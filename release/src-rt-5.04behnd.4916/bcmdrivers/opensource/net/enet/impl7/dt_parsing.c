@@ -108,10 +108,6 @@ static port_cap_t port_cap_get(struct device_node *port_dn, enetx_port_t *p)
     return port_cap;
 }
 
-#ifdef ENET_DT_TEST
-extern enetx_port_t *root_sw2;
-#endif
-
 static const char *port_type_string[] =
 {
     FOREACH_PORT_TYPE(GENERATE_STRING)
@@ -170,146 +166,99 @@ static void port_request_network_leds(struct device_node *dn, enetx_port_t *p)
 #include <bp3_license.h>
 
 #if defined(CONFIG_BCM968880)
-#define GPHY0  0
-#define GPHY1  1
-#define GPHY2  2
-#define GPHY3  3
-#define XGPHY0 5
 #define WANAE  6
+#define XGPHY0 5
 #define XGPHY1 7
-#define SLAN0  8
-#define SLAN1  9
-#define SLAN2  10
-#define SLAN3  11
-#define QLAN0  12
-#define QLAN1  13
-#define QLAN2  14
-#define QLAN3  15
 #elif defined(CONFIG_BCM96837)
-#define GPHY0  0
-#define GPHY1  1
-#define GPHY2  2
-#define GPHY3  3
 #define WANAE  4
-#define SLAN0  5
-#define SLAN1  6
-#define SLAN2  7
-#define SLAN3  8
-#define QLAN0  9
-#define QLAN1  10
-#define QLAN2  11
-#define QLAN3  12
+#define XGPHY0 -1
+#define XGPHY1 -2
+#elif defined(CONFIG_BCM968375)
+#define WANAE  4
 #define XGPHY0 -1
 #define XGPHY1 -2
 #else
 #error
 #endif
 
-static int enet_port_license_check(uint32_t port_index, int speed)
+static int enet_port_macsec_license_check(uint32_t port_index)
 {
-    if (!speed)
-        return 1;
-
     switch (port_index)
     {
-    case GPHY0:
-        return bcm_license_check_msg(BP3_FEATURE_EGPHY0) > 0;
-    case GPHY1:
-        return bcm_license_check_msg(BP3_FEATURE_EGPHY1) > 0;
-    case GPHY2:
-        return bcm_license_check_msg(BP3_FEATURE_EGPHY2) > 0;
-    case GPHY3:
-        return bcm_license_check_msg(BP3_FEATURE_EGPHY3) > 0;
     case XGPHY0:
-        switch (speed)
-        {
-        case 10000:
-            return bcm_license_check_msg(BP3_FEATURE_XGPHY0_10) > 0;
-        case 5000:
-            return bcm_license_check_msg(BP3_FEATURE_XGPHY0_5) > 0;
-        default:
-            return bcm_license_check_msg(BP3_FEATURE_XGPHY0_2_5) > 0;
-        }
+        return bcm_license_check(BP3_FEATURE_XGPHY0_2_5_MACSEC)
+            || bcm_license_check(BP3_FEATURE_XGPHY0_5_MACSEC)
+            || bcm_license_check(BP3_FEATURE_XGPHY0_10_MACSEC);
+        break;
     case XGPHY1:
-            switch (speed)
-            {
-            case 10000:
-                return bcm_license_check_msg(BP3_FEATURE_XGPHY1_10) > 0;
-            case 5000:
-                return bcm_license_check_msg(BP3_FEATURE_XGPHY1_5) > 0;
-            default:
-                return bcm_license_check_msg(BP3_FEATURE_XGPHY1_2_5) > 0;
-            }
-    case SLAN0:
-        switch (speed)
-        {
-        case 10000:
-            return bcm_license_check_msg(BP3_FEATURE_SLAN_10) > 0;
-        case 5000:
-            return bcm_license_check_msg(BP3_FEATURE_SLAN_5) > 0;
-        default:
-            return bcm_license_check_msg(BP3_FEATURE_SLAN_2_5) > 0 || bcm_license_check_msg(BP3_FEATURE_SLAN_4_2_5) > 0;
-        }
-    case SLAN1:
-    case SLAN2:
-    case SLAN3:
-        switch (speed)
-        {
-        case 10000:
-        case 5000:
-            return 0;
-        default:
-            return bcm_license_check_msg(BP3_FEATURE_SLAN_4_2_5) > 0;
-        }
-    case QLAN0:
-        switch (speed)
-        {
-        case 10000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN0_10) > 0;
-        case 5000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN0_5) > 0;
-        default:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN0_2_5) > 0;
-        }
-    case QLAN1:
-        switch (speed)
-        {
-        case 10000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN1_10) > 0;
-        case 5000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN1_5) > 0;
-        default:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN1_2_5) > 0;
-        }
-    case QLAN2:
-        switch (speed)
-        {
-        case 10000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN2_10) > 0;
-        case 5000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN2_5) > 0;
-        default:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN2_2_5) > 0;
-        }
-    case QLAN3:
-        switch (speed)
-        {
-        case 10000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN3_10) > 0;
-        case 5000:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN3_5) > 0;
-        default:
-            return bcm_license_check_msg(BP3_FEATURE_QLAN3_2_5) > 0;
-        }
-    default:
-        return 0;
+        return bcm_license_check(BP3_FEATURE_XGPHY1_2_5_MACSEC)
+            || bcm_license_check(BP3_FEATURE_XGPHY1_5_MACSEC)
+            || bcm_license_check(BP3_FEATURE_XGPHY1_10_MACSEC);
+        break;
+    case WANAE:
+        return bcm_license_check(BP3_FEATURE_ACTIVE_ETH_2_5_MACSEC)
+            || bcm_license_check(BP3_FEATURE_ACTIVE_ETH_5_MACSEC)
+            || bcm_license_check(BP3_FEATURE_ACTIVE_ETH_10_MACSEC);
+        break;
     }
 
     return 0;
 }
 #endif
 
-extern int dt_get_port_speed(const dt_handle_t port_handle);
+extern phy_speed_t dt_port_speed_get(const dt_handle_t port_handle, int port_index);
+
+static int check_port_limit(struct device_node *port_dn, uint32_t port_index, enetx_port_t *p)
+{
+#if !defined(DSL_DEVICES)
+    phy_speed_t speed = PHY_SPEED_UNKNOWN;
+
+    if (!p->p.phy)
+        return 0;
+    
+    speed = dt_port_speed_get(port_dn, port_index);
+
+    if (speed == PHY_SPEED_UNKNOWN)
+    {
+        enet_err("Skipping port named %s due to insufficient license\n",
+            of_node_full_name(port_dn));
+    }
+    else if (bandwidth)
+    {
+        if (bandwidth_sum + speed > bandwidth)
+        {
+            enet_err("Skipping port named %s due to bandwidth overflow: %d > %d\n",
+                of_node_full_name(port_dn), bandwidth_sum + speed, bandwidth);
+            speed = PHY_SPEED_UNKNOWN;
+        }
+        else
+        {
+            bandwidth_sum += speed;
+        }
+    }
+
+    if (speed < PHY_SPEED_10000)
+        p->p.phy->caps_mask &= ~PHY_CAP_10000;
+
+    if (speed < PHY_SPEED_5000)
+        p->p.phy->caps_mask &= ~PHY_CAP_5000;
+
+    if (speed < PHY_SPEED_2500)
+        p->p.phy->caps_mask &= ~PHY_CAP_2500;
+
+    if (speed == PHY_SPEED_UNKNOWN)
+    {
+        phy_dev_del(p->p.phy);
+        mac_dev_del(p->p.mac);
+        p->p.phy = NULL;
+        p->p.mac = NULL;
+    }
+
+    return speed == PHY_SPEED_UNKNOWN;
+#else
+    return 0;
+#endif
+}
 
 static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_node *port_dn, int unit, int compat_port)
 {
@@ -326,7 +275,6 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
     uint32_t port_index = -1;
     char *port_name = (char *)of_get_property(port_dn, "label", NULL);
     rgmii_params params = {};
-    int speed;
     int rc = -1;
 
     port_info_t port_info =
@@ -342,8 +290,12 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
         .is_wanconf_mux_ae = of_property_read_bool(port_dn, "is-wanconf-mux-ae"),
         .is_wanconf_mux_pon = of_property_read_bool(port_dn, "is-wanconf-mux-pon"),
         .swtag_use_pvid =  of_property_read_bool(port_dn, "extswtag-use-pvid"),
+        .wan_use_8txq = of_property_read_bool(port_dn, "wan-use-8txq"),
         .is_macsec = (-1),
+        .port_group = -1,
     };
+
+    of_property_read_u32(port_dn, "port-group", &port_info.port_group);
 
     port_reg = of_get_property(port_dn, "reg", NULL);
     if (!port_reg)
@@ -355,24 +307,20 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
     port_index = be32_to_cpup(port_reg);
     port_info.port = port_index;
 
-    speed = dt_get_port_speed(port_dn);
-
-    if (speed && bandwidth && bandwidth_sum + speed > bandwidth)
-    {
-        enet_err("Skipping port_create for port %s due to bandwidth overflow: %d > %d\n",
-            of_node_full_name(port_dn), bandwidth_sum + speed, bandwidth);
-        return 0;
-    }
-
-    bandwidth_sum += speed;
-
     link_dn = of_parse_phandle(port_dn, "link", 0);
     if (link_dn) /* Used by G9991 lag */
         port_info.is_attached = 1;
 
     macsec_dn = of_parse_phandle(port_dn, "macsec-handle", 0);
+#if defined(CONFIG_BRCM_SMC_BOOT)
     if (macsec_dn)
-        of_property_read_u32(macsec_dn, "index", &port_info.is_macsec);
+    {
+        if (enet_port_macsec_license_check(port_index))
+            of_property_read_u32(macsec_dn, "index", &port_info.is_macsec);
+        else
+            enet_err("No valid MACSEC license was found for %s\n", of_node_full_name(port_dn));
+    }
+#endif
 
     if (port_create(&port_info, sw, &p) > 0)
     {
@@ -405,21 +353,17 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
         if (!(p->p.phy = phy_drv_find_device(phy_dn)))
         {
             enet_err("Failed to find phy of devicenode (%s)\n", of_node_full_name(phy_dn));
-#ifndef ENET_DT_TEST
             goto error;
-#endif
         }
 
-#ifndef ENET_DT_TEST
         phy_dev_attach(p->p.phy, mii_type, !params.delay_rx, !params.delay_tx, params.instance);
-#endif
 
 #if defined(DSL_DEVICES)
 		// FIXME_DT: unify DSL & PON cascade handling
         // DSL devices port points 1st of cascade PHY instead of last
+        p->p.phy->sw_port = p;
         if (!phy_is_pon_wan_ae_serdes(p->p.phy))
         {
-            p->p.phy->sw_port = p;
             if (p->p.phy->cascade_next)
                 p->p.phy->cascade_next->sw_port = p;
         }
@@ -430,13 +374,11 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
 
     if ((mac_type_str = of_get_property(port_dn, "mac-type", NULL)))
     {
-#ifndef ENET_DT_TEST
         if (!(p->p.mac = mac_dev_dt_probe(port_dn, port_index)))
         {
             enet_err("Failed to create mac for port %d\n", port_index);
             goto error;
         }
-#endif
 
         if (mii_type == PHY_MII_TYPE_RGMII)
         {
@@ -471,12 +413,14 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
     port_request_network_leds(port_dn, p);
 #endif
 
-#if defined(CONFIG_BRCM_SMC_BOOT)
-    enet_port_license_check(port_index, speed);
-#endif
-
     if (port_info.is_detect)
         goto done;
+
+    if (check_port_limit(port_dn, port_index, p))
+    {
+        sw_free(&p);
+        return 0;
+    }
 
 #if defined(ENET_DELAYED_INIT)
     /* enable parallel mac/phy init for non-detect ports */
@@ -504,6 +448,7 @@ static int of_port_probe(struct device *dev, enetx_port_t *sw, struct device_nod
 done:
     enet_dbg("port create: success: devicenode: (%s)\n", full_name);
     return 0;
+
 error:
     enet_err("port create: failed: initialize port index (%d) from devicenode: (%s)\n", port_index, full_name);
     return rc;
@@ -545,11 +490,7 @@ static int of_sw_probe(struct device *dev, struct device_node *np, enetx_port_t 
     }
 
     if (!parent_port)
-#ifndef ENET_DT_TEST
         root_sw = sw;
-#else
-        root_sw2 = sw;
-#endif
 
     g_unit++;
     unit = g_unit;

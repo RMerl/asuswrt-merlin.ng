@@ -38,8 +38,6 @@ mknod /dev/blog c           338 0
 mknod /dev/archer c         339 0
 mknod /dev/mpm c            342 0
 mknod /dev/slicslac c       350 1
-mknod /dev/dect c           351 0
-mknod /dev/dectdbg c        351 1
 mknod /dev/ac97 c           360 0
 mknod /dev/bp3 c            380 0
 #mknod /dev/vfbio c         381 0 is created by vfbio.ko

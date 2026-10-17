@@ -145,15 +145,9 @@ static inline struct sk_buff *xtm_skb_alloc(BcmXtm_RxDma *rxdma)
 {
    struct sk_buff *skb;
    spinlock_t     *xtmlock_rx = &g_GlobalInfo.xtmlock_rx;
-      
-#if defined (CONFIG_BCM963138) || defined (CONFIG_BCM963148)
-   UINT32   irqFlags;
-      
-   spin_lock_irqsave(xtmlock_rx, irqFlags);
-#else
-   spin_lock_bh(xtmlock_rx);   
-#endif
-      
+
+   spin_lock_bh(xtmlock_rx);
+
    if (rxdma->freeSkbList)
    {
       skb = rxdma->freeSkbList;
@@ -162,14 +156,9 @@ static inline struct sk_buff *xtm_skb_alloc(BcmXtm_RxDma *rxdma)
    else
       skb = kmem_cache_alloc(g_GlobalInfo.xtmSkbCache, GFP_ATOMIC);
 
-#if defined (CONFIG_BCM963138) || defined (CONFIG_BCM963148)
-   spin_unlock_irqrestore(xtmlock_rx, irqFlags);
-#else
-   spin_unlock_bh(xtmlock_rx);   
-#endif
-      
+   spin_unlock_bh(xtmlock_rx);
+
    return skb;
-   
 }  /* xtm_skb_alloc() */
 
 
@@ -180,18 +169,12 @@ static inline struct sk_buff *xtm_skb_alloc(BcmXtm_RxDma *rxdma)
  * Returns: void
  *---------------------------------------------------------------------------
  */
-static inline void xtm_skb_free(BcmXtm_RxDma *rxdma, struct sk_buff *skb) 
+static inline void xtm_skb_free(BcmXtm_RxDma *rxdma, struct sk_buff *skb)
 {
    spinlock_t  *xtmlock_rx = &g_GlobalInfo.xtmlock_rx;
-      
-#if defined (CONFIG_BCM963138) || defined (CONFIG_BCM963148)
-   UINT32   irqFlags;
-      
-   spin_lock_irqsave(xtmlock_rx, irqFlags);
-#else
-   spin_lock_bh(xtmlock_rx);   
-#endif
-      
+
+   spin_lock_bh(xtmlock_rx);
+
    if ((UINT8 *)skb < rxdma->skbs_p || (UINT8 *)skb >= rxdma->end_skbs_p)
    {
       kmem_cache_free(g_GlobalInfo.xtmSkbCache, skb);
@@ -201,12 +184,8 @@ static inline void xtm_skb_free(BcmXtm_RxDma *rxdma, struct sk_buff *skb)
       skb->next_free     = rxdma->freeSkbList;
       rxdma->freeSkbList = skb;
    }
-   
-#if defined (CONFIG_BCM963138) || defined (CONFIG_BCM963148)
-   spin_unlock_irqrestore(xtmlock_rx, irqFlags);
-#else
-   spin_unlock_bh(xtmlock_rx);   
-#endif
+
+   spin_unlock_bh(xtmlock_rx);
 }  /* xtm_skb_free() */
 
 

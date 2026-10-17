@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the Hihope board
+ *
+ * Copyright (C) 2021 Renesas Electronisc Corporation
+ */
+
+#include "r8a774c0-ek874.dts"
+#include "r8a774c0-u-boot.dtsi"
+
+/ {
+	aliases {
+		spi0 = &rpc;
+	};
+};
+
+&rpc {
+	num-cs = <1>;
+	status = "okay";
+	spi-max-frequency = <50000000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	flash0: spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "w25m512jv", "spi-flash", "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+		reg = <0>;
+	};
+};

@@ -93,4 +93,9 @@ written consent.
 #define OTP_SKO1_CRC_ROW_SHIFT                0x0
 #define OTP_SKO1_CRC_ROW_MASK                 0xffffffff
 
+/* row 143 */
+#define OTP_INFO_ROW                143
+#define OTP_INFO_SHIFT              10
+#define OTP_INFO_MASK               (0x1f << OTP_INFO_SHIFT)
+
 #endif

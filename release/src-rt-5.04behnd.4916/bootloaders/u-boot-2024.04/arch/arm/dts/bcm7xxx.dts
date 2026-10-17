@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Empty devicetre file for bcm7260 board
+ *
+ * This is required to make the board build with CONFIG OF_SEPARATE
+ * In-tree document explains how to obtain a real devicetree using 'bolt' but
+ * I did not attempt this.
+ *
+ * Copyright 2021 Google LLC
+ */
+
+/dts-v1/;
+
+/ {
+};

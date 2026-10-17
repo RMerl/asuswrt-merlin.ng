@@ -1,9 +1,0 @@
-if TARGET_MPC8308_P1M
-
-config SYS_BOARD
-	default "mpc8308_p1m"
-
-config SYS_CONFIG_NAME
-	default "mpc8308_p1m"
-
-endif

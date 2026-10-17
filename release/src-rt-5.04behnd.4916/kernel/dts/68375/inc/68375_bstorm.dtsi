@@ -1,0 +1,7 @@
+
+accelerator@84800000 {
+    interrupt-names = "bstm";
+    interrupts = <GIC_SPI 220  IRQ_TYPE_LEVEL_HIGH>;
+    reg =  <0x0 0x84800000 0x0 0x4802C3>;
+    compatible = "brcm,bstm";
+};

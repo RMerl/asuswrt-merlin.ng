@@ -91,13 +91,13 @@ static int gdx_miss_packet_handler(void *void_p)
     /*Todo: Support for multiple GDX groups */
     dev_group_p = &gdx_dev_groups[0];
     dev_group_p->cpu_rxq_total_pkts++;
+    spin_lock(&dev_group_p->group_lock);
     if (gdx_get_group_idx_and_dev_idx(skb->dev, &group_idx, &dev_idx) != GDX_SUCCESS)
     {
         dev_group_p->cpu_rxq_lpbk_no_dev++;
         GDX_PRINT_ERROR("no matching GDX intf skb<0x%px> dev<%s>", skb, skb->dev->name);
         goto drop_and_exit_miss_hdlr;
     }
-    spin_lock(&dev_group_p->group_lock);
     gendev_info_p = (gdx_gendev_info_pp[dev_idx]);
     if (gendev_info_p == NULL)
     {
@@ -123,6 +123,14 @@ drop_and_exit_miss_hdlr:
     return GDX_FAILURE;
 }
 
+static int gdx_forward_prep_handler(void)
+{
+    gdx_dev_group_t *dev_group_p = &gdx_dev_groups[0];
+    /* Take the spinlock for the entire duration of the forward packet handling */
+    spin_lock(&dev_group_p->group_lock);
+    return 0;
+}
+
 static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
 {
     gdx_hwacc_rx_info_t info = {};
@@ -140,7 +148,6 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
     /*Todo: Support for multiple GDX groups */
     /* Here group_idx is always 0 */
     dev_group_p = &gdx_dev_groups[0];
-    spin_lock(&dev_group_p->group_lock);
     gdx_get_pkt_info_from_nbuff(pNBuff, &info);
     info.gdx_pd_data  = (int)user_value;
     GDX_PRINT_INFO("gdx_pd_data:%d size:%d\n",info.gdx_pd_data, info.size);
@@ -148,21 +155,24 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
     info.dev_idx = gdx_get_dev_idx_from_gdx_dev_id(info.gdx_pd_data);
     if (info.dev_idx < 0)
     {
-        GDX_PRINT_ERROR("dev_idx is not valid \n");
+        if (GDX_PRINT_FREQ(dev_group_p->cpu_rxq_tx_no_dev))
+           GDX_PRINT_ERROR("dev_idx is not valid \n");
         goto gdx_fwd_pkt_err_no_dev;
     }
 
     gendev_info_p = gdx_gendev_info_pp[info.dev_idx];
     if (gendev_info_p == NULL)
     {
-        GDX_PRINT_INFO("GDX disabled on the target device\n");
+        if (GDX_PRINT_FREQ(dev_group_p->cpu_rxq_tx_no_dev))
+           GDX_PRINT_INFO("GDX disabled on the target device\n");
         goto gdx_fwd_pkt_err_no_dev;
     }
     dev_stats_p = &gendev_info_p->dev_stats;
     info.tx_dev = bcm_get_netdev_by_id_nohold(info.gdx_pd_data);
     if (!gdx_is_dev_valid(info.tx_dev))
     {
-        GDX_PRINT_ERROR("tx_dev is not valid \n");
+        if (GDX_PRINT_FREQ(dev_group_p->cpu_rxq_tx_no_dev))
+           GDX_PRINT_ERROR("tx_dev is not valid \n");
         goto gdx_fwd_pkt_err_no_dev;
     }
     GDX_PRINT_INFO("TX DEV:%s",bcm_get_netdev_name_by_id(info.gdx_pd_data));
@@ -239,19 +249,20 @@ static int gdx_forward_packet_handler(void *void_p, uint32_t user_value)
     /* forward packets to gdx TX device. */
     dev_group_p->cpu_rxq_valid_pkts++;
     gdx_forward_packet_handle(dev_group_p, &info, pNBuff_tx);
-    spin_unlock(&dev_group_p->group_lock);
     return GDX_SUCCESS;
 gdx_fwd_pkt_err_drop:
     dev_stats_p->dev_tx_pkts_dropped++;
 gdx_fwd_pkt_err_no_dev:
     dev_group_p->cpu_rxq_tx_no_dev++;
-    spin_unlock(&dev_group_p->group_lock);
     nbuff_free(pNBuff);
     return GDX_FAILURE;
 }
 
 static int gdx_forward_done_handler(void)
 {
+    gdx_dev_group_t *dev_group_p = &gdx_dev_groups[0];
+    /* Release the spinlock since the forward packet handling is done */
+    spin_unlock(&dev_group_p->group_lock);
     bcm_fro_tcp_complete();
     return 0;
 }
@@ -323,6 +334,7 @@ static int _gdx_hwacc_crossbow_init(int group_idx, const char *gdx_dev_name)
         if (gdx_hwacc_bind_func)
         {
             bind_arg.gdx_miss_pkt_handler_cb = gdx_miss_packet_handler;
+            bind_arg.gdx_fwd_pkt_prep_cb     = gdx_forward_prep_handler;
             bind_arg.gdx_hit_pkt_handler_cb  = gdx_forward_packet_handler;
             bind_arg.gdx_fwd_pkt_done_cb     = gdx_forward_done_handler;
             bind_arg.gdx_acc_send_pkt = NULL;

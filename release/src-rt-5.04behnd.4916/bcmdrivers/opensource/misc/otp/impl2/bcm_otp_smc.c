@@ -84,9 +84,6 @@ enum
 #define k_FIELD_STR_RSA_KEYB            "RSA_KEYB"
 #define k_FIELD_STR_EC_KEY              "EC_KEY"
 #define k_FIELD_STR_GEN_ROW0            "GEN_ROW0"
-#define k_FIELD_STR_GEN_ROW1            "GEN_ROW1"
-#define k_FIELD_STR_GEN_ROW2            "GEN_ROW2"
-#define k_FIELD_STR_GEN_ROW3            "GEN_ROW3"
 #define k_FIELD_STR_UNQ_REENC_CMPLT     "RENCDONE"
 #define k_FIELD_STR_BP3_INIT            "BP3_INIT"
 #define k_FIELD_STR_FLD_HMID            "FLD_HMID"
@@ -135,6 +132,8 @@ static bcm_otp_feat_info otp_feat_info[] = {
 	{ .feat = OTP_MAP_JU_MODE, .fld_name = k_FIELD_STR_JU_MODE, .fld_size = 4 },
 	{ .feat = OTP_MAP_LEDS, .fld_name = k_FIELD_STR_LEDS, .fld_size = 5},
 	{ .feat = OTP_MAP_UART_EN, .fld_name = k_FIELD_STR_UART_EN, .fld_size = 4},
+	{ .feat = OTP_MAP_FLASH_ENCRYPTED, .fld_name = k_FIELD_STR_GEN_ROW0, .fld_size = 8},
+	{ .feat = OTP_MAP_AUTO_FLASH_ENC, .fld_name = k_FIELD_STR_GEN_ROW0, .fld_size = 8},
 };
 //
 // OTP RPC access helpers

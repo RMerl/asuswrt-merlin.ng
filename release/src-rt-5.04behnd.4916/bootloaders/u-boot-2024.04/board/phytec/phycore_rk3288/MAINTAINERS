@@ -1,0 +1,9 @@
+phyCORE-RK3288
+M:	Wadim Egorov <w.egorov@phytec.de>
+S:	Maintained
+F:	arch/arm/dts/rk3288-phycore-rdk.dts
+F:	arch/arm/dts/rk3288-phycore-rdk-u-boot.dtsi
+F:	arch/arm/dts/rk3288-phycore-som.dtsi
+F:	board/phytec/phycore_rk3288
+F:	include/configs/phycore_rk3288.h
+F:	configs/phycore-rk3288_defconfig

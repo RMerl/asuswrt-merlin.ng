@@ -43,7 +43,6 @@
 
 #include "beep.h"
 #include "bcm_retcodes.h"
-#include "bdk_dbus.h"
 
 /* ---- Constants and Types ----------------------------------------------- */
 
@@ -66,7 +65,21 @@
 #define OPS_HOSTEE_ALIAS     "HostEE"
 /* OPS_VERSION 3.0 has changes in BDK ZBUS API */
 /* OPS_VERSION 3.1 has changes in container lib (hardcode bind mount removal) */
-#define OPS_VERSION          "3.1"
+/* OPS_VERSION 4.0 
+ * 1. Added required period parameter in cpu section in manifest
+ * 2. after switching to kernel 5.15, glibc used by toolchain
+ * removes libpthread and librt. So dependency section in container manifest
+ * needs to be updated
+ * 3. we will always bump up the major number whenever a new toolchain is
+ * updated or a major feature is introduced
+ * 4. Our convention of a DU version that uses HostEE version 4 would have its
+ * major version 4 as well. The minor version is bumped whenever there is a
+ * modification in the DU's EU */
+/* OPS_VERSION 4.1 
+ * The version is bumped because the changeDuStateCompleteResponse API
+ * changed to retrieve the allocatedEUUID, allocatedEUGID,
+ * allocatedHostUID, allocatedHostGID, and updateUID */
+#define OPS_VERSION          "4.1"
 #define OPS_HOSTEE_VERSION   OPS_VERSION
 #define OPS_HOSTEE_VENDOR    "Broadcom"
 #define OPS_HOSTEE_TYPE      "Host EE"
@@ -77,6 +90,7 @@
 #define OPS_APPARMOR_DIR     "/etc/apparmor.d/lxc"
 
 #define OPS_EE_PREINSTALL_MAX     8
+#define OPS_EE_RESTART_MAX        8
 #define OPS_DU_PREINSTALL_MAX     16
 #define OPS_DU_PER_UNINSTALL_MAX  8
 #define OPS_DU_PER_UPDATE_MAX     16
@@ -84,6 +98,7 @@
 #define OPS_EU_STOP_TIMEOUT_INTERVAL 1000 //1 secs
 #define OPS_EU_STOP_TIMEOUT_TRY_MAX  2
 #define OPS_EU_RESTART_TIMEOUT_TRY_MAX  4
+#define OPS_EU_RESTART_MAX  8
 
 #define OPS_UID_BASE_HOSTEE      8000
 #define OPS_UID_BASE_BGN         10000
@@ -193,6 +208,14 @@ typedef enum
 #define EXEFAULTCODE_ID "exeFaultCode"
 #define EXEFAULTMSG_ID  "exeFaultMessage"
 #define CONTAINERNAME_ID "containerName"
+/* UPDATE_USER_ID must be set to 1 for openplat_md to pick up the
+ * allocatedEUID, allocatedEUGID, allocatedHostID, and allocatedGroupID.
+ * When 0, openplat will assume these ID have not been assigned */
+#define UPDATE_USER_ID   "updateUID"
+#define USER_ID          "allocatedEUUID"
+#define GROUP_ID         "allocatedEUGID"
+#define HOST_USER_ID     "allocatedHostUID"
+#define HOST_GROUP_ID    "allocatedHostGID"
 
 
 #endif /* OPENPLAT_H */

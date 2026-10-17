@@ -51,7 +51,11 @@ typedef enum {
     rdpa_fpi_attr_special_gre = 2, /* special_gre : RW : bool : Flow Provisioning Interface to support a special GRE */
     rdpa_fpi_attr_l2lkp_on_ethertype = 3, /* l2lkp_on_ethertype : RW : bool : Flow Provisioning Interface to force L2 Lookup when configured EtherType is seen */
     rdpa_fpi_attr_ethertype_for_l2lkp = 4, /* ethertype_for_l2lkp : RW : number : Flow Provisioning Interface. EtherType to force L2 Lookup */
-    rdpa_fpi_attr_lkp_enable = 5, /* lkp_enable : RW : bool : Hardware Flow Lookup Enable */
+    rdpa_fpi_attr_ipv6_exthdr_force_trap = 5, /* ipv6_exthdr_force_trap : RW : bool : Enable force trap when see IPv6 packet with extension header other than ESP or Fragment */
+    rdpa_fpi_attr_lkp_enable = 6, /* lkp_enable : RW : bool : Hardware Flow Lookup Enable */
+    rdpa_fpi_attr_ip_frag_enable = 7, /* ip_frag_enable : RW : bool : Enable accelerated IP fragmentation */
+    rdpa_fpi_attr_ip_reasm_enable = 8, /* ip_reasm_enable : RW : bool : Enable accelerated IP reassembly */
+    rdpa_fpi_attr_stat = 9, /* stat : RW : aggregate fpi_stat(rdpa_fpi_stat_t) : fragmentation and reassembly statistics */
 } rdpa_fpi_attr_types;
 
 extern int (*f_rdpa_fpi_get)(bdmf_object_handle *pmo);
@@ -224,6 +228,38 @@ static inline int rdpa_fpi_ethertype_for_l2lkp_set(bdmf_object_handle mo_, bdmf_
 }
 
 
+/** Get fpi/ipv6_exthdr_force_trap attribute.
+ *
+ * Get Enable force trap when see IPv6 packet with extension header other than ESP or Fragment.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[out]  ipv6_exthdr_force_trap_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_ipv6_exthdr_force_trap_get(bdmf_object_handle mo_, bdmf_boolean *ipv6_exthdr_force_trap_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_fpi_attr_ipv6_exthdr_force_trap, &_nn_);
+    *ipv6_exthdr_force_trap_ = (bdmf_boolean)_nn_;
+    return _rc_;
+}
+
+
+/** Set fpi/ipv6_exthdr_force_trap attribute.
+ *
+ * Set Enable force trap when see IPv6 packet with extension header other than ESP or Fragment.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[in]   ipv6_exthdr_force_trap_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_ipv6_exthdr_force_trap_set(bdmf_object_handle mo_, bdmf_boolean ipv6_exthdr_force_trap_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_fpi_attr_ipv6_exthdr_force_trap, ipv6_exthdr_force_trap_);
+}
+
+
 /** Get fpi/lkp_enable attribute.
  *
  * Get Hardware Flow Lookup Enable.
@@ -253,6 +289,98 @@ static inline int rdpa_fpi_lkp_enable_get(bdmf_object_handle mo_, bdmf_boolean *
 static inline int rdpa_fpi_lkp_enable_set(bdmf_object_handle mo_, bdmf_boolean lkp_enable_)
 {
     return bdmf_attr_set_as_num(mo_, rdpa_fpi_attr_lkp_enable, lkp_enable_);
+}
+
+
+/** Get fpi/ip_frag_enable attribute.
+ *
+ * Get Enable accelerated IP fragmentation.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[out]  ip_frag_enable_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_ip_frag_enable_get(bdmf_object_handle mo_, bdmf_boolean *ip_frag_enable_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_fpi_attr_ip_frag_enable, &_nn_);
+    *ip_frag_enable_ = (bdmf_boolean)_nn_;
+    return _rc_;
+}
+
+
+/** Set fpi/ip_frag_enable attribute.
+ *
+ * Set Enable accelerated IP fragmentation.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[in]   ip_frag_enable_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_ip_frag_enable_set(bdmf_object_handle mo_, bdmf_boolean ip_frag_enable_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_fpi_attr_ip_frag_enable, ip_frag_enable_);
+}
+
+
+/** Get fpi/ip_reasm_enable attribute.
+ *
+ * Get Enable accelerated IP reassembly.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[out]  ip_reasm_enable_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_ip_reasm_enable_get(bdmf_object_handle mo_, bdmf_boolean *ip_reasm_enable_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_fpi_attr_ip_reasm_enable, &_nn_);
+    *ip_reasm_enable_ = (bdmf_boolean)_nn_;
+    return _rc_;
+}
+
+
+/** Set fpi/ip_reasm_enable attribute.
+ *
+ * Set Enable accelerated IP reassembly.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[in]   ip_reasm_enable_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_ip_reasm_enable_set(bdmf_object_handle mo_, bdmf_boolean ip_reasm_enable_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_fpi_attr_ip_reasm_enable, ip_reasm_enable_);
+}
+
+
+/** Get fpi/stat attribute.
+ *
+ * Get fragmentation and reassembly statistics.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[out]  stat_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_stat_get(bdmf_object_handle mo_, rdpa_fpi_stat_t * stat_)
+{
+    return bdmf_attr_get_as_buf(mo_, rdpa_fpi_attr_stat, stat_, sizeof(*stat_));
+}
+
+
+/** Set fpi/stat attribute.
+ *
+ * Set fragmentation and reassembly statistics.
+ * \param[in]   mo_ fpi object handle or mattr transaction handle
+ * \param[in]   stat_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_fpi_stat_set(bdmf_object_handle mo_, const rdpa_fpi_stat_t * stat_)
+{
+    return bdmf_attr_set_as_buf(mo_, rdpa_fpi_attr_stat, stat_, sizeof(*stat_));
 }
 
 /** @} end of fpi Doxygen group */

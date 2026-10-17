@@ -84,8 +84,16 @@ typedef struct {
     uint16_t local_port_nbr;   /**< Local UDP Port Number */
     bdmf_ip_t remote_ip_addr;  /**< Remote IP Address */
     uint16_t remote_port_nbr;  /**< Remote UDP Port Number */
+    int is_tunnel; /**< Is Tunnel */
+    bdmf_ip_t outer_local_ip_addr;   /**< Outer Local IP Address */
+    bdmf_ip_t outer_remote_ip_addr;  /**< Outer Remote IP Address */
     bdmf_index flow_index[128];  /**< Analyzer Unicast Flow Index */
 } rdpa_udpspdtest_rx_params_t;
+
+typedef struct {
+    bdmf_boolean flow_added;
+    uint8_t tunnel_inner_pkt_offset;
+} rdpa_udpspdtest_rx_info_t;
 
 /** UDP Speed Test TX parameters.\n
  */

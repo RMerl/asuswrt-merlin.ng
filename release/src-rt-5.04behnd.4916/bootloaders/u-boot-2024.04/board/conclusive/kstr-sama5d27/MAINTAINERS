@@ -1,0 +1,9 @@
+CONCLUSIVE KSTR-SAMA5D27 BOARD
+M:	Jakub Klama <jakub@conclusive.pl>
+M:	Artur Rojek <artur@conclusive.pl>
+S:	Maintained
+F:	board/conclusive/kstr-sama5d27
+F:	include/configs/kstr-sama5d27.h
+F:	configs/kstr_sama5d27_defconfig
+F:	arch/arm/dts/at91-kstr-sama5d27.dts
+F:	arch/arm/dts/at91-kstr-sama5d27-u-boot.dtsi

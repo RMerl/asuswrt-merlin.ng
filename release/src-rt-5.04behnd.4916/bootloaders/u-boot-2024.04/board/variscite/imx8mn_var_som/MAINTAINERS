@@ -1,0 +1,7 @@
+ARM i.MX8MN VARISCITE VAR-SOM-MX8MN MODULE
+M:	Hugo Villeneuve <hvilleneuve@dimonoff.com>
+S:	Maintained
+F:	arch/arm/dts/imx8mn-var-som*
+F:	board/variscite/imx8mn_var_som/
+F:	configs/imx8mn_var_som_defconfig
+F:	include/configs/imx8mn_var_som.h

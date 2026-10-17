@@ -1,0 +1,1180 @@
+menu "Library routines"
+
+config ADDR_MAP
+	bool "Enable support for non-identity virtual-physical mappings"
+	help
+	  Enables helper code for implementing non-identity virtual-physical
+	  memory mappings for 32bit CPUs.
+
+	  This library only works in the post-relocation phase.
+
+config SYS_NUM_ADDR_MAP
+	int "Size of the address-map table"
+	depends on ADDR_MAP
+	default 16
+	help
+	  Sets the number of entries in the virtual-physical mapping table.
+
+config SYS_TIMER_COUNTS_DOWN
+	bool "System timer counts down rather than up"
+
+config PHYSMEM
+	bool "Access to physical memory region (> 4G)"
+	help
+	  Some basic support is provided for operations on memory not
+	  normally accessible to 32-bit U-Boot - e.g. some architectures
+	  support access to more than 4G of memory on 32-bit
+	  machines using physical address extension or similar.
+	  Enable this to access this basic support, which only supports clearing
+	  the memory.
+
+config BCH
+	bool "Enable Software based BCH ECC"
+	help
+	  Enables software based BCH ECC algorithm present in lib/bch.c
+	  This is used by SoC platforms which do not have built-in ELM
+	  hardware engine required for BCH ECC correction.
+
+config BINMAN_FDT
+	bool "Allow access to binman information in the device tree"
+	depends on BINMAN && DM && OF_CONTROL
+	default y if OF_SEPARATE || OF_EMBED
+	help
+	  This enables U-Boot to access information about binman entries,
+	  stored in the device tree in a binman node. Typical uses are to
+	  locate entries in the firmware image. See binman.h for the available
+	  functionality.
+
+config CC_OPTIMIZE_LIBS_FOR_SPEED
+	bool "Optimize libraries for speed"
+	help
+	  Enabling this option will pass "-O2" to gcc when compiling
+	  under "lib" directory.
+
+	  If unsure, say N.
+
+config CHARSET
+	bool
+
+config DYNAMIC_CRC_TABLE
+	bool "Enable Dynamic tables for CRC"
+	help
+	  Enable this option to calculate entries for CRC tables at runtime.
+	  This can be helpful when reducing the size of the build image
+
+config HAVE_ARCH_IOMAP
+	bool
+	help
+	  Enable this option if architecture provides io{read,write}{8,16,32}
+	  I/O accessor functions.
+
+config HAVE_PRIVATE_LIBGCC
+	bool
+
+config LIB_UUID
+	bool
+
+config RANDOM_UUID
+	bool "GPT Random UUID generation"
+	select LIB_UUID
+	help
+	  Enable the generation of partitions with random UUIDs if none
+	  are provided.
+
+config SPL_LIB_UUID
+	depends on SPL
+	bool
+
+config SEMIHOSTING
+	bool "Support semihosting"
+	depends on ARM || RISCV
+	help
+	  Semihosting is a method for a target to communicate with a host
+	  debugger. It uses special instructions which the debugger will trap
+	  on and interpret. This allows U-Boot to read/write files, print to
+	  the console, and execute arbitrary commands on the host system.
+
+	  Enabling this option will add support for reading and writing files
+	  on the host system. If you don't have a debugger attached then trying
+	  to do this will likely cause U-Boot to hang. Say 'n' if you are unsure.
+
+config SEMIHOSTING_FALLBACK
+	bool "Recover gracefully when semihosting fails"
+	depends on SEMIHOSTING
+	default y
+	help
+	  Normally, if U-Boot makes a semihosting call and no debugger is
+	  attached, then it will panic due to a synchronous abort
+	  exception. This config adds an exception handler which will allow
+	  U-Boot to recover. Say 'y' if unsure.
+
+config SPL_SEMIHOSTING
+	bool "Support semihosting in SPL"
+	depends on SPL && (ARM || RISCV)
+	help
+	  Semihosting is a method for a target to communicate with a host
+	  debugger. It uses special instructions which the debugger will trap
+	  on and interpret. This allows U-Boot to read/write files, print to
+	  the console, and execute arbitrary commands on the host system.
+
+	  Enabling this option will add support for reading and writing files
+	  on the host system. If you don't have a debugger attached then trying
+	  to do this will likely cause U-Boot to hang. Say 'n' if you are unsure.
+
+config SPL_SEMIHOSTING_FALLBACK
+	bool "Recover gracefully when semihosting fails in SPL"
+	depends on SPL_SEMIHOSTING
+	select ARMV8_SPL_EXCEPTION_VECTORS if ARM64
+	default y
+	help
+	  Normally, if U-Boot makes a semihosting call and no debugger is
+	  attached, then it will panic due to a synchronous abort
+	  exception. This config adds an exception handler which will allow
+	  U-Boot to recover. Say 'y' if unsure.
+
+config PRINTF
+	bool
+	default y
+
+config SPL_PRINTF
+	bool
+	select SPL_SPRINTF
+	select SPL_STRTO if !SPL_USE_TINY_PRINTF
+
+config TPL_PRINTF
+	bool
+	select TPL_SPRINTF
+	select TPL_STRTO if !TPL_USE_TINY_PRINTF
+
+config VPL_PRINTF
+	bool
+	select VPL_SPRINTF
+	select VPL_STRTO if !VPL_USE_TINY_PRINTF
+
+config SPRINTF
+	bool
+	default y
+
+config SPL_SPRINTF
+	bool
+
+config TPL_SPRINTF
+	bool
+
+config VPL_SPRINTF
+	bool
+
+config SSCANF
+	bool
+
+config STRTO
+	bool
+	default y
+
+config SPL_STRTO
+	bool
+
+config TPL_STRTO
+	bool
+
+config VPL_STRTO
+	bool
+
+config IMAGE_SPARSE
+	bool
+
+config IMAGE_SPARSE_FILLBUF_SIZE
+	hex "Android sparse image CHUNK_TYPE_FILL buffer size"
+	default 0x80000
+	depends on IMAGE_SPARSE
+	help
+	  Set the size of the fill buffer used when processing CHUNK_TYPE_FILL
+	  chunks.
+
+config USE_PRIVATE_LIBGCC
+	bool "Use private libgcc"
+	depends on HAVE_PRIVATE_LIBGCC
+	default y if HAVE_PRIVATE_LIBGCC && ((ARM && !ARM64) || MIPS)
+	help
+	  This option allows you to use the built-in libgcc implementation
+	  of U-Boot instead of the one provided by the compiler.
+	  If unsure, say N.
+
+config SYS_HZ
+	int
+	default 1000
+	help
+	  The frequency of the timer returned by get_timer().
+	  get_timer() must operate in milliseconds and this option must be
+	  set to 1000.
+
+config SPL_USE_TINY_PRINTF
+	bool "Enable tiny printf() version in SPL"
+	depends on SPL
+	default y
+	help
+	  This option enables a tiny, stripped down printf version.
+	  This should only be used in space limited environments,
+	  like SPL versions with hard memory limits. This version
+	  reduces the code size by about 2.5KiB on armv7.
+
+	  The supported format specifiers are %c, %s, %u/%d and %x.
+
+config TPL_USE_TINY_PRINTF
+	bool "Enable tiny printf() version in TPL"
+	depends on TPL
+	default y if SPL_USE_TINY_PRINTF
+	help
+	  This option enables a tiny, stripped down printf version.
+	  This should only be used in space limited environments,
+	  like SPL versions with hard memory limits. This version
+	  reduces the code size by about 2.5KiB on armv7.
+
+	  The supported format specifiers are %c, %s, %u/%d and %x.
+
+config VPL_USE_TINY_PRINTF
+	bool "Enable tiny printf() version for VPL"
+	depends on VPL
+	help
+	  This option enables a tiny, stripped down printf version.
+	  This should only be used in space limited environments,
+	  like SPL versions with hard memory limits. This version
+	  reduces the code size by about 2.5KiB on armv7.
+
+	  The supported format specifiers are %c, %s, %u/%d and %x.
+
+config PANIC_HANG
+	bool "Do not reset the system on fatal error"
+	help
+	  Define this option to stop the system in case of a fatal error,
+	  so that you have to reset it manually. This is probably NOT a good
+	  idea for an embedded system where you want the system to reboot
+	  automatically as fast as possible, but it may be useful during
+	  development since you can try to debug the conditions that lead to
+	  the situation.
+
+config REGEX
+	bool "Enable regular expression support"
+	default y if NET
+	help
+	  If this variable is defined, U-Boot is linked against the
+	  SLRE (Super Light Regular Expression) library, which adds
+	  regex support to some commands, for example "env grep" and
+	  "setexpr".
+
+choice
+	prompt "Pseudo-random library support type"
+	depends on NET_RANDOM_ETHADDR || RANDOM_UUID || CMD_UUID || \
+		   RNG_SANDBOX || UT_LIB && AES || FAT_WRITE
+	default LIB_RAND
+	help
+	  Select the library to provide pseudo-random number generator
+	  functions.  LIB_HW_RAND supports certain hardware engines that
+	  provide this functionality.  If in doubt, select LIB_RAND.
+
+config LIB_RAND
+	bool "Pseudo-random library support"
+
+config LIB_HW_RAND
+	bool "HW Engine for random library support"
+
+endchoice
+
+config SUPPORT_ACPI
+	bool
+	help
+	  Enable this if your arch or board can support generating ACPI
+	  (Advanced Configuration and Power Interface) tables. In this case
+	  U-Boot can generate these tables and pass them to the Operating
+	  System.
+
+config ACPI
+	bool "Enable support for ACPI libraries"
+	depends on SUPPORT_ACPI
+	help
+	  Provides library functions for dealing with ACPI tables. This does
+	  not necessarily include generation of tables
+	  (see GENERATE_ACPI_TABLE), but allows for tables to be located.
+
+config SPL_ACPI
+	bool "Enable support for ACPI libraries in SPL"
+	depends on SPL && SUPPORT_ACPI
+	help
+	  Provides library functions for dealing with ACPI tables in SPL. This
+	  does not necessarily include generation of tables
+	  (see GENERATE_ACPI_TABLE), but allows for tables to be located.
+
+config GENERATE_ACPI_TABLE
+	bool "Generate an ACPI (Advanced Configuration and Power Interface) table"
+	depends on ACPI
+	select QFW if QEMU
+	help
+	  The Advanced Configuration and Power Interface (ACPI) specification
+	  provides an open standard for device configuration and management
+	  by the operating system. It defines platform-independent interfaces
+	  for configuration and power management monitoring.
+
+config SPL_TINY_MEMSET
+	bool "Use a very small memset() in SPL"
+	depends on SPL
+	help
+	  The faster memset() is the arch-specific one (if available) enabled
+	  by CONFIG_USE_ARCH_MEMSET. If that is not enabled, we can still get
+	  better performance by writing a word at a time. But in very
+	  size-constrained environments even this may be too big. Enable this
+	  option to reduce code size slightly at the cost of some speed.
+
+config TPL_TINY_MEMSET
+	bool "Use a very small memset() in TPL"
+	depends on TPL
+	help
+	  The faster memset() is the arch-specific one (if available) enabled
+	  by CONFIG_USE_ARCH_MEMSET. If that is not enabled, we can still get
+	  better performance by writing a word at a time. But in very
+	  size-constrained environments even this may be too big. Enable this
+	  option to reduce code size slightly at the cost of some speed.
+
+config RBTREE
+	bool
+
+config BITREVERSE
+	bool "Bit reverse library from Linux"
+
+config TRACE
+	bool "Support for tracing of function calls and timing"
+	imply CMD_TRACE
+	imply TIMER_EARLY
+	help
+	  Enables function tracing within U-Boot. This allows recording of call
+	  traces including timing information. The command can write data to
+	  memory for exporting for analysis (e.g. using bootchart).
+	  See doc/README.trace for full details.
+
+config TRACE_BUFFER_SIZE
+	hex "Size of trace buffer in U-Boot"
+	depends on TRACE
+	default 0x01000000
+	help
+	  Sets the size of the trace buffer in U-Boot. This is allocated from
+	  memory during relocation. If this buffer is too small, the trace
+	  history will be truncated, with later records omitted.
+
+	  If early trace is enabled (i.e. before relocation), this buffer must
+	  be large enough to include all the data from the early trace buffer as
+	  well, since this is copied over to the main buffer during relocation.
+
+	  A trace record is emitted for each function call and each record is
+	  12 bytes (see struct trace_call). A suggested minimum size is 1MB. If
+	  the size is too small then 'trace stats' will show a message saying
+	  how many records were dropped due to buffer overflow.
+
+config TRACE_CALL_DEPTH_LIMIT
+	int "Trace call depth limit"
+	depends on TRACE
+	default 15
+	help
+	  Sets the maximum call depth up to which function calls are recorded.
+
+config TRACE_EARLY
+	bool "Enable tracing before relocation"
+	depends on TRACE
+	help
+	  Sometimes it is helpful to trace execution of U-Boot before
+	  relocation. This is possible by using a arch-specific, fixed buffer
+	  position in memory. Enable this option to start tracing as early as
+	  possible after U-Boot starts.
+
+config TRACE_EARLY_SIZE
+	hex "Size of early trace buffer in U-Boot"
+	depends on TRACE_EARLY
+	default 0x00100000
+	help
+	  Sets the size of the early trace buffer in bytes. This is used to hold
+	  tracing information before relocation.
+
+config TRACE_EARLY_CALL_DEPTH_LIMIT
+	int "Early trace call depth limit"
+	depends on TRACE_EARLY
+	default 15
+	help
+	  Sets the maximum call depth up to which function calls are recorded
+	  during early tracing.
+
+config TRACE_EARLY_ADDR
+	hex "Address of early trace buffer in U-Boot"
+	depends on TRACE_EARLY
+	default 0x00100000
+	help
+	  Sets the address of the early trace buffer in U-Boot. This memory
+	  must be accessible before relocation.
+
+	  A trace record is emitted for each function call and each record is
+	  12 bytes (see struct trace_call). A suggested minimum size is 1MB. If
+	  the size is too small then the message which says the amount of early
+	  data being coped will the the same as the
+
+config CIRCBUF
+	bool "Enable circular buffer support"
+
+source lib/dhry/Kconfig
+
+menu "Security support"
+
+config AES
+	bool "Support the AES algorithm"
+	help
+	  This provides a means to encrypt and decrypt data using the AES
+	  (Advanced Encryption Standard). This algorithm uses a symetric key
+	  and is widely used as a streaming cipher. Different key lengths are
+	  supported by the algorithm but only a 128-bit key is supported at
+	  present.
+
+source lib/ecdsa/Kconfig
+source lib/rsa/Kconfig
+source lib/crypto/Kconfig
+source lib/crypt/Kconfig
+
+config TPM
+	bool "Trusted Platform Module (TPM) Support"
+	depends on DM
+	imply DM_RNG
+	select SHA1
+	select SHA256
+	select SHA384
+	select SHA512
+	help
+	  This enables support for TPMs which can be used to provide security
+	  features for your board. The TPM can be connected via LPC or I2C
+	  and a sandbox TPM is provided for testing purposes. Use the 'tpm'
+	  command to interactive the TPM. Driver model support is provided
+	  for the low-level TPM interface, but only one TPM is supported at
+	  a time by the TPM library.
+
+config SPL_TPM
+	bool "Trusted Platform Module (TPM) Support in SPL"
+	depends on SPL_DM
+	imply SPL_CRC8
+	help
+	  This enables support for TPMs which can be used to provide security
+	  features for your board. The TPM can be connected via LPC or I2C
+	  and a sandbox TPM is provided for testing purposes. Use the 'tpm'
+	  command to interactive the TPM. Driver model support is provided
+	  for the low-level TPM interface, but only one TPM is supported at
+	  a time by the TPM library.
+
+config TPL_TPM
+	bool "Trusted Platform Module (TPM) Support in TPL"
+	depends on TPL_DM
+	help
+	  This enables support for TPMs which can be used to provide security
+	  features for your board. The TPM can be connected via LPC or I2C
+	  and a sandbox TPM is provided for testing purposes. Use the 'tpm'
+	  command to interactive the TPM. Driver model support is provided
+	  for the low-level TPM interface, but only one TPM is supported at
+	  a time by the TPM library.
+
+config VPL_TPM
+	bool "Trusted Platform Module (TPM) Support in VPL"
+	depends on VPL_DM
+	help
+	  This enables support for TPMs which can be used to provide security
+	  features for your board. The TPM can be connected via LPC or I2C
+	  and a sandbox TPM is provided for testing purposes. Use the 'tpm'
+	  command to interactive the TPM. Driver model support is provided
+	  for the low-level TPM interface, but only one TPM is supported at
+	  a time by the TPM library.
+
+endmenu
+
+menu "Android Verified Boot"
+
+config LIBAVB
+	bool "Android Verified Boot 2.0 support"
+	depends on ANDROID_BOOT_IMAGE
+	help
+	  This enables support of Android Verified Boot 2.0 which can be used
+	  to assure the end user of the integrity of the software running on a
+	  device. Introduces such features as boot chain of trust, rollback
+	  protection etc.
+
+endmenu
+
+menu "Hashing Support"
+
+config BLAKE2
+	bool "Enable BLAKE2 support"
+	help
+	  This option enables support of hashing using BLAKE2B algorithm.
+	  The hash is calculated in software.
+	  The BLAKE2 algorithm produces a hash value (digest) between 1 and
+	  64 bytes.
+
+config SHA1
+	bool "Enable SHA1 support"
+	help
+	  This option enables support of hashing using SHA1 algorithm.
+	  The hash is calculated in software.
+	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
+	  (digest).
+
+config SHA256
+	bool "Enable SHA256 support"
+	help
+	  This option enables support of hashing using SHA256 algorithm.
+	  The hash is calculated in software.
+	  The SHA256 algorithm produces a 256-bit (32-byte) hash value
+	  (digest).
+
+config SHA512
+	bool "Enable SHA512 support"
+	default y if TI_SECURE_DEVICE && FIT_SIGNATURE
+	help
+	  This option enables support of hashing using SHA512 algorithm.
+	  The hash is calculated in software.
+	  The SHA512 algorithm produces a 512-bit (64-byte) hash value
+	  (digest).
+
+config SHA384
+	bool "Enable SHA384 support"
+	select SHA512
+	help
+	  This option enables support of hashing using SHA384 algorithm.
+	  The hash is calculated in software. This is also selects SHA512,
+	  because these implementations share the bulk of the code..
+	  The SHA384 algorithm produces a 384-bit (48-byte) hash value
+	  (digest).
+
+config SHA_HW_ACCEL
+	bool "Enable hardware acceleration for SHA hash functions"
+	help
+	  This option enables hardware acceleration for the SHA1 and SHA256
+	  hashing algorithms. This affects the 'hash' command and also the
+	  hash_lookup_algo() function.
+
+if SPL
+
+config SPL_CRC32
+	bool "Enable CRC32 support in SPL"
+	default y if SPL_LEGACY_IMAGE_SUPPORT || SPL_EFI_PARTITION
+	default y if SPL_ENV_SUPPORT || TPL_BLOBLIST
+	help
+	  This option enables support of hashing using CRC32 algorithm.
+	  The CRC32 algorithm produces 32-bit checksum value. For FIT
+	  images, this is the least secure type of checksum, suitable for
+	  detected accidental image corruption. For secure applications you
+	  should consider SHA256 or SHA384.
+
+config SPL_SHA1
+	bool "Enable SHA1 support in SPL"
+	default y if SHA1
+	help
+	  This option enables support of hashing using SHA1 algorithm.
+	  The hash is calculated in software.
+	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
+	  (digest).
+
+config SPL_SHA256
+	bool "Enable SHA256 support in SPL"
+	default y if SHA256
+	help
+	  This option enables support of hashing using SHA256 algorithm.
+	  The hash is calculated in software.
+	  The SHA256 algorithm produces a 256-bit (32-byte) hash value
+	  (digest).
+
+config SPL_SHA512
+	bool "Enable SHA512 support in SPL"
+	default y if SHA512
+	help
+	  This option enables support of hashing using SHA512 algorithm.
+	  The hash is calculated in software.
+	  The SHA512 algorithm produces a 512-bit (64-byte) hash value
+	  (digest).
+
+config SPL_SHA384
+	bool "Enable SHA384 support in SPL"
+	default y if SHA384
+	select SPL_SHA512
+	help
+	  This option enables support of hashing using SHA384 algorithm.
+	  The hash is calculated in software. This is also selects SHA512,
+	  because these implementations share the bulk of the code..
+	  The SHA384 algorithm produces a 384-bit (48-byte) hash value
+	  (digest).
+
+config SPL_SHA_HW_ACCEL
+	bool "Enable hardware acceleration for SHA hash functions"
+	default y if SHA_HW_ACCEL
+	help
+	  This option enables hardware acceleration for the SHA1 and SHA256
+	  hashing algorithms. This affects the 'hash' command and also the
+	  hash_lookup_algo() function.
+
+config SPL_SHA_PROG_HW_ACCEL
+	bool "Enable Progressive hashing support using hardware in SPL"
+	depends on SHA_PROG_HW_ACCEL
+	default y
+	help
+	  This option enables hardware-acceleration for SHA progressive
+	  hashing.
+	  Data can be streamed in a block at a time and the hashing is
+	  performed in hardware.
+
+endif
+
+
+config TPL_SHA1
+	bool "Enable SHA1 support in TPL"
+	depends on TPL
+	default y if SHA1
+	help
+	  This option enables support of hashing using SHA1 algorithm.
+	  The hash is calculated in software.
+	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
+	  (digest).
+
+config TPL_SHA256
+	bool "Enable SHA256 support in TPL"
+	depends on TPL
+	default y if SHA256
+	help
+	  This option enables support of hashing using SHA256 algorithm.
+	  The hash is calculated in software.
+	  The SHA256 algorithm produces a 256-bit (32-byte) hash value
+	  (digest).
+
+config VPL_SHA1
+	bool "Enable SHA1 support in VPL"
+	depends on VPL
+	default y if SHA1
+	help
+	  This option enables support of hashing using SHA1 algorithm.
+	  The hash is calculated in software.
+	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
+	  (digest).
+
+config VPL_SHA256
+	bool "Enable SHA256 support in VPL"
+	depends on VPL
+	default y if SHA256
+	help
+	  This option enables support of hashing using SHA256 algorithm.
+	  The hash is calculated in software.
+	  The SHA256 algorithm produces a 256-bit (32-byte) hash value
+	  (digest).
+
+if SHA_HW_ACCEL
+
+config SHA512_HW_ACCEL
+	bool "Enable hardware acceleration for SHA512"
+	depends on SHA512
+	help
+	  This option enables hardware acceleration for the SHA384 and SHA512
+	  hashing algorithms. This affects the 'hash' command and also the
+	  hash_lookup_algo() function.
+
+config SHA_PROG_HW_ACCEL
+	bool "Enable Progressive hashing support using hardware"
+	help
+	  This option enables hardware-acceleration for SHA progressive
+	  hashing.
+	  Data can be streamed in a block at a time and the hashing is
+	  performed in hardware.
+
+endif
+
+config MD5
+	bool "Support MD5 algorithm"
+	help
+	  This option enables MD5 support. MD5 is an algorithm designed
+	  in 1991 that produces a 16-byte digest (or checksum) from its input
+	  data. It has a number of vulnerabilities which preclude its use in
+	  security applications, but it can be useful for providing a quick
+	  checksum of a block of data.
+
+config SPL_MD5
+	bool "Support MD5 algorithm in SPL"
+	depends on SPL
+	help
+	  This option enables MD5 support in SPL. MD5 is an algorithm designed
+	  in 1991 that produces a 16-byte digest (or checksum) from its input
+	  data. It has a number of vulnerabilities which preclude its use in
+	  security applications, but it can be useful for providing a quick
+	  checksum of a block of data.
+
+config CRC8
+	def_bool y
+	help
+	  Enables CRC8 support in U-Boot. This is normally required. CRC8 is
+	  a simple and fast checksumming algorithm which does a bytewise
+	  checksum with feedback to produce an 8-bit result. The code is small
+	  and it does not require a lookup table (unlike CRC32).
+
+config SPL_CRC8
+	bool "Support CRC8 in SPL"
+	depends on SPL
+	help
+	  Enables CRC8 support in SPL. This is not normally required. CRC8 is
+	  a simple and fast checksumming algorithm which does a bytewise
+	  checksum with feedback to produce an 8-bit result. The code is small
+	  and it does not require a lookup table (unlike CRC32).
+
+config SPL_CRC16
+	bool "Support CRC16 in SPL"
+	depends on SPL
+	help
+	  Enables CRC16 support in SPL. This is not normally required.
+
+config CRC32
+	def_bool y
+	help
+	  Enables CRC32 support in U-Boot. This is normally required.
+
+config CRC32C
+	bool
+
+config XXHASH
+	bool
+
+endmenu
+
+menu "Compression Support"
+
+config LZ4
+	bool "Enable LZ4 decompression support"
+	help
+	  If this option is set, support for LZ4 compressed images
+	  is included. The LZ4 algorithm can run in-place as long as the
+	  compressed image is loaded to the end of the output buffer, and
+	  trades lower compression ratios for much faster decompression.
+
+	  NOTE: This implements the release version of the LZ4 frame
+	  format as generated by default by the 'lz4' command line tool.
+	  This is not the same as the outdated, less efficient legacy
+	  frame format currently (2015) implemented in the Linux kernel
+	  (generated by 'lz4 -l'). The two formats are incompatible.
+
+config LZMA
+	bool "Enable LZMA decompression support"
+	help
+	  This enables support for LZMA (Lempel-Ziv-Markov chain algorithm),
+	  a dictionary compression algorithm that provides a high compression
+	  ratio and fairly fast decompression speed. See also
+	  CONFIG_CMD_LZMADEC which provides a decode command.
+
+config LZO
+	bool "Enable LZO decompression support"
+	help
+	  This enables support for the LZO compression algorithm.
+
+config GZIP
+	bool "Enable gzip decompression support"
+	select ZLIB
+	select GZIP_COMPRESSED
+	default y
+	help
+	  This enables support for GZIP compression algorithm.
+
+config GZIP_COMPRESSED
+	bool "Enable gzip compressed flag"
+	default n
+	help
+	  This is needed for support for GZIP compression algorithm.
+
+config ZLIB_UNCOMPRESS
+	bool "Enables zlib's uncompress() functionality"
+	help
+	  This enables an extra zlib functionality: the uncompress() function,
+	  which decompresses data from a buffer into another, knowing their
+	  sizes. Unlike gunzip(), there is no header parsing.
+
+config GZIP_COMPRESSED
+	bool
+	select ZLIB
+
+config BZIP2
+	bool "Enable bzip2 decompression support"
+	help
+	  This enables support for BZIP2 compression algorithm.
+
+config ZLIB
+	bool
+	default y
+	help
+	  This enables ZLIB compression lib.
+
+config ZSTD
+	bool "Enable Zstandard decompression support"
+	select XXHASH
+	help
+	  This enables Zstandard decompression library.
+
+if ZSTD
+
+config ZSTD_LIB_MINIFY
+	bool "Minify Zstandard code"
+	default y
+	help
+	  This disables various optional components and changes the
+	  compilation flags to prioritize space-saving.
+
+	  For detailed info, see zstd's lib/README.md
+
+	  https://github.com/facebook/zstd/blob/dev/lib/README.md
+
+endif
+
+config SPL_BZIP2
+	bool "Enable bzip2 decompression support for SPL build"
+	depends on SPL
+	help
+	  This enables support for bzip2 compression algorithm for SPL boot.
+
+config SPL_LZ4
+	bool "Enable LZ4 decompression support in SPL"
+	depends on SPL
+	help
+	  This enables support for the LZ4 decompression algorithm in SPL. LZ4
+	  is a lossless data compression algorithm that is focused on
+	  fast compression and decompression speed. It belongs to the LZ77
+	  family of byte-oriented compression schemes.
+
+config SPL_LZMA
+	bool "Enable LZMA decompression support for SPL build"
+	depends on SPL
+	help
+	  This enables support for LZMA compression algorithm for SPL boot.
+
+config VPL_LZMA
+	bool "Enable LZMA decompression support for VPL build"
+	default y if LZMA
+	help
+	  This enables support for LZMA compression algorithm for VPL boot.
+
+config SPL_LZO
+	bool "Enable LZO decompression support in SPL"
+	depends on SPL
+	help
+	  This enables support for LZO compression algorithm in the SPL.
+
+config SPL_GZIP
+	bool "Enable gzip decompression support for SPL build"
+	select SPL_ZLIB
+	help
+	  This enables support for the GZIP compression algorithm for SPL boot.
+
+config SPL_ZLIB
+	bool
+	help
+	  This enables compression lib for SPL boot.
+
+config SPL_ZSTD
+	bool "Enable Zstandard decompression support in SPL"
+	depends on SPL
+	select XXHASH
+	help
+	  This enables Zstandard decompression library in the SPL.
+
+endmenu
+
+config ERRNO_STR
+	bool "Enable function for getting errno-related string message"
+	help
+	  The function errno_str(int errno), returns a pointer to the errno
+	  corresponding text message:
+	  - if errno is null or positive number - a pointer to "Success" message
+	  - if errno is negative - a pointer to errno related message
+
+config HEXDUMP
+	bool "Enable hexdump"
+	help
+	  This enables functions for printing dumps of binary data.
+
+config SPL_HEXDUMP
+	bool "Enable hexdump in SPL"
+	depends on SPL && HEXDUMP
+	help
+	  This enables functions for printing dumps of binary data in
+	  SPL.
+
+config GETOPT
+	bool "Enable getopt"
+	help
+	  This enables functions for parsing command-line options.
+
+config OF_LIBFDT
+	bool "Enable the FDT library"
+	default y if OF_CONTROL
+	help
+	  This enables the FDT library (libfdt). It provides functions for
+	  accessing binary device tree images in memory, such as adding and
+	  removing nodes and properties, scanning through the tree and finding
+	  particular compatible nodes. The library operates on a flattened
+	  version of the device tree.
+
+config OF_LIBFDT_ASSUME_MASK
+	hex "Mask of conditions to assume for libfdt"
+	depends on OF_LIBFDT || FIT
+	default 0x0
+	help
+	  Use this to change the assumptions made by libfdt about the
+	  device tree it is working with. A value of 0 means that no assumptions
+	  are made, and libfdt is able to deal with malicious data. A value of
+	  0xff means all assumptions are made and any invalid data may cause
+	  unsafe execution. See FDT_ASSUME_PERFECT, etc. in libfdt_internal.h
+
+config OF_LIBFDT_OVERLAY
+	bool "Enable the FDT library overlay support"
+	depends on OF_LIBFDT
+	default y if ARCH_OMAP2PLUS || ARCH_KEYSTONE
+	help
+	  This enables the FDT library (libfdt) overlay support.
+
+config SYS_FDT_PAD
+	hex "Maximum size of the FDT memory area passeed to the OS"
+	depends on OF_LIBFDT
+	default 0x13000 if FMAN_ENET || QE || U_QE
+	default 0x80000 if ARCH_BCMBCA
+	default 0x3000
+	help
+	  During OS boot, we allocate a region of memory within the bootmap
+	  for the FDT. This is the size that we will expand the FDT that we
+	  are using will be extended to be, in bytes.
+
+config SPL_OF_LIBFDT
+	bool "Enable the FDT library for SPL"
+	depends on SPL_LIBGENERIC_SUPPORT
+	default y if SPL_OF_CONTROL
+	help
+	  This enables the FDT library (libfdt). It provides functions for
+	  accessing binary device tree images in memory, such as adding and
+	  removing nodes and properties, scanning through the tree and finding
+	  particular compatible nodes. The library operates on a flattened
+	  version of the device tree.
+
+config SPL_OF_LIBFDT_ASSUME_MASK
+	hex "Mask of conditions to assume for libfdt"
+	depends on SPL_OF_LIBFDT || (FIT && SPL)
+	default 0xff
+	help
+	  Use this to change the assumptions made by libfdt in SPL about the
+	  device tree it is working with. A value of 0 means that no assumptions
+	  are made, and libfdt is able to deal with malicious data. A value of
+	  0xff means all assumptions are made and any invalid data may cause
+	  unsafe execution. See FDT_ASSUME_PERFECT, etc. in libfdt_internal.h
+
+config TPL_OF_LIBFDT
+	bool "Enable the FDT library for TPL"
+	depends on TPL_LIBGENERIC_SUPPORT
+	default y if TPL_OF_CONTROL
+	help
+	  This enables the FDT library (libfdt). It provides functions for
+	  accessing binary device tree images in memory, such as adding and
+	  removing nodes and properties, scanning through the tree and finding
+	  particular compatible nodes. The library operates on a flattened
+	  version of the device tree.
+
+config TPL_OF_LIBFDT_ASSUME_MASK
+	hex "Mask of conditions to assume for libfdt"
+	depends on TPL_OF_LIBFDT || (FIT && TPL)
+	default 0xff
+	help
+	  Use this to change the assumptions made by libfdt in TPL about the
+	  device tree it is working with. A value of 0 means that no assumptions
+	  are made, and libfdt is able to deal with malicious data. A value of
+	  0xff means all assumptions are made and any invalid data may cause
+	  unsafe execution. See FDT_ASSUME_PERFECT, etc. in libfdt_internal.h
+
+config VPL_OF_LIBFDT
+	bool "Enable the FDT library for VPL"
+	depends on VPL
+	default y if VPL_OF_CONTROL && !VPL_OF_PLATDATA
+	help
+	  This enables the FDT library (libfdt). It provides functions for
+	  accessing binary device tree images in memory, such as adding and
+	  removing nodes and properties, scanning through the tree and finding
+	  particular compatible nodes. The library operates on a flattened
+	  version of the device tree.
+
+config VPL_OF_LIBFDT_ASSUME_MASK
+	hex "Mask of conditions to assume for libfdt"
+	depends on VPL_OF_LIBFDT || (FIT && VPL)
+	default 0xff
+	help
+	  Use this to change the assumptions made by libfdt in SPL about the
+	  device tree it is working with. A value of 0 means that no assumptions
+	  are made, and libfdt is able to deal with malicious data. A value of
+	  0xff means all assumptions are made and any invalid data may cause
+	  unsafe execution. See FDT_ASSUME_PERFECT, etc. in libfdt_internal.h
+
+menu "System tables"
+	depends on (!EFI && !SYS_COREBOOT) || (ARM && EFI_LOADER)
+
+config BLOBLIST_TABLES
+	bool "Put tables in a bloblist"
+	depends on X86 && BLOBLIST
+	help
+	  Normally tables are placed at address 0xf0000 and can be up to 64KB
+	  long. With this option, tables are instead placed in the bloblist
+	  with a pointer from 0xf0000. The size can then be larger and the
+	  tables can be placed high in memory.
+
+config GENERATE_SMBIOS_TABLE
+	bool "Generate an SMBIOS (System Management BIOS) table"
+	depends on SMBIOS
+	default y
+	help
+	  The System Management BIOS (SMBIOS) specification addresses how
+	  motherboard and system vendors present management information about
+	  their products in a standard format by extending the BIOS interface
+	  on Intel architecture systems.
+
+	  Check http://www.dmtf.org/standards/smbios for details.
+
+	  See also SYSINFO_SMBIOS which allows SMBIOS values to be provided in
+	  the devicetree.
+
+endmenu
+
+config LIB_RATIONAL
+	bool "enable continued fraction calculation routines"
+
+config SPL_LIB_RATIONAL
+	bool "enable continued fraction calculation routines for SPL"
+	depends on SPL
+
+config ASN1_COMPILER
+	bool
+	help
+	  ASN.1 (Abstract Syntax Notation One) is a standard interface
+	  description language for defining data structures that can be
+	  serialized and deserialized in a cross-platform way. It is
+	  broadly used in telecommunications and computer networking,
+	  and especially in cryptography (https://en.wikipedia.org/wiki/ASN.1).
+	  This option enables the support of the asn1 compiler.
+
+config ASN1_DECODER
+	bool
+	help
+	  ASN.1 (Abstract Syntax Notation One) is a standard interface
+	  description language for defining data structures that can be
+	  serialized and deserialized in a cross-platform way. It is
+	  broadly used in telecommunications and computer networking,
+	  and especially in cryptography (https://en.wikipedia.org/wiki/ASN.1).
+	  This option enables the support of the asn1 decoder.
+
+config SPL_ASN1_DECODER
+	bool
+	help
+	  ASN.1 (Abstract Syntax Notation One) is a standard interface
+	  description language for defining data structures that can be
+	  serialized and deserialized in a cross-platform way. It is
+	  broadly used in telecommunications and computer networking,
+	  and especially in cryptography (https://en.wikipedia.org/wiki/ASN.1).
+	  This option enables the support of the asn1 decoder in the SPL.
+
+config OID_REGISTRY
+	bool
+	help
+	  In computing, object identifiers or OIDs are an identifier mechanism
+	  standardized by the International Telecommunication Union (ITU) and
+	  ISO/IEC for naming any object, concept, or "thing" with a globally
+	  unambiguous persistent name (https://en.wikipedia.org/wiki/Object_identifier).
+	  Enable fast lookup object identifier registry.
+
+config SPL_OID_REGISTRY
+	bool
+	help
+	  In computing, object identifiers or OIDs are an identifier mechanism
+	  standardized by the International Telecommunication Union (ITU) and
+	  ISO/IEC for naming any object, concept, or "thing" with a globally
+	  unambiguous persistent name (https://en.wikipedia.org/wiki/Object_identifier).
+	  Enable fast lookup object identifier registry in the SPL.
+
+config SMBIOS
+	bool "SMBIOS support"
+	depends on X86 || EFI_LOADER
+	default y
+	select LAST_STAGE_INIT
+	help
+	  Indicates that this platform can support System Management BIOS
+	  (SMBIOS) tables. These provide various pieces of information about
+	  the board, such as the manufacturer and the model name.
+
+	  See GENERATE_SMBIOS_TABLE which controls whether U-Boot actually
+	  creates these tables, rather than them coming from a previous firmware
+	  stage.
+
+config SMBIOS_PARSER
+	bool "SMBIOS parser"
+	help
+	  A simple parser for SMBIOS data.
+
+source lib/efi/Kconfig
+source lib/efi_loader/Kconfig
+source lib/optee/Kconfig
+
+config TEST_FDTDEC
+	bool "enable fdtdec test"
+	depends on OF_LIBFDT
+
+config LIB_DATE
+	bool
+
+config LIB_ELF
+	bool
+	help
+	  Support basic elf loading/validating functions.
+	  This supports for 32 bit and 64 bit versions.
+
+config LMB
+	bool "Enable the logical memory blocks library (lmb)"
+	default y if ARC || ARM || M68K || MICROBLAZE || MIPS || \
+		     NIOS2 || PPC || RISCV || SANDBOX || SH || X86 || XTENSA
+	help
+	  Support the library logical memory blocks.
+
+config LMB_USE_MAX_REGIONS
+	bool "Use a common number of memory and reserved regions in lmb lib"
+	default y
+	help
+	  Define the number of supported memory regions in the library logical
+	  memory blocks.
+	  This feature allow to reduce the lmb library size by using compiler
+	  optimization when LMB_MEMORY_REGIONS == LMB_RESERVED_REGIONS.
+
+config LMB_MAX_REGIONS
+	int "Number of memory and reserved regions in lmb lib"
+	depends on LMB_USE_MAX_REGIONS
+	default 16
+	help
+	  Define the number of supported regions, memory and reserved, in the
+	  library logical memory blocks.
+
+config LMB_MEMORY_REGIONS
+	int "Number of memory regions in lmb lib"
+	depends on !LMB_USE_MAX_REGIONS
+	default 8
+	help
+	  Define the number of supported memory regions in the library logical
+	  memory blocks.
+	  The minimal value is CONFIG_NR_DRAM_BANKS.
+
+config LMB_RESERVED_REGIONS
+	int "Number of reserved regions in lmb lib"
+	depends on !LMB_USE_MAX_REGIONS
+	default 8
+	help
+	  Define the number of supported reserved regions in the library logical
+	  memory blocks.
+
+config PHANDLE_CHECK_SEQ
+	bool "Enable phandle check while getting sequence number"
+	help
+	  When there are multiple device tree nodes with same name,
+          enable this config option to distinguish them using
+	  phandles in fdtdec_get_alias_seq() function.
+
+endmenu
+
+source lib/fwu_updates/Kconfig

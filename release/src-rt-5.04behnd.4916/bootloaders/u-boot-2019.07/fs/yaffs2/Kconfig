@@ -1,7 +1,0 @@
-config YAFFS2
-	bool "YAFFS2 filesystem support"
-	help
-	  This provides access to YAFFS2 filesystems. Yet Another Flash
-	  Filesystem 2 is a filesystem designed specifically for NAND flash.
-	  It incorporates bad-block management and ensures that device
-	  writes are sequential regardless of filesystem activity.

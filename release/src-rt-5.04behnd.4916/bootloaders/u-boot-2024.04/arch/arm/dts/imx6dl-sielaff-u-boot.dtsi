@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * Copyright (C) 2022 Kontron Electronics GmbH
+ */
+
+#include "imx6qdl-u-boot.dtsi"
+
+/ {
+	binman: binman {
+		filename = "flash.bin";
+		pad-byte = <0x00>;
+
+		spl: blob-ext@1 {
+			offset = <0x0>;
+			filename = "SPL";
+		};
+
+		uboot: blob-ext@2 {
+			offset = <0x11000>;
+			filename = "u-boot.img";
+		};
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+	};
+};
+
+&fec {
+	phy-mode = "rmii";
+	phy-reset-gpios = <&gpio5 2 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <100>;
+};
+
+&gpmi {
+	fsl,legacy-bch-geometry;
+};

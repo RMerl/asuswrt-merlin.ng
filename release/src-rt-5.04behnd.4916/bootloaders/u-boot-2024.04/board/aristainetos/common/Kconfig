@@ -1,0 +1,33 @@
+config SYS_BOARD_VERSION
+	int "select version of aristainetos board"
+	help
+	  version of aristainetos board version
+	  5 version 2c and 2d
+	  6 version 2c-cslb
+
+config SYS_I2C_MXC_I2C1
+	default y
+
+config SYS_I2C_MXC_I2C2
+	default y
+
+config SYS_I2C_MXC_I2C3
+	default y
+
+config SYS_I2C_MXC_I2C4
+	default y
+
+config SYS_MALLOC_LEN
+	default 0x4000000
+
+config ENV_SIZE
+	default 0x3000
+
+config ENV_SECT_SIZE
+	default 0x10000
+
+config ENV_OFFSET
+	default 0xd0000
+
+config SYS_CONFIG_NAME
+	default "aristainetos2"

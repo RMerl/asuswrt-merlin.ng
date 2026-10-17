@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the Ebisu board
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a77990-ebisu.dts"
+#include "r8a77990-u-boot.dtsi"
+
+/ {
+	sysinfo {
+		compatible = "renesas,rcar-sysinfo";
+		i2c-eeprom = <&sysinfo_eeprom>;
+		bootph-all;
+	};
+};
+
+&i2c_dvfs {
+	compatible = "renesas,iic-r8a77990",
+		     "renesas,rcar-gen3-iic",
+		     "renesas,rmobile-iic";
+	bootph-all;
+
+	sysinfo_eeprom: eeprom@50 {
+		compatible = "rohm,br24t01", "atmel,24c01";
+		reg = <0x50>;
+		pagesize = <8>;
+		bootph-all;
+		status = "okay";
+	};
+};
+
+&pfc {
+	pinctrl-0 = <&scif_clk_pins>;
+	pinctrl-names = "default";
+
+	scif_clk_pins: scif_clk {
+		groups = "scif_clk_a";
+		function = "scif_clk";
+	};
+};
+
+&rpc {
+	reg = <0 0xee200000 0 0x100>, <0 0x08000000 0 0x04000000>;
+	status = "disabled";
+};
+
+&sdhi0 {
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	max-frequency = <208000000>;
+};
+
+&sdhi1 {
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	max-frequency = <208000000>;
+};
+
+&vcc_sdhi0 {
+	u-boot,off-on-delay-us = <20000>;
+};
+
+&vcc_sdhi1 {
+	u-boot,off-on-delay-us = <20000>;
+};

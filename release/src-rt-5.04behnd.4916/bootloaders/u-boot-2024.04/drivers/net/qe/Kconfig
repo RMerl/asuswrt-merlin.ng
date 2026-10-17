@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2020 Heiko Schocher <hs@denx.de>
+
+config QE_UEC
+	bool "NXP QE UEC Ethernet controller"
+	help
+	  This driver supports the NXP QE UEC ethernet controller

@@ -1,0 +1,20 @@
+config ASPEED_HACE
+	bool "ASPEED Hash and Crypto Engine"
+	depends on DM_HASH
+	help
+	  Select this option to enable a driver for using the SHA engine in
+	  the ASPEED BMC SoCs.
+
+	  Enabling this allows the use of SHA operations in hardware without
+	  requiring the SHA software implementations. It also improves performance
+	  and saves code size.
+
+config ASPEED_ACRY
+	bool "ASPEED RSA and ECC Engine"
+	depends on ASPEED_AST2600
+	help
+	 Select this option to enable a driver for using the RSA/ECC engine in
+	 the ASPEED BMC SoCs.
+
+	 Enabling this allows the use of RSA/ECC operations in hardware without requiring the
+	 software implementations. It also improves performance and saves code size.

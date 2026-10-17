@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2020 Dario Binacchi <dariobin@libero.it>
+#
+config AM335X_LCD
+	bool "Enable AM335x video support"
+	help
+	   Supports video output to an attached LCD panel.

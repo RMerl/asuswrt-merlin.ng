@@ -33,17 +33,56 @@
  */
 
 /*
- * Phy drivers for 63138, 63148, 4908
+ * Phy drivers for DSL platforms
  */
 
  #include "phy_drv_dsl_phy.h"
  #include "phy_drv_brcm.h"
+ #include "bcm_ioremap_shared.h"
 
 sw_base_t sw_mmap_base;
 EXPORT_SYMBOL(sw_mmap_base);
 int gphy_base_addr;
 
-#include "bcm_ioremap_shared.h"
+DEFINE_MUTEX(bcm_egphy_mutex);
+DEFINE_MUTEX(bcm_recursive_call_mutex);
+static int _phy_dsl_egphy_mutex_lock(int unlock)
+{
+    static int lock_cnt;
+    static int lock_pid = -1;
+
+    if (unlock == 0)
+    {
+        mutex_lock(&bcm_recursive_call_mutex);
+        if (current->pid == lock_pid) /* We have recursive call */
+        {
+            lock_cnt++;
+            mutex_unlock(&bcm_recursive_call_mutex);
+            return 0;
+        }
+        mutex_unlock(&bcm_recursive_call_mutex);
+
+        mutex_lock(&bcm_egphy_mutex);
+        mutex_lock(&bcm_recursive_call_mutex);
+        lock_pid = current->pid;
+        lock_cnt++;
+        mutex_unlock(&bcm_recursive_call_mutex);
+    }
+    else
+    {
+        mutex_lock(&bcm_recursive_call_mutex);
+        lock_cnt--;
+        if (lock_cnt == 0)
+        {
+            lock_pid = -1;
+            mutex_unlock(&bcm_egphy_mutex);
+        }
+        mutex_unlock(&bcm_recursive_call_mutex);
+    }
+    return 0;
+}
+#define phy_dsl_egphy_mutex_lock() _phy_dsl_egphy_mutex_lock(0)
+#define phy_dsl_egphy_mutex_unlock() _phy_dsl_egphy_mutex_lock(1)
 
 static int swblks_probe(dt_device_t *pdev)
 {
@@ -85,7 +124,11 @@ static int swblks_probe(dt_device_t *pdev)
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchsib-base");
     if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.sib_base = devm_ioremap_resource(&pdev->dev, res);
-        
+
+    res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "switchwol-base");
+    if (res && !IS_ERR((void*)(uintptr_t)res->start))
+        sw_mmap_base.wol_base = devm_ioremap_resource(&pdev->dev, res);
+
     res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "xbar-ctrl");
     if (res && !IS_ERR((void*)(uintptr_t)res->start))
         sw_mmap_base.xbar_ctrl = devm_ioremap_resource(&pdev->dev, res);
@@ -217,137 +260,7 @@ int dsl_phy_reset(phy_dev_t *phy_dev)
     return 1;
 }
 
-#if defined(CONFIG_BCM963138)
-
-#define _phy_afe_cfg(phy_dev) {\
-        phy_bus_write(phy_dev, MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6); \
-        udelay(100); \
-        brcm_misc_write(phy_dev, 0x38, 0x1, 0x9b2f);     /*AFE_RXCONFIG_1 Provide more margin for INL/DNL measurement on ATE */ \
-        brcm_misc_write(phy_dev, 0x39, 0x0, 0x0431);     /*AFE_TX_CONFIG Set 100BT Cfeed=011 to improve rise/fall time */ \
-        brcm_misc_write(phy_dev, 0x39, 0x1, 0xa7da);     /*AFE_VDAC_ICTRL_0 Set Iq=1101 instead of 0111 for improving AB symmetry */ \
-        brcm_misc_write(phy_dev, 0x3a, 0x0, 0x00e3); }   /*AFE_HPF_TRIM_OTHERS Set 100Tx/10BT to -4.5% swing & Set rCal offset for HT=0 code */
-
-static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
-{
-    int i;
-    static int qphy_afe_pll_done = 0;
-
-    if (!IS_QPHY(phy_dev) && !IS_SPHY(phy_dev))
-        return;
-    if (IS_QPHY(phy_dev) && qphy_afe_pll_done)
-        return;
-
-    // reset PHY
-    if (phy_dev == sphy_dev)
-        _phy_afe_cfg(phy_dev)
-    else
-        for (i=0; i<4; i++)
-            if (qphy_devs[i])
-                _phy_afe_cfg(qphy_devs[i])
-
-    //CORE_BASE1E Force trim overwrite and set I_ext trim to 0000
-    phy_bus_write(phy_dev, 0x1e, 0x10);
-
-    if (phy_dev == sphy_dev)
-        brcm_misc_write(phy_dev, 0xa, 0x0, 0x011b);      //Adjust bias current trim by +4% swing, +2 tick 'DSP_TAP10
-    else
-        for (i=0; i<4; i++)
-            if (qphy_devs[i])
-                brcm_misc_write(qphy_devs[i], 0xa, 0x0, 0x011b);      //Adjust bias current trim by +4% swing, +2 tick 'DSP_TAP10
-
-    brcm_exp_write(phy_dev, 0xb0, 0x10);   //Reset R_CAL/RC_CAL Engine 'CORE_EXPB0
-    brcm_exp_write(phy_dev, 0xb0, 0x0);    //Disable Reset R_CAL/RC_CAL Engine 'CORE_EXPB0
-
-    if (phy_dev != sphy_dev)
-        qphy_afe_pll_done = 1;
-}
-
-#elif defined(CONFIG_BCM963148)
-
-#define _phy_afe_cfg(phy_dev) {\
-        phy_bus_write(phy_dev, MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6); \
-        udelay(100); \
-        brcm_misc_write(phy_dev, 0x38, 0x0, 0xeb15);    /*AFE_RXCONFIG_0 */ \
-        brcm_misc_write(phy_dev, 0x38, 0x1, 0x9b2f);    /*AFE_RXCONFIG_1. Replacing the previously suggested 0x9AAF for SS part. See JIRA HW63148-31 */ \
-        brcm_misc_write(phy_dev, 0x38, 0x2, 0x2003);    /*AFE_RXCONFIG_2 */ \
-        brcm_misc_write(phy_dev, 0x38, 0x3, 0x7fc0);    /*AFE_RX_LP_COUNTER */ \
-        brcm_misc_write(phy_dev, 0x39, 0x0, 0x0060);    /*AFE_TX_CONFIG */ \
-        brcm_misc_write(phy_dev, 0x39, 0x1, 0xa7da);    /*AFE_VDAC_ICTRL_0 */ \
-        brcm_misc_write(phy_dev, 0x39, 0x3, 0xa020);    /*AFE_VDAC_OTHERS_0 */ \
-        brcm_misc_write(phy_dev, 0x3a, 0x0, 0x00e3); }  /*AFE_HPF_TRIM_OTHERS */ 
-
-static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
-{
-    int i;
-    static int qphy_afe_pll_done = 0;
-
-    if (!IS_QPHY(phy_dev) && !IS_SPHY(phy_dev))
-        return;
-    if (IS_QPHY(phy_dev) && qphy_afe_pll_done)
-        return;
-
-    // reset PHY
-    if (phy_dev == sphy_dev)
-        _phy_afe_cfg(phy_dev)
-    else
-        for (i=0; i<4; i++)
-            if (qphy_devs[i])
-                _phy_afe_cfg(qphy_devs[i])
-
-    //CORE_BASE1E Force trim overwrite and set I_ext trim to 0000
-    phy_bus_write(phy_dev, 0x1e, 0x10);
-
-    if (phy_dev == sphy_dev)
-        brcm_misc_write(phy_dev, 0xa, 0x0, 0x111b);      //Adjust bias current trim by +4% swing, +2 tick, increase PLL BW in GPHY link start up training 'DSP_TAP10
-    else
-        for (i=0; i<4; i++)
-            if (qphy_devs[i])
-                brcm_misc_write(qphy_devs[i], 0xa, 0x0, 0x111b);      //Adjust bias current trim by +4% swing, +2 tick, increase PLL BW in GPHY link start up training 'DSP_TAP10
-
-    brcm_exp_write(phy_dev, 0xb0, 0x10);   //Reset R_CAL/RC_CAL Engine 'CORE_EXPB0
-    brcm_exp_write(phy_dev, 0xb0, 0x0);    //Disable Reset R_CAL/RC_CAL Engine 'CORE_EXPB0
-
-    if (phy_dev != sphy_dev)
-        qphy_afe_pll_done = 1;
-}
-
-#elif defined(CONFIG_BCM94908)
-
-#define _phy_afe_cfg(phy_dev) {\
-        phy_bus_write(phy_dev, MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6); \
-        udelay(100); \
-        brcm_misc_write(phy_dev, 0x38, 0x1, 0x9b2f);    /*AFE_RXCONFIG_1 Provide more margin for INL/DNL measurement on ATE */ \
-        brcm_misc_write(phy_dev, 0x39, 0x0, 0x0431);    /*AFE_TX_CONFIG Set 1000BT Cfeed=011 to improve rise/fall time */ \
-        brcm_misc_write(phy_dev, 0x39, 0x1, 0xa7da);    /*AFE_VDAC_ICTRL_0 Set Iq=1101 instead of 0111 for improving AB symmetry */ \
-        brcm_misc_write(phy_dev, 0x3a, 0x0, 0x00e3);    /*AFE_HPF_TRIM_OTHERS Set 100Tx/10BT to -4.5% swing & Set rCal offset for HT=0 code */ \
-        brcm_misc_write(phy_dev, 0x0a, 0x0, 0x011b); }  /*DSP_TAP10  Adjust I_int bias current trim by +0% swing, +0 tick */
-
-static void dsl_phy_afe_pll_setup(phy_dev_t *phy_dev)
-{
-    int i;
-    static int qphy_afe_pll_done = 0;
-
-    if (!IS_QPHY(phy_dev) && !IS_SPHY(phy_dev))
-        return;
-    if (IS_QPHY(phy_dev) && qphy_afe_pll_done)
-        return;
-
-    // reset PHY
-    if (phy_dev == sphy_dev)
-        _phy_afe_cfg(phy_dev)
-    else
-        for (i=0; i<4; i++)
-            if (qphy_devs[i])
-                _phy_afe_cfg(qphy_devs[i])
-
-    brcm_exp_write(phy_dev, 0xb0, 0x10);   //Reset R_CAL/RC_CAL Engine 'CORE_EXPB0
-    brcm_exp_write(phy_dev, 0xb0, 0x0);    //Disable Reset R_CAL/RC_CAL Engine 'CORE_EXPB0
-
-    if (phy_dev != sphy_dev)
-        qphy_afe_pll_done = 1;
-}
-
-#elif defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756)
 
 #define _phy_afe_cfg(phy_dev) {\
         phy_bus_write(phy_dev, MII_CONTROL, MII_CONTROL_RESET|MII_CONTROL_AN_ENABLE|MII_CONTROL_DUPLEX_MODE|MII_CONTROL_SPEED_SEL6); \
@@ -437,7 +350,11 @@ static void _phy_run_cal(phy_dev_t *phy_dev, u16 *rcalnewcode11_p)
 
     // AFE_BIAS_CONFIG_0 
     brcm_misc_write(phy_dev, 0x39, 0x3, (rcalnewcodelp << 8) + 0xf8);   // REXT=1 BYP=1 RCAL_st1<5:0>=new rcal code
+#if defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+    brcm_misc_write(phy_dev, 0x38, 0x1, 0xe5e4);    // AFE_BIAS_CONFIG_0 10BT bias code, bias = 0xe4; 100BTbias: E5 FFC+R version
+#else
     brcm_misc_write(phy_dev, 0x38, 0x1, 0xe3e4);    // AFE_BIAS_CONFIG_0 10BT bias code, bias = 0xe4; 100BTbias: E3 same as EPHY
+#endif
 }
 
 static void _phy_afe_cfg(phy_dev_t *phy_dev, u16 rcalnewcode11)
@@ -595,8 +512,8 @@ static int phy_init (phy_dev_t *phy_dev)
         }
 #if defined(CONFIG_BCM_JUMBO_FRAME)
         brcm_shadow_18_ext_pkt_len_set(phy_dev, 1);
-#endif         
-        if (PhyIsPortConnectedToExternalSwitch(phy_dev) && phy_dev->mii_type == PHY_MII_TYPE_GMII)
+#endif
+        if (PhyShrinkIPG(phy_dev) && phy_dev->mii_type == PHY_MII_TYPE_GMII)
         {
             brcm_egphy_rx_short_ipg_en(phy_dev);
 
@@ -619,10 +536,16 @@ static int phy_init (phy_dev_t *phy_dev)
 
 static int _phy_read_status(phy_dev_t *phy_dev)
 {
+    int ret;
+
+    phy_dsl_egphy_mutex_lock();
     if (phy_dev->mii_type==PHY_MII_TYPE_RGMII)      // update RGMII_IB_STATUS
-        return brcm_read_status_rgmii_ib_override(phy_dev);
+        ret = brcm_read_status_rgmii_ib_override(phy_dev);
     else
-        return brcm_read_status(phy_dev);
+        ret = brcm_read_status(phy_dev);
+
+    phy_dsl_egphy_mutex_unlock();
+    return ret; 
 }
 
 #if defined(QPHY_CNTRL)
@@ -756,7 +679,7 @@ static void sphy_ctrl_adjust(uint32_t ext_pwr_down)
 #endif
 
     phy_ctrl = (*SPHY_CNTRL) & ~(ETHSW_SPHY_CTRL_RESET_MASK | ETHSW_SPHY_CTRL_IDDQ_BIAS_MASK| ETHSW_SPHY_CTRL_EXT_PWR_DOWN_MASK | 
-            ETHSW_SPHY_CTRL_IDDQ_GLOBAL_PWR_MASK | ETHSW_SPHY_CTRL_CK25_DIS_MASK | ETHSW_SPHY_CTRL_PHYAD_MASK);
+            ETHSW_SPHY_CTRL_IDDQ_GLOBAL_PWR_MASK | ETHSW_SPHY_CTRL_CK25_DIS_MASK);
     phy_ctrl |= SPHY_ADDR << ETHSW_SPHY_CTRL_PHYAD_SHIFT;
 #if defined(ETHSW_SPHY_CTRL_REF_CLK_50MHZ)
     phy_ctrl |= ETHSW_SPHY_CTRL_REF_CLK_50MHZ;
@@ -852,6 +775,7 @@ int dsl_phy_exp_op(phy_dev_t *phy_dev, int op, va_list ap)
     uint16_t *valp;
     int ret = 0;
 
+    phy_dsl_egphy_mutex_lock();
     switch(op)
     {
         case PHY_OP_RD_MDIO:
@@ -863,7 +787,7 @@ int dsl_phy_exp_op(phy_dev_t *phy_dev, int op, va_list ap)
             ret = ethsw_phy_exp_write(phy_dev, reg, val);
             break;
     }
-
+    phy_dsl_egphy_mutex_unlock();
     return ret;
 }
 
@@ -936,40 +860,75 @@ void phy_bus_probe(bus_drv_t *bus_drv)
     probed = 1;
 }
 
+#define EGPHY_FUN_WITH_MUTEX(fun, args...) \
+{ \
+    int ret; \
+    phy_dsl_egphy_mutex_lock(); \
+    ret = fun(args); \
+    phy_dsl_egphy_mutex_unlock(); \
+    return ret; \
+}
+
+#define EGPHY_FUN_MUTEX_GET(fun) static int _##fun(phy_dev_t *phy_dev, int *enable) EGPHY_FUN_WITH_MUTEX(fun, phy_dev, enable)
+#define EGPHY_FUN_MUTEX_SET(fun) static int _##fun(phy_dev_t *phy_dev, int enable) EGPHY_FUN_WITH_MUTEX(fun, phy_dev, enable)
+
+EGPHY_FUN_MUTEX_GET(mii_power_get)
+EGPHY_FUN_MUTEX_SET(mii_power_set)
+EGPHY_FUN_MUTEX_GET(brcm_egphy_apd_get)
+EGPHY_FUN_MUTEX_SET(brcm_egphy_apd_set)
+EGPHY_FUN_MUTEX_GET(brcm_egphy_eee_get)
+EGPHY_FUN_MUTEX_SET(brcm_egphy_eee_set)
+EGPHY_FUN_MUTEX_GET(brcm_egphy_eee_resolution_get)
+EGPHY_FUN_MUTEX_GET(brcm_egphy_eth_wirespeed_get)
+EGPHY_FUN_MUTEX_SET(brcm_egphy_eth_wirespeed_set)
+EGPHY_FUN_MUTEX_SET(brcm_egphy_eee_mode_set)
+static int _mii_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex) EGPHY_FUN_WITH_MUTEX(mii_speed_set, phy_dev, speed, duplex)
+static int _mii_caps_get(phy_dev_t *phy_dev, int caps_type,  uint32_t *pcaps) EGPHY_FUN_WITH_MUTEX(mii_caps_get, phy_dev, caps_type, pcaps)
+static int _mii_caps_set(phy_dev_t *phy_dev, uint32_t caps) EGPHY_FUN_WITH_MUTEX(mii_caps_set, phy_dev, caps)
+static int _mii_phyid_get(phy_dev_t *phy_dev, uint32_t *phyid) EGPHY_FUN_WITH_MUTEX(mii_phyid_get, phy_dev, phyid)
+EGPHY_FUN_MUTEX_SET(mii_isolate_phy)
+static int _brcm_egphy_read(phy_dev_t *phy_dev, uint16_t reg, uint16_t *val) EGPHY_FUN_WITH_MUTEX(brcm_egphy_read, phy_dev, reg, val)
+static int _brcm_egphy_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val) EGPHY_FUN_WITH_MUTEX(brcm_egphy_write, phy_dev, reg, val)
+static int _brcm_egphy_mdix_mode_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode) EGPHY_FUN_WITH_MUTEX(brcm_egphy_mdix_mode_get, phy_dev, mdix_mode)
+static int _brcm_egphy_mdix_mode_set(phy_dev_t *phy_dev, phy_mdix_t mdix_mode) EGPHY_FUN_WITH_MUTEX(brcm_egphy_mdix_mode_set, phy_dev, mdix_mode)
+static int _brcm_egphy_mdix_status_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode) EGPHY_FUN_WITH_MUTEX(brcm_egphy_mdix_status_get, phy_dev, mdix_mode)
+
 phy_drv_t phy_drv_dsl_gphy =
 {
     .phy_type = PHY_TYPE_DSL_GPHY,
     .name = "EGPHY",
 
-    .power_get = mii_power_get,
-    .power_set = mii_power_set,
-    .apd_get = brcm_egphy_apd_get,
-    .apd_set = brcm_egphy_apd_set,
-    .eee_set = brcm_egphy_eee_set,
-    .eee_get = brcm_egphy_eee_get,
-    .eee_resolution_get = brcm_egphy_eee_resolution_get,
-    .wirespeed_set = brcm_egphy_eth_wirespeed_set,
-    .wirespeed_get = brcm_egphy_eth_wirespeed_get,
+    .power_get = _mii_power_get,
+    .power_set = _mii_power_set,
+    .apd_get = _brcm_egphy_apd_get,
+    .apd_set = _brcm_egphy_apd_set,
+    .eee_get = _brcm_egphy_eee_get,
+    .eee_set = _brcm_egphy_eee_set,
+    .eee_resolution_get = _brcm_egphy_eee_resolution_get,
+    .wirespeed_get = _brcm_egphy_eth_wirespeed_get,
+    .wirespeed_set = _brcm_egphy_eth_wirespeed_set,
+    .eee_mode_set = _brcm_egphy_eee_mode_set,
     .read_status = _phy_read_status,
-    .speed_set = mii_speed_set,
-    .caps_get = mii_caps_get,
-    .caps_set = mii_caps_set,
-    .phyid_get = mii_phyid_get,
-    .isolate_phy = mii_isolate_phy,
+    .speed_set = _mii_speed_set,
+    .caps_get = _mii_caps_get,
+    .caps_set = _mii_caps_set,
+    .phyid_get = _mii_phyid_get,
+    .isolate_phy = _mii_isolate_phy,
 
-    .read = brcm_egphy_read,
-    .write = brcm_egphy_write,
+    .read = _brcm_egphy_read,
+    .write = _brcm_egphy_write,
 
     .init = phy_init,
 
     .dev_add = _phy_dev_add,
     .drv_init = _phy_drv_init,
-    .loopback_set = brcm_loopback_set,
     .loopback_get = brcm_loopback_get,
-    .apd_get = brcm_egphy_apd_get,
-    .apd_set = brcm_egphy_apd_set,
+    .loopback_set = brcm_loopback_set,
     .cable_diag_run = brcm_cable_diag_run,
     .leds_init = dsl_phy_leds_init,	
+    .mdix_mode_get = _brcm_egphy_mdix_mode_get,
+    .mdix_mode_set = _brcm_egphy_mdix_mode_set,
+    .mdix_status_get = _brcm_egphy_mdix_status_get,
     .priv_fun = dsl_phy_exp_op,
 };
 

@@ -89,7 +89,7 @@ int dt_gpio_request_by_name(const dt_handle_t handle, const char *propname, int 
 
 void dt_gpio_set_value(dt_gpio_desc desc, int value)
 {
-    gpiod_set_value(desc, value);
+    gpiod_set_value_cansleep(desc, value);
 }
 
 int dt_gpio_exists(dt_gpio_desc desc)

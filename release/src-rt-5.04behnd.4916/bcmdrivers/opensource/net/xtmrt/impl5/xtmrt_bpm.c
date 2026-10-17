@@ -138,13 +138,13 @@ int xtm_bpm_alloc_buf_ring(BcmXtm_RxDma *rxdma, UINT32 num)
         }
 
         /* Locate the FkBuff_t structure preceeding the BPM data buf */
-        pFkBuf = PDATA_TO_PFKBUFF(pData, BCM_PKT_HEADROOM);
+        pFkBuf = BCM_PDATA_TO_PFKBUFF(pData);
 
         /* Pre-initialize the FkBuff_t object at pFkBuf */
         fkb_preinit((UINT8 *)pFkBuf, (RecycleFuncP)bcmxtmrt_recycle, context);
 
         /* BPM allocated buffers do not need cache invalidate, redundant */
-        cache_flush_region(pData, (UINT8 *)pFkBuf + BCM_PKTBUF_SIZE);
+        cache_flush_region(pData, (UINT8 *)BCM_PDATA_TO_PSTART(pData) + BCM_PKTBUF_SIZE);
         bcmPktDma_XtmFreeRecvBuf(&rxdma->pktDmaRxInfo, (unsigned char *)pData);
     }
 

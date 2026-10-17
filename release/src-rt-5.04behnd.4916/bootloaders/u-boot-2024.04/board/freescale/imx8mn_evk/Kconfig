@@ -1,0 +1,18 @@
+if TARGET_IMX8MN_EVK || TARGET_IMX8MN_DDR4_EVK
+
+config SYS_BOARD
+	default "imx8mn_evk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "imx8mn_evk"
+
+config IMX8MN_LOW_DRIVE_MODE
+	bool "Enable the low drive mode of iMX8MN on EVK board"
+
+config IMX_CONFIG
+	default "board/freescale/imx8mn_evk/imximage-8mn-ddr4.cfg"
+
+endif

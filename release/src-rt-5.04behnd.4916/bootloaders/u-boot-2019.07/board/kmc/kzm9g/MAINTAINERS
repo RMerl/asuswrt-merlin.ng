@@ -1,7 +1,0 @@
-KZM9G BOARD
-M:	Nobuhiro Iwamatsu <nobuhiro.iwamatsu.yj@renesas.com>
-M:	Tetsuyuki Kobayashi <koba@kmckk.co.jp>
-S:	Maintained
-F:	board/kmc/kzm9g/
-F:	include/configs/kzm9g.h
-F:	configs/kzm9g_defconfig

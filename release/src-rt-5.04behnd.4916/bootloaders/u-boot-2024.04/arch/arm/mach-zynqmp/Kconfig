@@ -1,0 +1,226 @@
+if ARCH_ZYNQMP
+
+config SPL_FS_FAT
+	default y
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBDISK_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+config SPL_MMC
+	default y if MMC_SDHCI_ZYNQ
+
+config SPL_SERIAL
+	default y
+
+config SPL_SPI_FLASH_SUPPORT
+	default y if ZYNQ_QSPI
+
+config SPL_SPI
+	default y if ZYNQ_QSPI
+
+config SYS_BOARD
+	string "Board name"
+	default "zynqmp"
+
+config SYS_VENDOR
+	string "Vendor name"
+	default "xilinx"
+
+config SYS_SOC
+	default "zynqmp"
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "xilinx_zynqmp"
+	help
+	  This option contains information about board configuration name.
+	  Based on this option include/configs/<CONFIG_SYS_CONFIG_NAME>.h header
+	  will be used for board configuration.
+
+config SYS_MEM_RSVD_FOR_MMU
+	bool "Reserve memory for MMU Table"
+	help
+	  If defined this option is used to setup different space for
+	  MMU table than the one which will be allocated during
+	  relocation.
+
+config BOOT_INIT_FILE
+	string "boot.bin init register filename"
+	depends on SPL
+	default ""
+	help
+	  Add register writes to boot.bin format (max 256 pairs).
+	  Expect a table of register-value pairs, e.g. "0x12345678 0x4321"
+
+config PMUFW_INIT_FILE
+	string "PMU firmware"
+	depends on SPL
+	default ""
+	help
+	  Include external PMUFW (Platform Management Unit FirmWare) to
+	  a Xilinx bootable image (boot.bin).
+
+config ZYNQMP_SPL_PM_CFG_OBJ_FILE
+	string "PMU firmware configuration object to load at runtime by SPL"
+	depends on SPL
+	help
+	  Path to a binary PMU firmware configuration object to be linked
+	  into U-Boot SPL and loaded at runtime into the PMU firmware.
+
+	  The ZynqMP Power Management Unit (PMU) needs a configuration
+	  object for most SoC peripherals to work. To have it loaded by
+	  U-Boot SPL set here the file name (absolute path or relative to
+	  the top source tree) of your configuration, which must be a
+	  binary blob. It will be linked in the SPL binary and loaded
+	  into the PMU firmware by U-Boot SPL during board
+	  initialization.
+
+	  Leave this option empty if your PMU firmware has a hard-coded
+	  configuration object or you are loading it by any other means.
+
+config ZYNQMP_NO_DDR
+	bool "Disable DDR MMU mapping"
+	help
+	  This option configures MMU with no DDR to avoid speculative
+	  access to DDR memory where DDR is not present.
+
+config SPL_ZYNQMP_DRAM_ECC_INIT
+	bool "Initialize DRAM ECC"
+	depends on SPL
+	help
+	  This option initializes all memory to 0xdeadbeef. Must be set if your
+	  memory is of ECC type.
+
+config SPL_ZYNQMP_DRAM_BANK1_BASE
+	depends on SPL_ZYNQMP_DRAM_ECC_INIT
+	hex "DRAM Bank1 address"
+	default 0x00000000
+	help
+	  Start address of DRAM ECC bank1
+
+config SPL_ZYNQMP_DRAM_BANK1_LEN
+	depends on SPL_ZYNQMP_DRAM_ECC_INIT
+	hex "DRAM Bank1 size"
+	default 0x80000000
+	help
+	  Size in bytes of the DRAM ECC bank1
+
+config SPL_ZYNQMP_DRAM_BANK2_BASE
+	depends on SPL_ZYNQMP_DRAM_ECC_INIT
+	hex "DRAM Bank2 address"
+	default 0x800000000
+	help
+	  Start address of DRAM ECC bank2
+
+config SPL_ZYNQMP_DRAM_BANK2_LEN
+	depends on SPL_ZYNQMP_DRAM_ECC_INIT
+	hex "DRAM Bank2 size"
+	default 0x0
+	help
+	  Size in bytes of the DRAM ECC bank2. A null size takes no action.
+
+config SYS_MALLOC_F_LEN
+	default 0x600
+
+config DEFINE_TCM_OCM_MMAP
+	bool "Define TCM and OCM memory in MMU Table"
+	default y if MP
+	help
+	  This option if enabled defines the TCM and OCM memory and its
+	  memory attributes in MMU table entry.
+
+config ZYNQMP_PSU_INIT_ENABLED
+	bool "Include psu_init"
+	select BOARD_EARLY_INIT_F
+	help
+	  Include psu_init to full u-boot.
+
+config SPL_ZYNQMP_PSU_INIT_ENABLED
+	bool "Include psu_init in SPL"
+	default y if SPL
+	select BOARD_EARLY_INIT_F
+	help
+	  Include psu_init by default in SPL.
+
+config SPL_ZYNQMP_ALT_BOOTMODE_ENABLED
+	bool "Overwrite SPL bootmode"
+	depends on SPL
+	help
+	  Overwrite bootmode selected via boot mode pins to tell SPL what should
+	  be the next boot device.
+
+config SPL_ZYNQMP_RESTORE_JTAG
+	bool "Restore JTAG"
+	depends on SPL
+	help
+	  Booting SPL in secure mode causes the CSU to disable the JTAG interface
+	  even if no eFuses were burnt. This option restores the interface if
+	  possible.
+
+config ZYNQ_SDHCI_MAX_FREQ
+	default 200000000
+
+config SPL_ZYNQMP_ALT_BOOTMODE
+	hex
+	default 0x0 if JTAG_MODE
+	default 0x1 if QSPI_MODE_24BIT
+	default 0x2 if QSPI_MODE_32BIT
+	default 0x3 if SD_MODE
+	default 0x4 if NAND_MODE
+	default 0x5 if SD_MODE1
+	default 0x6 if EMMC_MODE
+	default 0x7 if USB_MODE
+	default 0xa if SW_USBHOST_MODE
+	default 0xb if SW_SATA_MODE
+	default 0xe if SD1_LSHFT_MODE
+
+choice
+	prompt "Boot mode"
+	depends on SPL_ZYNQMP_ALT_BOOTMODE_ENABLED
+	default JTAG_MODE
+
+config JTAG_MODE
+	bool "JTAG_MODE"
+
+config QSPI_MODE_24BIT
+	bool "QSPI_MODE_24BIT"
+
+config QSPI_MODE_32BIT
+	bool "QSPI_MODE_32BIT"
+
+config SD_MODE
+	bool "SD_MODE"
+
+config SD_MODE1
+	bool "SD_MODE1"
+
+config NAND_MODE
+	bool "NAND_MODE"
+
+config EMMC_MODE
+	bool "EMMC_MODE"
+
+config USB_MODE
+	bool "USB"
+
+config SW_USBHOST_MODE
+	bool "SW USBHOST_MODE"
+
+config SW_SATA_MODE
+	bool "SW SATA_MODE"
+
+config SD1_LSHFT_MODE
+	bool "SD1_LSHFT_MODE"
+
+endchoice
+
+source "board/xilinx/Kconfig"
+source "board/xilinx/zynqmp/Kconfig"
+
+endif

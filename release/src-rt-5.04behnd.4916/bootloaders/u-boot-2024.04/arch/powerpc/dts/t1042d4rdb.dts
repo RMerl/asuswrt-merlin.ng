@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * T1042D4RDB Device Tree Source
+ *
+ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2019-2023 NXP
+ */
+
+/include/ "t104x.dtsi"
+
+/ {
+	model = "fsl,T1042D4RDB";
+	compatible = "fsl,T1042D4RDB";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	aliases {
+		spi0 = &espi0;
+		serial0 = &serial0;
+		serial1 = &serial1;
+		serial2 = &serial2;
+		serial3 = &serial3;
+	};
+};
+
+&soc {
+	fman0: fman@400000 {
+		ethernet@e0000 {
+			phy-handle = <&phy_sgmii_0>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e2000 {
+			phy-handle = <&phy_sgmii_1>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e4000 {
+			phy-handle = <&phy_sgmii_2>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e6000 {
+			phy-handle = <&phy_rgmii_0>;
+			phy-connection-type = "rgmii";
+		};
+
+		ethernet@e8000 {
+			phy-handle = <&phy_rgmii_1>;
+			phy-connection-type = "rgmii";
+		};
+
+		mdio0: mdio@fc000 {
+			phy_sgmii_0: ethernet-phy@2 {
+				reg = <0x02>;
+			};
+
+			phy_sgmii_1: ethernet-phy@3 {
+				reg = <0x03>;
+			};
+
+			phy_sgmii_2: ethernet-phy@1 {
+				reg = <0x01>;
+			};
+
+			phy_rgmii_0: ethernet-phy@4 {
+				reg = <0x04>;
+			};
+
+			phy_rgmii_1: ethernet-phy@5 {
+				reg = <0x05>;
+			};
+		};
+	};
+};
+
+&espi0 {
+	status = "okay";
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		spi-max-frequency = <10000000>; /* input clock */
+	};
+};
+
+/include/ "t1042si-post.dtsi"

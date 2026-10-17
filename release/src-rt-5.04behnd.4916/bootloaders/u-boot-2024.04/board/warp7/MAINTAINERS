@@ -1,0 +1,7 @@
+WARP7 BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/warp7/
+F:	include/configs/warp7.h
+F:	configs/warp7_defconfig
+F:	configs/warp7_bl33_defconfig

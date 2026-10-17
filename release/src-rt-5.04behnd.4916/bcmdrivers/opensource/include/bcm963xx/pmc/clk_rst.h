@@ -74,8 +74,8 @@ int rdp_freq_set(unsigned long freq);
 unsigned long get_rdp_freq(unsigned int *rdp_freq);
 int biu_ch_freq_get(unsigned int ch, unsigned int *freq);
 
-#if !defined(CONFIG_BRCM_IKOS) && (IS_BCMCHIP(6858) || IS_BCMCHIP(6846) || \
-	IS_BCMCHIP(6856) || IS_BCMCHIP(6878) || IS_BCMCHIP(63158) || \
+#if !defined(CONFIG_BRCM_IKOS) && (IS_BCMCHIP(6858) || \
+	IS_BCMCHIP(6856) || IS_BCMCHIP(63158) || \
 	IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(63146))
 int bcm_enable_xtal_clk(void);
 int bcm_disable_xtal_clk(void);
@@ -90,7 +90,7 @@ static inline int bcm_disable_xtal_clk(void)
 }
 #endif
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856) || IS_BCMCHIP(6878) || IS_BCMCHIP(6855)
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856) || IS_BCMCHIP(6855)
 int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco);
 int pll_ch_freq_vco_set(unsigned int pll_addr, unsigned int ch,
 			unsigned int mdiv, unsigned int use_vco);
@@ -102,7 +102,7 @@ int pll_vco_config(unsigned int pll_addr, unsigned int ndivider, unsigned int pd
 
 void set_vreg_clk(void);
 
-#if IS_BCMCHIP(4908) || IS_BCMCHIP(6858)
+#if IS_BCMCHIP(6858)
 
 typedef enum {
 	BCM_CPU_CLK_HIGH,
@@ -116,18 +116,12 @@ void reset_cluster_clock(void);
 #endif
 
 void set_spike_mitigation(unsigned int spike_us);
-#if IS_BCMCHIP(63148)
-void set_b15_mdiv(unsigned int value);
-#endif
 
 #if IS_BCMCHIP(6858) || IS_BCMCHIP(6855) || IS_BCMCHIP(6888)
 #define XRDPPLL_RUNNER_CHANNEL   0
 #endif
-#if IS_BCMCHIP(6856) || IS_BCMCHIP(6846)
+#if IS_BCMCHIP(6856)
 #define XRDPPLL_RUNNER_CHANNEL   1
-#endif
-#if IS_BCMCHIP(6878)
-#define SYSPLL_RUNNER_CHANNEL   0
 #endif
 #if IS_BCMCHIP(63158)
 /* TBD. Verify value. */

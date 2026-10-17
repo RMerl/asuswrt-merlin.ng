@@ -34,7 +34,9 @@
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
 
-#include <wl_pktc.h>
+#if defined(BCM_PKTFWD)
+#include <wl_pktfwd.h>
+#endif /* BCM_PKTFWD */
 #include <dhd_br_d3lut.h>
 
 #include "br_private.h"
@@ -42,12 +44,15 @@
 /* The d3lut generate/update function for wlan DHD driver. */
 void dhd_update_d3lut(struct net_device *dst_dev, struct sk_buff *skb)
 {
+#if defined(BCM_PKTFWD)
 	unsigned char *da = eth_hdr(skb)->h_dest;
 
-	if (dhd_pktc_req_hook != NULL)
+	if (dhd_pktfwd_req_hook != NULL)
 	{
-		dhd_pktc_req_hook(PKTC_TBL_UPDATE, (unsigned long)da, (unsigned long)dst_dev, 0);
+		dhd_pktfwd_req_hook(wl_pktfwd_req_ins_symbol_e,
+			(unsigned long)da, (unsigned long)dst_dev, 0);
 	}
+#endif /* BCM_PKTFWD */
 }
 
 /* The d3lut creation function for wlan DHD driver.
@@ -69,11 +74,11 @@ dhd_handle_br_d3lut(struct net_device *src_dev, struct net_device *dst_dev, stru
 	struct net_device *root_src_dev, *root_dst_dev;
 	unsigned char *da = eth_hdr(skb)->h_dest;
 
-#if defined(PKTC_TBL) || defined(BCM_PKTFWD)
+#if defined(BCM_PKTFWD)
 	/* dhd module is not ready/loaded */
-	if (dhd_pktc_req_hook == NULL)
+	if (dhd_pktfwd_req_hook == NULL)
 		return;
-#endif
+#endif /* BCM_PKTFWD */
 
 	if (skbuff_bcm_ext_br_flood_get(skb))
 		return;
@@ -117,10 +122,9 @@ dhd_handle_br_d3lut(struct net_device *src_dev, struct net_device *dst_dev, stru
 		 *      VLAN_WLAN   |    NO PKTFWD     NO PKTFWD     NO PKTFWD        NO PKTFWD
 		 *----------------------------------------------------------------------------------
 		 */
-#if defined(PKTC_TBL) || defined(BCM_PKTFWD)
+
 		/* Update chaining table for DHD on the wl to switch direction only */
 		dhd_update_d3lut(dst_dev, skb);
-#endif
 	}
 }
 

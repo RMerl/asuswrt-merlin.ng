@@ -1,0 +1,6 @@
+RUT BOARD
+M:	Enrico Leto <enrico.leto@siemens.com>
+S:	Maintained
+F:	board/siemens/rut/
+F:	include/configs/rut.h
+F:	configs/rut_defconfig

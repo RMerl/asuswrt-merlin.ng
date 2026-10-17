@@ -1,0 +1,56 @@
+Synopsys DesignWare AMBA 2.0 Synchronous Serial Interface
+and Synopsys DesignWare High Performance Synchronous Serial Interface
+
+Required properties:
+- compatible : One of
+  "altr,socfpga-spi",
+  "altr,socfpga-arria10-spi",
+  "canaan,k210-spi",
+  "canaan,k210-ssi",
+  "intel,stratix10-spi",
+  "intel,agilex-spi",
+  "mscc,ocelot-spi",
+  or "mscc,jaguar2-spi";
+  and one of
+  "snps,dw-apb-ssi-3.20a",
+  "snps,dw-apb-ssi-3.22a",
+  "snps,dw-apb-ssi-3.23",
+  "snps,dw-apb-ssi-4.00a",
+  "snps,dw-apb-ssi-4.01",
+  or "snps,dwc-ssi-1.01a".
+  "snps,dw-apb-ssi" may also be used, but is deprecated in favor of specific
+  version strings.
+- reg : The register base for the controller. For "mscc,<soc>-spi", a second
+  register set is required (named ICPU_CFG:SPI_MST)
+- #address-cells : <1>, as required by generic SPI binding.
+- #size-cells : <0>, also as required by generic SPI binding.
+- clocks : phandles for the clocks, see the description of clock-names below.
+   The phandle for the "ssi_clk" is required. The phandle for the "pclk" clock
+   is optional. If a single clock is specified but no clock-name, it is the
+   "ssi_clk" clock. If both clocks are listed, the "ssi_clk" must be first.
+
+Optional properties:
+- clock-names : Contains the names of the clocks:
+    "ssi_clk", for the core clock used to generate the external SPI clock.
+    "pclk", the interface clock, required for register access.
+- cs-gpios : Specifies the gpio pins to be used for chipselects.
+- num-cs : The number of chipselects. If omitted, this will default to 4.
+- reg-io-width : The I/O register width (in bytes) implemented by this
+  device.  Supported values are 2 or 4 (the default).
+
+Child nodes as per the generic SPI binding.
+
+Example:
+
+	spi@fff00000 {
+		compatible = "altr,socfpga-arria10-spi",
+			     "snps,dw-apb-ssi-4.00a", "snps,dw-apb-ssi";
+		reg = <0xfff00000 0x1000>;
+		interrupts = <0 154 4>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clocks = <&spi_m_clk>;
+		num-cs = <2>;
+		cs-gpios = <&gpio0 13 0>,
+			   <&gpio0 14 0>;
+	};

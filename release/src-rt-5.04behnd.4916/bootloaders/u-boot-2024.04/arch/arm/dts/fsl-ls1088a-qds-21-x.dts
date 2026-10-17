@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS1088AQDS device tree source for SERDES protocol 21.x
+ *
+ * Copyright 2020 NXP
+ *
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1088a-qds-sd1-21.dtsi"
+
+/ {
+	model = "NXP Layerscape 1088a QDS Board (DTS 21-x)";
+	compatible = "fsl,ls1088a-qds", "fsl,ls1088a";
+};

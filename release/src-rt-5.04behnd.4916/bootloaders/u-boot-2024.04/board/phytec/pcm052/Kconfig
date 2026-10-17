@@ -1,0 +1,39 @@
+if TARGET_PCM052
+
+config SYS_BOARD
+	default "pcm052"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "pcm052"
+
+config PCM052_DDR_SIZE
+	int
+	default 256
+
+config IMX_CONFIG
+	default "board/phytec/pcm052/imximage.cfg"
+
+endif
+
+if TARGET_BK4R1
+
+config SYS_BOARD
+	default "pcm052"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "bk4r1"
+
+config PCM052_DDR_SIZE
+	int
+	default 512
+
+config IMX_CONFIG
+	default "board/phytec/pcm052/imximage.cfg"
+
+endif

@@ -1,0 +1,8 @@
+DH electronics DHCOM i.MX8M Plus and matching carrier boards
+M:	Marek Vasut <marex@denx.de>
+L:	u-boot@dh-electronics.com
+S:	Maintained
+F:	arch/arm/dts/imx8mp-dhcom*
+F:	board/dhelectronics/dh_imx8mp/
+F:	configs/imx8mp_dhcom*defconfig
+F:	include/configs/imx8mp_dhcom*

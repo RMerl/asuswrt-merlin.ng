@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * PQ3 I2C Device Tree stub
+ *
+ * Copyright 2020 NXP
+ */
+i2c@3000 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	cell-index = <0>;
+	compatible = "fsl-i2c";
+	bootph-all;
+	reg = <0x3000 0x100>;
+	interrupts = <43 2 0 0>;
+	dfsrr;
+};

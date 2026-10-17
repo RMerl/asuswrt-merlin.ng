@@ -5,7 +5,6 @@ projects/make.proj_xrdp_basic_set_objs
 projects/make.proj_6g_basic_set_objs
 projects/make.xpon_objs
 projects/make.dhd_helper_objs
-projects/make.spdsvc_objs
 projects/make.spu_offload_objs
 projects/BCM6813_FPI/make.proj_flags
 projects/BCM6813_FPI/drivers/rdpa/make.proj_objs
@@ -19,6 +18,9 @@ firmware/common/rdd/Makefile
 firmware/common/rdd/xrdp/rdd_defs.h
 firmware/common/rdd/xrdp/rdd_debug.h
 firmware/common/rdd/xrdp/rdd_debug.c
+firmware/common/rdd/xrdp/rdd_debug_daemon.h
+firmware/common/rdd/xrdp/rdd_debug_daemon.c
+firmware/common/rdd/xrdp/rdd_debug_helper.c
 firmware/common/rdd/rdd_crc.c
 firmware/common/rdd/rdd_crc.h
 firmware/common/rdd/rdd_simulator.c
@@ -38,18 +40,13 @@ firmware/classification/rdd/xrdp/rdd_natc.h
 firmware/classification/rdd/xrdp/rdd_iptv.h
 firmware/classification/rdd/xrdp/rdd_iptv.c
 firmware/cpu/rdd/xrdp/*
-firmware/spdsvc/rdd/xrdp/*
 firmware/tunneling/rdd/xrdp/*
 firmware/mirroring/rdd/xrdp/*
-firmware/tcpspdtest/rdd/xrdp/*
 
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_dhd_tx_post.h
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_dhd_tx_post.c
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_processing.h
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_processing.c
-projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_tcpspdtest.h
-projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_pktgen_tx.h
-projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_pktgen_tx.c
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_runner_defs_auto.h
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_data_structures_auto.h
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_data_structures_auto.c
@@ -75,10 +72,6 @@ projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_natc.h
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_natc.c
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_service_queues.h
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_service_queues.c
-projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_spdsvc_gen.h
-projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_spdsvc_gen.c
-projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_spdsvc_analyzer.h
-projects/BCM6813_FPI/drivers/rdd/auto/rdd_ag_spdsvc_analyzer.c
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_debug_c_strings.h
 projects/BCM6813_FPI/drivers/rdd/auto/rdd_debug_strings.h
 
@@ -91,9 +84,6 @@ firmware/tm/rdd/xrdp/rdd_ghost_reporting.h
 firmware/tm/rdd/xrdp/rdd_ghost_reporting.c
 firmware/tm/rdd/xrdp/c/rdd_scheduling.c
 firmware/tm/rdd/xrdp/c/rdd_scheduling.h
-firmware/tm/rdd/xrdp/rdd_codel.h
-firmware/tm/rdd/xrdp/rdd_codel.c
-firmware/tm/rdd/xrdp/rdd_codel_shell.c
 firmware/tm/rdd/xrdp/rdd_pi2.h
 firmware/tm/rdd/xrdp/rdd_pi2.c
 firmware/tm/rdd/xrdp/rdd_pi2_shell.c
@@ -111,13 +101,14 @@ firmware/dhd_offload/rdd/xrdp/rdd_dhd_helper.c
 firmware/dhd_offload/rdd/xrdp/rdd_dhd_helper_shell.c
 
 # RDP Subsystem
-drivers/rdp_subsystem/xrdp/access_macros.h
-drivers/rdp_subsystem/xrdp/access_macros_boot.h
-drivers/rdp_subsystem/xrdp/access_macros_sim.h
-drivers/rdp_subsystem/xrdp/access_macros_board.h
+drivers/rdp_subsystem/common/access_macros.h
+drivers/rdp_subsystem/common/access_macros_boot.h
+drivers/rdp_subsystem/common/access_macros_sim.h
+drivers/rdp_subsystem/common/access_macros_board.h
 drivers/rdp_subsystem/packing.h
 drivers/rdp_subsystem/rdp_mm.h
 drivers/rdp_subsystem/rdp_subsystem_common.h
+drivers/rdp_subsystem/BCM6813/autogen/xrdp_autogens.h
 drivers/rdp_subsystem/BCM6813/autogen/XRDP_AG.c
 drivers/rdp_subsystem/BCM6813/autogen/XRDP_AG.h
 drivers/rdp_subsystem/BCM6813/autogen/xrdp_drv_drivers_common_ag.c
@@ -258,12 +249,14 @@ drivers/rdp_subsystem/BCM6813/autogen/xlif/xrdp_drv_xlif1_q_off_ag.h
 drivers/rdp_subsystem/BCM6813/autogen/xlif/xrdp_drv_xlif1_rx_if_ag.h
 drivers/rdp_subsystem/BCM6813/data_path_init.c
 drivers/rdp_subsystem/BCM6813/data_path_init.h
-drivers/rdp_subsystem/data_path_init_common.h
+drivers/rdp_subsystem/xrdp/data_path_init_common.h
 drivers/rdp_subsystem/xrdp/data_path_init_common.c
 drivers/rdp_subsystem/xrdp/rdp_common.c
 drivers/rdp_subsystem/xrdp/rdp_common.h
 drivers/rdp_subsystem/BCM6813/rdp_platform.c
 drivers/rdp_subsystem/BCM6813/rdp_platform.h
+drivers/rdp_subsystem/BCM6813/rdp_drv_dcl_auto.h
+drivers/rdp_subsystem/BCM6813/rdp_drv_dcl_auto_arr.h
 drivers/rdp_subsystem/xrdp/rdp_drv_bbh_rx.c
 drivers/rdp_subsystem/xrdp/rdp_drv_bbh_rx.h
 drivers/rdp_subsystem/xrdp/rdp_drv_bbh_tx.c
@@ -280,8 +273,8 @@ drivers/rdp_subsystem/xrdp/rdp_drv_qm.c
 drivers/rdp_subsystem/xrdp/rdp_drv_qm.h
 drivers/rdp_subsystem/xrdp/rdp_drv_dqm.c
 drivers/rdp_subsystem/xrdp/rdp_drv_dqm.h
-drivers/rdp_subsystem/xrdp/rdp_drv_fpm.c
-drivers/rdp_subsystem/xrdp/rdp_drv_fpm.h
+drivers/rdp_subsystem/common/rdp_drv_fpm.c
+drivers/rdp_subsystem/common/rdp_drv_fpm.h
 drivers/rdp_subsystem/xrdp/rdp_drv_mpm.c
 drivers/rdp_subsystem/xrdp/rdp_drv_mpm.h
 drivers/rdp_subsystem/xrdp/rdp_drv_rnr.c
@@ -292,9 +285,9 @@ drivers/rdp_subsystem/xrdp/rdp_drv_bac_if.h
 drivers/rdp_subsystem/xrdp/rdp_drv_bac_if.c
 drivers/rdp_subsystem/xrdp/rdp_drv_psram.h
 drivers/rdp_subsystem/xrdp/rdp_drv_psram.c
-drivers/rdp_subsystem/xrdp/rdp_drv_natc.c
-drivers/rdp_subsystem/xrdp/rdp_drv_natc.h
-drivers/rdp_subsystem/xrdp/rdp_drv_natc_defs.h
+drivers/rdp_subsystem/common/rdp_drv_natc.c
+drivers/rdp_subsystem/common/rdp_drv_natc.h
+drivers/rdp_subsystem/common/rdp_drv_natc_defs.h
 drivers/rdp_subsystem/xrdp/rdp_drv_tcam.c
 drivers/rdp_subsystem/xrdp/rdp_drv_tcam.h
 drivers/rdp_subsystem/xrdp/drv_shell.h
@@ -313,8 +306,7 @@ drivers/rdp_subsystem/rdp_cpu_ring.c
 drivers/rdp_subsystem/rdp_cpu_ring.h
 drivers/rdp_subsystem/rdp_cpu_feed_ring.c
 drivers/rdp_subsystem/rdp_cpu_feed_ring.h
-drivers/rdp_subsystem/xrdp/rdp_cpu_ring_defs.h
-drivers/rdp_subsystem/xrdp/rdp_cpu_ring_inline.h
+drivers/rdp_subsystem/common/rdp_cpu_ring_inline.h
 
 drivers/rdp_subsystem/Makefile
 
@@ -340,6 +332,8 @@ drivers/rdp_drv/rdp_drv_proj_cntr.h
 drivers/rdp_drv/rdp_drv_proj_cntr.c
 drivers/rdp_drv/rdp_drv_spu.c
 drivers/rdp_drv/rdp_drv_spu.h
+drivers/rdp_drv/rdp_drv_dcl.h
+drivers/rdp_drv/rdp_drv_dcl.c
 
 # RDPA
 drivers/rdpa/gen_headers.bdmf
@@ -348,7 +342,6 @@ drivers/rdpa/sim/rdpa_sim.c
 drivers/rdpa/rdpa_emu.h
 drivers/rdpa/Makefile
 drivers/rdpa/misc_shell.c
-drivers/rdpa/rdpa_bridge_ex.h
 drivers/rdpa/rdpa_common.c
 drivers/rdpa/rdpa_common.h
 drivers/rdpa/xrdp/rdpa_common_ex.c
@@ -387,10 +380,6 @@ drivers/rdpa/rdpa_tcont.c
 drivers/rdpa/rdpa_tcont_ex.h
 drivers/rdpa/xrdp/rdpa_tcont_ex.c
 drivers/rdpa/rdpa_types.c
-drivers/rdpa/rdpa_vlan_ex.h
-drivers/rdpa/rdpa_vlan_action.c
-drivers/rdpa/rdpa_vlan_action_ex.h
-drivers/rdpa/xrdp/rdpa_vlan_action_ex.c
 drivers/rdpa/rdpa_cpu.c
 drivers/rdpa/rdpa_cpu_ex.h
 drivers/rdpa/rdpa_dhd_sim.c
@@ -431,7 +420,7 @@ drivers/rdpa/rdpa_mcast_ex.h
 drivers/rdpa/rdpa_iptv_ex.h
 drivers/rdpa/rdpa_mcast_common.c
 drivers/rdpa/rdpa_mcast_basic.c
-drivers/rdpa/rdpa_mcast_dsl.c
+drivers/rdpa/rdpa_mcast_impl2.c
 drivers/rdpa/rdpa_mcast_common.h
 drivers/rdpa/rdpa_mcast_common_basic.h
 drivers/rdpa/rdpa_mcast_whitelist.c
@@ -439,26 +428,13 @@ drivers/rdpa/rdpa_mcast_whitelist_ex.h
 drivers/rdpa/xrdp/rdpa_mcast_ex.c
 drivers/rdpa/xrdp/rdpa_mcast_whitelist_ex.c
 drivers/rdpa/xrdp/rdpa_iptv_ex.c
-drivers/rdpa/rdpa_spdsvc.c
-drivers/rdpa/rdpa_spdsvc_ex.h
-drivers/rdpa/xrdp/rdpa_spdsvc_ex.c
-drivers/rdpa/rdpa_tr471_spdsvc.c
-drivers/rdpa/rdpa_tcpspdtest.c
-drivers/rdpa/rdpa_tcpspdtest_ex.h
-drivers/rdpa/xrdp/rdpa_tcpspdtest_ex.c
-drivers/rdpa/rdpa_spdtest_common.c
-drivers/rdpa/rdpa_spdtest_common_ex.h
-drivers/rdpa/xrdp/rdpa_spdtest_common_ex.c
-drivers/rdpa/rdpa_udpspdtest.c
-drivers/rdpa/rdpa_udpspdtest_ex.h
-drivers/rdpa/xrdp/rdpa_udpspdtest_ex.c
 drivers/rdpa/xrdp/rdpa_spu_offload_ex.c
+drivers/rdpa/rdpa_buffer.c
 drivers/rdpa/rdpa_fpi.c
 
 # RDPA GPL
 drivers/rdpa_gpl/Makefile
 drivers/rdpa_gpl/include/rdpa_api.h
-drivers/rdpa_gpl/include/rdpa_bridge.h
 drivers/rdpa_gpl/include/rdpa_config.h
 drivers/rdpa_gpl/include/rdpa_cpu.h
 drivers/rdpa_gpl/include/rdpa_cpu_basic.h
@@ -482,9 +458,6 @@ drivers/rdpa_gpl/include/rdpa_system.h
 drivers/rdpa_gpl/include/rdpa_tcont.h
 drivers/rdpa_gpl/include/rdpa_tm.h
 drivers/rdpa_gpl/include/rdpa_types.h
-drivers/rdpa_gpl/include/rdpa_vlan.h
-drivers/rdpa_gpl/include/rdpa_vlan_action_basic.h
-drivers/rdpa_gpl/include/rdpa_vlan_action.h
 drivers/rdpa_gpl/include/rdpa_cmd_list.h
 drivers/rdpa_gpl/include/rdpa_dhd_helper.h
 drivers/rdpa_gpl/include/rdpa_dhd_helper_basic.h
@@ -493,14 +466,10 @@ drivers/rdpa_gpl/include/rdpa_mcast.h
 drivers/rdpa_gpl/include/rdpa_mcast_basic.h
 drivers/rdpa_gpl/include/rdpa_mcast_whitelist.h
 drivers/rdpa_gpl/include/rdpa_iptv.h
-drivers/rdpa_gpl/include/rdpa_spdsvc.h
-drivers/rdpa_gpl/include/rdpa_tr471_spdsvc.h
-drivers/rdpa_gpl/include/rdpa_tcpspdtest.h
-drivers/rdpa_gpl/include/rdpa_udpspdtest.h
-drivers/rdpa_gpl/include/rdpa_spdtest_common.h
+drivers/rdpa_gpl/include/rdpa_buffer.h
 drivers/rdpa_gpl/include/rdpa_flow_idx_pool.h
 drivers/rdpa_gpl/include/rdpa_spu_offload.h
-drivers/rdpa_gpl/include/autogen/rdpa_ag_bridge.h
+drivers/rdpa_gpl/include/rdpa_fpi.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_cpu.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_dscp_to_pbit.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_egress_tm.h
@@ -516,18 +485,12 @@ drivers/rdpa_gpl/include/autogen/rdpa_ag_tunnel.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_port.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_system.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_tcont.h
-drivers/rdpa_gpl/include/autogen/rdpa_ag_vlan.h
-drivers/rdpa_gpl/include/autogen/rdpa_ag_vlan_action.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_wlan_mcast.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_ucast.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_l2_ucast.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_mcast.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_mcast_whitelist.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_dhd_helper.h
-drivers/rdpa_gpl/include/autogen/rdpa_ag_spdsvc.h
-drivers/rdpa_gpl/include/autogen/rdpa_ag_tr471_spdsvc.h
-drivers/rdpa_gpl/include/autogen/rdpa_ag_tcpspdtest.h
-drivers/rdpa_gpl/include/autogen/rdpa_ag_udpspdtest.h
 drivers/rdpa_gpl/include/autogen/rdpa_ag_fpi.h
 drivers/rdpa_gpl/rdpa_gpl_cpu.c
 drivers/rdpa_gpl/rdpa_gpl_dscp_to_pbit.c
@@ -543,18 +506,12 @@ drivers/rdpa_gpl/rdpa_gpl_rate_limit.c
 drivers/rdpa_gpl/rdpa_gpl_port.c
 drivers/rdpa_gpl/rdpa_gpl_system.c
 drivers/rdpa_gpl/rdpa_gpl_tcont.c
-drivers/rdpa_gpl/rdpa_gpl_spdsvc.c
-drivers/rdpa_gpl/rdpa_gpl_tr471_spdsvc.c
-drivers/rdpa_gpl/rdpa_gpl_vlan.c
-drivers/rdpa_gpl/rdpa_gpl_vlan_action.c
 drivers/rdpa_gpl/rdpa_gpl_handwritten.c
 drivers/rdpa_gpl/rdpa_gpl_ucast.c
 drivers/rdpa_gpl/rdpa_gpl_l2_ucast.c
 drivers/rdpa_gpl/rdpa_gpl_mcast.c
 drivers/rdpa_gpl/rdpa_gpl_mcast_whitelist.c
 drivers/rdpa_gpl/rdpa_gpl_dhd_helper.c
-drivers/rdpa_gpl/rdpa_gpl_tcpspdtest.c
-drivers/rdpa_gpl/rdpa_gpl_udpspdtest.c
 drivers/rdpa_gpl/rdpa_gpl_fpi.c
 
 # RDPA USERS
@@ -569,13 +526,10 @@ drivers/rdpa_user/rdpa_system_ioctl_ag.c
 drivers/rdpa_user/rdpa_port_ioctl_ag.c
 drivers/rdpa_user/rdpa_cpu_ioctl_ag.c
 drivers/rdpa_user/rdpa_egress_tm_ioctl_ag.c
-drivers/rdpa_user/rdpa_udpspdtest_ioctl_ag.c
 drivers/rdpa_user/include/autogen/rdpa_system_user_ag.h
 drivers/rdpa_user/include/autogen/rdpa_egress_tm_user_ag.h
 drivers/rdpa_user/include/autogen/rdpa_port_user_ag.h
 drivers/rdpa_user/include/autogen/rdpa_cpu_user_ag.h
-drivers/rdpa_user/include/autogen/rdpa_vlan_action_user_ag.h
-drivers/rdpa_user/include/autogen/rdpa_udpspdtest_user_ag.h
 drivers/rdpa_user/include/user_api.h
 drivers/rdpa_user/autogen/rdpa_egress_tm_user_ioctl_ag.h
 drivers/rdpa_user/autogen/rdpa_port_user_ioctl_ag.h
@@ -584,7 +538,6 @@ drivers/rdpa_user/autogen/rdpa_system_user_ioctl_ag.h
 drivers/rdpa_user/autogen/rdpa_tcont_user_ioctl_ag.h
 drivers/rdpa_user/include/autogen/rdpa_tcont_user_ag.h
 drivers/rdpa_user/rdpa_tcont_ioctl_ag.c
-drivers/rdpa_user/autogen/rdpa_udpspdtest_user_ioctl_ag.h
 drivers/rdpa_user/rdpa_llid_ioctl_ag.c
 drivers/rdpa_user/include/autogen/rdpa_llid_user_ag.h
 drivers/rdpa_user/autogen/rdpa_llid_user_ioctl_ag.h
@@ -606,3 +559,6 @@ drivers/rdpa_user/rdpa_ingress_class_ioctl_ag.c
 drivers/rdpa_user/rdpa_mcast_whitelist_ioctl_ag.c
 drivers/rdpa_user/include/autogen/rdpa_mcast_whitelist_user_ag.h
 drivers/rdpa_user/autogen/rdpa_mcast_whitelist_user_ioctl_ag.h
+
+# RDD SHMEM
+include(rdd_shmem_sources.list)

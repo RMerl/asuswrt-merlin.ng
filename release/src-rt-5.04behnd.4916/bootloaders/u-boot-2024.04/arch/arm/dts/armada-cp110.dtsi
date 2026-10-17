@@ -1,0 +1,359 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016- 2021 Marvell International Ltd.
+ */
+
+/*
+ * Generic Device Tree describing Marvell Armada CP-110 device
+ */
+
+#include <dt-bindings/comphy/comphy_data.h>
+
+#define U64_TO_U32_H(addr)		(((addr) >> 32) & 0xffffffff)
+#define U64_TO_U32_L(addr)		((addr) & 0xffffffff)
+
+#define CP110_PCIEx_REG0_BASE(iface)	\
+	(CP110_BASE + 0x600000 + (iface) * 0x20000)
+#define CP110_PCIEx_REG1_BASE(iface)	\
+	(CP110_PCIEx_CPU_MEM_BASE(iface) + CP110_PCIE_MEM_SIZE(iface))
+#define CP110_PCIE_EP_REG_BASE(iface)	(CP110_BASE + 0x600000 + \
+					 (iface) * 0x4000)
+
+/ {
+	CP110_NAME {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		compatible = "simple-bus";
+		interrupt-parent = <&gic>;
+		ranges;
+
+		config-space {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "simple-bus";
+			interrupt-parent = <&gic>;
+			ranges = <0x0 U64_TO_U32_H(CP110_BASE) U64_TO_U32_L(CP110_BASE) 0x2000000>;
+
+			CP110_LABEL(mdio): mdio@12a200 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "marvell,orion-mdio";
+				reg = <0x12a200 0x10>;
+				device-name = CP110_STRING_LABEL(mdio);
+				status = "disabled";
+			};
+
+			CP110_LABEL(xmdio): mdio@12a600 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "marvell,xmdio";
+				reg = <0x12a600 0x200>;
+				device-name = CP110_STRING_LABEL(xmdio);
+				status = "disabled";
+			};
+
+			CP110_LABEL(sar-reg) {
+				compatible = "marvell,sample-at-reset-common",
+					     "marvell,sample-at-reset-cp110";
+				reg = <0x400200 0x8>;
+				sar-driver = "cp110_sar";
+				sar-name = CP110_STRING_LABEL(sar);
+				status = "okay";
+			};
+
+			CP110_LABEL(syscon0): system-controller@440000 {
+				compatible = "marvell,cp110-system-controller0",
+					     "syscon";
+				reg = <0x440000 0x1000>;
+				#clock-cells = <2>;
+				core-clock-output-names =
+					"cpm-apll", "cpm-ppv2-core", "cpm-eip",
+					"cpm-core", "cpm-nand-core";
+				gate-clock-output-names =
+					"cpm-audio", "cpm-communit", "cpm-nand",
+					"cpm-ppv2", "cpm-sdio", "cpm-mg-domain",
+					"cpm-mg-core", "cpm-xor1", "cpm-xor0",
+					"cpm-gop-dp", "none", "cpm-pcie_x10",
+					"cpm-pcie_x11", "cpm-pcie_x4", "cpm-pcie-xor",
+					"cpm-sata", "cpm-sata-usb", "cpm-main",
+					"cpm-sd-mmc", "none", "none",
+					"cpm-slow-io", "cpm-usb3h0", "cpm-usb3h1",
+					"cpm-usb3dev", "cpm-eip150", "cpm-eip197";
+			};
+
+			CP110_LABEL(pinctl): pinctl@440000 {
+				compatible = "marvell,mvebu-pinctrl";
+				reg = <0x440000 0x20>;
+				pin-count = <63>;
+				max-func = <0xf>;
+			};
+
+			CP110_LABEL(gpio0): gpio@440100 {
+				compatible = "marvell,orion-gpio";
+				reg = <0x440100 0x40>;
+				ngpios = <32>;
+				gpiobase = <20>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			CP110_LABEL(gpio1): gpio@440140 {
+				compatible = "marvell,orion-gpio";
+				reg = <0x440140 0x40>;
+				ngpios = <31>;
+				gpiobase = <52>;
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			CP110_LABEL(sata0): sata@540000 {
+				compatible = "marvell,armada-8k-ahci";
+				reg = <0x540000 0x30000>;
+				interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&CP110_LABEL(syscon0) 1 15>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(usb3_0): usb3@500000 {
+				compatible = "marvell,armada-8k-xhci",
+					     "generic-xhci";
+				reg = <0x500000 0x4000>;
+				dma-coherent;
+				interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&CP110_LABEL(syscon0) 1 22>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(usb3_1): usb3@510000 {
+				compatible = "marvell,armada-8k-xhci",
+					     "generic-xhci";
+				reg = <0x510000 0x4000>;
+				dma-coherent;
+				interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&CP110_LABEL(syscon0) 1 23>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(spi0): spi@700600 {
+				compatible = "marvell,armada-380-spi";
+				reg = <0x700600 0x50>;
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				cell-index = <1>;
+				spi-max-frequency = <50000000>;
+				clocks = <&CP110_LABEL(syscon0) 0 3>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(spi1): spi@700680 {
+				compatible = "marvell,armada-380-spi";
+				reg = <0x700680 0x50>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				cell-index = <2>;
+				spi-max-frequency = <50000000>;
+				clocks = <&CP110_LABEL(syscon0) 1 21>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(i2c0): i2c@701000 {
+				compatible = "marvell,mv78230-i2c";
+				reg = <0x701000 0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&CP110_LABEL(syscon0) 1 21>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(i2c1): i2c@701100 {
+				compatible = "marvell,mv78230-i2c";
+				reg = <0x701100 0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+				clocks = <&CP110_LABEL(syscon0) 1 21>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(mss_i2c0): i2c@211000 {
+				compatible = "marvell,mv78230-i2c";
+				reg = <0x211000 0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(comphy): comphy@441000 {
+				compatible = "marvell,mvebu-comphy", "marvell,comphy-cp110";
+				reg = <0x441000 0x8>,
+				      <0x120000 0x8>;
+				mux-bitcount = <4>;
+				max-lanes = <6>;
+			};
+
+			CP110_LABEL(utmi): utmi@580000 {
+				compatible = "marvell,mvebu-utmi";
+				reg = <0x580000 0xc>; /* utmi-common-pll */
+				#address-cells = <1>;
+				#size-cells = <1>;
+				CP110_LABEL(utmi0): utmi@58000c {
+					compatible = "marvell,mvebu-utmi-2.6.0";
+					reg = <0x58000c 0x100>,/* utmi-unit */
+					      <0x440420 0x4>,	/* usb-cfg */
+					      <0x440440 0x4>;	/* utmi-cfg */
+					utmi-port = <UTMI_PHY_TO_USB3_HOST0>;
+					status = "disabled";
+				};
+
+				CP110_LABEL(utmi1): utmi@58100c {
+					compatible = "marvell,mvebu-utmi-2.6.0";
+					reg = <0x58100c 0x100>,/* utmi-unit */
+					      <0x440420 0x4>,	/* usb-cfg */
+					      <0x440444 0x4>;	/* utmi-cfg */
+					utmi-port = <UTMI_PHY_TO_USB3_HOST1>;
+					status = "disabled";
+				};
+			};
+
+			CP110_LABEL(sdhci0): sdhci@780000 {
+				compatible = "marvell,armada-8k-sdhci";
+				reg = <0x780000 0x300>;
+				interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
+				dma-coherent;
+				status = "disabled";
+			};
+
+			CP110_LABEL(nand): nand@720000 {
+				compatible = "marvell,armada-8k-nand-controller",
+					"marvell,armada370-nand-controller";
+				reg = <0x720000 0x54>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				clocks = <&CP110_LABEL(syscon0) 1 2>;
+				marvell,nand-enable-arbiter;
+				num-cs = <1>;
+				nand-ecc-strength = <8>;
+				nand-ecc-step-size = <512>;
+				marvell,system-controller = <&CP110_LABEL(syscon0)>;
+				status = "disabled";
+			};
+
+			CP110_LABEL(ethernet): ethernet@0 {
+				compatible = "marvell,armada-7k-pp22";
+				reg = <0x0 0x100000>, <0x129000 0xb000>;
+				clocks = <&CP110_LABEL(syscon0) 1 3>, <&CP110_LABEL(syscon0) 1 9>, <&CP110_LABEL(syscon0) 1 5>;
+				clock-names = "pp_clk", "gop_clk", "mg_clk";
+				status = "disabled";
+				dma-coherent;
+
+				CP110_LABEL(eth0): eth0 {
+					interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+					port-id = <0>;
+					gop-port-id = <0>;
+					status = "disabled";
+				};
+
+				CP110_LABEL(eth1): eth1 {
+					interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
+					port-id = <1>;
+					gop-port-id = <2>;
+					status = "disabled";
+				};
+
+				CP110_LABEL(eth2): eth2 {
+					interrupts = <GIC_SPI 39 IRQ_TYPE_LEVEL_HIGH>;
+					port-id = <2>;
+					gop-port-id = <3>;
+					status = "disabled";
+				};
+			};
+		};
+
+		CP110_LABEL(pcie0): pcie0@600000 {
+			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
+			reg =
+			   <U64_TO_U32_H(CP110_PCIEx_REG0_BASE(0)) U64_TO_U32_L(CP110_PCIEx_REG0_BASE(0)) 0 0x10000>,
+			   /* Last 512KB of mem space */
+			   <U64_TO_U32_H(CP110_PCIEx_REG1_BASE(0)) U64_TO_U32_L(CP110_PCIEx_REG1_BASE(0)) 0 0x80000>;
+			reg-names = "ctrl", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			device_type = "pci";
+			dma-coherent;
+
+			bus-range = <0 0xff>;
+			ranges =
+				/* non-prefetchable memory */
+				<CP110_PCIE_BUS_MEM_CFG U64_TO_U32_H(CP110_PCIEx_BUS_MEM_BASE(0))
+				U64_TO_U32_L(CP110_PCIEx_BUS_MEM_BASE(0)) U64_TO_U32_H(CP110_PCIEx_CPU_MEM_BASE(0))
+				U64_TO_U32_L(CP110_PCIEx_CPU_MEM_BASE(0))
+				U64_TO_U32_H(CP110_PCIE_MEM_SIZE(0)) U64_TO_U32_L(CP110_PCIE_MEM_SIZE(0))>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &gic 0 GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 32 IRQ_TYPE_LEVEL_HIGH>;
+			num-lanes = <1>;
+			clocks = <&CP110_LABEL(syscon0) 1 13>;
+			status = "disabled";
+		};
+
+		CP110_LABEL(pcie1): pcie1@620000 {
+			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
+			reg =
+			   <U64_TO_U32_H(CP110_PCIEx_REG0_BASE(1)) U64_TO_U32_L(CP110_PCIEx_REG0_BASE(1)) 0 0x10000>,
+			   /* Last 512KB of mem space */
+			   <U64_TO_U32_H(CP110_PCIEx_REG1_BASE(1)) U64_TO_U32_L(CP110_PCIEx_REG1_BASE(1)) 0 0x80000>;
+			reg-names = "ctrl", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			device_type = "pci";
+			dma-coherent;
+
+			bus-range = <0 0xff>;
+			ranges =
+				/* non-prefetchable memory */
+				<CP110_PCIE_BUS_MEM_CFG U64_TO_U32_H(CP110_PCIEx_BUS_MEM_BASE(1))
+				U64_TO_U32_L(CP110_PCIEx_BUS_MEM_BASE(1)) U64_TO_U32_H(CP110_PCIEx_CPU_MEM_BASE(1))
+				U64_TO_U32_L(CP110_PCIEx_CPU_MEM_BASE(1)) U64_TO_U32_H(CP110_PCIE_MEM_SIZE(1))
+				U64_TO_U32_L(CP110_PCIE_MEM_SIZE(1))>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &gic 0 GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+
+			num-lanes = <1>;
+			clocks = <&CP110_LABEL(syscon0) 1 11>;
+			status = "disabled";
+		};
+
+		CP110_LABEL(pcie2): pcie2@640000 {
+			compatible = "marvell,armada8k-pcie", "snps,dw-pcie";
+			reg =
+			   <U64_TO_U32_H(CP110_PCIEx_REG0_BASE(2)) U64_TO_U32_L(CP110_PCIEx_REG0_BASE(2)) 0 0x10000>,
+			   /* Last 64KB of mem space */
+			   <U64_TO_U32_H(CP110_PCIEx_REG1_BASE(2)) U64_TO_U32_L(CP110_PCIEx_REG1_BASE(2)) 0 0x80000>;
+			reg-names = "ctrl", "config";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			device_type = "pci";
+			dma-coherent;
+
+			bus-range = <0 0xff>;
+			ranges =
+				/* non-prefetchable memory */
+				<CP110_PCIE_BUS_MEM_CFG U64_TO_U32_H(CP110_PCIEx_BUS_MEM_BASE(2))
+				U64_TO_U32_L(CP110_PCIEx_BUS_MEM_BASE(2)) U64_TO_U32_H(CP110_PCIEx_CPU_MEM_BASE(2))
+				U64_TO_U32_L(CP110_PCIEx_CPU_MEM_BASE(2)) U64_TO_U32_H(CP110_PCIE_MEM_SIZE(2))
+				U64_TO_U32_L(CP110_PCIE_MEM_SIZE(2))>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &gic 0 GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <GIC_SPI 33 IRQ_TYPE_LEVEL_HIGH>;
+
+			num-lanes = <1>;
+			clocks = <&CP110_LABEL(syscon0) 1 12>;
+			status = "disabled";
+		};
+	};
+};

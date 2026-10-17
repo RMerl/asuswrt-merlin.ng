@@ -3,7 +3,7 @@
 #include "../bcm_voice.dtsi"
 
 / {
-	memory_controller {
+	memory_controller:memory_controller {
 		memcfg = <(BP_DDR_TYPE_DDR4 | \
 			BP_DDR_SPEED_1067_15_15_15 | \
 			BP_DDR_TOTAL_SIZE_1024MB   | \

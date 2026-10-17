@@ -15,7 +15,7 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
-        bootargs = "console=ttyAMA0,1500000n8 earlyprintk debug lpj=800000 ikosboot mem=64M,1048576 root=/dev/ram0 ro";
+        bootargs = "console=ttyAMA0,1500000n8 earlycon debug lpj=800000 ikosboot mem=64M,1048576 root=/dev/ram0 ro";
         linux,initrd-start = <0x1b00000>;
         linux,initrd-end = <0x1fff000>;
     };

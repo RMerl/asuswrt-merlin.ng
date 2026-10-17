@@ -129,7 +129,7 @@ static inline int rdpa_l2_class_flow_idx_pool_ptr_get(bdmf_object_handle mo_, vo
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_l2_class_attr_flow_idx_pool_ptr, &_nn_);
-    *flow_idx_pool_ptr_ = (void *)(long)_nn_;
+    *flow_idx_pool_ptr_ = (void *)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -144,7 +144,7 @@ static inline int rdpa_l2_class_flow_idx_pool_ptr_get(bdmf_object_handle mo_, vo
  */
 static inline int rdpa_l2_class_flow_idx_pool_ptr_set(bdmf_object_handle mo_, void * flow_idx_pool_ptr_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_l2_class_attr_flow_idx_pool_ptr, (long)flow_idx_pool_ptr_);
+    return bdmf_attr_set_as_num(mo_, rdpa_l2_class_attr_flow_idx_pool_ptr, (bdmf_long_t)flow_idx_pool_ptr_);
 }
 
 

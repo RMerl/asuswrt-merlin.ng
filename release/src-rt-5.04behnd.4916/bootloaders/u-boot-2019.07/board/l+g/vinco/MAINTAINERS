@@ -1,6 +1,0 @@
-VInCo Platform
-M:	Gregory CLEMENT <gregory.clement@free-electrons.com>
-S:	Maintained
-F:	board/l+g/vinco
-F:	include/configs/vinco.h
-F:	configs/vinco_defconfig

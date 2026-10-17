@@ -1,0 +1,48 @@
+partitions=uuid_disk=${uuid_disk};name=u-boot0,start=1MiB,size=2MiB,uuid=${uuid_uboot0};name=u-boot-env0,size=1MiB,uuid=${uuid_uboot_env0};name=u-boot1,size=2MiB,uuid=${uuid_uboot1};name=u-boot-env1,size=1MiB,uuid=${uuid_uboot_env1};name=factory,size=1MiB,uuid=${uuid_factory};name=panic,size=24MiB,uuid=${uuid_panic};name=boot,size=32MiB,uuid=${uuid_boot};name=rootfs,size=1536MiB,uuid=${uuid_rootfs};name=update,size=768MiB,uuid=${uuid_update};name=home,size=-,uuid=${uuid_home};
+do_dfu_alt_info_mmc=setenv dfu_alt_info "ifwi${hardware_id} raw 0 8192 mmcpart 1;ifwib${hardware_id} raw 0 8192 mmcpart 2;u-boot0 part 0 1;u-boot-env0 part 0 2;u-boot1 part 0 3;u-boot-env1 part 0 4;boot part 0 7;rootfs part 0 8;update part 0 9;home part 0 10;vmlinuz fat 0 7;initrd fat 0 7"
+dfu_alt_info_ram=kernel ram ${loadaddr} 0x800000
+do_dfu_alt_info_ifwi=setenv dfu_alt_info "ifwi${hardware_id} raw 0 8192 mmcpart 1;ifwib${hardware_id} raw 0 8192 mmcpart 2"
+dfu_alt_info_reset=reset ram 0x0 0x0
+bootargs_console=console=ttyMFD2 earlyprintk=ttyMFD2,keep
+bootargs_debug=loglevel=4
+do_bootargs_rootfs=setenv bootargs_rootfs rootwait root=PARTUUID=${uuid_rootfs} rootfstype=ext4
+first_install_retry=0
+first_install_max_retries=3
+ota_update_retry=0
+ota_update_max_retries=3
+audio_codec_name=audio_codec="dummy"
+do_audio_support=setenv audio_support platform_mrfld_audio.${audio_codec_name}
+do_compute_target=if itest.b ${first_install_retry} -gt ${first_install_max_retries} || itest.b ${ota_update_retry} -gt ${ota_update_max_retries}; then echo "Switch to Rescue target"; setenv bootargs_target rescue; saveenv; fi
+mmc-bootargs=run do_bootargs_rootfs; run do_audio_support; setenv bootargs ${bootargs_rootfs} ${bootargs_console} ${bootargs_debug} g_multi.ethernet_config=${bootargs_ethconfig} systemd.unit=${bootargs_target}.target hardware_id=${hardware_id} g_multi.iSerialNumber=${serial#} g_multi.dev_addr=${usb0addr} ${audio_support}
+loadaddr=0x100000
+load_kernel=fatload mmc 0:7 ${loadaddr} vmlinuz
+do_partition_done=0
+do_partition=if itest.b ${do_partition_done} -eq 1; then echo "Partitioning already done..."; else run do_force_partition ; fi
+do_force_partition=echo "Partitioning using GPT"; gpt write mmc 0 ${partitions} ; mmc rescan; setenv do_partition_done 1 ; saveenv
+do_flash_ifwi=run do_dfu_alt_info_ifwi ; dfu 0 mmc 0 $dfu_to_sec
+do_flash_os=if itest.b ${do_flash_os_done} -eq 1 ; then echo "Flashing already done..." ; else run do_force_flash_os; fi
+do_force_flash_os=run do_dfu_alt_info_mmc ; sleep 1 ; setenv do_flash_os_done 1 ; saveenv ; dfu 0 mmc 0 $dfu_to_sec
+do_flashall=run do_partition;run do_flash_ifwi;run do_flash_os
+do_dnx=setenv dfu_alt_info ${dfu_alt_info_ram};dfu 0 ram 0 ram;run bootcmd
+init_dfu=run do_dfu_alt_info_mmc ; saveenv
+bootcmd=echo "Target:${target_name}"; run do_partition; run do_handle_bootargs_mode;
+do_handle_bootargs_mode=run do_preprocess_bootargs_mode; if itest.s $bootargs_mode == "ota" ; then run do_ota; fi; if itest.s $bootargs_mode == "boot" ; then run do_boot; fi; if itest.s $bootargs_mode == "flash"; then run do_flash; fi; run do_fallback; exit;
+do_preprocess_bootargs_mode=if env exists bootargs_mode ; then ; else setenv bootargs_mode "boot" ;fi;
+do_fallback=echo "Unknown boot mode: $bootargs_mode"; env delete -f bootargs_mode; saveenv; echo "Resetting to default boot mode and reboot..."; reset;
+do_boot=run boot_target_cmd;
+do_flash=run do_force_flash_os;
+ota_done=0
+ota_script_addr=0x100000
+do_ota_init=setenv ota_status 1 ; env delete -f bootargs_mode
+do_load_ota_scr=if fatload mmc 0:9 $ota_script_addr ota_update.scr ; then setenv ota_status 0 ; else setenv ota_status 1 ; fi
+do_source_ota_scr=if test $ota_status -eq 0 ; then if source $ota_script_addr ; then setenv ota_status 0 ; else setenv ota_status 2 ; fi ; fi
+do_ota_clean=saveenv ; reset
+do_ota=run do_ota_init ; run do_load_ota_scr ; run do_source_ota_scr ; run do_ota_clean
+target_name=blank
+bootdelay=1
+do_flash_os_done=1
+bootargs_target=multi-user
+bootargs_ethconfig=cdc
+dfu_to_sec=3
+do_probe_dfu=run do_dfu_alt_info_mmc ; dfu 0 mmc 0 $dfu_to_sec
+boot_target_cmd=run do_flash_os;run do_probe_dfu;run do_compute_target;run mmc-bootargs;run load_kernel;zboot ${loadaddr}

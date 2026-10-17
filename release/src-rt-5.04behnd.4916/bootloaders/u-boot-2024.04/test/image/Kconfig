@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: GPL-2.0+
+# Copyright (C) 2023 Sean Anderson <seanga2@gmail.com>
+
+config SPL_UT_LOAD
+	bool "Unit tests for SPL load methods"
+	depends on SPL_UNIT_TEST
+	default y if SANDBOX
+	help
+	  Test various SPL load methods.
+
+if SPL_UT_LOAD
+
+config SPL_UT_LOAD_FS
+	bool "Unit tests for filesystems"
+	depends on SANDBOX && SPL_OF_REAL
+	depends on FS_LOADER
+	depends on SPL_BLK_FS
+	depends on SPL_FS_FAT
+	depends on SPL_FS_EXT4
+	depends on SPL_MMC_WRITE
+	depends on SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+	default y
+	help
+	  Test filesystems and the various load methods which use them.
+
+config SPL_UT_LOAD_NAND
+	bool "Test loading from NAND flash"
+	depends on SANDBOX && SPL_OF_REAL
+	depends on SPL_NAND_SUPPORT
+	depends on SPL_MTD
+	default y
+	help
+	  Test the NAND flash load method.
+
+config SPL_UT_LOAD_NET
+	bool "Test loading over TFTP"
+	depends on SANDBOX && SPL_OF_REAL
+	depends on SPL_ETH
+	depends on USE_BOOTFILE
+	default y
+	help
+	  Test loading images over TFTP using the NET image load method.
+
+config SPL_UT_LOAD_SPI
+	bool "Test loading from SPI Flash"
+	depends on SANDBOX && SPL_OF_REAL
+	depends on SPL_SPI_LOAD
+	default y
+	help
+	  Test the SPI flash image load metod.
+
+config SPL_UT_LOAD_OS
+	bool "Test loading from the host OS"
+	depends on SANDBOX && SPL_LOAD_FIT
+	select SPL_LOAD_BLOCK
+	default y
+	help
+	  Smoke test to ensure that loading U-boot works in sandbox.
+
+endif

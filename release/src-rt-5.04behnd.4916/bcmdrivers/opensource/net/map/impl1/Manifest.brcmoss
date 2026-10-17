@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: nat46
+OSS_REFERENCE_Version: git commit: "Zero checksum handling for UDP4->UDP6" <1c0066afb3a1893b5459586195c00ff32211c88c>
+OSS_REFERENCE_License: GPLv2
+OSS_REFERENCE_DownloadURL: https://github.com/ayourtch/nat46/archive/1c0066afb3a1893b5459586195c00ff32211c88c.zip
+OSS_REFERENCE_BroadcomURL:
+OSS_Broadcom_RelativePath: ./

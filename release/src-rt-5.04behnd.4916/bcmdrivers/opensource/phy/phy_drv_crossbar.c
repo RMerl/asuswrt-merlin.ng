@@ -65,7 +65,7 @@ int crossbar_is_not_initialized(int crossbar_id)
 {
     int i;
     for (i=0; i < ARRAY_SIZE(crossbars[0].external_endpoint); i++)
-        if (crossbars[crossbar_id].external_endpoint[i])
+        if (crossbars[crossbar_id].phys[i])
             return 0;
     return 1;
 }

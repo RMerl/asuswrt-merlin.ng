@@ -46,8 +46,6 @@ inline int enetxapi_offload_should_mark(struct net_device *dev, FkBuff_t *fkb, u
 
 #if defined(RUNNER)
 #include "enet_inline_runner.h"
-#elif defined(SF2_DEVICE)
-#include "enet_inline_sf2.h"
 #else
 /* Unimplemented APIs */
 

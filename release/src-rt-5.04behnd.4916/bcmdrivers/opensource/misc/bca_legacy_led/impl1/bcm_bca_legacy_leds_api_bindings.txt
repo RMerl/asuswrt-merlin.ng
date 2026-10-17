@@ -80,7 +80,6 @@ Please find below the list of the predefined led names and corresponding legacy 
 | "voip2-ok-led"        |   kLedVoip2           |   kLedOK          |
 | "voip2-fail-led"      |   kLedVoip2           |   kLedFail        |
 | "pots-led"            |   kLedPots            |   kLedOK          |
-| "dect-led"            |   kLedDect            |   kLedOK          |
 | "wl0-led"             |   kLedWL0             |   kLedOK          |
 | "wl1-led"             |   kLedWL1             |   kLedOK          |
 | "usb-led"             |   kLedUSB             |   kLedOK          |

@@ -71,8 +71,9 @@ struct ndi_classify {
 
 /* flags */
 enum {
-	UPDATED_BIT,
+	DEV_UPDATED_BIT,
 	DEV_CLASSIFY_BIT,
+	CT_UPDATED_BIT,
 };
 
 /* enum for device heartbeat state */
@@ -162,7 +163,7 @@ struct ndi_sa *sa_find_first(struct sec_path *sp);
 struct ndi_sa *sa_find_or_new(struct xfrm_state *x);
 void sa_delete(struct ndi_sa *sa);
 int __init ndi_tables_init(void);
-void __exit ndi_tables_exit(void);
+void ndi_tables_exit(void);
 
 /* netlink */
 void ndi_nl_rcv(struct sk_buff *skb);

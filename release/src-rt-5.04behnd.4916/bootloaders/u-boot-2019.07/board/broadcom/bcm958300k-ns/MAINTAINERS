@@ -1,6 +1,0 @@
-BCM958300K-NS BOARD
-M:	Steve Rae <steve.rae@raedomain.com>
-S:	Maintained
-F:	board/broadcom/bcmcygnus/
-F:	include/configs/bcm_ep_board.h
-F:	configs/bcm958300k-ns_defconfig

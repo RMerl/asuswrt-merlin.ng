@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+&spi0 {
+	flash@0 {
+		/*
+		 * For some unknown reason U-Boot SPI driver cannot access
+		 * SPI-NOR with higher frequency. Linux kernel SPI driver
+		 * does not have this problem.
+		 */
+		spi-max-frequency = <50000000>;
+
+#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@firmware {
+				reg = <0 CONFIG_ENV_OFFSET>;
+				label = "firmware";
+			};
+
+			partition@u-boot-env {
+				reg = <CONFIG_ENV_OFFSET CONFIG_ENV_SIZE>;
+				label = "u-boot-env";
+			};
+		};
+#endif
+	};
+};
+
+/*
+ * U-Boot requires to have this eMMC node by default in "okay" status. U-Boot
+ * at runtime changes status to "disabled" if eMMC is not present on the board.
+ */
+&sdhci0 {
+	status = "okay";
+};

@@ -1,0 +1,19 @@
+if ARCH_OCTEONTX2
+
+choice
+	prompt "OcteonTX2 board select"
+	optional
+
+config TARGET_OCTEONTX2_95XX
+	bool "Marvell OcteonTX2 CN95XX"
+
+config TARGET_OCTEONTX2_96XX
+	bool "Marvell OcteonTX2 CN96XX"
+
+endchoice
+
+config SYS_SOC
+	string
+	default "octeontx2"
+
+endif

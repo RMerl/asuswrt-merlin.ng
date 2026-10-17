@@ -102,7 +102,7 @@ struct bcmvpcie_vdev
  *
  * @vid      : virtual core id
  * @num_dev  : number of virtual devices per core
- * @dev      : virual device control block
+ * @dev      : virtual device control block
  */
 struct bcmvpcie_hc_cb
 {
@@ -116,7 +116,7 @@ struct bcmvpcie_hc_cb
  *  Local Function prototype
  * +-----------------------------------------------------
  */
-/* Config Space Access */
+/* Configuration Space Access */
 static int bcmvpcie_hc_config_read(struct pci_bus *bus, unsigned int devfn,
 	int where, int size, u32 *val);
 static int bcmvpcie_hc_config_write(struct pci_bus *bus, unsigned int devfn,
@@ -272,22 +272,29 @@ static inline void bcmvpcie_hc_pwrdn_dev(struct pcie_hc_core *phc, int devidx)
 	return;
 }
 
-/* read 32bit pcie register space */
+/* read 32bit PCIe register space */
 static inline u32 bcmvpcie_hc_read(struct pcie_hc_core *phc, unsigned offset)
 {
-	u32 data;
+	u32 data = 0xdeaddead;
 
-	data = bcmvpcie_hc_core_reg[offset/sizeof(u32)];
+	if (offset < sizeof(bcmvpcie_hc_core_reg)) {
+	    data = bcmvpcie_hc_core_reg[offset/sizeof(u32)];
+	}
 
-	HCD_LOG_REG("read_reg [0x%px + 0x%04x] = 0x%08x\n", phc->info.base, offset, data);
+	HCD_LOG_REG("read_reg [0x%px + 0x%04x] = 0x%08x\n", phc->info.base, offset,
+	    data);
 	return data;
 }
 
-/* write 32bit pcie register space */
-static inline void bcmvpcie_hc_write(u32 data, struct pcie_hc_core *phc, unsigned offset)
+/* write 32bit PCIe register space */
+static inline void bcmvpcie_hc_write(u32 data, struct pcie_hc_core *phc,
+	unsigned offset)
 {
-	bcmvpcie_hc_core_reg[offset/sizeof(u32)] = data;
-	HCD_LOG_REG("write_reg [0x%px + 0x%04x] = 0x%08x\n", phc->info.base, offset, data);
+	if (offset < sizeof(bcmvpcie_hc_core_reg)) {
+	    bcmvpcie_hc_core_reg[offset/sizeof(u32)] = data;
+	    HCD_LOG_REG("write_reg [0x%px + 0x%04x] = 0x%08x\n", phc->info.base,
+	        offset, data);
+	}
 }
 
 /*
@@ -300,22 +307,24 @@ static inline void bcmvpcie_hc_write(u32 data, struct pcie_hc_core *phc, unsigne
  * Function bcmvpcie_hc_config_read (bus, devfn, where, size, val)
  *
  *   Parameters:
- *    bus   ... pointer to pci bus data structure
- *    devfn ... pci device, function mapping
+ *    bus   ... pointer to PCI bus data structure
+ *    devfn ... PCI device, function mapping
  *    where ... offset from the device base
  *    size  ... access size
  *    val   ... pointer to read data to be written
  *
  *   Description:
- *    Check and write to virtual device first, if not, go back to external device
+ *    Check and write to virtual device first, if not, go back to external
+ *    device
  *
  *   Return: PCIBIOS_DEVICE: SUCCESS or DEVICE_NOT_FOUND on failure
  */
 static int bcmvpcie_hc_config_read(struct pci_bus *bus, unsigned int devfn,
 	int where, int size, u32 *val)
 {
-	struct pcie_hc_core *phc = bus->sysdata;
+	struct pcie_hc_core *phc = pcie_hcd_get_hccore_from_bus(bus);
 	struct bcmvpcie_hc_cb *phc_cb = (struct bcmvpcie_hc_cb*)(phc->phc_cb);
+	struct bcmvpcie_vdev_cfg *pvcfg;
 	int slot = PCI_SLOT(devfn);
 	int ret = PCIBIOS_DEVICE_NOT_FOUND;
 	ulong addr = 0;
@@ -324,7 +333,8 @@ static int bcmvpcie_hc_config_read(struct pci_bus *bus, unsigned int devfn,
 
 	HCD_FN_ENT();
 
-	valid = bcmvpcie_hc_access_valid(phc_cb, bus->number, slot, PCI_FUNC(devfn), &devidx);
+	valid = bcmvpcie_hc_access_valid(phc_cb, bus->number, slot, PCI_FUNC(devfn),
+	    &devidx);
 	if (valid == FALSE) {
 	    HCD_INFO("%s: invalid access bus %d, slot %d, func %d where %d\r\n",
 	        __FUNCTION__, bus->number, slot, PCI_FUNC(devfn), where);
@@ -338,7 +348,8 @@ static int bcmvpcie_hc_config_read(struct pci_bus *bus, unsigned int devfn,
 	    goto done;
 	}
 
-	addr =  (ulong)(&phc_cb->dev[devidx].cfg) + where;
+	pvcfg = &phc_cb->dev[devidx].cfg;
+	addr =  (ulong)(pvcfg) + where;
 
 	if (size == 1)
 	    *((uint8 *)val) = *((uint8 *)(addr));
@@ -357,7 +368,7 @@ static int bcmvpcie_hc_config_read(struct pci_bus *bus, unsigned int devfn,
 	     */
 	    if ((*val == 0xffffffff) &&
 	        ((where >= PCI_BASE_ADDRESS_0) && (where <= PCI_BASE_ADDRESS_5))) {
-	        *val = ~(phc_cb->dev[devidx].cfg.bar_size[(where - PCI_BASE_ADDRESS_0)/4]-1);
+	        *val = ~(pvcfg->bar_size[(where - PCI_BASE_ADDRESS_0)/4]-1);
 	    } else if (where == PCI_ROM_ADDRESS) {
 	        *val = 0xffffffff;
 	    }
@@ -377,21 +388,22 @@ done:
  * Function bcmvpcie_hc_config_write (bus, devfn, where, size, val)
  *
  *   Parameters:
- *    bus   ... pointer to pci bus data structure
- *    devfn ... pci device, function mapping
+ *    bus   ... pointer to PCI bus data structure
+ *    devfn ... PCI device, function mapping
  *    where ... offset from the device base
  *    size  ... access size
  *    val   ... value to be written
  *
  *   Description:
- *    Check and write to virtual device first, if not, go back to external device
+ *    Check and write to virtual device first, if not, go back to external
+ *    device
  *
  *   Return: PCIBIOS_DEVICE: SUCCESS or DEVICE_NOT_FOUND on failure
  */
 static int bcmvpcie_hc_config_write(struct pci_bus *bus, unsigned int devfn,
 	int where, int size, u32 val)
 {
-	struct pcie_hc_core *phc = bus->sysdata;
+	struct pcie_hc_core *phc = pcie_hcd_get_hccore_from_bus(bus);
 	struct bcmvpcie_hc_cb *phc_cb = (struct bcmvpcie_hc_cb*)(phc->phc_cb);
 	int slot = PCI_SLOT(devfn);
 	int ret = PCIBIOS_DEVICE_NOT_FOUND;
@@ -401,7 +413,8 @@ static int bcmvpcie_hc_config_write(struct pci_bus *bus, unsigned int devfn,
 
 	HCD_FN_ENT();
 
-	valid = bcmvpcie_hc_access_valid(phc_cb, bus->number, slot, PCI_FUNC(devfn), &devidx);
+	valid = bcmvpcie_hc_access_valid(phc_cb, bus->number, slot, PCI_FUNC(devfn),
+	    &devidx);
 	if (valid == FALSE) {
 	    HCD_LOG("%s: invalid access bus %d, slot %d, func %d where %d\r\n",
 	        __FUNCTION__, bus->number, slot, PCI_FUNC(devfn), where);
@@ -442,19 +455,18 @@ done:
  * Function bcmvpcie_hc_map_irq (pcidev, slot, pin)
  *
  *   Parameters:
- *    pcidev ... pointer to pci device data structure
- *    slot   ... pci slot/device id
+ *    pcidev ... pointer to PCI device data structure
+ *    slot   ... PCI slot/device id
  *    pin    ... pin number (not used)
  *
  *   Description:
- *    Get the pcie core irq number.
+ *    Get the PCIe core irq number.
  *
- *   Return: pcie core irq number
+ *   Return: PCIe core irq number
  */
-int bcmvpcie_hc_map_irq(const struct pci_dev *pcidev,
-	u8 slot, u8 pin)
+int bcmvpcie_hc_map_irq(const struct pci_dev *pcidev, u8 slot, u8 pin)
 {
-	struct pcie_hc_core *phc = pcidev->bus->sysdata;
+	struct pcie_hc_core *phc = pcie_hcd_get_hccore_from_bus(pcidev->bus);
 	struct bcmvpcie_hc_cb *phc_cb = (struct bcmvpcie_hc_cb*)(phc->phc_cb);
 	int idx;
 	int irq = -1;
@@ -481,7 +493,7 @@ int bcmvpcie_hc_map_irq(const struct pci_dev *pcidev,
  *   Parameters:
  *    phc    ... pointer to core control block
  *    devidx ... core device index
- *    up     ... flag to sepcify power up/down
+ *    up     ... flag to specify power up/down
  *    type   ... mask to specify EP and/or RC device type
  *
  *   Description:
@@ -521,12 +533,12 @@ int bcmvpcie_hc_set_power(struct pcie_hc_core *phc, unsigned int devidx,
  * Function bcmvpcie_hc_parse_slot_dt (phc, np, np_slot)
  *
  *   Parameters:
- *    phc ... pointer to pcie core hcd data structure
+ *    phc ... pointer to PCIe core HCD data structure
  *    np ... Pointer to vpcie core device tree node
- *    np_slot ... Pointer to vpcie slot devie tree node
+ *    np_slot ... Pointer to vpcie slot device tree node
  *
  *   Description:
- *    Parse pcie slot device tree entries. Currently supported resources
+ *    Parse PCIe slot device tree entries. Currently supported resources
  *    - PCIe core base, memory window, PCI bus range
  *
  *   Return: 0 on success, -ve on failure
@@ -593,6 +605,10 @@ static int bcmvpcie_hc_parse_slot_dt(struct pcie_hc_core *phc,
 	    return -EINVAL;
 	}
 
+	/* Store the base information device (for display only, not for mapping) */
+	memcpy(&phc->res.base, &base, sizeof(struct resource));
+	phc->res.base.flags = 0;
+
 	/* WIFI MLO core register base (optional) */
 	err = of_address_to_resource(np, 1, &pvdev->mlo_reg);
 	if (err == 0) {
@@ -641,6 +657,20 @@ static int bcmvpcie_hc_parse_slot_dt(struct pcie_hc_core *phc,
 	    win++;
 	}
 
+	if (pvdev->mlo_reg.start) {
+	    pvdev->cfg.bar_size[2] = pvdev->mlo_reg.end - pvdev->mlo_reg.start + 1;
+	    regs->bar_3 = pvdev->mlo_reg.start | PCI_BASE_ADDRESS_MEM_TYPE_64;
+	}
+
+	if (pvdev->cfg.bar_size[2]) {
+	    owin = &phc->res.owin[win];
+	    owin->name = dev_name(&phc->pdev->dev);
+	    owin->start = regs->bar_3 & PCI_BASE_ADDRESS_MEM_MASK;
+	    owin->end = owin->start + pvdev->cfg.bar_size[2] - 1;
+	    owin->flags = IORESOURCE_MEM;
+	    win++;
+	}
+
 	/* Virtual PCIe device revision id */
 	{
 	    err = of_property_read_u32(np_slot, "brcm,revid", &dt_val);
@@ -684,10 +714,10 @@ static int bcmvpcie_hc_parse_slot_dt(struct pcie_hc_core *phc,
  * Function bcmvpcie_hc_parse_dt (phc)
  *
  *   Parameters:
- *    phc ... pointer to pcie core hcd data structure
+ *    phc ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Parse pcie core hcd device tree entries. Currently supported resources
+ *    Parse PCIe core HCD device tree entries. Currently supported resources
  *    - PCIe core base, memory window, PCI bus range
  *
  *   Return: 0 on success, -ve on failure
@@ -741,7 +771,7 @@ static int bcmvpcie_hc_parse_dt(struct pcie_hc_core *phc)
  * Function bcmvpcie_hc_core_config (phc)
  *
  *   Parameters:
- *    phc ... pointer to pcie core hc data structure
+ *    phc ... pointer to PCIe core HC data structure
  *
  *   Description:
  *    Dummy
@@ -763,7 +793,7 @@ static int bcmvpcie_hc_core_config(struct pcie_hc_core *phc)
 	        void __iomem *mlo_base;
 
 	        /* Get access to registers */
-	        mlo_base = devm_ioremap_resource(&phc->pdev->dev, &pvdev->mlo_reg);
+	        mlo_base = ioremap(pvdev->mlo_reg.start, pvdev->cfg.bar_size[2]);
 	        if (IS_ERR(mlo_base)) {
 	            HCD_ERROR("Core [%d] Vcore [%d] get mlo base failure\n",
 	                phc->info.id, phc_cb->vid);
@@ -774,7 +804,7 @@ static int bcmvpcie_hc_core_config(struct pcie_hc_core *phc)
 	        pcie_hcd_sync_stmr(phc->pdrv, (mlo_base+MLO_SAT_TIMER_REGS_OFFSET));
 
 	        /* Release resources, no longer used by vpcie */
-	        devm_iounmap(&phc->pdev->dev, mlo_base);
+	        iounmap(mlo_base);
 	    }
 	}
 
@@ -789,10 +819,11 @@ static int bcmvpcie_hc_core_config(struct pcie_hc_core *phc)
  * Function bcmvpcie_hc_init_dev (phc)
  *
  *   Parameters:
- *    phc ... pointer to pcie core hcd data structure
+ *    phc ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Initialize the HCD resource entries to default values. Currently supported resources
+ *    Initialize the HCD resource entries to default values. Currently supported
+ *    resources
  *    - PCIe virtual core base as memory window, PCI bus range
  *
  *   Return: 0 on success, -ve on failure
@@ -813,7 +844,7 @@ static int bcmvpcie_hc_init_dev(struct pcie_hc_core *phc)
 	vid = phc_cb->vid;
 
 	/* Get the virtual device configuration. Hierarchy
-	 * - nvram full configruation (TODO: pcie_vdev%d_cfg_path)
+	 * - nvram full configuration (TODO: pcie_vdev%d_cfg_path)
 	 * - Default built-in configuration
 	 * - nvram specific configuration parameters
 	 * - Device Tree
@@ -906,10 +937,10 @@ static int bcmvpcie_hc_init_dev(struct pcie_hc_core *phc)
  * Function bcmvpcie_hc_probe (phc)
  *
  *   Parameters:
- *    phc ... pointer to pcie core data structure
+ *    phc ... pointer to PCIe core data structure
  *
  *   Description:
- *    PCIe hc driver probe. Called for each instance of the PCIe core.
+ *    PCIe HC driver probe. Called for each instance of the PCIe core.
  *    Allocate control block and initialize the default resources
  *
  *   Return: 0 on success, -ve on failure
@@ -935,13 +966,15 @@ int bcmvpcie_hc_probe(struct pcie_hc_core *phc)
 	/* Allocate HC control block */
 	phc_cb = (struct bcmvpcie_hc_cb*) kzalloc(sizeof(*phc_cb), GFP_KERNEL);
 	if (!phc_cb) {
-	    HCD_ERROR("[%d] vcore [%d] Unable to allocate memory for CB\r\n", phc->info.id, vid);
+	    HCD_ERROR("[%d] vcore [%d] Unable to allocate memory for CB\r\n",
+	        phc->info.id, vid);
 	    err =  -ENOMEM;
 	    goto done;
 	}
-	HCD_INFO("[%d] vcore [%d] Allocated [0x%px] hc CB\r\n", phc->info.id, vid, phc_cb);
+	HCD_INFO("[%d] vcore [%d] Allocated [0x%px] HC CB\r\n", phc->info.id, vid,
+	    phc_cb);
 
-	/* Initialize hc elements */
+	/* Initialize HC elements */
 	phc->phc_cb = (void*)phc_cb;
 	phc->cfg.core_rev_offset = BCMVPCIE_HC_REV_OFFSET;
 	phc->cfg.core_rev_mask = BCMVPCIE_HC_REV_MASK;
@@ -977,10 +1010,10 @@ done:
  * Function bcmvpcie_hc_remove (phc)
  *
  *   Parameters:
- *    phc ... pointer to pcie core hc data structure
+ *    phc ... pointer to PCIe core HC data structure
  *
  *   Description:
- *    PCIe hc driver remove - Free the allocated resources
+ *    PCIe HC driver remove - Free the allocated resources
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -1007,10 +1040,10 @@ static void bcmvpcie_hc_remove(struct pcie_hc_core *phc)
  * Function pcie_vhc_plt_init (hc_cfg)
  *
  *   Parameters:
- *    hc_cfg ... pointer to pcie host controller configuration data structure
+ *    hc_cfg ... pointer to PCIe host controller configuration data structure
  *
  *   Description:
- *    fill the hc configuration
+ *    fill the HC configuration
  *
  *   Return: 0 on success, -ve on failure
  */

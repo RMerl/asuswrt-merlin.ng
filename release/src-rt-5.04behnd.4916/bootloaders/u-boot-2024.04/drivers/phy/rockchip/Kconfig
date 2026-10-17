@@ -1,0 +1,59 @@
+#
+# Phy drivers for Rockchip platforms
+#
+
+menu "Rockchip PHY driver"
+
+config PHY_ROCKCHIP_INNO_DSIDPHY
+	bool "Rockchip INNO DSIDPHY Driver"
+	depends on ARCH_ROCKCHIP
+	select PHY
+	select MIPI_DPHY_HELPERS
+	help
+	  Support for Rockchip MIPI DPHY with Innosilicon IP block.
+
+config PHY_ROCKCHIP_INNO_USB2
+	bool "Rockchip INNO USB2PHY Driver"
+	depends on ARCH_ROCKCHIP
+	select PHY
+	help
+	  Support for Rockchip USB2.0 PHY with Innosilicon IP block.
+
+config PHY_ROCKCHIP_NANENG_COMBOPHY
+	bool "Support Rockchip NANENG combo PHY Driver"
+	depends on ARCH_ROCKCHIP
+	select PHY
+	help
+	  Enable this to support the Rockchip NANENG combo PHY.
+
+config PHY_ROCKCHIP_PCIE
+	bool "Rockchip PCIe PHY Driver"
+	depends on ARCH_ROCKCHIP
+	select PHY
+	help
+	  Enable this to support the Rockchip PCIe PHY.
+
+config PHY_ROCKCHIP_SNPS_PCIE3
+	bool "Rockchip Snps PCIe3 PHY Driver"
+	depends on PHY && ARCH_ROCKCHIP
+	help
+	  Support for Rockchip PCIe3 PHY with Synopsys IP block.
+	  It could support PCIe Gen3 single root complex, and could
+	  also be able splited into multiple combinations of lanes.
+
+config PHY_ROCKCHIP_USBDP
+	tristate "Rockchip USBDP COMBO PHY Driver"
+	depends on ARCH_ROCKCHIP
+	select PHY
+	help
+	  Enable this to support the Rockchip USB3.0/DP
+	  combo PHY with Samsung IP block.
+
+config PHY_ROCKCHIP_TYPEC
+	bool "Rockchip TYPEC PHY Driver"
+	depends on ARCH_ROCKCHIP
+	select PHY
+	help
+	  Enable this to support the Rockchip USB TYPEC PHY.
+
+endmenu

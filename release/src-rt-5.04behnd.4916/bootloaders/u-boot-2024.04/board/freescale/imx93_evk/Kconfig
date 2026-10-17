@@ -1,0 +1,19 @@
+if TARGET_IMX93_11X11_EVK
+
+config SYS_BOARD
+	default "imx93_evk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "imx93_evk"
+
+config IMX93_EVK_LPDDR4X
+	bool "Using LPDDR4X Timing and PMIC voltage"
+	default y
+	select IMX9_LPDDR4X
+	help
+	  Select the LPDDR4X timing and 0.6V VDDQ
+
+endif

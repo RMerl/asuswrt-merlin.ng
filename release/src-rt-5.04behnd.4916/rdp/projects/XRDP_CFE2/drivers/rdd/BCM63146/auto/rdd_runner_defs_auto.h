@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed

@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2018-2019 Rockchip Electronics Co., Ltd
+ */
+
+#include "rk3328-u-boot.dtsi"
+#include "rk3328-sdram-lpddr3-1600.dtsi"
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &emmc;
+	};
+
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = "pine64";
+				product = "rock64_rk3328";
+			};
+
+			baseboard {
+				manufacturer = "pine64";
+				product = "rock64_rk3328";
+			};
+
+			chassis {
+				manufacturer = "pine64";
+				product = "rock64_rk3328";
+			};
+		};
+	};
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&pinctrl {
+	bootph-pre-ram;
+};
+
+&sdmmc0m1_pin {
+	bootph-pre-ram;
+};
+
+&pcfg_pull_up_4ma {
+	bootph-pre-ram;
+};
+
+/* Need this and all the pinctrl/gpio stuff above to set pinmux */
+&vcc_sd {
+	bootph-pre-ram;
+};
+
+&spi0 {
+	spi_flash: flash@0 {
+		bootph-all;
+	};
+};

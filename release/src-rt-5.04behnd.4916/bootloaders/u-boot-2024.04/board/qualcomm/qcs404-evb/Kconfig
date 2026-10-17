@@ -1,0 +1,15 @@
+if TARGET_QCS404EVB
+
+config SYS_BOARD
+	default "qcs404-evb"
+
+config SYS_VENDOR
+	default "qualcomm"
+
+config SYS_SOC
+	default "qcs404"
+
+config SYS_CONFIG_NAME
+	default "qcs404-evb"
+
+endif

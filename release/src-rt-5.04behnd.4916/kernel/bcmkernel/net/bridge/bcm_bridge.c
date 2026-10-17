@@ -59,15 +59,18 @@ int bcm_br_hook_should_deliver(const struct sk_buff *skb, const struct net_bridg
 int bcm_br_hook_br_flood(struct sk_buff *skb, struct net_bridge *br)
 {
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-	Blog_t *blog_p = blog_ptr(skb);
+    Blog_t *blog_p = blog_ptr(skb);
 
-	if (blog_p)
-   	{
+    if (is_netdev_bcm_hook_skip(br->dev))
+        return 0;
+
+    if (blog_p)
+    {
         if (BLOG_RX_UCAST(blog_p))
-	   	{
+        {
 #if defined(CONFIG_BCM_UNKNOWN_UCAST)
             if (blog_support_unknown_ucast_g)
-		   	{
+            {
                 blog_p->rx.unknown_ucast = 1;
                 blog_p->br_dev_p = (void *)br;
             }

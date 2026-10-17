@@ -247,8 +247,8 @@ static inline int bpcie_addr_in_bar_range(struct pcie_hc_core *phc, int bar,
  * Function bcm_pcie_unconfig_bar_addr ()
  *
  *   Parameters:
- *    phc:   pci host controller handle
- *    bar:   pci BAR register to use
+ *    phc:   PCI host controller handle
+ *    bar:   PCI BAR register to use
  *            0: Search for existing BAR
  *    addr:  BAR incoming physical address
  *
@@ -273,7 +273,11 @@ static int bcm_pcie_unconfig_bar_addr(struct pcie_hc_core *phc, int bar,
 	max_bars = hweight8(phc->cfg.barmask);
 
 	/* Prepare parameters for configuration */
+#ifdef CONFIG_PHYS_ADDR_T_64BIT
 	addr_hi = ((u64)addr) >> 32;
+#else
+	addr_hi = 0;
+#endif
 	addr_lo = (uint32)(addr);
 	sizekb = SZ_64K/SZ_1K; /* Use minimum Size */
 
@@ -356,8 +360,8 @@ static int bcm_pcie_unconfig_bar_addr(struct pcie_hc_core *phc, int bar,
  * Function bcm_pcie_config_bar_addr ()
  *
  *   Parameters:
- *    pdev:  pci device handle
- *    bar:   pci BAR register to use
+ *    pdev:  PCI device handle
+ *    bar:   PCI BAR register to use
  *            0: Search for available/existing BAR
  *    addr:  BAR incoming physical address
  *    size: incoming address size
@@ -400,7 +404,7 @@ int bcm_pcie_config_bar_addr(struct pci_dev *pdev, int bar, phys_addr_t addr,
 	}
 
 	/* Get the PCIe host core handle */
-	phc = (struct pcie_hc_core*)(pdev->bus->sysdata);
+	phc = pcie_hcd_get_hccore_from_bus(pdev->bus);
 
 	/* size=0 is for unconfig the BAR */
 	if (size == 0) {
@@ -414,7 +418,11 @@ int bcm_pcie_config_bar_addr(struct pci_dev *pdev, int bar, phys_addr_t addr,
 	max_bars = hweight8(phc->cfg.barmask);
 
 	/* Prepare parameters for configuration */
+#ifdef CONFIG_PHYS_ADDR_T_64BIT
 	addr_hi = ((u64)addr) >> 32;
+#else
+	addr_hi = 0;
+#endif
 	addr_lo = (uint32)(addr);
 	sizekb = size/SZ_1K; /* Convert to 1K size number */
 
@@ -502,7 +510,7 @@ int bcm_pcie_config_bar_addr(struct pci_dev *pdev, int bar, phys_addr_t addr,
 	}
 #else /* !CONFIG_BCM_PCIE_SWAM */
 	if (SAWM_MEM_ADDR_RANGE(addr)) {
-	    /* This is used for inter pcie messaging */
+	    /* This is used for inter PCIe messaging */
 	    icm = 1;
 	}
 #endif /* CONFIG_BCM_PCIE_SWAM */
@@ -523,8 +531,8 @@ EXPORT_SYMBOL(bcm_pcie_config_bar_addr);
  * Function bcm_pcie_map_bar_addr ()
  *
  *   Parameters:
- *    pdev:  pci device handle
- *    addr:  bar2 phsical address to be mapped
+ *    pdev:  PCI device handle
+ *    addr:  bar#2 physical address to be mapped
  *    size:  map size
  *
  *   Description:
@@ -564,7 +572,7 @@ phys_addr_t bcm_pcie_map_bar_addr(struct pci_dev *pdev, phys_addr_t addr,
 	}
 
 	/* Get the controller handle */
-	phc = (struct pcie_hc_core*)(pdev->bus->sysdata);
+	phc = pcie_hcd_get_hccore_from_bus(pdev->bus);
 	if (!phc) {
 	    HCD_ERROR("bpcie: Unable to find controller handle for pdev 0x%px\n",
 	        pdev);
@@ -639,3 +647,217 @@ done:
 	return pci_addr;
 }
 EXPORT_SYMBOL(bcm_pcie_map_bar_addr);
+
+/*
+ * Get PCIe Broadcast address used for Mutex Lock register
+ *
+ * param
+ *   pdev  : pci device pointer of external or internal pcie WiFi device
+ *
+ * return  :
+ *   Valid address - On success
+ *   0             - On failure (mutex feature not available/enabled)
+ */
+u64 bcm_pcie_get_mutex_addr(struct pci_dev *pdev)
+{
+	struct pci_dev *root = NULL;
+	u64 addr = BCM_PCIE_MUTEX_ADDR_INVALID;
+	u64 flags = BCM_PCIE_MUTEX_FLAG_MASK;
+	struct pcie_hc_core *phc;
+
+	HCD_INFO("bpcie: >>%s(0x%px)\n", __FUNCTION__, pdev);
+
+	/* Sanity Check input parameters */
+	if (!pdev) {
+	    HCD_ERROR("bpcie: Null pdev");
+	    goto done;
+	}
+
+	/* Get the RC device handle */
+	root = pcie_find_root_port(pdev);
+	if (!root) {
+	    HCD_INFO("bpcie: Unable to find root port for pdev 0x%px\n", pdev);
+	    /* Not external PCIe, could be internal WiFi device (self root) */
+	    root = pdev;
+	}
+
+	/* Get the controller handle */
+	phc = pcie_hcd_get_hccore_from_bus(root->bus);
+	if (!phc) {
+	    HCD_ERROR("bpcie: Unable to find controller handle for pdev 0x%px\n",
+	        pdev);
+	    goto done;
+	}
+
+	/* Get the mutex information from controller driver */
+	addr = pcie_hcd_get_fastpath_mutexaddr(phc->pdrv);
+	addr &= (~flags);
+
+done:
+	HCD_INFO("bpcie: Broadcast mutex address = 0x%llx\n", addr);
+
+	return addr;
+}
+EXPORT_SYMBOL(bcm_pcie_get_mutex_addr);
+
+/*
+ * Get PCIe Mutex Lock register configuration
+ *
+ * param
+ *   pdev  : pci device pointer of external or internal pcie WiFi device
+ *
+ * return  :
+ *   Configuration flags
+ */
+u32 bcm_pcie_get_mutex_config(struct pci_dev *pdev)
+{
+	struct pci_dev *root = NULL;
+	u32 config = 0;
+	struct pcie_hc_core *phc;
+
+	HCD_INFO("bpcie: >>%s(0x%px)\n", __FUNCTION__, pdev);
+
+	/* Sanity Check input parameters */
+	if (!pdev) {
+	    HCD_ERROR("bpcie: Null pdev");
+	    goto done;
+	}
+
+	/* Get the RC device handle */
+	root = pcie_find_root_port(pdev);
+	if (!root) {
+	    HCD_INFO("bpcie: Unable to find root port for pdev 0x%px\n", pdev);
+	    /* Not external PCIe, could be internal WiFi device (self root) */
+	    root = pdev;
+	}
+
+	/* Get the controller handle */
+	phc = pcie_hcd_get_hccore_from_bus(root->bus);
+	if (!phc) {
+	    HCD_ERROR("bpcie: Unable to find controller handle for pdev 0x%px\n",
+	        pdev);
+	    goto done;
+	}
+
+	/* Get the mutex information from controller driver */
+	config = pcie_hcd_get_fastpath_mutexconfig(phc->pdrv);
+
+done:
+	HCD_INFO("bpcie: Broadcast mutex configuration = 0x%x\n", config);
+
+	return config;
+}
+EXPORT_SYMBOL(bcm_pcie_get_mutex_config);
+
+/*
+ * Get outgoing broadcast address of the given external WiFi end-point or
+ * internal WiFi core
+ *
+ * param
+ *   pdev  : pci device
+ *
+ * return  : 0:  Broadcast address device not available/enabled
+ *           >0: Broadcast out address to be used by the EP/WIFI core
+ */
+u64 bcm_pcie_get_bcast_out_addr(struct pci_dev *pdev)
+{
+	struct pci_dev *root = NULL;
+	u64 addr = 0;
+	struct pcie_hc_core *phc;
+
+	HCD_INFO("bpcie: >>%s(0x%px)\n", __FUNCTION__, pdev);
+
+	/* Sanity Check input parameters */
+	if (!pdev) {
+	    HCD_ERROR("bpcie: Null pdev");
+	    goto done;
+	}
+
+	/* Get the RC device handle */
+	root = pcie_find_root_port(pdev);
+	if (!root) {
+	    HCD_INFO("bpcie: Unable to find root port for pdev 0x%px\n", pdev);
+	    /* Not external PCIe, could be internal WiFi device (self root) */
+	    root = pdev;
+	}
+
+	/* Get the controller handle */
+	phc = pcie_hcd_get_hccore_from_bus(pdev->bus);
+	if (!phc) {
+	    HCD_ERROR("bpcie: Unable to find controller handle for pdev 0x%px\n",
+	        pdev);
+	    goto done;
+	}
+
+	/*
+	 * Get the incoming fastpath base address from controller driver
+	 *
+	 * RC incoming fastpath address  = EP outgoing address
+	 */
+	addr = pcie_hcd_get_fastpath_in_addr(phc->pdrv);
+	addr &= BCM_PCIE_OUT_BCAST_ADDR_MASK;
+
+done:
+	HCD_INFO("bpcie: Broadcast outgoing address = 0x%llx\n", addr);
+
+	return addr;
+}
+EXPORT_SYMBOL(bcm_pcie_get_bcast_out_addr);
+
+/*
+ * Get incoming broadcast address of the given external WiFi end-point or
+ * internal WiFi core
+ *
+ * param
+ *   pdev  : pci device
+ *
+ * return  : 0:  Broadcast address device not available/enabled
+ *           >0: Incoming broadcast address to be used by the EP/WiFi core
+ */
+u64 bcm_pcie_get_bcast_in_addr(struct pci_dev *pdev)
+{
+	struct pci_dev *root = NULL;
+	u64 addr = 0;
+	u32 ep_bar = FASTPATH_EP_IN_BCAST_BAR;
+	struct pcie_hc_core *phc;
+
+	HCD_INFO("bpcie: >>%s(0x%px)\n", __FUNCTION__, pdev);
+
+	/* Sanity Check input parameters */
+	if (!pdev) {
+	    HCD_ERROR("bpcie: Null pdev");
+	    goto done;
+	}
+
+	/* Get the RC device handle */
+	root = pcie_find_root_port(pdev);
+	if (!root) {
+	    HCD_INFO("bpcie: Unable to find root port for pdev 0x%px\n", pdev);
+	    /* Not external PCIe, could be internal WiFi device (self root) */
+	    root = pdev;
+	}
+
+	/* Get the controller handle */
+	phc = pcie_hcd_get_hccore_from_bus(pdev->bus);
+	if (!phc) {
+	    HCD_ERROR("bpcie: Unable to find controller handle for pdev 0x%px\n",
+	        pdev);
+	    goto done;
+	}
+
+	/*
+	 * Get the outgoing fastpath base address from controller driver
+	 *
+	 * RC outgoing fastpath address  = EP incoming address
+	 */
+	addr = pcie_hcd_get_fastpath_out_addr(phc->pdrv, 0);
+	addr &= BCM_PCIE_IN_BCAST_ADDR_MASK;
+	if (addr && (root != pdev))
+	    addr |= (ep_bar << BCM_PCIE_IN_BCAST_BAR_SHIFT);
+
+done:
+	HCD_INFO("bpcie: Broadcast incoming address = 0x%llx\n", addr);
+
+	return addr;
+}
+EXPORT_SYMBOL(bcm_pcie_get_bcast_in_addr);

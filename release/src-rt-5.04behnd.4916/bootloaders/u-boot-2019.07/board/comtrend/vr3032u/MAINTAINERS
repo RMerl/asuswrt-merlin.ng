@@ -1,6 +1,0 @@
-COMTREND VR-3032U BOARD
-M:	Álvaro Fernández Rojas <noltari@gmail.com>
-S:	Maintained
-F:	board/comtrend/vr-3032u/
-F:	include/configs/comtrend_vr-3032u.h
-F:	configs/comtrend_vr3032u_ram_defconfig

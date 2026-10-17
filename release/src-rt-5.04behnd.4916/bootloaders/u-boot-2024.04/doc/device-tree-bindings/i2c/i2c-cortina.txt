@@ -1,0 +1,18 @@
+* I2C for Cortina platforms
+
+Required properties :
+- compatible : Must be "cortina,ca-i2c"
+- reg : Offset and length of the register set for the device
+
+Recommended properties :
+- clock-frequency : desired I2C bus clock frequency in Hz. If not specified,
+		    default value is 100000. Possible values are 100000,
+		    400000 and 1000000.
+
+Examples :
+
+	i2c: i2c@f4329120 {
+		compatible = "cortina,ca-i2c";
+		reg = <0x0 0xf4329120 0x28>;
+		clock-frequency = <400000>;
+	};

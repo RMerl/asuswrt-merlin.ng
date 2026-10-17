@@ -182,9 +182,9 @@ static int adc3101_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
    struct snd_soc_component *component = codec_dai->component;
    u8 iface_reg_1,dataslot_offset,iface_reg_2;
 
-   iface_reg_1 = snd_soc_component_read32(component,ADC3101_IFACE1);
+   iface_reg_1 = snd_soc_component_read(component,ADC3101_IFACE1);
    dataslot_offset = 0;
-   iface_reg_2 = snd_soc_component_read32(component, ADC3101_IFACE2);
+   iface_reg_2 = snd_soc_component_read(component, ADC3101_IFACE2);
    iface_reg_2 &= ~(1 << I2S_DEFAULT_BIT_POL_SHIFT);
 
    /* set master/slave audio interface */
@@ -252,7 +252,7 @@ static int adc3101_hw_params(struct snd_pcm_substream *substream,
    snd_soc_component_write(component, ADC3101_MADC,ADC3101_MADCEN | adc3101_divs[params_idx].madc );
    snd_soc_component_write(component, ADC3101_AOSR, adc3101_divs[params_idx].aosr);
    snd_soc_component_write(component, ADC3101_ADCSPB, ADC3101_SPB_PRB_R1);
-   data = snd_soc_component_read32(component, ADC3101_IFACE1);
+   data = snd_soc_component_read(component, ADC3101_IFACE1);
 
    switch (params_width(params)) 
    {
@@ -270,16 +270,16 @@ static int adc3101_hw_params(struct snd_pcm_substream *substream,
    }
    snd_soc_component_write(component, ADC3101_IFACE1, data);
    snd_soc_component_write(component, ADC3101_ADCSETUP, ADC3101_DISABLE_SFTSTEP );
-   val=snd_soc_component_read32(component, ADC3101_ADCFGA);
+   val=snd_soc_component_read(component, ADC3101_ADCFGA);
    snd_soc_component_write(component, ADC3101_ADCFGA, val & ~(ADC3101_LADC_MUTED | ADC3101_RADC_MUTED ));
    return 0;
 }
 
-static int adc3101_mute(struct snd_soc_dai *dai, int mute)
+static int adc3101_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
    struct snd_soc_component *component = dai->component;
    u8 dac_reg;
-   dac_reg = snd_soc_component_read32(component, ADC3101_DACMUTE) & ~ADC3101_MUTEON;
+   dac_reg = snd_soc_component_read(component, ADC3101_DACMUTE) & ~ADC3101_MUTEON;
    if (mute)
       snd_soc_component_write(component, ADC3101_DACMUTE, dac_reg | ADC3101_MUTEON);
    else
@@ -323,7 +323,7 @@ static int adc3101_set_bias_level(struct snd_soc_component *component,enum snd_s
 }
 static const struct snd_soc_dai_ops adc3101_ops = {
    .hw_params    = adc3101_hw_params,
-   .digital_mute = adc3101_mute,
+   .mute_stream  = adc3101_mute,
    .set_fmt      = adc3101_set_dai_fmt,
    .set_sysclk   = adc3101_set_dai_sysclk,
 };
@@ -338,7 +338,6 @@ static struct snd_soc_dai_driver adc3101_dai = {
       .rates        = ADC3101_RATES,
       .formats      = ADC3101_FORMATS,},
    .ops             = &adc3101_ops,
-   .symmetric_rates = 1,
 };
 
 static int adc3101_probe(struct snd_soc_component *component)

@@ -1,0 +1,10 @@
+DRACO BOARD
+M:	Enrico Leto <enrico.leto@siemens.com>
+S:	Maintained
+F:	board/siemens/draco/
+F:	configs/draco-etamin_defconfig
+F:	configs/draco-rastaban_defconfig
+F:	configs/draco-thuban_defconfig
+F:	include/configs/draco-etamin.h
+F:	include/configs/draco-rastaban.h
+F:	include/configs/draco-thuban.h

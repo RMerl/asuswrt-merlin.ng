@@ -1,0 +1,63 @@
+
+Summary
+=======
+
+This README is about U-Boot support for SAMSUNG's/NEXELL's ARM Cortex-A9 based
+S5P4418 SoC. It is based on FriendlyARM's U-Boot v2016.01 for the NanoPi2
+(and other) boards [1].
+
+Currently the following boards are supported:
+
+* FriendlyArm NanoPi2   [2]
+* FriendlyArm NanoPC-T2 [3]
+
+
+Build
+=====
+
+* NanoPi2 and NanoPC-T2
+
+make s5p4418_nanopi2_defconfig
+make
+
+
+Installation
+============
+
+- Download Official-ROMs-SDCard-20190718.7z from [4] (images files for android,
+  friendlyCore and LUbuntu)
+- Use s5p4418-sd-lubuntu-desktop-xenial-4.4-armhf-20190718.img to make a SD-card
+- Use dd in the directory where U-Boot has been built to update U-Boot:
+  (replace <SD-card> with the device used for the SD-card, e.g. sdc)
+  sudo dd seek=3841 if=u-boot.bin of=/dev/<SD-card>
+- Boot the board from this SD-card
+
+The source code for (the used?) LUbuntu 16.04 can be found at [5].
+
+
+Links
+=====
+
+[1] FriendlyArm U-Boot v2016.01:
+
+https://github.com/friendlyarm/u-boot/tree/nanopi2-v2016.01
+
+
+[2] NanoPi2:
+
+http://wiki.friendlyarm.com/wiki/index.php/NanoPi_2
+
+
+[3] NanoPC-T2:
+
+http://wiki.friendlyarm.com/wiki/index.php/NanoPC-T2
+
+
+[4] FriendlyArm image files for NanoPi2:
+
+http://download.friendlyarm.com//NanoPi2
+
+
+[5] FriendlyArm LUbuntu 16.04 Source Code for NanoPi2:
+
+https://github.com/friendlyarm/linux/tree/nanopi2-v4.4.y

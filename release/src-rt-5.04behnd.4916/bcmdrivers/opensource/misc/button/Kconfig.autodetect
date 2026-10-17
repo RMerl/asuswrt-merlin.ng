@@ -1,6 +1,6 @@
 config BCM_BUTTON
 	bool "Broadcom BCA Board Button driver"
-	depends on BCM_BCA_EXTINTR
+	depends on BCM_BCA_EXTINTR || BCM_BCA_GPIO
 	default n
 	help
 	  Add the BCM BCA External Interrup support.

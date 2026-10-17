@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2022 MediaTek Inc.
+ * Author: Sam Shih <sam.shih@mediatek.com>
+ */
+
+&topckgen {
+	bootph-all;
+};
+
+&pericfg {
+	bootph-all;
+};
+
+&apmixedsys {
+	bootph-all;
+};
+
+&timer0 {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&snand {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};

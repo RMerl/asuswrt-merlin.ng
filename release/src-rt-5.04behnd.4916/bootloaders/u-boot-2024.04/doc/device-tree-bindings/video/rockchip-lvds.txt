@@ -1,0 +1,77 @@
+Rockchip LVDS interface
+------------------
+
+Required properties:
+- compatible: "rockchip,rk3288-lvds";
+
+- reg: physical base address of the controller and length
+	of memory mapped region.
+- clocks: must include clock specifiers corresponding to entries in the
+	clock-names property.
+- clock-names: must contain "pclk_lvds"
+
+- rockchip,grf: phandle to the general register files syscon
+
+- rockchip,data-mapping: should be <LVDS_FORMAT_VESA> or  <LVDS_FORMAT_JEIDA>,
+	This describes how the color bits are laid out in the
+	serialized LVDS signal.
+- rockchip,data-width : should be <18> or <24>;
+- rockchip,output: should be <LVDS_OUTPUT_RGB>, <LVDS_OUTPUT_SINGLE> or
+	<LVDS_OUTPUT_DUAL>, This describes the output face.
+
+- display-timings : described by
+	doc/device-tree-bindings/video/display-timing.txt.
+
+Example:
+	lvds: lvds@ff96c000 {
+		compatible = "rockchip,rk3288-lvds";
+		reg = <0xff96c000 0x4000>;
+		clocks = <&cru PCLK_LVDS_PHY>;
+		clock-names = "pclk_lvds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&lcdc0_ctl>;
+		rockchip,grf = <&grf>;
+		status = "disabled";
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			lvds_in: port@0 {
+				reg = <0>;
+
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				lvds_in_vopb: endpoint@0 {
+					reg = <0>;
+					remote-endpoint = <&vopb_out_lvds>;
+				};
+				lvds_in_vopl: endpoint@1 {
+					reg = <1>;
+					remote-endpoint = <&vopl_out_lvds>;
+				};
+			};
+		};
+	};
+
+	&lvds {
+		rockchip,data-mapping = <LVDS_FORMAT_VESA>;
+		rockchip,data-width = <24>;
+		rockchip,output = <LVDS_OUTPUT_DUAL>;
+		rockchip,panel = <&panel>;
+		status = "okay";
+
+		display-timings {
+			timing@0 {
+				clock-frequency = <40000000>;
+				hactive = <1920>;
+				vactive = <1080>;
+				hsync-len = <44>;
+				hfront-porch = <88>;
+				hback-porch = <148>;
+				vfront-porch = <4>;
+				vback-porch = <36>;
+				vsync-len = <5>;
+			};
+		};
+	};

@@ -1,0 +1,33 @@
+Kendryte K210 Sysctl
+
+This binding describes the K210 sysctl device, which contains many miscellaneous
+registers controlling system functionality. This node is a register map and can
+be reference by other bindings which need a phandle to the K210 sysctl regmap.
+
+Required properties:
+- compatible: should be
+	"canaan,k210-sysctl", "syscon", "simple-mfd"
+- reg: address and length of the sysctl registers
+- reg-io-width: must be <4>
+
+Clock sub-node
+
+This node is a binding for the clock tree driver
+
+Required properties:
+- compatible: should be "canaan,k210-clk"
+- clocks: phandle to the "in0" external oscillator
+- #clock-cells: must be <1>
+
+Example:
+sysctl: syscon@50440000 {
+	compatible = "canaan,k210-sysctl", "syscon", "simple-mfd";
+	reg = <0x50440000 0x100>;
+	reg-io-width = <4>;
+
+	sysclk: clock-controller {
+		compatible = "canaan,k210-clk";
+		clocks = <&in0>;
+		#clock-cells = <1>;
+	};
+};

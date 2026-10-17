@@ -1,0 +1,18 @@
+/dts-v1/;
+
+/*
+ * https://github.com/dgibson/dtc/issues/64
+ *
+ * Certain dtc versions had a bug where this input caused an infinite
+ * loop in check_property_phandle_args().
+ *
+ */
+
+/ {
+    clocks = <&ref &ref>;
+
+    ref: poc {
+        phandle = <1>;
+        #clock-cells = <0xffffffff>;
+    };
+};

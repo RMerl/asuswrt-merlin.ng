@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2023 Linaro Ltd.
+ */
+
+&cmu_top {
+	bootph-all;
+};
+
+&cmu_peri {
+	bootph-all;
+};
+
+&oscclk {
+	bootph-all;
+};
+
+&pinctrl_alive {
+	bootph-all;
+};
+
+&pmu_system_controller {
+	bootph-all;
+	samsung,uart-debug-1;
+};
+
+&serial_0 {
+	bootph-all;
+};
+
+&uart1_pins {
+	bootph-all;
+};
+
+&usi_uart {
+	bootph-all;
+};

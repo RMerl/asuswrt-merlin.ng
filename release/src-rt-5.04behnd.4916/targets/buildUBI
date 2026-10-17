@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# script to generate files required for pureUBI
+# script to generate files required for UBI images
 
 # options available to pass this script:
 #   -u UBI .ini file[name] to generate

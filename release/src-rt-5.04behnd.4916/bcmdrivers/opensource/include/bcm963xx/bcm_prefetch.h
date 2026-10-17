@@ -1,8 +1,7 @@
 #ifndef _BCM_PREFETCH_H
 #define _BCM_PREFETCH_H
 
-#if (defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM96846) || \
-     defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
+#if (defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855) || \
      defined(CONFIG_BCM96756) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)) 
 static inline void _bcm_prefetch(const void * addr)
 {
@@ -26,9 +25,9 @@ static inline void bcm_prefetch_multiple(const void * addr, const int cachelines
 	}
 	return;
 }
-#elif (defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
-       defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM96813) || \
-       defined(CONFIG_BCM96837) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96765)) 
+#elif (defined(CONFIG_BCM963158) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
+       defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM96813)  || \
+       defined(CONFIG_BCM96837) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM968375) || defined(CONFIG_BCM968850)) 
 static inline void bcm_prefetch_ld(const void * addr)
 {
 	__asm__ __volatile__("prfm pldl1keep, %a0" : : "p"(addr) : "cc");

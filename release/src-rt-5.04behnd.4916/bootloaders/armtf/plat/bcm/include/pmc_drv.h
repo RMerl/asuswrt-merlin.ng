@@ -44,31 +44,31 @@ written consent.
 // this is for the host
 #define PMC_LITTLE_ENDIAN	1
 
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856) || IS_BCMCHIP(63178) || \
-	IS_BCMCHIP(47622) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || \
-	IS_BCMCHIP(6756) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888) || \
-	IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || IS_BCMCHIP(6764)
+#if defined(_BCM96856_) || defined(_BCM963178_) || \
+	defined(_BCM947622_) || defined(_BCM963146_) || defined(_BCM94912_) || \
+	defined(_BCM96756_) || defined(_BCM96813_) || defined(_BCM96888_) || \
+	defined(_BCM96765_) || defined(_BCM96766_) || defined(_BCM96764_)
 #define PMC_IMPL_3_X
-#elif IS_BCMCHIP(6878) || IS_BCMCHIP(6855)
+#elif defined(_BCM96855_)
 #define PMC_ON_HOSTCPU      1
 #else
 #define PMC_CPU_BIG_ENDIAN   1
 #endif
 
-#if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888)
+#if defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_) || defined(_BCM96888_)
 #define PMC_FW_IN_ITCM		1
 #endif
 
-#if IS_BCMCHIP(6756)
+#if defined(_BCM96756_)
 #define PMC_BOOT_TMO_SECONDS	2
 #else
 #define PMC_BOOT_TMO_SECONDS	0
 #endif
 
-#if defined(CFG_RAMAPP) && (defined(PMC_IMPL_3_X) || IS_BCMCHIP(63158)) && \
+#if defined(CFG_RAMAPP) && (defined(PMC_IMPL_3_X) || defined(_BCM963158_)) && \
 	!defined(CONFIG_BRCM_IKOS)
 #define PMC_RAM_BOOT
-#if IS_BCMCHIP(63158)
+#if defined(_BCM963158_)
 #define PMC_IN_MAIN_LOOP	kPMCRunStateRunning
 #else
 #define PMC_IN_MAIN_LOOP	6
@@ -77,8 +77,6 @@ written consent.
 
 /* there are 32 DQM, since REPLY DQM will always be one after the REQUEST
  * DQM, we should use use 0 to 30 for REQ DQM, so RPL DQM will be 1 to 31 */
-/* 63138 has pair of DQM#0+DQM#1, #2+#3, #4+#5, and #6+#7.  We will use
- * DQM#0+DQM#1 pair */
 #define PMC_DQM_REQ_NUM		0
 
 #define PMC_DQM_RPL_NUM		(PMC_DQM_REQ_NUM + 1)
@@ -189,7 +187,7 @@ int read_bpcm_reg_direct(int devAddr, int wordOffset, uint32_t * value);
 int write_bpcm_reg_direct(int devAddr, int wordOffset, uint32_t value);
 int GetRevision(unsigned int *change, unsigned int *revision);
 int GetPVT(int sel, int island, int *value);
-#if (!defined(PMC_IMPL_3_X) && !defined(PMC_ON_HOSTCPU)) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622)
+#if (!defined(PMC_IMPL_3_X) && !defined(PMC_ON_HOSTCPU)) || defined(_BCM963178_) || defined(_BCM947622_)
 int GetRCalSetting(int resistor, int *rcal);
 #endif
 int GetDevPresence(int devAddr, int *value);
@@ -220,16 +218,15 @@ int ResetZone(int devAddr, int zone);
 int CloseAVS(int island, unsigned short margin_mv_slow,
 	     unsigned short margin_mv_fast, unsigned short maximum_mv,
 	     unsigned short minimum_mv);
-#if IS_BCMCHIP(4908)
+#if defined(_BCM94908_)
 int RecloseAVS(int iscold);
 #endif
 void WaitPmc(int runState, void* pmc_log);
-#if IS_BCMCHIP(63138) || IS_BCMCHIP(63148) || IS_BCMCHIP(6858) || \
-       IS_BCMCHIP(4908)
+#if defined(_BCM96858_)
 int StallPmc(void);
 int UnstallPmc(void);
 #endif
-#if IS_BCMCHIP(6856)
+#if defined(_BCM96856_)
 int GetAllROs(uint32_t pa);
 #endif
 enum pvtctl_sel {

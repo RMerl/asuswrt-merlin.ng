@@ -1,8 +1,0 @@
-S32V234 Evaluation BOARD
-M:	Eddy Petrișor <eddy.petrisor@gmail.com>
-S:	Maintained
-F:	arch/arm/cpu/armv8/s32v234/
-F:	arch/arm/include/asm/arch-s32v234/
-F:	board/freescale/s32v234evb/
-F:	include/configs/s32v234evb.h
-F:	configs/s32v234evb_defconfig

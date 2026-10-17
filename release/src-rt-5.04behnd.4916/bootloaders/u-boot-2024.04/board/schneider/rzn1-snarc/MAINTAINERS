@@ -1,0 +1,9 @@
+RZN1 SNARC
+M:	Ralph Siemsen <ralph.siemsen@linaro.org>
+S:	Maintained
+F:	board/schneider/rzn1-snarc/
+F:	arch/arm/dts/r9a06g032-ddr.dtsi
+F:	arch/arm/dts/r9a06g032-rzn1-snarc-u-boot.dtsi
+F:	arch/arm/dts/r9a06g032-rzn1-snarc.dts
+F:	configs/rzn1_snarc_defconfig
+F:	include/configs/rzn1-snarc.h

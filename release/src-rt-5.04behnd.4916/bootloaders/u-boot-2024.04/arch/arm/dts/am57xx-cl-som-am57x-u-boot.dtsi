@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "omap5-u-boot.dtsi"
+#include "dra7-ipu-common-early-boot.dtsi"

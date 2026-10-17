@@ -44,7 +44,7 @@ endfunc plat_my_core_pos
  *  With this function: CorePos = (ClusterId * 4) + CoreId
  */
 func plat_bcm_calc_core_pos
-#if defined (PLATFORM_FLAVOR_68880) || defined (PLATFORM_FLAVOR_6837)
+#if defined (PLATFORM_FLAVOR_68880) || defined (PLATFORM_FLAVOR_6837) || defined (PLATFORM_FLAVOR_68375)
 	mov	x0, x0, LSR #MPIDR_AFF1_SHIFT
 	and	x0, x0, #MPIDR_CPU_MASK
 #else

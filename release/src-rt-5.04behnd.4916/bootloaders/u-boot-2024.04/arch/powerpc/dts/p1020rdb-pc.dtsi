@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * P1020 RDB-PC Device Tree Source stub (no addresses or top-level ranges)
+ *
+ * Copyright 2012 Freescale Semiconductor Inc.
+ * Copyright 2020 NXP
+ */
+
+&soc {
+	mdio@24000 {
+		phy0: ethernet-phy@0 {
+			interrupt-parent = <&mpic>;
+			interrupts = <3 1 0 0>;
+			reg = <0x0>;
+		};
+
+		phy1: ethernet-phy@1 {
+			interrupt-parent = <&mpic>;
+			interrupts = <2 1 0 0>;
+			reg = <0x1>;
+		};
+
+		tbi0: tbi-phy@11 {
+			device_type = "tbi-phy";
+			reg = <0x11>;
+		};
+	};
+
+	mdio@25000 {
+		tbi1: tbi-phy@11 {
+			reg = <0x11>;
+			device_type = "tbi-phy";
+		};
+	};
+
+	enet0: ethernet@b0000 {
+		phy-connection-type = "rgmii-id";
+		fixed-link {
+			speed = <1000>;
+			full-duplex;
+		};
+
+	};
+
+	enet1: ethernet@b1000 {
+		phy-handle = <&phy0>;
+		tbi-handle = <&tbi1>;
+		phy-connection-type = "sgmii";
+	};
+
+	enet2: ethernet@b2000 {
+		phy-handle = <&phy1>;
+		phy-connection-type = "rgmii-id";
+	};
+};

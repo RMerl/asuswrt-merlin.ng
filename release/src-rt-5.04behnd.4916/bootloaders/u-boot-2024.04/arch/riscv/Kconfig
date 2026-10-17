@@ -1,0 +1,533 @@
+menu "RISC-V architecture"
+	depends on RISCV
+
+config SYS_ARCH
+	default "riscv"
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_ANDES_AE350
+	bool "Support Andes ae350"
+
+config TARGET_MICROCHIP_ICICLE
+	bool "Support Microchip PolarFire-SoC Icicle Board"
+
+config TARGET_MILKV_DUO
+	bool "Support Milk-v Duo Board"
+
+config TARGET_OPENPITON_RISCV64
+	bool "Support RISC-V cores on OpenPiton SoC"
+
+config TARGET_QEMU_VIRT
+	bool "Support QEMU Virt Board"
+
+config TARGET_SIFIVE_UNLEASHED
+	bool "Support SiFive Unleashed Board"
+
+config TARGET_SIFIVE_UNMATCHED
+	bool "Support SiFive Unmatched Board"
+	select SYS_CACHE_SHIFT_6
+
+config TARGET_SIPEED_MAIX
+	bool "Support Sipeed Maix Board"
+	select SYS_CACHE_SHIFT_6
+
+config TARGET_STARFIVE_VISIONFIVE2
+	bool "Support StarFive VisionFive2 Board"
+	select BOARD_LATE_INIT
+
+config TARGET_TH1520_LPI4A
+	bool "Support Sipeed's TH1520 Lichee PI 4A Board"
+	select SYS_CACHE_SHIFT_6
+
+config TARGET_XILINX_MBV
+	bool "Support AMD/Xilinx MicroBlaze V"
+
+endchoice
+
+config SYS_ICACHE_OFF
+	bool "Do not enable icache"
+	help
+	  Do not enable instruction cache in U-Boot.
+
+config SPL_SYS_ICACHE_OFF
+	bool "Do not enable icache in SPL"
+	depends on SPL
+	default SYS_ICACHE_OFF
+	help
+	  Do not enable instruction cache in SPL.
+
+config SYS_DCACHE_OFF
+	bool "Do not enable dcache"
+	help
+	  Do not enable data cache in U-Boot.
+
+config SPL_SYS_DCACHE_OFF
+	bool "Do not enable dcache in SPL"
+	depends on SPL
+	default SYS_DCACHE_OFF
+	help
+	  Do not enable data cache in SPL.
+
+config SPL_ZERO_MEM_BEFORE_USE
+	bool "Zero memory before use"
+	depends on SPL
+	help
+	  Zero stack/GD/malloc area in SPL before using them, this is needed for
+	  Sifive core devices that uses L2 cache to store SPL.
+
+# board-specific options below
+source "board/AndesTech/ae350/Kconfig"
+source "board/emulation/qemu-riscv/Kconfig"
+source "board/microchip/mpfs_icicle/Kconfig"
+source "board/openpiton/riscv64/Kconfig"
+source "board/sifive/unleashed/Kconfig"
+source "board/sifive/unmatched/Kconfig"
+source "board/sipeed/maix/Kconfig"
+source "board/sophgo/milkv_duo/Kconfig"
+source "board/starfive/visionfive2/Kconfig"
+source "board/thead/th1520_lpi4a/Kconfig"
+source "board/xilinx/mbv/Kconfig"
+
+# platform-specific options below
+source "arch/riscv/cpu/andesv5/Kconfig"
+source "arch/riscv/cpu/fu540/Kconfig"
+source "arch/riscv/cpu/fu740/Kconfig"
+source "arch/riscv/cpu/generic/Kconfig"
+source "arch/riscv/cpu/jh7110/Kconfig"
+
+# architecture-specific options below
+
+choice
+	prompt "Base ISA"
+	default ARCH_RV32I
+
+config ARCH_RV32I
+	bool "RV32I"
+	select 32BIT
+	help
+	  Choose this option to target the RV32I base integer instruction set.
+
+config ARCH_RV64I
+	bool "RV64I"
+	select 64BIT
+	select PHYS_64BIT
+	help
+	  Choose this option to target the RV64I base integer instruction set.
+
+endchoice
+
+choice
+	prompt "Code Model"
+	default CMODEL_MEDLOW
+
+config CMODEL_MEDLOW
+	bool "medium low code model"
+	help
+	  U-Boot and its statically defined symbols must lie within a single 2 GiB
+	  address range and must lie between absolute addresses -2 GiB and +2 GiB.
+
+config CMODEL_MEDANY
+	bool "medium any code model"
+	help
+	  U-Boot and its statically defined symbols must be within any single 2 GiB
+	  address range.
+
+endchoice
+
+choice
+	prompt "Run Mode"
+	default RISCV_MMODE
+
+config RISCV_MMODE
+	bool "Machine"
+	help
+	  Choose this option to build U-Boot for RISC-V M-Mode.
+
+config RISCV_SMODE
+	bool "Supervisor"
+	imply DEBUG_UART
+	help
+	  Choose this option to build U-Boot for RISC-V S-Mode.
+
+endchoice
+
+choice
+	prompt "SPL Run Mode"
+	default SPL_RISCV_MMODE
+	depends on SPL
+
+config SPL_RISCV_MMODE
+	bool "Machine"
+	help
+	  Choose this option to build U-Boot SPL for RISC-V M-Mode.
+
+config SPL_RISCV_SMODE
+	bool "Supervisor"
+	help
+	  Choose this option to build U-Boot SPL for RISC-V S-Mode.
+
+endchoice
+
+config RISCV_ISA_C
+	bool "Emit compressed instructions"
+	default y
+	help
+	  Adds "C" to the ISA subsets that the toolchain is allowed to emit
+	  when building U-Boot, which results in compressed instructions in the
+	  U-Boot binary.
+
+config RISCV_ISA_F
+	bool "Standard extension for Single-Precision Floating Point"
+	default y
+	help
+	  Adds "F" to the ISA string passed to the compiler.
+
+config RISCV_ISA_D
+	bool "Standard extension for Double-Precision Floating Point"
+	depends on RISCV_ISA_F
+	default y
+	help
+	  Adds "D" to the ISA string passed to the compiler and changes the
+	  riscv32 ABI from ilp32 to ilp32d and the riscv64 ABI from lp64 to
+	  lp64d.
+
+config RISCV_ISA_ZBB
+	bool "Zbb extension support for bit manipulation instructions"
+	help
+	  Adds ZBB extension (basic bit manipulation) to the ISA subsets
+	  that the toolchain is allowed to emit when building U-Boot.
+	  The Zbb extension provides instructions to accelerate a number
+	  of bit-specific operations (count bit population, sign extending,
+	  bitrotation, etc) and enables optimized string routines.
+
+menu "Use assembly optimized implementation of string routines"
+
+config USE_ARCH_STRLEN
+	bool "Use an assembly optimized implementation of strlen"
+	default y
+	depends on RISCV_ISA_ZBB
+	help
+	  Enable the generation of an optimized version of strlen using
+	  Zbb extension.
+
+config SPL_USE_ARCH_STRLEN
+	bool "Use an assembly optimized implementation of strlen for SPL"
+	default y if USE_ARCH_STRLEN
+	depends on RISCV_ISA_ZBB
+	depends on SPL
+	help
+	  Enable the generation of an optimized version of strlen using
+	  Zbb extension.
+
+config TPL_USE_ARCH_STRLEN
+	bool "Use an assembly optimized implementation of strlen for TPL"
+	default y if USE_ARCH_STRLEN
+	depends on RISCV_ISA_ZBB
+	depends on TPL
+	help
+	  Enable the generation of an optimized version of strlen using
+	  Zbb extension.
+
+config USE_ARCH_STRCMP
+	bool "Use an assembly optimized implementation of strcmp"
+	default y
+	depends on RISCV_ISA_ZBB
+	help
+	  Enable the generation of an optimized version of strcmp using
+	  Zbb extension.
+
+config SPL_USE_ARCH_STRCMP
+	bool "Use an assembly optimized implementation of strcmp for SPL"
+	default y if USE_ARCH_STRCMP
+	depends on RISCV_ISA_ZBB
+	depends on SPL
+	help
+	  Enable the generation of an optimized version of strcmp using
+	  Zbb extension.
+
+config TPL_USE_ARCH_STRCMP
+	bool "Use an assembly optimized implementation of strcmp for TPL"
+	default y if USE_ARCH_STRCMP
+	depends on RISCV_ISA_ZBB
+	depends on TPL
+	help
+	  Enable the generation of an optimized version of strcmp using
+	  Zbb extension.
+
+config USE_ARCH_STRNCMP
+	bool "Use an assembly optimized implementation of strncmp"
+	default y
+	depends on RISCV_ISA_ZBB
+	help
+	  Enable the generation of an optimized version of strncmp using
+	  Zbb extension.
+
+config SPL_USE_ARCH_STRNCMP
+	bool "Use an assembly optimized implementation of strncmp for SPL"
+	default y if USE_ARCH_STRNCMP
+	depends on RISCV_ISA_ZBB
+	depends on SPL
+	help
+	  Enable the generation of an optimized version of strncmp using
+	  Zbb extension.
+
+config TPL_USE_ARCH_STRNCMP
+	bool "Use an assembly optimized implementation of strncmp for TPL"
+	default y if USE_ARCH_STRNCMP
+	depends on RISCV_ISA_ZBB
+	depends on TPL
+	help
+	  Enable the generation of an optimized version of strncmp using
+	  Zbb extension.
+
+endmenu
+
+config RISCV_ISA_A
+	def_bool y
+
+config 32BIT
+	bool
+
+config 64BIT
+	bool
+
+config DMA_ADDR_T_64BIT
+	bool
+	default y if 64BIT
+
+config RISCV_ACLINT
+	bool
+	depends on RISCV_MMODE
+	select REGMAP
+	select SYSCON
+	help
+	  The RISC-V ACLINT block holds memory-mapped control and status registers
+	  associated with software and timer interrupts.
+
+config SPL_RISCV_ACLINT
+	bool
+	depends on SPL_RISCV_MMODE
+	select SPL_REGMAP
+	select SPL_SYSCON
+	help
+	  The RISC-V ACLINT block holds memory-mapped control and status registers
+	  associated with software and timer interrupts.
+
+config SIFIVE_CACHE
+	bool
+	help
+	  This enables the operations to configure SiFive cache
+
+config ANDES_PLICSW
+	bool
+	depends on RISCV_MMODE || SPL_RISCV_MMODE
+	select REGMAP
+	select SYSCON
+	select SPL_REGMAP if SPL
+	select SPL_SYSCON if SPL
+	help
+	  The Andes PLICSW block holds memory-mapped claim and pending
+	  registers associated with software interrupt.
+
+config SMP
+	bool "Symmetric Multi-Processing"
+	depends on SBI_V01 || !RISCV_SMODE
+	help
+	  This enables support for systems with more than one CPU. If
+	  you say N here, U-Boot will run on single and multiprocessor
+	  machines, but will use only one CPU of a multiprocessor
+	  machine. If you say Y here, U-Boot will run on many, but not
+	  all, single processor machines.
+
+config SPL_SMP
+	bool "Symmetric Multi-Processing in SPL"
+	depends on SPL && SPL_RISCV_MMODE
+	default y
+	help
+	  This enables support for systems with more than one CPU in SPL.
+	  If you say N here, U-Boot SPL will run on single and multiprocessor
+	  machines, but will use only one CPU of a multiprocessor
+	  machine. If you say Y here, U-Boot SPL will run on many, but not
+	  all, single processor machines.
+
+config NR_CPUS
+	int "Maximum number of CPUs (2-32)"
+	range 2 32
+	depends on SMP || SPL_SMP
+	default 8
+	help
+	  On multiprocessor machines, U-Boot sets up a stack for each CPU.
+	  Stack memory is pre-allocated. U-Boot must therefore know the
+	  maximum number of CPUs that may be present.
+
+config SBI
+	bool
+	default y if RISCV_SMODE || SPL_RISCV_SMODE
+
+choice
+	prompt "SBI support"
+	default SBI_V02
+
+config SBI_V01
+	bool "SBI v0.1 support"
+	depends on SBI
+	help
+	  This config allows kernel to use SBI v0.1 APIs. This will be
+	  deprecated in future once legacy M-mode software are no longer in use.
+
+config SBI_V02
+	bool "SBI v0.2 or later support"
+	depends on SBI
+	help
+	  The SBI specification introduced the concept of extensions in version
+	  v0.2. With this configuration option U-Boot can detect and use SBI
+	  extensions. With the HSM extension introduced in SBI 0.2, only a
+	  single hart needs to boot and enter the operating system. The booting
+	  hart can bring up secondary harts one by one afterwards.
+
+	  Choose this option if OpenSBI release v0.7 or above is used together
+	  with U-Boot.
+
+endchoice
+
+config SBI_IPI
+	bool
+	depends on SBI
+	default y if RISCV_SMODE || SPL_RISCV_SMODE
+	depends on SMP
+
+config XIP
+	bool "XIP mode"
+	help
+	  XIP (eXecute In Place) is a method for executing code directly
+	  from a NOR flash memory without copying the code to ram.
+	  Say yes here if U-Boot boots from flash directly.
+
+config SPL_XIP
+	bool "Enable XIP mode for SPL"
+	help
+	  If SPL starts in read-only memory (XIP for example) then we shouldn't
+	  rely on lock variables (for example hart_lottery and available_harts_lock),
+	  this affects only SPL, other stages should proceed as non-XIP.
+
+config AVAILABLE_HARTS
+	bool "Send IPI by available harts"
+	default y
+	help
+	  By default, IPI sending mechanism will depend on available_harts.
+	  If disable this, it will send IPI by CPUs node numbers of device tree.
+
+config SHOW_REGS
+	bool "Show registers on unhandled exception"
+
+config RISCV_PRIV_1_9
+	bool "Use version 1.9 of the RISC-V priviledged specification"
+	help
+	  Older versions of the RISC-V priviledged specification had
+	  separate counter enable CSRs for each privilege mode. Writing
+	  to the unified mcounteren CSR on a processor implementing the
+	  old specification will result in an illegal instruction
+	  exception. In addition to counter CSR changes, the way virtual
+	  memory is configured was also changed.
+
+config STACK_SIZE_SHIFT
+	int
+	default 14
+
+config OF_BOARD_FIXUP
+	default y if OF_SEPARATE && RISCV_SMODE
+
+menu "Use assembly optimized implementation of memory routines"
+
+config USE_ARCH_MEMCPY
+	bool "Use an assembly optimized implementation of memcpy"
+	default y
+	help
+	  Enable the generation of an optimized version of memcpy.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config SPL_USE_ARCH_MEMCPY
+	bool "Use an assembly optimized implementation of memcpy for SPL"
+	default y if USE_ARCH_MEMCPY
+	depends on SPL
+	help
+	  Enable the generation of an optimized version of memcpy.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config TPL_USE_ARCH_MEMCPY
+	bool "Use an assembly optimized implementation of memcpy for TPL"
+	default y if USE_ARCH_MEMCPY
+	depends on TPL
+	help
+	  Enable the generation of an optimized version of memcpy.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config USE_ARCH_MEMMOVE
+	bool "Use an assembly optimized implementation of memmove"
+	default y
+	help
+	  Enable the generation of an optimized version of memmove.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config SPL_USE_ARCH_MEMMOVE
+	bool "Use an assembly optimized implementation of memmove for SPL"
+	default y if USE_ARCH_MEMCPY
+	depends on SPL
+	help
+	  Enable the generation of an optimized version of memmove.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config TPL_USE_ARCH_MEMMOVE
+	bool "Use an assembly optimized implementation of memmove for TPL"
+	default y if USE_ARCH_MEMCPY
+	depends on TPL
+	help
+	  Enable the generation of an optimized version of memmove.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config USE_ARCH_MEMSET
+	bool "Use an assembly optimized implementation of memset"
+	default y
+	help
+	  Enable the generation of an optimized version of memset.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config SPL_USE_ARCH_MEMSET
+	bool "Use an assembly optimized implementation of memset for SPL"
+	default y if USE_ARCH_MEMSET
+	depends on SPL
+	help
+	  Enable the generation of an optimized version of memset.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+config TPL_USE_ARCH_MEMSET
+	bool "Use an assembly optimized implementation of memset for TPL"
+	default y if USE_ARCH_MEMSET
+	depends on TPL
+	help
+	  Enable the generation of an optimized version of memset.
+	  Such an implementation may be faster under some conditions
+	  but may increase the binary size.
+
+endmenu
+
+config SPL_LOAD_FIT_OPENSBI_OS_BOOT
+	bool "Enable SPL (OpenSBI OS boot mode) applying linux from FIT"
+	depends on SPL_LOAD_FIT
+	help
+	  Use fw_dynamic from the FIT image, and u-boot SPL will invoke it directly.
+	  This is a shortcut boot flow, from u-boot SPL -> OpenSBI -> u-boot proper
+	  -> linux to u-boot SPL -> OpenSBI -> linux.
+
+endmenu

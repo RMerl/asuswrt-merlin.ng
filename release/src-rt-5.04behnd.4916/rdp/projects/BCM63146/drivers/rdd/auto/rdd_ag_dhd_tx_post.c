@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -35,130 +35,6 @@
 #include "rdd.h"
 
 #include "rdd_ag_dhd_tx_post.h"
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_set(uint32_t _entry, uint16_t bias, uint16_t slope)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_WRITE_G(bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_WRITE_G(slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_set_core(uint32_t _entry, uint16_t bias, uint16_t slope, int core_id)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_WRITE_CORE(bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_WRITE_CORE(slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_get(uint32_t _entry, uint16_t *bias, uint16_t *slope)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_READ_G(*bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_READ_G(*slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_get_core(uint32_t _entry, uint16_t *bias, uint16_t *slope, int core_id)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_READ_CORE(*bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_READ_CORE(*slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_bias_set(uint32_t _entry, uint16_t bias)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_WRITE_G(bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_bias_set_core(uint32_t _entry, uint16_t bias, int core_id)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_WRITE_CORE(bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_bias_get(uint32_t _entry, uint16_t *bias)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_READ_G(*bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_bias_get_core(uint32_t _entry, uint16_t *bias, int core_id)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_BIAS_READ_CORE(*bias, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_slope_set(uint32_t _entry, uint16_t slope)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_WRITE_G(slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_slope_set_core(uint32_t _entry, uint16_t slope, int core_id)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_WRITE_CORE(slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_slope_get(uint32_t _entry, uint16_t *slope)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_READ_G(*slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_dhd_tx_post_dhd_codel_bias_slope_table_slope_get_core(uint32_t _entry, uint16_t *slope, int core_id)
-{
-    if(_entry >= RDD_DHD_CODEL_BIAS_SLOPE_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_DHD_CODEL_BIAS_SLOPE_SLOPE_READ_CORE(*slope, RDD_DHD_CODEL_BIAS_SLOPE_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
 
 int rdd_ag_dhd_tx_post_dhd_hw_cfg_fpm_thresholds_low_set(uint16_t fpm_thresholds_low)
 {

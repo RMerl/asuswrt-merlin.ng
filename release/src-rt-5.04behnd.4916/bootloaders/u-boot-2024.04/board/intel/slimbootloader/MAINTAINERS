@@ -1,0 +1,6 @@
+Intel Slim Bootloader Payload
+M:	Aiden Park <aiden.park@intel.com>
+S:	Maintained
+F:	board/intel/slimbootloader
+F:	include/configs/slimbootloader.h
+F:	configs/slimbootloader_defconfig

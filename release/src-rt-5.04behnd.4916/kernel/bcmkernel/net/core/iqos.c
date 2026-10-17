@@ -46,6 +46,7 @@ written consent.
 #include <net/ip.h>
 #include <linux/bcm_log.h>
 
+#if IS_ENABLED(CONFIG_BCM_INGQOS)
 
 /* Debug macros */
 #if defined(CC_IQOS_SUPPORT_DEBUG)
@@ -616,8 +617,6 @@ static int __init __init_iqos(void)
 
 subsys_initcall(__init_iqos);
 
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
-
 /* get the congestion status for system */
 iqos_cong_status_t iqos_get_sys_cong_status(void)
 {
@@ -654,4 +653,86 @@ uint32_t iqos_set_cong_status(iqos_if_t iface, uint32_t chnl,
 EXPORT_SYMBOL(iqos_get_cong_status);
 EXPORT_SYMBOL(iqos_set_cong_status);
 
-#endif /* IS_ENABLED(CONFIG_BCM_INGQOS) */
+#endif /* if IS_ENABLED(CONFIG_BCM_INGQOS) */
+
+#if IS_ENABLED(CONFIG_BCM_TC)
+extern int tc_insert_L4port(const char *if_name, uint16_t filter_prio, int chain_index, int iq_prio,
+    uint16_t ip_proto, uint16_t port, int action, uint16_t reason);
+extern int tc_remove_L4port(const char *if_name, uint16_t filter_prio, int chain_index,
+    uint16_t ip_proto, uint16_t port, int action, uint16_t reason);
+
+static int iqos_add_L4port_sync(uint8_t ipProto, uint16_t destPort, iqos_ent_t ent,
+		    iqos_prio_t prio)
+{
+    return tc_insert_L4port("bcmsw", 40, 4, 1, ipProto, destPort, 2, 0);
+}
+
+static int iqos_rem_L4port_sync(uint8_t ipProto, uint16_t destPort, iqos_ent_t ent)
+{
+    return tc_remove_L4port("bcmsw", 40, 4, ipProto, destPort, 2, 0);
+}
+
+typedef enum {
+    IQOS_CMD_ADD_L4_PORT,
+    IQOS_CMD_REM_L4_PORT,
+} iqos_cmd_t;
+
+typedef struct
+{
+    struct work_struct base_work;
+    iqos_cmd_t cmd;
+    uint8_t ipProto;
+    uint16_t destPort;
+} iqos_work_t;
+
+static void iqos_work_cb(struct work_struct *work)
+{
+    int rc = -EOPNOTSUPP;
+    iqos_work_t *iqos_work = container_of(work, iqos_work_t, base_work);
+
+    switch (iqos_work->cmd)
+    {
+    case IQOS_CMD_ADD_L4_PORT:
+        rc = iqos_add_L4port_sync(iqos_work->ipProto, iqos_work->destPort, 0, 0);
+        break;
+    case IQOS_CMD_REM_L4_PORT:
+        rc = iqos_rem_L4port_sync(iqos_work->ipProto, iqos_work->destPort, 0);
+        break;
+    default:
+        break;
+    }
+
+    kfree(iqos_work);
+}
+
+static int iqos_queue_work(iqos_cmd_t cmd, uint8_t ipProto, uint16_t destPort)
+{
+    iqos_work_t *iqos_work = kmalloc(sizeof(iqos_work_t), GFP_ATOMIC);
+    if (!iqos_work)
+        return -1;
+
+    INIT_WORK(&iqos_work->base_work, iqos_work_cb);
+    iqos_work->cmd = cmd;
+    iqos_work->ipProto = ipProto;
+    iqos_work->destPort = destPort;
+
+    queue_work(system_unbound_wq, &iqos_work->base_work);
+    return 0;
+}
+
+int iqos_add_L4port(uint8_t ipProto, uint16_t destPort, iqos_ent_t ent,
+		    iqos_prio_t prio)
+{
+    return iqos_queue_work(IQOS_CMD_ADD_L4_PORT, ipProto, destPort);
+}
+
+EXPORT_SYMBOL(iqos_add_L4port);
+
+int iqos_rem_L4port(uint8_t ipProto, uint16_t destPort, iqos_ent_t ent)
+{
+    return iqos_queue_work(IQOS_CMD_REM_L4_PORT, ipProto, destPort);
+}
+
+EXPORT_SYMBOL(iqos_rem_L4port);
+
+#endif /* if IS_ENABLED(CONFIG_BCM_TC) */

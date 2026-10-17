@@ -1,0 +1,7 @@
+Arbel EVB
+M:	Stanley Chu <yschu@nuvoton.com>
+M:	Jim Liu <JJLIU0@nuvoton.com>
+S:	Maintained
+F:	board/nuvoton/arbel_evb/
+F:	include/configs/arbel.h
+F:	configs/arbel_evb_defconfig

@@ -128,9 +128,9 @@ static inline void bcm_add_tcphdr(FkBuff_t *fkb, struct gso_hdrs *hdrs)
 static void bcm_sw_gso_recycle_func(void *pNBuff, unsigned long context, uint32_t flags)
 {
 #if IS_ENABLED(CONFIG_BCM_BPM)
-	gbpm_free_buf(PFKBUFF_TO_PDATA(PNBUFF_2_PBUF(pNBuff), BCM_PKT_HEADROOM));
+	gbpm_free_buf(BCM_PFKBUFF_TO_PDATA(PNBUFF_2_PBUF(pNBuff)));
 #else
-	kmem_cache_free(pktBufferCache, PNBUFF_2_PBUF(pNBuff));
+	kmem_cache_free(pktBufferCache, BCM_PFKBUFF_TO_PSTART(PNBUFF_2_PBUF(pNBuff)));
 #endif
 }
 
@@ -138,8 +138,9 @@ static inline int bcm_sw_gso_free_pool(void **buffer_pool,unsigned int cur_pkt,u
 {
 	if(cur_pkt < npkts){
 		int i;
-		for(i=cur_pkt; i < npkts; i++)
-		    bcm_sw_gso_recycle_func(PDATA_TO_PFKBUFF(buffer_pool[i], BCM_PKT_HEADROOM), 0, 0 );
+		for(i=cur_pkt; i < npkts; i++) {
+		    bcm_sw_gso_recycle_func(BCM_PDATA_TO_PFKBUFF(buffer_pool[i]), 0, 0 );
+        }
 	}
 	return 0;
 }
@@ -160,7 +161,7 @@ static inline int bcm_sw_alloc_pkt_buffers(int npkts, void **buffer_pool)
 		buf = kmem_cache_alloc(pktBufferCache, GFP_ATOMIC);
 		if(buf == NULL)
 			break;
-		buffer_pool[i] = (void *)PFKBUFF_TO_PDATA((void *)(buf), BCM_PKT_HEADROOM);
+		buffer_pool[i] = (void *)BCM_PSTART_TO_PDATA(buf);
 	}
 
 	/* check if we allocated all the buffers requested */
@@ -168,7 +169,7 @@ static inline int bcm_sw_alloc_pkt_buffers(int npkts, void **buffer_pool)
 		printk("%s %s: Not enough memory for packet buffer allocation\n", __FILE__, __FUNCTION__);
 		npkts =i;
 		for(i=0; i<npkts; i++)
-			kmem_cache_free(pktBufferCache, PDATA_TO_PFKBUFF(buffer_pool[i], BCM_PKT_HEADROOM));
+			kmem_cache_free(pktBufferCache, BCM_PDATA_TO_PSTART(buffer_pool[i]));
 
 		return -1;
 	}
@@ -296,7 +297,8 @@ static inline int bcm_sw_gso_tcp_segment(struct sk_buff *skb, struct gso_hdrs *h
 		int i;
 		/* xmit packet */
 		for(i=0; i < cur_pkt; i++)
-			hdrs->xmit_fn(FKBUFF_2_PNBUFF(PDATA_TO_PFKBUFF(buffer_pool[i], BCM_PKT_HEADROOM)), hdrs->txdev);
+			hdrs->xmit_fn(FKBUFF_2_PNBUFF(BCM_PDATA_TO_PFKBUFF(buffer_pool[i])),
+                            hdrs->txdev);
 	}
 
 	if(cur_pkt < npkts){
@@ -455,7 +457,8 @@ static int bcm_sw_gso_ip_fragment(struct sk_buff *skb, struct gso_hdrs *hdrs)
 		int i;
 		/* xmit packet */
 		for(i=0; i < cur_pkt; i++)
-			hdrs->xmit_fn(FKBUFF_2_PNBUFF(PDATA_TO_PFKBUFF(buffer_pool[i], BCM_PKT_HEADROOM)), hdrs->txdev);
+			hdrs->xmit_fn(FKBUFF_2_PNBUFF(BCM_PDATA_TO_PFKBUFF(buffer_pool[i])),
+                            hdrs->txdev);
 	}
 
 	if(cur_pkt < npkts){

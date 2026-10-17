@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * (C) Copyright 2021  Niel Fourie <lusus@denx.de>
+ */
+
+#include <config.h>
+
+/ {
+
+	aliases {
+		spi0 = "/soc@ffe000000/spi@110000";
+		i2c0 = "/soc@ffe000000/i2c@118000";
+		i2c1 = "/soc@ffe000000/i2c@118000/mux@70/i2c@0";
+		i2c2 = "/soc@ffe000000/i2c@118000/mux@70/i2c@1";
+		i2c3 = "/soc@ffe000000/i2c@118000/mux@70/i2c@7";
+		i2c4 = "/soc@ffe000000/i2c@118100";
+		/delete-property/ pci1;
+		/delete-property/ pci2;
+		/delete-property/ pci3;
+	};
+
+	chosen {
+		stdout-path = "/soc@ffe000000/serial@11c500";
+	};
+
+	soc@ffe000000 {
+		bootph-all;
+		spi@110000 {
+			/* This documents where km_fpgacfg should be appear */
+			fpga@0 {
+				compatible = "keymile,fpga-conf";
+				reg = <0>;
+				spi-max-frequency = <25000000>;
+			};
+		};
+
+		sdhc@114000 {
+			status = "okay";
+		};
+
+		i2c@118000 {
+			bootph-all;
+			mux@70 {
+				i2c@1 { /* IVM bus */
+					reg = <1>;
+					#address-cells = <1>;
+					#size-cells = <0>;
+				};
+			};
+		};
+
+		serial@11c500 {
+			bootph-all;
+			clock-frequency = <200000000>;
+		};
+
+		fman@400000 {
+			ethernet@e0000 {
+				phy-connection-type = "sgmii";
+			};
+
+			ethernet@e2000 {
+				phy-connection-type = "sgmii";
+			};
+
+			ethernet@e8000 {
+				phy-connection-type = "rgmii-id";
+			};
+		};
+
+	};
+
+	pcie@ffe240000 {
+		compatible = "fsl,pcie-t104x";
+		law_trgt_if = <0>;
+	};
+};
+
+#include "u-boot.dtsi"

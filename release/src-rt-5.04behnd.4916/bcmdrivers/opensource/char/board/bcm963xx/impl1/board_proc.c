@@ -43,10 +43,10 @@
 #include <board.h>
 
 
+#include "board_util.h"
 #include "board_proc.h"
 #include "board_image.h"
 #include "board_wl.h"
-#include "bcm_mbox_map.h"
 #include "clk_rst.h"
 
 #if defined(CONFIG_BCM96858)
@@ -105,7 +105,10 @@ static ssize_t __proc_get_socinfo(char *buf, int cnt)
     } else {
 #if defined(CONFIG_BCM_PMC)
         /* try pmc driver directly */
-        biu_ch_freq_get(0, (unsigned int*)&freq);
+        /* getting only 32 least significant bits*/
+	unsigned int biu_freq = 0; 
+        biu_ch_freq_get(0, (unsigned int*)&biu_freq);
+	freq = biu_freq;
 #endif
     }
 
@@ -258,7 +261,7 @@ static ssize_t __proc_set_param(struct file *f, const char *buf, unsigned long c
 
     memset(input, '\0', sizeof(input));
 
-    if ((cnt > 32) || (copy_from_user(input, buf, cnt) != 0))
+    if ((cnt > sizeof(input)) || (copy_from_user(input, buf, cnt) != 0))
         return -EFAULT;
 
     for (i = 0; i < r; i ++)
@@ -272,9 +275,11 @@ static ssize_t __proc_set_param(struct file *f, const char *buf, unsigned long c
                     input[i]='\0'; 
                 }
             }
-            memmove(&input[i], &input[i + 1], r - i - 1);
-            r --;
-            i --;
+            if (i + 1 < sizeof(input)) { 
+                memmove(&input[i], &input[i + 1], r - i - 1);
+                r --;
+                i --;
+            }
         }
     }
 
@@ -298,7 +303,7 @@ ssize_t __proc_get_param_string(char *page, int cnt, void *data)
         r=envram_get_locked((char*)data, value, cnt);
         if ((r > 0) && !value[r-1])
             r--;
-        if(copy_to_user(page, value, r > cnt ? cnt:r))
+        if(r < 0 || copy_to_user(page, value, r > cnt ? cnt:r))
         {
             r=-EFAULT;
         }
@@ -310,7 +315,7 @@ static ssize_t __proc_set_led(struct file *f, const char *buf, unsigned long cnt
 {
     // char leddata[16];
     unsigned int leddata;
-    char input[32];
+    char input[32] = {0};
     int i;
 
     if (cnt > 31)
@@ -327,7 +332,6 @@ static ssize_t __proc_set_led(struct file *f, const char *buf, unsigned long cnt
             input[i] = 0;
         }
     }
-    input[i] = 0;
 
     if (0 != kstrtouint(input, 16, &leddata)) 
         return -EFAULT;

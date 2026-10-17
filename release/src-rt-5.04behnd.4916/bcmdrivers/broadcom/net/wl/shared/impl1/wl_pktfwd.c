@@ -82,7 +82,7 @@
  *   5. Cleanup all PKTC entry points, retaining a single wl_pktfwd_request.
  *      May retain the wl_pktfwd_match() which is invoked on WLAN receive path
  *      on a per packet basis for Receive is chainable.
- *        - wl_pktc_del_hook() registered with Blog SHIM
+ *        - wl_pktfwd_del_hook() registered with Blog SHIM
  *        - fdb_check_expired_wl_hook registered with Linux Bridge
  *
  * =============================================================================
@@ -99,6 +99,7 @@
 #include <net/switchdev.h>
 #include <d11_cfg.h>
 #include <bcm_pktfwd.h>
+#include <bcm_pktfwd_spc.h>
 #include <wl_dbg.h>
 #include <wlc_pub.h>
 #include <wlc_dump.h>
@@ -109,13 +110,16 @@
 #include <wlc.h>
 #include <wlc_cfp.h>
 #include <wlc_scb.h>
-#include <wl_pktc.h>		/* wl_pktc redirected to wl_pktfwd */
+#include <wl_pktfwd.h>
 #if defined(BCM_BLOG)
 #include <wl_blog.h>
 #endif /* BCM_BLOG */
 #include <net/rtnetlink.h>
+#if defined(BCM_WFD)
+#include <wl_wfd.h>
+#endif
 
-#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING) && defined(WL_PKTFWD_INTRABSS)
+#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING)
 #include <wlc_rx.h>
 #include <wlc_wmf.h>
 #endif
@@ -127,6 +131,9 @@
 #endif /* WLCFP */
 #if (PKTFWD_ENDPOINTS_MAX < SCB_USER_FLOWID_TOTAL)
 #error "Maximum PKTFWD ENDPOINTS and SCB Flows mismatch"
+#endif
+#if defined(BCM_SANITIZE)
+#include <bcm_asan.h>
 #endif
 
 /* Toggle pktfwd acceleration in dwds via nvram vars */
@@ -555,7 +562,7 @@ static void /* Without osh accounting */ wl_pktwd_pktlist_free(pktlist_context_t
 
 	while (pktlist_free->len--) {
 		pkt = pktlist_free->head;
-		pktlist_free->head = PKTLIST_PKT_SLL(pkt, SKBUFF_PTR);
+		pktlist_free->head = PKTLIST_PKT_SLL(pkt, WL_NBUFF_PTR);
 
 		/* No osh accounting, as not yet in WLAN */
 		PKTLIST_PKT_FREE(pkt);
@@ -652,7 +659,7 @@ wl_pktlist_xfer_pktlist(pktlist_context_t * wl_pktlist_context,
 	} /* for each work list elem */
 #endif /* BCM_PKTFWD_FLCTL */
 
-	__pktlist_xfer_pktlist(work_list, pktlist_free, SKBUFF_PTR);
+	__pktlist_xfer_pktlist(work_list, pktlist_free, WL_NBUFF_PTR);
 	dll_join(work_list, &wl_pktlist_context->free);
 
 } /* wl_pktlist_xfer_pktlist() */
@@ -784,6 +791,68 @@ wl_pktfwd_update_link_credits(wl_info_t * wl, uint16_t scb_flowid, uint8_t * d3a
 
 } /* wl_pktfwd_update_link_credits() */
 
+#if defined(BCM_PKTFWD_SPC)
+/**
+ * -----------------------------------------------------------------------------
+ * Function : Update credits for a pktlist identified by prio & dest
+ * -----------------------------------------------------------------------------
+ */
+
+void
+wl_pktfwd_update_link_agg_params(wl_info_t * wl, uint16_t scb_flowid, uint8_t * d3addr,
+	uint32_t prio, uint16_t max_sframes, uint16_t max_aggbytes)
+{
+	uint32_t dest;
+	d3lut_elem_t *d3lut_elem;
+	pktlist_context_t *pktlist_context;
+
+	if (!WL_PKTFWD_SUPPORTED(wl->unit)) {
+		/* PKTFWD is not supported for this radio */
+		return;
+	}
+
+	pktlist_context = WL_PKTLIST_CONTEXT(wl->unit);
+
+	PKTFWD_ASSERT(scb_flowid != ID16_INVALID);
+	d3lut_elem = __wl_flowid_2_d3lut_elem(wl->unit, scb_flowid);
+
+	if ((d3lut_elem == D3LUT_ELEM_NULL) || !(d3lut_elem->ext.inuse))
+		return;		/* Station is not registered with PKTFWD */
+
+	PKTFWD_ASSERT(d3lut_elem->ext.wlan);
+
+	dest = D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index);
+
+	/* set max_sframes to zero, indicating 'disabled' for these conditions */
+	if (!CFP_ENAB(wl->pub) ||
+#if !defined(BCM_WKB)
+		/* XXX: BCM_WKB_TEST: Expand support of CFP_SPC_TX_LAN with WKBs */
+		!CFP_SPC_TX_LAN(wl->wlc->cfp) ||
+#endif /* ! BCM_WKB */
+		FALSE) {
+		max_sframes = 0;
+	}
+
+#if defined(BCM_WKB)
+	WKB_PTRACE("dest %x prio %d max_sframes %d max_aggbytes %d\n",
+		dest, prio, max_sframes, max_aggbytes);
+	WKB_PTRACE("\tpktlist: max_sframes %d max_aggbytes %d\n",
+		__pktlist_fctable_get_max_sframes(pktlist_context, prio, dest),
+		__pktlist_fctable_get_max_aggbytes(pktlist_context, prio, dest));
+#endif /* BCM_WKB */
+
+	/* atomic_set is more expensive than atomic_get so only update if changed */
+	if (__pktlist_fctable_get_max_sframes(pktlist_context, prio, dest) != max_sframes) {
+		__pktlist_fctable_set_max_sframes(pktlist_context, prio, dest, max_sframes);
+	}
+
+	if (__pktlist_fctable_get_max_aggbytes(pktlist_context, prio, dest) != max_aggbytes) {
+		__pktlist_fctable_set_max_aggbytes(pktlist_context, prio, dest, max_aggbytes);
+	}
+} /* wl_pktfwd_update_link_agg_params() */
+
+#endif /* BCM_PKTFWD_SPC */
+
 #endif /* BCM_PKTFWD_FLCTL */
 
 /**
@@ -903,7 +972,7 @@ wl_pktfwd_cache(uint8_t * d3addr, struct net_device *net_device)
 
 	/* 2b wfdidx | 16 chainidx (3b domain, 1b incarn, 12b index) */
 	wfd_chain_idx =
-		(unsigned long)PKTC_WFD_CHAIN_IDX(d3lut_elem->key.domain, d3lut_elem->key.v16);
+		(unsigned long)PKTFWD_WFD_CHAIN_IDX(d3lut_elem->key.domain, d3lut_elem->key.v16);
 
 	D3LUT_UNLK(wl_pktfwd->d3lut);	// ------------------------------------------
 
@@ -922,7 +991,7 @@ wl_pktfwd_cache_failure:
  *
  * Function : Lookup the PKTFWD LUT for a matching 802.3 d3addr and device
  *
- * Operation: Invoked in WLAN Rx Path (is chainable) via PKTC_TBL_FN_CMP().
+ * Operation: Invoked in WLAN Rx Path (is chainable)
  *
  * Invoked on a per packet basis for those packets that are not candidates
  * for CFP bypass.
@@ -1019,9 +1088,8 @@ uint16_t wl_pktfwd_get_cfp_flowid(wl_info_t * wl, uint8_t * d3addr)
  * -----------------------------------------------------------------------------
  *
  * Function : Requests from bridge, wlan subsystems. See enum wl_pktfwd_req_t.
- *            Retaining the wl_pktc_req() signature along with PKTC and PKTC_TBL
  *
- * Operation: Invoked by Linux bridge and WLAN driver via wl_pktc_req_hook().
+ * Operation: Invoked by Linux bridge and WLAN driver via wl_pktfwd_req_hook().
  *
  * -----------------------------------------------------------------------------
  */
@@ -1231,6 +1299,10 @@ wl_pktfwd_lut_ins(uint8_t * d3addr, struct net_device *net_device, bool is_wlan)
 #if defined(BCM_PKTFWD_FLCTL)
 	uint32_t prio;
 	int32_t credits[PKTLIST_PRIO_MAX];	// Not Initialized.
+#if defined(BCM_PKTFWD_SPC)
+	int32_t max_sframes[PKTLIST_PRIO_MAX];	// Not Initialized.
+	int32_t max_aggbytes[PKTLIST_PRIO_MAX];	// Not Initialized.
+#endif /* BCM_PKTFWD_SPC */
 #endif /* BCM_PKTFWD_FLCTL */
 	d3lut_policy_t d3lut_policy;
 	d3lut_elem_t *d3lut_elem;
@@ -1372,6 +1444,10 @@ wl_pktfwd_lut_ins(uint8_t * d3addr, struct net_device *net_device, bool is_wlan)
 		if_handle = (void *)d3fwd_wlif;	/* wlif extension */
 		ssid = wlif->subunit;	/* WLAN interface index */
 
+		if ((current != wl->kthread) &&
+			(current != wl->scheduler_thread)) {
+			goto wl_pktfwd_lut_ins_failure;
+		}
 		/*
 		 * Fetch link status and SCB assigned flowid.
 		 *
@@ -1470,6 +1546,21 @@ wl_pktfwd_lut_ins(uint8_t * d3addr, struct net_device *net_device, bool is_wlan)
 				__pktlist_fctable_set_credits(WL_PKTLIST_CONTEXT(wl->unit), prio,
 					D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index),	/* dest */
 					credits[prio]);
+#if defined(BCM_PKTFWD_SPC)
+				wlc_scb_get_link_max_sframes(wl->wlc, wlif->wlcif, d3addr,
+						scb_flowid, (uint8_t) prio, &max_sframes[prio]);
+				__pktlist_fctable_set_max_sframes(WL_PKTLIST_CONTEXT(wl->unit),
+					prio,
+					D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index),	/* dest */
+					max_sframes[prio]);
+
+				wlc_scb_get_link_max_aggbytes(wl->wlc, wlif->wlcif, d3addr,
+						scb_flowid, (uint8_t) prio, &max_aggbytes[prio]);
+				__pktlist_fctable_set_max_aggbytes(WL_PKTLIST_CONTEXT(wl->unit),
+					prio,
+					D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index),	/* dest */
+					max_aggbytes[prio]);
+#endif /* BCM_PKTFWD_SPC */
 			}
 #endif /* BCM_PKTFWD_FLCTL */
 
@@ -1506,6 +1597,9 @@ wl_pktfwd_lut_ins(uint8_t * d3addr, struct net_device *net_device, bool is_wlan)
 		d3lut_elem->ext.net_device = (struct net_device *)if_handle;
 		d3lut_elem->ext.ssid = ssid;
 	}
+	if (d3lut_elem_ext_cb_op != NULL) {
+		d3lut_elem_ext_cb_op(d3lut_elem, D3LUT_ELEM_EXT_CB_SET);
+	}
 
 	return (void *)d3lut_elem;
 
@@ -1518,7 +1612,7 @@ wl_pktfwd_lut_ins_failure:
 /**
  * -----------------------------------------------------------------------------
  * Function : Delete an endpoint from the PKTFWD LUT
- * HOOK_FN  : Invoked by Blog SHIM via wl_pktc_del_hook
+ * HOOK_FN  : Invoked by Blog SHIM via wl_pktfwd_del_hook
  * -----------------------------------------------------------------------------
  */
 static void /* must be called with d3lut lock and non-null d3lut_elem */
@@ -1585,6 +1679,14 @@ _wl_pktfwd_lut_del(uint8_t * d3addr, d3lut_elem_t * d3lut_elem,
 				/* Reset credits for the station */
 				__pktlist_fctable_set_credits(WL_PKTLIST_CONTEXT(d3domain), prio,
 					D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index), 0);
+#if defined(BCM_PKTFWD_SPC)
+				__pktlist_fctable_set_max_sframes(WL_PKTLIST_CONTEXT(d3domain),
+					prio,
+					D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index),	0);
+				__pktlist_fctable_set_max_aggbytes(WL_PKTLIST_CONTEXT(d3domain),
+					prio,
+					D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index),	0);
+#endif /* BCM_PKTFWD_SPC */
 			}
 		}
 #endif /* BCM_PKTFWD_FLCTL */
@@ -1799,7 +1901,7 @@ int wl_pktfwd_lut_hit(uint8_t * d3addr, struct net_device *net_device)
  * stack.
  *
  * See wl_linux.c:: wl_netdev_ops::ndo_uninit = wl_uninit
- *    wl_pktfwd_request(PKTC_TBL_FLUSH = wl_pktfwd_req_flush_full_e)
+ *    wl_pktfwd_request(wl_pktfwd_req_flush_full_e)
  * -----------------------------------------------------------------------------
  */
 
@@ -1852,7 +1954,7 @@ void wl_pktfwd_lut_clr(struct net_device *net_device)
  * Operation: wl_alloc_if, wl_alloc_linux_if allocates a 1:1 <wlif,net_device>
  *            net_device is linked to a wlif by an extension to the net_device
  *            using priv_link_t. wlif->dev is setup.
- *            A call is then made (via wl_pktc_init) to wl_pktfwd_wlif_ins() to
+ *            A call is then made to wl_pktfwd_wlif_ins() to
  *            further extend the pair <wlif,net_device> with a d3fwd_wlif_t.
  *            In the case of the primary interface (wl_attach), the interface
  *            may be registered with the pktfwd layer before the radio (wl_info)
@@ -2244,6 +2346,10 @@ void *wl_pktfwd_radio_ins(wl_info_t * wl)
 		for (dest = 0U; dest < PKTLIST_DEST_MAX; ++dest) {
 			/* Reset credits of a pktlist */
 			__pktlist_fctable_set_credits(pktlist_context, prio, dest, 0);
+#if defined(BCM_PKTFWD_SPC)
+			__pktlist_fctable_set_max_sframes(pktlist_context, prio, dest, 0);
+			__pktlist_fctable_set_max_aggbytes(pktlist_context, prio, dest, 0);
+#endif /* BCM_PKTFWD_SPC */
 		}
 	}
 
@@ -2260,22 +2366,20 @@ void *wl_pktfwd_radio_ins(wl_info_t * wl)
 	memset(pktqueue_table, 0, mem_bytes);
 	for (domain = 0; domain < PKTQUEUE_QUEUES_MAX; domain++) {
 		pktqueue = PKTQUEUE_TBL_QUEUE(pktqueue_table, domain);
-		/* Set packet type to SKB */
-		pktqueue->NBuffPtrType = SKBUFF_PTR;	/* never reset */
+		/* Set packet type to SKB|WKB */
+		pktqueue->NBuffPtrType = WL_NBUFF_PTR;	/* never reset */
 		PKTQUEUE_RESET(pktqueue);	/* head,tail, not reset */
 	}
 
 	WL_PKTQUEUE_TABLE(unit) = pktqueue_table;
 
 #if defined(BCMDBG) || defined(BCMDBG_DUMP)
-	/* Register dump hook with WLAN "pktc" module for iovar queries */
-	wlc_dump_add_fns(WLC_DUMP_INST(wl), "pktc", wl_pktfwd_radio_dbg, wl_pktfwd_sys_clr, wl);
+	/* Register dump hook with WLAN "pktfwd" module for iovar queries */
+	wlc_dump_add_fns(WLC_DUMP_INST(wl), "pktfwd", wl_pktfwd_radio_dbg, wl_pktfwd_sys_clr, wl);
 #endif
 
 	// osl_set_wlunit(wl->osh, unit); DSLCPE
-#if defined(PKTC_TBL)
 	wl->txq_txchain_dispatched = false;	/* global flag for wl thread dispatch */
-#endif
 #if defined(BCM_BLOG)
 	wl->pub->fcache = 1;	/* enable fcache by default */
 #endif
@@ -2288,7 +2392,7 @@ void *wl_pktfwd_radio_ins(wl_info_t * wl)
 	}
 
 	/**
-	 * wl_wfd_bind() is not yet invoked, when wl_pktc_attach is invoked.
+	 * wl_wfd_bind() is not yet invoked, when wl_pktfwd_radio_ins is invoked.
 	 * so pointless trying to setup wl_pktfwd_g::wfd_idx[], leave as -1.
 	 */
 	PKTFWD_LOCK();		// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2670,7 +2774,7 @@ static int pktfwd_netdev_notifier_call(struct notifier_block *nb,
                                          unsigned long state, void *ptr)
 {
 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
-	wl_if_t * wlif = is_netdev_wlan(dev) ? WL_DEV_IF(dev) : NULL;
+	wl_if_t * wlif = is_netdev_wlan_nic(dev) ? WL_DEV_IF(dev) : NULL;
 	d3fwd_wlif_t *d3fwd_wlif = wlif ? __wlif_2_d3fwd_wlif(wlif) : D3FWD_WLIF_NULL;
 
 	switch (state) {
@@ -2809,13 +2913,11 @@ int wl_pktfwd_sys_init(void)
 	 * Section: Initialize the global network stack interfaces (hooks)
 	 * ---------------------------------------------------------------
 	 */
-#if defined(PKTC) || defined(PKTC_TBL)
+#if defined(BCM_PKTFWD)
 	/* register with bridge and wlc */
-	wl_pktc_req_hook = wl_pktfwd_request;
-#endif /* if defined(PKTC) || defined(PKTC_TBL) */
-#if defined(BCM_BLOG) || defined(PKTC_TBL)
+	wl_pktfwd_req_hook = wl_pktfwd_request;
 	/* register hook with Blog Shim */
-	wl_pktc_del_hook = (wl_pktfwd_del_hook_t) wl_pktfwd_lut_del;
+	wl_pktfwd_del_hook = (wl_pktfwd_del_hook_t) wl_pktfwd_lut_del;
 #endif
 	/* register bridge refresh */
 	fdb_check_expired_wl_hook = (wl_pktfwd_hit_hook_t) wl_pktfwd_lut_hit;
@@ -2877,12 +2979,10 @@ void wl_pktfwd_sys_fini(void)
 
 	PKTFWD_FUNC();
 
-#if defined(BCM_BLOG) || defined(PKTC_TBL)
-	wl_pktc_del_hook = NULL;
-#endif
-#if defined(PKTC) || defined(PKTC_TBL)
-	wl_pktc_req_hook = NULL;
-#endif /* #if defined(PKTC) || defined(PKTC_TBL) */
+#if defined(BCM_PKTFWD)
+	wl_pktfwd_del_hook = NULL;
+	wl_pktfwd_req_hook = NULL;
+#endif /* #if defined(BCM_PKTFWD) */
 	fdb_check_expired_wl_hook = NULL;
 
 	if (wl_pktfwd->initialized == false) {
@@ -3012,8 +3112,8 @@ wl_pktfwd_xfer_pktlist_test(pktlist_t * pktlist_pkts, d3lut_elem_t * d3lut_elem,
 {
 	pktfwd_key_t head_key, tail_key, elem_key;
 
-	head_key.v16 = PKTLIST_PKT_KEY(pktlist_pkts->head, SKBUFF_PTR);
-	tail_key.v16 = PKTLIST_PKT_KEY(pktlist_pkts->tail, SKBUFF_PTR);
+	head_key.v16 = PKTLIST_PKT_KEY(pktlist_pkts->head, WL_NBUFF_PTR);
+	tail_key.v16 = PKTLIST_PKT_KEY(pktlist_pkts->tail, WL_NBUFF_PTR);
 	elem_key.v16 = d3lut_elem->key.v16;
 
 	// pragma message "TODO: if tail matches, flush stale into pktlist_free"
@@ -3054,7 +3154,7 @@ wl_pktfwd_xfer_pktlist_free(pktlist_context_t * wl_pktlist_context, pktlist_elem
 		pktlist_free->head = pktlist_pkts->head;
 		pktlist_free->tail = pktlist_pkts->tail;
 	} else {
-		PKTLIST_PKT_SET_SLL(pktlist_free->tail, pktlist_pkts->head, SKBUFF_PTR);
+		PKTLIST_PKT_SET_SLL(pktlist_free->tail, pktlist_pkts->head, WL_NBUFF_PTR);
 		pktlist_free->tail = pktlist_pkts->tail;
 	}
 
@@ -3099,14 +3199,14 @@ wl_pktfwd_xfer_pktlist(pktlist_context_t * wl_pktlist_context, pktlist_elem_t * 
 	if (wl_pktfwd_xfer_pktlist_test(pktlist_pkts, d3lut_elem, pktlist_free, true)) {
 		join = false;
 		PKTFWD_WARN("stale pkts detected\n");
-		goto wl_pktc_handoff_pktlist_join_done;	/* allow for partial drop? */
+		goto wl_pktfwd_handoff_pktlist_join_done;	/* allow for partial drop? */
 	}
 
 	d3fwd_wlif = d3lut_elem->ext.d3fwd_wlif;
 	if (d3fwd_wlif == D3FWD_WLIF_NULL) {
 		join = false;
 		PKTFWD_WARN("d3fwd_wlif deleted\n");
-		goto wl_pktc_handoff_pktlist_join_done;
+		goto wl_pktfwd_handoff_pktlist_join_done;
 	}
 
 	PKTFWD_ASSERT(d3fwd_wlif->wlif != (wl_if_t *) NULL);
@@ -3146,7 +3246,7 @@ wl_pktfwd_xfer_pktlist(pktlist_context_t * wl_pktlist_context, pktlist_elem_t * 
 		_wl_schedule_work(d3fwd_wlif->wlif->wl);
 	}
 
-wl_pktc_handoff_pktlist_join_done:
+wl_pktfwd_handoff_pktlist_join_done:
 	PKTFWD_UNLK();		// --------------------------------------------------------
 
 	return join;
@@ -3193,7 +3293,7 @@ void wl_pktfwd_xfer_pkt_free(pktlist_pkt_t *pkt, pktlist_t * pktlist_free)
 {
 	if (pktlist_free->len != 0U) {	/* Do not use <head,tail> */
 		/* Append to tail */
-		PKTLIST_PKT_SET_SLL(pktlist_free->tail, pkt, SKBUFF_PTR);
+		PKTLIST_PKT_SET_SLL(pktlist_free->tail, pkt, WL_NBUFF_PTR);
 		pktlist_free->tail = pkt;
 	} else {
 		/* Add packet to head */
@@ -3221,7 +3321,7 @@ wl_pktfwd_mcast_pktlist_xmit(pktlist_context_t * wl_pktlist_context, pktlist_t *
 	uint16_t ssid_vector, subunit;
 	wl_info_t *wl;
 	pktlist_pkt_t *pkt;
-	struct sk_buff *skb;
+	void	* pkt_clone;
 	d3fwd_wlif_t *d3fwd_wlif;
 	struct net_device *net_device;
 	xmit_fn_t netdev_ops_xmit;
@@ -3233,23 +3333,29 @@ wl_pktfwd_mcast_pktlist_xmit(pktlist_context_t * wl_pktlist_context, pktlist_t *
 
 	while (pktlist_mcast->len) {
 		pkt = pktlist_mcast->head;
-		pktlist_mcast->head = PKTLIST_PKT_SLL(pkt, SKBUFF_PTR);
-		PKTLIST_PKT_SET_SLL(pkt, PKTLIST_PKT_NULL, SKBUFF_PTR);
+		pktlist_mcast->head = PKTLIST_PKT_SLL(pkt, WL_NBUFF_PTR);
+		PKTLIST_PKT_SET_SLL(pkt, PKTLIST_PKT_NULL, WL_NBUFF_PTR);
 		pktlist_mcast->len--;
 
-		ssid_vector = ((struct sk_buff *)pkt)->wl.mcast.ssid_vector;
+		ssid_vector = PNBUFF_2_WL_NBUFF(pkt)->wl.mcast.ssid_vector;
 
 		while (ssid_vector) {
 			subunit = pktfwd_map_ssid_vector_to_ssid(&ssid_vector);
 
 			/* ssid_vector now/here is updated to the next */
 			if (ssid_vector) {	/* Don't make a copy for only/last interface */
+#if defined(BCM_WKB)
+				/* WKB should should not have pNBuff linked */
+				ASSERT(wkb_pkt_ref(PNBUFF_2_WKBUFF(pkt)) == NULL);
+				pkt_clone = wkb_copy(PNBUFF_2_WKBUFF(pkt));
+#else /* ! BCM_WKB */
 				/* skb copy */
-				skb = skb_copy(pkt, GFP_ATOMIC);
+				pkt_clone = (void *)skb_copy(pkt, GFP_ATOMIC);
+#endif /* ! BCM_WKB */
 
-				if (unlikely(skb == (struct sk_buff *)NULL)) {
+				if (unlikely(pkt_clone == NULL)) {
 					PKTFWD_ERROR
-					    ("skb copy failed; dropping packet<%px>",
+					    ("pkt copy failed; dropping packet<%px>",
 					     pkt);
 					wl_pktfwd->stats.pkts_dropped++;
 
@@ -3258,7 +3364,7 @@ wl_pktfwd_mcast_pktlist_xmit(pktlist_context_t * wl_pktlist_context, pktlist_t *
 					break;
 				}
 			} else {
-				skb = (struct sk_buff *)pkt;
+				pkt_clone = pkt;
 			}
 
 			PKTFWD_LOCK();		// ++++++++++++++++++++++++++++++++++++++++++++
@@ -3278,7 +3384,7 @@ wl_pktfwd_mcast_pktlist_xmit(pktlist_context_t * wl_pktlist_context, pktlist_t *
 			if (netdev_ops_xmit == NULL) {
 				if (!ssid_vector) {
 					wl_pktfwd->stats.pkts_dropped++;
-					wl_pktfwd_xfer_pkt_free((pktlist_pkt_t *)skb, pktlist_free);
+					wl_pktfwd_xfer_pkt_free(pkt_clone, pktlist_free);
 
 					/* ssid_vector = 0, try next pktlist */
 					bcm_dev_put(net_device);
@@ -3289,14 +3395,14 @@ wl_pktfwd_mcast_pktlist_xmit(pktlist_context_t * wl_pktlist_context, pktlist_t *
 				continue;
 			}
 
-			PKTFWD_PTRACE("wl%d skb %px", wl->unit, skb);
+			PKTFWD_PTRACE("wl%d pkt %px", wl->unit, pkt_clone);
 			wl_pktfwd->stats.txf_chn_pkts++;
 			wl_pktfwd->stats.txf_mcast_pkts++;
 
-			skb->dev = net_device;
+			PKTSETDEV(pkt_clone, net_device);
 
 			/* Add it to WLAN xmit queue and schedule WLAN thread */
-			netdev_ops_xmit(skb, net_device);	/* wl_start() */
+			netdev_ops_xmit(pkt_clone, net_device); /* wl_start() */
 
 			/* dev is allowed to be free'd now */
 			bcm_dev_put(net_device);
@@ -3404,17 +3510,17 @@ static const union {
  *    3B SNAP OUI
  *    2B EtherType
  */
-static inline void wl_pktfwd_llc_snap_insert(osl_t * osh, struct sk_buff *skb)
+static inline void wl_pktfwd_llc_snap_insert(osl_t * osh, void *pkt)
 {
 	uint8_t *src_eth, *dst_eth;
 	uint16_t ether_type, ether_payload_len;
 
-	src_eth = (uint8_t *) PKTDATA(osh, skb);
+	src_eth = (uint8_t *) PKTDATA(osh, pkt);
 	ether_type = ntohs(((struct ether_header *)src_eth)->ether_type);
 	if (ether_type < ETHER_TYPE_MIN)
 		return;
-	dst_eth = PKTPUSH(osh, skb, DOT11_LLC_SNAP_HDR_LEN);
-	ether_payload_len = PKTLEN(osh, skb) - ETHER_HDR_LEN;
+	dst_eth = PKTPUSH(osh, pkt, DOT11_LLC_SNAP_HDR_LEN);
+	ether_payload_len = PKTLEN(osh, pkt) - ETHER_HDR_LEN;
 
 	/* Copy 12B ethernet header: 32bit aligned source and destination. */
 	((uint32_t *) (dst_eth))[0] = ((const uint32_t *)(src_eth))[0];
@@ -3443,131 +3549,205 @@ static inline void wl_pktfwd_llc_snap_insert(osl_t * osh, struct sk_buff *skb)
 static inline void
 wl_pktfwd_pktlist_cfp(wl_info_t * wl, struct net_device *net_device, wl_pktfwd_pktlist_t * pktlist)
 {
-	struct sk_buff *skb;
+	void * pkt;
 	wlc_pkttag_t pkttag = { 0 };
 	struct wlan_ext wlanext = { 0 };
 
 	PKTFWD_PFUNC();
 
-	skb = pktlist->head;
+	pkt = pktlist->head;
 
-	/* Initialize the on-stack pkttag and wlanext to be copied for all skbs */
+#if defined(BCM_WKB)
+	/* XXX: BCM_WKB_TEST: Defer CFP packet preparation from enqueue to TAF release stage
+	 * to avoid touching Packet twice
+	 */
+#endif /* BCM_WKB */
+
+	/* Initialize the on-stack pkttag and wlanext to be copied for all packets */
 	wlc_cfp_pkttag_ext_prepare(wl->wlc, pktlist->flowid, pktlist->prio,
 		&pkttag, &wlanext);
 
-	while (skb != (struct sk_buff *)NULL) {
+	while (pkt != PKTLIST_PKT_NULL) {
 		if (!WLHDR_SUPPORT(wl)) {
-			bcm_prefetch(PKTDATA(wl->osh, skb));	/* for llc snap insert */
+			bcm_prefetch(PKTDATA(wl->osh, pkt));	/* for llc snap insert */
+		}
+#if defined(BCM_SANITIZE)
+#if defined(BCM_WKB)
+		dasan_register((uptr) pkt, sizeof(wkbuff_t),
+				"wkb", sizeof("wkb"));
+#else /* BCM_WKB */
+		dasan_register((uptr) pkt, sizeof(struct sk_buff),
+				"skb", sizeof("skb"));
+		dasan_register((uptr) skb_shinfo(pkt),
+				sizeof(struct skb_shared_info),
+				"shinfo", sizeof("shinfo"));
+#endif /* BCM_WKB */
+#endif /* BCM_SANITIZE */
+
+		/* Copy pkttag, wlanext into pkt */
+		*WLPKTTAG(pkt) = pkttag;
+
+#if defined(BCM_WKB)
+		WKB_PTRACE("wkb " WKB_ADDR_FMT " len %d frag_cnt %d\n",
+			WKB_ADDR_VAL(pkt), PKTLEN(wl->osh, pkt), PKTFRAGCNT(wl->osh, pkt));
+
+		PKTSETCFP(pkt);
+		PKTSETCFPFLOWID(pkt, pktlist->flowid);
+		if (PKTFRAGCNT(wl->osh, pkt)) {
+			PKTSETSPC(wl->osh, pkt);
+		}
+#else /* ! BCM_WKB */
+		((struct sk_buff *)pkt)->bcm_ext.wlan = wlanext;
+		PKTSETDEV(pkt, net_device);
+#endif /* ! BCM_WKB */
+
+		if (!WLHDR_SUPPORT(wl)) {
+			/* No SW llc snap insertion support yet */
+			PKTFWD_ASSERT(!PKTISSPC(wl->osh, pkt));
+			wl_pktfwd_llc_snap_insert(wl->osh, pkt);
 		}
 
-		/* Copy pkttag, wlanext into skb */
-		*WLPKTTAG(skb) = pkttag;
-		skb->bcm_ext.wlan = wlanext;
-
-		bcm_prefetch(skb);
-		if (!WLHDR_SUPPORT(wl)) {
-			wl_pktfwd_llc_snap_insert(wl->osh, skb);
-		}
-
-		skb->dev = net_device;
-
-		PKTFWD_ASSERT(PKTLIST_PKT_SLL(skb, SKBUFF_PTR) == PKTLINK(skb));
-		skb = PKTLIST_PKT_SLL(skb, SKBUFF_PTR);
+		PKTFWD_ASSERT(PKTLIST_PKT_SLL(pkt, WL_NBUFF_PTR) == PKTLINK(pkt));
+		pkt = PKTLIST_PKT_SLL(pkt, WL_NBUFF_PTR);
 	}
-	/* osh::alloced add */
+
 	PKTACCOUNT(wl->osh, pktlist->len, TRUE);
 
 } /* wl_pktfwd_pktlist_cfp() */
 #endif /* WLCFP */
 
-/** Transpose a pktlist into a pktc chain_node list */
-static inline struct sk_buff *
-wl_pktfwd_pktlist_pktc(wl_info_t * wl, struct net_device *net_device, wl_pktfwd_pktlist_t *pktlist)
+/** With or without SQS, non-CFP single packets go through this route:
+ * wl_pktfwd_pktlist_xmit_single_pkt
+ *    |- wl_pktc_tx
+ *           |- wlc_sendpkt
+ * On this path, wlc_sendpkt might queue the packets in SQS and SQS might
+ * enqueue them in AMPDU if CFP is established by that point. If not, the
+ * packets end up in the slowpath, bypassing the AMPDU queue and the credits
+ * process.
+ *
+ * We take care of two things here:
+ * 1. A true single packet with no frags:
+ *       * The LAN driver has decremented flow credits (-1)
+ *       * We increment it here (+1)
+ *       * wlc_sendpkt decrements it prior to queueing to SQS (-1)
+ *       * If the packet does not go to the AMPDU queue,
+ *       *          SQS adds again (+1)
+ *       * Else
+ *       *           ampdu dequeue returns the credit (+1)
+ * 2. A pkt with frags:
+ *       * The LAN driver has decremented flow credits (-1)
+ *       * We decrement it for p->data here (-1)
+ *       * We just decrement *extra_credit for every frag (0)
+ *       * wlc_sendpkt decrements for data and each fraag (-1 -nr_frags)
+ *       * If the packet(s) do not go to the AMPDU queue,
+ *       *          SQS adds again (+1 +nr_frags)
+ *       * Else
+ *       *           ampdu dequeue returns the credit (+1 +nr_frags)
+ */
+static void wl_pktfwd_pktlist_single_pkt_credits(wl_info_t * wl,
+		pktlist_context_t *pktlist_context,
+		wl_pktfwd_pktlist_t * wl_pktfwd_pktlist,
+		uint8 *extra_credit)
 {
-	struct sk_buff *skb, *skb_sll, *skb_chain;
-
-	PKTFWD_PTRACE("pktlist len %u", pktlist->len);
-	skb_chain = skb = pktlist->head;
-
-	while (skb != (struct sk_buff *)NULL) {
-		skb_sll = PKTLIST_PKT_SLL(skb, SKBUFF_PTR);
-		bcm_prefetch(skb_sll);
-
-		skb->prev = skb->next = NULL;
-		skb_cb_zero(skb);	/* OPTIMIZE (redundant) as pktc takes wl_start path */
-
-		if (WLHDR_SUPPORT(wl)) {
-			WLPKTTAG(skb)->flags |= WLF_NON8023;
-		}
-
-		skb->dev = net_device;
-
-		PKTSETCHAINED(wl->osh, skb);
-		PKTSETCLINK(skb, skb_sll);
-
-		skb = skb_sll;
+	if (*extra_credit) {
+		(*extra_credit)--;
+	} else {
+		__pktlist_fctable_add_credits(pktlist_context, wl_pktfwd_pktlist->prio,
+			WL_SCBID2LUTID(wl_pktfwd_pktlist->flowid), 1);
 	}
+}
 
-	/* osh::alloced add */
-	PKTACCOUNT(wl->osh, pktlist->len, TRUE);
-
-	/* Complete transposition */
-	PKTCSETCNT(skb_chain, pktlist->len);
-
-	return skb_chain; /* return transposed packet chain */
-
-} /* wl_pktfwd_pktlist_pktc() */
-
-#if !defined(PKTC)
 /** CFP and PKTC are disabled, send pkts in pktlist one by one */
 static void
 wl_pktfwd_pktlist_xmit_single_pkt(wl_info_t * wl, struct net_device *net_device,
 	wl_pktfwd_pktlist_t * wl_pktfwd_pktlist)
 {
-	struct sk_buff *skb, *skb_sll;
+	void *pkt, *pkt_sll;
+	uint8_t extra_credit = 0;
 	wl_if_t *wlif = WL_DEV_IF(net_device);
 	pktlist_context_t *pktlist_context = WL_PKTLIST_CONTEXT(wl->unit);
+	BCM_REFERENCE(pktlist_context);
 
 	PKTFWD_PTRACE("pktlist len %u", wl_pktfwd_pktlist->len);
-	skb = wl_pktfwd_pktlist->head;
+	pkt = wl_pktfwd_pktlist->head;
 
-	while (skb != (struct sk_buff *)NULL) {
-		skb_sll = PKTLIST_PKT_SLL(skb, SKBUFF_PTR);
+	while (pkt != PKTLIST_PKT_NULL) {
 
-		skb->prev = skb->next = NULL;
-		skb_cb_zero(skb);
+#if defined(BCM_WKB)
+		if (PKTFRAGCNT(wl->osh, pkt)) {
+			void *next, *p = pkt, *sll = PKTLIST_PKT_SLL(pkt, WL_NBUFF_PTR);
+
+			extra_credit = wlc_cfp_spc_tx_detransform(wl->wlc, p);
+			next = PKTNEXT(wl->osh, pkt);
+
+			while (next) {
+				PKTSETLINK(p, next);
+				p = next;
+				next = PKTNEXT(wl->osh, p);
+			}
+
+			PKTSETLINK(p, sll);
+		}
+#elif defined(BCM_PKTFWD_SPC)
+		if (PKTISSPC(wl->osh, pkt)) {
+			void *next, *p = pkt, *sll = PKTLIST_PKT_SLL(pkt, WL_NBUFF_PTR);
+#if defined(BCM_PKTFWD_SPC_CREDITS)
+			extra_credit = PKTFRAGCNT(wl->osh, pkt);
+#endif /* BCM_PKTFWD_SPC_CREDITS */
+
+			wlc_cfp_spc_tx_detransform(wl->wlc, pkt);
+			next = PKTNEXT(wl->osh, pkt);
+
+			while (next) {
+				PKTSETLINK(p, next);
+				p = next;
+				next = PKTNEXT(wl->osh, p);
+			}
+			PKTSETLINK(p, sll);
+		}
+#endif /* BCM_PKTFWD_SPC */
+
+		pkt_sll = PKTLIST_PKT_SLL(pkt, WL_NBUFF_PTR);
+
+		PKTSETLINK(pkt, NULL);
+		PKTSETNEXT(wl->osh, pkt, NULL);
+
+#if !defined(BCM_WKB)
+		skb_cb_zero(pkt);
+		PKTSETDEV(pkt, net_device);
+#endif /* ! BCM_WKB */
 
 		if (WLHDR_SUPPORT(wl)) {
-			WLPKTTAG(skb)->flags |= WLF_NON8023;
+			WLPKTTAG(pkt)->flags |= WLF_NON8023;
 		}
-
-		skb->dev = net_device;
 
 		/* increment counters for each pkt before it is forwarded to wl driver */
 		D3FWD_STATS_ADD(d3fwd_wlif->stats[wl_pktfwd_pktlist->prio].
 				slow_pkts, 1);
-		/* osh::alloced add */
-		PKTACCOUNT(wl->osh, 1, TRUE);
 		wl_pktfwd_g.stats.txf_fkb_pkts++;
 		PKTCNTR_INC(wl->wlc, PKTCNTR_WLPF_PKTLIST_SINGLE, 1);
 
+		if (!extra_credit) {
+			/*
+			 * wlc_cfp_spc_tx_detransform() already did PKTACCOUNT for the
+			 * exta credit.
+			 */
+			PKTACCOUNT(wl->osh, 1, TRUE);
+		}
+
 #if defined(BCM_PKTFWD_FLCTL)
-		/* In legacy path, packet might be queued to non-ampdu queue (TXMOD).
-		 * Increament credits here and update in wlc_ampdu_agg_pktc()
-		 */
-		__pktlist_fctable_add_credits(pktlist_context, wl_pktfwd_pktlist->prio,
-			WL_SCBID2LUTID(wl_pktfwd_pktlist->flowid), 1);
+		wl_pktfwd_pktlist_single_pkt_credits(wl, pktlist_context, wl_pktfwd_pktlist,
+				&extra_credit);
 #endif /* BCM_PKTFWD_FLCTL */
 
-		bcm_prefetch(skb_sll);
+		bcm_prefetch(pkt_sll);
 
-		wl_pktc_tx(wl, wlif, skb);
+		wl_pktc_tx(wl, wlif, pkt);
 
-		skb = skb_sll;
+		pkt = pkt_sll;
 	}
 
 } /* wl_pktfwd_pktlist_xmit_single_pkt */
-#endif /* !defined(PKTC) */
 
 /*
  * -----------------------------------------------------------------------------
@@ -3587,9 +3767,6 @@ wl_pktfwd_pktlist_xmit_single_pkt(wl_info_t * wl, struct net_device *net_device,
 void
 wl_pktfwd_pktlist_xmit(struct net_device *net_device, wl_pktfwd_pktlist_t * wl_pktfwd_pktlist)
 {
-#ifdef PKTC
-	struct sk_buff *skb_chain;
-#endif
 	pktlist_context_t *pktlist_context;
 	wl_pktfwd_t *wl_pktfwd = &wl_pktfwd_g;
 	wl_info_t *wl;
@@ -3610,8 +3787,10 @@ wl_pktfwd_pktlist_xmit(struct net_device *net_device, wl_pktfwd_pktlist_t * wl_p
 	d3fwd_wlif = __wlif_2_d3fwd_wlif(wlif);
 
 	pktlist_context = WL_PKTLIST_CONTEXT(wl->unit);
+
 #if defined(BCM_WFD) && defined(BCM_WLAN_NIC_RX_RNR_ACCEL)
 	if (unlikely(wfd_path_delay_calc != NULL)) {
+		ASSERT(IS_SKBUFF_PTR(wl_pktfwd_pktlist->head));
 		wfd_path_delay_calc(wl_pktfwd_pktlist->head, wl_pktfwd_pktlist->len, 0);
 	}
 #endif
@@ -3622,7 +3801,6 @@ wl_pktfwd_pktlist_xmit(struct net_device *net_device, wl_pktfwd_pktlist_t * wl_p
 		wlc_cfp_tx_enabled(wl->unit, wl_pktfwd_pktlist->flowid, wl_pktfwd_pktlist->prio);
 
 	if (likely(cfp_tx_enabled)) {
-
 		wl_pktfwd->stats.txf_cfp_pkts += wl_pktfwd_pktlist->len;
 		PKTCNTR_INC(wl->wlc, PKTCNTR_WLPF_PKTLIST_CFP, wl_pktfwd_pktlist->len);
 
@@ -3631,7 +3809,7 @@ wl_pktfwd_pktlist_xmit(struct net_device *net_device, wl_pktfwd_pktlist_t * wl_p
 		D3FWD_STATS_ADD(d3fwd_wlif->stats[wl_pktfwd_pktlist->prio].
 				cfp_fwds, 1);
 
-		/* Transpose to CPF list by preparing packets for CFP w/ llcsnap */
+		/* Transpose to CFP list by preparing packets for CFP w/ llcsnap */
 		wl_pktfwd_pktlist_cfp(wl, net_device, wl_pktfwd_pktlist);
 
 		PKTFWD_PTRACE
@@ -3641,47 +3819,20 @@ wl_pktfwd_pktlist_xmit(struct net_device *net_device, wl_pktfwd_pktlist_t * wl_p
 		     wl_pktfwd_pktlist->len, wl_pktfwd_pktlist->prio);
 
 		PKTFWD_ASSERT(PKTLIST_PKT_SLL
-			      (wl_pktfwd_pktlist->tail, SKBUFF_PTR)
-			      == NULL);
+			      (wl_pktfwd_pktlist->tail, WL_NBUFF_PTR) == NULL);
 
 		wlc_cfp_tx_sendup(wl->unit, wl_pktfwd_pktlist->flowid, wl_pktfwd_pktlist->prio,
 			wl_pktfwd_pktlist->head, wl_pktfwd_pktlist->tail, wl_pktfwd_pktlist->len);
 	} else
 #endif /* WLCFP */
-#if defined(PKTC)
-	{
-		wl_pktfwd->stats.txf_chn_pkts += wl_pktfwd_pktlist->len;
-		PKTCNTR_INC(wl->wlc, PKTCNTR_WLPF_PKTLIST_PKTC, wl_pktfwd_pktlist->len);
-
-		D3FWD_STATS_ADD(d3fwd_wlif->stats[wl_pktfwd_pktlist->prio].chn_pkts,
-				wl_pktfwd_pktlist->len);
-		D3FWD_STATS_ADD(d3fwd_wlif->stats[wl_pktfwd_pktlist->prio].chn_fwds, 1);
-
-		/* Transpose to PKT chain_node form */
-		skb_chain =
-		    wl_pktfwd_pktlist_pktc(wl, net_device, wl_pktfwd_pktlist);
-
-#if defined(BCM_PKTFWD_FLCTL)
-		/* In legacy path, packet might be queued to non-ampdu queue (TXMOD).
-		 * Increament credits here and update in wlc_ampdu_agg_pktc()
-		 */
-		__pktlist_fctable_add_credits(pktlist_context, wl_pktfwd_pktlist->prio,
-			WL_SCBID2LUTID(wl_pktfwd_pktlist->flowid), wl_pktfwd_pktlist->len);
-#endif /* BCM_PKTFWD_FLCTL */
-
-		PKTFWD_ASSERT(skb_chain != (struct sk_buff *)NULL);
-
-		wl_pktc_tx(wl, wlif, skb_chain);
-	}
-#else /* !PKTC */
 	{
 		/* Send the packets one by one through the legacy wltxq interface */
 		wl_pktfwd_pktlist_xmit_single_pkt(wl, net_device, wl_pktfwd_pktlist);
 	}
-#endif /* PKTC */
 
 	/* All packets from pktlist are dispatched, RESET len = 0U */
 	wl_pktfwd_pktlist->len = 0;
+
 #if defined(BCM_WFD) && defined(BCM_WLAN_NIC_RX_RNR_ACCEL)
 	if (unlikely(wfd_path_delay_calc != NULL)) {
 		wfd_path_delay_calc(NULL, 0, 1);
@@ -3759,8 +3910,8 @@ wl_pktfwd_dnstream_next_prio_continue:
 	/* Extract pktlist_elem->pktlist elements to a WLAN pktlist and
 	 * move pktlist_elem to free list.
 	 */
-	wl_pktfwd_pktlist.head = (struct sk_buff *)pktlist_elem->pktlist.head;
-	wl_pktfwd_pktlist.tail = (struct sk_buff *)pktlist_elem->pktlist.tail;
+	wl_pktfwd_pktlist.head = pktlist_elem->pktlist.head;
+	wl_pktfwd_pktlist.tail = pktlist_elem->pktlist.tail;
 	wl_pktfwd_pktlist.len = pktlist_elem->pktlist.len;
 	wl_pktfwd_pktlist.prio = prio;
 	wl_pktfwd_pktlist.flowid = WL_FWDID2LUTID(pktlist_elem->pktlist.dest);
@@ -3865,6 +4016,9 @@ static d3fwd_wlif_t *wl_pktfwd_runq_schedule(wl_info_t * wl)
 /** Iterate over all wlif(s) for a radio and dispatch accumulated pktlists */
 void wl_pktfwd_dnstream(wl_info_t * wl)
 {
+#if defined(WLSQS)
+	bool stride_trigger = FALSE;
+#endif /* WLSQS */
 	if (!WL_PKTFWD_SUPPORTED(wl->unit)) {
 		/* PKTFWD is not supported for this radio */
 		return;
@@ -3880,6 +4034,9 @@ void wl_pktfwd_dnstream(wl_info_t * wl)
 	/* Supply credits to run queue: to be used across all wlif */
 	while ((d3fwd_wlif = wl_pktfwd_runq_schedule(wl)) != D3FWD_WLIF_NULL) {
 		wl_pktfwd_d3fwd_wlif_xmit(wl, d3fwd_wlif);
+#if defined(WLSQS)
+		stride_trigger = TRUE;
+#endif /* WLSQS */
 
 		if (runq->credits <= 0) {
 			wl->txq_txchain_dispatched = true;	/* re-enter wl_thread loop */
@@ -3912,6 +4069,15 @@ void wl_pktfwd_dnstream(wl_info_t * wl)
 #endif /* ! WL_PKTFWD_RUNQ */
 
 	WL_UNLOCK(wl);
+
+#if defined(WLSQS)
+	/* Trigger the SQS to stride through the pktlists after pushing the pktlists
+	 * to the SQS module.
+	 */
+	if (stride_trigger) {
+		wlc_cfp_schedule_trigger(wl->unit);
+	}
+#endif /* WLSQS */
 } /* wl_pktfwd_dnstream() */
 
 #if defined(WL_PKTFWD_TXEVAL)
@@ -3988,8 +4154,8 @@ wl_pktfwd_dispatch_pktlist(wl_info_t * wl, wl_if_t * wlif, uint8_t * d3addr,
 		/* Extract pktlist_elem->pktlist elements to a WLAN pktlist and
 		 * move pktlist_elem to free list.
 		 */
-		wl_pktfwd_pktlist.head = (struct sk_buff *)pktlist->head;
-		wl_pktfwd_pktlist.tail = (struct sk_buff *)pktlist->tail;
+		wl_pktfwd_pktlist.head = pktlist->head;
+		wl_pktfwd_pktlist.tail = pktlist->tail;
 		wl_pktfwd_pktlist.len = pktlist->len;
 		wl_pktfwd_pktlist.prio = prio;
 		wl_pktfwd_pktlist.flowid = WL_FWDID2LUTID(pktlist->dest);
@@ -4047,46 +4213,81 @@ wl_pktfwd_dnqueued(wl_info_t * wl, d3fwd_wlif_t * d3fwd_wlif, uint32_t * ucast_p
 	return;
 }
 
-#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING) && defined(WL_PKTFWD_INTRABSS)
-int wl_pktfwd_rx_mcast_handler(wl_if_t * wlif, void *skb)
+#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING)
+int wl_pktfwd_rx_mcast_handler(wl_if_t * wlif, void *pkt)
 {
 	void *tmp;
 	struct wl_info *wl = wlif->wl;
 	struct wlc_if *wlcif = wlif->wlcif;
 	wlc_bsscfg_t *bsscfg = wlc_bsscfg_find_by_wlcif(wl->wlc, wlcif);
-#ifdef PKT_INTRABSS_FWD
-	skb_cb_zero(skb);
-#endif
+
+#if !defined(BCM_WKB)
+	ASSERT(IS_SKBUFF_PTR(pkt));
+	skb_cb_zero(pkt);
+#endif /* ! BCM_WKB */
 
 	PKTFWD_ASSERT(bsscfg != (wlc_bsscfg_t *) NULL);
 
 	if (WL_IFTYPE_WDS == wlif->if_type || !BSSCFG_AP(bsscfg)) {
 		return BCME_ERROR;
 	}
+
 #ifdef WMF
-	struct ether_header *eh = (struct ether_header *)PKTDATA(NULL, skb);
 	if (bsscfg && BSSCFG_AP(bsscfg) && WMF_ENAB(bsscfg)) {
 		struct scb *scb;
+		struct ether_header *eh = (struct ether_header *)PKTDATA(NULL, pkt);
+
+#if defined(BCM_WKB)
+		/* Packet is re-entering to WLAN driver so adjust pkt accountung */
+		PKTACCOUNT(wl->osh, 1, TRUE);
+#endif /* BCM_WKB */
+
 		if ((scb = wlc_scbfind(wl->wlc, bsscfg, (struct ether_addr *)eh->ether_shost))) {
+
 			switch (wlc_wmf_packets_handle(((struct wlc_info *)(wl->wlc))->wmfi, bsscfg,
-					scb, skb, 1)) {
+					scb, pkt, TRUE)) {
 			case WMF_TAKEN:
 				/* The packet is taken by WMF return */
 				return BCME_OK;
 			case WMF_DROP:
 				/* The packet drop decision by WMF free and return */
-				PKTFREE(wl->osh, skb, FALSE);
+				PKTFREE(wl->osh, pkt, FALSE);
 				return BCME_OK;
 			}
 		}
 	}
 #endif /* WMF */
-	if (bsscfg && !bsscfg->ap_isolate && (tmp = PKTDUP(wl->osh, skb))) {
-		wlc_recvdata_sendpkt(wl->wlc, tmp, wlcif);
+
+	if (bsscfg && !bsscfg->ap_isolate) {
+
+#if defined(BCM_WKB)
+		/* XXX: BCM_WKB_TEST: Caller will convert WKB back to SKB
+		 * TODO: Reorganize the code flow and avoid skb => wkb => skb translations
+		 * Send cloned packet (SKB) to NTKSTK and original packet (WKB) to
+		 * WLAN driver
+		 */
+
+		tmp = nbuff_wkb_get_pkt_ref(wl->osh, pkt);
+		ASSERT(tmp != NULL);
+
+		if ((tmp = PKTDUP(wl->osh, tmp)) != NULL) {
+			tmp = nbuff_xlate_to_wkb(wl->osh, tmp);
+			wlc_recvdata_sendpkt(wl->wlc, tmp, wlcif);
+		}
+
+		nbuff_wkb_data_fixup(wl->osh, pkt);
+
+#else /* ! BCM_WKB */
+
+		if ((tmp = PKTDUP(wl->osh, pkt)) != NULL) {
+			wlc_recvdata_sendpkt(wl->wlc, tmp, wlcif);
+		}
+#endif /* ! BCM_WKB */
 	}
+
 	return BCME_ERROR;
 }
-#endif /* BCM_WLAN_PER_CLIENT_FLOW_LEARNING && WL_PKTFWD_INTRABSS */
+#endif /* BCM_WLAN_PER_CLIENT_FLOW_LEARNING */
 
 /**
  * =============================================================================
@@ -4134,17 +4335,14 @@ wl_pktfwd_pktqueue_add_pkt(wl_info_t * wl, struct net_device *rx_net_device,
 	d3lut_elem_t *d3lut_elem;
 	pktqueue_t *pktqueue;
 	pktqueue_table_t *pktqueue_table;
-	struct sk_buff *skb;
 	wl_pktfwd_t *wl_pktfwd = &wl_pktfwd_g;
 	struct ether_header *eh;
 	wlc_bsscfg_t *bsscfg;
 
 	PKTFWD_PTRACE("wl%d pkt %px", wl->unit, pkt);
 
-	skb = (struct sk_buff *)pkt;
-
-	skb->dev = rx_net_device;
-	eh = (struct ether_header *)PKTDATA(wl->osh, skb);
+	PKTSETDEV(pkt, rx_net_device);
+	eh = (struct ether_header *)PKTDATA(wl->osh, pkt);
 	d3_addr = (uint8_t *) eh->ether_dhost;
 
 	pktqueue_table = WL_PKTQUEUE_TABLE(wl->unit);
@@ -4217,7 +4415,10 @@ wl_pktfwd_pktqueue_add_pkt(wl_info_t * wl, struct net_device *rx_net_device,
 	}
 
 	if (likely(d3lut_elem != D3LUT_ELEM_NULL)) {
+		struct sk_buff *skb;
 		uint8_t prio4bit = 0;
+
+		skb = (struct sk_buff *)pkt;
 		d3domain = d3lut_elem->key.domain;	/* WLAN to WLAN/LAN */
 
 		/* update hit flag */
@@ -4226,7 +4427,7 @@ wl_pktfwd_pktqueue_add_pkt(wl_info_t * wl, struct net_device *rx_net_device,
 		/* Reset wl FlowInf and set pktfwd FlowInf */
 		skb->wl.u32 = 0U;
 
-		pktfwd_key = PKTC_WFD_CHAIN_IDX(d3lut_elem->key.domain, d3lut_elem->key.v16);
+		pktfwd_key = PKTFWD_WFD_CHAIN_IDX(d3lut_elem->key.domain, d3lut_elem->key.v16);
 		ENCODE_WLAN_PRIORITY_MARK(prio4bit, skb->mark);
 
 		/* Tag packet with d3lut pktfwd_key_t  */
@@ -4247,11 +4448,11 @@ pktqueue_add_pkt:
 	pktqueue = PKTQUEUE_TBL_QUEUE(pktqueue_table, d3domain);
 
 	if (likely(pktqueue->len != 0U)) {	/* Do not use <head,tail> PKTQUEUE_RESET */
-		PKTQUEUE_PKT_SET_SLL(pktqueue->tail, skb, SKBUFF_PTR);
-		pktqueue->tail = (pktqueue_pkt_t *) skb;
+		PKTQUEUE_PKT_SET_SLL(pktqueue->tail, pkt, WL_NBUFF_PTR);
+		pktqueue->tail = (pktqueue_pkt_t *) pkt;
 	} else {
-		pktqueue->head = (pktqueue_pkt_t *) skb;
-		pktqueue->tail = (pktqueue_pkt_t *) skb;
+		pktqueue->head = (pktqueue_pkt_t *) pkt;
+		pktqueue->tail = (pktqueue_pkt_t *) pkt;
 	}
 
 	pktqueue->len++;
@@ -4262,7 +4463,7 @@ pktqueue_add_pkt:
 		d3fwd_wlif_t * d3fwd_wlif;
 		wlif = WL_DEV_IF(rx_net_device);
 		d3fwd_wlif = __wlif_2_d3fwd_wlif(wlif);
-		prio = PKTPRIO(skb);
+		prio = PKTPRIO(pkt);
 		D3FWD_STATS_ADD(d3fwd_wlif->stats[prio].rx_tot_pkts, 1);
 		if (d3domain != PKTQUEUE_NTKSTK_QUEUE_IDX)
 			D3FWD_STATS_ADD(d3fwd_wlif->stats[prio].rx_fast_pkts, 1);
@@ -4270,7 +4471,7 @@ pktqueue_add_pkt:
 			D3FWD_STATS_ADD(d3fwd_wlif->stats[prio].rx_slow_pkts, 1);
 	});
 
-	/* CAUTION: PKTQUEUE_PKT_SLL(skb) is NOT terminated by NULL ! */
+	/* CAUTION: PKTQUEUE_PKT_SLL(pkt) is NOT terminated by NULL ! */
 
 	PKTFWD_UNLK();		// ---------------------------------------------------------
 
@@ -4295,7 +4496,6 @@ void wl_pktfwd_flush_pktqueues(wl_info_t * wl)
 	pktqueue_table_t *pktqueue_table;
 	pktqueue_context_t *pktqueue_context;
 	wl_pktfwd_t *wl_pktfwd = &wl_pktfwd_g;
-	struct sk_buff *skb;
 
 	if (!WL_PKTFWD_SUPPORTED(wl->unit)) {
 		/* PKTFWD is not supported for this radio */
@@ -4329,25 +4529,24 @@ wl_pktfwd_flush_pktqueues_continue:
 			pktqueue_context->flush_complete_fn(pktqueue_context->driver);
 			pktqueue_context->queue_stats++;
 		} else {	/* Send each pkt to Network stack */
+			struct sk_buff *skb;
 
 			wl_pktfwd->stats.rx_slow_fwds += pktqueue->len;
 			while (pktqueue->len) {
 				pkt = pktqueue->head;
-				pktqueue->head = PKTQUEUE_PKT_SLL(pkt, SKBUFF_PTR);
-				PKTQUEUE_PKT_SET_SLL(pkt, PKTQUEUE_PKT_NULL, SKBUFF_PTR);
+				pktqueue->head = PKTQUEUE_PKT_SLL(pkt, WL_NBUFF_PTR);
+				PKTQUEUE_PKT_SET_SLL(pkt, PKTQUEUE_PKT_NULL, WL_NBUFF_PTR);
 				pktqueue->len--;
 
-				skb = (struct sk_buff *)pkt;
+				PKTTAINTED(wl->osh, pkt);
 
-#if defined(BCM_NBUFF_PKT) && defined(CC_BPM_SKB_POOL_BUILD)
-				PKTTAINTED(wl->osh, skb);
-#endif /* BCM_NBUFF_PKT && CC_BPM_SKB_POOL_BUILD */
-
-				if (!ETHER_ISMULTI(PKTDATA(wl->osh, skb))) {
+				if (!ETHER_ISMULTI(PKTDATA(wl->osh, pkt))) {
 					if (wl_intrabss_forward
-					    (wl, skb->dev, skb) == true)
+					    (wl, PKTDEV(pkt), pkt) == true)
 						continue;
 				}
+
+				skb = (struct sk_buff *)pkt;
 
 #if defined(WL_PKTQUEUE_RXCHAIN)
 				wl_sendup_ex(wl, skb);
@@ -4394,10 +4593,10 @@ wl_pktfwd_flush_pktqueues_continue:
  * -----------------------------------------------------------------------------
  */
 
-int wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff *skb)
+int wl_pktfwd_upstream(wl_info_t * wl, void *pkt)
 {
 #if defined(WL_PKTQUEUE_RXCHAIN)
-	void *nskb;
+	void *npkt;
 	struct net_device *rx_net_device;
 #else /* ! WL_PKTQUEUE_RXCHAIN */
 	uint8_t *d3_addr;
@@ -4406,7 +4605,7 @@ int wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff *skb)
 #endif /* ! WL_PKTQUEUE_RXCHAIN */
 	wl_pktfwd_t *wl_pktfwd = &wl_pktfwd_g;
 
-	PKTFWD_PTRACE("wl%d skb %px", wl->unit, skb);
+	PKTFWD_PTRACE("wl%d pkt %px", wl->unit, pkt);
 
 	if (!WL_PKTFWD_SUPPORTED(wl->unit)) {
 		/* PKTFWD is not supported for this radio */
@@ -4415,12 +4614,15 @@ int wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff *skb)
 #if defined(BCM_WFD) && defined(BCM_WLAN_NIC_RX_RNR_ACCEL)
 	if (WL_WFD_IDX_VALID(wl->unit) && (inject_to_fastpath)) {
 
-		if (ETHER_ISMULTI(PKTDATA(wl->osh, skb)) ||
-		    (wl_intrabss_forward(wl, skb->dev, skb) == false)) {
+		if (ETHER_ISMULTI(PKTDATA(wl->osh, pkt)) ||
+			(wl_intrabss_forward(wl, PKTDEV(pkt), pkt) == false)) {
 			/* call to registered fastpath callback */
-			send_packet_to_upper_layer(skb);
+			if (send_packet_to_upper_layer(pkt) == BCME_OK)
+				return BCME_OK;
 		}
-		return BCME_OK;
+		else {
+			return BCME_OK;
+		}
 	}
 #endif /* BCM_WFD && CONFIG_BCM_PON */
 
@@ -4431,19 +4633,19 @@ int wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff *skb)
 	}
 #if defined(WL_PKTQUEUE_RXCHAIN)
 
-	rx_net_device = skb->dev;
+	rx_net_device = PKTDEV(pkt);
 	/* Break PKTC chain and bin packets to domain PktQueues */
-	FOREACH_CHAINED_PKT(skb, nskb) {
-		PKTCLRCHAINED(wl->osh, skb);
-		PKTCCLRFLAGS(skb);
-		wl_pktfwd_pktqueue_add_pkt(wl, rx_net_device, skb, ID16_INVALID);
+	FOREACH_CHAINED_PKT(pkt, npkt) {
+		PKTCLRCHAINED(wl->osh, pkt);
+		PKTCCLRFLAGS(pkt);
+		wl_pktfwd_pktqueue_add_pkt(wl, rx_net_device, pkt, ID16_INVALID);
 	}
 
 	return BCME_OK;
 
 #else /* ! WL_PKTQUEUE_RXCHAIN */
 
-	d3_addr = (uint8_t *) PKTDATA(wl->osh, skb);
+	d3_addr = (uint8_t *) PKTDATA(wl->osh, pkt);
 
 	if (ETHER_ISMULTI(d3_addr))	/* Only unicast packets are bridged via LUT */
 		return BCME_UNSUPPORTED;
@@ -4477,7 +4679,7 @@ int wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff *skb)
 			if (!d3lut_elem->ext.wlan || !is_netdev_vlan(d3lut_ndev)) {
 				bool rtnl_lock_taken = rtnl_trylock();
 
-				rx_br_dev = bcm_netdev_master_upper_dev_get_nolock(skb->dev);
+				rx_br_dev = bcm_netdev_master_upper_dev_get_nolock(PKTDEV(pkt));
 				dst_br_dev = bcm_netdev_master_upper_dev_get_nolock(d3lut_ndev);
 
 				if (rtnl_lock_taken) {
@@ -4498,15 +4700,17 @@ int wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff *skb)
 
 	D3LUT_UNLK(wl_pktfwd->d3lut);	// ---------------------------------------------------------
 
-	if (!ETHER_ISMULTI(d3_addr) && (wl_intrabss_forward(wl, skb->dev, skb) == true)) {
+	if (!ETHER_ISMULTI(d3_addr) && (wl_intrabss_forward(wl, PKTDEV(pkt), pkt) == true)) {
 		return BCME_OK;
 	}
 
-	if ((net_device != (struct net_device *)NULL) &&
-	    (skb->dev != net_device)) {
+	if ((net_device != (struct net_device *)NULL) && (PKTDEV(pkt) != net_device)) {
+		struct sk_buff *skb;
 		xmit_fn_t netdev_ops_xmit;
-		netdev_ops_xmit =
-		    (xmit_fn_t) (net_device->netdev_ops->ndo_start_xmit);
+
+		netdev_ops_xmit = (xmit_fn_t) (net_device->netdev_ops->ndo_start_xmit);
+		skb = (struct sk_buff *)pkt;
+
 		netdev_ops_xmit(skb, net_device);
 		wl_pktfwd->stats.rx_fast_fwds++;
 		return BCME_OK;

@@ -1,0 +1,12 @@
+if TARGET_TOTAL_COMPUTE
+
+config SYS_BOARD
+	default "total_compute"
+
+config SYS_VENDOR
+	default "armltd"
+
+config SYS_CONFIG_NAME
+	default "total_compute"
+
+endif

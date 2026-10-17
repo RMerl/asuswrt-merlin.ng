@@ -1,0 +1,92 @@
+if ARCH_VEXPRESS64
+
+config SYS_BOARD
+	default "vexpress64"
+
+config SYS_VENDOR
+	default "armltd"
+
+config SYS_CONFIG_NAME
+	default "vexpress_aemv8"
+
+config VEXPRESS64_BASE_MODEL
+	bool
+	select SEMIHOSTING
+	imply VIRTIO_MMIO
+	select VIRTIO_BLK if VIRTIO_MMIO
+	select VIRTIO_NET if VIRTIO_MMIO
+	select DM_ETH if VIRTIO_NET
+	imply RTC_PL031
+	select DM_RTC if RTC_PL031
+	imply EFI_SET_TIME if DM_RTC
+	select LINUX_KERNEL_IMAGE_HEADER
+	select POSITION_INDEPENDENT
+
+choice
+	prompt "VExpress64 board variant"
+
+config TARGET_VEXPRESS64_BASE_FVP
+	bool "Support Versatile Express ARMv8a FVP BASE model"
+	select VEXPRESS64_BASE_MODEL
+	imply OF_HAS_PRIOR_STAGE
+
+config TARGET_VEXPRESS64_BASER_FVP
+	bool "Support Versatile Express ARMv8r64 FVP BASE model"
+	select VEXPRESS64_BASE_MODEL
+	imply OF_HAS_PRIOR_STAGE
+
+config TARGET_VEXPRESS64_JUNO
+	bool "Support Versatile Express Juno Development Platform"
+	select PCIE_ECAM_GENERIC if PCI
+	select SATA_SIL
+	select SMC911X if DM_ETH
+	select SMC911X_32_BIT if SMC911X
+	select CMD_USB if USB
+	select USB_EHCI_HCD if USB
+	select USB_EHCI_GENERIC if USB
+	select USB_OHCI_HCD if USB
+	select USB_OHCI_GENERIC if USB
+	imply OF_HAS_PRIOR_STAGE
+
+endchoice
+
+config JUNO_DTB_PART
+	string "NOR flash partition holding DTB"
+	default "board.dtb"
+	help
+	  The ARM partition name in the NOR flash memory holding the
+	  device tree blob to configure U-Boot.
+
+config LNX_KRNL_IMG_TEXT_OFFSET_BASE
+	default TEXT_BASE
+
+config TEXT_BASE
+	default 0x88000000 if TARGET_VEXPRESS64_BASE_FVP
+	default 0xe0000000 if TARGET_VEXPRESS64_JUNO
+	default 0x00001000 if TARGET_VEXPRESS64_BASER_FVP
+
+config SYS_MALLOC_LEN
+	default 0x810000 if TARGET_VEXPRESS64_JUNO
+	default 0x840000 if TARGET_VEXPRESS64_BASE_FVP
+
+config SYS_MALLOC_F_LEN
+	default 0x2000
+
+config SYS_LOAD_ADDR
+	default 0x10000000 if TARGET_VEXPRESS64_BASER_FVP
+	default 0x90000000
+
+config ENV_ADDR
+	default 0x0BFC0000 if TARGET_VEXPRESS64_JUNO
+	default 0x0FFC0000 if TARGET_VEXPRESS64_BASE_FVP
+	default 0x8FFC0000 if TARGET_VEXPRESS64_BASER_FVP
+
+config ENV_SIZE
+	default 0x10000 if TARGET_VEXPRESS64_JUNO
+	default 0x40000
+
+config ENV_SECT_SIZE
+	default 0x10000 if TARGET_VEXPRESS64_JUNO
+	default 0x40000
+
+endif

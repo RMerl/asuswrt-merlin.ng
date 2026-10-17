@@ -1,0 +1,73 @@
+if ARCH_ZYNQ
+
+config SPL_FS_FAT
+	default y
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBDISK_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+config SPL_MMC
+	default y if MMC_SDHCI_ZYNQ
+
+config SPL_SERIAL
+	default y
+
+config SPL_SPI_FLASH_SUPPORT
+	default y if ZYNQ_QSPI
+
+config SPL_SPI
+	default y if ZYNQ_QSPI
+
+config ZYNQ_DDRC_INIT
+	bool "Zynq DDRC initialization"
+	default y
+	help
+	  This option used to perform DDR specific initialization
+	  if required. There might be cases like ddr less where we
+	  want to skip ddr init and this option is useful for it.
+
+config SYS_BOARD
+	string "Board name"
+	default "zynq"
+
+config SYS_VENDOR
+	string "Vendor name"
+	default "xilinx"
+
+config SYS_SOC
+	default "zynq"
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "zynq-common"
+	help
+	  This option contains information about board configuration name.
+	  Based on this option include/configs/<CONFIG_SYS_CONFIG_NAME>.h header
+	  will be used for board configuration.
+
+config SYS_MALLOC_F_LEN
+	default 0x800
+
+config SYS_MALLOC_LEN
+	default 0x1400000
+
+config BOOT_INIT_FILE
+	string "boot.bin init register filename"
+	default ""
+	help
+	  Add register writes to boot.bin format (max 256 pairs).
+	  Expect a table of register-value pairs, e.g. "0x12345678 0x4321"
+
+config ZYNQ_SDHCI_MAX_FREQ
+	default 52000000
+
+source "board/xilinx/Kconfig"
+source "board/xilinx/zynq/Kconfig"
+
+endif

@@ -1,0 +1,119 @@
+Design Notes on Exporting U-Boot Functions to Standalone Applications:
+======================================================================
+
+1. The functions are exported by U-Boot via a jump table. The jump
+   table is allocated and initialized in the jumptable_init() routine
+   (common/exports.c). Other routines may also modify the jump table,
+   however. The jump table can be accessed as the 'jt' field of the
+   'global_data' structure. The struct members for the jump table are
+   defined in the <include/exports.h> header. E.g., to substitute the
+   malloc() and free() functions that will be available to standalone
+   applications, one should do the following:
+
+	DECLARE_GLOBAL_DATA_PTR;
+
+	gd->jt->malloc	= my_malloc;
+	gd->jt->free = my_free;
+
+   Note that the pointers to the functions are real function pointers
+   so the compiler can perform type checks on these assignments.
+
+2. The pointer to the jump table is passed to the application in a
+   machine-dependent way. PowerPC, ARM, MIPS, Blackfin and Nios II
+   architectures use a dedicated register to hold the pointer to the
+   'global_data' structure: r2 on PowerPC, r9 on ARM, k0 on MIPS,
+   P3 on Blackfin and gp on Nios II. The x86 architecture does not
+   use such a register; instead, the pointer to the 'global_data'
+   structure is passed as 'argv[-1]' pointer.
+
+   The application can access the 'global_data' structure in the same
+   way as U-Boot does:
+
+	DECLARE_GLOBAL_DATA_PTR;
+
+	printf("U-Boot relocation offset: %x\n", gd->reloc_off);
+
+3. The application should call the app_startup() function before any
+   call to the exported functions. Also, implementor of the
+   application may want to check the version of the ABI provided by
+   U-Boot. To facilitate this, a get_version() function is exported
+   that returns the ABI version of the running U-Boot. I.e., a
+   typical application startup may look like this:
+
+	int my_app (int argc, char *const argv[])
+	{
+		app_startup (argv);
+		if (get_version () != XF_VERSION)
+			return 1;
+	}
+
+4. The default load and start addresses of the applications are as
+   follows:
+
+			Load address	Start address
+	x86		0x00040000	0x00040000
+	PowerPC		0x00040000	0x00040004
+	ARM		0x0c100000	0x0c100000
+	MIPS		0x80200000	0x80200000
+	Blackfin	0x00001000	0x00001000
+	Nios II		0x02000000	0x02000000
+	RISC-V		0x00600000	0x00600000
+
+   For example, the "hello world" application may be loaded and
+   executed on a PowerPC board with the following commands:
+
+   => tftp 0x40000 hello_world.bin
+   => go 0x40004
+
+5. To export some additional function long foobar(int i,char c), the following steps
+   should be undertaken:
+
+   - Append the following line at the end of the include/_exports.h
+     file:
+
+	EXPORT_FUNC(foobar, long, foobar, int, char)
+
+	Parameters to EXPORT_FUNC:
+	 - the first parameter is the function that is exported (default implementation)
+	 - the second parameter is the return value type
+	 - the third  parameter is the name of the member in struct jt_funcs
+	   this is also the name that the standalone application will used.
+	   the rest of the parameters are the function arguments
+
+   - Add the prototype for this function to the include/exports.h
+     file:
+
+	long foobar(int i, char c);
+
+	Initialization with the default implementation is done in jumptable_init()
+
+	You can override the default implementation using:
+
+	gd->jt->foobar = another_foobar;
+
+	The signature of another_foobar must then match the declaration of foobar.
+
+   - Increase the XF_VERSION value by one in the include/exports.h
+     file
+
+   - If you want to export a function which depends on a CONFIG_XXX
+	use 2 lines like this:
+	#ifdef CONFIG_FOOBAR
+		EXPORT_FUNC(foobar, long, foobar, int, char)
+	#else
+		EXPORT_FUNC(dummy, void, foobar, void)
+	#endif
+
+
+6. The code for exporting the U-Boot functions to applications is
+   mostly machine-independent. The only places written in assembly
+   language are stub functions that perform the jump through the jump
+   table. That said, to port this code to a new architecture, the
+   only thing to be provided is the code in the examples/stubs.c
+   file. If this architecture, however, uses some uncommon method of
+   passing the 'global_data' pointer (like x86 does), one should add
+   the respective code to the app_startup() function in that file.
+
+   Note that these functions may only use call-clobbered registers;
+   those registers that are used to pass the function's arguments,
+   the stack contents and the return address should be left intact.

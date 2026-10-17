@@ -98,7 +98,7 @@ static uint32_t enabled_addrs = 0;
 #pragma pack(push,1)
 typedef struct
 {
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
     uint32_t PHY_TEST_EN:1;
     uint32_t RESERVED1:31;
 #endif
@@ -109,7 +109,7 @@ typedef struct
     uint32_t PLL_REFCLK_SEL:2;
     uint32_t RESERVED1:26;
 #endif
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t PHY_TEST_EN:1;
     uint32_t IDDQ_TEST_MODE:1;
     uint32_t RESERVED1:30;
@@ -120,7 +120,7 @@ typedef struct
 #pragma pack(push,1)
 typedef struct
 {
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
     uint32_t IDDQ_BIAS:1;
     uint32_t EXT_PWR_DOWN:4;
     uint32_t FORCE_DLL_EN:1;
@@ -146,7 +146,7 @@ typedef struct
     uint32_t PHY_PHYAD:5;
     uint32_t RESERVED2:15;
 #endif
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t IDDQ_BIAS:1;
     uint32_t EXT_PWR_DOWN:4;
     uint32_t FORCE_DLL_EN:1;
@@ -164,8 +164,7 @@ typedef struct
 #pragma pack(push,1)
 typedef struct
 {
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || \
-    defined(CONFIG_BCM96855) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96888) || \
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM96858) || \
     defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t ENERGY_DET_MASKED:4;
     uint32_t ENERGY_DET_APD:4;
@@ -191,7 +190,28 @@ typedef struct
 #define AFE_TX_CONFIG_2         0x01eb /* AFE_TX_CONFIG_2 */
 #define AFE_TEMPSEN_OTHERS      0x01ec /* AFE_TEMPSEN_OTHERS */
 
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96855) || defined(CONFIG_BCM96856)
+#include "bcm_otp.h"
+#if defined(CONFIG_BCM96855)
+#define OTP_INFO_ROW                143
+#else
+#define OTP_INFO_ROW                95
+#endif
+#define OTP_INFO_SHIFT              10
+#define OTP_INFO_MASK               (0x1f << OTP_INFO_SHIFT)
+
+static int is_smic(void)
+{
+    unsigned int val;
+
+    if (bcm_otp_get_row(OTP_INFO_ROW, &val))
+        return 0;
+
+    return ((val & OTP_INFO_MASK) >> OTP_INFO_SHIFT) == 4;
+}
+#endif
+
+#if defined(CONFIG_BCM96856)
 static int _phy_afe(phy_dev_t *phy_dev)
 {
     int ret;
@@ -207,6 +227,14 @@ static int _phy_afe(phy_dev_t *phy_dev)
     /* 1g AB symmetry Iq */
     if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | AFE_TX_CONFIG_1, 0x0bcc)))
         goto Exit;
+
+#if defined(CONFIG_BCM96856)
+    if (is_smic())
+    {
+        if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | AFE_TX_CONFIG_2, 0x0048)))
+            goto Exit;
+    }
+#endif
 
     /* LPF BW */
     if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | AFE_TX_IQ_RX_LP, 0x233f)))
@@ -263,7 +291,7 @@ static int _phy_afe(phy_dev_t *phy_dev)
         goto Exit;
 
     /* 10BT no change(net increase +2.2%) and 100BT decrease by -4.8% (net increase -2.6%) */
-    if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | AFE_TX_CONFIG_2, 0x005e))) /* TODO: 0x005f for 17x17 */
+    if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | AFE_TX_CONFIG_2, is_smic() ? 0x0005b : 0x005e)))
         goto Exit;
 
     /* LPF BW */
@@ -349,7 +377,7 @@ Exit:
 }
 #endif
 
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
 static void _phy_run_cal(phy_dev_t *phy_dev, uint16_t *rcalnewcode11_p)
 {
     uint16_t expa9, rcalcode, rcalnewcodelp;
@@ -624,7 +652,7 @@ static int _phy_cfg(uint32_t port_map)
     if (!port_map)
     {
         /* Assert iddq_global_pwr and iddq_bias */
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
         qegphy_ctrl.IDDQ_GLOBAL_PWR = 0xf;
 #else
         qegphy_ctrl.IDDQ_GLOBAL_PWR = 0x1;
@@ -742,7 +770,7 @@ static int _phy_drv_init(phy_drv_t *phy_drv)
     return 0;
 }
 
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96856)
 #include "bcm_bca_leds_dt_bindings.h"
 #include "bcm_bca_leds.h"
 
@@ -923,31 +951,28 @@ static int _phy_leds_init_51XX(phy_dev_t *phy_dev, void *_leds_info, uint8_t is_
 }
 #endif
 
-#if defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96855)
 int xrdp_leds_init(void *leds_info);
 #endif
 #if defined(CONFIG_BCM96858)
 int lport_led_init(void *leds_info);
 #endif
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
 int ephy_leds_init(void *leds_info);
 #endif
 
 static int _phy_leds_init(phy_dev_t *phy_dev, void *leds_info)
 {
-#if defined(CONFIG_BCM96846)
-    return _phy_leds_init_51XX(phy_dev, leds_info, 0);
-#endif
 #if defined(CONFIG_BCM96856)
     return _phy_leds_init_51XX(phy_dev, leds_info, 1);
 #endif
-#if defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96855)
     return xrdp_leds_init(leds_info);
 #endif
 #if defined(CONFIG_BCM96858)
     return lport_led_init(leds_info);
 #endif
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     return ephy_leds_init(leds_info);
 #endif
 }
@@ -970,8 +995,9 @@ phy_drv_t phy_drv_egphy =
     .caps_get = mii_caps_get,
     .caps_set = mii_caps_set,
     .phyid_get = mii_phyid_get,
-    .auto_mdix_set = brcm_egphy_force_auto_mdix_set,
-    .auto_mdix_get = brcm_egphy_force_auto_mdix_get,
+    .mdix_mode_set = brcm_egphy_mdix_mode_set,
+    .mdix_mode_get = brcm_egphy_mdix_mode_get,
+    .mdix_status_get = brcm_egphy_mdix_status_get,
     .wirespeed_set = brcm_egphy_eth_wirespeed_set,
     .wirespeed_get = brcm_egphy_eth_wirespeed_get,
     .init = _phy_init,

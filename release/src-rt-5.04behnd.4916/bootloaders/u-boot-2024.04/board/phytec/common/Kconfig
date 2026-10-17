@@ -1,0 +1,13 @@
+config PHYTEC_SOM_DETECTION
+	bool "Support SoM detection for PHYTEC platforms"
+	select SPL_CRC8 if SPL
+	help
+	   Support of I2C EEPROM based SoM detection.
+
+config PHYTEC_IMX8M_SOM_DETECTION
+	bool "Support SoM detection for i.MX8M PHYTEC platforms"
+	depends on ARCH_IMX8M && PHYTEC_SOM_DETECTION
+	default y
+	help
+	  Support of I2C EEPROM based SoM detection. Supported
+	  for PHYTEC i.MX8MM/i.MX8MP boards

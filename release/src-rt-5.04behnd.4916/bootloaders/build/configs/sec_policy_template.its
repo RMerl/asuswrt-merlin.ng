@@ -12,9 +12,13 @@ security_policy {
 		min_tpl_compatibility = <0x3>;
 	};
 	key-aes {
+		// This is the delegate's aes key that has been encrypted using the key-owners
+		// FLD aes root of encryption key.
 		description = "Encrypted AES key - Mandatory Node";
 		data = <%DELG_AES_KEY_DATA%>;
-		algo = "aes-cbc-128";
+		algo = "%DELG_AES_KEY_ALGO%";
+		// Unencrypted size of delegate's aes key (ek+iv)
+		size = <%DELG_AES_KEY_SIZE%>;
 	};
 	encoded_keys {
 		// The 'keyx' node names are only placeholders and can be 
@@ -34,8 +38,8 @@ security_policy {
 		key1 {
 			description = "Secret key to be passed to secure world";
 			data = [ %ENC_KEY1% ];
-			size = < 0x20 >;
-			algo = "aes-cbc-128";
+			size = <%ENC_KEY1_SIZE%>;
+			algo = "%DELG_AES_KEY_ALGO%";
 			load_addr = <0x0>;
 			key_name = "secret_1";
 			permission = "secure";
@@ -44,11 +48,31 @@ security_policy {
 		key2 {
 			description = "Secret key to be passed to NON secure world";
 			data = [ %ENC_KEY2% ];
-			size = < 0x20 >;
-			algo = "aes-cbc-128";
+			size = <%ENC_KEY2_SIZE%>;
+			algo = "%DELG_AES_KEY_ALGO%";
 			load_addr = <0x0>;
 			key_name = "secret_2";
 			permission = "nonsecure";
+			os_export = "no";
+		};
+		key3 {
+			description = "ATF encryption key to be passed to secure world";
+			data = [ %ENC_KEY_IMG_ENC% ];
+			size = <%ENC_KEY_IMG_ENC_SIZE%>;
+			algo = "%DELG_AES_KEY_ALGO%";
+			load_addr = <0x0>;
+			key_name = "atf_enc";
+			permission = "secure";
+			os_export = "no";
+		};
+		key4 {
+			description = "OPTEE encryption key to be passed to secure world";
+			data = [ %ENC_KEY_IMG_ENC% ];
+			size = <%ENC_KEY_IMG_ENC_SIZE%>;
+			algo = "%DELG_AES_KEY_ALGO%";
+			load_addr = <0x0>;
+			key_name = "optee_enc";
+			permission = "secure";
 			os_export = "no";
 		};
 	};
@@ -102,7 +126,7 @@ security_policy {
 					node_name = "atf";
 					load_addr = <0x0>;
 					start_addr = <0x0>;
-					// Size of binary
+					// Size of UNENCRYPTED binary
 					size = <0x0>;
 					// Output of sha256sum <binary>
 					sha256 = [00 00];

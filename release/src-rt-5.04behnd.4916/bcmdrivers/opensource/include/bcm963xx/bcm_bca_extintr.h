@@ -49,6 +49,7 @@ extern void bcm_bca_extintr_clear(unsigned int irq);
 extern void bcm_bca_extintr_mask(unsigned int irq);
 extern void bcm_bca_extintr_unmask(unsigned int irq);
 extern void* bcm_bca_extintr_get_gpiod(unsigned int irq);
+#endif
 extern int bcm_bca_extintr_get_hwirq(int virq);
 extern int bcm_bca_extintr_get_virq_by_gpio(int gpio);
 extern int periph_intr_sense_read(unsigned int hw_irq);
@@ -57,6 +58,5 @@ extern int periph_intr_mask_read(unsigned int mask_num, unsigned int hw_irq);
 extern int periph_intr_mask_set(unsigned int mask_num, unsigned int hw_irq, bool do_set);
 extern int periph_intr_status_read(unsigned int mask_num, unsigned int hw_irq);
 extern int periph_intr_status_set(unsigned int mask_num, unsigned int hw_irq, bool do_set);
-#endif
 
 #endif

@@ -131,16 +131,22 @@ name [pinmux] [pinconf]
 pinctrl-bcmbca yes no
 
 == Pin configuration node content ==
-At the moment only a single pinconfiguration item 'drive-strength' is supported. 
 Required properties:
-pins                    - List of pin numbers to be assigned with a specific pinconf (drive-strength)
+pins                    - List of pin numbers to be assigned with a specific pinconf such as
+                          drive-strength, pull-up and pulldown configuration
 drive-strength          - The drive strength to set for the list of pins. Can be a
-                          single number to assign all the pins with the same 
+                          single number to assign all the pins with the same
                           drive strength, or can be a list of drive strengths to
                           be assigned respectively to each pin in the list of pins.The valid 
-			  values of drive strength are 2, 4, 6, 8, 10, 12, 14, 16 (mA)
+                          values of drive strength are 2, 4, 6, 8, 10, 12, 14, 16 (mA)
+bias-pull-up            - Enable pull-up for the list of pin(s); A simple boolean flag enable
+                          pull-up for all the pin in the list; A list of value 1/0 enable/disable
+                          pull-up for each respective pin in the list of pins 
+bias-pull-down          - Enable pull-down for the list of pin(s); A simple boolean flag enable
+                          pull-down for all the pin in the list; A list of value 1/0 enable/disable
+                          pull-down for each respective pin in the list of pins
 
-== Example for the BCM66765 chip ==
+== Drive strength example for the BCM6765 chip ==
 [.../devel/kernel/dts/6765/96765SV1_HS200.dtsi file]
 
 	emmc_ctrl_pins_hs200: emmc_ctrl_hs200_pinconf {
@@ -153,3 +159,21 @@ pins = <60 61>;
 drive-strength = <10 6>;
 Set drive strength of pin 60 as 10mA
 Set drive strength of pin 61 as 6mA
+
+== Pull-up and pull-down control example  ==
+	a_eth_mdc_pin_62: a_eth_mdc_pinmux {
+		pins = <62>;
+		function = <1>;
+		bias-pull-up;
+	};
+
+	usb0_pwr_pins: usb0_pwr_pinmux {
+		pins = <66 67>;
+		function = <1>;
+		bias-pull-up = <1 0>;
+		bias-pull-down = <0 1>;
+	};
+
+== Explanation of the DTS example above ==
+First example enable pull-up for pin 62. Second exmaple enable
+pull-up for pin 66 and pull-down for pin 67.

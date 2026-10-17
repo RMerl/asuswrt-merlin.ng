@@ -74,20 +74,11 @@
 #define CMS_MODSW_TMP_DIR   CMS_DATA_STORAGE_DIR"/modsw/tmp"
 
 
-/** Common path to both OSGI DU, BEEP DU and Linux DU.
+/** Common path to both Openplat DU and Linux DU.
  *
  */
 #define MODSW_DU_DIR        "/modsw/tr157du"
 #define CMS_MODSW_DU_DIR    CMS_DATA_STORAGE_DIR"/modsw/tr157du"
-
-
-/** Path to TR157 Deployment Unit Directory for OSGI bundles.
- *  OSGI bundle deployment units are put in this directory based on their
- *  name, e.g. /local/modsw/tr157du/osgibundle/bundle_name...
- * So each DU has its own directory.
- */
-#define CMS_MODSW_OSGIEE_DU_DIR    CMS_DATA_STORAGE_DIR"/modsw/tr157du/osgibundles"
-
 
 
 /** Path to TR157 Primary Firmware Patch dir.  Patches to the primary firmware

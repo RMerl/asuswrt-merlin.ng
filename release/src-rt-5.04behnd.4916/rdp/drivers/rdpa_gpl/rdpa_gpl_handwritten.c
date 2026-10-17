@@ -36,9 +36,6 @@
 #include <rdpa_dhd_helper_basic.h>
 #endif
 
-#if defined(XRDP)
-#define NUM_OF_VIRTUAL_PORTS 40
-#endif
 #include <linux/of_platform.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
@@ -204,7 +201,7 @@ int rdpa_cpu_send_sysb_fpm(bdmf_sysb sysb, const rdpa_cpu_tx_info_t *info)
 }
 EXPORT_SYMBOL(rdpa_cpu_send_sysb_fpm);
 
-#if defined(BCM_DSL_RDP) || defined(BCM_DSL_XRDP)
+#if defined(BCM_DSL_XRDP)
 /** Send system buffer to WAN */
 int (*f_rdpa_cpu_tx_port_enet_or_dsl_wan)(bdmf_sysb sysb, uint32_t egress_queue, rdpa_flow wanFlow,
                                           bdmf_object_handle port_obj, rdpa_cpu_tx_extra_info_t extra_info);
@@ -215,71 +212,6 @@ int rdpa_cpu_tx_port_enet_or_dsl_wan(bdmf_sysb sysb, uint32_t egress_queue, rdpa
     return f_rdpa_cpu_tx_port_enet_or_dsl_wan(sysb, egress_queue, wanFlow, port_obj, extra_info);
 }
 EXPORT_SYMBOL(rdpa_cpu_tx_port_enet_or_dsl_wan);
-#endif
-
-#if defined(BCM_DSL_RDP)
-/** Send system buffer to LAN */
-int (*f_rdpa_cpu_tx_port_enet_lan)(bdmf_sysb sysb, uint32_t egress_queue, bdmf_object_handle port_obj, rdpa_cpu_tx_extra_info_t extra_info);
-EXPORT_SYMBOL(f_rdpa_cpu_tx_port_enet_lan);
-int rdpa_cpu_tx_port_enet_lan(bdmf_sysb sysb, uint32_t egress_queue, bdmf_object_handle port_obj, rdpa_cpu_tx_extra_info_t extra_info)
-{
-    return f_rdpa_cpu_tx_port_enet_lan(sysb, egress_queue, port_obj, extra_info);
-}
-EXPORT_SYMBOL(rdpa_cpu_tx_port_enet_lan);
-
-/** Send system buffer to Flow Cache offload */
-int (*f_rdpa_cpu_tx_flow_cache_offload)(bdmf_sysb sysb, uint32_t cpu_rx_queue, int dirty);
-EXPORT_SYMBOL(f_rdpa_cpu_tx_flow_cache_offload);
-int rdpa_cpu_tx_flow_cache_offload(bdmf_sysb sysb, uint32_t cpu_rx_queue, int dirty)
-{
-    return f_rdpa_cpu_tx_flow_cache_offload(sysb, cpu_rx_queue, dirty);
-}
-EXPORT_SYMBOL(rdpa_cpu_tx_flow_cache_offload);
-
-/** Send system buffer to IPsec offload */
-int (*f_rdpa_cpu_tx_ipsec_offload)(bdmf_sysb sysb,
-                                   rdpa_traffic_dir dir,
-                                   uint8_t esphdr_offset,
-                                   uint8_t sa_index,
-                                   uint8_t sa_update,
-                                   uint8_t cpu_qid);
-EXPORT_SYMBOL(f_rdpa_cpu_tx_ipsec_offload);
-
-int rdpa_cpu_tx_ipsec_offload(bdmf_sysb sysb, rdpa_traffic_dir dir, uint8_t esphdr_offset,
-                              uint8_t sa_index, uint8_t sa_update, uint8_t cpu_qid)
-{
-  return f_rdpa_cpu_tx_ipsec_offload(sysb, dir, esphdr_offset, sa_index, sa_update, cpu_qid);
-}
-EXPORT_SYMBOL(rdpa_cpu_tx_ipsec_offload);
-
-/** Frees the given free index and returns a pointer to the associated System Buffer */
-bdmf_sysb (*f_rdpa_cpu_return_free_index)(uint16_t free_index);
-EXPORT_SYMBOL(f_rdpa_cpu_return_free_index);
-bdmf_sysb rdpa_cpu_return_free_index(uint16_t free_index)
-{
-    return f_rdpa_cpu_return_free_index(free_index);
-}
-EXPORT_SYMBOL(rdpa_cpu_return_free_index);
-
-void (*f_rdpa_cpu_tx_reclaim)(void) = NULL;
-EXPORT_SYMBOL(f_rdpa_cpu_tx_reclaim);
-void rdpa_cpu_tx_reclaim(void)
-{
-    if (f_rdpa_cpu_tx_reclaim)
-    	f_rdpa_cpu_tx_reclaim();
-}
-EXPORT_SYMBOL(rdpa_cpu_tx_reclaim);
-
-/** return port handle for a vport **/
-uint32_t (*f_rdpa_cpu_get_port_handle)(uint16_t vport, void *data);
-EXPORT_SYMBOL(f_rdpa_cpu_get_port_handle);
-uint32_t rdpa_cpu_get_port_handle(uint16_t vport, void **data)
-{
-    if (f_rdpa_cpu_get_port_handle)
-    	return f_rdpa_cpu_get_port_handle(vport, data);
-    return 0;
-}
-EXPORT_SYMBOL(rdpa_cpu_get_port_handle);
 #endif
 
 void *(*f_rdpa_cpu_data_get)(int rdpa_cpu_type);
@@ -345,6 +277,20 @@ void rdpa_cpu_rx_dump_packet(char *name, rdpa_cpu_port port,
     return;
 }
 EXPORT_SYMBOL(rdpa_cpu_rx_dump_packet);
+
+/** Send system buffer */
+int (*f_rdpa_udpspdtest_tx_start)(const rdpa_cpu_tx_info_t *info, int to_wan, bdmf_sysb sysb);
+EXPORT_SYMBOL(f_rdpa_udpspdtest_tx_start);
+int rdpa_udpspdtest_tx_start(const rdpa_cpu_tx_info_t *info, int to_wan, bdmf_sysb sysb)
+{
+    if (!f_rdpa_udpspdtest_tx_start)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_udpspdtest_tx_start(info, to_wan, sysb);
+}
+EXPORT_SYMBOL(rdpa_udpspdtest_tx_start);
 
 #ifdef CONFIG_DHD_RUNNER
 /* DHD Helper */
@@ -435,6 +381,19 @@ int rdpa_dhd_helper_dhd_complete_message_get(rdpa_dhd_complete_data_t *dhd_compl
     return f_rdpa_dhd_helper_dhd_complete_message_get(dhd_complete_info);
 }
 EXPORT_SYMBOL(rdpa_dhd_helper_dhd_complete_message_get);
+
+int (*f_rdpa_dhd_helper_dhd_pcap_packet_get)(rdpa_dhd_pcap_data_t *dhd_pcap_info);
+EXPORT_SYMBOL(f_rdpa_dhd_helper_dhd_pcap_packet_get);
+int rdpa_dhd_helper_dhd_pcap_packet_get(rdpa_dhd_pcap_data_t *dhd_pcap_info)
+{
+    if (!f_rdpa_dhd_helper_dhd_pcap_packet_get)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_dhd_helper_dhd_pcap_packet_get(dhd_pcap_info);
+}
+EXPORT_SYMBOL(rdpa_dhd_helper_dhd_pcap_packet_get);
 #endif
 
 int (*f_rdpa_tcont_sr_dba_callback)(uint32_t tcont_id, uint32_t *runner_ddr_occupancy);
@@ -469,9 +428,9 @@ void rdpa_llid_l2_l1_map_get(uint8_t l1_queue)
 }
 EXPORT_SYMBOL(rdpa_llid_l2_l1_map_get);
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963158) || \
-    defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || \
-    defined(CONFIG_BCM96813)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963158) || \
+    defined(CONFIG_BCM96855) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM968375)|| \
+    defined(CONFIG_BCM96813) || defined(CONFIG_BCM968850)
 int (*f_rdpa_wan_tx_bbh_flush_status_get)(uint8_t tcont_id, bdmf_boolean *bbh_flush_done_p);
 EXPORT_SYMBOL(f_rdpa_wan_tx_bbh_flush_status_get);
 int rdpa_wan_tx_bbh_flush_status_get(uint8_t tcont_id, bdmf_boolean *bbh_flush_done_p)
@@ -561,6 +520,7 @@ int rdpa_cpu_send_raw_from_fpm(void *data, uint32_t length, const rdpa_cpu_tx_in
     if (!f_rdpa_cpu_send_raw_from_fpm)
     {
         BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
     }
     return f_rdpa_cpu_send_raw_from_fpm(data, length, info);
 }
@@ -579,16 +539,16 @@ void rdpa_spu_set_pd_ring(rdpa_spu_pd_ring_info_t *info)
 }
 EXPORT_SYMBOL(rdpa_spu_set_pd_ring);
 
-void (*f_rdpa_spu_crypto_session_base_set)(uint64_t base_addr);
+void (*f_rdpa_spu_crypto_session_base_set)(uint64_t seq_base_addr, uint64_t prepend_base_addr);
 EXPORT_SYMBOL(f_rdpa_spu_crypto_session_base_set);
-void rdpa_spu_crypto_session_base_set(uint64_t base_addr)
+void rdpa_spu_crypto_session_base_set(uint64_t seq_base_addr, uint64_t prepend_base_addr)
 {
     if (!f_rdpa_spu_crypto_session_base_set)
     {
         BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
         return;
     }
-    f_rdpa_spu_crypto_session_base_set(base_addr);
+    f_rdpa_spu_crypto_session_base_set(seq_base_addr, prepend_base_addr);
 }
 EXPORT_SYMBOL(rdpa_spu_crypto_session_base_set);
 
@@ -644,18 +604,31 @@ int rdpa_spu_set_cpu_irq(struct bdmf_object *mo, int idx)
 }
 EXPORT_SYMBOL(rdpa_spu_set_cpu_irq);
 
-void (*f_rdpa_spu_offload_pkt)(uint32_t *req, uint32_t *cmpl);
+void (*f_rdpa_spu_offload_pkt)(rdpa_spu_offload_stat_t *stat);
 EXPORT_SYMBOL(f_rdpa_spu_offload_pkt);
-void rdpa_spu_offload_pkt(uint32_t *req, uint32_t *cmpl)
+void rdpa_spu_offload_pkt(rdpa_spu_offload_stat_t *stat)
 {
     if (!f_rdpa_spu_offload_pkt)
     {
         BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
         return;
     }
-    f_rdpa_spu_offload_pkt(req, cmpl);
+    f_rdpa_spu_offload_pkt(stat);
 }
 EXPORT_SYMBOL(rdpa_spu_offload_pkt);
+
+void (*f_rdpa_spu_offload_tunnel_mapping)(uint32_t tun_id, int32_t session_id);
+EXPORT_SYMBOL(f_rdpa_spu_offload_tunnel_mapping);
+void rdpa_spu_offload_tunnel_mapping(uint32_t tun_id, int32_t session_id)
+{
+    if (!f_rdpa_spu_offload_tunnel_mapping)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return;
+    }
+    f_rdpa_spu_offload_tunnel_mapping(tun_id, session_id);
+}
+EXPORT_SYMBOL(rdpa_spu_offload_tunnel_mapping);
 #endif
 
 #if defined(CONFIG_RUNNER_GDX_SUPPORT)
@@ -672,6 +645,197 @@ void rdpa_gdx_params_set(rdpa_gdx_params_t *gdx_params)
 }
 EXPORT_SYMBOL(rdpa_gdx_params_set);
 #endif
+
+#if defined(CONFIG_DYNAMIC_LB_LAG_SUPPORT)
+int (*f_rdpa_lag_hash_stat_get)(uint32_t hash_idx, uint64_t *tx_bytes);
+EXPORT_SYMBOL(f_rdpa_lag_hash_stat_get);
+int rdpa_lag_hash_stat_get(uint32_t hash_idx, uint64_t *tx_bytes)
+{
+    if (!f_rdpa_lag_hash_stat_get)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_lag_hash_stat_get(hash_idx, tx_bytes);
+}
+EXPORT_SYMBOL(rdpa_lag_hash_stat_get);
+#endif
+
+#if defined(SCORE_SUPPORT)
+int (*f_rdpa_score_msg_ring_create)(uint32_t ring_size);
+EXPORT_SYMBOL(f_rdpa_score_msg_ring_create);
+int rdpa_score_msg_ring_create(uint32_t ring_size)
+{
+    if (!f_rdpa_score_msg_ring_create)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_msg_ring_create(ring_size);
+}
+EXPORT_SYMBOL(rdpa_score_msg_ring_create);
+
+int (*f_rdpa_score_msg_ring_destroy)(uint32_t ring_size);
+EXPORT_SYMBOL(f_rdpa_score_msg_ring_destroy);
+int rdpa_score_msg_ring_destroy(uint32_t ring_size)
+{
+    if (!f_rdpa_score_msg_ring_destroy)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_msg_ring_destroy(ring_size);
+}
+EXPORT_SYMBOL(rdpa_score_msg_ring_destroy);
+
+int (*f_rdpa_score_msg_ring_info_get)(rdpa_score_data_t *score_msg_info);
+EXPORT_SYMBOL(f_rdpa_score_msg_ring_info_get);
+int rdpa_score_msg_ring_info_get(rdpa_score_data_t *score_msg_info)
+{
+    if (!f_rdpa_score_msg_ring_info_get)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_msg_ring_info_get(score_msg_info);
+}
+EXPORT_SYMBOL(rdpa_score_msg_ring_info_get);
+
+int (*f_rdpa_score_qstat_ring_create)(uint32_t ring_size);
+EXPORT_SYMBOL(f_rdpa_score_qstat_ring_create);
+int rdpa_score_qstat_ring_create(uint32_t ring_size)
+{
+    if (!f_rdpa_score_qstat_ring_create)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_qstat_ring_create(ring_size);
+}
+EXPORT_SYMBOL(rdpa_score_qstat_ring_create);
+
+int (*f_rdpa_score_qstat_ring_destroy)(uint32_t ring_size);
+EXPORT_SYMBOL(f_rdpa_score_qstat_ring_destroy);
+int rdpa_score_qstat_ring_destroy(uint32_t ring_size)
+{
+    if (!f_rdpa_score_qstat_ring_destroy)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_qstat_ring_destroy(ring_size);
+}
+EXPORT_SYMBOL(rdpa_score_qstat_ring_destroy);
+
+int (*f_rdpa_score_qstat_ring_info_get)(rdpa_qstat_data_t *score_qstat_info);
+EXPORT_SYMBOL(f_rdpa_score_qstat_ring_info_get);
+int rdpa_score_qstat_ring_info_get(rdpa_qstat_data_t *score_qstat_info)
+{
+    if (!f_rdpa_score_qstat_ring_info_get)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_qstat_ring_info_get(score_qstat_info);
+}
+EXPORT_SYMBOL(rdpa_score_qstat_ring_info_get);
+
+int (*f_rdpa_score_bnl_ring_create)(uint32_t ring_size);
+EXPORT_SYMBOL(f_rdpa_score_bnl_ring_create);
+int rdpa_score_bnl_ring_create(uint32_t ring_size)
+{
+    if (!f_rdpa_score_bnl_ring_create)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_bnl_ring_create(ring_size);
+}
+EXPORT_SYMBOL(rdpa_score_bnl_ring_create);
+
+int (*f_rdpa_score_bnl_ring_destroy)(uint32_t ring_size);
+EXPORT_SYMBOL(f_rdpa_score_bnl_ring_destroy);
+int rdpa_score_bnl_ring_destroy(uint32_t ring_size)
+{
+    if (!f_rdpa_score_bnl_ring_destroy)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_bnl_ring_destroy(ring_size);
+}
+EXPORT_SYMBOL(rdpa_score_bnl_ring_destroy);
+
+int (*f_rdpa_score_bnl_ring_info_get)(rdpa_bnl_data_t *score_bnl_info);
+EXPORT_SYMBOL(f_rdpa_score_bnl_ring_info_get);
+int rdpa_score_bnl_ring_info_get(rdpa_bnl_data_t *score_bnl_info)
+{
+    if (!f_rdpa_score_bnl_ring_info_get)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_bnl_ring_info_get(score_bnl_info);
+}
+EXPORT_SYMBOL(rdpa_score_bnl_ring_info_get);
+
+int (*f_rdpa_score_ts_1us_get)(uint32_t *ts_1us_p);
+EXPORT_SYMBOL(f_rdpa_score_ts_1us_get);
+int rdpa_score_ts_1us_get(uint32_t *ts_1us_p)
+{
+    if (!f_rdpa_score_ts_1us_get)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_score_ts_1us_get(ts_1us_p);
+}
+EXPORT_SYMBOL(rdpa_score_ts_1us_get);
+#endif
+
+#if defined(CONFIG_RUNNER_FPI)
+int (*f_rdpa_fpi_ipid_cntr_alloc)(uint8_t *ipid_cntr_p);
+EXPORT_SYMBOL(f_rdpa_fpi_ipid_cntr_alloc);
+int rdpa_fpi_ipid_cntr_alloc(uint8_t *ipid_cntr_p)
+{
+    if (!f_rdpa_fpi_ipid_cntr_alloc)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_fpi_ipid_cntr_alloc(ipid_cntr_p);
+}
+EXPORT_SYMBOL(rdpa_fpi_ipid_cntr_alloc);
+
+void (*f_rdpa_fpi_ipid_cntr_free)(uint8_t ipid_cntr);
+EXPORT_SYMBOL(f_rdpa_fpi_ipid_cntr_free);
+void rdpa_fpi_ipid_cntr_free(uint8_t ipid_cntr)
+{
+    if (!f_rdpa_fpi_ipid_cntr_free)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return;
+    }
+    f_rdpa_fpi_ipid_cntr_free(ipid_cntr);
+}
+EXPORT_SYMBOL(rdpa_fpi_ipid_cntr_free);
+#endif
+
+int (*f_rdpa_port_get_hw_queue_info)(bdmf_object_handle port_obj, uint8_t wan_flow, uint16_t queue_id,
+                                   bdmf_object_handle *egress_tm_obj, uint8_t *queue_index, uint16_t *hw_queue_id);
+EXPORT_SYMBOL(f_rdpa_port_get_hw_queue_info);
+int rdpa_port_get_hw_queue_info(bdmf_object_handle port_obj, uint8_t wan_flow, uint16_t queue_id,
+                              bdmf_object_handle *p_egress_tm_obj, uint8_t *queue_index, uint16_t *hw_queue_id)
+{
+    if (!f_rdpa_port_get_hw_queue_info)
+    {
+        BDMF_TRACE_ERR("rdpa.ko is not loaded\n");
+        return BDMF_ERR_STATE;
+    }
+    return f_rdpa_port_get_hw_queue_info(port_obj, wan_flow, queue_id, p_egress_tm_obj, queue_index, hw_queue_id);
+}
+EXPORT_SYMBOL(rdpa_port_get_hw_queue_info);
+
 
 #define MAX_IRQ_NUM  64
 #define NAME_LENGTH  32

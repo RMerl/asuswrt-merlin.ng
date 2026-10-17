@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Levin Du <djw@t-chip.com.cn>
+ */
+
+#include "rk3399-u-boot.dtsi"
+#include "rk3399-sdram-lpddr4-100.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &spi_flash, &sdhci, &sdmmc;
+	};
+
+	vcc_hub_en: vcc_hub_en-regulator {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio2 RK_PA4 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&hub_rst>;
+		regulator-name = "vcc_hub_en";
+		regulator-always-on;
+	};
+};
+
+/*
+ * should be placed inside mp8859, but not until mp8859 has
+ * its own dt-binding.
+ */
+&dc_12v {
+	compatible = "regulator-fixed";
+	regulator-name = "dc_12v";
+	regulator-always-on;
+	regulator-boot-on;
+	regulator-min-microvolt = <12000000>;
+	regulator-max-microvolt = <12000000>;
+	vin-supply = <&vcc_vbus_typec0>;
+};
+
+&spi1 {
+	spi_flash: flash@0 {
+		bootph-all;
+	};
+};
+
+&vdd_log {
+	regulator-min-microvolt = <430000>;
+	regulator-init-microvolt = <950000>;
+};
+
+&vcc5v0_host {
+	regulator-always-on;
+};
+
+&vcc_sys {
+	regulator-always-on;
+};
+
+&vcc_sdio {
+	regulator-always-on;
+};

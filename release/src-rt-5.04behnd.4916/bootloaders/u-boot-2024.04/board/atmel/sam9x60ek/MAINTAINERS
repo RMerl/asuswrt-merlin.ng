@@ -1,0 +1,9 @@
+SAM9X60EK BOARD
+M:	Sandeep Sheriker M <sandeep.sheriker@microchip.com>
+M:	Eugen Hristev <eugen.hristev@microchip.com>
+S:	Maintained
+F:	board/atmel/sam9x60ek/
+F:	include/configs/sam9x60ek.h
+F:	configs/sam9x60ek_mmc_defconfig
+F:	configs/sam9x60ek_nandflash_defconfig
+F:	configs/sam9x60ek_qspiflash_defconfig

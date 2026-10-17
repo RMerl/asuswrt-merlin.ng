@@ -1,16 +1,16 @@
 #include "6766.dtsi"
 
-/ {
-	memory_controller {
-		memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1 | \
-			BP1_DDR_TYPE_LPDDR4               | \
-			BP1_DDR_SPEED_2133_36_39_39       | \
-			BP1_DDR_TOTAL_SIZE_8Gb            | \
-			BP1_DDR_WIDTH_16BIT               | \
-			BP1_DDR_6766_DEFAULT              | \
-			BP1_DDR_CONFIG_DEBUG)>;
-	};
+&memory_controller {
+	memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1 | \
+		BP1_DDR_TYPE_LPDDR4               | \
+		BP1_DDR_SPEED_2133_36_39_39       | \
+		BP1_DDR_TOTAL_SIZE_8Gb            | \
+		BP1_DDR_WIDTH_16BIT               | \
+		BP1_DDR_6766_DEFAULT              | \
+		BP1_DDR_CONFIG_DEBUG)>;
+};
 
+/ {
 	buttons {
 		compatible = "brcm,buttons";
 
@@ -175,7 +175,7 @@
 
 &nand {
 	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_59>;
-	write-protect = <1>;
+	/delete-property/ brcm,wp-not-connected;
 	status = "okay";
 };
 
@@ -241,15 +241,6 @@
 			status = "okay";
 		};
 	};
-};
-
-/* 
- * For BT Coex 
- */
-&pincontroller {
-    pinctrl-names = "default";
-    pinctrl-0 = <&wifi1_gci_gpio_0_pin_16 &wifi1_gci_gpio_1_pin_17 &wifi1_gci_gpio_2_pin_22>; /* 3-Wire */
-    /*pinctrl-0 = <&wifi1_seci_in_pin_30 &wifi1_seci_out_pin_25>;*/ /* SECI */
 };
 
 #if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

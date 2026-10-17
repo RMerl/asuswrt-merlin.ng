@@ -1,0 +1,143 @@
+/* Networking */
+/ {
+    xport:xport {
+        compatible = "brcm,xport";
+        reg = <0x0 0x837f0000 0x0 0x8000>,
+              <0x0 0x828b2000 0x0 0x1800>;
+        status = "disabled";
+    };
+
+    ethphytop:ethphytop {
+        compatible = "brcm,eth-phy-top";
+        reg = <0x0 0x837ff000 0x0 0x1000>;
+        xphy0-addr = <0x1>;
+        xphy1-addr = <0x2>;
+        xphy2-addr = <0x3>;
+        xphy3-addr = <0x4>;
+        xphy4-addr = <0x5>;
+        status = "disabled";
+    };
+
+    serdes:serdes {
+        compatible = "brcm,serdes1";
+        reg = <0x0 0x837ff500 0x0 0x200>;
+        status = "disabled";
+    };
+
+    mdio:mdio {
+        compatible = "brcm,mdio1";
+        reg = <0x0 0x837ffd00 0x0 0x10>;
+        status = "disabled";
+    };
+
+    mdio_bus: mdio_bus {
+        compatible = "simple-bus";
+        bus-type = "MDIO_V1";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        xphy0:xphy0 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x1>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy1:xphy1 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x2>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy2:xphy2 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x3>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy3:xphy3 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x4>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy4:xphy4 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x5>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+    };
+
+    switch0:switch0 {
+        compatible = "brcm,enet";
+        label = "bcmsw";
+        sw-type = "RUNNER_SW";
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            port_xgphy0 {
+                reg = <3>;
+                mac-type = "XPORT";
+                mac-index = <4>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy0>;
+                status = "disabled";
+            };
+
+            port_xgphy1 {
+                reg = <4>;
+                mac-type = "XPORT";
+                mac-index = <5>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy1>;
+                status = "disabled";
+            };
+
+            port_xgphy2 {
+                reg = <5>;
+                mac-type = "XPORT";
+                mac-index = <6>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy2>;
+                status = "disabled";
+            };
+
+            port_xgphy3 {
+                reg = <6>;
+                mac-type = "XPORT";
+                mac-index = <7>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy3>;
+                status = "disabled";
+            };
+
+            port_xgphy4 {
+                reg = <2>;
+                mac-type = "XPORT";
+                mac-index = <2>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy4>;
+                status = "disabled";
+            };
+        };
+    };
+};

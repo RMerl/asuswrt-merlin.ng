@@ -40,11 +40,26 @@
 #include "rdpa_cpu_basic.h"
 #include "rdpa_cpu.h"
 
-#ifdef CONFIG_BCM_NFT_OFFLOAD
 #include <net/xdp_nft.h>
-#endif
 
 #ifdef CONFIG_BCM_XDP
+static u32 enet_xdp_run_meta(struct net_device *dev, struct bpf_prog *xdp_prog, struct xdp_buff *xdp, unsigned long *cookie)
+{
+    u32 act;
+
+    /* Shift meta_data offset to leave room for L2 header and cookie */
+    xdp->data_meta = xdp->data - sizeof(*cookie) - MAX_L2_HEADER;
+    *(unsigned long *)xdp->data_meta = 0;
+
+    act = bpf_prog_run_xdp(xdp_prog, xdp);
+
+    *cookie = *(unsigned long *)xdp->data_meta;
+
+    netdev_printk(KERN_DEBUG, dev, "%s: Received cookie %lu\n", __FUNCTION__, *cookie);
+
+    return act;
+}
+
 enet_xdp_ingress_result_t enet_xdp_handle_ingress(struct net_device *dev, FkBuff_t *fkb, struct enet_xdp_stats * stats)
 {
     enetx_netdev *priv = (enetx_netdev*) netdev_priv(dev);
@@ -56,7 +71,7 @@ enet_xdp_ingress_result_t enet_xdp_handle_ingress(struct net_device *dev, FkBuff
 
     xdp.data = fkb->data;
     xdp.data_end = fkb->data + fkb->len;
-    xdp.data_hard_start = PFKBUFF_TO_PHEAD(fkb);
+    xdp.data_hard_start = BCM_PFKBUFF_TO_PHEAD(fkb);
     xdp.rxq = &priv->xdp_rxq;
     xdp.frame_sz = SKB_DATA_ALIGN(sizeof(struct skb_shared_info)) + xdp.data_end - xdp.data_hard_start;
 
@@ -64,7 +79,7 @@ enet_xdp_ingress_result_t enet_xdp_handle_ingress(struct net_device *dev, FkBuff
     stats->xdp_bytes += size;
     stats->xdp_packets++; 
  
-    act = fm_nft_run_xdp_meta(dev, priv->_xdp_prog, &xdp, &cookie);
+    act = enet_xdp_run_meta(dev, priv->_xdp_prog, &xdp, &cookie);
     // NOTE : xdp.data, xdp.data_end could be changed
 
     switch (act) 
@@ -185,7 +200,7 @@ int enet_xdp_xmit(struct net_device *dev, int n,
     for (i = 0; i < n; i++) 
     {
         struct xdp_frame * frame = frames[i];
-        FkBuff_t * fkb = PHEAD_TO_PFKBUFF(frame);
+        FkBuff_t * fkb = BCM_PHEAD_TO_PFKBUFF(frame);
  
         /* transfer modifications from xdp back to fxb */
         fkb->data = frame->data;

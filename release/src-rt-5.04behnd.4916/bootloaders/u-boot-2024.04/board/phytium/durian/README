@@ -1,0 +1,59 @@
+Here is the step-by-step to boot U-Boot on phytium durian board.
+
+Compile U-Boot
+==============
+  > make durian_defconfig
+  > make
+
+Get the prebuild binary about BPF
+=================================
+  > cd ../
+  > git clone https://github.com/phytium-durian/bpf.git
+
+Package the image
+=================
+  > cd bpf
+  > cp ../u-boot/u-boot.bin ./
+  > ./dopack
+
+  The fip-all.bin is the final image.
+
+Flash the image into the spi nor-flash
+======================================
+  Any spi nor-flash and appropriate tool can be used to flash.
+  For example, we choose the S25FL256 chip that produced from
+  SPANSION company and EZP_XPro V1.2.
+
+Reset the board, you can get U-Boot log message from boot console:
+
+Power on...
+Start pcie setup!
+End pcie setup!
+Start ddr setup!
+End ddr setup!
+Jump to entrypoint: 0x500000
+
+U-Boot 2019.10-00594-g9ccc1b17ea-dirty (Oct 18 2019 - 00:17:09 +0800)
+
+DRAM:  1.9 GiB
+In:    uart@28001000
+Out:   uart@28001000
+Err:   uart@28001000
+scanning bus for devices...
+Target spinup took 0 ms.
+SATA link 1 timeout.
+SATA link 2 timeout.
+SATA link 3 timeout.
+AHCI 0001.0000 32 slots 4 ports 6 Gbps 0xf impl SATA mode
+flags: 64bit ncq led only pmp fbss pio slum part sxs
+  Device 0: (0:0) Vendor: ATA Prod.: ST1000DM010-2EP1 Rev: CC43
+            Type: Hard Disk
+            Capacity: 953869.7 MB = 931.5 GB (1953525168 x 512)
+SATA link 0 timeout.
+SATA link 1 timeout.
+SATA link 2 timeout.
+SATA link 3 timeout.
+AHCI 0001.0000 32 slots 4 ports 6 Gbps 0xf impl SATA mode
+flags: 64bit ncq led only pmp fbss pio slum part sxs
+Hit any key to stop autoboot:  0
+durian#

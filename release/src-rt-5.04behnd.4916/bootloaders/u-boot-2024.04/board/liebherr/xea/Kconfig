@@ -1,0 +1,24 @@
+if TARGET_XEA
+
+config SYS_BOARD
+	default "xea"
+
+config SYS_VENDOR
+	default "liebherr"
+
+config SYS_SOC
+	default "mxs"
+
+config SYS_CONFIG_NAME
+	default "xea"
+
+config ENV_SIZE
+	default 0x2000
+
+config ENV_SECT_SIZE
+	default 0x10000 if ENV_IS_IN_SPI_FLASH
+
+config ENV_OFFSET
+	default 0x80000 if ENV_IS_IN_SPI_FLASH
+
+endif

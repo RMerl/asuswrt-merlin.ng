@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright 2022 Google LLC
+ */
+/dts-v1/;
+
+/ {
+	description = "FIT image with FPGA bistream";
+	#address-cells = <1>;
+
+	images {
+		fpga-periph-1 {
+			description = "FPGA peripheral bitstream";
+			data = /incbin/("../../../periph.rbf");
+			type = "fpga";
+			arch = "arm";
+			compression = "none";
+		};
+		fpga-core-1 {
+			description = "FPGA core bitstream";
+			data = /incbin/("../../../core.rbf");
+			type = "fpga";
+			arch = "arm";
+			compression = "none";
+		};
+	};
+
+	configurations {
+		default = "config-1";
+		config-1 {
+			description = "Boot with FPGA config";
+			fpga = "fpga-periph-1", "fpga-core-1";
+		};
+	};
+};

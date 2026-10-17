@@ -1,0 +1,12 @@
+if TARGET_NANOPI2
+
+config SYS_BOARD
+	default "nanopi2"
+
+config SYS_VENDOR
+	default "friendlyarm"
+
+config SYS_CONFIG_NAME
+	default "s5p4418_nanopi2"
+
+endif

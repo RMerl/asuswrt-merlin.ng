@@ -1,0 +1,23 @@
+J721S2 BOARD
+M:	Manorit Chawdhry <m-chawdhry@ti.com>
+S:	Maintained
+F:	board/ti/j721s2
+F:	arch/arm/mach-k3/j721s2
+F:	doc/board/ti/j721s2_evm.rst
+F:	include/configs/j721s2_evm.h
+F:	configs/j721s2_evm_r5_defconfig
+F:	configs/j721s2_evm_a72_defconfig
+F:	arch/arm/dts/k3-j721s2.dtsi
+F:	arch/arm/dts/k3-j721s2-main.dtsi
+F:	arch/arm/dts/k3-j721s2-mcu-wakeup.dtsi
+F:	arch/arm/dts/k3-j721s2-thermal.dtsi
+F:	arch/arm/dts/k3-j721s2-som-p0.dtsi
+F:	arch/arm/dts/k3-j721s2-common-proc-board.dts
+F:	arch/arm/dts/k3-j721s2-common-proc-board-u-boot.dtsi
+F:	arch/arm/dts/k3-j721s2-r5-common-proc-board.dts
+F:	arch/arm/dts/k3-j721s2-ddr.dtsi
+F:	arch/arm/dts/k3-j721s2-ddr-evm-lp4-4266.dtsi
+F:	arch/arm/dts/k3-am68-sk-som.dtsi
+F:	arch/arm/dts/k3-am68-sk-base-board.dts
+F:	arch/arm/dts/k3-am68-sk-base-board-u-boot.dtsi
+F:	arch/arm/dts/k3-am68-sk-r5-base-board.dts

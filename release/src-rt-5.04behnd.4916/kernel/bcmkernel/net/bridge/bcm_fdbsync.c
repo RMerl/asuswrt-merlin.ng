@@ -28,7 +28,7 @@
 
 */
 
-/* Create /proc for sync FDB for PKTC/PKTFWD from userspace */
+/* Create /proc for sync FDB for PKTFWD from userspace */
 
 #if defined(CONFIG_BCM_WLAN_MODULE)
 
@@ -51,10 +51,17 @@ static struct proc_dir_entry *proc_fdbsync_dir = NULL;       /* /proc/fdbsync */
 static struct proc_dir_entry *proc_fdbsync_ops_file = NULL;  /* /proc/fdbsync/operate */
 
 static ssize_t fdbsync_operate_file_write(struct file *file, const char __user *buf, size_t cnt, loff_t *ppos);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
 static const struct file_operations fdbsync_fops = {
        .owner  = THIS_MODULE,
        .write   = fdbsync_operate_file_write,
 };
+#else
+static const struct proc_ops fdbsync_fops = {
+       .proc_write   = fdbsync_operate_file_write,
+};
+#endif
+
 
 /**
  * -----------------------------------------------------------------------------
@@ -211,9 +218,9 @@ static ssize_t fdbsync_operate_file_write(struct file *file, const char __user *
 #endif
                          if (Block_DEL == 0)
                          {
-                             bcmFun_t *bcm_br_wl_pktc_del_by_mac_cb = bcmFun_get(BCM_FUN_ID_WLAN_PKTC_DEL_BY_MAC);
-                             if (bcm_br_wl_pktc_del_by_mac_cb != NULL)
-                                 bcm_br_wl_pktc_del_by_mac_cb((void *)mac_addr);
+                             bcmFun_t *bcm_br_wl_pktfwd_del_by_mac_cb = bcmFun_get(BCM_FUN_ID_WLAN_PKTFWD_DEL_BY_MAC);
+                             if (bcm_br_wl_pktfwd_del_by_mac_cb != NULL)
+                                 bcm_br_wl_pktfwd_del_by_mac_cb((void *)mac_addr);
 
                          }
                     }

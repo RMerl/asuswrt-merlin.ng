@@ -1,0 +1,279 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 B&R Industrial Automation GmbH
+ * Copyright 2012 Freescale Semiconductor, Inc.
+ * Copyright 2011 Linaro Ltd.
+ *
+ * The code contained herein is licensed under the GNU General Public
+ * License. You may obtain a copy of the GNU General Public License
+ * Version 2 or later at the following locations:
+ *
+ * http://www.opensource.org/licenses/gpl-license.html
+ * http://www.gnu.org/copyleft/gpl.html
+ */
+
+/dts-v1/;
+
+#include "imx6dl.dtsi"
+#include "imx6qdl-u-boot.dtsi"
+#include <dt-bindings/pwm/pwm.h>
+#include <include/dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "PPT50";
+	compatible = "fsl,imx6dl";
+
+	config {
+		u-boot,spl-payload-offset = <0x100000>;
+	};
+
+	fset: factory-settings {
+		bl-version	= "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		order-no	= "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		hw-revision	= "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		serial-no	= <0>;
+		device-id	= <0x0>;
+		parent-id	= <0x0>;
+		hw-variant	= <0x0>;
+	};
+
+	aliases {
+		ds1timing0 = &timing0;
+		ds1timing1 = &timing1;
+		ds1bkl = &backlight;
+		fset = &fset;
+		mxcfb0 = &mxcfb0;
+		touch0 = &touch0;
+		touch1 = &touch1;
+		touch2 = &touch2;
+		display_regulator = &display_regulator;
+		ldb = &ldb;
+		mmc0 = &usdhc4;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	mxcfb0: fb@0 {
+		compatible = "fsl,mxc_sdc_fb";
+		disp_dev = "ldb";
+		interface_pix_fmt = "RGB24";
+		default_bpp = <32>;
+		int_clk = <0>;
+		late_init = <0>;
+		rotation = <0>;
+		status = "okay";
+	};
+
+	lcd@0 {
+		compatible = "fsl,lcd";
+		vlcd-supply = <&display_regulator>;
+		ipu_id = <0>;
+		disp_id = <0>;
+		default_ifmt = "RGB24";
+		status = "disabled";
+
+		display-timings {
+			native-mode = <&timing1>;
+			timing1: lcd {
+			};
+		};
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		pwms = <&pwm4 0 5000000>;
+		brightness-levels = <0   1   2   3   4   5   6   7
+			  8   9  10  11  12  13  14  15
+			 16  17  18  19  20  21  22  23
+			 24  25  26  27  28  29  30  31
+			 32  33  34  35  36  37  38  39
+			 40  41  42  43  44  45  46  47
+			 48  49  50  51  52  53  54  55
+			 56  57  58  59  60  61  62  63
+			 64  65  66  67  68  69  70  71
+			 72  73  74  75  76  77  78  79
+			 80  81  82  83  84  85  86  87
+			 88  89  90  91  92  93  94  95
+			 96  97  98  99 100>;
+		default-brightness-level = <0>;
+		status = "okay";
+
+		enable-gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>;
+	};
+
+	beeper: pwm-beep {
+		compatible = "pwm-beeper";
+		pwms = <&pwm3 0 0 0>;
+	};
+
+	vbus1_regulator: regulator@1 {
+		bootph-all;
+		compatible = "regulator-fixed";
+		regulator-name = "vbus1_regulator";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio3 22 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+	vbus2_regulator: regulator@2 {
+		compatible = "regulator-fixed";
+		regulator-name = "vbus2_regulator";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio3 31 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+	usbhub_regulator: gpio-regulator@3 {
+		compatible = "regulator-gpio";
+		regulator-name = "ushbub_regulator";
+		enable-gpio = <&gpio1 16 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		enable-at-boot;
+		states = <0 0 1 1>;
+	};
+	display_regulator: regulator@4 {
+		compatible = "regulator-fixed";
+		regulator-name = "display_regulator";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio5 18 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		startup-delay-us = <1000>;
+	};
+};
+
+&fec {
+	phy-mode = "rgmii-id";
+	status = "okay";
+
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&uart1 {
+	bootph-pre-ram;
+	bootph-all;
+	status = "okay";
+};
+
+&pwm3 {
+	status = "okay";
+};
+
+&pwm4 {
+	#pwm-cells = <2>;
+	status = "okay";
+};
+
+&ldb {
+	status = "disabled";
+	vldb-supply = <&display_regulator>;
+
+	lvds-channel@0 {
+		fsl,data-mapping = "spwg";
+		fsl,data-width = <24>;
+		primary;
+		status = "okay";
+		crtc = "ipu1-di0";
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: lcd {
+			};
+		};
+	};
+};
+
+&usdhc4 {
+	non-removable;
+	bus-width = <8>;
+	status = "okay";
+};
+
+&usbotg {
+	vbus-supply = <&vbus1_regulator>;
+	dr_mode = "host";
+	status = "okay";
+};
+
+&usbh1 {
+	vbus-supply = <&vbus2_regulator>;
+	dr_mode = "host";
+	status = "okay";
+};
+
+&i2c3 {
+	clock-frequency = <400000>;
+	status = "okay";
+
+	touch0: egalax_i2c@2a {
+		compatible = "eeti,egalax_i2c";
+		reg = <0x2a>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <9 2>;
+		int-gpios = <&gpio4 9 GPIO_ACTIVE_HIGH>;
+	};
+
+	touch1: gt911@5d {
+		compatible = "goodix,gt911";
+		reg = <0x5d>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <9 2>;
+		irq-gpios = <&gpio4 9 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio4 11 GPIO_ACTIVE_HIGH>;
+		status = "disabled";
+	};
+
+	touch2: i2c-hid-dev@2c {
+		compatible = "hid-over-i2c";
+		reg = <0x2c>;
+		hid-descr-addr = <0x0001>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <9 2>;
+		status = "disabled";
+	};
+};
+
+&gpio1 {
+	bootph-pre-ram;
+	status = "okay";
+};
+
+&gpio2 {
+	bootph-pre-ram;
+	status = "okay";
+};
+
+&gpio3 {
+	bootph-pre-ram;
+	status = "okay";
+};
+
+&gpio4 {
+	bootph-pre-ram;
+	status = "okay";
+};
+
+&usdhc4 {
+	status = "okay";
+};
+
+&ecspi1 {
+	bootph-pre-ram;
+	cs-gpios = <&gpio3 19 GPIO_ACTIVE_LOW>, <&gpio3 19 GPIO_ACTIVE_LOW>;
+	status = "okay";
+	spi-max-frequency = <25000000>;
+
+	m25p32@1 {
+		bootph-pre-ram;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "st,m25p", "jedec,spi-nor";
+		spi-max-frequency = <25000000>;
+		reg = <1>;
+	};
+};

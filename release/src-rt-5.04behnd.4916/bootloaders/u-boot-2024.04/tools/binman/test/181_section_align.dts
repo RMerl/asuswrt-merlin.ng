@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		pad-byte = <0x26>;
+		fill {
+			size = <1>;
+		};
+		section@1 {
+			read-only;
+
+			/* Padding for the section uses the 0x26 pad byte */
+			align = <2>;
+			align-size = <0x10>;
+
+			/* Set the padding byte for entries, i.e. u-boot */
+			pad-byte = <0x21>;
+
+			fill {
+				size = <1>;
+			};
+
+			u-boot {
+				align = <4>;
+				align-size = <8>;
+			};
+		};
+	};
+};

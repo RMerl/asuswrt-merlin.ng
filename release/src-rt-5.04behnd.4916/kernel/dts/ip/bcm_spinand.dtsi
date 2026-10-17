@@ -6,5 +6,5 @@ reg = <0>;
 spi-max-frequency = <SPINAND_MAX_FREQ>;
 spi-tx-bus-width = <2>;
 spi-rx-bus-width = <2>;
-u-boot,dm-pre-reloc;
+
 status = "disabled";

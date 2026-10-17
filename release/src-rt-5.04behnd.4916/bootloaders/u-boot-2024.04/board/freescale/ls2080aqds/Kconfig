@@ -1,0 +1,16 @@
+
+if TARGET_LS2080AQDS
+
+config SYS_BOARD
+	default "ls2080aqds"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls2080aqds"
+
+endif

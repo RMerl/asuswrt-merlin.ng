@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2018-2019 Rockchip Electronics Co., Ltd
+ */
+#include "rk3308-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &emmc, &sdmmc;
+	};
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-some-ram;
+
+	uart0 {
+		bootph-some-ram;
+	};
+	rtc {
+		bootph-some-ram;
+	};
+};
+
+&uart0_xfer {
+	bootph-some-ram;
+};
+
+&uart0_cts {
+	bootph-some-ram;
+};
+
+&uart0_rts {
+	bootph-some-ram;
+};
+
+&rtc_32k {
+	bootph-some-ram;
+};

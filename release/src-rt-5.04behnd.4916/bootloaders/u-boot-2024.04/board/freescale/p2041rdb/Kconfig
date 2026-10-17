@@ -1,0 +1,12 @@
+if TARGET_P2041RDB
+
+config SYS_BOARD
+	default "p2041rdb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "P2041RDB"
+
+endif

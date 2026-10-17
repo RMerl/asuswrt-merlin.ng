@@ -1,0 +1,52 @@
+U-Boot for the Technexion Pico i.MX8MQ
+
+Quick Start
+===========
+- Build the TFA binary
+- Get DDR and HDMI firmware
+- Build U-Boot
+- Boot
+
+Get and Build the TFA blob
+==========================
+Note: srctree is U-Boot source directory
+Get ATF from: https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git
+branch: master
+$ CROSS_COMPILE=aarch64-linux-gnu- make PLAT=imx8mq bl31
+$ cp build/imx8mq/release/bl31.bin $(builddir)
+
+Get the DDR and HDMI firmware
+=============================
+$ wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-7.9.bin
+$ chmod +x firmware-imx-7.9.bin
+$ ./firmware-imx-7.9.bin
+# Or use this to avoid running random scripts from the internet,
+# but note that you must agree to the license the script displays:
+# $ dd if=firmware-imx-7.9.bin of=firmware-imx-7.9.tar.bz2 bs=38868 skip=1
+# $ tar -xf firmware-imx-7.9.tar.bz2
+$ cp firmware-imx-7.9/firmware/hdmi/cadence/signed_hdmi_imx8m.bin $(builddir)
+$ cp firmware-imx-7.9/firmware/ddr/synopsys/lpddr4*.bin $(builddir)
+
+Build U-Boot
+============
+$ export CROSS_COMPILE=aarch64-poky-linux-
+$ make pico-imx8mq_defconfig
+$ make flash.bin
+
+Burn the flash.bin to MicroSD card offset 33KB
+$ dd if=flash.bin of=/dev/mmcblkX bs=1024 seek=33
+Or into eMMC from a running system
+$ dhcp flash.bin && mmc write $loadaddr 0x42 0x800
+
+Boot
+====
+"o" denotes a pin
+"[]" denotes two pins bridged by a jumper
+
+eMMC boot:
+J1 o[] []o J2
+   []o o[]
+
+USB upload via USB-C connector:
+J1 ooo ooo J2
+   o[] []o

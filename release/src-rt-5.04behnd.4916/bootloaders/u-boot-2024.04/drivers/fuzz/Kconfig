@@ -1,0 +1,17 @@
+config DM_FUZZING_ENGINE
+	bool "Driver support for fuzzing engine devices"
+	depends on DM
+	help
+	  Enable driver model for fuzzing engine devices. This interface is
+	  used to get fuzzing inputs from a fuzzing engine.
+
+if DM_FUZZING_ENGINE
+
+config FUZZING_ENGINE_SANDBOX
+	bool "Sanbox fuzzing engine"
+	depends on SANDBOX
+	default y
+	help
+	  Enable fuzzing engine for sandbox.
+
+endif

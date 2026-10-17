@@ -11,5 +11,6 @@
 +TA_SKS=y
 +TA_SIGNING_KEY="plat/plat-bca/user_ta_sign_key.pem"
 +TA_PUBLIC_KEY="plat/plat-bca/unknown_pub_key.pem"
++TA_ENCRYPT_KEY=""
 +DO_BUILD_OPENSSL=y
 +# BCM_KERNEL_CODE_PROTECTION is not set

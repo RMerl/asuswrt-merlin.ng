@@ -1,0 +1,11 @@
+OSS_REFERENCE_Name: make_ext4fs
+OSS_REFERENCE_Version: 4.3_r3
+OSS_REFERENCE_License: GPL
+OSS_REFERENCE_DownloadURL: 
+https://android.googlesource.com/platform/external/libselinux/+archive/dae85f9e3e7f0e531138a57f1b13e646b78b1919.tar.gz
+https://android.googlesource.com/platform/system/core/+archive/821678e1c7bd0af12fa4adc314c9024def9ba7c0.tar.gz
+https://android.googlesource.com/platform/external/zlib/+archive/6a396b358e97fdbcb2dc181e52d36a9d8b5ea752.tar.gz
+https://android.googlesource.com/platform/system/extras/+archive/4d4bc6e7777887d93340f577d9b46de4a7c75f26.tar.gz
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./make_ext4fs_android_4.3_src.tar.gz
+

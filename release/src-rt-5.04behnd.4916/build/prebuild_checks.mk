@@ -14,15 +14,22 @@ all default: prebuild_checks
 BUILD_DIR = $(CURDIR)
 include $(BUILD_DIR)/make.common
 
-REQUIRED_MAKE_VERSION := 3.81
+REQUIRED_MAKE_VERSION := 4.2.1
+CMAKE := $(if $(shell which cmake3),cmake3,cmake)
+ifneq ($(strip $(BUILD_BCM_BSTORM)),)
+REQUIRED_CMAKE_VERSION := 3.26.3
+else
+REQUIRED_CMAKE_VERSION := 3.14.0
+endif
 REQUIRED_HOST_KERNEL_VERSION := 2.6
-REQUIRED_AUTOMAKE_VERSION := 1.10.2
+REQUIRED_AUTOMAKE_VERSION := 1.13.4
 REQUIRED_AUTOCONF_VERSION := 2.65
 REQUIRED_LIBTOOLIZE_VERSION := 1.4.0
 REQUIRED_BCMTOOL_VERSION := Rel1.8
 
-# LINUX PERF
-REQUIRED_BISON_VERSION := 2.5
+REQUIRED_BISON_VERSION := 3.0.4
+EXCLUDE_BISON_VERSIONS := 3.7.9,3.7.91,3.8 
+REQUIRED_GIT_VERSION := 2.32.0
 
 BCMTOOL_VERSION := `echo "BCM_TOOLCHAIN_VERSION" | gcc -E -P -o- -include $${TOOLCHAIN_TOP}/${TOOLCHAIN_USR_DIR}/include/bcm_toolver.h -xc - | sed 's/^"\(.*\)"$$/\1/'`
 
@@ -89,14 +96,14 @@ endif
 		exit 1; \
 	else \
 		pyver=`python3 --version | cut -d " " -f2 | sed 's/[^0-9]*//g'`; \
-		if [[ pyver -lt 370 ]]; then \
+		if [[ $$pyver -lt 370 ]]; then \
 			echo "ERROR: python3 version must be 3.7.0 or greater "; \
 			exit 1; \
 		fi; \
 		if [ "" != "$(findstring OPTEE,$(PROFILE))" ]; then \
-			if ! python3 -c "from Crypto.Signature import PKCS1_v1_5"; then \
+			if ! python3 -c "from cryptography.hazmat.primitives import hashes"; then \
 				echo "***************************************************"; \
-				echo "ERROR: Install python3-pyelftools and python3-pip"; \
+				echo "ERROR: Install cryptography for python"; \
 				echo "***************************************************"; \
 				exit 1; \
 			fi; \
@@ -106,7 +113,19 @@ endif
 			   ! python3 -c "import pydot" || \
 			   ! python3 -c "import jinja2"; then \
 				echo "***************************************************"; \
-				echo "ERROR: Need python3 modules: kconfiglib, pydot, jinja2"; \
+				echo "ERROR: opensync needs python3 modules: kconfiglib, pydot, jinja2"; \
+				echo "***************************************************"; \
+				exit 1; \
+			fi; \
+			if ! quilt --version 2>/dev/null; then \
+				echo "ERROR: quilt is required for opensync build "; \
+	 			exit 1; \
+			fi; \
+		fi; \
+		if [ "" != "$(BUILD_MESON_NINJA)" ]; then \
+			if ! python3 -c "import packaging"; then \
+				echo "***************************************************"; \
+				echo "ERROR: Need python3-packaging"; \
 				echo "***************************************************"; \
 				exit 1; \
 			fi; \
@@ -128,16 +147,44 @@ endif
 		echo "ERROR: rsync is required for build "; \
 		exit 1; \
 	fi
+ifneq ($(strip $(BUILD_NINJA_GN)),)
+	@echo "Check clang is installed"
+	@if ! clang --version 2>/dev/null; then \
+		echo "ERROR: clang is required for build "; \
+		exit 1; \
+	else \
+		clangver=`clang --version | grep version | sed 's/^.*version //g' | cut -d " " -f1 | cut -d "-" -f1 | sed 's/[^0-9]*//g'`; \
+		if [[ $$clangver -lt 900 ]]; then \
+			echo "ERROR: clang version must be 9.0.0 or greater "; \
+			exit 1; \
+		fi; \
+	fi
+endif
+	@echo "Check git is installed"
+	@if ! git --version 2>/dev/null; then \
+		echo "ERROR: git is required for build "; \
+		exit 1; \
+	else \
+		if [ ! "x"`env |grep AUTOFETCH |grep -m 1 _git` == "x" ]; then \
+			$(HOSTTOOLS_DIR)/scripts/checkver.pl -e git -r $(REQUIRED_GIT_VERSION) || $(COND_FAIL); \
+		fi \
+	fi
 	@echo "Checking openssl version"
 	@if ! openssl version 2>/dev/null; then \
 		echo "ERROR: openssl is required "; \
 		exit 1; \
 	else \
 		sslver=`openssl version | cut -d " " -f2 | sed 's/[^0-9]*//g'`; \
-		if [[ sslver -lt 100 ]]; then \
+		if [[ $$sslver -lt 100 ]]; then \
 			echo "ERROR: openssl version must be 1.0.0a or greater "; \
 			exit 1; \
 		fi; \
+	fi
+	@echo "Checking openssl devel headers"
+	@if ! echo "#include <openssl/ssl.h>" | gcc -E - >/dev/null; then \
+		echo "ERROR: ssl development library is required for build"; \
+		echo "       usually, this is provided by the libssl-dev library"; \
+		if [ -z "$(FORCE)" ]; then exit 1; fi \
 	fi
 	@echo "Checking sed version"
 	@if ! echo bcrm|sed -E 's/brcm/BRCM/' 2> /dev/null > /dev/null; then\
@@ -146,8 +193,12 @@ endif
 	fi;
 	@echo "Checking make version"
 	@$(HOSTTOOLS_DIR)/scripts/checkver.pl -s $(MAKE_VERSION) -r $(REQUIRED_MAKE_VERSION) || $(COND_FAIL);
+	@echo "Checking cmake version"
+	@$(HOSTTOOLS_DIR)/scripts/checkver.pl -e $(CMAKE) -r $(REQUIRED_CMAKE_VERSION) || $(COND_FAIL);
+
 	@echo "Checking host kernel version"
 	@$(HOSTTOOLS_DIR)/scripts/checkver.pl -s $(HOST_KERNEL_VERSION) -r $(REQUIRED_HOST_KERNEL_VERSION) || $(COND_FAIL);
+
 ifeq ($(strip $(DESKTOP_LINUX)),)
 ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN)),)
 	@echo "Checking bcm tools version"
@@ -191,10 +242,14 @@ endif
 		if [ -z "$(FORCE)" ]; then exit 1; fi \
 	fi
 endif  # DESKTOP_LINUX eq empty
-ifneq ($(strip $(BUILD_LINUX_PERF)),)
+
 	@echo "Checking bison version:"
-	@$(HOSTTOOLS_DIR)/scripts/checkver.pl -e bison -r $(REQUIRED_BISON_VERSION) || $(COND_FAIL);
-endif
+	@$(HOSTTOOLS_DIR)/scripts/checkver.pl -e bison -r $(REQUIRED_BISON_VERSION) -x $(EXCLUDE_BISON_VERSIONS) || $(COND_FAIL);
+	@echo "Check flex is installed:"
+	@if ! flex --version 2>/dev/null; then \
+		echo "ERROR: flex is required for build "; \
+		exit 1; \
+	fi
 	@echo "Checking tar version:"
 	@tarVer=`$(HOSTTOOLS_DIR)/scripts/checkver.pl -e tar`; \
 	echo "$$tarVer"; \
@@ -206,6 +261,12 @@ endif
 		echo "----------------------------------------------------------------"; \
 		if [ -z "$(FORCE)" ]; then exit 1; fi \
 	fi
+	@if ! echo "#include <popt.h>" | gcc -E - >/dev/null; then \
+		echo "ERROR: popt development library is required for build"; \
+		echo "       usually, this is provided by the popt-devel (CentOS) or"; \
+		echo "       libpopt-dev (Ubuntu) library"; \
+		if [ -z "$(FORCE)" ]; then exit 1; fi \
+	fi
 	@if ! echo "#include <lzo/lzo1x.h>" | gcc -E - >/dev/null; then \
 		echo "ERROR: lzo/lzo1x.h development library is required for build"; \
 		echo "       usually, this is provided by the liblzo2-dev library"; \
@@ -213,6 +274,10 @@ endif
 	fi
 	@if ! echo "#include <uuid/uuid.h>" | gcc -E - >/dev/null; then \
 		echo "ERROR: libuuid development library is required for build"; \
+		if [ -z "$(FORCE)" ]; then exit 1; fi \
+	fi
+	@if ! echo "#include <ncurses.h>" | gcc -E - >/dev/null; then \
+		echo "ERROR: ncurses development library is required for build"; \
 		if [ -z "$(FORCE)" ]; then exit 1; fi \
 	fi
 	@if ! pkg-config --exists --print-errors   zlib ; then \
@@ -235,10 +300,6 @@ endif
 	fi
 	@echo "Checking patch version:";
 	@$(HOSTTOOLS_DIR)/scripts/checkver.pl -e patch || $(COND_FAIL);
-	@if [[ -n "$(BUILD_EMMC_IMG)" ]]; then \
-		echo "Checking sgdisk version:"; \
-		$(HOSTTOOLS_DIR)/scripts/checkver.pl -e sgdisk || $(COND_FAIL); \
-	fi
 	@pkg_c=`PKG_CONFIG_PATH= PKG_CONFIG_LIBDIR=/foo pkg-config --list-all | wc -l`; \
 	if [ ! $$pkg_c == "0" ];then \
 		echo "ERROR: wrong pkg-config, please check PATH, should not use pkg-config from /tools/bin "; \
@@ -246,3 +307,10 @@ endif
 		echo $(shell which pkg-config); \
 		exit 1; \
 	fi
+ifneq ($(strip $(BUILD_PROCPS)),)
+	@echo "Check autopoint is installed:"
+	@if ! autopoint --version 2>/dev/null; then \
+		echo "ERROR: autopoint is required for build "; \
+		exit 1; \
+	fi
+endif

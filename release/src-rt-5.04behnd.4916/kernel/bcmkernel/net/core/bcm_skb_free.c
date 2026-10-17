@@ -34,6 +34,7 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/skbuff.h>
+#include <linux/nbuff.h>
 #include <linux/netdevice.h>
 #include "uapi/linux/bcm_realtime.h"
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
@@ -41,10 +42,15 @@
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
 
 #include <linux/bcm_version_compat.h>
+#include <linux/bcm_log_mod.h>
 
 static struct task_struct *skb_free_task = NULL;
 static struct sk_buff *skb_completion_queue = NULL;
 static unsigned int skb_completion_queue_cnt = 0;
+#if defined(CONFIG_BCM_WKB)
+static pNBuff_t *wkb_completion_queue = NULL;
+static unsigned int wkb_completion_queue_cnt = 0;
+#endif /* CONFIG_BCM_WKB */
 static DEFINE_SPINLOCK(skbfree_lock);
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
 static struct completion skb_free_complete;
@@ -63,9 +69,8 @@ static unsigned int skbfree_thread_enable __read_mostly;
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
 
 #define SKB_RECYCLE_FLAGS_FAST  (SKB_RECYCLE | SKB_DATA_RECYCLE | SKB_BPM_PRISTINE)
-
 #define SKB_SHINFO(skb)         ((struct skb_shared_info *)skb_shinfo(skb))
-#define SHINFO_NRFLAGS(skb)     (SKB_SHINFO(skb)->nr_frags)
+#define SHINFO_NRFLAGS(skb)     (!(skb->is_spc) && SKB_SHINFO(skb)->nr_frags)
 #define SHINFO_FRAGLIST(skb)    (SKB_SHINFO(skb)->frag_list)
 #define SHINFO_TXFLAGS(skb)     (SKB_SHINFO(skb)->tx_flags)
 
@@ -99,7 +104,7 @@ static unsigned int skbfree_thread_enable __read_mostly;
 
 #define SKB_FAST_RELEASE_TO_BPM(skb) \
     SKB_PTR_FAST_RELEASE_TO_BPM(skb) & \
-    (skb->recycle_flags == SKB_RECYCLE_FLAGS_FAST) & \
+    ((skb->recycle_flags & SKB_RECYCLE_FLAGS_FAST) == SKB_RECYCLE_FLAGS_FAST) & \
     (!(SHINFO_TXFLAGS(skb) & SKBFL_ZEROCOPY_FRAG)) & \
     (!SHINFO_NRFLAGS(skb)) & \
     (!skb->cloned) & \
@@ -119,7 +124,7 @@ static unsigned int skbfree_thread_enable __read_mostly;
 
 #define SKB_FAST_RELEASE_TO_BPM(skb) \
     SKB_PTR_FAST_RELEASE_TO_BPM(skb) & \
-    (skb->recycle_flags == SKB_RECYCLE_FLAGS_FAST) & \
+    ((skb->recycle_flags & SKB_RECYCLE_FLAGS_FAST) == SKB_RECYCLE_FLAGS_FAST) & \
     (!(SHINFO_TXFLAGS(skb) & SKBTX_DEV_ZEROCOPY)) & \
     (!SHINFO_NRFLAGS(skb)) & \
     (!skb->cloned) & \
@@ -134,104 +139,205 @@ typedef struct skb_list {
 } skb_list_t;
 
 void dev_kfree_skb_thread_wait(void);
-void dev_kfree_skb_thread_bulk(struct sk_buff *head, struct sk_buff *tail, uint32_t len);
-#else
-void dev_kfree_skb_thread_bulk(struct sk_buff *skb);
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
+
+bcm_score_qstat_wlan_func_t bcm_score_qstat_wlan_nic_func = NULL;
+EXPORT_SYMBOL(bcm_score_qstat_wlan_nic_func);
+
+int default_wlan_nic_set_egress_ts(void *sob)
+{
+    printk(KERN_EMERG "%s() no host timer handler!!\n", __FUNCTION__);
+    return 0;
+}
+bcm_score_qstat_wlan_func_t bcm_score_qstat_wlan_nic_set_egress_ts = default_wlan_nic_set_egress_ts;
+EXPORT_SYMBOL(bcm_score_qstat_wlan_nic_set_egress_ts);
+EXPORT_SYMBOL(default_wlan_nic_set_egress_ts);
+
+#if IS_ENABLED(CONFIG_BCM_SCORE)
+static inline void bcm_score_push_qstat_records(struct sk_buff *skb)
+{
+	if (bcm_score_qstat_wlan_nic_func && skb_has_qstat_telemetry(skb)) {
+		if (skb_data_has_qstat_telemetry(skb))
+		{
+			/* Send record */
+			/* TODO : Abstract telemetry offset; assumed at head for now */
+			bcm_score_qstat_wlan_nic_func(skb->head);
+			skb_data_clr_qstat_telemetry(skb);
+		}
+		if (skb->is_spc)
+		{
+			uint8_t frag;
+			uint8_t *data_p;
+			uint16_t offset;
+			for (frag = 0; skb_has_qstat_telemetry(skb) && frag < skb_shinfo(skb)->nr_frags; frag++) {
+				if (skb_spc_frag_has_qstat_telemetry(skb, frag))
+				{
+					data_p = (uint8_t *) skb_shinfo(skb)->frags[frag].data;
+					offset = skb_frag_off(&skb_shinfo(skb)->frags[frag]);
+					/* Send record */
+					/* TODO : Abstract telemetry offset; assumed at head for now */
+					bcm_score_qstat_wlan_nic_func(data_p - offset);
+					skb_spc_frag_clr_qstat_telemetry(skb, frag);
+				}
+			}
+		}
+	}
+}
+#else
+static inline void bcm_score_push_qstat_records(struct sk_buff *skb)
+{
+}
+#endif
 
 static int skb_free_thread_func(void *thread_data)
 {
-   unsigned int budget;
-   struct sk_buff *skb;
-   struct sk_buff *free_list = NULL;
-   unsigned long flags;
+	unsigned int skb_budget;
+	struct sk_buff *skb;
+	struct sk_buff *skb_free_list = NULL;
+#if defined(CONFIG_BCM_WKB)
+	unsigned int wkb_budget;
+	wkbuff_t *wkb;
+	pNBuff_t *wkb_free_list = NULL;
+#endif /* CONFIG_BCM_WKB */
+	unsigned long flags;
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-   skb_list_t bpm_freelist = { NULL, NULL, 0 };
-   int bufcnt = 0;
-   static void *bufp_arr[MAX_SKB_FREE_BUDGET];
+	skb_list_t bpm_freelist = { NULL, NULL, 0 };
+	int bufcnt = 0;
+#if !defined(CONFIG_BCM_BPM_HW_ENABLED)
+	static void *bufp_arr[MAX_SKB_FREE_BUDGET];
+#endif
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
 
-   while (!kthread_should_stop()) {
-      budget = skbfree_free_budget;
-
+	while (!kthread_should_stop()) {
+		skb_budget = skbfree_free_budget;
+#if defined(CONFIG_BCM_WKB)
+		/* Both WKB and SKB budget are same. When WKB is enabled,
+		 * skb will be used only for stack generated packets and
+		 * should be very less in number.
+		 */
+		wkb_budget = skb_budget;
+#endif /* CONFIG_BCM_WKB */
 update_list:
-      spin_lock_irqsave(&skbfree_lock, flags);
-      if (free_list == NULL) {
-         if (skb_completion_queue) {
-            free_list = skb_completion_queue;
-            skb_completion_queue = NULL;
-            skb_completion_queue_cnt = 0;
-         }
-      }
-      spin_unlock_irqrestore(&skbfree_lock, flags);
+		spin_lock_irqsave(&skbfree_lock, flags);
+		if ((skb_free_list == NULL) && skb_budget) {
+			if (skb_completion_queue) {
+				skb_free_list = skb_completion_queue;
+				skb_completion_queue = NULL;
+				skb_completion_queue_cnt = 0;
+			}
+		}
 
-      while (free_list && budget) {
-         skb = free_list;
-         free_list = free_list->next;
-         skb->next = NULL;
+#if defined(CONFIG_BCM_WKB)
+		if ((wkb_free_list == NULL) && wkb_budget) {
+			if (wkb_completion_queue) {
+				wkb_free_list = wkb_completion_queue;
+				wkb_completion_queue = NULL;
+				wkb_completion_queue_cnt = 0;
+			}
+		}
+#endif /* CONFIG_BCM_WKB */
+		spin_unlock_irqrestore(&skbfree_lock, flags);
+
+#if defined(CONFIG_BCM_WKB)
+		while (wkb_free_list && wkb_budget) {
+			wkb = PNBUFF_2_WKBUFF(wkb_free_list);
+			wkb_free_list = wkb_link(wkb);
+			wkb_set_link(wkb, NULL);
+			wkb_free(wkb);
+			wkb_budget--;
+		}
+#endif /* CONFIG_BCM_WKB */
+
+		while (skb_free_list && skb_budget) {
+			skb = skb_free_list;
+			skb_free_list = skb_free_list->next;
+			skb->next = NULL;
+			/* Send qstat_records for this skb */
+			bcm_score_push_qstat_records(skb);
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-         if (SKB_FAST_RELEASE_TO_BPM(skb)) {
+			if (SKB_FAST_RELEASE_TO_BPM(skb)) {
 #if defined(CONFIG_BCM_XRDP) 
-            (*skb->recycle_hook)(skb, skb->recycle_context,
-                  SKB_DATA_RECYCLE);
-            skb->head = skb->data = NULL;
-            skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
+				(*skb->recycle_hook)(skb, skb->recycle_context,
+						     SKB_DATA_RECYCLE);
+				skb->head = skb->data = NULL;
+				skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
 #else
-            if (gbpm_is_skb_with_hw_buf(skb))
-            {
-               /* Todo: free directly to hwpool */
-               (*skb->recycle_hook)(skb, skb->recycle_context,
-                     SKB_DATA_RECYCLE);
-               skb->head = skb->data = NULL;
-            }
-            else
-            {
-               bufp_arr[bufcnt++] = gbpm_invalidate_dirtyp(skb);
-            }
+#if !defined(CONFIG_BCM_BPM_HW_ENABLED)
+				if (gbpm_is_skb_with_hw_buf(skb))
+				{
+					/* Todo: free directly to hwpool */
+					(*skb->recycle_hook)(skb, skb->recycle_context,
+							     (SKB_DATA_RECYCLE | SKB_DATA_HW_RECYCLE_CAPABLE));
+					skb->head = skb->data = NULL;
+				} else if (skb->is_spc) {
+					/* Calling BPM recycle hook to free up the spc frags */
+					(*skb->recycle_hook)(skb, skb->recycle_context, SKB_DATA_RECYCLE);
+					skb->head = skb->data = NULL;
+			    	} else {
+					bufp_arr[bufcnt++] = gbpm_invalidate_dirtyp(skb);
+				}
 
-            /* Todo: update the skb HW recycle capable flags */
-            skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
+				/* Todo: update the skb HW recycle capable flags */
+				skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
+#endif
 
 #endif /* CONFIG_BCM_XRDP */
 
-            if (bpm_freelist.len != 0) {
-               bpm_freelist.tail->next = skb;
-               bpm_freelist.tail = skb;
-            } else
-               bpm_freelist.tail = bpm_freelist.head = skb;
+				if (bpm_freelist.len != 0) {
+					bpm_freelist.tail->next = skb;
+					bpm_freelist.tail = skb;
+				} else
+					bpm_freelist.tail = bpm_freelist.head = skb;
 
-            bpm_freelist.len++;
-         } else
+				bpm_freelist.len++;
+			} else
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
-            __kfree_skb(skb);
-         budget--;
-      }
+				__kfree_skb(skb);
+			skb_budget--;
+		}
 
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-      if (bpm_freelist.len) {
-         gbpm_free_skblist(bpm_freelist.head, bpm_freelist.tail,
-               bpm_freelist.len, bufcnt, bufp_arr);
-         bpm_freelist.head = bpm_freelist.tail = NULL;
-         bpm_freelist.len = 0;
-         bufcnt = 0;
-      }
+		if (bpm_freelist.len) {
+#if !defined(CONFIG_BCM_BPM_HW_ENABLED)
+			gbpm_free_skblist(bpm_freelist.head, bpm_freelist.tail,
+					  bpm_freelist.len, bufcnt, bufp_arr);
+#else
+			gbpm_free_mult_skb_and_buf(bpm_freelist.head,bpm_freelist.len);
+#endif
+			bpm_freelist.head = bpm_freelist.tail = NULL;
+			bpm_freelist.len = 0;
+			bufcnt = 0;
+		}
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
 
-      if (free_list || skb_completion_queue) {
-         if (budget)
-            goto update_list;
+		if (skb_free_list || skb_completion_queue) {
+			if (skb_budget) {
+				goto update_list;
+			}
 
-         /* we still have packets in Q, reschedule the task */
-         yield();
-      } else {
+			/* we still have packets in Q, reschedule the task */
+			yield();
+		} else
+#if defined(CONFIG_BCM_WKB)
+		if (wkb_free_list || wkb_completion_queue) {
+			if (wkb_budget) {
+				goto update_list;
+			}
+
+			/* we still have packets in Q, reschedule the task */
+			yield();
+		} else
+#endif /* CONFIG_BCM_WKB */
+		{
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
-         complete(&skb_free_complete);
+			complete(&skb_free_complete);
 #endif /* CONFIG_BCM_BPM_BULK_FREE */
-         set_current_state(TASK_INTERRUPTIBLE);
-         schedule_timeout(msecs_to_jiffies(skbfree_timer_period));
-      }
-   }
-   return 0;
+			set_current_state(TASK_INTERRUPTIBLE);
+			schedule_timeout(msecs_to_jiffies(skbfree_timer_period));
+		}
+	}
+
+	return 0;
 }
 
 /* proc files */
@@ -644,6 +750,38 @@ void dev_kfree_skb_thread(struct sk_buff *skb)
 }
 EXPORT_SYMBOL(dev_kfree_skb_thread);
 
+#if defined(CONFIG_BCM_WKB)
+/* queue wkb so that it can be freed in thread context */
+void dev_kfree_wkb_thread(wkbuff_t * wkb)
+{
+	unsigned long flags;
+
+	if (skbfree_thread_enable == 0) {
+		wkb_free(wkb);
+		return;
+	}
+
+	spin_lock_irqsave(&skbfree_lock, flags);
+
+	if (!wkb_completion_queue) {
+		wkb_set_link(wkb, NULL);
+	} else {
+		wkb_set_link(wkb, wkb_completion_queue);
+	}
+
+	wkb_completion_queue = WKBUFF_2_PNBUFF(wkb);
+	wkb_completion_queue_cnt++ ;
+
+	spin_unlock_irqrestore(&skbfree_lock, flags);
+
+	if ((skb_free_task->__state != TASK_RUNNING) &&
+			(wkb_completion_queue_cnt >= skbfree_coalescing_budget)) {
+		wake_up_process(skb_free_task);
+	}
+}
+EXPORT_SYMBOL(dev_kfree_wkb_thread);
+#endif /* CONFIG_BCM_WKB */
+
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
 /* There may be packets in skb_completion_queue but the thread
  * not scheduled (becasue of skbfree_coalescing_budget). This API
@@ -673,6 +811,7 @@ EXPORT_SYMBOL(dev_kfree_skb_thread_wait);
 void dev_kfree_skb_thread_bulk(struct sk_buff *head, struct sk_buff *tail, uint32_t len)
 {
 	unsigned long flags;
+
 	/* Assumption here is all the skb's in list have same refcount
 	 *  TODO: check if this is ok in all cases
 	 */
@@ -684,16 +823,45 @@ void dev_kfree_skb_thread_bulk(struct sk_buff *head, struct sk_buff *tail, uint3
 		spin_unlock_irqrestore(&skbfree_lock, flags);
 
 		if ((skb_free_task->__state != TASK_RUNNING) &&
-				(skb_completion_queue_cnt >= skbfree_coalescing_budget))
+			(skb_completion_queue_cnt >= skbfree_coalescing_budget)) {
 			wake_up_process(skb_free_task);
+		}
 	}
 }
+
+#if defined(CONFIG_BCM_WKB)
+/* bulk queue wkbs so it can be freed in thread context */
+void dev_kfree_wkb_thread_bulk(wkbuff_t *head, wkbuff_t *tail, uint32_t len)
+{
+	unsigned long flags;
+
+	spin_lock_irqsave(&skbfree_lock, flags);
+
+	if (!wkb_completion_queue) {
+		wkb_set_link(tail, NULL);
+	} else {
+		wkb_set_link(tail, wkb_completion_queue);
+	}
+
+	wkb_completion_queue = WKBUFF_2_PNBUFF(head);
+	wkb_completion_queue_cnt += len;
+
+	spin_unlock_irqrestore(&skbfree_lock, flags);
+
+	if ((skb_free_task->__state != TASK_RUNNING) &&
+		(wkb_completion_queue_cnt >= skbfree_coalescing_budget)) {
+		wake_up_process(skb_free_task);
+	}
+}
+EXPORT_SYMBOL(dev_kfree_wkb_thread_bulk);
+#endif /* CONFIG_BCM_WKB */
+
 #else
 void dev_kfree_skb_thread_bulk(struct sk_buff *skb)
 {
+	unsigned long flags;
 	struct sk_buff *skbfreelistend;
 	unsigned int skbcnt = 1;
-	unsigned long flags;
 
 	/* locate last skb of the supplied skb list */
 	skbfreelistend = skb;

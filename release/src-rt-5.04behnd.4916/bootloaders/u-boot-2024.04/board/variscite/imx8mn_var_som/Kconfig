@@ -1,0 +1,15 @@
+if TARGET_IMX8MN_VAR_SOM
+
+config SYS_BOARD
+	default "imx8mn_var_som"
+
+config SYS_VENDOR
+	default "variscite"
+
+config SYS_CONFIG_NAME
+	default "imx8mn_var_som"
+
+config IMX_CONFIG
+	default "board/variscite/imx8mn_var_som/imximage-8mn-ddr4.cfg"
+
+endif

@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  dts file for Phytium pe2201 board
+ *  Copyright (C) 2023, Phytium Technology Co., Ltd.
+ *	lixinde			<lixinde@phytium.com.cn>
+ *	weichangzheng	<weichangzheng@phytium.com.cn>
+ */
+/dts-v1/;
+
+/ {
+	model = "Phytium pe2201 Board";
+	compatible = "phytium,pe2201";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	uart0: serial@2800c000 {
+	compatible = "arm,pl011", "arm,primecell";
+		reg = <0x0 0x2800c000 0x0 0x1000>;
+		clock = <100000000>;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		pcie@40000000 {
+			compatible = "pci-host-ecam-generic";
+			device_type = "pci";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			reg = <0x0 0x40000000 0x0 0x10000000>;
+			ranges = <0x01000000 0x00 0x00000000 0x0 0x50000000 0x0 0x00F00000>,
+			<0x02000000 0x00 0x58000000 0x0 0x58000000 0x0 0x28000000>,
+			<0x43000000 0x10 0x00000000 0x10 0x00000000 0x10 0x00000000>;
+		};
+	};
+};

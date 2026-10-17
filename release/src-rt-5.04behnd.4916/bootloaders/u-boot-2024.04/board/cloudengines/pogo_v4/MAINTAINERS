@@ -1,0 +1,6 @@
+POGO_V4 BOARD
+M:	Tony Dinh <mibodhi@gmail.com>
+S:	Maintained
+F:	board/cloudengines/pogo_v4/
+F:	include/configs/pogo_v4.h
+F:	configs/pogo_v4_defconfig

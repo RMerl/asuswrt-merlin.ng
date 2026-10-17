@@ -98,12 +98,6 @@ typedef struct
     uint32_t     priv_feat;
 
     enetx_port_t *port;
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-    struct list_head enet_devs;
-    struct list_head ig_chains;
-    struct list_head eg_chains;
-    struct net_device *enet_netdev;
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
 
 #ifdef CONFIG_BCM_XDP
     struct bpf_prog         *_xdp_prog;
@@ -131,7 +125,7 @@ int enetx_queue_work(enetx_work_func_t func, void *arg1, int arg2);
 
 /* Called from platform ISR implementation */
 int enetx_rx_isr(enetx_channel *chan);
-void wait_enet_ready(void);
+void wait_enet_ready(bool under_rtnl);
 
 /* Called from port init */
 int enet_create_netdevice(enetx_port_t *p);
@@ -184,8 +178,6 @@ int enetxapi_rx_pkt_dump_on_demux_err(enetx_rx_info_t *rx_info);
 /* Initialize platform dependent configuration */
 int enetxapi_post_parse(void);
 int enetxapi_post_config(void);
-void set_mac_cfg_by_phy(enetx_port_t *p);
-void set_mac_eee_by_phy(enetx_port_t *p);
 int sw_print_mac_phy_info(enetx_port_t *sw, char **buf, int *sz);
 netdev_tx_t enet_xmit(pNBuff_t pNBuff, struct net_device *dev);
 

@@ -30,11 +30,6 @@ written consent.
 #ifndef CLK_RST_H
 #define CLK_RST_H
 
-#ifndef IS_BCMCHIP
-#define IS_BCMCHIP(num) (defined(_BCM9##num##_)||defined(CONFIG_BCM9##num)||\
-				defined(CONFIG_BCM##num))
-#endif
-
 /* pll dividers */
 struct PLL_DIVIDERS {
 	unsigned int pdiv;
@@ -52,19 +47,19 @@ int ddr_freq_set(unsigned long freq);
 int viper_freq_set(unsigned long freq);
 int rdp_freq_set(unsigned long freq);
 unsigned long get_rdp_freq(unsigned int *rdp_freq);
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856) || IS_BCMCHIP(6878) || IS_BCMCHIP(6855)
+#if defined(_BCM96858_) || defined(_BCM96856_) || defined(_BCM96855_)
 int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco);
 int pll_ch_freq_vco_set(unsigned int pll_addr, unsigned int ch,
 			unsigned int mdiv, unsigned int use_vco);
 #endif
 
-#if IS_BCMCHIP(6855)
+#if defined(_BCM96855_)
 int pll_vco_config(unsigned int pll_addr, unsigned int ndivider, unsigned int pdivider);
 #endif
 
 void set_vreg_clk(void);
 
-#if IS_BCMCHIP(6858)
+#if defined(_BCM96858_)
 
 typedef enum {
 	BCM_CPU_CLK_HIGH,
@@ -75,16 +70,13 @@ int bcm_change_cpu_clk(BCM_CPU_CLK clock);
 
 #endif
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6855)
+#if defined(_BCM96858_) || defined(_BCM96855_)
 #define XRDPPLL_RUNNER_CHANNEL   0
 #endif
-#if IS_BCMCHIP(6856) || IS_BCMCHIP(6846)
+#if defined(_BCM96856_)
 #define XRDPPLL_RUNNER_CHANNEL   1
 #endif
-#if IS_BCMCHIP(6878)
-#define SYSPLL_RUNNER_CHANNEL   0
-#endif
-#if IS_BCMCHIP(63158)
+#if defined(_BCM963158_)
 /* TBD. Verify value. */
 #define XRDPPLL_RUNNER_CHANNEL   1
 #endif

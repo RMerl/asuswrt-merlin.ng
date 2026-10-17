@@ -1,0 +1,12 @@
+<PUBLISH>
+--- 94916G.old	2024-02-21 11:24:17.595733031 +0800
++++ 94916G	2024-02-21 11:24:31.283589513 +0800
+@@ -758,7 +758,7 @@
+ BUILD_MMC_OOPS=y
+ # BUILD_KASAN is not set
+ # BUILD_ASAN is not set
+-# BUILD_KFENCE is not set
++BUILD_KFENCE=y
+ # SKIP_RTPOLICY is not set
+ # BUILD_UBSAN is not set
+ # BUILD_LINUX_GCOV is not set

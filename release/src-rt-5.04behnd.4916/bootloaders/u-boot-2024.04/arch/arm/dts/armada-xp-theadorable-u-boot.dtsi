@@ -1,0 +1,5 @@
+&lcd0 {
+	bootph-all;
+};
+
+#include "mvebu-u-boot.dtsi"

@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Configuration file for binman
+ *
+ * After building u-boot, can generate the SPKG output by running:
+ * tools/binman/binman build -d arch/arm/dts/r9a06g032-rzn1-snarc.dtb -O <outdir>
+ */
+
+#include <config.h>
+
+/ {
+	binman: binman {
+	};
+};
+
+&binman {
+	mkimage {
+		filename = "u-boot.bin.spkg";
+		args = "-n board/schneider/rzn1-snarc/spkgimage.cfg -T spkgimage -a 0x20040000 -e 0x20040000";
+		u-boot {
+		};
+	};
+};

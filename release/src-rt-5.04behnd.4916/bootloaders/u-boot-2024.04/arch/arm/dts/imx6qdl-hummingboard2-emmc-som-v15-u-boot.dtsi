@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "imx6qdl-u-boot.dtsi"
+
+/ {
+	board-detect {
+		compatible = "solidrun,hummingboard-detect";
+		detect-gpios = <
+			&gpio2 8 0
+			&gpio3 4 0
+			&gpio4 9 0
+			&gpio6 0 0
+			&gpio6 4 0
+		>;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&soc {
+	bootph-all;
+};
+
+&aips1 {
+	bootph-all;
+};
+
+&pinctrl_microsom_uart1 {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&gpio2 {
+	bootph-all;
+};
+
+&gpio3 {
+	bootph-all;
+};
+
+&gpio4 {
+	bootph-all;
+};
+
+&gpio6 {
+	bootph-all;
+};
+
+&usdhc1 {
+	status = "disabled";
+};
+
+&usdhc2 {
+	bootph-all;
+};
+
+&usdhc3 {
+	bootph-all;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

@@ -1,0 +1,15 @@
+if TARGET_TURINGRK1_RK3588
+
+config SYS_BOARD
+	default "turing-rk1-rk3588"
+
+config SYS_VENDOR
+	default "turing"
+
+config SYS_CONFIG_NAME
+	default "turing-rk1-rk3588"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

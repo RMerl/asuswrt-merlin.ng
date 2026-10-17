@@ -175,7 +175,7 @@ typedef struct {
 } TCommandJumpApp;
 
 typedef struct {
-#if defined(PMC_IMPL_3_X) || IS_BCMCHIP(63158)
+#if defined(PMC_IMPL_3_X) || defined(_BCM963158_)
 	union {
 		uint32_t word2;
 		struct {

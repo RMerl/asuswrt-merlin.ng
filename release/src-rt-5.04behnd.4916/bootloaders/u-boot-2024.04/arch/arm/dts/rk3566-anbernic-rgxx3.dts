@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/dts-v1/;
+
+#include "rk3566-anbernic-rgxx3.dtsi"
+
+/ {
+
+/*
+ * Note this is a pseudo-model that doesn't exist in mainline Linux.
+ * This model is used for all RGXX3 devices and the board.c file will
+ * set the correct dtb name for loading mainline Linux automatically.
+ */
+	model = "RGXX3";
+	compatible = "anbernic,rg353m", "anbernic,rg353p",
+		     "anbernic,rg353v", "anbernic,rg353vs",
+		     "anbernic,rg503", "rockchip,rk3566";
+};

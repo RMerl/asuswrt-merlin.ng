@@ -1,0 +1,7 @@
+N2350  BOARD
+M:	Tony Dinh <mibodhi@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/armada-385-thecus-n2350.dts
+F:	board/thecus/n2350/
+F:	include/configs/n2350.h
+F:	configs/n2350_defconfig

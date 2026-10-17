@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot addition to handle Samsung S9 SM-G9600 (starqltechn) pins
+ *
+ * (C) Copyright 2021 Dzmitry Sankouski <dsankouski@gmail.com>
+ *
+ */
+
+/
+{
+	framebuffer@9D400000 {
+		bootph-all;
+	};
+	soc {
+		bootph-all;
+		serial@a84000 {
+			bootph-all;
+		};
+		clock-controller@100000 {
+			bootph-all;
+		};
+		pinctrl@3400000 {
+			bootph-all;
+		};
+	};
+};
+

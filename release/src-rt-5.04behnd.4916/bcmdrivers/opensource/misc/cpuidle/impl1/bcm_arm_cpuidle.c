@@ -98,16 +98,13 @@ static const unsigned int bcm_arm_freq_pattern[] = {
 
 static unsigned int auto_clock_divide_enabled = 0;
 static unsigned int __iomem
-#if defined(CONFIG_BCM94908)
-	*bcr_wfx_state,
-#endif
 	*bcr_cluster_clk_ctrl0,
 	*bcr_cluster_clk_pattern0;
 
 static void bcm_arm_cpuidle_update_freq( void )
 {
 	freq_oper_index = (freq_max_index > freq_admin_index) ? freq_max_index : freq_admin_index;
-#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858)
 	if (bcr_cluster_clk_pattern0)
 		*bcr_cluster_clk_pattern0 = bcm_arm_freq_pattern[freq_oper_index];
 #else
@@ -283,9 +280,6 @@ static int __init bcm_biucfg_map_reg_addr(struct platform_device *pdev)
 {
 	int i, ret;
 	struct bcm_biucfg_reg_addr bra[] = {
-#if defined(CONFIG_BCM94908)
-		REG_ADDR(wfx_state),
-#endif
 		REG_ADDR(cluster_clk_ctrl0),
 		REG_ADDR(cluster_clk_pattern0),
 	};
@@ -372,14 +366,9 @@ static int bcm_arm_cpuidle_wfi_enter(struct cpuidle_device *dev,
 	static volatile int wfi_state = 0; // assuming only 1 cluster for now
 #endif
 #endif
-#if defined(CONFIG_BCM_CPUIDLE_CLK_DIVIDER) || \
-	defined(CONFIG_BCM_DDR_SELF_REFRESH_PWRSAVE)
+#if defined(CONFIG_BCM_CPUIDLE_CLK_DIVIDER)
 	// Assume cpu does not change through this function
 	const int cpu_mask = 1 << raw_smp_processor_id();
-#endif
-
-#ifdef CONFIG_BCM_DDR_SELF_REFRESH_PWRSAVE
-	bcm_memc_self_refresh_pre_wfi(cpu_mask);
 #endif
 
 #if defined(CONFIG_BCM_CPUIDLE_CLK_DIVIDER)
@@ -399,16 +388,7 @@ static int bcm_arm_cpuidle_wfi_enter(struct cpuidle_device *dev,
 		// in which case we can reduce the core frequency.
 		// The frequency will be raised back immediately after wfi
 		// since the code below is running with local interrupts disabled
-#if defined(CONFIG_BCM94908)
-		if (bcr_wfx_state && bcr_cluster_clk_pattern0) {
-			unsigned int wfx_mask = *bcr_wfx_state & ((1 << 4) - 1);
-
-			if ((((wfx_mask & online_mask) | cpu_mask) ^
-						online_mask) == 0)
-				*bcr_cluster_clk_pattern0 =
-					bcm_arm_freq_pattern[LAST_PATTERN_INDEX];
-		}
-#elif defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858)
 		wfi_state |= cpu_mask;
 
 		// if all CPUs in the cluster are in WFI, lower the clock frequency
@@ -447,10 +427,6 @@ static int bcm_arm_cpuidle_wfi_enter(struct cpuidle_device *dev,
 		dsb(ish);
 		wfi();
 	}
-
-#ifdef CONFIG_BCM_DDR_SELF_REFRESH_PWRSAVE
-	bcm_memc_self_refresh_post_wfi(cpu_mask);
-#endif
 
 	return index;
 }
@@ -493,13 +469,7 @@ int ret;
 	if(ret)
 		printk(KERN_ERR "sysfs_create_group : %d\n", ret);
 
-#if defined(CONFIG_BCM94908)
-	if (bcr_cluster_clk_ctrl0 && (*bcr_cluster_clk_ctrl0 & (1 << 4)) == 0) {
-		if (bcr_cluster_clk_pattern0)
-			*bcr_cluster_clk_pattern0 = ~0;	// full-speed user clock-pattern
-		*bcr_cluster_clk_ctrl0 = 1 << 4;	// enable user clock-patterns
-	}
-#elif defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96858)
 	if (bcr_cluster_clk_pattern0)
 		*bcr_cluster_clk_pattern0 = ~0;	// full-speed user clock-pattern
 	// enable clock control and select clock pattern register

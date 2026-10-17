@@ -32,6 +32,8 @@
 
 #include "rdd_map_auto.h"
 #include "access_macros.h"
+
+/* coverity[include_recursion:SUPPRESS] */
 #include "rdd_common.h"
 #ifdef __KERNEL__
 #include "bcm_rsvmem.h"
@@ -76,7 +78,7 @@ extern uintptr_t rdp_runner_core_addr[];
 #endif
 
 #define SCHEDULING
-#if  (defined(BCM6888)) 
+#if  (defined(BCM6888) || defined(BCM68375)) 
 #define MAX_TM_CORES_PER_DIRECTION 3
 #else
 #define MAX_TM_CORES_PER_DIRECTION 1
@@ -106,13 +108,6 @@ static inline void _rdd_module_init(rdd_module_t *module)
 }
 
 #if defined(RDP_SIM)
-
-static inline uint8_t read8(uint8_t *addr);
-static inline uint16_t read16(uint16_t *addr);
-static inline uint32_t read32(uint32_t *addr);
-static inline void write8(uint8_t *addr, uint8_t value);
-static inline void write16(uint16_t *addr, uint16_t value);
-static inline void write32(uint32_t *addr, uint32_t value);
 
 static inline void _rdd_socket_write(uint32_t sim_addr, uint32_t val, rdd_entry_size_t size)
 {
@@ -222,13 +217,6 @@ static inline void _rdd_i_write_single_core(uint32_t *addr_arr, uint32_t addr, u
 
     BUG_ON(addr_arr[core_id] == INVALID_TABLE_ADDRESS);
 
-#if defined(RDP_SIM)
-    if (g_runner_sim_connected)
-    {
-        _rdd_socket_i_write(core_id, addr_arr, addr, val, i, size);
-    }
-#endif
-
     entry = (uint32_t *)(DEVICE_ADDRESS((rdp_runner_core_addr[core_id] + addr_arr[core_id]) + addr));
     switch (size)
     {
@@ -265,13 +253,6 @@ static inline uint32_t _rdd_i_read_single_core(uint32_t *addr_arr, uint32_t addr
 
     BUG_ON(addr_arr[core_id] == INVALID_TABLE_ADDRESS);
 
-#if defined(RDP_SIM)
-    if (g_runner_sim_connected)
-    {
-        ret = _rdd_socket_i_read(core_id, addr_arr, addr, i, size);
-    }
-    else
-#endif
     {
         entry = (uint32_t *)(DEVICE_ADDRESS((rdp_runner_core_addr[core_id] + addr_arr[core_id]) + addr));
         switch (size)
@@ -313,14 +294,6 @@ static inline void _rdd_field_write_single_core(uint32_t *addr_arr, uint32_t add
 
     BUG_ON(addr_arr[core_id] == INVALID_TABLE_ADDRESS);
 
-#if defined(RDP_SIM)
-    if (g_runner_sim_connected)
-    {
-        uint32_t current_value = _rdd_socket_i_read(core_id, addr_arr, addr, 0, size);
-        RDP_FIELD_SET(current_value, lsb, width, val);
-        _rdd_socket_i_write(core_id, addr_arr, addr, current_value, 0, size);
-    }
-#endif
     entry = (uint32_t *)(DEVICE_ADDRESS((rdp_runner_core_addr[core_id] + addr_arr[core_id]) + addr));
     switch (size)
     {
@@ -359,14 +332,6 @@ static inline uint32_t _rdd_field_read_single_core(uint32_t *addr_arr, uint32_t 
 
     BUG_ON(addr_arr[core_id] == INVALID_TABLE_ADDRESS);
 
-#if defined(RDP_SIM)
-    if (g_runner_sim_connected)
-    {
-        uint32_t current_value = _rdd_socket_i_read(core_id, addr_arr, addr, 0, size);
-        ret = RDP_FIELD_GET(current_value, lsb, width);
-    }
-    else
-#endif
     {
         entry = (uint32_t *)(DEVICE_ADDRESS((rdp_runner_core_addr[core_id] + addr_arr[core_id]) + addr));
         switch (size)
@@ -413,95 +378,6 @@ static inline uint32_t _rdd_field_read(uint32_t *addr_arr, uint32_t addr, uint32
 /* 32 bit */
 #define GET_ADDR_LOW(lsb_addr, phys_ring_address) (lsb_addr = ((uint32_t)phys_ring_address & 0xFFFFFFFF));
 #endif
-
-static int is_rdp_block_addr(void *addr)
-{
-    return (uint8_t *)addr >= soc_base_address && (uint8_t *)addr <= soc_base_address + SIM_MEM_SIZE;
-}
-
-static inline uint8_t read8(uint8_t *addr)
-{
-    if (g_runner_sim_connected && is_rdp_block_addr(addr))
-    {
-        uint32_t addr_low;
-
-        GET_ADDR_LOW(addr_low, (bdmf_phys_addr_t)addr);
-        return (uint8_t)_rdd_socket_read(addr_low, rdd_size_8);
-    }
-    else
-        return *addr;
-}
-
-static inline uint16_t read16(uint16_t *addr)
-{
-    uint16_t val;
-
-    if (g_runner_sim_connected && is_rdp_block_addr(addr))
-    {
-        uint32_t addr_low;
-
-        GET_ADDR_LOW(addr_low, (bdmf_phys_addr_t)addr);
-        val = (uint16_t)_rdd_socket_read(addr_low, rdd_size_16);
-    }
-    else
-        val = *addr;
-    return swap2bytes(val);
-}
-
-static inline uint32_t read32(uint32_t *addr)
-{
-    uint32_t val;
-
-    if (g_runner_sim_connected && is_rdp_block_addr(addr))
-    {
-        uint32_t addr_low;
-
-        GET_ADDR_LOW(addr_low, (bdmf_phys_addr_t)addr);
-        val = (uint32_t)_rdd_socket_read(addr_low, rdd_size_32);
-    }
-    else
-        val = *addr;
-    return swap4bytes(val);
-}
-
-static inline void write8(uint8_t *addr, uint8_t value)
-{
-    if (g_runner_sim_connected && is_rdp_block_addr(addr))
-    {
-        uint32_t addr_low;
-
-        GET_ADDR_LOW(addr_low, (bdmf_phys_addr_t)addr);
-        _rdd_socket_write(addr_low, value, rdd_size_8);
-    }
-    else
-        *addr = value;
-}
-
-static inline void write16(uint16_t *addr, uint16_t value)
-{
-    if (g_runner_sim_connected && is_rdp_block_addr(addr))
-    {
-        uint32_t addr_low;
-
-        GET_ADDR_LOW(addr_low, (bdmf_phys_addr_t)addr);
-        _rdd_socket_write(addr_low, value, rdd_size_16);
-    }
-    else
-        *addr = swap2bytes(value);
-}
-
-static inline void write32(uint32_t *addr, uint32_t value)
-{
-    if (g_runner_sim_connected && is_rdp_block_addr(addr))
-    {
-        uint32_t addr_low;
-
-        GET_ADDR_LOW(addr_low, (bdmf_phys_addr_t)addr);
-        _rdd_socket_write(addr_low, value, rdd_size_32);
-    }
-    else
-        *addr = swap4bytes(value);
-}
 
 #endif
 #endif

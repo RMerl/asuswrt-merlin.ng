@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "am33xx-u-boot.dtsi"
+
+&l4_per {
+	bootph-all;
+	segment@300000 {
+		bootph-all;
+		target-module@e000 {
+			bootph-all;
+
+			lcdc: lcdc@0 {
+				bootph-all;
+			};
+		};
+	};
+};
+
+&mmc3 {
+	status = "disabled";
+};
+
+&usb0 {
+	dr_mode = "peripheral";
+};
+
+&i2c0 {
+	bootph-all;
+};
+
+&l4_wkup {
+	bootph-all;
+	segment@200000 {
+		bootph-all;
+		target-module@9000 {
+			bootph-all;
+		};
+	};
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&mmc1 {
+	bootph-all;
+};
+
+&mmc2 {
+	bootph-all;
+};

@@ -1,0 +1,78 @@
+Texas Instruments, TPS65911 PMIC
+
+This device uses two drivers:
+- drivers/power/pmic/tps65910.c (for parent device)
+- drivers/power/regulator/tps65911_regulator.c (for child regulators)
+
+This chapter describes the binding info for the PMIC driver and regulators.
+
+Required properties for PMIC:
+- compatible: "ti,tps65911"
+- reg: 0x2d
+
+With those two properties, the pmic device can be used for read/write only.
+To bind each regulator, the optional regulators subnode should exists.
+
+Optional subnode:
+- name: regulators (subnode list of each device's regulator)
+
+Regulators subnode contains set on supported regulators.
+
+Required properties:
+- regulator-name: used for regulator uclass platform data '.name',
+
+List of supported regulator nodes names for tps65911:
+- vdd1, vdd2, vddctrl, vddio
+- ldo1, ldo2, ldo3, ldo4, ldo5, ldo6, ldo7, ldo8
+
+vddio in datasheet is referred as vio, but for reduction of code and
+unification of smps regulators it is named vddio.
+
+Optional:
+- regulator-min-microvolt: minimum allowed Voltage to set
+- regulator-max-microvolt: minimum allowed Voltage to set
+- regulator-always-on: regulator should be never disabled
+- regulator-boot-on: regulator should be enabled by the bootloader
+
+Example:
+
+tps65911@2d {
+	compatible = "ti,tps65911";
+	reg = <0x2d>;
+
+	regulators {
+		vdd1 {
+			regulator-name = "vdd_1v2_backlight";
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1200000>;
+			regulator-always-on;
+			regulator-boot-on;
+		};
+
+		...
+
+		vddio {
+			regulator-name = "vdd_1v8_gen";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			regulator-always-on;
+			regulator-boot-on;
+		};
+
+		ldo1 {
+			regulator-name = "vdd_emmc_core";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-always-on;
+			regulator-boot-on;
+		};
+
+		...
+
+		ldo8 {
+			regulator-name = "vdd_ddr_hs";
+			regulator-min-microvolt = <1000000>;
+			regulator-max-microvolt = <1000000>;
+		};
+	};
+};

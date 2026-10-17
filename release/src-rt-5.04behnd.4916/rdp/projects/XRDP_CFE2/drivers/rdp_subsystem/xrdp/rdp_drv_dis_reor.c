@@ -37,7 +37,7 @@
 
 #define DSPTCHR_CONJ_INGR (RU_BLK(DSPTCHR).addr[0] +  RU_REG_OFFSET(DSPTCHR,CONGESTION_INGRS_CONGSTN))
 #define DSPTCHR_CONJ_EGRS (RU_BLK(DSPTCHR).addr[0] +  RU_REG_OFFSET(DSPTCHR,CONGESTION_EGRS_CONGSTN))
-#if !defined(BCM6858) && !defined(BCM6846) && !defined(BCM63158)
+#if !defined(BCM6858) && !defined(BCM63158)
 #define DSPTCHR_BDRAM_NEXT (RU_BLK(DSPTCHR).addr[0] +  RU_REG_OFFSET(DSPTCHR,BDRAM_NEXT_DATA))
 #else
 #define DSPTCHR_BDRAM_NEXT (RU_BLK(DSPTCHR).addr[0] +  RU_REG_OFFSET(DSPTCHR,BDRAM_DATA))
@@ -135,7 +135,7 @@ int drv_dis_reor_free_linked_list_init()
 
     for (i = 0; i < (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1); i++)
     {
-#if !defined(BCM6858) && !defined(BCM6846) && !defined(BCM63158)
+#if !defined(BCM6858) && !defined(BCM63158)
         rc = ag_drv_dsptchr_bdram_next_data_set(i, i+1);
 #else
         rc = ag_drv_dsptchr_bdram_data_set(i, i+1);
@@ -233,7 +233,7 @@ static int _drv_dis_reor_viq_cfg(uint8_t q_idx, dsptchr_ingress_queue *viq)
     rc = rc ? rc : ag_drv_dsptchr_qdes_head_set(q_idx, fll_entry.head);
     rc = rc ? rc : ag_drv_dsptchr_qdes_tail_set(q_idx, fll_entry.head);
     /* advance the FLL head pointer */
-#if !defined(BCM6858) && !defined(BCM6846) && !defined(BCM63158)
+#if !defined(BCM6858) && !defined(BCM63158)
     rc = rc ? rc : ag_drv_dsptchr_bdram_next_data_get(fll_entry.head, &q_head);
 #else
     rc = rc ? rc : ag_drv_dsptchr_bdram_data_get(fll_entry.head, &q_head);

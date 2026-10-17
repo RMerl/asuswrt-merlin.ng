@@ -71,7 +71,7 @@
 #include "XRDP_XUMAC_RDP_AG.h"
 
 extern const ru_block_rec *RU_ALL_BLOCKS[];
-#define RU_BLOCK_COUNT 36
+#define RU_BLOCK_COUNT 38
 #define RU_REG_COUNT 1340
 #define RU_CHIP_ID_LOWER "bcm68888_b0"
 #define RU_CHIP_ID_UPPER "BCM68888_B0"

@@ -41,13 +41,14 @@
 #include "time_sync.h"
 #endif
 #include "rdpa_drv.h"
+#include "bp3_license.h"
 
 /* init system params */
 #define BP_NO_EXT_SW 30
 #define RDPA_SWITCHING_MODE_PSP_KEY "SwitchingMode"
 #define RDPA_IPCLASS_METHOD_PSP_KEY "IpClassMethod" /* Backward compatibility. */
 #define RDPA_US_DDR_QUEUE_ENABLE "UsDDRQueueEn"
-#define RDPA_VLAN_STATS_ENABLE "VlanStatsEn"
+
 #define RDPA_IPTV_TABLE_SIZE "IptvTableSize"
 #define RDPA_QM_US_QUEUE_SIZE "QmUsQueueSize"
 #define RDPA_QM_DS_QUEUE_SIZE "QmDsQueueSize"
@@ -56,188 +57,25 @@
 #define FC_TCP_ACK_PRIO_ENABLE "FcTcpAckPrioEn"
 
 
-#define NVRAM_RNR_MAX_KEYS                    1
+#define NVRAM_RNR_MAX_KEYS                    2
 #define NVRAM_RNR_KEY_STR_LEN                 32
 #define NVRAM_RNR_RES_STR_LEN                 32
 
-#define NVRAM_RNR_KEY_DHD_OFFL_OVERRIDE       0
+#define NVRAM_DOL_KEY_DHD_OFFL_OVERRIDE       0
+#define NVRAM_RNR_KEY_DHD_OFFL_OVERRIDE       1
 
 extern char *nvram_k_get(char *name);
 
 /* storage key id vs format str */
 char runner_key_fmt_str[NVRAM_RNR_MAX_KEYS][NVRAM_RNR_KEY_STR_LEN] = {
+    "dol_cap_offload_override",
     "dhd_rnr_offload_override",
 };
-
-#ifndef CONFIG_BCM_PON
-static int emac_map = 0;
-#endif
 
 static int ext_sw_pid = BP_NO_EXT_SW;
 
 extern int bdmf_history_init(uint32_t size, bdmf_boolean record_on);
-#ifndef CONFIG_BCM_PON
-#include <linux/of.h>
 
-static int rdpa_get_init_system_dt_params(rdpa_system_init_cfg_t  *init_cfg)
-{
-    int rc = 0;
-#ifdef CONFIG_BRCM_QEMU
-    emac_map = 0xF;
-#else // !QEMU
-    struct device_node *np, *child, *child_p;
-    const unsigned int *port_reg;
-    uint32_t port_index;
-
-    if ((np = of_find_compatible_node(NULL, NULL, "brcm,enet")))
-    {
-        for_each_available_child_of_node(np, child)
-        {
-            for_each_available_child_of_node(child, child_p)
-            {
-                port_reg = of_get_property(child_p, "reg", NULL);
-                port_index = be32_to_cpup(port_reg);
-
-                if (of_property_read_bool(child_p, "management")) continue;
-                if (strstr((char *)of_node_full_name(child_p), "fiber")) continue;
-
-                emac_map |= 1 << port_index;
-                if (of_parse_phandle(child_p, "link", 0))
-                    ext_sw_pid = port_index;
-            }
-        }
-    }
-
-    if (np)
-        of_node_put(np);
-
-#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
-    for_each_compatible_node(np, NULL, "brcm,bcaphy")
-    {
-        const char *m_type_str = of_get_property(np, "usxgmii-m-type", NULL);
-
-        if (!m_type_str) continue;
-        if (!strcasecmp(m_type_str, "10G-SXGMII"))      init_cfg->usxgmiim_port_cfg = rdpa_usxgmiim_1_port;
-        else if (!strcasecmp(m_type_str, "10G-DXGMII")) init_cfg->usxgmiim_port_cfg = rdpa_usxgmiim_2_port;
-        else if (!strcasecmp(m_type_str, "10G-QXGMII")) init_cfg->usxgmiim_port_cfg = rdpa_usxgmiim_4_port;
-        else if (!strcasecmp(m_type_str, "5G-SXGMII"))  init_cfg->usxgmiim_port_cfg = rdpa_usxgmiim_1_port;
-        else if (!strcasecmp(m_type_str, "5G-DXGMII"))  init_cfg->usxgmiim_port_cfg = rdpa_usxgmiim_2_port;
-        else if (!strcasecmp(m_type_str, "2.5G-SXGMII"))init_cfg->usxgmiim_port_cfg = rdpa_usxgmiim_1_port;
-        break;
-    }
-#endif //4912
-#endif // !QEMU
-
-    printk("rdpa_get_init_system_dt_params: emac_map=%x ext_sw_pid=%d usxgmiim_cnt=%d\n", emac_map, ext_sw_pid, init_cfg->usxgmiim_port_cfg);
-    return rc;
-}
-
-#if defined(TM_CORE_LOAD_BALANCING)
-#ifndef CONFIG_BRCM_QEMU
-static uint32_t two_digit_atoi(char *digits)
-{
-    if (digits[0] >= '0' && digits[0] <= '9')
-    {
-        if (digits[1] >= '0' && digits[1] <= '9')
-            return (digits[0] - '0') * 10 + (digits[1] - '0');
-        else
-            return digits[0] - '0';
-    }
-    return 100; /* out of range */
-}
-#endif
-
-static void rdpa_get_init_system_tm_core_port_map(rdpa_tm_core_emac_map *tm_core_emac_map_p,
-    char *ports_tm_0_p, char *ports_tm_1_p)
-{
-#ifndef CONFIG_BRCM_QEMU
-    uint32_t enabled_map_copy = tm_core_emac_map_p->enabled_map;
-    uint32_t ports_mapped = 0;
-    uint32_t port_index;
-    uint8_t *p;
-    int i, j;
-
-    for (i = 0; i < 2; i++)
-    {
-        /* PSP PortsTm0 and PortsTm1 format example: P0,P1,P10 */
-        p = (i == 0) ? ports_tm_0_p : ports_tm_1_p;
-        while (*p)
-        {
-            while (*p != 'P' && *p != 'p' && *p != '\0')
-                p++;
-            if (*p == 'P' || *p == 'p')
-            {
-                p++;
-                port_index = two_digit_atoi(p);
-
-                /* the user configured port number must be less than the maximum port number,
-                 * exist in the device tree port configuration and must have not already
-                 * been configured */
-                if ((port_index < TM_CORE_EMAC_MAP_MAX_PORTS) &&
-                     ((1 << port_index) & tm_core_emac_map_p->enabled_map) &&
-                    !((1 << port_index) & ports_mapped))
-                {
-                    if (i == 1)
-                       tm_core_emac_map_p->core_map |= (1 << port_index);
-                    else
-                       tm_core_emac_map_p->core_map &= ~(1 << port_index);
-
-                    enabled_map_copy &= ~(1 << port_index);
-                    ports_mapped |= (1 << port_index);
-                }
-                else
-                {
-                    printk("RUNNER TM PORT MAPPING: Error in TmPorts%cs string, Valid ports are: ", (i == 0) ? 'D' : 'U');
-                    for (j = 0; j < TM_CORE_EMAC_MAP_MAX_PORTS; j++)
-                    {
-                        if ((1 << j) & tm_core_emac_map_p->enabled_map)
-                            printk("P%d ", j);
-                    }
-                    printk("RUNNER TM PORT MAPPING: switching to automatic port mapping\n");
-                    tm_core_emac_map_p->core_map = 0;
-                    return;
-                }
-            }
-            else /* end of string */
-                break;
-        }
-    }
-
-    if (enabled_map_copy)
-    {
-        printk("RUNNER TM PORT MAPPING: Error, these ports are not assigned in PortsTm0 or PortsTm1: ");
-        for (i = 0; i < TM_CORE_EMAC_MAP_MAX_PORTS; i++)
-        {
-            if ((1 << i) & enabled_map_copy)
-                printk("P%d ", i);
-        }
-        printk("RUNNER TM PORT MAPPING: switching to automatic port mapping\n");
-        tm_core_emac_map_p->core_map = 0;
-        return;
-    }
-
-    printk("RUNNER TM PORT MAPPING: Using TM port mapping from PortsTm0:\n");
-    for (i = 0; i < TM_CORE_EMAC_MAP_MAX_PORTS; i++)
-    {
-        if (((1 << i) & tm_core_emac_map_p->enabled_map) && !((1 << i) & tm_core_emac_map_p->core_map))
-            printk("P%d ", i);
-    }
-
-    printk("RUNNER TM PORT MAPPING: Using TM port mapping from PortsTm1:\n");
-    for (i = 0; i < TM_CORE_EMAC_MAP_MAX_PORTS; i++)
-    {
-        if (((1 << i) & tm_core_emac_map_p->enabled_map) && ((1 << i) & tm_core_emac_map_p->core_map))
-            printk("P%d ", i);
-    }
-    
-    tm_core_emac_map_p->tm_core_port_map_enable = 1;
-
-#endif // !QEMU
-}
-#endif /* TM_CORE_LOAD_BALANCING */
-#endif /* !CONFIG_BCM_PON */
-
-#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
 typedef enum
 {
     scratchpad_func_get_or_init = 0,
@@ -297,18 +135,13 @@ Exit:
 int operation_mode_get(rdpa_operation_mode *operation_mode)
 {
     *operation_mode = rdpa_method_fc;
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV)
-    *operation_mode = rdpa_method_prv;
-#endif
 
    return 0;
 }
 
-#ifdef XRDP
-
 static int nvram_runner_key_get(int key_id, char *buff, int len)
 {
-#ifndef CONFIG_BRCM_QEMU
+#if !defined(CONFIG_BRCM_QEMU) && !defined(RDP_ARCH_QEMU_SIM)
     char val_str[NVRAM_RNR_RES_STR_LEN];
 #endif /* CONFIG_BRCM_QEMU */
     char *key_str = NULL;
@@ -316,7 +149,7 @@ static int nvram_runner_key_get(int key_id, char *buff, int len)
     if (key_id >= NVRAM_RNR_MAX_KEYS)
         return 0;
 
-#ifndef CONFIG_BRCM_QEMU
+#if !defined(CONFIG_BRCM_QEMU) && !defined(RDP_ARCH_QEMU_SIM)
     /* Read uboot environment first */
     memset(val_str, 0, sizeof(val_str));
     if (eNvramGet(runner_key_fmt_str[key_id], val_str, NVRAM_RNR_RES_STR_LEN) > 0) {
@@ -419,9 +252,17 @@ int dhd_offload_config_get(uint32_t *dhd_offload_bitmask)
     char buff[NVRAM_RNR_RES_STR_LEN];
     int  length = 0;
 
-    /* Fetch the offlaod override Configuration information of the radio, if present */
+    /*
+     * Fetch the offlaod override Configuration information of the radio,
+     * if present. Try dol_xxx setting first and then dhd_rnr_xxx setting
+     */
     memset(buff, 0, sizeof(buff));
-    length = nvram_runner_key_get(NVRAM_RNR_KEY_DHD_OFFL_OVERRIDE, buff, sizeof(buff));
+#ifdef CONFIG_BCM_DHD_OFFLOAD
+    length = nvram_runner_key_get(NVRAM_DOL_KEY_DHD_OFFL_OVERRIDE, buff, sizeof(buff));
+#endif /* CONFIG_BCM_DHD_OFFLOAD */
+    if (length == 0) {
+        length = nvram_runner_key_get(NVRAM_RNR_KEY_DHD_OFFL_OVERRIDE, buff, sizeof(buff));
+    }
 
     if (length == 0)
     {
@@ -434,7 +275,7 @@ int dhd_offload_config_get(uint32_t *dhd_offload_bitmask)
 
     return 0;
 }
-#endif
+
 
 int qm_queues_size_get(rdpa_qm_cfg_t *qm_cfg_table)
 {
@@ -486,21 +327,6 @@ int iptv_table_size_get(rdpa_iptv_table_size *iptv_table_size)
     return 0;
 }
 
-int vlan_stats_enable_get(bdmf_boolean *vlan_stats_enable)
-{
-    int rc;
-    char buf[6];
-
-    *vlan_stats_enable = BDMF_FALSE;
-    rc = scratchpad_get_or_init(RDPA_VLAN_STATS_ENABLE, buf, sizeof(buf), NULL, scratchpad_func_get);
-    if (rc < 0)
-        return rc;
-
-    if (!strcmp(buf ,"YES"))
-        *vlan_stats_enable = BDMF_TRUE;
-
-    return 0;
-}
 
 static int rdpa_create_cpu_port_and_filter(void)
 {
@@ -583,17 +409,12 @@ int rdpa_init_system(void)
 #if defined(CONFIG_BCM_RUNNER_QOS_MAPPER)
     bdmf_object_handle rdpa_pbit_to_queue_obj = NULL;
     BDMF_MATTR_ALLOC(rdpa_pbit_to_queue_attrs, rdpa_pbit_to_queue_drv());
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV)
-    bdmf_object_handle rdpa_tc_to_queue_obj = NULL;
-    BDMF_MATTR_ALLOC(rdpa_tc_to_queue_attrs, rdpa_tc_to_queue_drv());
-#endif 
 
     int i;
 #endif
     int rc;
     rdpa_system_init_cfg_t sys_init_cfg = {};
     int rc_dqm;
-    int rc_cntr_cfg;
 #ifdef CONFIG_BLOG
     int tcp_ack_prio_ena = 0;
 #endif /* CONFIG_BLOG */
@@ -601,7 +422,7 @@ int rdpa_init_system(void)
     rdpa_qm_cfg_t qm_cfg = {};
     rdpa_counter_cfg_t counter_cfg = {};
 
-#if defined(XRDP) && !defined(BUFMNG_HW_RUNNER_SUPPORT)
+#if !defined(BUFMNG_HW_RUNNER_SUPPORT)
     rdpa_packet_buffer_cfg_t packet_buffer_cfg = {};
 #endif
     rdpa_system_cfg_t sys_cfg = {};
@@ -620,6 +441,15 @@ int rdpa_init_system(void)
 
     sys_cfg.def_max_pkt_size = BCM_MAX_PKT_LEN_MTU_BASED;
 
+    if (bcm_license_check(BP3_FEATURE_AQM))
+    {
+#ifdef BUFFER_CONGESTION_MGT
+        sys_cfg.buffer_cong_mgmt = 1;
+#endif
+#ifdef XRDP_FLUSH_STALE_PACKETS
+        sys_cfg.fw_flush = 1;
+#endif
+    }
     sys_cfg.car_mode = 1;
 
     sys_init_cfg.runner_ext_sw_cfg.emac_id = (ext_sw_pid == BP_NO_EXT_SW) ? rdpa_emac_none:(rdpa_emac)ext_sw_pid;
@@ -650,7 +480,7 @@ int rdpa_init_system(void)
     rc = rc ? : iptv_table_size_get(&sys_init_cfg.iptv_table_size);
     if (rc)
         goto exit;
-    rc_cntr_cfg = vlan_stats_enable_get(&counter_cfg.vlan_stats_enable);
+
 #endif
     rc_dqm = qm_queues_size_get(&qm_cfg);
 
@@ -663,7 +493,7 @@ int rdpa_init_system(void)
     rdpa_system_cfg_set(rdpa_system_attrs, &sys_cfg);
     rdpa_system_init_cfg_set(rdpa_system_attrs, &sys_init_cfg);
 
-#if defined(XRDP) && !defined(BUFMNG_HW_RUNNER_SUPPORT)
+#if !defined(BUFMNG_HW_RUNNER_SUPPORT)
     packet_buffer_cfg.us_prio_rsv_thrs.min_buf_rsv_threshold = 1;
     packet_buffer_cfg.ds_prio_rsv_thrs.min_buf_rsv_threshold = 1;
     packet_buffer_cfg.wlan_prio_rsv_thrs.high_prio_buf_threshold = 2;
@@ -674,8 +504,8 @@ int rdpa_init_system(void)
 
     if (rc_dqm == 0)
         rdpa_system_qm_cfg_set(rdpa_system_attrs, &qm_cfg);
-    if (rc_cntr_cfg == 0)
-        rdpa_system_counter_cfg_set(rdpa_system_attrs, &counter_cfg);
+
+    rdpa_system_counter_cfg_set(rdpa_system_attrs, &counter_cfg);
 
 
     rc = bdmf_new_and_set(rdpa_system_drv(), NULL, rdpa_system_attrs, &rdpa_system_obj);
@@ -693,16 +523,6 @@ int rdpa_init_system(void)
     }
 
 #if defined(CONFIG_BCM_RUNNER_QOS_MAPPER)
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV)
-    /* Configure tc to q table */
-    rdpa_tc_to_queue_table_set(rdpa_tc_to_queue_attrs, 0);
-    rc = bdmf_new_and_set(rdpa_tc_to_queue_drv(), NULL, rdpa_tc_to_queue_attrs, &rdpa_tc_to_queue_obj);
-    if (rc)
-    {
-        printk("%s %s Failed to create rdpa tc_to_queue object rc(%d)\n", __FILE__, __FUNCTION__, rc);
-        goto exit;
-    }
-#endif
     /* Configure pbit to q table - id 0 direction DS */
     rdpa_pbit_to_queue_table_set(rdpa_pbit_to_queue_attrs, 0);
     rc = bdmf_new_and_set(rdpa_pbit_to_queue_drv(), NULL, rdpa_pbit_to_queue_attrs, &rdpa_pbit_to_queue_obj);
@@ -714,9 +534,6 @@ int rdpa_init_system(void)
 
     for (i = 0; i < 8; ++i)
     {
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV)    
-        rdpa_tc_to_queue_tc_map_set(rdpa_tc_to_queue_obj, i, 0);
-#endif
         rdpa_pbit_to_queue_pbit_map_set(rdpa_pbit_to_queue_obj, i, 0);
     }
 #endif
@@ -727,9 +544,6 @@ exit:
 
     BDMF_MATTR_FREE(rdpa_system_attrs);
 #if defined(CONFIG_BCM_RUNNER_QOS_MAPPER)
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV)    
-    BDMF_MATTR_FREE(rdpa_tc_to_queue_attrs);
-#endif
     BDMF_MATTR_FREE(rdpa_pbit_to_queue_attrs);
 #endif
 
@@ -745,14 +559,9 @@ int rdpa_init_system(void)
     int rc;
     int dhd_offload_bitmask = 0;
     rdpa_system_init_cfg_t sys_init_cfg = {};
-#if defined(TM_CORE_LOAD_BALANCING)
-    rdpa_tm_core_emac_map tm_core_emac_map = {};
-    char ports_tm_0[48]={};
-    char ports_tm_1[48]={};
-#endif
 
     rdpa_system_cfg_t sys_cfg = {};
-#if defined(XRDP) && !defined(BUFMNG_HW_RUNNER_SUPPORT)
+#if !defined(BUFMNG_HW_RUNNER_SUPPORT)
     rdpa_packet_buffer_cfg_t packet_buffer_cfg = {};
 #endif
     bdmf_object_handle cpu =  NULL;
@@ -767,26 +576,8 @@ int rdpa_init_system(void)
     /* configure bdmf history if scratchpad key exist */
     bdmf_history_buff_size_config();
 
-    rc = rdpa_get_init_system_dt_params(&sys_init_cfg);
-
-#if defined(TM_CORE_LOAD_BALANCING)
-    tm_core_emac_map.enabled_map = (uint32_t)(emac_map & ((1 << TM_CORE_EMAC_MAP_MAX_PORTS) - 1));
-    if (!rc && kerSysScratchPadGet(RUNNER_PORTS_TM_0, ports_tm_0, sizeof(ports_tm_0)) > 0 &&
-        kerSysScratchPadGet(RUNNER_PORTS_TM_1, ports_tm_1, sizeof(ports_tm_1)) > 0)
-    {
-        rdpa_get_init_system_tm_core_port_map(&tm_core_emac_map, ports_tm_0, ports_tm_1);
-    }
-    emac_map = (int)*(uint32_t *)&tm_core_emac_map;
-#endif
-
-    if (rc)
-        goto exit;
-
     sys_cfg.def_max_pkt_size = BCM_MAX_PKT_LEN_MTU_BASED;
-
     sys_cfg.car_mode = 1;
-
-    sys_init_cfg.enabled_emac = emac_map;
 
     sys_init_cfg.runner_ext_sw_cfg.emac_id = (ext_sw_pid == BP_NO_EXT_SW) ? rdpa_emac_none:(rdpa_emac)ext_sw_pid;
     sys_init_cfg.runner_ext_sw_cfg.enabled = (ext_sw_pid == BP_NO_EXT_SW) ? 0 : 1;
@@ -798,14 +589,13 @@ int rdpa_init_system(void)
     rdpa_system_cfg_set(rdpa_system_attrs, &sys_cfg);
     rdpa_system_init_cfg_set(rdpa_system_attrs, &sys_init_cfg);
 
-#if defined(XRDP) && !defined(BUFMNG_HW_RUNNER_SUPPORT)
+#if !defined(BUFMNG_HW_RUNNER_SUPPORT)
     packet_buffer_cfg.us_prio_rsv_thrs.high_prio_buf_threshold = 5;
     packet_buffer_cfg.us_prio_rsv_thrs.min_buf_rsv_threshold = 10;
     packet_buffer_cfg.wlan_prio_rsv_thrs.high_prio_buf_threshold = 2;
     packet_buffer_cfg.wlan_prio_rsv_thrs.excl_prio_buf_threshold = 5;
     rdpa_system_packet_buffer_cfg_set(rdpa_system_attrs, &packet_buffer_cfg);
 #endif
-
 
     rc = bdmf_new_and_set(rdpa_system_drv(), NULL, rdpa_system_attrs, &rdpa_system_obj);
     if (rc)
@@ -832,69 +622,4 @@ exit:
     return rc;
 }
 #endif /* defined(CONFIG_BCM_PON)*/
-
-#elif defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
-
-int rdpa_init_system(void)
-{
-    BDMF_MATTR_ALLOC(rdpa_system_attrs, rdpa_system_drv());
-    bdmf_object_handle rdpa_system_obj = NULL;
-    BDMF_MATTR_ALLOC(rdpa_filter_attrs, rdpa_filter_drv());
-    bdmf_object_handle rdpa_filter_obj = NULL;
-    int rc;
-    rdpa_system_init_cfg_t sys_init_cfg = {};
-    bdmf_object_handle cpu =  NULL;
-
-    /* Default values */
-    sys_init_cfg.enabled_emac = 0;
-    sys_init_cfg.operation_mode = rdpa_method_fc;
-    sys_init_cfg.runner_ext_sw_cfg.enabled = 0;
-    sys_init_cfg.switching_mode = rdpa_switching_none;
-    sys_init_cfg.us_ddr_queue_enable = 0;
-
-    rc = rdpa_get_init_system_dt_params(&sys_init_cfg);
-    if (rc)
-        goto exit;
-
-    sys_init_cfg.enabled_emac = emac_map;
-    sys_init_cfg.runner_ext_sw_cfg.emac_id = (ext_sw_pid == BP_NO_EXT_SW) ? rdpa_emac_none:(rdpa_emac)ext_sw_pid;
-    sys_init_cfg.runner_ext_sw_cfg.enabled = (ext_sw_pid == BP_NO_EXT_SW) ? 0 : 1;
-    sys_init_cfg.runner_ext_sw_cfg.type = rdpa_brcm_hdr_opcode_0;
-    sys_init_cfg.switching_mode = rdpa_switching_none;
-    sys_init_cfg.operation_mode = rdpa_method_fc;
-
-    rdpa_system_init_cfg_set(rdpa_system_attrs, &sys_init_cfg);
-
-    rc = bdmf_new_and_set(rdpa_system_drv(), NULL, rdpa_system_attrs, &rdpa_system_obj);
-    if (rc)
-    {
-        printk("%s %s Failed to create rdpa system object rc(%d)\n", __FILE__, __FUNCTION__, rc);
-        goto exit;
-    }
-
-    rc = rdpa_cpu_get(rdpa_cpu_host, &cpu);
-
-    /*CPU Interrupts are no longer automatically connected as part of CPU object
-     *creation. They need to be explicitly using below rdpa call.*/
-    rc = rc ? rc : rdpa_cpu_int_connect_set(cpu, 1 /*true*/);
-    if (rc < 0)
-    {
-        BDMF_TRACE_RET(BDMF_ERR_INTERNAL, "Failed to connect cpu interrupts\n");
-        goto exit;
-    }
-
-    rc = bdmf_new_and_set(rdpa_filter_drv(), NULL, rdpa_filter_attrs, &rdpa_filter_obj);
-    if (rc)
-        printk("%s %s Failed to create rdpa filter object rc(%d)\n", __FILE__, __FUNCTION__, rc);
-
-exit:
-    if (rc && rdpa_system_obj)
-        bdmf_destroy(rdpa_system_obj);
-
-    BDMF_MATTR_FREE(rdpa_system_attrs);
-    BDMF_MATTR_FREE(rdpa_filter_attrs);
-    return rc;
-}
-
-#endif
 

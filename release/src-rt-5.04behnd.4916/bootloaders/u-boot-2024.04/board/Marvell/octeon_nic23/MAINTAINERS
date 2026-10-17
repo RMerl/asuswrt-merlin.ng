@@ -1,0 +1,7 @@
+OCTEON_NIC23 BOARD
+M:	Aaron Williams <awilliams@marvell.com>
+S:	Maintained
+F:	board/Marvell/octeon_nic23/*
+F:	configs/octeon_nic23_defconfig
+F:	include/configs/octeon_nic23.h
+F:	arch/mips/dts/mrvl,octeon-nic23.dts

@@ -191,6 +191,23 @@ static dll_t pktlist_context_instances_g =
     .prev_p = &pktlist_context_instances_g
 };
 
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+/**
+ * -----------------------------------------------------------------------------
+ * Function   : pktlist_context_enable_spc_pkts
+ * Description: Enable spc_pkts mechanism for supported source/destinations.
+ *
+ *              Set spc_pkts_enable field.
+ * -----------------------------------------------------------------------------
+ */
+void
+pktlist_context_enable_spc_pkts(
+    pktlist_context_t * pktlist_context)
+{
+    pktlist_context->spc_pkts_enable = true;
+}
+EXPORT_SYMBOL(pktlist_context_enable_spc_pkts);
+#endif /* CONFIG_BCM_PKTFWD_SPC */
 
 /**
  * -----------------------------------------------------------------------------
@@ -308,6 +325,10 @@ pktlist_context_init(
     dll_init(&pktlist_context->instance);
     dll_append(&pktlist_context_instances_g, &pktlist_context->instance);
 
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+    pktlist_context->spc_pkts          = PKTLIST_PKT_NULL;
+    pktlist_context->spc_pkts_enable   = false;
+#endif /* CONFIG_BCM_PKTFWD_SPC */
 
     PKTLIST_TRACE(PKTFWD_VRP_FMT " Constructed %px for %s",
                   PKTFWD_VRP_VAL(PKTLIST, PKTLIST_VERSIONCODE),
@@ -381,7 +402,7 @@ void
 pktlist_context_dump(pktlist_context_t * pktlist_context,
     bool dump_peer, bool dump_verbose)
 {
-    int32_t credits = ~0;
+    int32_t credits = 0;
     uint32_t prio, dest;
     uint32_t total_len   = 0U;
 
@@ -408,16 +429,15 @@ pktlist_context_dump(pktlist_context_t * pktlist_context,
         for (dest = 0U; dest < PKTLIST_DEST_MAX; ++dest)
         {
             pktlist = &pktlist_context->table->elem[prio][dest].pktlist;
-            if (pktlist->len != 0)
-            {
 #if defined(BCM_PKTFWD_FLCTL)
-                if (pktlist_context->fctable != PKTLIST_FCTABLE_NULL)
-                {
-                    credits = __pktlist_fctable_get_credits(pktlist_context,
-                                                            prio, dest);
-                }
+	    if (pktlist_context->fctable != PKTLIST_FCTABLE_NULL)
+	    {
+		credits = __pktlist_fctable_get_credits(pktlist_context, prio, dest);
+	    }
 #endif /* BCM_PKTFWD_FLCTL */
 
+            if (pktlist->len || credits)
+            {
                 printk(PKTLIST_FMT "    %d\n", PKTLIST_VAL(pktlist), credits);
                 total_len   += pktlist->len;
             }
@@ -761,10 +781,10 @@ void
 d3fwd_ext_dump(d3fwd_ext_t * d3fwd_ext)
 {
     printk("\t ext %px flow_key " D3LUT_KEY_FMT
-        "ucast 0x%2x wlan %u assoc %u inuse %u hit %u\n",
+        "ucast 0x%2x wlan %u assoc %u inuse %u hit %u (%s)\n",
         d3fwd_ext->d3fwd_wlif, D3LUT_KEY_VAL(d3fwd_ext->flow_key),
         d3fwd_ext->ucast_bmap, d3fwd_ext->wlan, d3fwd_ext->assoc,
-        d3fwd_ext->inuse, d3fwd_ext->hit);
+        d3fwd_ext->inuse, d3fwd_ext->hit, d3fwd_ext->wlan ? d3fwd_ext->d3fwd_wlif->net_device->name : "eth");
 }   /* d3fwd_ext_dump() */
 
 EXPORT_SYMBOL(d3fwd_wlif_stats_dump);
@@ -1181,12 +1201,16 @@ d3lut_pool_fini(d3lut_elem_t * d3lut_elem_base)
     D3LUT_FUNC();
 
     if (d3lut_elem_base == D3LUT_ELEM_NULL)
+    {
         return;
+    }
+
+    if (d3lut_elem_ext_cb_op != NULL)
+        d3lut_elem_ext_cb_op(NULL, D3LUT_ELEM_EXT_CB_FREE);
 
     D3LUT_TRACE("Destructing Elem base %px ...", d3lut_elem_base);
     memset(d3lut_elem_base, 0xff, D3LUT_ELEM_TOT * sizeof(d3lut_elem_t));
     kfree((void *) d3lut_elem_base);
-
 }   /* d3lut_pool_fini() */
 
 
@@ -1243,6 +1267,8 @@ __d3lut_elem_get(d3lut_t * d3lut, uint32_t pool, d3lut_policy_t d3lut_policy)
         d3lut_elem->next = D3LUT_ELEM_NULL;     /* prepare element */
 
         D3FWD_EXT_GET(d3lut_elem->ext);
+        if (d3lut_elem_ext_cb_op != NULL)
+            d3lut_elem_ext_cb_op(d3lut_elem, D3LUT_ELEM_EXT_CB_GET);
 
         goto __d3lut_elem_get_done;
     }
@@ -1278,6 +1304,8 @@ __d3lut_elem_get(d3lut_t * d3lut, uint32_t pool, d3lut_policy_t d3lut_policy)
             d3lut_elem, D3LUT_KEY_VAL(d3lut_elem->key), d3lut_pool->elem_free);
 
         D3FWD_EXT_GET(d3lut_elem->ext);
+        if (d3lut_elem_ext_cb_op != NULL)
+            d3lut_elem_ext_cb_op(d3lut_elem, D3LUT_ELEM_EXT_CB_GET);
     }
     else
     {
@@ -1368,6 +1396,8 @@ __d3lut_elem_put(d3lut_t * d3lut, d3lut_elem_t * d3lut_elem)
     *((uint32_t *)(d3lut_elem->sym.v8 + 0)) = 0xFFFFFFFF;
     *((uint16_t *)(d3lut_elem->sym.v8 + 4)) = 0xFFFF;   /* reset symbol to ~0 */
 
+    if (d3lut_elem_ext_cb_op != NULL)
+        d3lut_elem_ext_cb_op(d3lut_elem, D3LUT_ELEM_EXT_CB_PUT);
     /* Invalidate the d3lut_elem's extension ... as not in use */
     D3FWD_EXT_PUT(d3lut_elem->ext);
 
@@ -2205,6 +2235,8 @@ d3lut_stats_clr(d3lut_t * d3lut)
 
 }   /* d3lut_stats_clr() */
 
+void (*d3lut_elem_ext_cb_op)(d3lut_elem_t *d3lut_elem, d3fwd_ext_cb_op_t op) = NULL;
+
 EXPORT_SYMBOL(d3lut_gp);
 EXPORT_SYMBOL(d3lut_hash);
 EXPORT_SYMBOL(d3lut_policy_set);
@@ -2220,6 +2252,7 @@ EXPORT_SYMBOL(d3lut_del);
 EXPORT_SYMBOL(d3lut_lkup);
 EXPORT_SYMBOL(d3lut_clr);
 EXPORT_SYMBOL(d3lut_stats_clr);
+EXPORT_SYMBOL(d3lut_elem_ext_cb_op);
 
 #endif /* BCM_D3LUT */
 

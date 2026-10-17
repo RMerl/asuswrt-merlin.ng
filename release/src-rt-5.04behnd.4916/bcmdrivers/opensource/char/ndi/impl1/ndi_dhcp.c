@@ -140,7 +140,7 @@ dhcp_device_check(struct ndi_classify *p, struct dhcp_pkt *dp)
 				  old->mac, p->dev->mac);
 		else
 			pr_debug("new or renewed device [%pM]\n", p->dev->mac);
-		set_bit(UPDATED_BIT, &p->local_flags);
+		set_bit(DEV_UPDATED_BIT, &p->local_flags);
 	}
 }
 
@@ -177,7 +177,7 @@ static int set_hostname(struct ndi_classify *p, char *str, size_t len)
 	memcpy(p->dev->hostname, str, len);
 	pr_debug("%s updated hostname to %s\n", ndi_dev_name(p->dev),
 		 p->dev->hostname);
-	set_bit(UPDATED_BIT, &p->local_flags);
+	set_bit(DEV_UPDATED_BIT, &p->local_flags);
 	return 0;
 }
 

@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2020 Theobroma Systems Design und Consulting GmbH
+ */
+
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = &sdmmc;
+	};
+
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		mmc0 = &sdmmc;
+		serial1 = &uart1;
+		serial2 = &uart2;
+		spi0 = &sfc;
+	};
+
+	dmc {
+		bootph-all;
+		compatible = "rockchip,px30-dmc", "syscon";
+		reg = <0x0 0xff2a0000 0x0 0x1000>;
+	};
+
+	rng: rng@ff0b0000 {
+		compatible = "rockchip,cryptov2-rng";
+		reg = <0x0 0xff0b0000 0x0 0x4000>;
+		status = "okay";
+	};
+};
+
+/* U-Boot clk driver for px30 cannot set GPU_CLK */
+&cru {
+	bootph-all;
+	assigned-clocks = <&cru PLL_NPLL>,
+		<&cru ACLK_BUS_PRE>, <&cru ACLK_PERI_PRE>,
+		<&cru HCLK_BUS_PRE>, <&cru HCLK_PERI_PRE>,
+		<&cru PCLK_BUS_PRE>, <&cru PLL_CPLL>;
+
+	assigned-clock-rates = <1188000000>,
+		<200000000>, <200000000>,
+		<150000000>, <150000000>,
+		<100000000>, <17000000>;
+};
+
+&gpio0 {
+	bootph-all;
+};
+
+&gpio1 {
+	bootph-all;
+};
+
+&gpio2 {
+	bootph-all;
+};
+
+&gpio3 {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};
+
+&pmucru {
+	bootph-all;
+};
+
+&pmugrf {
+	bootph-all;
+};
+
+&saradc {
+	bootph-all;
+	status = "okay";
+};
+
+&sdmmc {
+	bootph-all;
+
+	/* mmc to sram can't do dma, prevent aborts transferring TF-A parts */
+	u-boot,spl-fifo-mode;
+};
+
+&sfc {
+	bootph-all;
+};
+
+&{/spi@ff3a0000/flash@0} {
+	bootph-all;
+};
+
+&uart1 {
+	clock-frequency = <24000000>;
+	bootph-all;
+};
+
+&uart2 {
+	clock-frequency = <24000000>;
+	bootph-all;
+};
+
+&xin24m {
+	bootph-all;
+};

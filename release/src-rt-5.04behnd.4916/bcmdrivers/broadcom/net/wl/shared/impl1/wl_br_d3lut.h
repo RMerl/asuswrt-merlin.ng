@@ -41,7 +41,7 @@ typedef enum {
 	ETHHDR_BRG
 } ETHHDR_TYPE;
 
-#define PKT_ETHHDR(pkt, type) ((type == ETHHDR_DATA) ? PKTDATA(NULL, pkt) : eth_hdr(pkt)->h_dest)
+#define PKT_ETHHDR(skb, type) (((type) == ETHHDR_DATA) ? (skb)->data : eth_hdr(skb)->h_dest)
 
 extern void
 wl_handle_br_d3lut(struct net_device *src_dev, struct net_device *dst_dev, struct sk_buff *skb);

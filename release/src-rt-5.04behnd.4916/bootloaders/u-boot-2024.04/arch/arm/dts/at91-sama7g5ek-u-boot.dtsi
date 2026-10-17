@@ -1,0 +1,170 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ *  at91-sama7g5ek-u-boot.dtsi - Device Tree file for SAMA7G5 SoC u-boot
+ *  properties.
+ *
+ *  Copyright (c) 2020 Microchip Technology Inc. and its subsidiaries
+ *
+ *  Author: Eugen Hristev <eugen.hristev@microchip.com>
+ *  Author: Claudiu Beznea <claudiu.beznea@microchip.com>
+ *
+ */
+
+#include "sama7g5-pinfunc.h"
+#include <dt-bindings/reset/sama7g5-reset.h>
+#include <dt-bindings/clock/at91.h>
+
+/ {
+	chosen {
+		bootph-all;
+	};
+
+	utmi {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		usb_phy0: phy@0 {
+			compatible = "microchip,sama7g5-usb-phy";
+			sfr-phandle = <&sfr>;
+			reg = <0>;
+			clocks = <&utmi_clk USB_UTMI1>;
+			clock-names = "utmi_clk";
+			status = "disabled";
+			#phy-cells = <0>;
+		};
+
+		usb_phy1: phy@1 {
+			compatible = "microchip,sama7g5-usb-phy";
+			sfr-phandle = <&sfr>;
+			reg = <1>;
+			clocks = <&utmi_clk USB_UTMI2>;
+			clock-names = "utmi_clk";
+			status = "disabled";
+			#phy-cells = <0>;
+		};
+
+		usb_phy2: phy@2 {
+			compatible = "microchip,sama7g5-usb-phy";
+			sfr-phandle = <&sfr>;
+			reg = <2>;
+			clocks = <&utmi_clk USB_UTMI3>;
+			clock-names = "utmi_clk";
+			status = "disabled";
+			#phy-cells = <0>;
+		};
+	};
+
+	utmi_clk: utmi-clk {
+		compatible = "microchip,sama7g5-utmi-clk";
+		sfr-phandle = <&sfr>;
+		#clock-cells = <1>;
+		clocks = <&pmc PMC_TYPE_CORE 27>;
+		clock-names = "utmi_clk";
+		resets = <&reset_controller SAMA7G5_RESET_USB_PHY1>,
+			 <&reset_controller SAMA7G5_RESET_USB_PHY2>,
+			 <&reset_controller SAMA7G5_RESET_USB_PHY3>;
+		reset-names = "usb0_reset", "usb1_reset", "usb2_reset";
+	};
+
+	soc {
+		bootph-all;
+
+		usb2: usb@400000 {
+			compatible = "microchip,sama7g5-ohci", "usb-ohci";
+			reg = <0x00400000 0x100000>;
+			interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&pmc PMC_TYPE_PERIPHERAL 106>, <&utmi_clk USB_UTMI1>, <&usb_clk>;
+			clock-names = "ohci_clk", "hclk", "uhpck";
+			status = "disabled";
+		};
+
+		usb3: usb@500000 {
+			compatible = "atmel,at91sam9g45-ehci", "usb-ehci";
+			reg = <0x00500000 0x100000>;
+			interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&usb_clk>, <&pmc PMC_TYPE_PERIPHERAL 106>;
+			clock-names = "usb_clk", "ehci_clk";
+			status = "disabled";
+		};
+
+		sfr: sfr@e1624000 {
+			compatible = "microchip,sama7g5-sfr", "syscon";
+			reg = <0xe1624000 0x4000>;
+		};
+	};
+};
+
+&main_rc {
+	bootph-all;
+};
+
+&main_xtal {
+	bootph-all;
+};
+
+&pioA {
+	bootph-all;
+};
+
+&pinctrl_flx3_default {
+	bootph-all;
+};
+
+&pioA {
+	bootph-all;
+
+	pinctrl_usb_default: usb_default {
+		pinmux = <PIN_PC6__GPIO>;
+		bias-disable;
+	};
+};
+
+&pit64b0 {
+	bootph-all;
+};
+
+&pmc {
+	bootph-all;
+};
+
+&slow_rc_osc {
+	bootph-all;
+};
+
+&slow_xtal {
+	bootph-all;
+};
+
+&uart3 {
+	bootph-all;
+};
+
+&usb2 {
+	num-ports = <3>;
+	atmel,vbus-gpio = <0
+			   0
+			   &pioA PIN_PC6 GPIO_ACTIVE_HIGH
+			  >;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb_default>;
+	phys = <&usb_phy2>;
+	phy-names = "usb";
+	status = "okay";
+};
+
+&usb3 {
+	status = "okay";
+};
+
+&usb_phy0 {
+	status = "okay";
+};
+
+&usb_phy1 {
+	status = "okay";
+};
+
+&usb_phy2 {
+	status = "okay";
+};

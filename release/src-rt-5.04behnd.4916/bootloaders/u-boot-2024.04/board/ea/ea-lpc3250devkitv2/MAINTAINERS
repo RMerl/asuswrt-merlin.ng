@@ -1,0 +1,9 @@
+EMBEDDED ARTISTS LPC3250 DEVKIT v2
+M:	Trevor Woerner <twoerner@gmail.com>
+S:	Maintained
+F:	board/ea/ea-lpc3250devkitv2
+F:	include/configs/ea-lpc3250devkitv2.h
+F:	configs/ea-lpc3250devkitv2_defconfig
+F:	arch/arm/dts/lpc32xx.dtsi
+F:	arch/arm/dts/lpc3250-ea3250.dts
+F:	arch/arm/dts/lpc3250-ea3250-u-boot.dtsi

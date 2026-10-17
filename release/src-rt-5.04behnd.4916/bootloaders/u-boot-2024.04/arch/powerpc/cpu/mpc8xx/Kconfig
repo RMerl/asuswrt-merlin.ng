@@ -1,0 +1,136 @@
+menu "mpc8xx CPU"
+	depends on MPC8xx
+
+config SYS_CPU
+	default "mpc8xx"
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_MCR3000
+	bool "Support MCR3000 board from CSSI"
+
+config TARGET_CMPC885
+	bool "Support CMPC885 board from CSSI"
+
+endchoice
+
+choice
+	prompt "CPU select"
+	default MPC866
+
+config MPC866
+	bool "MPC866"
+	select SYS_CACHE_SHIFT_4
+
+config MPC885
+	bool "MPC885"
+	select SYS_CACHE_SHIFT_4
+
+endchoice
+
+choice
+	prompt "Microcode patch selection"
+	default NO_UCODE_PATCH
+	help
+	  This allows loading of CPM microcode.
+
+	  Only one microcode can be loaded at a time.
+
+config NO_UCODE_PATCH
+	bool "None"
+
+config USB_SOF_UCODE_PATCH
+	bool "USB SOF patch"
+	depends on MPC885
+	help
+	  This microcode fixes CPM15 errata:
+
+	  When the USB controller is configured in Host mode, and the
+	  SOF generation (SFTE=1 in USMOD register) is being used,
+	  there may be false CRC error indication in other SCCs.
+	  Although the data is received correctly, the CRC result
+	  will be corrupted.
+
+config SMC_UCODE_PATCH
+	bool "SMC relocation patch"
+	help
+	  This microcode relocates SMC1 and SMC2 parameter RAMs to allow
+	  extended parameter RAM for SCC3 and SCC4 (ex: for QMC mode)
+
+config SMC1_RPBASE
+	hex "SMC1 relocation offset"
+	depends on SMC_UCODE_PATCH
+	default 0x1e80
+	help
+	  Offset of SMC1 parameter RAM to be written to RPBASE register.
+
+config SMC2_RPBASE
+	hex "SMC2 relocation offset"
+	depends on SMC_UCODE_PATCH
+	default 0x1f80
+	help
+	  Offset of SMC2 parameter RAM to be written to RPBASE register.
+
+endchoice
+
+comment "Specific commands"
+
+config CMD_IMMAP
+	bool "Enable various commands to dump IMMR information"
+	help
+	  This enables various commands such as:
+
+	    siuinfo - print System Interface Unit (SIU) registers
+	    memcinfo - print Memory Controller registers
+
+comment "Configuration Registers"
+
+config SYS_SIUMCR
+	hex "SIUMCR register"
+	help
+	  SIU Module Configuration (11-6)
+
+config SYS_SYPCR
+	hex "SYPCR register" if !WDT_MPC8xxx
+	default 0x0
+	help
+	  System Protection Control (11-9)
+
+config SYS_TBSCR
+	hex "TBSCR register"
+	help
+	  Time Base Status and Control (11-26)
+
+config SYS_PISCR
+	hex "PISCR register"
+	help
+	  Periodic Interrupt Status and Control (11-31)
+
+config SYS_PLPRCR_BOOL
+	bool "Customise PLPRCR"
+
+config SYS_PLPRCR
+	hex "PLPRCR register"
+	depends on SYS_PLPRCR_BOOL
+	help
+	  PLL, Low-Power, and Reset Control Register (15-30)
+
+config SYS_SCCR
+	hex "SCCR register"
+	help
+	  System Clock and reset Control Register (15-27)
+
+config SYS_SCCR_MASK
+	hex "MASK for setting SCCR register"
+
+config SYS_DER
+	hex "DER register"
+	help
+	  Debug Event Register (37-47)
+
+source "board/cssi/mcr3000/Kconfig"
+
+source "board/cssi/cmpc885/Kconfig"
+endmenu

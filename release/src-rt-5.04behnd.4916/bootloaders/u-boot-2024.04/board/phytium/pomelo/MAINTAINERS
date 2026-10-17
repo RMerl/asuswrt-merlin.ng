@@ -1,0 +1,8 @@
+POMELO BOARD
+M:	lixinde <lixinde@phytium.com.cn>
+M:	weichangzheng <weichangzheng@phytium.com.cn>
+S:	Maintained
+F:	board/phytium/pomelo/*
+F:	include/configs/pomelo.h
+F:	configs/pomelo_defconfig
+F:	arch/arm/dts/phytium-pomelo.dts

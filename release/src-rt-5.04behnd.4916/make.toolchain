@@ -1,0 +1,484 @@
+#***********************************************************************
+#
+#  Copyright (c) 2006  Broadcom Corporation
+#  All Rights Reserved
+#
+#***********************************************************************/
+
+
+###########################################
+# Define build environment for toolchain
+###########################################
+
+# When building multi-architecture, CURRENT_ARCH will override PROFILE_ARCH 
+# CURRENT_ARCH switches architectures i.e 64-bit vs 32-bit. It has valid compile time
+# values of 'arm' or 'aarch64'. These values will be mapped to proper PROFILE_ARCH
+# values :
+#           'arm'    - 32-bit arm with software based floating point using soft float ABI
+#           'armsfp' - 32-bit arm with hardware based floating point using soft float ABI
+#           'armhfp' - 32-bit arm with hardware based floating point using hard float ABI
+#           'aarch64'- 64-bit arm cores with hardware based floating point 
+ORIG_PROFILE_ARCH := $(PROFILE_ARCH)
+ifneq ($(strip $(CURRENT_ARCH)),)
+
+# For 32-bit, if we have soft-fp or hard-fp target, override
+# CURRENT_ARCH to reflect current target
+ifeq ($(strip $(PROFILE_ARCH)),armhfp)
+ifeq ($(strip $(CURRENT_ARCH)),arm)
+override CURRENT_ARCH := $(PROFILE_ARCH)
+endif
+endif
+
+# deprecated - All future releases will only support arm_hf toolchains
+ifeq ($(strip $(PROFILE_ARCH)),armsfp)
+ifeq ($(strip $(CURRENT_ARCH)),arm)
+override CURRENT_ARCH := $(PROFILE_ARCH)
+endif
+endif
+
+PROFILE_ARCH := $(CURRENT_ARCH)
+TOOLCHAIN_PREFIX :=
+TOOLCHAIN_TOP :=
+
+endif  #CURRENT_ARCH
+
+# When building multi-architecture, CURRENT_KARCH will override PROFILE_KARCH 
+# CURRENT_KARCH switches architectures i.e 64-bit vs 32-bit. It has valid compile time
+# values of 'arm' or 'aarch64'. These values will be mapped to proper PROFILE_KARCH
+# values :
+#           'arm'    - 32-bit arm with software based floating point using soft float ABI
+#           'armsfp' - 32-bit arm with hardware based floating point using soft float ABI
+#           'armhfp' - 32-bit arm with hardware based floating point using hard float ABI
+#           'aarch64'- 64-bit arm cores with hardware based floating point 
+ifneq ($(strip $(CURRENT_KARCH)),)
+
+# For 32-bit, if we have soft-fp or hard-fp target, override
+# CURRENT_KARCH to reflect current target
+ifeq ($(strip $(PROFILE_KARCH)),armhfp)
+ifeq ($(strip $(CURRENT_KARCH)),arm)
+CURRENT_KARCH := $(PROFILE_KARCH)
+endif
+endif
+
+# deprecated - All future releases will only support arm_hf toolchains
+ifeq ($(strip $(PROFILE_KARCH)),armsfp)
+ifeq ($(strip $(CURRENT_KARCH)),arm)
+CURRENT_KARCH := $(PROFILE_KARCH)
+endif
+endif
+
+ORIG_PROFILE_KARCH := $(PROFILE_KARCH)
+PROFILE_KARCH := $(CURRENT_KARCH)
+KTOOLCHAIN_PREFIX :=
+
+endif  #CURRENT_KARCH
+
+ifndef TOOLCHAIN_BASE
+ifeq ($(strip $(DESKTOP_LINUX)),)
+TOOLCHAIN_BASE := /opt/toolchains
+endif # DESKTOP_LINUX eq empty
+endif
+
+ifeq ($(strip $(RDK_BUILD)),y)
+  # When using Broadcom toolchain along with an alternate toolchain
+  # TODO: Remove as not needed with new ALT_TOOLCHAIN features
+  BRCM_TOOLCHAIN_BASE:=$(subst $\",,$(BRCM_TOOLCHAIN_BASE))
+endif
+
+# Define variables for Alternate toolchain if configured
+ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN)),y)
+  ifndef BRCM_ALT_TOOLCHAIN_BASE
+    ALT_TOOLCHAIN_BASE = $(TOOLCHAIN_BASE)
+  else
+    ifneq ($(strip $(BRCM_ALT_TOOLCHAIN_BASE)),"")
+      ALT_TOOLCHAIN_BASE  := $(subst $\",,$(strip $(BRCM_ALT_TOOLCHAIN_BASE)))
+    else
+      ALT_TOOLCHAIN_BASE = $(TOOLCHAIN_BASE)
+    endif
+  endif
+
+  ALT_ARM_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_TOPDIR)))
+  ALT_ARM_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_PREFIX)))
+  ALT_ARM_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_BIN_PREFIX)))
+  ALT_ARM_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_SYSROOT_DIR)))
+  ALT_ARM_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_VER)))
+  ALT_ARM_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_ARM_TOOLCHAIN_TOPDIR)
+  ALT_ARM_TOOLCHAIN_LIBDIR := $(ALT_ARM_TOOLCHAIN_PREFIX)/$(ALT_ARM_TOOLCHAIN_SYSROOT_DIR)/lib
+  ALT_ARM_TOOLCHAIN_INCDIR := $(ALT_ARM_TOOLCHAIN_PREFIX)/$(ALT_ARM_TOOLCHAIN_SYSROOT_DIR)/usr/include
+
+  # deprecated - All future releases will only support arm_hf toolchains
+  ALT_ARMSFP_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_TOPDIR)))
+  ALT_ARMSFP_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_PREFIX)))
+  ALT_ARMSFP_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_BIN_PREFIX)))
+  ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR)))
+  ALT_ARMSFP_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_VER)))
+  ALT_ARMSFP_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_ARMSFP_TOOLCHAIN_TOPDIR)
+  ALT_ARMSFP_TOOLCHAIN_LIBDIR := $(ALT_ARMSFP_TOOLCHAIN_PREFIX)/$(ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR)/lib
+  ALT_ARMSFP_TOOLCHAIN_INCDIR := $(ALT_ARMSFP_TOOLCHAIN_PREFIX)/$(ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR)/usr/include
+  
+  ALT_ARMHFP_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_TOPDIR)))
+  ALT_ARMHFP_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_PREFIX)))
+  ALT_ARMHFP_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_BIN_PREFIX)))
+  ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR)))
+  ALT_ARMHFP_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_VER)))
+  ALT_ARMHFP_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_ARMHFP_TOOLCHAIN_TOPDIR)
+  ALT_ARMHFP_TOOLCHAIN_LIBDIR := $(ALT_ARMHFP_TOOLCHAIN_PREFIX)/$(ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR)/lib
+  ALT_ARMHFP_TOOLCHAIN_INCDIR := $(ALT_ARMHFP_TOOLCHAIN_PREFIX)/$(ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR)/usr/include
+  
+  ALT_AARCH64_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_TOPDIR)))
+  ALT_AARCH64_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_PREFIX)))
+  ALT_AARCH64_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_BIN_PREFIX)))
+  ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR)))
+  ALT_AARCH64_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_VER)))
+  ALT_AARCH64_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_AARCH64_TOOLCHAIN_TOPDIR)
+  ALT_AARCH64_TOOLCHAIN_LIBDIR := $(ALT_AARCH64_TOOLCHAIN_PREFIX)/$(ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR)/lib
+  ALT_AARCH64_TOOLCHAIN_INCDIR := $(ALT_AARCH64_TOOLCHAIN_PREFIX)/$(ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR)/usr/include
+  
+  export ALT_ARM_TOOLCHAIN_PREFIX
+  export ALT_ARM_TOOLCHAIN_TOP   
+  export ALT_AARCH64_TOOLCHAIN_PREFIX
+  export ALT_AARCH64_TOOLCHAIN_TOP   
+endif
+
+#
+# Get Toolchain versions based
+# on profile
+#
+
+# RDK builds pretty much disables ALT Toolchain logic
+# it uses the ALT_ARM_xx variables, but then hardcodes
+# several other variables in make.common
+# TODO: Make RDK use proper ALT_TOOLCHAIN logic instead
+# of hardcoding variables in make.common, since we now
+# have separate user/kernel ALT_TOOLCHAINS
+ifeq ($(strip $(RDK_BUILD)),)
+  ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN)),y)
+    ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN_USER)),)
+      BRCM_USE_ALT_TOOLCHAIN_USER := y
+    endif
+    ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN_KERNEL)),)
+      BRCM_USE_ALT_TOOLCHAIN_KERNEL := y
+    endif
+  endif
+endif
+
+# for ARM, Linux 5.15
+ifeq ($(strip $(RDK_BUILD)),y)
+  #RDK needs two ARM toolchains in SoC using ARM7
+  #ARM - RDK toolchain for userspace
+  #ARM_2 BRCM toolchain for kernel space
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM        := $(ALT_ARM_TOOLCHAIN_TOP)
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARM    := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM         := $(ALT_ARM_TOOLCHAIN_PREFIX)
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARM         := usr/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARM         := usr/include
+  
+  # deprecated - All future releases will only support arm_hf toolchains
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMSFP        := 
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMSFP    := 
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP         := 
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMSFP         := 
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMSFP         := 
+  
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMHFP        := $(ALT_ARM_TOOLCHAIN_TOP)
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMHFP    := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP         := $(ALT_ARM_TOOLCHAIN_PREFIX)
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMHFP         := usr/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMHFP         := usr/include
+  
+  # deprecated - All future releases will only support arm_hf toolchains
+  # arm-softfp toolchain 
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMSFP_2       := 
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMSFP_2   := 
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP_2        := 
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMSFP_2        := 
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMSFP_2        := 
+  
+  # arm-hfp toolchain 
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMHFP_2        := $(TOOLCHAIN_BASE)/crosstools-arm_hf-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMHFP_2    := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP_2         := arm-buildroot-linux-gnueabihf
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMHFP_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP)/sysroot/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMHFP_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP)/sysroot/usr/include
+
+  # arm-soft toolchain 
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM_2       := $(BRCM_TOOLCHAIN_BASE)/crosstools-arm-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARM_2   := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM_2        := arm-buildroot-linux-gnueabi
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARM_2        := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM_2)/sysroot/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARM_2        := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM_2)/sysroot/usr/include
+
+else
+
+  # arm-hfp toolchain 
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMHFP        := $(TOOLCHAIN_BASE)/crosstools-arm_hf-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMHFP    := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP         := arm-buildroot-linux-gnueabihf
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMHFP         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP)/sysroot/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMHFP         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP)/sysroot/usr/include
+  
+  # deprecated - All future releases will only support arm_hf toolchains
+  # arm-softfp toolchain 
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMSFP        := 
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMSFP    := 
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP         := 
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMSFP         := 
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMSFP         := 
+  
+  # Soft-float toolchain 
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM        := $(TOOLCHAIN_BASE)/crosstools-arm-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARM    := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM         := arm-buildroot-linux-gnueabi
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARM         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM)/sysroot/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARM         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM)/sysroot/usr/include
+
+endif
+
+# for AARCH64, Linux 5.15
+ifeq ($(strip $(RDK_BUILD)),y)
+  #RDK build, using BRCM toolchain for kernel space in specified location
+  #In RDK 64bit
+  #AARCH64 - RDK toolchain for userspace
+  #AARCH64_2 - BRCM toolchain for kernel
+  
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_AARCH64        := $(ALT_AARCH64_TOOLCHAIN_TOP)
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_AARCH64    := 11.3.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64         := $(ALT_AARCH64_TOOLCHAIN_PREFIX)
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_AARCH64         := usr/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_AARCH64         := usr/include
+
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_AARCH64_2        := $(BRCM_TOOLCHAIN_BASE)/crosstools-aarch64-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_AARCH64_2    := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64_2         := aarch64-buildroot-linux-gnu
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_AARCH64_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_AARCH64_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/usr/include
+
+else
+
+  DEFAULT_TOOLCHAIN_LINUX_5_15_0_AARCH64        := $(TOOLCHAIN_BASE)/crosstools-aarch64-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41
+  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_AARCH64    := 13.2.0
+  TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64         := aarch64-buildroot-linux-gnu
+  TOOLCHAIN_LIBDIR_LINUX_5_15_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/lib
+  TOOLCHAIN_INCDIR_LINUX_5_15_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/usr/include
+
+endif
+
+LINUX_ZIP_FILE_LINUX_5_15_0         := none
+LINUX_SUB_DIR_LINUX_5_15_0          := linux-5.15
+LINUX_VER_STR_LINUX_5_15_0          := 5.15.167
+
+# set up userspace build tool arch
+# USER_ARCH - Differentiates between 64/32-bit, valid values 'arm' 'aarch64'
+# ARCHCAP   - Used to pick toolchain, valid values 'ARM' 'ARMHFP' 'ARMSFP' 'AARCH64'
+ARCH_ENDIAN := little
+export BRCM_ENDIAN_FLAGS := -l
+
+ifeq ($(strip $(PROFILE_ARCH)),armhfp)
+  ARCHCAP := ARMHFP
+  ARCH :=DEPRECATED_use_USER_ARCH
+  USER_ARCH := arm
+endif
+
+ifeq ($(strip $(PROFILE_ARCH)),armsfp)
+  ARCHCAP := ARMSFP
+  ARCH :=DEPRECATED_use_USER_ARCH
+  USER_ARCH := arm
+endif
+
+ifeq ($(strip $(PROFILE_ARCH)),arm)
+  ARCHCAP := ARM
+  ARCH :=DEPRECATED_use_USER_ARCH
+  USER_ARCH := arm
+endif
+
+ifeq ($(strip $(PROFILE_ARCH)),aarch64)
+  ARCHCAP := AARCH64
+  ARCH :=DEPRECATED_use_USER_ARCH
+  USER_ARCH := aarch64
+endif
+
+ifeq ($(strip $(PROFILE_ARCH)),i386)
+  ARCHCAP := I386
+  ARCH :=DEPRECATED_use_USER_ARCH
+  USER_ARCH := i386
+endif
+
+ifeq ($(strip $(DESKTOP_LINUX)),y)
+  ifeq ($(shell uname -m),x86_64)
+    ARCHCAP := X86_64
+    # uncomment the next two lines to have 64-bit compiling environment if the build machine is a 64-bit system
+    # ARCH :=DEPRECATED_use_USER_ARCH
+    # USER_ARCH := x86_64
+  endif
+  ifeq ($(shell uname -m),i686)
+    ARCHCAP := I686
+    ARCH :=DEPRECATED_use_USER_ARCH
+    USER_ARCH := i686
+  endif
+endif
+
+# set up kernel build tool arch, if PROFILE_KARCH not specified, kernel use the same as user PROFILE_ARCH
+# KERNEL_ARCH - Differentiates between 64/32-bit kernel, valid values 'arm' 'aarch64
+# KARCHCAP    - Used to pick toolchain, valid values 'ARM' 'ARMHFP' 'ARMSFP' 'AARCH64'
+# KARCH       - Used to set 'ARCH' for kernel build. Used for kernel includes. Valid values 'arm' 'arm64'
+ifeq ($(strip $(PROFILE_KARCH)),)
+  PROFILE_KARCH := $(PROFILE_ARCH)
+endif
+
+ifeq ($(strip $(PROFILE_KARCH)),armhfp)
+  ifeq ($(strip $(RDK_BUILD)),)
+    KARCHCAP := ARMHFP
+  else
+    KARCHCAP := ARMHFP_2
+  endif
+  KARCH := arm
+  KERNEL_ARCH := arm
+endif
+
+# deprecated - All future releases will only support arm_hf toolchains
+ifeq ($(strip $(PROFILE_KARCH)),armsfp)
+  ifeq ($(strip $(RDK_BUILD)),)
+    KARCHCAP := ARMSFP
+  else
+    KARCHCAP := ARMSFP_2
+  endif
+  KARCH := arm
+  KERNEL_ARCH := arm
+endif
+
+ifeq ($(strip $(PROFILE_KARCH)),arm)
+  ifeq ($(strip $(RDK_BUILD)),)
+    KARCHCAP := ARM
+  else
+    KARCHCAP := ARM_2
+  endif
+  KARCH := arm
+  KERNEL_ARCH := arm
+endif
+
+ifeq ($(strip $(PROFILE_KARCH)),aarch64)
+  ifeq ($(strip $(RDK_BUILD)),)
+	KARCHCAP := AARCH64
+  else
+	KARCHCAP := AARCH64_2
+  endif
+  # Linux Kernel names 64-bit as arm64 instead of aarch64
+  KARCH := arm64
+  KERNEL_ARCH := aarch64
+endif
+ifeq ($(strip $(KERNEL_ARCH)),i386)
+  KARCHCAP := I386
+  KARCH := i386
+  KERNEL_ARCH := i386
+endif
+
+ifeq ($(strip $(DESKTOP_LINUX)),y)
+  ifeq ($(shell uname -m),x86_64)
+    KARCHCAP := X86
+    KARCH := x86
+    KERNEL_ARCH := x86
+  endif
+  ifeq ($(shell uname -m),i686)
+    KARCHCAP := I686
+    KARCH := i686
+    KERNEL_ARCH := x86
+  endif
+endif
+
+#
+# ---  FINAL USERSPACE TOOLCHAIN DETERMINATION
+#
+ifeq ($(PROFILE_KERNEL_VER),)
+  $(error KERNEL VERSION not specified in profile $(PROFILE_FILE))
+endif
+
+ifndef TOOLCHAIN_TOP
+  ifeq ($(BRCM_USE_ALT_TOOLCHAIN_USER),y)
+    TOOLCHAIN_TOP := ${ALT_${ARCHCAP}_TOOLCHAIN_TOP}
+  else
+    TOOLCHAIN_TOP := ${DEFAULT_TOOLCHAIN_${PROFILE_KERNEL_VER}_${ARCHCAP}}
+  endif
+endif
+
+ifeq ($(strip $(RDK_BUILD)),)
+  # Older toolchains have a toplevel usr under which lie all the bins, includes and libs, if it exists then use it
+  TOOLCHAIN_USR_DIR := $(shell if test -d $(TOOLCHAIN_TOP)/usr ; then echo "usr"; else echo ""; fi; )
+endif
+
+ifeq ($(BRCM_USE_ALT_TOOLCHAIN_USER),y)
+  TOOLCHAIN_VER    := ${ALT_${ARCHCAP}_TOOLCHAIN_VER}
+  TOOLCHAIN_LIBDIR := ${ALT_${ARCHCAP}_TOOLCHAIN_LIBDIR}
+  TOOLCHAIN_INCDIR := ${ALT_${ARCHCAP}_TOOLCHAIN_INCDIR}
+  TOOLCHAIN_PREFIX := ${ALT_${ARCHCAP}_TOOLCHAIN_PREFIX}
+
+  # If the BIN_PREFIX is not specified, simply use PREFIX instead
+  ifeq ($(strip ${ALT_${ARCHCAP}_TOOLCHAIN_BIN_PREFIX}),)
+    TOOLCHAIN_BIN_PREFIX := ${ALT_${ARCHCAP}_TOOLCHAIN_PREFIX}
+  else 
+    TOOLCHAIN_BIN_PREFIX := ${ALT_${ARCHCAP}_TOOLCHAIN_BIN_PREFIX}
+  endif
+else
+   TOOLCHAIN_VER    := ${DEFAULT_TOOLCHAIN_VER_${PROFILE_KERNEL_VER}_${ARCHCAP}}
+   TOOLCHAIN_LIBDIR := ${TOOLCHAIN_LIBDIR_${PROFILE_KERNEL_VER}_${ARCHCAP}}
+   TOOLCHAIN_INCDIR := ${TOOLCHAIN_INCDIR_${PROFILE_KERNEL_VER}_${ARCHCAP}}
+   TOOLCHAIN_PREFIX := ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${ARCHCAP}}
+   TOOLCHAIN_BIN_PREFIX := ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${ARCHCAP}}
+endif   
+export TOOLCHAIN_PREFIX
+
+ifeq ($(strip $(RDK_BUILD)),y)
+  TOOLCHAIN_SYSROOT := $(TOOLCHAIN_TOP)
+else ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN_USER)),y)
+  TOOLCHAIN_SYSROOT := $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX)/${ALT_${ARCHCAP}_TOOLCHAIN_SYSROOT_DIR}
+else
+  TOOLCHAIN_SYSROOT := $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX)/sysroot
+endif
+
+
+#
+# ---  FINAL KERNELSPACE TOOLCHAIN DETERMINATION
+#
+LINUX_VER_STR    := ${LINUX_VER_STR_${PROFILE_KERNEL_VER}}
+
+ifndef KTOOLCHAIN_TOP
+  ifeq ($(BRCM_USE_ALT_TOOLCHAIN_KERNEL),y)
+    KTOOLCHAIN_TOP := ${ALT_${KARCHCAP}_TOOLCHAIN_TOP}
+  else
+    KTOOLCHAIN_TOP := ${DEFAULT_TOOLCHAIN_${PROFILE_KERNEL_VER}_${KARCHCAP}}
+  endif
+endif
+
+ifeq ($(strip $(RDK_BUILD)),)
+  # Older toolchains have a toplevel usr under which lie all the bins, includes and libs, if it exists then use it
+  KTOOLCHAIN_USR_DIR := $(shell if test -d $(KTOOLCHAIN_TOP)/usr ; then echo "usr"; else echo ""; fi; )
+endif
+
+ifeq ($(BRCM_USE_ALT_TOOLCHAIN_KERNEL),y)
+  KTOOLCHAIN_VER   := ${ALT_${KARCHCAP}_TOOLCHAIN_VER}
+  KTOOLCHAIN_PREFIX:= ${ALT_${KARCHCAP}_TOOLCHAIN_PREFIX}
+
+  # If the BIN_PREFIX is not specified, simply use PREFIX instead
+  ifeq ($(strip ${ALT_${KARCHCAP}_TOOLCHAIN_BIN_PREFIX}),)
+    KTOOLCHAIN_BIN_PREFIX := ${ALT_${KARCHCAP}_TOOLCHAIN_PREFIX}
+  else 
+    KTOOLCHAIN_BIN_PREFIX := ${ALT_${KARCHCAP}_TOOLCHAIN_BIN_PREFIX}
+  endif
+else
+  KTOOLCHAIN_VER   := ${DEFAULT_TOOLCHAIN_VER_${PROFILE_KERNEL_VER}_${KARCHCAP}}
+  KTOOLCHAIN_PREFIX:= ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${KARCHCAP}}
+  KTOOLCHAIN_BIN_PREFIX:= ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${KARCHCAP}}
+endif
+
+#                                                                                
+# ---  FINAL USERSPACE LIB INSTALL SUFFIX DETERMINATION                          
+#                                                                                
+ifneq ($(strip $(PROFILE_ARCH)),$(strip $(ORIG_PROFILE_ARCH)))
+# If userspace is by default 32bit, then 64bit libs are installed in lib/aarch64 
+# If userspace is by default 64bit, then 32bit libs are installed in lib/arm
+BCM_INSTALL_SUFFIX := $(USER_ARCH)
+BCM_INSTALL_SUFFIX_DIR := /$(BCM_INSTALL_SUFFIX)
+else
+# PROFILE_ARCH == ORIG_PROFILE_ARCH
+BCM_INSTALL_SUFFIX :=
+BCM_INSTALL_SUFFIX_DIR :=
+endif

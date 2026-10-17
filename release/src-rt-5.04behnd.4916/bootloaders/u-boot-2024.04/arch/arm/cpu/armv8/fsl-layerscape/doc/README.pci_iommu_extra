@@ -1,0 +1,67 @@
+#
+# Copyright 2020 NXP
+#
+# SPDX-License-Identifier:      GPL-2.0+
+#
+
+Specifying extra IOMMU mappings for PCI controllers
+
+This feature can be enabled through the PCI_IOMMU_EXTRA_MAPPINGS Kconfig option.
+
+The "pci_iommu_extra" env var or "pci-iommu-extra" device tree property (to be
+used for example in more static scenarios such as hardwired PCI endpoints that
+get initialized later in the system setup) allows two things:
+ - for a SRIOV capable PCI EP identified by its B.D.F specify the maximum number
+   of VFs that will ever be created for it
+ - for hot-plug case, specify the B.D.F with which the device will show up on
+   the PCI bus
+
+The env var consists of a list of <bdf>,<action> pairs for a certain pci bus
+identified by its controller's base register address, as defined in the "reg"
+property in the device tree.
+
+pci_iommu_extra = pci@<addr1>,<bdf>,<action>,<bdf>,<action>,
+		  pci@<addr2>,<bdf>,<action>,<bdf>,<action>,...
+
+where:
+ <addr> is the base register address of the pci controller for which the
+        subsequent <bdf>,<action> pairs apply
+ <bdf> identifies to which B.D.F the action applies to
+ <action> can be:
+    - "vfs=<number>" to specify that for the PCI EP identified previously by
+      the <bdf> to include mappings for <number> of VFs.
+      The variant "noari_vfs=<number>" is available to disable taking ARI into
+      account.
+    - "hp" to specify that on this <bdf> there will be a hot-plugged device so
+      it needs a mapping
+The device tree property must be placed under the correct pci controller node
+and only the bdf and action pairs need to be specified, like this:
+
+pci-iommu-extra = "<bdf>,<action>,<bdf>,<action>,...";
+
+Note: the env var has priority over the device tree property.
+
+For example, given this configuration on bus 6:
+
+=> pci 6
+Scanning PCI devices on bus 6
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+06.00.00   0x8086     0x1572     Network controller      0x00
+06.00.01   0x8086     0x1572     Network controller      0x00
+
+The following u-boot env var will create iommu mappings for 3 VFs for each PF:
+
+=> setenv pci_iommu_extra pci@0x3800000,6.0.0,vfs=3,6.0.1,vfs=3
+
+For the device tree case, this would be specified like this:
+
+pci-iommu-extra = "6.0.0,vfs=3,6.0.1,vfs=3";
+
+To add an iommu mapping for a hot-plugged device, please see following example:
+
+=> setenv pci_iommu_extra pci@0x3800000,2.16.0,hp
+
+For the device tree case, this would be specified like this:
+
+pci-iommu-extra = "2.16.0,hp";

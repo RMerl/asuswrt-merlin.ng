@@ -11,6 +11,7 @@
 #include <linux/ctype.h>
 #include <linux/sched/types.h>
 #include <linux/input.h>
+#include <linux/interrupt.h>
 #include <button.h>
 #include <linux/version.h>
 
@@ -532,8 +533,12 @@ static bool btn_is_gpio_btn_down(BtnInfo *btn) {
  * Description  : enable a buttons Irqs
  ***************************************************************************/
 static void btn_enable_irq(BtnInfo *btn) {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
     bcm_bca_extintr_clear(btn->extIrq);
     bcm_bca_extintr_unmask(btn->extIrq);
+#else
+    enable_irq(btn->extIrq);
+#endif
 }
 
 /***************************************************************************
@@ -541,8 +546,13 @@ static void btn_enable_irq(BtnInfo *btn) {
  * Description  : enable a buttons Irqs
  ***************************************************************************/
 static void btn_disable_irq(BtnInfo *btn) {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
     bcm_bca_extintr_mask(btn->extIrq);
     bcm_bca_extintr_clear(btn->extIrq);
+#else
+    if (!in_interrupt())
+        disable_irq(btn->extIrq);
+#endif
 }
 
 static struct button_events btn_events[BTN_EVENT_NUM] =
@@ -632,6 +642,9 @@ static int button_probe(struct platform_device *pdev)
     int ret;
     int i;
     struct device *dev = &pdev->dev;
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+    unsigned long irqflags = 0;
+#endif
 
     btn_input_dev = devm_input_allocate_device(dev);
     if (!btn_input_dev) 
@@ -664,7 +677,7 @@ static int button_probe(struct platform_device *pdev)
 
         spin_lock_init(&btnInfo[i].lock);
 
-        strncpy(btnInfo[i].name, btn_np->name, 32);
+        strncpy(btnInfo[i].name, btn_np->name, sizeof(btnInfo[i].name)-1);
 
         btnInfo[i].btnId = i;
         btnInfo[i].active = 0;
@@ -688,6 +701,7 @@ static int button_probe(struct platform_device *pdev)
             btnInfo[i].timer.expires  = jiffies + msecs_to_jiffies(BTN_POLLFREQ);
         }
 
+#if defined(CONFIG_BCM_BCA_EXTINTR)
         ret = bcm_bca_extintr_request(&pdev->dev, btn_np, CONSUMER_NAME, btnInfo[i].pressIsr, &btnInfo[i], btn_np->name , NULL);
         if (ret < 0)
         {
@@ -705,7 +719,37 @@ static int button_probe(struct platform_device *pdev)
             dev_err(&pdev->dev, "bcm_bca_extintr_get_gpiod for irq %d failed\n",  btnInfo[i].extIrq);
             continue;
         }
+#else
+        ret = 0;
+        btnInfo[i].gd = devm_fwnode_gpiod_get(&pdev->dev, of_fwnode_handle(btn_np),
+            CONSUMER_NAME, GPIOD_IN, btn_np->name);
+        if (btnInfo[i].gd == ERR_PTR(-EPROBE_DEFER))
+            return -EPROBE_DEFER;
 
+        if (IS_ERR(btnInfo[i].gd)) {
+            dev_err(&pdev->dev, "devm_fwnode_gpiod_get failed for button %s err %ld\n",
+                btn_np->name, PTR_ERR(btnInfo[i].gd));
+            continue;
+        }
+
+        btnInfo[i].extIrq = irq_of_parse_and_map(btn_np, 0);
+        if (!btnInfo[i].extIrq) {
+            /* interupt not defined, try gpiod_to_irq with default both edge interrupt type */
+            btnInfo[i].extIrq = gpiod_to_irq(btnInfo[i].gd);
+            irqflags |= IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING;
+        }
+
+        if (btnInfo[i].extIrq) {
+            ret = devm_request_threaded_irq(dev, btnInfo[i].extIrq, btnInfo[i].pressIsr,
+                 NULL, irqflags, btn_np->name, &btnInfo[i]);
+        }
+
+        if (ret || !btnInfo[i].extIrq) {
+            dev_err(&pdev->dev, "set up irq %d for button %s failed ret %d\n",
+                btnInfo[i].extIrq, btn_np->name, ret);
+            continue;
+        }
+#endif
         if(!of_property_read_u32(btn_np, KEY_CODE_NAME, &key_code))
         {
             btn_keymap[i] = btnInfo[i].linux_key_code = key_code;

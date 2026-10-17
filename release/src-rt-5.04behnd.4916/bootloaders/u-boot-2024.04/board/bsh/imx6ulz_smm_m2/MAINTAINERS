@@ -1,0 +1,6 @@
+MX6ULZ_SMM_M2 BOARD
+M:	Michael Trimarchi <michael@amarulasolutions.com>
+S:	Maintained
+F:	board/bsh/imx6ulz_smm_m2/
+F:	include/configs/imx6ulz_smm_m2.h
+F:	configs/imx6ulz_smm_m2_defconfig

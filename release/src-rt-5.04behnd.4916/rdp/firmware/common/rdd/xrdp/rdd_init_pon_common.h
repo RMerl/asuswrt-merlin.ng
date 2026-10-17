@@ -45,9 +45,8 @@
 #endif
 #include "rdp_drv_rnr.h"
 #include "rdd_ag_natc.h"
-#if (!defined(OPERATION_MODE_PRV) || defined(RULE_BASED_GRE))
 #include "rdd_tunnels_parsing.h"
-#endif
+
 
 void rdd_proj_init(rdd_init_params_t *init_params);
 int rdd_init(void);

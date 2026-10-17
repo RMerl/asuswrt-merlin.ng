@@ -1,0 +1,24 @@
+PHY nodes
+
+If the device tree is used to describe networking interfaces, U-Boot expects a
+node for each PHY.  Parent node for such a PHY node is expected to correspond to
+a MDIO bus and the bus is used to access the PHY.
+
+Required properties:
+
+ - reg : The ID number for the phy, usually a small integer
+
+Example:
+
+ethernet-phy@0 {
+	compatible = "ethernet-phy-id0141.0e90", "ethernet-phy-ieee802.3-c22";
+	interrupt-parent = <&PIC>;
+	interrupts = <35 IRQ_TYPE_EDGE_RISING>;
+	reg = <0>;
+
+	resets = <&rst 8>;
+	reset-names = "phy";
+	reset-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
+	reset-assert-us = <1000>;
+	reset-deassert-us = <2000>;
+};

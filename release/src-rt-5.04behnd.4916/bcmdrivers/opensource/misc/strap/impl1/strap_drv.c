@@ -494,7 +494,7 @@ static const struct of_device_id* fdt_match_node(unsigned long node, const struc
     if (!match_table)
         return NULL;
 
-    while (match_table->compatible)
+    while (match_table->compatible[0])
     {
         if (of_flat_dt_is_compatible(node, match_table->compatible))
             return match_table;

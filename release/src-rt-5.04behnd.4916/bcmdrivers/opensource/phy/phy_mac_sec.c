@@ -78,7 +78,7 @@ static int macsec_prepare_fw(phy_dev_t *phy_dev, uint16_t enable, uint16_t user_
 static int macsec_xlmac_powerup_init(phy_dev_t *phy_dev, macsec_port_loc_t port_loc);
 static int macsec_xlmac_init(phy_dev_t *phy_dev, macsec_port_loc_t port_loc);
 static int macsec_xlmac_restart(phy_dev_t *phy_dev, macsec_port_loc_t port_loc);
-static int macsec_get_xfi_serdes_mode(phy_dev_t *phy_dev, uint16_t *xfi_speed, uint16_t *mode_config, uint16_t *kr_mode);
+static int macsec_get_speed(phy_dev_t *phy_dev, uint16_t *line_spd);
 static void macsec_settings_convert(macsec_settings_t* p_settings, macsec_api_settings_t* p_api_settings);
 static int macsec_secy_init(phy_dev_t *phy_dev, macsec_settings_t* p_settings);
 static int macsec_device_init(secy_device_access_t *secy_device_access, const macsec_settings_t * const Settings_p, macsec_Capabilities_t *Capabilities);
@@ -500,14 +500,14 @@ static int phy_macsec_restart(phy_dev_t *phy_dev)
 {
     int ret = 0;
     phy_macsec_dev *macsec_dev = (phy_macsec_dev*)phy_dev->macsec_dev;
-    uint16_t xfi_spd = SPEED_10G, mode_config = 0, kr_mode = 0;
+    uint16_t line_spd = SPEED_10G;
 
     phy_macsec_log(LOG_DEBUG, "\nphy_macsec_restart\n");  
 
-    ret = macsec_get_xfi_serdes_mode(phy_dev, &xfi_spd, &mode_config, &kr_mode); 
+    ret = macsec_get_speed(phy_dev, &line_spd); 
 
     /* MACSEC_CONFIG_PORT_CTRL & MACSEC_CONFIG_MBUS */
-    phy_macsec_write(phy_dev, MACSEC_XLMAC_REG_BASE, 0x1010, (xfi_spd > SPEED_1000) ? 0x0001032D : 0x00010F2D);
+    phy_macsec_write(phy_dev, MACSEC_XLMAC_REG_BASE, 0x1010, (line_spd > SPEED_1000) ? 0x0001032D : 0x00010F2D);
 
     if (macsec_dev->initialized)
     {
@@ -1803,81 +1803,47 @@ static int macsec_xlmac_restart(phy_dev_t *phy_dev, macsec_port_loc_t port_loc)
     return 0;
 }
 
-static int macsec_get_xfi_serdes_mode(phy_dev_t *phy_dev, uint16_t *xfi_speed, uint16_t *mode_config, uint16_t *kr_mode)
+static int macsec_get_speed(phy_dev_t *phy_dev, uint16_t *line_spd)
 {
-    int ret;
-    uint16_t temp = 0;
+    int ret = 0;
+    uint16_t temp = 0, mode = 0;
 
-    PHY_WRITE(phy_dev, 0x1e, 0x4107, 0x403|(phy_dev->addr<<5));
-    PHY_WRITE(phy_dev, 0x1e, 0x4117, 0x2004);
-    PHY_READ(phy_dev, 0x03, 0xa040, &temp);
-    PHY_READ(phy_dev, 0x03, 0xa040, &temp);
-    PHY_WRITE(phy_dev, 0x1e, 0x4107, 0);
+    PHY_READ(phy_dev, 0x1e, 0x400d, &temp);
+    /* Read CORE_CFG_LINK_STS_scratch1 register bit */
+    mode = ((temp & (uint16_t)0x4) >> 2) << 2;
+    /* Read back CORE_CFG_LINK_STS register bit 4:2 and remap them */
+    mode |= (temp & (uint16_t)0x18) >> 3;
 
-    if(temp & XFIM_XFI_CTRL0_SPEED_10G) 
-    {
-        *xfi_speed = SPEED_10G;
-        phy_macsec_log(LOG_INFO, "XFI speed=10G");
-    } 
-    else if(temp & XFIM_XFI_CTRL0_SPEED_5G) 
-    {
-        *xfi_speed = SPEED_5000;
-        phy_macsec_log(LOG_INFO, "XFI speed=5G");
-    } 
-    else if(temp & XFIM_XFI_CTRL0_SPEED_2P5G) 
-    {
-        *xfi_speed = SPEED_2500;
-        phy_macsec_log(LOG_INFO, "XFI speed=2.5G");
-    } 
-    else if(temp & XFIM_XFI_CTRL0_SPEED_1G) 
-    {
-        *xfi_speed = SPEED_1000;
-        phy_macsec_log(LOG_INFO, "XFI speed=1G");
-    } 
-    else if( temp & XFIM_XFI_CTRL0_SPEED_100M) 
-    {
-        *xfi_speed = SPEED_100;
-        phy_macsec_log(LOG_INFO, "XFI speed=100M");
-    } 
-    else 
-    {
-        *xfi_speed = SPEED_UNDEFINED;
+    switch (mode) {
+    case 0:
+        *line_spd = SPEED_10;
+        phy_macsec_log(LOG_INFO, "LINE speed=10M");
+        break;
+    case 1:
+        *line_spd = SPEED_100;
+        phy_macsec_log(LOG_INFO, "LINE speed=100M");
+        break;
+    case 2:
+        *line_spd = SPEED_1000;
+        phy_macsec_log(LOG_INFO, "LINE speed=1G");
+        break;
+    case 3:
+        *line_spd = SPEED_10G;
+        phy_macsec_log(LOG_INFO, "LINE speed=10G");
+        break;
+    case 4:
+        *line_spd = SPEED_2500;
+        phy_macsec_log(LOG_INFO, "LINE speed=2.5G");
+        break;
+    case 5:
+        *line_spd = SPEED_5000;
+        phy_macsec_log(LOG_INFO, "LINE speed=5G");
+        break;
+    default:
         phy_macsec_log(LOG_ERROR, " SPEED_UNDEFINED ");
+        *line_spd = SPEED_UNDEFINED;
+        break;
     }
-
-#if 0
-    PHY_READ(phy_dev, 0x1e, 0x4011, &temp);
-    *mode_config = (temp>>1) & 0xf;
-
-    for (i = 0; i < 1000; i++)
-    {
-        /* Read status of command */
-        PHY_READ(phy_dev, 0x1e, 0x4037, &temp);
-
-        if (temp != CMD_IN_PROGRESS && temp != CMD_SYSTEM_BUSY)
-            break;
-
-        udelay(2000);
-    }
-
-    PHY_WRITE(phy_dev, 0x1e, 0x4005, 0x800E);
-
-    for (i = 0; i < 1000; i++)
-    {
-        /* Read status of command */
-        PHY_READ(phy_dev, 0x1e, 0x4037, &temp);
-
-        if (temp == CMD_PASS || temp == CMD_ERROR)
-            break;
-
-        udelay(2000);
-    }
-
-    PHY_READ(phy_dev, 0x1e, 0x4038, kr_mode);
-
-    phy_macsec_log(LOG_INFO, " mode=%u kr_enable=%u\n", *mode_config, *kr_mode);
-#endif    
-
 
 Exit:
     return ret;

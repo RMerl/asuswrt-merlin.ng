@@ -298,7 +298,6 @@ static int rpmb_process_cmd(rpmb_blk_ioc_data_t *idata)
 #ifdef DEBUG                
                     printk("[%d] VFBIO_RPMB_WRITE: frm->address[%d] cmd->blocks[%d]\n",__LINE__,frm->address,cmd->blocks);
 #endif                    
-                    frm->address = frm->address;
                     mem->last_op.address = frm->address;
                     rpc_rpbm_mem_write(frm, cmd->blocks);
                     mem->last_op.op_result = frm->op_result;
@@ -375,6 +374,7 @@ int vfbio_rpmb_ioctl_cmd(struct mmc_ioc_cmd *ic_ptr)
     if (IS_ERR(idata))
         return PTR_ERR(idata);
  
+     /* coverity[tainted_data:SUPPRESS] - All idata parameters checked in rpmb_blk_ioctl_copy_from_user() */
     ioc_err = rpmb_process_cmd(idata);
     if (ioc_err)
     {

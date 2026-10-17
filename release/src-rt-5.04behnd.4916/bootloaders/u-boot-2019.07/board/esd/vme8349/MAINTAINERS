@@ -1,7 +1,0 @@
-VME8349 BOARD
-M:	Reinhard Arlt <reinhard.arlt@esd-electronics.com>
-S:	Maintained
-F:	board/esd/vme8349/
-F:	include/configs/vme8349.h
-F:	configs/caddy2_defconfig
-F:	configs/vme8349_defconfig

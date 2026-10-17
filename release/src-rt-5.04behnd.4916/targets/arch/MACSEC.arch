@@ -1,0 +1,4 @@
+<PUBLISH>
+@@ -608,7 +608,7 @@
+-# BUILD_MACSEC is not set
++BUILD_MACSEC=y

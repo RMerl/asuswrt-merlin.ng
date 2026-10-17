@@ -1,0 +1,9 @@
+MX6Q_ACC
+M:	Matthias Winker <matthias.winker@de.bosch.com>
+M:	Philip Oberfichtner <pro@denx.de>
+S:	Maintained
+F:	board/bosch/acc
+F:	include/configs/imx6q-bosch-acc.h
+F:	configs/imx6q_bosch_acc_defconfig
+F:	arch/arm/dts/imx6q-bosch-acc.dts
+F:	arch/arm/dts/imx6q-bosch-acc-u-boot.dts

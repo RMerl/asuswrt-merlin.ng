@@ -225,12 +225,6 @@ typedef struct {
         #define REG_PORT_STP_SHIFT                        5
         #define REG_PORT_STP_MASK                         (0x7 << REG_PORT_STP_SHIFT)
         
-#if defined (CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
-    #define EPHY_PORTS       0
-    #define NUM_RGMII_PORTS  4
-    #define RGMII_PORT_ID    5
-#endif
-
 #define USB_PORT_ID     6
 #define MIPS_PORT_ID    8
 #define EXTSW_RGMII_PORT 5
@@ -761,7 +755,7 @@ typedef struct {
 /****************************************************************************
    QOS : Page (0x30)
 ****************************************************************************/
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
+#if defined(CONFIG_BCM947622)
     #define QOS_REG_SHIFT       0
 #else
     #define QOS_REG_SHIFT       4   // reg 0x28 to 0x64 need to shift 4 bytes
@@ -1066,7 +1060,7 @@ typedef struct {
 
 #define CTL_OVERIDE_REG(p)     (((p)==IMP_PORT_ID)?REG_CONTROL_MII1_PORT_STATE_OVERRIDE:REG_PORT_STATE+(p))
 
-#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
+#if !defined(CONFIG_BCM947622)
 /****************************************************************************
    63158 expanded page_control Registers
 ****************************************************************************/

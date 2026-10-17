@@ -118,7 +118,7 @@ void nft_fm_dump_macs(struct net_device *dev, struct ethhdr *eth)
         eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5]);
     fm_nft_printk(LOGLEVEL_DEBUG, dev, "NAT dest MAC: %02x:%02x:%02x:%02x:%02x:%02x\n", eth->h_dest[0], eth->h_dest[1],
         eth->h_dest[2], eth->h_dest[3], eth->h_dest[4], eth->h_dest[5]);
-    fm_nft_printk(LOGLEVEL_DEBUG, dev, "NAT h proto 0x%x (0x%x) sizeof ethhdr %ld\n", eth->h_proto, htons(eth->h_proto),
+    fm_nft_printk(LOGLEVEL_DEBUG, dev, "NAT h proto 0x%x (0x%x) sizeof ethhdr %zu\n", eth->h_proto, htons(eth->h_proto),
         sizeof(struct ethhdr));
 }
 
@@ -617,18 +617,5 @@ int fm_setup_tc(fm_nft_ctx_t *fm_nft_ctx, enum tc_setup_type type, void *type_da
     struct net_device *dev = fm_nft_ctx->dev;
     fm_nft_printk(LOGLEVEL_DEBUG, dev, "fm_setup_tc: HW offload cb is set for device %s, type %d ifindex %d\n", dev->name, type, dev->ifindex);
 
-    switch (type) {
-    case TC_SETUP_FT:
-        return flow_block_cb_setup_simple(type_data, &fm_block_ft_cb_list, fm_setup_tc_nft_cb, dev, fm_nft_ctx, true);
-    case TC_SETUP_BLOCK:
-    case TC_SETUP_CLSU32:
-    case TC_SETUP_CLSMATCHALL:
-    case TC_SETUP_CLSFLOWER:
-        return 0;
-    default:
-        fm_nft_printk(LOGLEVEL_ERR, dev, "fm_setup_tc: Unsupported type, type %d\n", type);
-        return -EOPNOTSUPP;
-    }
-
-    return 0;
+    return flow_block_cb_setup_simple(type_data, &fm_block_ft_cb_list, fm_setup_tc_nft_cb, dev, fm_nft_ctx, true);
 }

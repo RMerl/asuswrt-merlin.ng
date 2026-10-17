@@ -1,6 +1,0 @@
-PANDA BOARD
-M:	Lokesh Vutla <lokeshvutla@ti.com>
-S:	Maintained
-F:	board/ti/panda/
-F:	include/configs/omap4_panda.h
-F:	configs/omap4_panda_defconfig

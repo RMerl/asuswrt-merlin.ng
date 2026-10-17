@@ -1,0 +1,164 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2020 Philippe Reynes <philippe.reynes@softathome.com>
+ */
+
+/dts-v1/;
+
+#include "bcm6856.dtsi"
+
+/ {
+	model = "Broadcom BCM968360BG Reference Board";
+	compatible = "brcm,bcm968360bg", "brcm,bcm6856", "brcm,bcmbca";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x20000000>;
+	};
+};
+
+&uart0 {
+	bootph-all;
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
+&gpio3 {
+	status = "okay";
+};
+
+&gpio4 {
+	status = "okay";
+};
+
+&gpio5 {
+	status = "okay";
+};
+
+&gpio6 {
+	status = "okay";
+};
+
+&gpio7 {
+	status = "okay";
+};
+
+&nand_controller {
+	brcm,wp-not-connected;
+	status = "okay";
+};
+
+&nandcs {
+	nand-ecc-strength = <4>;
+	nand-ecc-step-size = <512>;
+	brcm,nand-oob-sector-size = <16>;
+};
+
+&leds {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	brcm,serial-led-en-pol;
+	brcm,serial-led-data-ppol;
+
+	led@0 {
+		reg = <0>;
+		label = "red:alarm";
+	};
+
+	led@1 {
+		reg = <1>;
+		label = "green:wan";
+	};
+
+	led@2 {
+		reg = <2>;
+		label = "green:wps";
+	};
+
+	led@12 {
+		reg = <12>;
+		label = "orange:enet5.1";
+	};
+
+	led@13 {
+		reg = <13>;
+		label = "green:enet5.2";
+	};
+
+	led@14 {
+		reg = <14>;
+		label = "orange:enet5.2";
+	};
+
+	led@15 {
+		reg = <15>;
+		label = "green:enet5.1";
+	};
+
+	led@16 {
+		reg = <16>;
+		label = "green:usb1";
+	};
+
+	led@17 {
+		reg = <17>;
+		label = "green:voip1";
+	};
+
+	led@18 {
+		reg = <18>;
+		label = "green:voip2";
+	};
+
+	led@19 {
+		reg = <19>;
+		label = "green:enet6";
+	};
+
+	led@20 {
+		reg = <20>;
+		label = "orange:enet6";
+	};
+
+	led@21 {
+		reg = <21>;
+		label = "green:inet";
+	};
+
+	led@22 {
+		reg = <22>;
+		label = "green:usb2";
+	};
+};
+
+&hsspi {
+	status = "okay";
+
+	flash: mt25@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		spi-max-frequency = <25000000>;
+	};
+};

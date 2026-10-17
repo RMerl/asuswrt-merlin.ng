@@ -55,9 +55,13 @@ written consent.
 #define RPC_SERVICE_VER_BA_SETUP_TRIGGER          0
 #define RPC_SERVICE_VER_BA_SETUP_PWR_PIN          0
 #define RPC_SERVICE_VER_BA_DEEP_SLEEP             0
+#define RPC_SERVICE_VER_BA_SVC_GET_SEC_STATE      0
 
 enum ba_svc_func_idx
 {
+    BA_SEC_BEGIN = 30,
+    BA_SVC_GET_SEC_STATE = BA_SEC_BEGIN,
+
     BA_UBOOT_LINUX_BEGIN = 50,
     BA_SVC_XPORT_SET_PWR = BA_UBOOT_LINUX_BEGIN,
     BA_SVC_GET_SMCBL_VER,
@@ -117,35 +121,33 @@ struct ba_msg {
     };
 };
 
-/* 
-    This is configurable parameter in git core.abbrev parameter currently it configure to 9 use more 3 byte for spare
-    In case of changing lenght of this parameters need  to change it also in the SMC_OS and SMC_OS
-*/
+/* A short git hash format must be used. */
 #define HASH_SHORT_SIZE         (12)
 
-typedef struct 
-{
-    uint16_t       smcos_major_ver;
-    uint16_t       smcos_minor_ver;
-    uint16_t       smcos_rev;
-    uint16_t       pon_major_ver;
-    uint16_t       pon_minor_ver;
-    uint16_t       pon_patch_ver; 
-    char           smcos_ver_hash[HASH_SHORT_SIZE]; 
+typedef struct {
+    uint16_t old_ver_format; /* 0 - new format, other old format */
+    uint16_t pon_smc_os_maj_ver;
+    uint16_t pon_smc_os_min_ver;
+    uint16_t pon_smc_os_patch_ver;
+    uint16_t pon_cast_ver;
+    uint16_t pon_patch_ver;
+    char     smcos_ver_hash[HASH_SHORT_SIZE];
 } smcos_ver_t;
 
-typedef struct 
-{
-    uint16_t       smcbl_major_ver;
-    uint16_t       smcbl_minor_ver;
-    uint16_t       smcbl_rev;
-    uint16_t       ponbl_major_ver;
-    uint16_t       ponbl_minor_ver;
-    char           smcbl_ver_hash[HASH_SHORT_SIZE];
+typedef struct {
+    uint16_t  old_ver_format; /* 0 - new format, other old format */
+    uint16_t  ponbl_patch_ver; /* new format field */
+    uint16_t  pon_cast_ver; /* new format field */
+    uint16_t  pon_cast_patch_ver; /* new format field*/
+    uint16_t  ponbl_major_ver; /* same as in old format */
+    uint16_t  ponbl_minor_ver; /* same as in old format */
+    char      smcbl_ver_hash[HASH_SHORT_SIZE];
 } smcbl_ver_t;
 
-#define BA_SVC_RESET_BOOT_WDOG	1
-#define BA_SVC_RESET_BOOT_COUNT	2
+#define BA_SVC_RESET_BOOT_WDOG	    1
+#define BA_SVC_RESET_BOOT_COUNT	    2
+#define BA_SVC_UBOOT                4
+#define BA_SVC_LINUX                8
 
 /* ba svc functions */
 int bcm_rpc_ba_xport_set_state(uint8_t port_id, uint8_t enable);
@@ -155,7 +157,8 @@ int bcm_rpc_ba_get_smcos_ver(smcos_ver_t  *smcos_ver);
 int bcm_rpc_ba_report_boot_success(uint32_t flags);
 int bcm_rpc_ba_get_boot_fail_cnt(void);
 int bcm_rpc_ba_setup_wake_trigger(wake_type_t wake_type, int param);
-int bcm_rpc_ba_setup_pwr_pin(uint32_t pin_number, uint32_t polarity);
+int bcm_rpc_ba_setup_pwr_pin(uint32_t pin_number, uint32_t polarity, uint8_t is_wakeup_pin);
 int bcm_rpc_ba_deep_sleep(void);
+int bcm_rpc_ba_get_sec_state(void);
 #endif
 

@@ -26,8 +26,9 @@ Boston, MA 02111-1307, USA.
 #include <linux/export.h>
 #include <linux/platform_device.h>
 #include <linux/of_device.h>
+#include <linux/ctype.h>
+#include "board.h"
 #include "bcmbca_memc_dt_bindings.h"
-#include "bcm_memc.h"
 
 extern int bcm_memc_irq_init(struct platform_device *pdev);
 
@@ -38,9 +39,14 @@ int bcm_memc_get_of_memcfg(unsigned int *memcfg)
 
 	if (!memcfg)
 		return -EINVAL;
-	np = of_find_node_opts_by_path("/memory_controller", NULL);
-	if (!np)
-		return -ENOENT;
+	np = of_find_compatible_node(NULL, NULL, "brcm,bcm-memc");
+	if (!np) {
+		np = of_find_node_opts_by_path("/memory_controller", NULL);
+		if (!np)
+			return -ENOENT;
+		pr_warn("%s: FIX the absolute memory_controller path in the board dts!!!\n",
+				__func__);
+	}
 	val = of_get_property(np, "memcfg", NULL);
 	if (!val) {
 		of_node_put(np);
@@ -175,20 +181,32 @@ EXPORT_SYMBOL(bcm_memc_get_ddr_size);
 
 int bcm_memc_get_spd_mhz(unsigned int *spd_mhz)
 {
+	char mcb[16]={};
 	unsigned int memcfg;
-	int ret; 
+	int ret;
 
 	if (!spd_mhz) {
 		pr_err("%s: Error - invalid input\n", __func__);
 		return -EINVAL;
 	}
 
-	ret = bcm_memc_get_of_memcfg(&memcfg);
+	ret = eNvramGet("MCB", mcb, sizeof(mcb)-1);
 	if (ret) {
-		pr_err("%s: Error - failed to get memcfg from device tree, "
-			"ret=%d\n", __func__, ret);
-		return ret;
+		ret = kstrtouint(mcb, 16, &memcfg);
+		if (ret) {
+			pr_err("%s: Error - failed to parse MCB=%s from nvram, "
+				"ret=%d\n", __func__, mcb, ret);
+			return ret;
+		}
+	} else {
+		ret = bcm_memc_get_of_memcfg(&memcfg);
+		if (ret) {
+			pr_err("%s: Error - failed to get memcfg from device tree, "
+				"ret=%d\n", __func__, ret);
+			return ret;
+		}
 	}
+
 
 	switch (memcfg & BP_DDR_MCBSEL_FORMAT_MASK) {
 	case BP_DDR_MCBSEL_FORMAT_VER0:
@@ -208,7 +226,7 @@ int bcm_memc_get_spd_mhz(unsigned int *spd_mhz)
 		return -EDOM;
 	}
 
-	pr_info("%s: memcfg=0x%x spd_mhz=%u\n", __func__, memcfg, *spd_mhz);
+	pr_debug("%s: memcfg=0x%x spd_mhz=%u\n", __func__, memcfg, *spd_mhz);
 	return 0;
 }
 EXPORT_SYMBOL(bcm_memc_get_spd_mhz);

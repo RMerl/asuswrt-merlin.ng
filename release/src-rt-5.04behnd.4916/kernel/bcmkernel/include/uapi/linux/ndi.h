@@ -34,10 +34,6 @@ struct ndi_dev {
 	struct hlist_node	node;
 };
 
-enum {
-	NDI_FINISHED_BIT = 0,
-};
-
 struct ndi_info {
 	struct ndi_dev		*dev;
 	unsigned long		flags;
@@ -47,10 +43,16 @@ struct ndi_dev *ndi_dev_find_by_id(u32 id);
 
 #endif /* CONFIG_BCM_KF_NDI */
 
-enum {
+enum ndi_dev_flags {
 	NDI_DEV_IGNORE_BIT = 0,
 	NDI_DEV_STALE_BIT,
 	NDI_DEV_IS_XFRM_BIT,
+};
+
+enum ndi_ct_flags {
+	NDI_FINISHED_BIT = 0,
+	NDI_ORIG_IS_WAN_BIT,
+	NDI_REPL_IS_WAN_BIT,
 };
 
 enum {
@@ -95,6 +97,7 @@ enum {
 	NDIA_DEV_DPI_FAMILY,
 	NDIA_DEV_DPI_PRIO,
 	NDIA_DEV_PADDING,
+	NDIA_DEV_INTF,
 	__NDIA_DEV_MAX
 };
 #define NDIA_DEV_MAX	(__NDIA_DEV_MAX - 1)

@@ -1,0 +1,13 @@
+VIM3
+M:	Neil Armstrong <neil.armstrong@linaro.org>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/vim3/
+F:	configs/khadas-vim3_defconfig
+F:	configs/khadas-vim3_android_defconfig
+F:	configs/khadas-vim3_android_ab_defconfig
+F:	configs/khadas-vim3l_defconfig
+F:	configs/khadas-vim3l_android_defconfig
+F:	configs/khadas-vim3l_android_ab_defconfig
+F:	doc/board/amlogic/khadas-vim3.rst
+F:	doc/board/amlogic/khadas-vim3l.rst

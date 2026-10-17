@@ -1,0 +1,7 @@
+ODROID-GO-ULTRA
+M:	Neil Armstrong <neil.armstrong@linaro.org>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/odroid-go-ultra
+F:	configs/odroid-go-ultra_defconfig
+F:	doc/board/amlogic/odroid-go-ultra.rst

@@ -1,0 +1,15 @@
+if TARGET_MK808
+
+config SYS_BOARD
+	default "mk808"
+
+config SYS_VENDOR
+	default "rikomagic"
+
+config SYS_CONFIG_NAME
+	default "mk808"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

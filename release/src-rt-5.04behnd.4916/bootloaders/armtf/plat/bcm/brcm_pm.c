@@ -157,11 +157,7 @@ static int brcm_pwr_domain_on(u_register_t mpidr)
  ******************************************************************************/
 void brcm_pwr_domain_off(const psci_power_state_t *target_state)
 {
-#if defined (PLATFORM_FLAVOR_63138)
-	assert(0);
-#else
 	gicv2_cpuif_disable();
-#endif
 }
 
 /*******************************************************************************
@@ -183,15 +179,11 @@ void brcm_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	assert(target_state->pwr_domain_state[MPIDR_AFFLVL0] ==
 					PLAT_LOCAL_STATE_OFF);
 
-#if defined (PLATFORM_FLAVOR_63138)
-	a9_gic_secure_init();
-#else
 	/* TODO: This setup is needed only after a cold boot */
 	gicv2_pcpu_distif_init();
 
 	/* Enable the gic cpu interface */
 	gicv2_cpuif_enable();
-#endif
 }
 
 /*******************************************************************************
@@ -236,10 +228,12 @@ static void __dead2 brcm_system_reset(void)
 #if defined(WDTIMR0_BASE)
 	INFO("performing system reset from PSCI.\n");
 
-#if defined(AARCH32) && ! defined(PLATFORM_FLAVOR_6846)
+#if defined(AARCH32)
 	WDTIMER0->WDTimerCtl = SOFT_RESET;
 #else
 #if defined PLATFORM_USING_SMC
+	WDTIMER0->WatchDogCtl = WDT_STOP_1;
+	WDTIMER0->WatchDogCtl = WDT_STOP_2;
 	WDTIMER0->WatchDogDefCount = MICROSECS_TO_WDOG_TICKS(1);
 	WDTIMER0->WatchDogCtl = WDT_START_1;
 	WDTIMER0->WatchDogCtl = WDT_START_2;
@@ -276,7 +270,7 @@ static const plat_psci_ops_t plat_brcm_psci_pm_ops = {
 int plat_setup_psci_ops(uintptr_t sec_entrypoint,
 			const plat_psci_ops_t **psci_ops)
 {
-#if defined(PLATFORM_FLAVOR_63138) || defined (PMB_ADDR_ORION_CPU0)
+#if defined (PMB_ADDR_ORION_CPU0)
 	pmc_initmode();
 #endif
 

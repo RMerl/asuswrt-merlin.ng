@@ -1,0 +1,22 @@
+if ARCH_NPCM7xx
+
+config SYS_CPU
+        default "armv7"
+
+config SYS_SOC
+	default "npcm7xx"
+
+config TARGET_POLEG
+	bool "NPCM POLEG board"
+	help
+	  poleg EVB is Nuvoton evaluation board for NPCM750 SoC,
+	  supports general functions of Basebase Management
+	  Controller(BMC).
+
+config SYS_MEM_TOP_HIDE
+	hex "Reserved TOP memory"
+	default 0x03000000
+
+source "board/nuvoton/poleg_evb/Kconfig"
+
+endif

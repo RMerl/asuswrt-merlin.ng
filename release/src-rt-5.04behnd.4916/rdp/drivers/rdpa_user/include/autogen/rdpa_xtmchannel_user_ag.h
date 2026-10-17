@@ -85,7 +85,7 @@ static inline int rdpa_xtmchannel_get(bdmf_number index_, bdmf_object_handle *xt
 	int fd, ret = 0;
 
 	pa.cmd = RDPA_XTMCHANNEL_GET;
-	pa.parm = (uint64_t)(long)index_;
+	pa.parm = (uint64_t)(bdmf_long_t)index_;
 
 	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
 	if (fd < 0)

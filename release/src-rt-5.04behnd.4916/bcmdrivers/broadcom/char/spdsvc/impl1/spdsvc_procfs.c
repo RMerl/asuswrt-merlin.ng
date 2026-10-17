@@ -197,9 +197,33 @@ typedef struct {
 spdsvc_procfs_file_data_t spdsvc_procfs_status_file_data_g;
 spdsvc_procfs_file_data_t spdsvc_procfs_last_burst_file_data_g;
 
+spdsvc_procfs_tr471_rx_queue_stats_t spdsvc_procfs_tr471_rx_queue_stats_g;
+
 /* Note: Not accounting for wrap around */
 #define SPDSVC_GET_STATS_CNT(index,last,field)         (spdsvc_procfs_data_g[index].field-last->field)
 #define SPDSVC_TR471_GET_STATS_CNT(index,last,field)   (spdsvc_procfs_data_g[index].tr471_cnts.field-last->tr471_cnts.field)
+
+/*
+ *------------------------------------------------------------------------------
+ * Function Name: spdsvc_procfs_tr471_print_rx_queue_stats
+ * Description  : Helper function to print spdsvc tr471 rx queue stats
+ *------------------------------------------------------------------------------
+ */
+void spdsvc_procfs_tr471_print_rx_queue_stats (struct seq_file *sf)
+{
+    bcm_seq_printf(sf, "\nUDPST Rx Q Stats (Aggregated for all the DS connections)\n");
+    bcm_seq_printf(sf, "=========================================================\n");
+    bcm_seq_printf(sf, "Q-Size   = %u\n", spdsvc_procfs_tr471_rx_queue_stats_g.total);
+    bcm_seq_printf(sf, "Writes   = %u\n", spdsvc_procfs_tr471_rx_queue_stats_g.writes);
+    bcm_seq_printf(sf, "Reads    = %u\n", spdsvc_procfs_tr471_rx_queue_stats_g.reads);
+    bcm_seq_printf(sf, "Pending  = %u\n", spdsvc_procfs_tr471_rx_queue_stats_g.pending);
+    bcm_seq_printf(sf, "Discards = %u\n", spdsvc_procfs_tr471_rx_queue_stats_g.discards);
+
+    if (spdsvc_clear_on_read)
+    {
+        memset(&spdsvc_procfs_tr471_rx_queue_stats_g, 0, sizeof(spdsvc_procfs_tr471_rx_queue_stats_t));
+    }
+}
 
 /* Extern to avoid including spdsvc.h */
 extern int spdsvc_get_active_prev_conns(void);
@@ -240,6 +264,8 @@ static void* spdsvc_seq_next(struct seq_file *s, void *v, loff_t *pos)
 {
     spdsvc_procfs_file_data_t *data_p = (spdsvc_procfs_file_data_t *)(s->private);
 
+    (*pos)++; /* Increment -- but not really used */
+
     if (data_p->dump_done)
     {
         return NULL;
@@ -259,6 +285,19 @@ static void spdsvc_seq_stop(struct seq_file *s, void *v)
     return;
 }
 
+static inline void spdsvc_procfs_convert_ip_2_str(spdsvc_procfs_ip_addr_t *ip_p, char *str_p, int len)
+{
+    if (ip_p->is_v6)
+    {
+        snprintf(str_p, len, "%pI6c", ip_p->ipv6.u8);
+    }
+    else
+    {
+        snprintf(str_p, len, "%pI4", &ip_p->ipv4.u32);
+    }
+
+    return;
+}
 /*
  *------------------------------------------------------------------------------
  * Function Name: spdsvc_procfs_show
@@ -268,9 +307,20 @@ static void spdsvc_seq_stop(struct seq_file *s, void *v)
 static void spdsvc_procfs_show(struct seq_file *sf, int connindex, spdsvc_procfs_data_t *last_p)
 {
     spdsvc_procfs_file_data_t *data_p = (spdsvc_procfs_file_data_t *)(sf->private);
+    char ip_addr_str[40]; /* max 39 char for IPv6 */
+    spdsvc_procfs_socket_t *conn_tuple_p = &spdsvc_procfs_data_g[connindex].conn_tuple;
+    spdsvc_procfs_burst_t *last_burst_p = &spdsvc_procfs_data_g[connindex].last_burst;
+    uint32_t fwd_lhdr ;
+
     /* Header dump for first connection */
+    fwd_lhdr =  SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, fwd_lhdr);
+
     if (connindex == 0)
     {
+        if (fwd_lhdr) /* DS test */ {
+            spdsvc_procfs_tr471_print_rx_queue_stats(sf);
+        }
+
         if (data_p->file_type == SPDSVC_PROCFS_FILE_STATUS)
         {
             bcm_seq_printf(sf, "\nSPDSVC Status/Stats [COR:%d]:\n", spdsvc_clear_on_read);
@@ -280,14 +330,23 @@ static void spdsvc_procfs_show(struct seq_file *sf, int connindex, spdsvc_procfs
             bcm_seq_printf(sf, "\nStats during LAST burst\n");
         }
     }
+
     bcm_seq_printf(sf, "\nSPDSVC conn            = %u\n", connindex);
     bcm_seq_printf(sf, "=============================\n");
-    bcm_seq_printf(sf, "SPDSVC State           = %s\n", spdsvc_get_state(connindex));
-    bcm_seq_printf(sf, "SPDSVC Mode            = %s\n", spdsvc_get_mode());
+    bcm_seq_printf(sf, "State                  = %s\n", spdsvc_get_state(connindex));
+    bcm_seq_printf(sf, "Mode                   = %s\n", spdsvc_get_mode());
+    bcm_seq_printf(sf, "Tx_MaxPktLen           = %u\n", spdsvc_procfs_data_g[connindex].conn_rx_max_pktlen);
     bcm_seq_printf(sf, "ioctl_enable_cnt       = %u\n", SPDSVC_GET_STATS_CNT(connindex, last_p, ioctl_enable_cnt));
     bcm_seq_printf(sf, "ioctl_disable_cntt     = %u\n", SPDSVC_GET_STATS_CNT(connindex, last_p, ioctl_disable_cnt));
     bcm_seq_printf(sf, "ioctl_result_cnt       = %u\n", SPDSVC_GET_STATS_CNT(connindex, last_p, ioctl_result_cnt));
     bcm_seq_printf(sf, "ioctl_ovrhd_cnt        = %u\n", SPDSVC_GET_STATS_CNT(connindex, last_p, ioctl_ovrhd_cnt));
+
+    bcm_seq_printf( sf, "\nTuple Info:\n");
+    spdsvc_procfs_convert_ip_2_str(&conn_tuple_p->local_ip_addr, ip_addr_str, sizeof(ip_addr_str));
+    bcm_seq_printf(sf, "LOCAL                  = [%s]:%u\n", ip_addr_str, ntohs(conn_tuple_p->local_port_nbr));
+
+    spdsvc_procfs_convert_ip_2_str(&conn_tuple_p->remote_ip_addr, ip_addr_str, sizeof(ip_addr_str));
+    bcm_seq_printf(sf, "REMOTE                 = [%s]:%u\n", ip_addr_str, ntohs(conn_tuple_p->remote_port_nbr));
 
     bcm_seq_printf(sf, "\nTR471 Status/Stats:\n");
     bcm_seq_printf(sf, "flow_state             = %s\n", spdsvc_tr471_get_state(connindex));
@@ -306,6 +365,7 @@ static void spdsvc_procfs_show(struct seq_file *sf, int connindex, spdsvc_procfs
     bcm_seq_printf(sf, "hw_gen_chk_status      = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, hw_gen_chk_status));
     bcm_seq_printf(sf, "hw_gen_cmpl_cnt_dupl   = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, hw_gen_cmpl_cnt_dupl));
     bcm_seq_printf(sf, "tx_via_fc_cnt          = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, tx_via_fc_cnt));
+    bcm_seq_printf(sf, "blogged                = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, blogged));
     bcm_seq_printf(sf, "nf_out_hk_cnt          = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, nf_out_hk_cnt));
     bcm_seq_printf(sf, "nf_out_hk_reg_cnt      = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, nf_out_hk_reg_cnt));
     bcm_seq_printf(sf, "nf_out_hk_unreg_cnt    = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, nf_out_hk_unreg_cnt));
@@ -321,13 +381,23 @@ static void spdsvc_procfs_show(struct seq_file *sf, int connindex, spdsvc_procfs
     bcm_seq_printf(sf, "pkt_match_unfrag       = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, pkt_match_unfrag));
     bcm_seq_printf(sf, "pkt_match_frag_first   = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, pkt_match_frag_first));
     bcm_seq_printf(sf, "pkt_match_frag_not_first= %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, pkt_match_frag_not_first));
-    bcm_seq_printf(sf, "fwd_lhdr               = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, fwd_lhdr));
+    bcm_seq_printf(sf, "fwd_lhdr               = %u\n",  fwd_lhdr);
     bcm_seq_printf(sf, "nf_invalid_state       = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, nf_invalid_state));
     bcm_seq_printf(sf, "nf_invalid_mode        = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, nf_invalid_mode));
     bcm_seq_printf(sf, "nf_invalid_socket      = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, nf_invalid_socket));
     bcm_seq_printf(sf, "rx_buf_thr_recycle     = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, rx_buf_thr_recycle));
     bcm_seq_printf(sf, "rx_buf_local_recycle   = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, rx_buf_local_recycle));
     bcm_seq_printf(sf, "rx_wait_for_completion = %u\n", SPDSVC_TR471_GET_STATS_CNT(connindex, last_p, rx_wait_for_completion));
+
+    if (!fwd_lhdr) { /* us test */
+        bcm_seq_printf(sf, "\nlast burst info:\n");
+        bcm_seq_printf(sf, "rand payload           = %s\n", last_burst_p->randPayload);
+        bcm_seq_printf(sf, "first burst            = %u\n", last_burst_p->firstBurst);
+        bcm_seq_printf(sf, "total burst            = %u\n", last_burst_p->totalburst);
+        bcm_seq_printf(sf, "burst size             = %u\n", last_burst_p->burstsize);
+        bcm_seq_printf(sf, "payload                = %u\n", last_burst_p->payload);
+        bcm_seq_printf(sf, "addon                  = %u\n", last_burst_p->addon);
+    }
 
     tr471_procfs_print_time_data(sf);
 }

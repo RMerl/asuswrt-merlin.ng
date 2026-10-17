@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx ZynqMP Generic System Controller
+ *
+ * Copyright (C) 2021 - 2022, Xilinx, Inc.
+ * Copyright (C) 2022 - 2023, Advanced Micro Devices, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+#include "zynqmp-sc-revB.dts"
+
+/ {
+	model = "ZynqMP Generic System Controller";
+	compatible = "xlnx,zynqmp-sc-revC", "xlnx,zynqmp-sc", "xlnx,zynqmp";
+};
+
+&gem1 { /* gem1 MIO38-49, MDIO MIO50/51 */
+	/delete-node/ mdio;
+
+	mdio: mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy0: ethernet-phy@1 { /* ADI1300 */
+			#phy-cells = <1>;
+			compatible = "ethernet-phy-id0283.bc30";
+			reg = <1>;
+			adi,rx-internal-delay-ps = <2400>;
+			adi,tx-internal-delay-ps = <2400>;
+			adi,fifo-depth-bits = <8>;
+			reset-gpios = <&gpio 77 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10>;
+			reset-deassert-us = <5000>;
+		};
+	};
+};

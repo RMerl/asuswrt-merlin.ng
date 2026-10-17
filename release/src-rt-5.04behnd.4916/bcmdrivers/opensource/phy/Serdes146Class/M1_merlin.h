@@ -42,6 +42,7 @@ Table format:
 enum {SEQ_TYPE_REG, SEQ_TYPE_FUN, SEQ_TYPE_NEST_SEQ};
 enum {SEQ_TYPE_FUN_ARG_NONE=0, SEQ_FUN_ARG_CORE};
 void merlin_chk_pll_lock (uint32 CoreNum);
+void merlin_multi_speed_cl73_adv_set(uint32 Core);
 #define SEQ_TYPE_FUNC_SET(x) (char *)((void *)(x))
 #define SEQ_TYPE_FUNC_GET(x, t) (t)(x)
 #define SEQ_TYPE_NSEQ_SET(x) (char *)((void *)(x))
@@ -147,7 +148,7 @@ prog_seq_tbl PMD_setup_50_10p3125_VCO[] = {
 }; 
 
 prog_seq_tbl PMD_setup_80_10p3125_VCO[] = {
-  {"main control register",      0x3,  0x9100, 0xf000, 0x6000}, //refclk_sel [15:12]
+  {"main control register",      0x3,  0x9100, 0xf000, 0x7000}, //refclk_sel [15:12]
   {"digcom_top_user_control_0",  0x1,  0xD0F4, 0x2000, 0x0000}, //core_dp_s_rstb [13]
   {"amscom_pll_ctrl_8",          0x1,  0xd0b8, 0x03FF, 0x0080}, // ndiv_int [9:0] = 0x80
   {"amscom_pll_ctrl_8",          0x1,  0xd0b8, 0x8000, 0x0000}, // dither_en [15]  = 0x0
@@ -165,7 +166,7 @@ prog_seq_tbl PMD_setup_80_10p3125_VCO[] = {
   {0x0,                           0x0,  0x0000, 0x0000, 0x0000}
 }; 
 prog_seq_tbl PMD_setup_80_12p5_VCO[] = {
-  {"main control register",      0x3,  0x9100, 0xf000, 0x6000}, //refclk_sel [15:12]
+  {"main control register",      0x3,  0x9100, 0xf000, 0x7000}, //refclk_sel [15:12]
   {"digcom_top_user_control_0",  0x1,  0xD0F4, 0x2000, 0x0000}, //core_dp_s_rstb [13]
   {"amscom_pll_ctrl_8",          0x1,  0xd0b8, 0x03FF, 0x009c}, // ndiv_int [9:0] = 0x9c
   {"amscom_pll_ctrl_8",          0x1,  0xd0b8, 0x8000, 0x0000}, // dither_en [15] = 0x0
@@ -851,10 +852,23 @@ prog_seq_tbl force_speed_1g_x[] = {
 
 prog_seq_tbl auto_neg_2p5g_kx_cl73[] = {
   {"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x3000, 0x0000},  //13:12 use_ieee_reg_ctrl_sel = 2'b00
-  {"AN advertisement 2",                       0x7,  0x0012, 0x0001, 0x0001},  //00:00 speed advertisement = 1'b1  //added by ALEX  
+  {"AN advertisement 2",                       0x7,  0x0012, 0x0003, 0x0001},  //00:00 speed advertisement = 1'b1  //added by ALEX  
   {"AN advertisement 0",                       0x7,  0x0010, 0x001f, 0x0001},  //04:00 base selector = 5'h01  
   {"AN Control 1",                             0x7,  0x0000, 0x1000, 0x1000},  //12:12 AN enable = 1'b1  
-  {"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x0840, 0x0000},  //merged [11] & p06]
+  {"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x0840, 0x0000},  //merged [11] and [06:00] 
+
+  //{"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x0080, 0x0080},  //07:07 mac_creditenable = 1'b1;
+    /* Line above is important for CL127 to guarreentee the credit is set before link up in setting below. Or will hang!! */
+    /* Also, don't merge two lines for the same 3.C30B above, timing is different !!! */
+
+  {SEQ_TYPE_NSEQ_SET(&datapath_reset_lane), 0, 0, 0, 0, SEQ_TYPE_NEST_SEQ}, // Cause PLL lock; LX d081
+  {SEQ_TYPE_FUNC_SET(merlin_chk_pll_lock), SEQ_FUN_ARG_CORE, 0, 0, 0, SEQ_TYPE_FUN},
+
+  {"pma_control_0 register",                   0x3,  0xC457, 0x0001, 0x0001},  //00:00 rx rstb_lane = 1'b1 
+  {"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x0080, 0x0080},  //07:07 mac_creditenable = 1'b1
+  //{"Misc register",                            0x3,  0xC433, 0x0002, 0x0002},  //01:01 tx rstb_lane = 1'b1  
+  //{"Misc register",                            0x3,  0xC433, 0x0001, 0x0001},  //00:00 enable_tx_lane = 1'b1
+  {"Misc register",                            0x3,  0xC433, 0x0003, 0x0003},  //merged [01:00]
   {0x0,                                         0x0,  0x0000, 0x0000, 0x0000}
 }; 
 
@@ -966,10 +980,22 @@ prog_seq_tbl force_speed_1g_R[] = {
 
 prog_seq_tbl auto_neg_5g_kr_cl73[] = {
   {"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x3000, 0x0000},  //13:12 use_ieee_reg_ctrl_sel = 2'b00
-  {"AN advertisement 2",                       0x7,  0x0012, 0x0002, 0x0002},  //01:01 speed advertisement = 1'b1  //added by ALEX  
+  {"AN advertisement 2",                       0x7,  0x0012, 0x0003, 0x0002},  //01:01 speed advertisement = 1'b1  //added by ALEX  
   {"AN advertisement 0",                       0x7,  0x0010, 0x001f, 0x0001},  //04:00 base selector = 5'h01  
   {"AN Control 1",                             0x7,  0x0000, 0x1000, 0x1000},  //12:12 AN enable = 1'b1  
   {"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x0840, 0x0000},  //merged [11] & p06]
+  //{"cl72_ieee_training_enable",                0x1,  0x0096, 0x0002, 0x0002},  //01:01 cl72_ieee_training_enable = 1'b1
+  //{"Misc register",                            0x3,  0xC433, 0x0400, 0x0400},  //10:10 TX fec en (optional) = 1'b1  
+  //{"Decoder control 0 register",               0x3,  0xC454, 0x0007, 0x0004},  //02:00 RX fec block sync mode (optional) = 3'h4
+
+  {SEQ_TYPE_NSEQ_SET(&datapath_reset_lane), 0, 0, 0, 0, SEQ_TYPE_NEST_SEQ}, // Cause PLL lock; LX d081
+  {SEQ_TYPE_FUNC_SET(merlin_chk_pll_lock), SEQ_FUN_ARG_CORE, 0, 0, 0, SEQ_TYPE_FUN},
+
+  {"pma_control_0 register",                   0x3,  0xC457, 0x0001, 0x0001},  //00:00 rx rstb_lane = 1'b1 
+  {"Miscellaneous digital  control1 register", 0x3,  0xC30B, 0x0080, 0x0080},  //07:07 mac_creditenable = 1'b1
+  //{"Misc register",                            0x3,  0xC433, 0x0002, 0x0002},  //01:01 tx rstb_lane = 1'b1  
+  //{"Misc register",                            0x3,  0xC433, 0x0001, 0x0001},  //00:00 enable_tx_lane = 1'b1
+  {"Misc register",                            0x3,  0xC433, 0x0003, 0x0003},  //merged [01:00]
   {0x0,                                         0x0,  0x0000, 0x0000, 0x0000}
 }; 
 
@@ -1785,17 +1811,17 @@ prog_seq_tbl usxgmii_mp_global_pcs_loopback[] = {
 
 prog_seq_tbl auto_neg_ieee_cl73[] = {
   {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x3000, 0x0000},  //13:12 use_ieee_reg_ctrl_sel = 2'b00
-  //{"AN advertisement 1",                       0x7,  0x0011, 0xffe0, 0x00a0},  //15:05 speed advertisement = 11'h005 
-  {"AN advertisement 1",                       0x7,  0x0011, 0xffe0, 0x0020},  //15:05 speed advertisement = 11'h005 
-  //{"AN advertisement 2",                       0x7,  0x0012, 0x0003, 0x0003},  //01:00 speed advertisement = 2'b11  //added by ALEX 
-  {"AN advertisement 0",                       0x7,  0x0010, 0x001f, 0x0001},  //04:00 base selector = 5'h01 
-  {"AN advertisement 2",                       0x7,  0x0012, 0xc000, 0x4000},  //15:14 FEC support (optional) = 2'h1
+  //{"AN advertisement 1",                       0x7,  0x0011, 0xffe0, 0x00a0},  //15:05 speed advertisement = 11'h005; 10G||1G
+  //{"AN advertisement 2",                       0x7,  0x0012, 0x0003, 0x0003},  //00:00 speed advertisement = 2'b3  5G|2.5G
+  {SEQ_TYPE_FUNC_SET(merlin_multi_speed_cl73_adv_set), SEQ_FUN_ARG_CORE, 0, 0, 0, SEQ_TYPE_FUN},
+  {"AN advertisement 0",                       0x7,  0x0010, 0x001f, 0x0001},  //04:00 base selector = 5'h01
   {"AN Control 1",                             0x7,  0x0000, 0x1000, 0x1000},  //12:12 AN enable = 1'b1 
+  //{"AN advertisement 2",                       0x7,  0x0012, 0xc000, 0x4000},  //15:14 FEC support (optional) = 2'h1
+  {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x0840, 0x0000},  //merged [11]=0x0, [06]=0x0
 
   {SEQ_TYPE_NSEQ_SET(&datapath_reset_lane), 0, 0, 0, 0, SEQ_TYPE_NEST_SEQ}, // Cause PLL lock; LX d081
   {SEQ_TYPE_FUNC_SET(merlin_chk_pll_lock), SEQ_FUN_ARG_CORE, 0, 0, 0, SEQ_TYPE_FUN},
 
-  {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x0840, 0x0000},  //merged [11]=0x0, [06]=0x0
   {"pma_control_0 register",                   0x3,  0xc457, 0x0001, 0x0001},  //00:00 rx rstb_lane = 1'b1
   {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x0080, 0x0080},  //07:07 mac_creditenable = 1'b1
   {"Misc register",                            0x3,  0xc433, 0x0003, 0x0003},  //merged [01] = 1'b1, [00] = 1'b1

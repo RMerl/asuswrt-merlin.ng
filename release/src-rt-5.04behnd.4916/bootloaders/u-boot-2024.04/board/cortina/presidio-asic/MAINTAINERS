@@ -1,0 +1,6 @@
+Cortina Presidio ASIC G3 Engineering BOARD
+M:	Alex Nemirovsky <alex.nemirovsky@cortina-access.com>
+S:	Supported
+F:	board/cortina/presidio-asic/
+F:	include/configs/presidio_asic.h
+F:	configs/cortina_presidio-asic*defconfig

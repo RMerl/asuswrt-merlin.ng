@@ -44,6 +44,10 @@ written consent.
 #include <bcm_bca_extintr.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/of.h>
+#include <linux/of_irq.h>
+#if defined(CONFIG_BCM_ETHTOOL)
+#include <linux/ethtool.h>
+#endif
 #include "trxbus.h"
 
 struct sfp_eeprom_base
@@ -125,6 +129,11 @@ enum {
 #define T_PROBE_RETRY msecs_to_jiffies(1000)
 #define T_PROBE_RETRY_NUM 100
 
+#define SFP_I2C_A0_ADDR 0x50
+#define SFP_I2C_A1_ADDR 0x51
+#define SFP_I2C_PHY_ADDR 0x56
+#define XFP_I2C_ADDR 0x50
+
 typedef enum
 {
     GPIO_MODDEF0,
@@ -159,6 +168,8 @@ struct sfp_data
     unsigned int (*get_present)(struct sfp_data *);
 
     struct gpio_desc *gpio[GPIO_MAX];
+    int gpio_irq[GPIO_MAX];
+
     struct pinctrl_state *txsd_state;
     int rxsd_pin;
     int mod_state;
@@ -174,16 +185,23 @@ struct sfp_data
     int has_fixed_attribues;
 
     int force_tx_power;
+
+    int has_mux_attribues;
+    int selected_chan;
+    struct gpio_descs *gpios;
 };
 
-enum { sff_data, sfp_data };
+enum { sff_data, sfp_data, mux_data, };
 
 /************** F O R W A R D  D E C L A R A T I O N S ************/
 static int sfp_mon_read(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long *value);
 static int sfp_mon_read_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len);
 static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, long value);
 static int sfp_mon_write_buf(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int channel, char *buf, int len);
-static int sfp_mon_read_eeprom_raw(struct sfp_data *psfp, int addr, int reg, uint8_t *data, int len);
+#if defined(CONFIG_BCM_ETHTOOL)
+static int bcmsfp_module_eeprom(struct sfp_data *psfp, struct ethtool_eeprom *ee, u8 *data);
+static int bcmsfp_module_info(struct sfp_data *psfp, struct ethtool_modinfo *modinfo);
+#endif /* CONFIG_BCM_ETHTOOL */
 
 /*********************** S T A T I C  D A T A *********************/
 /**
@@ -205,12 +223,16 @@ static struct bcmsfp_ops sfp_ops = {
     .mon_read_buf = sfp_mon_read_buf,
     .mon_write = sfp_mon_write,
     .mon_write_buf = sfp_mon_write_buf,
-    .mon_read_raw = sfp_mon_read_eeprom_raw,
+#if defined(CONFIG_BCM_ETHTOOL)
+    .module_eeprom = bcmsfp_module_eeprom,
+    .module_info = bcmsfp_module_info,
+#endif
 };
 
 static const struct of_device_id of_platform_sfp_table[] = {
     { .compatible = "brcm,sfp", .data = (void *)sfp_data, },
     { .compatible = "brcm,sff", .data = (void *)sff_data, },
+    { .compatible = "brcm,sfp-mux", .data = (void *)mux_data, },
     { /* end of list */ },
 };
 
@@ -391,6 +413,8 @@ static ssize_t _store(struct device *dev, struct device_attribute *dev_attr, con
     static struct dev_ext_attribute dev_attr_##_name = \
         { __ATTR(_name, _mode, _show_buf, _store_buf), (void *)(_var) }
 
+DEVICE_SFP_MON_ATTR(chan, 0644, bcmsfp_chan_select);
+
 /* SFP status & properties */
 DEVICE_SFP_MON_ATTR(has_txsd, 0644, bcmsfp_mon_has_txsd);
 DEVICE_SFP_MON_ATTR(rxsd_pin, 0644, bcmsfp_mon_rxsd_pin);
@@ -425,6 +449,11 @@ DEVICE_SFP_MON_STR_ATTR(mon_xfp_password, 0644, bcmsfp_mon_xfp_password);
 
 /* Ethernet PHY register monitoring */
 DEVICE_SFP_MON_STR_ATTR(mon_phy_reg, 0644, bcmsfp_mon_phy_reg);
+
+static struct attribute *sfp_mux_attributes[] = {
+    &dev_attr_chan.attr.attr,
+    NULL
+};
 
 static struct attribute *sfp_fixed_attributes[] = {
     &dev_attr_present.attr.attr,
@@ -464,6 +493,10 @@ static struct attribute *sfp_mon_attributes[] = {
 
     &dev_attr_mon_phy_reg.attr.attr,
     NULL,
+};
+
+static const struct attribute_group bcmsfp_mux_attribute_group = {
+    .attrs = sfp_mux_attributes,
 };
 
 static const struct attribute_group bcmsfp_fixed_attribute_group = {
@@ -591,7 +624,7 @@ static void sfp_sm_next(struct sfp_data *psfp, int mod_state, int timeout)
 static int _sfp_module_gpio_get(struct sfp_data *psfp, int gpio)
 {
     if (psfp->gpio[gpio])
-        return gpiod_get_value(psfp->gpio[gpio]);
+        return gpiod_get_value_cansleep(psfp->gpio[gpio]);
 
     return -1;
 }
@@ -744,13 +777,16 @@ static irqreturn_t sfp_isr(int irq, void *arg)
 {
     struct sfp_data *psfp = arg;
 
+#if defined(CONFIG_BCM_BCA_EXTINTR)
     bcm_bca_extintr_mask(irq);
-
+#endif
     dev_dbg(psfp->dev, "sfp_isr interrupt called irq %d!\n", irq);
     mod_delayed_work(system_power_efficient_wq, &psfp->dwork_irq, msecs_to_jiffies(1)); 
 
+#if defined(CONFIG_BCM_BCA_EXTINTR)
     bcm_bca_extintr_clear(irq);
     bcm_bca_extintr_unmask(irq);
+#endif
 
     return IRQ_HANDLED;
 }
@@ -804,11 +840,16 @@ static void sfp_cleanup(void *data)
 
     if (psfp->has_fixed_attribues)
         sysfs_remove_group(&psfp->dev->kobj, &bcmsfp_fixed_attribute_group);
+    if (psfp->has_mux_attribues)
+        sysfs_remove_group(&psfp->dev->kobj, &bcmsfp_mux_attribute_group);
     cancel_delayed_work_sync(&psfp->dwork);
     cancel_delayed_work_sync(&psfp->dwork_poll);
     cancel_delayed_work_sync(&psfp->dwork_irq);
     if (psfp->i2c)
+    {
         i2c_put_adapter(psfp->i2c);
+        sfp_sm_event(psfp, SFP_E_REMOVE);
+    }
     kfree(psfp);
 }
 
@@ -840,33 +881,13 @@ static int sfp_get_rxsd_pin(struct device_node *np)
     return pin;
 }
 
-static int _probe(struct platform_device *pdev)
+static int pinctrl_set(struct sfp_data *psfp)
 {
-    struct device *dev = &pdev->dev;
+    int ret = 0;
+    struct device *dev = psfp->dev;
     struct device_node *np = dev->of_node;
-    struct sfp_data *psfp;
-    int ret, i, poll = false;
-    const struct of_device_id *of_id;
-    struct pinctrl *pctrl;
-    char *mode;
+    struct pinctrl *pctrl = devm_pinctrl_get(dev);
 
-    if (!np)
-        return -ENODEV;
-
-    psfp = sfp_data_alloc(&pdev->dev);
-    if (IS_ERR(psfp))
-        return PTR_ERR(psfp);
-
-    platform_set_drvdata(pdev, psfp);
-    ret = devm_add_action(psfp->dev, sfp_cleanup, psfp);
-    if (ret < 0)
-        return ret;
-
-    of_id = of_match_node(of_platform_sfp_table, np);
-    if (WARN_ON(!of_id))
-        return -EINVAL;
-
-    pctrl = devm_pinctrl_get(dev);
     if (IS_ERR(pctrl))
     {
         if (pctrl != ERR_PTR(-ENODEV))
@@ -887,14 +908,77 @@ static int _probe(struct platform_device *pdev)
         return ret;
 #endif
 
-    if ((ret = i2c_configure(psfp, np)))
-        return ret;
-    if ((ret = sysfs_create_group(&psfp->dev->kobj, &bcmsfp_fixed_attribute_group)))
+    return ret;
+}
+
+static void i2c_mux_gpio_set(struct sfp_data *psfp, int desired_child)
+{
+    DECLARE_BITMAP(values, BITS_PER_TYPE(desired_child));
+
+    values[0] = desired_child;
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+    /* XXX: Mux will not work for Kernel 4.19 */
+    gpiod_set_array_value_cansleep(psfp->gpios->ndescs, psfp->gpios->desc,
+            psfp->gpios->info, values);
+#endif
+}
+
+static int _mux_selection_put(struct sfp_data *psfp)
+{
+    struct device *dev = psfp->dev;
+    int i;
+
+    cancel_delayed_work_sync(&psfp->dwork);
+    cancel_delayed_work_sync(&psfp->dwork_poll);
+    cancel_delayed_work_sync(&psfp->dwork_irq);
+    sfp_sm_event(psfp, SFP_E_REMOVE);
+    if (psfp->i2c)
+        i2c_put_adapter(psfp->i2c);
+
+    for (i = 0; i < GPIO_MAX; i++)
     {
-        dev_err(dev, "Failed to register sysfs (%d)\n", ret);
-        return ret;
+        if (psfp->gpio[i])
+        {
+            /* bcm_bca_extintr_free(), when applicable, will take care of releasing gpio_desc */
+            if (psfp->gpio_irq[i])
+            {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
+                bcm_bca_extintr_free(dev, psfp->gpio_irq[i], psfp);
+#else
+                devm_free_irq(dev, psfp->gpio_irq[i], NULL);
+                devm_gpiod_put(dev, psfp->gpio[i]);
+#endif
+                psfp->gpio_irq[i] = 0;
+            }
+            else
+                devm_gpiod_put(dev, psfp->gpio[i]);
+
+            psfp->gpio[i] = NULL;
+        }
     }
-    psfp->has_fixed_attribues = 1;
+
+    return 0;
+}
+
+static int _probe_node(struct sfp_data *psfp, struct device_node *of_child)
+{
+    struct device *dev = psfp->dev;
+    struct device_node *np = dev->of_node;
+    int ret, i, poll = false;
+    char *mode;
+    struct device_node *of_save = dev->of_node;
+    const char *type = NULL;
+    const struct of_device_id *of_id;
+
+    of_id = of_match_node(of_platform_sfp_table, np);
+    if (WARN_ON(!of_id))
+        return -EINVAL;
+
+    if ((ret = i2c_configure(psfp, of_child)))
+        return ret;
+
+    dev->of_node = of_child;
     mutex_lock(&psfp->st_mutex);
     for (i = 0; i < GPIO_MAX; i++)
     {
@@ -904,6 +988,8 @@ static int _probe(struct platform_device *pdev)
             ret = PTR_ERR(psfp->gpio[i]);
             goto label_unlock_return;
         }
+
+#if defined(CONFIG_BCM_BCA_EXTINTR)
         if (psfp->gpio[i] && gpio_components[i].flag == GPIOD_IN)
         {
             gpiod_direction_input(psfp->gpio[i]);
@@ -931,8 +1017,34 @@ static int _probe(struct platform_device *pdev)
             }
 
             psfp->gpio[i] = bcm_bca_extintr_get_gpiod(ret);
+            psfp->gpio_irq[i] = ret;
         }
+#else
+        if (psfp->gpio[i] && gpio_components[i].flag == GPIOD_IN) {
+            gpiod_direction_input(psfp->gpio[i]);
+            /* check interrupt for spf moddef0 pin, fallback to i2c polling if no interrupt  */
+            if (i == GPIO_MODDEF0) {
+                unsigned long irqflags = 0;
+                ret = 0;
+                psfp->gpio_irq[i] = irq_of_parse_and_map(dev->of_node, 0);
+                if (!psfp->gpio_irq[i]) {
+                    /* interupt not defined, try gpiod_to_irq with default both edge interrupt type */
+                    psfp->gpio_irq[i] = gpiod_to_irq(psfp->gpio[i]);
+                    irqflags |= IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING;
+                }
+
+                if (psfp->gpio_irq[i]) {
+                    ret = devm_request_threaded_irq(dev, psfp->gpio_irq[i], sfp_isr, NULL, irqflags, dev_name(dev), psfp);
+                }
+
+                if (ret || !psfp->gpio_irq[i]) {
+                    poll = true;
+                }
+            }
+        }
+#endif
     }
+    dev->of_node = of_save;
 
     sfp_module_power_set(psfp, GPIO_TX_POWER, 0);
     sfp_module_tx_disable_set(psfp, 1);
@@ -953,8 +1065,12 @@ static int _probe(struct platform_device *pdev)
             psfp->get_present = sfp_i2c_get_present;
         }
     }
+
+    if (of_id->data == (void *)mux_data)
+        of_property_read_string(of_child, "type", &type);
+
     /* SFF modules always present */
-    if (of_id->data == sff_data)
+    if (of_id->data == sff_data || (type && !strcmp("sff", type)))
     {
         psfp->get_present = sff_get_present;
         mode = "sff";
@@ -974,7 +1090,7 @@ static int _probe(struct platform_device *pdev)
     dev_info(psfp->dev, "registered: polling: %s present: %s\n", poll ? "true" : "false", mode);
     mutex_unlock(&psfp->st_mutex);
 
-    trxbus_module_init(psfp->i2c->nr, psfp, &sfp_ops, 0);
+    trxbus_module_init(psfp->i2c->nr, psfp, &sfp_ops, 0, of_save);
 
     if (poll)
         mod_delayed_work(system_wq, &psfp->dwork_poll, poll_jiffies);
@@ -986,6 +1102,99 @@ static int _probe(struct platform_device *pdev)
 label_unlock_return:
     mutex_unlock(&psfp->st_mutex);
     return ret;
+}
+
+static int probe_mux_chan(struct sfp_data *psfp, uint32_t chan)
+{
+    struct device_node *np = psfp->dev->of_node;
+    struct device_node *child;
+    uint32_t reg;
+    int ret;
+
+    for_each_child_of_node(np, child) {
+        if (of_property_read_u32(child, "reg", &reg))
+        {
+            dev_err(psfp->dev, "Missing reg property in the DT.\n");
+            return -1;
+        }
+
+        if (reg == chan)
+        {
+            i2c_mux_gpio_set(psfp, chan);
+            ret = _probe_node(psfp, child);
+            if (ret)
+                return ret;
+
+            psfp->selected_chan = chan;
+            return 0;
+        }
+    }
+
+    dev_err(psfp->dev, "Failed to find requested chan\n");
+    return -1;
+}
+
+static int _probe_mux(struct sfp_data *psfp)
+{
+    struct device *dev = psfp->dev;
+    struct device_node *np = dev->of_node;
+    uint32_t initial_state = 0;
+    int ret = 0;
+
+    if ((ret = sysfs_create_group(&psfp->dev->kobj, &bcmsfp_mux_attribute_group)))
+    {
+        dev_err(dev, "Failed to register sysfs (%d)\n", ret);
+        return ret;
+    }
+    psfp->has_mux_attribues = 1;
+
+    psfp->gpios = devm_gpiod_get_array(psfp->dev, "mux", GPIOD_OUT_LOW);
+    if (IS_ERR(psfp->gpios))
+        return PTR_ERR(psfp->gpios);
+
+    of_property_read_u32(np, "initial-state", &initial_state);
+
+    return probe_mux_chan(psfp, initial_state);
+}
+
+static int _probe(struct platform_device *pdev)
+{
+    struct device *dev = &pdev->dev;
+    struct device_node *np = dev->of_node;
+    struct sfp_data *psfp;
+    int ret;
+    const struct of_device_id *of_id;
+
+    if (!np)
+        return -ENODEV;
+
+    of_id = of_match_node(of_platform_sfp_table, np);
+    if (WARN_ON(!of_id))
+        return -EINVAL;
+
+    psfp = sfp_data_alloc(&pdev->dev);
+    if (IS_ERR(psfp))
+        return PTR_ERR(psfp);
+
+    platform_set_drvdata(pdev, psfp);
+    ret = devm_add_action(psfp->dev, sfp_cleanup, psfp);
+    if (ret < 0)
+        return ret;
+
+    if ((ret = pinctrl_set(psfp)))
+        return ret;
+
+    if ((ret = sysfs_create_group(&psfp->dev->kobj, &bcmsfp_fixed_attribute_group)))
+    {
+        dev_err(dev, "Failed to register sysfs (%d)\n", ret);
+        return ret;
+    }
+    psfp->has_fixed_attribues = 1;
+
+    if (of_id->data == (void *)mux_data)
+        return _probe_mux(psfp);
+
+    return _probe_node(psfp, np);
 }
 
 static long bcmsfp_trx_compliance_get(struct sfp_data *psfp)
@@ -1006,7 +1215,30 @@ static long bcmsfp_trx_compliance_get(struct sfp_data *psfp)
     return compliance_bitmap;
 }
 
+static int _remove(struct platform_device *pdev)
+{
+    struct sfp_data *psfp = platform_get_drvdata(pdev);
+    int i;
+
+    for (i = 0; i < GPIO_MAX; i++)
+    {
+        if (!psfp->gpio_irq[i])
+            continue;
+#if defined(CONFIG_BCM_BCA_EXTINTR)
+        bcm_bca_extintr_free(psfp->dev, psfp->gpio_irq[i], psfp);
+#else
+        devm_free_irq(psfp->dev, psfp->gpio_irq[i], NULL);
+        devm_gpiod_put(psfp->dev, psfp->gpio[i]);
+        psfp->gpio[i] = NULL;
+#endif
+        psfp->gpio_irq[i] = 0;
+    }
+
+    return 0;
+}
+
 struct platform_driver of_platform_sfp_driver = {
+    .remove = _remove,
     .driver = {
         .name = "brcm_sfp",
         .of_match_table = of_platform_sfp_table,
@@ -1100,15 +1332,10 @@ static int sfp_mon_read_eeprom_mon_buf(struct sfp_data *psfp, int reg, u8 *data,
     if (psfp->eeprom.base.phys_id == PHYS_ID_XFP)
         addr = XFP_I2C_ADDR;
     else
-        addr = SFP_I2C_A2_ADDR;
+        addr = SFP_I2C_A1_ADDR;
 
     ret = i2c_read(psfp, addr, reg, data, len);
     return ret < 0 ? ret : 0;
-}
-
-static int sfp_mon_read_eeprom_raw(struct sfp_data *psfp, int addr, int reg, uint8_t *data, int len)
-{
-    return i2c_read(psfp, addr, reg, data, len);
 }
 
 static int sfp_mon_read_eeprom_mon(struct sfp_data *psfp, int reg, long *value)
@@ -1184,6 +1411,9 @@ static int sfp_mon_read(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int ch
     /* Common attributes, if not returned in above section */
     switch (attr)
     {
+        case bcmsfp_chan_select:
+            *value = psfp->selected_chan;
+            return 0;
         case bcmsfp_mon_has_txsd:
             *value = (psfp->txsd_state != ERR_PTR(-ENODEV));
             return 0;
@@ -1339,6 +1569,11 @@ static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int c
 
     switch (attr)
     {
+    case bcmsfp_chan_select:
+        if (psfp->selected_chan >= 0)
+            _mux_selection_put(psfp);
+
+        return probe_mux_chan(psfp, value);
     case bcmsfp_mon_tx_enable:
         sfp_module_power_set(psfp, GPIO_TX_POWER, value);
         dev_dbg(psfp->dev, "tx %sable\n",  value ? "en" : "dis");
@@ -1363,6 +1598,53 @@ static int sfp_mon_write(struct sfp_data *psfp, enum bcmsfp_mon_attr attr, int c
         return -EOPNOTSUPP;
     }
 }
+
+#if defined(CONFIG_BCM_ETHTOOL)
+static int bcmsfp_module_info(struct sfp_data *psfp, struct ethtool_modinfo *modinfo)
+{
+    if (psfp->eeprom.ext.sff8472_compliance &&
+        !(psfp->eeprom.ext.diagmon & SFP_DIAGMON_ADDRMODE)) {
+        modinfo->type = ETH_MODULE_SFF_8472;
+        modinfo->eeprom_len = ETH_MODULE_SFF_8472_LEN;
+    } else {
+        modinfo->type = ETH_MODULE_SFF_8079;
+        modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
+    }
+    return 0;
+}
+
+static int bcmsfp_module_eeprom(struct sfp_data *psfp, struct ethtool_eeprom *ee, u8 *data)
+{
+    unsigned int first, last, len;
+    int ret;
+	u8* peeprom = (u8*)(&psfp->eeprom);
+	
+    if (ee->len == 0)
+        return -EINVAL;
+
+    first = ee->offset;
+    last = ee->offset + ee->len;
+    if (first < ETH_MODULE_SFF_8079_LEN) {
+        len = min_t(unsigned int, last, ETH_MODULE_SFF_8079_LEN);
+        len -= first;
+
+        memcpy(data, peeprom + ee->offset, len);
+
+        first += len;
+        data += len;
+    }
+    if (first < ETH_MODULE_SFF_8472_LEN && last > ETH_MODULE_SFF_8079_LEN) {
+        len = min_t(unsigned int, last, ETH_MODULE_SFF_8472_LEN);
+        len -= first;
+        first -= ETH_MODULE_SFF_8079_LEN;
+
+        ret = sfp_mon_read_eeprom_mon_buf(psfp, first, data, len);
+        if (ret < 0)
+            return ret;
+    }
+    return 0;
+}
+#endif
 
 module_init(bcm_sfp_init);
 module_exit(bcm_sfp_uninit);

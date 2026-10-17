@@ -27,61 +27,23 @@
    :>
  */
 #ifdef RDP_SIM
-#ifndef XRDP
-#include "rdd.h"
-#ifndef G9991_PRV
-#if !defined(DSL_63138) && !defined(DSL_63148) && !defined(WL4908)
-#include "rdd_ip_flow.h"
-#endif /*DSL*/
-#include "rdd_simulator.h"
-#endif /*G9991_PRV*/
-
-#include "rdpa_dhd_helper_basic.h"
-#include "rdd_dhd_helper.h"
-
-extern uint32_t g_ddr_runner_base_addr;
-extern uint32_t g_runner_tables_offset;
-extern rdd_wan_tx_pointers_table_t *wan_tx_pointers_table;
-uint8_t *soc_base_address;
-
-#if defined OREN
-extern uint32_t g_context_table_ptr;
-#endif
-
-#ifdef OREN
-uint32_t ds_tuple_lkp_table_ptr;
-uint32_t us_tuple_lkp_table_ptr;
-#endif /*OREN*/
-uint32_t cpu_rx_ring_base_addr_ptr;
-uint32_t sim_iptv_table_ptr;
-uint32_t sim_iptv_context_table_ptr;
-uint32_t sim_iptv_ssm_context_table_ptr;
-uint32_t sim_dhd_tx_flow_ring_mgmt_ptr;
-
-#else /*XRDP:*/
 #include "bdmf_system.h"
 #include "rdd.h"
+#include "access_macros.h"
+#include "rdp_mm.h"
 #include "rdd_simulator.h"
 #include "rdd_common.h"
 #include "rdp_drv_natc.h"
 #include "rdp_drv_xpm.h"
+#include "xrdp_autogens.h"
+#include <system/SharedMem.h>
+
 uint8_t *cpu_rx_ring_base_addr_ptr;
 extern bdmf_phys_addr_t g_rsv_phys_base_addr;
 extern void *g_rsv_base_addr;
 extern uint32_t g_rsv_alloc_total_size;
-#endif /* XRDP */
-
-#ifdef WL4908
-extern uint8_t  *NatCacheTableBase;
-extern uint8_t  *ContextTableBase;
-extern uint8_t  *ContextContTableBase;
-extern uint8_t  *cpu_rx_ring_base;
-#endif /*WL4908*/
 
 #define SET_FORMAT "set %s %08x %08x\n"
-#ifndef XRDP
-#define DHD_TX_POST_FLOW_RING_MGMT_TABLE_PTR sim_dhd_tx_flow_ring_mgmt_ptr
-#endif
 
 void save_table(FILE *table_f, char *table_name, uint32_t *table, uint32_t table_offset, uint32_t table_size,
     int skip_empty)
@@ -101,76 +63,13 @@ void save_table(FILE *table_f, char *table_name, uint32_t *table, uint32_t table
 
 int rdd_sim_save_ddr_tables(void)
 {
-#ifndef XRDP
-    uint32_t packet_descriptor_address;
-    uint32_t i;
-    uint32_t *ptr;
-#endif
     FILE *ddr_tables;
 
     ddr_tables = fopen("ddr_tables.dfp", "w+b");
     if (!ddr_tables)
         BDMF_TRACE_RET(BDMF_ERR_INTERNAL, "Failed to open ddr_tables.dfp");
 
-#ifdef WL4908
-    SAVE_DDR_TABLE((uint32_t *)NatCacheTableBase, NAT_CACHE_TABLE_ADDRESS, sizeof(NAT_CACHE_TABLE_STRUCT));
-    SAVE_DDR_TABLE((uint32_t *)ContextTableBase, NATC_CONTEXT_TABLE_ADDRESS, sizeof(NATC_CONTEXT_TABLE_STRUCT));
-    SAVE_DDR_TABLE((uint32_t *)ContextContTableBase, CONTEXT_CONTINUATION_TABLE_ADDRESS, sizeof(CONTEXT_CONTINUATION_TABLE_STRUCT));
-#ifdef DSL_UNIT_TEST
-    {
-        NATC_CONTEXT_TABLE_STRUCT *context_table_ptr = (NATC_CONTEXT_TABLE_STRUCT *)ContextTableBase;
-        CONTEXT_CONTINUATION_TABLE_STRUCT *context_cont_table_ptr = (CONTEXT_CONTINUATION_TABLE_STRUCT *)ContextContTableBase;
-
-        extern wlan_mcast_dhd_list_table_t wlan_mcast_dhd_list_table_g;
-        extern uint32_t *fc_port_header_buffers;
-        uint32_t *ptr = fc_port_header_buffers;
-
-        /* Add multicast port header buffers. */
-        SAVE_DDR_TABLE((uint32_t *)ptr, 
-                       g_runner_ddr_base_addr + SIMULATOR_DDR_PORT_HEADER_BUFFERS_OFFSET, 
-                       RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE * RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE2);
-
-        /* Add first 10 context entries because multicast contextes do not get written out in save_connection_table. */
-        SAVE_DDR_TABLE((uint32_t *)context_table_ptr, 
-                       g_runner_ddr_base_addr + NATC_CONTEXT_TABLE_ADDRESS,  
-                       sizeof(NATC_CONTEXT_TABLE_STRUCT));
-
-        SAVE_DDR_TABLE((uint32_t *)context_cont_table_ptr, 
-                       g_runner_ddr_base_addr + CONTEXT_CONTINUATION_TABLE_ADDRESS, 
-                       sizeof(CONTEXT_CONTINUATION_TABLE_STRUCT));
-
-        /* Add first 4 wlan multicast dhd lists */
-        printf("SIMULATOR_DDR_WLAN_MCAST_DHD_LIST 0x%08x\n", (uint32_t)(g_runner_ddr_base_addr + SIMULATOR_DDR_WLAN_MCAST_DHD_LIST_OFFSET));
-        SAVE_DDR_TABLE((uint32_t *)wlan_mcast_dhd_list_table_g.virt_p, 
-                       g_runner_ddr_base_addr + SIMULATOR_DDR_WLAN_MCAST_DHD_LIST_OFFSET, 
-                       sizeof(RDD_WLAN_MCAST_DHD_LIST_ENTRY_ARRAY_DHD_STATION_NUMBER));
-    }
-#endif /*DSL_UNIT_TEST*/
-
-    /* Save DDR packet descriptors in rings */
-    for (i = 0, ptr = (uint32_t *)cpu_rx_ring_base; i < (RDD_RING_DESCRIPTORS_TABLE_SIZE * 10); i++)
-    {
-        packet_descriptor_address = SIMULATOR_DDR_RING_OFFSET + sizeof(CPU_RX_DESCRIPTOR_STRUCT) * i;
-        SAVE_DDR_TABLE((uint32_t *)ptr, packet_descriptor_address, sizeof(CPU_RX_DESCRIPTOR_STRUCT));
-        ptr += sizeof(CPU_RX_DESCRIPTOR_STRUCT) / sizeof(uint32_t);
-    }
-#elif defined(OREN)
-    SAVE_DDR_TABLE((uint32_t *)DS_TUPLE_LKP_TABLE_PTR,
-        g_ddr_runner_base_addr + g_runner_tables_offset + DS_TUPLE_LKP_TABLE_ADDRESS, sizeof(TUPLE_LKP_TABLE_STRUCT));
-    SAVE_DDR_TABLE((uint32_t *)US_TUPLE_LKP_TABLE_PTR,
-        g_ddr_runner_base_addr + g_runner_tables_offset + US_TUPLE_LKP_TABLE_ADDRESS, sizeof(TUPLE_LKP_TABLE_STRUCT));
-    SAVE_DDR_TABLE((uint32_t *)CONTEXT_TABLE_PTR,
-        g_ddr_runner_base_addr + g_runner_tables_offset + CONTEXT_TABLE_ADDRESS, sizeof(CONTEXT_TABLE_STRUCT));
-    /* Save DDR packet descriptors in rings */
-        for (i = 0, ptr = (uint32_t *)CPU_RX_RING_PTR; i < (RDD_RING_DESCRIPTORS_TABLE_SIZE * 10); i++)
-        {
-            packet_descriptor_address = SIMULATOR_DDR_RING_OFFSET + sizeof(CPU_RX_DESCRIPTOR_STRUCT) * i;
-            SAVE_DDR_TABLE((uint32_t *)ptr, packet_descriptor_address, sizeof(CPU_RX_DESCRIPTOR_STRUCT));
-            ptr += sizeof(CPU_RX_DESCRIPTOR_STRUCT)  / sizeof(uint32_t);
-        }
-#elif defined(XRDP)
     SAVE_DDR_TABLE(g_rsv_base_addr, g_rsv_phys_base_addr, g_rsv_alloc_total_size);
-#endif
 
     fclose(ddr_tables);
     return 0;
@@ -179,111 +78,10 @@ int rdd_sim_save_ddr_tables(void)
 int rdd_sim_save_hw_cfg(void)
 {
     FILE *sim_cfg;
-#ifndef XRDP	
-    RUNNER_REGS_CFG_DDR_CFG ddr_cfg_register;
-    RUNNER_REGS_CFG_CAM_CFG cam_cfg_register;
-    RUNNER_REGS_CFG_CNTR_CFG counter_cfg_register;
-    RUNNER_REGS_CFG_DDR_LKUP_MASK0 runner_ddr_lkup_mask0_register;
-    RUNNER_REGS_CFG_DDR_LKUP_MASK1 runner_ddr_lkup_mask1_register;
-    RUNNER_REGS_CFG_LKUP2_CFG hash_lkup_2_cfg_register;
-    RUNNER_REGS_CFG_LKUP2_CAM_CFG hash_lkup_2_cam_cfg_register;
-    RUNNER_REGS_CFG_LKUP_GLBL_MASK2_H hash_lkup_2_global_mask_high_register;
-    RUNNER_REGS_CFG_LKUP_GLBL_MASK2_L hash_lkup_2_global_mask_low_register;
-
-    uint32_t scheduler_config_register;
-#endif
 
     sim_cfg = fopen("sim_cfg", "w+b");
     if (!sim_cfg)
         BDMF_TRACE_RET(BDMF_ERR_INTERNAL, "Failed to open sim_cfg");
-
-#ifndef XRDP
-    RUNNER_REGS_0_CFG_DDR_CFG_READ(ddr_cfg_register);
-
-    fprintf(sim_cfg, "ddr_base %08x %08x %d\n", (ddr_cfg_register.dma_base << 21),
-        (ddr_cfg_register.dma_base << 21) + 0x1800000, ddr_cfg_register.buffer_offset);
-
-    RUNNER_REGS_0_CFG_DDR_LKUP_MASK0_READ(runner_ddr_lkup_mask0_register);
-    fprintf(sim_cfg, "set dma_lkp_global_0 %08x\n", runner_ddr_lkup_mask0_register.global_mask);
-
-    RUNNER_REGS_0_CFG_DDR_LKUP_MASK1_READ(runner_ddr_lkup_mask1_register);
-    fprintf(sim_cfg, "set dma_lkp_global_1 %08x\n", runner_ddr_lkup_mask1_register.global_mask);
-
-    RUNNER_REGS_0_CFG_LKUP2_CFG_READ(hash_lkup_2_cfg_register);
-    RUNNER_REGS_0_CFG_LKUP2_CAM_CFG_READ(hash_lkup_2_cam_cfg_register);
-    fprintf(sim_cfg, "set mac2 A %x %d %d %d", (unsigned int)(hash_lkup_2_cfg_register.base_address << 3),
-        (int)32 * (1 << hash_lkup_2_cfg_register.table_size), (int)(1 << hash_lkup_2_cfg_register.max_hop),
-        (int)hash_lkup_2_cfg_register.hash_type);
-
-    if (hash_lkup_2_cam_cfg_register.cam_en)
-        fprintf(sim_cfg, " %x\n", hash_lkup_2_cam_cfg_register.base_address << 3);
-    else
-        fprintf(sim_cfg, "\n");
-
-    RUNNER_REGS_0_CFG_LKUP_GLBL_MASK2_H_READ(hash_lkup_2_global_mask_high_register);
-    RUNNER_REGS_0_CFG_LKUP_GLBL_MASK2_L_READ(hash_lkup_2_global_mask_low_register);
-    fprintf(sim_cfg, "set global_mask_2 A %08x %08x\n", (unsigned int)hash_lkup_2_global_mask_high_register.base_address,
-        (unsigned int)hash_lkup_2_global_mask_low_register.base_address);
-
-#if defined(WL4908)
-    fprintf(sim_cfg, "set natc A %08x %d 16 %d\n",
-        NAT_CACHE_TABLE_ADDRESS, RDD_NAT_CACHE_TABLE_SIZE, RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE);
-
-    fprintf(sim_cfg, "set natc_result A %08x %d\n",
-        NATC_CONTEXT_TABLE_ADDRESS, sizeof(NATC_CONTEXT_ENTRY_UNION_STRUCT));
-
-    fprintf(sim_cfg, "set natc B %08x %d 16 %d\n",
-        NAT_CACHE_TABLE_ADDRESS, RDD_NAT_CACHE_TABLE_SIZE, RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE);
-
-    fprintf(sim_cfg, "set natc_result B %08x %d\n",
-        NATC_CONTEXT_TABLE_ADDRESS, sizeof(NATC_CONTEXT_ENTRY_UNION_STRUCT));
-#endif
-
-    RUNNER_REGS_0_CFG_CAM_CFG_READ(cam_cfg_register);
-    fprintf(sim_cfg, "set cam_stop_value A %x\n", cam_cfg_register.stop_value);
-
-    RUNNER_REGS_1_CFG_CAM_CFG_READ(cam_cfg_register);
-    fprintf(sim_cfg, "set cam_stop_value B %x\n", cam_cfg_register.stop_value);
-
-    /* save scheduller configuration */
-    RUNNER_REGS_0_CFG_MAIN_SCH_CFG_READ(scheduler_config_register);
-
-    fprintf(sim_cfg, "set scheduler_cfg A CLASS_%c group_0=%s group_1=%s group_2=%s group_3=%s\n",
-        (scheduler_config_register & 0x10) ? 'A' : ((scheduler_config_register & 0x20) ? 'B' : 'C'),
-        (scheduler_config_register & 0x01) ? "RR" : "SP",
-        (scheduler_config_register & 0x02) ? "RR" : "SP",
-        (scheduler_config_register & 0x04) ? "RR" : "SP",
-        (scheduler_config_register & 0x08) ? "RR" : "SP");
-
-    RUNNER_REGS_1_CFG_MAIN_SCH_CFG_READ(scheduler_config_register);
-
-    fprintf(sim_cfg, "set scheduler_cfg B CLASS_%c group_0=%s group_1=%s group_2=%s group_3=%s\n",
-        (scheduler_config_register & 0x10) ? 'A' : ((scheduler_config_register & 0x20) ? 'B' : 'C'),
-        (scheduler_config_register & 0x01) ? "RR" : "SP",
-        (scheduler_config_register & 0x02) ? "RR" : "SP",
-        (scheduler_config_register & 0x04) ? "RR" : "SP",
-        (scheduler_config_register & 0x08) ? "RR" : "SP");
-
-    RUNNER_REGS_0_CFG_PICO_SCH_CFG_READ(scheduler_config_register);
-
-    fprintf(sim_cfg, "set scheduler_cfg C CLASS_%c group_0=%s group_1=%s group_2=SP group_3=SP\n",
-        (scheduler_config_register & 0x10) ? 'A' : ((scheduler_config_register & 0x20) ? 'B' : 'C'),
-        (scheduler_config_register & 0x01) ? "RR" : "SP",
-        (scheduler_config_register & 0x02) ? "RR" : "SP");
-
-    RUNNER_REGS_1_CFG_PICO_SCH_CFG_READ(scheduler_config_register);
-
-    fprintf(sim_cfg, "set scheduler_cfg D CLASS_%c group_0=%s group_1=%s group_2=SP group_3=SP\n",
-        (scheduler_config_register & 0x10) ? 'A' : ((scheduler_config_register & 0x20) ? 'B' : 'C'),
-        (scheduler_config_register & 0x01) ? "RR" : "SP",
-        (scheduler_config_register & 0x02) ? "RR" : "SP");
-
-    RUNNER_REGS_0_CFG_CNTR_CFG_READ(counter_cfg_register);
-    fprintf(sim_cfg, "set counter A %x common\n", counter_cfg_register.base_address << 3);
-
-    RUNNER_REGS_1_CFG_CNTR_CFG_READ(counter_cfg_register);
-    fprintf(sim_cfg, "set counter B %x common\n", counter_cfg_register.base_address << 3);
-#endif /* XRDP */
 
     fclose(sim_cfg);
     return 0;
@@ -291,133 +89,151 @@ int rdd_sim_save_hw_cfg(void)
 
 void rdd_sim_save_tx_pointers(uint16_t *buffer)
 {
-#ifndef XRDP
-    rdd_wan_tx_pointers_entry_t *entry;
-    uint32_t wan_channel_id;
-    uint32_t rate_controller_id;
-    uint32_t queue_id;
-#endif
-
-#ifndef XRDP
-#if !defined(WL4908)
-    for (wan_channel_id = 0; wan_channel_id < (RDD_WAN_CHANNELS_0_7_TABLE_SIZE + RDD_WAN_CHANNELS_8_39_TABLE_SIZE); wan_channel_id++)
-#else
-    for (wan_channel_id = 0; wan_channel_id < RDD_WAN_CHANNELS_0_7_TABLE_SIZE; wan_channel_id++)
-#endif
-    {
-        for (rate_controller_id = 0; rate_controller_id < RDD_WAN_CHANNEL_0_7_DESCRIPTOR_RATE_CONTROLLER_ADDR_NUMBER; rate_controller_id++)
-        {
-            for (queue_id = 0; queue_id < RDD_US_RATE_CONTROLLER_DESCRIPTOR_TX_QUEUE_ADDR_NUMBER; queue_id++)
-            {
-                entry = &(wan_tx_pointers_table->entry[wan_channel_id][rate_controller_id][queue_id]);
-
-                if (entry->wan_tx_queue_ptr)
-                {
-                    buffer[wan_channel_id * RDD_WAN_CHANNEL_0_7_DESCRIPTOR_RATE_CONTROLLER_ADDR_NUMBER *
-                        RDD_US_RATE_CONTROLLER_DESCRIPTOR_TX_QUEUE_ADDR_NUMBER + rate_controller_id *
-                        RDD_US_RATE_CONTROLLER_DESCRIPTOR_TX_QUEUE_ADDR_NUMBER + queue_id] =
-#ifdef FIRMWARE_LITTLE_ENDIAN
-                            swap2bytes((entry->wan_tx_queue_ptr - WAN_TX_QUEUES_TABLE_ADDRESS)
-                                / sizeof(WAN_TX_QUEUE_DESCRIPTOR_STRUCT));
-#else
-                    (entry->wan_tx_queue_ptr - WAN_TX_QUEUES_TABLE_ADDRESS) / sizeof(WAN_TX_QUEUE_DESCRIPTOR_STRUCT);
-#endif
-                }
-                else
-                {
-                    buffer[wan_channel_id * RDD_WAN_CHANNEL_0_7_DESCRIPTOR_RATE_CONTROLLER_ADDR_NUMBER * RDD_US_RATE_CONTROLLER_DESCRIPTOR_TX_QUEUE_ADDR_NUMBER +
-                        rate_controller_id * RDD_US_RATE_CONTROLLER_DESCRIPTOR_TX_QUEUE_ADDR_NUMBER + queue_id] = 0xFFFF;
-                }
-            }
-        }
-    }
-#endif		
+    ;
 }
 
-#ifdef XRDP
 uintptr_t xrdp_virt2phys(const ru_block_rec *ru_block, uint8_t addr_idx)
 {
     return RDD_IO_VIRT_TO_PHYS(ru_block->addr[addr_idx]);
 }
-#endif
+
+
+#define DRV_COMMON_SHMEM_NO_FIXED_OFFSET 0xffffffff
+
+
+
+static int _get_env_var(char *varname, char loc[], int loc_len, char *def)
+{
+    char *ptr = getenv(varname);
+
+    if (ptr)
+    {
+        if (strlen(ptr) < loc_len)
+            strcpy(loc, ptr);
+        else
+            return BDMF_ERR_OVERFLOW;
+    }
+    else
+        strcpy(loc, def);
+
+    return 0;
+}
 
 
 /* allocate memory segments for simulation */
 int rdd_sim_alloc_segments(void)
 {
-#ifdef XRDP
     bdmf_phys_addr_t phy;
+
+    char shmemdir[512];
+
+    if (_get_env_var("SHMEM_DIR", shmemdir, sizeof(shmemdir), "."))
+        return BDMF_ERR_OVERFLOW;
+
+#if 1
+#if (CHIP_VER < RDP_GEN_100)
+    sharedmem_create_x(shmemdir, SIM_MEM_SIZE + sizeof(Status_t) + DEFAULT_LAYOUT_AREA_SIZE_XRDP, /* emulator */ 0, 
+                                       /* layout_size */ DEFAULT_LAYOUT_AREA_SIZE_XRDP);
+#else
+    sharedmem_create_x(shmemdir, SIM_MEM_SIZE + sizeof(Status_t) + DEFAULT_LAYOUT_AREA_SIZE_LOTUS + 
+                    0xB00000 + 0xb00000/* Extra space for TM blocks defined in surplus in the simulator */, 
+                                        /* emulator */ 0, /* layout_size */ DEFAULT_LAYOUT_AREA_SIZE_LOTUS);
+
+    sharedmem_non_chip_alloc("WAKEUP_TASKS", -1, "", "uint8_t", sizeof(uint8_t), (NUM_OF_PROCESSING_RUNNERS + NUM_OF_TM_RUNNERS) * 16);
 #endif
-    SEG_CHK_ALLOC(soc_base_address, sizeof(uint8_t) * SIM_MEM_SIZE);
-#if defined(OREN)
-    SEG_CHK_ALLOC(DS_TUPLE_LKP_TABLE_PTR, sizeof(TUPLE_LKP_TABLE_STRUCT));
-    SEG_CHK_ALLOC(US_TUPLE_LKP_TABLE_PTR, sizeof(TUPLE_LKP_TABLE_STRUCT));
-    SEG_CHK_ALLOC(CONTEXT_TABLE_PTR, sizeof(CONTEXT_TABLE_STRUCT));
-    SEG_CHK_ALLOC(CPU_RX_RING_PTR, sizeof(CPU_RX_DESCRIPTOR_STRUCT) * RDD_RING_DESCRIPTORS_TABLE_SIZE * 10);
-#elif defined(WL4908)
-    SEG_CHK_ALLOC(NatCacheTableBase, sizeof(NAT_CACHE_TABLE_STRUCT));
-    SEG_CHK_ALLOC(ContextTableBase, sizeof(NATC_CONTEXT_TABLE_STRUCT));
-    SEG_CHK_ALLOC(ContextContTableBase, sizeof(CONTEXT_CONTINUATION_TABLE_STRUCT));
-    SEG_CHK_ALLOC(cpu_rx_ring_base, sizeof(RING_DESCRIPTORS_TABLE_STRUCT));
-#elif defined(XRDP)
+
+    soc_base_address = sharedmem_alloc(-1, "FULL_REG_SPACE", -1, "", "Runner_t", /*struct_size*/ SIM_MEM_SIZE, /*#*/ 1,
+                                       /*hw_addr*/ SOC_BASE_ADDRESS, /*endian*/ 0, 
+                                       DRV_COMMON_SHMEM_NO_FIXED_OFFSET, /* overlap_check */ 1);
+    if (!soc_base_address)
+        return BDMF_ERR_NORES;
+
+#else /* CRDP-TODO */
+
+    sharedmem_create(shmemdir, 0x9c00000 /*CRDP_BLOCK_SIZE: TODO*/, "REDWOOD", -1, 1, 0);
+
+    soc_base_address = (uint8_t *)sharedmem_getBasePtr() + sharedmem_getAllocatedSize();
+
+    struct block_ptr_t 
+    {
+        char *block_name;
+        char *sub_block_name;
+        const ru_block_rec *blk_ptr;
+        char *struct_name;
+        uint32_t big_endian;
+    };
+    
+    struct block_ptr_t blocks[] = { 
+                                    { "RNR_PP", "REGS",  &RU_BLK(CRDP_RCG_RNR_REGS),  "rdp_crdp_rcg_rnr_regs_t",    0 },
+                                    { "RNR_PP", "CNTXT", &RU_BLK(CRDP_RCG_RNR_CNTXT), "rdp_crdp_rcg_rnr_cntxt_t",   1 },
+                                    { "RNR_PP", "CMN",   &RU_BLK(CRDP_RCG_RNR_CMN),   "rdp_crdp_rcg_rnr_cmn_t",     0 },
+                                    { "RNR_PP", "INST",  &RU_BLK(CRDP_RCG_RNR_INST),  "rdp_crdp_rcg_rnr_inst_t",    0 },
+                                    { "RNR_PP", "PRED",  &RU_BLK(CRDP_RCG_RNR_PRED),  "rdp_crdp_rcg_rnr_pred_t",    0 },
+                                    { "RNR_PP", "MEM",   &RU_BLK(CRDP_RCG_RNR_MEM),   "rdp_crdp_rcg_rnr_mem_t",     0 },
+                                    { "RNR_TM", "REGS",  &RU_BLK(CRDP_EGR_RNR_REGS),  "rdp_crdp_egr_rnr_regs_t",    0 },
+                                    { "RNR_TM", "CNTXT", &RU_BLK(CRDP_EGR_RNR_CNTXT), "rdp_crdp_egr_rnr_cntxt_t",   1 },
+                                    { "RNR_TM", "CMN",   &RU_BLK(CRDP_EGR_RNR_CMN),   "rdp_crdp_egr_rnr_cmn_t",     0 },
+                                    { "RNR_TM", "INST",  &RU_BLK(CRDP_EGR_RNR_INST),  "rdp_crdp_egr_rnr_inst_t",    0 },
+                                    { "RNR_TM", "PRED",  &RU_BLK(CRDP_EGR_RNR_PRED),  "rdp_crdp_egr_rnr_pred_t",    0 },
+                                    { "RNR_TM", "MEM",   &RU_BLK(CRDP_EGR_RNR_MEM),   "rdp_crdp_egr_rnr_mem_t",     0 },
+                                    { "BAC_IF", "",      &RU_BLK(BAC_IF),             "rdp_bac_if_t",               0 },
+                                    { "BBH",    "RX",    &RU_BLK(BBH_RX),             "rdp_bbh_rx_t",               0 },
+                                    { "BUFMNG", "REGS",  &RU_BLK(BUFMNG),             "rdp_bufmng_t",               0 },
+                                    { "CNPL",   "",      &RU_BLK(CNPL),               "rdp_crdp_cnpl_t",            0 },
+                                    { "BBHTX_CP", "REGS", &RU_BLK(CRDP_DS_CMN_BBH_TX), "rdp_crdp_ds_cmn_bbh_tx_t",  0 },
+                                    { "PFB",    "DS_CMN", &RU_BLK(CRDP_DS_CMN_PFB),   "rdp_crdp_ds_cmn_pfb_t",      0 },
+                                    { "SBPM",   "DS_CMN", &RU_BLK(CRDP_DS_CMN_SBPM),  "rdp_crdp_ds_cmn_sbpm_t",     0 },
+                                    { "BBHTX",  "REGS",  &RU_BLK(CRDP_EGR_BBH_TX),    "rdp_crdp_egr_bbh_tx_t",      0 },
+                                    { "PFB",    "EGR",   &RU_BLK(CRDP_EGR_PFB),       "rdp_crdp_egr_pfb_t",         0 },
+                                    { "PFB",    "ING",   &RU_BLK(CRDP_ING_PFB),       "rdp_crdp_ing_pfb_t",         0 },
+                                    { "SBPM",   "ING",   &RU_BLK(CRDP_ING_SBPM),      "rdp_crdp_ing_sbpm_t",        0 },
+                                    { "DSPTCHR", "",     &RU_BLK(DSPTCHR),            "rdp_dsptchr_t",              0 },
+                                    { "DSPTCHR_CMN", "", &RU_BLK(DSPTCHR_CMN),        "rdp_dsptchr_cmn_t",          0 },
+                                    { "FPM",    "REGS",  &RU_BLK(FPM),                "rdp_fpm_t",                  0 },
+                                    { "FPMINI", "REGS",  &RU_BLK(FPM_FPMINI),         "rdp_fpm_fpmini_t",           0 },
+                                    { "GSU",    "REGS",  &RU_BLK(GSU_REG),            "rdp_gsu_reg_t",              0 },
+                                    { "GSU",    "MEM",   &RU_BLK(GSU_MEM),            "rdp_gsu_mem_t",              0 },
+                                    { "HASH", "",        &RU_BLK(HASH),               "rdp_hash_t",                 0 },
+                                    { "PSRAM",  "MEM",   &RU_BLK(PSRAM_MEM),          "rdp_psram_mem_t",            0 },
+                                    { "QM",     "REGS",  &RU_BLK(QM),                 "rdp_qm_t",                   0 },
+                                    { "TCAM", "",        &RU_BLK(TCAM),               "rdp_tcam_t",                 0 },
+                                  };
+
+    /* TODO: Check if these blocks need to be added:    CRDP_DS_CMN_PSRAM 
+     *                                                  CRDP_DS_CMN_UBUS_RESPONDER_BRDG
+     *                                                  CRDP_EGR_CNPL
+     *                                                  CRDP_EGR_UBUS_RESPONDER_BRDG
+     *                                                  CRDP_ING_PSRAM
+     *                                                  CRDP_ING_UBUS_RESPONDER_BRDG
+     *                                                  CRDP_RCG_UBUS_RESPONDER_BRDG
+     *                                                  NAT_CACHE */
+
+    int block_num = sizeof(blocks)/sizeof(struct block_ptr_t);
+
+    int i, b;
+
+    for (b = 0; b < block_num; b++)
+    {
+        for (i = 0; i < blocks[b].blk_ptr->addr_count; i++)
+        {
+            if (!sharedmem_chipalloc(blocks[b].block_name, i, blocks[b].sub_block_name, blocks[b].struct_name,
+                                              blocks[b].blk_ptr->size[0], 1, blocks[b].blk_ptr->addr[i], blocks[b].big_endian,
+                                              DRV_COMMON_SHMEM_NO_FIXED_OFFSET, 1))
+            {
+                return BDMF_ERR_NORES;
+            }
+        }
+    }
+
+    sharedmem_non_chip_alloc("WAKEUP_TASKS", -1, "", "uint8_t", sizeof(uint8_t), (NUM_OF_PROCESSING_RUNNERS + NUM_OF_TM_RUNNERS) * 16);
+#endif
     cpu_rx_ring_base_addr_ptr = rdp_mm_aligned_alloc(RDD_CPU_RING_DESCRIPTORS_TABLE_SIZE * RDD_CPU_RING_BYTE_SIZE,
-        &phy);
+      &phy);
     if (!cpu_rx_ring_base_addr_ptr)
         return BDMF_ERR_INTERNAL;
-#endif
+
     return 0;
 }
-
-/* allocate memory segments for simulation */
-void rdd_sim_free_segments(void)
-{
-#if defined(OREN)
-    SEG_CHK_FREE(CPU_RX_RING_PTR);
-    SEG_CHK_FREE(CONTEXT_TABLE_PTR);
-    SEG_CHK_FREE(US_TUPLE_LKP_TABLE_PTR);
-    SEG_CHK_FREE(DS_TUPLE_LKP_TABLE_PTR);
-#elif defined(WL4908)
-    SEG_CHK_FREE(cpu_rx_ring_base);
-    SEG_CHK_FREE(ContextContTableBase);
-    SEG_CHK_FREE(ContextTableBase);
-    SEG_CHK_FREE(NatCacheTableBase);
-#endif
-    SEG_CHK_FREE(soc_base_address);
-}
-
-#ifndef XRDP
-#ifndef G9991_PRV
-#if !defined(DSL_63138) && !defined(DSL_63148) && !defined(WL4908)
-int rdd_ip_flow_ut(rdd_module_t *module, rdpa_ip_flow_key_t *key, void *context)
-{
-    uint32_t context_idx = -1;
-    uint32_t key_idx = -1;
-    bdmf_error_t rc = BDMF_ERR_OK;
-
-    rc = rdd_ip_flow_add(module, key, context, &context_idx);
-    if (rc)
-        return rc;
-
-    rc = rdd_ip_flow_find(module, key, &key_idx);
-    if (rc)
-        return rc;
-
-    rc = rdd_ip_flow_get(module, key_idx, key, context);
-    if (rc)
-        return rc;
-
-    rc = rdd_ip_flow_delete(module, key_idx);
-    if (rc)
-        return rc;
-    rc = rdd_ip_flow_find(module, key, &key_idx);
-    if (rc != BDMF_ERR_NOENT)
-        return BDMF_ERR_INTERNAL;
-
-    return BDMF_ERR_OK;
-}
-#endif /*DSL*/
-#endif
-#endif /* XRDP */
 
 int _segment_file_init(const char *file_name, const char *mode, uint8_t *segment_mem, int segment_size)
 {
@@ -441,73 +257,4 @@ int segment_file_init(const char *file_name, const char *mode, int segment, int 
 {
     return _segment_file_init(file_name, mode, (uint8_t *)DEVICE_ADDRESS(segment), segment_size);
 }
-
-#ifndef XRDP
-void rdd_save_wifi_dongle_config(void)
-{
-    FILE *dongle_config;
-
-    dongle_config = fopen("wifi_dongle_config", "w+b");
-
-    if (dongle_config == NULL)
-    {
-        printf("Error: Can't open wifi_dongle_config file\n");
-        return;
-    }
-
-    fprintf(dongle_config, "rx_post_flow_ring_base_addr %08x\n", DHD_RX_POST_DDR_BUFFER_ADDRESS);
-    fprintf(dongle_config, "rx_complete_flow_ring_base_addr %08x\n", DHD_RX_COMPLETE_DDR_BUFFER_ADDRESS);
-    fprintf(dongle_config, "tx_post_flow_ring_mgmt_ring_base_addr %08x\n",
-        DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_TABLE_ADDRESS);
-    fprintf(dongle_config, "tx_complete_flow_ring_base_addr %08x\n", DHD_TX_COMPLETE_DDR_BUFFER_ADDRESS);
-    fprintf(dongle_config, "r2d_wr_arr_base_addr %08x\n", R2D_WR_ARR_DDR_BUFFER_ADDRESS);
-    fprintf(dongle_config, "d2r_rd_arr_base_addr %08x\n", D2R_RD_ARR_DDR_BUFFER_ADDRESS);
-    fprintf(dongle_config, "r2d_rd_arr_base_addr %08x\n", R2D_RD_ARR_DDR_BUFFER_ADDRESS);
-    fprintf(dongle_config, "d2r_wr_arr_base_addr %08x\n", D2R_WR_ARR_DDR_BUFFER_ADDRESS);
-    fprintf(dongle_config, "tx_post_flow_ring_max_id %08x\n", RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_TABLE_SIZE);
-    fprintf(dongle_config, "rx_post_flow_ring_size %08x\n", RDD_DHD_RX_POST_DDR_BUFFER_SIZE);
-    fprintf(dongle_config, "rx_complete_flow_ring_size %08x\n", RDD_DHD_RX_COMPLETE_DDR_BUFFER_SIZE);
-    fprintf(dongle_config, "tx_post_flow_ring_size %08x\n", RDD_DHD_TX_POST_DDR_BUFFER_SIZE2);
-    fprintf(dongle_config, "tx_complete_flow_ring_size %08x\n", RDD_DHD_TX_COMPLETE_DDR_BUFFER_SIZE);
-
-    fclose(dongle_config);
-}
-
-#define SIM_TX_POST_FLOW_RING_ENTRIES RDD_DHD_TX_POST_DDR_BUFFER_SIZE2
-#define SIM_TX_POST_FLOW_RING_SIZE (sizeof(DHD_TX_POST_DESCRIPTOR_STRUCT) * SIM_TX_POST_FLOW_RING_ENTRIES)
-
-/* We must use the descriptor defined below for initialization and not the autogenerated one,
-   becase otherwise flags and size will be swapped (since they are defined as bitfields inside uint32_t)
-   This struct must be always synced with DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_STRUCT
-*/
-typedef struct 
-{
-    uint32_t	flow_ring_base_low;
-    uint32_t	flow_ring_base_high;
-    uint32_t	size_and_flags;
-    uint32_t	reserved;
-} dhd_tx_post_mgmt_descriptor_t;
-
-void rdd_sim_dhd_tx_flow_ring_mgmt_init(void)
-{
-#ifndef G9991_PRV
-    int i = 0;
-    dhd_tx_post_mgmt_descriptor_t *mgmt = (dhd_tx_post_mgmt_descriptor_t *)DHD_TX_POST_FLOW_RING_MGMT_TABLE_PTR;
-    uint32_t flow_ring_addr = DHD_TX_POST_DDR_BUFFER_ADDRESS;
-
-    for (; i < RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_TABLE_SIZE; i++, mgmt++, flow_ring_addr += SIM_TX_POST_FLOW_RING_SIZE)
-    {
-        memset(mgmt, 0, sizeof(dhd_tx_post_mgmt_descriptor_t));
-        mgmt->flow_ring_base_low = swap4bytes(flow_ring_addr);
-        mgmt->size_and_flags = SIM_TX_POST_FLOW_RING_ENTRIES; 
-    }
-#endif
-}
-
-void rdp_rnr_write_context(void *__to, void *__from, unsigned int __n)
-{
-    MWRITE_BLK_32(__to, __from, __n);
-}
-
-#endif /* XRDP */
 #endif /*RDP_SIM*/

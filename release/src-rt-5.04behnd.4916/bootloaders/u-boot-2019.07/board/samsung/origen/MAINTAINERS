@@ -1,6 +1,0 @@
-ORIGEN BOARD
-M:	Chander Kashyap <k.chander@samsung.com>
-S:	Maintained
-F:	board/samsung/origen/
-F:	include/configs/origen.h
-F:	configs/origen_defconfig

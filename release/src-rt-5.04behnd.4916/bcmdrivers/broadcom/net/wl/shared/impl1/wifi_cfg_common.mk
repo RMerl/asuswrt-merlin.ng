@@ -2,13 +2,8 @@ ifneq ($(strip $(CONFIG_BCM_KF_NBUFF)),)
 ifneq ($(strip $(CONFIG_BLOG)),)
 EXTRA_CFLAGS += -DBCM_NBUFF_WLMCAST 
 ifneq ($(strip $(CONFIG_BCM_UNKNOWN_UCAST)),)
-# Enable only when DHD code supports processing connect event that
-# flushes flow cache flows on station connect (needed for unknown ucast support)
-DHD_SYS_DIR = $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP)/sys/src/dhd/sys/
-CNCT_EVNT = $(shell grep 'DHD_BLOG_CONNECT_EVENT' $(DHD_SYS_DIR)/dhd_common.c)
-ifneq ($(CNCT_EVNT),)
+# Enable unknown ucast support
 EXTRA_CFLAGS += -DBCM_BLOG_UNKNOWN_UCAST
-endif
 endif
 endif
 
@@ -59,16 +54,22 @@ EXTRA_CFLAGS += -DBCM_DHD_LOCK
 EXTRA_CFLAGS += -DAWL_TX_DPC
 # to get DWDS peer's macaddr
 EXTRA_CFLAGS += -DBCM_DHD_DWDS_PEER_MACADDR
+# Use 'wlan_cma' reserved memory if available
+EXTRA_CFLAGS += -DBCM_CMA_RSV_MEM
+
+# https://lore.kernel.org/all/20230116125058.1604843-1-quic_vjakkam@quicinc.com
+# upstream commit 9a47c1ef5a95d adds mld_addr to cfg80211_external_auth_params
+# which allows authentication offload to user space for MLO connections in STA mode.
+# This backport is necessary for the WLAN driver to send MLD addr along with bssid
+# to the supplicant during SAE authentication. This change has been back-ported
+# from linux 6.3 to our router kernel, and we use the flag 'BCM_DHD_EXTAUTH_MLD_ADDR'
+# to indicate that the backport exists in the current kernel.
+EXTRA_CFLAGS += -DBCM_DHD_EXTAUTH_MLD_ADDR
 
 # This flag can be used in wl code to include wl/shared
 # header files. It indicates we have the WLAN_SHARED_DIR
 # and are pulling code from there.
 EXTRA_CFLAGS += -I$(WLAN_SHARED_DIR) -DBCA_CPE_BSP_SHARED
-
-# SROM MAP support
-EXTRA_CFLAGS += -DBCA_SROMMAP
-# specify the path for srommap files (default: /etc/wlan)
-# EXTRA_CFLAGS += -DSROMMAP_PATH=\"/mnt/defaults/wl\"
 
 # Internal NIC flags
 # core ID and interrupt info from VPCIE
@@ -86,9 +87,32 @@ ifneq ($(strip $(CONFIG_BCM_FPI)),)
 EXTRA_CFLAGS += -DBCM_WLAN_FPI
 endif
 
+# NIC-SQS/NIC-SPP depend on PKTFWD
+ifneq ($(strip $(CONFIG_BCM_PKTFWD)),)
+  # Enable NIC-SPP for SoC platforms
+  # For all other platforms, enable NIC-SPP if MLO is supported
+  ifneq ($(strip $(CONFIG_BCM_CROSSBOW))$(strip $(CONFIG_BCM_WLAN_MLO)),)
+    WLSQS := 1
+    WLSPP_NIC := 1
+  endif
+endif
+
 # Enable only for the SoC platforms
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6765_6766_6764_47722),)
-ifneq ($(strip $(CONFIG_BCM_BPM)),)
-PP_XPM := 1
-endif
-endif
+ifneq ($(strip $(CONFIG_BCM_CROSSBOW)),)
+  ifneq ($(strip $(CONFIG_BCM_BPM)),)
+    PP_XPM := 1
+    ifneq ($(strip $(CONFIG_BCM_PKTFWD_SPC)),)
+      BCM_PKTFWD_SPC := 1
+    endif # CONFIG_BCM_PKTFWD_SPC
+    ifneq ($(strip $(CONFIG_HAVE_SKBUFF_WL_SPC_V2)),)
+      ifneq ($(strip $(CONFIG_BCM_SPC_RX)),)
+        # Enable SPC Rx only when full offload and SPC_V2 is enabled
+        BCM_SPC_RX := 1
+      endif # CONFIG_BCM_SPC_RX
+    endif # CONFIG_HAVE_SKBUFF_WL_SPC_V2
+  endif # CONFIG_BCM_BPM
+endif # CONFIG_BCM_CROSSBOW
+
+ifneq ($(strip $(CONFIG_BCM_SCORE)),)
+  BCM_PKT_TLM := 1
+endif # CONFIG_BCM_SCORE

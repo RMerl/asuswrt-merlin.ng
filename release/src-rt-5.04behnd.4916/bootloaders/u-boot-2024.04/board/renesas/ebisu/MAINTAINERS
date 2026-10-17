@@ -1,0 +1,7 @@
+EBISU BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a77990*
+F:	board/renesas/ebisu/
+F:	configs/r8a77990_ebisu_defconfig
+F:	include/configs/ebisu.h

@@ -241,7 +241,8 @@ struct iproc_ctx_s {
 			u8           ipv6         : 1;
 			u8           gcm          : 1;
 			u8           esn          : 1;
-			u8           reserved     : 3;
+			u8           ipv4_in_ipv6 : 1;
+			u8           reserved     : 2;
 		};
 		u8                   u8_0;
 	};
@@ -494,6 +495,7 @@ struct spu_hw {
 	int (*spu_get_max_channel)(void);
 	int (*spu_and_dma_runtime_on)(void);
 	int (*spu_and_dma_runtime_off)(void);
+	void (*spu_set_session_cnt)(const atomic_t *session_cnt);
 #if defined(CONFIG_BCM_SPU2_TEST_VEC)
 	void (*spu_test_raw_perf)(long long num);
 	int (*spu_get_test_vectors)(struct spu_test_vector_t **test_vectors_ptr);

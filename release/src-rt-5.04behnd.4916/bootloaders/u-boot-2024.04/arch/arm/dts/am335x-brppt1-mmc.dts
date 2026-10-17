@@ -1,0 +1,155 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 B&R Industrial Automation GmbH
+ * http://www.br-automation.com
+ *
+ */
+/dts-v1/;
+
+#include "am33xx.dtsi"
+
+/ {
+	model = "BRPPT1 (MMC) Panel";
+	compatible = "ti,am33xx";
+
+
+	aliases {
+		gpmc = &gpmc;
+		mmc = &mmc2;
+	};
+
+	chosen {
+		bootargs = "console=ttyO0,115200 earlyprintk";
+		stdout-path = &uart0;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>; /* 256 MB */
+	};
+
+	vmmcsd_fixed: fixedregulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vmmcsd_fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+};
+
+&uart0 {		/* console uart */
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <400000>;
+};
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <100000>;
+};
+
+&edma {
+	status = "okay";
+};
+
+&usb {
+	status = "okay";
+};
+
+&usb_ctrl_mod {
+	status = "okay";
+};
+
+&usb0_phy {
+	status = "okay";
+};
+
+&usb1_phy {
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb1 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&davinci_mdio {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <1>;
+	};
+
+	phy1: ethernet-phy@1 {
+		reg = <2>;
+	};
+};
+
+&mac {
+	status = "okay";
+};
+
+&cpsw_emac0 {
+	phy-handle = <&phy0>;
+	dual_emac_res_vlan = <1>;
+	phy-mode = "mii";
+};
+
+&cpsw_emac1 {
+	phy-handle = <&phy1>;
+	dual_emac_res_vlan = <2>;
+	phy-mode = "mii";
+};
+
+&mmc1 {
+	vmmc-supply = <&vmmcsd_fixed>;
+	bus-width = <0x4>;
+	ti,non-removable;
+	ti,needs-special-hs-handling;
+	ti,vcc-aux-disable-is-sleep;
+	status = "okay";
+};
+
+&mmc2 {
+	vmmc-supply = <&vmmcsd_fixed>;
+	bus-width = <0x8>;
+	ti,non-removable;
+	ti,needs-special-hs-handling;
+	ti,vcc-aux-disable-is-sleep;
+	status = "okay";
+};
+
+&gpio0 {
+	ti,no-reset-on-init;
+};
+
+&gpio1 {
+	ti,no-reset-on-init;
+};
+
+&gpio2 {
+	ti,no-reset-on-init;
+};
+
+&gpio3 {
+	ti,no-reset-on-init;
+};
+
+&timer6 {		/* used for cpsw end device */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer7 {		/* used for cpsw end device */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};

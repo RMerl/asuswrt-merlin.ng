@@ -13399,6 +13399,9 @@ static const ru_reg_rec *QM_REGS[] =
 const ru_block_rec QM_BLOCK =
 {
     "QM",
+#if RU_INCLUDE_SIZE
+    { 0x00021000 },
+#endif
     QM_ADDRS,
     1,
     170,

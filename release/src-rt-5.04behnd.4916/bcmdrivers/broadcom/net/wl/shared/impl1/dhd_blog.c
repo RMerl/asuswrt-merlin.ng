@@ -46,9 +46,6 @@
 
 #include <dhd_flowring.h>
 
-#if defined(PKTC_TBL)
-#include <wl_pktc.h>
-#endif
 #if defined(BCM_PKTFWD)
 #include <dhd_pktfwd.h>
 #endif /* BCM_PKTFWD */
@@ -116,10 +113,6 @@ dhd_handle_blog_sinit(struct dhd_pub *dhdp, int ifidx, struct sk_buff *skb)
 	}
 	if (PKT_DONE == blog_ret) {
 		/* Doesnot need go to IP stack */
-#if defined(DSLCPE) || defined(PKTC_TBL)
-		dhdp->rx_fcache_cnt++;
-#endif
-
 		dhdp->dstats.rx_bytes += pktlen;
 		dhdp->rx_packets ++;
 #ifndef BCM_COUNTER_EXTSTATS
@@ -139,15 +132,16 @@ dhd_handle_blog_sinit(struct dhd_pub *dhdp, int ifidx, struct sk_buff *skb)
 #endif /* BCM_DHD_RUNNER */
 
 #if defined(BCM_AWL)
-	/* Archer platforms support acceleration through Archer driver */
-	if ((PKT_BLOG == blog_ret) && (skb->blog_p)) {
+	/*
+	 * Archer platforms support RX acceleration through Archer driver for all
+	 * radios that support WFD
+	 */
+	if ((PKT_BLOG == blog_ret) && (skb->blog_p) &&
+		WLAN_WFD_ENABLED(dhdp->wfd_idx)) {
 		skb->blog_p->wl_hw_support.is_rx_hw_acc_en = 1;
 	}
 #endif /* BCM_AWL */
 
-#if defined(DSLCPE) || defined(PKTC_TBL)
-	dhdp->rx_linux_cnt++;
-#endif
 	return !PKT_DONE;
 }
 
@@ -173,9 +167,6 @@ dhd_handle_blog_finit(struct dhd_pub *dhdp, int ifidx, struct fkbuff *fkb, struc
 
 	if (PKT_DONE == blog_ret) {
 		/* Doesnot need go to IP stack */
-#if defined(DSLCPE) || defined(PKTC_TBL)
-		dhdp->rx_fcache_cnt++;
-#endif
 		dhdp->dstats.rx_bytes += pktlen;
 		dhdp->rx_packets ++;
 #ifndef BCM_COUNTER_EXTSTATS
@@ -193,15 +184,16 @@ dhd_handle_blog_finit(struct dhd_pub *dhdp, int ifidx, struct fkbuff *fkb, struc
 	}
 #endif /* BCM_DHD_RUNNER */
 #if defined(BCM_AWL)
-	/* Archer platforms support acceleration through Archer driver */
-	if ((PKT_BLOG == blog_ret) && (skb->blog_p)) {
+	/*
+	 * Archer platforms support RX acceleration through Archer driver for all
+	 * radios that support WFD
+	 */
+	if ((PKT_BLOG == blog_ret) && (skb->blog_p) &&
+		WLAN_WFD_ENABLED(dhdp->wfd_idx)) {
 		fkb->blog_p->wl_hw_support.is_rx_hw_acc_en = 1;
 	}
 #endif /* BCM_AWL */
 
-#if defined(DSLCPE) || defined(PKTC_TBL)
-	dhdp->rx_linux_cnt++;
-#endif
 	return blog_ret;
 }
 #endif /* BCM_NBUFF_PKT_BPM */
@@ -355,18 +347,6 @@ int fdb_check_expired_dhd(unsigned char *addr, struct net_device * net_device)
 {
 	DHD_INFO(("%s: check addr [%02x:%02x:%02x:%02x:%02x:%02x]\n", __FUNCTION__,
 		addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]));
-
-#if defined(PKTC_TBL)
-{
-	wl_pktc_tbl_t *pt;
-
-	pt = (wl_pktc_tbl_t *)dhd_pktc_req(PKTC_TBL_GET_BY_DA, (unsigned long)addr, 0, 0);
-	if (pt && pt->hits) {
-		pt->hits = 0;
-		return 0; /* packet is going through, not expired */
-	}
-}
-#endif
 
 #if defined(BCM_WFD)
 {
@@ -547,16 +527,24 @@ dhd_handle_blog_disconnect_event(struct dhd_pub *dhdp, wl_event_msg_t *event)
 	DHD_UNLOCK(dhdp);
 
 #if defined(BCM_PKTFWD)
-	dhd_pktfwd_request(dhd_pktfwd_req_assoc_sta_e,
-		(unsigned long)&event->addr.octet, 0, event->event_type);
-#endif /* BCM_PKTFWD */
+{
+	uint32 type = ntoh32_ua((void *)&event->event_type);
+#if defined(WDS_FREXP)
+	if (type != WLC_E_WDS_RS_DISASSOC)
+#endif /* WDS_FREXP */
+		dhd_pktfwd_request(dhd_pktfwd_req_assoc_sta_e,
+			(unsigned long)&event->addr.octet, 0, type);
+}
 
-#if defined(PKTC_TBL) || defined(BCM_PKTFWD)
-	/* destroy pktc entry */
-	if (dhd_pktc_del_hook) {
-		dhd_pktc_del_hook((unsigned long)(event->addr.octet), dev);
+	/* destroy pktfwd entry */
+	if (dhd_pktfwd_del_hook) {
+		dhd_pktfwd_priv_t * dhd_pktfwd_priv;
+		dhd_pktfwd_priv = dhd_pktfwd_get_priv(dev);
+		netdev_wlan_set_dwds_disconnected(dhd_pktfwd_priv->d3fwd_wlif);
+
+		dhd_pktfwd_del_hook((unsigned long)(event->addr.octet), dev);
 	}
-#endif /* PKTC_TBL || BCM_PKTFWD */
+#endif /* BCM_PKTFWD */
 
 	bcm_mcast_wlan_client_disconnect_notifier(dev, event->addr.octet);
 
@@ -614,12 +602,21 @@ dhd_handle_blog_connect_event(struct dhd_pub *dhdp, wl_event_msg_t *event)
 
 #if defined(BCM_PKTFWD)
 	{
+		dhd_pktfwd_priv_t * dhd_pktfwd_priv;
 		uint32 type = ntoh32_ua((void *)&event->event_type);
 
-		if (type != WLC_E_AUTH_IND) {
+		if ((type != WLC_E_AUTH_IND) &&
+#if defined(WDS_FREXP)
+		    (type != WLC_E_WDS_RS_ASSOC))
+#else
+		    true)
+#endif /* WDS_FREXP */
+		{
 			dhd_pktfwd_request(dhd_pktfwd_req_assoc_sta_e,
 				(unsigned long)&event->addr.octet, 1, type);
 		}
+		dhd_pktfwd_priv = dhd_pktfwd_get_priv(dev);
+		netdev_wlan_unset_dwds_disconnected(dhd_pktfwd_priv->d3fwd_wlif);
 	}
 #endif /* BCM_PKTFWD */
 

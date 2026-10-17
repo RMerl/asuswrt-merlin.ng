@@ -1,0 +1,42 @@
+if TARGET_TH1520_LPI4A
+
+config ARCH_THEAD
+	bool
+	default y
+
+config SYS_BOARD
+	default "th1520_lpi4a"
+
+config SYS_VENDOR
+	default "thead"
+
+config SYS_CPU
+	default "generic"
+
+config SYS_CONFIG_NAME
+	default "th1520_lpi4a"
+
+config TEXT_BASE
+	default 0x01b00000 if SPL
+	default 0x01c00000 if !RISCV_SMODE
+	default 0x01c00000 if RISCV_SMODE
+
+config SPL_TEXT_BASE
+	default 0x08000000
+
+config SPL_OPENSBI_LOAD_ADDR
+	default 0x80000000
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select ARCH_EARLY_INIT_R
+	imply CPU
+	imply CPU_RISCV
+	imply RISCV_TIMER if RISCV_SMODE
+	imply CMD_CPU
+	imply SMP
+	imply SUPPORT_OF_CONTROL
+	imply OF_CONTROL
+	imply OF_REAL
+
+endif

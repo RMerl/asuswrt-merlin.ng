@@ -30,11 +30,13 @@
 #ifndef _PF_RING_SGS_H_
 #define _PF_RING_SGS_H_
 
+#if !defined(__KERNEL__)
+#include <compiler.h>
+#endif
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
 
-
-#define PF_RING_IOCTL_WAKEUP	0
-#define PF_RING_IOCTL_EVICT	1
+#define PF_RING_IOCTL_WAKEUP		0
+#define PF_RING_IOCTL_EVICT		1
 
 #define PF_SGS_INIT_FROM_WAN_BIT	0
 #define PF_SGS_IS_LOCAL_BIT		1

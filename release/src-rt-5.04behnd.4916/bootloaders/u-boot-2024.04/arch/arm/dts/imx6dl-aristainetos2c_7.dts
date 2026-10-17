@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: (GPL-2.0)
+/*
+ * support for the imx6 based aristainetos2c board
+ *
+ * Copyright (C) 2019 Heiko Schocher <hs@denx.de>
+ * Copyright (C) 2015 Heiko Schocher <hs@denx.de>
+ *
+ */
+/dts-v1/;
+#include "imx6dl-aristainetos2_7.dtsi"
+#include "imx6qdl-aristainetos2c.dtsi"
+
+/ {
+	model = "aristainetos2c+2d i.MX6 Dual Lite Boards 7";
+	compatible = "abb,aristainetos2-imx6dl-7", "fsl,imx6dl";
+};

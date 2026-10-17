@@ -1,0 +1,78 @@
+menu "Integrator Options"
+	depends on ARCH_INTEGRATOR
+
+choice
+	prompt "Integrator platform select"
+	optional
+
+config ARCH_INTEGRATOR_AP
+	bool "Support Integrator/AP platform"
+
+config ARCH_INTEGRATOR_CP
+	bool "Support Integrator/CP platform"
+	select ARCH_CINTEGRATOR
+
+endchoice
+
+config ARCH_CINTEGRATOR
+	bool
+
+choice
+	prompt "Integrator core module select"
+	optional
+
+config CM720T
+	bool "Core Module for ARM720T"
+	select CPU_ARM720T
+
+config CM920T
+	bool "Core Module for ARM920T"
+	select CPU_ARM920T
+
+config CM926EJ_S
+	bool "Core Module for ARM926EJ-STM"
+	select CPU_ARM926EJS
+	select CM_TCRAM
+
+config CM946ES
+	bool "Core Module for ARM946E-STM"
+	select CPU_ARM946ES
+	select CM_MULTIPLE_SSRAM
+	select CM_TCRAM
+
+config CM1136
+	bool "Core Module for ARM1136JF-STM"
+	select CPU_ARM1136
+	select CM_TCRAM
+
+endchoice
+
+config SYS_BOARD
+	default "integrator"
+
+config SYS_VENDOR
+	default "armltd"
+
+config SYS_CONFIG_NAME
+	default "integratorap" if ARCH_INTEGRATOR_AP
+	default "integratorcp" if ARCH_INTEGRATOR_CP
+
+config SYS_MALLOC_F_LEN
+	default 0x2000
+
+config CM_INIT
+	def_bool y
+
+config CM_REMAP
+	def_bool y
+
+config CM_SPD_DETECT
+	def_bool y
+
+config CM_MULTIPLE_SSRAM
+	bool
+
+config CM_TCRAM
+	bool
+
+endmenu

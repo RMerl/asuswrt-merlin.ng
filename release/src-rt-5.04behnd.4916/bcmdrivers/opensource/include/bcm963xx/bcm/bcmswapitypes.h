@@ -99,7 +99,7 @@ enum ethsw_op {
     ETHSWPBVLAN,                //!< CLI- ::CMD_pbvlanmap            \n API- bcm_port_pbvlanmap_set() bcm_port_pbvlanmap_get()
     ETHSWCOSSCHED,              //!< CLI- ::CMD_cosqsched ::CMD_cosqsched_sf2  \n API- bcm_cosq_sched_get_X() bcm_cosq_sched_set_X()
     ETHSWCOSPORTMAP,            //!< CLI- ::CMD_cosq                 \n API- bcm_cosq_port_mapping_get() bcm_cosq_port_mapping_set()
-    ETHSWSTATPORTCLR,           //!<                                 \n API- bcm_stat_port_clear()
+    ETHSWSTATPORTCLR,           //!< CLI- ::CMD_clearstats           \n API- bcm_stat_port_clear()
     ETHSWPORTRXRATE,            //!< CLI- ::CMD_rxratectrl           \n API- bcm_port_rate_ingress_set() bcm_port_rate_ingress_get()
     ETHSWPORTTXRATE,            //!< CLI- ::CMD_txratectrl ::CMD_txratectrl_sf2  \n API- bcm_port_rate_egress_set_X() bcm_port_rate_egress_get_X()
     ETHSWTEST1,                 //!< CLI- ::CMD_test                 \n API- bcm_enet_driver_test_config_get() 
@@ -339,9 +339,9 @@ enum {
     MACLMT_MAX_TYPES,
 };
     
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || \
-    defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || \
-    defined(CHIP_63138) || defined(CHIP_63148) || defined(CHIP_4908) || defined(CHIP_63158) || defined(CHIP_63178)  || defined(CHIP_47622) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765) || defined(CHIP_6766) || \
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+    defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || \
+    defined(CHIP_63158) || defined(CHIP_63178)  || defined(CHIP_47622) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765) || defined(CHIP_6766) || \
     defined(CONFIG_BCM96764) || defined(CHIP_6764)
 #define BCM_COS_COUNT  8
 #else
@@ -376,8 +376,10 @@ enum {
 #define PHY_CAP_LAST            (1 << 14)
 #define PHY_CAP_ALL             (PHY_CAP_LAST - 1)
 
-#define PHY_CAP_PURE_SPEED_CAPS ((PHY_CAP_AUTONEG<<1) - 1)
-#define PHY_CAP_NON_SPEED_CAPS (PHY_CAP_ALL & (~PHY_CAP_PURE_SPEED_CAPS))
+#define PHY_CAP_PURE_SPEED_CAPS (PHY_CAP_AUTONEG - 1)
+#define PHY_CAP_PURE_SPEED_AN_CAPS ((PHY_CAP_AUTONEG<<1) - 1)
+#define PHY_CAP_NON_SPEED_CAPS  (PHY_CAP_ALL & (~PHY_CAP_PURE_SPEED_AN_CAPS))
+#define PHY_CAP_HALF_DUPLEX     (PHY_CAP_1000_HALF|PHY_CAP_100_HALF|PHY_CAP_10_HALF);
 
 /* eth switch mac entry -- add by Andrew 2020/05/04 */
 typedef struct ethsw_mac_entry_s {
@@ -431,9 +433,10 @@ typedef struct ethsw_port_stats_s {
 #define INTER_PHY_TYPE_USXGMII      16
 #define INTER_PHY_TYPE_SXGMII       17
 #define INTER_PHY_TYPE_USXGMII_MP   18
-#define INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN 19
+#define INTER_PHY_TYPE_MULTI_SPEED_AN 19
+#define INTER_PHY_TYPE_RGMII        20
 
-#define INTER_PHY_TYPE_MAX (INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN + 1)
+#define INTER_PHY_TYPE_MAX (INTER_PHY_TYPE_RGMII + 1)
 
 #define PHY_CFG_AN_AUTO 0
 #define PHY_CFG_AN_OFF  1
@@ -649,6 +652,7 @@ struct ethswctl_data
             unsigned short num_spq;           // configured SP q value in Combo mode
             unsigned short wrr_type;          // WRR or WDR?              
             unsigned short weights_upper;     // when setting, upper/lower 4 weights -- useful for CLI
+#define Q_WEIGHT_ALL    2
             unsigned short max_egress_spq;    // CAP -  max SP q in Combo mode 
             unsigned short max_egress_q;      // CAP - per port max queues supported 
             unsigned int port_qos_caps;       // CAP - scheduling/shaping capabilities
@@ -757,6 +761,7 @@ struct ethswctl_data
         struct
         {
             int pfc_ret;
+            int pfc_resolution;
             int pfc_timer[8];
         };
         net_port_t net_port;
@@ -909,8 +914,8 @@ typedef struct {
 #define BCM_COSQ_COMBO   2
 #define BCM_COSQ_SP      0
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) \
-    || defined(CHIP_63138) || defined(CHIP_63148) || defined(CHIP_4908) || defined(CHIP_63158) || defined(CHIP_63178) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765) || defined(CHIP_6766) \
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) \
+    || defined(CHIP_63158) || defined(CHIP_63178) || defined(CHIP_63146) || defined(CHIP_6756) || defined(CHIP_6765) || defined(CHIP_6766) \
     || defined(CONFIG_BCM96764) || defined(CHIP_6764)
 #define NUM_EGRESS_QUEUES  8
 #else
@@ -968,6 +973,28 @@ typedef struct {
 #define ETHSW_LINK_MIGHT_CHANGED    (1<<0)
 #define ETHSW_LINK_FORCE_CHECK      (1<<1)
 #define ETHSW_LINK_CHANGED          (1<<2)
+
+static inline int pfc_pause_encoding(int tx_enable, int rx_enable, int pfc_tx_enable, int pfc_rx_enable, int *pfc_code)
+{
+    if ((rx_enable || tx_enable) && (pfc_rx_enable || pfc_tx_enable))
+        return -1;
+
+    else if (rx_enable == 0 && tx_enable== 0 && pfc_rx_enable == 0 && pfc_tx_enable == 0)
+        *pfc_code = PAUSE_FLOW_CTRL_NONE;
+    else if (rx_enable || tx_enable) {
+        if (rx_enable)
+            *pfc_code = tx_enable ? PAUSE_FLOW_CTRL_BOTH : PAUSE_FLOW_CTRL_RX;
+        else
+            *pfc_code = PAUSE_FLOW_CTRL_TX;
+    }
+    else {
+        if (pfc_rx_enable)
+            *pfc_code = pfc_tx_enable ? PAUSE_FLOW_PFC_BOTH : PAUSE_FLOW_PFC_RX;
+        else
+            *pfc_code = PAUSE_FLOW_PFC_TX;
+    }
+    return 0;
+}
 
 /* Spanning Tree states */
 enum {

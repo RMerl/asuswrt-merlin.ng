@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Jagan Teki <jagan@amarulasolutions.com>
+ */
+
+#include "rk3399-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = &spi_flash;
+	};
+
+	config {
+		u-boot,spl-payload-offset = <0x40000>;
+	};
+};
+
+&binman {
+	rom {
+		size = <0x800000>;
+	};
+};
+
+&cros_ec {
+	ec-interrupt = <&gpio0 RK_PA1 GPIO_ACTIVE_LOW>;
+};
+
+&edp {
+	rockchip,panel = <&edp_panel>;
+};
+
+&pp1800_audio {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+};
+
+&ppvar_bigcpu_pwm {
+	regulator-init-microvolt = <900000>;
+};
+
+&ppvar_centerlogic_pwm {
+	regulator-init-microvolt = <900000>;
+};
+
+&ppvar_gpu_pwm {
+	regulator-init-microvolt = <900000>;
+};
+
+&ppvar_litcpu_pwm {
+	regulator-init-microvolt = <900000>;
+};
+
+&ppvar_sd_card_io {
+	enable-gpios = <&gpio2 2 GPIO_ACTIVE_HIGH>;
+};
+
+&spi5 {
+	spi-activate-delay = <100>;
+	spi-max-frequency = <3000000>;
+	spi-deactivate-delay = <200>;
+};
+
+&spi_flash {
+	bootph-all;
+};

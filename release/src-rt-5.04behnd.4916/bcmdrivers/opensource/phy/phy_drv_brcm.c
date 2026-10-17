@@ -51,6 +51,10 @@
 #define RDB_REG_ADDRESS             0x1e
 #define RDB_REG_VALUE               0x1f
 
+#define CORE_SHD18_AUTOGREEEN       0x800  /* AutoGreeen configuration */
+#define CORE_BASE10                 0x0000 /* PHY Extended control Register */
+#define CORE_BASE11                 0x0001 /* PHY Extended Status Register */
+#define CORE_BASE1E                 0x000e /* Test 1 Register */
 #define CORE_SHD18_111              0x002f /* Miscellanous Control Register */
 #define CORE_SHD1C_0A               0x001a /* Auto-Power Down */
 #define CORE_SHD1C_05               0x0015 /* Reserved Control 3 */
@@ -82,10 +86,32 @@
 #define BRCM_PHY_REG_FORCE_LINK     (0x1<<12)
 #define BRCM_PHY_TEST_REG           0x1e
 
+static int brcm_egphy_autogreeen_set(phy_dev_t *phy_dev)
+{
+    int ret;
+    uint16_t val;
+
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_SHD18_AUTOGREEEN, &val)))
+        goto Exit;
+
+    if (phy_dev->autogreeen)
+        val |= 1; 
+    else
+        val &= ~1;
+
+    if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD18_AUTOGREEEN, val)))
+        goto Exit;
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_SHD18_AUTOGREEEN, &val)))
+        goto Exit;
+Exit:
+    return ret;
+}
+
 int brcm_read_status(phy_dev_t *phy_dev)
 {
-    int ret = 0, mode;
+    int ret = 0, mode, eee_resolution_on;
     uint16_t val;
+    int old_link = phy_dev->link;
 
     if ((ret = phy_bus_read(phy_dev, AUXSTAT, &val)))
         goto exit_dn;
@@ -135,6 +161,13 @@ int brcm_read_status(phy_dev_t *phy_dev)
 
     phy_dev->pause_rx = ((val >> 1) & 0x1);
     phy_dev->pause_tx = ((val >> 0) & 0x1);
+
+    if (!old_link)
+    {
+        brcm_egphy_eee_resolution_get(phy_dev, &eee_resolution_on);
+        if (eee_resolution_on)
+            brcm_egphy_autogreeen_set(phy_dev);
+    }
 
     return 0;
     
@@ -226,8 +259,7 @@ int brcm_egphy_rx_short_ipg_en(phy_dev_t *phy_dev)
 {
     uint16_t v16;
 
-    if (PhyIsExtPhyId(phy_dev))
-        phy_bus_write(phy_dev, REG_18, 0x0c00);  // enable clock for EXP_REG_ADDRESS to function
+    phy_bus_write(phy_dev, REG_18, 0x0c00);  // enable clock for EXP_REG_ADDRESS to function
 
     // allow GPHY receive of shorten IPG due to brcm tag
     phy_bus_write(phy_dev, EXP_REG_ADDRESS, DSP_TAP13);
@@ -462,6 +494,85 @@ Exit:
     return ret;
 }
 
+int brcm_egphy_mdix_mode_set(phy_dev_t *phy_dev, phy_mdix_t mdix_mode)
+{
+    int ret;
+    uint16_t val;
+    int auto_mdix, force_mdix;
+
+    if (mdix_mode == PHY_MDIX_AUTO)
+    {
+        auto_mdix = 1;
+        force_mdix = 0;
+    }
+    else
+    {
+        auto_mdix = 0;
+        force_mdix = mdix_mode == PHY_MDIX_ON ? 1 : 0;
+    }
+
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_BASE10, &val)))
+        goto Exit;
+
+    if (auto_mdix)
+        val &= ~(1 << 14); /* Enable Auto MDIX */
+    else
+        val |= (1 << 14); /* Disable Auto MDIX */
+
+    if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_BASE10, val)))
+        goto Exit;
+
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_BASE1E, &val)))
+        goto Exit;
+
+    if (force_mdix)
+        val |= (1 << 7); /* Enable MDIX Swap */
+    else
+        val &= ~(1 << 7); /* Disable MDIX Swap */
+
+    if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_BASE1E, val)))
+        goto Exit;
+
+Exit:
+    return ret;
+}
+
+int brcm_egphy_mdix_mode_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode)
+{
+    int ret;
+    uint16_t val1, val2;
+
+    *mdix_mode = PHY_MDIX_UNKNOWN;
+
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_BASE10, &val1)))
+        goto Exit;
+
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_BASE1E, &val2)))
+        goto Exit;
+
+    if (val1 & (1 << 14))
+        *mdix_mode = val2 & (1 << 7) ? PHY_MDIX_ON : PHY_MDIX_OFF; /* Enable MDIX Swap */
+    else
+        *mdix_mode = PHY_MDIX_AUTO; /* Auto MDIX Enabled */
+
+Exit:
+    return ret;
+}
+
+int brcm_egphy_mdix_status_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode)
+{
+    int ret;
+    uint16_t val;
+
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_BASE11, &val)))
+        goto Exit;
+
+    *mdix_mode = val & (1 << 13) ? PHY_MDIX_ON : PHY_MDIX_OFF; /* MDIX Enabled */
+
+Exit:
+    return ret;
+}
+
 int brcm_egphy_force_auto_mdix_set(phy_dev_t *phy_dev, int enable)
 {
     int ret;
@@ -546,6 +657,7 @@ int brcm_egphy_apd_get(phy_dev_t *phy_dev, int *enable)
 Exit:
     return ret;
 }
+
 int brcm_egphy_apd_set(phy_dev_t *phy_dev, int enable)
 {
     int ret;
@@ -564,7 +676,6 @@ int brcm_egphy_apd_set(phy_dev_t *phy_dev, int enable)
     if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_0A, val)))
         goto Exit;
 
-#if !defined(CONFIG_BCM963148)
     /* Reserved Control 3 */
     if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_SHD1C_05, &val)))
         goto Exit;
@@ -582,7 +693,6 @@ int brcm_egphy_apd_set(phy_dev_t *phy_dev, int enable)
 
     if ((ret = phy_dev_write(phy_dev, RDB_ACCESS | CORE_SHD1C_05, val)))
         goto Exit;
-#endif
 
 Exit:
     return ret;
@@ -601,6 +711,11 @@ int brcm_egphy_eee_get(phy_dev_t *phy_dev, int *enable)
 
 Exit:
     return ret;
+}
+
+int brcm_egphy_eee_mode_set(phy_dev_t *phy_dev, int autogreeen)
+{
+    return 0;
 }
 
 int brcm_egphy_eee_set(phy_dev_t *phy_dev, int enable)
@@ -624,9 +739,7 @@ int brcm_egphy_eee_set(phy_dev_t *phy_dev, int enable)
     if (enable)
     {
         val |= (1 << 1); /* EEE support for 100BASE-TX */
-#if !defined(CONFIG_BCM963148)
         val |= (1 << 2); /* EEE support for 1000BASE-T */
-#endif
     }
 
     if ((ret = phy_bus_c45_write(phy_dev, 7, EEE_ADV, val)))
@@ -854,6 +967,21 @@ int brcm_shadow_18_ext_pkt_len_get(phy_dev_t *phy_dev, int *enable)
 
 Exit:
     return ret;
+}
+
+int brcm_shadow_18_mdix_mode_set(phy_dev_t *phy_dev, phy_mdix_t mdix_mode)
+{
+    return -1;
+}
+
+int brcm_shadow_18_mdix_mode_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode)
+{
+    return -1;
+}
+
+int brcm_shadow_18_mdix_status_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode)
+{
+    return -1;
 }
 
 int brcm_shadow_18_force_auto_mdix_set(phy_dev_t *phy_dev, int enable)

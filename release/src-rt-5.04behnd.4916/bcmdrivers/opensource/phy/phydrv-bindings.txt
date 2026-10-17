@@ -27,6 +27,8 @@ Optional Properties:
 
 - phy-reset:    gpio, if set, used to take phy out of reset before PHY initialization
 
+- tx-disable: The GPIO phandle and specifier for the SFP tx disable signal.
+
 - serdes-core:  serdes core index
 
 - serdes-lane:  serdes lane index within core
@@ -34,6 +36,8 @@ Optional Properties:
 - phy-external: bool, indicates phy is external to chip.
 
 - phy-extswitch: bool, indicates external switch is connected.
+
+- phy-shrink-ipg: bool, indicates shrinking 4 byte IPG to accomodate Switch Tag.
 
 - wake-on-lan: bool, indicates wake-on-lan is supported.
 
@@ -51,7 +55,8 @@ Optional Properties:
 - phy-xfi-tx-polarity-inverse: XFI TX Polarity inverse
 
 - shared-ref-clk-mhz: Serdes shares reference clock to the external XGPHY
-- shared-ref-clk-mhz-bootstrap: Serdes shares reference clock to the external XGPHY with bootstrapping configuration
+
+- phy-tx-power: XGPHY Tx Power Level
 
 brcm,mdio1:
 brcm,mdio-sf2:
@@ -69,9 +74,6 @@ Chip Port Hardware Capability
     - cap-lan-only: Chip port capability
     - cap-wan-prefered: Chip port capability
     No definition means both lan/wan capable
-
-# TODO: is this LPORT_SERDES specific ?
-- serdes-tx-disable: The GPIO phandle and specifier for the SFP tx disable signal.
 
 
 egphy
@@ -126,9 +128,11 @@ Required properties for crossbar group:
 
 - phy-fixed:    For Serdes-Moca Connection
 
-- config-speed: For Serdes-Moca fixed speed configuration
+- config-speed: For Serdes-Moca fixed speed configuration integer in mbps: config-speed = <1000>;
 
-- config-xfi:   For Serdes-Moca fixed XFI mode configuration: 2500Base-X, 1000Base-X, etc.
+- inter_phy_types:  Define XFI mode capabilitie string: inter_phy_type = "2500Base-X|1000Base-X|SGMII" etc.
+
+- config-xfi:   For Serdes-Moca fixed XFI mode configuration string: config_xfi="2500Base-X", "1000Base-X", etc.
                 Add Suffix '_A' to set AN enable, ie. 2.5GBase-X_A means 2.5GBase-X with AN enabled
 
 Required properties for external endpoint PHY node:
@@ -142,7 +146,8 @@ Required properties for external endpoint PHY node:
                 "5G:256,0x2345,789,0x2345;"
                 "10G:256,0x2345,789,0x2345;"
 
-- phy-combo:    Indicate if this is a combo port which supports copper and optic
+
+- phy-combo:    Indicate if this is a combo port which supports copper and optic 
 
 For external endpoint PHY node with phy-mode set to "rgmii" on devices using RGMII pad control (63138, 63148, 63158) 
 following optional properties should be set.

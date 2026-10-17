@@ -37,6 +37,7 @@ endif
 
 ifneq ($(strip $(BUILD_RDKWIFI)),)
 export USR_CFLAGS += -DBCA_CPEROUTER_RDKWIFI
+export WL_CMWIFI_DIR = $(ALLSRCBASE)/cmwifi
 endif
 
 ifneq ($(strip $(BUILD_BCM_WLAN_DPDCTL)),)
@@ -48,12 +49,12 @@ endif
 ifneq ($(strip $(RDK_BUILD)),)
 export RDKB=y
 export EXTRA_CFLAGS += -DRDKB -DBCA_CPEROUTER_RDK
-export USR_CFLAGS += -DRDKB -DBCA_CPEROUTER_RDK
+export USR_CFLAGS += -DRDKB -DBCA_CPEROUTER_RDK  -DWPA3_PERSONAL_TRANSITION_AKM24_SUPPORTED
 export RDKB_CFLAGS += -I${RDKB_BCALINUX_SYSROOT}/usr/include/json-c -I${RDKB_BCALINUX_SYSROOT}/usr/include/libnl3
 export EXTRA_CFLAGS += $(RDKB_CFLAGS)
 endif
 
-ifneq ($(strip $(BUILD_LIBNL)),)
+ifneq ($(strip $(BUILD_LIBNL))$(strip $(BCM_COND_HAVE_LIBNL)),)
 export BCA_CPEROUTER_LIBNL=y
 endif
 
@@ -68,11 +69,6 @@ ifneq ($(strip $(BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG)),)
 export NO_BCMINTERNAL = 1
 export NO_BCMDBG = 1
 endif
-
-ifneq ($(strip $(BUILD_UBUS_CAPT_WLAN)),)
-export UBUS_CAPT_WLAN = 1
-endif
-
 endif # For either wlan driver or userspace
 
 ifneq ($(strip $(BUILD_43602NIC)),)
@@ -101,4 +97,8 @@ BRCM_ENGR_ONLY=1
 endif
 export BCM_QOSMGMT_REL = 2
 export BCM_MSCS_IMPL_VER = 2
+
+ifneq ($(strip $(BUILD_NF_TABLES)),)
+export BUILD_NF_TABLES=y
+endif
 endif # For wlan userspace

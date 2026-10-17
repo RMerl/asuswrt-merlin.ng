@@ -38,10 +38,18 @@
 #include "phy_drv_dsl_serdes.h"
 #include "Serdes146Class/phy_drv_merlin16.h"
 #include "serdes_access.h"
+#include "merlin16_shortfin_diag.h"
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+#include "BcmDiagSerdesEth.h"
+#include "Serdes146Class/merlin16_shortfin_ucode_image.h"
+#endif
 
 static void dsl_merlin16_serdes_link_stats(phy_dev_t *phy_dev);
 static int dsl_merlin16_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex);
 static int _merlin_core_power_op(phy_dev_t *phy_dev, int power_level);
+static int _phy_txfir_cfg_get(phy_dev_t *phy_dev, int8_t *pre, int8_t *main, int8_t *post1, int8_t *post2, int8_t *hpf);
+static int _phy_txfir_cfg_set(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf);
+
 static int dsl_merlin16_light_detected(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
@@ -59,13 +67,13 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
         .phy_type = PHY_TYPE_146CLASS_SERDES,
 #if defined(CONFIG_BCM963146)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
+        .inter_phy_types = INTER_PHY_TYPES_AUS1KXR2KXR_M,
 #elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
+        .inter_phy_types = INTER_PHY_TYPES_AUS1KXR2KXR5KXR10R_M,
 #elif defined(CONFIG_BCM96764)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR5KXR_M,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KXR2KXR5KXR_M,
 #endif
         .link_stats = dsl_merlin16_serdes_link_stats,
         .config_speed = PHY_SPEED_AUTO,
@@ -77,7 +85,10 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
         .light_detected = dsl_merlin16_light_detected,
         .read_txfir_reg = merlin16_read_txfir_reg,
         .write_txfir_reg = merlin16_write_txfir_reg,
-        //.lbe_op = dsl_merlin16_lbe_op,
+        .txfir_cfg_get = _phy_txfir_cfg_get,
+        .txfir_cfg_set = _phy_txfir_cfg_set,
+        .silent_start_light_detected = dsl_serdes_sfp_silent_start_light_detected,
+        .laser_op = serdes_access_lane_enable,
     }},
     {{
         .phy_type = PHY_TYPE_146CLASS_SERDES,
@@ -85,20 +96,22 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
 #define CONFIG_BCM963146_TESTING
 #if defined(CONFIG_BCM963146_TESTING)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR_M,
+        .inter_phy_types = INTER_PHY_TYPES_AMUS1KXR2KXR5KXR_M,
 #else
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR_M,
+        .inter_phy_types = INTER_PHY_TYPES_AUS1KXR2KXR_M,
 #endif
 #elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96766)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AUS1KR2KXR5KXR10R_M,
+        .inter_phy_types = INTER_PHY_TYPES_AUS1KXR2KXR5KXR10R_M,
 #elif defined(CONFIG_BCM96764)
+        //.speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
+        //.inter_phy_types = INTER_PHY_TYPES_AUS1KXR2KXR5KXR10R_M,
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AQUS1KR2KXR_M,
+        .inter_phy_types = INTER_PHY_TYPES_AQUS1KXR2KXR_M,
 #elif defined(CONFIG_BCM96813)
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR10R_M,
+        .inter_phy_types = INTER_PHY_TYPES_AMUS1KXR2KXR5KXR10R_M,
 #endif
         .link_stats = dsl_merlin16_serdes_link_stats,
         .config_speed = PHY_SPEED_AUTO,
@@ -110,12 +123,15 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
         .power_set = _merlin_core_power_op,
         .read_txfir_reg = merlin16_read_txfir_reg,
         .write_txfir_reg = merlin16_write_txfir_reg,
-        //.lbe_op = dsl_merlin16_lbe_op,
+        .txfir_cfg_get = _phy_txfir_cfg_get,
+        .txfir_cfg_set = _phy_txfir_cfg_set,
+        .silent_start_light_detected = dsl_serdes_sfp_silent_start_light_detected,
+        .laser_op = serdes_access_lane_enable,
     }},
     {{
         .phy_type = PHY_TYPE_146CLASS_SERDES,
         .speed_caps = PHY_CAP_AUTONEG|PHY_CAP_10000|PHY_CAP_5000|PHY_CAP_2500|PHY_CAP_1000_FULL|PHY_CAP_100_FULL|PHY_CAP_10_FULL,
-        .inter_phy_types = INTER_PHY_TYPES_AMUS1KR2KXR5KXR10R_M,
+        .inter_phy_types = INTER_PHY_TYPES_AMUS1KXR2KXR5KXR10R_M,
         .link_stats = dsl_merlin16_serdes_link_stats,
         .config_speed = PHY_SPEED_AUTO,
         .power_mode = SERDES_BASIC_POWER_SAVING,
@@ -126,9 +142,48 @@ static phy_serdes_t serdes_146class[MAX_146CORES][MAX_146USXGMII_PORTS] =
         .power_set = _merlin_core_power_op,
         .read_txfir_reg = merlin16_read_txfir_reg,
         .write_txfir_reg = merlin16_write_txfir_reg,
-        //.lbe_op = dsl_merlin16_lbe_op,
+        .txfir_cfg_get = _phy_txfir_cfg_get,
+        .txfir_cfg_set = _phy_txfir_cfg_set,
+        .silent_start_light_detected = dsl_serdes_sfp_silent_start_light_detected,
+        .laser_op = serdes_access_lane_enable,
     }}
 };
+
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+static srdsDiagApiDepFunctions serdesDiag146DepApiFuncs =
+{
+    .pSrdsUcImage   = merlin16_shortfin_ucode_image,
+    .ucImageSize    = MERLIN16_SHORTFIN_UCODE_IMAGE_SIZE,
+    .ucImageCrc     = MERLIN16_SHORTFIN_UCODE_IMAGE_CRC,
+    .srdsGetInfoPtr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr,
+    .srdsInit       = merlin16_serdes_init,
+    .srdsPostInit   = phy_dsl_serdes_post_init,
+    .srdsDisplayDiagData    = merlin16_shortfin_display_diag_data_core,
+    .srdsUcCmd      = merlin16_shortfin_pmd_uc_cmd,
+    .srdsPmdRdReg   = _merlin16_shortfin_pmd_rde_reg,
+    .srdsMacRdReg   = phy_dev_c45_read,
+    .srdsRdBlkCallBack  = merlin16_shortfin_INTERNAL_rdblk_callback,
+    .srdsRdBlkRam       = merlin16_shortfin_INTERNAL_rdblk_uc_generic_ram,
+    .srdsRdBlkProgRam   = merlin16_shortfin_rdblk_uc_prog_ram,
+    .srdsRdEventLogWithCallBack = merlin16_shortfin_INTERNAL_read_event_log_with_callback,
+    .srdsPmdWrReg   = merlin16_shortfin_acc_wr_reg,
+    .srdsMacWrReg   = phy_dev_c45_write,
+    .srdsPmdMskWrReg    = merlin16_shortfin_acc_mwr_reg,
+    .srdsMacMskWrReg    = phy_dev_c45_write_mask,
+    .srdsWrLMem     = merlin16_shortfin_wr_long_uc_mem,
+    .srdsWrWMem     = merlin16_shortfin_wrw_uc_mem,
+    .srdsWrBMem     = merlin16_shortfin_wrb_uc_mem,
+    .srdsInitInfo   = merlin16_shortfin_init_merlin16_shortfin_info,
+    .srdsSetLane    = merlin16_shortfin_set_lane,
+    .srdsGetInfoPtrWithCheck    = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr_with_check,
+};
+
+void merlin16_shortfin_report_raw_eye_scan_stripe(srds_access_t *sa__, uint32_t *buffer, uint16_t size)
+{
+    BcmDiagWriteData(((DIAG_SERDES_CLIENT << DIAG_DRV_TYPE_SHIFT) | (BcmDiagSerdesEthGetDiagCoreIdx() << DIAG_DRV_LINE_SHIFT) | LOG_CMD_SERDES_EYEDATA), (char *)buffer, sizeof(uint32_t) * size, NULL, 0);
+}
+
+#endif  // CONFIG_BCM_PHYDIAG_SERDES_ETH
 
 static int total_cores;
 int phy_drv_serdes146_get_total_cores(void)
@@ -143,6 +198,7 @@ phy_dev_t *phy_drv_serdes146_get_phy_dev(int core_num, int port_num)
     return phy_dev;
 }
 
+// extern uint32_t *lxDbgBase;
 static int phy_drv_serdes_146class_init_lock(phy_dev_t *phy_dev)
 {
     phy_dev_t *phy_dev_mmaster = mphy_get_master(phy_dev);
@@ -157,6 +213,10 @@ static int phy_drv_serdes_146class_init_lock(phy_dev_t *phy_dev)
         printk("****** Duplicated Serdes at address %d defined in board parameter.\n", phy_dev->addr);
         BUG();
     }
+
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    BcmDiagSerdesEthRegister(phy_dev, &serdesDiag146DepApiFuncs);
+#endif
 
     /* Polulate all non defined arrays */
     if (serdes_146class[0][1].speed_caps == 0)
@@ -296,7 +356,6 @@ end:
     return ret;
 }
 
-int merlin16_shortfin_display_diag_data(phy_dev_t *phy_dev, uint16_t  diag_level);
 static int _phy_diag_lock(phy_dev_t *phy_dev, int level)
 {
     int ret;
@@ -306,7 +365,7 @@ static int _phy_diag_lock(phy_dev_t *phy_dev, int level)
     return ret;
 }
 
-static int _phy_tx_cfg_set(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf)
+static int _phy_txfir_cfg_set(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf)
 {
     int rc;
 
@@ -315,7 +374,7 @@ static int _phy_tx_cfg_set(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t p
     return rc;
 }
 
-static int _phy_tx_cfg_get(phy_dev_t *phy_dev, int8_t *pre, int8_t *main, int8_t *post1, int8_t *post2, int8_t *hpf)
+static int _phy_txfir_cfg_get(phy_dev_t *phy_dev, int8_t *pre, int8_t *main, int8_t *post1, int8_t *post2, int8_t *hpf)
 {
     int rc;
     rc = merlin16_shortfin_read_tx_afe(phy_dev, TX_AFE_PRE, pre) ||
@@ -400,10 +459,12 @@ phy_drv_t phy_drv_serdes_146class =
     .configured_inter_phy_speed_type_set = dsl_serdes_cfg_speed_mode_set_lock,
     .xfi_tx_polarity_inverse_set = dsl_merlin16_xfi_tx_polarity_set,
     .xfi_rx_polarity_inverse_set = dsl_merlin16_xfi_rx_polarity_set,
-    .tx_cfg_get = _phy_tx_cfg_get,
-    .tx_cfg_set = _phy_tx_cfg_set,
+    .txfir_cfg_get = _phy_txfir_cfg_get,
+    .txfir_cfg_set = dsl_serdes_txfir_set_lock,
     .shared_clock_set = _phy_shared_clock_set,
     .phy_temp_get = _phy_temp_get,
+    .silent_start_get = phy_dev_sltstt_get,
+    .silent_start_set = phy_dev_sltstt_set_lock,
 #if defined(CONFIG_BCM963146)
     .name = "2.5GAE",
 #else

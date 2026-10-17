@@ -58,6 +58,8 @@ extern "C" {
 #define WDT_HZ			50000000
 #define WDT_START_1		(0xff00)
 #define WDT_START_2		(0x00ff)
+#define WDT_STOP_1		(0xee00)
+#define WDT_STOP_2		(0x00ee)
 #define MICROSECS_TO_WDOG_TICKS(x) ((uint32_t)((x) * (WDT_HZ/1000000)))
 
 #ifndef __ASSEMBLER__

@@ -78,6 +78,8 @@ typedef enum
     OTP_COMMIT,
     OTP_CU_LOCK,
     OTP_UART_EN,
+    OTP_FLASH_ENCRYPTED,
+    OTP_AUTO_FLASH_ENC,
 } OTP_IOCTL_ENUM;
 
 #endif

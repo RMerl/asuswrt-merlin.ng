@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+config SPL_CLK_JH7110
+	bool "SPL clock support for JH7110"
+	depends on STARFIVE_JH7110 && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	help
+	  This enables SPL DM support for clock driver in JH7110.
+
+config CLK_JH7110
+	bool "StarFive JH7110 clock support"
+	depends on STARFIVE_JH7110
+	select CLK
+	select CLK_CCF
+	help
+	  This enables support clock driver for StarFive JH7110 SoC platform.

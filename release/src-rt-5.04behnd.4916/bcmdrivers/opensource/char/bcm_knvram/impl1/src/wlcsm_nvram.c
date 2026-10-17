@@ -444,6 +444,7 @@ static char *large_nvram_list[] = {
 	"subnet_rl",
 	"httpd_nonce_list",
 	"app_cnonce_list",
+	"wlc_profile_list",
 	NULL
 };
 

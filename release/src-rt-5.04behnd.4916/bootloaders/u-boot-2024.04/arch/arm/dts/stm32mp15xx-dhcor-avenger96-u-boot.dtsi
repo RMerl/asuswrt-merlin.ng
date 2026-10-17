@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+/*
+ * Copyright (C) 2020 Marek Vasut <marex@denx.de>
+ */
+
+#include "stm32mp15xx-dhcor-u-boot.dtsi"
+
+/ {
+	aliases {
+		mmc0 = &sdmmc1;
+		mmc1 = &sdmmc2;
+		usb0 = &usbotg_hs;
+	};
+
+	config {
+		u-boot,boot-led = "led1";
+		u-boot,error-led = "led4";
+		dh,board-coding-gpios = <&gpiog 13 0>, <&gpiod 9 0>;
+	};
+};
+
+&ethernet0 {
+	phy-reset-gpios = <&gpioz 2 GPIO_ACTIVE_LOW>;
+
+	mdio0 {
+		ethernet-phy@7 {
+			reset-gpios = <&gpioz 2 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <11000>;
+			reset-deassert-us = <1000>;
+		};
+	};
+};
+
+&sdmmc1 {
+	bootph-pre-ram;
+	st,use-ckin;
+	st,cmd-gpios = <&gpiod 2 0>;
+	st,ck-gpios = <&gpioc 12 0>;
+	st,ckin-gpios = <&gpioe 4 0>;
+};
+
+&sdmmc1_b4_pins_a {
+	bootph-pre-ram;
+	pins1 {
+		bootph-pre-ram;
+	};
+	pins2 {
+		bootph-pre-ram;
+	};
+};
+
+&sdmmc1_dir_pins_b {
+	bootph-pre-ram;
+	pins1 {
+		bootph-pre-ram;
+	};
+	pins2 {
+		bootph-pre-ram;
+	};
+};
+
+&sdmmc2 {
+	bootph-pre-ram;
+};
+
+&sdmmc2_b4_pins_a {
+	bootph-pre-ram;
+	pins1 {
+		bootph-pre-ram;
+	};
+	pins2 {
+		bootph-pre-ram;
+	};
+};
+
+&sdmmc2_d47_pins_c {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&uart4 {
+	bootph-all;
+};
+
+&uart4_pins_b {
+	bootph-all;
+	pins1 {
+		bootph-all;
+	};
+	pins2 {
+		bootph-all;
+		/delete-property/ bias-disable;
+		bias-pull-up;
+	};
+};
+
+&usbotg_hs {
+	u-boot,force-b-session-valid;
+	hnp-srp-disable;
+};
+
+&vdd {
+	/delete-property/ regulator-always-on;
+};
+
+&vdd_io {
+	bootph-pre-ram;
+};

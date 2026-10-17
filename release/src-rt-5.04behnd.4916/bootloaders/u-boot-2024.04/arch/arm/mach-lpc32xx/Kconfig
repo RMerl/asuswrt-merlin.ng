@@ -1,0 +1,24 @@
+if ARCH_LPC32XX
+
+config SYS_SOC
+	default "lpc32xx"
+
+choice
+	prompt "NXP LPC32xx board select"
+
+config TARGET_DEVKIT3250
+	bool "Timll DevKit3250"
+
+config TARGET_WORK_92105
+	bool "Work Microwave Work_92105"
+
+config TARGET_EA_LPC3250DEVKITV2
+	bool "Embedded Artists LPC3250 Developer's Kit v2"
+
+endchoice
+
+source "board/timll/devkit3250/Kconfig"
+source "board/work-microwave/work_92105/Kconfig"
+source "board/ea/ea-lpc3250devkitv2/Kconfig"
+
+endif

@@ -1,0 +1,54 @@
+U-Boot for the NXP i.MX8QM EVK board
+
+Quick Start
+===========
+
+- Build the ARM Trusted firmware binary
+- Get scfw_tcm.bin and ahab-container.img
+- Build U-Boot
+- Flash the binary into the SD card
+- Boot
+
+Get and Build the ARM Trusted firmware
+======================================
+
+$ git clone https://github.com/nxp-imx/imx-atf
+$ cd imx-atf/
+$ git checkout origin/imx_4.14.78_1.0.0_ga -b imx_4.14.78_1.0.0_ga
+$ make PLAT=imx8qm bl31
+
+And copy the resulting bl31.bin to u-boot directory:
+
+$ cp build/imx8qm/release/bl31.bin path/to/u-boot/
+
+Get scfw_tcm.bin and ahab-container.img
+=======================================
+
+$ wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-sc-firmware-1.1.bin
+$ chmod +x imx-sc-firmware-1.1.bin
+$ ./imx-sc-firmware-1.1.bin
+$ wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.0.bin
+$ chmod +x firmware-imx-8.0.bin
+$ ./firmware-imx-8.0.bin
+
+
+And copy the following firmwares to U-Boot folder:
+
+* `imx-sc-firmware-1.1/mx8qm-mek-scfw-tcm.bin`
+* `firmware-imx-8.0/firmware/seco/mx8qm-ahab-container.img`
+
+Build U-Boot
+============
+$ make imx8qm_mek_defconfig
+$ make
+
+Flash the binary into the SD card
+=================================
+
+Burn the flash.bin binary to SD card offset 32KB:
+
+$ sudo dd if=flash.bin of=/dev/sd[x] bs=1024 seek=32
+
+Boot
+====
+Set Boot switch SW2: 001100.

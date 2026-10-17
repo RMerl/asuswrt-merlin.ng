@@ -45,19 +45,10 @@ typedef enum
     SFP_FIXED_PHY,
     SFP_NO_MODULE,
     SFP_GPON_MODULE,
-    SFP_AE_OPTICAL_MODULE,
-    SFP_AE_COPPER_MODULE,
-    SFP_DAC_CABLE,
+    SFP_AE_MODULE,
 } serdes_sfp_type_t;
-#define SFP_COPPER_MODULE_MAX_LENGTH_METER (100)
 
 enum SERDES_POWER_LEVEL {SERDES_POWER_DOWN, SERDES_POWER_UP};
-typedef enum {
-    LASER_FLOAT,
-    LASER_ON,
-    LASER_OFF,
-} laser_op_t;
-
 typedef struct {
     int current_long_timer;
     int speed_detect_interval;
@@ -97,7 +88,7 @@ typedef struct phy_serdes_s {
     int (*enable_multi_speed_an)(phy_dev_t *phy_dev);
     int (*light_detected)(phy_dev_t *phy_dev);
     int (*silent_start_light_detected)(phy_dev_t *phy_dev);   /* For PON/AE dual role device */
-    void (*lbe_op)(phy_dev_t *phy_dev, laser_op_t lbe_op);
+    int (*laser_op)(phy_dev_t *phy_dev, int enable);
     int flag;
         #define FORCE_SPEED_SET_ON_SIG  (1<<0)
         #define LANE_STRUCTURE          (1<<1)
@@ -111,28 +102,57 @@ typedef struct phy_serdes_s {
     int print_log;
     int apd_inited;
     int vco;
-    laser_op_t laser_status;
+    int laser_enable;
     int usxgmii_m_index;
     spd_dtc_tmr_t tmr;
     int adv_caps;
     int (*read_txfir_reg)(phy_dev_t *phy_dev, phy_txfir_t *txfir);
     int (*write_txfir_reg)(phy_dev_t *phy_dev, phy_txfir_t *txfir);
+    int (*txfir_cfg_get)(phy_dev_t *phy_dev, int8_t *pre, int8_t *main, int8_t *post1, int8_t *post2, int8_t *hpf);
+    int (*txfir_cfg_set)(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf);
 } phy_serdes_t;
 
-inline static int dsl_phy_tx_cfg_get(phy_dev_t *phy_dev, uint32_t *pre, uint32_t *main, uint32_t *post1, uint32_t *post2, uint32_t *hpf)
+enum {SERDES_VCO_NOT_SET, SERDES_VCO_9P375G, SERDES_VCO_10P3125G, SERDES_VCO_12P5G};
+
+inline static int dsl_serdes_txfir_get_u32(phy_dev_t *phy_dev, uint32_t *pre, uint32_t *main, uint32_t *post1, uint32_t *post2, uint32_t *hpf)
 {
     int8_t _pre, _main, _post1, _post2, _hpf;
     int rc;
+    phy_serdes_t *phy_serdes = phy_dev->priv;
 
-    if (!phy_dev->phy_drv->tx_cfg_get)
+    if (!phy_serdes->txfir_cfg_get)
         return -1;
 
-    rc = phy_dev_tx_cfg_get(phy_dev, &_pre, &_main, &_post1, &_post2, &_hpf);
+    rc = phy_serdes->txfir_cfg_get(phy_dev, &_pre, &_main, &_post1, &_post2, &_hpf);
     *pre = _pre;
     *main = _main;
     *post1 = _post1;
     *post2 = _post2;
     *hpf = _hpf;
+    return rc;
+}
+
+static inline int dsl_serdes_txfir_set(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf)
+{
+    phy_serdes_t *phy_serdes = phy_dev->priv;
+    int old_link = phy_dev->link;
+    int i, rc;
+
+    if (!phy_serdes->read_txfir_reg)
+        return 0;
+
+    rc = phy_serdes->txfir_cfg_set(phy_dev, pre, main, post1, post2, hpf);
+    if (old_link)
+    {
+        for (i=0; i<30; i++)
+        {
+            msleep(10);
+            phy_serdes->link_stats(phy_dev);
+            if (phy_dev->link)
+                break;
+        }
+    }
+
     return rc;
 }
 
@@ -152,6 +172,8 @@ static inline int dsl_write_txfir_reg(phy_dev_t *phy_dev, phy_txfir_t *txfir)
     return phy_serdes->write_txfir_reg(phy_dev, txfir);
 }
 
+int dsl_serdes_txfir_set_lock(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf);
+
 enum {NONSGMII_MODE, SGMII_AUTO, SGMII_FORCE};
 
 #define PHY_IS_SERDES(phy_dev) ( \
@@ -161,17 +183,22 @@ enum {NONSGMII_MODE, SGMII_AUTO, SGMII_FORCE};
     phy_dev->phy_drv->phy_type == PHY_TYPE_146CLASS_SERDES ))
 
 int dsl_serdes_priv_fun(phy_dev_t *phy_dev, int op_code, va_list ap);
-static inline void dsl_serdes_sfp_lbe_op(phy_dev_t *phy_dev,  laser_op_t lbe_op)
+
+static inline int dsl_serdes_sfp_laser_op(phy_dev_t *phy_dev,  int enable)
 {
+    int ret;
+
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
-    /* Only skip for laser off since power off can also change laser status */
-    if (phy_serdes->laser_status == LASER_OFF && lbe_op == LASER_OFF)
-        return ;
+    if (!phy_serdes->laser_op)
+        return -1;
 
-    if(phy_serdes->lbe_op)
-        (*phy_serdes->lbe_op)(phy_dev, lbe_op);
-    phy_serdes->laser_status = lbe_op;
+    if (phy_serdes->laser_enable == enable)
+        return 0;
+
+    ret = phy_serdes->laser_op(phy_dev, enable);
+    phy_serdes->laser_enable = enable;
+    return ret;
 }
 
 void phy_serdes_polarity_config(phy_dev_t *phy_dev);
@@ -230,6 +257,23 @@ static inline void phy_dsl_serdes_access_get_an_status(phy_dev_t *phy_dev)
     phy_dev->link = an_link_status;
 }
 
+static inline void phy_dsl_serdes_access_get_an_pause_resolution(phy_dev_t *phy_dev)
+{
+    if (!phy_dev->link)
+    {
+        phy_dev->pause_rx = phy_dev->pause_tx = 0;
+        return;
+    }
+
+    if (phy_dev->an_enabled && !INTER_PHY_IS_MULTI_SPEED_MS(phy_dev->current_inter_phy_type))
+        serdes_access_get_an_pause_resolution(phy_dev, &phy_dev->pause_rx, &phy_dev->pause_tx);
+    else
+    {
+        phy_dev->pause_tx = PhyIsPauseTxConfigEnabled(phy_dev)>0;
+        phy_dev->pause_rx = PhyIsPauseRxConfigEnabled(phy_dev)>0;
+    }
+}
+
 static inline void phy_dsl_serdes_access_get_speed(phy_dev_t *phy_dev)
 {
     int lane_index = phy_dev->lane_index;
@@ -276,7 +320,7 @@ int phy_drv_serdes_adjust_speed(phy_dev_t *phy_dev, phy_speed_t max_speed);
 int phy_i2c_module_detect(phy_dev_t *phy_dev);
 void phy_i2c_module_type_detect(phy_dev_t *phy_dev);
 int phy_dev_sltstt_get(phy_dev_t *phy_dev, int *mode);
-int phy_dev_sltstt_set(phy_dev_t *phy_dev, int mode);
+int phy_dev_sltstt_set_lock(phy_dev_t *phy_dev, int mode);
 int dsl_serdes_power_mode_get(phy_dev_t *phy_dev, int *mode);
 int dsl_serdes_power_mode_set(phy_dev_t *phy_dev, int mode);
 int dsl_serdes_apd_get(phy_dev_t *phy_dev, int *enable);
@@ -289,11 +333,14 @@ int phy_dsl_serdes_dt_priv(dt_handle_t handle, uint32_t addr, uint32_t phy_mode,
 int phy_dsl_serdes_dev_add_lock(phy_dev_t *phy_dev);
 char *dsl_serdes_get_phy_name(phy_dev_t *phy_dev);
 int dsl_serdes_check_power(phy_dev_t *phy_dev);
+int dsl_serdes_sfp_silent_start_light_detected(phy_dev_t *phy_dev);
 
 static inline int dsl_serdes_silent_start_supported(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = (phy_serdes_t *)phy_dev->priv;
-    return phy_serdes->silent_start_light_detected != 0;
+
+    return phy_serdes->silent_start_light_detected != 0 &&
+        (phy_serdes->silent_start_light_detected != dsl_serdes_sfp_silent_start_light_detected || dt_gpio_exists(phy_dev->gpiod_tx_disable));
 }
 
 static inline int dsl_serdes_is_silent_start_enabled(phy_dev_t *phy_dev)

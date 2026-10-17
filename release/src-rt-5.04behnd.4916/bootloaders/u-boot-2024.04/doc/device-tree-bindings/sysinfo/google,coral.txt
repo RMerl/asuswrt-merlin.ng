@@ -1,0 +1,37 @@
+Google Coral sysinfo information
+================================
+
+This binding allows information about the board to be described. It includes
+the SMBIOS binding as well.
+
+Required properties:
+
+  - compatible: "google,coral"
+  - recovery-gpios: GPIO to use for recovery button (-1 if none)
+  - wite-protect-gpios: GPIO to use for write-protect screw
+  - phase-enforce-gpios: GPIO to indicate the board is in final ship mode
+  - memconfig-gpios: 4 GPIOs to use to read memory config (as base2 int)
+
+Optional properties:
+  - skuconfig-gpios: 2 GPIOs to use to read SKU ID. If not present, the
+       Chromium OS EC SKU_ID is used instead
+
+Example:
+
+board: board {
+	compatible = "google,coral";
+	recovery-gpios = <&gpio_nw (-1) GPIO_ACTIVE_LOW>;
+	write-protect-gpios = <&gpio_nw GPIO_75 GPIO_ACTIVE_HIGH>;
+	phase-enforce-gpios = <&gpio_n GPIO_10 GPIO_ACTIVE_HIGH>;
+	memconfig-gpios = <&gpio_nw GPIO_101 GPIO_ACTIVE_HIGH
+		&gpio_nw GPIO_102 GPIO_ACTIVE_HIGH
+		&gpio_n GPIO_38 GPIO_ACTIVE_HIGH
+		&gpio_n GPIO_45 GPIO_ACTIVE_HIGH>;
+
+	/*
+	 * This is used for reef only:
+	 *
+	 * skuconfig-gpios = <&gpio_nw GPIO_16 GPIO_ACTIVE_HIGH
+	 *	&gpio_nw GPIO_17 GPIO_ACTIVE_HIGH>;
+	 */
+ };

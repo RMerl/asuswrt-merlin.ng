@@ -10,8 +10,8 @@ config BCM_PMC_IMPL
 	help
 	  Broadcom PMC driver implentation index. Index 2 for System Management Controller boot
 
-config BCM_PMC_AUX
-    bool "pmc aux functionality"
+config BCM_BSTORM
+    bool "pmc BStorm related functionality"
 
 config PMC_PCM_V1
 	bool "pmc pcm v1"

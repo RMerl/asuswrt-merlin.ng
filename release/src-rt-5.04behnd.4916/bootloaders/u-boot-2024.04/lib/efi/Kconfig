@@ -1,0 +1,74 @@
+config EFI
+	bool "Support running U-Boot from EFI"
+	depends on X86
+	imply X86_TSC_READ_BASE
+	help
+	  U-Boot can be started from EFI on certain platforms. This allows
+	  EFI to perform most of the system init and then jump to U-Boot for
+	  final system boot. Another option is to run U-Boot as an EFI
+	  application, with U-Boot using EFI's drivers instead of its own.
+
+choice
+	prompt "Select EFI mode to use"
+	depends on X86 && EFI
+
+config EFI_APP
+	bool "Support running as an EFI application"
+	select CHARSET
+	help
+	  Build U-Boot as an application which can be started from EFI. This
+	  is useful for examining a platform in the early stages of porting
+	  U-Boot to it. It allows only very basic functionality, such as a
+	  command prompt and memory and I/O functions. Use 'reset' to return
+	  to EFI.
+
+config EFI_STUB
+	bool "Support running as an EFI payload"
+
+endchoice
+
+choice
+	prompt "EFI app 32/64-bit selection"
+	depends on EFI_APP
+	help
+	  EFI does not support mixing 32-bit and 64-bit modes. This is a
+	  significant problem because it means that you must build a stub with
+	  the correct type for EFI to load it correctly. If you are using
+	  32-bit EFI, select 32-bit here, else select 64-bit. Failure to do
+	  this may produce no error message - it just won't start!
+
+config EFI_APP_32BIT
+	bool "Produce an app for running with 32-bit EFI"
+
+config EFI_APP_64BIT
+	bool "Produce an app for running with 64-bit EFI"
+
+endchoice
+
+choice
+	prompt "EFI stub 32/64-bit selection"
+	depends on EFI_STUB
+	help
+	  EFI does not support mixing 32-bit and 64-bit modes. This is a
+	  significant problem because it means that you must build a stub with
+	  the correct type for EFI to load it correctly. If you are using
+	  32-bit EFI, select 32-bit here, else select 64-bit. Failure to do
+	  this may produce no error message - it just won't start!
+
+config EFI_STUB_32BIT
+	bool "Produce a stub for running with 32-bit EFI"
+
+config EFI_STUB_64BIT
+	bool "Produce a stub for running with 64-bit EFI"
+
+endchoice
+
+config EFI_RAM_SIZE
+	hex "Amount of EFI RAM for U-Boot"
+	depends on EFI_APP
+	default 0x10000000
+	help
+	  Set the amount of EFI RAM which is claimed by U-Boot for its own
+	  use. U-Boot allocates this from EFI on start-up (along with a few
+	  other smaller amounts) and it can never be increased after that.
+	  It is used as the RAM size in with U-Boot.

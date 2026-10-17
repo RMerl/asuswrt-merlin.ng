@@ -1,0 +1,6 @@
+MT8183 Pumpkin
+M:	Fabien Parent <fparent@baylibre.com>
+S:	Maintained
+F:	board/mediatek/mt8183
+F:	include/configs/mt8183.h
+F:	configs/mt8183_pumpkin_defconfig

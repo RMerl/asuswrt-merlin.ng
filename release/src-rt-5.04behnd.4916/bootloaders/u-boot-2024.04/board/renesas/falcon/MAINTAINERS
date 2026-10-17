@@ -1,0 +1,7 @@
+FALCON BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a779a0*
+F:	board/renesas/falcon/
+F:	configs/r8a779a0_falcon_defconfig
+F:	include/configs/falcon.h

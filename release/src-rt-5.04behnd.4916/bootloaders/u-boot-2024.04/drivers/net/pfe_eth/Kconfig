@@ -1,0 +1,28 @@
+menuconfig FSL_PFE
+	bool "NXP PFE Ethernet driver"
+	help
+	  This driver provides support for NXP's Packet Forwarding Engine.
+
+if FSL_PFE
+
+config SYS_FSL_PFE_ADDR
+	hex "PFE base address"
+	default 0x04000000
+
+config SYS_FSL_PFE_SPI_BUS
+	int "Value of SPI flash bus for PFE firmware"
+	default SF_DEFAULT_BUS
+
+config SYS_FSL_PFE_SPI_CS
+	int "Value of SPI flash chip select for PFE firmware"
+	default SF_DEFAULT_CS
+
+config SYS_FSL_PFE_SPI_MAX_HZ
+	int "Value of SPI flash max frequency for PFE firmware"
+	default SF_DEFAULT_SPEED
+
+config SYS_FSL_PFE_SPI_MODE
+	hex "Value of SPI flash work mode for PFE firmware"
+	default SF_DEFAULT_MODE
+
+endif

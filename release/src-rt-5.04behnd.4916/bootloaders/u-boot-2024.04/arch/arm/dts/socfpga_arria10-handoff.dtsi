@@ -1,0 +1,290 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+
+/ {
+	clocks {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		bootph-all;
+
+		altera_arria10_hps_eosc1: altera_arria10_hps_eosc1 {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <EOSC1_CLK_HZ>;
+			clock-output-names = "altera_arria10_hps_eosc1-clk";
+			bootph-all;
+		};
+
+		altera_arria10_hps_cb_intosc_ls: altera_arria10_hps_cb_intosc_ls {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <CB_INTOSC_LS_CLK_HZ>;
+			clock-output-names = "altera_arria10_hps_cb_intosc_ls-clk";
+			bootph-all;
+		};
+
+		/* Clock source: altera_arria10_hps_f2h_free */
+		altera_arria10_hps_f2h_free: altera_arria10_hps_f2h_free {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <F2H_FREE_CLK_HZ>;
+			clock-output-names = "altera_arria10_hps_f2h_free-clk";
+			bootph-all;
+		};
+	};
+
+	clkmgr@0xffd04000 {
+		compatible = "altr,socfpga-a10-clk-init";
+		reg = <0xffd04000 0x00000200>;
+		reg-names = "soc_clock_manager_OCP_SLV";
+		bootph-all;
+
+		mainpll {
+			vco0-psrc = <MAINPLLGRP_VCO0_PSRC>;
+			vco1-denom = <MAINPLLGRP_VCO1_DENOM>;
+			vco1-numer = <MAINPLLGRP_VCO1_NUMER>;
+			mpuclk-cnt = <MAINPLLGRP_MPUCLK_CNT>;
+			mpuclk-src = <MAINPLLGRP_MPUCLK_SRC>;
+			nocclk-cnt = <MAINPLLGRP_NOCCLK_CNT>;
+			nocclk-src = <MAINPLLGRP_NOCCLK_SRC>;
+			cntr2clk-cnt = <MAINPLLGRP_CNTR2CLK_CNT>;
+			cntr3clk-cnt = <MAINPLLGRP_CNTR3CLK_CNT>;
+			cntr4clk-cnt = <MAINPLLGRP_CNTR4CLK_CNT>;
+			cntr5clk-cnt = <MAINPLLGRP_CNTR5CLK_CNT>;
+			cntr6clk-cnt = <MAINPLLGRP_CNTR6CLK_CNT>;
+			cntr7clk-cnt = <MAINPLLGRP_CNTR7CLK_CNT>;
+			cntr7clk-src = <MAINPLLGRP_CNTR7CLK_SRC>;
+			cntr8clk-cnt = <MAINPLLGRP_CNTR8CLK_CNT>;
+			cntr9clk-cnt = <MAINPLLGRP_CNTR9CLK_CNT>;
+			cntr9clk-src = <MAINPLLGRP_CNTR9CLK_SRC>;
+			cntr15clk-cnt = <MAINPLLGRP_CNTR15CLK_CNT>;
+			nocdiv-l4mainclk = <MAINPLLGRP_NOCDIV_L4MAINCLK>;
+			nocdiv-l4mpclk = <MAINPLLGRP_NOCDIV_L4MPCLK>;
+			nocdiv-l4spclk = <MAINPLLGRP_NOCDIV_L4SPCLK>;
+			nocdiv-csatclk = <MAINPLLGRP_NOCDIV_CSATCLK>;
+			nocdiv-cstraceclk = <MAINPLLGRP_NOCDIV_CSTRACECLK>;
+			nocdiv-cspdbgclk = <MAINPLLGRP_NOCDIV_CSPDBGCLK>;
+			bootph-all;
+		};
+
+		perpll {
+			vco0-psrc = <PERPLLGRP_VCO0_PSRC>;
+			vco1-denom = <PERPLLGRP_VCO1_DENOM>;
+			vco1-numer = <PERPLLGRP_VCO1_NUMER>;
+			cntr2clk-cnt = <PERPLLGRP_CNTR2CLK_CNT>;
+			cntr2clk-src = <PERPLLGRP_CNTR2CLK_SRC>;
+			cntr3clk-cnt = <PERPLLGRP_CNTR3CLK_CNT>;
+			cntr3clk-src = <PERPLLGRP_CNTR3CLK_SRC>;
+			cntr4clk-cnt = <PERPLLGRP_CNTR4CLK_CNT>;
+			cntr4clk-src = <PERPLLGRP_CNTR4CLK_SRC>;
+			cntr5clk-cnt = <PERPLLGRP_CNTR5CLK_CNT>;
+			cntr5clk-src = <PERPLLGRP_CNTR5CLK_SRC>;
+			cntr6clk-cnt = <PERPLLGRP_CNTR6CLK_CNT>;
+			cntr6clk-src = <PERPLLGRP_CNTR6CLK_SRC>;
+			cntr7clk-cnt = <PERPLLGRP_CNTR7CLK_CNT>;
+			cntr8clk-cnt = <PERPLLGRP_CNTR8CLK_CNT>;
+			cntr8clk-src = <PERPLLGRP_CNTR8CLK_SRC>;
+			cntr9clk-cnt = <PERPLLGRP_CNTR9CLK_CNT>;
+			emacctl-emac0sel = <PERPLLGRP_EMACCTL_EMAC0SEL>;
+			emacctl-emac1sel = <PERPLLGRP_EMACCTL_EMAC1SEL>;
+			emacctl-emac2sel = <PERPLLGRP_EMACCTL_EMAC2SEL>;
+			gpiodiv-gpiodbclk = <PERPLLGRP_GPIODIV_GPIODBCLK>;
+			bootph-all;
+		};
+
+		alteragrp {
+			nocclk = <ALTERAGRP_NOCCLK>;
+			mpuclk = <ALTERAGRP_MPUCLK>;
+			bootph-all;
+		};
+	};
+
+	i_io48_pin_mux: pinmux@0xffd07000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "pinctrl-single";
+		reg = <0xffd07000 0x00000800>;
+		reg-names = "soc_3v_io48_pin_mux_OCP_SLV";
+		bootph-all;
+
+		shared {
+			reg = <0xffd07000 0x00000200>;
+			pinctrl-single,register-width = <32>;
+			pinctrl-single,function-mask = <0x0000000f>;
+			pinctrl-single,pins =
+				<0x00000000 PINMUX_SHARED_IO_Q1_1_SEL>,
+				<0x00000004 PINMUX_SHARED_IO_Q1_2_SEL>,
+				<0x00000008 PINMUX_SHARED_IO_Q1_3_SEL>,
+				<0x0000000c PINMUX_SHARED_IO_Q1_4_SEL>,
+				<0x00000010 PINMUX_SHARED_IO_Q1_5_SEL>,
+				<0x00000014 PINMUX_SHARED_IO_Q1_6_SEL>,
+				<0x00000018 PINMUX_SHARED_IO_Q1_7_SEL>,
+				<0x0000001c PINMUX_SHARED_IO_Q1_8_SEL>,
+				<0x00000020 PINMUX_SHARED_IO_Q1_9_SEL>,
+				<0x00000024 PINMUX_SHARED_IO_Q1_10_SEL>,
+				<0x00000028 PINMUX_SHARED_IO_Q1_11_SEL>,
+				<0x0000002c PINMUX_SHARED_IO_Q1_12_SEL>,
+				<0x00000030 PINMUX_SHARED_IO_Q2_1_SEL>,
+				<0x00000034 PINMUX_SHARED_IO_Q2_2_SEL>,
+				<0x00000038 PINMUX_SHARED_IO_Q2_3_SEL>,
+				<0x0000003c PINMUX_SHARED_IO_Q2_4_SEL>,
+				<0x00000040 PINMUX_SHARED_IO_Q2_5_SEL>,
+				<0x00000044 PINMUX_SHARED_IO_Q2_6_SEL>,
+				<0x00000048 PINMUX_SHARED_IO_Q2_7_SEL>,
+				<0x0000004c PINMUX_SHARED_IO_Q2_8_SEL>,
+				<0x00000050 PINMUX_SHARED_IO_Q2_9_SEL>,
+				<0x00000054 PINMUX_SHARED_IO_Q2_10_SEL>,
+				<0x00000058 PINMUX_SHARED_IO_Q2_11_SEL>,
+				<0x0000005c PINMUX_SHARED_IO_Q2_12_SEL>,
+				<0x00000060 PINMUX_SHARED_IO_Q3_1_SEL>,
+				<0x00000064 PINMUX_SHARED_IO_Q3_2_SEL>,
+				<0x00000068 PINMUX_SHARED_IO_Q3_3_SEL>,
+				<0x0000006c PINMUX_SHARED_IO_Q3_4_SEL>,
+				<0x00000070 PINMUX_SHARED_IO_Q3_5_SEL>,
+				<0x00000074 PINMUX_SHARED_IO_Q3_6_SEL>,
+				<0x00000078 PINMUX_SHARED_IO_Q3_7_SEL>,
+				<0x0000007c PINMUX_SHARED_IO_Q3_8_SEL>,
+				<0x00000080 PINMUX_SHARED_IO_Q3_9_SEL>,
+				<0x00000084 PINMUX_SHARED_IO_Q3_10_SEL>,
+				<0x00000088 PINMUX_SHARED_IO_Q3_11_SEL>,
+				<0x0000008c PINMUX_SHARED_IO_Q3_12_SEL>,
+				<0x00000090 PINMUX_SHARED_IO_Q4_1_SEL>,
+				<0x00000094 PINMUX_SHARED_IO_Q4_2_SEL>,
+				<0x00000098 PINMUX_SHARED_IO_Q4_3_SEL>,
+				<0x0000009c PINMUX_SHARED_IO_Q4_4_SEL>,
+				<0x000000a0 PINMUX_SHARED_IO_Q4_5_SEL>,
+				<0x000000a4 PINMUX_SHARED_IO_Q4_6_SEL>,
+				<0x000000a8 PINMUX_SHARED_IO_Q4_7_SEL>,
+				<0x000000ac PINMUX_SHARED_IO_Q4_8_SEL>,
+				<0x000000b0 PINMUX_SHARED_IO_Q4_9_SEL>,
+				<0x000000b4 PINMUX_SHARED_IO_Q4_10_SEL>,
+				<0x000000b8 PINMUX_SHARED_IO_Q4_11_SEL>,
+				<0x000000bc PINMUX_SHARED_IO_Q4_12_SEL>;
+			bootph-all;
+		};
+
+		dedicated {
+			reg = <0xffd07200 0x00000200>;
+			pinctrl-single,register-width = <32>;
+			pinctrl-single,function-mask = <0x0000000f>;
+			pinctrl-single,pins =
+				<0x0000000c PINMUX_DEDICATED_IO_4_SEL>,
+				<0x00000010 PINMUX_DEDICATED_IO_5_SEL>,
+				<0x00000014 PINMUX_DEDICATED_IO_6_SEL>,
+				<0x00000018 PINMUX_DEDICATED_IO_7_SEL>,
+				<0x0000001c PINMUX_DEDICATED_IO_8_SEL>,
+				<0x00000020 PINMUX_DEDICATED_IO_9_SEL>,
+				<0x00000024 PINMUX_DEDICATED_IO_10_SEL>,
+				<0x00000028 PINMUX_DEDICATED_IO_11_SEL>,
+				<0x0000002c PINMUX_DEDICATED_IO_12_SEL>,
+				<0x00000030 PINMUX_DEDICATED_IO_13_SEL>,
+				<0x00000034 PINMUX_DEDICATED_IO_14_SEL>,
+				<0x00000038 PINMUX_DEDICATED_IO_15_SEL>,
+				<0x0000003c PINMUX_DEDICATED_IO_16_SEL>,
+				<0x00000040 PINMUX_DEDICATED_IO_17_SEL>;
+			bootph-all;
+		};
+
+		dedicated_cfg {
+			reg = <0xffd07200 0x00000200>;
+			pinctrl-single,register-width = <32>;
+			pinctrl-single,function-mask = <0x003f3f3f>;
+			pinctrl-single,pins =
+				<0x00000100 CONFIG_IO_BANK_VSEL>,
+				<0x00000104 CONFIG_IO_MACRO (CONFIG_IO_1)>,
+				<0x00000108 CONFIG_IO_MACRO (CONFIG_IO_2)>,
+				<0x0000010c CONFIG_IO_MACRO (CONFIG_IO_3)>,
+				<0x00000110 CONFIG_IO_MACRO (CONFIG_IO_4)>,
+				<0x00000114 CONFIG_IO_MACRO (CONFIG_IO_5)>,
+				<0x00000118 CONFIG_IO_MACRO (CONFIG_IO_6)>,
+				<0x0000011c CONFIG_IO_MACRO (CONFIG_IO_7)>,
+				<0x00000120 CONFIG_IO_MACRO (CONFIG_IO_8)>,
+				<0x00000124 CONFIG_IO_MACRO (CONFIG_IO_9)>,
+				<0x00000128 CONFIG_IO_MACRO (CONFIG_IO_10)>,
+				<0x0000012c CONFIG_IO_MACRO (CONFIG_IO_11)>,
+				<0x00000130 CONFIG_IO_MACRO (CONFIG_IO_12)>,
+				<0x00000134 CONFIG_IO_MACRO (CONFIG_IO_13)>,
+				<0x00000138 CONFIG_IO_MACRO (CONFIG_IO_14)>,
+				<0x0000013c CONFIG_IO_MACRO (CONFIG_IO_15)>,
+				<0x00000140 CONFIG_IO_MACRO (CONFIG_IO_16)>,
+				<0x00000144 CONFIG_IO_MACRO (CONFIG_IO_17)>;
+			bootph-all;
+		};
+
+		fpga {
+			reg = <0xffd07400 0x00000100>;
+			pinctrl-single,register-width = <32>;
+			pinctrl-single,function-mask = <0x00000001>;
+			pinctrl-single,pins =
+				<0x00000000 PINMUX_RGMII0_USEFPGA_SEL>,
+				<0x00000004 PINMUX_RGMII1_USEFPGA_SEL>,
+				<0x00000008 PINMUX_RGMII2_USEFPGA_SEL>,
+				<0x0000000c PINMUX_I2C0_USEFPGA_SEL>,
+				<0x00000010 PINMUX_I2C1_USEFPGA_SEL>,
+				<0x00000014 PINMUX_I2CEMAC0_USEFPGA_SEL>,
+				<0x00000018 PINMUX_I2CEMAC1_USEFPGA_SEL>,
+				<0x0000001c PINMUX_I2CEMAC2_USEFPGA_SEL>,
+				<0x00000020 PINMUX_NAND_USEFPGA_SEL>,
+				<0x00000024 PINMUX_QSPI_USEFPGA_SEL>,
+				<0x00000028 PINMUX_SDMMC_USEFPGA_SEL>,
+				<0x0000002c PINMUX_SPIM0_USEFPGA_SEL>,
+				<0x00000030 PINMUX_SPIM1_USEFPGA_SEL>,
+				<0x00000034 PINMUX_SPIS0_USEFPGA_SEL>,
+				<0x00000038 PINMUX_SPIS1_USEFPGA_SEL>,
+				<0x0000003c PINMUX_UART0_USEFPGA_SEL>,
+				<0x00000040 PINMUX_UART1_USEFPGA_SEL>;
+			bootph-all;
+		};
+	};
+
+	i_noc: noc@0xffd10000 {
+		compatible = "altr,socfpga-a10-noc";
+		reg = <0xffd10000 0x00008000>;
+		reg-names = "mpu_m0";
+		bootph-all;
+
+		firewall {
+			mpu0 = <0x00000000 0x0000ffff>;
+			l3-0 = <0x00000000 0x0000ffff>;
+			fpga2sdram0-0 = <0x00000000 0x0000ffff>;
+			fpga2sdram1-0 = <0x00000000 0x0000ffff>;
+			fpga2sdram2-0 = <0x00000000 0x0000ffff>;
+			bootph-all;
+		};
+	};
+
+	hps_fpgabridge0: fpgabridge@0 {
+		compatible = "altr,socfpga-hps2fpga-bridge";
+		init-val = <H2F_AXI_MASTER>;
+		bootph-all;
+	};
+
+	hps_fpgabridge1: fpgabridge@1 {
+		compatible = "altr,socfpga-lwhps2fpga-bridge";
+		init-val = <LWH2F_AXI_MASTER>;
+		bootph-all;
+	};
+
+	hps_fpgabridge2: fpgabridge@2 {
+		compatible = "altr,socfpga-fpga2hps-bridge";
+		init-val = <F2H_AXI_SLAVE>;
+		bootph-all;
+	};
+
+	hps_fpgabridge3: fpgabridge@3 {
+		compatible = "altr,socfpga-fpga2sdram0-bridge";
+		init-val = <F2SDRAM0_AXI_SLAVE>;
+		bootph-all;
+	};
+
+	hps_fpgabridge4: fpgabridge@4 {
+		compatible = "altr,socfpga-fpga2sdram1-bridge";
+		init-val = <F2SDRAM1_AXI_SLAVE>;
+		bootph-all;
+	};
+
+	hps_fpgabridge5: fpgabridge@5 {
+		compatible = "altr,socfpga-fpga2sdram2-bridge";
+		init-val = <F2SDRAM2_AXI_SLAVE>;
+		bootph-all;
+	};
+};

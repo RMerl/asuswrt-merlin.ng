@@ -1,0 +1,350 @@
+menu "Timer Support"
+
+config TIMER
+	bool "Enable driver model for timer drivers"
+	depends on DM
+	help
+	  Enable driver model for timer access. It uses the same API as
+	  lib/time.c, but now implemented by the uclass. The first timer
+	  will be used. The timer is usually a 32 bits free-running up
+	  counter. There may be no real tick, and no timer interrupt.
+
+config SPL_TIMER
+	bool "Enable driver model for timer drivers in SPL"
+	depends on TIMER && SPL
+	help
+	  Enable support for timer drivers in SPL. These can be used to get
+	  a timer value when in SPL, or perhaps for implementing a delay
+	  function. This enables the drivers in drivers/timer as part of an
+	  SPL build.
+
+config TPL_TIMER
+	bool "Enable driver model for timer drivers in TPL"
+	depends on TIMER && TPL
+	help
+	  Enable support for timer drivers in TPL. These can be used to get
+	  a timer value when in TPL, or perhaps for implementing a delay
+	  function. This enables the drivers in drivers/timer as part of an
+	  TPL build.
+
+config VPL_TIMER
+	bool "Enable driver model for timer drivers in VPL"
+	depends on TIMER && VPL
+	default y if TPL_TIMER
+	help
+	  Enable support for timer drivers in VPL. These can be used to get
+	  a timer value when in VPL, or perhaps for implementing a delay
+	  function. This enables the drivers in drivers/timer as part of an
+	  TPL build.
+
+config TIMER_EARLY
+	bool "Allow timer to be used early in U-Boot"
+	depends on TIMER
+	# initr_bootstage() requires a timer and is called before initr_dm()
+	# so only the early timer is available
+	default y if X86 && BOOTSTAGE
+	help
+	  In some cases the timer must be accessible before driver model is
+	  active. Examples include when using CONFIG_TRACE to trace U-Boot's
+	  execution before driver model is set up. Enable this option to
+	  use an early timer. These functions must be supported by your timer
+	  driver: timer_early_get_count() and timer_early_get_rate().
+
+config ALTERA_TIMER
+	bool "Altera timer support"
+	depends on TIMER
+	help
+	  Select this to enable a timer for Altera devices. Please find
+	  details on the "Embedded Peripherals IP User Guide" of Altera.
+
+config ANDES_PLMT_TIMER
+	bool
+	depends on RISCV_MMODE
+	help
+	  The Andes PLMT block holds memory-mapped mtime register
+	  associated with timer tick.
+
+config SPL_ANDES_PLMT_TIMER
+	bool
+	depends on SPL_RISCV_MMODE
+	help
+	  The Andes PLMT block holds memory-mapped mtime register
+	  associated with timer tick.
+
+config ARC_TIMER
+	bool "ARC timer support"
+	depends on TIMER && ARC && CLK
+	help
+	  Select this to enable built-in ARC timers.
+	  ARC cores may have up to 2 built-in timers: timer0 and timer1,
+	  usually at least one of them exists. Either of them is supported
+	  in U-Boot.
+
+config ARM_TWD_TIMER
+	bool "ARM timer watchdog (TWD) timer support"
+	depends on TIMER && CLK
+	help
+	  Select this to enable support for the ARM global timer watchdog timer.
+
+config AST_TIMER
+	bool "Aspeed ast2400/ast2500 timer support"
+	depends on TIMER
+	default y if ARCH_ASPEED
+	help
+	  Select this to enable timer for Aspeed ast2400/ast2500 devices.
+	  This is a simple sys timer driver, it is compatible with lib/time.c,
+	  but does not support any interrupts. Even though SoC has 8 hardware
+	  counters, they are all treated as a single device by this driver.
+	  This is mostly because they all share several registers which
+	  makes it difficult to completely separate them.
+
+config ATCPIT100_TIMER
+	bool "ATCPIT100 timer support"
+	depends on TIMER
+	help
+	  Select this to enable a ATCPIT100 timer which will be embedded
+	  in AE3XX, AE250 boards.
+
+config ATMEL_PIT_TIMER
+	bool "Atmel periodic interval timer support"
+	depends on TIMER
+	help
+	  Select this to enable a periodic interval timer for Atmel devices,
+	  it is designed to offer maximum accuracy and efficient management,
+	  even for systems with long response time.
+
+config SPL_ATMEL_PIT_TIMER
+	bool "Atmel periodic interval timer support in SPL"
+	depends on SPL_TIMER
+	help
+	  Select this to enable a periodic interval timer for Atmel devices,
+	  it is designed to offer maximum accuracy and efficient management,
+	  even for systems with long response time.
+	  Select this to be available in SPL.
+
+config ATMEL_TCB_TIMER
+	bool "Atmel timer counter support"
+	depends on TIMER
+	depends on ARCH_AT91
+	help
+	  Select this to enable the use of the timer counter as a monotonic
+	  counter.
+
+config SPL_ATMEL_TCB_TIMER
+	bool "Atmel timer counter support in SPL"
+	depends on SPL_TIMER
+	depends on ARCH_AT91
+	help
+	  Select this to enable the use of the timer counter as a monotonic
+	  counter in SPL.
+
+config CADENCE_TTC_TIMER
+	bool "Cadence TTC (Triple Timer Counter)"
+	depends on TIMER
+	help
+	  Enables support for the cadence ttc driver. This driver is present
+	  on Xilinx Zynq and ZynqMP SoCs.
+
+config DESIGNWARE_APB_TIMER
+	bool "Designware APB Timer"
+	depends on TIMER
+	help
+	  Enables support for the Designware APB Timer driver. This timer is
+	  present on Altera SoCFPGA SoCs.
+
+config FTTMR010_TIMER
+	bool "Faraday Technology timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for the timer found on
+	  devices using Faraday Technology's IP.
+
+config GXP_TIMER
+	bool "HPE GXP Timer"
+	depends on TIMER
+	help
+	  Enables support for the GXP Timer driver. This timer is
+	  present on HPE GXP SoCs.
+
+config MPC83XX_TIMER
+	bool "MPC83xx timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for the timer found on
+	  devices based on the MPC83xx family of SoCs.
+
+config RENESAS_OSTM_TIMER
+	bool "Renesas RZ/A1 R7S72100 OSTM Timer"
+	depends on TIMER
+	help
+	  Enables support for the Renesas OSTM Timer driver.
+	  This timer is present on Renesas RZ/A1 R7S72100 SoCs.
+
+config X86_TSC_TIMER_FREQ
+	int "x86 TSC timer frequency in Hz"
+	depends on X86_TSC_TIMER
+	default 1000000000
+	help
+	  Sets the estimated CPU frequency in Hz when TSC is used as the
+	  early timer and the frequency can neither be calibrated via some
+	  hardware ways, nor got from device tree at the time when device
+	  tree is not available yet.
+
+config NOMADIK_MTU_TIMER
+	bool "Nomadik MTU Timer"
+	depends on TIMER
+	help
+	  Enables support for the Nomadik Multi Timer Unit (MTU),
+	  used in ST-Ericsson Ux500 SoCs.
+	  The MTU provides 4 decrementing free-running timers.
+	  At the moment, only the first timer is used by the driver.
+
+config NPCM_TIMER
+	bool "Nuvoton NPCM timer support"
+	depends on TIMER
+	help
+	  Select this to enable a timer on Nuvoton NPCM SoCs.
+	  NPCM timer module has 5 down-counting timers, only the first timer
+	  is used to implement timer ops. No support for early timer and
+	  boot timer.
+
+config OMAP_TIMER
+	bool "Omap timer support"
+	depends on TIMER
+	help
+	  Select this to enable an timer for Omap devices.
+
+config ORION_TIMER
+	bool "Orion timer support"
+	depends on TIMER
+	default y if ARCH_KIRKWOOD || (ARCH_MVEBU && ARMADA_32BIT)
+	select TIMER_EARLY if ARCH_MVEBU
+	help
+	  Select this to enable an timer for Orion and Armada devices
+	  like Armada XP etc.
+
+config RISCV_TIMER
+	bool "RISC-V timer support"
+	depends on TIMER && RISCV
+	help
+	  Select this to enable support for a generic RISC-V S-Mode timer
+	  driver.
+
+config ROCKCHIP_TIMER
+	bool "Rockchip timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for the timer found on
+	  Rockchip devices.
+
+config SANDBOX_TIMER
+	bool "Sandbox timer support"
+	depends on SANDBOX && TIMER
+	help
+	  Select this to enable an emulated timer for sandbox. It gets
+	  time from host os.
+
+config ARM_GLOBAL_TIMER
+	bool "ARM Cortex A9 global timer support"
+	depends on TIMER
+	depends on ARM
+	default y if ARCH_STI
+	help
+	  Select this to enable global timer found on ARM Cortex A9
+	  based devices.
+
+config SP804_TIMER
+	bool "ARM SP804 timer support"
+	depends on TIMER
+	help
+	  ARM SP804 dual timer IP support
+
+config STM32_TIMER
+	bool "STM32 timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for the timer found on
+	  STM32 devices.
+
+config TEGRA_TIMER
+	bool "Tegra timer support"
+	depends on TIMER
+	select TIMER_EARLY
+	help
+	  Select this to enable support for the timer found on
+	  Tegra devices.
+
+config X86_TSC_TIMER
+	bool "x86 Time-Stamp Counter (TSC) timer support"
+	depends on TIMER && X86
+	help
+	  Select this to enable Time-Stamp Counter (TSC) timer for x86.
+
+config X86_TSC_READ_BASE
+	bool "Read the TSC timer base on start-up"
+	depends on X86_TSC_TIMER
+	help
+	  On x86 platforms the TSC timer tick starts at the value 0 on reset.
+	  This it makes no sense to read the timer on boot and use that as the
+	  base, since we will miss some time taken to load U-Boot, etc. This
+	  delay is controlled by the SoC and we cannot reduce it, but for
+	  bootstage we want to record the time since reset as accurately as
+	  possible.
+
+	  The only exception is when U-Boot is used as a secondary bootloader,
+	  where this option should be enabled.
+
+config TPL_X86_TSC_TIMER_NATIVE
+	bool "x86 TSC timer uses native calibration"
+	depends on TPL && X86_TSC_TIMER
+	help
+	  Selects native timer calibration for TPL and don't include the other
+	  methods in the code. This helps to reduce code size in TPL and works
+	  on fairly modern Intel chips. Code-size reductions is about 700
+	  bytes.
+
+config MTK_TIMER
+	bool "MediaTek timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for the timer found on
+	  MediaTek devices.
+
+config MCHP_PIT64B_TIMER
+	bool "Microchip 64-bit periodic interval timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for Microchip 64-bit periodic
+	  interval timer.
+
+config IMX_GPT_TIMER
+	bool "NXP i.MX GPT timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for the timer found on
+	  NXP i.MX devices.
+
+config XILINX_TIMER
+	bool "Xilinx timer support"
+	depends on TIMER
+	select REGMAP
+	select SPL_REGMAP if SPL
+	help
+	  Select this to enable support for the timer found on
+	  any Xilinx boards (axi timer).
+
+config STARFIVE_TIMER
+	bool "Starfive timer support"
+	depends on TIMER
+	help
+	  Select this to enable support for the timer found on
+	  Starfive SoC.
+
+config BCM6XXX_TIMER
+	bool "Broadcom 6XXX SoC timer support"
+	depends on TIMER
+	help
+	  Select this to enable peripheral timer support for Broadcom
+	  6XXX SoC devices
+
+endmenu

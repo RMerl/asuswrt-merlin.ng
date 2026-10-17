@@ -38,7 +38,8 @@
 #include "port.h"
 #include "enet.h"
 #include <rdpa_api.h>
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912)  || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
+    defined(CONFIG_BCM96888)  || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM968375)
 #include <bcm/bcmswapitypes.h>
 #endif
 extern int configure_bc_rate_limit_meter(void *enet_priv, unsigned int rate_limit);
@@ -68,7 +69,8 @@ static inline bdmf_object_handle _port_rdpa_object_by_port(enetx_port_t *port)
 #define BCM_ENET_OVERHEAD   (BCM_ENET_CRC_LEN + BCM_ENET_IFG) /* bytes */
 #endif
 
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
+    defined(CONFIG_BCM96837) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM968375)
 int _runner_rdpa_dos_ctrl(struct ethswctl_data *e);
 #endif
 

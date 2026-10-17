@@ -102,8 +102,13 @@
 #define wrv_usr_diag_wr_ptr(wr_val)                                  merlin16_shortfin_wrbl_uc_var(sa__,0x1c,wr_val)
 #define rdv_usr_ctrl_cl72_frc_byte()                                 merlin16_shortfin_rdbl_uc_var(sa__,__ERR,0x1d)
 #define wrv_usr_ctrl_cl72_frc_byte(wr_val)                           merlin16_shortfin_wrbl_uc_var(sa__,0x1d,wr_val)
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+#define rdv_status_byte()                                            merlin16_shortfin_rdbl_uc_var(sa__,__ERR,0x1e)
+#define wrv_status_byte(wr_val)                                      merlin16_shortfin_wrbl_uc_var(sa__,0x1e,wr_val)
+#else
 #define rdv_status_byte()                                            merlin16_shortfin_rdbl_uc_var(sa__,__ERR,0x47)
 #define wrv_status_byte(wr_val)                                      merlin16_shortfin_wrbl_uc_var(sa__,0x47,wr_val)
+#endif
 
 /* RAM access functions for core_var_struct variables */
 #define rdcv_config_word()                                           merlin16_shortfin_rdwc_uc_var(sa__,__ERR,0x0)

@@ -1,0 +1,9 @@
+STM32MP2 BOARD
+M:	Patrice Chotard <patrice.chotard@st.com>
+M:	Patrick Delaunay <patrick.delaunay@st.com>
+L:	uboot-stm32@st-md-mailman.stormreply.com (moderated for non-subscribers)
+S:	Maintained
+F:	arch/arm/dts/stm32mp25*
+F:	board/st/stm32mp2/
+F:	configs/stm32mp25_defconfig
+F:	include/configs/stm32mp25_common.h

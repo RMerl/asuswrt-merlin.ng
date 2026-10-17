@@ -1,0 +1,9 @@
+TECHNEXION PICO-IMX6 BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx6qdl-pico.dtsi
+F:	arch/arm/dts/imx6q-pico.dts
+F:	arch/arm/dts/imx6dl-pico.dts
+F:	board/technexion/pico-imx6/
+F:	include/configs/pico-imx6.h
+F:	configs/pico-imx6_defconfig

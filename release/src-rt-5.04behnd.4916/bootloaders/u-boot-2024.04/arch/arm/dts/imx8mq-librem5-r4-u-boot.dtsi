@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+
+#include "imx8mq-u-boot.dtsi"
+
+&pinctrl_uart1 {
+	bootph-pre-ram;
+};
+
+&uart1 { /* console */
+	bootph-pre-ram;
+};
+
+&binman {
+	/delete-node/ signed-hdmi;
+
+	signed-hdmi {
+		filename = "signed_hdmi.bin";
+
+		signed-dp-imx8m {
+			filename = "signed_dp_imx8m.bin";
+			type = "blob-ext";
+		};
+	};
+};

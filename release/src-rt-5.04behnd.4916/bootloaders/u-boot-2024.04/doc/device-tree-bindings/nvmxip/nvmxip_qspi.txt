@@ -1,0 +1,56 @@
+Specifying NVMXIP information for devices
+======================================
+
+QSPI XIP flash device nodes
+---------------------------
+
+Each flash device should have its own node.
+
+Each node must specify the following fields:
+
+1)
+		compatible = "nvmxip,qspi";
+
+This allows to bind the flash device with the nvmxip_qspi driver
+If a platform has its own driver, please provide your own compatible
+string.
+
+2)
+		reg = /bits/ 64 <0x08000000 0x00200000>;
+
+The start address and size of the flash device. The values give here are an
+example (when the cell size is 2).
+
+When cell size is 1, the reg field looks like this:
+
+		reg = <0x08000000 0x00200000>;
+
+3)
+
+		lba_shift = <9>;
+
+The number of bit shifts used to calculate the size in bytes of one block.
+In this example the block size is 1 << 9 = 2 ^ 9 = 512 bytes
+
+4)
+
+		lba = <4096>;
+
+The number of blocks.
+
+Example of multiple flash devices
+----------------------------------------------------
+
+	nvmxip-qspi1@08000000 {
+		compatible = "nvmxip,qspi";
+		reg = /bits/ 64 <0x08000000 0x00200000>;
+		lba_shift = <9>;
+		lba = <4096>;
+	};
+
+	nvmxip-qspi2@08200000 {
+		compatible = "nvmxip,qspi";
+		reg = /bits/ 64 <0x08200000 0x00100000>;
+		lba_shift = <9>;
+		lba = <2048>;
+	};

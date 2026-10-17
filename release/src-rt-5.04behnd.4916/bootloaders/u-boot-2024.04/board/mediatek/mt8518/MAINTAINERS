@@ -1,0 +1,6 @@
+MT8518
+M:	Mingming lee <mingming.lee@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt8518
+F:	include/configs/mt8518.h
+F:	configs/mt8518_ap1_emmc_defconfig

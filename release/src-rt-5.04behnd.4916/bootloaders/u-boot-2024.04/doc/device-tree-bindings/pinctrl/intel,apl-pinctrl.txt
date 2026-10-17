@@ -1,0 +1,39 @@
+* Intel Apollo Lake pin controller
+
+The Apollo Lake (APL) pin controller is used to select the function of a pin
+and to configure it.
+
+Required properties:
+- compatible: "intel,apl-pinctrl"
+- intel,p2sb-port-id: Port ID number within the parent P2SB
+- reg: PCI address of the controller
+
+Please refer to pinctrl-bindings.txt in this directory for details of the
+common pinctrl bindings used by client devices.
+
+Optional subnodes:
+
+GPIO nodes may be added as children of the pinctrl nodes. See intel,apl-gpio
+for the binding.
+
+
+Example:
+
+...
+{
+	p2sb: p2sb@d,0 {
+		reg = <0x02006810 0 0 0 0>;
+		compatible = "intel,p2sb";
+		early-regs = <IOMAP_P2SB_BAR 0x100000>;
+
+		n {
+			compatible = "intel,apl-pinctrl";
+			intel,p2sb-port-id = <PID_GPIO_N>;
+			gpio_n: gpio-n {
+				compatible = "intel,apl-gpio";
+				#gpio-cells = <2>;
+			};
+		};
+	};
+};
+...

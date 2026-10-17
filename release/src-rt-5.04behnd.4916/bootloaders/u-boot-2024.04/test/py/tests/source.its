@@ -1,0 +1,43 @@
+/dts-v1/;
+
+/ {
+    description = "FIT image to test the source command";
+    #address-cells = <1>;
+
+    images {
+        default = "script-1";
+
+        script-1 {
+            data = "echo 1";
+            type = "script";
+            arch = "sandbox";
+            compression = "none";
+        };
+
+        script-2 {
+            data = "echo 2";
+            type = "script";
+            arch = "sandbox";
+            compression = "none";
+        };
+
+        not-a-script {
+            data = "echo 3";
+            type = "kernel";
+            arch = "sandbox";
+            compression = "none";
+        };
+    };
+
+    configurations {
+        default = "conf-2";
+
+        conf-1 {
+            script = "script-1";
+        };
+
+        conf-2 {
+            script = "script-2";
+        };
+    };
+};

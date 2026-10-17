@@ -1,0 +1,34 @@
+if TARGET_PUMA_RK3399
+
+config SYS_BOARD
+	default "puma_rk3399"
+
+config SYS_VENDOR
+	default "theobroma-systems"
+
+config SYS_CONFIG_NAME
+	default "puma_rk3399"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ENV_IS_NOWHERE
+
+config ENV_SIZE
+	default 0x4000
+
+choice
+	prompt "Theobroma Systems RK3399-Q7 DDR Option"
+	default TARGET_PUMA_RK3399_RAM_DDR3_1333
+
+config TARGET_PUMA_RK3399_RAM_DDR3_1333
+	bool "DDR3-1333MHz"
+
+config TARGET_PUMA_RK3399_RAM_DDR3_1600
+	bool "DDR3-1600MHz"
+
+config TARGET_PUMA_RK3399_RAM_DDR3_1866
+	bool "DDR3-1866MHz"
+
+endchoice
+
+endif

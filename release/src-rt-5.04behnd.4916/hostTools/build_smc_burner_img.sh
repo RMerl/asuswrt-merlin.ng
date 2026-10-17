@@ -5,6 +5,7 @@ help () {
     echo "            -p          profile name as it is in make PROFILE parameter"
     echo "            -f          flash type: emmc, nand128 or nand256"
     echo "            -e          uboot env source file"
+    echo "            -E          create encrypted LUNs"
     echo "            -r          ext4 or squashfs, in case of NAND could be omitted to produce bootstrap image without FS"
     echo "            -b          board id to be added to environment, optional"
     echo "            -v          explain what is being done"
@@ -35,7 +36,14 @@ fdump () {
         padcount=$((padsize - filesize))
         < /dev/zero tr '\000' '\377' | head -c "$padcount" 1>> $output
     fi
+    if [ "$verbose" != "" ]; then
+        x=$( printf "%06x" $(stat -c "%s" $output) )
+        y=$( printf "%06x" $current )
+        echo "$output size after adding $2: 0x$x cur=0x$y" 
+    fi
 }
+
+encrypted=""
 
 create_ini () {
 cat <<EOF > $profile/bcm${profile}_dyn_burn.ini
@@ -43,14 +51,16 @@ cat <<EOF > $profile/bcm${profile}_dyn_burn.ini
 image=$profile/bcm${profile}_uboot_linux.itb
 lun_id=3
 lun_name=bootfs1
+${encrypted}
 [04-lun]
 image=$rootfs
 lun_id=4
 lun_name=rootfs1
+${encrypted}
 EOF
 }
 
-while getopts "hvp:f:e:b:r:" options; do
+while getopts "hvEp:f:e:b:r:" options; do
     case "${options}" in
         p)
             profile=${OPTARG}
@@ -60,6 +70,9 @@ while getopts "hvp:f:e:b:r:" options; do
             ;;
         e)
             env=${OPTARG}
+            ;;
+        E)
+            encrypted="encrypted=yes"
             ;;
         b)
             bid=${OPTARG}
@@ -80,6 +93,8 @@ cd `dirname -- "$0"`/../targets
 
 if [[ $profile == *"68880"* ]]; then
     chip=68880B0
+elif [[ $profile == *"68375"* ]]; then
+    chip=68375A0
 elif [[ $profile == *"6837"* ]]; then
     chip=6837A0
 else

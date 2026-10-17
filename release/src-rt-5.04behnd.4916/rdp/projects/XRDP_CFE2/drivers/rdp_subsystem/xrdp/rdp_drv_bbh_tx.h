@@ -181,7 +181,7 @@ typedef struct
     queue_to_rnr_t *queue_profile;
     queue_to_rnr_t *qm_q;
 #endif
-    pd_fifo_base_t *pd_fifo_base; /*not used in 6878 but here to reduce ifdefs when configure it */
+    pd_fifo_base_t *pd_fifo_base;
 
     pd_fifo_size_t *pd_fifo_size;
     pd_fifo_base_t *fe_fifo_base;

@@ -1,6 +1,0 @@
-OMAP5_UEVM BOARD
-M:	Lokesh Vutla <lokeshvutla@ti.com>
-S:	Maintained
-F:	board/ti/omap5_uevm/
-F:	include/configs/omap5_uevm.h
-F:	configs/omap5_uevm_defconfig

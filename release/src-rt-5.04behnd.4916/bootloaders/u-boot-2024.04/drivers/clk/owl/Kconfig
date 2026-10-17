@@ -1,0 +1,8 @@
+config CLK_OWL
+        bool "Actions Semi OWL clock drivers"
+        depends on CLK && ARCH_OWL
+        help
+          Enable support for clock managemet unit present in Actions Semi
+	  Owl series S900/S700 SoCs.
+
+

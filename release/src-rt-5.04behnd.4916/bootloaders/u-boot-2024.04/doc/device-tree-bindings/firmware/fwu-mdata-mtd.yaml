@@ -1,0 +1,115 @@
+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/firmware/u-boot,fwu-mdata-mtd.yaml#
+$schema: http://devicetree.org/meta-schemas/base.yaml#
+
+title: FWU metadata on MTD device without GPT
+
+maintainers:
+ - Jassi Brar <jaswinder.singh@linaro.org>
+
+properties:
+  compatible:
+    items:
+      - const: u-boot,fwu-mdata-mtd
+
+  fwu-mdata-store:
+    $ref: /schemas/types.yaml#/definitions/phandle
+    description: Phandle of the MTD device which contains the FWU MetaData and Banks.
+
+  mdata-parts:
+    $ref: /schemas/types.yaml#/definitions/non-unique-string-array
+    minItems: 2
+    maxItems: 2
+    description: labels of the primary and secondary FWU metadata partitions in the 'fixed-partitions' subnode of the 'jedec,spi-nor' flash device node.
+
+  patternProperties:
+    "fwu-bank[0-9]":
+    type: object
+    description: List of FWU mtd-backed banks. Typically two banks.
+
+    properties:
+      id:
+        $ref: /schemas/types.yaml#/definitions/uint32
+        description: Index of the bank.
+
+      label:
+        $ref: /schemas/types.yaml#/definitions/non-unique-string-array
+        minItems: 1
+        maxItems: 1
+        description: label of the partition, in the 'fixed-partitions' subnode of the 'jedec,spi-nor' flash device node, that holds this bank.
+
+      patternProperties:
+        "fwu-image[0-9]":
+        type: object
+        description: List of images in the FWU mtd-backed bank.
+
+        properties:
+          id:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Index of the bank.
+
+          offset:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Offset, from start of the bank, where the image is located.
+
+          size:
+            $ref: /schemas/types.yaml#/definitions/uint32
+            description: Size reserved for the image.
+
+          uuid:
+            $ref: /schemas/types.yaml#/definitions/non-unique-string-array
+            minItems: 1
+            maxItems: 1
+            description: UUID of the image.
+
+        required:
+          - id
+          - offset
+          - size
+          - uuid
+        additionalProperties: false
+
+    required:
+      - id
+      - label
+      - fwu-images
+    additionalProperties: false
+
+required:
+  - compatible
+  - fwu-mdata-store
+  - mdata-parts
+  - fwu-banks
+additionalProperties: false
+
+examples:
+  - |
+	fwu-mdata {
+		compatible = "u-boot,fwu-mdata-mtd";
+		fwu-mdata-store = <&flash0>;
+		mdata-parts = "MDATA-Pri", "MDATA-Sec";
+
+		fwu-bank0 {
+			id = <0>;
+			label = "FIP-Bank0";
+			fwu-image0 {
+				id = <0>;
+				offset = <0x0>;
+				size = <0x400000>;
+				uuid = "5a66a702-99fd-4fef-a392-c26e261a2828";
+			};
+		};
+		fwu-bank1 {
+			id = <1>;
+			label = "FIP-Bank1";
+			fwu-image0 {
+				id = <0>;
+				offset = <0x0>;
+				size = <0x400000>;
+				uuid = "a8f868a1-6e5c-4757-878d-ce63375ef2c0";
+			};
+		};
+	};
+...

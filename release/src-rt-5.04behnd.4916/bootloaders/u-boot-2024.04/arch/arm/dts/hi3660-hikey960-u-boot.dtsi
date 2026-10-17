@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright (c) 2019 Linaro Ltd.
+ */
+
+&dwmmc1 {
+	bootph-all;
+};

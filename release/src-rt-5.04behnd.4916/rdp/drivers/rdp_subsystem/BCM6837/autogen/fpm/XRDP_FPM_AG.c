@@ -6392,6 +6392,9 @@ static const ru_reg_rec *FPM_REGS[] =
 const ru_block_rec FPM_BLOCK =
 {
     "FPM",
+#if RU_INCLUDE_SIZE
+    { 0x000E003C },
+#endif
     FPM_ADDRS,
     1,
     58,

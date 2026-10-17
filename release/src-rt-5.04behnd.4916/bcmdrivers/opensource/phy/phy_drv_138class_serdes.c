@@ -56,13 +56,6 @@
 
 static void __iomem *serdes_base;
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-#define SGMII_FIBER_DETECT             ((volatile uint32_t *)sgmii_fiber_detect)
-    #define MISC_SGMII_FIBER_GPIO36     1
-
-static void __iomem *sgmii_fiber_detect;
-#endif
-
 static int serdes_probe(dt_device_t *pdev)
 {
     int ret;
@@ -75,17 +68,6 @@ static int serdes_probe(dt_device_t *pdev)
         dev_err(&pdev->dev, "Missing serdes_base entry\n");
         goto Exit;
     }
-
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    sgmii_fiber_detect = dt_dev_remap(pdev, 1);
-    if (IS_ERR(sgmii_fiber_detect))
-    {
-        ret = PTR_ERR(sgmii_fiber_detect);
-        sgmii_fiber_detect = NULL;
-        dev_err(&pdev->dev, "Missing SGMII fiber detect entry\n");
-        goto Exit;
-    }
-#endif
 
     dev_dbg(&pdev->dev, "serdes_base=0x%p\n", serdes_base);
     dev_info(&pdev->dev, "registered\n");
@@ -455,13 +437,6 @@ int phy_drv_serdes_138class_init_lock(phy_dev_t *phy_dev)
 #endif
 
     phy_dsl_serdes_init(phy_dev);
-
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    if (phy_serdes->signal_detect_gpio == 36)
-        *SGMII_FIBER_DETECT = MISC_SGMII_FIBER_GPIO36;
-    else
-        *SGMII_FIBER_DETECT = 0;
-#endif
 
     /* Power Reset to make things clean */
     dsl_powerdown_serdes(phy_dev);

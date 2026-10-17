@@ -1,0 +1,6 @@
+VISIONSOM-6ULL BOARD
+M:	Arkadiusz Karas <arkadiusz.karas@somlabs.com>
+S:	Maintained
+F:	board/somlabs/visionsom-6ull/
+F:	include/configs/somlabs_visionsom_6ull.h
+F:	configs/somlabs_visionsom_6ull_defconfig

@@ -1,0 +1,14 @@
+config BCM_SCORE
+	tristate "Statistics Collection Offload Reporting Engine"
+	depends on NF_CONNTRACK
+	depends on BCM968880 || BCM94912 || BCM96756 || BCM96765 || BCM96766 || BCM96764 || BCM96764L || BCM963146 || BCM96813  || BCM96837 || BCM96858 ||  BCM96856 ||  BCM96855 ||  BCM963158 || BCM968375
+
+config BCM_SCORE_IMPL
+	int "SCORE Implementation Selection"
+	depends on BCM_SCORE
+	default 1
+
+config BCM_SCORE_LOAD
+	tristate "Autoload score driver"
+	depends on BCM_SCORE
+	default n

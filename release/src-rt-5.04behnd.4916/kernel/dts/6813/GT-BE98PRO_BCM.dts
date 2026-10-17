@@ -32,7 +32,7 @@
 
 &nand {
 	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_25>;
-	write-protect = <1>;
+	/delete-property/ brcm,wp-not-connected;
 	status = "okay";
 };
 

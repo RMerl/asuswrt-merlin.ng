@@ -12,8 +12,7 @@ DESKTOP_LINUX
 # Help text goes here
 END
 
-BRCM_ROOTFS_SQUASHFS
-BRCM_ROOTFS_JFFS2
+BRCM_FLASH_NOR_ROOTFS_SQUASHFS
 BRCM_ROOTFS_NFS
 # Help text goes here
 END
@@ -80,18 +79,16 @@ BUILD_BRCM_BDK
    Additional software items, such as Wifi, can be enabled as long as they do
    not depend on CMS.
 
-   CMS: The standard Configuration Management System that has been used
-   in Broadcom SDK's since 4.02L.01.
+   CMS: This is a legacy and deprecated management system and is only supported
+   for specific customers in limited configurations.  Only TR98 and TR98 Hybrid
+   data models (not TR181) are supported in CMS.
 
-   BDK: A new Advanced Gateway Platform which was introduced starting
-   in 5.04L.01.  When you choose this option, many sub-options
-   such as OPENPLAT, D-BUS, LXC, Distributed MDM, TR-181 will also be enabled.
+   BDK: This is the main supported management system.  Most customers should use
+   choose this option.  BDK uses the TR181 data model.
 END
 
 BUILD_DM_LEGACY98
 BUILD_DM_HYBRID
-BUILD_DM_PURE181
-BUILD_DM_DETECT
    TR98: use TR98 and Broadcom proprietary extensions.  Specifically,
    do not include any objects from TR181.  Root of Data Model is
    InternetGatewayDevice.
@@ -102,11 +99,6 @@ BUILD_DM_DETECT
    Data Model is InternetGatewayDevice.
 
    Pure181: Use TR181 (do not use TR98).  Root of Data Model is Device.
-
-   DM_Detect: compile both TR98 and TR181 objects.  Early in system bootup,
-   use some external method to determine which data model the CPE should use,
-   and use that data model.  Note that although both data models are compiled,
-   only one of them is usable and active at runtime.
 END
 
 BUILD_RDK_HAL_HEADERS
@@ -148,13 +140,9 @@ CONSOLE_SHELL_BUSYBOX
 END
 
 BUILD_SYSV_INIT
-BUILD_SYSTEMD
-   SYSV init is the current and stable way to run scripts and launch apps
+   SYSV init is the only supported way to run scripts and launch apps
    during userspace startup.  SYSV init uses bcm_boot_launcher and scripts in
    /etc/rc3.d.
-
-   systemd is a new way to initialize userspace.  It is under development so
-   it should only be used by Broadcom developers.
 END
 
 RDK_BUILD
@@ -372,6 +360,14 @@ BRCM_DRIVER_SPDTEST
    Support Broadcom TCP/UDP Speed Test Offload
 END
 
+BRCM_DRIVER_SCORE
+   Support Broadcom Selective Collection Oflload Report Engine
+END
+
+BRCM_DRIVER_TC
+   Support TC offload for Runner
+END
+
 BUILD_DISABLE_PINMUXTEST
    Disable building pinmux test
 
@@ -468,6 +464,10 @@ BRCM_VOICE_APP_EPTAPP
    Support DSP Endpoint application
 END
 
+BRCM_VOICE_EPTCLI
+   Support Endpoint console
+END
+
 BUILD_DM_TR104_V1
 BUILD_DM_TR104_V2
    Support TR104 data model
@@ -481,10 +481,6 @@ BRCM_VOICE_ANNOUNCEMENT
    Support Voice Announcement for endpoint application
 END
 
-BRCM_VOICE_DECT_SUPPORT
-   Support DECT
-END
-
 BRCM_VOICE_HALCAP_NETWORK_SUPPORT
    Support HAL Capture Network
 END
@@ -495,6 +491,10 @@ END
 
 BRCM_VOICE_SRTP_SUPPORT
    Support SRTP
+END
+
+BRCM_VOICE_SQM
+   Support Smart Voice Quality Monitoring
 END
 
 BUILD_L2TPAC
@@ -738,13 +738,6 @@ BRCM_BPM_BULK_FREE
    This option recycles list of skbs directly into BPM bypassing the linux stack.
 END
 
-BUILD_PMD
-  Build the userspace private PMD library.
-  The PMD library provides APIs to handle the calibration parameters.
-  It supports both JSON text calibration files and legacy binary calibration files.
-  It is enabled for all the platforms which may have a Physical Media Dependent (PMD) device.
-END
-
 BUILD_TMCTL
   Traffic Management Control Utility (TMCTL)
   TMCTL provide platform independent traffic management API and CLI.
@@ -854,10 +847,6 @@ BCM_FLASH_LAYOUT_OPTIONS
   environments is controlled by one or more options files. To list multiple files use a comma as a delimiter.
 END
 
-BUILD_DUMP1KNVRAM
-  (temporary) Include a utility to dump the legacy NVRAM in hex
-END
-
 BCM_BLD_LOADER_SRC
 BCM_BLD_LOADER_BIN
 BCM_BLD_LOADER_NONE
@@ -887,12 +876,20 @@ MDM_LOCK_TRACING
   Enable MDM lock tracing.  See comments in cms_lck.h for details.
 END
 
+BUILD_CUTEST
+  Build the C unittest framework library and all c unittest apps.
+END
+
 BUILD_KASAN
   Enable KASAN in the kernel to debug memory issues.
 END
 
 BUILD_ASAN
   Enable ASAN in the userspace apps to debug memory issues.
+END
+
+BUILD_KFENCE
+  Enable KFENCE in the kernel to debug memory issues(low-overhead)
 END
 
 BUILD_UBSAN
@@ -911,6 +908,10 @@ BRCM_KERNEL_LPAE
   Enable ARMv7 LPAE support for 4GB or more DDR. It is possible to enable
   this feature on any v7 chip but only some v7 chips support 4GB DDR so only
   these chips are allowed to enable this feature.
+END
+
+BRCM_ARMTF_HW_RNG_ACCESS
+  Allows ARMTF to provide RNG access to u-boot, Linux and OPTEE
 END
 
 BRCM_BUILD_DATA_TRANSITION_TOOL
@@ -993,6 +994,9 @@ BUILD_BCM_WLMLO
 BUILD_BCM_WLAUX
     If enabled, Build WLAN AUX core module
 
+BUILD_BCM_DHD_OFFLOAD
+    If enabled, Build Common DHD offload (DoL) for Runner/Archer/Crossbow
+
 BRCM_VOICE_DSP_PROFILER
     (Broadcom internal use only) If enabled, build LDX profiler DPR
     module and related endpoint module, This feature also depends on Linux
@@ -1014,6 +1018,22 @@ BUILD_OPENTHREAD
     Enterprise WLAN SOCs as part of their Bluetooth interface (4711).
 END
 
+BUILD_MATTER
+    Integrates a router / access point with the Matter IoT ecosystem.
+END
+
+BRCM_KERNEL_RAMOOPS
+    If enabled, build the pstore and ramoops feature in the linux kernel. This build option
+    works together with ramoops configurations either from boot args or device tree. The ramoops
+    configurations specify the reserved persistent RAM used to store kernel oops/panic output.
+    For example, in uboot, you can set:
+    setenv bootargs_append "mem=512M ramoops.mem_address=0x20000000 ramoops.mem_size=0x100000 ramoops.ecc=1"
+    saveenv
+    Then if kernel panic occures, after reboot, run:
+    #mount -t pstore pstore /mnt
+    And you should be able to observe the dmesg and console output for the panic under /mnt.
+END
+
 BCM_TINY_COREDUMP
     If enabled, the tiny kernel coredump feature is build into the linux kernel. Drivers can add
     objects of interest through API functions. User-space can obtain the dump from /proc/tinykcore
@@ -1024,4 +1044,39 @@ BCM_TINY_COREDUMP
     With the above a kernel panic will write the coredump to /dev/mtd3 and after reboot it can be
     obtained using:
     # dd bs=4096 count=1215 if=/dev/mtd3 | epi_ttcp -t <server_ipaddr>
+END
+
+BRCM_MU
+    (Broadcom internal use only) Add memory using report utility.
+END
+
+BUILD_TPM2
+    If enabled, will build userspace TPM tools and TPM2.0 software stack to interface with TPM module
+END
+
+UBOOT_DIR
+  UBOOT source directory from where the uboot binary is built. This is a directory under bootloaders directory
+END
+
+BRCM_KERNEL_STACK_AUTOZERO
+   If enabled, kernel automatically initialize stack to zero upon function entry. This is a kernel
+   hardening feature but it can impact system performance. GCC 13 or above is required to support
+   this feature.
+END
+
+BUILD_BCM_WKB
+   Enable Wireless Kernel Buffer (WKB).
+   For efficeint forarding, WLAN forwarding datapath uses the specially
+   designed Packet Context wkbuff_t instead of SKB or FKB
+END
+
+BUILD_STANDARD_GPIO_INTR_DRIVER
+BUILD_BROADCOM_EXTR_INTR_DRIVER
+   Build and use bca_gpio driver for gpio interrupt support. It uses the standard linux kernel gpio
+   interrupt API and device tree binding. See bcmdrivers/opensource/misc/bca_gpio/impl1/bca-gpio-bindings.txt
+   for more details.
+
+   Build and use a separate bca_extintr driver for gpio interrupt support. It is a Broadcom proprietary
+   implementation and use Broadcom's own API and device tree binding. See bcmdrivers/opensource/misc/bca_extintr/
+   bca_extintr_bindings.txt for more details.
 END

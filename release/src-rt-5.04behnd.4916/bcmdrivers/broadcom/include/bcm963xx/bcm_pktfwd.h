@@ -382,7 +382,7 @@ pktfwd_map_ssid_vector_to_ssid(uint16_t * ssid_vector)
  * Section:  pNBuff_t Functional Interface
  *
  * Impl Caveat: Inlined functions and constant NBuffPtrType_t allows for compile
- *              time resolution of SKB vs FKB type.
+ *              time resolution of SKB vs FKB vs WKB type.
  *              Default case will never be compiled.
  * =============================================================================
  */
@@ -402,18 +402,21 @@ pktfwd_pktsll(void * pkt, const NBuffPtrType_t NBuffPtrType)
     switch (NBuffPtrType)
     {
         case SKBUFF_PTR:
-             pktsll = ((struct sk_buff *)pkt)->prev;
+             pktsll = PNBUFF_2_SKBUFF(pkt)->prev;
              break;
 
         case FKBUFF_PTR:
-            pktsll = ((FkBuff_t *)PNBUFF_2_PBUF(pkt))->queue;
+             pktsll = PNBUFF_2_FKBUFF(pkt)->queue;
+             break;
+
+#if defined(CONFIG_BCM_WKB)
+        case WKBUFF_PTR:
+            pktsll = wkb_link(PNBUFF_2_WKBUFF(pkt));
             break;
+#endif /* CONFIG_BCM_WKB */
 
         default:
-            if (IS_SKBUFF_PTR(pkt))
-                pktsll = ((struct sk_buff *)pkt)->prev;
-            else
-                pktsll = ((FkBuff_t *)PNBUFF_2_PBUF(pkt))->queue;
+            BCM_ASSERT_A(0);
             break;
     }
 
@@ -431,18 +434,21 @@ pktfwd_pktsetsll(void * pkt, void * pktsll, const NBuffPtrType_t NBuffPtrType)
     switch (NBuffPtrType)
     {
         case SKBUFF_PTR:
-             ((struct sk_buff *) pkt)->prev = pktsll;
-             break;
-
-        case FKBUFF_PTR:
-            ((FkBuff_t *) PNBUFF_2_PBUF(pkt))->queue = pktsll;
+            PNBUFF_2_SKBUFF(pkt)->prev = pktsll;
             break;
 
+        case FKBUFF_PTR:
+            PNBUFF_2_FKBUFF(pkt)->queue = pktsll;
+            break;
+
+#if defined(CONFIG_BCM_WKB)
+        case WKBUFF_PTR:
+            wkb_set_link(PNBUFF_2_WKBUFF(pkt), pktsll);
+            break;
+#endif /* CONFIG_BCM_WKB */
+
         default:
-            if (IS_SKBUFF_PTR(pkt))
-                ((struct sk_buff *) pkt)->prev = pktsll;
-            else
-                ((FkBuff_t *) PNBUFF_2_PBUF(pkt))->queue = pktsll;
+            BCM_ASSERT_A(0);
             break;
     }
 }   /* pktfwd_pktsetsll() */
@@ -472,18 +478,21 @@ pktfwd_pktlist_pktkey(void * pkt, const NBuffPtrType_t NBuffPtrType)
     switch (NBuffPtrType)
     {
         case SKBUFF_PTR:
-            pktkey = ((struct sk_buff *) pkt)->wl.ucast.nic.wl_chainidx;
+            pktkey = PNBUFF_2_SKBUFF(pkt)->wl.ucast.nic.wl_chainidx;
             break;
 
         case FKBUFF_PTR:
-            pktkey = ((FkBuff_t *) PNBUFF_2_PBUF(pkt))->wl.ucast.dhd.flowring_idx;
+            pktkey = PNBUFF_2_FKBUFF(pkt)->wl.ucast.dhd.flowring_idx;
             break;
 
+#if defined(CONFIG_BCM_WKB)
+        case WKBUFF_PTR:
+            pktkey = PNBUFF_2_WKBUFF(pkt)->wl.ucast.nic.wl_chainidx;
+            break;
+#endif /* CONFIG_BCM_WKB */
+
         default:
-            if (IS_SKBUFF_PTR(pkt))
-                pktkey = ((struct sk_buff *) pkt)->wl.ucast.nic.wl_chainidx;
-            else
-                pktkey = ((FkBuff_t *) PNBUFF_2_PBUF(pkt))->wl.ucast.dhd.flowring_idx;
+            BCM_ASSERT_A(0);
             break;
     }
 
@@ -504,18 +513,21 @@ pktfwd_pktqueue_pktkey(void * pkt, const NBuffPtrType_t NBuffPtrType)
     switch (NBuffPtrType)
     {
         case SKBUFF_PTR:
-            pktkey = ((struct sk_buff *) pkt)->wl.pktfwd.pktfwd_key;
+            pktkey = PNBUFF_2_SKBUFF(pkt)->wl.pktfwd.pktfwd_key;
             break;
 
         case FKBUFF_PTR:
-            pktkey = ((FkBuff_t *) PNBUFF_2_PBUF(pkt))->wl.pktfwd.pktfwd_key;
+            pktkey = PNBUFF_2_FKBUFF(pkt)->wl.pktfwd.pktfwd_key;
             break;
 
+#if defined(CONFIG_BCM_WKB)
+        case WKBUFF_PTR:
+            pktkey = PNBUFF_2_WKBUFF(pkt)->wl.pktfwd.pktfwd_key;
+            break;
+#endif /* CONFIG_BCM_WKB */
+
         default:
-            if (IS_SKBUFF_PTR(pkt))
-                pktkey = ((struct sk_buff *) pkt)->wl.pktfwd.pktfwd_key;
-            else
-                pktkey = ((FkBuff_t *) PNBUFF_2_PBUF(pkt))->wl.pktfwd.pktfwd_key;
+            BCM_ASSERT_A(0);
             break;
     }
 
@@ -603,6 +615,7 @@ pktfwd_pktqueue_pktkey(void * pkt, const NBuffPtrType_t NBuffPtrType)
 
 /** PKTLIST Conditional compiles */
 #define CC_PKTLIST_DEBUG            (0)
+
 // #define CC_PKTLIST_STATS
 
 /** PKTLIST return codes */
@@ -679,6 +692,12 @@ pktfwd_pktqueue_pktkey(void * pkt, const NBuffPtrType_t NBuffPtrType)
 #define PKTLIST_FMT                 " %4u %4u %04x %7u"
 #define PKTLIST_VAL(p)              (p)->dest, (p)->prio, (p)->key.v16, (p)->len
 
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+#define SPC_PKT_RESET(p)            (p)->spc_pkt = PKTLIST_PKT_NULL
+#else
+#define SPC_PKT_RESET(p)            (void) 0
+#endif /* CONFIG_BCM_PKTFWD_SPC */
+
 /** Design optimization, override during debug. */
 #if defined(CC_PKTLIST_DEBUG)
 #define PKTLIST_RESET(pktlist_p) \
@@ -687,6 +706,7 @@ pktfwd_pktqueue_pktkey(void * pkt, const NBuffPtrType_t NBuffPtrType)
     (pktlist_p)->tail    = PKTLIST_PKT_NULL; \
     (pktlist_p)->len     = 0U; \
     (pktlist_p)->key.v16 = ~0; \
+    SPC_PKT_RESET(pktlist_p);  \
 })
 
 #else
@@ -695,6 +715,7 @@ pktfwd_pktqueue_pktkey(void * pkt, const NBuffPtrType_t NBuffPtrType)
 ({ \
     (pktlist_p)->len     = 0U; \
     (pktlist_p)->key.v16 = ~0; \
+    SPC_PKT_RESET(pktlist_p);  \
 }) /* Do not need to reset <head,tail,key> just len. */
 #endif /* ! CC_PKTLIST_DEBUG */
 
@@ -739,7 +760,7 @@ struct  pktlist_elem;               /* pktlist with a dll for xfers */
 struct  pktlist_table;              /* 2-d array of pktlist_elem */
 struct  pktlist_context;            /* binning and xfer of pktlist */
 
-/* Same as Nbuff_t of struct sk_buff or struct fkbuff */
+/* Same as Nbuff_t of struct sk_buff or struct fkbuff or struct wkbuff */
 typedef void                        pktlist_pkt_t;
 
 typedef struct  pktlist             pktlist_t;
@@ -822,6 +843,12 @@ typedef struct  pktlist_fctable     pktlist_fctable_t;
  * WLAN driver will increment the credits when a packet is released from
  * precedence queues.
  *
+ * SPC/WKB:
+ * If the producer is capable of aggregating packets, then WLAN also configures
+ * and updates max_sframes (maximum number of frames that can be aggregated) and
+ * max_aggbytes (maximum number of bytes that can be aggregated) for a single
+ * packet descriptor.
+ *
  * NOTE: Used only for WLAN NIC radio
  * -----------------------------------------------------------------------------
  */
@@ -829,6 +856,8 @@ typedef struct  pktlist_fctable     pktlist_fctable_t;
 struct pktlist_fctable               /* pktlist_fctable_t */
 {
     pktlist_credits_t   credits[PKTLIST_PRIO_MAX][PKTLIST_DEST_MAX];
+    pktlist_credits_t   max_sframes[PKTLIST_PRIO_MAX][PKTLIST_DEST_MAX];
+    pktlist_credits_t   max_aggbytes[PKTLIST_PRIO_MAX][PKTLIST_DEST_MAX];
     uint32_t            pkt_prio_favor; /* favor pkt prio; defalut VI, VO */
 };
 
@@ -871,6 +900,11 @@ typedef int  (* pktlist_context_keymap_fn_t)(uint32_t radio_idx,
 #define PKTLIST_CONTEXT_PEER_NULL   ((pktlist_context_t *)       NULL)
 #define PKTLIST_CONTEXT_XFER_NULL   ((pktlist_context_xfer_fn_t) NULL)
 #define PKTLIST_CONTEXT_KEYMAP_NULL ((pktlist_context_keymap_fn_t) NULL)
+
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+extern void pktlist_context_enable_spc_pkts(
+                    pktlist_context_t *pktlist_context);
+#endif /* CONFIG_BCM_PKTFWD_SPC */
 
 extern  pktlist_context_t *
                pktlist_context_init(
@@ -930,6 +964,9 @@ struct pktlist                      /* pktlist_t */
       )
     };
     pktfwd_key_t    key;            /* 3b domain, 1b incarn, 12b index */
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+    pktlist_pkt_t * spc_pkt;        /* accumulate SPC frags */
+#endif /* CONFIG_BCM_PKTFWD_SPC */
 };
 
 
@@ -1006,6 +1043,10 @@ struct pktlist_context              /* pktlist_context_t */
     pktlist_context_t * peer;       /* peer driver pktlist_context */
     pktlist_context_xfer_fn_t xfer_fn;  /* Transfer to peer hander */
     pktlist_context_keymap_fn_t keymap_fn;  /* DHD: pktfwd key and flowid map */
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+    pktlist_pkt_t * spc_pkts;   /* list of uncommitted SPCs for the next turn */
+    bool spc_pkts_enable;       /* spc_pkt mechanism is on in this context */
+#endif /* CONFIG_BCM_SPC_PKTFWD */
 
     /* Statistics and Debug */
     uint32_t            list_stats; /* total pktlists dispatched */
@@ -1109,7 +1150,7 @@ __pktlist_xfer_work(    /* Xfer pktlist(s) from producer to consumer worklist */
     dll_t             * src_work_list,          /* producer's work list */
     dll_t             * dst_work_list,          /* consumer's work list */
     const char        * name,
-    const NBuffPtrType_t    NBuffPtrType)       /* Buffer type SKB|FKB */
+    const NBuffPtrType_t    NBuffPtrType)       /* Buffer type SKB|FKB|WKB */
 {
     uint32_t list_stats, pkts_stats;
     pktlist_elem_t * src_elem, * dst_elem;
@@ -1250,6 +1291,43 @@ __pktlist_head(pktlist_context_t * pktlist_context,
 
 }  /* __pktlist_head() */
 
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+static inline bool
+__pktlist_pkt_is_spc_candidate(pktlist_pkt_t * pkt,
+        const NBuffPtrType_t NBuffPtrType)
+{
+    bool is_spc_candidate = false;
+
+    switch (NBuffPtrType)
+    {
+        case SKBUFF_PTR:
+            is_spc_candidate = PNBUFF_2_SKBUFF(pkt)->is_spc_candidate;
+            break;
+
+        case WKBUFF_PTR:
+            is_spc_candidate = true;
+            break;
+
+        default:
+            break;
+    }
+
+    return is_spc_candidate;
+}   /* __pktlist_pkt_is_spc_candidate() */
+
+static inline void
+__pktlist_add_spc_candidate(pktlist_t * pktlist,
+        pktlist_pkt_t * pkt, NBuffPtrType_t NBuffPtrType)
+{
+    if (pktlist->spc_pkt != PKTLIST_PKT_NULL) {
+        PKTLIST_PKT_SET_SLL(pktlist->tail,
+                pktlist->spc_pkt, NBuffPtrType);
+        pktlist->tail = pktlist->spc_pkt;
+        pktlist->len++;
+    }
+    pktlist->spc_pkt = pkt;
+}
+#endif /* CONFIG_BCM_PKTFWD_SPC */
 
 /*
  * -----------------------------------------------------------------------------
@@ -1283,6 +1361,14 @@ __pktlist_add_pkt(pktlist_context_t * pktlist_context,
 
     if ( likely(pktlist->len != 0U) ) /* Do not use <head,tail> PKTLIST_RESET */
     {
+#if defined(CONFIG_BCM_PKTFWD_SPC)
+        if (pktlist_context->spc_pkts_enable &&
+            __pktlist_pkt_is_spc_candidate(pkt, NBuffPtrType)) {
+            /* let the function below increment len if needed */
+            __pktlist_add_spc_candidate(pktlist, pkt, NBuffPtrType);
+            return;
+        }
+#endif /* CONFIG_BCM_PKTFWD_SPC */
         /* Append to tail - without auditing new packet's key (incarn) match */
         PKTLIST_PKT_SET_SLL(pktlist->tail, pkt, NBuffPtrType);
         pktlist->tail                  = pkt;
@@ -1627,7 +1713,7 @@ struct  pktqueue;                   /* single linked list of packets */
 struct  pktqueue_table;             /* array of pktqueues */
 struct  pktqueue_context;           /* binning and xfer of pktqueue */
 
-/* Same as Nbuff_t of struct sk_buff or struct fkbuff */
+/* Same as Nbuff_t of struct sk_buff or struct fkbuff or struct wkbuff */
 typedef void                        pktqueue_pkt_t;
 
 typedef struct  pktqueue            pktqueue_t;
@@ -1739,7 +1825,7 @@ struct pktqueue                     /* pktqueue_t */
     pktqueue_pkt_t    * head;           /* head packet in pktqueue */
     pktqueue_pkt_t    * tail;           /* tail packet in pktqueue */
     uint32_t            len;            /* number of packets in pktqueue */
-    NBuffPtrType_t      NBuffPtrType;   /* SKB|FPB|TGB|FKB */
+    NBuffPtrType_t      NBuffPtrType;   /* SKB|WKB|TGB|FKB */
 };
 
 /**
@@ -1811,7 +1897,8 @@ __pktqueue_xfer_pkts(pktqueue_t * src_pktqueue, pktqueue_t * dst_pktqueue,
 {
 
     PKTQUEUE_PTRACE("len<%u> pkt_type<%3s>", src_pktqueue->len,
-        src_pktqueue->NBuffPtrType == SKBUFF_PTR ? "SKB" : "FKB");
+        src_pktqueue->NBuffPtrType == SKBUFF_PTR ? "SKB" :
+        FKBUFF_PTR ? "FKB" : "WKB");
 
     /* Terminate the pktqueue, now */
     PKTQUEUE_PKT_SET_SLL(src_pktqueue->tail, PKTQUEUE_PKT_NULL, NBuffPtrType);
@@ -2021,7 +2108,7 @@ typedef struct d3fwd_wlif_stats
  * -----------------------------------------------------------------------------
  */
 
-#define WLIF_UNIT_INVALID	(0xf)	/* d3fwd_wlif::unit 4bit */
+#define WLIF_UNIT_INVALID   (0xf)   /* d3fwd_wlif::unit 4bit */
 
 struct d3fwd_wlif                       /* d3fwd_wlif_t */
 {
@@ -2104,11 +2191,19 @@ struct d3fwd_ext                        /* d3fwd_ext_t */
     };
     uint16_t            ssid;           /* WLAN interface index */
     uint16_t            rsvd16;         /* pad a D3LUT element to 16 B */
+    void                *cb;            /* control block pointer links external data */
     struct net_device * virt_net_device; /* virtual interface's net_device */
 };
 
 void d3fwd_ext_dump(d3fwd_ext_t *d3fwd_ext);
 
+typedef enum d3fwd_ext_cb_op
+{
+    D3LUT_ELEM_EXT_CB_GET  = 0,
+    D3LUT_ELEM_EXT_CB_SET  = 1,
+    D3LUT_ELEM_EXT_CB_PUT  = 2,
+    D3LUT_ELEM_EXT_CB_FREE = 3
+} d3fwd_ext_cb_op_t;
 
 /**
  * -----------------------------------------------------------------------------
@@ -2687,7 +2782,6 @@ extern void             d3lut_put(d3lut_t * d3lut,
 extern void             d3lut_put_nolock(d3lut_t * d3lut,
                                   d3lut_elem_t * d3lut_elem); /* dealloc */
 
-
 /** D3LUT Dictionary -------------------------------------------------------- */
 /** D3LUT Dictionary hash function */
 extern uint16_t         d3lut_hash(const uint8_t * sym);
@@ -2707,6 +2801,10 @@ extern void             d3lut_clr(d3lut_t * d3lut, void * ext,
                                   bool ignore_ext_match);
 
 extern void             d3lut_stats_clr(d3lut_t * d3lut);
+
+/** D3LUT element ext control block function */
+extern void             (*d3lut_elem_ext_cb_op)(d3lut_elem_t *d3lut_elem,
+                                  d3fwd_ext_cb_op_t op);
 
 #endif /* BCM_D3LUT */
 

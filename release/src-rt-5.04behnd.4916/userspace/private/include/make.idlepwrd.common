@@ -1,0 +1,81 @@
+#***********************************************************************
+#
+#  Copyright (c) 2024  Broadcom Corporation
+#  All Rights Reserved
+#
+#***********************************************************************/
+
+###########################################
+#
+# Generic/common rules & definitions which 
+# are used by idlepwrd package Makefiles
+#
+###########################################
+
+##
+# Common restrictions for all pwm monitoring utilities are:
+# i.   No emulation or desktop environments 
+# ii.  Netlink (libnl) support
+ifeq ($(strip $(DESKTOP_LINUX))$(strip $(BRCM_QEMU)), )
+	ifneq ($(strip $(BUILD_LIBNL)), )
+		# Generic lib is supported
+		GPSMAPI_SUPPORT := y
+		# Extra features:
+		# Check Edmonton, Tampa & Pine chips support for idlepwrd application
+		IDLEPWRD_CHIP_SUPPORT := $(filter $(strip $(BRCM_CHIP)),68880 6837 68375)
+		# Check GPON monitor & power control features support
+		GPONPWRCTL_SUPPORT := $(strip $(BUILD_GPON))
+		# Check WLAN MLO power feature support (currently used as placeholder)
+		WLMLO_SUPPORT := $(strip $(BUILD_BCM_WLMLO))
+	endif
+endif
+
+##
+# Compiler flags
+CFLAGS += -Werror -Wfatal-errors
+
+##
+# Common Lib link path defintion
+BCM_LIB_PATH += -L$(BCM_FSINSTALL_DIR)/lib
+
+##
+# Clean functions
+# TODO: Consider moving the below to make.common
+##
+#  $(1) list of files to delete in zzz/lib directories
+define clean_all_libs
+	$(call clean_all_artifacts,$(1),lib)
+endef
+
+##
+#  $(1) list of files to delete in www/bin directories
+define clean_all_bins
+	$(call clean_all_artifacts,$(1),bin)
+endef
+
+##
+# $(1) list of files to delete in www/$(2) directories
+# $(2) path postfix (e.g: bin, lib or nothing)
+define clean_all_artifacts
+	$(call clean_build_dir,$(1), $(shell pwd))
+	$(call clean_dir_artifacts,$(1),$(TARGET_FS)/,$(2)/)
+	$(call clean_dir_artifacts,$(1),$(BCM_FSINSTALL_DIR)/,$(2)/)
+	$(call clean_dir_artifacts,$(1),$(BCM_FSBUILD_DIR)/private/,$(2)/)
+endef
+
+##
+#  $(1) list of files to delete
+#  $(2) artifacts path prefix
+define clean_build_dir
+	$(call clean_dir_artifacts,*.o *.d *.d.* core.* *.a output.txt $(1),$(2)/,)
+	rm -rf $(2)/output
+endef
+
+##
+#  $(1) list of artifacts (e.g.: libxxx.so, libyyy.a, app_name e.t.c.)
+#  $(2) artifacts path prefix
+#  $(3) artisfacts path postfix (e.g: bin or lib)
+# note $(2) and $(3) (if provided) must end with '/'
+define clean_dir_artifacts
+	$(foreach art, $(1), rm -f $(2)$(3)$(art);)
+endef

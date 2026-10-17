@@ -1,0 +1,6 @@
+OBJS = main_dummy.o
+ 
+ifneq ($(strip $(BUILD_OPENSYNC_GW)),)
+OBJS += wlssk_mdm.o
+LIBS += -lcms_msg $(CMS_COMMON_LIBS) -lcms_dal -lcms_msg $(CMS_COMMON_LIBS) $(MDM_CORE_LIBS)
+endif

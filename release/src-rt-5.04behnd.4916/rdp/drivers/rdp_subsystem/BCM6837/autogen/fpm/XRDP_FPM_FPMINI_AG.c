@@ -1080,6 +1080,9 @@ static const ru_reg_rec *FPM_FPMINI_REGS[] =
 const ru_block_rec FPM_FPMINI_BLOCK =
 {
     "FPM_FPMINI",
+#if RU_INCLUDE_SIZE
+    { 0x00008408 },
+#endif
     FPM_FPMINI_ADDRS,
     1,
     18,

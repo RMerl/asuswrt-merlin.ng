@@ -1,0 +1,27 @@
+if TARGET_AT91SAM9260EK
+
+config SYS_BOARD
+	default "at91sam9260ek"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_CONFIG_NAME
+	default "at91sam9260ek"
+
+choice
+	prompt "Evaluation board"
+
+config AT91SAM9G20EK
+	bool "Atmel AT91SAM9G20 EK"
+
+config AT91SAM9260EK
+	bool "Atmel AT91SAM9260 EK"
+
+endchoice
+
+config AT91SAM9G20EK_2MMC
+	bool "Atmel AT91SAM9G20 EK 2MMC variant"
+	depends on AT91SAM9260EK
+
+endif

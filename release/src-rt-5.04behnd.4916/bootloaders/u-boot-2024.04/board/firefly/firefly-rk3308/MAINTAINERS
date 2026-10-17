@@ -1,0 +1,6 @@
+ROC-RK3308-CC
+M:      Andy Yan <andy.yan@rock-chips.com>
+S:      Maintained
+F:      board/firefly/firefly-rk3308/
+F:      configs/roc-cc-rk3308_defconfig
+F:      include/configs/firefly_rk3308.h

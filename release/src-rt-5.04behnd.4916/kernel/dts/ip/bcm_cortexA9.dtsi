@@ -119,7 +119,7 @@ clocks {
 	#address-cells = <1>;
 	#size-cells = <1>;
 	ranges;
-	u-boot,dm-pre-reloc;
+
 
 	armcpu: armcpu {
 		#clock-cells = <0>;
@@ -131,7 +131,7 @@ clocks {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <PERIPH_CLK>;
-		u-boot,dm-pre-reloc;
+
 	};
 
 	refclk50mhz: refclk50mhz {
@@ -144,7 +144,7 @@ clocks {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
 		clock-frequency = <HS_SPI_PLL_CLK>;
-		u-boot,dm-pre-reloc;		
+
 	};
 
 	axi_clk: axi_clk {

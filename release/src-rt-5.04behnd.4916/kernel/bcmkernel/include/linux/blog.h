@@ -7,18 +7,18 @@
 /* Blog.h and Blog.c for Linux OS */
 /*--------------------------------*/
 
-/* 
+/*
 * <:copyright-BRCM:2003:DUAL/GPL:standard
-* 
-*    Copyright (c) 2003 Broadcom 
+*
+*    Copyright (c) 2003 Broadcom
 *    All Rights Reserved
-* 
+*
 * Unless you and Broadcom execute a separate written software license
 * agreement governing use of this software, this software is licensed
 * to you under the terms of the GNU General Public License version 2
 * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
 * with the following added to such license:
-* 
+*
 *    As a special exception, the copyright holders of this software give
 *    you permission to link this software with independent modules, and
 *    to copy and distribute the resulting executable under terms of your
@@ -27,12 +27,12 @@
 *    An independent module is a module which is not derived from this
 *    software.  The special exception does not apply to any modifications
 *    of the software.
-* 
+*
 * Not withstanding the above, under no circumstances may you combine
 * this software in any way with any other Broadcom software provided
 * under a license other than the GPL, without Broadcom's express prior
 * written consent.
-* 
+*
 :>
 */
 
@@ -129,22 +129,22 @@
  *   context, may it be a skbuff or a fkbuff. Support for transferring a
  *   Blog_t structure from one packet context to another during the course of
  *   a packet in the network stack involving a packet context clone/copy is
- *   also included. The release and recycling of Blog_t structures when a 
+ *   also included. The release and recycling of Blog_t structures when a
  *   packet context is freed are also providied.
  *   Binding is bi-directional: packet context <-- --> Blog_t
- * 
+ *
  *
  * 2. Associating native OS or 3rd-party network constructs: blog_link()
  * ==========================================================================
  *   Examples of network constructs
- *      "dev"   - Network device 
+ *      "dev"   - Network device
  *      "ct"    - Connection or session tracker
  *      "fdb"   - Network bridge forwarding database entity
  *
  *   Association is pseudo bi-directional, using "void *" binding in a Blog_t to
  *   a network construct. In the reverse, a network construct will link to a
  *   Blog client entity using a Key concept. Two types of keys are currently
- *   employed, a BlogFlowKey and a BlogGroupKey. 
+ *   employed, a BlogFlowKey and a BlogGroupKey.
  *
  *   A BlogFlowKey would typically refer to a single unidirectional packet
  *   stream defined by say all packets belonging to a unidirectional IPv4 flow,
@@ -229,7 +229,7 @@
  * path within the network stack (PKT_NORM).
  *
  * Designer Note: Blog clients MAY NOT use fields not defined in FkBuff.
- * 
+ *
  *
  * blog_emit():
  * ============
@@ -343,7 +343,8 @@ typedef struct {
             uint8_t esp_inner_pkt:1;
             uint8_t esp_over_udp:1;
             uint8_t esp_mode:1;
-            uint8_t esp_rsv:5;
+            uint8_t esp_rsv:4;
+            uint8_t encrypt:1; /* for wireguard */
         };
     };
     uint32_t esp_spi;
@@ -400,7 +401,10 @@ typedef struct {
     uint8_t  tx_l4_offset;
     uint16_t local_rx_devid;
     unsigned long dev_xmit;
-    void     *esptx_dst_p;
+    union {
+        void     *esptx_dst_p;
+        void     *esprx_dev_p;
+    };
     union {
         void    *esprx_secPath_p;
         void    *esprx_xfrm_st;
@@ -433,7 +437,7 @@ typedef enum xmit_args_field_id {
 }enum_xmit_args_t;
 
 typedef struct xmit_arg_def {
-   enum_xmit_args_t field;  
+   enum_xmit_args_t field;
    uint16_t size;
    uint16_t pos;
    size_t blog_offset;
@@ -459,13 +463,13 @@ extern int blog_get_dstentry_id(struct dst_entry *dst_p, uint16_t *dstid_p);
 extern int blog_dstentry_id_tbl_init(void);
 
 #if defined(CONFIG_NET_IPGRE) || defined(CONFIG_NET_IPGRE_MODULE)
-typedef int (*blog_gre_rcv_check_t)(void *dev, BlogIpv4Hdr_t *iph, uint16_t len, 
+typedef int (*blog_gre_rcv_check_t)(void *dev, BlogIpv4Hdr_t *iph, uint16_t len,
               void **tunl_pp, uint32_t *pkt_seqno_p);
 extern blog_gre_rcv_check_t blog_gre_rcv_check_fn;
 
 typedef int (*blog_gre_xmit_upd_t)(void * tunl_p, BlogIpv4Hdr_t *iph, uint16_t len);
 extern blog_gre_xmit_upd_t blog_gre_xmit_update_fn;
-typedef int (*blog_gre6_rcv_check_t)(void *dev, BlogIpv6Hdr_t *ipv6h, uint16_t len, 
+typedef int (*blog_gre6_rcv_check_t)(void *dev, BlogIpv6Hdr_t *ipv6h, uint16_t len,
               void **tunl_pp, uint32_t *pkt_seqno_p);
 extern blog_gre6_rcv_check_t blog_gre6_rcv_check_fn;
 
@@ -473,6 +477,7 @@ typedef int (*blog_gre6_xmit_upd_t)(void * tunl_p, BlogIpv6Hdr_t *ipv6h, uint16_
 extern blog_gre6_xmit_upd_t blog_gre6_xmit_update_fn;
 #endif
 
+extern int (*blog_score_flow_notify_cb)(void *arg1);
 
 #define PPTP_NOT_ACK 0
 #define PPTP_WITH_ACK 1
@@ -480,15 +485,15 @@ extern blog_gre6_xmit_upd_t blog_gre6_xmit_update_fn;
 #define PPTP_GRE_VER_1 1
 #define PPTP_GRE_NONE 2
 
-typedef int (*blog_pptp_xmit_upd_t)(uint16_t call_id, uint32_t *seqNum, 
+typedef int (*blog_pptp_xmit_upd_t)(uint16_t call_id, uint32_t *seqNum,
                                     uint32_t *ackNum, uint32_t daddr);
 extern blog_pptp_xmit_upd_t blog_pptp_xmit_update_fn;
 
-typedef int (*blog_pptp_rcv_check_t)(uint16_t call_id, uint32_t *rcv_pktSeq, 
+typedef int (*blog_pptp_rcv_check_t)(uint16_t call_id, uint32_t *rcv_pktSeq,
                                      uint32_t rcv_pktAck, uint32_t saddr);
 extern blog_pptp_rcv_check_t blog_pptp_rcv_check_fn;
- 
-typedef int (*blog_l2tp_rcv_check_t)(void *dev, uint16_t tunnel_id, 
+
+typedef int (*blog_l2tp_rcv_check_t)(void *dev, uint16_t tunnel_id,
                                      uint16_t session_id);
 extern blog_l2tp_rcv_check_t blog_l2tp_rcv_check_fn;
 
@@ -496,7 +501,7 @@ extern blog_l2tp_rcv_check_t blog_l2tp_rcv_check_fn;
 typedef int (* blog_is_ovs_internal_dev_t)(void *dev);
 typedef unsigned long (* blog_mega_get_key_t)(void *mega);
 typedef void (* blog_mega_set_key_t)(void *mega, unsigned long blog_key);
-typedef void (* blog_mega_put_fast_stats_t)(void *net_p, 
+typedef void (* blog_mega_put_fast_stats_t)(void *net_p,
         const blog_fast_stats_t *stats);
 
 typedef struct {
@@ -596,6 +601,7 @@ typedef enum {
         BLOG_DECL(GRE_TUNL)             /* GRE Tunnel                         */
         BLOG_DECL(TOS_MODE)             /* TOS_MODE                           */
         BLOG_DECL(MEGA)                 /* Megaflow tracker                   */
+        BLOG_DECL(BNLTRACE)             /* BNL connection tracker  */
         BLOG_DECL(BLOG_NET_ENTITY_MAX)
 } BlogNetEntity_t;
 
@@ -606,7 +612,7 @@ typedef enum {
  *------------------------------------------------------------------------------
  */
 
-/* MCAST_CONTROL_EVT: param1 is add|del, and param2 is IPv4|IPv6 */ 
+/* MCAST_CONTROL_EVT: param1 is add|del, and param2 is IPv4|IPv6 */
 #define BLOG_PARAM1_MCAST_ADD       0U
 #define BLOG_PARAM1_MCAST_DEL       1U
 #define BLOG_PARAM2_MCAST_IPV4      0U
@@ -635,7 +641,12 @@ typedef enum {
         BLOG_DECL(FETCH_MEGA_STATS)     /* Fetch megaflow fast stats          */
         BLOG_DECL(CLEAR_MEGA_STATS)     /* Clear megaflow fast stats          */
         BLOG_DECL(UPDATE_FLOWTRACK_IDLE_TIMEOUT)/* update idle timeout		  */
-        BLOG_DECL(CREATE_BRIDGEFDB)    /* Bridge FDB is created               */
+        BLOG_DECL(CREATE_BRIDGEFDB)     /* Bridge FDB is created              */
+        BLOG_DECL(UPDATE_BNL)           /* Update BNL trace info              */
+        BLOG_DECL(UPDATE_SCOREINFO)     /* Update SCORE trace info            */
+        BLOG_DECL(FETCH_LAG_HASH_STATS) /* Fetch LAG hash stats               */
+        BLOG_DECL(UPDATE_LAG_HASH_PORT) /* Fetch LAG hash stats               */
+        BLOG_DECL(SET_QOS)
         BLOG_DECL(BLOG_NOTIFY_MAX)
 } BlogNotify_t;
 
@@ -650,15 +661,42 @@ typedef enum {
         BLOG_DECL(BLOG_QUERY_MAX)
 } BlogQuery_t;
 
-typedef struct{
-    int orig_queue;                     /* Originating queue index */
-    int reply_queue;                    /* Reply queue index */
-    int priority;                       /* Traffic priority */
-}BlogDpiParams_t;
+typedef struct {
+    int orig_queue;
+    int reply_queue;
+    int priority;
+} BlogDpiParams_t;
 
+struct blog_qos {
+    int orig_queue;
+    int reply_queue;
+};
 
 /* Blog Notify FLUSH strucutre */
 typedef int (* BlogFlushMetadataFunc_t)(void *metadata_p, const Blog_t *const blog_p);
+
+#define BLOG_FLUSH_RX_SADDR  (1 << 0)
+#define BLOG_FLUSH_TX_SADDR  (1 << 1)
+#define BLOG_FLUSH_RX_DADDR  (1 << 2)
+#define BLOG_FLUSH_TX_DADDR  (1 << 3)
+#define BLOG_FLUSH_RX_ADDR   (BLOG_FLUSH_RX_SADDR | BLOG_FLUSH_RX_DADDR)
+#define BLOG_FLUSH_TX_ADDR   (BLOG_FLUSH_TX_SADDR | BLOG_FLUSH_TX_DADDR)
+#define BLOG_FLUSH_SADDR     (BLOG_FLUSH_RX_SADDR | BLOG_FLUSH_TX_SADDR)
+#define BLOG_FLUSH_DADDR     (BLOG_FLUSH_RX_DADDR | BLOG_FLUSH_TX_DADDR)
+#define BLOG_FLUSH_ADDR      (BLOG_FLUSH_SADDR    | BLOG_FLUSH_DADDR)
+
+#define OFFSET_OF( structName, memberName )   ( (size_t)&((structName *)0)->memberName )
+
+typedef union {
+    BlogIpv6Addr_t ipv6_addr;
+    BlogIpv4Addr_t ipv4_addr;
+}BlogIpAddr_t;
+
+typedef struct {
+    BlogIpAddr_t ip_addr;
+    u8 netmask_len;
+    u8 family;
+}BlogAddrParams_t;
 
 typedef struct {
     uint32_t flush_all      :1;
@@ -669,13 +707,16 @@ typedef struct {
     uint32_t flush_meta     :1;         /* Not available through Userspace/CLI */
     uint32_t flush_hw       :1;         /* Flush all flows from HW */
     uint32_t flush_chan     :1;
-    uint32_t flush_unused   :24;
+    uint32_t flush_ipaddr   :4;
+    uint32_t flush_unused   :20;
+
     uint8_t mac[6];
     uint8_t chan_id;
     int devid;
     int flowid;
     void *metadata_p;                   /* flush_meta = 1 ; Must set metadata_p, devid & flush_dev */
     BlogFlushMetadataFunc_t func_p;     /* flush_meta = 1 ; Must provide callback func */
+    BlogAddrParams_t addr;
 }BlogFlushParams_t;
 
 /*
@@ -694,6 +735,8 @@ typedef enum {
         BLOG_DECL(FLOWTRACK_IDLE_TIMEOUT_GET)  /* get idle timeout in a flow tracker  */
         BLOG_DECL(FLOWTRACK_PUT_STATS)  /* Push accumulated stats to conntrack*/
         BLOG_DECL(FLOWTRACK_L4PROTO_GET)/* Get L4 proto in Flowtracker        */
+        BLOG_DECL(FLOWTRACK_BNL_GET)    /* Get BNL idx in Flowtracker         */
+        BLOG_DECL(FLOWTRACK_SCORE_SET)  /* set scoreinfo in Flowtracker       */
         BLOG_DECL(NETIF_PUT_STATS)      /* Push accumulated stats to devices  */
         BLOG_DECL(LINK_XMIT_FN)         /* Fetch device link transmit function*/
         BLOG_DECL(LINK_NOCARRIER)       /* Fetch device link carrier          */
@@ -732,8 +775,10 @@ typedef enum {
         BLOG_DECL(BLOG_UPDATE_DPI_QUEUE)     /* DPI Queue assignment has changed */
         BLOG_DECL(BLOG_UPDATE_BITMAP)        /* Multicast client bitmap has changed */
         BLOG_DECL(BLOG_UPDATE_FWD_AND_TRAP)  /* fwd_and_trap bit has changed */
-        BLOG_DECL(BLOG_UPDATE_BITMAP_FWD_AND_TRAP)  /* Mcast client bitmap and 
+        BLOG_DECL(BLOG_UPDATE_BITMAP_FWD_AND_TRAP)  /* Mcast client bitmap and
                                                 fwd_and_trap bit have changed */
+        BLOG_DECL(BLOG_UPDATE_LAG_HASH_PORT) /* LAG hash egress port has changed */
+        BLOG_DECL(BLOG_UPDATE_SCOREINFO)     /* update scoreinfo in hw flow */
         BLOG_DECL(BLOG_UPDATE_MAX)
 } BlogUpdate_t;
 
@@ -791,7 +836,7 @@ typedef enum {
  * a ppp interface would be referred to as a Virtual interface.
  *------------------------------------------------------------------------------
  */
-#define MAX_VIRT_DEV           7
+#define MAX_VIRT_DEV           10
 
 #define DEV_DIR_MASK           0x3ul
 #define DEV_PTR_MASK           (~DEV_DIR_MASK)
@@ -833,7 +878,7 @@ typedef struct{
     uint64_t  tx_bytes;               /* total blog bytes transmitted   */
     uint64_t  multicast;              /* total blog multicast packets   */
     uint64_t  tx_multicast_packets;   /* multicast packets transmitted */
-    uint64_t  rx_multicast_bytes;     /* multicast bytes recieved */ 
+    uint64_t  rx_multicast_bytes;     /* multicast bytes recieved */
     uint64_t  tx_multicast_bytes;     /* multicast bytes transmitted */
 } BlogStats_t;
 
@@ -849,12 +894,12 @@ typedef enum {
     BLOG_DECL(blog_skip_reason_unknown_proto)
     BLOG_DECL(blog_skip_reason_unknown_proto_ah4)
     BLOG_DECL(blog_skip_reason_unknown_proto_ah6)
-    BLOG_DECL(blog_skip_reason_unknown_proto_esp6)
     BLOG_DECL(blog_skip_reason_esp4_crypto_algo)
     BLOG_DECL(blog_skip_reason_esp4_spu_disabled)
     BLOG_DECL(blog_skip_reason_esp6_crypto_algo)
     BLOG_DECL(blog_skip_reason_esp6_spu_disabled)
     BLOG_DECL(blog_skip_reason_spudd_check_failure)
+    BLOG_DECL(blog_skip_reason_blog_esp_ep)
     BLOG_DECL(blog_skip_reason_dpi)
     BLOG_DECL(blog_skip_reason_sgs)
     BLOG_DECL(blog_skip_reason_bond)
@@ -869,6 +914,8 @@ typedef enum {
     BLOG_DECL(blog_skip_reason_mega_field_mismatch)
     BLOG_DECL(blog_skip_reason_blog_clone)
     BLOG_DECL(blog_skip_reason_known_exception_client)
+    BLOG_DECL(blog_skip_reason_wireguard)
+    BLOG_DECL(blog_skip_reason_openvpn)
     BLOG_DECL(blog_skip_reason_max)
 } blog_skip_reason_t;
 
@@ -877,7 +924,7 @@ typedef enum {
     BLOG_DECL(blog_free_reason_blog_emit)
     BLOG_DECL(blog_free_reason_blog_iq_prio)
     BLOG_DECL(blog_free_reason_kfree)
-    BLOG_DECL(blog_free_reason_ipmr_local)
+    BLOG_DECL(blog_free_reason_ipmr_unresolved)
     BLOG_DECL(blog_free_reason_known_exception_client)
     BLOG_DECL(blog_free_reason_max)
 } blog_free_reason_t;
@@ -894,6 +941,28 @@ typedef struct {
     uint32_t blog_alloc_shared_info;
     uint32_t blog_free_shared_info;
 } blog_info_stats_t;
+
+union blog_bnl_key {
+/* we expect this to bv 16 bit if the size is increased
+ * adjust position in the blog, to maintain cachline boundary
+ */
+    uint16_t key;
+    struct {
+        BE_DECL(
+                uint16_t dir:1;
+                uint16_t idx:15;
+        )
+        LE_DECL(
+                u16 idx:15;
+                u16 dir:1;
+        )
+    };
+};
+
+
+/* flow acceleration type */
+#define BLOG_PKT_ACCEL_MODE_L2    0
+#define BLOG_PKT_ACCEL_MODE_L3    1
 
 /*
  * -----------------------------------------------------------------------------
@@ -926,6 +995,9 @@ extern blog_accel_mode_set_t blog_accel_mode_set_fn;
 
 extern void blog_support_accel_mode(int accel_mode);
 extern int blog_support_get_accel_mode(void);
+
+extern int blog_mcast_learn_pkt_drop_g;
+extern void blog_mcast_learn_pkt_drop(int enable);
 
 /* Support for TCP ACK multi flows */
 extern int blog_support_tcp_ack_mflows_g;
@@ -987,15 +1059,20 @@ extern int blog_support_get_pure_llc(void);
 #define CC_BLOG_SUPPORT_MCAST        BLOG_MCAST_DISABLE
 #endif
 
+/* Drop Multicast Learning packets to avoid out-of-order */
+#define BLOG_MCAST_LEARN_PKT_DROP_DISABLE          0
+#define BLOG_MCAST_LEARN_PKT_DROP_ENABLE           1
+#define BLOG_MCAST_LEARN_PKT_DROP_DEFAULT          BLOG_MCAST_LEARN_PKT_DROP_ENABLE
+
 extern int blog_support_mcast_g;
 extern void blog_support_mcast(int enable);
 
 #define BCM_WLAN_PER_CLIENT_FLOW_LEARNING 1
 
-/* 
- * Support for blog shared info feature used for completing the 
+/*
+ * Support for blog shared info feature used for completing the
  * learning of multicast/unknown_ucast flows.
- */ 
+ */
 #define BCM_WLAN_MCAST_BLOG_SHARED_INFO 1
 
 /*
@@ -1053,6 +1130,10 @@ extern int blog_l2tp_tunnel_accelerated_g;
 extern int blog_support_l2tp_g;
 extern void blog_support_l2tp(int enable);
 
+#define BLOG_TUNNEL_INNER_L3FLOW_DISABLE    0
+#define BLOG_TUNNEL_INNER_L3FLOW_ENABLE     1
+extern int blog_support_tunnel_inner_l3flow_g;
+
 /* ESP Support: tunnel and pass-thru modes */
 #define BLOG_ESP_DISABLE          0
 #define BLOG_ESP_TUNNEL           1
@@ -1062,6 +1143,12 @@ extern void blog_support_l2tp(int enable);
 #define CC_BLOG_SUPPORT_ESP        BLOG_ESP_TUNNEL
 #else
 #define CC_BLOG_SUPPORT_ESP        BLOG_ESP_DISABLE
+#endif
+
+#ifdef CONFIG_BLOG_ESP_EP
+extern uint32_t blog_esp_endpoint;
+void blog_esp_emit_aead_us(struct sk_buff *skb, void *esp_info);
+void blog_esp_emit_aead_ds(struct sk_buff *skb);
 #endif
 
 /*
@@ -1110,6 +1197,8 @@ typedef enum
     BLOG_DECL(BLOG_NOTIFY_EVT_FLUSH_PARAMS)
     BLOG_DECL(BLOG_NOTIFY_EVT_FETCH_NETIF_STATS)
     BLOG_DECL(BLOG_NOTIFY_EVT_CLEAR_NETIF_STATS)
+    BLOG_DECL(BLOG_NOTIFY_EVT_FETCH_LAG_HASH_STATS)
+    BLOG_DECL(BLOG_NOTIFY_EVT_UPDATE_LAG_HASH_PORT)
     BLOG_DECL(BLOG_NOTIFY_EVT_MAX)
 } blog_notify_evt_type_t;
 
@@ -1127,12 +1216,12 @@ typedef union {
     uint32_t word;
     struct {
         BE_DECL(
-            uint32_t incarn  :  3; /* Allocation instance identification */
-            uint32_t self    : 29; /* Index into static allocation table */
+            uint32_t incarn  : 12; /* Allocation instance identification */
+            uint32_t self    : 20; /* Index into static allocation table */
         )
         LE_DECL(
-            uint32_t self    : 29; /* Index into static allocation table */
-            uint32_t incarn  :  3; /* Allocation instance identification */
+            uint32_t self    : 20; /* Index into static allocation table */
+            uint32_t incarn  : 12; /* Allocation instance identification */
         )
     };
 } BlogKeyFc_t;
@@ -1242,7 +1331,7 @@ typedef enum
  *------------------------------------------------------------------------------
  */
 struct blog_npe {
-    struct dll_t    node;           /* npe Entity list                        */
+    dll_t           node;           /* npe Entity list                        */
     BlogKeyFc_t     key;            /* linking Linux nwe and npe entity       */
     struct blog_npe *chain_p;       /* npe Entity Hash list node              */
     uint32_t        hashix;         /* npe Entity hash index                  */
@@ -1269,9 +1358,9 @@ typedef struct blog_npe blog_npe_t;
 #define BLOG_NXE_STS_NPE     2
 
 typedef struct {
-    uint32_t unused: 29;     
-    uint32_t dir   : 1;     
-    uint32_t status: 2;     
+    uint32_t unused: 29;
+    uint32_t dir   : 1;
+    uint32_t status: 2;
 } blog_nxe_flags_t;
 
 /* union of NPE and NWE entities */
@@ -1284,7 +1373,7 @@ typedef struct {
             void    *mega_p;
         }; /* These fields are valid before flow learning */
     };
-    blog_nxe_flags_t flags;     
+    blog_nxe_flags_t flags;
 } blog_nxe_t;
 
 /* Max # of nf_conn linked per flow */
@@ -1349,7 +1438,14 @@ typedef enum {
 
 typedef struct {
     void *ct_p[BLOG_CT_MAX];
-    int ct_count;
+    union {
+        struct {
+            uint32_t ct_count           :3;
+            uint32_t reserved1          :15;
+            uint32_t rx_max_pktlen      :14;
+        };
+        uint32_t u32_1;
+    };
     union {
         struct {
             uint32_t is_downstream      :1;
@@ -1455,7 +1551,7 @@ typedef struct {
                 uint32_t         PASS_THRU   : 1;
 
                 uint32_t         NPT6        : 1;
-                uint32_t         GREoESP     : 1; 
+                uint32_t         GREoESP     : 1;
                 uint32_t         GREoESP_type: 2;
                 uint32_t         HDR0_L2     : 1;
                 uint32_t         HDR0_IPv6   : 1;
@@ -1467,7 +1563,7 @@ typedef struct {
                 uint32_t         DEL_IPv4    : 1;
                 uint32_t         ESP         : 1;
                 uint32_t         GRE         : 1;
-                uint32_t         L2TP        : 1; 
+                uint32_t         L2TP        : 1;
                 uint32_t         PPTP        : 1;
                 uint32_t         PLD_IPv6    : 1;
 
@@ -1513,12 +1609,12 @@ typedef struct {
                 uint32_t         LLC_SNAP    : 1;
                 uint32_t         VXLAN       : 1;
                 uint32_t         GRE_ETH_IPv4: 1;    /* GRE inner header type IPv4 */
-                uint32_t         GRE_ETH_IPv6: 1;    /* GRE inner header type IPv6 */                
+                uint32_t         GRE_ETH_IPv6: 1;    /* GRE inner header type IPv6 */
                 uint32_t         ESPoUDP     : 1;
             )
         }               bmap;/* as per order of BlogEncap_t enums declaration */
         uint32_t        hdrs;
-    }; 
+    };
 } BlogInfo_t;
 
 /*
@@ -1548,7 +1644,7 @@ struct blogTuple_t {
     uint8_t         tos;            /* IP header tos */
     uint16_t        check;          /* checksum: rx tuple=l3, tx tuple=l4 */
 
-}; 
+};
 typedef struct blogTuple_t BlogTuple_t;
 
 #define BLOG_RX_L2(b)               (blog_p->rx.info.bmap.PLD_L2 && !b->rx.unknown_ucast)
@@ -1562,9 +1658,10 @@ typedef struct blogTuple_t BlogTuple_t;
 
 #define HDRS_IPinIP     ((1<<GRE) | (1<<PLD_IPv4) | (1<<PLD_IPv6) | (1<<PLD_L2) | \
                          (1<<HDR0_IPv4) | (1<<HDR0_IPv6) | (1<<HDR0_L2) |  \
-                         (1<<DEL_IPv4) | (1<<DEL_IPv6) | (1<<DEL_L2) | (1<<VXLAN))
+                         (1<<DEL_IPv4) | (1<<DEL_IPv6) | (1<<DEL_L2) | (1<<VXLAN) | \
+                         (1<<L2TP))
 
-#define HDRS_EIPinIP    (HDRS_IPinIP | (1<<GREoESP) | (3<<GREoESP_type) | (1<<ESP) | (1<<ESPoUDP)) 
+#define HDRS_EIPinIP    (HDRS_IPinIP | (1<<GREoESP) | (3<<GREoESP_type) | (1<<ESP) | (1<<ESPoUDP))
 
 #define HDRS_IP4in4     ((1<<PLD_IPv4) | (1<<DEL_IPv4))
 #define HDRS_IP6in4     ((1<<PLD_IPv6) | (1<<DEL_IPv4))
@@ -1577,6 +1674,7 @@ typedef struct blogTuple_t BlogTuple_t;
 #define HDRS_IP2in4     ((1<<PLD_L2) | (1<<DEL_IPv4))
 #define HDRS_IP2in6     ((1<<PLD_L2) | (1<<DEL_IPv6))
 #define HDRS_EIP4in6    ((1<<PLD_IPv4) | (1<<DEL_IPv6) | (1<<ESP))
+#define HDRS_EIP6in6    ((1<<PLD_IPv6) | (1<<DEL_IPv6) | (1<<ESP))
 #define HDRS_2in2       ((1<<PLD_L2) | (1<<DEL_L2))
 
 #define RX_IP4in6(b)    (((b)->rx.info.hdrs & HDRS_IPinIP)==HDRS_IP4in6)
@@ -1586,6 +1684,8 @@ typedef struct blogTuple_t BlogTuple_t;
 #define RX_L2inL2(b)    (((b)->rx.info.hdrs & HDRS_IPinIP)==HDRS_2in2)
 #define TX_NONE(b)      (((b)->tx.info.hdrs & HDRS_IPinIP)==0)
 
+#define RX_L2(b)        ((b)->rx.info.bmap.PLD_L2)
+#define TX_L2(b)        ((b)->tx.info.bmap.PLD_L2)
 #define RX_IPV4(b)      ((b)->rx.info.bmap.PLD_IPv4)
 #define TX_IPV4(b)      ((b)->tx.info.bmap.PLD_IPv4)
 #define RX_IPV6(b)      ((b)->rx.info.bmap.PLD_IPv6)
@@ -1607,13 +1707,26 @@ typedef struct blogTuple_t BlogTuple_t;
 #define TX_ESPoUDP(b)   ((b)->tx.info.bmap.ESPoUDP)
 #define ESPoUDP(b)      ((b)->rx.info.bmap.ESPoUDP || (b)->tx.info.bmap.ESPoUDP)
 #define PT_ESPoUDP(b)   (RX_ESPoUDP(b) && TX_ESPoUDP(b))
+#define PT_ESPv4oUDP(b)   (RX_IPV4(b) && (b)->esp_over_udp_pt)
+#define PT_ESPv6oUDP(b)   (RX_IPV6(b) && (b)->esp_over_udp_pt)
 #define IS_ESPoUDP_SPU_DS(b)  ( RX_ESPoUDP(b) && TX_ESPoUDP(b) && (TX_PHY_TYPE(b) == BLOG_SPU_DS) )
 #define IS_ESPoUDP_SPU_US(b)  ( RX_ESPoUDP(b) && TX_ESPoUDP(b) && (RX_PHY_TYPE(b) == BLOG_SPU_US) )
+#define RX_ESPv4oUDP(b)   (RX_IPV4(b) && ((RX_ESP(b) && !RX_ESPoUDP(b) && TX_ESPoUDP(b)) || (b)->esp_over_udp_pt))
+#define TX_ESPv4oUDP(b)   (TX_IPV4(b) && (TX_ESPoUDP(b) || (b)->esp_over_udp_pt))
+#define RX_ESPv6oUDP(b)   (RX_IPV6(b) && ((RX_ESP(b) && !RX_ESPoUDP(b) && TX_ESPoUDP(b)) || (b)->esp_over_udp_pt))
+#define TX_ESPv6oUDP(b)   (TX_IPV6(b) && ((RX_ESPoUDP(b) && TX_ESPoUDP(b)) || (b)->esp_over_udp_pt))
+
 #define RX_GRE_ETH(b)   ((b)->rx.info.bmap.GRE_ETH)
 #define TX_GRE_ETH(b)   ((b)->tx.info.bmap.GRE_ETH)
 #define TX_VXLAN(b)     ((b)->tx.info.bmap.VXLAN)
 #define RX_VXLAN(b)     ((b)->rx.info.bmap.VXLAN)
 #define VXLAN(b)        (TX_VXLAN(b) || RX_VXLAN(b))
+
+/* GREv4/6 Tunnel */
+#define RX_GREV4(b)     (RX_GRE(b) & RX_IPV4_DEL(b))
+#define TX_GREV4(b)     (TX_GRE(b) & TX_IPV4_DEL(b))
+#define RX_GREV6(b)     (RX_GRE(b) & RX_IPV6_DEL(b))
+#define TX_GREV6(b)     (TX_GRE(b) & TX_IPV6_DEL(b))
 
 #define RX_IPV4ONLY(b)  (((b)->rx.info.hdrs & HDRS_IPinIP)==(1 << PLD_IPv4))
 #define TX_IPV4ONLY(b)  (((b)->tx.info.hdrs & HDRS_IPinIP)==(1 << PLD_IPv4))
@@ -1690,7 +1803,7 @@ typedef struct blogTuple_t BlogTuple_t;
 #define T6in4DN(b)      (RX_IP6in4(b) && (TX_IPV6ONLY(b) || TX_GIP6in4(b) || TX_GIP6in6(b)))
 
 #define CHK4in6(b)      (T4in6UP(b) || T4in6DN(b))
-#define CHK6in4(b)      (T6in4UP(b) || T6in4DN(b)) 
+#define CHK6in4(b)      (T6in4UP(b) || T6in4DN(b))
 #define CHK4to4(b)      (RX_IPV4ONLY(b) && TX_IPV4ONLY(b))
 #define CHK6to6(b)      (RX_IPV6ONLY(b) && TX_IPV6ONLY(b))
 
@@ -1699,8 +1812,8 @@ typedef struct blogTuple_t BlogTuple_t;
 #define TG4in4DN(b)     (RX_GIP4in4(b) && (TX_IPV4ONLY(b) || TX_IPV6ONLY(b) || TX_IP4in6(b)))
 #define TG6in4UP(b)     (TX_GIP6in4(b) && (RX_IPV4ONLY(b) || RX_IPV6ONLY(b) || RX_IP6in4(b)))
 #define TG6in4DN(b)     (RX_GIP6in4(b) && (TX_IPV4ONLY(b) || TX_IPV6ONLY(b) || TX_IP6in4(b)))
-#define TG2in4UP(b)     (RX_L2ONLY(b) && TX_GIP2in4(b))
-#define TG2in4DN(b)     (RX_GIP2in4(b) && TX_L2ONLY(b))
+#define TG2in4UP(b)     (RX_L2(b) && TX_GIP2in4(b))
+#define TG2in4DN(b)     (RX_GIP2in4(b) && TX_L2(b))
 
 #define TGL2_4in6UP(b)  (RX_L2ONLY(b) && TX_GRE_ETH(b) && TX_GIP2in6(b) && !((b)->tx.info.bmap.GRE_ETH_IPv6) && ((b)->tx.info.bmap.GRE_ETH_IPv4))
 #define TGL2_4in6DN(b)  (RX_GRE_ETH(b) && RX_GIP2in6(b) && TX_L2ONLY(b) && !((b)->rx.info.bmap.GRE_ETH_IPv6) && ((b)->rx.info.bmap.GRE_ETH_IPv4))
@@ -1713,8 +1826,8 @@ typedef struct blogTuple_t BlogTuple_t;
 #define TG4in6DN(b)     (RX_GIP4in6(b) && (TX_IPV4ONLY(b) || TX_IPV6ONLY(b) || TX_IP4in6(b)))
 #define TG6in6UP(b)     (TX_GIP6in6(b) && (RX_IPV4ONLY(b) || RX_IPV6ONLY(b) || RX_IP6in4(b)))
 #define TG6in6DN(b)     (RX_GIP6in6(b) && (TX_IPV4ONLY(b) || TX_IPV6ONLY(b) || TX_IP6in4(b)))
-#define TG2in6UP(b)     (RX_L2ONLY(b) && TX_GIP2in6(b))
-#define TG2in6DN(b)     (RX_GIP2in6(b) && TX_L2ONLY(b))
+#define TG2in6UP(b)     (RX_L2(b) && TX_GIP2in6(b))
+#define TG2in6DN(b)     (RX_GIP2in6(b) && TX_L2(b))
 
 #define TG24in4UP(b)    (TG4in4UP(b) || TG2in4UP(b))
 #define TG24in4DN(b)    (TG4in4DN(b) || TG2in4DN(b))
@@ -1744,10 +1857,8 @@ typedef struct blogTuple_t BlogTuple_t;
 
 #define PTG4(b)         (RX_GIPV4ONLY(b) && TX_GIPV4ONLY(b) && PT(b))
 #define PTG6(b)         (RX_GIPV6ONLY(b) && TX_GIPV6ONLY(b) && PT(b))
-#define TOTG4(b)        (!PT(b) && ((RX_GIP4in4(b) && TX_GIP4in4(b)) || \
-                            (RX_GIP6in4(b) && TX_GIP6in4(b))))
-#define TOTG6(b)        (!PT(b) && ((RX_GIP4in6(b) && TX_GIP4in6(b)) || \
-                            (RX_GIP6in6(b) && TX_GIP6in6(b))))
+#define TOTG4(b)        (!PT(b) && ((RX_GIP4in4(b) || RX_GIP6in4(b) || RX_GIP2in4(b)) && (TX_GIP4in4(b) || TX_GIP6in4(b) || TX_GIP2in4(b))))
+#define TOTG6(b)        (!PT(b) && ((RX_GIP4in6(b) || RX_GIP6in6(b) || RX_GIP2in6(b)) && (TX_GIP4in6(b) || TX_GIP6in6(b) || TX_GIP2in6(b))))
 
 #define L2ACCEL_PTG(b)  (RX_GL2ONLY(b) && TX_GL2ONLY(b))
 
@@ -1767,11 +1878,31 @@ typedef struct blogTuple_t BlogTuple_t;
 #define TE6in4UP(b)     (RX_IPV6ONLY(b) && TX_EIP6in4(b))
 #define TE6in4DN(b)     (RX_EIP6in4(b) && TX_IPV6ONLY(b))
 
+#define CHKE46in4UP(b)  (TE4in4UP(b) || TE6in4UP(b))
+#define CHKE46in4DN(b)  (TE4in4DN(b) || TE6in4DN(b))
+
 #define CHKE4in4(b)     (TE4in4UP(b) || TE4in4DN(b))
 #define CHKE6in4(b)     (TE6in4UP(b) || TE6in4DN(b))
 #define CHKE46in4(b)    (CHKE4in4(b) || CHKE6in4(b))
 
 #define PTE4(b)         (RX_EIPV4ONLY(b) && TX_EIPV4ONLY(b))
+
+#define RX_EIP4in6(b)   (((b)->rx.info.hdrs & HDRS_EIPinIP)==HDRS_EIP4in6)
+#define TX_EIP4in6(b)   (((b)->tx.info.hdrs & HDRS_EIPinIP)==HDRS_EIP4in6)
+#define RX_EIP6in6(b)   (((b)->rx.info.hdrs & HDRS_EIPinIP)==HDRS_EIP6in6)
+#define TX_EIP6in6(b)   (((b)->tx.info.hdrs & HDRS_EIPinIP)==HDRS_EIP6in6)
+
+#define TE4in6UP(b)     (RX_IPV4ONLY(b) && TX_EIP4in6(b))
+#define TE4in6DN(b)     (RX_EIP4in6(b) && TX_IPV4ONLY(b))
+#define TE6in6UP(b)     (RX_IPV6ONLY(b) && TX_EIP6in6(b))
+#define TE6in6DN(b)     (RX_EIP6in6(b) && TX_IPV6ONLY(b))
+
+#define CHKE46in6UP(b)  (TE4in6UP(b) || TE6in6UP(b))
+#define CHKE46in6DN(b)  (TE4in6DN(b) || TE6in6DN(b))
+#define CHKE4in6(b)     (TE4in6UP(b) || TE4in6DN(b))
+#define CHKE6in6(b)     (TE6in6UP(b) || TE6in6DN(b))
+#define CHKE46in6(b)    (CHKE4in6(b) || CHKE6in6(b))
+
 
 #define HDRS_404        (1<<DEL_IPv4|1<<PLD_IPv4)
 #define HDRS_464        (1<<DEL_IPv4|1<<HDR0_IPv6|1<<PLD_IPv4)
@@ -1833,15 +1964,49 @@ typedef struct blogTuple_t BlogTuple_t;
 #define CHK246oG4oE4DN(b) (CHK4oG4oE4DN(b) || CHK6oG4oE4DN(b) || CHK2oG4oE4DN(b))
 #define CHK246oG4oE4(b)   (CHK4oG4oE4(b) || CHK6oG4oE4(b) || CHK2oG4oE4(b))
 
+#define BLOG_RX_GRE_KEY_ENABLED(blog_p)   (RX_GRE(blog_p) && \
+        (blog_p->grerx.gre_flags.u16 & BLOG_GRE_FLAGS_KEY_ENABLE))
+
 
 #define RX_PPTP(b)       ((b)->rx.info.bmap.PPTP)
 #define TX_PPTP(b)       ((b)->tx.info.bmap.PPTP)
+#define RX_PPTP_TUNNEL(b) (RX_PPTP(b) && !TX_PPTP(b))
+#define TX_PPTP_TUNNEL(b) (!RX_PPTP(b) && TX_PPTP(b))
 
 #define RX_L2TP(b)       ((b)->rx.info.bmap.L2TP)
 #define TX_L2TP(b)       ((b)->tx.info.bmap.L2TP)
 
-#define CHK_RX_L2TP(b)    (((b)->rx.info.hdrs & ((1 << DEL_IPv4) | (1 << PLD_IPv4))) && RX_L2TP(b))
-#define CHK_TX_L2TP(b)    (((b)->rx.info.hdrs & ((1 << DEL_IPv4) | (1 << PLD_IPv4))) && TX_L2TP(b))
+#define RX_L2TPv4(b) (RX_L2TP(b) && ((b)->rx.info.hdrs & (1 << DEL_IPv4)))
+#define TX_L2TPv4(b) (TX_L2TP(b) && ((b)->tx.info.hdrs & (1 << DEL_IPv4)))
+#define RX_L2TPv6(b) (RX_L2TP(b) && ((b)->rx.info.hdrs & (1 << DEL_IPv6)))
+#define TX_L2TPv6(b) (TX_L2TP(b) && ((b)->tx.info.hdrs & (1 << DEL_IPv6)))
+
+/* L2TPv4 Tunnel */
+#define CHK_RX_L2TPv4(b) (RX_L2TPv4(b) && !TX_L2TPv4(b))
+#define CHK_TX_L2TPv4(b) (!RX_L2TPv4(b) && TX_L2TPv4(b))
+
+/* L2TPv4 Tunnel 46in4 flows */
+#define CHK_RX_L2TPv4_4in4(b) (CHK_RX_L2TPv4(b) && ((b)->rx.info.hdrs & (1 << PLD_IPv4)))
+#define CHK_TX_L2TPv4_4in4(b) (CHK_TX_L2TPv4(b) && ((b)->tx.info.hdrs & (1 << PLD_IPv4)))
+#define CHK_RX_L2TPv4_6in4(b) (CHK_RX_L2TPv4(b) && ((b)->rx.info.hdrs & (1 << PLD_IPv6)))
+#define CHK_TX_L2TPv4_6in4(b) (CHK_TX_L2TPv4(b) && ((b)->tx.info.hdrs & (1 << PLD_IPv6)))
+
+/* L2TPv4 pass-thru */
+#define CHK_L2TPv4_PT(b) (RX_L2TP(b) && RX_IPV4_DEL(b) && TX_L2TP(b) && TX_IPV4_DEL(b))
+
+/* L2TPv6 Tunnel */
+#define CHK_RX_L2TPv6(b) (RX_L2TPv6(b) && !TX_L2TPv6(b))
+#define CHK_TX_L2TPv6(b) (!RX_L2TPv6(b) && TX_L2TPv6(b))
+
+/* L2TPv6 Tunnel 46in6 flows */
+#define CHK_RX_L2TPv6_4in6(b) (CHK_RX_L2TPv6(b) && ((b)->rx.info.hdrs & (1 << PLD_IPv4)))
+#define CHK_TX_L2TPv6_4in6(b) (CHK_TX_L2TPv6(b) && ((b)->tx.info.hdrs & (1 << PLD_IPv4)))
+#define CHK_RX_L2TPv6_6in6(b) (CHK_RX_L2TPv6(b) && ((b)->rx.info.hdrs & (1 << PLD_IPv6)))
+#define CHK_TX_L2TPv6_6in6(b) (CHK_TX_L2TPv6(b) && ((b)->tx.info.hdrs & (1 << PLD_IPv6)))
+
+/* L2TPv6 pass-thru */
+#define CHK_L2TPv6_PT(b) (RX_L2TP(b) && RX_IPV6_DEL(b) && TX_L2TP(b) && TX_IPV6_DEL(b))
+
 
 #define RX_PPPOE(b)       ((b)->rx.info.bmap.PPPoE_2516)
 #define TX_PPPOE(b)       ((b)->tx.info.bmap.PPPoE_2516)
@@ -1850,6 +2015,58 @@ typedef struct blogTuple_t BlogTuple_t;
 #define MAPT_UP(b)       ((RX_IPV4ONLY(b) || RX_GIP4in4(b)) && TX_IPV6ONLY(b))
 #define MAPT_DN(b)       (RX_IPV6ONLY(b) && (TX_IPV4ONLY(b) || TX_GIP4in4(b)))
 #define MAPT(b)          (MAPT_DN(b) || MAPT_UP(b))
+
+#define RX_V4VXLAN(b)   ((b)->rx.info.bmap.DEL_IPv4 && RX_VXLAN(b))
+#define TX_V4VXLAN(b)   ((b)->tx.info.bmap.DEL_IPv4 && TX_VXLAN(b))
+
+#define RX_V6VXLAN(b)   ((b)->rx.info.bmap.DEL_IPv6 && RX_VXLAN(b))
+#define TX_V6VXLAN(b)   ((b)->tx.info.bmap.DEL_IPv6 && TX_VXLAN(b))
+
+#define RX_VXLAN_2in4(b)   (RX_VXLAN(b) && RX_L2(b) && RX_IPV4_DEL(b))
+#define RX_VXLAN_4in4(b)   (RX_VXLAN(b) && RX_IPV4(b) && RX_IPV4_DEL(b))
+#define RX_VXLAN_6in4(b)   (RX_VXLAN(b) && RX_IPV6(b) && RX_IPV4_DEL(b))
+#define TX_VXLAN_2in4(b)   (TX_VXLAN(b) && TX_L2(b) && TX_IPV4_DEL(b))
+#define TX_VXLAN_4in4(b)   (TX_VXLAN(b) && TX_IPV4(b) && TX_IPV4_DEL(b))
+#define TX_VXLAN_6in4(b)   (TX_VXLAN(b) && TX_IPV6(b) && TX_IPV4_DEL(b))
+
+#define RX_VXLAN_2in6(b)   (RX_VXLAN(b) && RX_L2(b) && RX_IPV6_DEL(b))
+#define RX_VXLAN_4in6(b)   (RX_VXLAN(b) && RX_IPV4(b) && RX_IPV6_DEL(b))
+#define RX_VXLAN_6in6(b)   (RX_VXLAN(b) && RX_IPV6(b) && RX_IPV6_DEL(b))
+#define TX_VXLAN_2in6(b)   (TX_VXLAN(b) && TX_L2(b) && TX_IPV6_DEL(b))
+#define TX_VXLAN_4in6(b)   (TX_VXLAN(b) && TX_IPV4(b) && TX_IPV6_DEL(b))
+#define TX_VXLAN_6in6(b)   (TX_VXLAN(b) && TX_IPV6(b) && TX_IPV6_DEL(b))
+
+/* Tunnels with IPv4 outer header, but skip ESP tunnels */
+#define RX_V4TUNNEL(b)    (TOTG4(b) || CHKG246in4DN(b) || T6in4DN(b) || RX_V4VXLAN(b) || RX_PPTP_TUNNEL(b) || \
+        CHK_RX_L2TPv4(b) || RX_ESPv4oUDP(b))
+
+#define TX_V4TUNNEL(b)    (TOTG4(b) || CHKG246in4UP(b) || T6in4UP(b) || TX_V4VXLAN(b) || TX_PPTP_TUNNEL(b) || \
+        CHK_TX_L2TPv4(b) || TX_ESPv4oUDP(b))
+
+
+/* Tunnels with IPv6 outer header, but skip ESP tunnels */
+#define RX_V6TUNNEL(b) (TOTG6(b) || CHKG246in6DN(b) || T4in6DN(b) ||  RX_V6VXLAN(b) || PT_ESPv6oUDP(b) || \
+        CHK_RX_L2TPv6(b))
+
+#define TX_V6TUNNEL(b) (TOTG6(b) || CHKG246in6UP(b) || T4in6UP(b) || TX_V6VXLAN(b) || PT_ESPv6oUDP(b) || \
+        CHK_TX_L2TPv6(b))
+
+#define BLOG_V4_DEL_TUNNEL_FLOW(b)  ((b)->is_tunnel && (b)->rx.info.bmap.DEL_IPv4)
+#define BLOG_V4_PLD_TUNNEL_FLOW(b)  ((b)->is_tunnel && RX_ESPv4oUDP(b))
+#define BLOG_V4_TUNNEL_FLOW(b)      (BLOG_V4_DEL_TUNNEL_FLOW(b) || BLOG_V4_PLD_TUNNEL_FLOW(b))
+#define BLOG_V4_NON_TUNNEL_FLOW(b)  (!(b)->is_tunnel && (b)->rx.info.bmap.PLD_IPv4)
+#define BLOG_V4_FLOW(b)             (BLOG_V4_NON_TUNNEL_FLOW(b) || BLOG_V4_TUNNEL_FLOW(b))
+
+#define BLOG_V6_DEL_TUNNEL_FLOW(b)  ((b)->is_tunnel && (b)->rx.info.bmap.DEL_IPv6)
+#define BLOG_V6_PLD_TUNNEL_FLOW(b)  ((b)->is_tunnel && RX_ESPv6oUDP(b))
+#define BLOG_V6_TUNNEL_FLOW(b)      (BLOG_V6_DEL_TUNNEL_FLOW(b) || BLOG_V6_PLD_TUNNEL_FLOW(b))
+#define BLOG_V6_NON_TUNNEL_FLOW(b)  (!(b)->is_tunnel && (b)->rx.info.bmap.PLD_IPv6)
+#define BLOG_V6_FLOW(b)             (BLOG_V6_NON_TUNNEL_FLOW(b) || BLOG_V6_TUNNEL_FLOW(b))
+
+#define BLOG_L2_DEL_TUNNEL_FLOW(b)  ((b)->is_tunnel && (b)->rx.info.bmap.DEL_L2)
+#define BLOG_L2_TUNNEL_FLOW(b)      BLOG_L2_DEL_TUNNEL_FLOW(b)
+#define BLOG_L2_NON_TUNNEL_FLOW(b)  (!(b)->is_tunnel && (b)->rx.info.bmap.PLD_L2)
+#define BLOG_L2_FLOW(b)             (BLOG_L2_NON_TUNNEL_FLOW(b) || BLOG_L2_TUNNEL_FLOW(b))
 
 #define PKT_IPV6_GET_TOS_WORD(word)       \
    ((ntohl(word) & 0x0FF00000) >> 20)
@@ -1884,8 +2101,8 @@ struct blogTupleV6_t {
     union {
         uint32_t    word1;
         struct {
-            uint16_t length; 
-            uint8_t next_hdr; 
+            uint16_t length;
+            uint8_t next_hdr;
             uint8_t rx_hop_limit;
         };
     };
@@ -1921,14 +2138,14 @@ struct blogTupleV6_t {
         };
         uint32_t   word3;
     };
-    
-    union {      
+
+    union {
         struct {
             uint8_t nextHdr; uint8_t hdrLen; uint16_t data16;
             uint32_t data32;
         };
         uint64_t ip6_ExtHdr;
-    }; 
+    };
 
     ip6_addr_t      addr_npt6;
 } ____cacheline_aligned;
@@ -1964,7 +2181,7 @@ typedef union blogGreFlags {
             uint16_t rtgIe  : 1;
             uint16_t csumIe : 1;
         )
-    }; 
+    };
 } BlogGreFlags_t;
 
 struct blogGre_t {
@@ -1987,23 +2204,23 @@ struct blogGre_t {
     };
     uint16_t    ipid;
     uint16_t    l2_hlen;
-	
+
     union { //pptp
         struct {
-            uint16_t    keyLen;     
-            uint16_t    keyId;      
-        }; 
+            uint16_t    keyLen;
+            uint16_t    keyId;
+        };
         uint32_t    key;
     };
-    uint32_t            seqNum; 
+    uint32_t            seqNum;
     uint32_t            ackNum;
     uint16_t            pppInfo;
-    uint16_t            pppProto;	
+    uint16_t            pppProto;
 };
 
 typedef struct blogGre_t BlogGre_t;
 
-typedef union blogL2tpFlags { 
+typedef union blogL2tpFlags {
     uint16_t    u16;
     struct {
         BE_DECL(
@@ -2022,7 +2239,7 @@ typedef union blogL2tpFlags {
             uint16_t offsetBit   : 1;
             uint16_t seqBit     : 2;
             uint16_t lenBit     : 3;
-            uint16_t type       : 1;            
+            uint16_t type       : 1;
         )
     };
 } BlogL2tpFlags_t;
@@ -2148,7 +2365,7 @@ struct blogVxlan_t {
                 uint16_t length     :  8;
                 uint16_t ipv4       :  1;
                 uint16_t ipv6       :  1;
-                uint16_t reserved   :  6;              
+                uint16_t reserved   :  6;
             )
         };
     };
@@ -2433,6 +2650,16 @@ typedef enum  {
 #define BLOG_GROUP_DEV_REALLOC_COUNT    16
 
 typedef union {
+    uint32_t word0;
+    struct {
+        int8_t adjust; /* adjustment to MTU for this flow, when HDR additions are not part of MTU */
+        int8_t anomaly; /* similar to adjust, but when MTU is not based on physical dev MTU(ex: MAPT) */
+        int8_t padlen; /* need to be excluded as it is not same for all pkts of flow */
+        int8_t  tx_l3_delta; /* l3 delta for maxfrag len calulation */ 
+    };
+} blog_mtu_adjust_info_t;
+
+typedef union {
     uint8_t u8;
     struct {
         uint8_t unused: 6;
@@ -2445,8 +2672,8 @@ typedef struct {
     uint8_t ref_cnt;    /* ref count to this virtual dev */
     uint8_t bridge_info_idx; /* index into bridge_base_stats_tbl[] */
     blog_virt_dev_flags_t flags;
-    int8_t  delta;      /* virtual dev delta */   
-    int8_t  adjust;     /* MTU adjust */   
+    int8_t  delta;      /* virtual dev delta for stats */
+    blog_mtu_adjust_info_t mtu_info;
     void    *dev_p;     /* pointer to virtual dev */
 } blog_virt_dev_info_t;
 
@@ -2476,7 +2703,7 @@ typedef struct {
     uint16_t num_dev;   /* number of used devices in the table */
     uint16_t last_dev_idx;  /* index of last used device in the table */
     blog_master_bridge_base_stats_t bridge_base_stats_tbl[BLOG_MCAST_MAX_BRIDGE_STATS];
-    blog_virt_dev_info_t *virt_dev_info_tbl_p; /* pointer to table/list of virtual devices */   
+    blog_virt_dev_info_t *virt_dev_info_tbl_p; /* pointer to table/list of virtual devices */
 } group_dev_info_t;
 
 typedef enum group_type {
@@ -2509,12 +2736,148 @@ typedef struct blog_shared_info {
     atomic_t wlan_mcast_clone_count;  /* # of times a blog cloned for replication by WLAN */
     atomic_t wlan_mcast_client_count; /* # of times a pkt transmitted to WLAN client */
     atomic_t emit_count; /* # of times a blog_emit() was called by a client */
-    atomic_t known_exception_client_count; /* # of times blog was cloned but a 
+    atomic_t known_exception_client_count; /* # of times blog was cloned but a
                    blog_emit() was not called because of a known exception for a client */
     atomic_t client_count;
     atomic_t host_client_count;
-    void *master_p;
+    uint32_t master_flowid;
 } blog_shared_info_t;
+
+typedef union {
+    uint8_t u8;
+    struct {
+        uint8_t unused0: 7;
+        uint8_t is_inner_hdr_l3: 1;  /* inner hdr is 1: L3, 0: L2 */
+    };
+} blog_tunnel_flags_t;
+
+/* Note:
+ * - Outer flow context: all the fields are valid except key.
+ * - Inner flow context: flowid, and key fields are valid, all other fields are for
+ *   info only.
+ */
+typedef struct blog_tunnel_info {
+    uint32_t flowid;
+    uint32_t key;
+    uint32_t key_mask;
+    uint8_t key_offset;
+    uint8_t inner_pkt_offset;
+    blog_tunnel_flags_t flags;
+    uint8_t ipid_cntr_id;
+} blog_tunnel_info_t;
+
+#define BLOG_TUNNEL_FLOWID              0
+#define BLOG_TUNNEL_KEY_DEFAULT         0
+#define BLOG_TUNNEL_KEY_OFFSET_DEFAULT  0
+
+#define BLOG_VXLAN_TUNNEL_KEY_MASK      0xFFFFFF00
+#define BLOG_GRE_TUNNEL_KEY_MASK        0xFFFFFFFF
+
+#define BLOG_DIR_RX_TOS                 0
+#define BLOG_DIR_TX_TOS                 1 
+
+typedef struct blog_tunnel_tuple {
+    blog_tunnel_info_t  info;
+    uint32_t   hash;
+    BlogHash_t match;
+    union {
+        struct {
+            uint16_t source;     /* L4 source port */
+            uint16_t dest;       /* L4 dest port */
+        } port;
+        uint32_t ports; /* Used by ESPoUDP inner flows to save tunnel L4 ports */
+    };
+} blog_tunnel_t;
+
+/* These fields save the RX L2 encap info and used to restore the RX L2 for 
+ * VXLAN pass-thru case */
+typedef struct blog_l2_encap {
+    uint32_t    info_hdrs;
+    uint8_t     unused;
+    uint8_t     encap_count;
+    uint8_t     encap[BLOG_ENCAP_MAX];
+} blog_l2_encap_t;
+
+typedef struct blog_ip_frag_info {
+    uint16_t max_ip_payload_size;
+    uint8_t fixed_hdr_size;
+    uint8_t fragment_ip_hdr_offset;
+    uint8_t ipid_cntr_id;
+} blog_ip_frag_info_t;
+
+typedef union blog_score_key {
+    uint16_t key;
+    struct {
+        BE_DECL(
+                uint16_t rsvd:2;
+                uint16_t dir:1;
+                uint16_t incarn:3;
+                uint16_t idx:10;
+        )
+        LE_DECL(
+                uint16_t idx:10;
+                uint16_t incarn:3;
+                uint16_t dir:1;
+                uint16_t rsvd:2;
+        )
+    };
+} blog_score_key_t;
+
+
+typedef struct {
+    blog_score_key_t score_key;          /* score trace key */
+    uint16_t         score_dcp_bitmask;  /* score data collection profile bitmask*/
+} blog_score_info_t;
+
+typedef enum {
+    BLOG_SCORE_FLOW_ADD=1,
+    BLOG_SCORE_FLOW_DELETE,
+    BLOG_SCORE_FLOW_UPDATE,
+    BLOG_SCORE_FLOW_HW_DEFER_ADD,
+    BLOG_SCORE_FLOW_MAX
+} blog_score_cmd_t;
+
+typedef struct {
+    blog_score_key_t score_key;   /* score trace key */
+    uint16_t  score_dcp_bitmask;  /* score data collection profile bitmask */
+    union {
+       uint32_t flags;
+       struct {
+           uint32_t hw_flow_enabled:1;
+           uint32_t nf_dir:1;
+           uint32_t is_score_bnl_dcp_en:1;
+           uint32_t is_score_sw_only_en:1;
+           uint32_t rsvd:28;
+       };
+    };
+    union { /*wlan info */
+        uint32_t        wl_info;
+        struct {
+            BE_DECL(
+               uint32_t            is_rx_hw_acc_en      : 1;/* =1 if WLAN Receive is capable of HW Acceleration */
+               uint32_t            is_tx_hw_acc_en      : 1;/* =1 if WLAN Transmit is capable of HW Acceleartion */
+               uint32_t            reserved             : 30;
+            )
+            LE_DECL(
+               uint32_t            reserved             : 30;
+               uint32_t            is_tx_hw_acc_en      : 1;/* =1 if WLAN Transmit is capable of HW Acceleartion */
+               uint32_t            is_rx_hw_acc_en      : 1;/* =1 if WLAN Receive is capable of HW Acceleration */
+            )
+        } wl_hw_support;
+        BlogWfd_t       wfd;
+        BlogRnr_t       rnr;
+    };
+    void *tx_dev;           /* tx net device */
+    void *ct;               /* selected CT */
+    BlogInfo_t tx_info;     /*tx phy & hdr info */
+    blog_score_cmd_t cmd;   /*flow add/modify/delete*/ 
+
+    /* Wired info */
+    uint32_t queue_id;      /**< Egress queue id, a derivative of mark */
+    uint8_t wan_flow;
+} blog_score_flow_info_t;
+
+
 
 /*
  *------------------------------------------------------------------------------
@@ -2522,7 +2885,7 @@ typedef struct blog_shared_info {
  * ARM 32: 704 bytes
  * ARM 64: 896 bytes
  * MIPS  : 704 bytes
- * Marked the cacheline boundaries in the below structure. 
+ * Marked the cacheline boundaries in the below structure.
  * Be cautious when adding new members to this structure.
  *------------------------------------------------------------------------------
  */
@@ -2553,7 +2916,7 @@ struct blog_t {
         BlogRnr_t       rnr;
     };
     blog_gdx_t          gdx;
-    uint32_t            fc_context;     
+    uint32_t            fc_context;
     void                * mc_fdb;       /* physical rx network device */
     uint32_t            esp_over_udp_spi;
 
@@ -2567,14 +2930,16 @@ struct blog_t {
     uint32_t            ifidx[2];       /* fdb src and fdb dst bridge ifidx */
     int8_t              tx_dev_delta; /* octet delta of TX dev */
     int8_t              tx_dev_adjust; /* MTU adjust */
+    int8_t              tx_dev_tx_l3_delta; /* l3 delta for max_rx_pktlen calculation */
+    int8_t              tx_dev_mtu_anomaly; /* anomaly for max_rx_pktlen calculation */
+    int8_t              tx_dev_mtu_padlen; /* need to be excluded as it is not same for all pkts of flow */
     uint8_t             l2_dirty_offset;
     uint8_t             outer_vtag_num: 4; /* used for outer header */
     uint8_t             vtag_num: 4; /* used for tuple header */
     uint8_t             hdr_count: 4;
     uint8_t             vtag_tx_num: 4;
-    uint8_t             unused2: 4;
-    uint8_t             ucast_vtag_num: 4; /* VLAN VTAG NUM used for ucast flow classification */
     uint16_t            eth_type;
+    uint16_t            outer_eth_type;
     /* --- [ARM32]32 byte cacheline boundary --- */
 
     union {
@@ -2593,7 +2958,7 @@ struct blog_t {
             uint32_t    l2_pppoe:    1; /* L2 packet is PPPoE */
             uint32_t    l2_ipv6:     1; /* L2 packet is IPv6  */
             uint32_t    l2_ipv4:     1; /* L2 packet is IPv4  */
-            uint32_t    is_mapt_us:  1; /* MAP-T Upstream flow */   
+            uint32_t    is_mapt_us:  1; /* MAP-T Upstream flow */
             uint32_t    is_df:       1; /* IPv4 DF flag set */
             uint32_t    ptm_us_bond: 1; /* PTM US Bonding Mode */
             uint32_t    lag_port:    2; /* LAG port when trunking is done by internal switch/runner */
@@ -2632,7 +2997,7 @@ struct blog_t {
             uint32_t    lag_port:    2; /* LAG port when trunking is done by internal switch/runner */
             uint32_t    ptm_us_bond: 1; /* PTM US Bonding Mode */
             uint32_t    is_df:       1; /* IPv4 DF flag set */
-            uint32_t    is_mapt_us:  1; /* MAP-T Upstream flow */   
+            uint32_t    is_mapt_us:  1; /* MAP-T Upstream flow */
             uint32_t    l2_ipv4:     1; /* L2 packet is IPv4  */
             uint32_t    l2_ipv6:     1; /* L2 packet is IPv6  */
             uint32_t    l2_pppoe:    1; /* L2 packet is PPPoE */
@@ -2652,17 +3017,25 @@ struct blog_t {
         uint32_t        flags2;
         struct {
         BE_DECL(
-            uint32_t    unused3:        14;
+            uint32_t    unused3:         8;
+            uint32_t    encrypt:         1; /* for wireguard */
             uint32_t    rx_ipfrag:       1; /* Rx packet was a IP fragment */
-            uint32_t    brcm_tag:        1; /* BRCM Tag */
             uint32_t    esp_over_udp_pt: 1; /* This flag should be set by WCC SCS in Linux path */
                                             /* after idenitfying the ESPoUDP pass-thru packet */
             uint32_t    esp_mode:        1;
+            uint32_t    inner_l2_pppoe:  1; /* L2 packet is PPPoE */
+            uint32_t    inner_l2_ipv6:   1; /* L2 packet is IPv6  */
+            uint32_t    inner_l2_ipv4:   1; /* L2 packet is IPv4  */
+            uint32_t    inner_l2_mode:   1; /* L2 mode */
+
+            uint32_t    brcm_tag:        1; /* BRCM Tag */
             uint32_t    pkt_accel_mode:  1;
+            uint32_t    inner_pkt_accel_mode:  1;
             uint32_t    fpi_mode:        2;
             uint32_t    force_l2_hdr_copy: 1; /* Force L2 header copy when preparing flow context */
             uint32_t    tcp_discard:     1;
             uint32_t    fro:             1;
+
             uint32_t    local_tcp:       1;  /* Locally terminated TCP flows */
             uint32_t    hw_cso:          1;
             uint32_t    is_tr471_flow:   1;
@@ -2681,17 +3054,25 @@ struct blog_t {
             uint32_t    is_tr471_flow:   1;
             uint32_t    hw_cso:          1;
             uint32_t    local_tcp:       1;  /* Locally terminated TCP flows */
+
             uint32_t    fro:             1;
             uint32_t    tcp_discard:     1;
             uint32_t    force_l2_hdr_copy: 1; /* Force L2 header copy when preparing flow context */
             uint32_t    fpi_mode:        2;
+            uint32_t    inner_pkt_accel_mode:  1;
             uint32_t    pkt_accel_mode:  1;
+            uint32_t    brcm_tag:        1; /* BRCM Tag */
+
+            uint32_t    inner_l2_mode:   1; /* L2 mode */
+            uint32_t    inner_l2_ipv4:   1; /* L2 packet is IPv4  */
+            uint32_t    inner_l2_ipv6:   1; /* L2 packet is IPv6  */
+            uint32_t    inner_l2_pppoe:  1; /* L2 packet is PPPoE */
             uint32_t    esp_mode:        1;
             uint32_t    esp_over_udp_pt: 1; /* This flag should be set by WCC SCS in Linux path */
                                             /* after idenitfying the ESPoUDP pass-thru packet */
-            uint32_t    brcm_tag:        1; /* BRCM Tag */
             uint32_t    rx_ipfrag:       1; /* Rx packet was a IP fragment */
-            uint32_t    unused3:        14;
+            uint32_t    encrypt:         1; /* for wireguard */
+            uint32_t    unused3:         8;
         )
         };
     };
@@ -2699,12 +3080,26 @@ struct blog_t {
         uint32_t        flags3;
         struct {
         BE_DECL(
-            uint32_t    unused4:        16;
+            uint32_t    unused4:         2;
+            uint32_t    is_score_sw_only_en:  1;
+            uint32_t    is_score_bnl_sw_en:  1;
+            uint32_t    fpe_enabled:     1;
+            uint32_t    is_inner_flow:   1;
+            uint32_t    is_tunnel:       1;
+            uint32_t    lag_enabled:     1;
+            uint32_t    lag_hash:        8; /* LAG hash index */
             uint32_t    xmit_args_mask: 16;
         )
         LE_DECL(
             uint32_t    xmit_args_mask: 16;
-            uint32_t    unused4:        16;
+            uint32_t    lag_hash:        8;
+            uint32_t    lag_enabled:     1;
+            uint32_t    is_tunnel:       1;
+            uint32_t    is_inner_flow:   1;
+            uint32_t    fpe_enabled:     1;
+            uint32_t    is_score_bnl_sw_en:  1;
+            uint32_t    is_score_sw_only_en:  1;
+            uint32_t    unused4:         2;
         )
         };
     };
@@ -2714,10 +3109,9 @@ struct blog_t {
         uint32_t            priority;       /* Tx  priority */
         uint32_t            flowid;         /* used only for local in */
     };
-    struct {
-        uint16_t dst_entry_id;	/* skb dst_entry for local_in */
-        uint16_t reserved2;
-    };
+
+    uint16_t dst_entry_id; /* skb dst_entry for local_in */
+    union blog_bnl_key bnl_key; /* bnl trace key */
 
     void                * blogRule_p;   /* List of Blog Rules */
 
@@ -2734,7 +3128,10 @@ struct blog_t {
             uint32_t dscp2q    :  1;
             uint32_t outVtagCk :  1;
             uint32_t spGre     :  1;
-            uint32_t reserved  :  6;
+            uint32_t ipFragOk  :  1;
+            uint32_t ignoreIpDf:  1;
+            uint32_t insertIpid:  1;
+            uint32_t reserved  :  3;
         };
         uint32_t feature;       /* Feature set for per-packet modification */
     };
@@ -2760,7 +3157,7 @@ struct blog_t {
     /* vtag[] stored in network order to improve fcache performance */
     uint32_t            vtag[MAX_NUM_VLAN_TAG];
     uint32_t            outer_vtag[MAX_NUM_VLAN_TAG];
-    uint32_t            ucast_vtag; /* VLAN VTAG used for ucast flow classification */
+    uint32_t            tx_vtag[MAX_NUM_VLAN_TAG];
     /* pointers to the devices which the flow goes thru */
     blog_virt_dev_info_t virt_dev_info[MAX_VIRT_DEV];
 
@@ -2768,8 +3165,8 @@ struct blog_t {
     void                *fdb_npe_p[BLOG_FDB_NPE_MAX]; /* FDB NPEs */
     /* --- [ARM32][ARM64]cacheline boundary --- */
 
-    //BlogTupleV6_t and BlogHeader_t is cacheline_aligned structure, be 
-    //be cautious when adding new variables around these memeber as it 
+    //BlogTupleV6_t and BlogHeader_t is cacheline_aligned structure, be
+    //be cautious when adding new variables around these memeber as it
     //will create unwanted holes in the structure.
     BlogTupleV6_t       tupleV6;        /* L3+L4 IP Tuple log */
     BlogTupleV6_t       del_tupleV6;    /* Del GRE L3+L4 IPV6 Tuple log */
@@ -2786,7 +3183,7 @@ struct blog_t {
        function pointer is set, fcache will call dev_xmit_args() */
     void                *dev_xmit_args;
     unsigned long       dev_xmit;
- 
+
     /* Flow connection/session tracker */
     blog_nxe_t          nxe[BLOG_NXE_MAX];
     uint8_t             ct_count;
@@ -2801,10 +3198,11 @@ struct blog_t {
     /* max Rx packet length that is accelerated (does not include CRC) */
     uint16_t            rx_max_pktlen;
     int16_t             mtu_adj;    /* can be a -ve value */
+    uint8_t             rx_l2_hdrlen;
+    uint8_t             tx_l2_hdrlen;
     uint16_t            tx_max_pktlen;
     uint16_t            rx_max_pktlen_old; /* using pkt mod */
-    uint16_t            rx_max_pktlen_new; /* using pkt length delta */
-    uint16_t            rx_max_pktlen_fcs;
+    uint16_t            rx_max_pktlen_new; /* using rx max pkt length delta */
     uint8_t             dpi_queue;
     uint8_t             tuple_offset; /* offset of flow tuple header */
     uint8_t             hw_pathstat_idx;    /* HWACC Pathstat index */
@@ -2861,12 +3259,13 @@ struct blog_t {
     BlogTuple_t         tx_tuple[1];    /* TX L3+L4 IP Tuple log */
     void                *br_dev_p;
     atomic_t            ref_count;
-    
+
     uint32_t            l2_keymap;
     uint32_t            l3_keymap;
 
-    uint8_t         client_type;
     uint32_t        client_id;
+    uint8_t         client_type;
+    uint8_t         inner_l2_tos;
     int16_t         group_bitmap_idx; /* index into group bitmap pool */
     blog_group_type_t   group_type;
     group_dev_info_t   *group_dev_info_p; /* master group dev info */
@@ -2875,6 +3274,17 @@ struct blog_t {
 
     uint32_t        spdt_so_mark;
     uint32_t        svtag; /* BRCM SVTag header */
+    blog_score_info_t score_info;
+    blog_tunnel_t   tunnel;
+    uint16_t        unused2;
+    uint16_t        inner_eth_type;
+    union {
+        blog_l2_encap_t saved_rx_l2;
+        blog_ip_frag_info_t ip_frag;
+    };
+
+    void            *fpe_p;  /* FPE cmdlist passing to HWACC */
+    
 } ____cacheline_aligned;
 
 /*
@@ -3051,45 +3461,45 @@ extern unsigned long blog_request(BlogRequest_t event, void * net_p,
 extern int blog_query(BlogQuery_t query, void * net_p,
                         uint32_t param1, uint32_t param2, unsigned long param3);
 
-/* 
+/*
  * blog_notify():
  * blog_notify() is a synchrounous notification from an entity to blog/flow_cache
- * and will return once the notification/event has been completed. 
+ * and will return once the notification/event has been completed.
  * This API should be called only when it is known that the event processing time
  * is going to be short (process or interrupt context).
  *
- * Interrupt Context: It is NOT recommended to call blog_notify() from an 
- *   interrupt context (like softirq/timer) because it will block all other 
- *   processes/threads/softirq from running until the notification processing 
- *   has been completed. Instead use blog_notify_async() from an interrupt 
+ * Interrupt Context: It is NOT recommended to call blog_notify() from an
+ *   interrupt context (like softirq/timer) because it will block all other
+ *   processes/threads/softirq from running until the notification processing
+ *   has been completed. Instead use blog_notify_async() from an interrupt
  *   context.
  */
 extern void blog_notify(BlogNotify_t event, void *net_p,
                         unsigned long param1, unsigned long param2);
 
-/* 
- * fc_evt task will invoke this callback function asynchronously once the 
- * event processing has been completed. It is upto each entity to decide what 
- * it wants to do within this callback but it should not hold the fc_evt task 
- * for too long. 
+/*
+ * fc_evt task will invoke this callback function asynchronously once the
+ * event processing has been completed. It is upto each entity to decide what
+ * it wants to do within this callback but it should not hold the fc_evt task
+ * for too long.
  */
 typedef	void (*blog_notify_async_cb_fn_t)(void *notify_cb_data_p);
 
-/* 
+/*
  * blog_notify_async():
  * It is same as blog_notify() except two new parameters (notify_cb_fn and
- * notify_cb_data_p) have been added, and it is asynchronous call. notify_cb_fn 
- * function will be called with notify_cb_data_p parameter on completion of 
- * the event processing. If an caller does not want to wait for the completion 
+ * notify_cb_data_p) have been added, and it is asynchronous call. notify_cb_fn
+ * function will be called with notify_cb_data_p parameter on completion of
+ * the event processing. If an caller does not want to wait for the completion
  * of the event it can pass NULL values for notify_cb_fn and notify_cb_data_p.
  *
- * blog_notify_async() can be called from process or interrupt context, 
+ * blog_notify_async() can be called from process or interrupt context,
  * it will not block/sleep in this call. If blocking is needed it should be
  * done outside this API.
  *
  * CAUTION: Responsibility of the calling entity:
  * - Serialization and/or locking, reference count of entry
- * - the entry (e.g. flowring, FDB, etc.) for which flows are being flused 
+ * - the entry (e.g. flowring, FDB, etc.) for which flows are being flused
  *   is NOT freed or reallocated before the callback function is invoked.
  *
  * return: Caller MUST check the return value.
@@ -3106,8 +3516,8 @@ extern int blog_notify_async(BlogNotify_t event, void *net_p,
  * blog_notify_async_wait
  * Calls blog_notify_async() and then waits for completion of event. No callback
  * function needed from the caller, this function uses its own callback function.
- * Note : If called from NOT preempt-safe context, this function will change 
- *        blog_notify_async() to blog_notify(), which means the event is 
+ * Note : If called from NOT preempt-safe context, this function will change
+ *        blog_notify_async() to blog_notify(), which means the event is
  *        processed synchronously.
  *        Caller should not call blog_lock()/blog_unlock() as this fucntion
  *        internally calls blog_lock before calling blog_notify/_async() APIs,
@@ -3118,11 +3528,11 @@ extern void blog_notify_async_wait(BlogNotify_t event, void *net_p,
         unsigned long param1, unsigned long param2);
 
 /* blog notify event enqueue function type */
-typedef	int (*blog_notify_evt_enqueue_hook_t)(blog_notify_evt_type_t evt_type, 
+typedef	int (*blog_notify_evt_enqueue_hook_t)(blog_notify_evt_type_t evt_type,
         void *net_p, unsigned long param1, unsigned long param2,
         blog_notify_async_cb_fn_t notify_cb_fn, void *notify_cb_data_p);
 
-void blog_bind_notify_evt_enqueue( 
+void blog_bind_notify_evt_enqueue(
         blog_notify_evt_enqueue_hook_t blog_notify_evt_enqueue_fn );
 /*
  *------------------------------------------------------------------------------
@@ -3172,6 +3582,7 @@ static inline int blog_get_pkt_drop(Blog_t *blog_p)
 }
 
 #if defined(CONFIG_BLOG)
+
 extern BlogAction_t blog_emit_generic(void * nbuff_p, void * dev_p,
                                       uint32_t channel, uint32_t phyHdr);
 extern BlogAction_t _blog_emit(void * nbuff_p, void * dev_p,
@@ -3211,6 +3622,13 @@ BlogAction_t blog_emit_args( void * nbuff_p, void * dev_p,
  */
 extern int blog_iq_prio(struct sk_buff * skb_p, void * dev_p,
                          uint32_t encap, uint32_t channel, uint32_t phyHdr);
+
+/*
+ * blog_ipv4_prefix_equal compares the provided ip addresses with the netmask
+ */
+extern bool blog_ip_prefix_equal( BlogIpAddr_t *addr1, BlogIpAddr_t *addr2,
+                                  u8 netmask_len, u8 family );
+
 /*
  *------------------------------------------------------------------------------
  *  blog_activate(): static configuration function of blog application
@@ -3251,7 +3669,7 @@ extern BlogAction_t blog_filter(Blog_t * blog_p);
  *
  *  RX Hook: If this hook is defined then blog_init() will pass the packet to
  *           the Rx Hook using the FkBuff_t context. L1 and encap information
- *           are passed to the receive hook. The private network device context 
+ *           are passed to the receive hook. The private network device context
  *           may be extracted using the passed net_device object, if needed.
  *
  *  TX Hook: If this hook is defined then blog_emit() will check to see whether
@@ -3297,8 +3715,8 @@ typedef BlogAction_t (* BlogDevRxHook_t)(struct fkbuff *fkb_p, void * dev_p,
 typedef BlogAction_t (* BlogDevTxHook_t)(struct sk_buff *skb_p, void * dev_p,
                                        uint32_t encap, uint32_t blogHash, BlogFcArgs_t * args);
 
-typedef int (* BlogNotifyHook_t)(blog_notify_api_t blog_notify_api, 
-        BlogNotify_t notification, 
+typedef int (* BlogNotifyHook_t)(blog_notify_api_t blog_notify_api,
+        BlogNotify_t notification,
         void * net_p, unsigned long param1, unsigned long param2,
         blog_notify_async_cb_fn_t notify_cb_fn, void *notify_cb_data_p);
 
@@ -3329,7 +3747,7 @@ extern void blog_bind(BlogDevRxHook_t rx_hook,    /* Client Rx netdevice handler
                       BlogGroupLearnComplete_t glc_hook, /* group learn complete handler */
                       BlogBind_t   bind
                      );
-                     
+
 extern void blog_bind_config(BlogScHook_t sc_hook,    /* Client static config handler*/
                              BlogSdHook_t sd_hook,    /* Client static deconf handler*/
                              BlogHostClientHook_t hc_hook,
@@ -3346,7 +3764,7 @@ int blog_flowevent_unregister_notifier(struct notifier_block *nb);
  *------------------------------------------------------------------------------
  */
 typedef struct {
-    struct dll_t    node;       /* First element implements dll               */
+    dll_t           node;       /* First element implements dll               */
     blog_notify_evt_type_t evt_type;
     void            *net_p;
     unsigned long   param1;
@@ -3365,7 +3783,7 @@ typedef struct {
 extern void blog_hw_formatted_dump(Blog_t *blog_p);
 
 /* Logging of L2|L3 headers */
-extern void blog(struct sk_buff * skb_p, BlogDir_t dir, BlogEncap_t encap,  
+extern void blog(struct sk_buff * skb_p, BlogDir_t dir, BlogEncap_t encap,
                  size_t len, void * data_p);
 
 /* Dump a Blog_t object */
@@ -3373,8 +3791,16 @@ extern void blog_dump(Blog_t * blog_p);
 
 /* Get the minimum Tx MTU for a blog */
 uint16_t blog_getTxMtu(Blog_t * blog_p);
-extern void blog_spu_us_tx_dev_delta(Blog_t *blog_p);
 extern int blog_get_max_unfragment_pktlen(Blog_t *blog_p, uint16_t *max_rx_pktlen_p, uint16_t *max_tx_pktlen_p, int *headroom_p);
+int blog_get_l2hdr_len(const char *hdr_p, uint16_t h_proto);
+
+/* Save Lag tx hash */
+extern void blog_set_lag_hash(Blog_t *blog, unsigned char hash);
+
+extern uint8_t blog_get_l2_rx_tos(Blog_t *blog_p);
+extern uint8_t blog_get_tos(Blog_t * blog_p, int dir);
+extern int blog_is_llc_snap_insert(Blog_t * blog_p);
+extern int blog_is_llc_snap_length_set(Blog_t * blog_p);
 
 /*
  * Lock and unlock the blog layer.  This is used to reduce the number of
@@ -3438,7 +3864,7 @@ extern int blog_post_mod_hook(Blog_t *blog_p, void *nbuff_p);
 #define BLOG_GRE_RCV_OOS_LT             -4
 #define BLOG_GRE_RCV_OOS_GT             -5
 
-extern int blog_gre_rcv( struct fkbuff *fkb_p, void * dev_p, uint32_t h_proto, 
+extern int blog_gre_rcv( struct fkbuff *fkb_p, void * dev_p, uint32_t h_proto,
                          void **tunl_pp, uint32_t *pkt_seqno_p);
 extern void blog_gre_xmit( struct sk_buff *skb_p, uint32_t h_proto );
 #endif
@@ -3453,7 +3879,7 @@ extern void blog_gre_xmit( struct sk_buff *skb_p, uint32_t h_proto );
 #define BLOG_PPTP_RCV_CHKSUM_ERR         -3
 #define BLOG_PPTP_RCV_OOS_LT             -4
 #define BLOG_PPTP_RCV_OOS_GT             -5
-extern int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto, 
+extern int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto,
                           uint32_t *rcv_pktSeq);
 extern void blog_pptp_xmit( struct sk_buff *skb_p, uint32_t h_proto );
 #endif
@@ -3468,6 +3894,8 @@ void blog_clr_dev_stats(void *dev_p);
 void blog_get_dev_running_stats(void *dev_p, void * const bStats_p);
 void blog_get_dev_running_stats_wlan(void *dev_p, void * const bStats_p); /* Remove once WLAN falls in place */
 void blog_add_dev_accelerated_stats(void *dev_p, void *stats64_p);
+void blog_get_dev_lag_hash_stats(void *dev_p, uint64_t *tx_bytes_p, uint32_t hash);
+void blog_update_lag_hash_port(void *dev_p, uint8_t hash);
 
 typedef struct {
     wait_queue_head_t   wqh;
@@ -3555,7 +3983,7 @@ typedef struct blog_ctx {
     blog_config_t config;
 } blog_ctx_t;
 
-/* 
+/*
  * These are various major flow types (categories) supported by flow cache.
  */
 typedef enum blog_flow_type {
@@ -3567,7 +3995,7 @@ typedef enum blog_flow_type {
     BLOG_FLOW_TYPE_MAX
 } blog_flow_type_t;
 
-/* 
+/*
  * This structure defines whether an optional field is used as part of
  * lookup key by flow cache for classification for a particular flow type
  *
@@ -3618,45 +4046,6 @@ typedef struct blog_vtag_masks {
     uint32_t mask[BLOG_VTAG_MASK_MAX];
 } blog_vtag_masks_t;
 
-/*
- * L3 Ucast VLAN tag for classification:
- * 1. When only 1 header is present the VLAN tags are in vtags.
- * 2. when multiple headers are present, inner header VLAN tags are in vtags
- *    and outer header VLAN tags are in outer_vtags.
- * 3. In case of unicast only 1 VLAN tag (outermost) is used for classification
- *    (even when multiple VLAN tags are present in the header, or multiple
- *    headers are present).
- * 
- * VLAN tag selection criterion:
- * 1: if (vtag_num == 0) && (outer_vtag_num != 0) --> Use outer VLAN Tag
- *    from outer_vtags, i.e, outer_vtag[0]
- * 2: if (vtag_num != 0) --> use outer VLAN Tag from vtags, i.e. vtag[0]
- * 3: if (vtag_num == 0) && (outer_vtag_num == 0) --> use vid=pbit=0
-*/
-static inline void _blog_get_ucast_vtag(uint32_t vtag_num, uint32_t vtag0, 
-        uint32_t outer_vtag_num, uint32_t outer_vtag0, 
-        uint32_t *ucast_vtag_p, uint32_t *ucast_vtag_num_p)
-{
-    if (vtag_num == 0)
-    {
-        if (outer_vtag_num == 0)
-        {
-            *ucast_vtag_p = 0;
-            *ucast_vtag_num_p = 0;
-        }
-        else
-        {
-            *ucast_vtag_p = outer_vtag0;
-            *ucast_vtag_num_p = outer_vtag_num;
-        }
-    }
-    else
-    {
-        *ucast_vtag_p = vtag0;
-        *ucast_vtag_num_p = vtag_num;
-    }
-}
-
 #define IN
 #define OUT
 
@@ -3685,7 +4074,7 @@ typedef struct {
 } blog_flow_filter_t;
 
 typedef union {
-    uint8_t u8; 
+    uint8_t u8;
     struct {
         uint8_t unused: 5;
         uint8_t pbits: 1;
@@ -3818,11 +4207,11 @@ typedef struct {
  *------------------------------------------------------------------------------
  * Function     : blog_flow_get_flowid
  * Description  : gets the blog_flow_flowid_t (flow_handle and flow_idx) of the
- *              : active flows, begining from start_flow_idx upto max of flow_count 
+ *              : active flows, begining from start_flow_idx upto max of flow_count
  *              : number of flows.
  *              :
  *              : When invoking the next call use flow_idx from the (n-1) index
- *              : from the previous invokation and add 1 to calculate the value 
+ *              : from the previous invokation and add 1 to calculate the value
  *              : of the start_flow_idx in the new call.
  *              :
  * Input        :
@@ -3830,7 +4219,7 @@ typedef struct {
  * Return       : count of flowids
  *          -1  : error
  *           n  : n is equal to flow_count. more active flows present
- *         < n  : reached the end of active flows 
+ *         < n  : reached the end of active flows
  *------------------------------------------------------------------------------
  */
 int blog_flow_get_flowid(blog_flow_get_flowid_t *get_flowid_p);
@@ -3838,7 +4227,7 @@ int blog_flow_get_flowid(blog_flow_get_flowid_t *get_flowid_p);
 /*
  *------------------------------------------------------------------------------
  * Function     : blog_flow_get_flowinfo
- * Description  : gets the flowinfo, and stats for the flows, begining from 
+ * Description  : gets the flowinfo, and stats for the flows, begining from
  *              : start_flow_idx upto max of flow_count number of flows.
  *              :
  * Input        :
@@ -3853,7 +4242,7 @@ int blog_flow_get_flowinfo(blog_flow_get_flowinfo_t *get_flowinfo_p);
 /*
  *------------------------------------------------------------------------------
  * Function     : blog_flow_get_flowstats
- * Description  : gets the stats for the flows, begining from 
+ * Description  : gets the stats for the flows, begining from
  *              : start_flow_idx upto max of flow_count number of flows.
  *              :
  * Input        :
@@ -3899,13 +4288,13 @@ int blog_flow_get_flowstats(blog_flow_get_flowstats_t *get_flowstats_p);
 #define BLOG_ESP6_GRE6_RXHDR_LEN(b)  (BLOG_ESP6_RXHDR_LEN(b) + BLOG_GRE6_RXHDR_LEN(b))
 #define BLOG_ESP6_GRE6_TXHDR_LEN(b)  (BLOG_ESP6_TXHDR_LEN(b) + BLOG_GRE6_TXHDR_LEN(b))
 
+#define BLOG_L2TP_PPP_LENGTH(l2tp_p)  (((l2tp_p)->pppInfo == BLOG_PPP_ADDR_CTL) ? BLOG_L2TP_PPP_LEN : BLOG_L2TP_PPP_LEN2)
+
 #define BLOG_ESP4_L2TP_RXHDR_LEN(b)  (BLOG_ESP4_RXHDR_LEN(b) + BLOG_UDP_HDR_LEN + \
     (b)->l2tprx.hlen + BLOG_L2TP_PPP_LENGTH(&(b)->l2tprx))
 
 #define BLOG_ESP4_L2TP_TXHDR_LEN(b)  (BLOG_ESP4_TXHDR_LEN(b) + BLOG_UDP_HDR_LEN + \
     (b)->l2tptx.hlen + BLOG_L2TP_PPP_LENGTH(&(b)->l2tptx))
-
-#define BLOG_L2TP_PPP_LENGTH(l2tp_p)  (((l2tp_p)->pppInfo == BLOG_PPP_ADDR_CTL) ? BLOG_L2TP_PPP_LEN : BLOG_L2TP_PPP_LEN2)
 
 #define BLOG_GROUP_JOIN_ID_INVALID  0
 

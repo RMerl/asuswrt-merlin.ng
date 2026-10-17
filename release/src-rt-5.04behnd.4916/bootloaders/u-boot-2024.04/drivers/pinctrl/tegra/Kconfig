@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config PINCTRL_TEGRA
+	bool "Nvidia Tegra pinctrl driver"
+	depends on DM
+	help
+	  Support pin multiplexing control on Nvidia Tegra SoCs.
+	  The driver is an overlay to existing driver and allows
+	  the usage of dedicated device tree node which contains
+	  full description of each pin.
+
+config SPL_PINCTRL_TEGRA
+	bool "Nvidia Tegra SPL pinctrl driver"
+	depends on SPL_PINCTRL
+	help
+	  Enables support of pre-DM version of pin multiplexing
+	  control driver used on SPL stage for board setup and
+	  available for backwards compatibility purpose.

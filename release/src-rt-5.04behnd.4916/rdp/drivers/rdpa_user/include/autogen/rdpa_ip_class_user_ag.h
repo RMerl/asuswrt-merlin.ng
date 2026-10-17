@@ -154,7 +154,7 @@ static inline int rdpa_ip_class_flow_stat_get(bdmf_object_handle mo_, bdmf_index
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)flow_stat_;
 	pa.cmd = RDPA_IP_CLASS_FLOW_STAT_GET;
 
@@ -264,7 +264,7 @@ static inline int rdpa_ip_class_l4_filter_get(bdmf_object_handle mo_, rdpa_l4_fi
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)l4_filter_;
 	pa.cmd = RDPA_IP_CLASS_L4_FILTER_GET;
 
@@ -302,7 +302,7 @@ static inline int rdpa_ip_class_l4_filter_set(bdmf_object_handle mo_, rdpa_l4_fi
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)l4_filter_;
 	pa.cmd = RDPA_IP_CLASS_L4_FILTER_SET;
 
@@ -340,7 +340,7 @@ static inline int rdpa_ip_class_l4_filter_stat_get(bdmf_object_handle mo_, rdpa_
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)l4_filter_stat_;
 	pa.cmd = RDPA_IP_CLASS_L4_FILTER_STAT_GET;
 
@@ -453,7 +453,7 @@ static inline int rdpa_ip_class_pathstat_get(bdmf_object_handle mo_, bdmf_index 
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)pathstat_;
 	pa.cmd = RDPA_IP_CLASS_PATHSTAT_GET;
 

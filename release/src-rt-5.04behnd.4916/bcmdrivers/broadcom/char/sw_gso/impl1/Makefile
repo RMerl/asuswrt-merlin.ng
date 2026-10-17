@@ -30,6 +30,7 @@ clean:
 # the "%.o : %.c" rule (defined earlier by kbuild), to take precidence
 
 %.o : %.o_tmp
+	$(Q)touch $(@D)/.$(@F).cmd
 	$(Q)mv $< $@
 
 %.o_tmp : %.$(BCMARCH).o_saved

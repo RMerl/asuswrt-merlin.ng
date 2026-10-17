@@ -42,10 +42,10 @@ written consent.
 #define FPI_VERSION	"v1.0"
 #define FPI_MODNAME	"Broadcom Flow Provisioning Interface Module"
 
-#ifndef CONFIG_BCM_RUNNER_MAX_FLOWS
+#ifndef CONFIG_BCM_MAX_UCAST_FLOWS
 #define FPI_MAX_FLOWS	(32 * 1024)
 #else
-#define FPI_MAX_FLOWS	(CONFIG_BCM_RUNNER_MAX_FLOWS)
+#define FPI_MAX_FLOWS	(CONFIG_BCM_MAX_UCAST_FLOWS)
 #endif
 
 #define FPI_DEFAULT_MODE	fpi_mode_l3l4
@@ -53,17 +53,20 @@ written consent.
 #define FPI_DEFAULT_GRE_MODE	fpi_gre_mode_proprietary
 
 #define FPI_MAX_AP_MAC	8
+#define FPI_MAX_IPSEC_TUNNEL 32 /* 32 US and 32 DS tunnels */
+#define FPI_MAX_IPSEC_FWD_FLOWS 10
+#define FPI_MAX_IP_ID_COUNTER 32
 
 /* Errno descriptions:
  * Flow management related:
  * fpi_err_outresrc: out of resource, table is full
  * fpi_err_dupl: duplicate, entry has been created
- * fpi_err_reject: rejected, because hash collision happens, even though flow
- *		   is unique, but can't be created
+ * fpi_err_reject: rejected by HW table. Usually it is due to hash collision.
  *
  * Other control error:
  * fpi_err_invalid: invalid parameter(s) provided
  * fpi_err_notfound: cannot find the flow
+ * fpi_err_wlnotfound: cannot find the WL client info
  * fpi_err_perm: permission denied, such as hardware accelerator not ready
  * fpi_err_fault: IO control message error
  * fpi_err_nomem: no memory
@@ -75,6 +78,7 @@ typedef enum {
 	fpi_err_reject = -EKEYREJECTED,
 	fpi_err_invalid = -EINVAL,
 	fpi_err_notfound = -ENOENT,
+	fpi_err_wlnotfound = -ENOLINK,
 	fpi_err_perm = -EPERM,
 	fpi_err_fault = -EFAULT,
 	fpi_err_nomem = -ENOMEM,
@@ -206,5 +210,58 @@ int fpi_set_gre_mode(fpi_gre_mode_t mode);
  *	0 if succeeds. otherwise, fails
  */
 int fpi_set_l2lkp_on_etype(bool enable, uint16_t etype);
+
+/*
+ * Global control of enabling IP fragmentation support by HW accelerator
+ * Return:
+ *	0 if succeeds. otherwise, fails
+ */
+int fpi_set_ip_frag_enable(bool enable);
+
+/*
+ * Global control of enabling IP Reassembly support by HW accelerator
+ * Return:
+ *	0 if succeeds. otherwise, fails
+ */
+int fpi_set_ip_reasm_enable(bool enable);
+
+/*
+ * Adding IPsec tunnel.
+ * Input:
+ * 	tunnel_p: pointer to tunnel data structure 
+ * Output:
+ * 	tun_id_p: memory to store returned handle
+ * Return:
+ * 	0 if succeeds. otherwise, fails
+ */
+int fpi_add_ipsec_tunnel(fpi_ipsec_tunnel_t *tun_p, uint32_t *tun_id_p);
+
+/*
+ * Deleting IPsec tunnel by providing the handle
+ * Input:
+ * 	handle: handle for the tunnel
+ * Return:
+ * 	0 if succeeds. otherwise, fails
+ */
+int fpi_delete_ipsec_tunnel_by_handle(uint32_t handle);
+
+/*
+ * Deleting IPsec tunnel by providing the tunnel data structure 
+ * Input:
+ * 	key_p: pointer to tunnel data structure
+ * Return:
+ * 	0 if succeeds. otherwise, fails
+ */
+int fpi_delete_ipsec_tunnel(fpi_ipsec_tunnel_t *tun_p);
+
+/*
+ * Remapping IPsec tunnel.
+ * Input:
+ * 	tunnel_p: pointer to tunnel data structure 
+ * Return:
+ * 	0 if succeeds. otherwise, fails
+ */
+int fpi_remap_ipsec_tunnel(fpi_ipsec_tunnel_t *tun_p);
+
 
 #endif /* __FPI_H_INCLUDED__ */

@@ -1,0 +1,15 @@
+if TARGET_BEACON_RZG2M
+
+config SYS_SOC
+	default "renesas"
+
+config SYS_BOARD
+	default "beacon-rzg2m"
+
+config SYS_VENDOR
+	default "beacon"
+
+config SYS_CONFIG_NAME
+	default "beacon-rzg2m"
+
+endif

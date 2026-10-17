@@ -1,6 +1,0 @@
-FIREFLY
-M:	Simon Glass <sjg@chromium.org>
-S:	Maintained
-F:	board/radxa/rock2
-F:	include/configs/rock2.h
-F:	configs/rock2_defconfig

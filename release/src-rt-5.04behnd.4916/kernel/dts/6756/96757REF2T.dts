@@ -7,8 +7,7 @@
 			BP_DDR_TOTAL_SIZE_1024MB   | \
 			BP_DDR_DEVICE_WIDTH_16     | \
 			BP_DDR_TOTAL_WIDTH_16BIT   | \
-			BP_DDR_6756_DEFAULT          | \
-			BP_DDR_CONFIG_DEBUG)>;
+			BP_DDR_6756_DEFAULT)>;
 	};
 };
 

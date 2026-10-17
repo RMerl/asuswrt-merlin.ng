@@ -1777,6 +1777,9 @@ static const ru_reg_rec *CNPL_REGS[] =
 const ru_block_rec CNPL_BLOCK =
 {
     "CNPL",
+#if RU_INCLUDE_SIZE
+    { 0x00005720 },
+#endif
     CNPL_ADDRS,
     1,
     26,

@@ -136,39 +136,43 @@ typedef void (*gbpm_add_ref_hook_t) (void *, int);
 
 /* GBPM_DECL may be undef/define, for GBPM_BIND and GBPM_USER template usage */
 #define GBPM_BIND()				\
-   /* --- BPM BUF POOL --- */		\
-   GBPM_DECL(alloc_mult_buf)		\
-   GBPM_DECL(free_mult_buf)		\
-   GBPM_DECL(alloc_buf)			\
-   GBPM_DECL(free_buf)			\
-   /* --- BPM SKB POOL --- */		\
-   GBPM_DECL(total_skb)			\
-   GBPM_DECL(avail_skb)			\
-   GBPM_DECL(attach_skb)			\
-   GBPM_DECL(attach_skb_no_shinfo_reset)	\
-   GBPM_DECL(alloc_skb)			\
-   GBPM_DECL(alloc_buf_skb_attach)		\
-   GBPM_DECL(alloc_mult_buf_skb_attach)		\
-   GBPM_DECL(alloc_mult_skb)		\
-   GBPM_DECL(free_skb)			\
-   GBPM_DECL(free_skblist)			\
-   GBPM_DECL(invalidate_dirtyp)		\
-   GBPM_DECL(recycle_skb)			\
-   GBPM_DECL(attach_skb_hw_buf)			\
-   GBPM_DECL(recycle_skb_hw_buf)			\
-   GBPM_DECL(free_mult_skb_and_buf)    \
-   GBPM_DECL(is_skb_with_hw_buf)    \
-   /* --- BPM pNBuff --- */		\
-   GBPM_DECL(recycle_pNBuff)		\
-   /* --- BPM Get Accessors --- */		\
-   GBPM_DECL(get_dyn_buf_lvl)		\
-   GBPM_DECL(get_total_bufs)		\
-   GBPM_DECL(get_avail_bufs)		\
-   GBPM_DECL(get_max_dyn_bufs)		\
-   /* --- BPM Runtime --- */		\
-   GBPM_DECL(is_buf_hw_recycle_capable)	\
-   GBPM_DECL(recycle_hw_buf)		\
-   GBPM_DECL(register_hw_pool_api)
+	/* --- BPM BUF POOL --- */		\
+	GBPM_DECL(alloc_mult_buf)		\
+	GBPM_DECL(free_mult_buf)		\
+	GBPM_DECL(alloc_buf)			\
+	GBPM_DECL(free_buf)			\
+	/* --- BPM SKB POOL --- */		\
+	GBPM_DECL(total_skb)			\
+	GBPM_DECL(avail_skb)			\
+	GBPM_DECL(attach_skb)			\
+	GBPM_DECL(attach_skb_no_shinfo_reset)	\
+	GBPM_DECL(alloc_skb)			\
+	GBPM_DECL(alloc_buf_skb_attach)		\
+	GBPM_DECL(alloc_mult_buf_skb_attach)		\
+	GBPM_DECL(alloc_mult_skb)		\
+	GBPM_DECL(free_skb)			\
+	GBPM_DECL(free_skblist)			\
+	GBPM_DECL(invalidate_dirtyp)		\
+	GBPM_DECL(recycle_skb)			\
+	GBPM_DECL(attach_skb_hw_buf)			\
+	GBPM_DECL(recycle_skb_hw_buf)			\
+	GBPM_DECL(recycle_skb_recycle_fkbdata)		\
+	GBPM_DECL(free_mult_skb_and_buf)    \
+	GBPM_DECL(is_skb_with_hw_buf)    \
+	/* --- BPM pNBuff --- */		\
+	GBPM_DECL(recycle_pNBuff)		\
+	/* --- BPM Get Accessors --- */		\
+	GBPM_DECL(get_dyn_buf_lvl)		\
+	GBPM_DECL(get_total_bufs)		\
+	GBPM_DECL(get_avail_bufs)		\
+	GBPM_DECL(get_max_dyn_bufs)		\
+	/* --- BPM Runtime --- */		\
+	GBPM_DECL(is_buf_hw_recycle_capable)	\
+	GBPM_DECL(recycle_hw_buf)		\
+	GBPM_DECL(recycle_hw_skb)		\
+	GBPM_DECL(register_hw_pool_api)	\
+	GBPM_DECL(free_buf_from_spc_skb)	\
+	GBPM_DECL(add_skb_hwbuf_attach_cnt)
 
 
 	/* --- BPM Users --- */
@@ -213,6 +217,7 @@ typedef void *(*gbpm_invalidate_dirtyp_hook_t)(void *);
 typedef void (*gbpm_recycle_skb_hook_t)(void *, unsigned long, uint32_t);
 typedef void (*gbpm_attach_skb_hw_buf_hook_t)(void *, void *, uint32_t, uint32_t, bool);
 typedef void (*gbpm_recycle_skb_hw_buf_hook_t)(void *, unsigned long, uint32_t);
+typedef void (*gbpm_recycle_skb_recycle_fkbdata_hook_t)(void *, unsigned long, uint32_t);
 typedef void (*gbpm_free_mult_skb_and_buf_hook_t)(void *, uint32_t);
 typedef bool (*gbpm_is_skb_with_hw_buf_hook_t)(void *);
 
@@ -228,8 +233,12 @@ typedef void (*gbpm_upd_buf_lvl_hook_t)(int);
 /* --- BPM HW Buffer Manager ---*/
 typedef bool (*gbpm_is_buf_hw_recycle_capable_hook_t)(void *);
 typedef void (*gbpm_recycle_hw_buf_hook_t)(void *, uint32_t);
+typedef void (*gbpm_recycle_hw_skb_hook_t)(void *, uint32_t);
 typedef int (*gbpm_register_hw_pool_api_hook_t)(void *, void *);
 
+/* --- SPC related API --- */
+typedef void (*gbpm_free_buf_from_spc_skb_hook_t)(const void *, void *);
+typedef void (*gbpm_add_skb_hwbuf_attach_cnt_hook_t)(uint32_t);
 /* --- BPM User --- */
 typedef void (*gbpm_thresh_hook_t)(void);
 typedef void (*gbpm_status_hook_t)(void);
@@ -386,6 +395,11 @@ static inline void gbpm_recycle_skb_hw_buf(void *skbp, unsigned long context,
    gbpm_g.recycle_skb_hw_buf(skbp, context, recycle_action);
 }
 
+static inline void gbpm_recycle_skb_recycle_fkbdata(void *skbp, unsigned long context,
+					uint32_t recycle_action)
+{
+   gbpm_g.recycle_skb_recycle_fkbdata(skbp, context, recycle_action);
+}
 static inline void gbpm_free_mult_skb_and_buf(void *skbp, uint32_t list_len)
 {
    gbpm_g.free_mult_skb_and_buf(skbp, list_len);
@@ -428,9 +442,24 @@ static inline void gbpm_recycle_hw_buf(void *buf_p, uint32_t recycle_context)
 	return gbpm_g.recycle_hw_buf(buf_p, recycle_context);
 }
 
+static inline void gbpm_recycle_hw_skb(void *skb_p, uint32_t recycle_context)
+{
+	return gbpm_g.recycle_hw_skb(skb_p, recycle_context);
+}
+
 static inline int gbpm_register_hw_pool_api(void *ops_p, void *id_p)
 {
 	return gbpm_g.register_hw_pool_api(ops_p, id_p);
+}
+
+static inline void gbpm_free_buf_from_spc_skb(const void *skbp, void *bufp)
+{
+	gbpm_g.free_buf_from_spc_skb(skbp, bufp);
+}
+
+static inline void gbpm_add_skb_hwbuf_attach_cnt(uint32_t num)
+{
+	gbpm_g.add_skb_hwbuf_attach_cnt(num);
 }
 
 #if defined(CONFIG_BCM_BPM_BUF_TRACKING)

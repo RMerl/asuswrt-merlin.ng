@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Freescale ls2080a QDS common device tree source
+ *
+ * Copyright 2013-2015 Freescale Semiconductor, Inc.
+ * Copyright 2020 NXP
+ */
+
+#include "fsl-ls2080a.dtsi"
+
+&i2c0 {
+	status = "okay";
+	pca9547@77 {
+		compatible = "nxp,pca9547";
+		reg = <0x77>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x00>;
+			rtc@68 {
+				compatible = "dallas,ds3232";
+				reg = <0x68>;
+			};
+		};
+	};
+};
+
+&dspi {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash0: n25q128a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+	dflash1: sst25wf040b {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <1>;
+	};
+	dflash2: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <2>;
+	};
+};
+
+&qspi {
+	status = "okay";
+
+	s25fs256s0: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+	};
+};
+
+&sata {
+	status = "okay";
+};

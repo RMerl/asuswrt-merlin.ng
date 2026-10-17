@@ -36,7 +36,6 @@
 #include "rdpa_mw_blog_parse.h"
 #include "rdpa_mw_qos.h"
 #endif
-#include "rdpa_mw_vlan.h"
 #include "br_private.h"
 #include "rdd_fw_defs.h"
 
@@ -80,30 +79,6 @@ static bdmf_object_handle rdpa_system = NULL;
 static rdpa_operation_mode mode;
 
 #if defined(CONFIG_BLOG)
-static bdmf_object_handle EGRESS_PORT_FROM_BLOG_KEY(int blog_key)
-{
-    bdmf_number handle = _EGRESS_PORT_FROM_BLOG_KEY(blog_key);
-    bdmf_number port_handle;
-    bdmf_object_handle port_obj = NULL;
-    int rc;
-
-    while (1)
-    {
-        port_obj = bdmf_get_next(rdpa_port_drv(), port_obj, NULL);
-        if (!port_obj)
-            break;
-       
-        rc = rdpa_port_handle_get(port_obj, &port_handle);
-        if (rc)
-            continue;
-        if (port_handle == handle) 
-        {
-            bdmf_put(port_obj);
-            return port_obj;
-        }
-    }
-    return NULL;
-}
 
 static int EGRESS_PORT_FOR_BLOG_KEY(bdmf_object_handle port_obj)
 {
@@ -168,18 +143,8 @@ static int compare_ic_flows(rdpa_ic_info_t *a, rdpa_ic_info_t *b)
     COMPARE(result.qos_method);
     COMPARE(result.wan_flow);
     COMPARE(result.action);
-    COMPARE(result.policer);
     COMPARE(result.forw_mode);
     COMPARE(result.queue_id);
-    COMPARE(result.vlan_action);
-    COMPARE(result.opbit_remark);
-    COMPARE(result.opbit_val);
-    COMPARE(result.ipbit_remark);
-    COMPARE(result.ipbit_val);
-    COMPARE(result.dscp_remark);
-    COMPARE(result.dscp_val);
-    COMPARE(result.ecn_val);
-    COMPARE(result.pbit_to_gem_table);
 
     return 0;
 }
@@ -230,7 +195,7 @@ static void match_ic_flow(bdmf_object_handle ingress_class_obj, rdpa_ic_info_t *
     while (rdpa_ingress_class_flow_get_next(ingress_class_obj, flow_idx) != BDMF_ERR_NO_MORE)
     {
         rdpa_ingress_class_flow_get(ingress_class_obj, *flow_idx, &flow_tmp);
-        flow_tmp.result.vlan_action = NULL;
+
         if (!compare_ic_flows(&flow_tmp, flow))
         {
             protoDebug("IC flow match found idx(%d)", (int)*flow_idx);
@@ -248,54 +213,6 @@ static int ds_dal_enabled_get(bdmf_object_handle port_obj)
 
     rdpa_port_cfg_get(port_obj, &cfg);
     return cfg.dal_enable;
-}
-
-static int configure_action_per_port(bdmf_object_handle ingress_class_obj, uint32_t flow_idx,
-    bdmf_object_handle port_obj, bdmf_object_handle vlan_action_obj, int drop)
-{
-    rdpa_port_action_key_t pa_key = { .flow = flow_idx, .port_egress_obj = port_obj };
-    rdpa_port_action_t pa = { .vlan_action = vlan_action_obj, .drop = drop };
-    int rc;
-
-    protoDebug("per-port action config: flow_idx %d, port %p, drop %d vlan %p", (int)flow_idx, port_obj, drop,
-        vlan_action_obj);
-    rc = rdpa_ingress_class_port_action_set(ingress_class_obj, &pa_key, &pa);
-    if (rc < 0)
-    {
-        protoError("Failed to update port action flow attribute\n");
-        return rc;
-    }
-
-    return 0;
-}
-
-static int deconfigure_action_per_port(bdmf_object_handle ingress_class_obj, uint32_t flow_idx, bdmf_object_handle port_obj)
-{
-    rdpa_port_action_key_t pa_key = { .flow = flow_idx, .port_egress_obj = port_obj };
-    rdpa_port_action_t pa ;
-    int rc;
-
-    if (!port_obj)
-        return 0;
-
-    rc = rdpa_ingress_class_port_action_get(ingress_class_obj, &pa_key, &pa);
-
-    /* if no vlan_action is configured with this flow_idx and port */
-    if (rc == BDMF_ERR_NOENT)
-        return 0;
-
-    /* if other error returned during find port action */
-    if (rc < 0)
-    {
-        protoError("get port action returns %d\n", rc);
-        return rc;
-    }
-
-    /* if port action is found */
-    if (pa.vlan_action)
-        bdmf_put(pa.vlan_action);
-
-    return 0;
 }
 
 static int rdpa_port_is_wifi(bdmf_object_handle port_obj)
@@ -318,7 +235,6 @@ static int add_modify_ic_flow(uint32_t field_mask, Blog_t *blog, bdmf_object_han
     rdpa_ic_info_t flow = {};
     blogRule_t *blog_rule = blog->blogRule_p;
     blogRuleFilter_t *filter = &blog_rule->filter;
-    bdmf_object_handle vlan_action_obj = NULL;
     uint32_t blog_queue_id = 0;
     bdmf_object_handle port_ingress_obj;
 
@@ -365,13 +281,9 @@ static int add_modify_ic_flow(uint32_t field_mask, Blog_t *blog, bdmf_object_han
         flow.key.inner_tpid = filter->vlan[0].value.h_vlan_encapsulated_proto;
 
     flow.key.number_of_vlans = filter->nbrOfVlanTags;
-    flow.result.policer = NULL;
+
     flow.result.qos_method = rdpa_qos_method_flow;
     flow.result.queue_id = 0; /* XXX: insert qos queue mapping function here */
-    if (!blog_rule_mapping_get(blog_rule, BLOG_RULE_CMD_SET_DEI, &blog_out))
-        flow.result.dei_command = blog_out;
-    else
-        flow.result.dei_command = RDPA_IC_DEI_COPY;
 
     if (!is_drop_rule && (blog->tx.info.phyHdrType == BLOG_GPONPHY || blog->tx.info.phyHdrType == BLOG_EPONPHY))
     {
@@ -389,10 +301,8 @@ static int add_modify_ic_flow(uint32_t field_mask, Blog_t *blog, bdmf_object_han
 
         flow.result.wan_flow = blog_out;
     }
-
-    /* DS will use per-port vlan_action drop instead of forward_action_drop */
-    flow.result.action = (dir == rdpa_dir_ds || !is_drop_rule) ? rdpa_forward_action_forward : rdpa_forward_action_drop;
-
+    /* update flow action */
+    flow.result.action = (!is_drop_rule) ? rdpa_forward_action_forward : rdpa_forward_action_drop;
     if (!blog_rule_mapping_get(blog_rule, BLOG_RULE_CMD_SET_SKB_MARK_QUEUE, &blog_out))
     {
         blog_queue_id = blog_out;
@@ -403,9 +313,6 @@ static int add_modify_ic_flow(uint32_t field_mask, Blog_t *blog, bdmf_object_han
         blog_queue_id = 0; /* Defaults to queue 0 if not specified in blog */
         protoDebug("Queue %d not specified in BLOG, dir %d\n", blog_queue_id, dir);
     }
-
-    *port_egress_obj = blog_parse_egress_port_get(blog);
-    flow.result.port_egress_obj = *port_egress_obj;
 
     port_ingress_obj = blog_parse_ingress_port_get(blog);
     if (!port_ingress_obj)
@@ -454,104 +361,19 @@ static int add_modify_ic_flow(uint32_t field_mask, Blog_t *blog, bdmf_object_han
             flow.result.forw_mode = rdpa_forwarding_mode_flow;
         }
     }
-
-    if (!is_drop_rule)
-    {
-        rc = blog_rule_to_vlan_action(blog_rule, dir, &vlan_action_obj);
-        if (rc < 0)
-        {
-            protoError("Failed to assign a valid vlan_action\n");
-            goto Error;
-        }
-    }
-
-    /* US flows and new DS flows have vlan_action set, otherwise set port_action */
-    if (flow_idx != BDMF_INDEX_UNASSIGNED)
-    {
-        if (dir == rdpa_dir_ds)
-        {
-            if (!rdpa_mw_packet_based_forward)
-            {
-                rc = BDMF_ERR_INTERNAL;
-                protoError("Flow based forwarding cannot assign multiple ports to same flow (%d)\n", (int)flow_idx);
-                goto Error;
-            }
-
-            protoDebug("Reusing flow_idx %d:", (int)flow_idx);
-            rc = configure_action_per_port(ingress_class_obj, flow_idx, *port_egress_obj, vlan_action_obj, is_drop_rule);
-            if (rc)
-            {
-                char port_name[IFNAMSIZ];
-
-                rdpa_port_name_get(*port_egress_obj, port_name, IFNAMSIZ);
-
-                protoError("configure_action_per_port fail with rc %d, port %s\n", rc, port_name);
-                goto Error;
-            }
-        }
-        else
-        {
-            rc = BDMF_ERR_INTERNAL;
-            protoError("US flow already assigned to flow %d\n", (int)flow_idx);
-            goto Error;
-        }
-    }
-    else
+    if (flow_idx == BDMF_INDEX_UNASSIGNED)
     {
         /* Packet based forwarding sets vlan_action per-port only */
-        if (!rdpa_mw_packet_based_forward || dir == rdpa_dir_us)
-            flow.result.vlan_action = vlan_action_obj;
-
         rc = rdpa_ingress_class_flow_add(ingress_class_obj, &flow_idx, &flow);
         if (rc < 0)
         {
             protoError("rdpa_ingress_class_flow_add fail with rc %d, flow_idx %d\n", rc, (int)flow_idx);
-            goto Error;
-        }
-
-        if (rdpa_mw_packet_based_forward && dir == rdpa_dir_ds)
-        {
-            bdmf_boolean is_wan;
-            int this_rule_port;
-            bdmf_object_handle next_port_obj = NULL;
-            rdpa_port_type port_type = rdpa_port_type_none;
-
-            /* Since this is a new flow, initialize all non-configured lan egress ports to drop */
-            while (1)
-            {
-                next_port_obj = bdmf_get_next(rdpa_port_drv(), next_port_obj, NULL);
-                if (!next_port_obj)
-                    break;
-
-                /* Per-port vlan action can set lan + wlan port (only one action for all ssids) */
-                rdpa_port_is_wan_get(next_port_obj, &is_wan);
-                if (is_wan)
-                    continue;
-
-                rdpa_port_type_get(next_port_obj, &port_type);
-                if (port_type == rdpa_port_wlan || port_type == rdpa_port_cpu)
-                    continue;
-
-                this_rule_port = (next_port_obj == *port_egress_obj);
-
-                protoDebug("this_rule_port %d: ", this_rule_port);
-                rc = configure_action_per_port(ingress_class_obj, flow_idx, next_port_obj,
-                    this_rule_port ? vlan_action_obj : NULL, is_drop_rule);
-                if (rc)
-                {
-                    protoError("configure_action_per_port fail with rc %d, port %p\n", rc, next_port_obj);
-                    bdmf_put(next_port_obj);
-                    goto Error;
-                }
-            }
         }
     }
 
 Error:
     if (rc)
     {
-        if (vlan_action_obj)
-            bdmf_put(vlan_action_obj);
         return rc;
     }
 
@@ -577,6 +399,12 @@ static int add_ic_cfg(uint32_t field_mask, rdpa_traffic_dir dir, int prty, bdmf_
 
     return 0;
 }
+
+static inline int is_tpid(uint16_t h_proto)
+{
+    return h_proto == 0x8100 || h_proto == 0x88A8;
+}
+
 
 static int filter_to_mask(blogRuleFilter_t *filter, rdpa_traffic_dir dir, int is_us_wifi, uint32_t *mask)
 {
@@ -915,21 +743,12 @@ static Blog_t *deactivate_blogRule(uint32_t blog_key)
         return BLOG_NULL;
     }
     bdmf_put(ingress_class_obj); /* above rdpa_ingress_class_get, obj still locked by 'blog-flow' so its safe to put */
-
-    deconfigure_action_per_port(ingress_class_obj, FLOW_IDX_FROM_BLOG_KEY(blog_key), EGRESS_PORT_FROM_BLOG_KEY(blog_key));
     if (--(*ref_cnt))
     {
-        protoDebug("IC flow still in use, setting port-action to drop, still in use by %d ports", *ref_cnt);
-        configure_action_per_port(ingress_class_obj, FLOW_IDX_FROM_BLOG_KEY(blog_key),
-            EGRESS_PORT_FROM_BLOG_KEY(blog_key), NULL, 1);
         return BLOG_NULL; /* Do nothing because there are still ports using the same flow */
     }
 
     rc = rdpa_ingress_class_flow_get(ingress_class_obj, FLOW_IDX_FROM_BLOG_KEY(blog_key), &ic_flow);
-    if ((!rc) && (ic_flow.result.vlan_action))
-    {
-        bdmf_put(ic_flow.result.vlan_action);
-    }
 
     rc = rdpa_ingress_class_flow_delete(ingress_class_obj, FLOW_IDX_FROM_BLOG_KEY(blog_key));
     if (rc)
@@ -962,100 +781,6 @@ static void rdpa_disable_all_tpid(void)
     for(tpid=0; tpid< rdpa_tpid_detect__num_of; ++tpid)
         rdpa_system_tpid_detect_set(rdpa_system, tpid, &entry);
 }
-
-#if defined(CONFIG_BCM_RUNNER_VLAN_ACTION)
-static int rdpa_vlan_add(struct net_device *vlan_dev)
-{
-    BDMF_MATTR_ALLOC(vlan_attr, rdpa_vlan_drv());
-    bdmf_object_handle vlan_object, port_object = NULL;
-    int ret = -1;
-
-    port_object = rdpa_mw_get_port_object_by_dev(vlan_dev);
-    if (!port_object)
-    {
-        protoError("Can't find RDPA port object for %s\n", vlan_dev->name);
-        goto Exit;
-    }
-
-    rdpa_vlan_name_set(vlan_attr, vlan_dev->name);
-
-    if (bdmf_new_and_set(rdpa_vlan_drv(), port_object, vlan_attr, &vlan_object))
-    {
-        protoError("Failed to add RDPA vlan object for %s\n", vlan_dev->name);
-        goto Exit;
-    }
-
-    ret = 0;
-
-Exit:
-    BDMF_MATTR_FREE(vlan_attr);
-    return ret;
-}
-
-static int rdpa_vlan_del(struct net_device *vlan_dev)
-{
-    bdmf_object_handle vlan_object = NULL;
-    int ret = -1;
-
-    if (rdpa_vlan_get(vlan_dev->name, &vlan_object))
-    {
-        protoError("Can't find RDPA vlan object for %s\n", vlan_dev->name);
-        goto Exit;
-    }
-
-    if (bdmf_destroy(vlan_object))
-    {
-        protoError("Failed to remove RDPA vlan object for %s\n", vlan_dev->name);
-        goto Exit;
-    }
-
-    ret = 0;
-
-Exit:
-    if (vlan_object)
-        bdmf_put(vlan_object);
-
-    return ret;
-}
-
-static int rdpa_vlan_vid_set(const char *name, unsigned int vid, int enable)
-{
-    bdmf_object_handle vlan_object;
-
-    if (rdpa_vlan_get(name, &vlan_object))
-    {
-        protoError("Can't find RDPA vlan object for %s\n", name);
-        return -1;
-    }
-
-    bdmf_put(vlan_object);
-    rdpa_vlan_vid_enable_set(vlan_object, vid, enable ? 1 : 0);
-
-    return 0;
-}
-
-#define BCM_VLAN_DONT_CARE         ~0
-
-static int rdpa_vlan_set(vlanctl_vlan_t *vlanctl_vlan)
-{    
-    BDMF_TRACE_DBG("rdpa_vlan_set: op=%s dev=%s vid=%u\n",
-        vlanctl_vlan->enable ? "add" : "del",
-        vlanctl_vlan->vlan_dev->name,
-        vlanctl_vlan->vid);
-
-    if (vlanctl_vlan->vid == BCM_VLAN_DONT_CARE)
-    {
-        if (vlanctl_vlan->enable)
-            return rdpa_vlan_add(vlanctl_vlan->vlan_dev);
-        else
-            return rdpa_vlan_del(vlanctl_vlan->vlan_dev);
-    }
-    else
-    {
-        return rdpa_vlan_vid_set(vlanctl_vlan->vlan_dev->name, vlanctl_vlan->vid, vlanctl_vlan->enable);
-    } 
-}
-#endif
 
 static void rdpa_setTpidTable(unsigned int *tpidTable)
 {
@@ -1108,11 +833,7 @@ static void rdpa_notify_fp( vlanctl_bind_Notify_t event, void *ptr)
         protoDebug("Activating blog tpid set");
         rdpa_setTpidTable(ptr);   
         break;
-    case VLANCTL_BIND_NOTIFY_VLAN:
-#if defined(CONFIG_BCM_RUNNER_VLAN)    
-        protoDebug("Setting vlan");
-        rdpa_vlan_set(ptr);
-#endif        
+    case VLANCTL_BIND_NOTIFY_VLAN:      
         break;        
     case VLANCTL_BIND_DROP_PRECEDENCE_SET:
     {
@@ -1149,7 +870,7 @@ static void rdpa_bind_vlanctl(int enabled)
 }
 #endif
 
-#ifdef CONFIG_BCM_BPM_HW_ENABLED
+#if defined(CONFIG_BCM_BPM_HW_ENABLED) && !defined(CONFIG_BRCM_QEMU)
 extern struct gbpm_hw_buffer_mngr rdpa_buffer_hw_buffer_mngr;
 #endif
 
@@ -1175,7 +896,7 @@ int __init rdpa_mw_init(void)
     rdpa_bind_vlanctl(1);
 #endif
 
-#ifdef CONFIG_BCM_BPM_HW_ENABLED
+#if defined(CONFIG_BCM_BPM_HW_ENABLED) && !defined(CONFIG_BRCM_QEMU)
     ret = gbpm_register_hw_buffer_manager(&rdpa_buffer_hw_buffer_mngr);
     if (ret) {
         BDMF_TRACE_ERR("Unable to create RDPA Buffer HW BPM\n");

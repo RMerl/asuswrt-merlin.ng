@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+menuconfig SOC_SAMSUNG
+	bool "Samsung SoC drivers support"
+
+if SOC_SAMSUNG
+
+config EXYNOS_PMU
+	bool "Exynos PMU controller driver"
+	depends on ARCH_EXYNOS
+	select REGMAP
+	select SYSCON
+	help
+	  Enable support for system controller configuration driver. It allows
+	  one to configure system controller registers (e.g. some register in
+	  PMU syscon) by providing register's offset, mask and value.
+
+config EXYNOS_USI
+	bool "Exynos USI (Universal Serial Interface) driver"
+	depends on ARCH_EXYNOS
+	select MISC
+	select REGMAP
+	select SYSCON
+	help
+	  Enable support for USI block. USI (Universal Serial Interface) is an
+	  IP-core found in modern Samsung Exynos SoCs, like Exynos850 and
+	  ExynosAutoV9. USI block can be configured to provide one of the
+	  following serial protocols: UART, SPI or High Speed I2C.
+
+	  This driver allows one to configure USI for desired protocol, which
+	  is usually done in USI node in Device Tree.
+
+endif

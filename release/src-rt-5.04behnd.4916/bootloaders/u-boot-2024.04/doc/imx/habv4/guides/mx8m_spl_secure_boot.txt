@@ -1,0 +1,231 @@
+      +=========================================================+
+      +  i.MX8M U-Boot HABv4 Secure Boot guide for SPL targets  +
+      +=========================================================+
+
+1. HABv4 secure boot process
+-----------------------------
+
+This document is an addendum of mx6_mx7_spl_secure_boot.txt guide describing
+a step-by-step procedure on how to sign and securely boot an U-Boot image for
+SPL targets on i.MX8M, i.MX8M Mini, i.MX8M Nano, i.MX8M Plus.
+
+Details about HAB can be found in the application note AN4581[1] and in the
+introduction_habv4.txt document.
+
+1.1 Building a SPL target supporting secure boot
+-------------------------------------------------
+
+The U-Boot build for i.MX8M SoC makes use of Second Program Loader (SPL)
+support, fitImage support and custom i.MX8M specific flash.bin container.
+This leads to a generation of multiple intermediate build artifacts, the
+U-Boot SPL, U-Boot binary, DT blob. These later two artifacts are bundled
+with external ATF BL31 blob to form a fitImage. The fitImage is bundled
+with SPL and external DDR and optional HDMI PHY initialization blobs to
+form the final flash.bin container. The HABv4 can be used to authenticate
+all of the input binaries separately.
+
+Out of reset the ROM code authenticates the SPL and PHY initialization
+blobs, combination of which is responsible for initializing essential
+features such as DDR, UART, PMIC and clock enablement. Once the DDR is
+available, the SPL code loads the secondary fitImage to its specific
+address and call the HAB APIs to extend the root of trust on its
+components.
+
+The U-Boot SPL provides support to secure boot configuration and also
+provide access to the HAB APIs exposed by the ROM vector table, the
+U-Boot provides access to HAB APIs via SMC calls to ATF. The support
+is enabled by selecting the CONFIG_IMX_HAB option.
+
+When built with this configuration the U-Boot correctly pads combined
+SPL and PHY initialization blob image, called u-boot-spl-ddr.bin, by
+aligning to the next 0xC00 address, so the CSF signature data generated
+by CST can be concatenated to the image.
+
+The U-Boot also reserves space in the fitImage binary (u-boot.itb) between
+the fitImage tree and external blobs included in it, so it can be used to
+inject IVT and CST signatures used by SPL HAB calls to authenticate the
+fitImage components.
+
+The diagram below illustrate a signed SPL combined with DDR PHY
+initialization firmware blobs part of flash.bin container layout.
+This part is loaded to memory address ( CONFIG_SPL_TEXT_BASE - 0x40 ) and
+authenticated the BootROM. The reason for the offset is so that the *entry
+would be at memory address CONFIG_SPL_TEXT_BASE when BootROM executes the
+code within it:
+
+            ------- +-----------------------------+ <-- *start
+                ^   |      Image Vector Table     |
+                |   |         (0x20 bytes)        |
+                |   +-----------------------------+ <-- *boot_data
+                |   |          Boot Data          |
+                |   +-----------------------------+
+                |   |           Padding           |
+         Signed |   |  to 0x40 bytes from *start  |
+          Data  |   +-----------------------------+ <-- *entry
+                |   |                             |
+                |   |  SPL combined with DDR PHY  |
+                |   |    initialization blobs     |
+                |   |    (u-boot-spl-ddr.bin)     |
+                |   |                             |
+                |   +-----------------------------+
+                v   |           Padding           |
+            ------- +-----------------------------+ <-- *csf
+                    |                             |
+                    | Command Sequence File (CSF) |
+                    |                             |
+                    +-----------------------------+
+                    |      Padding (optional)     |
+                    +-----------------------------+
+
+The diagram below illustrate a signed U-Boot binary, DT blob and external
+ATF BL31 blob combined to form fitImage part of flash.bin container layout.
+The *load_address is CONFIG_SPL_LOAD_FIT_ADDRESS, the fitImage is loaded
+including all of its embedded data, authenticated using IVT+CSF concatenated
+at the end of the fitImage at offset aligned to 4 kiB. The fitImage with
+external data is not supported.
+
+            ------- +-----------------------------+ <-- *load_address
+                ^   |                             |
+                |   |        fitImage tree        |
+                |   |      with embedded data     |
+                |   |        (cca. 1 MiB)         |
+         Signed |   |                             |
+  .-----  Tree  |   +-----------------------------+
+  |       Data  |   | Padding to next 4k aligned  |
+  |             |   |     from *load_address      |
+  |             |   +-----------------------------+ <-- *ivt
+  |             |   |     Image Vector Table      |
+  |             v   |         (0x20 bytes)        |
+  |         ------- +-----------------------------+ <-- *csf
+  |                 | Command Sequence File (CSF) |
+  |                 |  for all signed entries in  |
+  '---------------->| the fitImage, tree and data |
+                    |        (cca 6-7 kiB)        |
+                    +-----------------------------+
+
+The diagram below illustrate a combined flash.bin container layout:
+
+                    +-----------------------------+
+                    |       Signed SPL part       |
+                    +-----------------------------+
+                    |     Signed fitImage part    |
+                    +-----------------------------+
+
+1.2 Enabling the secure boot support
+-------------------------------------
+
+The first step is to generate an U-Boot image supporting the HAB features
+mentioned above, this can be achieved by adding CONFIG_IMX_HAB to the
+build configuration:
+
+- Defconfig:
+
+  CONFIG_IMX_HAB=y
+
+- Kconfig:
+
+  ARM architecture -> Support i.MX HAB features
+
+1.3 Signing the images
+-----------------------
+
+The CSF contains all the commands that the HAB executes during the secure
+boot. These commands instruct the HAB code on which memory areas of the image
+to authenticate, which keys to install, use and etc.
+
+CSF examples are available under doc/imx/habv4/csf_examples/ directory.
+
+CSF "Blocks" line for csf_spl.txt can be generated as follows:
+
+```
+spl_block_base=$(printf "0x%x" $(( $(sed -n "/CONFIG_SPL_TEXT_BASE=/ s@.*=@@p" .config) - 0x40)) )
+spl_block_size=$(printf "0x%x" $(stat -tc %s u-boot-spl-ddr.bin))
+sed -i "/Blocks = / s@.*@  Blocks = $spl_block_base 0x0 $spl_block_size \"flash.bin\"@" csf_spl.txt
+```
+
+The resulting line looks as follows:
+```
+  Blocks = 0x7e0fc0 0x0 0x306f0 "flash.bin"
+```
+
+The columns mean:
+  - CONFIG_SPL_TEXT_BASE - 0x40 -- Start address of signed data, in DRAM
+  - 0x0 -- Start address of signed data, in "flash.bin"
+  - 0x306f0 -- Length of signed data, in "flash.bin"
+  - Filename -- "flash.bin"
+
+To generate signature for the SPL part of flash.bin container, use CST:
+```
+cst -i csf_spl.tmp -o csf_spl.bin
+```
+
+The newly generated CST blob has to be patched into existing flash.bin
+container. Conveniently, flash.bin IVT contains physical address of the
+CSF blob. Remember, the SPL part of flash.bin container is loaded by the
+BootROM at CONFIG_SPL_TEXT_BASE - 0x40 , so the offset of CSF blob in
+the fitImage can be calculated and inserted into the flash.bin in the
+correct location as follows:
+```
+# offset = IVT_HEADER[6 = CSF address] - CONFIG_SPL_TEXT_BASE - 0x40
+spl_csf_offset=$(xxd -s 24 -l 4 -e flash.bin | cut -d " " -f 2 | sed "s@^@0x@")
+spl_bin_offset=$(xxd -s 4 -l 4 -e flash.bin | cut -d " " -f 2 | sed "s@^@0x@")
+spl_dd_offset=$((${spl_csf_offset} - ${spl_bin_offset} + 0x40))
+dd if=csf_spl.bin of=flash.bin bs=1 seek=${spl_dd_offset} conv=notrunc
+```
+
+CSF "Blocks" line for csf_fit.txt can be generated as follows:
+```
+# fitImage
+fit_block_base=$(printf "0x%x" $(sed -n "/CONFIG_SPL_LOAD_FIT_ADDRESS=/ s@.*=@@p" .config) )
+fit_block_offset=$(printf "0x%s" $(fdtget -t x u-boot.dtb /binman/imx-boot/uboot offset))
+fit_block_size=$(printf "0x%x" $(( ( ( $(stat -tc %s u-boot.itb) + 0x1000 - 0x1 ) & ~(0x1000 - 0x1)) + 0x20 )) )
+sed -i "/Blocks = / s@.*@  Blocks = $fit_block_base $fit_block_offset $fit_block_size \"flash.bin\"@" csf_fit.tmp
+```
+
+The fitImage part of flash.bin requires separate IVT. Generate the IVT and
+patch it into the correct aligned location of flash.bin as follows:
+```
+# IVT
+ivt_ptr_base=$(printf "%08x" ${fit_block_base} | sed "s@\(..\)\(..\)\(..\)\(..\)@0x\4\3\2\1@")
+ivt_block_base=$(printf "%08x" $(( ${fit_block_base} + ${fit_block_size} - 0x20 )) | sed "s@\(..\)\(..\)\(..\)\(..\)@0x\4\3\2\1@")
+csf_block_base=$(printf "%08x" $(( ${fit_block_base} + ${fit_block_size} )) | sed "s@\(..\)\(..\)\(..\)\(..\)@0x\4\3\2\1@")
+ivt_block_offset=$((${fit_block_offset} + ${fit_block_size} - 0x20))
+csf_block_offset=$((${ivt_block_offset} + 0x20))
+
+echo "0xd1002041 ${ivt_block_base} 0x00000000 0x00000000 0x00000000 ${ivt_block_base} ${csf_block_base} 0x00000000" | xxd -r -p > ivt.bin
+dd if=ivt.bin of=flash.bin bs=1 seek=${ivt_block_offset} conv=notrunc
+```
+
+To generate CSF signature for the fitImage part of flash.bin container, use CST:
+```
+cst -i csf_fit.tmp -o csf_fit.bin
+```
+
+Finally, patch the CSF signature into the fitImage right past the IVT:
+```
+dd if=csf_fit.bin of=flash.bin bs=1 seek=${csf_block_offset} conv=notrunc
+```
+
+The entire script is available in doc/imx/habv4/csf_examples/mx8m/csf.sh
+and can be used as follows to modify flash.bin to be signed
+(adjust paths as needed):
+```
+export CST_DIR=/usr/src/cst-3.3.1/
+export CSF_KEY=$CST_DIR/crts/CSF1_1_sha256_4096_65537_v3_usr_crt.pem
+export IMG_KEY=$CST_DIR/crts/IMG1_1_sha256_4096_65537_v3_usr_crt.pem
+export SRK_TABLE=$CST_DIR/crts/SRK_1_2_3_4_table.bin
+export PATH=$CST_DIR/linux64/bin:$PATH
+/bin/sh doc/imx/habv4/csf_examples/mx8m/csf.sh
+```
+
+1.4 Closing the device
+-----------------------
+
+The procedure for closing the device is similar as in Non-SPL targets, for a
+complete procedure please refer to section "1.5 Programming SRK Hash" in
+mx6_mx7_secure_boot.txt document available under doc/imx/habv4/guides/
+directory.
+
+References:
+[1] AN4581: "Secure Boot on i.MX 50, i.MX 53, i.MX 6 and i.MX 7 Series using
+ HABv4" - Rev 2.

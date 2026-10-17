@@ -1,0 +1,57 @@
+// SPDX-License-Identifier:      GPL-2.0+
+
+/dts-v1/;
+
+#include "bcm5301x.dtsi"
+
+/ {
+	/*
+	 * The Northstar does not have a proper fallback compatible, but
+	 * these basic chips will suffice.
+	 */
+	model = "Northstar model";
+	compatible = "brcm,bcm47094", "brcm,bcm4708";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&gic>;
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x08000000>,
+		      <0x88000000 0x08000000>;
+	};
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	nand-controller@18028000 {
+		nandcs: nand@0 {
+			compatible = "brcm,nandcs";
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			/*
+			 * Same as using the bcm5301x-nand-cs0-bch1.dtsi
+			 * include from the Linux kernel.
+			 */
+			nand-ecc-algo = "bch";
+			nand-ecc-strength = <1>;
+			nand-ecc-step-size = <512>;
+
+			partitions {
+				compatible = "brcm,bcm947xx-cfe-partitions";
+			};
+		};
+	};
+};
+
+&uart0 {
+	clock-frequency = <125000000>;
+	status = "okay";
+};

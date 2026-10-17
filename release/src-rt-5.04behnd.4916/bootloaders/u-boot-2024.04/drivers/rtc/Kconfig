@@ -1,0 +1,310 @@
+#
+# RTC drivers configuration
+#
+
+menu "Real Time Clock"
+
+config DM_RTC
+	bool "Enable Driver Model for RTC drivers"
+	depends on DM
+	select LIB_DATE
+	help
+	  Enable drver model for real-time-clock drivers. The RTC uclass
+	  then provides the rtc_get()/rtc_set() interface, delegating to
+	  drivers to perform the actual functions. See rtc.h for a
+	  description of the API.
+
+config SPL_DM_RTC
+	bool "Enable Driver Model for RTC drivers in SPL"
+	depends on SPL_DM
+	help
+	  Enable drver model for real-time-clock drivers. The RTC uclass
+	  then provides the rtc_get()/rtc_set() interface, delegating to
+	  drivers to perform the actual functions. See rtc.h for a
+	  description of the API.
+
+config TPL_DM_RTC
+	bool "Enable Driver Model for RTC drivers in TPL"
+	depends on TPL_DM
+	help
+	  Enable drver model for real-time-clock drivers. The RTC uclass
+	  then provides the rtc_get()/rtc_set() interface, delegating to
+	  drivers to perform the actual functions. See rtc.h for a
+	  description of the API.
+
+config VPL_DM_RTC
+	bool "Enable Driver Model for RTC drivers in VPL"
+	depends on VPL_DM
+	help
+	  Enable drver model for real-time-clock drivers. The RTC uclass
+	  then provides the rtc_get()/rtc_set() interface, delegating to
+	  drivers to perform the actual functions. See rtc.h for a
+	  description of the API.
+
+config RTC_ENABLE_32KHZ_OUTPUT
+	bool "Enable RTC 32Khz output"
+	help
+	   Some real-time clocks support the output of 32kHz square waves (such as ds3231),
+	   the config symbol choose Real Time Clock device 32Khz output feature.
+
+config RTC_ARMADA38X
+	bool "Enable Armada 38x Marvell SoC RTC"
+	depends on DM_RTC && ARCH_MVEBU
+	help
+	  This adds support for the in-chip RTC that can be found in the
+	  Armada 38x Marvell's SoC devices.
+
+config RTC_PCF2127
+	bool "Enable PCF2127 driver"
+	depends on DM_RTC
+	help
+	  The PCF2127 is a CMOS Real Time Clock (RTC) and calendar with an integrated
+	  Temperature Compensated Crystal (Xtal) Oscillator (TCXO) and a 32.768 kHz quartz
+	  crystal optimized for very high accuracy and very low power consumption. The PCF2127
+	  has a selectable I2C-bus or SPI-bus, a backup battery switch-over circuit, a
+	  programmable watchdog function, a timestamp function, and many other features.
+
+config RTC_DS1307
+	bool "Enable DS1307 driver"
+	depends on DM_RTC
+	help
+	  Support for Dallas Semiconductor (now Maxim) DS1307 and DS1339 and
+	  compatible Real Time Clock devices.
+
+config RTC_DS1337
+	bool "Enable DS1337 driver"
+	help
+	  Support for Dallas Semiconductor (now Maxim) DS1337/8/9 compatible
+	  Real Time Clock devices.
+
+config RTC_DS1337_NOOSC
+	bool "Enable support for no oscillator output in DS1337 driver"
+	depends on RTC_DS1337
+
+config RTC_DS1338
+	bool "Enable DS1338 driver"
+	help
+	  Support for Dallas Semiconductor (now Maxim) DS1338 and compatible
+	  Real Time Clock devices.
+
+config RTC_DS1374
+	bool "Enable DS1374 driver"
+	depends on !DM_RTC
+	help
+	  Support for Dallas Semiconductor (now Maxim) DS1374 and compatible
+	  Real Time Clock devices.
+
+config RTC_DS3231
+	bool "Enable DS3231 driver"
+	help
+	  Support for Dallas Semiconductor (now Maxim) DS3231 compatible
+	  Real Time Clock devices.
+
+config RTC_DS3232
+	bool "Enable DS3232 driver"
+	depends on DM_RTC
+	depends on DM_I2C
+	help
+	  Support for Dallas Semiconductor (now Maxim) DS3232 compatible
+	  Real Time Clock devices.
+
+config RTC_EMULATION
+	bool "Enable emulated RTC"
+	depends on DM_RTC
+	help
+	  On a board without hardware clock this software real time clock can be
+	  used. The initial time may be provided via the environment variable
+	  'rtc_emul_epoch' as a decimal string indicating seconds since
+	  1970-01-01. If the environment variable is missing, the build time is
+	  used to initialize the RTC. The time can be adjusted manually via the
+	  'date' command or the 'sntp' command can be used to update the RTC
+	  with the time from a network time server. See CONFIG_CMD_SNTP and
+	  CONFIG_BOOTP_NTPSERVER. The RTC time is advanced according to CPU
+	  ticks.
+
+config RTC_GOLDFISH
+	bool "Enable Goldfish driver"
+	depends on DM_RTC
+	help
+	  The Goldfish RTC is a virtual device which may be supplied by QEMU.
+	  It is enabled by default on QEMU's RISC-V virt machine.
+
+config RTC_ISL1208
+	bool "Enable ISL1208 driver"
+	depends on DM_RTC
+	help
+	  The Renesas (formerly Intersil) ISL1208 is a I2C Real Time Clock (RTC) and
+	  calendar with automatic leap year correction, 2-byte battery backed SRAM,
+	  automatic power switch-over, alarm function and 15 selectable frequency
+	  outputs.
+
+	  This driver supports reading and writing the RTC/calendar and detects
+	  total power failures.
+
+config RTC_MAX313XX
+	bool "Analog Devices MAX313XX RTC driver"
+	depends on DM_RTC
+	depends on DM_I2C
+	help
+	  If you say yes here you will get support for the
+	  Analog Devices MAX313XX series RTC family.
+
+	  Chip features not currently supported:
+	  - Timestamp registers as SRAM
+	  - Temperature sensor
+	  - CLKOUT generation
+
+config RTC_PCF8563
+	tristate "Philips PCF8563"
+	help
+	  If you say yes here you get support for the Philips PCF8563 RTC
+	  and compatible chips.
+
+config RTC_PT7C4338
+	bool "Enable Pericom Technology PT7C4338 RTC driver"
+
+config RTC_RV3028
+	bool "Enable RV3028 driver"
+	depends on DM_RTC
+	help
+	  The MicroCrystal RV3028 is a I2C Real Time Clock (RTC)
+
+config RTC_RV3029
+	bool "Enable RV3029 driver"
+	depends on DM_RTC
+	help
+	  The MicroCrystal RV3029 is a I2C Real Time Clock (RTC) with 8-byte
+	  battery-backed SRAM.
+
+	  This driver supports reading and writing the RTC/calendar and the
+	  battery-baced SRAM section.
+
+config RTC_RV8803
+	bool "Enable RV8803 driver"
+	depends on DM_RTC
+	help
+	  The Micro Crystal RV8803 is a high accuracy, ultra-low power I2C
+	  Real Time Clock (RTC) with temperature compensation.
+
+	  This driver supports reading and writing the RTC/calendar and
+	  detects total power failures.
+
+config RTC_RX8010SJ
+	bool "Enable RX8010SJ driver"
+	depends on DM_RTC
+	help
+	  Support for Epson RX8010SJ Real Time Clock devices.
+
+config RTC_RX8025
+	bool "Enable RX8025 driver"
+	depends on DM_RTC
+	help
+	  Support for Epson RX8025 Real Time Clock devices.
+
+config RTC_PL031
+	bool "Enable ARM AMBA PL031 RTC driver"
+	help
+	  The ARM PrimeCell Real Time Clock (PL031) is an optional SoC
+	  peripheral based on the Advanced Microcontroller Bus Architecture
+	  (AMBA). It is emulated in QEMU virtual ARM machines.
+
+config RTC_MV
+	bool "Enable Marvell RTC driver"
+	depends on DM_RTC
+	help
+	  Enable Marvell RTC driver. This driver supports the rtc that is present
+	  on some Marvell SoCs.
+
+config RTC_S35392A
+	bool "Enable S35392A driver"
+	select BITREVERSE
+	help
+	  Enable s35392a driver which provides rtc get and set function.
+
+config RTC_MC13XXX
+	bool "Enable MC13XXX RTC driver"
+	depends on !DM_RTC
+
+config RTC_MC146818
+	bool "Enable MC146818 driver"
+	help
+	  This is a widely used real-time clock chip originally by Motorola
+	  and now available from NXP. It includes a battery-backed real-time
+	  clock with a wide array of features and 50 bytes of general-purpose,
+	  battery-backed RAM. The driver supports access to the clock and RAM.
+
+config MCFRTC
+	bool "Use common CF RTC driver"
+	depends on M68K
+
+config SYS_MCFRTC_BASE
+	hex "Base address for RTC in immap.h"
+	depends on MCFRTC
+
+config RTC_MXS
+	bool "Enable i.MXS RTC driver"
+	depends on ARCH_MX23 || ARCH_MX28
+
+config RTC_M41T62
+	bool "Enable M41T62 driver"
+	help
+	  Enable driver for ST's M41T62 compatible RTC devices (like RV-4162).
+	  It is a serial (I2C) real-time clock (RTC) with alarm.
+
+config RTC_SANDBOX
+	bool "Enable sandbox RTC driver"
+	depends on SANDBOX && DM_RTC
+	default y
+	help
+	  Enable the sandbox RTC driver. This driver connects to the RTC
+	  emulator and is used to test the RTC uclasses and associated code,
+	  as well as the I2C subsystem.
+
+config SPL_RTC_SANDBOX
+	bool "Enable sandbox RTC driver (SPL)"
+	depends on SANDBOX && SPL_DM_RTC
+	default y
+	help
+	  Enable the sandbox RTC driver. This driver connects to the RTC
+	  emulator and is used to test the RTC uclasses and associated code,
+	  as well as the I2C subsystem.
+
+config RTC_STM32
+	bool "Enable STM32 RTC driver"
+	depends on DM_RTC
+	help
+	  Enable STM32 RTC driver. This driver supports the rtc that is present
+	  on some STM32 SoCs.
+
+config RTC_ABX80X
+	bool "Enable Abracon ABx80x RTC driver"
+	depends on DM_RTC
+	help
+	  If you say yes here you get support for Abracon AB080X and AB180X
+	  families of ultra-low-power  battery- and capacitor-backed real-time
+	  clock chips.
+
+config RTC_DAVINCI
+	bool "Enable TI OMAP RTC driver"
+	depends on ARCH_DAVINCI || ARCH_OMAP2PLUS
+	help
+	  Say "yes" here to support the on chip real time clock
+	  present on TI OMAP1, AM33xx, DA8xx/OMAP-L13x, AM43xx and DRA7xx.
+
+config RTC_ZYNQMP
+	bool "Enable ZynqMP RTC driver"
+	depends on ARCH_ZYNQMP
+	help
+	  Say "yes" here to support the on chip real time clock
+	  present on Xilinx ZynqMP SoC.
+
+config RTC_HT1380
+	bool "Enable Holtek HT1380/HT1381 RTC driver"
+	depends on DM_RTC && DM_GPIO
+	help
+	  Say "yes" here to get support for Holtek HT1380/HT1381
+	  Serial Timekeeper IC which provides seconds, minutes, hours,
+	  day of the week, date, month and year information. It is to be
+	  connected via 3 GPIO pins which work as reset, clock, and data.
+
+endmenu

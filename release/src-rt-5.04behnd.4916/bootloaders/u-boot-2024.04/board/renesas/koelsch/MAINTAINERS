@@ -1,0 +1,8 @@
+KOELSCH BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+M:	Nobuhiro Iwamatsu <nobuhiro.iwamatsu.yj@renesas.com>
+S:	Maintained
+F:	arch/arm/dts/r8a7791-koelsch*
+F:	board/renesas/koelsch/
+F:	configs/koelsch_defconfig
+F:	include/configs/koelsch.h

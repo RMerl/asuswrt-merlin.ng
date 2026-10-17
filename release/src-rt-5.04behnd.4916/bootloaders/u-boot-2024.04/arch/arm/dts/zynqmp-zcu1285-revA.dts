@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx ZynqMP ZCU1285 RevA
+ *
+ * (C) Copyright 2018 - 2021, Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ * Siva Durga Prasad Paladugu <siva.durga.prasad.paladugu@amd.com>
+ */
+
+/dts-v1/;
+
+#include "zynqmp.dtsi"
+#include "zynqmp-clk-ccf.dtsi"
+
+/ {
+	model = "ZynqMP ZCU1285 RevA";
+	compatible = "xlnx,zynqmp-zcu1285-revA", "xlnx,zynqmp-zcu1285",
+		     "xlnx,zynqmp";
+
+	aliases {
+		serial0 = &uart0;
+		serial1 = &dcc;
+		spi0 = &qspi;
+		mmc0 = &sdhci1;
+		ethernet0 = &gem1; /* EMIO */
+		i2c = &i2c0; /* EMIO */
+	};
+
+	chosen {
+		bootargs = "earlycon";
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+};
+
+&dcc {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <400000>;
+
+};
+
+&gem1 {
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		phy1: ethernet-phy@1 {
+			reg = <1>; /* KSZ9031RNXIC on AES-FMC-NETW1-G */
+			rxc-skew-ps = <1800>; /* Skew control of RX_CLK pad output */
+			txc-skew-ps = <1800>; /* Skew control of GTX_CLK pad input */
+			txen-skew-ps = <900>; /* Skew control of TX_CTL pad input */
+			rxdv-skew-ps = <0>; /* Skew control of RX_CTL pad output */
+			rxd0-skew-ps = <0>; /* Skew control of RXD0 pad output */
+			rxd1-skew-ps = <0>; /* Skew control of RXD1 pad output */
+			rxd2-skew-ps = <0>; /* Skew control of RXD2 pad output */
+			rxd3-skew-ps = <0>; /* Skew control of RXD3 pad output */
+			txd0-skew-ps = <900>; /* Skew control of TXD0 pad input */
+			txd1-skew-ps = <900>; /* Skew control of TXD1 pad input */
+			txd2-skew-ps = <900>; /* Skew control of TXD2 pad input */
+			txd3-skew-ps = <900>; /* Skew control of TXD3 pad input */
+		};
+	};
+};
+
+&gpio {
+	status = "okay";
+};
+
+&qspi {
+	status = "okay";
+	flash@0 {
+		compatible = "m25p80", "jedec,spi-nor"; /* 32MB */
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+		spi-max-frequency = <108000000>; /* Based on DC1 spec */
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&sdhci1 {
+	status = "okay";
+	/*
+	 * This property should be removed for supporting UHS mode
+	 */
+	no-1-8-v;
+	xlnx,mio-bank = <1>;
+};

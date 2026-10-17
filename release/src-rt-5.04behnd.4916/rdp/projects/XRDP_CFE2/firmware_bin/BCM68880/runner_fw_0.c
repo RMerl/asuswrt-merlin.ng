@@ -27,7 +27,7 @@
 :>
 */
 
-char *rdpa_version_fw_0 = "$Change: 323893 $";
+char *rdpa_version_fw_0 = "$Change: 535333 $";
 
 uint32_t fw_binary_0[] = {
 0x0A800006, 

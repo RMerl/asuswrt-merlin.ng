@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Bus Devices
+#
+
+menu "Bus devices"
+
+config TI_PWMSS
+	bool
+	default y if ARCH_OMAP2PLUS && PWM_TI_EHRPWM
+	help
+	  PWM Subsystem driver support for AM33xx SOC.
+
+config TI_SYSC
+	bool "TI sysc interconnect target module driver"
+	depends on DM && ARCH_OMAP2PLUS
+	help
+	  Generic driver for Texas Instruments interconnect target module
+	  found on many TI SoCs.
+
+config SPL_TI_SYSC
+	bool "Support TI sysc interconnect in SPL"
+	depends on SPL_DM && TI_SYSC
+	help
+	  Generic driver for Texas Instruments interconnect target module
+	  found on many TI SoCs.
+
+config UNIPHIER_SYSTEM_BUS
+	bool "UniPhier System Bus driver"
+	depends on ARCH_UNIPHIER
+	default y
+	help
+	  Support for UniPhier System Bus, a simple external bus.  This is
+	  needed to use on-board devices connected to UniPhier SoCs.
+
+endmenu

@@ -4,7 +4,7 @@
 #include <linux/types.h>
 
 struct ebt_fsmark_t_info {
-    __u8    id;
+    __u16    id;
     int     target;     // EBT_ACCEPT, EBT_DROP, EBT_CONTINUE or EBT_RETURN
 };
 

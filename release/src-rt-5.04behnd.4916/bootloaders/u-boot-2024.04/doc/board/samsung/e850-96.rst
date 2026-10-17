@@ -1,0 +1,87 @@
+.. SPDX-License-Identifier: GPL-2.0+
+.. sectionauthor:: Sam Protsenko <semen.protsenko@linaro.org>
+
+WinLink E850-96 board
+=====================
+
+Overview
+--------
+
+WinLink's E850-96 board [1]_ is based on Samsung Exynos850 SoC and follows
+96Boards Consumer Edition specification [2]_. That makes it possible to use
+96Boards mezzanine boards [3]_ along with it. It's an open-hardware board and
+the hardware design files [4]_ were published, along with the supported
+software [5]_ and related documentation.
+
+U-Boot can be used on E850-96 instead of the original Samsung LittleKernel based
+bootloader [6]_. Because FWBL1 [7]_ doesn't verify bootloader's signature, there
+is no need to sign a U-Boot binary. That means U-Boot binary can be flashed into
+``bootloader`` partition (instead of LittleKernel bootloader) and it will just
+work.
+
+Because BL2 bootloader already sets up DRAM and runs the final bootloader
+(U-Boot) from DRAM, there is no need in U-Boot SPL. It's enough to have only
+U-Boot proper (``u-boot.bin``).
+
+Boot Flow
+---------
+
+The boot path for Exynos850 is shown on the figure below.
+
+.. image:: img/exynos850-boot-architecture.svg
+  :alt: Exynos850 SoC boot flow
+
+Legend:
+
+* ``BL0``: Boot ROM code
+* ``BL1``: Software part of Boot ROM
+* ``EPBL``: Exynos Primary Boot Loader
+* ``BL2``: Initializes CMU and DRAM and runs the final bootloader
+* ``Bootloader``: Final bootloader (e.g. U-Boot); also called BL33 in terms of
+  ARM boot flow
+* ``EL3_MON``: EL3 monitor (trusted firmware, handles SMC calls); also called
+  BL31 in terms of ARM boot flow
+* ``LDFW``: Loadable Firmware
+
+Build Procedure
+---------------
+
+.. warning::
+  At the moment both eMMC and USB features are not enabled in U-Boot. Flashing
+  U-Boot binary **WILL** effectively brick your board. The ``dltool`` [8]_ can
+  be used then to perform USB boot and flash LittleKernel bootloader binary [7]_
+  to unbrick and revive the board. Flashing U-Boot binary might be helpful for
+  developers or anybody who want to check current state of U-Boot enablement on
+  E850-96 (which is mostly serial console and related blocks).
+
+Build U-Boot binary from source code (using AArch64 baremetal GCC toolchain):
+
+.. prompt:: bash $
+
+  export PATH=<toolchain path>/bin:$PATH
+  export CROSS_COMPILE=<toolchain prefix>
+  make e850-96_defconfig
+  make
+
+Boot E850-96 board into fastboot mode as described in board software doc [9]_,
+and flash U-Boot binary into ``bootloader`` eMMC partition:
+
+.. prompt:: bash $
+
+  fastboot flash bootloader u-boot.bin
+  fastboot reboot
+
+U-Boot will boot up to the shell.
+
+References
+----------
+
+.. [1] https://www.96boards.org/product/e850-96b/
+.. [2] https://www.96boards.org/products/ce/
+.. [3] https://www.96boards.org/products/mezzanine/
+.. [4] https://www.96boards.org/documentation/consumer/e850-96b/hardware-docs/
+.. [5] https://gitlab.com/Linaro/96boards/e850-96/
+.. [6] https://gitlab.com/Linaro/96boards/e850-96/lk
+.. [7] https://gitlab.com/Linaro/96boards/e850-96/images
+.. [8] https://gitlab.com/Linaro/96boards/e850-96/tools/dltool
+.. [9] https://gitlab.com/Linaro/96boards/e850-96/doc

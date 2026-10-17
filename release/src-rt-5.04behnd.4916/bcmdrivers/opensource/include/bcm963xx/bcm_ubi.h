@@ -11,8 +11,8 @@
 
 #ifndef __KERNEL__
 #include <endian.h>
-#include "bcmTag.h"
 #define be32_to_cpu be32toh
+#define CRC32_INIT_VALUE 0xffffffff /* Initial CRC32 checksum value */
 #endif
 
 /*

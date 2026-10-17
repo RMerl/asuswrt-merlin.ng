@@ -1,6 +1,0 @@
-PICOSAM9G45 BOARD
-M:	Erik van Luijk <evanluijk@interact.nl>
-S:	Maintained
-F:	board/mini-box/picosam9g45/
-F:	include/configs/picosam9g45.h
-F:	configs/picosam9g45_defconfig

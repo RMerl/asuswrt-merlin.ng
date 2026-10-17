@@ -1,0 +1,46 @@
+choice
+	prompt "SoC select"
+
+config TARGET_GXP
+	bool "GXP"
+	select DM
+	select SOC_GXP
+	imply CMD_DM
+
+config TARGET_GXP2
+	bool "GXP2"
+	select DM
+	select SOC_GXP
+	select GXP_ECC
+	imply CMD_DM
+
+endchoice
+
+choice
+	prompt "GXP VROM size"
+	default GXP_VROM_64MB
+	optional
+
+config GXP_VROM_64MB
+	bool "64MB"
+
+config GXP_VROM_32MB
+	bool "32MB"
+endchoice
+
+config GXP_ECC
+	bool "Enable memory ECC protected"
+	help
+	  Use half of memory to enable ECC protected
+
+config SYS_BOARD
+	default "gxp"
+
+config SYS_VENDOR
+	default "hpe"
+
+config SYS_CONFIG_NAME
+	default "gxp"
+
+config TEXT_BASE
+	default 0x50000000

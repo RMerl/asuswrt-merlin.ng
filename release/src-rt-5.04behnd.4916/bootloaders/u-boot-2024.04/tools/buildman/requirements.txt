@@ -1,0 +1,3 @@
+jsonschema==4.17.3
+pyyaml==6.0
+yamllint==1.26.3

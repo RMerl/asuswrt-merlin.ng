@@ -1,0 +1,9 @@
+config BCM_BNL
+	tristate "Broadcom Network Latency Monitoring"
+	depends on NF_CONNTRACK
+	default m 
+config BCM_BNL_IMPL
+	int "BNL Implementation Selection"
+	depends on BCM_BNL
+	default 2 if BCM_SCORE
+	default 1 

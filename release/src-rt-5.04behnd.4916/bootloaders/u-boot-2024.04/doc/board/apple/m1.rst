@@ -1,0 +1,83 @@
+.. SPDX-License-Identifier: GPL-2.0+
+
+U-Boot for Apple Silicon Macs
+=============================
+
+Allows Apple Silicon Macs to boot U-Boot via the m1n1 bootloader
+developed by the Asahi Linux project.  At this point the machines with
+the following SoCs work:
+
+ - Apple M1 SoC (t8103)
+ - Apple M1 Pro SoC (t6000)
+ - Apple M1 Max SoC (t6001)
+ - Apple M1 Ultra SoC (t6002)
+
+On these SoCs the following hardware is supported:
+
+ - S5L serial port
+ - SPI keyboard (on laptops)
+ - Framebuffer
+ - NVMe storage
+ - USB 3.1 Type-C ports
+
+Device trees are currently provided for the M1 Mac mini (2020, J274),
+M1 MacBook Pro 13" (2020, J293), M1 MacBook Air (2020, J313) and M1
+iMac (2021, J456/J457).
+
+Building U-Boot
+---------------
+
+.. code-block:: bash
+
+    $ export CROSS_COMPILE=aarch64-none-elf-
+    $ make apple_m1_defconfig
+    $ make
+
+This will build ``u-boot-nodtb.bin`` as well as devices trees for some
+of the supported machines.  These device trees can be found in the
+``arch/arm/dts`` subdirectory of your build.
+
+Image creation
+--------------
+
+In order to run U-Boot on an Apple Silicon Mac, U-Boot has to be used
+as a payload for the m1n1 bootloader.  Instructions for building m1n1
+can be found here:
+
+    https://github.com/AsahiLinux/docs/wiki/SW%3Am1n1
+
+.. code-block:: bash
+
+    $ cat m1n1.macho t8103-j274.dtb u-boot-nodtb.bin > u-boot.macho
+
+This uses ``u-boot-nodtb.bin`` as the device tree is passed to U-Boot
+by m1n1 after making some adjustments.
+
+Image installation
+------------------
+
+Instructions on how to install U-Boot on your Mac can be found at:
+
+    https://github.com/AsahiLinux/docs/wiki/Developer-Quickstart
+
+Just replace ``m1n1.macho`` with ``u-boot.macho`` in the instructions.
+
+Debug UART
+----------
+
+Since the base address of the UART is SoC-dependent, the debug UART is
+not enabled by default.  To enable the debug UART the base address
+needs to be adjusted and the CONFIG_DEBUG_UART option needs to be
+enabled.  The table below gives the correct base address for the
+supported SoCs.
+
+.. list-table::
+   :widths: 32 16
+   :header-rows: 1
+
+   * - SoC
+     - Base Address
+   * - M1 (t8103)
+     - 0x235200000
+   * - M1 Pro/Max/Ultra (t6000/t6001/t6002)
+     - 0x39b200000

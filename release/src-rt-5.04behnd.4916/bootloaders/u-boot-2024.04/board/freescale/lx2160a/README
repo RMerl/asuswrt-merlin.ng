@@ -1,0 +1,329 @@
+Overview
+--------
+The LX2160A Reference Design (RDB) is a high-performance computing,
+evaluation, and development platform that supports the QorIQ LX2160A
+Layerscape Architecture processor and its personalities.
+
+LX2160A SoC Overview
+--------------------------------------
+For details, please refer arch/arm/cpu/armv8/fsl-layerscape/doc/README.soc
+
+LX2160ARDB board Overview
+----------------------
+DDR Memory
+	Two ports of 72-bits (8-bits ECC) DDR4.
+	Each port supports four chip-selects and two DIMM
+	connectors. Data rate upto 3.2 GT/s.
+
+SERDES ports
+	Thress serdes controllers (24 lanes)
+	Serdes1: Supports two USXGMII connectors, each connected through
+	Aquantia AQR107 phy, two 25GbE SFP+ modules connected through an Inphi
+	IN112525 phy and one 40 GbE QSFP+ module connected through an Inphi
+	CS4223 phy.
+
+	Serdes2: Supports one PCIe x4 (Gen1/2/3/4) connector, four SATA 3.0
+	connectors
+
+	Serdes3: Supports one PCIe x8 (Gen1/2/3/4) connector
+
+eSDHC
+	eSDHC1: Supports a SD connector for connecting SD cards
+	eSDHC2: Supports 128GB Micron MTFC128GAJAECE-IT eMMC
+
+Octal SPI (XSPI)
+	Supports two 64 MB onbpard octal SPI flash memories, one SPI emulator
+	for off-board emulation
+
+I2C	All system devices on I2C1 multiplexed using PCA9547 multiplexer
+	Serial Ports
+
+USB 3.0
+	Two high speed USB 3.0 ports. First USB 3.0 port configured as
+	Host with Type-A connector, second USB 3.0 port configured as OTG
+	with micro-AB connector
+
+Serial Ports	Two UART ports
+Ethernet	Two RGMII interfaces
+Debug		ARM JTAG support
+
+Booting Options
+---------------
+a) Flexspi boot
+b) SD boot
+
+Memory map for Flexspi flash
+----------------------------
+Image							Flash Offset
+bl2_flexspi_nor.pbl (RCW+PBI+bl2.pbl)			0x00000000
+fip.bin (bl31 + bl33(u-boot) +
+	 header for Secure-boot(secure-boot only))	0x00100000
+Boot firmware Environment				0x00500000
+DDR PHY Firmware (fip_ddr_all.bin)			0x00800000
+DPAA2 MC Firmware					0x00A00000
+DPAA2 DPL						0x00D00000
+DPAA2 DPC						0x00E00000
+Kernel.itb						0x01000000
+
+Memory map for sd card
+----------------------------
+Image							SD card Offset
+bl2_sd.pbl (RCW+PBI+bl2.pbl)				0x00008
+fip.bin (bl31 + bl33(u-boot) +
+	 header for Secure-boot(secure-boot only))	0x00800
+Boot firmware Environment				0x02800
+DDR PHY Firmware (fip_ddr_all.bin)			0x04000
+DPAA2 MC Firmware					0x05000
+DPAA2 DPL						0x06800
+DPAA2 DPC						0x07000
+Kernel.itb						0x08000
+
+LX2160AQDS board Overview
+----------------------
+Various Mezzanine cards and their connection for different SERDES protocols is
+as below:
+
+SERDES1	|CARDS
+-----------------------------------------------------------------------
+1	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+3	|Mezzanine:X-M11-USXGMII (29828)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+7	|Mezzanine:X-M11-USXGMII (29828)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+8	|Mezzanine:X-M12-XFI (29829)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+	|Mezzanine:X-M12-XFI (29829)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+13	|Mezzanine:X-M8-100G (29734)
+	|Connect Hydra Cable (HDR-198816-XX-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+	|Mezzanine:X-M8-100G (29734)
+	|Connect Hydra Cable (HDR-198816-XX-ECUE) to SD_SLOT2(J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+15	|Mezzanine:X-M8-100G (29734)
+	|Connect Hydra Cable (HDR-198816-XX-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+17	|Mezzanine:X-M13-25G  (32133)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+19	|Mezzanine:X-M11-USXGMII (29828), X-M13-25G (32133)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect M11 I/O cable to IO_SLOT1(J110), M13 I/O cable to IO_SLOT6(J125)
+	|Mezzanine:X-M7-40G (29738)
+	|Connect Straight Cable (HDR-198816-XX-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+20	|Mezzanine:X-M7-40G (29738)
+	|Connect Straight Cable (HDR-198816-XX-ECUE) to SD_SLOT1 (J108)
+	|Connect  I/O cable to IO_SLOT1(J108)
+	|Mezzanine:X-M7-40G (29738)
+	|Connect Straight Cable (HDR-198816-XX-ECUE) to SD_SLOT2 (J111)
+	|Connect I/O cable to IO_SLOT2(J113)
+------------------------------------------------------------------------
+
+
+SERDES2	|CARDS
+-----------------------------------------------------------------------
+2	|Mezzanine:X-M6-PCIE-X8 (29737) *
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect Straight Cable (HDR-198816-XX-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT3(J116)
+------------------------------------------------------------------------
+3	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect I/O cable to IO_SLOT3(J116)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT4(J119)
+------------------------------------------------------------------------
+5	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect I/O cable to IO_SLOT3(J116)
+	|Mezzanine:X-M5-SATA (29687)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT4(J119)
+------------------------------------------------------------------------
+11	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect I/O cable to IO_SLOT7(J127)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT8(J131)
+------------------------------------------------------------------------
+
+
+SERDES3	|CARDS
+-----------------------------------------------------------------------
+2	|Mezzanine:X-M6-PCIE-X8 (29737) *
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT5 (J120)
+	|Connect Straight Cable (HDR-198816-XX-ECUE) to SD_SLOT6 (J123)
+	|Connect I/O cable to IO_SLOT5(J122)
+-------------------------------------------------------------------------
+3	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT5 (J120)
+	|Connect I/O cable to IO_SLOT5(J122)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT6 (J123)
+	|Connect I/O cable to IO_SLOT6(J125)
+-------------------------------------------------------------------------
+
+LX2162A SoC Overview
+--------------------------------------
+For details, please refer arch/arm/cpu/armv8/fsl-layerscape/doc/README.soc
+
+LX2162AQDS board Overview
+----------------------
+DDR Memory
+	One ports of 72-bits (8-bits ECC) DDR4.
+	Each port supports four chip-selects and two DIMM
+	connectors. Data rate upto 2.9 GT/s.
+
+SERDES ports
+	Two serdes controllers (12 lanes)
+	Serdes1: Supports two USXGMII connectors, each connected through
+	Aquantia AQR107 phy, two 25GbE SFP+ modules connected through an Inphi
+	IN112525 phy and one 40 GbE QSFP+ module connected through an Inphi
+	CS4223 phy.
+
+	Serdes2: Supports two PCIe x4 (Gen3) and one PCIe x8 (Gen3) connector,
+	four SATA 3.0 connectors
+
+eSDHC
+	eSDHC1: Supports a SD connector for connecting SD cards
+	eSDHC2: Supports 128GB Micron MTFC128GAJAECE-IT eMMC
+
+Octal SPI (XSPI)
+	Supports two 64 MB onbpard octal SPI flash memories, one SPI emulator
+	for off-board emulation
+
+I2C	All system devices on I2C1 multiplexed using PCA9547 multiplexer
+	Serial Ports
+
+USB 3.0
+	One high speed USB 3.0 ports. First USB 3.0 port configured as Host
+	with Type-A connector, second USB 3.0 port configured as OTG with
+	micro-AB connector
+
+Serial Ports	Two UART ports
+Ethernet	Two RGMII interfaces
+Debug		ARM JTAG support
+
+Booting Options
+---------------
+a) Flexspi boot
+b) SD boot
+c) eMMC boot
+
+Memory map for Flexspi flash
+----------------------------
+Image							Flash Offset
+bl2_flexspi_nor.pbl (RCW+PBI+bl2.pbl)			0x00000000
+fip.bin (bl31 + bl33(u-boot) +
+	 header for Secure-boot(secure-boot only))	0x00100000
+Boot firmware Environment				0x00500000
+DDR PHY Firmware (fip_ddr_all.bin)			0x00800000
+DPAA2 MC Firmware					0x00A00000
+DPAA2 DPL						0x00D00000
+DPAA2 DPC						0x00E00000
+Kernel.itb						0x01000000
+
+Memory map for sd/eMMC card
+----------------------------
+Image							SD/eMMC card Offset
+bl2_sd.pbl (RCW+PBI+bl2.pbl)				0x00008
+fip.bin (bl31 + bl33(u-boot) +
+	 header for Secure-boot(secure-boot only))	0x00800
+Boot firmware Environment				0x02800
+DDR PHY Firmware (fip_ddr_all.bin)			0x04000
+DPAA2 MC Firmware					0x05000
+DPAA2 DPL						0x06800
+DPAA2 DPC						0x07000
+Kernel.itb						0x08000
+
+Various Mezzanine cards and their connection for different SERDES protocols is
+as below:
+
+SERDES1	|CARDS
+-----------------------------------------------------------------------
+1	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+------------------------------------------------------------------------
+3	|Mezzanine:X-M11-USXGMII (29828)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+------------------------------------------------------------------------
+15	|Mezzanine:X-M8-50G (29734)
+	|Connect Hydra Cable (HDR-198816-XX-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+------------------------------------------------------------------------
+17	|Mezzanine:X-M13-25G  (32133)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect I/O cable to IO_SLOT1(J110)
+------------------------------------------------------------------------
+18	|Mezzanine:X-M11-USXGMII (29828), X-M13-25G (32133)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT1 (J108)
+	|Connect M11 I/O cable to IO_SLOT1(J110), M13 I/O cable to IO_SLOT6(J125)
+------------------------------------------------------------------------
+20	|Mezzanine:X-M7-40G (29738)
+	|Connect Straight Cable (HDR-198816-XX-ECUE) to SD_SLOT1 (J108)
+	|Connect  I/O cable to IO_SLOT1(J108)
+------------------------------------------------------------------------
+
+
+SERDES2	|CARDS
+-----------------------------------------------------------------------
+2	|Mezzanine:X-M6-PCIE-X8 (29737) *
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect Straight Cable (HDR-198816-XX-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT3(J116)
+------------------------------------------------------------------------
+3	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect I/O cable to IO_SLOT3(J116)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT4(J119)
+------------------------------------------------------------------------
+5	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect I/O cable to IO_SLOT3(J116)
+	|Mezzanine:X-M5-SATA (29687)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT4(J119)
+------------------------------------------------------------------------
+11	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT3 (J114)
+	|Connect I/O cable to IO_SLOT7(J127)
+	|Mezzanine:X-M4-PCIE-SGMII (29733)
+	|Connect Hydra Cable (HDR-198564-01-ECUE) to SD_SLOT4 (J117)
+	|Connect I/O cable to IO_SLOT8(J131)
+------------------------------------------------------------------------

@@ -1,0 +1,20 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		_testing {
+			bad-update-contents;
+		};
+
+		u-boot {
+		};
+
+		_testing2 {
+			type = "_testing";
+			bad-update-contents;
+		};
+	};
+};

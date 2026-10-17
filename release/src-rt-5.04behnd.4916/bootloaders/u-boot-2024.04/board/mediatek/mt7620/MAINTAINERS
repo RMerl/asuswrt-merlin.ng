@@ -1,0 +1,9 @@
+MT7620_RFB BOARD
+M:	Weijie Gao <weijie.gao@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7620
+F:	include/configs/mt7620.h
+F:	configs/mt7620_rfb_defconfig
+F:	configs/mt7620_mt7530_rfb_defconfig
+F:	arch/mips/dts/mediatek,mt7620-rfb.dts
+F:	arch/mips/dts/mediatek,mt7620-mt7530-rfb.dts

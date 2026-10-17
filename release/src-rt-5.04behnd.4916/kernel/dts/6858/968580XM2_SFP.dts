@@ -81,6 +81,14 @@
             #size-cells = <0>;
         };
     };
+
+    slicpowerctl {
+		status = "okay";
+		pinctrl-0 = <&gpio_14_in_pulldown_pin_14>;/*voice slic irq*/
+		pinctrl-names = "default";
+		compatible = "brcm,voice-slic-power";
+		slicpwrctl-gpio = <&gpioc 78 GPIO_ACTIVE_HIGH>;
+    };
 };
 
 #ifdef CONFIG_BCM_TIME_SYNC_MODULE
@@ -339,8 +347,9 @@
 	status = "okay";
 
     voice0 {
-        pinctrl-0 = <&a_spim_ss3_b_pin_13>;
-        pinctrl-names = "default";
+        pinctrl-0 = <&a_spim_ss3_b_pin_13 &gpio_21_pin_21>;
+        pinctrl-1 = <&gpio_13_in_pulldown_pin_13 &gpio_21_in_pulldown_pin_21>;
+        pinctrl-names = "default","powerdown";
         compatible = "bcm-spi-voice";
         reg = <3>; /* chip select 3 */
         spi-max-frequency = <1024000>;
@@ -349,8 +358,9 @@
     };
 
     voice1 {
-        pinctrl-0 = <&a_spim_ss4_b_pin_12>;
-        pinctrl-names = "default";
+        pinctrl-0 = <&a_spim_ss4_b_pin_12 &gpio_22_pin_22>;
+        pinctrl-1 = <&gpio_12_in_pulldown_pin_12 &gpio_22_in_pulldown_pin_22>;
+        pinctrl-names = "default","powerdown";
         compatible = "bcm-spi-voice";
         reg = <4>; /* chip select 4 */
         spi-max-frequency = <1024000>;
@@ -359,14 +369,21 @@
     };
 
     voice2 {
-        pinctrl-0 = <&a_spim_ss5_b_pin_11>;
-        pinctrl-names = "default";
+        pinctrl-0 = <&a_spim_ss5_b_pin_11 &gpio_20_pin_20>;
+        pinctrl-1 = <&gpio_11_in_pulldown_pin_11 &gpio_20_in_pulldown_pin_20>;
+        pinctrl-names = "default","powerdown";
         compatible = "bcm-spi-voice";
         reg = <5>; /* chip select 5 */
         spi-max-frequency = <1024000>;
         reset-gpio = <&gpioc 20 GPIO_ACTIVE_LOW>;
         spi-index = <2>;
     };
+};
+
+&voice_7 {
+	pinctrl-0 = <&a_pcm_sdin_pin_0 &a_pcm_sdout_pin_1 &a_pcm_clk_pin_2 &a_pcm_fs_pin_3>;
+	pinctrl-1 = <&gpio_0_in_pulldown_pin_0 &gpio_1_in_pulldown_pin_1 &gpio_2_in_pulldown_pin_2 &gpio_3_in_pulldown_pin_3>;
+	pinctrl-names = "default", "powerdown";
 };
 
 &phy_wan_serdes {
@@ -446,3 +463,89 @@
 	status = "okay";
 };
 #endif // defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&pincontroller {
+    pincontroller-functions {
+        gpio_0_in_pulldown_pin_0: gpio_0_in_pulldown_pin_0_pinconf {
+            pins = <0>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_1_in_pulldown_pin_1: gpio_1_in_pulldown_pin_1_pinconf {
+            pins = <1>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_2_in_pulldown_pin_2: gpio_2_in_pulldown_pin_2_pinconf {
+            pins = <2>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_3_in_pulldown_pin_3: gpio_3_in_pulldown_pin_3_pinconf {
+            pins = <3>;
+            function = <5>;
+            bias-pull-down;
+        };		
+		
+        gpio_11_in_pulldown_pin_11: gpio_11_in_pulldown_pin_11_pinconf {
+            pins = <11>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_12_in_pulldown_pin_12: gpio_12_in_pulldown_pin_12_pinconf {
+            pins = <12>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_13_in_pulldown_pin_13: gpio_13_in_pulldown_pin_13_pinconf {
+            pins = <13>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_20_in_pulldown_pin_20: gpio_20_in_pulldown_pin_20_pinconf {
+            pins = <20>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_20_pin_20: gpio_20_pin_20_pinconf {
+            pins = <20>;
+            function = <5>;
+        };
+
+        gpio_21_in_pulldown_pin_21: gpio_21_in_pulldown_pin_21_pinconf {
+            pins = <21>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_21_pin_21: gpio_21_pin_21_pinconf {
+            pins = <21>;
+            function = <5>;
+        };
+
+        gpio_22_in_pulldown_pin_22: gpio_22_in_pulldown_pin_22_pinconf {
+            pins = <22>;
+            function = <5>;
+            bias-pull-down;
+        };
+
+        gpio_22_pin_22: gpio_22_pin_22_pinconf {
+            pins = <22>;
+            function = <5>;
+        };
+
+        /*voice slic irq*/
+        gpio_14_in_pulldown_pin_14: gpio_14_in_pulldown_pin_14_pinconf {
+            pins = <14>;
+            function = <5>;
+            bias-pull-down;
+        };
+    };
+};

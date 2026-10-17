@@ -49,7 +49,8 @@ extern "C" {
 /* Maximum number of PCIe ports supported by HCD */
 #define MAX_NUM_PHY_PCIE_CORES              4
 #define MAX_NUM_VIRT_PCIE_CORES             2
-#define MAX_NUM_PCIE_CORES                  (MAX_NUM_PHY_PCIE_CORES + MAX_NUM_VIRT_PCIE_CORES)
+#define MAX_NUM_PCIE_CORES                  \
+	(MAX_NUM_PHY_PCIE_CORES + MAX_NUM_VIRT_PCIE_CORES)
 #define MAX_NUM_CORE_DEVS                   2
 #define MAX_MSI_MAP_SIZE                    32
 #define MAX_NUM_OUTGOING_WINDOWS            4
@@ -90,21 +91,63 @@ extern "C" {
 #define HCD_PHYLANE_0                       0x1
 #define HCD_PHYLANE_1                       0x2
 #define HCD_PHYLANE_BC                      0xF
+#define HCD_PHYLANE_MAX                     2
 
 /* PCIe HCD device type values */
 #define HCD_DEV_NONE                        0x0
 #define HCD_DEV_RC                         (1 << 0)
 #define HCD_DEV_EP                         (1 << 1)
 #define HCD_DEV_BOTH                       (HCD_DEV_RC | HCD_DEV_EP)
+#define HCD_DEV_RC_PHY                     (1 << 2) /* Only internal */
+#define HCD_DEV_ALL                        (HCD_DEV_RC_PHY | HCD_DEV_BOTH)
 
 #define PCIE_HCD_DEV_NAME                   "bcm-pcie"
 #define PCIE_HCD_DRV_NAME                   PCIE_HCD_DEV_NAME
 #define VPCIE_HCD_DEV_NAME                  "bcm-vpcie"
 #define VPCIE_HCD_DRV_NAME                  VPCIE_HCD_DEV_NAME
 
-#define MSI_MATCH_ADDR_MAGIC                0xFFFFFFFC
+/* MSI message trap address */
+#define MSI_MATCH_ADDR_MAGIC                0xFFFFFCFC
 #define MSI_MATCH_DATA_MAGIC                0x0000BCA0
 
+/*
+ * Fast Path Configuration definitions
+ */
+/* Enable (first nibble of pcie_fastpath) */
+#define FASTPATH_OFF                        (0 << 0)
+#define FASTPATH_EN_IN                      (1 << 0)
+#define FASTPATH_EN_OUT                     (1 << 1)
+#define FASTPATH_EN_MASK                    0x3
+#define FASTPATH_NONEXCLUSIVE               (1 << 2)
+#define FASTPATH_MASTER                     (1 << 3)
+
+/* Mutex master (third nibble of pcie_fastpath) */
+
+/* Fast path incoming address map */
+#define FASTPATH_PCIE_IN_BASE               0xFFFFFF00
+#define FASTPATH_PCIE_IN_SIZE               0x00000100
+#define FASTPATH_PCIE_IN_BCAST              0x0000
+#define FASTPATH_PCIE_IN_MUTEX              0x0004
+#define FASTPATH_PCIE_OUT_BCAST             0x00FC
+/* End-Point BAR used for Incoming Broadcast messages */
+#define FASTPATH_EP_IN_BCAST_BAR            2
+
+/*
+ * Fastpath: Mutex Request identifiers used (maximum 4) for UBUS
+ * Assignment for N physical cores + M WiFi cores
+ * 0 ... (N-1), N ... (N+M-1)
+ * Example: 676X SoC:  N=2, M=2, 68375 SoC: N=3, M=0
+ */
+#define FASTPATH_ID_PCIE0                   0
+#define FASTPATH_ID_PCIE1                   1
+#define FASTPATH_ID_PCIE2                   2
+#define FASTPATH_ID_PCIE3                   3
+#define FASTPATH_ID_WIFI0                   2
+#define FASTPATH_ID_WIFI1                   3
+#define FASTPATH_ID_MAX                     4
+#define FASTPATH_COREID_TO_REQID(id)        \
+	(PLTID2HC((id)) == PHC) ?               \
+	    ((id) + FASTPATH_ID_PCIE0) : ((id) - NUM_PCORES + FASTPATH_ID_WIFI0)
 /*
  * +-----------------------------------------------------
  *  Macros
@@ -113,15 +156,21 @@ extern "C" {
 /* resources */
 #define OWIN_RES_CONFIGURED(phc, win)       ((phc)->res.owin[(win)].start != 0)
 
-/* Core config */
+/* Core configure */
 #define HCD_HC_CORE_CFG(cfg, core)          \
-	(((0xF << ((core)*4)) & (cfg)) >> ((core)*4))
+	(((0xF << ((core) * 4)) & (cfg)) >> ((core) * 4))
 
-#define HCD_HC_SET_CORE_CFG(cfg, core, val)     \
-	do {                                        \
-	    (cfg) &= (~(0xF << ((core)*4)));        \
-	    (cfg) |= (((val)&0xF) <<  ((core)*4));  \
+#define HCD_HC_SET_CORE_CFG(cfg, core, val)         \
+	do {                                            \
+	    (cfg) &= (~(0xF << ((core) * 4)));          \
+	    (cfg) |= (((val) & 0xF) <<  ((core) * 4));  \
 	} while (false)
+
+#define HCD_HC_CORE_ARRAY_CFG(cfg, core, idx)       \
+	cfg[((core)*nr_##cfg) + (idx)]
+
+#define HCD_HC_SET_CORE_ARRAY_CFG(cfg, core, idx, val)   \
+	cfg[((core)*nr_##cfg) + (idx)] = val
 
 /* Enable HCD_DEBUG if debug logs are needed */
 #define HCD_DEBUG
@@ -148,9 +197,11 @@ extern "C" {
 #define HCD_FN_EXT()                        \
 	if (pcie_log_level & HCD_LOG_LVL_FN) printk("<<%s\n", __FUNCTION__)
 
-#define HCD_FN_RET()                        do { HCD_FN_EXT(); return;} while (0)
+#define HCD_FN_RET()                        \
+	do { HCD_FN_EXT(); return;} while (0)
 
-#define HCD_FN_RET_VAL(r)                   do { HCD_FN_EXT(); return (r); } while (0)
+#define HCD_FN_RET_VAL(r)                   \
+	do { HCD_FN_EXT(); return (r); } while (0)
 
 #define HCD_ERROR(fmt, args...)             \
 	if (pcie_log_level & HCD_LOG_LVL_ERROR)  \
@@ -203,6 +254,9 @@ extern "C" {
 #define PLTID2HC(id)                        (((id) < NUM_PCORES) ? PHC : VHC)
 #define PLTID2CORE(id)                      \
 	(((id) >= NUM_PCORES) ? ((id) - NUM_PCORES) : (id))
+#define PHC_CORE(id)                        (PLTID2HC((id)) == PHC)
+#define VHC_CORE(id)                        (PLTID2HC((id)) == VHC)
+#define INV_CORE                            0xF
 
 /*
  * +-----------------------------------------------------
@@ -210,7 +264,7 @@ extern "C" {
  * +-----------------------------------------------------
  */
 
-/* Forward declerations */
+/* Forward declarations */
 struct pcie_hcd;
 struct pcie_hc_core;
 
@@ -229,6 +283,7 @@ typedef int (*fp_set_power_t)(struct pcie_hc_core *, unsigned, bool, int);
 struct pcie_hc_core_res
 {
 	struct resource base;
+	struct resource ecam;
 	struct resource owin[MAX_NUM_OUTGOING_WINDOWS];
 	struct resource bus_range;
 	u32    domain;
@@ -255,6 +310,9 @@ struct pcie_hc_core_res
  * @barmask:           BAR number usage mask
  * @epuperstb:         EP Power On (regulator) after PERSTB=1
  * @serdes:            PCIe serdes flags
+ * @prioqueue:         PCIe Priority Queue
+ * @fastpath:          Fast Path configuration
+ * @g3_eq_presets:     GEN3 link equalization presets
  *
  * @CORE Section
  *
@@ -282,6 +340,9 @@ struct pcie_hc_core_cfg
 	u8   barmask;
 	u8   epuperstb;
 	u32  serdes;
+	u8   prioqueue;
+	u8   fastpath;
+	u32  g3_eq_presets[HCD_PHYLANE_MAX];
 
 	u32  core_rev_offset;
 	u32  core_rev_mask;
@@ -351,25 +412,26 @@ struct pcie_hc_core
  * @flags:            configuration flags
  * @plt_dev:          pointer to platform device
  * @plt_drv:          pointer to platform driver
- * @pci_fops:         pci file operations
+ * @pci_fops:         PCI file operations
  *
  * @init_core:        function pointer to initialize HC core control block
  * @free_core:        function pointer to free HC core control block
  * @setup_rev:        function pointer to setup HC core rev based info
  * @read_reg:         function pointer to read core registers
  * @write_reg:        function pointer to write core registers
- * @config_core:      function pointer to configure pcie core
- * @unconfig_core:    function pointer to de-configure pcie core
- * @reset_core:       function pointer to reset pcie core
+ * @config_core:      function pointer to configure PCIe core
+ * @unconfig_core:    function pointer to de-configure PCIe core
+ * @reset_core:       function pointer to reset PCIe core
  * @is_linkup:        function pointer to check if linkup
- * @map_core_irq:     function pointer to map pcie interrupt
- * @setup_msi:        function pointer to configure pcie msi interrupts
+ * @map_core_irq:     function pointer to map PCIe interrupt
+ * @setup_msi:        function pointer to configure PCIe msi interrupts
  * @teardown_msi:     function pointer to de-configure msi interrupts
  * @get_msi:          function pointer to get msi interrupt status
- * @setup_errint:     function pointer to configure pcie error interrupt
- * @teardown_errint:  function pointer to de-configure pcie error interrupt
+ * @setup_errint:     function pointer to configure PCIe error interrupt
+ * @teardown_errint:  function pointer to de-configure PCIe error interrupt
  * @get_errint:       function pointer to get error interrupt status
  * @set_power:        function pointer to set power up/down EP/RC cores
+ * @config_core_post: function pointer to config core after enumeration
  *
  */
 struct pcie_hc_plt_cfg
@@ -383,7 +445,7 @@ struct pcie_hc_plt_cfg
 	int  (*init_core)(struct pcie_hc_core *);
 	void (*free_core)(struct pcie_hc_core *);
 	int  (*setup_rev)(struct pcie_hc_core *);
-	u32  (*read_reg)(struct pcie_hc_core *, unsigned);
+	uint32  (*read_reg)(struct pcie_hc_core *, unsigned);
 	void (*write_reg)(u32, struct pcie_hc_core *, unsigned);
 	int  (*config_core)(struct pcie_hc_core *);
 	int  (*unconfig_core)(struct pcie_hc_core *);
@@ -392,16 +454,29 @@ struct pcie_hc_plt_cfg
 	int  (*map_core_irq)(const struct pci_dev *, u8, u8);
 	int  (*setup_msi)(struct pcie_hc_core *);
 	void (*teardown_msi)(struct pcie_hc_core *);
-	u32  (*get_msi)(struct pcie_hc_core *);
+	uint32  (*get_msi)(struct pcie_hc_core *);
 	int  (*setup_errint)(struct pcie_hc_core *);
 	void (*teardown_errint)(struct pcie_hc_core *);
-	u32  (*get_errint)(struct pcie_hc_core *);
+	uint32  (*get_errint)(struct pcie_hc_core *);
 	fp_set_power_t          set_power;
+	int  (*config_core_post)(struct pcie_hc_core *);
 };
 
 /*
  * +-----------------------------------------------------
- *  Function declerations
+ *  inline function definitions
+ * +-----------------------------------------------------
+ */
+static inline resource_size_t hcd_resource_len(struct resource *res) {
+	if (res->start == 0 && res->end == 0)
+	    return 0;
+
+	return resource_size(res);
+}
+
+/*
+ * +-----------------------------------------------------
+ *  Function declarations
  * +-----------------------------------------------------
  */
 /* To HCD */
@@ -411,10 +486,26 @@ extern int pcie_vhc_plt_init(struct pcie_hc_plt_cfg *hc_cfg);
 /* From HCD */
 struct pci_bus *pcie_hcd_get_rootbus(struct pcie_hcd *pdrv);
 int pcie_hcd_sync_stmr(struct pcie_hcd *pdrv, void __iomem *stmr);
+struct pcie_hc_core *pcie_hcd_get_hccore_from_bus(struct pci_bus *bus);
+
+/* Update fastpath addresses */
+int pcie_hcd_update_fastpath_in_addr(struct pcie_hcd *pdrv, u64 pcie_addr,
+	u32 ubus_offset);
+/* Get fastpath Mutex address */
+u64 pcie_hcd_get_fastpath_mutexaddr(struct pcie_hcd *pdrv);
+/* Get fastpath Mutex Configuration */
+u32 pcie_hcd_get_fastpath_mutexconfig(struct pcie_hcd *pdrv);
+/* Get RC fastpath incoming address */
+u64 pcie_hcd_get_fastpath_in_addr(struct pcie_hcd *pdrv);
+/* Get RC fastpath outgoing address */
+u64 pcie_hcd_get_fastpath_out_addr(struct pcie_hcd *pdrv, int core);
+/* Set RC fastpath outgoing address */
+u64 pcie_hcd_update_fastpath_out_addr(struct pcie_hcd *pdrv,
+	struct device_node *np);
 
 /*
  * +-----------------------------------------------------
- *  Variable declerations
+ *  Variable declarations
  * +-----------------------------------------------------
  */
 extern u32 pcie_log_level;

@@ -48,6 +48,13 @@ foreach my $src (@sources, $target) {
     open(SRC,"<", $src);
     while (my $l = <SRC>) {
         chomp $l;
+        my $ll=$l;
+            # multiline options are escaped with \
+            while ( $ll =~ /\\$/ ) {
+                       $l = $ll . "\n" . <SRC>;
+                       $ll=$l;
+                       chomp $ll;
+            }
         if ($l =~ /^##/) {
             if ($in_header) {
                 push @{$sections{$section}}, $l;

@@ -49,7 +49,7 @@ written consent.
 #define MODULE_VER    "1.0"
 
 #define VFBIO_MINORS            16
-#define VFBIO_MAX_PENDING_ASYNC_OPS    16
+#define VFBIO_MAX_PENDING_ASYNC_OPS    8
 #define VFBIO_MAX_DISCARD_BLOCKS    1024
 #define VFBIO_MAX_SEGMENT_SIZE        (16*1024*1024)
 #define VFBIO_IO_TIMEOUT_DEFAULT    120 /* sec */
@@ -711,7 +711,7 @@ static blk_status_t vfbio_request(struct blk_mq_hw_ctx *hctx,
             status = -EBUSY;
             break;
         }
-        /* Pass trough */
+        __attribute__((__fallthrough__));
     case REQ_OP_READ:
         dev_dbg(dev, "%s %d sectors @ %lld\n",
             op == REQ_OP_READ ? "Read" : "Write",
@@ -1292,11 +1292,9 @@ int vfbio_device_create(struct device *dev, struct vfbio_device *vfbio)
     blk_queue_dma_alignment(vfbio->q, vfbio->blk_sz - 1);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
     blk_queue_bounce_limit(vfbio->q, BLK_BOUNCE_NONE);
-    dma_set_mask(dev, BLK_BOUNCE_NONE);
     blk_queue_flag_set(QUEUE_FLAG_DISCARD, vfbio->q);
 #else
     blk_queue_bounce_limit(vfbio->q, BLK_BOUNCE_ANY);
-    dma_set_mask(dev, BLK_BOUNCE_ANY);
     queue_flag_set_unlocked(QUEUE_FLAG_DISCARD, vfbio->q);
 #endif
     vfbio->q->limits.discard_alignment = vfbio->blk_sz;
@@ -1315,15 +1313,22 @@ int vfbio_device_create(struct device *dev, struct vfbio_device *vfbio)
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
     disk = blk_alloc_disk(NUMA_NO_NODE);
-    disk->minors = 32;
-#else
-    disk = alloc_disk(VFBIO_MINORS);
-#endif
-    if (!disk) {
+     if (!disk) {
         dev_err(dev, RED("Unable to allocate gendisk.\n"));
         status = -ENOMEM;
         goto err_cleanup_q;
     }
+    disk->minors = 32;
+    if (!blk_get_queue(vfbio->q))
+        pr_info("Cannot increment queue reference count of VFBIO block device %s\n", disk->disk_name);
+#else
+    disk = alloc_disk(VFBIO_MINORS);
+     if (!disk) {
+        dev_err(dev, RED("Unable to allocate gendisk.\n"));
+        status = -ENOMEM;
+        goto err_cleanup_q;
+    }
+#endif
     vfbio->disk = disk;
     disk->major        = vfbio_major;
     disk->first_minor    = VFBIO_MINORS * vfbio->lun;
@@ -1356,8 +1361,8 @@ int vfbio_device_create(struct device *dev, struct vfbio_device *vfbio)
     goto done;
 
 err_cleanup_q:
-    if (vfbio->q)
-        blk_cleanup_queue(vfbio->q);
+    blk_cleanup_queue(vfbio->q); /* vfbio->q cannot be NULL */
+
     if (disk)
         put_disk(disk);
 
@@ -1370,8 +1375,8 @@ done:
 void vfbio_device_delete(struct vfbio_device *vfbio)
 {
     del_gendisk(vfbio->disk);
-    put_disk(vfbio->disk);
     blk_cleanup_queue(vfbio->q);
+    put_disk(vfbio->disk);
     while (atomic_read(&vfbio->pending_ops));
     vfdevs[vfbio->lun] = NULL;
     spin_lock_irq(&vfdevs_list_lock);
@@ -1523,6 +1528,18 @@ static int vfbio_probe(struct platform_device *pdev)
     }
     pr_debug("    access          %s\n", vfbio->read_only ? "read-only" : "read-write");
 
+    status = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
+    if (status) {
+        dev_warn(&pdev->dev, "Failed to enable 64-bit DMA. Trying 32 bit.\n");
+        status = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+        if (!status) {
+            dev_info(&pdev->dev, "Enabled 32-bit DMA support.\n");
+        }
+        else {
+            dev_warn(&pdev->dev, "Failed to enable 64-bit or 32-bit DMA. Trying to continue, but this might not work.\n");
+        }
+    }
+
     /* Create device */
     status = vfbio_device_create(dev, vfbio);
     if (status)
@@ -1665,14 +1682,15 @@ err_free_sgls:
     spin_lock_irq(&vfbio_sgls_lock);
     list_for_each(pos, &vfbio_sgls) {
         entry = list_entry(pos, struct vfbio_sgls_entry, list);
-        free_pages((unsigned long)entry, get_order(sizeof(struct vfbio_sgls_entry)));
+        /* coverity[overrun-call:SUPPRESS] */
+		free_pages((unsigned long)entry, get_order(sizeof(struct vfbio_sgls_entry)));
         list_del(pos);
     }
     spin_unlock_irq(&vfbio_sgls_lock);
 done:
     return status;
 }
-late_initcall_sync(vfbio_init);
+device_initcall_sync(vfbio_init);
 
 static void vfbio_exit(void)
 {
@@ -1691,6 +1709,7 @@ static void vfbio_exit(void)
     spin_lock_irq(&vfbio_sgls_lock);
     list_for_each(pos, &vfbio_sgls) {
         entry = list_entry(pos, struct vfbio_sgls_entry, list);
+		/* coverity[overrun-call:SUPPRESS] */
         free_pages((unsigned long)entry, get_order(sizeof(struct vfbio_sgls_entry)));
         list_del(pos);
     }

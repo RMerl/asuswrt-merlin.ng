@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2017, Bin Meng <bmeng.cn@gmail.com>
+
+config NVME
+	bool "NVM Express device support"
+	help
+	  This option enables support for NVM Express devices.
+	  It supports basic functions of NVMe (read/write).
+
+config NVME_APPLE
+	bool "Apple NVMe controller support"
+	select NVME
+	help
+	  This option enables support for the NVMe storage
+	  controller integrated on Apple SoCs.  This controller
+	  isn't PCI-based based and deviates from the NVMe
+	  standard implementation in its implementation of
+	  the command submission queue and the integration
+	  of an NVMMU that needs to be managed.
+
+config NVME_PCI
+	bool "NVM Express PCI device support"
+	depends on PCI
+	select NVME
+	help
+	  This option enables support for NVM Express PCI
+	  devices.

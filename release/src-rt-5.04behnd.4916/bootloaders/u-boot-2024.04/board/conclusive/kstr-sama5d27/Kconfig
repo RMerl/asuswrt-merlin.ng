@@ -1,0 +1,15 @@
+if TARGET_KSTR_SAMA5D27
+
+config SYS_BOARD
+	default "kstr-sama5d27"
+
+config SYS_VENDOR
+	default "conclusive"
+
+config SYS_SOC
+	default "at91"
+
+config SYS_CONFIG_NAME
+	default "kstr-sama5d27"
+
+endif

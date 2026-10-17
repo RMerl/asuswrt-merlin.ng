@@ -1,0 +1,215 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * Copyright (C) 2021 PHYTEC Messtechnik GmbH
+ * Author: Teresa Remmet <t.remmet@phytec.de>
+ */
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+
+#ifdef CONFIG_OPTEE
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+#endif
+};
+
+#ifdef CONFIG_FSL_CAAM
+&crypto {
+	bootph-pre-ram;
+};
+#endif
+
+&soc {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&clk {
+	bootph-pre-ram;
+	bootph-all;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+};
+
+&osc_32k {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&osc_24m {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&aips1 {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&aips2 {
+	bootph-pre-ram;
+};
+
+&aips3 {
+	bootph-pre-ram;
+	spba-bus@30800000 {
+		bootph-pre-ram;
+	};
+};
+
+&iomuxc {
+	bootph-pre-ram;
+};
+
+#ifdef CONFIG_FSL_CAAM
+&sec_jr0 {
+	bootph-pre-ram;
+};
+
+&sec_jr1 {
+	bootph-pre-ram;
+};
+
+&sec_jr2 {
+	bootph-pre-ram;
+};
+#endif
+
+&binman {
+	 u-boot-spl-ddr {
+		filename = "u-boot-spl-ddr.bin";
+		pad-byte = <0xff>;
+		align-size = <4>;
+		align = <4>;
+
+		u-boot-spl {
+			align-end = <4>;
+		};
+
+		ddr-1d-imem-fw {
+			filename = "lpddr4_pmu_train_1d_imem_202006.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-1d-dmem-fw {
+			filename = "lpddr4_pmu_train_1d_dmem_202006.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-2d-imem-fw {
+			filename = "lpddr4_pmu_train_2d_imem_202006.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-2d-dmem-fw {
+			filename = "lpddr4_pmu_train_2d_dmem_202006.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+	};
+
+	spl {
+		filename = "spl.bin";
+
+		mkimage {
+			args = "-n spl/u-boot-spl.cfgout -T imx8mimage -e 0x920000";
+
+			blob {
+				filename = "u-boot-spl-ddr.bin";
+			};
+		};
+	};
+
+	itb {
+		filename = "u-boot.itb";
+
+		fit {
+			description = "Configuration to load ATF before U-Boot";
+#ifndef CONFIG_IMX_HAB
+			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+#endif
+			fit,fdt-list = "of-list";
+			#address-cells = <1>;
+
+			images {
+				uboot {
+					description = "U-Boot (64-bit)";
+					type = "standalone";
+					arch = "arm64";
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+
+					uboot_blob: blob-ext {
+						filename = "u-boot-nodtb.bin";
+					};
+				};
+
+#ifndef CONFIG_ARMV8_PSCI
+				atf {
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					load = <0x970000>;
+					entry = <0x970000>;
+
+					atf_blob: atf-blob {
+						filename = "bl31.bin";
+						type = "atf-bl31";
+					};
+				};
+#endif
+
+				@fdt-SEQ {
+					description = "NAME";
+					type = "flat_dt";
+					compression = "none";
+
+					blob-ext {
+						filename = "u-boot.dtb";
+					};
+				};
+			};
+
+			configurations {
+				default = "@config-DEFAULT-SEQ";
+
+				@config-SEQ {
+					description = "NAME";
+					fdt = "fdt-SEQ";
+					firmware = "uboot";
+#ifndef CONFIG_ARMV8_PSCI
+					loadables = "atf";
+#endif
+				};
+			};
+		};
+	};
+
+	imx-boot {
+		filename = "flash.bin";
+		pad-byte = <0x00>;
+
+		spl {
+			filename = "spl.bin";
+			offset = <0x0>;
+			type = "blob-ext";
+		};
+
+		binman_uboot: uboot {
+			filename = "u-boot.itb";
+			offset = <0x58000>;
+			type = "blob-ext";
+		};
+	};
+};

@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * QorIQ USB Host device tree stub [ controller @ offset 0x210000 ]
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ */
+
+usb@210000 {
+	compatible = "fsl,mpc85xx-usb2-mph", "fsl-usb2-mph";
+	reg = <0x210000 0x1000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	interrupts = <44 0x2 0 0>;
+};

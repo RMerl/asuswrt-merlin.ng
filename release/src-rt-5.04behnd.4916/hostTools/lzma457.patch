@@ -1,0 +1,221 @@
+diff -rupN lzma457_orig/CPP/7zip/Compress/LZMA/LZMAEncoder.cpp lzma457/CPP/7zip/Compress/LZMA/LZMAEncoder.cpp
+--- lzma457_orig/CPP/7zip/Compress/LZMA/LZMAEncoder.cpp	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/7zip/Compress/LZMA/LZMAEncoder.cpp	2024-07-18 03:48:53.000000000 +0800
+@@ -1181,9 +1181,9 @@ UInt32 CEncoder::GetOptimumFast(UInt32 &
+ 
+   if (repLens[repMaxIndex] >= 2)
+   {
+-    if (repLens[repMaxIndex] + 1 >= lenMain || 
+-        repLens[repMaxIndex] + 2 >= lenMain && (backMain > (1 << 9)) ||
+-        repLens[repMaxIndex] + 3 >= lenMain && (backMain > (1 << 15)))
++    if ((repLens[repMaxIndex] + 1 >= lenMain) || 
++        (repLens[repMaxIndex] + 2 >= lenMain && (backMain > (1 << 9))) ||
++        (repLens[repMaxIndex] + 3 >= lenMain && (backMain > (1 << 15))))
+     {
+       backRes = repMaxIndex;
+       UInt32 lenRes = repLens[repMaxIndex];
+@@ -1199,10 +1199,10 @@ UInt32 CEncoder::GetOptimumFast(UInt32 &
+     if (_longestMatchLength >= 2)
+     {
+       UInt32 newDistance = matchDistances[_numDistancePairs - 1];
+-      if (_longestMatchLength >= lenMain && newDistance < backMain || 
+-          _longestMatchLength == lenMain + 1 && !ChangePair(backMain, newDistance) ||
+-          _longestMatchLength > lenMain + 1 ||
+-          _longestMatchLength + 1 >= lenMain && lenMain >= 3 && ChangePair(newDistance, backMain))
++      if ((_longestMatchLength >= lenMain && newDistance < backMain) || 
++          (_longestMatchLength == lenMain + 1 && !ChangePair(backMain, newDistance)) ||
++          (_longestMatchLength > lenMain + 1) ||
++          (_longestMatchLength + 1 >= lenMain && lenMain >= 3 && ChangePair(newDistance, backMain)))
+       {
+         _longestMatchWasFound = true;
+         backRes = UInt32(-1);
+@@ -1349,6 +1349,9 @@ HRESULT CEncoder::CodeOneBlock(UInt64 *i
+       return Flush((UInt32)nowPos64);
+     UInt32 len, numDistancePairs;
+     len = ReadMatchDistances(numDistancePairs);
++    if (len <= 0){
++       fprintf(stderr, "%s", "len is less than 0\n");
++    }
+     UInt32 posState = UInt32(nowPos64) & _posStateMask;
+     _isMatch[_state.Index][posState].Encode(&_rangeEncoder, 0);
+     _state.UpdateChar();
+diff -rupN lzma457_orig/CPP/7zip/Compress/LZMA_Alone/LzmaAlone.cpp lzma457/CPP/7zip/Compress/LZMA_Alone/LzmaAlone.cpp
+--- lzma457_orig/CPP/7zip/Compress/LZMA_Alone/LzmaAlone.cpp	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/7zip/Compress/LZMA_Alone/LzmaAlone.cpp	2024-07-23 09:06:48.650385652 +0800
+@@ -467,7 +467,7 @@ int main2(int n, const char *args[])
+       Byte b = Byte(fileSize >> (8 * i));
+       if (outStream->Write(&b, 1, 0) != S_OK)
+       {
+-        fprintf(stderr, kWriteError);
++        fprintf(stderr, "%s", kWriteError);
+         return 1;
+       }
+     }
+@@ -492,12 +492,12 @@ int main2(int n, const char *args[])
+     UInt32 processedSize;
+     if (ReadStream(inStream, properties, kPropertiesSize, &processedSize) != S_OK)
+     {
+-      fprintf(stderr, kReadError);
++      fprintf(stderr, "%s", kReadError);
+       return 1;
+     }
+     if (processedSize != kPropertiesSize)
+     {
+-      fprintf(stderr, kReadError);
++      fprintf(stderr, "%s", kReadError);
+       return 1;
+     }
+     if (decoderSpec->SetDecoderProperties2(properties, kPropertiesSize) != S_OK)
+@@ -511,12 +511,12 @@ int main2(int n, const char *args[])
+       Byte b;
+       if (inStream->Read(&b, 1, &processedSize) != S_OK)
+       {
+-        fprintf(stderr, kReadError);
++        fprintf(stderr, "%s", kReadError);
+         return 1;
+       }
+       if (processedSize != 1)
+       {
+-        fprintf(stderr, kReadError);
++        fprintf(stderr, "%s", kReadError);
+         return 1;
+       }
+       fileSize |= ((UInt64)b) << (8 * i);
+diff -rupN lzma457_orig/CPP/7zip/Compress/LZMA_Alone/LzmaBenchCon.cpp lzma457/CPP/7zip/Compress/LZMA_Alone/LzmaBenchCon.cpp
+--- lzma457_orig/CPP/7zip/Compress/LZMA_Alone/LzmaBenchCon.cpp	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/7zip/Compress/LZMA_Alone/LzmaBenchCon.cpp	2024-07-23 09:06:14.442388165 +0800
+@@ -142,7 +142,7 @@ HRESULT CBenchCallback::SetDecodeResult(
+   if (final)
+   {
+     UInt64 rating = GetDecompressRating(info.GlobalTime, info.GlobalFreq, info.UnpackSize, info.PackSize, info.NumIterations);
+-    fprintf(f, kSep);
++    fprintf(f, "%s", kSep);
+     CBenchInfo info2 = info;
+     info2.UnpackSize *= info2.NumIterations;
+     info2.PackSize *= info2.NumIterations;
+@@ -201,14 +201,14 @@ HRESULT LzmaBenchCon(
+   {
+     fprintf(f, "   Speed Usage    R/U Rating");
+     if (j == 0)
+-      fprintf(f, kSep);
++      fprintf(f, "%s", kSep);
+   }
+   fprintf(f, "\n   ");
+   for (j = 0; j < 2; j++)
+   {
+     fprintf(f, "    KB/s     %%   MIPS   MIPS");
+     if (j == 0)
+-      fprintf(f, kSep);
++      fprintf(f, "%s", kSep);
+   }
+   fprintf(f, "\n\n");
+   for (UInt32 i = 0; i < numIterations; i++)
+diff -rupN lzma457_orig/CPP/7zip/Compress/LZMA_Alone/comp.cc lzma457/CPP/7zip/Compress/LZMA_Alone/comp.cc
+--- lzma457_orig/CPP/7zip/Compress/LZMA_Alone/comp.cc	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/7zip/Compress/LZMA_Alone/comp.cc	2024-07-23 09:07:50.601381100 +0800
+@@ -235,12 +235,23 @@ sqlzma_cm(struct sqlzma_opts *opts, z_st
+ 
+ 	if (opts->try_lzma) {
+ 		unsigned char a[stream->total_out];
+-		uLong processed;
++		uLong processed=0;
++
++		//printf("\n == LZMA == \n");
+ 
+ 		memcpy(a, p, stream->total_out);
+ 
+ 		// malloc family in glibc and stdc++ seems to be thread-safe
+ 		err = LzmaCompress(next_in, avail_in, p, l, opts, &processed);
++		
++#if 1	// Disable ZLIB compression: this is the safer choice
++		if (!err) {
++			if (!is_lzma(*next_out))
++				Failure(next_out);
++			stream->total_out = processed;
++			err = Z_STREAM_END;
++		}
++#else
+ 		if (!err && processed <= stream->total_out) {
+ 			if (!is_lzma(*next_out))
+ 				Failure(next_out);
+@@ -251,6 +262,8 @@ sqlzma_cm(struct sqlzma_opts *opts, z_st
+ 			memcpy(p, a, stream->total_out);
+ 			err = Z_STREAM_END;
+ 		}
++#endif
++
+ 	}
+ 	return err;
+ 
+diff -rupN lzma457_orig/CPP/7zip/Compress/LZMA_Alone/makefile.gcc lzma457/CPP/7zip/Compress/LZMA_Alone/makefile.gcc
+--- lzma457_orig/CPP/7zip/Compress/LZMA_Alone/makefile.gcc	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/7zip/Compress/LZMA_Alone/makefile.gcc	2024-07-19 08:30:02.000000000 +0800
+@@ -3,7 +3,7 @@ CXX = g++ -O2 -Wall
+ CXX_C = gcc -O2 -Wall
+ LIB = -lm
+ RM = rm -f
+-CFLAGS = -c
++CFLAGS = -c -Werror
+ 
+ ifdef SystemDrive
+ IS_MINGW = 1
+@@ -12,7 +12,7 @@ endif
+ ifdef IS_MINGW
+ FILE_IO =FileIO
+ FILE_IO_2 =Windows/$(FILE_IO)
+-LIB2 = -luuid 
++LIB2 = -luuid
+ else
+ FILE_IO =C_FileIO
+ FILE_IO_2 =Common/$(FILE_IO)
+@@ -136,4 +136,3 @@ LzmaRamDecode.o: LzmaRamDecode.c
+ 
+ clean:
+ 	-$(RM) $(PROG) $(OBJS)
+-
+diff -rupN lzma457_orig/CPP/Common/MyCom.h lzma457/CPP/Common/MyCom.h
+--- lzma457_orig/CPP/Common/MyCom.h	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/Common/MyCom.h	2024-07-18 03:48:53.000000000 +0800
+@@ -165,8 +165,7 @@ public:
+ 
+ #define MY_ADDREF_RELEASE \
+ STDMETHOD_(ULONG, AddRef)() { return ++__m_RefCount; } \
+-STDMETHOD_(ULONG, Release)() { if (--__m_RefCount != 0)  \
+-  return __m_RefCount; delete this; return 0; }
++STDMETHOD_(ULONG, Release)() { if (--__m_RefCount != 0) return __m_RefCount; delete this; return 0; }
+ 
+ #define MY_UNKNOWN_IMP_SPEC(i) \
+   MY_QUERYINTERFACE_BEGIN \
+diff -rupN lzma457_orig/CPP/Common/MyString.h lzma457/CPP/Common/MyString.h
+--- lzma457_orig/CPP/Common/MyString.h	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/Common/MyString.h	2024-07-19 07:10:08.000000000 +0800
+@@ -419,9 +419,10 @@ public:
+   }
+   int FindOneOf(const CStringBase &s) const
+   {
+-    for(int i = 0; i < _length; i++)
++    for(int i = 0; i < _length; i++) {
+       if (s.Find(_chars[i]) >= 0)
+         return i;
++    }
+       return -1;
+   }
+ 
+diff -rupN lzma457_orig/CPP/Common/MyVector.h lzma457/CPP/Common/MyVector.h
+--- lzma457_orig/CPP/Common/MyVector.h	2009-06-17 02:43:57.000000000 +0800
++++ lzma457/CPP/Common/MyVector.h	2024-07-19 07:10:39.000000000 +0800
+@@ -201,10 +201,12 @@ public:
+   }
+   int Find(const T& item) const
+   {
+-    for(int i = 0; i < Size(); i++)
++    for(int i = 0; i < Size(); i++) {
+       if (item == (*this)[i])
+         return i;
+-      return -1;
++    }
++    return -1;
++
+   }
+   int FindInSorted(const T& item) const
+   {

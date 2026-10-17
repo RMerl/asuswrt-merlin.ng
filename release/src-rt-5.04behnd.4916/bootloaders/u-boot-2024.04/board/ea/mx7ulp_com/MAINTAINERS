@@ -1,0 +1,6 @@
+MX7ULPCOM BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/ea/mx7ulp_com/
+F:	include/configs/mx7ulp_com.h
+F:	configs/mx7ulp_com_defconfig

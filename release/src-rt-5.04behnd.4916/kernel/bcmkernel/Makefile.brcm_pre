@@ -10,13 +10,22 @@ ifdef BCM_KF # defined(CONFIG_BCM_KF_MISC_MAKEFILE)
 -include include/config/auto.conf
 export HPATH 	:= $(TOPDIR)/include
 export CONFIG_SYSTEM := linux
-ifeq ($(strip $(CONFIG_BRCM_IKOS)),$(strip $(CONFIG_BRCM_QEMU)))
 brcmdrivers-y	:= $(BRCMDRIVERS_DIR_RELATIVE)/ ../bcmkernel/
+
+ifeq ($(strip $(CONFIG_BRCM_IKOS)),$(strip $(CONFIG_BRCM_QEMU)))
+checkmore := 1
+endif
+
+ifneq ($(strip $(CONFIG_BCM_QEMU_SIM)),)
+checkmore := 1
+endif
+
+ifneq ($(checkmore),)
 # Other chip specific compilations
 ifneq ($(findstring _$(strip $(CONFIG_BCM_ENET))_,_m_y_),)
 brcmdrivers-y += $(BRCMDRIVERS_DIR)/opensource/phy/
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63138_63148_4908_63158_6846_6856_6878_63146_4912_6813_6855_6888_6837_68880_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63138_63148_4908_63158_6856_63146_4912_6813_6855_6888_6837_68880_68375_68850_),)
 ifneq "$(wildcard $(PROJECT_DIR)/target )" ""
 brcmdrivers-y += $(PROJECT_DIR)/target/bdmf/ $(PROJECT_DIR)/target/rdpa/ $(PROJECT_DIR)/target/rdpa_gpl/ $(PROJECT_DIR)/target/rdpa_user/
 endif
@@ -24,8 +33,6 @@ ifneq ($(RDP_PROJECT2),)
 brcmdrivers-y += $(subst FC,PRV,$(PROJECT_DIR))/target/rdpa/
 endif
 endif
-else
-brcmdrivers-y	:= $(BRCMDRIVERS_DIR_RELATIVE)/ ../bcmkernel/
 endif
 
 LINUXINCLUDE  += -I$(BUILD_DIR)/kernel/bcmkernel/include
@@ -145,6 +152,9 @@ bcmdrivers_clean:
 	       -o -name modules.builtin -o -name '.tmp_*.o.*' \
 	       -o -name '*.mod' \
 	       -o -name '*.gcno' \) -type f -print | xargs rm -f
+
+
+bcmlinks_clean: clean
 	@echo Cleaning bcmlinks
 	$(Q)$(MAKE) -C $(BRCMDRIVERS_DIR) cleanlinks
 

@@ -33,11 +33,7 @@
 #include <linux/blog_rule.h>
 #include "bcm_mcast_blogrule.h"
 
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-#define BLOG_RULE_HOOK blogRuleTcHook 
-#else /* CONFIG_BCM_ENET_TC_OFFLOAD */
 #define BLOG_RULE_HOOK blogRuleVlanHook 
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
 
 extern int bcm_mcast_activate_blog(bcm_mcast_ifdata *pif,
                                                   blogRule_t       *rule_p,
@@ -613,11 +609,11 @@ int bcm_mcast_blogrule_get_whitelist_vlan_info(struct net_device *from_dev,
     }
 
     /* Note that the bcm_mcast_blogrule_get_vlan_info process function
-       must be called even if there are no vlandevices in the vlandev list.
-       This just means that the WAN from_dev received from MCPD does not have any lower
-       VLANctl devices. For example, the WAN from device could be a bridge with
-       no vlanctl devices. Another example is RDK platforms where vlanctl driver is
-       not enabled. In this case, both lan and wan vlan devices would be empty/NULL
+       must be called even if there are no lower layer (virtual) devices.
+       This just means that the WAN from_dev received from MCPD does not have any 
+       lower devices. For example, the WAN from device could be a bridge with
+       no virtual devices. Another example is RDK platforms where virtual devices management
+	   driver is not enabled. In this case, both lan and wan virtual devices would be empty/NULL
        and the blog rule would have no actions */
     i = 0;
     do

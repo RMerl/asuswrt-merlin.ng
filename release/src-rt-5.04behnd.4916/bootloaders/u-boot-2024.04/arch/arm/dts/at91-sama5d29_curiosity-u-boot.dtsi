@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * at91-sama5d29_curiosity-u-boot.dtsi - Device Tree file for SAMA5D2 SoC u-boot properties.
+ *
+ * Copyright (c) 2023, Microchip Technology Inc. and its subsidiaries
+ *
+ * Author: Mihai Sain <mihai.sain@microchip.com>
+ *
+ */
+
+/ {
+	chosen {
+		bootph-all;
+	};
+};
+
+&pinctrl_qspi1_default {
+	bootph-all;
+};
+
+&pinctrl_sdmmc0_default {
+	bootph-all;
+};
+
+&pinctrl_sdmmc1_default {
+	bootph-all;
+};
+
+&hlcdc {
+	bootph-all;
+};
+
+&pioA {
+	bootph-all;
+};
+
+&qspi1 {
+	bootph-all;
+
+	flash@0 {
+		bootph-all;
+	};
+};
+
+&sdmmc0 {
+	bootph-all;
+};
+
+&sdmmc1 {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};

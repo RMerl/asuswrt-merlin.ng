@@ -1,0 +1,35 @@
+Common MDIO bus properties.
+
+These are generic properties that can apply to any MDIO bus.
+
+Optional properties:
+	- device-name - If present it is used to name the device and MDIO bus.
+			The name must be unique and must not contain spaces.
+
+A list of child nodes, one per device on the bus is expected.  These could be
+PHYs, switches or similar devices and child nodes should follow the specific
+binding for the device type.
+
+Example :
+This example shows the structure used for the external MDIO bus on NXP LS1028A
+RDB board.  Note that this MDIO device is an integrated PCI function and
+requires no compatible property for probing.
+
+/* definition in SoC dtsi file */
+	pcie@1f0000000 {
+
+		mdio0: pci@0,3 {
+			#address-cells=<0>;
+			#size-cells=<1>;
+			reg = <0x000300 0 0 0 0>;
+			status = "disabled";
+			device-name = "emdio";
+		};
+	};
+/* definition of PHYs in RDB dts file */
+&mdio0 {
+	status = "okay";
+	rdb_phy0: phy@2 {
+		reg = <2>;
+	};
+};

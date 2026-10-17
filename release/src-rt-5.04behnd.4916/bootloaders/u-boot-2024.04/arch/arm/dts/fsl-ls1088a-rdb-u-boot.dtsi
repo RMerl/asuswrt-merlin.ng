@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include <config.h>
+
+#include "fsl-ls1088a-u-boot.dtsi"
+

@@ -1,0 +1,15 @@
+if TARGET_SAM9X60_CURIOSITY
+
+config SYS_BOARD
+	default "sam9x60_curiosity"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_SOC
+        default "at91"
+
+config SYS_CONFIG_NAME
+	default "sam9x60_curiosity"
+
+endif

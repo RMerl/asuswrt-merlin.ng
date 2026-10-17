@@ -1,0 +1,167 @@
+.. SPDX-License-Identifier: GPL-2.0+
+.. sectionauthor:: Dzmitry Sankouski <dsankouski@gmail.com>
+
+Snapdragon 845
+==============
+
+About this
+----------
+
+This document describes the information about Qualcomm Snapdragon 845
+supported boards and it's usage steps.
+
+SDM845 - hi-end qualcomm chip, introduced in late 2017.
+Mostly used in flagship phones and tablets of 2018.
+
+The current boot flow support loading u-boot as an Android boot image via
+Qualcomm's UEFI-based ABL (Android) Bootloader.
+
+Installation
+------------
+
+Build
+^^^^^
+
+Setup ``CROSS_COMPILE`` for aarch64 and build U-Boot for your board::
+
+	$ export CROSS_COMPILE=<aarch64 toolchain prefix>
+	$ make <your board name here, see Boards section>_defconfig
+	$ make
+
+This will build ``u-boot.bin`` in the configured output directory.
+
+Generate FIT image
+^^^^^^^^^^^^^^^^^^
+
+See doc/uImage.FIT for more details
+
+Pack android boot image
+^^^^^^^^^^^^^^^^^^^^^^^
+
+We'll assemble android boot image with ``u-boot.bin`` instead of linux kernel,
+and FIT image instead of ``initramfs``. Android bootloader expect gzipped kernel
+with appended dtb, so let's mimic linux to satisfy stock bootloader.
+
+Boards
+------
+
+starqlte
+^^^^^^^^
+
+The starqltechn is a production board for Samsung S9 (SM-G9600) phone,
+based on the Qualcomm SDM845 SoC.
+
+Steps:
+
+- Build u-boot::
+
+	$ export CROSS_COMPILE=<aarch64 toolchain prefix>
+	$ make starqltechn_defconfig
+	$ make
+
+- Create dump dtb::
+
+	workdir=/tmp/prepare_payload
+	mkdir -p "$workdir"
+	cd "$workdir"
+	mock_dtb="$workdir"/payload_mock.dtb
+
+	dtc -I dts -O dtb -o "$mock_dtb" << EOF
+	/dts-v1/;
+	/ {
+		memory {
+			/* We expect the bootloader to fill in the size */
+			reg = <0 0 0 0>;
+		};
+
+		chosen { };
+	};
+	EOF
+
+- gzip u-boot::
+
+	gzip u-boot.bin
+
+- Append dtb to gzipped u-boot::
+
+	cat u-boot.bin.gz "$mock_dtb" > u-boot.bin.gz-dtb
+
+- Now we've got everything to build android boot image::
+
+	mkbootimg --base 0x0 --kernel_offset 0x00008000 \
+	--ramdisk_offset 0x02000000 --tags_offset 0x01e00000 \
+	--pagesize 4096 --second_offset 0x00f00000 \
+	--ramdisk "$fit_image" \
+	--kernel u-boot.bin.gz-dtb \
+	-o boot.img
+
+- Flash image with your phone's flashing method.
+
+More information can be found on the `Samsung S9 page`_.
+
+dragonboard845c
+^^^^^^^^^^^^^^^
+
+The dragonboard845c is a Qualcomm Robotics RB3 Development Platform, based on
+the Qualcomm SDM845 SoC.
+
+Steps:
+
+- Build u-boot::
+
+	$ export CROSS_COMPILE=<aarch64 toolchain prefix>
+	$ make dragonboard845c_defconfig
+	$ make
+
+- Create dummy dtb::
+
+	workdir=/tmp/prepare_payload
+	mkdir -p "$workdir"
+	mock_dtb="$workdir"/payload_mock.dtb
+
+	dtc -I dts -O dtb -o "$mock_dtb" << EOF
+	/dts-v1/;
+	/ {
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		memory@80000000 {
+			device_type = "memory";
+			/* We expect the bootloader to fill in the size */
+			reg = <0 0x80000000 0 0>;
+		};
+
+		chosen { };
+	};
+	EOF
+
+- gzip u-boot::
+
+	gzip u-boot.bin
+
+- Append dtb to gzipped u-boot::
+
+	 cat u-boot.bin.gz "$mock_dtb" > u-boot.bin.gz-dtb
+
+- A ``db845c.its`` file can be found in ``board/qualcomm/dragonboard845c/``
+  directory. It expects a folder as ``db845c_imgs/`` in the main directory
+  containing pre-built kernel, dts and ramdisk images. See ``db845c.its``
+  for full path to images::
+
+	mkimage -f db845c.its db845c.itb
+
+- Now we've got everything to build android boot image::
+
+	mkbootimg --kernel u-boot.bin.gz-dtb --ramdisk db845c.itb \
+	--output boot.img --pagesize 4096 --base 0x80000000
+
+- Flash boot.img using db845c fastboot method:
+
+  .. code-block:: bash
+
+      sudo fastboot flash boot boot.img
+
+More information can be found on the `DragonBoard 845c page`_.
+
+.. _Samsung S9 page: https://en.wikipedia.org/wiki/Samsung_Galaxy_S9
+.. _DragonBoard 845c page: https://www.96boards.org/product/rb3-platform/

@@ -1,0 +1,17 @@
+/{
+    aliases {
+        mmc0 = &usdhc1;
+    };
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+};
+
+&i2c1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c1 {
+	bootph-pre-ram;
+};

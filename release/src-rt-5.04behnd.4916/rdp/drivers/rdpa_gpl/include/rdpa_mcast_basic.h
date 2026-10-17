@@ -96,10 +96,8 @@ typedef struct rdpa_iptv_channel_key
     rdpa_mcast_group_t mcast_group; /**< Multicast Group Address Can be either L2 or L3 */
     uint16_t vid;                   /**< VID used for multicast stream (channel). */
     bdmf_object_handle port_ingress_obj;                  /**< RX interface for Multi Wan only */
-#if defined(BCM_DSL_XRDP) || defined(RDP_UFC)
     uint16_t inner_vid;
     uint8_t num_vlan_tags;
-#endif
 } rdpa_iptv_channel_key_t;
 
 /** FC Multicast flow key.\n

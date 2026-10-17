@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 Linaro Ltd.
+ */
+
+&{/imx8qx-pm} {
+
+	bootph-pre-ram;
+};
+
+&mu {
+	bootph-pre-ram;
+};
+
+&clk {
+	bootph-pre-ram;
+};
+
+&iomuxc {
+	bootph-pre-ram;
+};
+
+&pd_lsio {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio0 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio1 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio2 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio3 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio4 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio5 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio6 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio7 {
+	bootph-pre-ram;
+};
+
+&pd_conn {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch0 {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch1 {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch2 {
+	bootph-pre-ram;
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&gpio6 {
+	bootph-pre-ram;
+};
+
+&gpio7 {
+	bootph-pre-ram;
+};
+
+&lpuart2 {
+	bootph-pre-ram;
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+};
+
+&usdhc2 {
+	bootph-pre-ram;
+};

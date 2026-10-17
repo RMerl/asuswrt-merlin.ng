@@ -2,7 +2,6 @@
 #include "rdpa_api.h"
 #include "rdpa_mw_arch.h"
 #include "rdpa_mw_blog_parse.h"
-#include "rdpa_mw_vlan.h"
 #include "rdpa_mw_qos.h"
 #include "bcmenet_common.h"
 #include "bcm_util_func.h"

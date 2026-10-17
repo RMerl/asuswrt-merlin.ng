@@ -1,0 +1,69 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018-2021 Marvell International Ltd.
+ */
+
+#include "cn9130-db-B.dts"
+#include "cn9131-db.dtsi"
+
+/ {
+	model = "Marvell CN9131 development board (CP NAND) setup(B)";
+	compatible = "marvell,cn9131-db", "marvell,armada-ap806-quad",
+		     "marvell,armada-ap806";
+};
+
+&cp1_comphy {
+	/* Serdes Configuration:
+	 *	Lane 0: PCIe0 (x2)
+	 *	Lane 1: PCIe0 (x2)
+	 *	Lane 2: SFI (port 0)
+	 *	Lane 3: USB1
+	 *	Lane 4: SGMII (port 1)
+	 *	Lane 5: SATA1
+	 */
+	phy0 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+	};
+	phy1 {
+		phy-type = <COMPHY_TYPE_PEX0>;
+	};
+	phy2 {
+		phy-type = <COMPHY_TYPE_SFI0>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
+	};
+	phy3 {
+		phy-type = <COMPHY_TYPE_USB3_HOST1>;
+	};
+	phy4 {
+		phy-type = <COMPHY_TYPE_SGMII1>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
+	};
+	phy5 {
+		phy-type = <COMPHY_TYPE_SATA1>;
+	};
+};
+
+&cp1_ethernet {
+	status = "okay";
+};
+
+/* 3310 RJ45 CON55 */
+&cp1_eth0 {
+	status = "okay";
+	phy-mode = "sfi"; /* lane-2 */
+	phy = <&sfi_phy8>; /* required by 3310 fw download */
+};
+
+/* CON50 */
+&cp1_eth1 {
+	status = "okay";
+	phy-mode = "sgmii"; /* lane-4 */
+	marvell,sfp-tx-disable-gpio = <&cp1_gpio0 9 GPIO_ACTIVE_HIGH>;
+};
+
+&cp1_xmdio {
+	status = "okay";
+	sfi_phy8: ethernet-phy@8 {
+		reg = <8>;
+	};
+};

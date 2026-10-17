@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# For MTK USB3.0 IP
+
+config USB_MTU3
+	bool "MediaTek USB3 Dual Role controller"
+	depends on USB_XHCI_HCD || USB_GADGET
+	depends on ARCH_MEDIATEK
+	help
+	  Say Y here if your system runs on MediaTek SoCs with
+	  Dual Role SuperSpeed USB controller. You can select usb
+	  mode as peripheral role or host role.
+
+	  If you don't know what this is, please say N.
+
+if USB_MTU3
+choice
+	bool "MTU3 Mode Selection"
+	default USB_MTU3_GADGET if USB_GADGET
+	default USB_MTU3_HOST if (USB_HOST && !USB_GADGET)
+
+config USB_MTU3_HOST
+	bool "Host only mode"
+	depends on USB_XHCI_HCD
+	help
+	  Select this when you want to use MTU3 in host mode only,
+	  thereby the gadget feature will be regressed.
+
+config USB_MTU3_GADGET
+	bool "Gadget only mode"
+	depends on USB_GADGET
+	select USB_GADGET_DUALSPEED
+	help
+	  Select this when you want to use MTU3 in gadget mode only,
+	  thereby the host feature will be regressed.
+
+endchoice
+
+config USB_MTU3_DEBUG
+	bool "Enable Debugging Messages"
+	help
+	  Say Y here to enable debugging messages in the MTU3 Driver.
+
+endif

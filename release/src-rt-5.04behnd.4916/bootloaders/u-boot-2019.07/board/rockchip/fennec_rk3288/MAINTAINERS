@@ -1,6 +1,0 @@
-FENNEC-RK3288
-M:	Lin Huang <hl@rock-chips.com>
-S:	Maintained
-F:	board/rockchip/fennec_rk3288
-F:	include/configs/fennec_rk3288.h
-F:	configs/fennec-rk3288_defconfig

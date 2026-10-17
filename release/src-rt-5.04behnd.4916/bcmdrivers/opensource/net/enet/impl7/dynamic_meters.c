@@ -396,35 +396,47 @@ static int config_param_index_get(char *name)
     return config_names[i][CONFIG_NAME_ID] ? i : -1;
 }
 
-static ssize_t help_read(struct file *file, char *buff, size_t len, loff_t *offset)
+static ssize_t help_read(struct file *file, char __user *buff, size_t len, loff_t *offset)
 {
     int i;
+    char outbuf[1536];
+    int sz = sizeof(outbuf);
 
     if (*offset)
         return 0;
 
     for (i = 0; config_names[i][CONFIG_NAME_ID] && *offset < (len - 64); i++)
-        *offset += sprintf(buff + *offset, "%s: %s\n",  config_names[i][CONFIG_NAME_ID], config_names[i][CONFIG_HELP_ID]);
+        *offset += snprintf(outbuf + *offset, sz - *offset, "%s: %s\n",  config_names[i][CONFIG_NAME_ID], config_names[i][CONFIG_HELP_ID]);
+
+    if (copy_to_user(buff, outbuf, *offset))
+        return -EFAULT;
 
     return *offset;
 }
 
-static ssize_t stats_read(struct file *file, char *buff, size_t len, loff_t *offset)
+static ssize_t stats_read(struct file *file, char __user *buff, size_t len, loff_t *offset)
 {
+    char outbuf[256];
+    int sz = sizeof(outbuf);
+
     if (*offset)
         return 0;
 
-    *offset = sprintf(buff, "Dynamic meter statistics (clear on read):\n\tRate down: %u\n\tRate up: %u\n\tMeter remove: %u\n", 
+    *offset = snprintf(outbuf, sz, "Dynamic meter statistics (clear on read):\n\tRate down: %u\n\tRate up: %u\n\tMeter remove: %u\n", 
             stats.rate_down, stats.rate_up, stats.meter_clear);
 
     stats.rate_down = stats.rate_up = stats.meter_clear = 0;
+    if (copy_to_user(buff, outbuf, *offset))
+        return -EFAULT;
 
     return *offset;
 }
 
-static ssize_t config_get(struct file *file, char *buff, size_t len, loff_t *offset)
+static ssize_t config_get(struct file *file, char __user *buff, size_t len, loff_t *offset)
 {
     int i;
+    char outbuf[64];
+    int sz = sizeof(outbuf);
 
     if (*offset)
         return 0;
@@ -432,7 +444,9 @@ static ssize_t config_get(struct file *file, char *buff, size_t len, loff_t *off
     if ((i = config_param_index_get(file->f_path.dentry->d_iname)) == -1)
         return 0;
 
-    *offset = sprintf(buff, "%u\n", config.param[i]);
+    *offset = snprintf(outbuf, sz, "%u\n", config.param[i]);
+    if (copy_to_user(buff, outbuf, *offset))
+        return -EFAULT;
 
     return *offset;
 }

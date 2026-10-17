@@ -1038,6 +1038,9 @@ static const ru_reg_rec *TCAM_REGS[] =
 const ru_block_rec TCAM_BLOCK =
 {
     "TCAM",
+#if RU_INCLUDE_SIZE
+    { 0x00008604 },
+#endif
     TCAM_ADDRS,
     1,
     18,

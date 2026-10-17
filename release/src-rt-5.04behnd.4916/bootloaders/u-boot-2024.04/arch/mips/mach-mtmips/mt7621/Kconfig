@@ -1,0 +1,115 @@
+
+if SOC_MT7621
+
+menu "CPU & DDR configuration"
+
+config MT7621_CPU_FREQ
+	int "CPU Frequency (MHz)"
+	range 400 1200
+	default 880
+
+choice
+	prompt "DRAM Frequency"
+	default MT7621_DRAM_FREQ_1200
+
+config MT7621_DRAM_FREQ_400
+	bool "400MHz"
+
+config MT7621_DRAM_FREQ_800
+	bool "800MHz"
+
+config MT7621_DRAM_FREQ_1066
+	bool "1066MHz"
+
+config MT7621_DRAM_FREQ_1200
+	bool "1200MHz"
+
+endchoice
+
+choice
+	prompt "DDR2 timing parameters"
+	default MT7621_DRAM_DDR2_1024M
+
+config MT7621_DRAM_DDR2_512M
+	bool "64MB"
+
+config MT7621_DRAM_DDR2_1024M
+	bool "128MB"
+
+config MT7621_DRAM_DDR2_512M_W9751G6KB_A02_1066MHZ
+	bool "W9751G6KB_A02 @ 1066MHz (64MB)"
+
+config MT7621_DRAM_DDR2_1024M_W971GG6KB25_800MHZ
+	bool "W971GG6KB25 @ 800MHz (128MB)"
+
+config MT7621_DRAM_DDR2_1024M_W971GG6KB18_1066MHZ
+	bool "W971GG6KB18 @ 1066MHz (128MB)"
+
+endchoice
+
+choice
+	prompt "DDR3 timing parameters"
+	default MT7621_DRAM_DDR3_2048M
+
+config MT7621_DRAM_DDR3_1024M
+	bool "128MB"
+
+config MT7621_DRAM_DDR3_1024M_KGD
+	bool "128MB KGD (MT7621DA)"
+
+config MT7621_DRAM_DDR3_2048M
+	bool "256MB"
+
+config MT7621_DRAM_DDR3_4096M
+	bool "512MB"
+
+endchoice
+
+endmenu
+
+config DEBUG_UART_BOARD_INIT
+	default y
+
+config MT7621_BOOT_FROM_NAND
+	bool "Boot from NAND"
+	help
+	  Select this if u-boot will boot from NAND flash. When booting from
+	  NAND, SPL will be loaded by bootrom directly and no TPL is needed.
+
+choice
+	prompt "Board select"
+
+config BOARD_MT7621_RFB
+	bool "MediaTek MT7621 RFB (SPI-NOR)"
+	help
+	  The reference design of MT7621A (WS3010) booting from SPI-NOR flash.
+	  The board can be configured with DDR2 (64MiB~256MiB) or DDR3
+	  (128MiB~512MiB). The board has 16 MiB SPI-NOR flash, built-in MT7530
+	  GbE switch, 1 UART, 1 USB 2.0 host, 1 USB 3.0 host, 1 SDXC, 3 PCIe
+	  sockets, 1 RGMII to external GbE PHY, 2 audio jacks (in/out),
+	  JTAG pins and expansion GPIO pins.
+
+config BOARD_MT7621_NAND_RFB
+	bool "MediaTek MT7621 RFB (NAND)"
+	help
+	  The reference design of MT7621A (WS3010) booting from NAND flash.
+	  The board can be configured with DDR2 (64MiB~256MiB) or DDR3
+	  (128MiB~512MiB). The board has 128 MiB parallel NAND flash, built-in
+	  MT7530 GbE switch, 1 UART, 1 USB 2.0 host, 1 USB 3.0 host, 3 PCIe
+	  sockets, 1 RGMII to external GbE PHY, 2 audio jacks (in/out),
+	  JTAG pins and expansion GPIO pins.
+
+endchoice
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "mt7621" if  BOARD_MT7621_RFB || BOARD_MT7621_NAND_RFB
+
+config SYS_BOARD
+	string "Board name"
+	default "mt7621" if  BOARD_MT7621_RFB || BOARD_MT7621_NAND_RFB
+
+config SYS_VENDOR
+	default "mediatek" if BOARD_MT7621_RFB || BOARD_MT7621_NAND_RFB
+
+endif

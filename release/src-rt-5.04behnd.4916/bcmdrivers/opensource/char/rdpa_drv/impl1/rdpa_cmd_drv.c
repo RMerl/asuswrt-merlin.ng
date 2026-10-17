@@ -72,27 +72,6 @@
 #include <ingqos.h>
 #endif
 
-#undef RDPA_CMD_DECL
-#define RDPA_CMD_DECL(x) #x,
-
-#if defined(CONFIG_BCM_LOG)
-static const char *rdpa_cmd_ioctl_name[] =
-{
-    RDPA_CMD_DECL(RDPA_IOC_TM)
-    RDPA_CMD_DECL(RDPA_IOC_IC)
-    RDPA_CMD_DECL(RDPA_IOC_SYS)
-    RDPA_CMD_DECL(RDPA_IOC_PORT)
-    RDPA_CMD_DECL(RDPA_IOC_BRIDGE)
-    RDPA_CMD_DECL(RDPA_IOC_LLID)
-    RDPA_CMD_DECL(RDPA_IOC_DS_WAN_UDP_FILTER)
-    RDPA_CMD_DECL(RDPA_IOC_RDPA_MW_SET_MCAST_DSCP_REMARK)
-    RDPA_CMD_DECL(RDPA_IOC_TIME_SYNC)
-    RDPA_CMD_DECL(RDPA_IOC_DSCP_TO_PBIT)
-    RDPA_CMD_DECL(RDPA_IOC_MISC)
-    RDPA_CMD_DECL(RDPA_IOC_MAX)
-};
-#endif
-
 #if defined(CONFIG_BCM_PON_XRDP)
 #if defined(CONFIG_BLOG)
 extern int rdpa_mw_set_mcast_dscp_remark;
@@ -135,14 +114,14 @@ static long rdpa_cmdIoctl(struct file *filep, unsigned int command, unsigned lon
     else
         cmd = (rdpa_drv_ioctl_t) command;
 
-    BCM_LOG_INFO(BCM_LOG_ID_RDPA_CMD_DRV, "RDPA Char Device: cmd<%d> %s arg<0x%08lX>",
-                 command, rdpa_cmd_ioctl_name[command], arg);
+    BCM_LOG_INFO(BCM_LOG_ID_RDPA_CMD_DRV, "RDPA Char Device: cmd<%d> arg<0x%08lX>",
+                 command, arg);
 
     switch( cmd )
     {
         case RDPA_IOC_IC:
         {
-#if defined(CONFIG_BCM_DSL_RDP) || defined(CONFIG_BCM_DSL_XRDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
             BCM_LOG_ERROR(BCM_LOG_ID_RDPA_CMD_DRV, "RDPA_IOC_IC is not supported");
             ret = RDPA_DRV_ERROR;
 #else
@@ -153,18 +132,13 @@ static long rdpa_cmdIoctl(struct file *filep, unsigned int command, unsigned lon
 
         case RDPA_IOC_SYS:
         {
-#if defined(CONFIG_BCM_DSL_RDP)
-            BCM_LOG_ERROR(BCM_LOG_ID_RDPA_CMD_DRV, "RDPA_IOC_SYS is not supported");
-            ret = RDPA_DRV_ERROR;
-#else
             ret = rdpa_cmd_sys_ioctl(arg);
-#endif
             break;
         }
 
         case RDPA_IOC_PORT:
         {
-#if defined(CONFIG_BCM_DSL_RDP) || defined(CONFIG_BCM_DSL_XRDP) 
+#if defined(CONFIG_BCM_DSL_XRDP) 
             BCM_LOG_INFO(BCM_LOG_ID_RDPA_CMD_DRV, "RDPA_IOC_PORT is not supported");
             ret = RDPA_DRV_UNSUPPORTED;
 #else
@@ -175,18 +149,14 @@ static long rdpa_cmdIoctl(struct file *filep, unsigned int command, unsigned lon
 
         case RDPA_IOC_BRIDGE:
         {
-#if !defined(CONFIG_BCM_RUNNER_BRIDGE)
             BCM_LOG_ERROR(BCM_LOG_ID_RDPA_CMD_DRV, "RDPA_IOC_BRIDGE is not supported");
             ret = RDPA_DRV_ERROR;
-#else
-            ret = rdpa_cmd_br_ioctl(arg);
-#endif
             break;
         }
 
         case RDPA_IOC_LLID:
         {
-#if defined(CONFIG_BCM_DSL_RDP) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912)
             /* It used to have defined(CONFIG_BCM_DSL_XRDP) as well, but we only
              * have 63158 as the only DSL_XRDP as this point and it supports EPON.
              * We might need adjustment to the ifdef in the future. */
@@ -450,7 +420,9 @@ int __init rdpa_cmd_drv_init(void)
 
 #if defined(CONFIG_BCM_PON_XRDP)
     rdpa_cmd_ic_init();
+#if defined(CONFIG_RNR_BRIDGE_SUPPORT)
     rdpa_cmd_br_init();
+#endif
 #endif
 
 #if (defined(CONFIG_BCM_INGQOS) || defined(CONFIG_BCM_INGQOS_MODULE))

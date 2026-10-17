@@ -41,8 +41,6 @@
 /*                                                                           */
 /*****************************************************************************/
 #define INTERN_PRINT printk
-
-#if defined(XRDP)
 #include "rdp_cpu_ring.h"
 
 #define shell_print(dummy,format,...) xprintf(format, ##__VA_ARGS__)
@@ -239,4 +237,4 @@ exit:
     return ret;
 }
 
-#endif
+

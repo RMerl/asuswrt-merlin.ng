@@ -215,7 +215,7 @@ typedef enum
    EE_TO_HOST_MSG_DEFAULT  = 0,
    EE_TO_HOST_MSG_BEE      = 1,
    EE_TO_HOST_MSG_OPENWRT  = 2,
-   EE_TO_HOST_MSG_OSGI     = 3,
+   EE_TO_HOST_MSG_OSGI_DEPRECATED = 3, /* OSGI has been removed */
    EE_TO_HOST_MSG_DOCKERMD = 4,
    EE_TO_HOST_MSG_LAST,
 } eeToHostMessageType;

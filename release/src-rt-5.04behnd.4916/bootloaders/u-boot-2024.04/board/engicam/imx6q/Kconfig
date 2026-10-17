@@ -1,0 +1,14 @@
+if TARGET_MX6Q_ENGICAM
+
+config SYS_BOARD
+	default "imx6q"
+
+config SYS_VENDOR
+	default "engicam"
+
+config SYS_CONFIG_NAME
+	default "imx6-engicam"
+
+source "board/engicam/common/Kconfig"
+
+endif

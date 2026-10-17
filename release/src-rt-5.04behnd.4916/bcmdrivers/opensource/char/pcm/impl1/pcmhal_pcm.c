@@ -35,7 +35,10 @@ written consent.
 #include <linux/sort.h>
 #include <linux/semaphore.h>
 #include <linux/circ_buf.h> /* For CIRC_CNT */
-#include <linux/dma-mapping.h>
+#include <linux/dma-map-ops.h> /* For arch_setup_dma_ops */
+#include <linux/irqreturn.h> /* For irqreturn_t */
+#include <linux/interrupt.h> /* For request_irq */
+
 #if defined(CONFIG_PMC_PCM_V1)
 #include <pmc/pmc_pcm.h>
 #endif
@@ -433,12 +436,12 @@ int iudma_request_chan(unsigned int chan, int count, size_t size,
    /* Allocate descriptor ring */
    memset(&iudma_chan_cfg[chan], 0, sizeof(iudma_chan_cfg[0]));
    iudma_chan_cfg[chan].desc_size     = count * sizeof(struct iudma_descr);
-   iudma_chan_cfg[chan].desc_addr.cpu = dma_zalloc_coherent(dhdev.device,
+   iudma_chan_cfg[chan].desc_addr.cpu = dma_alloc_coherent(dhdev.device,
          iudma_chan_cfg[chan].desc_size, &iudma_chan_cfg[chan].desc_addr.dma, GFP_ATOMIC | GFP_DMA);
    if(!iudma_chan_cfg[chan].desc_addr.cpu)
    {
       spin_unlock_irqrestore(&iudma_lock, flags);
-      PHLOG_ERR("%s:dma_zalloc_coherent failed for iudma channel %u \n", __func__, chan);
+      PHLOG_ERR("%s:dma_alloc_coherent failed for iudma channel %u \n", __func__, chan);
       return -ENOMEM;
    }
 
@@ -1813,9 +1816,9 @@ static void pcm_dma_read_cb(unsigned int chan, char *bufp, size_t size,
 void pcm_ts_dealloc(const struct pcm_dma *dma, int ts)
 {
    int ts16, ts_reg, ts_loc, chan_id;
+   struct dma_ts_cfg *ts_cfg = &ts_cfg_txrx;
    chan_id = 0;
    ts_loc = 0; 
-   struct dma_ts_cfg *ts_cfg = &ts_cfg_txrx;
 
    if(ts >= PCM_MAX_TS)
    {
@@ -1902,7 +1905,7 @@ static void pcm_ts_alloc(int ts, int pcm_chan)
       }
       if(chan_id >= ARRAY_SIZE(ts_cfg->pcm_map))
       {
-         PHLOG_ERR("%s: No more available channels. chan_id=%d arSize=%d\n", __func__,chan_id, ARRAY_SIZE(ts_cfg->pcm_map) );
+         PHLOG_ERR("%s: No more available channels. chan_id=%d arSize=%lu\n", __func__,chan_id, ARRAY_SIZE(ts_cfg->pcm_map) );
          return;
       }
    }
@@ -2469,7 +2472,7 @@ static ssize_t pcm_chancfg_write(struct file *file,
       mutex_unlock(&write_lock);
       return -EFAULT;
    }
-   PHLOG_INFO("chancfg=%s,count=%d\n", tmp, count);
+   PHLOG_INFO("chancfg=%s,count=%zd\n", tmp, count);
    if (parse_chancfg(tmp, count))
    {
       PHLOG_ERR("Wrong PCM channel configuration. Valid input example:\n\"0:N,1:N,3:W,4:N,5:N\"\n");
@@ -2715,8 +2718,8 @@ DEFINE_SIMPLE_STRING(pcm_stats_fops, pcm_stats_read,
 static ssize_t pcm_dumpReadBuf_read(struct file *filp, char __user *buf,
                                  size_t count, loff_t *f_pos)
 {
-   printNextReadBuf=1;
    DBPRINTF_SETUP();
+   printNextReadBuf=1;
    DBPRINTF("Dumping the next buffer\n");
    DBPRINTF_END();
 }

@@ -1,0 +1,37 @@
+U-Boot for Google's i.MX8MQ Phanbell board
+
+Quick Start
+===========
+- Build the ARM Trusted firmware binary
+- Get ddr and hdmi firmware
+- Build U-Boot
+- Boot
+
+Get and Build the ARM Trusted firmware
+======================================
+Note: srctree is U-Boot source directory
+Get ATF from: https://github.com/nxp-imx/imx-atf
+branch: imx_4.19.35_1.0.0
+$ make PLAT=imx8mq bl31
+$ cp build/imx8mq/release/bl31.bin $(builddir)
+
+Get the ddr and hdmi firmware
+=============================
+$ wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-7.9.bin
+$ chmod +x firmware-imx-7.9.bin
+$ ./firmware-imx-7.9.bin
+$ cp firmware-imx-7.9/firmware/hdmi/cadence/signed_hdmi_imx8m.bin $(builddir)
+$ cp firmware-imx-7.9/firmware/ddr/synopsys/lpddr4*.bin $(builddir)
+
+Build U-Boot
+============
+$ export CROSS_COMPILE=aarch64-linux-gnu-
+$ make imx8mq_phanbell_defconfig
+$ make flash.bin
+
+Burn the flash.bin to MicroSD card offset 33KB
+$sudo dd if=flash.bin of=/dev/sd[x] bs=1K seek=33
+
+Boot
+====
+Set Boot switch SW1: 1011 to boot from Micro SD.

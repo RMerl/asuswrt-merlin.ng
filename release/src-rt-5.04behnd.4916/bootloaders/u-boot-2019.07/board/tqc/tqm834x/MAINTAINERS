@@ -1,6 +1,0 @@
-TQM834X BOARD
-#M:	-
-S:	Maintained
-F:	board/tqc/tqm834x/
-F:	include/configs/TQM834x.h
-F:	configs/TQM834x_defconfig

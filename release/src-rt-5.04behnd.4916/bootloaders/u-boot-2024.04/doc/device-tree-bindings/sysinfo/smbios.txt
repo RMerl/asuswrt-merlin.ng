@@ -1,0 +1,77 @@
+SMBIOS sysinfo information
+==========================
+
+This binding allows the values for the SMBIOS tables to be specified in the
+devicetree, as below.
+
+Required properties:
+
+  - compatible: "u-boot,smbios" or any other string depending on your board
+
+This driver allows providing board-specific features such as power control
+GPIOs. In addition, the SMBIOS values can be specified in the device tree,
+as below:
+
+An optional 'smbios' subnode can be used to provide these properties. Within
+that, the properties are broken down by table type, as in the System Management
+BIOS (Basic Input/Output System) Specification.
+
+Available subnodes for each table type are:
+
+  - 1 : system
+  - 2 : baseboard
+  - 3 : chassis
+
+Within each subnode the following tables are recognised:
+
+"system" subnode optional properties:
+
+  - manufacturer: Product manufacturer for system
+  - product:      Product name
+  - version:      Product version string
+  - serial:       Serial number for system (note that this can be overridden by
+                      the serial# environment variable)
+  - sku:          Product SKU (Stock-Keeping Unit)
+  - family:       Product family
+
+"baseboard" subnode optional properties:
+
+  - manufacturer: Product manufacturer for baseboard
+  - product:      Product name
+  - asset-tag:    Asset tag for the motherboard, sometimes used in organisations
+                      to track devices
+
+"chassis" subnode optional properties:
+
+  - manufacturer: Product manufacturer for chassis
+
+
+Example:
+
+sysinfo {
+	compatible = "sandbox,sysinfo-sandbox";
+
+	smbios {
+		/* Type 1 table */
+		system {
+			manufacturer = "Google";
+			product = "Coral";
+			version = "rev2";
+			serial = "123456789";
+			sku = "sku3";
+			family = "Google_Coral";
+		};
+
+		/* Type 2 table */
+		baseboard {
+			manufacturer = "Google";
+			product = "Coral";
+			asset-tag = "ABC123";
+		};
+
+		/* Type 3 table */
+		chassis {
+			manufacturer = "Google";
+		};
+	};
+};

@@ -1,0 +1,7 @@
+<<Broadcom-WL-IPTag/Proprietary>>
+afcm_server_cert.pem
+afcm_server_key.pem
+afcm_root_CA_cert.pem
+
+<<Broadcom-WL-IPTag/Open:opensource>>
+cacert.pem

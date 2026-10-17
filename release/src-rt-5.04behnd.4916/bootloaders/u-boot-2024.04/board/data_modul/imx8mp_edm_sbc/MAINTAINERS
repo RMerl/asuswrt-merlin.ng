@@ -1,0 +1,8 @@
+Data Modul eDM SBC i.MX8M Plus
+M:	Marek Vasut <marex@denx.de>
+S:	Maintained
+F:	arch/arm/dts/imx8mp-data-modul-edm-sbc.dts
+F:	arch/arm/dts/imx8mp-data-modul-edm-sbc-u-boot.dtsi
+F:	board/data_modul/imx8mp_edm_sbc/
+F:	configs/imx8mp_data_modul_edm_sbc_defconfig
+F:	include/configs/imx8mp_data_modul_edm_sbc.h

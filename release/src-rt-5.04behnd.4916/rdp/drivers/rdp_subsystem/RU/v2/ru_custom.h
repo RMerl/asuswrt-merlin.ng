@@ -71,6 +71,14 @@ written consent.
 #define RU_INCLUDE_ACCESS RU_FUNCTION_REG_ACCESS
 #endif
 
+#ifndef RU_FUNCTION_BLOCK_SIZE
+#define RU_FUNCTION_BLOCK_SIZE 0
+#endif
+
+#ifndef RU_INCLUDE_SIZE
+#define RU_INCLUDE_SIZE RU_FUNCTION_BLOCK_SIZE
+#endif
+
 #if !defined(_CFE_) && !defined(__UBOOT__) 
 #define RU_FASTLOCK_LOCK() ru_lock()
 extern bdmf_fastlock ru_fastlock;

@@ -49,6 +49,17 @@ Boston, MA 02111-1307, USA.
 #include <linux/pf_ring_sgs.h>
 #endif
 
+#if !defined(KERNEL_VERSION)
+#define LINUX_VERSION_CODE	0
+#define KERNEL_VERSION(a,b,c)	(a+b+c)
+#endif
+
+#if defined(CONFIG_BCM_KF_SGS)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
+#include <linux/time.h>
+#endif
+#endif
+
 /* Versioning */
 #define RING_VERSION                "7.5.0"
 #define RING_VERSION_NUM           0x070500
@@ -369,7 +380,14 @@ struct pfring_extended_pkthdr {
 
 struct pfring_pkthdr {
   /* pcap header */
+#if defined(CONFIG_BCM_KF_SGS) || !defined(__KERNEL__)
+#if defined(__KERNEL__) && (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
+  struct __kernel_old_timeval ts;
+#else
   struct timeval ts;    /* time stamp */
+#endif
+#endif
+
 #if (defined(CONFIG_BCM_KF_SGS) && defined(CONFIG_ARM)) || defined(USER_ARCH_ARM32)
   u_int32_t padding[2];
 #endif

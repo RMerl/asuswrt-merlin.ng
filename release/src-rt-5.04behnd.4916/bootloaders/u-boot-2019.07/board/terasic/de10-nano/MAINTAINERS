@@ -1,5 +1,0 @@
-DE10-NANO BOARD
-M:	Dalon Westergreen <dwesterg@gmail.com>
-S:	Maintained
-F:	include/configs/socfpga_de10_nano.h
-F:	configs/socfpga_de10_nano_defconfig

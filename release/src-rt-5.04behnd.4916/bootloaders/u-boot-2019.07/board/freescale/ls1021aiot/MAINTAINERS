@@ -1,7 +1,0 @@
-LS1021AIOT BOARD
-M:	Feng Li <feng.li_2@nxp.com>
-S:	Maintained
-F:	board/freescale/ls1021aiot/
-F:	include/configs/ls1021aiot.h
-F:	configs/ls1021aiot_sdcard_defconfig
-F:	configs/ls1021aiot_qspi_defconfig

@@ -1,0 +1,116 @@
+Gpio controller:
+
+gpioc: gpioc {
+   compatible = "brcm,bca-gpio-smc";
+   #gpio-cells = <0x2>;
+   gpio-controller;
+   interrupt-controller;
+   #interrupt-cells = <2>;
+   reg = <0x0 0x84214000 0x0 0x200
+          0x0 0x84213C00 0x0 0x24>;
+   interrupts = <GIC_SPI 222 IRQ_TYPE_LEVEL_HIGH>;
+   brcm,gpio-bank-widths = <32 32 26>;
+   gpio-ranges = <&pincontroller 0 0 90>;
+};
+Important nodes:
+1. registers - first one base address of gpio banks, second one base address of registers 
+               which handles access to gpios. 
+2. interrupts - defines UPG GPIO interrupt (all gpio interrupts mapped to this one)
+3. gpio-bank-widths - describes GPIO banks each bank includes maximum 32 gpios
+
+Gpio Definition:
+
+Gpio should be defined in the scope of the device/controller using it.
+The gpio name must have one of the suffixes ("-gpio" or "-gpios")
+Each gpio in the device tree is defined by three parameters:
+The first is phandle to the gpio controller.
+The second is the gpio number.
+The third parameter is the flag. We will use a generic flag bitfield.
+All flag definitions are in include/dt-bindings/gpio/gpio.h. Below is an
+example gpio pin definition:
+
+pon {
+    status = "okay";
+    pinctrl-0 = <&1pps_0_pins &RogueOnuEn_1_pins &WanNcoProgMClk_pins>;
+    pinctrl-names = "default";
+    txen-gpio = <&gpioc 34 GPIO_ACTIVE_LOW>
+};
+
+To use gpio as an interupt source, interrupt parent must be the phandle of the 
+gpio controller. Interrupt number is same as
+the gpio number in our design. Interrupt type is standard kernel definition from
+include/dt-bindings/interrupt-controller/irq.h. For example:
+
+sfp {
+    compatible = "brcm,sfp";
+    mod-def0-gpio = <&gpioc 32 GPIO_ACTIVE_LOW>;
+    interrupt-parent = <&gpioc>;
+    interrupts = <32 IRQ_TYPE_EDGE_BOTH>;
+    status = "okay";	
+};
+
+The consumer driver must call gpiod_to_irq to get the irq number
+which will return the gpio number in our design. But it has to set the interrupt
+type to certain type depending on the need of the consumer driver.  If user
+needs to specify the type, then interrupts property must be defined in the dts
+with the specific interrupt type.
+
+Interrupt numbers:
+
+In the gpio interrupt controller design, kernel requires the gpio driver to use
+chained irq mechanism with two irq domains. ARM GIC is the parent irq domain,
+the gpio irq controller domain is the secondary domain. The GPIO number is used
+as hwirq number in this second domain as one-to-one linear mapping. 
+
+Linux interrupt API work with its the virtual interrupt number space or virq
+number. irq_of_parse_and_map and gpoid_to_irq kernel API return the virq from
+hwirq or GPIO number.
+
+Gpio APIs:
+
+Once a device driver requires the gpio functionality it should call to standard linux API:
+
+    struct gpio_desc * devm_gpiod_get(struct device *dev, const char *con_id, enum gpiod_flags flags)
+Example:
+    gpio_desc = devm_gpiod_get (node, "gio_function_name(w/o suffix)", GPIO_ASIS)
+
+This will find the needed GPIO and request it from the gpio controller.
+
+To set the GPIO  state to active (1) or not-active (0) use the following API:
+
+    void gpiod_set_value(struct gpio_desc *desc, int value); 
+
+To get current GPIO state use:
+    int gpiod_get_value(const struct gpio_desc *desc);
+
+The polarity is handled by this APIs.
+
+To get current GPIO direction use:
+    int gpiod_get_direction(struct gpio_desc *desc);
+
+To set GPIO output direction and initial value of it use:
+    int gpiod_direction_output(struct gpio_desc *desc, int value);
+
+To set GPIO input direction use:
+    int gpiod_direction_input(struct gpio_desc *desc);
+
+For interrupt support,  gpio consumer driver first still needs to request the gpio by
+calling devm_gpiod_get function.  Then it can call standard linux API:
+    unsigned int devm_irq_of_parse_and_map(struct device *dev, struct device_node *dev, int index)
+if interrupt is explicitly defined in the dts.
+
+If it returns valid interrupt number, driver can go ahead to call the following linux
+API to install the ISR:
+    int devm_request_threaded_irq(struct device *dev, unsigned int irq, irq_handler_t handler,
+			 irq_handler_t thread_fn, unsigned long irqflags,
+			 const char *devname, void *dev_id)
+
+The ISR routine does not need to deal with interrupt enable/ack/disable as they are handled
+by the kernel interrupt framework and gpio driver interrupt supporting code.
+
+If interrupt is not defined, gpio consumer driver can call this API to let kernel and gpio
+driver assign the irq number which will be same as gpio number:
+    int gpiod_to_irq(const struct gpio_desc *desc)
+But the driver is responsible to decide what interrupt type it should set by passing the desired
+irqflags when calling devm_request_threaded_irq, for example,
+    irqflags |= IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING;

@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2022 B&R Industrial Automation GmbH -
+ * https://www.br-automation.com/
+ */
+
+/ {
+	ocp {
+		bootph-all;
+	};
+};
+
+&l4_wkup {
+	bootph-all;
+	segment@200000 {
+		bootph-all;
+		target-module@0
+		{
+			bootph-all;
+			compatible = "simple-bus";
+		};
+		target-module@7000 {
+			bootph-all;
+			compatible = "simple-bus";
+		};
+		target-module@9000 {
+			bootph-all;
+			compatible = "simple-bus";
+		};
+	};
+};
+
+&wkup_cm {
+	bootph-all;
+};
+
+&l4_wkup_clkctrl {
+	bootph-all;
+};
+
+&l4_per {
+	bootph-all;
+	segment@0 {
+		bootph-all;
+		compatible = "simple-bus";
+		target-module@4c000 {
+			bootph-all;
+			compatible = "simple-bus";
+		};
+	};
+
+	segment@100000 {
+		bootph-all;
+		compatible = "simple-bus";
+		target-module@ac000 {
+			bootph-all;
+			compatible = "simple-bus";
+		};
+		target-module@ae000 {
+			bootph-all;
+			compatible = "simple-bus";
+		};
+	};
+};
+
+&prcm {
+	bootph-all;
+};
+
+&gpio0_target {
+	bootph-all;
+};
+
+&prcm_clocks {
+	compatible = "simple-bus";
+};
+
+&scm_clocks {
+	compatible = "simple-bus";
+};
+
+&i2c0 {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&mmc1 {
+	bootph-all;
+};
+
+&mmc2 {
+	bootph-all;
+};
+
+&gpio0 {
+	bootph-all;
+};
+
+&gpio1 {
+	bootph-all;
+};
+
+&gpio2 {
+	bootph-all;
+};
+
+&gpio3 {
+	bootph-all;
+};

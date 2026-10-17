@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Rockchip Electronics Co., Ltd
+ */
+
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	aliases {
+		gpio0 = &gpio0;
+		gpio1 = &gpio1;
+		gpio2 = &gpio2;
+		gpio3 = &gpio3;
+		gpio4 = &gpio4;
+		gpio5 = &gpio5;
+		gpio6 = &gpio6;
+		gpio7 = &gpio7;
+		gpio8 = &gpio8;
+		mmc0 = &emmc;
+		mmc1 = &sdmmc;
+		mmc2 = &sdio0;
+		mmc3 = &sdio1;
+	};
+
+	chosen {
+		u-boot,spl-boot-order = \
+			"same-as-spl", &emmc, &sdmmc;
+	};
+
+	dmc: dmc@ff610000 {
+		compatible = "rockchip,rk3288-dmc", "syscon";
+		reg = <0x0 0xff610000 0x0 0x3fc
+		       0x0 0xff620000 0x0 0x294
+		       0x0 0xff630000 0x0 0x3fc
+		       0x0 0xff640000 0x0 0x294>;
+		clocks = <&cru PCLK_DDRUPCTL0>, <&cru PCLK_PUBL0>,
+			 <&cru PCLK_DDRUPCTL1>, <&cru PCLK_PUBL1>,
+			 <&cru ARMCLK>;
+		clock-names = "pclk_ddrupctl0", "pclk_publ0",
+			      "pclk_ddrupctl1", "pclk_publ1",
+			      "arm_clk";
+		rockchip,cru = <&cru>;
+		rockchip,grf = <&grf>;
+		rockchip,noc = <&noc>;
+		rockchip,pmu = <&pmu>;
+		rockchip,sgrf = <&sgrf>;
+		rockchip,sram = <&ddr_sram>;
+		bootph-all;
+	};
+
+	noc: syscon@ffac0000 {
+		compatible = "rockchip,rk3288-noc", "syscon";
+		reg = <0x0 0xffac0000 0x0 0x2000>;
+		bootph-all;
+	};
+};
+
+#if defined(CONFIG_ROCKCHIP_SPI_IMAGE) && defined(CONFIG_HAS_ROM)
+&binman {
+	rom {
+		filename = "u-boot.rom";
+		size = <0x400000>;
+		pad-byte = <0xff>;
+
+		mkimage {
+			args = "-n rk3288 -T rkspi";
+			u-boot-spl {
+			};
+		};
+		u-boot-img {
+			offset = <0x20000>;
+		};
+		u-boot {
+			offset = <0x300000>;
+		};
+		fdtmap {
+		};
+	};
+};
+#endif
+
+&bus_intmem {
+	ddr_sram: ddr-sram@1000 {
+		compatible = "rockchip,rk3288-ddr-sram";
+		reg = <0x1000 0x4000>;
+	};
+};
+
+&cru {
+	bootph-all;
+};
+
+&edp {
+	clocks = <&cru SCLK_EDP>, <&cru SCLK_EDP_24M>, <&cru PCLK_EDP_CTRL>;
+	clock-names = "clk_edp", "clk_edp_24m", "pclk_edp";
+};
+
+&gpio7 {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};
+
+&pmu {
+	bootph-all;
+};
+
+&sgrf {
+	bootph-all;
+};
+
+&uart0 {
+	clock-frequency = <24000000>;
+};
+
+&uart1 {
+	clock-frequency = <24000000>;
+};
+
+&uart2 {
+	clock-frequency = <24000000>;
+};
+
+&uart3 {
+	clock-frequency = <24000000>;
+};
+
+&vopb {
+	bootph-all;
+};
+
+&vopl {
+	bootph-all;
+};
+
+&xin24m {
+	bootph-all;
+};

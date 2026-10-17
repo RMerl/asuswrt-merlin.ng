@@ -142,10 +142,17 @@ static int bcm_avs_target_index(struct cpufreq_policy *policy, unsigned int inde
 static unsigned int bcm_avs_cpufreq_get(unsigned int cpu)
 {
     struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-    struct bcmsmc_cpufreq_t *ctx = policy->driver_data;
+    struct bcmsmc_cpufreq_t *ctx;
     int ret;
     uint32_t freq = 0;
 
+    if (policy == NULL)
+    {
+        printk("%s:%d: failed to get cpu frequency \n", __func__, __LINE__);
+        return 0;
+    }
+
+    ctx = policy->driver_data;
     ret = bcm68xx_get_cpu_freq(ctx->cur_pstate, &freq, NULL);
     if (ret) 
         return ret;

@@ -212,7 +212,7 @@ static inline int rdpa_tr471_spdsvc_tx_complete_cb_get(bdmf_object_handle mo_, v
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_tr471_spdsvc_attr_tx_complete_cb, &_nn_);
-    *tx_complete_cb_ = (void *)(long)_nn_;
+    *tx_complete_cb_ = (void *)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -227,7 +227,7 @@ static inline int rdpa_tr471_spdsvc_tx_complete_cb_get(bdmf_object_handle mo_, v
  */
 static inline int rdpa_tr471_spdsvc_tx_complete_cb_set(bdmf_object_handle mo_, void * tx_complete_cb_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_tr471_spdsvc_attr_tx_complete_cb, (long)tx_complete_cb_);
+    return bdmf_attr_set_as_num(mo_, rdpa_tr471_spdsvc_attr_tx_complete_cb, (bdmf_long_t)tx_complete_cb_);
 }
 
 /** @} end of tr471_spdsvc Doxygen group */

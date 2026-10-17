@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2023 Gateworks Corporation
+ */
+#include "imx8mp-venice-gw702x-u-boot.dtsi"
+
+&gpio4 {
+	dio_1 {
+		gpio-hog;
+		input;
+		gpios = <8 GPIO_ACTIVE_HIGH>;
+		line-name = "dio1";
+	};
+
+	dio_0 {
+		gpio-hog;
+		input;
+		gpios = <11 GPIO_ACTIVE_HIGH>;
+		line-name = "dio0";
+	};
+
+	pci_usb_sel {
+		gpio-hog;
+		output-low;
+		gpios = <14 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_usb_sel";
+	};
+
+	dio_3 {
+		gpio-hog;
+		input;
+		gpios = <24 GPIO_ACTIVE_HIGH>;
+		line-name = "dio3";
+	};
+
+	dio_2 {
+		gpio-hog;
+		input;
+		gpios = <26 GPIO_ACTIVE_HIGH>;
+		line-name = "dio2";
+	};
+
+	pci_wdis {
+		gpio-hog;
+		output-high;
+		gpios = <28 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_wdis#";
+	};
+};
+
+/* gpio-usb-con not supported yet in U-Boot so make this a host for now */
+&usb_dwc3_0 {
+	dr_mode = "host";
+};

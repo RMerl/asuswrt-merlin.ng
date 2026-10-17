@@ -2414,6 +2414,9 @@ static const ru_reg_rec *DMA_REGS[] =
 const ru_block_rec DMA_BLOCK =
 {
     "DMA",
+#if RU_INCLUDE_SIZE
+    { 0x00000320 },
+#endif
     DMA_ADDRS,
     4,
     34,

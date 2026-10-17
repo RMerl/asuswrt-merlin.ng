@@ -1,0 +1,33 @@
+[Header]
+  Version = 4.3
+  Hash Algorithm = sha256
+  Engine = CAAM
+  Engine Configuration = 0
+  Certificate Format = X509
+  Signature Format = CMS
+
+[Install SRK]
+  # SRK_TABLE is full path to SRK_1_2_3_4_table.bin
+  File = "$SRK_TABLE"
+  Source index = 0
+
+[Install CSFK]
+  # CSF_KEY is full path to CSF1_1_sha256_4096_65537_v3_usr_crt.pem
+  File = "$CSF_KEY"
+
+[Authenticate CSF]
+
+[Unlock]
+  Engine = CAAM
+  Features = MID
+
+[Install Key]
+  Verification index = 0
+  Target Index = 2
+  # IMG_KEY is full path to IMG1_1_sha256_4096_65537_v3_usr_crt.pem
+  File = "$IMG_KEY"
+
+[Authenticate Data]
+  Verification index = 2
+  # FIXME: Adjust start (first column) and size (third column) here
+  Blocks = 0x7e0fc0 0x0 0x306f0 "flash.bin"

@@ -1,0 +1,55 @@
+Intel Apollo Lake GPIO controller
+
+The Apollo Lake (APL) GPIO controller is used to control GPIO functions of
+the pins.
+
+Required properties:
+- compatible: "intel,apl-gpio"
+- #gpio-cells: Should be 2. The syntax of the gpio specifier used by client
+  nodes should be the following with values derived from the SoC user manual.
+     <[phandle of the gpio controller node]
+      [pin number within the gpio controller]
+      [flags]>
+
+  Values for gpio specifier:
+  - Pin number: is a GPIO pin number between 0 and 244
+  - Flags: GPIO_ACTIVE_HIGH or GPIO_ACTIVE_LOW
+
+- gpio-controller: Specifies that the node is a gpio controller.
+
+Example:
+
+...
+{
+	p2sb: p2sb@d,0 {
+		reg = <0x02006810 0 0 0 0>;
+		compatible = "intel,p2sb";
+		early-regs = <IOMAP_P2SB_BAR 0x100000>;
+
+		north {
+			compatible = "intel,apl-pinctrl";
+			intel,p2sb-port-id = <PID_GPIO_N>;
+			gpio_n: gpio-n {
+				compatible = "intel,gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+		};
+	};
+
+	i2c_2: i2c2@16,2 {
+		compatible = "intel,apl-i2c", "snps,designware-i2c-pci";
+		reg = <0x0200b210 0 0 0 0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clock-frequency = <400000>;
+		tpm@50 {
+			reg = <0x50>;
+			compatible = "google,cr50";
+			u-boot,i2c-offset-len = <0>;
+			ready-gpios = <&gpio_n GPIO_28 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+};
+...

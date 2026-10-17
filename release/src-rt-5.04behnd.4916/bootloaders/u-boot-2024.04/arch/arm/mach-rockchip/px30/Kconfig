@@ -1,0 +1,100 @@
+if ROCKCHIP_PX30
+
+config TARGET_EVB_PX30
+	bool "EVB_PX30"
+	help
+	  This target config option used for below listed px30 boards.
+
+	  EVB_PX30:
+	  * EVB_PX30 is an evaluation board for Rockchip PX30.
+
+config TARGET_ODROID_GO2
+	bool "ODROID_GO2"
+
+config TARGET_PX30_CORE
+	bool "Engicam PX30.Core"
+	help
+	  PX30.Core EDIMM2.2:
+	  * PX30.Core is an EDIMM SOM based on Rockchip PX30 from Engicam.
+	  * EDIMM2.2 is a Form Factor Capacitive Evaluation Board from Engicam.
+	  * PX30.Core needs to mount on top of EDIMM2.2 for creating complete
+	    PX30.Core EDIMM2.2 Starter Kit.
+
+	  PX30.Core CTOUCH2:
+	  * PX30.Core is an EDIMM SOM based on Rockchip PX30 from Engicam.
+	  * CTOUCH2.0 is a general purpose Carrier board with capacitive
+	    touch interface support.
+	  * PX30.Core needs to mount on top of CTOUCH2.0 for creating complete
+	    PX30.Core C.TOUCH Carrier board.
+
+	  PX30.Core CTOUCH2-OF10:
+	  * PX30.Core is an EDIMM SOM based on Rockchip PX30 from Engicam.
+	  * CTOUCH2.0 is a general purpose Carrier board with capacitive
+	    touch interface support.
+	  * 10.1" OF is a capacitive touch 10.1" Open Frame panel solutions.
+	  * PX30.Core needs to mount on top of C.TOUCH 2.0 carrier with pluged
+            10.1" OF for creating complete PX30.Core C.TOUCH 2.0 10.1" Open Frame.
+
+config TARGET_RINGNECK_PX30
+	bool "Theobroma Systems PX30-µQ7 (Ringneck)"
+	help
+	  The PX30-uQ7 (Ringneck) SoM is a µQseven-compatible (40mmx70mm,
+          MXM-230 connector) system-on-module from Theobroma Systems[1],
+	  featuring the Rockchip PX30.
+
+	  It provides the following feature set:
+	    * up to 4GB DDR4
+	    * up to 128GB on-module eMMC (with 8-bit 1.8V interface)
+	    * SD card (on a baseboard) via edge connector
+	    * Fast Ethernet with on-module TI DP83825I PHY
+	    * MIPI-DSI/LVDS
+	    * MIPI-CSI
+	    * USB
+	      - 1x USB 2.0 dual-role
+	      - 3x USB 2.0 host
+	    * on-module companion controller (STM32 Cortex-M0 or ATtiny), implementing:
+	      - low-power RTC functionality (ISL1208 emulation)
+	      - fan controller (AMC6821 emulation)
+	      - USB<->CAN bridge controller (STM32 only)
+	    * on-module Espressif ESP32 for Bluetooth + 2.4GHz WiFi
+	    * on-module NXP SE05x Secure Element
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0xff010200
+
+config ROCKCHIP_STIMER_BASE
+	default 0xff220020
+
+config SYS_SOC
+	default "px30"
+
+config SYS_MALLOC_F_LEN
+	default 0x400
+
+config SPL_SERIAL
+	default y
+
+config TPL_LDSCRIPT
+	default "arch/arm/mach-rockchip/u-boot-tpl-v8.lds"
+
+config TPL_TEXT_BASE
+	default 0xff0e1000
+
+config TPL_STACK
+	default 0xff0e4fff
+
+config DEBUG_UART_CHANNEL
+	int "Mux channel to use for debug UART2/UART3"
+	depends on DEBUG_UART_BOARD_INIT
+	default 0
+	help
+	  UART2 and UART3 can use two different set of pins to route the output.
+	  For using the UART for early debugging the route to use needs
+	  to be declared (0 or 1).
+
+source "board/engicam/px30_core/Kconfig"
+source "board/hardkernel/odroid_go2/Kconfig"
+source "board/rockchip/evb_px30/Kconfig"
+source "board/theobroma-systems/ringneck_px30/Kconfig"
+
+endif

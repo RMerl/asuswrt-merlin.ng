@@ -1,0 +1,27 @@
+if TARGET_AP143
+
+config SYS_VENDOR
+	default "qca"
+
+config SYS_BOARD
+	default "ap143"
+
+config SYS_CONFIG_NAME
+	default "ap143"
+
+config TEXT_BASE
+	default 0x9f000000
+
+config SYS_DCACHE_SIZE
+	default 32768
+
+config SYS_DCACHE_LINE_SIZE
+	default 32
+
+config SYS_ICACHE_SIZE
+	default 65536
+
+config SYS_ICACHE_LINE_SIZE
+	default 32
+
+endif

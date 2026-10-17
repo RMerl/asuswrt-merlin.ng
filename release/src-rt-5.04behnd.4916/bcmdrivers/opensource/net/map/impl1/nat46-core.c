@@ -1791,13 +1791,13 @@ void ip6_update_csum(struct sk_buff * skb, struct iphdr * iph, struct ipv6hdr * 
       struct tcphdr *th = tcp_hdr(skb);
       unsigned tcplen = 0;
 
-      oldsum = th->check;
       if (do_atomic_frag) {
-        sum1 = csum_ipv4_unmagic_addrs(iph->saddr, iph->daddr, oldsum);
+        sum1 = csum_ipv4_unmagic_addrs(iph->saddr, iph->daddr, th->check);
         sum2 = csum_tcpudp_remagic_addrs(&ip6hdr->saddr, &ip6hdr->daddr, sum1);
         th->check = sum2;
         break;
       }
+      oldsum = th->check;
       tcplen = ntohs(ip6hdr->payload_len) - (do_atomic_frag?8:0); /* TCP header + payload */
       th->check = 0;
       sum1 = csum_partial((char*)th, tcplen, 0); /* calculate checksum for TCP hdr+payload */
@@ -1809,15 +1809,20 @@ void ip6_update_csum(struct sk_buff * skb, struct iphdr * iph, struct ipv6hdr * 
       struct udphdr *udp = udp_hdr(skb);
       unsigned udplen = ntohs(ip6hdr->payload_len) - (do_atomic_frag?8:0); /* UDP hdr + payload */
 
-      oldsum = udp->check;
-      udp->check = 0;
+      if ((udp->check == 0) && zero_csum_pass) {
+        /* zero checksum and the config to pass it is set - do nothing with it */
+        break;
+      }
 
       if (do_atomic_frag) {
-        sum1 = csum_ipv4_unmagic_addrs(iph->saddr, iph->daddr, oldsum);
+        sum1 = csum_ipv4_unmagic_addrs(iph->saddr, iph->daddr, udp->check);
         sum2 = csum_tcpudp_remagic_addrs(&ip6hdr->saddr, &ip6hdr->daddr, sum1);
         udp->check = sum2;
         break;
       }
+
+      oldsum = udp->check;
+      udp->check = 0;
 
       sum1 = csum_partial((char*)udp, udplen, 0); /* calculate checksum for UDP hdr+payload */
       sum2 = csum_ipv6_magic(&ip6hdr->saddr, &ip6hdr->daddr, udplen, ip6hdr->nexthdr, sum1); /* add pseudoheader */

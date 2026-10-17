@@ -1,0 +1,13 @@
+obj-$(CONFIG_PINCTRL_IMX)		+= pinctrl-imx.o
+obj-$(CONFIG_PINCTRL_IMX5)		+= pinctrl-imx5.o
+obj-$(CONFIG_PINCTRL_IMX6)		+= pinctrl-imx6.o
+obj-$(CONFIG_PINCTRL_IMX7)		+= pinctrl-imx7.o
+obj-$(CONFIG_PINCTRL_IMX7ULP)		+= pinctrl-imx7ulp.o
+obj-$(CONFIG_PINCTRL_IMX8ULP)		+= pinctrl-imx8ulp.o
+obj-$(CONFIG_PINCTRL_IMX_SCU)		+= pinctrl-scu.o
+obj-$(CONFIG_PINCTRL_IMX8)		+= pinctrl-imx8.o
+obj-$(CONFIG_PINCTRL_IMX8M)		+= pinctrl-imx8m.o
+obj-$(CONFIG_PINCTRL_IMX93)		+= pinctrl-imx93.o
+obj-$(CONFIG_PINCTRL_MXS)		+= pinctrl-mxs.o
+obj-$(CONFIG_PINCTRL_VYBRID)		+= pinctrl-vf610.o
+obj-$(CONFIG_PINCTRL_IMXRT)		+= pinctrl-imxrt.o

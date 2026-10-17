@@ -1,0 +1,7 @@
+i.MX8MN EVK BOARD
+M:	Peng Fan <peng.fan@nxp.com>
+S:	Maintained
+F:	board/freescale/imx8mn_evk/
+F:	include/configs/imx8mn_evk.h
+F:	configs/imx8mn_ddr4_evk_defconfig
+F:	configs/imx8mn_evk_defconfig

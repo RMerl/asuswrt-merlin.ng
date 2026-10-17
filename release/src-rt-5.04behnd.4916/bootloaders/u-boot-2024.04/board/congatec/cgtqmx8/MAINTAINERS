@@ -1,0 +1,7 @@
+i.MX8QM CGTQMX8 BOARD
+M:	Oliver Graute <oliver.graute@kococonnector.com>
+S:	Maintained
+F:	board/congatec/cgtqmx8/
+F:	arch/arm/dts/imx8qm-cgtqmx8.dts
+F:	include/configs/cgtqmx8.h
+F:	configs/cgtqmx8_defconfig

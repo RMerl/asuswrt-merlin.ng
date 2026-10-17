@@ -108,6 +108,9 @@ static const ru_reg_rec *RNR_CNTXT_REGS[] =
 const ru_block_rec RNR_CNTXT_BLOCK =
 {
     "RNR_CNTXT",
+#if RU_INCLUDE_SIZE
+    { 0x00000800 },
+#endif
     RNR_CNTXT_ADDRS,
     14,
     1,

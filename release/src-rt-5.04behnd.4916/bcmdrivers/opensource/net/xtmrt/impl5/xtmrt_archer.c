@@ -400,7 +400,7 @@ void bcmxtmrt_recycle_handler (pNBuff_t pNBuff, unsigned long context, uint32_t 
 
         FkBuff_t* fkb = PNBUFF_2_FKBUFF(pNBuff);
 
-        xtm_recycle_pdata(PFKBUFF_TO_PDATA(fkb, BCM_PKT_HEADROOM));
+        xtm_recycle_pdata(BCM_PFKBUFF_TO_PDATA(fkb));
     }
     else /* skb */
     {
@@ -409,7 +409,7 @@ void bcmxtmrt_recycle_handler (pNBuff_t pNBuff, unsigned long context, uint32_t 
         if (likely(flag & SKB_DATA_RECYCLE))
         {
 #if !defined(CONFIG_BCM_GLB_COHERENCY)
-            void *data_startp = (void *)((uint8_t *)(skb->head) + BCM_PKT_HEADROOM);
+            void *data_startp = (void *)BCM_PHEAD_TO_PDATA(skb->head);
             void *data_endp;
 #if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
             {
@@ -452,7 +452,7 @@ void bcmxtmrt_recycle_handler (pNBuff_t pNBuff, unsigned long context, uint32_t 
 #endif /* !CONFIG_BCM_GLB_COHERENCY */
 
             /* free the data buffer */
-            xtm_recycle_pdata((uint8_t *)(skb->head) + BCM_PKT_HEADROOM);
+            xtm_recycle_pdata(BCM_PHEAD_TO_PDATA(skb->head));
         }
     }
 
@@ -655,7 +655,7 @@ UINT32 bcmxapi_rxtask(UINT32 ulBudget, UINT32 *pulMoreToDo)
             {
                 /* pBuf is just a pointer to the rx iudma buffer. */
                 bcmxtmrt_processRxPkt(pDevCtx, NULL, pData,
-                                      desc_status, data_len, 0, group_fwd_exception);
+                                      desc_status, data_len, 0, group_fwd_exception, 0);
             
                 ulRxPktGood++;
                 ulBudget--;

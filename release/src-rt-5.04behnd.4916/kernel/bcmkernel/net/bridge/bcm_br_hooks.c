@@ -94,6 +94,9 @@ static inline int bcm_br_blog_hook(struct sk_buff *skb, int hooknum)
 
     brdev = br->dev;
 
+    if (is_netdev_bcm_hook_skip(brdev))
+        return 0;
+    
     br_vlan_get_tag(skb, &vid);
 
     /* link FDB */

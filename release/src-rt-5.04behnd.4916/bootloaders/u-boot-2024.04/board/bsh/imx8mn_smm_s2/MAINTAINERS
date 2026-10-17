@@ -1,0 +1,7 @@
+ARM i.MX8MN BSH SMM S2 BOARDS
+M:	Michael Trimarchi <michael@amarulasolutions.com>
+S:	Maintained
+F:	arch/arm/dts/imx8mn-bsh-smm-s2*
+F:	board/bsh/imx8mn_smm_s2/
+F:	configs/imx8mn_bsh_smm_s2*
+F:	include/configs/imx8mn_bsh_smm_s2*

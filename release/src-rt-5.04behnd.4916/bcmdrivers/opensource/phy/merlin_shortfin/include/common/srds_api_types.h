@@ -66,6 +66,7 @@ typedef struct {
     uint32_t micro_var_ram_base;
     uint8_t  lane_count; /* lanes per micro */
     uint8_t  trace_memory_descending_writes;
+    uint8_t  trace_memory_concurrent_read;
     uint8_t  micro_count;
     uint8_t  micro_var_ram_size;
     uint16_t grp_ram_size;

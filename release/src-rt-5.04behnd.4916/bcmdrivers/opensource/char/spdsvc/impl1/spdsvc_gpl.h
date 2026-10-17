@@ -55,7 +55,10 @@ int spdsvc_event_unregister(eSpdSvc_tr471_evt_type etype);
 int spdsvc_event_unregister_all(void);
 
 void spdsvc_tr471_rx_queue_init(void);
-int spdsvc_tr471_rx_queue_write(spdsvc_tr471_rx_queue_if_entry_t *entry_p);
-int spdsvc_tr471_burst_cmpl_event(void);
-
+int spdsvc_tr471_rx_queue_write(spdsvc_tr471_rx_queue_if_entry_t *entry_p, int event_mode);
+#define SPDSVC_EVENT_SIGNAL_BATCH_MODE     0
+#define SPDSVC_EVENT_SIGNAL_NORMAL_MODE    1
+int spdsvc_tr471_burst_cmpl_event(uint16_t rx_max_pktlen);
+void spdsvc_tr471_rx_queue_write_event(void);
+void spdsvc_tr471_rx_queue_stats(uint32_t *pPending, uint32_t *pTotal, uint32_t *pWrites, uint32_t *pReads, uint32_t *pDiscards);
 #endif  /* __SPDSVC_GPL_H_INCLUDED__ */

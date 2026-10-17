@@ -1,6 +1,0 @@
-UDOO BOARD
-M:	Fabio Estevam <fabio.estevam@nxp.com>
-S:	Maintained
-F:	board/udoo/
-F:	include/configs/udoo.h
-F:	configs/udoo_defconfig

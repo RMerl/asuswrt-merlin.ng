@@ -1,6 +1,8 @@
 CUR_DIR := $(BRCMDRIVERS_DIR)/opensource/phy
 DRV_DIR := ../../../shared/opensource/drv
 
+# MACSEC
+ifeq ("$(CONFIG_BCM_MACSEC)", "y")
 # XFLOW
 ifeq ("$(CONFIG_BCM_MACSEC_FIRELIGHT)", "y")
     EXTRA_CFLAGS += -include linux/kernel.h -include linux/types.h -include linux/string.h
@@ -27,6 +29,14 @@ endif
     DRV_OBJS += xflow/xflow_macsec_stats.o
     DRV_OBJS += xflow/xflow_macsec_util.o
 endif # XFLOW
+
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_6855_63158_47622_4912_6813_6837_68375_6756_6765_6766_6764_),)
+    DRV_OBJS += phy_mac_sec.o
+    DRV_OBJS += phy_mac_sec_list.o
+    EXTRA_CFLAGS += -DMACSEC_SUPPORT
+endif
+endif # MACSEC
+#SUPPORT_SERDESDRV_GDB=y
 
 # LPORT
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_),)
@@ -62,7 +72,7 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_),)
 endif
 
 # XPORT
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_4912_6813_6888_68880_6837_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_4912_6813_68880_6837_68375_),)
 ifeq ($(strip $(BRCM_CHIP)),63158) 
     XPORT_CHIP=63158B0
 endif
@@ -72,15 +82,16 @@ endif
 ifeq ($(strip $(BRCM_CHIP)),6813) 
     XPORT_CHIP=6813A0
 endif
-ifeq ($(strip $(BRCM_CHIP)),6888) 
-    XPORT_CHIP=6888A0
-endif
 ifeq ($(strip $(BRCM_CHIP)),68880) 
     XPORT_CHIP=6888A0
     DRV_OBJS += xport/xport_intr.o
 endif
 ifeq ($(strip $(BRCM_CHIP)),6837) 
     XPORT_CHIP=6837A0
+    DRV_OBJS += xport/xport_intr.o
+endif
+ifeq ($(strip $(BRCM_CHIP)),68375) 
+    XPORT_CHIP=68375A0
     DRV_OBJS += xport/xport_intr.o
 endif
     DRV_OBJS += xport/xport_drv.o
@@ -90,7 +101,7 @@ endif
     EXTRA_CFLAGS += -I$(CUR_DIR)/xport -I$(CUR_DIR)/xport/ag/$(XPORT_CHIP)
 endif
 
-# Merlin mptwo
+# Merlin28 mptwo
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6756_),)
     EXTRA_CFLAGS += -DEXCLUDE_STD_HEADERS -DUINT16_MAX=0xFFFF -DUINT32_MAX=0xFFFFFFFF
     EXTRA_CFLAGS += -include linux/kernel.h -include linux/types.h -include linux/string.h
@@ -99,32 +110,36 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6756_),)
     DRV_OBJS += merlin_mptwo/serdes_wrapper.o
 endif
 
-# Merlin shortfin
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_6837_63146_4912_6813_6765_6766_6764_),)
+# Merlin16 shortfin
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68880_6837_63146_4912_6813_6765_6766_6764_),)
     EXTRA_CFLAGS += -DEXCLUDE_STD_HEADERS -DUINT16_MAX=0xFFFF -DUINT32_MAX=0xFFFFFFFF
     EXTRA_CFLAGS += -include linux/kernel.h -include linux/types.h -include linux/string.h
     EXTRA_CFLAGS += -I$(CUR_DIR)/merlin_shortfin/include
-    DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find merlin_shortfin/src -type f -name '*.c')) 
-    DRV_OBJS += merlin_shortfin/serdes_wrapper.o
+    DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find merlin_shortfin -type f -name '*.c')) 
 endif
 
-# Merlin shasta
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_6837_),)
-ifeq ($(strip $(CONFIG_BRCM_QEMU)),) 
+# Merlin16 shasta
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68880_6837_),)
     EXTRA_CFLAGS += -DEXCLUDE_STD_HEADERS -DUINT16_MAX=0xFFFF -DUINT32_MAX=0xFFFFFFFF
     EXTRA_CFLAGS += -include linux/kernel.h -include linux/types.h -include linux/string.h
     EXTRA_CFLAGS += -I$(CUR_DIR)/merlin_shasta/include
-    DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find merlin_shasta/src -type f -name '*.c')) 
-    DRV_OBJS += merlin_shasta/serdes_wrapper.o
-endif	
+    DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find merlin_shasta -type f -name '*.c')) 
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_63158_6878_6855_6888_68880_6837_6813_),)
+# Merlin8 phy1
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68375_),)
+    EXTRA_CFLAGS += -DEXCLUDE_STD_HEADERS -DUINT16_MAX=0xFFFF -DUINT32_MAX=0xFFFFFFFF
+    EXTRA_CFLAGS += -include linux/kernel.h -include linux/types.h -include linux/string.h -include linux/slab.h
+    EXTRA_CFLAGS += -I$(CUR_DIR)/merlin8_phy1/include
+    DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find merlin8_phy1 -type f -name '*.c')) 
+endif
+
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_63158_6855_68880_6837_6813_68375_),)
 DRV_OBJS += phy_drv_pon.o
 EXTRA_CFLAGS += -DPHY_PON
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_6888_68880_6837_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_6855_68880_6837_68375_68850_),)
     DRV_OBJS += mac_drv.o
     DRV_OBJS += bus_drv.o
     DRV_OBJS += phy_drv.o
@@ -146,15 +161,13 @@ ifeq ($(strip ${BRCM_CHIP}),6858)
     DRV_OBJS += phy_drv_ext3.o
     DRV_OBJS += serdes_access.o
     DRV_OBJS += phy_drv_mptwo.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     EXTRA_CFLAGS += -DBUS_MDIO_V1
     EXTRA_CFLAGS += -DMAC_LPORT
     EXTRA_CFLAGS += -DPHY_EGPHY -DPHY_EXT1 -DPHY_EXT2 -DPHY_EXT3 -DPHY_MPTWO
-    EXTRA_CFLAGS += -DLPORT_INTERRUPTS -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DLPORT_INTERRUPTS
 ifeq ($(strip $(CONFIG_BCM_FTTDP_G9991)),)
-    EXTRA_CFLAGS += -DSERDES_LINK_POWER_DOWN -DSERDES_SPEED_DETECT -DSERDES_MODULE_DETECT
+    EXTRA_CFLAGS += -DSERDES_MODULE_DETECT
 endif
 endif
 
@@ -168,8 +181,6 @@ ifeq ($(strip ${BRCM_CHIP}),6856)
     DRV_OBJS += phy_drv_sgmii_plus2.o
     DRV_OBJS += phy_drv_ext1.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += brcm_rgmii.o
     EXTRA_CFLAGS += -DBUS_MDIO_V1
@@ -189,60 +200,25 @@ ifeq ($(strip ${BRCM_CHIP}),6855)
     DRV_OBJS += phy_drv_sgmii_plus2.o
     DRV_OBJS += phy_drv_ext1.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o   
     DRV_OBJS += brcm_rgmii.o
     EXTRA_CFLAGS += -DBUS_MDIO_V1
     EXTRA_CFLAGS += -DBRCM_RGMII
     EXTRA_CFLAGS += -DMAC_UNIMAC -DBRCM_64B_UMAC_MIB -DUMAC_32B_WRAP
-    EXTRA_CFLAGS += -DPHY_EGPHY -DPHY_SGMII -DPHY_EXT1 -DPHY_EXT3 -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_EGPHY -DPHY_SGMII -DPHY_EXT1 -DPHY_EXT3
     EXTRA_CFLAGS += -DXRDP_LED
 endif
 
-
-ifeq ($(strip ${BRCM_CHIP}),6846)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68880_6837_),)
     DRV_OBJS += unimac_drv_impl1.o
     DRV_OBJS += mdio_drv_common.o
     DRV_OBJS += mdio_drv_v1.o
     DRV_OBJS += bus_drv_mdio_v1.o
     DRV_OBJS += mac_drv_unimac.o
-    DRV_OBJS += phy_drv_egphy.o
-    DRV_OBJS += phy_drv_ext1.o
-    DRV_OBJS += brcm_rgmii.o
-    EXTRA_CFLAGS += -DBUS_MDIO_V1
-    EXTRA_CFLAGS += -DBRCM_RGMII
-    EXTRA_CFLAGS += -DMAC_UNIMAC
-    EXTRA_CFLAGS += -DPHY_EGPHY -DPHY_EXT1
-endif
-
-ifeq ($(strip ${BRCM_CHIP}),6878)
-    DRV_OBJS += unimac_drv_impl1.o
-    DRV_OBJS += mdio_drv_common.o
-    DRV_OBJS += mdio_drv_v1.o
-    DRV_OBJS += bus_drv_mdio_v1.o
-    DRV_OBJS += mac_drv_unimac.o
-    DRV_OBJS += phy_drv_egphy.o
-    DRV_OBJS += xrdp_led_init.o
-    DRV_OBJS += phy_drv_ext1.o
-    DRV_OBJS += brcm_rgmii.o
-    EXTRA_CFLAGS += -DBUS_MDIO_V1
-    EXTRA_CFLAGS += -DBRCM_RGMII
-    EXTRA_CFLAGS += -DMAC_UNIMAC
-    EXTRA_CFLAGS += -DPHY_EGPHY -DPHY_EXT1
-    EXTRA_CFLAGS += -DXRDP_LED
-endif
-
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_6837_),)
-    DRV_OBJS += unimac_drv_impl1.o
-    DRV_OBJS += mdio_drv_common.o
-    DRV_OBJS += mdio_drv_v1.o
-    DRV_OBJS += bus_drv_mdio_v1.o
-    DRV_OBJS += mac_drv_unimac.o
-    DRV_OBJS += ephy_led_init.o
-ifeq ($(strip $(CONFIG_BRCM_QEMU)),)
-    DRV_OBJS += eth_phy_top.o
     DRV_OBJS += mac_drv_xport.o
+    DRV_OBJS += ephy_led_init.o
+    DRV_OBJS += eth_phy_top.o
+ifeq ($(strip $(CONFIG_BRCM_QEMU)),)
     DRV_OBJS += phy_drv_egphy.o
     DRV_OBJS += serdes_access.o
     DRV_OBJS += phy_drv_shortfin.o
@@ -253,26 +229,40 @@ ifeq ($(strip $(CONFIG_BRCM_QEMU)),)
 endif
     EXTRA_CFLAGS += -DBUS_MDIO_V1
     EXTRA_CFLAGS += -DMAC_UNIMAC -DBRCM_64B_UMAC_MIB
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68880_),)
     EXTRA_CFLAGS += -DUMAC_32B_WRAP
 endif
     EXTRA_CFLAGS += -DEPHY_LED
-ifeq ($(strip $(CONFIG_BRCM_QEMU)),)
     EXTRA_CFLAGS += -DMAC_XPORT
+ifeq ($(strip $(CONFIG_BRCM_QEMU)),)
     EXTRA_CFLAGS += -DPHY_EGPHY -DPHY_SHORTFIN -DPHY_SHASTA -DPHY_EXT3 -DPHY_WAN_AE
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6888_68880_),)
-    EXTRA_CFLAGS += -DPHY_XPHY
-endif
     EXTRA_CFLAGS += -DXPORT_INTERRUPTS
 endif
 ifeq ($(strip $(CONFIG_BCM_FTTDP_G9991)),)
-    EXTRA_CFLAGS += -DSERDES_LINK_POWER_DOWN -DSERDES_MODULE_DETECT
+    EXTRA_CFLAGS += -DSERDES_MODULE_DETECT
+endif
+endif
+
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68375_),)
+    DRV_OBJS += mdio_drv_common.o
+    DRV_OBJS += mdio_drv_v1.o
+    DRV_OBJS += bus_drv_mdio_v1.o
+    DRV_OBJS += mac_drv_xport.o
+    DRV_OBJS += eth_phy_top.o
+    DRV_OBJS += serdes_access.o
+    DRV_OBJS += phy_drv_merlin8_phy1.o
+    DRV_OBJS += phy_drv_ext3.o
+    EXTRA_CFLAGS += -DBUS_MDIO_V1
+    EXTRA_CFLAGS += -DMAC_XPORT
+    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_MERLIN8_PHY1
+ifeq ($(strip $(CONFIG_BCM_FTTDP_G9991)),)
+    EXTRA_CFLAGS += -DSERDES_MODULE_DETECT
 endif
 endif
 
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_63158_63178_47622_63146_4912_6813_6756_6765_6766_6764_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_63178_47622_63146_4912_6813_6756_6765_6766_6764_),)
     DRV_OBJS += mac_drv.o
     DRV_OBJS += bus_drv.o
     DRV_OBJS += phy_drv.o
@@ -284,60 +274,6 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_63158_63178_47622_
     DRV_OBJS += brcm_rgmii.o
     EXTRA_CFLAGS += -DBRCM_RGMII
     EXTRA_CFLAGS += -DPHY_CROSSBAR
-
-ifeq ($(strip ${BRCM_CHIP}),63138)
-    DRV_OBJS += unimac_drv_impl1.o
-    DRV_OBJS += bus_drv_sf2.o
-    DRV_OBJS += mdio_drv_common.o
-    DRV_OBJS += mdio_drv_sf2.o
-    DRV_OBJS += mac_drv_unimac.o
-    DRV_OBJS += mac_drv_sf2.o
-    DRV_OBJS += phy_drv_dsl_phy.o
-    DRV_OBJS += phy_drv_dsl_serdes.o
-    DRV_OBJS += phy_drv_138class_serdes.o
-    DRV_OBJS += phy_drv_dsl_i2c.o
-    DRV_OBJS += ephy_led_init_impl2.o
-    EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_DSL_GPHY -DPHY_M2M -DDSL_DEVICES
-    EXTRA_CFLAGS += -DPHY_138CLASS_SERDES -DPHY_138CLASS_SERDES_NO_2P5G
-    EXTRA_CFLAGS += -DCRB_5X3_QGPHY3_WORKAROUND
-endif
-
-ifeq ($(strip ${BRCM_CHIP}),63148)
-    DRV_OBJS += unimac_drv_impl1.o
-    DRV_OBJS += bus_drv_sf2.o
-    DRV_OBJS += mdio_drv_common.o
-    DRV_OBJS += mdio_drv_sf2.o
-    DRV_OBJS += mac_drv_unimac.o
-    DRV_OBJS += mac_drv_sf2.o
-    DRV_OBJS += phy_drv_dsl_phy.o
-    DRV_OBJS += phy_drv_dsl_serdes.o
-    DRV_OBJS += phy_drv_138class_serdes.o
-    DRV_OBJS += phy_drv_dsl_i2c.o
-    DRV_OBJS += ephy_led_init_impl2.o
-    EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_DSL_GPHY -DPHY_M2M -DDSL_DEVICES
-    EXTRA_CFLAGS += -DPHY_138CLASS_SERDES -DPHY_138CLASS_SERDES_NO_2P5G
-endif
-
-ifeq ($(strip ${BRCM_CHIP}),4908)
-    DRV_OBJS += unimac_drv_impl1.o
-    DRV_OBJS += bus_drv_sf2.o
-    DRV_OBJS += mdio_drv_common.o
-    DRV_OBJS += mdio_drv_sf2.o
-    DRV_OBJS += mac_drv_unimac.o
-    DRV_OBJS += mac_drv_sf2.o
-    DRV_OBJS += phy_drv_dsl_serdes.o
-    DRV_OBJS += phy_drv_138class_serdes.o
-    DRV_OBJS += phy_drv_dsl_i2c.o
-    DRV_OBJS += phy_drv_dsl_848xx.o
-    DRV_OBJS += phy_drv_dsl_phy.o
-    DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
-    DRV_OBJS += sha256.o
-    DRV_OBJS += ephy_led_init.o
-    EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_DSL_GPHY -DPHY_138CLASS_SERDES -DPHY_M2M -DDSL_DEVICES -DSERDES_OPT_CHECK
-    EXTRA_CFLAGS += -DPHY_EXT3 -DMACSEC_SUPPORT
-endif
 
 ifeq ($(strip ${BRCM_CHIP}),63158)
     DRV_OBJS += unimac_drv_impl1.o
@@ -354,14 +290,12 @@ ifeq ($(strip ${BRCM_CHIP}),63158)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_dsl_i2c.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_DSL_GPHY -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DMAC_XPORT
-    EXTRA_CFLAGS += -DPHY_158CLASS_SERDES -DPHY_138CLASS_SERDES -DPHY_EXT3 -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_158CLASS_SERDES -DPHY_138CLASS_SERDES -DPHY_EXT3
 endif
 
 ifeq ($(strip ${BRCM_CHIP}),63178)
@@ -395,13 +329,11 @@ ifneq ($(findstring $(strip ${MODEL}),RTAX95Q RTAXE95Q),)
     DRV_OBJS += phys/nic_rtl8226.o
     DRV_OBJS += phys/rtl8226.o
 endif
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2_EXTERNAL -DPHY_DSL_GPHY -DPHY_138CLASS_SERDES -DSERDES_OPT_CHECK
-    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES
 
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
 endif
@@ -421,6 +353,13 @@ ifeq ($(strip ${BRCM_CHIP}),63146)
     DRV_OBJS += phy_drv_dsl_i2c.o
     DRV_OBJS += phy_drv_ext3.o
     DRV_OBJS += ephy_led_init.o
+ifeq "$(BRCM_PHY_DIAG_SERDES_ETH)" "y"
+    DRV_OBJS += BcmDiagSerdesEth.o
+endif
+ifeq "$(SUPPORT_SERDESDRV_GDB)" "y"
+    EXTRA_CFLAGS += -DSUPPORT_SERDESDRV_GDB
+    DRV_OBJS += BcmSerdesGdbStub.o
+endif
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DBRCM_64B_UMAC_MIB -DPHY_DSL_GPHY -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES
@@ -442,14 +381,12 @@ ifeq ($(strip ${BRCM_CHIP}),4912)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_146class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DBRCM_64B_UMAC_MIB -DPHY_DSL_GPHY -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES
-    EXTRA_CFLAGS += -DMAC_XPORT -DPHY_EXT3 -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DMAC_XPORT -DPHY_EXT3
 endif
 
 ifeq ($(strip ${BRCM_CHIP}),6813)
@@ -468,16 +405,21 @@ ifeq ($(strip ${BRCM_CHIP}),6813)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_146class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
     DRV_OBJS += phy_drv_wan_ae.o
     DRV_OBJS += mpcs.o
+ifeq "$(BRCM_PHY_DIAG_SERDES_ETH)" "y"
+    DRV_OBJS += BcmDiagSerdesEth.o
+endif
+ifeq "$(SUPPORT_SERDESDRV_GDB)" "y"
+    EXTRA_CFLAGS += -DSUPPORT_SERDESDRV_GDB
+    DRV_OBJS += BcmSerdesGdbStub.o
+endif
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DBRCM_64B_UMAC_MIB -DPHY_DSL_GPHY -DPHY_M2M -DDSL_DEVICES
-    EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -DPHY_XPHY
-    EXTRA_CFLAGS += -DMAC_XPORT -DPHY_EXT3 -DPHY_WAN_AE -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_146CLASS_SERDES
+    EXTRA_CFLAGS += -DMAC_XPORT -DPHY_EXT3 -DPHY_WAN_AE
 endif
 
 ifeq ($(strip ${BRCM_CHIP}),6756)
@@ -493,14 +435,12 @@ ifeq ($(strip ${BRCM_CHIP}),6756)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_6756class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
 
     EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_DSL_GPHY
     EXTRA_CFLAGS += -DPHY_6756CLASS_SERDES -I$(CUR_DIR)/Serdes6756Class -DEXCLUDE_STD_HEADERS
-    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
 endif
 
@@ -518,15 +458,19 @@ ifeq ($(strip ${BRCM_CHIP}),6765)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_146class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
 
     EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_DSL_GPHY -DPHY_SHARED_REF_CLK 
-    EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -DPHY_XPHY -DRESCAL_BY_XPHY
-    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -DRESCAL_BY_XPHY
+    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
+
+    # RTK External Switch Support (e.g., RTL8367S for RT-BE58U)
+    ifeq ("$(CONFIG_BCM_EXT_SWITCH_RTK)", "y")
+        DRV_OBJS += phy_drv_rtk_ext.o
+        EXTRA_CFLAGS += -DPHY_RTK_EXT
+    endif
 endif
 
 ifeq ($(strip ${BRCM_CHIP}),6766)
@@ -543,14 +487,12 @@ ifeq ($(strip ${BRCM_CHIP}),6766)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_146class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
 
     EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_DSL_GPHY -DPHY_SHARED_REF_CLK 
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES
-    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
 
     ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT7))
@@ -559,6 +501,11 @@ ifeq ($(strip ${BRCM_CHIP}),6766)
 
     ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GS7_PRO_MAX))
     EXTRA_CFLAGS += -DCONFIG_GS7_PRO_MAX
+    endif
+
+    ifeq ("$(CONFIG_BCM_EXT_SWITCH_MXL)", "y")
+        DRV_OBJS += phy_drv_mxl_ext.o
+        EXTRA_CFLAGS += -DPHY_MXL_EXT
     endif
 endif
 
@@ -576,14 +523,12 @@ ifeq ($(strip ${BRCM_CHIP}),6764)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_146class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += phy_mac_sec.o
-    DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
 
     EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_DSL_GPHY -DPHY_SHARED_REF_CLK 
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES
-    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
 endif
 
@@ -613,10 +558,11 @@ ifneq ("$(CONFIG_BCM_SELECTIVE_PHYS)", "y")
     CONFIG_BCM_PHY_SHORTFIN_B0=y
     CONFIG_BCM_PHY_LONGFIN_A0=y
     CONFIG_BCM_PHY_LONGFIN_B0=y
-    CONFIG_BCM_PHY_XPHY=y
     CONFIG_BCM_PHY_KAUAI_A0=y
     CONFIG_BCM_PHY_LANAI_A0=y
     CONFIG_BCM_PHY_NIIHAU_A0=y
+    CONFIG_BCM_PHY_XPHY_16=y
+    CONFIG_BCM_PHY_XPHY_8=y
 endif
 
 ifeq ("$(CONFIG_BCM_PHY_MAKO_A0)", "y")
@@ -669,10 +615,15 @@ ifneq ($(findstring _y_,_$(CONFIG_BCM_PHY_LONGFIN_A0)_$(CONFIG_BCM_PHY_LONGFIN_B
     PHY_FIRMWARE += firmware/longfin_a0_firmware.bin
 endif
 
-ifeq ("$(CONFIG_BCM_PHY_XPHY)", "y")
-    EXTRA_CFLAGS += -DCONFIG_BCM_PHY_XPHY
-        PHY_FIRMWARE += firmware/xphy_firmware.bin
-    endif
+ifeq ("$(CONFIG_BCM_PHY_XPHY_16)", "y")
+    EXTRA_CFLAGS += -DCONFIG_BCM_PHY_XPHY_16
+    PHY_FIRMWARE += firmware/xphy_16_firmware.bin
+endif
+
+ifeq ("$(CONFIG_BCM_PHY_XPHY_8)", "y")
+    EXTRA_CFLAGS += -DCONFIG_BCM_PHY_XPHY_8
+    PHY_FIRMWARE += firmware/xphy_8_2p5G_firmware.bin firmware/xphy_8_10G_firmware.bin
+endif
 
 
 -include $(TOPDIR)/Rules.make

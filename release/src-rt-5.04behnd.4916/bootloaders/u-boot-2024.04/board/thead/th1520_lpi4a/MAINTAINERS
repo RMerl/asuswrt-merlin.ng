@@ -1,0 +1,7 @@
+Lichee PI 4A
+M:	Wei Fu <wefu@redhat.com>
+M:	Yixun Lan <dlan@gentoo.org>
+S:	Maintained
+F:	board/thead/th1520_lpi4a/
+F:	configs/th1520_lpi4a_defconfig
+F:	doc/board/thead/lpi4a.rst

@@ -1,7 +1,0 @@
-BLANCHE BOARD
-M:	Masakazu Mochizuki <masakazu.mochizuki.wd@hitachi.com>
-S:	Maintained
-F:	board/renesas/blanche/
-F:	include/configs/blanche.h
-F:	configs/blanche_defconfig
-

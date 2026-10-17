@@ -91,22 +91,11 @@ static bdmf_object_handle system_obj = NULL;
 int rdpa_iq_sys_set_cong_ctrl(void *iq_param)
 {
     int rc = BDMF_ERR_OK;
-#if defined(CONFIG_BCM_DSL_RDP)
-    bdmf_number threshold_num;
-#elif defined(CONFIG_BCM_DSL_XRDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
     bdmf_boolean enable;
 #endif
 
-#if defined(CONFIG_BCM_DSL_RDP)
-    if (((iq_param_t *)iq_param)->status > 0)
-        threshold_num = RDPA_IQ_IH_CONG_THRESHOLD_NUM;
-    else 
-        threshold_num = 0;
-
-    rdpa_system_get(&system_obj);
-    rc = rdpa_system_ih_cong_threshold_set(system_obj, threshold_num);
-    bdmf_put(system_obj);
-#elif defined(CONFIG_BCM_DSL_XRDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
     if (((iq_param_t *)iq_param)->status > 0)
         enable = 1;
     else 
@@ -125,26 +114,18 @@ int rdpa_iq_sys_set_cong_ctrl(void *iq_param)
 int rdpa_iq_sys_get_cong_ctrl(void *iq_param)
 {
     int rc = BDMF_ERR_OK;
-#if defined(CONFIG_BCM_DSL_RDP)
-    bdmf_number threshold_num;
-#elif defined(CONFIG_BCM_DSL_XRDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
     bdmf_boolean enable;
 #endif
 
     ((iq_param_t *)iq_param)->status = 0;
-#if defined(CONFIG_BCM_DSL_RDP)
-    rdpa_system_get(&system_obj);
-    rc = rdpa_system_ih_cong_threshold_get(system_obj, &threshold_num);
-    bdmf_put(system_obj);
-    if ((rc == BDMF_ERR_OK) && (threshold_num != 0))
-        ((iq_param_t *)iq_param)->status = 1;
-#elif defined(CONFIG_BCM_DSL_XRDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
     rdpa_system_get(&system_obj);
     rc = rdpa_system_ingress_congestion_ctrl_get(system_obj, &enable);
     bdmf_put(system_obj);
     if ((rc == BDMF_ERR_OK) && (enable != 0))
         ((iq_param_t *)iq_param)->status = 1;
-#elif defined(CONFIG_BCM_PON_XRDP)
+#else
     ((iq_param_t *)iq_param)->status = 1;
 #endif
 

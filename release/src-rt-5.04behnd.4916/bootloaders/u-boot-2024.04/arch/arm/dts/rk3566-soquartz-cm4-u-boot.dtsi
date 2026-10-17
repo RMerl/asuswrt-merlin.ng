@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rk3566-soquartz-u-boot.dtsi"

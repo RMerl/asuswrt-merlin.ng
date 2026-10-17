@@ -1,0 +1,327 @@
+* Intel FSP-M configuration
+
+Several Intel platforms require the execution of the Intel FSP (Firmware
+Support Package) for initialization. The FSP consists of multiple parts, one
+of which is the FSP-M (Memory initialization phase).
+
+This binding applies to the FSP-M for the Intel Apollo Lake SoC.
+
+The FSP-M is available on Github [1].
+For detailed information on the FSP-M parameters see the documentation in
+FSP/ApolloLakeFspBinPkg/Docs [2].
+
+The properties of this binding are all optional. If no properties are set the
+values of the FSP-M are used.
+
+[1] https://github.com/IntelFsp/FSP
+[2] https://github.com/IntelFsp/FSP/tree/master/ApolloLakeFspBinPkg/Docs
+
+Optional properties:
+- fspm,training-delay: Time taken to train DDR memory if there is no cached MRC
+    data, in seconds. This is used to show a message if possible. For Chromebook
+    Coral this is typically 21 seconds. For an APL board with 1GB of RAM, it may
+    be only 6 seconds.
+- fspm,serial-debug-port-address: Debug Serial Port Base address
+- fspm,serial-debug-port-type: Debug Serial Port Type
+  0: NONE
+  1: I/O
+  2: MMIO (default)
+- fspm,serial-debug-port-device: Serial Port Debug Device
+  0: SOC UART0
+  1: SOC UART1
+  2: SOC UART2 (default)
+  3: External Device
+- fspm,serial-debug-port-stride-size: Debug Serial Port Stride Size
+  0: 1
+  2: 4 (default)
+- fspm,mrc-fast-boot: Memory Fast Boot
+- fspm,igd: Integrated Graphics Device
+- fspm,igd-dvmt50-pre-alloc: DVMT Pre-Allocated
+  0x02: 64 MB (default)
+  0x03: 96 MB
+  0x04: 128 MB
+  0x05: 160 MB
+  0x06: 192 MB
+  0x07: 224 MB
+  0x08: 256 MB
+  0x09: 288 MB
+  0x0A: 320 MB
+  0x0B: 352 MB
+  0x0C: 384 MB
+  0x0D: 416 MB
+  0x0E: 448 MB
+  0x0F: 480 MB
+  0x10: 512 MB
+- fspm,aperture-size: Aperture Size
+  0x1: 128 MB (default)
+  0x2: 256 MB
+  0x3: 512 MB
+- fspm,gtt-size: GTT Size
+  0x1: 2 MB
+  0x2: 4 MB
+  0x3: 8 MB (default)
+- fspm,primary-video-adaptor: Primary Display
+  0x0: AUTO (default)
+  0x2: IGD
+  0x3: PCI
+- fspm,package: Package
+  0x0: SODIMM (default)
+  0x1: BGA
+  0x2: BGA mirrored (LPDDR3 only)
+  0x3: SODIMM/UDIMM with Rank 1 Mirrored (DDR3L)
+- fspm,profile: Profile
+  0x01: WIO2_800_7_8_8
+  0x02: WIO2_1066_9_10_10
+  0x03: LPDDR3_1066_8_10_10
+  0x04: LPDDR3_1333_10_12_12
+  0x05: LPDDR3_1600_12_15_15
+  0x06: LPDDR3_1866_14_17_17
+  0x07: LPDDR3_2133_16_20_20
+  0x08: LPDDR4_1066_10_10_10
+  0x09: LPDDR4_1600_14_15_15
+  0x0A: LPDDR4_2133_20_20_20
+  0x0B: LPDDR4_2400_24_22_22
+  0x0C: LPDDR4_2666_24_24_24
+  0x0D: LPDDR4_2933_28_27_27
+  0x0E: LPDDR4_3200_28_29_29
+  0x0F: DDR3_1066_6_6_6
+  0x10: DDR3_1066_7_7_7
+  0x11: DDR3_1066_8_8_8
+  0x12: DDR3_1333_7_7_7
+  0x13: DDR3_1333_8_8_8
+  0x14: DDR3_1333_9_9_9
+  0x15: DDR3_1333_10_10_10
+  0x16: DDR3_1600_8_8_8
+  0x17: DDR3_1600_9_9_9
+  0x18: DDR3_1600_10_10_10
+  0x19: DDR3_1600_11_11_11 (default)
+  0x1A: DDR3_1866_10_10_10
+  0x1B: DDR3_1866_11_11_11
+  0x1C: DDR3_1866_12_12_12
+  0x1D: DDR3_1866_13_13_13
+  0x1E: DDR3_2133_11_11_11
+  0x1F: DDR3_2133_12_12_12
+  0x20: DDR3_2133_13_13_13
+  0x21: DDR3_2133_14_14_14
+  0x22: DDR4_1333_10_10_10
+  0x23: DDR4_1600_10_10_10
+  0x24: DDR4_1600_11_11_11
+  0x25: DDR4_1600_12_12_12
+  0x26: DDR4_1866_12_12_12
+  0x27: DDR4_1866_13_13_13
+  0x28: DDR4_1866_14_14_14
+  0x29: DDR4_2133_14_14_14
+  0x2A: DDR4_2133_15_15_15
+  0x2B: DDR4_2133_16_16_16
+  0x2C: DDR4_2400_15_15_15
+  0x2D: DDR4_2400_16_16_16
+  0x2E: DDR4_2400_17_17_17
+  0x2F: DDR4_2400_18_18_18
+- fspm,memory-down: Memory Down
+  0x0: No (default)
+  0x1: Yes
+  0x2: 1MD+SODIMM (for DDR3L only) ACRD
+  0x3: 1x32 LPDDR4
+- fspm,ddr3l-page-size: DDR3LPageSize
+  0x1: 1KB (default)
+  0x2: 2KB
+- fspm,ddr3-lasr: DDR3LASR
+- fspm,scrambler-support: ScramblerSupport
+- fspm,interleaved-mode: InterleavedMode
+- fspm,channel-hash-mask: ChannelHashMask
+- fspm,fspm,slice-hash-mask: SliceHashMask
+- fspm,channels-slices-enable: ChannelsSlices
+- fspm,min-ref-rate2x-enable: MinRefRate2x
+- fspm,dual-rank-support-enable: DualRankSupport
+- fspm,rmt-mode: RmtMode
+- fspm,memory-size-limit: MemorySizeLimit
+- fspm,low-memory-max-value: LowMemoryMaxValue
+- fspm,high-memory-max-value: HighMemoryMaxValue
+- fspm,disable-fast-boot: FastBoot
+- fspm,dimm0-spd-address: DIMM0 SPD Address
+- fspm,dimm1-spd-address: DIMM1 SPD Address
+- fspm,chX-rank-enable: Must be set to enable rank (X = 0-3)
+- fspm,chX-device-width: DRAM device width per DRAM channel (X = 0-3)
+  0: x8
+  1: x16
+  2: x32
+  3: x64
+- fspm,chX-dram-density: Must specify the DRAM device density (X = 0-3)
+  0: 4Gb
+  1: 6Gb
+  2: 8Gb
+  3: 12Gb
+  4: 16Gb
+  5: 2Gb
+- fspm,chX-option: Channel options (X = 0-3)
+- fspm,chX-odt-config: Channel Odt Config (X = 0-3)
+- fspm,chX-mode2-n: Force 2N Mode (X = 0-3)
+  0x0: Auto
+  0x1: Force 2N CMD Timing Mode
+- fspm,chX-odt-levels: Channel Odt Levels (X = 0-3)
+  0: ODT Connected to SoC
+  1: ODT held high
+- fspm,rmt-check-run: RmtCheckRun
+- fspm,rmt-margin-check-scale-high-threshold: RmtMarginCheckScaleHighThreshold
+- fspm,ch-bit-swizzling: Bit_swizzling
+- fspm,msg-level-mask: MsgLevelMask
+- fspm,pre-mem-gpio-table-pin-num: PreMem GPIO Pin Number for each table
+- fspm,pre-mem-gpio-table-ptr: PreMem GPIO Table Pointer
+- fspm,pre-mem-gpio-table-entry-num: PreMem GPIO Table Entry Number
+- fspm,enhance-port8xh-decoding: Enhance the port 8xh decoding
+- fspm,spd-write-enable: SPD Data Write
+- fspm,mrc-data-saving: MRC Training Data Saving
+- fspm,oem-loading-base: OEM File Loading Address
+- fspm,oem-file-name: OEM File Name to Load
+- fspm,mrc-boot-data-ptr:
+- fspm,emmc-trace-len: eMMC Trace Length
+  0x0: Long
+  0x1: Short
+- fspm,skip-cse-rbp: Skip CSE RBP to support zero sized IBB
+- fspm,npk-en: Npk Enable
+   0: Disable
+   1: Enable
+   2: Debugger
+   3: Auto (default)
+- fspm,fw-trace-en: FW Trace Enable
+- fspm,fw-trace-destination: FW Trace Destination
+  1: NPK_TRACE_TO_MEMORY
+  2: NPK_TRACE_TO_DCI
+  3: NPK_TRACE_TO_BSSB
+  4: NPK_TRACE_TO_PTI (default)
+- fspm,recover-dump: NPK Recovery Dump
+- fspm,msc0-wrap: Memory Region 0 Buffer WrapAround
+  0: n0-warp
+  1: n1-warp (default)
+- fspm,msc1-wrap: Memory Region 1 Buffer WrapAround
+  0: n0-warp
+  1: n1-warp (default)
+- fspm,msc0-size: Memory Region 0 Buffer Size
+  0: 0MB (default)
+  1: 1MB
+  2: 8MB
+  3: 64MB
+  4: 128MB
+  5: 256MB
+  6: 512MB
+  7: 1GB
+- fspm,msc1-size: Memory Region 1 Buffer Size
+  0: 0MB (default)
+  1: 1MB
+  2: 8MB
+  3: 64MB
+  4: 128MB
+  5: 256MB
+  6: 512MB
+  7: 1GB
+- fspm,pti-mode: PTI Mode
+  0: 0ff
+  1: x4 (default)
+  2: x8
+  3: x12
+  4: x16
+- fspm,pti-training: PTI Training
+  0: off (default)
+  1-6: 1-6
+- fspm,pti-speed:
+  0: full
+  1: half
+  2: quarter (default)
+- fspm,punit-mlvl: Punit Message Level
+  0:
+  1: (default)
+  2-4: 2-4
+- fspm,pmc-mlvl: PMC Message Level
+  0:
+  1: (default)
+  2-4: 2-4
+- fspm,sw-trace-en: SW Trace Enable
+- fspm,periodic-retraining-disable: Periodic Retraining Disable
+- fspm,enable-reset-system: Enable Reset System
+- fspm,enable-s3-heci2: Enable HECI2 in S3 resume path
+- fspm,variable-nvs-buffer-ptr:
+- fspm,start-timer-ticker-of-pfet-assert: PCIE SLOT Power Enable Assert Time - PFET
+- fspm,rt-en: Real Time Enabling
+- fspm,skip-pcie-power-sequence: Skip Pcie Power Sequence
+
+Example:
+
+&host_bridge {
+	fspm,package = <PACKAGE_BGA>;
+	fspm,profile = <PROFILE_LPDDR4_2400_24_22_22>;
+	fspm,memory-down = <MEMORY_DOWN_YES>;
+	fspm,scrambler-support = <1>;
+	fspm,interleaved-mode = <INTERLEAVED_MODE_ENABLE>;
+	fspm,channel-hash-mask = <0x36>;
+	fspm,slice-hash-mask = <0x9>;
+	fspm,low-memory-max-value = <2048>;
+	fspm,ch0-rank-enable = <1>;
+	fspm,ch0-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch0-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch0-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch0-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,ch1-rank-enable = <1>;
+	fspm,ch1-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch1-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch1-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch1-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,ch2-rank-enable = <1>;
+	fspm,ch2-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch2-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch2-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch2-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,ch3-rank-enable = <1>;
+	fspm,ch3-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch3-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch3-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch3-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,fspm,skip-cse-rbp = <1>;
+
+	fspm,ch-bit-swizzling = /bits/ 8 <
+		/* LP4_PHYS_CH0A */
+
+		/* DQA[0:7] pins of LPDDR4 module */
+		6 7 5 4 3 1 0 2
+		/* DQA[8:15] pins of LPDDR4 module */
+		12 10 11 13 14 8 9 15
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		16 22 23 20 18 17 19 21
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		30 28 29 25 24 26 27 31
+
+		/* LP4_PHYS_CH0B */
+		/* DQA[0:7] pins of LPDDR4 module */
+		7 3 5 2 6 0 1 4
+		/* DQA[8:15] pins of LPDDR4 module */
+		 9 14 12 13 10 11 8 15
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		20 22 23 16 19 17 18 21
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		28 24 26 27 29 30 31 25
+
+		/* LP4_PHYS_CH1A */
+
+		/* DQA[0:7] pins of LPDDR4 module */
+		2 1 6 7 5 4 3 0
+		/* DQA[8:15] pins of LPDDR4 module */
+		11 10 8 9 12 15 13 14
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		17 23 19 16 21 22 20 18
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		31 29 26 25 28 27 24 30
+
+		/* LP4_PHYS_CH1B */
+
+		/* DQA[0:7] pins of LPDDR4 module */
+		4 3 7 5 6 1 0 2
+		/* DQA[8:15] pins of LPDDR4 module */
+		15 9 8 11 14 13 12 10
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		20 23 22 21 18 19 16 17
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		25 28 30 31 26 27 24 29>;
+};

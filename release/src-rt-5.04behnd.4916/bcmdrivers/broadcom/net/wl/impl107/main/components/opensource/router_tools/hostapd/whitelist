@@ -1,0 +1,17 @@
+# Whitelist in place for this component / branch / twig
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+
+JIRA:BCAWLAN-272440 SmartMesh: 5G & 6G Interfaces are still Down after ifconfig down & ifconfig up
+JIRA:BCAWLAN-270177 Smartmesh: Samsung S24 Ultra fails to associate to rootap
+JIRA:BCAWLAN-273422 SmartMesh: TBSS is not responding for FBT Auth request.
+JIRA:BCAWLAN-273835 Segmentation Fault on hostapd 
+JIRA:BCAWLAN-274701 Repeater: Throughput degradation on Backhaul when in Smartmesh mode
+JIRA:BCAWLAN-274867 [hostapd]: Add hostapd to debug monitor only after it daemonizes

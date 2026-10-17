@@ -1,0 +1,500 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Freescale ls1021a SOC common device tree source
+ *
+ * Copyright 2013-2015 Freescale Semiconductor, Inc.
+ * Copyright 2021 NXP
+ */
+
+#include "skeleton.dtsi"
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	compatible = "fsl,ls1021a";
+	interrupt-parent = <&gic>;
+
+	aliases {
+		serial0 = &lpuart0;
+		serial1 = &lpuart1;
+		serial2 = &lpuart2;
+		serial3 = &lpuart3;
+		serial4 = &lpuart4;
+		serial5 = &lpuart5;
+		sysclk = &sysclk;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@f00 {
+			compatible = "arm,cortex-a7";
+			device_type = "cpu";
+			reg = <0xf00>;
+			clocks = <&clockgen 1 0>;
+		};
+
+		cpu@f01 {
+			compatible = "arm,cortex-a7";
+			device_type = "cpu";
+			reg = <0xf01>;
+			clocks = <&clockgen 1 0>;
+		};
+	};
+
+	sysclk: sysclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+		clock-output-names = "sysclk";
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	pmu {
+		compatible = "arm,cortex-a7-pmu";
+		interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "soc";
+		interrupt-parent = <&gic>;
+		ranges;
+
+		gic: interrupt-controller@1400000 {
+			compatible = "arm,cortex-a7-gic";
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			reg = <0x1401000 0x1000>,
+			      <0x1402000 0x1000>,
+			      <0x1404000 0x2000>,
+			      <0x1406000 0x2000>;
+			interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(2) | IRQ_TYPE_LEVEL_HIGH)>;
+
+		};
+
+		ifc: ifc@1530000 {
+			compatible = "fsl,ifc", "simple-bus";
+			reg = <0x1530000 0x10000>;
+			interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
+		};
+
+		sfp: efuse@1e80000 {
+			compatible = "fsl,ls1021a-sfp";
+			reg = <0x0 0x1e80000 0x0 0x10000>;
+			clocks = <&clockgen 4 3>;
+			clock-names = "sfp";
+		};
+
+		dcfg: dcfg@1ee0000 {
+			compatible = "fsl,ls1021a-dcfg", "syscon";
+			reg = <0x1ee0000 0x10000>;
+			big-endian;
+		};
+
+		esdhc: esdhc@1560000 {
+			compatible = "fsl,esdhc";
+			reg = <0x1560000 0x10000>;
+			interrupts = <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH>;
+			clock-frequency = <0>;
+			voltage-ranges = <1800 1800 3300 3300>;
+			sdhci,auto-cmd12;
+			big-endian;
+			bus-width = <4>;
+		};
+
+		gpio0: gpio@2300000 {
+			compatible = "fsl,ls1021a-gpio", "fsl,qoriq-gpio";
+			reg = <0x2300000 0x10000>;
+			interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		gpio1: gpio@2310000 {
+			compatible = "fsl,ls1021a-gpio", "fsl,qoriq-gpio";
+			reg = <0x2310000 0x10000>;
+			interrupts = <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		gpio2: gpio@2320000 {
+			compatible = "fsl,ls1021a-gpio", "fsl,qoriq-gpio";
+			reg = <0x2320000 0x10000>;
+			interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		gpio3: gpio@2330000 {
+			compatible = "fsl,ls1021a-gpio", "fsl,qoriq-gpio";
+			reg = <0x2330000 0x10000>;
+			interrupts = <GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+		};
+
+		scfg: scfg@1570000 {
+			compatible = "fsl,ls1021a-scfg", "syscon";
+			reg = <0x1570000 0x10000>;
+			big-endian;
+		};
+
+		crypto: crypto@1700000 {
+			compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
+			fsl,sec-era = <7>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg		 = <0x1700000 0x100000>;
+			ranges		 = <0x0 0x1700000 0x100000>;
+			interrupts	 = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
+
+			sec_jr0: jr@10000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+				reg = <0x10000 0x10000>;
+				interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			sec_jr1: jr@20000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+				reg = <0x20000 0x10000>;
+				interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			sec_jr2: jr@30000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+				reg = <0x30000 0x10000>;
+				interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+			sec_jr3: jr@40000 {
+				compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+				reg = <0x40000 0x10000>;
+				interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
+			};
+
+		};
+
+		clockgen: clocking@1ee1000 {
+			compatible = "fsl,ls1021a-clockgen";
+			reg = <0x0 0x1ee1000 0x0 0x1000>;
+			#clock-cells = <2>;
+			clocks = <&sysclk>;
+		};
+
+		dspi0: dspi@2100000 {
+			compatible = "fsl,vf610-dspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x2100000 0x10000>;
+			interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>;
+			clock-names = "dspi";
+			clocks = <&clockgen 4 1>;
+			spi-num-chipselects = <6>;
+			big-endian;
+			status = "disabled";
+		};
+
+		dspi1: dspi@2110000 {
+			compatible = "fsl,vf610-dspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x2110000 0x10000>;
+			interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
+			clock-names = "dspi";
+			clocks = <&clockgen 4 1>;
+			spi-num-chipselects = <6>;
+			big-endian;
+			status = "disabled";
+		};
+
+		qspi: quadspi@1550000 {
+			compatible = "fsl,ls1021a-qspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x1550000 0x10000>,
+				<0x40000000 0x1000000>;
+			reg-names = "QuadSPI", "QuadSPI-memory";
+			status = "disabled";
+		};
+
+		i2c0: i2c@2180000 {
+			compatible = "fsl,vf610-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x2180000 0x10000>;
+			interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
+			clock-names = "i2c";
+			clocks = <&clockgen 4 1>;
+			status = "disabled";
+		};
+
+		i2c1: i2c@2190000 {
+			compatible = "fsl,vf610-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x2190000 0x10000>;
+			interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
+			clock-names = "i2c";
+			clocks = <&clockgen 4 1>;
+			status = "disabled";
+		};
+
+		i2c2: i2c@21a0000 {
+			compatible = "fsl,vf610-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x21a0000 0x10000>;
+			interrupts = <GIC_SPI 90 IRQ_TYPE_LEVEL_HIGH>;
+			clock-names = "i2c";
+			clocks = <&clockgen 4 1>;
+			status = "disabled";
+		};
+
+		uart0: serial@21c0500 {
+			compatible = "fsl,16550-FIFO64", "ns16550a";
+			reg = <0x21c0500 0x100>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			fifo-size = <15>;
+			status = "disabled";
+		};
+
+		uart1: serial@21c0600 {
+			compatible = "fsl,16550-FIFO64", "ns16550a";
+			reg = <0x21c0600 0x100>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			fifo-size = <15>;
+			status = "disabled";
+		};
+
+		uart2: serial@21d0500 {
+			compatible = "fsl,16550-FIFO64", "ns16550a";
+			reg = <0x21d0500 0x100>;
+			interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+			fifo-size = <15>;
+			status = "disabled";
+		};
+
+		uart3: serial@21d0600 {
+			compatible = "fsl,16550-FIFO64", "ns16550a";
+			reg = <0x21d0600 0x100>;
+			interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+			fifo-size = <15>;
+			status = "disabled";
+		};
+
+		lpuart0: serial@2950000 {
+			compatible = "fsl,ls1021a-lpuart";
+			reg = <0x2950000 0x1000>;
+			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&sysclk>;
+			clock-names = "ipg";
+			status = "disabled";
+		};
+
+		lpuart1: serial@2960000 {
+			compatible = "fsl,ls1021a-lpuart";
+			reg = <0x2960000 0x1000>;
+			interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "ipg";
+			status = "disabled";
+		};
+
+		lpuart2: serial@2970000 {
+			compatible = "fsl,ls1021a-lpuart";
+			reg = <0x2970000 0x1000>;
+			interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "ipg";
+			status = "disabled";
+		};
+
+		lpuart3: serial@2980000 {
+			compatible = "fsl,ls1021a-lpuart";
+			reg = <0x2980000 0x1000>;
+			interrupts = <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "ipg";
+			status = "disabled";
+		};
+
+		lpuart4: serial@2990000 {
+			compatible = "fsl,ls1021a-lpuart";
+			reg = <0x2990000 0x1000>;
+			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "ipg";
+			status = "disabled";
+		};
+
+		lpuart5: serial@29a0000 {
+			compatible = "fsl,ls1021a-lpuart";
+			reg = <0x29a0000 0x1000>;
+			interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "ipg";
+			status = "disabled";
+		};
+
+		wdog0: watchdog@2ad0000 {
+			compatible = "fsl,imx21-wdt";
+			reg = <0x2ad0000 0x10000>;
+			interrupts = <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "wdog-en";
+			big-endian;
+		};
+
+		sai1: sai@2b50000 {
+			compatible = "fsl,vf610-sai";
+			reg = <0x2b50000 0x10000>;
+			interrupts = <GIC_SPI 132 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "sai";
+			dma-names = "tx", "rx";
+			dmas = <&edma0 1 47>,
+			       <&edma0 1 46>;
+			big-endian;
+			status = "disabled";
+		};
+
+		sai2: sai@2b60000 {
+			compatible = "fsl,vf610-sai";
+			reg = <0x2b60000 0x10000>;
+			interrupts = <GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clockgen 4 1>;
+			clock-names = "sai";
+			dma-names = "tx", "rx";
+			dmas = <&edma0 1 45>,
+			       <&edma0 1 44>;
+			big-endian;
+			status = "disabled";
+		};
+
+		edma0: edma@2c00000 {
+			#dma-cells = <2>;
+			compatible = "fsl,vf610-edma";
+			reg = <0x2c00000 0x10000>,
+			      <0x2c10000 0x10000>,
+			      <0x2c20000 0x10000>;
+			interrupts = <GIC_SPI 135 IRQ_TYPE_LEVEL_HIGH>,
+				     <GIC_SPI 135 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "edma-tx", "edma-err";
+			dma-channels = <32>;
+			big-endian;
+			clock-names = "dmamux0", "dmamux1";
+			clocks = <&clockgen 4 1>,
+				 <&clockgen 4 1>;
+		};
+
+		enet0: ethernet@2d10000 {
+			compatible = "fsl,etsec2";
+			reg = <0x2d10000 0x1000>;
+			status = "disabled";
+		};
+
+		enet1: ethernet@2d50000 {
+			compatible = "fsl,etsec2";
+			reg = <0x2d50000 0x1000>;
+			status = "disabled";
+		};
+
+		enet2: ethernet@2d90000 {
+			compatible = "fsl,etsec2";
+			reg = <0x2d90000 0x1000>;
+			status = "disabled";
+		};
+
+		mdio0: mdio@2d24000 {
+			compatible = "fsl,etsec2-mdio";
+			reg = <0x2d24000 0x4000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		mdio1: mdio@2d64000 {
+			compatible = "fsl,etsec2-mdio";
+			reg = <0x2d64000 0x4000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		usb@8600000 {
+			compatible = "fsl-usb2-dr-v2.5", "fsl-usb2-dr";
+			reg = <0x8600000 0x1000>;
+			interrupts = <GIC_SPI 171 IRQ_TYPE_LEVEL_HIGH>;
+			dr_mode = "host";
+			phy_type = "ulpi";
+		};
+
+		usb3@3100000 {
+			compatible = "fsl,layerscape-dwc3";
+			reg = <0x3100000 0x10000>;
+			interrupts = <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH>;
+			dr_mode = "host";
+		};
+
+		pcie@3400000 {
+			compatible = "fsl,ls-pcie", "snps,dw-pcie";
+			reg = <0x03400000 0x20000   /* dbi registers */
+			       0x01570000 0x10000   /* pf controls registers */
+			       0x24000000 0x20000>; /* configuration space */
+			reg-names = "dbi", "ctrl", "config";
+			big-endian;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+			bus-range = <0x0 0xff>;
+			ranges = <0x81000000 0x0 0x00000000 0x24020000 0x0 0x00010000   /* downstream I/O */
+				  0x82000000 0x0 0x28000000 0x28000000 0x0 0x08000000>; /* non-prefetchable memory */
+		};
+
+		pcie@3500000 {
+			compatible = "fsl,ls-pcie", "snps,dw-pcie";
+			reg = <0x03500000 0x10000    /* dbi registers */
+			       0x01570000 0x10000    /* pf controls registers */
+			       0x34000000 0x20000>;  /* configuration space */
+			reg-names = "dbi", "ctrl", "config";
+			big-endian;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			device_type = "pci";
+			num-lanes = <2>;
+			bus-range = <0x0 0xff>;
+			ranges = <0x81000000 0x0 0x00000000 0x34020000 0x0 0x00010000   /* downstream I/O */
+				  0x82000000 0x0 0x38000000 0x38000000 0x0 0x08000000>; /* non-prefetchable memory */
+		};
+
+		sata: sata@3200000 {
+			compatible = "fsl,ls1021a-ahci";
+			reg = <0x3200000 0x10000 0x20220520 0x4>;
+			reg-names = "ahci", "sata-ecc";
+			interrupts = <0 101 4>;
+			status = "disabled";
+		};
+	};
+};

@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS1028A-QDS device tree fragment for RCW 9999
+ *
+ * Copyright 2019-2021 NXP
+ *
+ */
+
+/*
+ * This set-up is using SCH-24801 cards with VSC8234 quad SGMII PHY.
+ *
+ * Switch ports are mapped 1:1 to VSC8234 card ports seated in slot 1.
+ * Top port is port 0.
+ *
+ * The following DTS assumes DIP SW5[1-3] = 000b.
+ */
+
+&slot1 {
+	#include "fsl-sch-24801.dtsi"
+};
+
+&enetc_port2 {
+	status = "okay";
+};
+
+&mscc_felix {
+	status = "okay";
+};
+
+&mscc_felix_port0 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@40/phy@1c}>;
+};
+
+&mscc_felix_port1 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@40/phy@1d}>;
+};
+
+&mscc_felix_port2 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@40/phy@1e}>;
+};
+
+&mscc_felix_port3 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@40/phy@1f}>;
+};
+
+&mscc_felix_port4 {
+	ethernet = <&enetc_port2>;
+	status = "okay";
+};

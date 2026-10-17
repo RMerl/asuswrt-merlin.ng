@@ -379,7 +379,7 @@ static inline int rdpa_cpu_reason_stat_external_cb_get(bdmf_object_handle mo_, v
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_cpu_attr_reason_stat_external_cb, &_nn_);
-    *reason_stat_external_cb_ = (void *)(long)_nn_;
+    *reason_stat_external_cb_ = (void *)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -394,7 +394,7 @@ static inline int rdpa_cpu_reason_stat_external_cb_get(bdmf_object_handle mo_, v
  */
 static inline int rdpa_cpu_reason_stat_external_cb_set(bdmf_object_handle mo_, void * reason_stat_external_cb_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_cpu_attr_reason_stat_external_cb, (long)reason_stat_external_cb_);
+    return bdmf_attr_set_as_num(mo_, rdpa_cpu_attr_reason_stat_external_cb, (bdmf_long_t)reason_stat_external_cb_);
 }
 
 

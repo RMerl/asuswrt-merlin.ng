@@ -1,6 +1,0 @@
-XFI3 BOARD
-M:	Marek Vasut <marek.vasut@gmail.com>
-S:	Maintained
-F:	board/creative/xfi3/
-F:	include/configs/xfi3.h
-F:	configs/xfi3_defconfig

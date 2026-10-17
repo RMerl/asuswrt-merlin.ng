@@ -51,9 +51,6 @@
 #if defined(CONFIG_BCM_EPON_STACK) || defined(CONFIG_BCM_EPON_STACK_MODULE)
 #include "mac_drv_epon_ae.h"
 #endif
-#ifdef CONFIG_BCM_PTP_1588
-#include "ptp_1588.h"
-#endif
 #if defined(DSL_DEVICES)
 #include "phy_drv_dsl_phy.h"
 #include "phy_drv_dsl_serdes.h"
@@ -70,9 +67,10 @@ void extlh_link_change_handler(enetx_port_t *port, int linkstatus, int speed, in
 #include "bcmenet_ioctl_phyext84991.h"
 #endif
 
+static void port_info_revert(enetx_port_t *p);
+
 extern int apd_enabled;
 extern int eee_enabled;
-extern int phy_speed_max;
 
 /**
  * @brief splits asymmetric input speed into up&down stream speeds
@@ -176,10 +174,17 @@ static int pm_lan_pwr_set_single(enetx_port_t *p, void *ctx)
     if (PORT_ROLE_IS_WAN(p) || !p->dev)
         return 0;
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,10,0))
     if (enabled)
         dev_change_flags(p->dev, p->dev->flags | IFF_UP);
     else
         dev_change_flags(p->dev, p->dev->flags & ~IFF_UP);
+#else
+    if (enabled)
+        dev_change_flags(p->dev, p->dev->flags | IFF_UP, NULL);
+    else
+        dev_change_flags(p->dev, p->dev->flags & ~IFF_UP, NULL);
+#endif
 
     return 0;
 }
@@ -210,6 +215,8 @@ static int pm_lan_pwr_get(void)
 #endif
 
 #if defined(CONFIG_BCM_PHY_SPEED_LIMIT)
+static int phy_speed_max = -1;
+
 static int pm_physpeed_get(void)
 {
     return phy_speed_max;
@@ -218,9 +225,35 @@ static int pm_physpeed_get(void)
 static int pm_physpeed_set_single(enetx_port_t *p, void *ctx)
 {
     phy_dev_t *phy_dev = p->p.phy;
+    phy_speed_t phy_speed = PHY_SPEED_UNKNOWN;
 
-    if (phy_dev)
-        phy_dev_speed_set(phy_dev, phy_speed_max, PHY_DUPLEX_FULL);
+    if (PORT_ROLE_IS_WAN(p) || !p->dev)
+        return 0;
+
+    if (phy_dev->phy_drv->phy_type == PHY_TYPE_SHORTFIN ||
+        phy_dev->phy_drv->phy_type == PHY_TYPE_SHASTA ||
+        phy_dev->phy_drv->phy_type == PHY_TYPE_MERLIN8_PHY1)
+    {
+        return 0;
+    }
+
+    if (phy_speed_max > 0)
+        phy_speed = phy_speed_max;
+
+    if (phy_speed_max == 0)
+    {
+        uint32_t supported_caps = 0, peer_caps = 0;
+
+        phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps);
+        phy_dev_caps_get(phy_dev, CAPS_TYPE_LP_ADVERTISED, &peer_caps);
+
+        if (peer_caps)
+            supported_caps &= peer_caps;
+
+        phy_speed = phy_caps_to_min_speed(supported_caps);
+    }
+
+    phy_dev_speed_set(phy_dev, phy_speed, PHY_DUPLEX_FULL);
 
     return 0;
 }
@@ -251,9 +284,9 @@ static int gpon_mcast_gem_set(int mcast_idx)
 
 static int tr_port_by_net_port(enetx_port_t *port, void *_ctx)
 {
-    int net_port = *(uint32_t *)_ctx;
+    struct net_port_t *net_port = *(struct net_port_t **)_ctx;
 
-    switch (net_port)
+    switch (net_port->port)
     {
         case NET_PORT_AE:
             if (port->port_info.is_wanconf_ae || port->port_info.is_wanconf_mux_ae)
@@ -268,13 +301,16 @@ static int tr_port_by_net_port(enetx_port_t *port, void *_ctx)
 
     return 0;
 match:
+    if (net_port->port_group != -1 && net_port->port_group != port->port_info.port_group)
+        return 0;
+
     *(enetx_port_t **)_ctx = port;
     return 1;
 }
 
-static int get_port_by_net_port(enetx_port_t *sw, port_class_t port_class, unsigned long net_port, enetx_port_t **match)
+static int get_port_by_net_port(enetx_port_t *sw, port_class_t port_class, struct net_port_t *net_port, enetx_port_t **match)
 {
-    void *in_out = (void *)(unsigned long)net_port;
+    void *in_out = (void *)net_port;
 
     if (port_traverse_ports(sw, tr_port_by_net_port, port_class, &in_out) <= 0)
         return -1;
@@ -370,9 +406,11 @@ static int _handle_add_port(struct net_port_t *net_port)
     char *ifname = net_port->ifname;
     enetx_port_t *p = NULL;
 
-    if (get_port_by_net_port(root_sw, PORT_CLASS_PORT_DETECT, port, &p) < 0)
+    if (get_port_by_net_port(root_sw, PORT_CLASS_PORT_DETECT, net_port, &p) < 0)
     {
         printk("Error: No port found in \"detect\" state for net_port->port %d\n", net_port->port);
+        if (net_port->port_group != -1)
+            printk("       net_port->port_group %d\n", net_port->port_group);
         return -1;
     }
 
@@ -381,7 +419,7 @@ static int _handle_add_port(struct net_port_t *net_port)
 #if defined(CONFIG_BCM96813)
         /* On 6813, All Ethernet ports are configured as lan in runner */
         net_port->is_wan = 0;
-        
+
         /* add to unit_port_array */
         unit_port_array[0][p->port_info.port] = p;
 #endif
@@ -403,7 +441,15 @@ static int _handle_add_port(struct net_port_t *net_port)
         _handle_add_port_gpon(net_port, p);
 
     if (port_activate(p) || !p->p.phy)
+    {
+        if (should_handle_serdes_mux(p))
+        {
+            mac_dev_del(p->p.mac);
+            p->p.mac = NULL;
+            port_info_revert(p);
+        }
         return -1;
+    }
 
     if (port == NET_PORT_AE)
     {
@@ -442,14 +488,27 @@ static void port_info_revert(enetx_port_t *p)
     /* On purpose not reverting p->port_info.is_wan */
 }
 
-static int _handle_del_port(int port)
+static int get_port_by_if_name(char *ifname, enetx_port_t **port);
+
+static int _handle_del_port(struct net_port_t *net_port)
 {
     enetx_port_t *p = NULL;
 
-    if (get_port_by_net_port(root_sw, PORT_CLASS_PORT, port, &p) < 0)
+    if (net_port->ifname[0] != 0)
     {
-        printk("Error: _handle_del_port: No port found\n");
-        return -1;
+        if (get_port_by_if_name(net_port->ifname, &p))
+        {
+            printk("Error: _handle_del_port: No port found: %s\n", net_port->ifname);
+            return -1;
+        }
+    }
+    else
+    {
+        if (get_port_by_net_port(root_sw, PORT_CLASS_PORT, net_port, &p) < 0)
+        {
+            printk("Error: _handle_del_port: No port found\n");
+            return -1;
+        }
     }
 
     port_deactivate(p);
@@ -466,10 +525,9 @@ static int _handle_del_port(int port)
 
 static int _handle_serdes_name(struct net_port_t *net_port)
 {
-    int port = net_port->port;
     enetx_port_t *p = NULL;
 
-    if (get_port_by_net_port(root_sw, PORT_CLASS_PORT, port, &p) < 0)
+    if (get_port_by_net_port(root_sw, PORT_CLASS_PORT, net_port, &p) < 0)
     {
         printk("Error: _handle_serdes_name: No port found\n");
         return -1;
@@ -630,7 +688,7 @@ static int get_root_dev_by_dev(struct net_device *dev, struct net_device **_dev)
 }
 
 
-int get_port_by_if_name(char *ifname, enetx_port_t **port)
+static int get_port_by_if_name(char *ifname, enetx_port_t **port)
 {
     struct net_device *dev;
 
@@ -1016,6 +1074,7 @@ int ioctl_handle_mii(struct net_device *dev, struct ifreq *ifr, int cmd)
     if (phy->sw_port != port)
         return -EINVAL;
 
+    phy = cascade_phy_get_last_active(phy);
     switch (cmd)
     {
         case SIOCGMIIREG: /* Read MII PHY register. */
@@ -1025,6 +1084,9 @@ int ioctl_handle_mii(struct net_device *dev, struct ifreq *ifr, int cmd)
         case SIOCSMIIREG: /* Write MII PHY register. */
             rc = phy_bus_write(phy, mii->reg_num & 0x1f, mii->val_in);
             return rc? -EINVAL : 0;
+        case SIOCGMIIPHY: /* Get address of MII PHY in use by dev */
+            mii->phy_id = phy->addr;
+            return 0;
     }
 
     return -EINVAL;
@@ -1147,7 +1209,7 @@ static char *inter_phy_types_string(int inter_phy_types)
         return "";
 
     /* Note: The order below matters, for matching the coding flag convention */
-    if (inter_phy_types & INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN_M)
+    if (inter_phy_types & INTER_PHY_TYPE_MULTI_SPEED_AN_M)
         n += snprintf(buf+n, sz-n, "A");
     if (inter_phy_types & INTER_PHY_TYPE_SXGMII_M)
         n += snprintf(buf+n, sz-n, "Q");
@@ -1157,25 +1219,27 @@ static char *inter_phy_types_string(int inter_phy_types)
         n += snprintf(buf+n, sz-n, "U");
     if (inter_phy_types & INTER_PHY_TYPE_SGMII_M)
         n += snprintf(buf+n, sz-n, "S");
+    if (inter_phy_types & INTER_PHY_TYPE_RGMII_M)
+        n += snprintf(buf+n, sz-n, "R");
 
     if (inter_phy_types & INTER_PHY_TYPE_100BASE_FX_M)
         n += snprintf(buf+n, sz-n, "0F");
 
     if (inter_phy_types & INTER_PHY_TYPE_1000BASE_X_M)
         n += snprintf(buf+n, sz-n, "%sK", f1g++? "":"1");
-    if (inter_phy_types & INTER_PHY_TYPE_1GBASE_R_M)
-        n += snprintf(buf+n, sz-n, "%sR", f1g++? "":"1");
     if (inter_phy_types & INTER_PHY_TYPE_1GBASE_X_M)
         n += snprintf(buf+n, sz-n, "%sX", f1g++? "":"1");
+    if (inter_phy_types & INTER_PHY_TYPE_1GBASE_R_M)
+        n += snprintf(buf+n, sz-n, "%sR", f1g++? "":"1");
 
     if (inter_phy_types & INTER_PHY_TYPE_2500BASE_X_M)
         n += snprintf(buf+n, sz-n, "%sK", f2g++? "":"2");
     if (inter_phy_types & INTER_PHY_TYPE_2P5GIDLE_M)
         n += snprintf(buf+n, sz-n, "%sI", f2g++? "":"2");
-    if (inter_phy_types & INTER_PHY_TYPE_2P5GBASE_R_M)
-        n += snprintf(buf+n, sz-n, "%sR", f2g++? "":"2");
     if (inter_phy_types & INTER_PHY_TYPE_2P5GBASE_X_M)
         n += snprintf(buf+n, sz-n, "%sX", f2g++? "":"2");
+    if (inter_phy_types & INTER_PHY_TYPE_2P5GBASE_R_M)
+        n += snprintf(buf+n, sz-n, "%sR", f2g++? "":"2");
 
     if (inter_phy_types & INTER_PHY_TYPE_5000BASE_X_M)
         n += snprintf(buf+n, sz-n, "%sK", f5g++? "":"5");
@@ -1220,13 +1284,13 @@ char *get_inter_phy_types(phy_dev_t *phy_dev)
         
     if cascade_phy_get_next(phy_dev)
     {
-        phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_DOWN, &inter_types);
+        phy_dev_inter_phy_types_get2(phy_dev, INTER_PHY_TYPE_DOWN, CAPS_TYPE_SUPPORTED, &inter_types);
         current_type = phy_dev_current_inter_phy_type_get(phy_dev);
         phy_dev_configured_inter_phy_types_get(phy_dev, &config_types);
     }
     else
     {
-        phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_UP, &inter_types);
+        phy_dev_inter_phy_types_get2(phy_dev, INTER_PHY_TYPE_UP, CAPS_TYPE_SUPPORTED, &inter_types);
         current_type = phy_dev_current_inter_phy_type_get(phy_dev);
         phy_dev_configured_inter_phy_types_get(phy_dev, &config_types);
     }
@@ -1456,12 +1520,12 @@ int sw_get_mac_addresses(enetx_port_t *sw, char **buf, int *sz)
     }
 
     if (wan_mac)
-        cat_snprintf(buf, sz, "   WAN MAC Address : %02X:%02X:%02X:%02X:%02X:%02X\n", 
+        cat_snprintf(buf, sz, "    WAN MAC Address : %02X:%02X:%02X:%02X:%02X:%02X\n", 
                 wan_mac[0], wan_mac[1], wan_mac[2],
                 wan_mac[3], wan_mac[4], wan_mac[5]);
 
     if (lan_mac)
-        cat_snprintf(buf, sz, "   LAN MAC Address : %02X:%02X:%02X:%02X:%02X:%02X\n", 
+        cat_snprintf(buf, sz, "    LAN MAC Address : %02X:%02X:%02X:%02X:%02X:%02X\n", 
                 lan_mac[0], lan_mac[1], lan_mac[2],
                 lan_mac[3], lan_mac[4], lan_mac[5]);
 
@@ -1544,8 +1608,8 @@ static int sw_print_board_ver_mac_phy_info(enetx_port_t *sw, char **buf, int *sz
 #if !defined(CONFIG_BRCM_QEMU)
     char board_id[64];
 
-    kerSysNvRamGetBoardId(board_id);
-    cat_snprintf(buf, sz, "          Board ID : %s\n", board_id);
+    kerSysNvRamGetBoardId(board_id, sizeof(board_id));
+    cat_snprintf(buf, sz, "           Board ID : %s\n", board_id);
 #endif
     sw_print_mac_phy_info(sw, buf, sz);
     return *sz;
@@ -1774,12 +1838,18 @@ extern int bcm_wake_on_button(void);
 extern int bcm_wake_on_timer(int minutes);
 extern int bcm_wake_on_wan(void);
 extern int bcm_deepsleep_start(void);
+static int bcm_wake_on_net_intf(char* intf, wol_params_t* param) { return 0; };
 #else
 static int bcm_wake_on_lan(mac_dev_t *mac_dev, phy_dev_t *phy_dev, int is_internal, int is_lnk) { return 0; }
 static int bcm_wake_on_button(void) { return 0; }
 static int bcm_wake_on_timer(int minutes) { return 0; }
 static int bcm_wake_on_wan(void) { return 0; }
 static int bcm_deepsleep_start(void) { return 0; }
+static int bcm_wake_on_net_intf(char* intf, wol_params_t* wol)
+{
+    wol_enable(intf, wol);
+    return 0;
+};
 #endif
 
 int enet_ioctl_compat_ethctl(struct net_device *dev, struct ifreq *rq, int cmd)
@@ -1973,7 +2043,7 @@ cd_end:
                 [PHY_TYPE_158CLASS_SERDES] = "PHY_TYPE_158CLASS_SERDES",
             };
 
-            if (ethctl->flags & (ETHCTL_FLAG_ACCESS_I2C_PHY | ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM))
+            if (ethctl->flags & ETHCTL_FLAG_ACCESS_I2C_PHY)
                 phy_type = PHY_TYPE_I2C_PHY;
             else if (ethctl->flags & (ETHCTL_FLAG_ACCESS_10GSERDES|ETHCTL_FLAG_ACCESS_10GPCS))
                 phy_type = PHY_TYPE_158CLASS_SERDES;
@@ -2043,18 +2113,13 @@ cd_end:
                         ethctl->long_tmr_ms, ethctl->long_tmr_weight, ethctl->val);
                 }
             } 
-            else if (ethctl->flags & ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM)
+            else if (ethctl->flags & ETHCTL_FLAG_ACCESS_TX_POWER) 
             {
-                void *buf;
-
-                phy_dev = cascade_phy_get_prev(phy_dev);
-                if (!(buf = kzalloc(ethctl->buf_size, GFP_KERNEL)))
-                    return -EFAULT;
-                ret = phy_priv_fun(phy_dev, SERDES_OP_DUMP_EEPROM, ethctl->val/2, ethctl->phy_reg, buf, ethctl->buf_size);
-                if (ret == 0)
-                    copy_to_user(ethctl->buf, buf, ethctl->buf_size);
-                kfree(buf);
-            }
+                if (ethctl->op == ETHGETMIIREG)
+                    ret = phy_dev_tx_pwr_get(phy_dev, &ethctl->val, &ethctl->val2);
+                else
+                    ret = phy_dev_tx_pwr_set(phy_dev, ethctl->val, ethctl->val2);
+            } 
             else
             {
                 uint16_t val = ethctl->val;
@@ -2095,7 +2160,6 @@ cd_end:
         }
 #elif (defined(CONFIG_BCM_PON) && !defined(CONFIG_BRCM_QEMU))
         {
-            uint16_t val = ethctl->val;
             phy_dev_t *phy_dev = phy_dev_get(PHY_TYPE_UNKNOWN, ethctl->phy_addr);
 
             if (!phy_dev || !phy_dev->phy_drv)
@@ -2114,16 +2178,18 @@ cd_end:
             }
             else
             {
-                if (ethctl->op == ETHGETMIIREG)
-                    ret = ethsw_phy_exp_read(phy_dev, ethctl->phy_reg, &val);
-                else
+                uint16_t val = ethctl->val;
+
+                if (ethctl->op == ETHSETMIIREG)
                     ret = ethsw_phy_exp_write(phy_dev, ethctl->phy_reg, val);
+                else
+                    ret = ethsw_phy_exp_read(phy_dev, ethctl->phy_reg, &val);
+
+                ethctl->val = val;
             }
 
             if (ret)
                 return ret;
-
-            ethctl->val = val;
 
             if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
                 return -EFAULT;
@@ -2194,6 +2260,8 @@ cd_end:
             mac_dev_t *mac_dev;
             int is_internal;
 
+            phy_dev_link_change_unregister(NULL);
+
             if (!ethctl->flags)
                 return bcm_deepsleep_start();
 
@@ -2242,6 +2310,9 @@ cd_end:
             wol_params.en_ard = (ethctl->flags & ETHCTL_FLAG_WAKE_ARD_SET) ? 1 : 0;
             wol_params.en_lnk = (ethctl->flags & ETHCTL_FLAG_WAKE_LNK_SET) ? 1 : 0;
             is_internal = (ethctl->flags & ETHCTL_FLAG_WAKE_INT_SET) ? 1 : 0;
+
+	    if (ethctl->flags & ETHCTL_FLAG_WAKE_SW_SET)
+		return bcm_wake_on_net_intf(ethctl->ifname, &wol_params);
 
             /* Set the detect location (MAC or PHY) */
             if (is_internal)
@@ -2636,7 +2707,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
             return 0;
         case ETHSWPORTDELETE:
-            if (_handle_del_port(ethswctl->net_port.port))
+            if (_handle_del_port(&ethswctl->net_port))
                 return -EFAULT;
 
             return 0;
@@ -2717,8 +2788,10 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     errStr = "Device not found";
                 else {
 #if defined(SF2_DUAL) || defined(SF2_EXTERNAL)
+#if !defined(BONDING_DUAL)
                     if (port1->p.parent_sw != port2->p.parent_sw)
                         errStr = "Devices on different switch units";
+#endif
 #endif                    
                 }
                 if (errStr) {
@@ -3077,7 +3150,9 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
             return 0;
 
-#if ((defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855)) && (!defined(CONFIG_BRCM_QEMU)))
+#if ((defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
+    defined(CONFIG_BCM96837) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM968375)) && \
+    (!defined(CONFIG_BRCM_QEMU)))
         case ETHSWDOSCTRL:            
             ret = _runner_rdpa_dos_ctrl(ethswctl);
             if (!ret && (ethswctl->type == TYPE_GET))
@@ -3287,35 +3362,38 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             if (ethswctl->type == TYPE_GET)
             {
                 int rx_enable = 0, tx_enable = 0, pfc_rx_enable = 0, pfc_tx_enable = 0;
-                    
+                phy_dev = get_active_phy(port->p.phy);
+
                 if (port_pause_get(port, &rx_enable, &tx_enable))
                     return -EFAULT;
 
                 if (port_pfc_capable(port) && port_pfc_get(port, &pfc_rx_enable, &pfc_tx_enable))
                     return -EFAULT;
 
-                if ((rx_enable || tx_enable) && (pfc_rx_enable || pfc_tx_enable))
+                if (pfc_pause_encoding(tx_enable, rx_enable, pfc_tx_enable, pfc_rx_enable, &ethswctl->pfc_ret))
                     return -EFAULT;
-                else if (rx_enable == 0 && tx_enable== 0 && pfc_rx_enable == 0 && pfc_tx_enable == 0)
-                    ethswctl->pfc_ret = PAUSE_FLOW_CTRL_NONE;
-                else if (rx_enable || tx_enable) {
-                    if (rx_enable)
-                        ethswctl->pfc_ret = tx_enable ? PAUSE_FLOW_CTRL_BOTH : PAUSE_FLOW_CTRL_RX;
+
+                if (phy_dev)
+                {
+                    if (phy_dev->link)
+                        pfc_pause_encoding(phy_dev->pause_tx, phy_dev->pause_rx, 0, 0, &ethswctl->pfc_resolution);
                     else
-                        ethswctl->pfc_ret = PAUSE_FLOW_CTRL_TX;
+                        ethswctl->pfc_resolution = PAUSE_FLOW_CTRL_OVER;
                 }
-                else {
-                    if (pfc_rx_enable)
-                        ethswctl->pfc_ret = pfc_tx_enable ? PAUSE_FLOW_PFC_BOTH : PAUSE_FLOW_PFC_RX;
-                    else {
-                        ethswctl->pfc_ret = PAUSE_FLOW_PFC_TX;
-                        for (i=0; i<8; i++)
-                            if (port_pfc_tx_timer_get(port, i, &ethswctl->pfc_timer[i]))
-                                return -EFAULT;
-                    }
+                else    /* For internal node connection to sf2 */
+                    ethswctl->pfc_resolution = ethswctl->pfc_ret;
+
+                if (pfc_tx_enable)
+                {
+                    for (i=0; i<8; i++)
+                        if (port_pfc_tx_timer_get(port, i, &ethswctl->pfc_timer[i]))
+                            return -EFAULT;
                 }
-                        
+
                 if (ethswctl_field_copy_to_user(pfc_ret))
+                    return -EFAULT;
+
+                if (ethswctl_field_copy_to_user(pfc_resolution))
                     return -EFAULT;
 
                 if (ethswctl_field_copy_to_user(pfc_timer))
@@ -3660,6 +3738,12 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 if (adCaps & PHY_CAP_1000_FULL)
                     ethswctl->autoneg_ad |= AN_1000M_FULL;
 
+                if (adCaps & PHY_CAP_2500)
+                    ethswctl->autoneg_ad |= AN_2500;
+
+                if (adCaps & PHY_CAP_5000)
+                    ethswctl->autoneg_ad |= AN_5000;
+
                 if (adCaps & PHY_CAP_10000)
                     ethswctl->autoneg_ad |= AN_10000;
 
@@ -3689,6 +3773,12 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
                 if (localCaps & PHY_CAP_1000_FULL)
                     ethswctl->autoneg_local |= AN_1000M_FULL;
+
+                if (localCaps & PHY_CAP_2500)
+                    ethswctl->autoneg_local |= AN_2500;
+
+                if (localCaps & PHY_CAP_5000)
+                    ethswctl->autoneg_local |= AN_5000;
 
                 if (localCaps & PHY_CAP_10000)
                     ethswctl->autoneg_local |= AN_10000;
@@ -3779,7 +3869,13 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             if (ethswctl->autoneg_ad & AN_1000M_FULL)
                 caps |= PHY_CAP_1000_FULL;
 
-            if (ethswctl->autoneg_local & AN_10000)
+            if (ethswctl->autoneg_ad & AN_2500)
+                caps |= PHY_CAP_2500;
+
+            if (ethswctl->autoneg_ad & AN_5000)
+                caps |= PHY_CAP_5000;
+
+            if (ethswctl->autoneg_ad & AN_10000)
                 caps |= PHY_CAP_10000;
 
             return phy_dev_caps_set(port->p.phy, caps) ? -EFAULT : 0;
@@ -3787,7 +3883,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
     
     case ETHSWAUTOMDIX:
         {
-            int enable;
+            phy_mdix_t mdix_mode;
             int ret;
 
             port = get_ioctl_port(dev, ethswctl);
@@ -3802,7 +3898,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
        
             if (ethswctl->type == TYPE_GET)
             {
-                ret = phy_dev_auto_mdix_get(port->p.phy, &enable);
+                ret = phy_dev_mdix_mode_get(port->p.phy, &mdix_mode);
 
                 if (ret == -1)
                 {
@@ -3811,7 +3907,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 else
                 {
                     ethswctl->ret_val = 0;
-                    ethswctl->val = enable;
+                    ethswctl->val = mdix_mode == PHY_MDIX_AUTO ? 1 : 0;
                 }
                   
                 if (copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
@@ -3821,7 +3917,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             }
             else if (ethswctl->type == TYPE_SET)
             {
-                ret = phy_dev_auto_mdix_set(port->p.phy, ethswctl->val);
+                ret = phy_dev_mdix_mode_set(port->p.phy, ethswctl->val ? PHY_MDIX_AUTO : PHY_MDIX_OFF);
                 if (ret == -1)
                 {
                     return -EFAULT;
@@ -4307,14 +4403,6 @@ int enet_ioctl_compat(struct net_device *dev, struct ifreq *rq, int cmd)
 
     case SIOCETHSWCTLOPS:
         return enet_ioctl_compat_ethswctl(dev, rq, cmd);
-
-#ifdef CONFIG_BCM_PTP_1588
-    case SIOCSHWTSTAMP:
-        return ptp_ioctl_hwtstamp_set(dev, rq);
-
-    case SIOCGHWTSTAMP:
-        return ptp_ioctl_hwtstamp_get(dev, rq);
-#endif
 
     }
 

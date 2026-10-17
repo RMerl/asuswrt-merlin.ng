@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2020 Theobroma Systems Design und Consulting GmbH
+ */
+
+#include <dt-bindings/memory/rk3368-dmc.h>
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	dmc: dmc@ff610000 {
+		compatible = "rockchip,rk3368-dmc", "syscon";
+		rockchip,cru = <&cru>;
+		rockchip,grf = <&grf>;
+		rockchip,msch = <&service_msch>;
+		reg = <0 0xff610000 0 0x400
+		       0 0xff620000 0 0x400>;
+	};
+
+	service_msch: syscon@ffac0000 {
+		compatible = "rockchip,rk3368-msch", "syscon";
+		reg = <0x0 0xffac0000 0x0 0x2000>;
+	};
+
+	sgrf: syscon@ff740000 {
+		compatible = "rockchip,rk3368-sgrf", "syscon";
+		reg = <0x0 0xff740000 0x0 0x1000>;
+	};
+};

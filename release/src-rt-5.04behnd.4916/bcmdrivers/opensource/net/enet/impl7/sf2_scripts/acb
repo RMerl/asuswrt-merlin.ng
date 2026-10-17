@@ -48,7 +48,7 @@ read_acb_reg() { # read_acb_reg <reg_offset>
 
 sf2_acb() { #sf2_acb <unit>
     local unit=$1
-    read_chip $unit
+    read_chip $unit $2
     if [ $sf2_acb == 0 ]
     then echo "device has no access control block (acb)!!"; return;
     fi

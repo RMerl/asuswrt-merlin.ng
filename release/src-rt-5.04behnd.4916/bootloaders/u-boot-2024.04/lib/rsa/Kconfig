@@ -1,0 +1,103 @@
+config RSA
+	bool "Use RSA Library"
+	select RSA_FREESCALE_EXP if FSL_CAAM && !ARCH_MX7 && !ARCH_MX7ULP && !ARCH_MX6 && !ARCH_MX5
+	select RSA_ASPEED_EXP if ASPEED_ACRY
+	select RSA_SOFTWARE_EXP if !RSA_FREESCALE_EXP && !RSA_ASPEED_EXP
+	help
+	  RSA support. This enables the RSA algorithm used for FIT image
+	  verification in U-Boot.
+	  See doc/uImage.FIT/signature.txt for more details.
+	  The Modular Exponentiation algorithm in RSA is implemented using
+	  driver model. So CONFIG_DM needs to be enabled by default for this
+	  library to function.
+	  The signing part is build into mkimage regardless of this
+	  option. The software based modular exponentiation is built into
+	  mkimage irrespective of this option.
+
+if RSA
+
+config SPL_RSA
+	bool "Use RSA Library within SPL"
+	depends on SPL
+
+config TPL_RSA
+	bool "Use RSA Library within TPL"
+	depends on TPL
+
+config SPL_RSA_VERIFY
+	bool
+	depends on SPL_RSA
+	help
+	  Add RSA signature verification support in SPL.
+
+config TPL_RSA_VERIFY
+	bool
+	depends on TPL_RSA
+	help
+	  Add RSA signature verification support in TPL.
+
+config RSA_VERIFY
+	bool
+	help
+	  Add RSA signature verification support.
+
+config RSA_VERIFY_WITH_PKEY
+	bool "Execute RSA verification without key parameters from FDT"
+	select RSA_VERIFY
+	select ASYMMETRIC_KEY_TYPE
+	select ASYMMETRIC_PUBLIC_KEY_SUBTYPE
+	select RSA_PUBLIC_KEY_PARSER
+	help
+	  The standard RSA-signature verification code (FIT_SIGNATURE) uses
+	  pre-calculated key properties, that are stored in fdt blob, in
+	  decrypting a signature.
+	  This does not suit the use case where there is no way defined to
+	  provide such additional key properties in standardized form,
+	  particularly UEFI secure boot.
+	  This options enables RSA signature verification with a public key
+	  directly specified in image_sign_info, where all the necessary
+	  key properties will be calculated on the fly in verification code.
+
+config SPL_RSA_VERIFY_WITH_PKEY
+	bool "Execute RSA verification without key parameters from FDT within SPL"
+	depends on SPL
+	select SPL_RSA_VERIFY
+	select SPL_ASYMMETRIC_KEY_TYPE
+	select SPL_ASYMMETRIC_PUBLIC_KEY_SUBTYPE
+	select SPL_RSA_PUBLIC_KEY_PARSER
+	help
+	  The standard RSA-signature verification code (FIT_SIGNATURE) uses
+	  pre-calculated key properties, that are stored in fdt blob, in
+	  decrypting a signature.
+	  This does not suit the use case where there is no way defined to
+	  provide such additional key properties in standardized form,
+	  particularly UEFI secure boot.
+	  This options enables RSA signature verification with a public key
+	  directly specified in image_sign_info, where all the necessary
+	  key properties will be calculated on the fly in verification code
+	  in the SPL.
+
+config RSA_SOFTWARE_EXP
+	bool "Enable driver for RSA Modular Exponentiation in software"
+	depends on DM
+	help
+	  Enables driver for modular exponentiation in software. This is a RSA
+	  algorithm used in FIT image verification. It required RSA Key as
+	  input.
+	  See doc/uImage.FIT/signature.txt for more details.
+
+config RSA_FREESCALE_EXP
+	bool "Enable RSA Modular Exponentiation with FSL crypto accelerator"
+	depends on DM && FSL_CAAM && !ARCH_MX7 && !ARCH_MX7ULP && !ARCH_MX6 && !ARCH_MX5
+	help
+	Enables driver for RSA modular exponentiation using Freescale cryptographic
+	accelerator - CAAM.
+
+config RSA_ASPEED_EXP
+	bool "Enable RSA Modular Exponentiation with ASPEED crypto accelerator"
+	depends on DM && ASPEED_ACRY
+	help
+	Enables driver for RSA modular exponentiation using ASPEED cryptographic
+	accelerator - ACRY
+
+endif

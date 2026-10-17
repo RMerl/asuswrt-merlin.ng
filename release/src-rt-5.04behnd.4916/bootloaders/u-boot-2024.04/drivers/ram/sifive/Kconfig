@@ -1,0 +1,13 @@
+config RAM_SIFIVE
+	bool "Ram drivers support for SiFive SoCs"
+	depends on RAM && RISCV
+	default y
+	help
+	  This enables support for ram drivers of SiFive SoCs.
+
+config SIFIVE_DDR
+	bool "SiFive DDR driver"
+	depends on RAM_SIFIVE
+	default y if TARGET_SIFIVE_UNLEASHED || TARGET_SIFIVE_UNMATCHED
+	help
+	  This enables DDR support for the platforms based on SiFive SoC.

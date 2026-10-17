@@ -1,6 +1,6 @@
 #!/bin/sh
 
-read_chip() { #read_chip <unit>
+read_chip() { #read_chip <unit> [<chip>]
     local ochip
     sf2_unit=-1;
     sf2_ovr_page=0
@@ -9,35 +9,42 @@ read_chip() { #read_chip <unit>
     sf2_acb=0
     ext_spd=0
     qos_shift=0
-    ochip=`dw 0xfffe8000`
-    ochip=`echo $ochip | awk '{printf "0x%s", substr($3,1,6)}'`
 
-    case $ochip in
-    0x631480)     chip=63148;;
-    0x631380)     chip=63138;;
+    case $2 in
+    63138|63148|4908|63158|63178|47622|4912|63146|6756|6765|6766|6764)
+                  chip=$2;;
     *)
-        chip=`dw 0xff800000`
-        chip=`echo $chip | awk '{printf "0x%s", substr($3,1,6)}'`
+        ochip=`dw 0xfffe8000`
+        ochip=`echo $ochip | awk '{printf "0x%s", substr($3,1,6)}'`
 
-        case $chip in
-        0x490800) chip=4908;;
-        0x631580) chip=63158;;
-        0x631780) chip=63178;;
-        0x476220) chip=47622;;
-        0x049121) chip=4912 ;;
-        0x631460) chip=63146 ;;
-        0x067560|0x067570) 
-                  chip=6756;;
-        0x067650|0x477220|0x067651|0x477221) 
-                  chip=6765;;
-        0x067660) 
-                  chip=6766;;
-        0x067640|0x067645) 
-                  chip=6764;;
-        *) echo unknown $ochip@fffe8000 $chip@ff800000; return;;
+        case $ochip in
+        0x631480)     chip=63148;;
+        0x631380)     chip=63138;;
+        *)
+            chip=`dw 0xff800000`
+            chip=`echo $chip | awk '{printf "0x%s", substr($3,1,6)}'`
+
+            case $chip in
+            0x490800|0x490801) 
+                      chip=4908;;
+            0x631580) chip=63158;;
+            0x631780) chip=63178;;
+            0x476220) chip=47622;;
+            0x049121) chip=4912 ;;
+            0x631460) chip=63146 ;;
+            0x067560|0x067570) 
+                      chip=6756;;
+            0x067650|0x477220|0x067651|0x477221) 
+                      chip=6765;;
+            0x067660) 
+                      chip=6766;;
+            0x067640|0x067645) 
+                      chip=6764;;
+            *) echo unknown $ochip@fffe8000 $chip@ff800000; return;;
+            esac
         esac
     esac
-    
+
     case $chip in
     63138) sf2_unit=1; sf2_ports='0 1 2 3 4 5   7 8'; sf2_reg_base=0x800c0000; sf2_cfp=1; sf2_acb=2;;
     63148) sf2_unit=1; sf2_ports='0 1 2 3 4 5   7 8'; sf2_reg_base=0x800c0000; sf2_cfp=1; sf2_acb=1;;

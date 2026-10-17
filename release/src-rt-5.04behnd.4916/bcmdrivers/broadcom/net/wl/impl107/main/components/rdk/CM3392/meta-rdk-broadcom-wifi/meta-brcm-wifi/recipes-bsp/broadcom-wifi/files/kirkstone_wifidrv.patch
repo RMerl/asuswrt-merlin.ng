@@ -1,0 +1,60 @@
+diff -ru a/cmwifi/cmwifi.mk b/cmwifi/cmwifi.mk
+--- a/cmwifi/cmwifi.mk
++++ b/cmwifi/cmwifi.mk
+@@ -251,6 +251,8 @@
+ LINUX_OPTS =
+ endif #CM_BUILDROOT
+ 
++USR_CFLAGS += -I$(LINUX_HDR_DIR)
++
+ # The USR_CFLAGS and USR_LDFLAGS will be exported by the top makefile.
+ USR_CFLAGS += -I$(BUILD_DIR)/shared/opensource/include/$(BRCM_BOARD)
+ 
+diff -ru a/main/components/apps/escand/Makefile b/main/components/apps/escand/Makefile
+--- a/main/components/apps/escand/Makefile
++++ b/main/components/apps/escand/Makefile
+@@ -53,7 +53,7 @@
+ export SRCBASE := $(WLAN_SrcBaseA)
+ export BASEDIR := $(WLAN_TreeBaseA)
+ export TOP = ../../router
+-CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall -Werror
++CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall
+ CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include $(SRCBASE)/../components/math/include)))
+ #CFLAGS	+= -g -DDEBUG
+ CFLAGS	+= -s -O2
+diff -ru a/main/components/apps/wldm/Makefile b/main/components/apps/wldm/Makefile
+--- a/main/components/apps/wldm/Makefile
++++ b/main/components/apps/wldm/Makefile
+@@ -92,7 +92,7 @@
+ 
+ all: $(WLDM_LIB) $(PROGS)
+ 
+-CFLAGS		+= -DSHELLPATH=\"$(run_prefix)/bin/sh\" -Wall -Os -fPIC -Werror
++CFLAGS		+= -DSHELLPATH=\"$(run_prefix)/bin/sh\" -Wall -Os -fPIC
+ CFLAGS		+= -I$(ALLSRCBASE)/main/src/include
+ CFLAGS		+= -I$(ALLSRCBASE)/main/src/shared/bcmwifi/include
+ CFLAGS          += -I$(ALLSRCBASE)/main/components/bcmhal/include
+diff -ru a/sys/src/dhd/exe/GNUmakefile b/sys/src/dhd/exe/GNUmakefile
+--- a/sys/src/dhd/exe/GNUmakefile
++++ b/sys/src/dhd/exe/GNUmakefile
+@@ -102,6 +102,8 @@
+   CFLAGS += -DNL80211
+ endif
+ 
++CFLAGS += -I$(LINUX_HDR_DIR)
++
+ #ifdef BCMWPA2
+ CFLAGS += -DBCMWPA2
+ #endif
+diff -ru a/sys/src/wl/exe/GNUmakefile b/sys/src/wl/exe/GNUmakefile
+--- a/sys/src/wl/exe/GNUmakefile
++++ b/sys/src/wl/exe/GNUmakefile
+@@ -327,6 +327,8 @@
+   CFLAGS += -I$(SRCBASE)/../../main/components/bcmcrypto/include
+ endif
+ 
++CFLAGS += -I$(LINUX_HDR_DIR)
++
+ # Add any EXTRA_CFLAGS that were specified on the make command line.
+ CFLAGS += $(EXTRA_CFLAGS)
+ 

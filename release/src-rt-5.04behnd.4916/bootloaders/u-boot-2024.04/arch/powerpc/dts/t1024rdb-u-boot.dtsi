@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0+
+/* Copyright 2023 NXP */
+
+&serial0 {
+	bootph-all;
+};
+
+&serial1 {
+	bootph-all;
+};
+
+#include "u-boot.dtsi"

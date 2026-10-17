@@ -1,0 +1,84 @@
+config FSL_CAAM
+	bool "Freescale Crypto Driver Support"
+	select SHA_HW_ACCEL
+	# hw_sha1() under drivers/crypto, and needed with SHA_HW_ACCEL
+	select MISC if DM
+	imply SPL_CRYPTO if (ARM && SPL)
+	imply CMD_HASH
+	help
+	  Enables the Freescale's Cryptographic Accelerator and Assurance
+	  Module (CAAM), also known as the SEC version 4 (SEC4). The driver uses
+	  Job Ring as interface to communicate with CAAM.
+
+config SYS_FSL_MAX_NUM_OF_SEC
+	int "Number of job rings in the CAAM"
+	depends on FSL_CAAM
+	default 1
+
+config CAAM_64BIT
+	bool
+	default y if PHYS_64BIT && !ARCH_IMX8M && !ARCH_IMX8
+	help
+	  Select Crypto driver for 64 bits CAAM version
+
+config SYS_FSL_HAS_SEC
+	bool
+	help
+		Enable Freescale Secure Boot and Trusted Architecture
+
+config SYS_FSL_SEC_COMPAT_2
+	bool
+	help
+		Secure boot and trust architecture compatible version 2
+
+config SYS_FSL_SEC_COMPAT_4
+	bool
+	help
+		Secure boot and trust architecture compatible version 4
+
+config SYS_FSL_SEC_COMPAT_5
+	bool
+	help
+		Secure boot and trust architecture compatible version 5
+
+config SYS_FSL_SEC_COMPAT_6
+	bool
+	help
+		Secure boot and trust architecture compatible version 6
+
+config SYS_FSL_SEC_BE
+	bool "Big-endian access to Freescale Secure Boot"
+
+config SYS_FSL_SEC_COMPAT
+	int "Freescale Secure Boot compatibility"
+	depends on SYS_FSL_HAS_SEC
+	default 2 if SYS_FSL_SEC_COMPAT_2
+	default 4 if SYS_FSL_SEC_COMPAT_4
+	default 5 if SYS_FSL_SEC_COMPAT_5
+	default 6 if SYS_FSL_SEC_COMPAT_6
+
+config SYS_FSL_SEC_LE
+	bool "Little-endian access to Freescale Secure Boot"
+
+if FSL_CAAM
+
+config FSL_CAAM_RNG
+	bool "Enable Random Number Generator support"
+	depends on DM_RNG
+	default y
+	help
+	  Enable support for the hardware based random number generator
+	  module of the CAAM. The random data is fetched from the DRGB
+	  using the prediction resistance flag which means the DRGB is
+	  reseeded from the TRNG every time random data is generated.
+
+endif
+
+config FSL_DCP_RNG
+	bool "Enable Random Number Generator support"
+	depends on DM_RNG
+	help
+	  Enable support for the hardware based random number generator
+	  module of the DCP. It uses the True Random Number Generator (TRNG)
+	  and a Pseudo-Random Number Generator (PRNG) to achieve a true
+	  randomness and cryptographic strength.

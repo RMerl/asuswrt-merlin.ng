@@ -1,0 +1,18 @@
+# Copyright (C) 2023 Renesas Electronics Corporation
+# SPDX-License-Identifier: GPL-2.0+
+
+if TARGET_RZG2L_SMARC_EVK
+
+config SYS_SOC
+	default "renesas"
+
+config SYS_BOARD
+	default "rzg2l"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "rzg2l-smarc"
+
+endif

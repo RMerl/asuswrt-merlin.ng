@@ -1,0 +1,57 @@
+EVB-RK3328
+M:      Kever Yang <kever.yang@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rk3328
+F:      include/configs/evb_rk3328.h
+F:      configs/evb-rk3328_defconfig
+
+NANOPI-R2C-RK3328
+M:      Tianling Shen <cnsztl@gmail.com>
+S:      Maintained
+F:      configs/nanopi-r2c-rk3328_defconfig
+F:      arch/arm/dts/rk3328-nanopi-r2c-u-boot.dtsi
+
+NANOPI-R2C-PLUS-RK3328
+M:      Tianling Shen <cnsztl@gmail.com>
+S:      Maintained
+F:      configs/nanopi-r2c-plus-rk3328_defconfig
+F:      arch/arm/dts/rk3328-nanopi-r2c-plus-u-boot.dtsi
+
+NANOPI-R2S-RK3328
+M:      David Bauer <mail@david-bauer.net>
+S:      Maintained
+F:      configs/nanopi-r2s-rk3328_defconfig
+F:      arch/arm/dts/rk3328-nanopi-r2s-u-boot.dtsi
+F:      arch/arm/dts/rk3328-nanopi-r2s.dts
+
+ORANGEPI-R1-PLUS-RK3328
+M:      Tianling Shen <cnsztl@gmail.com>
+S:      Maintained
+F:      configs/orangepi-r1-plus-rk3328_defconfig
+F:      arch/arm/dts/rk3328-orangepi-r1-plus-u-boot.dtsi
+
+ORANGEPI-R1-PLUS-LTS-RK3328
+M:      Tianling Shen <cnsztl@gmail.com>
+S:      Maintained
+F:      configs/orangepi-r1-plus-lts-rk3328_defconfig
+F:      arch/arm/dts/rk3328-orangepi-r1-plus-lts-u-boot.dtsi
+
+ROC-RK3328-CC
+M:      Loic Devulder <ldevulder@suse.com>
+M:      Chen-Yu Tsai <wens@csie.org>
+S:      Maintained
+F:      configs/roc-cc-rk3328_defconfig
+F:      arch/arm/dts/rk3328-roc-cc-u-boot.dtsi
+
+ROCK64-RK3328
+M:      Matwey V. Kornilov <matwey.kornilov@gmail.com>
+S:      Maintained
+F:      configs/rock64-rk3328_defconfig
+F:      arch/arm/dts/rk3328-rock64-u-boot.dtsi
+
+ROCKPIE-RK3328
+M:      Banglang Huang <banglang.huang@foxmail.com>
+S:      Maintained
+F:      configs/rock-pi-e-rk3328_defconfig
+F:      arch/arm/dts/rk3328-rock-pi-e.dts
+F:      arch/arm/dts/rk3328-rock-pi-e-u-boot.dtsi

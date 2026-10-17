@@ -1196,6 +1196,9 @@ static const ru_reg_rec *UBUS_RESP_REGS[] =
 const ru_block_rec UBUS_RESP_BLOCK =
 {
     "UBUS_RESP",
+#if RU_INCLUDE_SIZE
+    { 0x000002CC },
+#endif
     UBUS_RESP_ADDRS,
     1,
     19,

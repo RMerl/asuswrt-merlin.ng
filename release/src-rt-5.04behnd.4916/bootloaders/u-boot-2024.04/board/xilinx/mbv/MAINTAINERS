@@ -1,0 +1,7 @@
+XILINX MicroBlaze V BOARD
+M:	Michal Simek <michal.simek@amd.com>
+S:	Maintained
+F:	arch/riscv/dts/xilinx-mbv*
+F:	board/xilinx/mbv/
+F:	configs/xilinx_mbv*
+F:	include/configs/xilinx_mbv.h

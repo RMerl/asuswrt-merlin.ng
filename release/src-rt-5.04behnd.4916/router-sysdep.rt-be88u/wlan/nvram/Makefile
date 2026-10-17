@@ -179,7 +179,7 @@ libnvram:
 	cp -f ./prebuilt/libnvram.so .
 else
 libnvram: nvram_shared.o brcm_generic_lock.o $(WLCSM_LIB)
-	$(LD) -shared -soname libnvram.so -o libnvram.so nvram_shared.o brcm_generic_lock.o  -L$(LIBDIR) $(WLCSM_LIB) -lc -lpthread -L$(TOP)/shared -lshared
+	$(LD) -shared -soname libnvram.so -o libnvram.so nvram_shared.o brcm_generic_lock.o  -L$(LIBDIR) $(WLCSM_LIB) -lc -lpthread
 	install -m 755 libnvram.so $(INSTALL_DIR)/lib
 endif
 

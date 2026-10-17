@@ -133,10 +133,12 @@ typedef struct
 #pragma pack(pop)
 
 #pragma pack(push,1)
-typedef struct
+typedef struct  /* dummy */
 {
-    uint32_t an_link_status:2; /* dummy */
-    uint32_t reserved1:30;
+    uint32_t an_link_status:2;
+    uint32_t an_hcd_rx_pause:1;
+    uint32_t an_hcd_tx_pause:1;
+    uint32_t reserved1:4;
 } serdes_an_status_t;
 #pragma pack(pop)
 

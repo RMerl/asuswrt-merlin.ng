@@ -1,0 +1,18 @@
+if ARCH_NEXELL
+
+config PINCTRL_NEXELL
+	bool "Nexell pinctrl driver"
+	help
+	  Support of pin multiplexing and pin configuration for Nexell
+	  SoCs.
+
+config PINCTRL_NEXELL_S5PXX18
+	bool "Nexell s5pxx18 SoC pinctrl driver"
+	default y if ARCH_S5P4418 || ARCH_S5P6818
+	depends on ARCH_NEXELL && PINCTRL_FULL
+	select PINCTRL_NEXELL
+	help
+	  Support of pin multiplexing and pin configuration for S5P4418
+	  and S5P6818 SoC.
+
+endif

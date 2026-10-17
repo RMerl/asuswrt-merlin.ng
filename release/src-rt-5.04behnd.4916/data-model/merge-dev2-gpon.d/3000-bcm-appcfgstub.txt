@@ -1,0 +1,8 @@
+#
+# Add the object(s) in cms-dm-bcm-appcfgstub.xml at the
+# end of object Device.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-bcm-appcfgstub.xml Device.

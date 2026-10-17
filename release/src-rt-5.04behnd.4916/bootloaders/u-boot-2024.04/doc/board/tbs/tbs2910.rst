@@ -1,0 +1,191 @@
+TBS2910 Matrix ARM miniPC
+=========================
+
+Building
+--------
+To build u-boot for the TBS2910 Matrix ARM miniPC, you can use the following
+procedure:
+
+First add the ARM toolchain to your PATH
+
+Then setup the ARCH and cross compilation environment variables.
+
+When this is done you can then build u-boot for the TBS2910 Matrix ARM miniPC
+with the following commands:
+
+.. code-block:: none
+
+   make mrproper
+   make tbs2910_defconfig
+   make
+
+Once the build is complete, you can find the resulting image as u-boot.imx in
+the current directory.
+
+UART
+----
+The UART voltage is at 3.3V and its settings are 115200bps 8N1
+
+BOOT/UPDATE boot switch:
+------------------------
+The BOOT/UPDATE switch (SW11) is connected to the BOOT_MODE0 and
+BOOT_MODE1 SoC pins. It has "BOOT" and "UPDATE" markings both on
+the PCB and on the plastic case.
+
+When set to the "UPDATE" position, the SoC will use the "Boot From Fuses"
+configuration, and since BT_FUSE_SEL is 0, this makes the SOC jump to serial
+downloader.
+
+When set in the "BOOT" position, the SoC will use the "Internal boot"
+configuration, and since BT_FUSE_SEL is 0, it will then use the GPIO pins
+for the boot configuration.
+
+SW6 binary DIP switch array on the PCB revision 2.1:
+----------------------------------------------------
+On that PCB revision, SW6 has 8 positions.
+
+Switching a position to ON sets the corresponding
+register to 1.
+
+See the following table for a correspondence between the switch positions and
+registers:
+
+===============    ============
+Switch position    Register
+===============    ============
+1                  BOOT_CFG2[3]
+2                  BOOT_CFG2[4]
+3                  BOOT_CFG2[5]
+4                  BOOT_CFG2[6]
+5                  BOOT_CFG1[4]
+6                  BOOT_CFG1[5]
+7                  BOOT_CFG1[6]
+8                  BOOT_CFG1[7]
+===============    ============
+
+For example:
+
+  - To boot from the eMMC: 1:ON , 2:ON, 3:ON, 4:OFF, 5:OFF, 6:ON, 7:ON, 8:OFF
+  - To boot from the microSD slot: 1: ON, 2: OFF, 3: OFF, 4: OFF, 5:OFF, 6:OFF,
+    7:ON, 8:OFF
+  - To boot from the SD slot: 1: OFF, 2: ON, 3: OFF, 4: OFF, 5:OFF, 6:OFF, 7:ON,
+    8:OFF
+  - To boot from SATA: 1: OFF, 2: OFF, 3: OFF, 4: OFF, 5:OFF, 6:ON, 7:OFF, 8:OFF
+
+You can refer to the BOOT_CFG registers in the I.MX6Q reference manual for
+additional details.
+
+SW6 binary DIP switch array on the PCB revision 2.3:
+----------------------------------------------------
+On that PCB revision, SW6 has only 4 positions.
+
+Switching a position to ON sets the corresponding
+register to 1.
+
+See the following table for a correspondence between the switch positions and
+registers:
+
+===============    ============
+Switch position    Register
+===============    ============
+1                  BOOT_CFG2[3]
+2                  BOOT_CFG2[4]
+3                  BOOT_CFG2[5]
+4                  BOOT_CFG1[5]
+===============    ============
+
+For example:
+
+- To boot from the eMMC: 1:ON, 2:ON, 3:ON, 4:ON
+- To boot from the microSD slot: 1:ON, 2:OFF, 3:OFF, 4:OFF
+- To boot from the SD slot: 1:OFF, 2:ON, 3:OFF, 4:OFF
+
+You can refer to the BOOT_CFG registers in the I.MX6Q reference manual for
+additional details.
+
+Loading u-boot from USB:
+------------------------
+If you need to load u-boot from USB, you can use the following instructions:
+
+First build imx_usb_loader, as we will need it to load u-boot from USB. This
+can be done with the following commands:
+
+.. code-block:: none
+
+   git clone git://github.com/boundarydevices/imx_usb_loader.git
+   cd imx_usb_loader
+   make
+
+This will create the resulting imx_usb binary.
+
+When this is done, you can copy the u-boot.imx image that you built earlier
+in in the imx_usb_loader directory.
+
+You will then need to power off the TBS2910 Matrix ARM miniPC and make sure that
+the boot switch is set to "UPDATE"
+
+Once this is done you can connect an USB cable between the computer that will
+run imx_usb and the TBS2910 Matrix ARM miniPC.
+
+If you also need to access the u-boot console, you will also need to connect an
+UART cable between the computer running imx_usb and the TBS2910 Matrix ARM
+miniPC.
+
+Once everything is connected you can finally power on the TBS2910 Matrix ARM
+miniPC. The SoC will then jump to the serial download and wait for you.
+
+Finlay, you can load u-boot through USB with with the following command:
+
+.. code-block:: none
+
+   sudo ./imx_usb -v u-boot.imx
+
+The u-boot boot messages will then appear in the serial console.
+
+Install u-boot on the eMMC:
+---------------------------
+To install u-boot on the eMMC, you first need to boot the TBS2910 Matrix ARM
+miniPC.
+
+Once booted, you can flash u-boot.imx to mmcblk0boot0 with the
+following commands:
+
+.. code-block:: none
+
+   sudo echo 0 >/sys/block/mmcblk0boot0/force_ro
+   sudo dd if=u-boot.imx of=/dev/mmcblk0boot0 bs=1k seek=1; sync
+
+Note that the eMMC card node may vary, so adjust this as needed.
+
+Once the new u-boot version is installed, to boot on it you then need to power
+off the TBS2910 Matrix ARM miniPC.
+
+Once it is off, you need make sure that the boot switch is set to "BOOT" and
+that the SW6 switch is set to boot on the eMMC as described in the previous
+sections.
+
+If you also need to access the u-boot console, you will also need to connect an
+UART cable between the computer running imx_usb and the TBS2910 Matrix ARM
+miniPC.
+
+You can then power up the TBS2910 Matrix ARM miniPC and U-Boot messages will
+appear in the serial console.
+
+Booting a distribution:
+-----------------------
+When booting on the TBS2910 Matrix ARM miniPC, by default U-Boot will first try
+to boot from hardcoded offsets from the start of the eMMC. This is for
+compatibility with the stock GNU/Linux distribution.
+
+If that fails it will then try to boot from several interfaces using
+'distro_bootcmd': It will first try to boot from the microSD slot, then the
+SD slot, then the internal eMMC, then the SATA interface and finally the USB
+interface. For more information on how to configure your distribution to boot,
+see 'doc/develop/distro.rst'.
+
+Links:
+------
+  - https://www.tbsdtv.com/download/document/tbs2910/TBS2910-Matrix-ARM-mini-PC-SCH_rev2.1.pdf
+    - The schematics for the revision 2.1 of the TBS2910 Matrix ARM miniPC.
+  - https://cache.freescale.com/files/32bit/doc/ref_manual/IMX6DQRM.pdf - The
+    SoC reference manual for additional details on the BOOT_CFG registers.

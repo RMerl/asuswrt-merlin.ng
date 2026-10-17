@@ -1,0 +1,33 @@
+Qualcomm QUP SPI controller Device Tree Bindings
+-------------------------------------------
+
+Required properties:
+- compatible : Should be "qcom,spi-qup-v1.1.1", "qcom,spi-qup-v2.1.1"
+				or "qcom,spi-qup-v2.2.1"
+- reg : Physical base address and size of SPI registers map.
+- clock	: Clock phandle (see clock bindings for details).
+- #address-cells : Number of cells required to define a chip select
+			address on the SPI bus. Should be set to 1.
+- #size-cells : Should be zero.
+- pinctrl-names : Must be "default"
+- pinctrl-n : At least one pinctrl phandle
+- cs-gpios : Should specify GPIOs used for chipselects.
+				The gpios will be referred to as reg = <index> in the
+				SPI child nodes.
+
+Optional properties:
+- num-cs : total number of chipselects
+
+Example:
+
+	blsp1_spi1: spi@78b5000 {
+		compatible = "qcom,spi-qup-v2.2.1";
+		reg = <0x78b5000 0x600>;
+		clock = <&gcc 23>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pinctrl-names = "spi";
+		pinctrl-0 = <&blsp_spi0>;
+		num-cs = <2>;
+		cs-gpios = <&soc_gpios 54 GPIO_ACTIVE_HIGH>, <&soc_gpios 4 GPIO_ACTIVE_HIGH>;
+	};

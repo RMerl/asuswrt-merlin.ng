@@ -1,0 +1,36 @@
+# Generic Trusted Execution Environment Configuration
+config TEE
+	bool "Trusted Execution Environment support"
+	depends on (ARM && (ARM64 || CPU_V7A)) || SANDBOX
+	select ARM_SMCCC if ARM
+	help
+	  This implements a generic interface towards a Trusted Execution
+	  Environment (TEE). A TEE is a trusted OS running in some secure
+	  environment, for example, TrustZone on ARM cpus, or a separate
+	  secure co-processor etc. See also:
+	  https://en.wikipedia.org/wiki/Trusted_execution_environment
+
+if TEE
+
+menu "TEE drivers"
+
+config SANDBOX_TEE
+	bool "Sandbox TEE emulator"
+	depends on SANDBOX
+	default y
+	help
+	  This emulates a generic TEE needed for testing including the AVB
+	  TA. The emulation provides all callbacks of a regular TEE and
+	  supports session and shared memory management. The AVB TA is
+	  emulated with rollback indexes and device lock-state, the state
+	  of the TA is only kept in RAM and will be reset on each boot.
+	  The emulation only supports one open session at a time.
+	  Interaction from the U-Boot command line in possible via the
+	  "avb" commands.
+
+source "drivers/tee/optee/Kconfig"
+source "drivers/tee/broadcom/Kconfig"
+
+endmenu
+
+endif

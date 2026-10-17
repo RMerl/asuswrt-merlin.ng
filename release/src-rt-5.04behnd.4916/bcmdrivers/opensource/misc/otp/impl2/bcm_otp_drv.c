@@ -247,6 +247,7 @@ static int otp_ioctl(struct inode *inode, struct file *flip,
                 ret = bcm_otp_read(OTP_MAP_CUST_MFG_MRKTID, &val32, &val_size);
                 if(!ret)
                 {
+                    *val32 &= 0xffff;
                     ctrlParms.value = *val32;
                 }
                 break;
@@ -264,6 +265,36 @@ static int otp_ioctl(struct inode *inode, struct file *flip,
                     ctrlParms.value = *val64;
                 }
                 break;
+            case OTP_CU_LOCK:
+                ret = bcm_otp_read(OTP_MAP_DBG_MODE, (u32**)&val32, &val_size);
+                if(!ret)
+                {
+                    ctrlParms.value = *val32;
+                }
+                break;
+            case OTP_FLASH_ENCRYPTED:
+            {
+                ret = bcm_otp_read(OTP_MAP_FLASH_ENCRYPTED, (u32**)&val64, &val_size);
+                if(!ret) {
+                    if (*val64) {
+                        *val64 = (*val64 >> OTP_FLASH_ENCRYPTED_SHIFT) & OTP_FLASH_ENCRYPTED_MASK; 
+                    }
+                    ctrlParms.value = *val64;
+                }
+                break;
+            }
+            case OTP_AUTO_FLASH_ENC:
+            {
+                ret = bcm_otp_read(OTP_MAP_AUTO_FLASH_ENC, (u32**)&val64, &val_size);
+                if(!ret) {
+            	    if (*val64) {
+            		    *val64 = (*val64 >> OTP_AUTO_FLASH_ENC_SHIFT) & OTP_AUTO_FLASH_ENC_MASK; 
+                    }
+                    ctrlParms.value = *val64;
+                }
+                break;
+            }
+
             default:
                 ret = -1;
             }
@@ -307,11 +338,25 @@ static int otp_ioctl(struct inode *inode, struct file *flip,
                 ret = bcm_otp_write(OTP_MAP_JU_MODE, (const u32*)&val32, sizeof(u32));
                 break;
             }
+            case OTP_FLASH_ENCRYPTED:
+            {
+                val64 = 1UL << OTP_FLASH_ENCRYPTED_SHIFT;
+
+                 /* coverity[incompatible_cast:SUPPRESS] */
+                ret = bcm_otp_write(OTP_MAP_FLASH_ENCRYPTED, (u32*)&val64, sizeof(val64));
+                break;
+            }
+            case OTP_AUTO_FLASH_ENC:
+            {
+                val64 = 1UL << OTP_AUTO_FLASH_ENC_SHIFT;
+                ret = bcm_otp_write(OTP_MAP_AUTO_FLASH_ENC, (u32*)&val64, sizeof(val64));
+                break;
+            }
             case OTP_COMMIT:
                 ret = bcm_otp_commit();
                 break;
             default:
-                    ret = -1;
+                ret = -1;
             }
         }
         break;

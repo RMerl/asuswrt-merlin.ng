@@ -1,0 +1,39 @@
+#
+# NXP Management Complex
+#
+
+menuconfig FSL_MC_ENET
+	bool "NXP Management Complex"
+	depends on ARCH_LS2080A || ARCH_LS1088A || ARCH_LX2160A || ARCH_LX2162A
+	default y
+	select DM_MDIO
+	select FSL_LS_MDIO
+	select RESV_RAM
+	help
+	  Enable Management Complex (MC) network
+	  This is NXP Management Complex menuconfig
+	  that contains all MC related config options
+
+if FSL_MC_ENET
+
+config SYS_MC_RSV_MEM_ALIGN
+	hex "Management Complex reserved memory alignment"
+	depends on RESV_RAM
+	default 0x20000000 if ARCH_LS2080A || ARCH_LS1088A || ARCH_LX2160A || ARCH_LX2162A
+	help
+	  Reserved memory needs to be aligned for MC to use. Default value
+	  is 512MB.
+
+config MC_DRAM_SPB_OFFSET
+	hex "Soft Parser SPB DRAM offset"
+	default 0x00F40000
+	help
+	  Set the DRAM offset for Soft Parser Blob.
+
+config MC_SPB_MAX_SIZE
+	hex "Soft Parser SPB maximum size"
+	default 0x00020000
+	help
+	  Set the maximum size for Soft Parser Blob.
+
+endif # FSL_MC_ENET

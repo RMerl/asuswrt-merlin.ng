@@ -1,0 +1,155 @@
+SPDX-License-Identifier: GPL-2.0
+
+  U-Boot is Free Software.  It is copyrighted by Wolfgang Denk and
+many others who contributed code (see the actual source code and the
+git commit messages for details).  You can redistribute U-Boot and/or
+modify it under the terms of version 2 of the GNU General Public
+License as published by the Free Software Foundation.  Most of it can
+also be distributed, at your option, under any later version of the
+GNU General Public License -- see individual files for exceptions.
+
+  NOTE! This license does *not* cover the so-called "standalone"
+applications that use U-Boot services by means of the jump table
+provided by U-Boot exactly for this purpose - this is merely
+considered normal use of U-Boot, and does *not* fall under the
+heading of "derived work" -- see file  Licenses/Exceptions  for
+details.
+
+  Also note that the GPL and the other licenses are copyrighted by
+the Free Software Foundation and other organizations, but the
+instance of code that they refer to (the U-Boot source code) is
+copyrighted by me and others who actually wrote it.
+-- Wolfgang Denk
+
+
+Like many other projects, U-Boot has a tradition of including big
+blocks of License headers in all files.  This not only blows up the
+source code with mostly redundant information, but also makes it very
+difficult to generate License Clearing Reports.  An additional problem
+is that even the same licenses are referred to by a number of
+slightly varying text blocks (full, abbreviated, different
+indentation, line wrapping and/or white space, with obsolete address
+information, ...) which makes automatic processing a nightmare.
+
+To make this easier, such license headers in the source files will be
+replaced with a single line reference to Unique License Identifiers
+as defined by the Linux Foundation's SPDX project [1].
+
+If a "SPDX-License-Identifier:" line references more than one Unique
+License Identifier, then this means that the respective file can be
+used under the terms of either of these licenses, i. e. with
+
+	SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+
+you can choose between GPL-2.0+ and BSD-3-Clause licensing.
+
+We use the SPDX Unique License Identifiers here; these are available
+at [2].
+
+License identifier syntax
+-------------------------
+
+1. Placement:
+
+   The SPDX license identifier in U-Boot files shall be added at the first
+   possible line in a file which can contain a comment.  For the majority
+   or files this is the first line, except for scripts which require the
+   '#!PATH_TO_INTERPRETER' in the first line.  For those scripts the SPDX
+   identifier goes into the second line.
+
+|
+
+2. Style:
+
+   The SPDX license identifier is added in form of a comment.  The comment
+   style depends on the file type::
+
+      C source:	// SPDX-License-Identifier: <SPDX License Expression>
+      C header:	/* SPDX-License-Identifier: <SPDX License Expression> */
+      ASM:	/* SPDX-License-Identifier: <SPDX License Expression> */
+      scripts:	# SPDX-License-Identifier: <SPDX License Expression>
+      .rst:	.. SPDX-License-Identifier: <SPDX License Expression>
+      .dts{i}:	// SPDX-License-Identifier: <SPDX License Expression>
+
+   If a specific tool cannot handle the standard comment style, then the
+   appropriate comment mechanism which the tool accepts shall be used. This
+   is the reason for having the "/\* \*/" style comment in C header
+   files. There was build breakage observed with generated .lds files where
+   'ld' failed to parse the C++ comment. This has been fixed by now, but
+   there are still older assembler tools which cannot handle C++ style
+   comments.
+
+|
+
+3. Syntax:
+
+   A <SPDX License Expression> is either an SPDX short form license
+   identifier found on the SPDX License List, or the combination of two
+   SPDX short form license identifiers separated by "WITH" when a license
+   exception applies. When multiple licenses apply, an expression consists
+   of keywords "AND", "OR" separating sub-expressions and surrounded by
+   "(", ")" .
+
+   License identifiers for licenses like [L]GPL with the 'or later' option
+   are constructed by using a "+" for indicating the 'or later' option.::
+
+      // SPDX-License-Identifier: GPL-2.0+
+      // SPDX-License-Identifier: LGPL-2.1+
+
+   WITH should be used when there is a modifier to a license needed.
+   For example, the linux kernel UAPI files use the expression::
+
+      // SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
+      // SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note
+
+   Other examples using WITH exceptions found in the linux kernel are::
+
+      // SPDX-License-Identifier: GPL-2.0 WITH mif-exception
+      // SPDX-License-Identifier: GPL-2.0+ WITH GCC-exception-2.0
+
+   Exceptions can only be used with particular License identifiers. The
+   valid License identifiers are listed in the tags of the exception text
+   file.
+
+   OR should be used if the file is dual licensed and only one license is
+   to be selected.  For example, some dtsi files are available under dual
+   licenses::
+
+      // SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+
+   Examples from U-Boot for license expressions in dual licensed files::
+
+      // SPDX-License-Identifier: GPL-2.0 OR MIT
+      // SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+
+   AND should be used if the file has multiple licenses whose terms all
+   apply to use the file. For example, if code is inherited from another
+   project and permission has been given to put it in U-Boot, but the
+   original license terms need to remain in effect::
+
+      // SPDX-License-Identifier: (GPL-2.0 WITH Linux-syscall-note) AND MIT
+
+   Another other example where both sets of license terms need to be
+   adhered to is::
+
+      // SPDX-License-Identifier: GPL-1.0+ AND LGPL-2.1+
+
+[1] http://spdx.org/
+[2] http://spdx.org/licenses/
+
+Full name					SPDX Identifier	OSI Approved	File name		URI
+=======================================================================================================================================
+bzip2 and libbzip2 License v1.0.6		bzip2-1.0.6			bzip2-1.0.6.txt		https://spdx.org/licenses/bzip2-1.0.6.html
+GNU General Public License v2.0 only		GPL-2.0		Y		gpl-2.0.txt		http://www.gnu.org/licenses/gpl-2.0.txt
+GNU General Public License v2.0 or later	GPL-2.0+	Y		gpl-2.0.txt		http://www.gnu.org/licenses/gpl-2.0.txt
+GNU Library General Public License v2 or later	LGPL-2.0+	Y		lgpl-2.0.txt		http://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt
+GNU Lesser General Public License v2.1 or later	LGPL-2.1+	Y		lgpl-2.1.txt		http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+eCos license version 2.0			eCos-2.0			eCos-2.0.txt		http://www.gnu.org/licenses/ecos-license.html
+BSD 2-Clause License				BSD-2-Clause	Y		bsd-2-clause.txt	http://spdx.org/licenses/BSD-2-Clause
+BSD 3-clause "New" or "Revised" License		BSD-3-Clause	Y		bsd-3-clause.txt	http://spdx.org/licenses/BSD-3-Clause#licenseText
+IBM PIBS (PowerPC Initialization and		IBM-pibs			ibm-pibs.txt
+	Boot Software) license
+ISC License					ISC		Y		isc.txt			https://spdx.org/licenses/ISC
+MIT License					MIT		Y		mit.txt			https://spdx.org/licenses/MIT.html
+SIL OPEN FONT LICENSE (OFL-1.1)			OFL-1.1		Y		OFL.txt			https://spdx.org/licenses/OFL-1.1.html
+X11 License					X11				x11.txt			https://spdx.org/licenses/X11.html

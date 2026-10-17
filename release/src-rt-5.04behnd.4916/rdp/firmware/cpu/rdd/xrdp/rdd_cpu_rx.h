@@ -55,8 +55,11 @@ typedef enum
     TX_MCORE_RING_ID,        /* INTR: No */
     TX_RCYCLE_MCORE_RING_ID, /* INTR: Yes */
 #endif
+#if defined(SCORE_SUPPORT)
+    SCORE_RING_ID,    /* INTR: Yes. for SCORE to host communication. */
+#endif
     TR471_RING_ID,    /* INTR: Yes. for TR471 to notify host TX completion. */
-    RING_ID_LAST = TR471_RING_ID,     /* Note: TR471_RING_ID = 29, RING_ID 30 used for TCP speedtest (hard coded in tcp_engine.c) */
+    RING_ID_LAST = TR471_RING_ID,     /* Note: TR471_RING_ID = 29, intr_id 30 used for TCP speedtest (hard coded in tcp_engine.c) */
     RING_ID_NUM_OF
 } ring_id_t;
 

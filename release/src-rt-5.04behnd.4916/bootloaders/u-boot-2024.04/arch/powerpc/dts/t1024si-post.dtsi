@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * T1024 Silicon/SoC Device Tree Source (post include)
+ *
+ * Copyright 2014 Freescale Semiconductor Inc.
+ * Copyright 2019-2020 NXP
+ *
+ */
+
+#include "t1023si-post.dtsi"

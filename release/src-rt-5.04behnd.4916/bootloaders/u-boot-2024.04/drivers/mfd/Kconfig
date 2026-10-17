@@ -1,0 +1,4 @@
+config MFD_ATMEL_SMC
+       bool "Atmel Static Memory Controller driver"
+       help
+	Say yes here to support Atmel Static Memory Controller driver.

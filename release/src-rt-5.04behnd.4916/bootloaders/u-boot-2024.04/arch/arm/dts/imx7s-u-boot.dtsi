@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+
+&crypto {
+	sec_jr0: jr@1000 {
+		status = "disabled";
+	};
+};

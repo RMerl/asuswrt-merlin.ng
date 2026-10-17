@@ -35,7 +35,6 @@
 #include "bcmtypes.h"
 #include "rdpa_types.h"
 
-#include "rdpa_vlan_action.h"
 #include "rdpa_ingress_class_basic.h"
 #include "rdpa_egress_tm.h"
 
@@ -60,8 +59,6 @@
 #ifndef IFNAMSIZ
 #define IFNAMSIZ  16
 #endif
-
-#define RDPA_VLAN_ACTION_TPID_VALUE_DONT_CARE (0xffff)
 
 #if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(RDP_UFC)
 #define CONFIG_BCM_RDPA_INGRESS_QOS
@@ -252,7 +249,6 @@ typedef struct
     uint8_t forw_mode;
     char    egress_port_name[16];
     uint32_t queue_id; /**< Egress queue id and wan flow */
-    rdpa_vlan_action_cfg_t vlan_action;
     int8_t opbit_remark; /*-1: no remark */
     int8_t ipbit_remark; /*-1: no remark */
     int8_t dscp_remark; /*-1: no remark */

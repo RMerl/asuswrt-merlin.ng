@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Texas Instruments Incorporated - https://www.ti.com/
+ */
+#include "omap5-u-boot.dtsi"
+
+/ {
+	xtal25mhz: xtal25mhz {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <25000000>;
+	};
+};
+
+&i2c1 {
+	cdce913: cdce913@65 {
+		compatible = "ti,cdce913";
+		reg = <0x65>;
+		clocks = <&xtal25mhz>;
+		#clock-cells = <1>;
+		xtal-load-pf = <0>;
+	};
+};

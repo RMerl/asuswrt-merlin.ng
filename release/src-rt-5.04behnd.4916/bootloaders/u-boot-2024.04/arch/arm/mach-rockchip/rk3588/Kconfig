@@ -1,0 +1,178 @@
+if ROCKCHIP_RK3588
+
+config TARGET_EVB_RK3588
+	bool "Rockchip EVB1 v10"
+	select BOARD_LATE_INIT
+	help
+	  RK3588 EVB is a evaluation board for Rockchp RK3588.
+
+config TARGET_NANOPCT6_RK3588
+	bool "FriendlyElec NanoPC-T6 RK3588 board"
+	select BOARD_LATE_INIT
+	help
+	  The NanoPC-T6 is a Rockchip RK3588 based SBC by FriendlyElec.
+
+	  There are four variants depending on the DRAM size: 4G/32GB eMMC,
+	  8G/64GB eMMC, 16G/16MB SPI NOR, and 16G/256GB eMMC/16MB SPI NOR
+
+	  Specifications:
+
+	  CPU: Rockchip RK3588, 4x Cortex-A76 (up to 2.4GHz)
+	                      + 4x Cortex-A55 (up to 1.8GHz)
+	  GPU: Mali-G610 MP4
+	  VPU: 8K@60fps H.265 and VP9 decoder, 8K@30fps H.264 decoder,
+	       4K@60fps AV1 decoder, 8K@30fps H.264 and H.265 encoder
+	  NPU: 6TOPs, supports INT4/INT8/INT16/FP16
+	  RAM: 64-bit 4GB/8GB/16GB LPDDR4X at 2133MHz
+	  eMMC: 0GB/32GB/64GB/256GB HS400
+	  MicroSD Slot: MicroSD SDR104
+	  PCIe 3.0: M.2 M-Key x1, PCIe 3.0 x4 for NVMe SSDs up to 2,500 MB/s
+	  Ethernet: PCIe 2.5G 2x Ethernet (RTL8125BG)
+	  PCIe 2.1: M.2 E-Key x1, PCIe 2.1 x1 and USB2.0 Host,
+	            supports M.2 WiFi and Bluetooth
+	  4G Module: MiniPCIe x1, MicroSIM Card Slot x1
+	  Audio Out: 3.5mm jack for stereo headphone output
+	  Audio In: 2.0mm PH-2A connector for analog microphone input
+	  Video Input: standard HDMI input port, up to 4Kp60
+	  2x 4-lane MIPI-CSI, compatible with MIPI V1.2
+	  Video Output: 2x standard HDMI output ports compatible with HDMI2.1,
+	                HDMI2.0, and HDMI1.4
+	  2x 4-lane MIPI-DSI, compatible with MIPI DPHY 2.0 or CPHY 1.1
+	  USB-A: USB 3.0, Type A
+	  USB-C: Full function USB Type‑C port, DP display up to 4Kp60, USB 3.0
+	  40-pin 2.54mm header connector: up to 2x SPIs, 6x UARTs, 1x I2Cs,
+	                                  8x PWMs, 2x I2Ss, 28x GPIOs
+	  Debug UART: 3 Pin 2.54mm header, 3V level, 1500000bps
+	  Onboard IR receiver: 38KHz carrier frequency
+	  RTC Battery: 2 Pin 1.27/1.25mm RTC battery connector for low power
+	               RTC IC HYM8563TS
+	  5V Fan connector
+	  Working Temperature: 0C to 70C
+	  Power: 5.5*2.1mm DC Jack, 12VDC input
+	  Dimensions: 110x80x1.6mm (without case) / 86x114.5x30mm (with case)
+
+config TARGET_RK3588_NEU6
+	bool "Edgeble Neural Compute Module 6(Neu6) SoM"
+	select BOARD_LATE_INIT
+	help
+	  Neu6A:
+	  Neural Compute Module 6A(Neu6A) is a 96boards SoM-CB compute module
+	  based on Rockchip RK3588 from Edgeble AI.
+
+	  Neu6A-IO:
+	  Neural Compute Module 6A(Neu6A) IO board is an industrial form factor
+	  IO board and Neu6a needs to mount on top of this IO board in order to
+	  create complete Edgeble Neural Compute Module 6A(Neu6A) IO platform.
+
+	  Neu6B:
+	  Neural Compute Module 6B(Neu6B) is a 96boards SoM-CB compute module
+	  based on Rockchip RK3588J from Edgeble AI.
+
+	  Neu6A-IO:
+	  Neural Compute Module 6B(Neu6B) IO board is an industrial form factor
+	  IO board and Neu6a needs to mount on top of this IO board in order to
+	  create complete Edgeble Neural Compute Module 6B(Neu6B) IO platform.
+
+config TARGET_ROCK5A_RK3588
+	bool "Radxa ROCK5A RK3588 board"
+	select BOARD_LATE_INIT
+	help
+	  Radxa ROCK5A is a Rockchip RK3588S based SBC (Single Board Computer)
+	  by Radxa.
+
+	  There are tree variants depending on the DRAM size : 4G, 8G and 16G.
+
+	  Specification:
+
+	  Rockchip Rk3588S SoC
+	  4x ARM Cortex-A76, 4x ARM Cortex-A55
+	  4/8/16GB memory LPDDR4x
+	  Mali G610MC4 GPU
+	  MIPI CSI 2 multiple lanes connector
+	  4-lane MIPI DSI connector
+	  Audio – 3.5mm earphone jack
+	  eMMC module connector
+	  uSD slot (up to 128GB)
+	  2x USB 2.0, 2x USB 3.0
+	  2x micro HDMI 2.1 ports, one up to 8Kp60, the other up to 4Kp60
+	  Gigabit Ethernet RJ45 with optional PoE support
+	  40-pin IO header including UART, SPI, I2C and 5V DC power in
+	  USB PD over USB Type-C
+	  Size: 85mm x 56mm (Raspberry Pi 4 form factor)
+
+config TARGET_ROCK5B_RK3588
+	bool "Radxa ROCK5B RK3588 board"
+	select BOARD_LATE_INIT
+	help
+	  Radxa ROCK5B is a Rockchip RK3588 based SBC (Single Board Computer)
+	  by Radxa.
+
+	  There are tree variants depending on the DRAM size : 4G, 8G and 16G.
+
+	  Specification:
+
+	  Rockchip Rk3588 SoC
+	  4x ARM Cortex-A76, 4x ARM Cortex-A55
+	  4/8/16GB memory LPDDR4x
+	  Mali G610MC4 GPU
+	  2x MIPI CSI 2 multiple lanes connector
+	  eMMC module connector
+	  uSD slot (up to 128GB)
+	  2x USB 2.0 Type-A, 2x USB 3.0 Type-A, 1x USB 3.0 Type-C
+	  2x HDMI 2.1 output, 1x micro HDMI input
+	  2.5 Gbps Ethernet port
+	  40-pin IO header including UART, SPI, I2C and 5V DC power in
+	  USB PD over USB Type-C
+	  Size: 100mm x 72mm (Pico-ITX form factor)
+
+config TARGET_QUARTZPRO64_RK3588
+	bool "Pine64 QuartzPro64 RK3588 board"
+	select BOARD_LATE_INIT
+	help
+	  Pine64 QuartzPro64 is a Rockchip RK3588 based SBC (Single Board
+	  Computer) by Pine64.
+
+config TARGET_TURINGRK1_RK3588
+	bool "Turing Machines RK1 RK3588 board"
+	select BOARD_LATE_INIT
+	help
+	  The Turing RK1 is a Rockchip RK3588 based SoM from Turing Machines.
+
+	  There are three variants depending on the DRAM size : 8G, 16G and 32G.
+
+	  Specifications:
+
+	  Rockchip RK3588 SoC
+	  4x ARM Cortex-A76, 4x ARM Cortex-A55
+	  8/16/32GB memory LPDDR4x
+	  Mali G610MC4 GPU
+	  32GB eMMC HS400
+	  2x USB 2.0, 2x USB 3.0
+	  2x MIPI CSI 4x lanes
+	  1x MIPI-DSI DPHY 2x lanes
+	  PCIe 2.0 x1, PCIe 3.0 x4
+	  1x HDMI 2.1 output, 1x DP 1.4 output
+	  Gigabit Ethernet
+	  Size: 69.6mm x 45mm (260-pin SO-DIMM connector)
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0xfd588080
+
+config ROCKCHIP_STIMER_BASE
+	default 0xfd8c8000
+
+config SYS_SOC
+	default "rk3588"
+
+config SYS_MALLOC_F_LEN
+	default 0x80000
+
+source board/edgeble/neural-compute-module-6/Kconfig
+source board/friendlyelec/nanopc-t6-rk3588/Kconfig
+source board/pine64/quartzpro64-rk3588/Kconfig
+source board/turing/turing-rk1-rk3588/Kconfig
+source board/rockchip/evb_rk3588/Kconfig
+source board/radxa/rock5a-rk3588s/Kconfig
+source board/radxa/rock5b-rk3588/Kconfig
+
+endif

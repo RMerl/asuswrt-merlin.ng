@@ -1,0 +1,14 @@
+if	TARGET_P1020RDB_PC	|| \
+	TARGET_P1020RDB_PD	|| \
+	TARGET_P2020RDB
+
+config SYS_BOARD
+	default "p1_p2_rdb_pc"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "p1_p2_rdb_pc"
+
+endif

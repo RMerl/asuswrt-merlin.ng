@@ -1,0 +1,5 @@
+<PUBLISH>
+@@ -168 +168 @@
+-# BUILD_BCM_BML is not set
++BUILD_BCM_BML=y
++BUILD_BML_IDS=y

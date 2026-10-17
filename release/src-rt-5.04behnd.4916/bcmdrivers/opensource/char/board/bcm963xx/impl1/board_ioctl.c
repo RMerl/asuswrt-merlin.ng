@@ -39,11 +39,9 @@
 #include <board.h>
 #include <bcm_dgasp.h>
 
-#include <bcm_mbox_map.h>
 #include <shared_utils.h>
 #include <flash_api.h>
 #include <flash_common.h>
-#include <bcmSpiRes.h>
 
 #include "bcm_otp.h"
 #include "board_ioctl.h"
@@ -58,6 +56,15 @@ extern int compat_kerSysBcmSpiSlaveInit(int dev);
 extern int compat_kerSysBcmSpiSlaveRead(int dev, unsigned int addr, unsigned int *data, unsigned int len);
 extern int compat_kerSysBcmSpiSlaveWrite(int dev, unsigned int addr, unsigned int data, unsigned int len);
 extern int compat_kerSysBcmSpiSlaveWriteBuf(int dev, unsigned int addr, unsigned int *data, unsigned int len, unsigned int unitSize);
+
+void kerSysNvRamGetBoardId(char *boardId, int len)
+{
+    if( eNvramGet(NVRAM_SZBOARDID,boardId, len) < 0)
+    {
+        memset(boardId, '\0', len);
+    } 
+}
+EXPORT_SYMBOL(kerSysNvRamGetBoardId);
                                         
 long board_unlocked_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
@@ -147,7 +154,7 @@ err:
 int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned long arg, BOARD_IOCTL_PARMS *ctrlParms)
 {
 
-    int ret;
+    int ret = 0;
     char *param=NULL, *value=NULL;
     unsigned char ucaMacAddr[NVRAM_MAC_ADDRESS_LEN];
 
@@ -193,7 +200,7 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
 
         case NVRAM:
         {
-            ret = setUserNvRam(ctrlParms->string, ctrlParms->strLen, ctrlParms->offset);
+            printk("Invalid IOCTL NVRAM\n"); 
             break;
         }
         case ENVRAM:
@@ -228,78 +235,6 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
             break;
         }
 
-        case BCM_IMAGE_CFE:
-            {
-            unsigned int not_used;
-
-            if(kerSysBlParmsGetInt(NAND_RFS_OFS_NAME, (int *)&not_used)==0)
-            {
-                printk("\nERROR: Image does not support a NAND flash device.\n\n");
-                ret = -1;
-                break;
-            }
-            if( ctrlParms->strLen <= 0 || ctrlParms->strLen > FLASH_LENGTH_BOOT_ROM )
-            {
-                printk("Illegal CFE size [%d]. Size allowed: [%d]\n",
-                    ctrlParms->strLen, FLASH_LENGTH_BOOT_ROM);
-                ret = -1;
-                break;
-            }
-
-            ret = commonImageWrite(ctrlParms->offset + BOOT_OFFSET + IMAGE_OFFSET,
-                ctrlParms->string, ctrlParms->strLen, NULL, 0);
-
-            }
-            break;
-
-        case BCM_IMAGE_FS:
-            {
-            int numPartitions = 1;
-            int noReboot = FLASH_IS_NO_REBOOT(ctrlParms->offset);
-            int partition = FLASH_GET_PARTITION(ctrlParms->offset);
-            unsigned int not_used;
-            if(kerSysBlParmsGetInt(NAND_RFS_OFS_NAME, (int *)&not_used)==0)
-            {
-                printk("\nERROR: Image does not support a NAND flash device.\n\n");
-                ret = -1;
-                break;
-            }
-            ret = flashFsKernelImage(ctrlParms->string, ctrlParms->strLen,
-                partition, &numPartitions);
-            if(ret == 0 && (numPartitions == 1 || noReboot == 0))
-                resetPwrmgmtDdrMips();
-            }
-            break;
-
-        case BCM_IMAGE_KERNEL:  // not used for now.
-            break;
-
-        case BCM_IMAGE_WHOLE:
-            {
-                int noReboot = FLASH_IS_NO_REBOOT(ctrlParms->offset);
-                int partition = FLASH_GET_PARTITION(ctrlParms->offset);
-                if(ctrlParms->strLen <= 0)
-                {
-                    printk("Illegal flash image size [%d].\n", ctrlParms->strLen);
-                    ret = -1;
-                    break;
-                }
-
-                ret = commonImageWrite(FLASH_BASE, ctrlParms->string,
-                   ctrlParms->strLen, &noReboot, partition );
-
-                if(ret == 0 && noReboot == 0)
-                {
-                    resetPwrmgmtDdrMips();
-                }
-                else
-                {
-                    if (ret != 0)
-                        printk("flash of whole image failed, ret=%d\n", ret);
-                }
-            }
-            break;
-
         default:
             ret = -EINVAL;
             printk("flash_ioctl_command: invalid command %d\n", ctrlParms->action);
@@ -316,14 +251,19 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
                 /* ctrlParms->offset is the ctrlparms.buf length here so alloc a buffer for it */
                 char * temp_scratchp_bufp = kmalloc(ctrlParms->offset, GFP_KERNEL);
                 ret = -EFAULT;
-                if ( temp_scratchp_bufp )
-                {
-                    ret = kerSysScratchPadGet(ctrlParms->string, temp_scratchp_bufp, ctrlParms->offset);
-                    /* Since ctlrParms.buf has user defined behaviour, explicitly copy it back here */
-                    if(__copy_to_user((void*)ctrlParms->buf, temp_scratchp_bufp, ctrlParms->offset) != 0)
-                        printk("copy_to_user failed %s:%d \n", __FILE__, __LINE__);
-                    kfree(temp_scratchp_bufp);
-                }
+                if (!temp_scratchp_bufp)
+                    break;
+                
+                ret = kerSysScratchPadGet(ctrlParms->string, temp_scratchp_bufp, ctrlParms->offset);
+                if (ret)
+                    goto end_scratch_pad;
+
+                /* Since ctlrParms.buf has user defined behaviour, explicitly copy it back here */
+                ret = __copy_to_user((void*)ctrlParms->buf, temp_scratchp_bufp, ctrlParms->offset);
+                if (ret)
+                    printk("copy_to_user failed %s:%d \n", __FILE__, __LINE__);
+end_scratch_pad:
+                kfree(temp_scratchp_bufp);
             }
 
             break;
@@ -341,8 +281,9 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
             break;
 
         case NVRAM:
-            kerSysNvRamGet(ctrlParms->string, ctrlParms->strLen, ctrlParms->offset);
-            ret = 0;
+            printk("NVRAM IOCTL IS DEPRECATED\n");
+            printk("please use /proc/environment/<env> to read the u-boot environment variable\n");
+            ret = -1;
             break;
         case ENVRAM:
             /* Note that ctrlParms->param is a userspace string */
@@ -459,17 +400,11 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
     case BOARD_IOCTL_GET_ID:
         if( ctrlParms->string )
         {
-            char p[NVRAM_BOARD_ID_STRING_LEN];
-            kerSysNvRamGetBoardId(p);
-            if( strlen(p) + 1 < ctrlParms->strLen )
-                ctrlParms->strLen = strlen(p) + 1;
-
-            if(memcpy(ctrlParms->string, p, ctrlParms->strLen) == NULL)
-                  break;
-
-            ret=0;
+                memset(ctrlParms->string, '\0', ctrlParms->strLen);
+                ret = 0;
+                if(eNvramGet(NVRAM_SZBOARDID, ctrlParms->string, ctrlParms->strLen) < 0)
+                    ret=-1;
         }
-
         ctrlParms->result = 0;
         break;
     
@@ -550,36 +485,25 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
 
     case BOARD_IOCTL_GET_PSI_SIZE:
         {
-            FLASH_ADDR_INFO fInfo;
             legacy_ioctl_alert("BOARD_IOCTL_GET_PSI_SIZE");
-            kerSysFlashAddrInfoGet(&fInfo);
-            ctrlParms->result = fInfo.flash_persistent_length;
-            ret = 0;
+            ret = -1;
         }
         break;
 
     case BOARD_IOCTL_GET_BACKUP_PSI_SIZE:
         {
-            FLASH_ADDR_INFO fInfo;
             legacy_ioctl_alert("BOARD_IOCTL_GET_BACKUP_PSI_SIZE");
-            kerSysFlashAddrInfoGet(&fInfo);
             // if number_blks > 0, that means there is a backup psi, but length is the same
             // as the primary psi (persistent).
 
-            ctrlParms->result = (fInfo.flash_backup_psi_number_blk > 0) ?
-                fInfo.flash_persistent_length : 0;
-            printk("backup_psi_number_blk=%d result=%d\n", fInfo.flash_backup_psi_number_blk, fInfo.flash_persistent_length);
-            ret = 0;
+            ret = -1;
         }
         break;
 
     case BOARD_IOCTL_GET_SYSLOG_SIZE:
         {
-            FLASH_ADDR_INFO fInfo;
             legacy_ioctl_alert("BOARD_IOCTL_GET_SYSLOG_SIZE");
-            kerSysFlashAddrInfoGet(&fInfo);
-            ctrlParms->result = fInfo.flash_syslog_length;
-            ret = 0;
+            ret = -1;
         }
         break;
 
@@ -592,7 +516,16 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
     case BOARD_IOCTL_GET_BASE_MAC_ADDRESS:
         {
             PMAC_INFO pMacInfo = get_mac_info();
-            if(memcpy(ctrlParms->string, pMacInfo->ucaBaseMacAddr, NVRAM_MAC_ADDRESS_LEN) == NULL)
+            if (!pMacInfo)
+            {
+               printk("WARNING : pMacInfo == NULL\n");
+               ctrlParms->string[0] = 0;
+               ctrlParms->string[1] = 1;
+               ctrlParms->string[2] = 2;
+               ctrlParms->result = 0;
+               ret = 0;
+            }
+            else if(memcpy(ctrlParms->string, pMacInfo->ucaBaseMacAddr, NVRAM_MAC_ADDRESS_LEN) == NULL)
                 ret=-EFAULT;
             else {
                 ctrlParms->result = 0;
@@ -625,8 +558,15 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
     case BOARD_IOCTL_GET_NUM_MAC_ADDRESSES:
         {
             PMAC_INFO pMacInfo = get_mac_info();
-            ret = -EFAULT;			
-            ctrlParms->result = (int)pMacInfo->ulNumMacAddrs;
+            if (!pMacInfo)
+            {
+               printk("WARNING : pMacInfo == NULL\n");
+               ctrlParms->result = 1;
+            }
+            else {
+               ret = -EFAULT;			
+               ctrlParms->result = (int)pMacInfo->ulNumMacAddrs;
+            }
             if (ctrlParms->result >= 0)
                 ret = 0;
     	}
@@ -699,10 +639,6 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
         break;
 #endif
 
-    case BOARD_IOCTL_GET_GPIOVERLAYS:
-        ret = -EFAULT;
-        break;
-
     case BOARD_IOCTL_SET_MONITOR_FD:
         kerSysSetMonitorTaskPid(ctrlParms->offset);
         printk(KERN_INFO "monitor task is initialized pid= %d\n",ctrlParms->offset);
@@ -717,60 +653,15 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
         ret = ConfigCs(ctrlParms);
         break;
 
-
     case BOARD_IOCTL_BOOT_IMAGE_OPERATION:
         legacy_ioctl_alert("BOARD_IOCTL_BOOT_IMAGE_OPERATION");
         switch(ctrlParms->offset)
         {
-            case BOOT_SET_PART1_IMAGE:
-            case BOOT_SET_PART2_IMAGE:
-            case BOOT_SET_PART1_IMAGE_ONCE:
-            case BOOT_SET_PART2_IMAGE_ONCE:
-            case BOOT_SET_OLD_IMAGE:
-            case BOOT_SET_NEW_IMAGE:
-            case BOOT_SET_NEW_IMAGE_ONCE:
-                ctrlParms->result = kerSysSetBootImageState(ctrlParms->offset);
-                /* Clean up image version. */
-                if (ctrlParms->result == 0)
-                    clearImageVersion();
-                break;
-
-            case BOOT_GET_BOOT_IMAGE_STATE:
-                ctrlParms->result = kerSysGetBootImageState();
-                break;
-
-            case BOOT_GET_BOOTED_IMAGE_ID:
-                /* ctrlParm.strLen == 1: partition or == 0: id (new or old) */
-                ctrlParms->result = getBootedValue(ctrlParms->strLen);
-                break;
-
             default:
                 ctrlParms->result = -EFAULT;
                 break;
         }
         ret = 0;
-        break;
-
-    case BOARD_IOCTL_GET_SEQUENCE_NUMBER:
-        legacy_ioctl_alert("BOARD_IOCTL_GET_SEQUENCE_NUMBER");
-        ctrlParms->result = kerSysGetSequenceNumber(ctrlParms->offset);
-        ret = 0;
-        break;
-
-    case BOARD_IOCTL_GETSET_BOOT_INACTIVE_IMAGE:
-        legacy_ioctl_alert("BOARD_IOCTL_GETSET_BOOT_INACTIVE_IMAGE");
-        ret = 0;
-        if ((ctrlParms->offset != 0) && (ctrlParms->offset != 1)) { // get whether we boot the inactive image
-            ctrlParms->result = (BCM_MBOX_INACTIVE_IMAGE_GET() ? 1 : 0);
-        }
-        else { // set to boot or not boot the inactive image
-            if (ctrlParms->offset == 1) {
-                BCM_MBOX_SOFT_RESET_SAFE_EN;
-                BCM_MBOX_INACTIVE_IMAGE_SET(0x1);
-            } else {
-                BCM_MBOX_INACTIVE_IMAGE_CLR();
-            }
-        }
         break;
 
     case BOARD_IOCTL_GET_TIMEMS:
@@ -886,19 +777,23 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
 
     case BOARD_IOCTL_GET_BOOT_SECURE:
         ctrlParms->result = 0;
+#if defined(CONFIG_BCM_OTP_DRV)
         ctrlParms->result = bcm_otp_is_boot_secure();
+#endif
         ret = 0;
         break;
 
     case BOARD_IOCTL_GET_BTRM_BOOT:
         ctrlParms->result = 0;
+#if defined(CONFIG_BCM_OTP_DRV)
         ctrlParms->result = bcm_is_btrm_boot();
+#endif
         ret = 0;
         break;
 
     case BOARD_IOCTL_GET_BOOT_MFG_SECURE:
-#if defined(CONFIG_BCM94908)  || defined(CONFIG_BCM96858) || \
-    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96858) || \
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
         ctrlParms->result = bcm_otp_is_boot_mfg_secure();
 #else
         ctrlParms->result = 0;
@@ -906,20 +801,7 @@ int board_ioctl_cmd_handler(struct file *flip, unsigned int command, unsigned lo
         ret = 0;
         break;
 
-
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    case BOARD_IOCTL_SATA_TEST:
-        if( bcm_sata_test_ioctl_fn)
-        {
-            ret = bcm_sata_test_ioctl_fn((void*)arg);
-        }
-        else
-        {
-            printk("SATA TEST module not loaded\n");
-        }
-        break;
-#endif
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
     case BOARD_IOCTL_BT_GPIO: // bluetooth gpio for reset / wake
         {
             // get or set bt gpio
@@ -980,7 +862,7 @@ int board_ioctl( struct inode *inode, struct file *flip,
             if( ctrlParms.string && ctrlParms.strLen ) 
             {
                 /* allocate one extra byte due to legacy reasons */
-                temp_string_bufp = kmalloc(ctrlParms.strLen+1, GFP_KERNEL);
+                temp_string_bufp = kmalloc((size_t)ctrlParms.strLen+1, GFP_KERNEL);
                 if( temp_string_bufp ) 
                 {
                     memset(temp_string_bufp, 0, ctrlParms.strLen+1);
@@ -993,12 +875,14 @@ int board_ioctl( struct inode *inode, struct file *flip,
                         kfree(temp_string_bufp);
                         printk("board_ioctl: command %x failed copying string/value from userspace , cmd %d .\n",command,_IOC_NR(command));
                         ret = -EFAULT;
+                        return ret;
                     }
                 }
                 else
                 {
                     printk("board_ioctl: command %x failed to allocate memory for string/value , cmd %d .\n",command,_IOC_NR(command));
                     ret = -EFAULT;
+                    return ret;
                 }
             }
         }
@@ -1006,13 +890,20 @@ int board_ioctl( struct inode *inode, struct file *flip,
         {
             printk("board_ioctl: command %x failed copying ctrlparms from userspace , cmd %d %px.\n",command,_IOC_NR(command), (void*)arg);
             ret = -EFAULT;
+            return ret;
         }
     }
 
     ret=board_ioctl_cmd_handler(flip, command, arg, &ctrlParms);
 
     if( ret )
+    {
+        if( arg && (command != BOARD_IOCTL_MEM_ACCESS) )
+        {
+            kfree(temp_string_bufp);
+        }
         return ret;
+    }
 
     /* Copy to user ctrlParms and memory pointed to by ctrlParms.string OR ctrlParms.value */
     if( arg && (command != BOARD_IOCTL_MEM_ACCESS) )
@@ -1022,11 +913,11 @@ int board_ioctl( struct inode *inode, struct file *flip,
             temp_string_bufp = ctrlParms.string;
             ctrlParms.string = user_val_string_bufp;
             if(__copy_to_user((void*)ctrlParms.string, temp_string_bufp, ctrlParms.strLen))
-			printk("__copy_to_user failed\n");
+                printk("__copy_to_user failed\n");
             kfree(temp_string_bufp);
         }
         if(__copy_to_user((BOARD_IOCTL_PARMS*)arg, &ctrlParms, sizeof(ctrlParms)))
-		printk("__copy_to_user failed\n");
+            printk("__copy_to_user failed\n");
     }
 
 

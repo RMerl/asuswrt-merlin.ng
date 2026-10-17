@@ -1,7 +1,0 @@
-TRICORDER BOARD
-M:	Thomas Weber <weber@corscience.de>
-S:	Maintained
-F:	board/corscience/tricorder/
-F:	include/configs/tricorder.h
-F:	configs/tricorder_defconfig
-F:	configs/tricorder_flash_defconfig

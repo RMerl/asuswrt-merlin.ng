@@ -1,0 +1,9 @@
+SAMA5D29 CURIOSITY BOARD
+M:     Mihai Sain <mihai.sain@microchip.com>
+S:     Maintained
+F:     board/atmel/sama5d29_curiosity.c
+F:     include/configs/sama5d29_curiosity.h
+F:     configs/sama5d29_curiosity_mmc_defconfig
+F:     configs/sama5d29_curiosity_mmc1_defconfig
+F:     configs/sama5d29_curiosity_qspiflash_defconfig
+F:     arch/arm/dts/at91-sama5d29_curiosity*

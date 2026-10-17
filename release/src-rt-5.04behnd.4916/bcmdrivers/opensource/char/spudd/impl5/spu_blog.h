@@ -45,6 +45,17 @@ struct spu_offload_rx_info {
     };
 };
 
+struct spu_offload_debug_info {
+    uint32_t requests;
+    uint32_t complete;
+    uint32_t invalid_rx;
+    uint32_t invalid_insert;
+    uint32_t slowpath_us;
+    uint32_t slowpath_ds;
+    uint16_t icv_err;
+    uint16_t seqno_err;
+};
+
 void spu_blog_ctx_add(struct iproc_ctx_s *ctx);
 void spu_blog_ctx_del(struct iproc_ctx_s *ctx);
 int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn);
@@ -61,10 +72,9 @@ struct iproc_ctx_s *spu_blog_lookup_ctx_by_offload_id(uint32_t id);
 
 int spu_update_xfrm_offload_stats(void *xfrm);
 void *spu_offload_lookup_dstp_secp_by_id(uint32_t id);
-int spu_offload_get_us_session_id(uint32_t spi, struct dst_entry *dst_p);
-int spu_offload_get_us_id(struct iproc_ctx_s *ctx, uint32_t spi, Blog_t *blog_p);
+int spu_offload_get_us_session_id(uint32_t spi, struct dst_entry *dst_p, uint8_t ttl_hop, uint8_t tun_id, int new_tun);
 int spu_offload_insert_us_pkt(pNBuff_t pNBuf, int session_id, uint32_t digest_size, uint32_t *payloadlen);
-void spu_offload_prep_us_ingress(uint32_t session_id, uint8_t *data_p, struct spu_offload_prephdr_args *a, uint32_t *hdr_offset);
+void spu_offload_us_hdr_offset(uint32_t session_id, uint32_t *hdr_offset, uint32_t *fpi_tun_id);
 void spu_offload_session_free(uint32_t session_id);
 void spu_offload_handle_exception(uint32_t session_id, uint8_t data_limit, uint8_t overflow);
 void spu_blog_evict (struct iproc_ctx_s *ctx);
@@ -80,16 +90,15 @@ void spu_platform_offload_us_session(int session_id, struct xfrm_state *xfrm,
 				  struct bcmspu_offload_parm *parm);
 int spu_platform_offload_ds_session(int session_id, struct xfrm_state *xfrm,
 				  struct bcmspu_offload_parm *parm);
-void spu_platform_offload_us_prepend(struct bcmspu_offload_parm *parm,
-				     struct spu_offload_prephdr_args *a);
-void spu_platform_offload_ds_prepend(struct bcmspu_offload_parm *parm,
-				     struct spu_offload_prephdr_args *a);
-int spu_platform_offload_us_parm_set(struct bcmspu_offload_parm *parm);
+void spu_platform_offload_us_prepend(struct spu_offload_prephdr_args *a,
+				     uint8_t *pdata, uint8_t ipv6);
+void spu_platform_offload_tun_map(uint32_t tun_id, int32_t session_id);
+void spu_platform_offload_copy_fwd(uint32_t session_id2, uint32_t session_id1);
 
 void spu_platform_offload_free_session(uint32_t session_id);
 void spu_platform_offload_stats(uint32_t session_id, struct spu_offload_tracker *curr, uint32_t *bitmap, uint8_t long_bitmap);
 int spu_offload_get_rx_info(uint32_t session_id, struct spu_offload_rx_info *info);
-void spu_platform_offloaded(uint32_t *req, uint32_t *cmpl);
+void spu_platform_offloaded(struct spu_offload_debug_info* info);
 
 #endif
 

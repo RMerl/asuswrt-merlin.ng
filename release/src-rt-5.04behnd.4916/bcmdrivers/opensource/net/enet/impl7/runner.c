@@ -42,6 +42,7 @@
 #include <linux/etherdevice.h>
 #include <linux/kthread.h>
 #include <linux/spinlock.h>
+#include <net/pkt_cls.h>
 #include "enet_dbg.h"
 #include "bcmtypes.h"
 #ifdef CONFIG_BCM_PTP_1588
@@ -67,6 +68,10 @@ static bcmFun_t *enet_spdsvc_transmit;
 #include "dynamic_meters.h"
 #endif
 
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+#include "runner_egress_tc.h"
+#endif
+
 #if defined(DSL_DEVICES)
 #define NUM_OF_LAN_QUEUES       8
 #else
@@ -79,9 +84,12 @@ static int system_is_read;
 
 /* RDPA queue configuration */
 
-#if defined(DSL_DEVICES) && defined(CONFIG_BCM_XRDP)
 #if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
 #define RDPA_CPU_QUEUE_HW_FIREWALL 0
+#endif
+
+#if defined(DSL_DEVICES) && defined(CONFIG_BCM_XRDP)
+#if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
 #define RDPA_CPU_QUEUE_LOW 1
 #define RDPA_CPU_QUEUE_HI 2
 #else
@@ -89,6 +97,9 @@ static int system_is_read;
 #define RDPA_CPU_QUEUE_HI 1
 #endif
 #else
+#if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
+#define RDPA_CPU_QUEUE_HW_FIREWALL 0
+#endif
 #define RDPA_CPU_QUEUE_LOW 3
 #define RDPA_CPU_QUEUE_HI 4
 #endif
@@ -135,6 +146,18 @@ int rdpa_cpu_tc_hw_firewall;
 
 #include <bdmf_dev.h>
 
+#if defined(ENET_TC_INGRESS_CONFIG)
+const rdpa_filter default_lan_ingress_filters[] = {
+    RDPA_FILTER_HDR_ERR
+};
+const rdpa_filter default_wan_filters[] = {
+    RDPA_FILTER_HDR_ERR
+};
+const rdpa_filter gbe_default_extra_filters[] = {
+};
+
+#else
+
 #ifndef G9991_COMMON
 const rdpa_filter default_lan_ingress_filters[] = {
         RDPA_FILTER_DHCP,
@@ -149,9 +172,7 @@ const rdpa_filter default_lan_ingress_filters[] = {
            runner traps to host on hitting a ingress filter.
            On DSL XRDPC platforms(i.e 63146, 4912, 6813), runner
            continues to do flow lookup even after hitting a ingress
-           filter.
-           On DSL RDP platforms(i.e. 63138, 63148, 4908), no
-           ingress filters are configured */
+           filter. */
         RDPA_FILTER_MCAST,
 #endif
         RDPA_FILTER_IP_MCAST_CONTROL,
@@ -180,6 +201,7 @@ const rdpa_filter gbe_default_extra_filters[] = {
     RDPA_FILTER_DHCP,    
     RDPA_FILTER_ETYPE_PPPOE_D,
 };
+#endif /* ENET_TC_INGRESS_CONFIG */
 
 extern int enetx_weight_budget;
 extern void bdmf_sysb_databuf_recycle(void *pBuf);
@@ -216,20 +238,15 @@ static inline void _rdpa_reason_set_tc_and_queue(rdpa_cpu_reason reason, uint8_t
     case rdpa_cpu_rx_reason_etype_pppoe_s:
     case rdpa_cpu_rx_reason_etype_arp:
     case rdpa_cpu_rx_reason_etype_802_1ag_cfm:
-#ifndef XRDP
-    case rdpa_cpu_rx_reason_l4_icmp:
-    case rdpa_cpu_rx_reason_l4_udef_0:
-#else /* XRDP */
     case rdpa_cpu_rx_reason_dns:
-#endif
     case rdpa_cpu_rx_reason_icmpv6:
     case rdpa_cpu_rx_reason_igmp:
     case rdpa_cpu_rx_reason_dhcp:
     case rdpa_cpu_rx_reason_ingqos:
-#if defined(CONFIG_BCM_DSL_XRDP) || defined(CONFIG_BCM_DSL_RDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
     case rdpa_cpu_rx_reason_hit_trap_high:
 #endif
-#if defined(XRDP) && defined(CONFIG_BCM_FTTDP_G9991)
+#if defined(CONFIG_BCM_FTTDP_G9991)
     case rdpa_cpu_rx_reason_etype_udef_0: /* udef index: INBAND_FILTER_RDPA_INDEX */
 #endif
         *queue = RDPA_CPU_QUEUE_HI;
@@ -256,15 +273,11 @@ int _configure_tc_hi_lo(bdmf_object_handle system_obj)
     if (rdpa_system_high_prio_tc_threshold_get(system_obj, &rdpa_sys_tc_threshold))
         return -1;
 
-#ifdef XRDP
     rdpa_cpu_tc_high = rdpa_sys_tc_threshold + 1; 
-#else
-    rdpa_cpu_tc_high = rdpa_cpu_tc1; 
-#endif
     rdpa_cpu_tc_low = rdpa_cpu_tc0; 
 
 #if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
-    /* XRDP-only feature. HW_FIREWALL should be lowest priority */
+    /* HW_FIREWALL should be lowest priority */
     rdpa_cpu_tc_low = rdpa_cpu_tc1; 
     rdpa_cpu_tc_hw_firewall = rdpa_cpu_tc0; 
 #endif
@@ -272,7 +285,6 @@ int _configure_tc_hi_lo(bdmf_object_handle system_obj)
     return 0;
 }
 
-#ifdef XRDP
 static int _rdpa_map_reasons_2_queue(bdmf_object_handle system_obj, bdmf_object_handle cpu_obj)
 {
     int rc;
@@ -288,7 +300,7 @@ static int _rdpa_map_reasons_2_queue(bdmf_object_handle system_obj, bdmf_object_
         _rdpa_reason_set_tc_and_queue(reason, &tc, &queue);
 
         /* do not override udef reasons might be set before enet */
-#if defined(CONFIG_BCM_DSL_XRDP) || defined(CONFIG_BCM_DSL_RDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
         if (reason >= rdpa_cpu_rx_reason_udef_0  && reason <= rdpa_cpu_rx_reason_udef_3)
 #else
         if (reason >= rdpa_cpu_rx_reason_udef_0  && reason <= rdpa_cpu_rx_reason_udef_7 && reason != rdpa_cpu_rx_reason_ingqos)
@@ -306,41 +318,7 @@ static int _rdpa_map_reasons_2_queue(bdmf_object_handle system_obj, bdmf_object_
     }
     return 0;
 }
-#else
-static int _rdpa_map_reasons_2_queue(bdmf_object_handle system_obj, bdmf_object_handle cpu_obj)
-{
-    int rc;
-    rdpa_cpu_reason_index_t reason_cfg_idx = {BDMF_INDEX_UNASSIGNED, BDMF_INDEX_UNASSIGNED};
-    rdpa_cpu_reason_cfg_t reason_cfg = {};
-    uint8_t tc;
 
-    if ((rc = _configure_tc_hi_lo(system_obj)))
-        return rc;
-
-    reason_cfg.meter = BDMF_INDEX_UNASSIGNED;
-    while (!rdpa_cpu_reason_cfg_get_next(cpu_obj, &reason_cfg_idx))
-    {
-#if defined(CONFIG_BCM_DSL_RDP)
-        /* do not override override tcpspeedtest reason */
-        if (reason_cfg_idx.reason == rdpa_cpu_rx_reason_tcpspdtst)
-            continue;
-#endif
-        _rdpa_reason_set_tc_and_queue(reason_cfg_idx.reason, &tc, &reason_cfg.queue);
-#if defined(DSL_DEVICES)
-        /* sf2 based runner has LAN, WAN tables */
-        reason_cfg_idx.table_index = (reason_cfg_idx.dir == rdpa_dir_us)?
-                CPU_REASON_LAN_TABLE_INDEX : CPU_REASON_WAN1_TABLE_INDEX;
-#endif
-        rc = rdpa_cpu_reason_cfg_set(cpu_obj, &reason_cfg_idx, &reason_cfg);
-        if (rc < 0)
-        {
-            enet_err("failed to set RDPA reason %d\n", rc);
-            return rc;
-        }
-    }
-    return 0;
-}
-#endif
 #else
 static int _rdpa_map_reasons_2_queue(bdmf_object_handle system_obj, bdmf_object_handle cpu_obj)
 {
@@ -381,9 +359,6 @@ static int configure_cpu_low_prq_meter(bdmf_object_handle rdpa_cpu_obj)
         goto exit;
     }
 
-#ifndef XRDP
-    reason_cfg_idx.dir = rdpa_dir_us;
-#endif
     reason_cfg_idx.reason = rdpa_cpu_rx_reason_ip_flow_miss;
     
     reason_cfg.meter = METER_INDEX;
@@ -404,9 +379,6 @@ static int unconfigure_cpu_low_prq_meter(bdmf_object_handle rdpa_cpu_obj)
     rdpa_cpu_reason_cfg_t reason_cfg = {};
     int rc = 0;
 
-#ifndef XRDP
-    reason_cfg_idx.dir = rdpa_dir_us;
-#endif
     reason_cfg_idx.reason = rdpa_cpu_rx_reason_ip_flow_miss;
     
     reason_cfg.meter = BDMF_INDEX_UNASSIGNED;
@@ -674,19 +646,21 @@ int enetxapi_rx_pkt(int hw_q_id, FkBuff_t **fkb, enetx_rx_info_t *rx_info)
     }
 #endif    
 
-#if defined(CONFIG_BCM_PTP_1588) && defined(XRDP)
-    /* In 1588 packets, TS(32 bit) is appended to the begining of the packet by the XRDP,
+#if defined(CONFIG_BCM_PTP_1588)
+    /* In 1588 packets, TS(32 bit) is appended to the begining of the packet ,
      * so the data_offset pointer should be forwarded by 32bit and packet length decreased by 32bit */
     if (unlikely(info.reason == rdpa_cpu_rx_reason_etype_ptp_1588))
     {
         info.data_offset += PTP_RX_TS_LEN;
         info.size -= PTP_RX_TS_LEN;
-        info.ptp_index = 1;
+        rx_info->ptp_index = 1;
     }
 #endif
 
     *fkb = fkb_init((uint8_t *)info.data , BCM_PKT_HEADROOM, (uint8_t *)(info.data + info.data_offset), info.size);
     (*fkb)->recycle_hook = (RecycleFuncP)bdmf_sysb_recycle;
+
+    (*fkb)->iq_prio = info.iq_prio;
 
 #if defined(CONFIG_BCM_FCACHE_CLASSIFICATION_BYPASS)
     if (flow_key) 
@@ -696,9 +670,9 @@ int enetxapi_rx_pkt(int hw_q_id, FkBuff_t **fkb, enetx_rx_info_t *rx_info)
     /* Parameters required by enet */
     rx_info->src_port = info.handle;
     rx_info->flow_id = info.reason_data;
-    rx_info->ptp_index = info.ptp_index;
     rx_info->data_offset = info.data_offset;
     rx_info->reason = info.reason;
+    rx_info->iq_prio = info.iq_prio;
     rx_info->extra_skb_flags = 0;
     rx_info->is_exception = info.is_exception;
     rx_info->is_group_fwd_exception = (info.reason == rdpa_cpu_rx_reason_group_exception) ? 1 : 0;
@@ -759,11 +733,7 @@ inline int _rdpa_cpu_send_sysb(bdmf_sysb sysb, rdpa_cpu_tx_info_t *info)
     return rc;
 }
 
-#ifdef XRDP
 #define QUEUE_THRESHOLD 128*1536 /* Drop threshold in bytes */
-#else
-#define QUEUE_THRESHOLD 128 /* TODO: platform define */
-#endif
 
 #if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
 #define rdpa_get_queue_idx(is_wan, qid, q_count)  qid
@@ -881,7 +851,7 @@ static int port_ingress_filters_set(bdmf_object_handle port_obj, rdpa_filter *fi
     uint8_t filter;
 
 
-    for (filter = RDPA_FILTERS_BEGIN; filter < RDPA_FILTERS_QUANT; filter++)
+    for (filter = RDPA_FILTERS_BEGIN; filter < RDPA_FILTER_MAX; filter++)
     {
         filter_ctrl.enabled = 0;
         for (count = 0 ; count < num_of_filters; count++)
@@ -892,7 +862,10 @@ static int port_ingress_filters_set(bdmf_object_handle port_obj, rdpa_filter *fi
                 break;
             }
         }
-
+#if defined(ENET_TC_INGRESS_CONFIG)
+        if (!filter_ctrl.enabled)
+            continue;
+#endif
         filter_ctrl.action = rdpa_forward_action_host;
         if ((rc = rdpa_port_ingress_filter_set(port_obj, filter, &filter_ctrl)))
         {
@@ -957,6 +930,15 @@ bdmf_object_handle create_rdpa_port(enetx_port_t *self, net_device_handle_t hand
     rdpa_port_dp_cfg_t port_cfg = {};
     rdpa_filters_group filters_group = RDPA_FILTERS_GROUP_LAN;
     rdpa_port_interface_t rdpa_port_interface = {};
+
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+    hash_init(self->nodes_hash_table);
+    self->tc_setup_mqprio = port_runner_tc_config_mqprio;
+    self->tc_setup_egress_tm = port_runner_tc_config_egress_tm;
+    self->tc_ets_update_stat = port_runner_update_queues_stat;
+    self->tc_remove_egress_tm = runner_tc_remove_egress_tm;
+    self->tc_get_egress_tm_caps = runner_tc_get_caps;
+#endif
 
     rdpa_port_interface.index = self->p.port_id;
     rdpa_port_interface.type = port_runner_port_type_mapping(self->port_type);
@@ -1043,18 +1025,6 @@ skip_emac:
         goto Exit;
     }
 
-#ifdef G9991_PRV 
-    if (rdpa_port_interface.type == rdpa_port_sys_port)
-    {
-        rc = _rdpa_port_def_flow_trap_set(port_obj, rdpa_port_interface.index, rdpa_port_interface.type);
-        if (rc)
-        {
-            enet_err("Failed to set default flow to trap for system port, rc=%d\n", rc);
-            goto Exit;
-        }
-    }
-#endif
-#ifdef XRDP
     rc = rdpa_cpu_get(rdpa_cpu_host, &cpu_obj);
     rc = rc ? rc : rdpa_port_cpu_obj_set(port_obj, cpu_obj);
     if (rc)
@@ -1063,9 +1033,6 @@ skip_emac:
             rdpa_port_interface.index, rc);
         goto Exit;
     }
-#else
-    rc = 0;
-#endif
 
     if (create_ingress_filters)
     {
@@ -1151,6 +1118,19 @@ int port_runner_sw_init(enetx_port_t *self)
     if (NULL == enet_spdsvc_transmit)
         enet_err("no speed test tx function available\n");
 #endif
+
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+    hash_init(self->nodes_hash_table);
+    self->tc_setup_egress_tm = port_runner_tc_config_svsq_egress_tm;
+    self->tc_ets_update_stat = port_runner_svsq_update_queues_stat;
+    self->tc_remove_egress_tm = runner_tc_remove_egress_tm;
+    self->tc_get_egress_tm_caps = runner_tc_get_caps;
+#if defined(POLICER_SUPPORT)
+    self->tc_setup_policer = port_runner_tc_config_policer;
+    self->tc_remove_policer = port_runner_tc_remove_policer;
+#endif
+#endif
+
     return 0;
 }
 
@@ -1656,7 +1636,8 @@ int enetxapi_rx_pkt_dump_on_demux_err(enetx_rx_info_t *rx_info)
     return 1;
 }
 
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
+    defined(CONFIG_BCM96837) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM968375)
 // ----------- SIOCETHSWCTLOPS ETHSWDOSCTRL functions ---
 int _runner_rdpa_dos_ctrl(struct ethswctl_data *e)
 {

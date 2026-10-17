@@ -1,0 +1,568 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Device Tree file for the Guntermann & Drunck ControlCenter-Compact board
+ *
+ * Copyright (C) 2016 Mario Six <mario.six@gdsys.cc>
+ *
+ * based on the Device Tree file for Marvell Armada 388 evaluation board
+ * (DB-88F6820), which is
+ *
+ * Copyright (C) 2014 Marvell
+ *
+ * Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+ */
+
+/dts-v1/;
+
+#include "armada-388.dtsi"
+
+/ {
+	model = "Controlcenter Digital Compact";
+	compatible = "marvell,a385-db", "marvell,armada388",
+		"marvell,armada385", "marvell,armada380";
+
+	chosen {
+		bootargs = "console=ttyS1,115200 earlyprintk";
+		stdout-path = "/soc/internal-regs/serial@12100";
+	};
+
+	aliases {
+		ethernet0 = &eth0;
+		ethernet2 = &eth2;
+		mdio-gpio0 = &MDIO0;
+		mdio-gpio1 = &MDIO1;
+		mdio-gpio2 = &MDIO2;
+		spi0 = &spi0;
+		spi1 = &spi1;
+		i2c0 = &I2C0;
+		i2c1 = &I2C1;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x10000000>; /* 256 MB */
+	};
+
+	clocks {
+		sc16isclk: sc16isclk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <11059200>;
+		};
+	};
+
+	soc {
+		ranges = <MBUS_ID(0xf0, 0x01) 0 0xf1000000 0x100000
+			  MBUS_ID(0x01, 0x1d) 0 0xfff00000 0x100000>;
+
+		internal-regs {
+			I2C0: i2c@11000 {
+				status = "okay";
+				clock-frequency = <1000000>;
+				PCA21: pca9698@21 {
+					compatible = "nxp,pca9698";
+					reg = <0x21>;
+					#gpio-cells = <2>;
+					gpio-controller;
+				};
+				PCA22: pca9698@22 {
+					compatible = "nxp,pca9698";
+					reg = <0x22>;
+					#gpio-cells = <2>;
+					gpio-controller;
+				};
+				PCA23: pca9698@23 {
+					compatible = "nxp,pca9698";
+					reg = <0x23>;
+					#gpio-cells = <2>;
+					gpio-controller;
+				};
+				PCA24: pca9698@24 {
+					compatible = "nxp,pca9698";
+					reg = <0x24>;
+					#gpio-cells = <2>;
+					gpio-controller;
+				};
+				PCA25: pca9698@25 {
+					compatible = "nxp,pca9698";
+					reg = <0x25>;
+					#gpio-cells = <2>;
+					gpio-controller;
+				};
+				PCA26: pca9698@26 {
+					compatible = "nxp,pca9698";
+					reg = <0x26>;
+					#gpio-cells = <2>;
+					gpio-controller;
+				};
+			};
+
+			I2C1: i2c@11100 {
+				status = "okay";
+				clock-frequency = <400000>;
+				at97sc3205t@29 {
+					compatible = "atmel,at97sc3204t";
+					reg = <0x29>;
+					u-boot,i2c-offset-len = <0>;
+				};
+				emc2305@2d {
+					compatible = "smsc,emc2305";
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <0x2d>;
+					fan@0 {
+						reg = <0>;
+					};
+					fan@1 {
+						reg = <1>;
+					};
+					fan@2 {
+						reg = <2>;
+					};
+					fan@3 {
+						reg = <3>;
+					};
+					fan@4 {
+						reg = <4>;
+					};
+				};
+				lm77@48 {
+					compatible = "national,lm77";
+					reg = <0x48>;
+				};
+				ads1015@49 {
+					compatible = "ti,ads1015";
+					reg = <0x49>;
+				};
+				lm77@4a {
+					compatible = "national,lm77";
+					reg = <0x4a>;
+				};
+				ads1015@4b {
+					compatible = "ti,ads1015";
+					reg = <0x4b>;
+				};
+				emc2305@4c {
+					compatible = "smsc,emc2305";
+					#address-cells = <1>;
+					#size-cells = <0>;
+					reg = <0x4c>;
+					fan@0 {
+						reg = <0>;
+					};
+					fan@1 {
+						reg = <1>;
+					};
+					fan@2 {
+						reg = <2>;
+					};
+					fan@3 {
+						reg = <3>;
+					};
+					fan@4 {
+						reg = <4>;
+					};
+				};
+				at24c512@54 {
+					compatible = "atmel,24c512";
+					reg = <0x54>;
+					u-boot,i2c-offset-len = <2>;
+				};
+				ds1339@68 {
+					compatible = "dallas,ds1339";
+					reg = <0x68>;
+				};
+			};
+
+			serial@12000 {
+				status = "okay";
+			};
+
+			serial@12100 {
+				status = "okay";
+			};
+
+			ethernet@34000 {
+				status = "okay";
+				phy = <&phy1>;
+				phy-mode = "sgmii";
+			};
+
+			usb@58000 {
+				status = "ok";
+			};
+
+			ethernet@70000 {
+				status = "okay";
+				phy = <&phy0>;
+				phy-mode = "sgmii";
+			};
+
+			mdio@72004 {
+				phy0: ethernet-phy@0 {
+					reg = <1>;
+				};
+
+				phy1: ethernet-phy@1 {
+					reg = <0>;
+				};
+			};
+
+			sata@a8000 {
+				status = "okay";
+			};
+
+			sdhci@d8000 {
+				broken-cd;
+				wp-inverted;
+				bus-width = <4>;
+				status = "okay";
+				no-1-8-v;
+			};
+
+			usb3@f0000 {
+				status = "okay";
+			};
+		};
+
+		pcie {
+			status = "okay";
+			/*
+			 * The two PCIe units are accessible through
+			 * standard PCIe slots on the board.
+			 */
+			pcie@3,0 {
+				/* Port 0, Lane 0 */
+				status = "okay";
+			};
+		};
+
+		MDIO0: mdio0 {
+			compatible = "virtual,mdio-gpio";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			gpios = < /*MDC*/ &gpio0 13 0
+				  /*MDIO*/ &gpio0 14 0>;
+			mv88e1240@0 {
+				reg = <0x0>;
+			};
+			mv88e1240@1 {
+				reg = <0x1>;
+			};
+			mv88e1240@2 {
+				reg = <0x2>;
+			};
+			mv88e1240@3 {
+				reg = <0x3>;
+			};
+			mv88e1240@4 {
+				reg = <0x4>;
+			};
+			mv88e1240@5 {
+				reg = <0x5>;
+			};
+			mv88e1240@6 {
+				reg = <0x6>;
+			};
+			mv88e1240@7 {
+				reg = <0x7>;
+			};
+			mv88e1240@8 {
+				reg = <0x8>;
+			};
+			mv88e1240@9 {
+				reg = <0x9>;
+			};
+			mv88e1240@a {
+				reg = <0xa>;
+			};
+			mv88e1240@b {
+				reg = <0xb>;
+			};
+			mv88e1240@c {
+				reg = <0xc>;
+			};
+			mv88e1240@d {
+				reg = <0xd>;
+			};
+			mv88e1240@e {
+				reg = <0xe>;
+			};
+			mv88e1240@f {
+				reg = <0xf>;
+			};
+			mv88e1240@10 {
+				reg = <0x10>;
+			};
+			mv88e1240@11 {
+				reg = <0x11>;
+			};
+			mv88e1240@12 {
+				reg = <0x12>;
+			};
+			mv88e1240@13 {
+				reg = <0x13>;
+			};
+			mv88e1240@14 {
+				reg = <0x14>;
+			};
+			mv88e1240@15 {
+				reg = <0x15>;
+			};
+			mv88e1240@16 {
+				reg = <0x16>;
+			};
+			mv88e1240@17 {
+				reg = <0x17>;
+			};
+			mv88e1240@18 {
+				reg = <0x18>;
+			};
+			mv88e1240@19 {
+				reg = <0x19>;
+			};
+			mv88e1240@1a {
+				reg = <0x1a>;
+			};
+			mv88e1240@1b {
+				reg = <0x1b>;
+			};
+			mv88e1240@1c {
+				reg = <0x1c>;
+			};
+			mv88e1240@1d {
+				reg = <0x1d>;
+			};
+			mv88e1240@1e {
+				reg = <0x1e>;
+			};
+			mv88e1240@1f {
+				reg = <0x1f>;
+			};
+		};
+
+		MDIO1: mdio1 {
+			compatible = "virtual,mdio-gpio";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			gpios = < /*MDC*/ &gpio0 25 0
+				  /*MDIO*/ &gpio1 13 0>;
+			mv88e1240@0 {
+				reg = <0x0>;
+			};
+			mv88e1240@1 {
+				reg = <0x1>;
+			};
+			mv88e1240@2 {
+				reg = <0x2>;
+			};
+			mv88e1240@3 {
+				reg = <0x3>;
+			};
+			mv88e1240@4 {
+				reg = <0x4>;
+			};
+			mv88e1240@5 {
+				reg = <0x5>;
+			};
+			mv88e1240@6 {
+				reg = <0x6>;
+			};
+			mv88e1240@7 {
+				reg = <0x7>;
+			};
+			mv88e1240@8 {
+				reg = <0x8>;
+			};
+			mv88e1240@9 {
+				reg = <0x9>;
+			};
+			mv88e1240@a {
+				reg = <0xa>;
+			};
+			mv88e1240@b {
+				reg = <0xb>;
+			};
+			mv88e1240@c {
+				reg = <0xc>;
+			};
+			mv88e1240@d {
+				reg = <0xd>;
+			};
+			mv88e1240@e {
+				reg = <0xe>;
+			};
+			mv88e1240@f {
+				reg = <0xf>;
+			};
+			mv88e1240@10 {
+				reg = <0x10>;
+			};
+			mv88e1240@11 {
+				reg = <0x11>;
+			};
+			mv88e1240@12 {
+				reg = <0x12>;
+			};
+			mv88e1240@13 {
+				reg = <0x13>;
+			};
+			mv88e1240@14 {
+				reg = <0x14>;
+			};
+			mv88e1240@15 {
+				reg = <0x15>;
+			};
+			mv88e1240@16 {
+				reg = <0x16>;
+			};
+			mv88e1240@17 {
+				reg = <0x17>;
+			};
+			mv88e1240@18 {
+				reg = <0x18>;
+			};
+			mv88e1240@19 {
+				reg = <0x19>;
+			};
+			mv88e1240@1a {
+				reg = <0x1a>;
+			};
+			mv88e1240@1b {
+				reg = <0x1b>;
+			};
+			mv88e1240@1c {
+				reg = <0x1c>;
+			};
+			mv88e1240@1d {
+				reg = <0x1d>;
+			};
+			mv88e1240@1e {
+				reg = <0x1e>;
+			};
+			mv88e1240@1f {
+				reg = <0x1f>;
+			};
+		};
+
+		MDIO2: mdio2 {
+			compatible = "virtual,mdio-gpio";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			gpios = < /*MDC*/ &gpio1 14 0
+				  /*MDIO*/ &gpio0 24 0>;
+			mv88e1240@0 {
+				reg = <0x0>;
+			};
+			mv88e1240@1 {
+				reg = <0x1>;
+			};
+			mv88e1240@2 {
+				reg = <0x2>;
+			};
+			mv88e1240@3 {
+				reg = <0x3>;
+			};
+			mv88e1240@4 {
+				reg = <0x4>;
+			};
+			mv88e1240@5 {
+				reg = <0x5>;
+			};
+			mv88e1240@6 {
+				reg = <0x6>;
+			};
+			mv88e1240@7 {
+				reg = <0x7>;
+			};
+			mv88e1240@8 {
+				reg = <0x8>;
+			};
+			mv88e1240@9 {
+				reg = <0x9>;
+			};
+			mv88e1240@a {
+				reg = <0xa>;
+			};
+			mv88e1240@b {
+				reg = <0xb>;
+			};
+			mv88e1240@c {
+				reg = <0xc>;
+			};
+			mv88e1240@d {
+				reg = <0xd>;
+			};
+			mv88e1240@e {
+				reg = <0xe>;
+			};
+			mv88e1240@f {
+				reg = <0xf>;
+			};
+			mv88e1240@10 {
+				reg = <0x10>;
+			};
+			mv88e1240@11 {
+				reg = <0x11>;
+			};
+			mv88e1240@12 {
+				reg = <0x12>;
+			};
+			mv88e1240@13 {
+				reg = <0x13>;
+			};
+			mv88e1240@14 {
+				reg = <0x14>;
+			};
+			mv88e1240@15 {
+				reg = <0x15>;
+			};
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		finder_led {
+			label = "finder-led";
+			gpios = <&PCA22 25 0>;
+		};
+
+		status_led {
+			label = "status-led";
+			gpios = <&gpio0 29 0>;
+		};
+	};
+};
+
+&spi0 {
+	status = "okay";
+	sc16is741: sc16is741@0 {
+		compatible = "nxp,sc16is741";
+		reg = <0>;
+		clocks = <&sc16isclk>;
+		spi-max-frequency = <4000000>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+};
+
+&spi1 {
+	status = "okay";
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "n25q016a", "jedec,spi-nor";
+		reg = <0>; /* Chip select 0 */
+		spi-max-frequency = <108000000>;
+	};
+	spi-flash@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "n25q128a11", "jedec,spi-nor";
+		reg = <1>; /* Chip select 1 */
+		spi-max-frequency = <108000000>;
+	};
+};

@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * MPC8548CDS (36-bit address map) Device Tree Source
+ *
+ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2019 NXP
+ */
+
+/include/ "mpc8548.dtsi"
+
+/ {
+	model = "fsl,MPC8548CDS";
+	compatible = "fsl,MPC8548CDS";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	soc: soc8548@fe0000000 {
+		ranges = <0x0 0xf 0xe0000000 0x100000>;
+	};
+
+	pcie: pcie@fe000a000 {
+		reg = <0xf 0xe000a000 0x0 0x1000>;	/* registers */
+		ranges = <0x01000000 0x0 0x00000000 0xf 0xe3000000 0x0 0x00100000   /* downstream I/O */
+			  0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+};
+
+/include/ "mpc8548-post.dtsi"

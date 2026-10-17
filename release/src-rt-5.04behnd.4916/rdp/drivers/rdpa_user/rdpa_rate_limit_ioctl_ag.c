@@ -49,7 +49,7 @@ static int rdpa_user_rate_limit_get(rdpa_ioctl_cmd_t *pa)
 {
 	BDMF_TRACE_DBG("inside rdpa_user_rate_limit_drv\n");
 
-	if ((pa->ret = rdpa_rate_limit_get((bdmf_number)(long)pa->parm, &pa->mo)))
+	if ((pa->ret = rdpa_rate_limit_get((bdmf_number)(bdmf_long_t)pa->parm, &pa->mo)))
 	{
 		BDMF_TRACE_DBG("rdpa_rate_limit_get failed ret: %d\n", pa->ret);
 	}
@@ -68,7 +68,7 @@ static int rdpa_user_rate_limit_index_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_rate_limit_index_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -82,7 +82,7 @@ static int rdpa_user_rate_limit_index_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside rate_limit_user_index_set\n");
 
-	if ((pa->ret = rdpa_rate_limit_index_set(pa->mo, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_rate_limit_index_set(pa->mo, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_rate_limit_index_set failed, ret:%d\n", pa->ret);
 	}
@@ -101,7 +101,7 @@ static int rdpa_user_rate_limit_cfg_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_rate_limit_cfg_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_rl_cfg_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_rl_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -116,7 +116,7 @@ static int rdpa_user_rate_limit_cfg_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside rate_limit_user_cfg_set\n");
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_rl_cfg_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_rl_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -141,7 +141,7 @@ static int rdpa_user_rate_limit_in_use_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_rate_limit_in_use_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -150,7 +150,7 @@ static int rdpa_user_rate_limit_in_use_get(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
-long rdpa_rate_limit_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
+bdmf_long_t rdpa_rate_limit_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
 

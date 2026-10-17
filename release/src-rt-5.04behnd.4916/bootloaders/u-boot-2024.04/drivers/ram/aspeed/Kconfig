@@ -1,0 +1,77 @@
+menuconfig ASPEED_RAM
+	bool "ASPEED SDRAM configuration"
+	depends on RAM && ARCH_ASPEED
+	default ARCH_ASPEED
+	help
+	 Configuration options for DDR SDRAM on ASPEED systems.
+
+	 RAM initialisation is always built in for the platform. This menu
+	 allows customisation of the configuration used.
+
+if ASPEED_RAM
+
+config ASPEED_DDR4_DUALX8
+	bool "Enable Dual X8 DDR4 die"
+	depends on ASPEED_RAM
+	help
+	 Say Y if dual X8 DDR4 die is used on the board. The ASPEED DDRM
+	 SRAM controller needs to know if the memory chip mounted on the
+	 board is dual x8 die or not, otherwise it may get the wrong
+	 size of the memory space.
+
+config ASPEED_BYPASS_SELFTEST
+	depends on ASPEED_RAM
+	depends on ASPEED_AST2600
+	bool "Bypass self test during initialization"
+	help
+	  Say Y here to bypass DRAM self test to speed up the boot time.
+
+config ASPEED_ECC
+	bool "ASPEED SDRAM ECC"
+	depends on ASPEED_RAM
+	depends on ASPEED_AST2600
+	help
+	  Enable SDRAM ECC function. This configures the SDRAM controller to
+	  perform error detection and correction, sacrificing 1/9th of the
+	  installed RAM to do so.
+
+
+config ASPEED_ECC_SIZE
+	int "ECC size: 0=driver auto-caluated"
+	depends on ASPEED_ECC
+	default 0
+	help
+	  SDRAM size with the error correcting code enabled. The unit is
+	  in Megabytes.  Noted that only the 8/9 of the configured size
+	  can be used by the system.  The remaining 1/9 will be used by
+	  the ECC engine.  If the size is set to 0, the sdram driver will
+	  calculate the SDRAM size and set the whole range be ECC enabled.
+
+choice
+	prompt "AST2600 DDR4 target date rate"
+	default ASPEED_DDR4_1600
+	depends on ASPEED_RAM
+	depends on ASPEED_AST2600
+
+config ASPEED_DDR4_400
+	bool "400Mbps"
+	help
+	  select DDR4 target data rate at 400M
+
+config ASPEED_DDR4_800
+	bool "800Mbps"
+	help
+	  select DDR4 target data rate at 800M
+
+config ASPEED_DDR4_1333
+	bool "1333Mbps"
+	help
+	  select DDR4 target data rate at 1333M
+
+config ASPEED_DDR4_1600
+	bool "1600Mbps"
+	help
+	  select DDR4 target data rate at 1600M
+endchoice
+
+endif # End of ASPEED_RAM

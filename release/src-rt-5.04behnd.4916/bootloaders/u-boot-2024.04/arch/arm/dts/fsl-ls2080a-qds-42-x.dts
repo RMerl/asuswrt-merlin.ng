@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS2080AQDS device tree source for SERDES protocol 42.x
+ *
+ * Copyright 2020 NXP
+ *
+ */
+
+/dts-v1/;
+
+#include "fsl-ls2080a-qds-sd1-42.dtsi"
+
+/ {
+	model = "NXP Layerscape LS2080AQDS Board (DTS 42-x)";
+	compatible = "fsl,ls2080a-qds", "fsl,ls2080a";
+};

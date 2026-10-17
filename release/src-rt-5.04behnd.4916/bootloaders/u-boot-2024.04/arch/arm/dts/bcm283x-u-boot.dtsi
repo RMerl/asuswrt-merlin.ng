@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot addition to keep baudrate set by firmware
+ * and also initialize before relocation.
+ *
+ * (C) Copyright 2016 Fabian Vogt <fvogt@suse.com>
+ */
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+		smbios {
+			system {
+				manufacturer = "raspberrypi";
+				product = "rpi";
+			};
+			baseboard {
+				manufacturer = "raspberrypi";
+				product = "rpi";
+			};
+			chassis {
+				manufacturer = "raspberrypi";
+			};
+		};
+	};
+};
+
+&uart0 {
+	skip-init;
+	bootph-all;
+};
+
+&uart1 {
+	skip-init;
+	bootph-all;
+};
+
+&gpio {
+	bootph-all;
+};
+
+&uart0_gpio14 {
+	bootph-all;
+};
+
+&uart1_gpio14 {
+	bootph-all;
+};

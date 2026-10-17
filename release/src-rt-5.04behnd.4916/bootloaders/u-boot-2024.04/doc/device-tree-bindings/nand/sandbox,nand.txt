@@ -1,0 +1,57 @@
+Sandbox NAND
+============
+
+The sandbox NAND controller emulates a NAND controller and attached devices.
+
+Required properties:
+- compatible: "sandbox,nand"
+- #address-cells: Must be 1
+- #size-cells: Must be 0
+
+Any number of child nodes may be present, each representing a NAND device:
+
+Required Properties:
+- reg: The chip-select(s) to use. Only single-die devices are supported for now.
+- sandbox,id: An array of bytes to be reported by the READID (0x90) command
+- sandbox,erasesize: The block size (erase size) of the device, in bytes. Must
+                     be a power-of-two multiple of the page size.
+- sandbox,oobsize: The size of the OOB area per page, in bytes.
+- sandbox,pagesize: The page size (write size) of the device, in bytes. Must be
+                    a power of two.
+- sandbox,pages: The total number of pages in the device.
+- sandbox,err-count: Number of bit errors to inject per step.
+- sandbox,err-step-size: Size of the step to use when injecting errors, in
+                         bytes. Must evenly divide the page size.
+
+Optional properties:
+- sandbox,onfi: The complete ONFI parameter page, including the CRC. Should be
+                exactly 256 bytes.
+- Any common NAND chip properties as documented by Linux's
+  Documentation/devicetree/bindings/mtd/raw-nand-chip.yaml
+
+To match U-Boot's error correction capabilities, errors are only injected into
+the data area and the ECC codes. Other data in the OOB area is never corrupted.
+Generally, sandbox,err-step-size should be the same as the ECC step size, and
+sandbox,err-count should be less than the number of correctable bit errors (the
+ECC strength).
+
+Example
+-------
+
+nand-controller {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	compatible = "sandbox,nand";
+
+	nand@0 {
+		reg = <0>;
+		nand-ecc-mode = "soft";
+		sandbox,id = [00 e3];
+		sandbox,erasesize = <(8 * 1024)>;
+		sandbox,oobsize = <16>;
+		sandbox,pagesize = <512>;
+		sandbox,pages = <0x2000>;
+		sandbox,err-count = <1>;
+		sandbox,err-step-size = <512>;
+	};
+};

@@ -40,6 +40,10 @@
 #include "enet_dbg.h"
 #include <net_port.h>
 
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+#include "runner_egress_tc.h"
+#endif
+#include "mac_drv_epon_ae.h"
 
 static void port_runner_epon_stats(enetx_port_t *self, struct rtnl_link_stats64 *net_stats)
 {
@@ -172,10 +176,23 @@ Exit:
 static int port_runner_epon_init(enetx_port_t *self)
 {
     int is_ae = self->p.mac->mac_drv->mac_type == MAC_TYPE_EPON_AE;
-    int rc;
+    int rc = 0;
 
     self->p.port_cap = is_ae ? PORT_CAP_LAN_WAN : PORT_CAP_WAN_ONLY;
     self->n.port_netdev_role = self->port_info.is_wan ? PORT_NETDEV_ROLE_WAN : PORT_NETDEV_ROLE_LAN;
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+    hash_init(self->nodes_hash_table);
+    if (self->port_info.is_epon_ae) {
+        self->tc_setup_egress_tm = port_runner_tc_config_egress_tm;
+        self->tc_ets_update_stat = port_runner_update_queues_stat;
+    } else {
+        self->tc_setup_egress_tm = runner_pon_tc_config_egress_tm;
+        self->tc_ets_update_stat = port_runner_pon_update_queues_stat;
+    }
+    self->tc_remove_egress_tm = runner_tc_remove_egress_tm;
+    self->tc_get_egress_tm_caps = runner_tc_get_caps;
+#endif
+
     if (mux_set_rx_index(self->p.parent_sw, self->p.port_id, self))
         return -1;
 
@@ -250,6 +267,20 @@ static int port_runner_epon_role_set(enetx_port_t *self, port_netdev_role_t role
     return rc;
 }
 
+static int port_epon_link_change(enetx_port_t *self, int up)
+{
+    /* Optical AE mode will do the runner port open in the epon_ae_mac_cfg_set. Ignore 
+         * the runner operation here. */
+    if (self->port_info.is_epon_ae)
+    {
+        phy_dev_t *phy_dev = ((mac_priv_epon_ae_t *)self->p.mac->priv)->phy_dev;
+        if (phy_dev && phy_dev->phy_drv && (phy_dev->phy_drv->phy_type == PHY_TYPE_PON))
+            return 0;
+    }
+
+    return port_runner_link_change(self, up);
+}
+
 port_ops_t port_runner_epon =
 {
     .init = port_runner_epon_init,
@@ -262,7 +293,7 @@ port_ops_t port_runner_epon =
     .mib_dump = port_runner_mib_dump,
     .print_status = port_runner_print_status,
     .print_priv = port_runner_print_priv,
-    .link_change = port_runner_link_change,
+    .link_change = port_epon_link_change,
     .role_set = port_runner_epon_role_set,
 #if (defined(CONFIG_BCM_PON_XRDP) && defined(CONFIG_NET_SWITCHDEV) && (LINUX_VERSION_CODE < KERNEL_VERSION(5,1,0)))
     .switchdev_ops =

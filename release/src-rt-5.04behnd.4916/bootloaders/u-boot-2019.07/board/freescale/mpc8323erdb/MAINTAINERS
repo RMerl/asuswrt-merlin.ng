@@ -1,6 +1,0 @@
-MPC8323ERDB BOARD
-#M:	Michael Barkowski <michael.barkowski@freescale.com>
-S:	Orphan (since 2018-05)
-F:	board/freescale/mpc8323erdb/
-F:	include/configs/MPC8323ERDB.h
-F:	configs/MPC8323ERDB_defconfig

@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 Marvell International Ltd.
+ */
+
+/*
+ * Device Tree file for Marvell Armada AP806.
+ */
+
+/* AP806 Settings */
+#define AP_NAME				ap806
+
+#include "armada-ap80x.dtsi"
+
+/ {
+	model = "Marvell Armada AP806";
+
+	AP_NAME {
+		config-space {
+			sar-reg {
+				compatible = "marvell,sample-at-reset-common",
+					     "marvell,sample-at-reset-ap806";
+				reg = <0x6F8200 0x8>;
+				sar-driver = "ap806_sar";
+				sar-name = "ap806_sar";
+				status = "okay";
+			};
+
+			thermal: thermal@6f8084 {
+				compatible = "marvell,mvebu-thermal",
+					     "marvell,thermal-ext-sensor";
+				reg = <0x6f8084 0x12>;
+				gain = <425>;
+				offset = <153400>;
+				divisor = <1000>;
+				status = "okay";
+			};
+		};
+	};
+};

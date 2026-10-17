@@ -6,8 +6,7 @@
 			BP_DDR_TOTAL_SIZE_1024MB      | \
 			BP_DDR_DEVICE_WIDTH_16        | \
 			BP_DDR_TOTAL_WIDTH_32BIT      | \
-			BP_DDR_4912_DEFAULT          | \
-			BP_DDR_CONFIG_DEBUG)>;
+			BP_DDR_4912_DEFAULT)>;
 	};
 
 	buttons: buttons {
@@ -52,23 +51,11 @@
 		i2c-bus = <&i2c1>;
 		mod-def0 = <&bca_extintr 5 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
 	};
-
-	periph {
-		i2s: bcm63xx-i2s {
-			pinctrl-0 = <&b_i2s_tx_lrck_pin_7 &b_i2s_tx_mclk_pin_6 &a_i2s_rx_sclk_pin_45 &a_i2s_rx_lrck_pin_46 &a_i2s_sdata_in_pin_47 &a_i2s_rx_mclk_pin_48 &a_i2s_sdata_out_pin_49 &a_i2s_tx_sclk_pin_50>;
-			pinctrl-names = "default";
-			compatible = "brcm,bcm63xx-i2s";
-			reg = <0 0x2080 0 0x7f>;
-			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&i2stxclk>,<&i2srxclk>,<&osc>;
-			clock-names = "i2stxclk","i2srxclk","i2sosc"; 
-		};
-	};
 };
 
 &nand {
 	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_25>;
-	write-protect = <1>;
+	/delete-property/ brcm,wp-not-connected;
 	status = "okay";
 };
 
@@ -96,6 +83,12 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c1_sclk_pin_14 &i2c1_sdata_pin_15>;
 	status = "okay";
+};
+
+&i2s {
+	status = "okay";
+	pinctrl-0 = <&b_i2s_tx_lrck_pin_7 &b_i2s_tx_mclk_pin_6 &a_i2s_rx_sclk_pin_45 &a_i2s_rx_lrck_pin_46 &a_i2s_sdata_in_pin_47 &a_i2s_rx_mclk_pin_48 &a_i2s_sdata_out_pin_49 &a_i2s_tx_sclk_pin_50>;
+	pinctrl-names = "default";
 };
 
 &usb_ctrl {

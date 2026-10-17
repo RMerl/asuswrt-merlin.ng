@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/dts-v1/;
+/include/ "mcf5441x.dtsi"
+
+/ {
+	model = "Sysam stmark2";
+	compatible = "sysam,stmark2";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&uart0 {
+	bootph-all;
+	status = "okay";
+};
+
+&dspi0 {
+	spi-mode = <3>;
+	status = "okay";
+
+	flash: is25lp128@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <60000000>;
+		reg = <1>;
+	};
+};
+
+&fec0 {
+	status = "okay";
+};
+
+&fec1 {
+	status = "okay";
+	mii-base = <0>;
+};
+
+&i2c0 {
+	status = "okay";
+};

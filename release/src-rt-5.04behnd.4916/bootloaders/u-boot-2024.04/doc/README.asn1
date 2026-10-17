@@ -1,0 +1,40 @@
+ASN1
+====
+
+Abstract Syntax Notation One (or ASN1) is a standard by ITU-T and ISO/IEC
+and used as a description language for defining data structure in
+an independent manner.
+Any data described in ASN1 notation can be serialized (or encoded) and
+de-serialized (or decoded) with well-defined encoding rules.
+
+A combination of ASN1 compiler and ASN1 decoder library function will
+provide a function interface for parsing encoded binary into specific
+data structure:
+1) define data structure in a text file (*.asn1)
+2) define "action" routines for specific "tags" defined in (1)
+3) generate bytecode as a C file (*.asn1.[ch]) from *.asn1 file
+   with ASN1 compiler (tools/asn1_compiler)
+4) call a ASN1 decoder (asn1_ber_decoder()) with bytecode and data
+
+Usage of ASN1 compiler
+----------------------
+  asn1_compiler [-v] [-d] <grammar-file> <c-file> <hdr-file>
+
+  <grammar-file>:	ASN1 input file
+  <c-file>:		generated C file
+  <hdr-file>:		generated include file
+
+Usage of ASN1 decoder
+---------------------
+  int asn1_ber_decoder(const struct asn1_decoder *decoder, void *context,
+		       const unsigned char *data, size_t datalen);
+
+  @decoder:		bytecode binary
+  @context:		context for decoder
+  @data:		data to be parsed
+  @datalen:		size of data
+
+
+As of writing this, ASN1 compiler and decoder are used to implement
+X509 certificate parser, pcks7 message parser and RSA public key parser
+for UEFI secure boot.

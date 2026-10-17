@@ -1,6 +1,0 @@
-ARMADILLO-800EVA BOARD
-M:	Nobuhiro Iwamatsu <nobuhiro.iwamatsu.yj@renesas.com>
-S:	Maintained
-F:	board/atmark-techno/armadillo-800eva/
-F:	include/configs/armadillo-800eva.h
-F:	configs/armadillo-800eva_defconfig

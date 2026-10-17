@@ -1,0 +1,31 @@
+
+config PINCTRL_MTMIPS
+	depends on ARCH_MTMIPS
+	bool
+
+config PINCTRL_MT7620
+	bool "MediaTek MT7620 pin control driver"
+	select PINCTRL_MTMIPS
+	depends on SOC_MT7620 && PINCTRL_GENERIC
+	help
+	  Support pin multiplexing control on MediaTek MT7620.
+	  The driver is controlled by a device tree node which contains
+	  the pin mux functions for each available pin groups.
+
+config PINCTRL_MT7621
+	bool "MediaTek MT7621 pin control driver"
+	select PINCTRL_MTMIPS
+	depends on SOC_MT7621 && PINCTRL_GENERIC
+	help
+	  Support pin multiplexing control on MediaTek MT7621.
+	  The driver is controlled by a device tree node which contains
+	  the pin mux functions for each available pin groups.
+
+config PINCTRL_MT7628
+	bool "MediaTek MT7628 pin control driver"
+	select PINCTRL_MTMIPS
+	depends on SOC_MT7628 && PINCTRL_GENERIC
+	help
+	  Support pin multiplexing control on MediaTek MT7628.
+	  The driver is controlled by a device tree node which contains
+	  the pin mux functions for each available pin groups.

@@ -1,0 +1,113 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Copyright 2019 Google LLC
+#
+
+config INTEL_APOLLOLAKE
+	bool
+	select FSP_VERSION2
+	select HAVE_FSP
+	select ARCH_MISC_INIT
+	select USE_CAR
+	select INTEL_SOC
+	select INTEL_PMC
+	select TPL_X86_TSC_TIMER_NATIVE
+	select SPL_PCH
+	select TPL_PCH
+	select PCIEX_LENGTH_256MB
+	select PCH
+	select P2SB
+	select SMP_AP_WORK
+	select INTEL_GMA_SWSMISCI
+	select ACPI_GNVS_EXTERNAL
+	select TPL_OF_PLATDATA_PARENT
+	select TPL_OF_PLATDATA_INST
+	select TPL_READ_ONLY
+	imply ENABLE_MRC_CACHE
+	imply AHCI_PCI
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPI_FLASH
+	imply USB
+	imply USB_EHCI_HCD
+	imply TPL
+	imply SPL
+	imply TPL_X86_16BIT_INIT
+	imply TPL_OF_PLATDATA
+	imply ACPI_PMC
+	imply MMC
+	imply DM_MMC
+	imply MMC_PCI
+	imply MMC_SDHCI
+	imply CMD_MMC
+	imply VIDEO_FSP
+	imply PINCTRL_INTEL
+	imply PINCTRL_INTEL_APL
+	imply HAVE_VBT
+	imply HAVE_X86_FIT
+	imply INTEL_GPIO
+	imply SMP
+	imply HAVE_ITSS
+	imply HAVE_P2SB
+	imply CLK
+	imply CMD_CLK
+	imply CLK_INTEL
+	imply ACPI_GPE
+	imply INTEL_GMA_ACPI
+
+if INTEL_APOLLOLAKE
+
+config DCACHE_RAM_BASE
+	default 0xfef00000
+
+config DCACHE_RAM_SIZE
+	default 0xc0000
+
+config DCACHE_RAM_MRC_VAR_SIZE
+	default 0xb0000
+
+config CPU_SPECIFIC_OPTIONS
+	def_bool y
+	select SMM_TSEG
+	select X86_RAMTEST
+
+config SMM_TSEG_SIZE
+	hex
+	default 0x800000
+
+config MMCONF_BASE_ADDRESS
+	hex
+	default 0xe0000000
+
+config TPL_SIZE_LIMIT
+	default 0x7800
+
+config CPU_ADDR_BITS
+	default 39
+
+config APL_SPI_FLASH_BOOT
+	bool "Support booting with SPI-flash driver instead memory-mapped SPI"
+	select TPL_SPI_FLASH_SUPPORT
+	select TPL_SPI
+	select TPL_DM_SPI
+	select TPL_DM_SPI_FLASH
+	help
+	  This enables SPI and SPI flash in TPL. Without the this only
+	  available boot method is to use memory-mapped SPI. Since this is
+	  actually fast and produces a TPL which is 7KB smaller, memory-mapped
+	  SPI is the default.
+
+config APL_BOOT_FROM_FAST_SPI_FLASH
+	bool "Boot using SPI flash driver"
+	select APL_SPI_FLASH_BOOT
+	help
+	  This option is separate from APL_SPI_FLASH_BOOT since it is useful to
+	  be able to compare booting speed with the same build. Enable this to
+	  use the SPI-flash driver to load SPL, U-Boot and FSP-M. For technical
+	  reasons FSP-S is currently always loaded from memory-mapped SPI. See
+	  Apollo Lake's arch_fsp_init_r() for details about that.
+
+config VBT_ADDR
+	default 0xff3f1000
+
+endif

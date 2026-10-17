@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * P2020RDB-PC Device Tree Source
+ *
+ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2019 NXP
+ */
+
+/include/ "p2020.dtsi"
+
+/ {
+	model = "fsl,P2020RDB-PC";
+	compatible = "fsl,P2020RDB-PC";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	lbc: localbus@ffe05000 {
+		reg = <0 0xffe05000 0 0x1000>;
+	};
+
+	soc: soc@ffe00000 {
+		ranges = <0x0 0x0 0xffe00000 0x100000>;
+	};
+
+	pci2: pcie@ffe08000 {
+		reg = <0x0 0xffe08000 0x0 0x1000>;	/* registers */
+		status = "disabled";
+	};
+
+	pci1: pcie@ffe09000 {
+		reg = <0x0 0xffe09000 0x0 0x1000>;	/* registers */
+		ranges = <0x01000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0xa0000000 0x0 0xa0000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+
+	pci0: pcie@ffe0a000 {
+		reg = <0x0 0xffe0a000 0x0 0x1000>;	/* registers */
+		ranges = <0x01000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0x80000000 0x0 0x80000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+
+	aliases {
+		spi0 = &espi0;
+	};
+};
+
+/include/ "p2020rdb-pc.dtsi"
+/include/ "p2020-post.dtsi"
+
+&espi0 {
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		spi-max-frequency = <10000000>; /* input clock */
+	};
+};

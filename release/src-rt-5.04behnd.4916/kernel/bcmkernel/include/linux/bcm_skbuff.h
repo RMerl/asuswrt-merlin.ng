@@ -57,6 +57,9 @@ struct fkbuff;
 
 extern struct sk_buff *skb_xlate(struct fkbuff *fkb_p);
 extern struct sk_buff *skb_xlate_dp(struct fkbuff *fkb_p, uint8_t *dirty_p);
+extern void skb_xlate_morph(struct sk_buff * skb_p,
+		struct fkbuff * fkb_p, uint8_t *dirty_p, bool clear_cb);
+
 extern int skb_avail_headroom(const struct sk_buff *skb);
 extern void skb_bpm_tainted(struct sk_buff *skb);
 
@@ -70,6 +73,10 @@ extern int skb_layout_test(int head_offset, int truesize_offset, int end_offset)
 unsigned char *bcm_skb_tail_pointer(const struct sk_buff *skb);
 void bcm_skb_reset_tail_pointer(struct sk_buff *skb);
 void bcm_skb_set_tail_pointer(struct sk_buff *skb, const int offset);
+
+extern int kfree_skb_monitor_enabled;
+extern void bcm_kfree_skb_monitor(struct sk_buff *skb, enum skb_drop_reason reason);
+extern void bcm_kfree_skb_monitor_config(int action);
 
 #if defined(CONFIG_BCM_SW_GSO)
 extern __be16 bcm_sw_gso_skb_network_protocol(struct sk_buff *skb, int offset, __be16 type);
@@ -111,7 +118,8 @@ typedef union wlFlowInf {
 				uint32_t wl_prio:4;
 				uint32_t mark_prio_ovrd:1;
 				/* End - Shared fields between ucast and mcast */
-				uint32_t nic_reserved1:10;
+				uint32_t has_pkt_tlm:1; /* used between Crossbow/Archer and driver */
+				uint32_t nic_reserved1:9;
 				uint32_t wl_chainidx:16;
 			};
 			struct {
@@ -200,7 +208,6 @@ struct vlan_ext {
 	} bcm_flags;
 	__u16			vlan_count;
 	__u16			vlan_tpid;
-	__u32			cfi_save;
 	__u32			vlan_header[SKB_VLAN_MAX_TAGS];
 	struct net_device	*rxdev;
 };
@@ -231,7 +238,8 @@ struct bcm_skb_ext {
 	union {
 		__u32 flags;
 		struct {
-			__u32	reserved:13;
+			__u32	reserved:12;
+			__u32	iq_prio:1;
 			__u32	br_flood_pkt:1;/* forwarding by br_flood */
 			__u32	skb_fc_accel:1;/* fcache accelerated skb */
 			__u32	gdx_loopbk:1;/* loop back skb from HW accelerator */
@@ -251,6 +259,7 @@ struct bcm_skb_ext {
 	struct nf_queue_entry	*q_entry; /* sgs packet queue to reinject to the stack */
 	uint32_t fc_ctxt; 
 	fsmark_conds_t      fsmark_conds;
+	__u32	bcmmark;
 };
 
 /* accessor macro */
@@ -269,15 +278,33 @@ struct bcm_skb_ext {
 #define skbuff_bcm_ext_fc_ctxt_set(_skb, _val)	((_skb)->bcm_ext.fc_ctxt = _val)
 #define skbuff_bcm_ext_br_flood_get(_skb)	((_skb)->bcm_ext.br_flood_pkt)
 #define skbuff_bcm_ext_br_flood_set(_skb, _val)	((_skb)->bcm_ext.br_flood_pkt = _val)
+#define skbuff_bcm_ext_iq_prio_get(_skb)	        ((_skb)->bcm_ext.iq_prio)
+#define skbuff_bcm_ext_iq_prio_set(_skb, _val)	((_skb)->bcm_ext.iq_prio = _val)
 
 void bcm_skbuff_copy_skb_header(struct sk_buff *new, const struct sk_buff *old);
 void bcm_skbuff_skb_clone(struct sk_buff *n, struct sk_buff *skb);
 int bcm_skbuff_handle_netif_rx_internal(struct sk_buff *skb, int *ret);
 int bcm_skbuff_handle_netif_receive_skb_core(struct sk_buff *skb, int *ret);
 
+/* Declare and export qstat telemetry functions unconditionally */
+bool skb_has_qstat_telemetry(struct sk_buff *skb);
+bool skb_data_has_qstat_telemetry(struct sk_buff *skb);
+bool skb_spc_frag_has_qstat_telemetry(struct sk_buff *skb, u8 frag);
+
+void skb_data_set_qstat_telemetry(struct sk_buff *skb);
+void skb_spc_frag_set_qstat_telemetry(struct sk_buff *skb, u8 frag);
+
+void skb_data_clr_qstat_telemetry(struct sk_buff *skb);
+void skb_spc_frag_clr_qstat_telemetry(struct sk_buff *skb, u8 frag);
+void skb_spc_clr_all_qstat_telemetry(struct sk_buff *skb);
 
 #ifdef CONFIG_BCM_SKB_FREE_THREAD
 void dev_kfree_skb_thread(struct sk_buff *skb);
+#if defined(CONFIG_BCM_BPM_BULK_FREE)
+void dev_kfree_skb_thread_bulk(struct sk_buff *head, struct sk_buff *tail, uint32_t len);
+#else
+void dev_kfree_skb_thread_bulk(struct sk_buff *skb);
+#endif /* CONFIG_BCM_BPM_BULK_FREE */
 #else
 #define dev_kfree_skb_thread(skb) dev_consume_skb_any(skb)
 #endif
@@ -297,320 +324,8 @@ void skb_shinforeset(struct skb_shared_info *skb_shinfo);
  * sk_buff structure is copied directly from skbuff.h and removing any #ifdef except CONFIG_BCM_KF_NBUFF.
  * This is on-purpose to solve binary incompatibility issue.
  */
-
-#if defined(CONFIG_BCM_KF_MPTCP)
-#define BCM_SKB_CB_SIZE		80
-#else
-#define BCM_SKB_CB_SIZE		48
-#endif
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
-
-struct sk_buff {
-	union {
-		struct {
-			/* These two members must be first. */
-			struct sk_buff		*next;
-			struct sk_buff		*prev;
-
-			union {
-				struct net_device	*dev;
-				/* Some protocols might use this space to store information,
-				 * while device pointer would be NULL.
-				 * UDP receive path is one user.
-				 */
-				unsigned long		dev_scratch;
-			};
-		};
-		struct rb_node		rbnode; /* used in netem, ip4 defrag, and tcp stack */
-		struct list_head	list;
-	};
-
-	union {
-		struct sock		*sk;
-		int			ip_defrag_offset;
-	};
-
-	union {
-		ktime_t		tstamp;
-		u64		skb_mstamp;
-	};
-#if defined(CONFIG_BCM_KF_NBUFF)
-	/*
-	 * this structure is used by WL_SPC feature for more efficient and
-	 * faster forwarding performance. is_spc denotes the packet has been
-	 * marked to hold references to a full MPDU's worth of data buffers, and
-	 * spc_tot_len is the total length of the MPDU.
-	 *
-	 * !!!!! It is VERY IMPORTANT for this block to be in the very first
-	 * cache line of sk_buff for optimal tput. !!!!!!!
-	 */
-	struct {
-		unsigned int is_spc:1;
-		unsigned int spc_reserved:7;
-		unsigned int spc_tot_len:24;
-	};
-
-	union {
-		/* 3 bytes unused */
-		unsigned int recycle_and_rnr_flags;
-		unsigned int recycle_flags;
-	};
-	/*
-	 * Several skb fields have been regrouped together for better data locality
-	 * cache performance, 16byte cache line proximity.
-	 * In 32 bit architecture, we have 32 bytes of data before this comment.
-	 * In 64 bit architecture, we have 52 bytes of data at this point.
-	 */
-
-	/*--- members common to fkbuff: begin here ---*/
-	struct {
-		union {
-			/* see fkb_in_skb_test() */
-			void 			*fkbInSkb;
-			void			*word0;
-		};
-
-		/* defined(CONFIG_BLOG), use blog_ptr() */
-		struct blog_t		*blog_p;
-		unsigned char		*data;
-
-		/* The len in fkb is only 24 bits other 8 bits are used as internal flags
-		 * when fkbInSkb is used the max len can be only 24 bits, the bits 31-24
-		 * are cleared
-		 * currently we don't have a case where len can be >24 bits.
-		 */
-		union {
-			unsigned int	len;
-			/* used for fkb_in_skb test */
-			__u32		len_word;
-		};
-
-		union {
-			__u32		mark;
-			__u32		dropcount;
-			void		*queue;
-			/* have to declare the following variation of fkb_mark
-			 * for the ease of handling 64 bit vs 32 bit in fcache
-			 */
-			unsigned long	fkb_mark;
-		};
-
-		union {
-			__u32		priority;
-			wlFlowInf_t	wl;
-		};
-
-		/* Recycle preallocated skb or data */
-		RecycleFuncP		recycle_hook;
-
-		union {
-			unsigned long	recycle_context;
-			struct sk_buff	*next_free;
-			__u32       fpm_num;
-		};
-
-#ifdef CONFIG_64BIT
-	}  ____cacheline_aligned;
-	/*
-	 * purposedly making the above fkbuff data structure cacheline aligned
-	 * in 64 bit architecture.
-	 * This can ensure the offset to the content is fixed into same cacheline.
-	 * Main reason we only declare as cacheline_aligned for 64 bit is that
-	 * we have manually calculated to ensure that this structure is 32 byte
-	 * aligned in 32 bit architecture.  If we add ____cacheline_aligned
-	 * also for 32 bit architecture, it will waste 64 byte memory if that
-	 * architecture is with 64 byte cache line size (i.e., 63148).
-	 */
-#else
-	};
-#endif
-	/*--- members common to fkbuff: end here ---*/
-
-
-#endif
-
-	struct bcm_skb_ext bcm_ext;
-
-	union {
-		struct {
-			unsigned long	_skb_refdst;
-			void		(*destructor)(struct sk_buff *skb);
-		};
-		struct list_head	tcp_tsorted_anchor;
-	};
-
-	struct	sec_path	*sp;
-	unsigned long		 _nfct;
-	struct nf_bridge_info	*nf_bridge;
-#if defined(CONFIG_BCM_KF_NBUFF)
-	unsigned int		data_len;
-#else
-	unsigned int		len,
-				data_len;
-#endif
-	__u16		mac_len,
-				hdr_len;
-
-	/* Following fields are _not_ copied in __copy_skb_header()
-	 * Note that queue_mapping is here mostly to fill a hole.
-	 */
-	__u16			queue_mapping;
-
-/* if you move cloned around you also must adapt those constants */
-#ifdef __BIG_ENDIAN_BITFIELD
-#define CLONED_MASK	(1 << 7)
-#else
-#define CLONED_MASK	1
-#endif
-#define CLONED_OFFSET()		offsetof(struct sk_buff, __cloned_offset)
-
-	__u8		__cloned_offset[0];
-	__u8		cloned:1,
-				nohdr:1,
-				fclone:2,
-				peeked:1,
-				head_frag:1,
-				xmit_more:1,
-				pfmemalloc:1;
-
-	/* fields enclosed in headers_start/headers_end are copied
-	 * using a single memcpy() in __copy_skb_header()
-	 */
-	/* private: */
-	__u32			headers_start[0];
-	/* public: */
-
-/* if you move pkt_type around you also must adapt those constants */
-#ifdef __BIG_ENDIAN_BITFIELD
-#define PKT_TYPE_MAX	(7 << 5)
-#else
-#define PKT_TYPE_MAX	7
-#endif
-#define PKT_TYPE_OFFSET()	offsetof(struct sk_buff, __pkt_type_offset)
-
-	__u8			__pkt_type_offset[0];
-	__u8			pkt_type:3;
-	__u8			ignore_df:1;
-	__u8			nf_trace:1;
-	__u8			ip_summed:2;
-	__u8			ooo_okay:1;
-
-	__u8			l4_hash:1;
-	__u8			sw_hash:1;
-	__u8			wifi_acked_valid:1;
-	__u8			wifi_acked:1;
-	__u8			no_fcs:1;
-	/* Indicates the inner headers are valid in the skbuff. */
-	__u8			encapsulation:1;
-	__u8			encap_hdr_csum:1;
-	__u8			csum_valid:1;
-
-	__u8			csum_complete_sw:1;
-	__u8			csum_level:2;
-	__u8			csum_not_inet:1;
-	__u8			dst_pending_confirm:1;
-	__u8			ndisc_nodetype:2;
-	__u8			ipvs_property:1;
-
-	__u8			inner_protocol_type:1;
-	__u8			remcsum_offload:1;
-	__u8			offload_fwd_mark:1;
-	__u8			offload_mr_fwd_mark:1;
-	__u8			tc_skip_classify:1;
-	__u8			tc_at_ingress:1;
-	__u8			tc_redirected:1;
-	__u8			tc_from_ingress:1;
-	__u8			decrypted:1;
-	__u16			tc_index;	/* traffic control index */
-
-	union {
-		__wsum		csum;
-		struct {
-			__u16	csum_start;
-			__u16	csum_offset;
-		};
-	};
-#ifdef CONFIG_BCM_KF_NBUFF
-#else
-	__u32			priority;
-#endif
-	int			skb_iif;
-	__u32			hash;
-	__be16			vlan_proto;
-	__u16			vlan_tci;
-	union {
-		unsigned int	napi_id;
-		unsigned int	sender_cpu;
-	};
-	__u32		secmark;
-
-#if defined(CONFIG_BCM_KF_NBUFF)
-	__u32		reserved_tailroom;
-#else
-	union {
-		__u32		mark;
-		__u32		reserved_tailroom;
-	};
-#endif
-
-	union {
-		__be16		inner_protocol;
-		__u8		inner_ipproto;
-	};
-
-	__u16			inner_transport_header;
-	__u16			inner_network_header;
-	__u16			inner_mac_header;
-
-	__be16			protocol;
-	__u16			transport_header;
-	__u16			network_header;
-	__u16			mac_header;
-
-	/* private: */
-	__u32			headers_end[0];
-
-	/*
-	 * This is the control buffer. It is free to use for every
-	 * layer. Please put your private variables there. If you
-	 * want to keep them across layers you have to do a skb_clone()
-	 * first. This is owned by whoever has the skb queued ATM.
-	 */
-	char			cb[BCM_SKB_CB_SIZE] __aligned(8);
-
-	/* public: */
-
-	/* These elements must be at the end, see alloc_skb() for details.  */
-	sk_buff_data_t		end;
-#if defined(CONFIG_BCM_KF_NBUFF)
-	unsigned char		*head;
-#else
-	unsigned char		*head,
-				*data;
-#endif
-	unsigned int		truesize;
-/*
- * ------------------------------- CAUTION!!! ---------------------------------
- * Do NOT add a new field or modify any existing fields before this 
- * line to the beginning of the struct sk_buff. Doing so will cause 
- * struct sk_buff to be incompatible with the compiled binaries and may cause 
- * the binary only modules to crash.
- * any custom fields that need to be initilazed to zero on allocation 
- * should be added between truesize and tail
- * binary modules should access any field after truesize via function calls
- * ---------------------------------------------------------------------------
- */
-#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
-	void			*cb_next;
-	struct nf_queue_entry   *nf_queue_entry;
-	__u8			imq_flags:IMQ_F_BITS;
-#endif
-	sk_buff_data_t		tail;
-	refcount_t		users;
-};
-
-#else  //LINUX VER 5.15
+/* 64 bytes needed for WLAN pkttag */
+#define BCM_SKB_CB_SIZE		64
 
 struct sk_buff {
 	union {
@@ -642,7 +357,33 @@ struct sk_buff {
 		u64		skb_mstamp_ns; /* earliest departure time */
 	};
 #if defined(CONFIG_BCM_KF_NBUFF)
-	__u32 unused;
+#define SKB_DATA_HAS_TELEMETRY_MASK		BIT(0)
+#define SKB_FRAG_HAS_TELEMETRY_MASK(n)		BIT((n) + 1)
+	/*
+	 * this structure is used by WL_SPC feature for more efficient and
+	 * faster forwarding performance. is_spc denotes the packet has been
+	 * marked to hold references to a full MPDU's worth of data buffers, and
+	 * spc_tot_len is the total length of the MPDU.
+	 *
+	 * !!!!! It is VERY IMPORTANT for this block to be in the very first
+	 * cache line of sk_buff for optimal tput. !!!!!!!
+	 */
+	union {
+		unsigned int spc_tlm_u32;
+		struct {
+			unsigned int is_spc:1;
+			unsigned int is_spc_candidate:1;
+			unsigned int spc_reserved:6;
+			/*
+			 * 8 bits identifying if skb->data or any of the SPC frags have
+		 	* qstat telemetry enabled.
+		 	* bit 0   : s->data has qstat telemetry
+		 	* bit[1:7]: skb_shinfo(s)->frags[bit-1].data has qstat telemetry
+		 	*/
+			unsigned int frags_have_qstat_telemetry:8;
+			unsigned int spc_tot_len:16;
+		};
+	};
 	union {
 		/* 3 bytes unused */
 		unsigned int recycle_and_rnr_flags;
@@ -702,9 +443,6 @@ struct sk_buff {
 			__u32       fpm_num;
 		};
 
-#if IS_ENABLED(CONFIG_BCM_NF_FSMARK)
-		fsmark_conds_t      fsmark_conds;
-#endif
 #ifdef CONFIG_64BIT
 	}  ____cacheline_aligned;
 	/*
@@ -736,6 +474,9 @@ struct sk_buff {
 		unsigned long		_sk_redir;
 	};
 
+#ifdef CONFIG_XFRM
+	struct sec_path		*sp;
+#endif
 	unsigned long		 _nfct;
 #if defined(CONFIG_BCM_KF_NBUFF)
 	unsigned int		data_len;
@@ -930,14 +671,17 @@ struct sk_buff {
  * binary modules should access any field after truesize via function calls
  * ---------------------------------------------------------------------------
  */
+#if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
+	void			*cb_next;
+	struct nf_queue_entry   *nf_queue_entry;
+	__u8			imq_flags:IMQ_F_BITS;
+#endif
 	sk_buff_data_t		tail;
 	refcount_t		users;
 
 	/* only useable after checking ->active_extensions != 0 */
 	struct skb_ext		*extensions;
 };
-
-#endif //LINUX VER 5.15
 
 #define BCM_SKBOFFSETOF(member)  ((size_t)&((struct sk_buff*)0)->member)
 #define BCM_SKB_EXTOFFSETOF(member)  ((size_t)&((struct sk_buff*)0)->bcm_ext.member)

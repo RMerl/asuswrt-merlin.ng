@@ -1,0 +1,179 @@
+.. SPDX-License-Identifier: GPL-2.0+
+
+Kontron SMARC-sAL28
+===================
+
+The Kontron SMARC-sAL28 board is a TSN-enabled dual-core ARM A72
+processor module with an on-chip 6-port TSN switch and a 3D GPU.
+
+
+Quickstart
+----------
+
+Compile U-Boot
+^^^^^^^^^^^^^^
+
+Configure and compile the binary::
+
+ $ make kontron_sl28_defconfig
+ $ CROSS_COMPILE=aarch64-linux-gnu make
+
+Copy u-boot.rom to a TFTP server.
+
+Install the bootloader on the board
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To install the bootloader binary use the following command::
+
+ > tftp path/to/u-boot.rom
+ > sf probe 0
+ > sf update $fileaddr 0x210000 $filesize
+
+The board is fully failsafe, you can't break anything. If builtin watchdog
+is enabled, you'll automatically end up in the failsafe bootloader if
+something goes wrong. If the watchdog is disabled, you have to manually
+enter failsafe mode by asserting the ``FORCE_RECOV#`` line during board
+reset.
+
+Update image
+------------
+
+After the build finished, there will be an update image called
+u-boot-update.bin. This can either be used in the DFU mode (which isn't
+supported yet) or encapsulated in an EFI UpdateCapsule.
+
+To build the capsule use the following command
+
+ $ tools/mkeficapsule -f u-boot-update.bin -i 1 UpdateUboot
+
+Afterward you can copy this file to your ESP into the /EFI/UpdateCapsule/
+folder. On the next EFI boot this will automatically update your
+bootloader.
+
+Builtin watchdog
+----------------
+
+The builtin watchdog will supervise the bootloader startup. If anything
+goes wrong it will reset the board and boot into the failsafe bootloader.
+
+Once the bootloader is started successfully, it will disable the watchdog
+timer.
+
+wdt command flags
+^^^^^^^^^^^^^^^^^
+
+The `wdt start` as well as the `wdt expire` command take a flags argument.
+The supported bitmask is as follows.
+
+| Bit | Description                   |
+| --- | ----------------------------- |
+|   0 | Enable failsafe mode          |
+|   1 | Lock the control register     |
+|   2 | Disable board reset           |
+|   3 | Enable WDT_TIME_OUT# line     |
+
+For example, you can use `wdt expire 1` to issue a reset and boot into the
+failsafe bootloader.
+
+Disable the builtin watchdog
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If for some reason, this isn't a desired behavior, the watchdog can also
+be configured to not be enabled on board reset. It's configuration is saved
+in the non-volatile board configuration bits. To change these you can use
+the `sl28 nvm` command.
+
+For more information on the non-volatile board configuration bits, see the
+following section.
+
+Non-volatile Board Configuration Bits
+-------------------------------------
+
+The board has 16 configuration bits which are stored in the CPLD and are
+non-volatile. These can be changed by the `sl28 nvm` command.
+
+===  ===============================================================
+Bit  Description
+===  ===============================================================
+  0  Power-on inhibit
+  1  Enable eMMC boot
+  2  Enable watchdog by default
+  3  Disable failsafe watchdog by default
+  4  Clock generator selection bit 0
+  5  Clock generator selection bit 1
+  6  Disable CPU SerDes clock #2 and PCIe-A clock output
+  7  Disable PCIe-B and PCIe-C clock output
+  8  Keep onboard PHYs in reset
+  9  Keep USB hub in reset
+ 10  Keep eDP-to-LVDS converter in reset
+ 11  Enable I2C stuck recovery on I2C PM and I2C GP busses
+ 12  Enable automatic onboard PHY H/W reset
+ 13  reserved
+ 14  Used by the RCW to determine boot source
+ 15  Used by the RCW to determine boot source
+===  ===============================================================
+
+Please note, that if the board is in failsafe mode, the bits will have the
+factory defaults, ie. all bits are off.
+
+Power-On Inhibit
+^^^^^^^^^^^^^^^^
+
+If this is set, the board doesn't automatically turn on when power is
+applied. Instead, the user has to either toggle the ``PWR_BTN#`` line or
+use any other wake-up source such as RTC alarm or Wake-on-LAN.
+
+eMMC Boot
+^^^^^^^^^
+
+If this is set, the RCW will be fetched from the on-board eMMC at offset
+1MiB. For further details, have a look at the `Reset Configuration Word
+Documentation`_.
+
+Watchdog
+^^^^^^^^
+
+By default, the CPLD watchdog is enabled in failsafe mode. Using bits 2 and
+3, the user can change its mode or disable it altogether.
+
+=====  =====  ===============================
+Bit 2  Bit 3  Description
+=====  =====  ===============================
+    0      0  Watchdog enabled, failsafe mode
+    0      1  Watchdog disabled
+    1      0  Watchdog enabled, failsafe mode
+    1      1  Watchdog enabled, normal mode
+=====  =====  ===============================
+
+Clock Generator Select
+^^^^^^^^^^^^^^^^^^^^^^
+
+The board is prepared to supply different SerDes clock speeds. But for now,
+only setting 0 is supported, otherwise the CPU will hang because the PLL
+will not lock.
+
+Clock Output Disable And Keep Devices In Reset
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To safe power, the user might disable different devices and clock output of
+the board. It is not supported to disable the "CPU SerDes clock #2" for
+now, otherwise the CPU will hang because the PLL will not lock.
+
+Automatic reset of the onboard PHYs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, there is no hardware reset of the onboard PHY. This is because
+for Wake-on-LAN, some registers have to retain their values. If you don't
+use the WOL feature and a soft reset of the PHY is not enough you can
+enable the hardware reset. The onboard PHY hardware reset follows the
+power-on reset.
+
+
+Further documentation
+---------------------
+
+- `Vendor Documentation`_
+- `Reset Configuration Word Documentation`_
+
+.. _Reset Configuration Word Documentation: https://raw.githubusercontent.com/kontron/rcw-smarc-sal28/master/README.md
+.. _Vendor Documentation: https://raw.githubusercontent.com/kontron/u-boot-smarc-sal28/master/board/kontron/sl28/README.md

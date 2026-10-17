@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Test device tree file for dtoc
+ *
+ * Copyright 2020 Collabora Ltd.
+ */
+
+/dts-v1/;
+
+/ {
+	phandle: phandle-target {
+		bootph-all;
+		compatible = "target";
+		intval = <0>;
+		#gpio-cells = <0>;
+	};
+
+	phandle_1: phandle2-target {
+		bootph-all;
+		compatible = "target";
+		intval = <1>;
+		#gpio-cells = <1>;
+	};
+	phandle_2: phandle3-target {
+		bootph-all;
+		compatible = "target";
+		intval = <2>;
+		#gpio-cells = <2>;
+	};
+
+	phandle-source {
+		bootph-all;
+		compatible = "source";
+		cd-gpios = <&phandle &phandle_1 11 &phandle_2 12 13 &phandle>;
+	};
+
+	phandle-source2 {
+		bootph-all;
+		compatible = "source";
+		cd-gpios = <&phandle>;
+	};
+};

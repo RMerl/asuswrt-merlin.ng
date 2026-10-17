@@ -1,0 +1,6 @@
+DOCKSTAR BOARD
+M:	Tony Dinh <mibodhi@gmail.com>
+S:	Maintained
+F:	board/Seagate/dockstar/
+F:	include/configs/dockstar.h
+F:	configs/dockstar_defconfig

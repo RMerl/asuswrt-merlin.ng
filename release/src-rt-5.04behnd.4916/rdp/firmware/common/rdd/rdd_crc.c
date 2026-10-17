@@ -140,7 +140,6 @@ uint32_t rdd_crc_bit_by_bit(const uint8_t *p, uint32_t byte_len, uint32_t bit_le
     return crc;
 }
 
-#if defined(XRDP) || defined(WL4908)
 uint32_t rdd_crc_bit_by_bit_natc(const uint8_t *p, uint32_t byte_len, uint32_t bit_len)
 {
     uint32_t crc;
@@ -149,9 +148,7 @@ uint32_t rdd_crc_bit_by_bit_natc(const uint8_t *p, uint32_t byte_len, uint32_t b
 
     return crc;
 }
-#endif
 
-#if defined(XRDP)
 uint32_t rdd_crc_bit_by_bit_hash(uint8_t *p, uint8_t key_bit_len, uint8_t key_byte_len, crc16_polynom_t eng_id)
 {
     uint32_t crc;
@@ -162,7 +159,6 @@ uint32_t rdd_crc_bit_by_bit_hash(uint8_t *p, uint8_t key_bit_len, uint8_t key_by
 
     return crc;
 }
-#endif
 
 static void generate_crc_table(void)
 {

@@ -159,9 +159,11 @@ static bdmf_error_t br_fp_add_or_modify_mac_tbl_entry(struct net_bridge_fdb_entr
 {
     bdmf_error_t rc = -1;
     struct net_bridge_port *port;
+    const struct net_bridge_port *dst = NULL;
 
     rcu_read_lock();
-    port = br_port_get_rcu(fdb->dst->dev);
+    dst = READ_ONCE(fdb->dst);
+    port = br_port_get_rcu(dst->dev);
     if (port)
         rc = rdpa_add_or_modify_mac_tbl_entry(port, (uint8_t *)GET_FDB_ADDR(fdb).addr, GET_FDB_VLAN(fdb), fdb->is_static, is_add);
     rcu_read_unlock();
@@ -202,10 +204,12 @@ bdmf_error_t rdpa_remove_mac_tbl_entry(struct net_bridge_port *br_port, uint8_t 
 static int br_fp_remove_mac_tbl_entry(struct net_bridge_fdb_entry *fdb, int remove_dups)
 {
     struct net_bridge_port *port;
+    const struct net_bridge_port *dst = NULL;
     int rc = -1;
 
     rcu_read_lock();
-    port = br_port_get_rcu(fdb->dst->dev);
+    dst = READ_ONCE(fdb->dst);
+    port = br_port_get_rcu(dst->dev);
     if (port)
         rc = rdpa_remove_mac_tbl_entry(port, GET_FDB_ADDR(fdb).addr, GET_FDB_VLAN(fdb), remove_dups);
     rcu_read_unlock();
@@ -219,13 +223,14 @@ static int br_fp_ageing_mac_tbl_entry(struct net_bridge_fdb_entry *fdb, int *age
     bdmf_boolean _age_valid = 0;
     bdmf_object_handle bridge;
     rdpa_fdb_key_t key = {};
+    const struct net_bridge_port *dst = READ_ONCE(fdb->dst);
 
 #if defined(CONFIG_NET_SWITCHDEV)
-    if (!runner_switchdev_learning_enabled(fdb->dst->dev))
+    if (!runner_switchdev_learning_enabled(dst->dev))
         return 0;
 #endif
 
-    bridge = (bdmf_object_handle)bridge_fp_data_obj_get(fdb->dst->br->dev);
+    bridge = (bdmf_object_handle)bridge_fp_data_obj_get(dst->br->dev);
     if (!bridge)
         return BDMF_ERR_NOENT;
 
@@ -235,7 +240,7 @@ static int br_fp_ageing_mac_tbl_entry(struct net_bridge_fdb_entry *fdb, int *age
     if (rc)
     {
         if (rc != BDMF_ERR_NOENT)
-    	    BDMF_TRACE_ERR("Aging check failed(%d). src dev name[%s] mac[%pM]\n", rc, fdb->dst->dev->name, GET_FDB_ADDR(fdb).addr);
+    	    BDMF_TRACE_ERR("Aging check failed(%d). src dev name[%s] mac[%pM]\n", rc, dst->dev->name, GET_FDB_ADDR(fdb).addr);
         _age_valid = 0; /* return status, which will cause deletion of fdb entry in kernel bridge */
     }
 
@@ -443,7 +448,7 @@ Exit:
     return ret;
 }
 
-/* XRDP supports rdpa port per radio; should skip linking operation if radio is linked to another bridge */
+/* We supports rdpa port per radio; should skip linking operation if radio is linked to another bridge */
 static int wlan_radio_link_object_linked_to_any_bridge(bdmf_object_handle link_object)
 {
 #if defined(CONFIG_BCM_PON_XRDP)

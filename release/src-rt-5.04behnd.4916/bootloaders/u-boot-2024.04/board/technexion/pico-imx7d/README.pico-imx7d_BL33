@@ -1,0 +1,44 @@
+This document describes the instruction to build and flash ATF/OPTEE/U-Boot on
+pico-imx7d board. U-Boot is loaded as part of FIP image by ATF in this setup.
+The boot sequence is ATF -> OPTEE -> U-Boot -> Linux. U-Boot is in non-secure
+world in this case.
+
+- Build u-boot
+    Set environment variable of CROSS_COMPILE for your toolchain
+    $ make pico-imx7d_bl33_defconfig
+    $ make all
+
+- Download and build OPTEE
+    $ git clone git@github.com:OP-TEE/optee_os.git
+    $ make PLATFORM=imx PLATFORM_FLAVOR=mx7dpico_mbl CFG_BOOT_SECONDARY_REQUEST=y ARCH=arm
+
+- Download and build ATF
+    $ git clone https://git.linaro.org/landing-teams/working/mbl/arm-trusted-firmware.git -b linaro-imx7
+    $ make DEBUG=1 PLAT=picopi ARCH=aarch32 ARM_ARCH_MAJOR=7 \
+            CROSS_COMPILE=arm-linux-gnueabihf- LOG_LEVEL=50 V=1 \
+            CRASH_REPORTING=1 AARCH32_SP=optee all
+    Save file content in this link to file pico-imx7d.cfg:
+      http://git.linaro.org/landing-teams/working/mbl/u-boot.git/tree/board/technexion/pico-imx7d/pico-imx7d.cfg?h=linaro-imx
+    $ u-boot/tools/mkimage -n pico-imx7d.cfg -T imximage -e 0x9df00000 -d \
+            build/picopi/debug/bl2.bin bl2.imx
+
+- Create FIP image
+    Create a  fiptool_images/ folder in ATF folder, copy u-boot.bin in u-boot
+folder and tee*.bin in optee out/arm-plat-imx/core/tee/ folder to
+fiptool_images. Run below command in ATF folder to generate FIP image.
+    $ make -C tools/fiptool/
+    $ tools/fiptool/fiptool create --tos-fw fiptool_images/tee-header_v2.bin \
+          --tos-fw-extra1 fiptool_images/tee-pager_v2.bin \
+          --tos-fw-extra2 fiptool_images/tee-pageable_v2.bin \
+          --nt-fw fiptool_images/u-boot.bin \
+          fip.bin
+
+- Burn the images to eMMC for test.
+    Run below command in atf folder:
+    $ dd if=build/picopi/debug/bl2.bin.imx of=/dev/disk/by-id/usb-<your device>  bs=1024 seek=1;sync
+    $ dd if=fip.bin of=/dev/disk/by-id/usb-<your device>  bs=1024 seek=1;sync
+
+- Test
+    Just boot up your board and wait for u-boot start up after ATF's log.
+    For booting Linux in FIT image, please reference the FIT files in
+    u-boot doc/uImage.FIT/ folder.

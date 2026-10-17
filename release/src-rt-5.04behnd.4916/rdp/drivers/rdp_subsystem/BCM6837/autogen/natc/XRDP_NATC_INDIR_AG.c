@@ -296,6 +296,9 @@ static const ru_reg_rec *NATC_INDIR_REGS[] =
 const ru_block_rec NATC_INDIR_BLOCK =
 {
     "NATC_INDIR",
+#if RU_INCLUDE_SIZE
+    { 0x000000D8 },
+#endif
     NATC_INDIR_ADDRS,
     1,
     4,

@@ -1,0 +1,15 @@
+if TARGET_SOFTING_VINING_2000
+
+config SYS_BOARD
+	default "vining_2000"
+
+config SYS_VENDOR
+	default "softing"
+
+config SYS_CONFIG_NAME
+	default "vining_2000"
+
+config IMX_CONFIG
+	default "board/softing/vining_2000/imximage.cfg"
+
+endif

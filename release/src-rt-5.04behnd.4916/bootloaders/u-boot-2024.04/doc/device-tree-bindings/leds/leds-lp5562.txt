@@ -1,0 +1,63 @@
+LEDs connected to TI LP5562 controller
+
+This driver works with a TI LP5562 4-channel LED controller.
+CONFIG_LED_BLINK is supported using the controller engines.  However
+there are only 3 engines available for the 4 channels.  This means
+that the blue and white channels share the same engine.  When both
+blue and white LEDs are set to blink, they will share the same blink
+rate.  Changing the blink rate of the blue LED will affect the white
+LED and vice-versa.  Manual on/off is handled independently for all 4
+channels.
+
+Required properties:
+  - compatible : should be "ti,lp5562".
+  - #address-cells : must be 1.
+  - #size-cells : must be 0.
+  - reg : LP5562 LED controller I2C address.
+
+Optional properties:
+  - enable-gpios : Enable GPIO
+  - clock-mode : u8, configures the clock mode:
+      - 0 # automode
+      - 1 # internal
+      - 2 # external
+
+Each LED is represented as a sub-node of the ti,lp5562 device.
+
+LED sub-node required properties:
+  - reg : Zero-based channel identifier:
+    - 0 red
+    - 1 green
+    - 2 blue
+    - 3 white
+
+LED sub-node optional properties:
+  - chan-name : name of LED
+  - max-cur : LED current at max brightness in 100uA steps (0x00 - 0xFF)
+    Default : 100 (10 mA)
+
+Example:
+        leds0: lp5562@30 {
+                compatible = "ti,lp5562";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                enable-gpios = <&gpio3 9 GPIO_ACTIVE_HIGH>;
+                reg = <0x30>;
+		clock-mode = /bits/8 <1>;
+
+                led@0 {
+                        reg = <0>;
+                        chan-name = "red";
+                        max-cur = /bits/ 8 <200>; /* 20mA */
+                };
+                led@1 {
+                        reg = <1>;
+                        chan-name = "green";
+                        max-cur = /bits/ 8 <200>; /* 20mA */
+                };
+                led@2 {
+                        reg = <2>;
+                        chan-name = "blue";
+                        max-cur = /bits/ 8 <200>; /* 20mA */
+                };
+        };

@@ -80,11 +80,7 @@
 #define I2S_SCLKS_PER_1FS_DIV32_MASK  ( 0x0f<<I2S_SCLKS_PER_1FS_DIV32_SHIFT )
 
 /* I2S REGS */
-#if defined(CONFIG_BCM963148) || defined(CONFIG_BCM963138)   
-#define I2S_REG_PLATFORM_OFFSET       0x0c
-#else
 #define I2S_REG_PLATFORM_OFFSET       0      
-#endif
 
 #define I2S_CFG                       (0x0000)
 #define I2S_IRQ_CTL                   (0x0004 + I2S_REG_PLATFORM_OFFSET)
@@ -110,6 +106,14 @@
 #define I2S_TX_SLAVE_MODE_MASK        ( 1 << I2S_TX_SLAVE_MODE_SHIFT )
 #define I2S_TX_SLAVE_MODE             ( 1 << I2S_TX_SLAVE_MODE_SHIFT )
 #define I2S_TX_MASTER_MODE            ~I2S_TX_SLAVE_MODE
+
+/* for 68880 platform */
+#define I2S_TX_TDM_MODE_SHIFT         14
+#define I2S_TX_TDM_MODE_MASK          (1 << I2S_TX_TDM_MODE_SHIFT)
+#define I2S_TX_TDM_MODE               (1 << I2S_TX_TDM_MODE_SHIFT)
+#define I2S_TX_I2S_MODE               ~I2S_TX_TDM_MODE
+
+
 #define I2S_TX_BITS_PER_SAMPLE_SHIFT  10  /* the number of bits per sample. for transmitter LSB-justified data, MSB-justified data ignored*/
 #define I2S_TX_BITS_PER_SAMPLE_32     0
 #define I2S_TX_BITS_PER_SAMPLE_24     24
@@ -125,6 +129,11 @@
 #define I2S_PAD_LVL_SCLK_LRCK_LOOP_DIS_ENABLE 1<<2
 #define I2S_PAD_LVL_SCLK_LRCK_LOOP_DIS_SHIFT  2
 #define I2S_PAD_LVL_SCLK_LRCK_LOOP_DIS_MASK   1<<2
+
+/* for 68880 platform */
+#define I2S_INDEP_TX_RX_CLK_EN_SHIFT          3
+#define I2S_INDEP_TX_RX_CLK_EN_MASK           (1<<I2S_INDEP_TX_RX_CLK_EN_SHIFT)
+#define I2S_INDEP_TX_RX_CLK_EN                (1<<I2S_INDEP_TX_RX_CLK_EN_SHIFT)
 
 #define I2S_RX_CFG                        (0x0040 + I2S_REG_PLATFORM_OFFSET) /* 20c0 */
 #define I2S_RX_ENABLE_MASK                0x80000000
@@ -198,6 +207,12 @@
 #define I2S_RX_CFG_2                      (0x0064 + I2S_REG_PLATFORM_OFFSET) /* 20e4 */
 #define I2S_RX_SLAVE_MODE                 ( 1 << 13 )
 #define I2S_RX_SLAVE_MODE_MASK            ( 1 << 13 )
+
+/* for 68880 platform */
+#define I2S_RX_TDM_MODE_SHIFT         14
+#define I2S_RX_TDM_MODE_MASK          (1 << I2S_RX_TDM_MODE_SHIFT)
+#define I2S_RX_TDM_MODE               (1 << I2S_RX_TDM_MODE_SHIFT)
+#define I2S_RX_I2S_MODE               ~I2S_RX_TDM_MODE
 
 #define I2S_REG_MAX                       (0x007c+I2S_REG_PLATFORM_OFFSET)  /* 20fc */
 

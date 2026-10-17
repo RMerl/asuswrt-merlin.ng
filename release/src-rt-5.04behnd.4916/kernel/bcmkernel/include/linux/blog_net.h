@@ -84,6 +84,7 @@ typedef enum {
     BLOG_DECL(BLOG_SPU_DS)
     BLOG_DECL(BLOG_SPU_US)
     BLOG_DECL(BLOG_SPDTST)
+    BLOG_DECL(BLOG_WGPHY)
     BLOG_DECL(BLOG_MAXPHY)
 } BlogPhy_t;
 
@@ -613,7 +614,8 @@ typedef struct BlogTcpHdr {
 
 
 /*----- User Datagram Protocol: RFC 768 definitions --------------------------*/
-#define BLOG_UDP_HDR_LEN        8
+#define BLOG_UDP_HDR_LEN            8
+#define BLOG_UDP_HDR_CSUM_OFFSET    6
 
 typedef struct BlogUdpHdr {
     union {

@@ -1,0 +1,26 @@
+U-Boot boot device (bootdev)
+============================
+
+A bootdev provides a way to obtain a bootflow file from a device. It is a
+child of the media device (UCLASS_MMC, UCLASS_SPI_FLASH, etc.)
+
+The bootdev driver is provided by the media devices. The bindings for each
+are described in this file (to come).
+
+Required properties:
+
+compatible:
+   "u-boot,bootdev-eth" - Ethernet bootdev
+   "u-boot,bootdev-mmc" - MMC bootdev
+   "u-boot,bootdev-usb" - USB bootdev
+
+
+Example:
+
+	mmc1 {
+		compatible = "sandbox,mmc";
+
+		mmc-bootdev {
+			compatible = "u-boot,bootdev-eth";
+		};
+	};

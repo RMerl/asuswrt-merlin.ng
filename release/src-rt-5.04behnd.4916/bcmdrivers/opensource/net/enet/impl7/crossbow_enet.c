@@ -69,11 +69,11 @@ static int crossbow_enet_host_bind(void);
 #define CROSSBOW_ENET_RXQ_PRIO_HIGH  0
 #define CROSSBOW_ENET_RXQ_PRIO_LOW   1
 
-#define CROSSBOW_ENET_TX_LOCK(_flags)                           \
-    spin_lock_irqsave(&crossbow_enet_g.tx_lock, (_flags))
+#define CROSSBOW_ENET_TX_LOCK()                           \
+    spin_lock_bh(&crossbow_enet_g.tx_lock)
 
-#define CROSSBOW_ENET_TX_UNLOCK(_flags)                         \
-    spin_unlock_irqrestore(&crossbow_enet_g.tx_lock, (_flags))
+#define CROSSBOW_ENET_TX_UNLOCK()                         \
+    spin_unlock_bh(&crossbow_enet_g.tx_lock)
 
 #define CROSSBOW_ENET_RX_LOCK(_flags)                      \
     spin_lock_irqsave(&crossbow_enet_g.rx_lock, (_flags))
@@ -219,7 +219,7 @@ static inline void crossbow_enet_recycle_handler(pNBuff_t pNBuff, unsigned long 
 
         if(likely(flags & SKB_DATA_RECYCLE))
         {
-            FkBuff_t *fkb = PHEAD_TO_PFKBUFF(skb->head); 
+            FkBuff_t *fkb = BCM_PHEAD_TO_PFKBUFF(skb->head);
 
             crossbow_enet_fkb_free(fkb);
         }
@@ -289,17 +289,15 @@ void enetxapi_buf_recycle(struct sk_buff *skb, uint32_t context, uint32_t flags)
     crossbow_enet_recycle_handler(skb, context, flags);
 }
 
-int cpu_queues_tx_send(int tx_type, dispatch_info_t *dispatch_info)
+static inline int _cpu_queues_tx_send(int tx_type, dispatch_info_t *dispatch_info)
 {
     crossbow_gpl_txq_entry_t entry;
-    unsigned long flags;
     int ret;
 
     entry.pNBuff = dispatch_info->pNBuff;
     entry.egress_port = dispatch_info->port->n.blog_chnl;
     entry.egress_queue = dispatch_info->egress_queue;
 
-    CROSSBOW_ENET_TX_LOCK(flags);
 
     ret = crossbow_gpl_txq_write(&entry);
 
@@ -314,14 +312,27 @@ int cpu_queues_tx_send(int tx_type, dispatch_info_t *dispatch_info)
         crossbow_enet_g.stats.txq_discards++;
     }
 
-    CROSSBOW_ENET_TX_UNLOCK(flags);
 
+    return ret;
+}
+
+/* For transmitting dg (dying gasp) pkts we won't take any lock */
+int cpu_queues_tx_send_dg(int tx_type, dispatch_info_t *dispatch_info)
+{
+    return _cpu_queues_tx_send(tx_type, dispatch_info);
+}
+
+int cpu_queues_tx_send(int tx_type, dispatch_info_t *dispatch_info)
+{
+    int ret;
+    CROSSBOW_ENET_TX_LOCK();
+    ret = _cpu_queues_tx_send(tx_type, dispatch_info);
+    CROSSBOW_ENET_TX_UNLOCK();
     return ret;
 }
 
 static int crossbow_enet_recycle_thread(void *arg)
 {
-    unsigned long flags;
     pNBuff_t pNBuff;
     int rcq_not_empty;
     int budget;
@@ -339,7 +350,7 @@ static int crossbow_enet_recycle_thread(void *arg)
             break;
         }
 
-        CROSSBOW_ENET_TX_LOCK(flags);
+        CROSSBOW_ENET_TX_LOCK();
 
         budget = CROSSBOW_ENET_RECYCLE_BUDGET;
 
@@ -353,7 +364,7 @@ static int crossbow_enet_recycle_thread(void *arg)
 
         rcq_not_empty = crossbow_gpl_rcq_not_empty();
 
-        CROSSBOW_ENET_TX_UNLOCK(flags);
+        CROSSBOW_ENET_TX_UNLOCK();
 
         if(rcq_not_empty)
         {

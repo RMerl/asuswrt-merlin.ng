@@ -32,3 +32,8 @@
 /*       - Skip if this is a derivative board (already done in base)  */
 /**********************************************************************/
 #endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&sdhci {
+	brcm,sdhci-pll-baseclk-mhz = <5200>;
+	status = "okay";
+};

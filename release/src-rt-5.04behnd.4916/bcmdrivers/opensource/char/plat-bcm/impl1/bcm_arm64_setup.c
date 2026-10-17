@@ -35,10 +35,7 @@ Boston, MA 02111-1307, USA.
 #include <board.h>
 #include <bcm_rsvmem.h>
 #include "pmc_core_api.h"
-#if !defined(CONFIG_BCM94908)
 #include <bcm_ubus4.h>
-#endif
-#include <bcm_pinmux.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
 #include <linux/panic_notifier.h>
@@ -143,7 +140,6 @@ static int __init bcm_arch_early_init(void)
     /* 68360 arch should be modified after PMC support!!! */
 #if !defined(CONFIG_BRCM_IKOS)
     kerSysEarlyFlashInit();
-    kerSysFlashInit();
 
 #endif
 

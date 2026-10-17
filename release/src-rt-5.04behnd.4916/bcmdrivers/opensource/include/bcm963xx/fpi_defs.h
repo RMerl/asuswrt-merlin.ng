@@ -60,6 +60,17 @@ typedef struct {
 	uint8_t packet_priority;	/* 6-bit value */
 } fpi_l2_key_t;
 
+typedef enum {
+	ESP_IGNORE = 0,
+	ESP_US_FWD_UDP,
+	ESP_US_FWD,
+	ESP_DS_UDP,
+	ESP_DS,
+	ESP_US_UDP,
+	ESP_US,
+	ESP_FLOWTYPE_MAX
+} fpi_esp_flow_type_t;
+
 typedef struct {
 	char ingress_device_name[IFNAMSIZ];	/* name is used for userspace */
 	uint64_t ingress_device_ptr;
@@ -71,10 +82,7 @@ typedef struct {
 	uint8_t l4_proto;
 	uint16_t src_port;
 	uint16_t dst_port;
-	uint8_t esp_spi_mode;		/* 2-bit value */
-#define FPI_ESP_IGNORED	0
-#define FPI_ESP_IN_IP	1
-#define FPI_ESP_IN_UDP	2
+	uint32_t esp_flow_type; /* fpi_esp_flow_type_t */
 	uint32_t esp_spi;
 	uint8_t packet_priority;	/* 6-bit value */
 } fpi_l3l4_key_t;
@@ -94,6 +102,13 @@ typedef enum {
 	fpi_l2hdr_mode_22b,
 	fpi_l2hdr_mode_num
 } fpi_l2hdr_mode_t;
+
+typedef enum {
+	fpi_grehdr_mode_none,
+	fpi_grehdr_mode_ipv4,
+	fpi_grehdr_mode_ipv6,
+	fpi_grehdr_mode_num
+} fpi_grehdr_mode_t;
 
 typedef struct {
 	char egress_device_name[IFNAMSIZ];	/* name is used for userspace */
@@ -115,17 +130,29 @@ typedef struct {
 		uint16_t vlan_8021q_remove : 1;	/* 1-bit value */
 		uint16_t napt_enable : 1;	/* 1-bit value */
 		uint16_t dscp_rewrite : 1;	/* 1-bit value */
-		uint16_t gre_prepend : 1;	/* 1-bit value */
-		uint16_t gre_remove : 1;	/* 1-bit value */
+		uint16_t gre_prepend : 2;	/* 2-bit value.
+						 * fpi_grehdr_mode_t.
+						 */
+		uint16_t gre_remove : 2;	/* 2-bit value.
+						 * fpi_grehdr_mode_t.
+						 */
 		uint16_t outer_l2hdr_insert_mode : 2;	/* 2-bit value.
 							 * fpi_l2hdr_mode_t.
 							 */
 		uint16_t outer_l2hdr_remove_mode : 2;	/* 2-bit value.
 							 * fpi_l2hdr_mode_t.
 							 */
-		uint16_t unused1 : 5;
+		uint16_t eth_mac_valid_en : 1;	/* 1-bit value */
+		uint16_t ip_frag_en : 1;	/* 1-bit value */
+		uint16_t ignore_ip_df : 1;	/* 1-bit, ignore the DF bit
+						 * in the IPv4 header in incoming packet */
 	};
 	uint32_t vlan_8021q_hdr;
+
+	/* ETH MAC addresses used for validation */
+	uint8_t src_mac_valid[ETH_ALEN];
+	uint8_t dst_mac_valid[ETH_ALEN];
+
 	uint8_t src_mac[ETH_ALEN];
 	uint8_t dst_mac[ETH_ALEN];
 	/* IP address fields should be host order */
@@ -135,15 +162,16 @@ typedef struct {
 #define FPI_DSCP_MAX	0x3f
 	uint16_t src_port;
 	uint16_t dst_port;
+	uint32_t esp_spi;
+	uint8_t ipsec_tun_id;
 	uint32_t gre_hdr;
 	uint8_t outer_l2hdr[ETH_HLEN + VLAN_HLEN * 2];
-	uint8_t outer_src_mac[ETH_ALEN];	/* for L2GRE. obsolete */
-	uint8_t outer_dst_mac[ETH_ALEN];	/* for L2GRE. obsolete */
 	uint8_t encap_ip_hdr[40];	/* up to 40 byte for outer IPv6 Hdr */
 	uint8_t egress_priority;	/* 3-bit for Queue of non-WLAN
 					 * interface types; 1-bit for WLAN
 					 * interface congestion control */
 	uint16_t max_ingress_packet_size;
+	uint16_t max_ip_packet_size;	/* mainly used for IP fragmentation */
 } fpi_context_t;
 
 typedef struct {
@@ -161,6 +189,48 @@ typedef struct {
 	uint32_t pkt;
 	uint64_t byte;
 } fpi_stat_t;
+
+typedef struct {
+	struct {
+		uint32_t active;
+		uint32_t activates;
+		uint32_t deactivates;
+		uint32_t failures_activate;
+		uint32_t failures_deactivate;
+	} flow;
+	struct {
+		uint32_t active;
+		uint32_t activates;
+		uint32_t deactivates;
+		uint32_t failures_activate;
+		uint32_t failures_deactivate;
+	} ipsec_tun;
+	struct {
+		uint32_t packets_received;
+		uint32_t fragments_transmitted;
+		uint32_t no_buffer_drop;
+	} ip_frag;
+	struct {
+		uint32_t fragments_received;
+		uint32_t packets_reassembled;
+		uint32_t too_many_fragments_trap;
+		uint32_t packet_length_too_big_trap;
+		uint32_t buffer_type_mismatch_trap;
+		uint32_t no_buffer_trap;
+		uint32_t no_available_ctx_trap;
+		uint32_t flow_miss_trap;
+		uint32_t timeout_trap;
+	} ip_reasm;
+	struct {
+		uint32_t outresrc;
+		uint32_t dupl;
+		uint32_t reject;
+		uint32_t invalid;
+		uint32_t notfound;
+		uint32_t wlnotfound;
+		uint32_t misc;
+	} err;
+} fpi_global_stat_t;
 
 typedef union {
 	uint16_t half;
@@ -186,5 +256,19 @@ typedef struct {
 	uint16_t flowring_id;	/* 10-bit value, use for WFD_DHD and WDO-DIR */
 	fpi_wfd_nic_key_t wfd_nic_key;
 } fpi_wlan_egress_info_t;
+
+typedef struct {
+	int fwd;  /* number of fwd / udp flows associated with the IPsec tunnel */
+	int crypto; /* number of crypto flows associated with the IPsec tunnel */
+} fpi_ipsec_flows_t;
+
+typedef struct {
+	char tun_dev_name[IFNAMSIZ]; /* name is used for userspace */
+	uint64_t tun_device_ptr;
+	uint32_t esp_spi;
+	uint32_t new_spi;
+	uint8_t is_us;
+	uint8_t is_ipv6;
+} fpi_ipsec_tunnel_t;
 
 #endif /* __FPI_COMMON_H_INCLUDED__ */

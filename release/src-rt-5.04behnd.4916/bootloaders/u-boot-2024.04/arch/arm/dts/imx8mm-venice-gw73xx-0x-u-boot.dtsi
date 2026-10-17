@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2021 Gateworks Corporation
+ */
+#include "imx8mm-venice-gw700x-u-boot.dtsi"
+
+&gpio1 {
+	rs485_term {
+		gpio-hog;
+		output-low;
+		gpios = <0 GPIO_ACTIVE_HIGH>;
+		line-name = "rs485_term";
+	};
+
+	mipi_gpio4 {
+		gpio-hog;
+		input;
+		gpios = <1 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio4";
+	};
+
+	pci_usb_sel {
+		gpio-hog;
+		output-low;
+		gpios = <6 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_usb_sel";
+	};
+
+	dio_0 {
+		gpio-hog;
+		input;
+		gpios = <7 GPIO_ACTIVE_HIGH>;
+		line-name = "dio0";
+	};
+
+	dio_1 {
+		gpio-hog;
+		input;
+		gpios = <9 GPIO_ACTIVE_HIGH>;
+		line-name = "dio1";
+	};
+
+	tpm_rst {
+		gpio-hog;
+		output-high;
+		gpios = <11 GPIO_ACTIVE_HIGH>;
+		line-name = "tpm_rst#";
+	};
+};
+
+&gpio4 {
+	rs485_en {
+		gpio-hog;
+		output-low;
+		gpios = <0 GPIO_ACTIVE_HIGH>;
+		line-name = "rs485_en";
+	};
+
+	mipi_gpio3 {
+		gpio-hog;
+		input;
+		gpios = <1 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio3";
+	};
+
+	rs485_half {
+		gpio-hog;
+		output-low;
+		gpios = <2 GPIO_ACTIVE_HIGH>;
+		line-name = "rs485_hd";
+	};
+
+	mipi_gpio2 {
+		gpio-hog;
+		input;
+		gpios = <3 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio2";
+	};
+
+	mipi_gpio1 {
+		gpio-hog;
+		input;
+		gpios = <4 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio1";
+	};
+
+	pci_wdis {
+		gpio-hog;
+		output-high;
+		gpios = <7 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_wdis#";
+	};
+};

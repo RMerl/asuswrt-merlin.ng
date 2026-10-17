@@ -105,6 +105,9 @@ static int __init fdt_get_resource_byname(unsigned long node, const char *name, 
     int found = 0;
 
     resource_name = of_get_flat_dt_prop(node, "reg-names", &ret_size);
+    if (!resource_name)
+        return -ENODEV;
+
     while (ret_size > 0)
     {
         if (strncmp(resource_name, name, ret_size) == 0)
@@ -367,14 +370,14 @@ static int bcm_pmc_probe(struct platform_device *pdev)
 {
     int virq;
 
-    virq = platform_get_irq_byname(pdev, "pmc-irq");
+    virq = platform_get_irq_byname_optional(pdev, "pmc-irq");
     if (virq > 0)
     {
         printk("IRQ virt [%d] registered as pmc interrupt\n", virq);
         install_pmc_isr(virq);
     }
 
-    virq = platform_get_irq_byname(pdev, "pmc-temp-irq");
+    virq = platform_get_irq_byname_optional(pdev, "pmc-temp-irq");
     if (virq > 0)
     {
         printk("IRQ virt [%d] registered as pmc temp warning interrupt\n", virq);

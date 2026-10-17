@@ -1,0 +1,6 @@
+HIHOPE_RZG2 BOARD
+M:	Biju Das <biju.das.jz@bp.renesas.com>
+S:	Maintained
+F:	board/hoperun/hihope-rzg2/
+F:	include/configs/hihope-rzg2.h
+F:	configs/hihope_rzg2_defconfig

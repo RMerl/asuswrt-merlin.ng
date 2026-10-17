@@ -83,7 +83,8 @@
 /*******************************************************************************/
 /* static routines Functions                                                   */
 /*******************************************************************************/
-#if (defined(CONFIG_BCM_XRDP) && !defined(CONFIG_BRCM_QEMU))
+#if (defined(CONFIG_BCM_XRDP) && !defined(CONFIG_BRCM_QEMU) && \
+    !defined(CONFIG_BRCM_TC_QCONF) && !defined(CONFIG_BRCM_TC_QCONF_MODULE))
 
 static Bool epon_mode_get(rdpa_epon_mode *mode)
 {
@@ -142,10 +143,12 @@ int rdpa_cmd_llid_ioctl(unsigned long arg)
     {
         case RDPA_IOCTL_LLID_CMD_NEW: 
         {
+#if (!defined(CONFIG_BRCM_TC_QCONF) && !defined(CONFIG_BRCM_TC_QCONF_MODULE))
             rdpa_tm_queue_cfg_t queue_cfg = {};
+            bdmf_object_handle egress_tm = NULL;
+#endif
             bdmf_object_handle tmp_llid = NULL;
             bdmf_object_handle port_obj = NULL;    
-            bdmf_object_handle egress_tm = NULL;
             rdpa_port_tm_cfg_t tm_cfg;
             
             port_obj = get_rdpa_epon_port_obj();
@@ -179,6 +182,7 @@ int rdpa_cmd_llid_ioctl(unsigned long arg)
                 goto ioctl_exit;
             }
             
+#if (!defined(CONFIG_BRCM_TC_QCONF) && !defined(CONFIG_BRCM_TC_QCONF_MODULE))
             if (tm_cfg.sched != NULL && llid.llid_index == 0)
             {
                 // Create queue onece
@@ -269,6 +273,8 @@ int rdpa_cmd_llid_ioctl(unsigned long arg)
                 goto ioctl_exit;
             }
             
+#endif /* (!defined(CONFIG_BRCM_TC_QCONF) && !defined(CONFIG_BRCM_TC_QCONF_MODULE)) */
+
             break;
         }
         

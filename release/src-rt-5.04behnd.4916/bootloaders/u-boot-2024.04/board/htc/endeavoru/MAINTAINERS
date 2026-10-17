@@ -1,0 +1,7 @@
+ENDEAVORU BOARD
+M:	Svyatoslav Ryhel <clamor95@gmail.com>
+S:	Maintained
+F:	board/htc/endeavoru/
+F:	configs/endeavoru_defconfig
+F:	doc/board/htc/endeavoru.rst
+F:	include/configs/endeavoru.h

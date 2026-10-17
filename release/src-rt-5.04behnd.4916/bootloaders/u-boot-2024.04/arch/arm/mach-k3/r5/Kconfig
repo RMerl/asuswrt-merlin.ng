@@ -1,0 +1,53 @@
+config K3_LOAD_SYSFW
+	bool
+
+config K3_QOS
+	bool "Enable Quality of Service (QoS) Settings for TI K3 SoCs"
+	default y if SOC_K3_AM62A7
+	help
+	  This option enables the R5 SPL to apply QoS settings for various
+	  HW controllers inside the TI K3 SoCs. The files for QoS settings are
+	  generated from Sysconfig and k3-resource-partitioning tools.
+
+config K3_SYSFW_IMAGE_NAME
+	string "File name of SYSFW firmware and configuration blob"
+	depends on K3_LOAD_SYSFW
+	default	"sysfw.itb"
+	help
+	  Filename of the combined System Firmware and configuration image tree
+	  blob to be loaded when booting from a filesystem.
+
+config K3_SYSFW_IMAGE_MMCSD_RAW_MODE_SECT
+	hex "MMC sector to load SYSFW firmware and configuration blob from"
+	depends on K3_LOAD_SYSFW && SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+	default 0x3600
+	help
+	  Address on the MMC to load the combined System Firmware and
+	  configuration image tree blob from, when the MMC is being used
+	  in raw mode. Units: MMC sectors (1 sector = 512 bytes).
+
+config K3_SYSFW_IMAGE_MMCSD_RAW_MODE_PART
+	hex "MMC partition to load SYSFW firmware and configuration blob from"
+	depends on K3_LOAD_SYSFW && SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION
+	default 2
+	help
+	  Partition on the MMC to the combined System Firmware and configuration
+	  image tree blob from, when the MMC is being used in raw mode.
+
+config K3_SYSFW_IMAGE_SIZE_MAX
+	int "Amount of memory dynamically allocated for loading SYSFW blob"
+	depends on K3_LOAD_SYSFW
+	default	280000
+	help
+	  Amount of memory (in bytes) reserved through dynamic allocation at
+	  runtime for loading the combined System Firmware and configuration image
+	  tree blob. Keep it as tight as possible, as this directly affects the
+	  overall SPL memory footprint.
+
+config K3_SYSFW_IMAGE_SPI_OFFS
+	hex "SPI offset of SYSFW firmware and configuration blob"
+	depends on K3_LOAD_SYSFW
+	default	0x6C0000
+	help
+	  Offset of the combined System Firmware and configuration image tree
+	  blob to be loaded when booting from a SPI flash memory.

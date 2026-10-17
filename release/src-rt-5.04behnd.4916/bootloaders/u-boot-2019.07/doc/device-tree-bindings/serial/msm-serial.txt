@@ -1,6 +1,0 @@
-Qualcomm UART (Data Mover mode)
-
-Required properties:
-- compatible: must be "qcom,msm-uartdm-v1.4"
-- reg: start address and size of the registers
-- clock: interface clock (must accept baudrate as a frequency)

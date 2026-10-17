@@ -1,0 +1,15 @@
+if TARGET_MX7ULP_COM
+
+config SYS_BOARD
+	default "mx7ulp_com"
+
+config SYS_VENDOR
+	default "ea"
+
+config SYS_CONFIG_NAME
+	default "mx7ulp_com"
+
+config IMX_CONFIG
+	default "board/ea/mx7ulp_com/imximage.cfg"
+
+endif

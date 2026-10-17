@@ -1,6 +1,0 @@
-ICONNECT BOARD
-M:	Luka Perkov <luka@openwrt.org>
-S:	Maintained
-F:	board/iomega/iconnect/
-F:	include/configs/iconnect.h
-F:	configs/iconnect_defconfig

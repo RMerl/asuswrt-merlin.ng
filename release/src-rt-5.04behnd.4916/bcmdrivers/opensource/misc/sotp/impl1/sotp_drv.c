@@ -152,6 +152,7 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
             break;
         case SOTP_KEYSLOT_READLOCK:
             ret = sotp_get_keyslot_readlock_status( ctrlParms.keyslot_section_num, &ctrlParms.result );
+            break;
 	case SOTP_ROLLBACK_LVL:
 	    ret = sotp_get_rollback_lvl( bufp, &ctrlParms.result );
             break;
@@ -160,7 +161,7 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
         }
 
         /* Copy SOTP data */
-        copy_to_user(ctrlParms.inout_data, bufp, ctrlParms.data_len);
+        ret = copy_to_user(ctrlParms.inout_data, bufp, ctrlParms.data_len);
 
         break;
 
@@ -203,7 +204,7 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
         break;
     }
 
-    copy_to_user((void *)arg, (void *) &ctrlParms, sizeof(ctrlParms));
+    ret = copy_to_user((void *)arg, (void *) &ctrlParms, sizeof(ctrlParms));
 
     return (ret);
 } 

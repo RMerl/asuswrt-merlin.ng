@@ -1,0 +1,8 @@
+config BCM_RNG_SHIM
+	tristate "RNG Shim Driver"
+	default n
+
+config BCM_RNG_SHIM_IMPL
+	int "Implementaion version of RNG Shim"
+	depends on BCM_RNG_SHIM
+	default 1

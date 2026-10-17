@@ -380,19 +380,33 @@ static struct hlist_node *hosts_get_next(struct seq_file *seq,
 	return node;
 }
 
+static struct hlist_node *hosts_get_cur_idx_by_pos(struct seq_file *seq, loff_t pos)
+{
+	struct hlist_node *node = hosts_get_first(seq);
+
+	pos--; /*extra incremnet for SEQ_START_TOKEN */
+
+	if (node)
+		while (pos && (node = hosts_get_next(seq, node)))
+			pos--;
+
+	return pos ? NULL : node;
+}
+
 static void *hwf_hosts_seq_start(struct seq_file *seq, loff_t *pos)
 {
 	struct hosts_iter_state *st = seq->private;
 
 	BCM_HWF_HOST_TABLE_LOCK();
 
-	if (*pos != 0)
-		return NULL; /* needed to break loop for read() sycall */
 
 	st->hash = bcm_hosts_g.hashtbl;
 	st->htable_size = HASH_SIZE(bcm_hosts_g.hashtbl);
-	return SEQ_START_TOKEN;
-	//return hosts_get_idx(seq, *pos);
+
+	if (*pos == 0)
+		return SEQ_START_TOKEN;
+	else
+		return hosts_get_cur_idx_by_pos(seq, *pos);
 }
 
 static void *hwf_hosts_seq_next(struct seq_file *s, void *v, loff_t *pos)

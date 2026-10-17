@@ -1,0 +1,134 @@
+if ARCH_IMX8
+
+config AHAB_BOOT
+	bool "Support i.MX8 AHAB features"
+	imply CMD_DEKBLOB
+	help
+	  This option enables the support for AHAB secure boot.
+
+config IMX8
+	bool
+	select HAS_CAAM
+
+config MU_BASE_SPL
+	hex "MU base address used in SPL"
+	default 0x5d1b0000
+	help
+	  SPL runs in EL3 mode, it use MU0_A to communicate with SCU.
+	  So we could not reuse the one in dts which is for normal U-Boot.
+
+config IMX8QM
+	select IMX8
+	select SUPPORT_SPL
+	select SPL_RECOVER_DATA_SECTION if SPL
+	bool
+
+config IMX8QXP
+	select IMX8
+	select SUPPORT_SPL
+	select SPL_RECOVER_DATA_SECTION if SPL
+	bool
+
+config SYS_SOC
+	default "imx8"
+
+config BOOTAUX_RESERVED_MEM_BASE
+	hex "i.MX auxiliary core dram memory base"
+	default 0x0
+
+config BOOTAUX_RESERVED_MEM_SIZE
+	hex "i.MX auxiliary core dram memory size"
+	default 0x0
+
+choice
+	prompt "i.MX8 board select"
+	optional
+
+config TARGET_APALIS_IMX8
+	bool "Support Apalis iMX8 module"
+	select BOARD_LATE_INIT
+	select IMX8QM
+
+config TARGET_COLIBRI_IMX8X
+	bool "Support Colibri iMX8X module"
+	select BOARD_LATE_INIT
+	select IMX8QXP
+
+config TARGET_DENEB
+	bool "Support i.MX8QXP Capricorn Deneb board"
+	select BINMAN
+	select BOARD_LATE_INIT
+	select FACTORYSET
+	select IMX8QXP
+
+config TARGET_GIEDI
+	bool "Support i.MX8QXP Capricorn Giedi board"
+	select BINMAN
+	select BOARD_LATE_INIT
+	select FACTORYSET
+	select IMX8QXP
+
+config TARGET_IMX8QM_MEK
+	bool "Support i.MX8QM MEK board"
+	select BINMAN
+	select BOARD_LATE_INIT
+	select IMX8QM
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_CONGA_QMX8
+	bool "Support congatec conga-QMX8 board"
+	select BINMAN
+	select BOARD_LATE_INIT
+	select SUPPORT_SPL
+	select IMX8QM
+
+config TARGET_IMX8QM_ROM7720_A1
+	bool "Support i.MX8QM ROM-7720-A1"
+	select BINMAN
+	select BOARD_LATE_INIT
+	select SUPPORT_SPL
+	select IMX8QM
+
+config TARGET_IMX8QM_DMSSE20_A1
+	bool "Support i.MX8QM DMS-SE20-A1 board"
+	select BINMAN
+	select BOARD_LATE_INIT
+	select SUPPORT_SPL
+	select IMX8QM
+
+config TARGET_IMX8QXP_MEK
+	bool "Support i.MX8QXP MEK board"
+	select BINMAN
+	select BOARD_LATE_INIT
+	select IMX8QXP
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+endchoice
+
+source "board/freescale/imx8qm_mek/Kconfig"
+source "board/freescale/imx8qxp_mek/Kconfig"
+source "board/congatec/cgtqmx8/Kconfig"
+source "board/advantech/imx8qm_dmsse20_a1/Kconfig"
+source "board/advantech/imx8qm_rom7720_a1/Kconfig"
+source "board/toradex/apalis-imx8/Kconfig"
+source "board/toradex/colibri-imx8x/Kconfig"
+source "board/siemens/capricorn/Kconfig"
+
+config IMX_SNVS_SEC_SC
+	bool "Support SNVS configuration"
+	help
+	  Allow to configure the SNVS via SCU API to configure tampers and secure
+	  violation.
+
+config IMX_SNVS_SEC_SC_AUTO
+	bool "Support SNVS configuration command"
+	depends on IMX_SNVS_SEC_SC
+	help
+	  This configuration will apply the selected configurations automatically
+	  at boot.
+
+endif

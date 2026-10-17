@@ -82,4 +82,14 @@
  */
 #define WLAN_RADIOS_MAX                     4
 
+#ifdef OSL_CACHE_NEWAPI_AVAIL
+#define WLAN_OSL_CACHE_FLUSH			OSL_CACHE_FLUSH
+#define WLAN_OSL_CACHE_INV			OSL_CACHE_INV
+#else
+#define WLAN_OSL_CACHE_FLUSH(_osh, _va, _len)	\
+	({ BCM_REFERENCE(_osh); OSL_CACHE_FLUSH((_va), (_len)); })
+#define WLAN_OSL_CACHE_INV(_osh, _va, _len)	\
+	({ BCM_REFERENCE(_osh); OSL_CACHE_INV((_va), (_len)); })
+#endif /* OSL_CACHE_NEWAPI_AVAIL */
+
 #endif /* !__WLAN_SHARED_DEFS_H__ */

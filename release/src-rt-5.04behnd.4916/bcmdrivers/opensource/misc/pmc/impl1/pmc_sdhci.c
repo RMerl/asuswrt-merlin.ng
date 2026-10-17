@@ -56,51 +56,22 @@ static SDHCI_PLL_MAP pll_map =
 	{0,0,0}; 
 #endif
 
-int pmc_sdhci_set_base_clk( uint64_t freq, struct device_node *node )
+int pmc_sdhci_set_base_clk( uint32_t pll_base_clk, uint32_t sdhci_base_clk )
 {
 	int ret = -1;
-	uint32_t tmp, i, baseclk, num_freqs, mdiv;
+	uint32_t mdiv;
 	
-	if(node)
+	printk("%s: PLL pll_baseclk_mhz freq: %uMhz\n", __FUNCTION__, pll_base_clk);
+	if( pll_base_clk && sdhci_base_clk )
 	{
-		if(of_property_read_u32(node, "sdhci-pll-baseclk-mhz", &baseclk))
-		{
-			return ret;
-		}
-		else
-		{
-			printk("%s: PLL Baseclk freq: %uMhz\n", __FUNCTION__, baseclk);
-		}
-
-		/* Determine size of valid o/p freq array */
-		if (!of_get_property(node, "sdhci-pll-valid-op-mhz", &tmp))
-			return ret;
-
-		num_freqs = tmp / (sizeof(uint32_t));
-		do_div(freq,1000000);
-	
-		for (i = 0; i < num_freqs; i++) 
-		{
-			if (of_property_read_u32_index(node, "sdhci-pll-valid-op-mhz", i, &tmp))
-			{
-				return ret;
-			}
-			else
-			{
-				printk("%s: Supported freq: %uMhz\n", __FUNCTION__, tmp);
-				if( tmp == freq)
-				{
-					/* Matched supported frequency */
-					mdiv = baseclk/tmp;
-					printk("%s: Setting sdhci base clock freq to: %lluMhz, mdiv: %d\n", __FUNCTION__, freq, mdiv);
-					ret = pll_ch_freq_set_offs(pll_map.pll_addr, 
-						pll_map.ch, 
-						mdiv,
-						pll_map.offset); 
-					break;
-				}
-			}
-		}
+		/* calculate divisor value */
+		mdiv = pll_base_clk/sdhci_base_clk;
+		printk("%s: Setting sdhci base clock freq to: %uMhz, mdiv: %u\n", 
+			__FUNCTION__, sdhci_base_clk, mdiv);
+		ret = pll_ch_freq_set_offs(pll_map.pll_addr, 
+			pll_map.ch, 
+			mdiv,
+			pll_map.offset); 
 	}
 	return ret;
 }

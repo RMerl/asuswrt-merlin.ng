@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	binman {
+		u-boot {
+		};
+		base {
+			type = "section";
+			u-boot {
+			};
+			section {
+				compress = "lz4";
+				blob {
+					filename = "compress";
+				};
+
+				u-boot {
+				};
+			};
+			section2 {
+				type = "section";
+				compress = "lz4";
+				blob {
+					filename = "compress";
+				};
+				blob2 {
+					type = "blob";
+					filename = "compress";
+				};
+			};
+			u-boot2 {
+				type = "u-boot";
+			};
+		};
+	};
+};

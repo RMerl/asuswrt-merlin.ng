@@ -49,9 +49,7 @@
 #include <bcm_timer.h>
 #endif
 
-#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
 #define TIMER_64BIT 1
-#endif
 
 #define __error(fmt, arg...) printk("%s,%u: " fmt, __FUNCTION__, __LINE__, ##arg)
 
@@ -209,18 +207,30 @@ int ext_timer_alloc(EXT_TIMER_NUMBER timer_num, unsigned long timer_period, ExtT
     timers[timer_num].callback = timer_callback;
     timers[timer_num].callback_arg = param;
 
-    timer_count = TIMER_FREQ_MHZ * timer_period - 1;
-    if (timer_count > TIMER_CNT_MAX) {
-        __error("timer count %lld(%ld) exceed max hw counter\n", timer_count, timer_period);
-        spin_unlock_irqrestore(&timer_spinlock, flags); 
-        return -1;
-    }
+    if (timer_period)
+    {
+        timer_count = TIMER_FREQ_MHZ * timer_period - 1;
+        if (timer_count > TIMER_CNT_MAX) {
+            __error("timer count %lld(%ld) exceed max hw counter\n", timer_count, timer_period);
+            spin_unlock_irqrestore(&timer_spinlock, flags); 
+            return -1;
+        }
 
 #ifdef TIMER_64BIT
-    *(timers[timer_num].timer_ctrl_reg) = (uint64_t)timer_count;
+        *(timers[timer_num].timer_ctrl_reg) = (uint64_t)timer_count;
 #else
-    *(timers[timer_num].timer_ctrl_reg) = (uint32_t)timer_count;
+        *(timers[timer_num].timer_ctrl_reg) = (uint32_t)timer_count;
 #endif
+    }
+    else
+    {
+#ifdef TIMER_64BIT
+        *(timers[timer_num].timer_ctrl_reg) = (uint64_t)TIMER_CNT_MAX;
+#else
+        *(timers[timer_num].timer_ctrl_reg) = (uint32_t)TIMER_CNT_MAX;
+#endif
+        *(timers[timer_num].timer_ctrl_reg) &= ~(RSTCNTCLR);
+    }
     TIMER->TimerMask |= (TIMER0EN << timer_num);
     *(timers[timer_num].timer_ctrl_reg) |= TIMERENABLE ;
     timers[timer_num].allocated = 1;
@@ -382,6 +392,22 @@ int  ext_timer_read_count(EXT_TIMER_NUMBER timer_num, uint64_t* count)
     return 0;
 }
 EXPORT_SYMBOL(ext_timer_read_count);
+
+/***************************************************************************/
+/*     allows to access count register of the allocated timer              */
+/***************************************************************************/
+uint32_t  ext_timer_read_32b_ms(EXT_TIMER_NUMBER timer_num)
+{
+    if( (timer_num >= EXT_TIMER_NUM) || (timer_num < 0) )
+        return 0;
+
+
+    if (!timers[timer_num].allocated)
+        return 0;
+
+    return (uint32_t)(div_u64(*timers[timer_num].timer_cnt_reg & TIMER_COUNT_MASK, TIMER_FREQ_MHZ*1000/*usec to msec*/));
+}
+EXPORT_SYMBOL(ext_timer_read_32b_ms);
 
 /***************************************************************************/
 /*     set up the new timercount on the timer                              */ 

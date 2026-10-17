@@ -1,0 +1,1259 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/gpio/x86-gpio.h>
+
+/include/ "skeleton.dtsi"
+/include/ "keyboard.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+
+#include "tsc_timer.dtsi"
+
+#if defined(CONFIG_CHROMEOS_VBOOT) && defined(CONFIG_ROM_SIZE)
+#include "chromeos-x86.dtsi"
+#include "flashmap-x86-ro.dtsi"
+#include "flashmap-16mb-rw.dtsi"
+#endif
+
+#include <dt-bindings/clock/intel-clock.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/x86-irq.h>
+#include <asm/e820.h>
+#include <asm/intel_pinctrl_defs.h>
+#include <asm/arch-apollolake/cpu.h>
+#include <asm/arch-apollolake/gpe.h>
+#include <asm/arch-apollolake/gpio.h>
+#include <asm/arch-apollolake/iomap.h>
+#include <asm/arch-apollolake/pm.h>
+#include <dt-bindings/clock/intel-clock.h>
+#include <asm/arch-apollolake/fsp/fsp_m_upd.h>
+#include <asm/arch-apollolake/fsp/fsp_s_upd.h>
+#include <dt-bindings/sound/nhlt.h>
+
+/ {
+	model = "Google Coral";
+	compatible = "google,coral", "intel,apollolake";
+
+	aliases {
+		cros-ec0 = &cros_ec;
+		fsp = &fsp_s;
+		spi0 = &spi;
+		i2c0 = &i2c_0;
+		i2c1 = &i2c_1;
+		i2c2 = &i2c_2;
+		i2c3 = &i2c_3;
+		i2c4 = &i2c_4;
+		i2c5 = &i2c_5;
+		i2c6 = &i2c_6;
+		i2c7 = &i2c_7;
+		mmc0 = &emmc;
+		mmc1 = &sdmmc;
+	};
+
+	board: board {
+		compatible = "google,coral";
+		recovery-gpios = <&gpio_nw (-1) GPIO_ACTIVE_LOW>;
+		write-protect-gpios = <&gpio_nw GPIO_75 GPIO_ACTIVE_HIGH>;
+		phase-enforce-gpios = <&gpio_n GPIO_10 GPIO_ACTIVE_HIGH>;
+		memconfig-gpios = <&gpio_nw GPIO_101 GPIO_ACTIVE_HIGH
+			&gpio_nw GPIO_102 GPIO_ACTIVE_HIGH
+			&gpio_n GPIO_38 GPIO_ACTIVE_HIGH
+			&gpio_n GPIO_45 GPIO_ACTIVE_HIGH>;
+
+		/*
+		 * This is used for reef only:
+		 *
+		 * skuconfig-gpios = <&gpio_nw GPIO_16 GPIO_ACTIVE_HIGH
+		 *	&gpio_nw GPIO_17 GPIO_ACTIVE_HIGH>;
+		 */
+		smbios {
+			/* Type 1 table */
+			system {
+				manufacturer = "Google";
+				product = "Coral";
+				version = "rev2";
+				serial = "123456789";
+				sku = "sku3";
+				family = "Google_Coral";
+			};
+
+			/* Type 2 table */
+			baseboard {
+				manufacturer = "Google";
+				product = "Coral";
+				asset-tag = "ABC123";
+			};
+
+			/* Type 3 table */
+			chassis {
+				manufacturer = "Google";
+			};
+		};
+	};
+
+	config {
+	       silent_console = <0>;
+	};
+
+	chosen {
+		stdout-path = &serial;
+		e820-entries = /bits/ 64 <
+			IOMAP_P2SB_BAR IOMAP_P2SB_SIZE E820_RESERVED
+			MCH_BASE_ADDRESS     MCH_SIZE  E820_RESERVED>;
+		u-boot,acpi-ssdt-order = <&cpu_0 &cpu_1 &cpu_2 &cpu_3
+			&i2c_0 &i2c_1 &i2c_2 &i2c_3 &i2c_4 &i2c_5
+			&sdmmc &maxim_codec &wifi &da_codec &tpm
+			&elan_touchscreen &raydium_touchscreen
+			&elan_touchpad &synaptics_touchpad &wacom_digitizer>;
+		u-boot,acpi-dsdt-order = <&board &lpc>;
+	};
+
+	clk: clock {
+		compatible = "intel,apl-clk";
+		#clock-cells = <1>;
+		bootph-some-ram;
+	};
+
+	cpus {
+		bootph-some-ram;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu_0: cpu@0 {
+			bootph-some-ram;
+			bootph-pre-ram;
+			device_type = "cpu";
+			compatible = "intel,apl-cpu";
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+
+		cpu_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "intel,apl-cpu";
+			reg = <1>;
+			intel,apic-id = <2>;
+		};
+
+		cpu_2: cpu@2 {
+			device_type = "cpu";
+			compatible = "intel,apl-cpu";
+			reg = <2>;
+			intel,apic-id = <4>;
+		};
+
+		cpu_3: cpu@3 {
+			device_type = "cpu";
+			compatible = "intel,apl-cpu";
+			reg = <3>;
+			intel,apic-id = <6>;
+		};
+
+	};
+
+	acpi_gpe: general-purpose-events {
+		bootph-some-ram;
+		reg = <IOMAP_ACPI_BASE IOMAP_ACPI_SIZE>;
+		compatible = "intel,acpi-gpe";
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	coreboot-video {
+		/* This will only activate when booted from coreboot */
+		compatible = "coreboot-fb";
+	};
+
+	keyboard {
+		intel,duplicate-por;
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		bootph-all;
+		ranges = <0x02000000 0x0 0xc0000000 0xc0000000 0 0x10000000
+			0x42000000 0x0 0xb0000000 0xb0000000 0 0x10000000
+			0x01000000 0x0 0x1000 0x1000 0 0xefff>;
+		u-boot,skip-auto-config-until-reloc;
+
+		host_bridge: host-bridge@0,0 {
+			bootph-all;
+			reg = <0x00000000 0 0 0 0>;
+			compatible = "intel,apl-hostbridge";
+			pciex-region-size = <0x10000000>;
+			fspm,training-delay = <21>;
+			/*
+			 * Parameters used by the FSP-S binary blob. This is
+			 * really unfortunate since these parameters mostly
+			 * relate to drivers but we need them in one place. We
+			 * could put them in the driver nodes easily, but then
+			 * would have to scan each node to find them. So just
+			 * dump them here for now.
+			 */
+			fsp_s: fsp-s {
+			};
+			fsp_m: fsp-m {
+				bootph-pre-ram;
+			};
+
+			nhlt {
+				intel,dmic-channels = <4>;
+			};
+		};
+
+		punit@0,1 {
+			bootph-some-ram;
+			bootph-pre-ram;
+			reg = <0x00000800 0 0 0 0>;
+			compatible = "intel,apl-punit";
+		};
+
+		gma@2,0 {
+			bootph-some-ram;
+			reg = <0x00001000 0 0 0 0>;
+			compatible = "fsp-fb";
+		};
+
+		p2sb: p2sb@d,0 {
+			bootph-all;
+			reg = <0x02006810 0 0 0 0>;
+			compatible = "intel,p2sb";
+			early-regs = <IOMAP_P2SB_BAR 0x100000>;
+			pci,no-autoconfig;
+
+			n {
+				compatible = "intel,apl-pinctrl";
+				bootph-all;
+				intel,p2sb-port-id = <PID_GPIO_N>;
+				acpi,path = "\\_SB.GPO0";
+				gpio_n: gpio-n {
+					compatible = "intel,gpio";
+					bootph-all;
+					gpio-controller;
+					#gpio-cells = <2>;
+					linux-name = "INT3452:00";
+				};
+			};
+
+			nw {
+				bootph-all;
+				compatible = "intel,apl-pinctrl";
+				intel,p2sb-port-id = <PID_GPIO_NW>;
+				#gpio-cells = <2>;
+				acpi,path = "\\_SB.GPO1";
+				gpio_nw: gpio-nw {
+					compatible = "intel,gpio";
+					bootph-all;
+					gpio-controller;
+					#gpio-cells = <2>;
+					linux-name = "INT3452:01";
+				};
+			};
+
+			w {
+				bootph-all;
+				compatible = "intel,apl-pinctrl";
+				intel,p2sb-port-id = <PID_GPIO_W>;
+				#gpio-cells = <2>;
+				acpi,path = "\\_SB.GPO2";
+				gpio_w: gpio-w {
+					compatible = "intel,gpio";
+					bootph-all;
+					gpio-controller;
+					#gpio-cells = <2>;
+					linux-name = "INT3452:02";
+				};
+			};
+
+			sw {
+				bootph-all;
+				compatible = "intel,apl-pinctrl";
+				intel,p2sb-port-id = <PID_GPIO_SW>;
+				#gpio-cells = <2>;
+				acpi,path = "\\_SB.GPO3";
+				gpio_sw: gpio-sw {
+					compatible = "intel,gpio";
+					bootph-all;
+					gpio-controller;
+					#gpio-cells = <2>;
+					linux-name = "INT3452:03";
+				};
+			};
+
+			itss {
+				bootph-all;
+				compatible = "intel,itss";
+				intel,p2sb-port-id = <PID_ITSS>;
+				intel,pmc-routes = <
+					PMC_GPE_SW_31_0 GPIO_GPE_SW_31_0
+					PMC_GPE_SW_63_32 GPIO_GPE_SW_63_32
+					PMC_GPE_NW_31_0 GPIO_GPE_NW_31_0
+					PMC_GPE_NW_63_32 GPIO_GPE_NW_63_32
+					PMC_GPE_NW_95_64 GPIO_GPE_NW_95_64
+					PMC_GPE_N_31_0 GPIO_GPE_N_31_0
+					PMC_GPE_N_63_32 GPIO_GPE_N_63_32
+					PMC_GPE_W_31_0 GPIO_GPE_W_31_0>;
+			};
+		};
+
+		pmc@d,1 {
+			bootph-all;
+			reg = <0x6900 0 0 0 0>;
+
+			/*
+			 * Values for BAR0, BAR2 and ACPI_BASE for when PCI
+			 * auto-configure is not available
+			 */
+			early-regs = <0xfe042000 0x2000
+				0xfe044000 0x2000
+				IOMAP_ACPI_BASE IOMAP_ACPI_SIZE>;
+			compatible = "intel,apl-pmc";
+			gpe0-dwx-mask = <0xf>;
+			gpe0-dwx-shift-base = <4>;
+
+			/*
+			 * GPE configuration
+			 * Note that GPE events called out in ASL code rely on
+			 * this route, i.e., if this route changes then the
+			 * affected GPE * offset bits also need to be changed.
+			 * This sets the PMC register GPE_CFG fields.
+			 */
+			gpe0-dw = <PMC_GPE_N_31_0
+				PMC_GPE_N_63_32
+				PMC_GPE_SW_31_0>;
+			gpe0-sts = <0x20>;
+			gpe0-en = <0x30>;
+		};
+
+		audio@e,0 {
+			reg = <0x7000 0 0 0 0>;
+			compatible = "simple-bus";
+			acpi,name = "HDAS";
+			i2s {
+				compatible = "fred";
+			};
+			maxim_codec: maxim-codec {
+				compatible = "maxim,max98357a";
+				acpi,ddn = "Maxim Integrated 98357A Amplifier";
+				sdmode-gpios = <&gpio_n GPIO_76 GPIO_ACTIVE_HIGH>;
+				sdmode-delay = <5>;
+				acpi,name = "MAXM";
+				acpi,hid = "MX98357A";
+				acpi,audio-link = <AUDIO_LINK_SSP5>;
+			};
+		};
+
+		spi: fast-spi@d,2 {
+			bootph-some-ram;
+			bootph-pre-ram;
+			reg = <0x02006a10 0 0 0 0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "intel,fast-spi";
+			early-regs = <IOMAP_SPI_BASE 0x1000>;
+			intel,hardware-seq = <1>;
+
+			fwstore_spi: spi-flash@0 {
+				#size-cells = <1>;
+				#address-cells = <1>;
+				bootph-some-ram;
+				bootph-pre-ram;
+				reg = <0>;
+				m25p,fast-read;
+				compatible = "winbond,w25q128fw",
+					 "jedec,spi-nor";
+				rw-mrc-cache {
+					label = "rw-mrc-cache";
+					reg = <0x008e0000 0x00010000>;
+					bootph-some-ram;
+					bootph-pre-ram;
+				};
+				rw-var-mrc-cache {
+					label = "rw-mrc-cache";
+					reg = <0x008f0000 0x0001000>;
+					bootph-some-ram;
+					bootph-pre-ram;
+				};
+			};
+		};
+
+		/* WiFi */
+		pcie-a0@14,0 {
+			reg = <0x0000a000 0 0 0 0>;
+			acpi,name = "RP01";
+			wifi: wifi {
+				compatible = "intel,generic-wifi";
+				acpi,ddn = "Intel WiFi";
+				acpi,name = "WF00";
+				acpi,wake = <GPE0_DW3_00>;
+				interrupts-extended = <&acpi_gpe 0x3c 0>;
+			};
+		};
+
+		i2c_0: i2c2@16,0 {
+			compatible = "intel,apl-i2c";
+			reg = <0x0200b010 0 0 0 0>;
+			clocks = <&clk CLK_I2C>;
+			i2c-scl-rising-time-ns = <104>;
+			i2c-scl-falling-time-ns = <52>;
+			clock-frequency = <400000>;
+			i2c,speeds = <100000 400000 1000000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			da_codec: da-codec {
+				reg = <0x1a>;
+				compatible = "dlg,da7219";
+				interrupts-extended = <&acpi_gpe GPIO_116_IRQ
+					(IRQ_TYPE_LEVEL_LOW | X86_IRQ_TYPE_SHARED)>;
+				acpi,name = "DLG7";
+				acpi,ddn = "Dialog Semiconductor DA7219 Audio Codec";
+				acpi,audio-link = <AUDIO_LINK_SSP1>;
+				dlg,micbias-lvl = <2600>;
+				dlg,mic-amp-in-sel = "diff";
+				da7219_aad {
+					dlg,btn-cfg = <50>;
+					dlg,mic-det-thr = <500>;
+					dlg,jack-ins-deb = <20>;
+					dlg,jack-det-rate = "32ms_64ms";
+					dlg,jack-rem-deb = <1>;
+					dlg,a-d-btn-thr = <0xa>;
+					dlg,d-b-btn-thr = <0x16>;
+					dlg,b-c-btn-thr = <0x21>;
+					dlg,c-mic-btn-thr = <0x3e>;
+					dlg,btn-avg = <4>;
+					dlg,adc-1bit-rpt = <1>;
+				};
+			};
+		};
+
+		i2c_1: i2c2@16,1 {
+			compatible = "intel,apl-i2c";
+			reg = <0x0200b110 0 0 0 0>;
+			clocks = <&clk CLK_I2C>;
+			clock-frequency = <400000>;
+			i2c,speeds = <100000 400000 1000000 3400000>;
+			i2c-scl-rising-time-ns = <52>;
+			i2c-scl-falling-time-ns = <52>;
+		};
+
+		i2c_2: i2c2@16,2 {
+			compatible = "intel,apl-i2c", "snps,designware-i2c-pci";
+			reg = <0x0200b210 0 0 0 0>;
+			early-regs = <IOMAP_I2C2_BASE 0x1000>;
+			bootph-some-ram;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clock-frequency = <400000>;
+			i2c,speeds = <100000 400000 1000000>;
+			clocks = <&clk CLK_I2C>;
+			i2c-scl-rising-time-ns = <57>;
+			i2c-scl-falling-time-ns = <28>;
+			tpm: tpm@50 {
+				reg = <0x50>;
+				compatible = "google,cr50";
+				bootph-some-ram;
+				u-boot,i2c-offset-len = <0>;
+				ready-gpios = <&gpio_n 28 GPIO_ACTIVE_LOW>;
+				interrupts-extended = <&acpi_gpe GPIO_28_IRQ
+					 IRQ_TYPE_EDGE_FALLING>;
+				acpi,hid = "GOOG0005";
+				acpi,ddn = "I2C TPM";
+				acpi,name = "TPMI";
+			};
+		};
+
+		i2c_3: i2c2@16,3 {
+			compatible = "intel,apl-i2c";
+			reg = <0x0200b310 0 0 0 0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clk CLK_I2C>;
+			i2c-scl-rising-time-ns = <76>;
+			i2c-scl-falling-time-ns = <164>;
+			clock-frequency = <400000>;
+			i2c,speeds = <100000 400000>;
+			elan_touchscreen: elan-touchscreen@10 {
+				compatible = "i2c-chip";
+				reg = <0x10>;
+				acpi,hid = "ELAN0001";
+				acpi,ddn = "ELAN Touchscreen";
+				interrupts-extended = <&acpi_gpe GPIO_21_IRQ
+					IRQ_TYPE_EDGE_FALLING>;
+				linux,probed;
+				reset-gpios = <&gpio_n GPIO_36 GPIO_ACTIVE_HIGH>;
+				reset-delay-ms = <20>;
+				enable-gpios = <&gpio_n GPIO_152 GPIO_ACTIVE_HIGH>;
+				enable-delay-ms = <1>;
+				acpi,has-power-resource;
+			};
+
+			raydium_touchscreen: raydium-touchscreen@39 {
+				compatible = "i2c-chip";
+				reg = <0x39>;
+				acpi,hid = "RAYD0001";
+				acpi,ddn = "Raydium Touchscreen";
+				interrupts-extended = <&acpi_gpe GPIO_21_IRQ
+					IRQ_TYPE_EDGE_FALLING>;
+				linux,probed;
+				reset-gpios = <&gpio_n GPIO_36 GPIO_ACTIVE_HIGH>;
+				reset-delay-ms = <1>;
+				enable-gpios = <&gpio_n GPIO_152 GPIO_ACTIVE_HIGH>;
+				enable-delay-ms = <50>;
+				acpi,has-power-resource;
+			};
+		};
+
+		i2c_4: i2c2@17,0 {
+			compatible = "intel,apl-i2c";
+			reg = <0x0200b810 0 0 0 0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clk CLK_I2C>;
+			i2c-sda-hold-time-ns = <350>;
+			i2c-scl-rising-time-ns = <114>;
+			i2c-scl-falling-time-ns = <164>;
+			clock-frequency = <400000>;
+			i2c,speeds = <100000 400000>;
+			elan_touchpad: elan-touchpad@15 {
+				compatible = "i2c-chip";
+				reg = <0x15>;
+				u-boot,i2c-offset-len = <0>;
+				acpi,hid = "ELAN0000";
+				acpi,ddn = "ELAN Touchpad";
+				interrupts-extended = <&acpi_gpe GPIO_18_IRQ
+					 IRQ_TYPE_EDGE_FALLING>;
+				acpi,wake = <GPE0_DW1_15>;
+				linux,probed;
+			};
+			synaptics_touchpad: synaptics-touchpad@2c {
+				compatible = "hid-over-i2c";
+				reg = <0x2c>;
+				acpi,hid = "PNP0C50";
+				acpi,ddn = "Synaptics Touchpad";
+				interrupts-extended = <&acpi_gpe GPIO_18_IRQ
+					 IRQ_TYPE_EDGE_FALLING>;
+				acpi,wake = <GPE0_DW1_15>;
+				linux,probed;
+				hid-descr-addr = <0x20>;
+			};
+		};
+
+		i2c_5: i2c2@17,1 {
+			compatible = "intel,apl-i2c";
+			reg = <0x0200b910 0 0 0 0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clk CLK_I2C>;
+			i2c-scl-rising-time-ns = <76>;
+			i2c-scl-falling-time-ns = <164>;
+			clock-frequency = <400000>;
+			i2c,speeds = <100000 400000 1000000>;
+			wacom_digitizer: wacom-digitizer@9 {
+				compatible = "hid-over-i2c";
+				reg = <0x9>;
+				acpi,hid = "WCOM50C1";
+				acpi,ddn = "WCOM Digitizer";
+				interrupts-extended = <&acpi_gpe GPIO_13_IRQ
+					(IRQ_TYPE_LEVEL_LOW | X86_IRQ_TYPE_SHARED)>;
+				hid-descr-addr = <0x1>;
+			};
+		};
+
+		i2c_6: i2c2@17,2 {
+			compatible = "intel,apl-i2c";
+			reg = <0x0200ba10 0 0 0 0>;
+			clocks = <&clk CLK_I2C>;
+			status = "disabled";
+		};
+
+		i2c_7: i2c2@17,3 {
+			compatible = "intel,apl-i2c";
+			reg = <0x0200bb10 0 0 0 0>;
+			clocks = <&clk CLK_I2C>;
+			status = "disabled";
+		};
+
+		serial: serial@18,2 {
+			reg = <0x0200c210 0 0 0 0>;
+			bootph-all;
+			compatible = "intel,apl-ns16550";
+			early-regs = <0xde000000 0x20>;
+			reg-shift = <2>;
+			clock-frequency = <1843200>;
+			current-speed = <115200>;
+			acpi,name = "URT3";
+			pci,no-autoconfig;
+		};
+
+		sdmmc: sdmmc@1b,0 {
+			reg = <0x0000d800 0 0 0 0>;
+			compatible = "intel,apl-sd";
+			cd-gpios = <&gpio_sw GPIO_177 GPIO_ACTIVE_LOW>;
+			acpi,name = "SDCD";
+		};
+
+		emmc: emmc@1c,0 {
+			reg = <0x0000e000 0 0 0 0>;
+			compatible = "intel,apl-emmc";
+			non-removable;
+		};
+
+		pch: pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,apl-pch";
+			bootph-all;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			lpc: lpc {
+				compatible = "intel,apl-lpc";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				bootph-all;
+				cros_ec: cros-ec {
+					bootph-some-ram;
+					bootph-verify;
+					compatible = "google,cros-ec-lpc";
+					reg = <0x204 1 0x200 1 0x880 0x80>;
+
+					/*
+					 * Describes the flash memory within
+					 * the EC
+					 */
+					#address-cells = <1>;
+					#size-cells = <1>;
+					flash@8000000 {
+						reg = <0x08000000 0x20000>;
+						erase-value = <0xff>;
+					};
+				};
+			};
+		};
+	};
+
+};
+
+&host_bridge {
+	/*
+	 * PL1 override 12000 mW: the energy calculation is wrong with the
+	 * current VR solution. Experiments show that SoC TDP max (6W) can be
+	 * reached when RAPL PL1 is set to 12W. Set RAPL PL2 to 15W.
+	 */
+	tdp-pl-override-mw = <12000 15000>;
+
+	early-pads = <
+		/* These two are for the debug UART */
+		GPIO_46 /* UART2 RX */
+			(PAD_CFG0_MODE_NF1 | PAD_CFG0_LOGICAL_RESET_DEEP)
+			(PAD_CFG1_PULL_NATIVE | PAD_CFG1_IOSSTATE_TX_LAST_RXE)
+
+		GPIO_47 /* UART2 TX */
+			(PAD_CFG0_MODE_NF1 | PAD_CFG0_LOGICAL_RESET_DEEP)
+			(PAD_CFG1_PULL_NATIVE | PAD_CFG1_IOSSTATE_TX_LAST_RXE)
+
+		GPIO_75 /* I2S1_BCLK -- PCH_WP */
+			(PAD_CFG0_MODE_GPIO | PAD_CFG0_LOGICAL_RESET_DEEP)
+			(PAD_CFG1_PULL_UP_20K | PAD_CFG1_IOSSTATE_TXD_RXE)
+
+		/* I2C2 - TPM  */
+		GPIO_128 /* LPSS_I2C2_SDA */
+			(PAD_CFG0_MODE_NF1 | PAD_CFG0_LOGICAL_RESET_DEEP)
+			(PAD_CFG1_PULL_UP_2K | PAD_CFG1_IOSSTATE_TX_LAST_RXE)
+		GPIO_129 /* LPSS_I2C2_SCL */
+			(PAD_CFG0_MODE_NF1 | PAD_CFG0_LOGICAL_RESET_DEEP)
+			(PAD_CFG1_PULL_UP_2K | PAD_CFG1_IOSSTATE_TX_LAST_RXE)
+		GPIO_28 /* TPM IRQ */
+			(PAD_CFG0_MODE_GPIO | PAD_CFG0_LOGICAL_RESET_DEEP |
+				PAD_CFG0_TX_DISABLE | PAD_CFG0_ROUTE_IOAPIC |
+				PAD_CFG0_TRIG_LEVEL | PAD_CFG0_RX_POL_INVERT)
+			(PAD_CFG1_PULL_NONE | PAD_CFG1_IOSSTATE_TXD_RXE)
+		PAD_CFG_GPI(GPIO_25, UP_20K, DEEP)	 /* unused */
+
+		/*
+		 * WLAN_PE_RST - default to deasserted just in case FSP
+		 * misbehaves
+		 */
+		GPIO_122  /* SIO_SPI_2_RXD */
+			(PAD_CFG0_MODE_GPIO | PAD_CFG0_LOGICAL_RESET_DEEP |
+				PAD_CFG0_RX_DISABLE | 0)
+			(PAD_CFG1_PULL_NONE | PAD_CFG1_IOSSTATE_TX_LAST_RXE)
+
+		/* LPC */
+		PAD_CFG_NF(LPC_ILB_SERIRQ, UP_20K, DEEP, NF1) /* LPC_SERIRQ */
+		PAD_CFG_NF(LPC_CLKOUT0, NONE, DEEP, NF1) /* LPC_CLKOUT0 */
+		PAD_CFG_NF(LPC_CLKOUT1, UP_20K, DEEP, NF1)
+		PAD_CFG_NF(LPC_AD0, UP_20K, DEEP, NF1)	 /* LPC_AD0 */
+		PAD_CFG_NF(LPC_AD1, UP_20K, DEEP, NF1)	 /* LPC_AD1 */
+		PAD_CFG_NF(LPC_AD2, UP_20K, DEEP, NF1)	 /* LPC_AD2 */
+		PAD_CFG_NF(LPC_AD3, UP_20K, DEEP, NF1)	 /* LPC_AD3 */
+		PAD_CFG_NF(LPC_CLKRUNB, UP_20K, DEEP, NF1) /* LPC_CLKRUN_N */
+		PAD_CFG_NF(LPC_FRAMEB, NATIVE, DEEP, NF1) /* LPC_FRAME_N */
+
+		PAD_CFG_GPI(GPIO_101, NONE, DEEP) /* FST_IO2 -- MEM_CONFIG0 */
+		PAD_CFG_GPI(GPIO_102, NONE, DEEP) /* FST_IO3 -- MEM_CONFIG1 */
+		PAD_CFG_GPI(GPIO_38, NONE, DEEP) /* LPSS_UART0_RXD - MEM_CONFIG2*/
+		PAD_CFG_GPI(GPIO_45, NONE, DEEP) /* LPSS_UART1_CTS - MEM_CONFIG3 */
+		>;
+};
+
+&fsp_m {
+	fspm,package = <PACKAGE_BGA>;
+	fspm,profile = <PROFILE_LPDDR4_2400_24_22_22>;
+	fspm,memory-down = <MEMORY_DOWN_YES>;
+	fspm,scrambler-support = <1>;
+	fspm,interleaved-mode = <INTERLEAVED_MODE_ENABLE>;
+	fspm,channel-hash-mask = <0x36>;
+	fspm,slice-hash-mask = <0x9>;
+	fspm,dual-rank-support-enable = <1>;
+	fspm,low-memory-max-value = <2048>;
+	fspm,ch0-rank-enable = <1>;
+	fspm,ch0-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch0-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch0-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch0-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,ch1-rank-enable = <1>;
+	fspm,ch1-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch1-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch1-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch1-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,ch2-rank-enable = <1>;
+	fspm,ch2-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch2-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch2-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch2-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,ch3-rank-enable = <1>;
+	fspm,ch3-device-width = <CHX_DEVICE_WIDTH_X16>;
+	fspm,ch3-dram-density = <CHX_DEVICE_DENSITY_8GB>;
+	fspm,ch3-option = <(CHX_OPTION_RANK_INTERLEAVING |
+			   CHX_OPTION_BANK_ADDRESS_HASHING_ENABLE)>;
+	fspm,ch3-odt-config = <CHX_ODT_CONFIG_DDR4_CA_ODT>;
+	fspm,fspm,skip-cse-rbp = <1>;
+
+	fspm,ch-bit-swizzling = /bits/ 8 <
+		/* LP4_PHYS_CH0A */
+
+		/* DQA[0:7] pins of LPDDR4 module */
+		6 7 5 4 3 1 0 2
+		/* DQA[8:15] pins of LPDDR4 module */
+		12 10 11 13 14 8 9 15
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		16 22 23 20 18 17 19 21
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		30 28 29 25 24 26 27 31
+
+		/* LP4_PHYS_CH0B */
+		/* DQA[0:7] pins of LPDDR4 module */
+		7 3 5 2 6 0 1 4
+		/* DQA[8:15] pins of LPDDR4 module */
+		 9 14 12 13 10 11 8 15
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		20 22 23 16 19 17 18 21
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		28 24 26 27 29 30 31 25
+
+		/* LP4_PHYS_CH1A */
+
+		/* DQA[0:7] pins of LPDDR4 module */
+		2 1 6 7 5 4 3 0
+		/* DQA[8:15] pins of LPDDR4 module */
+		11 10 8 9 12 15 13 14
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		17 23 19 16 21 22 20 18
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		31 29 26 25 28 27 24 30
+
+		/* LP4_PHYS_CH1B */
+
+		/* DQA[0:7] pins of LPDDR4 module */
+		4 3 7 5 6 1 0 2
+		/* DQA[8:15] pins of LPDDR4 module */
+		15 9 8 11 14 13 12 10
+		/* DQB[0:7] pins of LPDDR4 module with offset of 16 */
+		20 23 22 21 18 19 16 17
+		/* DQB[7:15] pins of LPDDR4 module with offset of 16 */
+		25 28 30 31 26 27 24 29>;
+
+	fspm,dimm0-spd-address = <0>;
+	fspm,dimm1-spd-address = <0>;
+	fspm,skip-cse-rbp = <1>;
+	fspm,enable-s3-heci2 = <0>;
+};
+
+&fsp_s {
+	bootph-some-ram;
+
+	fsps,ish-enable = <0>;
+	fsps,enable-sata = <0>;
+	fsps,i2c6-enable = <I2CX_ENABLE_DISABLED>;
+	fsps,i2c7-enable = <I2CX_ENABLE_DISABLED>;
+	fsps,hsuart3-enable = <HSUARTX_ENABLE_DISABLED>;
+	fsps,spi1-enable = <SPIX_ENABLE_DISABLED>;
+	fsps,spi2-enable = <SPIX_ENABLE_DISABLED>;
+	fsps,sdio-enabled = <0>;
+
+	/* Disable unused clkreq of PCIe root ports */
+	fsps,pcie-rp-clk-req-number = /bits/ 8 <0 /* wifi/bt */
+		CLKREQ_DISABLED
+		CLKREQ_DISABLED
+		CLKREQ_DISABLED
+		CLKREQ_DISABLED
+		CLKREQ_DISABLED>;
+
+	/*
+	 * GPIO for PERST_0
+	 * If the Board has PERST_0 signal, assign the GPIO
+	 * If the Board does not have PERST_0, assign GPIO_PRT0_UDEF
+	 *
+	 * This are not used yet, so comment them out for now.
+	 *
+	 * prt0-gpio = <GPIO_122>;
+	 *
+	 * GPIO for SD card detect
+	 * sdcard-cd-gpio = <GPIO_177>;
+	 */
+
+	/*
+	 * Order is emmc-tx-data-cntl1, emmc-tx-data-cntl2,
+	 * emmc-rx-cmd-data-cntl1, emmc-rx-cmd-data-cntl2
+	 *
+	 * EMMC TX DATA Delay 1
+	 * Refer to EDS-Vol2-22.3
+	 * [14:8] steps of delay for HS400, each 125ps
+	 * [6:0] steps of delay for SDR104/HS200, each 125ps
+	 */
+
+	/*
+	 * EMMC TX DATA Delay 2
+	 * Refer to EDS-Vol2-22.3.
+	 * [30:24] steps of delay for SDR50, each 125ps
+	 * [22:16] steps of delay for DDR50, each 125ps
+	 * [14:8] steps of delay for SDR25/HS50, each 125ps
+	 * [6:0] steps of delay for SDR12, each 125ps
+	 */
+
+	/*
+	 * EMMC RX CMD/DATA Delay 1
+	 * Refer to EDS-Vol2-22.3.
+	 * [30:24] steps of delay for SDR50, each 125ps
+	 * [22:16] steps of delay for DDR50, each 125ps
+	 * [14:8] steps of delay for SDR25/HS50, each 125ps
+	 * [6:0] steps of delay for SDR12, each 125ps
+	 */
+
+	/*
+	 * EMMC RX CMD/DATA Delay 2
+	 * Refer to EDS-Vol2-22.3.
+	 * [17:16] stands for Rx Clock before Output Buffer
+	 * [14:8] steps of delay for Auto Tuning Mode, each 125ps
+	 * [6:0] steps of delay for HS200, each 125ps
+	 */
+	/* Enable DPTF */
+	fsps,dptf-enabled;
+	fsps,emmc-tx-data-cntl1 = <0x0c16>;
+	fsps,emmc-tx-data-cntl2 = <0x28162828>;
+	fsps,emmc-rx-cmd-data-cntl1 = <0x00181717>;
+	fsps,emmc-rx-cmd-data-cntl2 = <0x10008>;
+
+	/* Enable Audio Clock and Power gating */
+	fsps,hd-audio-clk-gate = <1>;
+	fsps,hd-audio-pwr-gate = <1>;
+	fsps,bios-cfg-lock-down = <1>;
+
+	/* Enable WiFi */
+	fsps,pcie-root-port-en = [01 00 00 00 00 00];
+	fsps,pcie-rp-hot-plug = [00 00 00 00 00 00];
+
+	fsps,skip-mp-init = <1>;
+	fsps,spi-eiss = <0>;
+	fsps,rtc-lock = <0>;
+
+	fsps,port-usb20-per-port-pe-txi-set = [07 07 06 06 07 07 07 01];
+	fsps,port-usb20-per-port-txi-set = [00 02 00 00 00 00 00 03];
+
+	fsps,lpss-s0ix-enable = <1>;
+	fsps,usb-otg = <0>;
+	fsps,monitor-mwait-enable = <0>;
+
+	/*
+	 * TODO(sjg@chromium.org): Move this to the I2C nodes
+	 * Intel Common SoC Config
+	 *+-------------------+---------------------------+
+	 *| Field             |  Value                    |
+	 *+-------------------+---------------------------+
+	 *| I2C0              | Audio                     |
+	 *| I2C2              | TPM                       |
+	 *| I2C3              | Touchscreen               |
+	 *| I2C4              | Trackpad                  |
+	 *| I2C5              | Digitizer                 |
+	 *+-------------------+---------------------------+
+	 *
+	common_soc_config" = "{
+		.i2c[0] = {
+			.speed = I2C_SPEED_FAST,
+			.rise-time-ns = 104,
+			.fall-time-ns = 52,
+		},
+		.i2c[2] = {
+			.early_init = 1,
+			.speed = I2C_SPEED_FAST,
+			.rise-time-ns = 57,
+			.fall-time-ns = 28,
+		},
+		.i2c[3] = {
+			.speed = I2C_SPEED_FAST,
+			.rise-time-ns = 76,
+			.fall-time-ns = 164,
+		},
+		.i2c[4] = {
+			.speed = I2C_SPEED_FAST,
+			.rise-time-ns = 114,
+			.fall-time-ns = 164,
+			.data_hold_time_ns = 350,
+		},
+		.i2c[5] = {
+			.speed = I2C_SPEED_FAST,
+			.rise-time-ns = 152,
+			.fall-time-ns = 30,
+		},
+	}"
+	*/
+
+	/* Minimum SLP S3 assertion width 28ms */
+	slp-s3-assertion-width-usecs = <28000>;
+
+	pads = <
+		/* PCIE_WAKE[0:3]_N */
+		PAD_CFG_GPI_SCI_LOW(GPIO_205, UP_20K, DEEP, EDGE_SINGLE) /* WLAN */
+		PAD_CFG_GPI(GPIO_206, UP_20K, DEEP)	 /* Unused */
+		PAD_CFG_GPI(GPIO_207, UP_20K, DEEP)	 /* Unused */
+		PAD_CFG_GPI(GPIO_208, UP_20K, DEEP)	 /* Unused */
+
+		/* EMMC interface */
+		PAD_CFG_NF(GPIO_156, DN_20K, DEEP, NF1) /* EMMC_CLK */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_157, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D0 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_158, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D1 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_159, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D2 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_160, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D3 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_161, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D4 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_162, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D5 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_163, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D6 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_164, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_D7 */
+		PAD_CFG_NF_IOSSTATE_IOSTERM(GPIO_165, UP_20K, DEEP, NF1, HIZCRX1, DISPUPD) /* EMMC_CMD */
+		PAD_CFG_NF(GPIO_182, DN_20K, DEEP, NF1) /* EMMC_RCLK */
+
+		/* SDIO -- unused */
+		PAD_CFG_GPI(GPIO_166, UP_20K, DEEP)	 /* SDIO_CLK */
+		PAD_CFG_GPI(GPIO_167, UP_20K, DEEP)	 /* SDIO_D0 */
+		/* Configure SDIO to enable power gating */
+		PAD_CFG_NF(GPIO_168, UP_20K, DEEP, NF1)	/* SDIO_D1 */
+		PAD_CFG_GPI(GPIO_169, UP_20K, DEEP)	 /* SDIO_D2 */
+		PAD_CFG_GPI(GPIO_170, UP_20K, DEEP)	 /* SDIO_D3 */
+		PAD_CFG_GPI(GPIO_171, UP_20K, DEEP)	 /* SDIO_CMD */
+
+		/* SDCARD */
+		/* Pull down clock by 20K */
+		PAD_CFG_NF(GPIO_172, DN_20K, DEEP, NF1) /* SDCARD_CLK */
+		PAD_CFG_NF(GPIO_173, UP_20K, DEEP, NF1) /* SDCARD_D0 */
+		PAD_CFG_NF(GPIO_174, UP_20K, DEEP, NF1) /* SDCARD_D1 */
+		PAD_CFG_NF(GPIO_175, UP_20K, DEEP, NF1) /* SDCARD_D2 */
+		PAD_CFG_NF(GPIO_176, UP_20K, DEEP, NF1) /* SDCARD_D3 */
+		/* Card detect is active LOW with external pull up */
+		PAD_CFG_NF(GPIO_177, NONE, DEEP, NF1) /* SDCARD_CD_N */
+		PAD_CFG_NF(GPIO_178, UP_20K, DEEP, NF1) /* SDCARD_CMD */
+		/* CLK feedback, internal signal, needs 20K pull down */
+		PAD_CFG_NF(GPIO_179, DN_20K, DEEP, NF1) /* SDCARD_CLK_FB */
+		/* No h/w write proect for uSD cards, pull down by 20K */
+		PAD_CFG_NF(GPIO_186, DN_20K, DEEP, NF1) /* SDCARD_LVL_WP */
+		/* EN_SD_SOCKET_PWR_L for SD slot power control. Default on */
+		PAD_CFG_GPO(GPIO_183, 0, DEEP)		 /* SDIO_PWR_DOWN_N */
+
+		/* SMBus -- unused */
+		PAD_CFG_GPI(SMB_ALERTB, UP_20K, DEEP)	 /* SMB_ALERT _N */
+		PAD_CFG_GPI(SMB_CLK, UP_20K, DEEP)	 /* SMB_CLK */
+		PAD_CFG_GPI(SMB_DATA, UP_20K, DEEP)	 /* SMB_DATA */
+
+		/* LPC */
+		PAD_CFG_NF(LPC_ILB_SERIRQ, UP_20K, DEEP, NF1) /* LPC_SERIRQ */
+		PAD_CFG_NF(LPC_CLKOUT0, NONE, DEEP, NF1) /* LPC_CLKOUT0 */
+		PAD_CFG_NF(LPC_CLKOUT1, UP_20K, DEEP, NF1)
+		PAD_CFG_NF(LPC_AD0, UP_20K, DEEP, NF1)	 /* LPC_AD0 */
+		PAD_CFG_NF(LPC_AD1, UP_20K, DEEP, NF1)	 /* LPC_AD1 */
+		PAD_CFG_NF(LPC_AD2, UP_20K, DEEP, NF1)	 /* LPC_AD2 */
+		PAD_CFG_NF(LPC_AD3, UP_20K, DEEP, NF1)	 /* LPC_AD3 */
+		PAD_CFG_NF(LPC_CLKRUNB, UP_20K, DEEP, NF1) /* LPC_CLKRUN_N */
+		PAD_CFG_NF(LPC_FRAMEB, NATIVE, DEEP, NF1) /* LPC_FRAME_N */
+
+		/* I2C0 - Audio */
+		PAD_CFG_NF(GPIO_124, UP_2K, DEEP, NF1) /* LPSS_I2C0_SDA */
+		PAD_CFG_NF(GPIO_125, UP_2K, DEEP, NF1) /* LPSS_I2C0_SCL */
+
+		/* I2C1 - NFC with external pulls */
+		PAD_CFG_NF(GPIO_126, NONE, DEEP, NF1) /* LPSS_I2C1_SDA */
+		PAD_CFG_NF(GPIO_127, NONE, DEEP, NF1) /* LPSS_I2C1_SCL */
+
+		/* I2C2 - TPM  */
+		PAD_CFG_NF(GPIO_128, UP_2K, DEEP, NF1) /* LPSS_I2C2_SDA */
+		PAD_CFG_NF(GPIO_129, UP_2K, DEEP, NF1) /* LPSS_I2C2_SCL */
+
+		/* I2C3 - touch */
+		PAD_CFG_NF(GPIO_130, UP_2K, DEEP, NF1) /* LPSS_I2C3_SDA */
+		PAD_CFG_NF(GPIO_131, UP_2K, DEEP, NF1) /* LPSS_I2C3_SCL */
+
+		/* I2C4 - trackpad */
+		/* LPSS_I2C4_SDA */
+		PAD_CFG_NF_IOSSTATE(GPIO_132, UP_2K, DEEP, NF1, HIZCRX1)
+		/* LPSS_I2C4_SCL */
+		PAD_CFG_NF_IOSSTATE(GPIO_133, UP_2K, DEEP, NF1, HIZCRX1)
+
+		/* I2C5 -- pen with external pulls  */
+		PAD_CFG_NF(GPIO_134, NONE, DEEP, NF1) /* LPSS_I2C5_SDA */
+		PAD_CFG_NF(GPIO_135, NONE, DEEP, NF1) /* LPSS_I2C5_SCL */
+
+		/* I2C6-7 -- unused */
+		PAD_CFG_GPI(GPIO_136, UP_20K, DEEP)	 /* LPSS_I2C6_SDA */
+		PAD_CFG_GPI(GPIO_137, UP_20K, DEEP)	 /* LPSS_I2C6_SCL */
+		PAD_CFG_GPI(GPIO_138, UP_20K, DEEP)	 /* LPSS_I2C7_SDA */
+		PAD_CFG_GPI(GPIO_139, UP_20K, DEEP)	 /* LPSS_I2C7_SCL */
+
+		/* Audio Amp - I2S6 */
+		PAD_CFG_NF(GPIO_146, NATIVE, DEEP, NF2) /* ISH_GPIO_0 - I2S6_BCLK */
+		PAD_CFG_NF(GPIO_147, NATIVE, DEEP, NF2) /* ISH_GPIO_1 - I2S6_WS_SYNC */
+		PAD_CFG_GPI(GPIO_148, UP_20K, DEEP)	 /* ISH_GPIO_2 - unused */
+		PAD_CFG_NF(GPIO_149, NATIVE, DEEP, NF2) /* ISH_GPIO_3 - I2S6_SDO */
+
+		/* NFC Reset */
+		PAD_CFG_GPO(GPIO_150, 1, DEEP)		 /* ISH_GPIO_4 */
+
+		PAD_CFG_GPI(GPIO_151, UP_20K, DEEP)	 /* ISH_GPIO_5 - unused */
+
+		/* Touch enable */
+		PAD_CFG_GPO(GPIO_152, 1, DEEP)		 /* ISH_GPIO_6 */
+
+		PAD_CFG_GPI(GPIO_153, UP_20K, DEEP)	 /* ISH_GPIO_7 - unused */
+		PAD_CFG_GPI(GPIO_154, UP_20K, DEEP)	 /* ISH_GPIO_8 - unused */
+		PAD_CFG_GPI(GPIO_155, UP_20K, DEEP)	 /* ISH_GPIO_9 - unused */
+
+		/* PCIE_CLKREQ[0:3]_N */
+		PAD_CFG_NF(GPIO_209, NONE, DEEP, NF1)	 /* WLAN with external pull */
+		PAD_CFG_GPI(GPIO_210, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_211, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_212, UP_20K, DEEP)	 /* unused */
+
+		/* OSC_CLK_OUT_[0:4] -- unused */
+		PAD_CFG_GPI(OSC_CLK_OUT_0, UP_20K, DEEP)
+		PAD_CFG_GPI(OSC_CLK_OUT_1, UP_20K, DEEP)
+		PAD_CFG_GPI(OSC_CLK_OUT_2, UP_20K, DEEP)
+		PAD_CFG_GPI(OSC_CLK_OUT_3, UP_20K, DEEP)
+		PAD_CFG_GPI(OSC_CLK_OUT_4, UP_20K, DEEP)
+
+		/* PMU Signals */
+		PAD_CFG_GPI(PMU_AC_PRESENT, UP_20K, DEEP) /* PMU_AC_PRESENT - unused */
+		PAD_CFG_NF(PMU_BATLOW_B, UP_20K, DEEP, NF1) /* PMU_BATLOW_N */
+		PAD_CFG_NF(PMU_PLTRST_B, NONE, DEEP, NF1) /* PMU_PLTRST_N */
+		PAD_CFG_NF(PMU_PWRBTN_B, UP_20K, DEEP, NF1) /* PMU_PWRBTN_N */
+		PAD_CFG_NF(PMU_RESETBUTTON_B, NONE, DEEP, NF1) /* PMU_RSTBTN_N */
+		PAD_CFG_NF_IOSSTATE(PMU_SLP_S0_B, NONE, DEEP, NF1, IGNORE) /* PMU_SLP_S0_N */
+		PAD_CFG_NF(PMU_SLP_S3_B, NONE, DEEP, NF1) /* PMU_SLP_S3_N */
+		PAD_CFG_NF(PMU_SLP_S4_B, NONE, DEEP, NF1) /* PMU_SLP_S4_N */
+		PAD_CFG_NF(PMU_SUSCLK, NONE, DEEP, NF1) /* PMU_SUSCLK */
+		PAD_CFG_GPO(PMU_WAKE_B, 1, DEEP)	 /* EN_PP3300_EMMC */
+		PAD_CFG_NF(SUS_STAT_B, NONE, DEEP, NF1) /* SUS_STAT_N */
+		PAD_CFG_NF(SUSPWRDNACK, NONE, DEEP, NF1) /* SUSPWRDNACK */
+
+		/* DDI[0:1] SDA and SCL -- unused */
+		PAD_CFG_GPI(GPIO_187, UP_20K, DEEP)	 /* HV_DDI0_DDC_SDA */
+		PAD_CFG_GPI(GPIO_188, UP_20K, DEEP)	 /* HV_DDI0_DDC_SCL */
+		PAD_CFG_GPI(GPIO_189, UP_20K, DEEP)	 /* HV_DDI1_DDC_SDA */
+		PAD_CFG_GPI(GPIO_190, UP_20K, DEEP)	 /* HV_DDI1_DDC_SCL */
+
+		/* MIPI I2C -- unused */
+		PAD_CFG_GPI(GPIO_191, UP_20K, DEEP)	 /* MIPI_I2C_SDA */
+		PAD_CFG_GPI(GPIO_192, UP_20K, DEEP)	 /* MIPI_I2C_SCL */
+
+		/* Panel 0 control */
+		PAD_CFG_NF(GPIO_193, NATIVE, DEEP, NF1) /* PNL0_VDDEN */
+		PAD_CFG_NF(GPIO_194, NATIVE, DEEP, NF1) /* PNL0_BKLTEN */
+		PAD_CFG_NF(GPIO_195, NATIVE, DEEP, NF1) /* PNL0_BKLTCTL */
+
+		/* Panel 1 control -- unused */
+		PAD_CFG_NF(GPIO_196, NATIVE, DEEP, NF1) /* PNL1_VDDEN */
+		PAD_CFG_NF(GPIO_197, NATIVE, DEEP, NF1) /* PNL1_BKLTEN */
+		PAD_CFG_NF(GPIO_198, NATIVE, DEEP, NF1) /* PNL1_BKLTCTL */
+
+		/* Hot plug detect */
+		PAD_CFG_NF(GPIO_199, UP_20K, DEEP, NF2) /* HV_DDI1_HPD */
+		PAD_CFG_NF(GPIO_200, UP_20K, DEEP, NF2) /* HV_DDI0_HPD */
+
+		/* MDSI signals -- unused */
+		PAD_CFG_GPI(GPIO_201, UP_20K, DEEP)	 /* MDSI_A_TE */
+		PAD_CFG_GPI(GPIO_202, UP_20K, DEEP)	 /* MDSI_A_TE */
+
+		/* USB overcurrent pins */
+		PAD_CFG_NF(GPIO_203, UP_20K, DEEP, NF1) /* USB_OC0_N */
+		PAD_CFG_NF(GPIO_204, UP_20K, DEEP, NF1) /* USB_OC1_N */
+
+		/* PMC SPI -- almost entirely unused */
+		PAD_CFG_GPI(PMC_SPI_FS0, UP_20K, DEEP)
+		PAD_CFG_NF(PMC_SPI_FS1, UP_20K, DEEP, NF2) /* HV_DDI2_HPD -- EDP HPD */
+		PAD_CFG_GPI(PMC_SPI_FS2, UP_20K, DEEP)
+		PAD_CFG_GPI(PMC_SPI_RXD, UP_20K, DEEP)
+		PAD_CFG_GPI(PMC_SPI_TXD, UP_20K, DEEP)
+		PAD_CFG_GPI(PMC_SPI_CLK, UP_20K, DEEP)
+
+		/* PMIC Signals Unused signals related to an old PMIC interface */
+		PAD_CFG_NF_IOSSTATE(PMIC_RESET_B, NATIVE, DEEP, NF1, IGNORE) /* PMIC_RESET_B */
+		PAD_CFG_GPI(GPIO_213, NONE, DEEP)	 /* unused external pull */
+		PAD_CFG_GPI(GPIO_214, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_215, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_NF(PMIC_THERMTRIP_B, UP_20K, DEEP, NF1) /* THERMTRIP_N */
+		PAD_CFG_GPI(PMIC_STDBY, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_NF(PROCHOT_B, UP_20K, DEEP, NF1) /* PROCHOT_N */
+		PAD_CFG_NF(PMIC_I2C_SCL, UP_1K, DEEP, NF1) /* PMIC_I2C_SCL */
+		PAD_CFG_NF(PMIC_I2C_SDA, UP_1K, DEEP, NF1) /* PMIC_I2C_SDA */
+
+		/* I2S1 -- largely unused */
+		PAD_CFG_GPI(GPIO_74, UP_20K, DEEP)	/* I2S1_MCLK */
+		PAD_CFG_GPI(GPIO_75, UP_20K, DEEP)	/* I2S1_BCLK -- PCH_WP */
+		PAD_CFG_GPO(GPIO_76, 0, DEEP)		/* I2S1_WS_SYNC -- SPK_PA_EN */
+		PAD_CFG_GPI(GPIO_77, UP_20K, DEEP)	/* I2S1_SDI */
+		PAD_CFG_GPO(GPIO_78, 1, DEEP)		/* I2S1_SDO -- EN_PP3300_DX_LTE_SOC */
+
+		/* DMIC or I2S4 */
+		/* AVS_DMIC_CLK_A1 */
+		PAD_CFG_NF_IOSSTATE(GPIO_79, NATIVE, DEEP, NF1, IGNORE)
+		PAD_CFG_NF(GPIO_80, NATIVE, DEEP, NF1) /* AVS_DMIC_CLK_B1 */
+		PAD_CFG_NF(GPIO_81, NATIVE, DEEP, NF1)	/* AVS_DMIC_DATA_1 */
+		PAD_CFG_GPI(GPIO_82, DN_20K, DEEP)	 /* unused -- strap */
+		PAD_CFG_NF(GPIO_83, NATIVE, DEEP, NF1) /* AVS_DMIC_DATA_2 */
+
+		/* I2S2 -- Headset amp */
+		PAD_CFG_NF(GPIO_84, NATIVE, DEEP, NF1)	 /* AVS_I2S2_MCLK */
+		PAD_CFG_NF(GPIO_85, NATIVE, DEEP, NF1)	 /* AVS_I2S2_BCLK */
+		PAD_CFG_NF(GPIO_86, NATIVE, DEEP, NF1)	 /* AVS_I2S2_SW_SYNC */
+		PAD_CFG_NF(GPIO_87, NATIVE, DEEP, NF1)	 /* AVS_I2S2_SDI */
+		PAD_CFG_NF(GPIO_88, NATIVE, DEEP, NF1)	 /* AVS_I2S2_SDO */
+
+		/* I2S3 -- largely unused */
+		PAD_CFG_GPI(GPIO_89, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_90, UP_20K, DEEP)	 /* GPS_HOST_WAKE */
+		PAD_CFG_GPO(GPIO_91, 1, DEEP)		 /* GPS_EN */
+		PAD_CFG_GPI(GPIO_92, DN_20K, DEEP)	 /* unused -- strap */
+
+		/* Fast SPI */
+		PAD_CFG_NF_IOSSTATE(GPIO_97, NATIVE, DEEP, NF1, IGNORE)	/* FST_SPI_CS0_B */
+		PAD_CFG_GPI(GPIO_98, UP_20K, DEEP)				/* FST_SPI_CS1_B -- unused */
+		PAD_CFG_NF_IOSSTATE(GPIO_99, NATIVE, DEEP, NF1, IGNORE)	/* FST_SPI_MOSI_IO0 */
+		PAD_CFG_NF_IOSSTATE(GPIO_100, NATIVE, DEEP, NF1, IGNORE)	/* FST_SPI_MISO_IO1 */
+		PAD_CFG_GPI(GPIO_101, NONE, DEEP)				/* FST_IO2 -- MEM_CONFIG0 */
+		PAD_CFG_GPI(GPIO_102, NONE, DEEP)				/* FST_IO3 -- MEM_CONFIG1 */
+		PAD_CFG_NF_IOSSTATE(GPIO_103, NATIVE, DEEP, NF1, IGNORE)	/* FST_SPI_CLK */
+		PAD_CFG_NF_IOSSTATE(FST_SPI_CLK_FB, NATIVE, DEEP, NF1, IGNORE) /* FST_SPI_CLK_FB */
+		PAD_CFG_NF_IOSSTATE(GPIO_106, NATIVE, DEEP, NF3, IGNORE)	/* FST_SPI_CS2_N */
+
+		/* SIO_SPI_0 - Used for FP */
+		PAD_CFG_NF(GPIO_104, NATIVE, DEEP, NF1)			/* SIO_SPI_0_CLK */
+		PAD_CFG_NF(GPIO_105, NATIVE, DEEP, NF1)			/* SIO_SPI_0_FS0 */
+		PAD_CFG_NF(GPIO_109, NATIVE, DEEP, NF1)			/* SIO_SPI_0_RXD */
+		PAD_CFG_NF(GPIO_110, NATIVE, DEEP, NF1)			/* SIO_SPI_0_TXD */
+
+		/* SIO_SPI_1 -- largely unused */
+		PAD_CFG_GPI(GPIO_111, UP_20K, DEEP)	 /* SIO_SPI_1_CLK */
+		PAD_CFG_GPI(GPIO_112, UP_20K, DEEP)	 /* SIO_SPI_1_FS0 */
+		PAD_CFG_GPI(GPIO_113, UP_20K, DEEP)	 /* SIO_SPI_1_FS1 */
+		/* Headset interrupt */
+		PAD_CFG_GPI_APIC_LOW(GPIO_116, NONE, DEEP) /* SIO_SPI_1_RXD */
+		PAD_CFG_GPI(GPIO_117, UP_20K, DEEP)	 /* SIO_SPI_1_TXD */
+
+		/* SIO_SPI_2 -- unused */
+		PAD_CFG_GPI(GPIO_118, UP_20K, DEEP)	 /* SIO_SPI_2_CLK */
+		PAD_CFG_GPI(GPIO_119, UP_20K, DEEP)	 /* SIO_SPI_2_FS0 */
+		PAD_CFG_GPI(GPIO_120, UP_20K, DEEP)	 /* SIO_SPI_2_FS1 */
+		PAD_CFG_GPI(GPIO_121, UP_20K, DEEP)	 /* SIO_SPI_2_FS2 */
+		/* WLAN_PE_RST - default to deasserted */
+		PAD_CFG_GPO(GPIO_122, 0, DEEP)		 /* SIO_SPI_2_RXD */
+		PAD_CFG_GPI(GPIO_123, UP_20K, DEEP)	 /* SIO_SPI_2_TXD */
+
+		/* Debug tracing */
+		PAD_CFG_GPI(GPIO_0, UP_20K, DEEP)
+		PAD_CFG_GPI(GPIO_1, UP_20K, DEEP)
+		PAD_CFG_GPI(GPIO_2, UP_20K, DEEP)
+		PAD_CFG_GPI_SCI_HIGH(GPIO_3, DN_20K, DEEP, LEVEL)	 /* FP_INT */
+		PAD_CFG_GPI(GPIO_4, UP_20K, DEEP)
+		PAD_CFG_GPI(GPIO_5, UP_20K, DEEP)
+		PAD_CFG_GPI(GPIO_6, UP_20K, DEEP)
+		PAD_CFG_GPI(GPIO_7, UP_20K, DEEP)
+		PAD_CFG_GPI(GPIO_8, UP_20K, DEEP)
+
+		PAD_CFG_GPI_APIC_LOW(GPIO_9, NONE, DEEP) /* dTPM IRQ */
+		PAD_CFG_GPI(GPIO_10, DN_20K, DEEP)	 /* Board phase enforcement */
+		PAD_CFG_GPI_SCI_LOW(GPIO_11, NONE, DEEP, EDGE_SINGLE) /* EC SCI  */
+		PAD_CFG_GPI(GPIO_12, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI_APIC_LOW(GPIO_13, NONE, DEEP) /* PEN_INT_ODL */
+		PAD_CFG_GPI_APIC_HIGH(GPIO_14, DN_20K, DEEP) /* FP_INT */
+		PAD_CFG_GPI_SCI_LOW(GPIO_15, NONE, DEEP, EDGE_SINGLE)	 /* TRACKPAD_INT_1V8_ODL */
+		PAD_CFG_GPI(GPIO_16, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_17, UP_20K, DEEP)	 /* 1 vs 4 DMIC config */
+		PAD_CFG_GPI_APIC_LOW(GPIO_18, NONE, DEEP) /* Trackpad IRQ */
+		PAD_CFG_GPI(GPIO_19, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI_APIC_LOW(GPIO_20, UP_20K, DEEP) /* NFC IRQ */
+		PAD_CFG_GPI_APIC_LOW(GPIO_21, NONE, DEEP) /* Touch IRQ */
+		PAD_CFG_GPI_SCI_LOW(GPIO_22, NONE, DEEP, EDGE_SINGLE) /* EC wake */
+		PAD_CFG_GPI(GPIO_23, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_24, NONE, DEEP)	 /* PEN_PDCT_ODL */
+		PAD_CFG_GPI(GPIO_25, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_26, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI(GPIO_27, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPI_APIC_LOW(GPIO_28, NONE, DEEP) /* TPM IRQ */
+		PAD_CFG_GPO(GPIO_29, 1, DEEP)		 /* FP reset */
+		PAD_CFG_GPI_APIC_LOW(GPIO_30, NONE, DEEP) /* KB IRQ */
+		PAD_CFG_GPO(GPIO_31, 0, DEEP)		 /* NFC FW DL */
+		PAD_CFG_NF(GPIO_32, NONE, DEEP, NF5)	 /* SUS_CLK2 */
+		PAD_CFG_GPI_APIC_LOW(GPIO_33, NONE, DEEP) /* PMIC IRQ */
+		PAD_CFG_GPI(GPIO_34, UP_20K, DEEP)	 /* unused */
+		PAD_CFG_GPO(GPIO_35, 0, DEEP)		 /* PEN_RESET - active high */
+		PAD_CFG_GPO(GPIO_36, 0, DEEP)		 /* touch reset */
+		PAD_CFG_GPI(GPIO_37, UP_20K, DEEP)	 /* unused */
+
+		/* LPSS_UART[0:2] */
+		PAD_CFG_GPI(GPIO_38, NONE, DEEP)	 /* LPSS_UART0_RXD - MEM_CONFIG2*/
+		/* Next 2 are straps */
+		PAD_CFG_GPI(GPIO_39, DN_20K, DEEP)	 /* LPSS_UART0_TXD - unused */
+		PAD_CFG_GPI(GPIO_40, DN_20K, DEEP)	 /* LPSS_UART0_RTS - unused */
+		PAD_CFG_GPI(GPIO_41, NONE, DEEP)	 /* LPSS_UART0_CTS - EC_IN_RW */
+		PAD_CFG_NF(GPIO_42, NATIVE, DEEP, NF1)	 /* LPSS_UART1_RXD */
+		PAD_CFG_NF(GPIO_43, NATIVE, DEEP, NF1)	 /* LPSS_UART1_TXD */
+		PAD_CFG_GPO(GPIO_44, 1, DEEP)	 /* GPS_RST_ODL */
+		PAD_CFG_GPI(GPIO_45, NONE, DEEP)	 /* LPSS_UART1_CTS - MEM_CONFIG3 */
+		PAD_CFG_NF(GPIO_46, NATIVE, DEEP, NF1)	 /* LPSS_UART2_RXD */
+		PAD_CFG_NF_IOSSTATE(GPIO_47, NATIVE, DEEP, NF1, TX1_RX_DCR_X0) /* UART2 TX */
+		PAD_CFG_GPI(GPIO_48, UP_20K, DEEP)	 /* LPSS_UART2_RTS - unused */
+		PAD_CFG_GPI_SMI_LOW(GPIO_49, NONE, DEEP, EDGE_SINGLE) /* LPSS_UART2_CTS - EC_SMI_L */
+
+		/* Camera interface -- completely unused */
+		PAD_CFG_GPI(GPIO_62, UP_20K, DEEP)	 /* GP_CAMERASB00 */
+		PAD_CFG_GPI(GPIO_63, UP_20K, DEEP)	 /* GP_CAMERASB01 */
+		PAD_CFG_GPI(GPIO_64, UP_20K, DEEP)	 /* GP_CAMERASB02 */
+		PAD_CFG_GPI(GPIO_65, UP_20K, DEEP)	 /* GP_CAMERASB03 */
+		PAD_CFG_GPI(GPIO_66, UP_20K, DEEP)	 /* GP_CAMERASB04 */
+		PAD_CFG_GPI(GPIO_67, UP_20K, DEEP)	 /* GP_CAMERASB05 */
+		PAD_CFG_GPI(GPIO_68, UP_20K, DEEP)	 /* GP_CAMERASB06 */
+		PAD_CFG_GPI(GPIO_69, UP_20K, DEEP)	 /* GP_CAMERASB07 */
+		PAD_CFG_GPI(GPIO_70, UP_20K, DEEP)	 /* GP_CAMERASB08 */
+		PAD_CFG_GPI(GPIO_71, UP_20K, DEEP)	 /* GP_CAMERASB09 */
+		PAD_CFG_GPI(GPIO_72, UP_20K, DEEP)	 /* GP_CAMERASB10 */
+		PAD_CFG_GPI(GPIO_73, UP_20K, DEEP)	 /* GP_CAMERASB11 */
+	>;
+};
+
+&rtc {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	bootph-some-ram;
+};

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+recurse() {
+   for file in "$1"/*; do
+      if [ -d "$file" ]; then
+#         echo ">>> checking directory $file";
+         recurse "$file"
+      elif [[ "$file" == *.c || "$file" == *.h ]]; then
+#         echo ">>>>>>>> checking file $file for illegitimate environment variables";
+         grep -R -E "env_set\(\"|env_get\(\"" $file | sed 's/^.*env_get(\"\|env_set(\"//' | sed 's/\".*//' | while read -r name; do
+#            echo "######## checking line $name for illegitimate environment variables";
+            case `grep -Fx "$name" "bootloaders/build/configs/envs_helps.txt" >/dev/null; echo $?` in
+               0) ;; # variable name found, do nothing
+               *) echo "ERROR!!! environment variable $name in file $file not found in whitelist";
+               #exit -1;
+               esac
+            done
+         fi
+     done
+}
+
+recurse "bootloaders/u-boot-2024.04";
+exit 0;
+

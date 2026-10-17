@@ -1,0 +1,27 @@
+if ARCH_OWL
+
+choice
+        prompt "Actions Semi Owl SoC Variant"
+        optional
+
+config MACH_S900
+        bool "Actions Semi S900 SoC"
+        select ARM64
+
+config MACH_S700
+        bool "Actions Semi S700 SoC"
+        select ARM64
+
+endchoice
+
+config TEXT_BASE
+        default 0x11000000
+
+config SYS_CONFIG_NAME
+        default "owl-common"
+
+config SYS_SOC
+        default "s900" if MACH_S900
+        default "s700" if MACH_S700
+
+endif

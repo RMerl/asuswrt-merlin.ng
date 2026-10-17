@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018 MediaTek Inc.
+ *
+ * Author: Weijie Gao <weijie.gao@mediatek.com>
+ */
+
+&infracfg {
+	bootph-all;
+};
+
+&pericfg {
+	bootph-all;
+};
+
+&timer0 {
+	bootph-all;
+};
+
+&mcucfg {
+	bootph-all;
+};
+
+&dramc {
+	bootph-all;
+};
+
+&apmixedsys {
+	bootph-all;
+};
+
+&topckgen {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&snfi {
+	bootph-all;
+};

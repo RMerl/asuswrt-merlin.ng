@@ -1,0 +1,8 @@
+
+config VIDEO_ZYNQMP_DPSUB
+	bool "Enable video support for ZynqMP Display Port"
+	depends on ZYNQMP_POWER_DOMAIN
+	help
+	Enable support for Xilinx ZynqMP Display Port. Currently this file
+	is used as placeholder for driver. The main reason is to record
+	compatible string and calling power domain driver.

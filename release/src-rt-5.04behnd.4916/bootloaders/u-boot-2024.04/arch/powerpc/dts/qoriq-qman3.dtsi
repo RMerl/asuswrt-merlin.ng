@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * QorIQ QMan rev3 device tree stub [ controller @ offset 0x318000 ]
+ *
+ * Copyright 2014 Freescale Semiconductor Inc.
+ */
+
+qman: qman@318000 {
+	compatible = "fsl,qman";
+	reg = <0x318000 0x2000>;
+	interrupts = <16 2 1 3>;
+	fsl,qman-portals = <&qportals>;
+	memory-region = <&qman_fqd &qman_pfdr>;
+};

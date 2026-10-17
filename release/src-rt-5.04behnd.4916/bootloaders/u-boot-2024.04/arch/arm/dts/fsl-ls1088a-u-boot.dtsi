@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include <config.h>
+
+/{
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x00000000 0x80000000 0 0x80000000>;
+		      /* DRAM space - 1, size : 2 GB DRAM */
+	};
+};
+
+&duart0 {
+	bootph-all;
+};
+
+&duart1 {
+	bootph-all;
+};
+
+/* MDIO controllers - U-Boot uses a different
+ * driver for the DPAA2 (LS/LX2) family,
+ * so must match fsl,ls-mdio first.
+ */
+&emdio1 {
+	compatible = "fsl,ls-mdio", "fsl,fman-memac-mdio";
+};
+
+&emdio2 {
+	compatible = "fsl,ls-mdio", "fsl,fman-memac-mdio";
+};
+
+/* DPAA2 Management Complex (MC)
+ * "simple-mfd" compatible used by U-Boot only,
+ * to allow driver model functionality.
+ */
+&fsl_mc {
+	compatible = "fsl,qoriq-mc", "simple-mfd";
+
+	dpmacs {
+		compatible = "simple-mfd";
+	};
+};
+
+&pcie1 {
+	status = "okay";
+};
+
+&pcie2 {
+	status = "okay";
+};
+
+&pcie3 {
+	status = "okay";
+};
+
+&usb0 {
+	compatible = "fsl,layerscape-dwc3", "snps,dwc3";
+};
+
+&usb1 {
+	compatible = "fsl,layerscape-dwc3", "snps,dwc3";
+};
+

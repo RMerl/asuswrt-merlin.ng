@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig(shift);
+
+######   Any config changes start here #####
+
+$c->set('CONFIG_BCM_FAILSAFE_BOOT_SUPPORT','y');
+$c->set('CONFIG_BOOT_BLOB_SEARCH_ADDR_MAX','0x400000');
+
+#####   End of config changes #####
+$c->write();
+

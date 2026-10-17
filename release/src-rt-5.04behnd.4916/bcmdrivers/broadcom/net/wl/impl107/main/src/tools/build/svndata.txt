@@ -1,0 +1,10 @@
+# $ Copyright Broadcom $
+#
+#
+# <<Broadcom-WL-IPTag/Proprietary>>
+
+This file is needed to provide svn keyword data for uses like epivers.h generation.
+
+$Id: svndata.txt 845067 2024-09-18 13:38:30Z db936042 $
+$HeadURL: svn://bcawlan-svn.lvn.broadcom.net/svn/bcawlan/proj/tags/KUDU/KUDU_REL_25_438_64/src/tools/build/svndata.txt $
+$Revision: 845067 $

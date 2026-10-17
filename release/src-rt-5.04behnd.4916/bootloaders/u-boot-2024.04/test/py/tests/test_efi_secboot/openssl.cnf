@@ -1,0 +1,48 @@
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+new_certs_dir = .
+database = ./index.txt
+serial = ./serial
+default_md = sha256
+policy = policy_min
+
+[ req ]
+distinguished_name = def_distinguished_name
+
+[def_distinguished_name]
+
+# Extensions
+#   -addext " ... = ..."
+#
+[ v3_ca ]
+   # Extensions for a typical Root CA.
+   basicConstraints = critical,CA:TRUE
+   keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+   subjectKeyIdentifier = hash
+   authorityKeyIdentifier = keyid:always,issuer
+
+[ v3_int_ca ]
+   # Extensions for a typical intermediate CA.
+   basicConstraints = critical, CA:TRUE
+   keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+   subjectKeyIdentifier = hash
+   authorityKeyIdentifier = keyid:always,issuer
+
+[ usr_cert ]
+   # Extensions for user end certificates.
+   basicConstraints = CA:FALSE
+   keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+   extendedKeyUsage = clientAuth, emailProtection
+   subjectKeyIdentifier = hash
+   authorityKeyIdentifier = keyid,issuer
+
+[ policy_min ]
+   countryName		= optional
+   stateOrProvinceName	= optional
+   localityName		= optional
+   organizationName	= optional
+   organizationalUnitName = optional
+   commonName		= supplied
+   emailAddress		= optional

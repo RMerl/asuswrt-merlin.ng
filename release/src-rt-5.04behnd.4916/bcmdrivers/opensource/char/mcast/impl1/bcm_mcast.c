@@ -97,11 +97,7 @@ void bcm_mcast_find_vlan_devs(struct net_device *dev_p,
         return;
     }
 
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-    if ( is_netdev_vfrwd(dev_p) )
-#else /* CONFIG_BCM_ENET_TC_OFFLOAD */
     if ( is_netdev_vlan(dev_p) )
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
     {
         vlandev_list->vlandev[vlandev_list->vlandev_count++] = dev_p;
         __logDebug("vlan_dev found %s count %d", dev_p->name, vlandev_list->vlandev_count);
@@ -185,8 +181,11 @@ EXPORT_SYMBOL(bcm_mcast_control_filter);
 #if defined(CONFIG_BLOG) && (defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE))
 int bcm_mcast_wlan_client_disconnect_notifier(struct net_device *dev, char *mac)
 {
-   return bcm_mcast_if_wlan_client_disconnect(dev, mac
-);
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
+   return bcm_mcast_if_wlan_client_disconnect(dev, mac);
+#else
+   return 0;
+#endif
 }
 EXPORT_SYMBOL(bcm_mcast_wlan_client_disconnect_notifier);
 #endif
@@ -208,13 +207,11 @@ static int bcm_mcast_fill_pkt_info(bcm_mcast_ifdata *pif,
    pinfo->data_len = len;
    pinfo->lanppp = flags & BCM_MCAST_FLAG_PPP ? 1 : 0;
 
-#if defined(CONFIG_BCM_VLAN) || defined(CONFIG_BCM_VLAN_MODULE)
    if (skbuff_bcm_ext_vlan_get(skb, vlan_count))
    {
       pinfo->tci = skbuff_bcm_ext_vlan_get(skb, vlan_header)[0] >> 16;
    }
    else
-#endif /* CONFIG_BCM_VLAN */
    {
       pinfo->tci = 0;
    }
@@ -808,6 +805,7 @@ static int bcm_mcast_receive(int ifindex, struct sk_buff *skb, int is_routed)
 
       if ( !skbuff_bcm_ext_indev_get(skb) ) 
       {
+          rcu_read_unlock();
           __logError("skb->in_dev NULL quit processing, skb->dev %s", skb->dev->name);
           return rv;
       }
@@ -1154,7 +1152,7 @@ void bcm_mcast_set_admission(int proto, int enable)
 #endif
 }
 
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
 void bcm_mcast_process_blog_enable(int enable)
 {
    if ( mcast_ctrl->blog_enable != enable )
@@ -1198,7 +1196,9 @@ void bcm_mcast_exit(void)
       kmem_cache_destroy(mcast_ctrl->ipv6_rep_cache);
    }
 #endif
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    bcm_mcast_fc_exit();
+#endif
    kfree(mcast_ctrl);
 
    return;
@@ -1221,7 +1221,7 @@ __init int bcm_mcast_init (void)
    mcast_ctrl->mcastPriQueue = -1;
    get_random_bytes(&mcast_ctrl->ipv6_hash_salt, sizeof(mcast_ctrl->ipv6_hash_salt));
    get_random_bytes(&mcast_ctrl->ipv4_hash_salt, sizeof(mcast_ctrl->ipv4_hash_salt));
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    mcast_ctrl->blog_enable = 1;
 #endif
    
@@ -1303,16 +1303,8 @@ __init int bcm_mcast_init (void)
 
 #endif
    /* PRV init must be done first to set the correct operation mode PRV/FlowCache */
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV) && !defined(CONFIG_BCM_55153_DPU)
-   err = bcm_mcast_prv_init();
-   if ( err )
-   {
-      printk("bcm_mcast_init: bcm_mcast_prv_init error\n");
-      bcm_mcast_exit();
-      return err;
-   }   
-#endif
 
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    err = bcm_mcast_fc_init();
    if ( err )
    {
@@ -1320,6 +1312,7 @@ __init int bcm_mcast_init (void)
       bcm_mcast_exit();
       return err;
    }   
+#endif
 
 #if defined(CC_MCAST_WHITELIST_SUPPORT)
    /* No Whitelist needed for prv mode */

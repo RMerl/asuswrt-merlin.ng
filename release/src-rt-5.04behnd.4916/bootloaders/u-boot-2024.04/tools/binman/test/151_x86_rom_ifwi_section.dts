@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		sort-by-offset;
+		end-at-4gb;
+		size = <0x800000>;
+		intel-descriptor {
+			filename = "descriptor.bin";
+		};
+
+		intel-ifwi {
+			offset-unset;
+			filename = "fitimage.bin";
+			convert-fit;
+
+			section {
+				ifwi-replace;
+				ifwi-subpart = "IBBP";
+				ifwi-entry = "IBBL";
+				u-boot-tpl {
+				};
+				u-boot-dtb {
+				};
+			};
+		};
+	};
+};

@@ -1,0 +1,12 @@
+if TARGET_STEMMY
+
+config SYS_BOARD
+	default "stemmy"
+
+config SYS_VENDOR
+	default "ste"
+
+config SYS_CONFIG_NAME
+	default "stemmy"
+
+endif

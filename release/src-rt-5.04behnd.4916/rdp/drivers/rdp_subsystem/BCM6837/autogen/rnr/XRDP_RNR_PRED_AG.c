@@ -101,6 +101,9 @@ static const ru_reg_rec *RNR_PRED_REGS[] =
 const ru_block_rec RNR_PRED_BLOCK =
 {
     "RNR_PRED",
+#if RU_INCLUDE_SIZE
+    { 0x00000400 },
+#endif
     RNR_PRED_ADDRS,
     7,
     1,

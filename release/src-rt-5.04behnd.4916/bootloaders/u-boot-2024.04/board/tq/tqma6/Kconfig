@@ -1,0 +1,95 @@
+if TARGET_TQMA6
+
+config SYS_BOARD
+	default "tqma6"
+
+config SYS_VENDOR
+	default "tq"
+
+config SYS_CONFIG_NAME
+	default "tqma6"
+
+choice
+	prompt "TQMa6 SoC variant"
+	default TQMA6Q
+	help
+	  select the TQMa6 module variant. The variants differing in the used
+	  i.MX6 CPU type and DRAM
+
+config TQMA6Q
+	bool "TQMa6Q / TQMa6D"
+	depends on MX6Q
+	help
+	  select TQMa6Q / TQMa6D with i.MX6Q/D and 1GiB DRAM
+
+config TQMA6DL
+	bool "TQMa6DL"
+	depends on MX6DL
+	help
+	  select TQMa6DL with i.MX6DL and 1GiB DRAM
+
+config TQMA6S
+	bool "TQMa6S"
+	depends on MX6S
+	help
+	  select TQMa6S with i.MX6S and 512 MiB DRAM
+
+endchoice
+
+choice
+	prompt "TQMa6 boot configuration"
+	default TQMA6X_MMC_BOOT
+	help
+	  Configure boot device. This is also used to implement environment
+	  location.
+
+config TQMA6X_MMC_BOOT
+	bool "MMC / SD Boot"
+	help
+	  Boot from eMMC / SD Card
+
+config TQMA6X_SPI_BOOT
+	bool "SPI NOR Boot"
+	help
+	  Boot from on board SPI NOR flash
+
+endchoice
+
+choice
+	prompt "TQMa6 base board variant"
+	default MBA6
+	help
+	  Select base board for TQMa6
+
+config MBA6
+	bool "TQMa6 on MBa6 Starterkit"
+	select USB
+	select CMD_USB
+	select USB_STORAGE
+	select USB_HOST_ETHER
+	select USB_ETHER_SMSC95XX
+	select PHYLIB
+	select PHY_MICREL
+	select PHY_MICREL_KSZ90X1
+	select MXC_UART
+	help
+	  Select the MBa6 starterkit. This features a GigE Phy, USB, SD-Card
+	  etc.
+
+config WRU4
+	bool "OHB WRU-IV"
+	help
+	  Select the OHB Systems AG WRU-IV baseboard.
+
+endchoice
+
+config TEXT_BASE
+	default 0x2fc00000 if TQMA6S
+	default 0x4fc00000 if TQMA6Q || TQMA6DL
+
+config IMX_CONFIG
+	default "board/tq/tqma6/tqma6q.cfg" if TQMA6Q
+	default "board/tq/tqma6/tqma6dl.cfg" if TQMA6DL
+	default "board/tq/tqma6/tqma6s.cfg" if TQMA6S
+
+endif

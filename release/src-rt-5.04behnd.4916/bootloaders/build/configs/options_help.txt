@@ -1,73 +1,308 @@
-ARCH
-  cpu architecture of device.  arm or aarch64
 
-bcm_cred_dir
-  directory where secure boot signing keys are stored
+# uboot option has to be at the start of the line
+# option:option text should be followed by one or more lines of help, each line
+  starting with 2 spaces 
+# any empty line will be ignored
 
-bcm_emmc_raw_linux_bootfs_part_size
+option: ARCH
+  CPU architecture of the device. Only arm or aarch64 are supported.
 
-bcm_emmc_raw_linux_rootfs_part_size
+option: bcm_cred_dir
+  Directory where secure boot signing keys are stored
 
-bcm_image_compatstr
-bcm_image_rev
-bcm_spinor_squashfs_offset
+option: bcm_emmc_raw_linux_bootfs_part_size
+  Size of eMMC bootfs partition in RAW linux images. This optional value will
+  override the defaults in the gen_emmc_linux_raw_img.sh script
 
-bcm_uboot_arch
+option: bcm_emmc_raw_linux_rootfs_part_size
+  Size of eMMC rootfs partition in RAW linux images. This optional value will
+   override the defaults in the gen_emmc_linux_raw_img.sh script
+
+option: bcm_image_compatstr
+  Image compatibility string
+
+option: bcm_spinor_squashfs_offset
+  Offset at which the squashfs is in a SPINOR image. It is not officially
+  supported and only for Broadcom internal testing.
+
+option: bcm_uboot_arch
   The basename of a script (with an .arch extension) that modifies the
   chip's default uboot defconfig options before building the full uboot
 
-bcm_uboot_delg_aes_base
-bcm_uboot_delg_fit_sign
-bcm_uboot_delg_sec_pol
-bcm_uboot_delg_sec_pol_sig
-bcm_uboot_delg_sec_sdr
-bcm_uboot_delg_sec_sdr_sig
-bcm_uboot_encode_keys
+option: bcm_uboot_delg_sec_enc_bins
+  Pointer to the delegate package's encryption record which holds information
+  about key-owner encrypted binaries. The encryption record is generated when
+  the image encryption config is enabled in the gen_delg_package_example.sh
+  script. Each entry in the encryption record is encoded as follows:
+    fit_image_name:aes_length:unencrypted_size:encrypted_file:encryption_key
 
-bcm_uboot_env
+option: bcm_uboot_delg_aes_base
+  Pointer to the plain-text delegated aes encryption key, usually provided as
+  part of a delegate package
+
+option: bcm_uboot_delg_fit_sign
+  Pointer to delegated FIT header signing key if delegation is enabled. Usually
+  Provided as part of a delegate package
+
+option: bcm_uboot_delg_sec_pol
+  Pointer to the key-owner's security policy ITB, usually provided as part of a
+  delegate package. This ITB is included in the final FIT image
+
+option: bcm_uboot_delg_sec_pol_sig
+  Pointer to the key-owner;s security policy ITB signature, usually provided as
+  part of a delegate package. This signature is included along with the ITB in
+  the final FIT image
+
+option: bcm_uboot_delg_sec_sdr
+  Pointer to the Security Delegation Record (SDR), usually provided as part of
+  a Delegate package. The SDR is appended to the end of the FIT header
+
+option: bcm_uboot_delg_sec_sdr_sig
+  Pointer to the SDR signature, usually provided as part of a delegate package
+
+option: bcm_uboot_encode_keys
+  List of keys to be encrypted using the delegated encryption key. Keys are
+  listed in the format <KEY_NAME>:<Key path relative to bootloaders directory>
+  where KEY_NAME is the placeholder for the key's data under the encoded_keys
+  node in the Security_trust_fit.dtsi pointed to by bcm_uboot_fit_security
+  
+option: bcm_uboot_env
   The name of the file containing environment variables to be compiled
   into flash images
 
-bcm_uboot_envsize
-bcm_uboot_fit_security
-bcm_uboot_fit_sign
-bcm_uboot_fit_signer
-bcm_uboot_image_offset
-bcm_uboot_kernel_compression
-bcm_uboot_layout
-bcm_uboot_mfg_sec_opt
-bcm_uboot_mk_include
-bcm_uboot_pkgtb_sign
-bcm_uboot_pkgtb_signer
-bcm_uboot_pmcfw_code_addr
-bcm_uboot_pmcfw_data_addr
-bcm_uboot_reimage_blocksize
-bcm_uboot_reimage_btrm
-bcm_uboot_reimage_format
-bcm_uboot_reimage_payload
-bcm_uboot_rootfs_encrypt
-bcm_uboot_rootfs_hash
-bcm_uboot_spl_arch
-bcm_uboot_spl_encrypt
-bcm_uboot_spl_encryptor
-bcm_uboot_spl_prefix
-bcm_uboot_spl_secmode
-bcm_uboot_spl_sign
-bcm_uboot_spl_signer
-bcm_uboot_tkmfg_aes
-bcm_uboot_tkmfg_args
-bcm_uboot_tkmfg_fld_hmid
-bcm_uboot_tkmfg_fld_roe
-bcm_uboot_tkmfg_keystore
-bcm_uboot_tkmfg_mid
-bcm_uboot_tkmfg_sign
-bcm_uboot_tpl_encrypt
-bcm_uboot_uboot_prefix
-BOOTLOADER_EXTRA
-BRCM_CHIP
-prebuilt_bin
-SEC_ARCH
-STANDALONE_CONFIGS
-STANDALONE_TYPE
-UBOOT_CONFIG
-UBOOT_CROSS_COMPILE
+option: bcm_uboot_envsize
+  uboot environment size
+
+option: bcm_uboot_fit_security
+  Points to the delegate's security settings .dtsi file, usually
+  security_trust_fit.dtsi 
+
+option: bcm_uboot_fit_sign
+  Points to FIT header signing key
+
+option: bcm_uboot_fit_signer
+  Points to signing script for FIT header signing
+
+option: bcm_uboot_image_offset
+  Specifies offset to start of the image MTD partition in NAND flash
+
+option: bcm_uboot_kernel_compression
+  Specifies kernel binary compression algorithm
+
+option: bcm_uboot_layout
+  Specifies the layout config file of the binaries in the loader
+
+option: bcm_uboot_mfg_sec_op
+  Specified MFG secure options such as dual eligibility mask. This will set
+  header to be eligible to run in both MFG and non-secure modes 
+
+option: bcm_uboot_mk_include
+  Specifies extra makefiles to include in bootloaders/Makefile. Used for
+  reimaging images only for upgrading from CFE based 4.x SDK NAND images to
+  u-boot based 5.x SDK image
+
+option: bcm_uboot_pkgtb_sign
+  Pointer to pkgtb image bundle signing key
+
+option: bcm_uboot_pkgtb_signer
+  Points to pkgtb image signing script
+
+option: bcm_uboot_pmcfw_code_addr
+  Specifies the PMC firmware code address. For Broadcom internal use only.
+
+option: bcm_uboot_pmcfw_data_addr
+  Specifies the PMC firmware data address. For Broadcom internal use only.
+
+option: bcm_uboot_reimage_blocksize
+  NAND block size of reimaging payload. Used for reimaging images only 
+
+option: bcm_uboot_reimage_btrm
+  Specifies if re-imaging target supports bootrom. Used for reimaging images
+  only
+
+option: bcm_uboot_reimage_format
+  Specifies format of the reimaging payload. Used for reimaging images only
+
+option: bcm_uboot_reimage_payload
+  Pointer to the 4.x based reimaging payload binary.
+
+option: bcm_uboot_rootfs_encrypt
+  Points to rootfs encryption script located in bootloaders/build/work/scripts
+
+option: bcm_uboot_spl_arch
+  
+  The basename of a script (with an .arch extension) that modifies the
+  chip's default uboot defconfig options before building the SPL. Usually it
+  includes the script to adjust the config for flash and DDR standalone type
+
+option: bcm_uboot_spl_encrypt
+  Pointer to SPL encryption AES keys ek and iv binaries
+
+option: bcm_uboot_spl_encryptor
+  Pointer to SPL encryption script
+
+option: bcm_uboot_spl_prefix
+  Specifies SPL object folder name’s prefix based on the flash type. It can
+  be nand, emmc or smc.
+
+option: bcm_uboot_spl_secmode
+  Specifies security mode for SPL
+
+option: bcm_uboot_spl_sign
+  Pointer to SPL signing key
+
+option: bcm_uboot_spl_signer
+  Pointer to SPL signing script
+
+option: bcm_uboot_tkmfg_aes
+  Specifies the path containing Krsa-mfg AES key and IV
+
+option: bcm_uboot_tkmfg_args
+  Arguments to the TKMFG library to specify parameters to form a keystore
+
+option: bcm_uboot_tkmfg_fld_hmid
+  Specifies the path containing FLD secure mode related HMID blob usually
+  Hmid-rot-fld-pub.bin
+
+option: bcm_uboot_tkmfg_fld_roe
+  Specifies the path containing FLD secure mode ROE, usually Kroe-fld-ek.bin
+  and Kroe-fld-iv.bin
+
+option: bcm_uboot_tkmfg_keystore
+  Points to the path where the keystore is placed to by the build system 
+
+option: bcm_uboot_tkmfg_mid
+  Specifies the path containing FLD secure mode MID 
+
+option: bcm_uboot_tkmfg_sign
+  Specifies the path containing MFG secure mode signing key usually Krsa-mfg.pem
+
+option: bcm_uboot_tpl_encrypt
+  Pointer to TPL encryption key
+
+option: bcm_uboot_uboot_prefix
+  Special configurations for uboot binary
+
+option: bcm_uboot_fit_img_enc
+  The space-separated name list of fit images to be encrypted. Currently the
+  following images are supported: kernel, uboot and dtb. 
+  
+option: bcm_uboot_fit_img_enc_algo
+  The algorithm to encrypt the fit image. Currently aes128, aes192 and aes256
+  are supported.
+
+option: bcm_uboot_fit_img_enc_keydir
+  The relative path (to bootloader/ folder) for storing the aes keys that
+  mkimage utility uses to encrypt the fit images.
+
+option: BOOTLOADER_EXTRA
+  Extra binary to be appended to the first stage bootloader usually SPL. For
+  Broadcom internal use only.
+
+option: BRCM_CHIP
+  Soc CHIP name 
+
+option: prebuilt_bin
+  Extra prebuilt binary to be included in the loader region. Layout file change
+  is needed to include this component.
+
+option: SEC_ARCH
+  Specifies security architecture. It can be either GEN3 and GEN4.
+
+option: STANDALONE_CONFIGS
+  Specifies the DDR technology supported in the DDR standalones. Currently only
+  DDR3, DDR4 or LPDDR4 are supported
+
+option: STANDALONE_TYPE
+  Specifies the DDR standalone implementation type. For Broadcom internal only
+
+option: UBOOT_CONFIG
+  Specifies the uboot defconfig file
+
+option: UBOOT_CROSS_COMPILE
+  Specifies the path to the uboot cross compiler 
+
+option: bcm_armtf_bin
+  Specifies optional location for armtf binary
+
+option: bcm_cred_dir_suffix
+  Specifies the suffix added to the directory pointing to the location of all
+  secure boot related material
+
+option: bcm_meminit_layout
+  help placeholder GEN4
+
+option: bcm_sec_encryptor
+  help placeholder GEN4
+
+option: bcm_sech_arch_ver
+  Specifies the secure arch version for GEN3 devices. For Broadcom internal use
+  only
+
+option: bcm_sec_key_map
+  help placeholder GEN4
+
+option: bcm_sec_signer
+  help placeholder GEN4
+
+option: bcm_sec_switch_certificate
+  help placeholder GEN4
+
+option: bcm_sec_switch_ksb
+  help placeholder GEN4
+
+option: bcm_sec_switch_roe_ek
+  help placeholder GEN4
+
+option: bcm_sec_switch_roe_iv
+  help placeholder GEN4
+
+option: bcm_sec_switch_rot
+  help placeholder GEN4
+
+option: bcm_sec_tpl_roe_ek
+  help placeholder GEN4
+
+option: bcm_sec_tpl_roe_iv
+  help placeholder GEN4
+
+option: bcm_sec_tpl_roe_options
+  help placeholder GEN4
+
+option: bcm_sec_tpl_rot
+  help placeholder GEN4
+
+option: bcm_sec_uboot_fit_cypher
+  help placeholder GEN4
+
+option: bcm_sec_uboot_fit_sign
+  help placeholder GEN4
+
+option: bcm_secure_os_bin
+  Pointer to optional OPTEE binary
+
+option: bcm_support_fallback
+  Enable the image boot fallback support. When enabled, uboot switches to backup
+  image if the boot up fails to reach steady state on the current image.
+
+option: bcm_uboot_aes_len
+  Specifies length of the AES key used to encrypt binaries for both FLD/MFG
+  secure modes
+
+option: bcm_uboot_failsafe_dir
+  Specifies the path where the failsafe binaries are placed to by the build
+  system
+
+option: bcm_uboot_fld_sec_opt
+  Options to FLD secure mode to enable specific features such as encryption 
+
+option: bcm_uboot_spl_encryptor_args
+  Specifies extra arguments to be passed to SPL encryption script
+
+option: BRCM_CHIP_TYPE
+  help placeholder GEN4
+
+option: DPFE_CONFIGS
+  Specifies DPFE DDR config types for SMC based chip
+
+

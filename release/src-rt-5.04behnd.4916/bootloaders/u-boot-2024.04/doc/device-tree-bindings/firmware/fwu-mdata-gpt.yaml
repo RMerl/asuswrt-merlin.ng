@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/firmware/fwu-mdata-gpt.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: FWU metadata on device with GPT partitioned layout
+
+maintainers:
+ - Sughosh Ganu <sughosh.ganu@linaro.org>
+
+properties:
+  compatible:
+    items:
+      - const: u-boot,fwu-mdata-gpt
+
+  fwu-mdata-store:
+    maxItems: 1
+    description: Phandle of the device which contains the FWU medatata partition.
+
+required:
+  - compatible
+  - fwu-mdata-store
+
+additionalProperties: false
+
+examples:
+  - |
+    fwu-mdata {
+        compatible = "u-boot,fwu-mdata-gpt";
+        fwu-mdata-store = <&sdmmc1>;
+    };

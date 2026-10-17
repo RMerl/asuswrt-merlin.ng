@@ -1,0 +1,2 @@
+See Binding in Linux documentation:
+Documentation/devicetree/bindings/firmware/arm,scmi.yaml

@@ -53,7 +53,7 @@
 #include "rdp_drv_xpm.h"
 #include "bdmf_system.h"
 #ifndef RDP_SIM
-#include "xrdp_drv_rnr_regs_ag.h"
+#include "xrdp_autogens.h"
 #endif
 
 bdmf_fastlock feed_ring_lock;    

@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	binman {
+		files {
+			pattern = "files/*.dat";
+			files-compress = "none";
+		};
+	};
+};

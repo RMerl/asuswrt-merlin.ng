@@ -1,0 +1,15 @@
+if TARGET_GURNARD
+
+config GURNARD_SPLASH
+	def_bool y
+
+config SYS_BOARD
+	default "gurnard"
+
+config SYS_VENDOR
+	default "bluewater"
+
+config SYS_CONFIG_NAME
+	default "snapper9g45"
+
+endif

@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright 2022 Toradex
+ */
+
+#include "imx6qdl-u-boot.dtsi"
+
+/ {
+	aliases {
+		/* U-Boot won't find PMIC otherwise */
+		i2c0 = &i2c3;
+		i2c1 = &i2c2;
+		/* SDHCI instance order: eMMC, 4-bit SD/MMC
+		 * (U-Boot won't find ConfigBlock otherwise)
+		 */
+		mmc0 = &usdhc3;
+		mmc1 = &usdhc1;
+	};
+
+	sysinfo {
+		compatible = "toradex,sysinfo";
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&wdog1 {
+	status = "okay";
+	bootph-pre-ram;
+};

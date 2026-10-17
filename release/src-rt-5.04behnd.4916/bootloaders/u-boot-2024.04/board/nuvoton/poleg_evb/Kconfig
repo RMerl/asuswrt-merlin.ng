@@ -1,0 +1,26 @@
+if TARGET_POLEG
+
+config SYS_BOARD
+	default "poleg_evb"
+
+config SYS_VENDOR
+	default "nuvoton"
+
+config SYS_CONFIG_NAME
+	default "poleg"
+
+choice
+	prompt "Target board select"
+	default TARGET_POLEG_EVB
+
+config TARGET_POLEG_EVB
+	bool "Poleg EVB"
+	help
+	  poleg EVB is Nuvoton evaluation board for NPCM750 SoC,
+	  supports general functions of Basebase Management
+	  Controller(BMC).
+
+endchoice
+
+source "board/nuvoton/common/Kconfig"
+endif

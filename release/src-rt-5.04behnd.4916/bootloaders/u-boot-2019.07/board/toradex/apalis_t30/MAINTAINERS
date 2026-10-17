@@ -1,7 +1,0 @@
-Apalis T30
-M:	Marcel Ziswiler <marcel.ziswiler@toradex.com>
-S:	Maintained
-F:	board/toradex/apalis_t30/
-F:	include/configs/apalis_t30.h
-F:	configs/apalis_t30_defconfig
-F:	arch/arm/dts/tegra30-apalis.dtb

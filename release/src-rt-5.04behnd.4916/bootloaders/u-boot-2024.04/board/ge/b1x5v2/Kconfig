@@ -1,0 +1,14 @@
+if TARGET_GE_B1X5V2
+
+config SYS_BOARD
+	default "b1x5v2"
+
+config SYS_VENDOR
+	default "ge"
+
+config SYS_CONFIG_NAME
+	default "ge_b1x5v2"
+
+source "board/ge/common/Kconfig"
+
+endif

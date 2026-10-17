@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * dts file for Xilinx ZynqMP ZCU106 Rev1.0
+ *
+ * (C) Copyright 2016 - 2022, Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+#include "zynqmp-zcu106-revA.dts"
+
+/ {
+	model = "ZynqMP ZCU106 Rev1.0";
+	compatible = "xlnx,zynqmp-zcu106-rev1.0", "xlnx,zynqmp-zcu106-revA",
+		     "xlnx,zynqmp-zcu106", "xlnx,zynqmp";
+};

@@ -1,0 +1,30 @@
+* Intel Advanced Configuration and Power Interface General Purpose Events
+
+This describes an interrupt controller which provides access to GPEs supported
+by the SoC.
+
+Required properties:
+
+- compatible : "intel,acpi-gpe"
+- interrupt-controller : Identifies the node as an interrupt controller
+- #interrupt-cells : The number of cells to define the interrupts.  Must be 2:
+     cell 0: interrupt number (normally >=32 since GPEs below that are reserved)
+     cell 1: 0 (flags, but none are currently defined)
+- reg : The register bank for the controller (set this to the ACPI base).
+
+Example:
+
+	general-purpose-events {
+		reg = <IOMAP_ACPI_BASE IOMAP_ACPI_SIZE>;
+		compatible = "intel,acpi-gpe";
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	...
+	tpm@50 {
+		reg = <0x50>;
+		compatible = "google,cr50";
+		ready-gpios = <&gpio_n 0x1c GPIO_ACTIVE_LOW>;
+		interrupts-extended = <&acpi_gpe 0x3c 0>;
+	};

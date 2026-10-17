@@ -1,4 +1,4 @@
-UB := u-boot-2019.07
+UB := u-boot-2024.04
 OPTEE_DFLT_BIN := secureos/optee/tee.bin
 INC_OPTEE :=
 ATF_DFLT_BIN := bootloaders/armtf/armtf.bin
@@ -71,6 +71,7 @@ endif
 -include build/configs/$(OPTIONS).conf
 
 KCFL="KCFLAGS=-Werror"
+KCFL_DDR="KCFLAGS=-Werror -DCONFIG_SPL_BUILD"
 
 ifeq ($(strip $(findstring smc,$(bcm_uboot_spl_prefix))),smc)
 FSBL_FINAL_BASE	= $(objdir)/binaries/u-boot-tpl
@@ -94,11 +95,24 @@ endif
 
 ifneq ($(strip $(bcm_uboot_rootfs_encrypt)),)
 uboot_squash_fname := rootfs.enc
+ifeq ($(strip $(BRCM_CHIP_TYPE)),SMC)
+uboot_rootfs_encrypt_blksize = 4096
+else
+uboot_rootfs_encrypt_blksize = 512
+endif
 else
 uboot_squash_fname := rootfs.squashfs
 endif
 
+ifneq ($(strip $(bcm_uboot_delg_sec_enc_bins)),)
+gen_fit_img_pre_enc_opt := --fit_img_pre_enc_cfg $(mdir)/../$(bcm_uboot_delg_sec_enc_bins)
+endif
+
 ifneq ($(strip $(bcm_uboot_encode_keys)),)
+ifneq ($(strip $(bcm_uboot_fit_img_enc)),)
+gen_fit_img_enc_opt := --fit_img_enc_list "$(bcm_uboot_fit_img_enc)"
+mkimg_keydir_opt := -k $(mdir)/$(bcm_uboot_fit_img_enc_keydir)
+endif
 gen_keyring_opt := --keyring obj/binaries/image_key.keyring
 endif
 
@@ -118,10 +132,6 @@ endif
 
 ifneq ($(strip $(bcm_uboot_spl_sign)),)
 bcm_uboot_spl_sign:=$(mdir)/../$(bcm_uboot_spl_sign)
-endif
-
-ifneq ($(strip $(bcm_uboot_rootfs_hash)),)
-rootfs_hash_opt := --sha=obj/binaries/rootfs.${bcm_uboot_rootfs_hash}
 endif
 
 ifeq ($(strip $(SEC_ARCH)),GEN3)
@@ -162,6 +172,15 @@ endif
 
 ifeq ($(strip $(BLD_LPAE)),y)
 bcm_extra_arch := $(bcm_extra_arch) lpae
+endif
+
+ifeq ($(strip $(BLD_ATF)),y)
+bcm_extra_arch := $(bcm_extra_arch) atf
+bcm_extra_spl_arch := $(bcm_extra_spl_arch) atf
+endif
+
+ifeq ($(strip $(BLD_ARMTF_RNG)),y)
+bcm_extra_arch := $(bcm_extra_arch) rngshim
 endif
 
 splobjdir := $(mdir)/obj/$(bcm_uboot_spl_prefix)spl
@@ -272,14 +291,14 @@ configure: $(ubootobjdir)/.config gen_html_headers rt_ver
 ifeq ($(strip $(BLD_COMMON)),y)
 	-rm -f $(ubootobjdir)/include/generated/hashtable.h
 endif
-#	@cp -ar $(objdir).$(shell echo $(BUILD_NAME) | tr A-Z a-z)/* $(objdir)/
+# Copy model-specific obj files
 	@cp -ar $(objdir).$(shell echo $(BUILD_NAME) | tr A-Z a-z)/* $(UB)/
 
 configure_spl: $(splobjdir)/.config
 	-rm -f $(splobjdir)/include/generated/hashtable.h
 
 $(splobjdir)/.config : $(UB)/configs/$(splconfig) | unpack changed_check 
-	$(MAKE) -C $(UB) O=$(splobjdir) $(splconfig)  HOSTCC="$(HOSTCC)"
+	$(MAKE) -C $(UB) O=$(splobjdir) $(splconfig)  HOSTCC="$(HOSTCC)" CROSS_COMPILE=$(UBOOT_CROSS_COMPILE)
 
 ifneq ($(strip $(BLD_COMMON)),y)
 $(splobjdir)/include/generated/hashtable.h : configure_spl 
@@ -290,13 +309,14 @@ endif
 	cp $(ubootobjdir)/include/generated/hashtable.h $(splobjdir)/include/generated/hashtable.h 
 
 $(ubootobjdir)/.config : $(UB)/configs/$(ubootconfig) | unpack changed_check 
-	$(MAKE) -C $(UB) O=$(ubootobjdir) $(ubootconfig)  HOSTCC="$(HOSTCC)"
+	$(MAKE) -C $(UB) O=$(ubootobjdir) $(ubootconfig)  HOSTCC="$(HOSTCC)" CROSS_COMPILE=$(UBOOT_CROSS_COMPILE)
+
 
 xconfig savedefconfig menuconfig : 
-	$(MAKE) -C $(UB) O=$(ubootobjdir) $@  HOSTCC="$(HOSTCC)"
+	$(MAKE) -C $(UB) O=$(ubootobjdir) $@  HOSTCC="$(HOSTCC)" CROSS_COMPILE=$(UBOOT_CROSS_COMPILE)
 
 fixdefconfig:  configure
-	$(MAKE) -C $(UB) O=$(ubootobjdir) savedefconfig HOSTCC="$(HOSTCC)"
+	$(MAKE) -C $(UB) O=$(ubootobjdir) savedefconfig HOSTCC="$(HOSTCC)" CROSS_COMPILE=$(UBOOT_CROSS_COMPILE)
 	chmod u+w $(UB)/configs/$(UBOOT_CONFIG)
 	cp $(UB)/configs/$(UBOOT_CONFIG) $(UB)/configs/$(UBOOT_CONFIG).old
 	cp $(ubootobjdir)/defconfig  $(UB)/configs/$(UBOOT_CONFIG)
@@ -307,7 +327,7 @@ fix_all_defconfig:
 	   echo "must run from a clean directory" ; exit 1 ; fi 
 	for opfile in `grep -lL bcm_uboot_arch build/configs/options_*.conf`; do op=`basename $$opfile .conf`; \
 	   echo $$op; \
-	   $(MAKE) OPTIONS=$$op fixdefconfig ; $(MAKE) clean ; done;
+	   $(MAKE) OPTIONS=$$op fixdefconfig  CROSS_COMPILE=$(UBOOT_CROSS_COMPILE); $(MAKE) clean ; done;
 
 spl: configure_spl $(splobjdir)/include/generated/hashtable.h
 	$(MAKE) -C $(UB) O=$(splobjdir) spl/u-boot-spl.bin CROSS_COMPILE=$(UBOOT_CROSS_COMPILE) HOSTCC="$(HOSTCC)" BUILD_TAG=$(LOADER_BUILD_TAG) $(KCFL) BLD_COMMON=n
@@ -399,13 +419,13 @@ standalone: $(patsubst %,$(objdir)/%/spl/$(DDRMOD),$(STANDALONE_CONFIGS))
 $(objdir)/%/spl/$(DDRMOD) : $(UB)/$(dir $(DDRMOD))/*.[ch] | unpack changed_check
 	echo "ddr_bin rule called with " $@
 	echo $(UB)/configs/$(subst $(objdir)/,,$(basename $(subst /spl/$(DDRMOD),,$@))_$(UBOOT_CONFIG)) 
-	$(MAKE) -f $(thismakefile) $(UB)/configs/$(subst $(objdir)/,,$(basename $(subst /spl/$(DDRMOD),,$@))_$(UBOOT_CONFIG)) BLD_COMMON=n
-	$(MAKE) -f $(thismakefile) $(subst /spl/$(DDRMOD),,$@)/.config BLD_COMMON=n
+	$(MAKE) -f $(thismakefile) $(UB)/configs/$(subst $(objdir)/,,$(basename $(subst /spl/$(DDRMOD),,$@))_$(UBOOT_CONFIG)) CROSS_COMPILE=$(UBOOT_CROSS_COMPILE) BLD_COMMON=n
+	$(MAKE) -f $(thismakefile) $(subst /spl/$(DDRMOD),,$@)/.config BLD_COMMON=n CROSS_COMPILE=$(UBOOT_CROSS_COMPILE)
 	work=$(subst /spl/$(DDRMOD),,$@) ;\
-	   $(MAKE) -C $(UB) O=$$work  $(dir $(DDRMOD)) CROSS_COMPILE=$(UBOOT_CROSS_COMPILE) HOSTCC="$(HOSTCC)" V=1 BUILD_TAG=$(LOADER_BUILD_TAG)
+	   $(MAKE) -C $(UB) O=$$work  $(dir $(DDRMOD)) CROSS_COMPILE=$(UBOOT_CROSS_COMPILE) HOSTCC="$(HOSTCC)" V=1 BUILD_TAG=$(LOADER_BUILD_TAG) $(KCFL_DDR)
 
 $(objdir)/%/.config : $(UB)/configs/%_$(UBOOT_CONFIG) | unpack changed_check
-	$(MAKE) -C $(UB) O=$(dir $@) $(notdir $<)  HOSTCC="$(HOSTCC)"
+	$(MAKE) -C $(UB) O=$(dir $@) $(notdir $<)  HOSTCC="$(HOSTCC)" CROSS_COMPILE=$(UBOOT_CROSS_COMPILE)
 
 $(UB)/configs/%_$(UBOOT_CONFIG): | unpack changed_check
 	cat $(UB)/configs/$(UBOOT_CONFIG) > $@
@@ -467,13 +487,21 @@ bcm_uboot_image_offset ?= 1M
 ifeq ($(strip $(BLD_LOADER)),)
 bootstrap_deps = image_bootstrap_fit
 else
-bootstrap_deps = loaderimage image_bootstrap_fit
+bootstrap_deps = gen_loader image_bootstrap_fit
+gen_loader_opts+= $(objdir)/binaries/*.bin_headered
 endif
 
 ifeq ($(strip $(findstring field,$(bcm_uboot_spl_secmode))),field)
 ifneq ($(strip $(bcm_uboot_spl_sign)),)
-bootstrap_deps += sign_loaderimage 
+bootstrap_deps += gen_loader
+gen_loader_opts+= $(objdir)/binaries/*.field $(objdir)/binaries/*.mfg
 endif
+endif
+
+ifneq ($(findstring failsafe,$(bcm_uboot_spl_arch)),) 
+$(if $(strip $(bcm_uboot_failsafe_dir)),,$(error directory $(bcm_uboot_failsafe_dir) is not set))
+bcm_uboot_failsafe_dir:=$(mdir)/../$(bcm_uboot_failsafe_dir)
+gen_loader_opts += $(bcm_uboot_failsafe_dir)/*.bin_failsafe
 endif
 
 ifeq ($(strip $(findstring nand,$(bcm_uboot_spl_prefix))),nand)
@@ -524,7 +552,7 @@ endif
 # 2 - objdir
 # 3 - defconfig name
 define gen_extra_spl
-	$(MAKE) -C $(UB) O=$2 $3  HOSTCC="$(HOSTCC)"
+	$(MAKE) -C $(UB) O=$2 $3  HOSTCC="$(HOSTCC)" CROSS_COMPILE=$(UBOOT_CROSS_COMPILE)
 	if [ ! -L "$2/tools" ]; then ln -sn $(ubootobjdir)/tools $2/tools; fi
 	$(MAKE) -C $(UB) O=$2 spl/u-boot-spl.bin CROSS_COMPILE=$(UBOOT_CROSS_COMPILE) HOSTCC="$(HOSTCC)"
 	cp $2/spl/u-boot-spl.bin $1
@@ -642,7 +670,20 @@ ifneq ($(and $(strip $(bcm_uboot_tpl_encrypt)),$(strip $(bcm_uboot_spl_encryptor
 endif
 endif
 
-.PHONY: encrypt_tpl
+.PHONY: encrypt_tpl 
+
+gen_loader: loaderimage
+ifeq ($(strip $(BLD_LOADER)),source)
+ifneq ($(findstring failsafe,$(bcm_uboot_spl_arch)),)
+	mkdir -p $(bcm_uboot_failsafe_dir)
+	for f in $(subst $(FSBL_FINAL_BASE).bin_headered,,$(wildcard $(objdir)/binaries/*.bin_headered)) ; do \
+		cp -nv  $$f  $(bcm_uboot_failsafe_dir)/`basename $$f|sed s/bin_headered/bin_failsafe/`; done
+	-cp -nv $(FSBL_FINAL_BASE).$(if $(findstring field,$(bcm_uboot_spl_secmode)),field,bin_headered)  $(bcm_uboot_failsafe_dir)/$(basename $(notdir $(FSBL_FINAL_BASE))).bin_failsafe
+endif
+	build/work/generate_loader --layout=build/configs/$(bcm_uboot_layout) --splprefix=$(bcm_uboot_spl_prefix) \
+		--out=$(LOADERIMG) $(gen_loader_opts)
+endif
+.PHONY: gen_loader 
 
 # Loader image
 ifeq ($(strip $(BLD_LOADER)),source)
@@ -665,20 +706,10 @@ ifneq ($(and $(strip $(bcm_uboot_$(BL)_encrypt)),$(strip $(bcm_uboot_spl_encrypt
 else
 	cat $(FSBL_FINAL_BASE).auth_header $(FSBL_INTERIM) > $(FSBL_FINAL_BASE).signable
 endif
+
 ifneq ($(and $(strip $(bcm_uboot_spl_sign)),$(strip $(bcm_uboot_spl_signer))),)
 	build/scripts/$(bcm_uboot_spl_signer) $(FSBL_FINAL_BASE).signable $(FSBL_FINAL_BASE).sig $(bcm_uboot_spl_sign)
 endif
-else
-	build/work/generate_loader --layout=build/configs/$(bcm_uboot_layout) --splprefix=$(bcm_uboot_spl_prefix) \
-		--out=$(LOADERIMG) $(objdir)/binaries/*.bin_headered 
-endif	
-else
-loaderimage:
-	mkdir -p $(objdir)/binaries
-	cp $(SPECLOADERIMG) $(LOADERIMG)
-endif		
-
-sign_loaderimage: | loaderimage
 	-rm -f $(FSBL_FINAL_BASE).field
 	echo > $(FSBL_FINAL_BASE).field
 ifneq ($(and $(strip $(bcm_uboot_$(BL)_encrypt)),$(strip $(bcm_uboot_spl_encryptor))),)
@@ -690,11 +721,14 @@ else
 		--arch $(SEC_ARCH)  --chip $(BRCM_CHIP) --field=$(FSBL_FINAL_BASE).sig \
 		--cred=$(FLD_CRED_LIST) --offset 0  $(FSBL_FINAL_BASE).field
 endif
-	build/work/generate_loader --layout=build/configs/$(bcm_uboot_layout) --splprefix=$(bcm_uboot_spl_prefix) \
-		--out=$(LOADERIMG) $(objdir)/binaries/*.bin_headered $(objdir)/binaries/*.field $(objdir)/binaries/*.mfg
+endif
 
+else
+loaderimage:
+	mkdir -p $(objdir)/binaries
+	cp $(SPECLOADERIMG) $(LOADERIMG)
+endif
 
-.PHONY: sign_loaderimage
 
 ifeq ($(strip $(BLD_COMMON)),y)
 	echo "BLD_COMMON is set $(BLD_COMMON)"
@@ -737,8 +771,10 @@ endif
 	mkdir -p $(objdir)/binaries/linux/
 	-cp ../targets/$(PROFILE)/image_ident $(objdir)/binaries/linux/
 	-cp ../kernel/dts/$(BRCM_CHIP)/*.dtb $(objdir)/binaries/linux/
+	-cp ../kernel/dts/overlays/voice/*.dtbo $(objdir)/binaries/linux/
 	./build/work/generate_linux_its --simple --dir=obj/binaries/linux/ --chip=$(BRCM_CHIP) \
-		$(if $(bcm_uboot_delg_sec_pol),--security_policy=../$(bcm_uboot_delg_sec_pol)) \
+		$(if $(bcm_uboot_delg_sec_pol),--security_policy=$(mdir)/../$(bcm_uboot_delg_sec_pol)) \
+		$(if $(bcm_uboot_delg_sec_pol_sig),--security_policy_sig=$(mdir)/../$(bcm_uboot_delg_sec_pol_sig)) \
 		$(if $(bcm_uboot_fit_security),--securitydefs=$(bcm_uboot_fit_security)) \
 		$(if $(strip $(findstring smc,$(bcm_uboot_spl_prefix))),--smc) \
 		--arch=$(ARCH) $(if $(INC_ATF),--armtf) $(if $(INC_OPTEE),--optee) $(if $(BLD_IKOS),--nohash) \
@@ -761,7 +797,7 @@ endif
 define gen_emmc_bootstrap_bins
 	# FIXME ... these sizes should not be hardcoded
 	dd if=/dev/zero of=obj/binaries/bootstrap_image_emmc_userdata_part.bin bs=1M count=3; \
-	sgdisk -n 3:1MiB:+1MiB -c 3:fit1 obj/binaries/bootstrap_image_emmc_userdata_part.bin; \
+	${HOSTTOOLS_DIR}/gptfdisk/sgdisk -n 3:1MiB:+1MiB -c 3:fit1 obj/binaries/bootstrap_image_emmc_userdata_part.bin; \
 	dd if=obj/binaries/$(BOOTSTRAPFIT) of=obj/binaries/bootstrap_image_emmc_userdata_part.bin bs=512 seek=2048 conv=notrunc; \
 	cp $(LOADERIMG) $(objdir)/binaries/bootstrap_image_emmc_boot_part.bin; 
 endef
@@ -827,21 +863,28 @@ image_linux_fit: image_bootstrap copy_trusted_bins $(bootstrap_deps)
 	-cp ../targets/$(PROFILE)/rootfs.img $(objdir)/binaries/rootfs.squashfs
 	-cp ../targets/$(PROFILE)/rootfs.ext4 $(objdir)/binaries
 ifneq ($(strip $(bcm_uboot_rootfs_encrypt)),)
-	build/scripts/${bcm_uboot_rootfs_encrypt}
+	@echo "Encrypting rootfs with blksize $(uboot_rootfs_encrypt_blksize)"
+	build/scripts/${bcm_uboot_rootfs_encrypt} $(uboot_rootfs_encrypt_blksize)
 endif
 	# cp uboot_squash_fname needs to be after rootfs encrypt
 	-cp $(objdir)/binaries/${uboot_squash_fname} $(objdir)/binaries/rootfs_nonubifs
 ifneq ($(strip $(bcm_uboot_encode_keys)),)
+ifneq ($(strip $(bcm_uboot_fit_img_enc)),)
+	build/work/generate_fit_img_enc_key --enc-key "${bcm_uboot_encode_keys}" \
+		$(if $(bcm_uboot_fit_img_enc_algo),--enc-algo=$(bcm_uboot_fit_img_enc_algo)) \
+		${bcm_uboot_fit_img_enc}
+endif
 	>obj/binaries/image_key.keyring
-	build/work/embed_image_key --delegated=${bcm_uboot_delg_aes_base} ${bcm_uboot_encode_keys}
+	build/work/embed_image_key --delegated=$(mdir)/../${bcm_uboot_delg_aes_base} ${bcm_uboot_encode_keys}
 endif
 ifneq ($(strip $(bcm_uboot_pmcfw_code_addr)$(bcm_uboot_pmcfw_data_addr)),)
 	cp -f $(UB)/arch/arm/mach-bcmbca/pmc/pmc_firmware_$(BRCM_CHIP)* $(objdir)/binaries
 endif
 	./build/work/generate_linux_its --dir=obj/binaries/linux/ --chip=$(BRCM_CHIP) \
-		${rootfs_hash_opt} ${gen_keyring_opt} \
+		${gen_keyring_opt} ${gen_fit_img_enc_opt} ${gen_fit_img_pre_enc_opt}\
 		$(if $(bcm_uboot_rootfs_encrypt),--mapper=obj/binaries/dm.txt) \
-		$(if $(bcm_uboot_delg_sec_pol),--security_policy=../$(bcm_uboot_delg_sec_pol)) \
+		$(if $(bcm_uboot_delg_sec_pol),--security_policy=$(mdir)/../$(bcm_uboot_delg_sec_pol)) \
+		$(if $(bcm_uboot_delg_sec_pol_sig),--security_policy_sig=$(mdir)/../$(bcm_uboot_delg_sec_pol_sig)) \
 		$(if $(bcm_support_fallback),--support_fallback=$(bcm_support_fallback)) \
 		$(if $(bcm_uboot_fit_security),--securitydefs=$(bcm_uboot_fit_security)) \
 		$(if $(bcm_uboot_kernel_compression),--kernel_compression=$(bcm_uboot_kernel_compression)) \
@@ -853,11 +896,11 @@ endif
 		$(if $(bcm_sec_uboot_fit_cypher),--cypher=$(bcm_sec_uboot_fit_cypher)) \
 		$(if $(bcm_sec_ksm),--ksm=$(topbuilddir)/$(bcm_sec_ksm)) \
 		> obj/binaries/brcm_full_linux.its
-	./obj/uboot/tools/mkimage -f obj/binaries/brcm_full_linux.its -E obj/binaries/tmp_fit.itb 
-	fitpad2len=`build/work/fit_header_tool --hex --pad 1280  obj/binaries/tmp_fit.itb` ; \
-		./obj/uboot/tools/mkimage -p $$fitpad2len -f obj/binaries/brcm_full_linux.its -E obj/binaries/$(LINUXFIT)
+	./obj/uboot/tools/mkimage -f obj/binaries/brcm_full_linux.its -E obj/binaries/tmp_fit.itb ${mkimg_keydir_opt}
+	fitpad2len=`build/work/fit_header_tool --hex --pad $(FITPAD) obj/binaries/tmp_fit.itb` ; \
+	./obj/uboot/tools/mkimage -p $$fitpad2len -f obj/binaries/brcm_full_linux.its -E obj/binaries/$(LINUXFIT) ${mkimg_keydir_opt}
 	fithdrlen=`build/work/fit_header_tool  obj/binaries/$(LINUXFIT)` ; \
-		dd if=obj/binaries/$(LINUXFIT) of=obj/binaries/$(LINUXFIT)_signable bs=$$fithdrlen count=1
+	dd if=obj/binaries/$(LINUXFIT) of=obj/binaries/$(LINUXFIT)_signable bs=$$fithdrlen count=1
 ifneq ($(and $(strip $(bcm_uboot_fit_sign)),$(strip $(bcm_uboot_fit_signer))),)
 	build/scripts/$(bcm_uboot_fit_signer) obj/binaries/$(LINUXFIT)_signable  obj/binaries/$(LINUXFIT).sig  $(bcm_uboot_fit_sign)
 else ifneq ($(and $(strip $(bcm_sec_uboot_fit_sign)),$(strip $(bcm_sec_signer))),)
@@ -1053,7 +1096,8 @@ define gen_emmc_raw_imgs
 	if [ -z "$(BLD_EMMC_PKGTB)" ]; then \
 		echo "NOT Building EMMC Raw Images!"; \
 	else \
-		./build/work/gen_emmc_linux_raw_img.sh $(opts_gen_emmc_linux_raw) obj/binaries/$(LINUXFIT) obj/binaries/$1 $(objdir)/binaries/test_metadata.bin_headered obj/binaries/linux_raw_emmc_userdata_part.bin  ; \
+	PATH=${HOSTTOOLS_DIR}/gptfdisk/:${PATH} \
+	./build/work/gen_emmc_linux_raw_img.sh $(opts_gen_emmc_linux_raw) obj/binaries/$(LINUXFIT) obj/binaries/$1 $(objdir)/binaries/test_metadata.bin_headered obj/binaries/linux_raw_emmc_userdata_part.bin  ; \
 	fi
 endef
 
@@ -1119,6 +1163,9 @@ LICENSE_PAK := $(shell ls -1 ../targets/pakl | head -1)
 ifneq ($(strip $(LICENSE_PAK)),)
 	LICENSE_IMAGE := --image=pakl,pakl.bin
 endif
+ifeq ($(strip $(BLD_TPM_UPDATE_IMG)),y)
+	TPM_IMAGE := --image=tpm,fTPM-$(BRCM_CHIP)$(BRCM_CHIP_REV).fpexe.prodkey.hsm_signed.flash
+endif
 
 smc_prepare_images: add_fit_sig_linuxfit
 	-rm -f $(objdir)/binaries/smc_os-$(BRCM_CHIP)$(BRCM_CHIP_REV).bin.prodkey.hsm_signed.flash
@@ -1132,6 +1179,9 @@ smc_prepare_images: add_fit_sig_linuxfit
 ifneq ($(strip $(LICENSE_PAK)),)
 	cp -f "../targets/pakl/$(LICENSE_PAK)" $(objdir)/binaries/pakl.bin
 endif
+ifeq ($(strip $(BLD_TPM_UPDATE_IMG)),y)
+	cp -f ../targets/smc/fTPM-$(BRCM_CHIP)$(BRCM_CHIP_REV).fpexe.prodkey.hsm_signed.flash $(objdir)/binaries/
+endif
 
 $(IMAGE_BUNDLES_SMC): smc_prepare_images
 
@@ -1140,6 +1190,18 @@ image_linux_smc sign_image_linux_smc: $(IMAGE_BUNDLES_SMC)
 	echo vf_1_boot=`stat -c %s $(objdir)/binaries/bcm$(PROFILE)_bstrap.pkgtb` >> $(objdir)/binaries/tmp_env
 	cat $(objdir)/binaries/tmp_env | $(ubootobjdir)/tools/mkenvimage --bootmagic -s $(bcm_uboot_envsize) -o ../targets/$(PROFILE)/bcm$(PROFILE)_ubootenv_lun.bin
 	chmod a+r ../targets/$(PROFILE)/bcm$(PROFILE)_ubootenv_lun.bin
+ifneq ($(and $(strip $(bcm_uboot_pkgtb_sign)),$(strip $(bcm_uboot_pkgtb_signer))),)
+	for pkg in obj/binaries/*.pkgtb.signable; do \
+	  sig=obj/binaries/`basename $$pkg nable` ;\
+	  echo $$pkg $$sig ;\
+	  build/scripts/$(bcm_uboot_pkgtb_signer) $$pkg $$sig $(topbuilddir)/$(bcm_uboot_pkgtb_sign); \
+	done
+	for pkghead in obj/binaries/*.pkgtb.signable; do \
+	  sig=obj/binaries/`basename $$pkghead nable` ;\
+	  pkg=obj/binaries/`basename $$pkghead .signable` ;\
+	  dd if=$$sig of=$$pkg bs=1 conv=notrunc seek=`stat -c %s $$pkghead` ;\
+	done
+endif
 	echo "RUNNING image_linux_smc END"
 
 # Generate linux pkgtb images
@@ -1147,27 +1209,27 @@ gen_pkgtb_smc_ext4:
 	./build/work/generate_bundle_itb --chip=$(BRCM_CHIP) --profile=$(PROFILE) --compatstr=${bcm_image_compatstr}  \
 		$(if $(bcm_uboot_pkgtb_signer), --padding=1024 ) --bootfs=$(LINUXFIT) --rootfsspec="","rootfs.ext4" \
 		--image=armbl,$(LOADERBIN) --image=meminit,bcm$(PROFILE)_meminit_lun.bin  --image=smcos,smc_os-$(BRCM_CHIP)$(BRCM_CHIP_REV).bin.prodkey.hsm_signed.flash \
-		$(LICENSE_IMAGE)
+		$(LICENSE_IMAGE) $(TPM_IMAGE)
 
 gen_pkgtb_smc_bl_ext4:
 	./build/work/generate_bundle_itb --chip=$(BRCM_CHIP) --profile=$(PROFILE) --compatstr=${bcm_image_compatstr}  \
 		$(if $(bcm_uboot_pkgtb_signer), --padding=1024 ) --bootfs=$(LINUXFIT) --rootfsspec="","rootfs.ext4" \
 		--image=armbl,$(LOADERBIN) --image=meminit,bcm$(PROFILE)_meminit_lun.bin --image=smcos,smc_os-$(BRCM_CHIP)$(BRCM_CHIP_REV).bin.prodkey.hsm_signed.flash \
 		--image=smcbl,smc_bootl-$(BRCM_CHIP)$(BRCM_CHIP_REV).prodkey.hsm_signed.flash \
-		$(LICENSE_IMAGE)
+		$(LICENSE_IMAGE) $(TPM_IMAGE)
 
 gen_pkgtb_smc_squash:
 	./build/work/generate_bundle_itb --chip=$(BRCM_CHIP) --profile=$(PROFILE) --compatstr=${bcm_image_compatstr}  \
 		$(if $(bcm_uboot_pkgtb_signer), --padding=1024 ) --bootfs=$(LINUXFIT) --rootfsspec="",${uboot_squash_fname} \
 		--image=armbl,$(LOADERBIN) --image=meminit,bcm$(PROFILE)_meminit_lun.bin  --image=smcos,smc_os-$(BRCM_CHIP)$(BRCM_CHIP_REV).bin.prodkey.hsm_signed.flash \
-		$(LICENSE_IMAGE)
+		$(LICENSE_IMAGE) $(TPM_IMAGE)
 
 gen_pkgtb_smc_bl_squash:
 	./build/work/generate_bundle_itb --chip=$(BRCM_CHIP) --profile=$(PROFILE) --compatstr=${bcm_image_compatstr}  \
 		$(if $(bcm_uboot_pkgtb_signer), --padding=1024 ) --bootfs=$(LINUXFIT) --rootfsspec="",${uboot_squash_fname} \
 		--image=armbl,$(LOADERBIN) --image=meminit,bcm$(PROFILE)_meminit_lun.bin  --image=smcos,smc_os-$(BRCM_CHIP)$(BRCM_CHIP_REV).bin.prodkey.hsm_signed.flash \
 		--image=smcbl,smc_bootl-$(BRCM_CHIP)$(BRCM_CHIP_REV).prodkey.hsm_signed.flash \
-		$(LICENSE_IMAGE)
+		$(LICENSE_IMAGE) $(TPM_IMAGE)
 
 gen_pkgtb_smc_bstrap:
 	./build/work/generate_bundle_itb --chip=$(BRCM_CHIP) --profile=$(PROFILE) --compatstr=${bcm_image_compatstr}  \

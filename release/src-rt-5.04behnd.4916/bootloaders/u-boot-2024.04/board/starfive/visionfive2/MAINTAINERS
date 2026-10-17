@@ -1,0 +1,8 @@
+STARFIVE JH7110 VISIONFIVE2 BOARD
+M:	Minda Chen <minda.chen@starfivetech.com>
+S:	Maintained
+F:	arch/riscv/include/asm/arch-jh7110/
+F:	board/starfive/visionfive2/
+F:	include/configs/starfive-visionfive2.h
+F:	configs/starfive_visionfive2_defconfig
+F:	drivers/pci/pcie_starfive_jh7110.c

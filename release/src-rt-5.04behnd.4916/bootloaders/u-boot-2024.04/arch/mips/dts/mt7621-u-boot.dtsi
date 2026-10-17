@@ -1,0 +1,111 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2022 MediaTek Inc. All rights reserved.
+ *
+ * Author: Weijie Gao <weijie.gao@mediatek.com>
+ */
+
+#include <linux/stringify.h>
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&sysc {
+	bootph-all;
+};
+
+&reboot {
+	bootph-all;
+};
+
+&clkctrl {
+	bootph-all;
+};
+
+&rstctrl {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&uart2 {
+	bootph-all;
+};
+
+&binman {
+	u-boot-spl-ddr {
+		align = <4>;
+		align-size = <4>;
+		filename = "u-boot-spl-ddr.bin";
+		pad-byte = <0xff>;
+
+		u-boot-spl {
+			align-end = <4>;
+			filename = "u-boot-spl.bin";
+		};
+
+		stage_bin {
+			filename = "mt7621_stage_sram.bin";
+			type = "blob-ext";
+		};
+	};
+
+	spl-img {
+		filename = "u-boot-spl-ddr.img";
+
+		mkimage {
+#ifdef CONFIG_MT7621_BOOT_FROM_NAND
+			args = "-T", "mtk_image", "-n", "mt7621=1",
+			       "-a", __stringify(CONFIG_SPL_TEXT_BASE),
+			       "-e", __stringify(CONFIG_SPL_TEXT_BASE);
+#else
+			args = "-A", "mips", "-T", "standalone", "-O", "u-boot",
+			       "-C", "none", "-n", "MT7621 U-Boot SPL",
+			       "-a", __stringify(CONFIG_SPL_TEXT_BASE),
+			       "-e", __stringify(CONFIG_SPL_TEXT_BASE);
+#endif
+
+			blob {
+				filename = "u-boot-spl-ddr.bin";
+			};
+		};
+	};
+
+	mt7621-uboot {
+		filename = "u-boot-mt7621.bin";
+		pad-byte = <0xff>;
+
+#ifndef CONFIG_MT7621_BOOT_FROM_NAND
+		u-boot-tpl {
+			align-end = <4>;
+			filename = "u-boot-tpl.bin";
+		};
+#endif
+
+		spl {
+#ifdef CONFIG_MT7621_BOOT_FROM_NAND
+			align-end = <0x1000>;
+#endif
+			filename = "u-boot-spl-ddr.img";
+			type = "blob";
+		};
+
+		u-boot {
+			filename = "u-boot-lzma.img";
+			type = "blob";
+		};
+	};
+};

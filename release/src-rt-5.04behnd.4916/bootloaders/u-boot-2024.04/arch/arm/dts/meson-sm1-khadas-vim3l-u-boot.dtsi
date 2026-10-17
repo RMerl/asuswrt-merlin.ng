@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2020 BayLibre, SAS
+ * Author: Neil Armstrong <narmstrong@baylibre.com>
+ */
+
+#include "meson-sm1-u-boot.dtsi"
+#include "meson-khadas-vim3-u-boot.dtsi"
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = "khadas";
+				product = "VIM3L";
+			};
+
+			baseboard {
+				manufacturer = "khadas";
+				product = "VIM3L";
+			};
+
+			chassis {
+				manufacturer = "khadas";
+				product = "VIM3L";
+			};
+		};
+	};
+};

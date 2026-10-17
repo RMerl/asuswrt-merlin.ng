@@ -29,10 +29,11 @@
  * :>
  */
 #include <linux/types.h>
+#include <linux/kqoe.h>
+#include "us_sq.h"
 
 #define DPI_DIR_DS		0
 #define DPI_DIR_US		1
-#define DPI_XRDP_US_SQ_OFFSET	100
 
 #define DPI_RESET_APPINST_BIT	0
 #define DPI_RESET_APP_BIT	1
@@ -41,7 +42,7 @@
 #define DPI_RESET_IP_BIT	4
 
 #define DPI_DEV_MSCS_BIT	0
-
+#define DPI_INVALID_TID		0xFF
 enum {
 	DQNLGRP_NONE,
 	DQNLGRP_APPINST,
@@ -124,15 +125,6 @@ enum {
 	__DQA_CFG_MAX
 };
 #define DQA_CFG_MAX	(__DQA_CFG_MAX - 1)
-
-enum {
-	EG_PRIO_LOW_LATENCY,
-	EG_PRIO_IMPORTANT,
-	EG_PRIO_NORMAL,
-	EG_PRIO_BACKGROUND,
-	__EG_PRIO_MAX
-};
-#define EG_PRIO_MAX		(__EG_PRIO_MAX - 1)
 
 /* --- common functions --- */
 static inline __u64 dpi_make_app_id(__u8 cat_id, __u16 app_id, __u8 beh_id)

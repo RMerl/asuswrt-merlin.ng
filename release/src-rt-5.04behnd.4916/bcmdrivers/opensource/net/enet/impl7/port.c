@@ -34,6 +34,7 @@
 
 #include <linux/slab.h>
 #include "port.h"
+#include "port_group.h"
 #include "phy_drv.h"
 #include "crossbar_dev.h"
 #include "enet.h"
@@ -181,7 +182,7 @@ int port_create(port_info_t *port_info, enetx_port_t *parent_sw, enetx_port_t **
 {
     int ret;
     enetx_port_t *port;
-    
+
     port = _port_create(PORT_TYPE_DETECT, 0, parent_sw);
     if (!port)
         return -1;
@@ -228,6 +229,9 @@ void _sw_free(enetx_port_t **_p, int free_port)
         return;
     }
 
+    if (p->dev)
+        enet_remove_netdevice(p);
+
     if (p->port_class & (PORT_CLASS_PORT | PORT_CLASS_PORT_DETECT))
     {
         enetx_port_t *parent_sw = p->p.parent_sw;
@@ -248,7 +252,7 @@ void _sw_free(enetx_port_t **_p, int free_port)
 
             sw_free(&p->s.ports[i]);
         }
-        
+
         p->s.port_count = 0;
         kfree(p->s.ports);
         p->s.ports = NULL;
@@ -270,6 +274,7 @@ void _sw_free(enetx_port_t **_p, int free_port)
         {
             phy_dev_link_change_unregister(p->p.phy);
             phy_dev_power_set(p->p.phy, 0);
+            phy_dev_uninit(p->p.phy);
             phy_dev_del(p->p.phy);
             p->p.phy = NULL;
             enet_dbg("freed PHY object\n");
@@ -285,11 +290,7 @@ void _sw_free(enetx_port_t **_p, int free_port)
         }
     }
 
-    /* Removing NetDevice must be last */
-    if (p->dev)
-        enet_remove_netdevice(p);
-
-    synchronize_rcu();
+    port_group_unset(p);
 
     if (free_port)
     {
@@ -437,6 +438,9 @@ int port_init(enetx_port_t *port)
     if (port->port_class == PORT_CLASS_PORT_DETECT)
         return 0;
 
+    if ((rc = port_group_set(port)))
+        return rc;
+
     if (port->p.ops->init && (rc = port->p.ops->init(port)))
         goto exit;
 
@@ -536,6 +540,9 @@ init_ports:
     }
 
 exit:
+    if (rc == ENOSPC)
+        return rc;
+
     if (rc && rc != EALREADY)
     {
         enet_err("failed to %sinitialize %s\n", was_init, sw->is_init ? sw->obj_name : "switch object");
@@ -566,7 +573,7 @@ int _port_traverse_ports(enetx_port_t *port, port_traverse_cb fn, port_class_t c
             if (classes & PORT_CLASS_SW && (rc = fn(port, ctx)))
                 return rc;
         }
-        
+
         if (max_sw_depth == 0)
             return 0;
 
@@ -605,7 +612,9 @@ void port_generic_open(enetx_port_t *self)
 {
     if ((self->p.phy) && !(g_enet_flags & ENET_FLAG_IF_PHY_PWR_SYNC_DISABLE))
     {
+        phy_dev_enable_read_status(self->p.phy, 0);
         phy_dev_power_set(self->p.phy, 1);
+        phy_dev_enable_read_status(self->p.phy, 1);
     }
     else
     {
@@ -621,12 +630,14 @@ void port_generic_stop(enetx_port_t *self)
 {
     if ((self->p.phy) && !(g_enet_flags & ENET_FLAG_IF_PHY_PWR_SYNC_DISABLE))
     {
+        phy_dev_enable_read_status(self->p.phy, 0);
 #if 0
         if (self->dev && strcmp(self->dev->name, "eth0"))
             phy_dev_power_set(self->p.phy, 0);
         else
 #endif
-            printk("%s %d skip turnning off power on %s here\n", __FUNCTION__, __LINE__, self->dev ? self->dev->name : NULL);
+        printk("%s %d skip turnning off power on %s here\n", __FUNCTION__, __LINE__, self->dev ? self->dev->name : NULL);
+        phy_dev_enable_read_status(self->p.phy, 1);
     }
     else
     {
@@ -695,13 +706,13 @@ int port_generic_mtu_set(enetx_port_t *self, int mtu)
 
     return 0;
 }
-    
+
 static int port_type_resolve(enetx_port_t *port)
 {
     int ret, port_id;
     enetx_port_t *parent_sw = port->p.parent_sw;
     port_type_t port_type;
-    
+
     if (port->port_class != PORT_CLASS_PORT_DETECT)
         return -1;
 
@@ -733,23 +744,35 @@ int port_activate(enetx_port_t *port)
     if (ret)
         return ret;
 
-    ret = sw_init(root_sw);
+    ret = port_init(port);
+    /* Don't free because we haven't actually initialized anything */
+    if (ret == ENOSPC)
+        goto error;
     if (ret && ret != EALREADY)
     {
-        sw_free(&port);
-        return -1;
+        _sw_free(&port, 0);
+        goto error;
     }
 
     /* For dynamic ports, skip looking for GBE WAN in scratchpad */
     port->port_info.is_detect = 0;
 
     return 0;
+
+error:
+    _assign_port_class(port, PORT_TYPE_DETECT);
+    port->port_info.is_detect = 1;
+
+    return -1;
 }
 
 int port_deactivate(enetx_port_t *p)
 {
     if (p->port_class != PORT_CLASS_PORT)
         return 0;
+
+    if (p->dev)
+        enet_remove_netdevice(p);
 
     if (p->p.mac)
     {
@@ -760,6 +783,7 @@ int port_deactivate(enetx_port_t *p)
     {
         phy_dev_link_change_unregister(p->p.phy);
         phy_dev_power_set(p->p.phy, 0);
+        phy_dev_uninit(p->p.phy);
     }
 
     port_link_change(p, 0);
@@ -767,13 +791,8 @@ int port_deactivate(enetx_port_t *p)
     if (p->is_init && p->p.ops->uninit)
         p->p.ops->uninit(p);
 
+    port_group_unset(p);
     p->is_init = 0;
-
-    /* Removing NetDevice must be last */
-    if (p->dev)
-        enet_remove_netdevice(p);
-
-    synchronize_rcu();
 
     if (_assign_port_class(p, PORT_TYPE_DETECT))
         return -1;
@@ -806,7 +825,7 @@ void port_generic_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net_st
     if (self->port_class != PORT_CLASS_PORT)
         return;
 
-    if (!self->p.mac || !self->p.mac->enabled)
+    if (!self->p.mac || !self->p.mac->mac_drv->initialized)
         return;
 
     mac_stats = &(self->p.mac->stats);

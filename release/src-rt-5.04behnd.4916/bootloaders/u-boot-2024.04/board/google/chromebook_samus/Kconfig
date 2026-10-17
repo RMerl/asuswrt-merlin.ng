@@ -1,0 +1,52 @@
+if TARGET_CHROMEBOOK_SAMUS || TARGET_CHROMEBOOK_SAMUS_TPL
+
+config SYS_BOARD
+	default "chromebook_samus"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_SOC
+	default "broadwell"
+
+config SYS_CONFIG_NAME
+	default "chromebook_samus" if TARGET_CHROMEBOOK_SAMUS
+	default "chromebook_samus" if TARGET_CHROMEBOOK_SAMUS_TPL
+
+config TEXT_BASE
+	default 0xffe00000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select USE_EARLY_BOARD_INIT
+	select INTEL_BROADWELL
+	select HAVE_INTEL_ME
+	select BOARD_ROMSIZE_KB_8192
+	select SPI_FLASH_WINBOND
+
+config PCIE_ECAM_BASE
+	default 0xf0000000
+
+config EARLY_POST_CROS_EC
+	bool "Enable early post to Chrome OS EC"
+	default y
+
+config SYS_CAR_ADDR
+	hex
+	default 0xff7c0000
+
+config SYS_CAR_SIZE
+	hex
+	default 0x40000
+
+endif
+
+if TARGET_CHROMEBOOK_SAMUS_TPL
+
+config BOARD_SPECIFIC_OPTIONS_TPL # dummy
+	def_bool y
+	select SPL
+	select TPL
+
+endif

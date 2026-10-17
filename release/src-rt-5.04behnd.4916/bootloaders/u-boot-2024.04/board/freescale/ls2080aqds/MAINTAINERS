@@ -1,0 +1,13 @@
+LS2080A BOARD
+M:	Priyanka Jain <priyanka.jain@nxp.com>
+M:	Wasim Khan <wasim.khan@nxp.com>
+S:	Maintained
+F:	board/freescale/ls2080aqds/
+F:	board/freescale/ls2080a/ls2080aqds.c
+F:	include/configs/ls2080aqds.h
+F:	configs/ls2080aqds_defconfig
+F:	configs/ls2080aqds_nand_defconfig
+F:	configs/ls2080aqds_qspi_defconfig
+F:	configs/ls2080aqds_sdcard_defconfig
+F:	configs/ls2088aqds_tfa_defconfig
+F:	configs/ls2080aqds_SECURE_BOOT_defconfig

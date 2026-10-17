@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2015-2016, 2020 Synopsys, Inc. (www.synopsys.com)
+ */
+/dts-v1/;
+
+#include "skeleton.dtsi"
+
+/ {
+	model = "snps,nsim";
+
+	aliases {
+		console = &uart0;
+	};
+
+	cpu_card {
+		core_clk: core_clk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <70000000>;
+			bootph-all;
+		};
+	};
+
+	uart0: serial@f0000000 {
+		compatible = "snps,dw-apb-uart";
+		reg = <0xf0000000 0x1000>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		clock-frequency = <70000000>;
+	};
+
+	virtio0: virtio@f0100000 {
+		compatible = "virtio,mmio";
+		reg = <0xf0100000 0x2000>;
+	};
+
+	virtio1: virtio@f0102000 {
+		compatible = "virtio,mmio";
+		reg = <0xf0102000 0x2000>;
+	};
+
+	virtio2: virtio@f0104000 {
+		compatible = "virtio,mmio";
+		reg = <0xf0104000 0x2000>;
+	};
+
+	virtio3: virtio@f0106000 {
+		compatible = "virtio,mmio";
+		reg = <0xf0106000 0x2000>;
+	};
+
+	virtio4: virtio@f0108000 {
+		compatible = "virtio,mmio";
+		reg = <0xf0108000 0x2000>;
+	};
+};

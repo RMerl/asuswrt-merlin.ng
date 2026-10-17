@@ -1,0 +1,6 @@
+ESPRESSO7420 Board
+M:	Minkyu Kang <mk7.kang@samsung.com>
+S:	Maintained
+F:	board/samsung/espresso7420/
+F:	include/configs/espresso7420.h
+F:	configs/espresso7420_defconfig

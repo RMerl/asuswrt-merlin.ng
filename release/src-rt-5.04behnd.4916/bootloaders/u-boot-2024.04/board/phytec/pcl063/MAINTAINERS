@@ -1,0 +1,18 @@
+PCL063 BOARD
+M:	Martyn Welch <martyn.welch@collabora.com>
+M:	Parthiban Nallathambi <parthitce@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx6ul-phytec-phycore-som.dtsi
+F:	arch/arm/dts/imx6ul-phytec-segin-peb-eval-01.dtsi
+F:	arch/arm/dts/imx6ul-phytec-segin.dtsi
+F:	arch/arm/dts/imx6ul-phytec-segin-ff-rdk-nand.dts
+F:	arch/arm/dts/imx6ull-phytec-phycore-som.dtsi
+F:	arch/arm/dts/imx6ull-phytec-segin-peb-eval-01.dtsi
+F:	arch/arm/dts/imx6ull-phytec-segin.dtsi
+F:	arch/arm/dts/imx6ull-phytec-segin-ff-rdk-emmc.dts
+F:	arch/arm/dts/imx6ull-u-boot.dtsi
+F:	board/phytec/pcl063/
+F:	configs/phycore_pcl063_defconfig
+F:	configs/phycore_pcl063_ull_defconfig
+F:	include/configs/pcl063.h
+F:	include/configs/pcl063_ull.h

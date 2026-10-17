@@ -1,0 +1,21 @@
+ifneq ($(strip $(BUILD_RDKWIFI)),)
+CFLAGS += $(USR_CFLAGS)
+ifneq ($(wildcard $(WIRELESS_IMPL_PATH)/cmwifi/apps/nvram),)
+CFLAGS += -DWLAN_CM_NVRAM_EXT -DCMWIFI_NVRAM_ENC
+endif
+CMWIFI_SETUP_SCRIPT=${WIRELESS_IMPL_PATH}/cmwifi/apps/util/script/_wifi_setup.sh
+ifeq ($(wildcard $(CMWIFI_SETUP_SCRIPT)),)
+CMWIFI_SETUP_SCRIPT=${WIRELESS_IMPL_PATH}/cmwifi/apps/util/script/wifi_setup.sh
+endif
+search_patch=\"restore_defaults\")
+CMWIFI_DEFAULT_SETUP=$(shell grep "${search_patch}" ${CMWIFI_SETUP_SCRIPT})
+ifneq ($(strip $(CMWIFI_DEFAULT_SETUP)),)
+CFLAGS += -DCMWIFI_DEFAULT_SETUP
+endif
+endif  # BUILD_RDKWIFI
+
+ifneq ($(strip $(RDK_BUILD)),)
+CFLAGS += $(USR_CFLAGS)	
+else
+OBJS += thread.o
+endif

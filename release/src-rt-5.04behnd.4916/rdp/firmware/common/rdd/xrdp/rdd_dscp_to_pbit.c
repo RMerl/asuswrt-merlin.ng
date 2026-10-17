@@ -48,13 +48,6 @@ int rdp_dscp_to_pbit_init(void)
             GROUP_MWRITE_8(RDD_DSCP_TO_PBITS_MAP_TABLE_ADDRESS_ARR, i*64 + j, 0);
     }
 
-#ifdef OPERATION_MODE_PRV
-    for (i = 0; i < RDD_VPORT_TO_DSCP_TO_PBITS_TABLE_SIZE; i++)
-    {
-        GROUP_MWRITE_8(RDD_VPORT_TO_DSCP_TO_PBITS_TABLE_ADDRESS_ARR, i, 0);
-    }
-#endif
-
     return BDMF_ERR_OK;
 }
 

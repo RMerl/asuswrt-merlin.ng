@@ -1,0 +1,200 @@
+/*
+ * Copyright 2018
+ * Lukasz Majewski, DENX Software Engineering, lukma@denx.de
+ *
+ * SPDX-License-Identifier:     GPL-2.0+ or X11
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include "imx53.dtsi"
+#include "imx53-pinfunc.h"
+
+#define IMX_PAD_SION	0x40000000
+
+/ {
+	model = "K+P iMX53";
+	compatible = "kp,imx53-kp", "fsl,imx53";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+
+	aliases {
+		mmc0 = &esdhc3;
+	};
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_usbh1_vbus: regulator-usbh1-vbus {
+			compatible = "regulator-fixed";
+			regulator-name = "usbh1_vbus";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio7 8 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+		};
+	};
+
+};
+
+&esdhc3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_esdhc3>;
+	bus-width = <8>;
+	non-removable;
+	status = "okay";
+};
+
+&fec {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_eth>;
+	phy-mode = "rmii";
+	phy-reset-gpios = <&gpio7 6 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&i2c2 {
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
+	clock_frequency = <100000>;
+
+	scl-gpios = <&gpio4 12 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio4 13 GPIO_ACTIVE_HIGH>;
+
+	status = "okay";
+
+	pmic: mc34708@8 {
+		compatible = "fsl,mc34708";
+		reg = <0x8>;
+	};
+};
+
+&i2c3 {
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c3>;
+	pinctrl-1 = <&pinctrl_i2c3_gpio>;
+	clock_frequency = <100000>;
+
+	scl-gpios = <&gpio1 5 GPIO_ACTIVE_HIGH>;
+	sda-gpios = <&gpio1 6 GPIO_ACTIVE_HIGH>;
+
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	imx53-kp {
+		pinctrl_esdhc3: esdhc3grp {
+			fsl,pins = <
+				MX53_PAD_PATA_DATA8__ESDHC3_DAT0        0x1d4
+				MX53_PAD_PATA_DATA9__ESDHC3_DAT1        0x1d4
+				MX53_PAD_PATA_DATA10__ESDHC3_DAT2       0x1d4
+				MX53_PAD_PATA_DATA11__ESDHC3_DAT3       0x1d4
+				MX53_PAD_PATA_DATA0__ESDHC3_DAT4        0x1d4
+				MX53_PAD_PATA_DATA1__ESDHC3_DAT5        0x1d4
+				MX53_PAD_PATA_DATA2__ESDHC3_DAT6        0x1d4
+				MX53_PAD_PATA_DATA3__ESDHC3_DAT7        0x1d4
+				MX53_PAD_PATA_RESET_B__ESDHC3_CMD       0x1e4
+				MX53_PAD_PATA_IORDY__ESDHC3_CLK         0x1d4
+			>;
+		};
+
+		pinctrl_eth: ethgrp {
+			fsl,pins = <
+				MX53_PAD_FEC_MDIO__FEC_MDIO 0x1fc
+				MX53_PAD_FEC_MDC__FEC_MDC 0x4
+				MX53_PAD_FEC_RXD1__FEC_RDATA_1 0x180
+				MX53_PAD_FEC_RXD0__FEC_RDATA_0 0x180
+				MX53_PAD_FEC_TXD1__FEC_TDATA_1 0x4
+				MX53_PAD_FEC_TXD0__FEC_TDATA_0 0x4
+				MX53_PAD_FEC_TX_EN__FEC_TX_EN 0x4
+				MX53_PAD_FEC_REF_CLK__FEC_TX_CLK 0x180
+				/* The RX_ER pin needs to be pull down */
+				/* for this device */
+				MX53_PAD_FEC_RX_ER__FEC_RX_ER 0x1c0
+				MX53_PAD_FEC_CRS_DV__FEC_RX_DV 0x180
+				>;
+		};
+
+		pinctrl_hog: hoggrp {
+			fsl,pins = <
+				/* PHY RESET */
+				MX53_PAD_PATA_DA_0__GPIO7_6 0x182
+				/* BOOSTER_OFF */
+				MX53_PAD_EIM_CS0__GPIO2_23 0x1e4
+				/* LCD BACKLIGHT */
+				MX53_PAD_GPIO_1__GPIO1_1 0x1e4
+				/* KEY1 GPIO */
+				MX53_PAD_EIM_RW__GPIO2_26 0x1e4
+				/* LED GREEN GPIO */
+				MX53_PAD_EIM_WAIT__GPIO5_0 0x1e4
+				/* LED RED GPIO */
+				MX53_PAD_EIM_D28__GPIO3_28 0x1e4
+			>;
+		};
+
+		pinctrl_i2c2: i2c2grp {
+			fsl,pins = <
+				MX53_PAD_KEY_ROW3__I2C2_SDA
+						 (0x1ee | IMX_PAD_SION)
+				MX53_PAD_KEY_COL3__I2C2_SCL
+						 (0x1ee | IMX_PAD_SION)
+			>;
+		};
+
+		pinctrl_i2c2_gpio: i2c2grpgpio {
+			fsl,pins = <
+				MX53_PAD_KEY_ROW3__GPIO4_13 0x1e4
+				MX53_PAD_KEY_COL3__GPIO4_12 0x1e4
+			>;
+		};
+
+		pinctrl_i2c3: i2c3grp {
+			fsl,pins = <
+				MX53_PAD_GPIO_6__I2C3_SDA (0x1ee | IMX_PAD_SION)
+				MX53_PAD_GPIO_5__I2C3_SCL (0x1ee | IMX_PAD_SION)
+			>;
+		};
+
+		pinctrl_i2c3_gpio: i2c3grpgpio {
+			fsl,pins = <
+				MX53_PAD_GPIO_6__GPIO1_6 0x1e4
+				MX53_PAD_GPIO_5__GPIO1_5 0x1e4
+			>;
+		};
+
+		pinctrl_uart2: uart2grp {
+			fsl,pins = <
+				MX53_PAD_PATA_BUFFER_EN__UART2_RXD_MUX 0x1e4
+				MX53_PAD_PATA_DMARQ__UART2_TXD_MUX 0x1e4
+			>;
+		};
+
+		pinctrl_usbh1: usbh1grp {
+			fsl,pins = <
+				/* VBUS_PWR_EN */
+				MX53_PAD_PATA_DA_2__GPIO7_8 0x1e4
+			>;
+		};
+	};
+};
+
+&uart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	status = "okay";
+};
+
+&usbh1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usbh1>;
+	vbus-supply = <&reg_usbh1_vbus>;
+	status = "okay";
+};

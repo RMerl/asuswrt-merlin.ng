@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+
+&serial0 {
+	bootph-all;
+};
+
+&pmgr {
+	bootph-all;
+};
+
+&ps_sio_busif {
+	bootph-all;
+};
+
+&ps_sio {
+	bootph-all;
+};
+
+&ps_uart_p {
+	bootph-all;
+};
+
+&ps_uart0 {
+	bootph-all;
+};

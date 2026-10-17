@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * PQ3 eTSEC device tree stub [ @ offsets 0x25000 ]
+ *
+ * Copyright 2011-2012 Freescale Semiconductor Inc.
+ * Copyright 2020 NXP
+ */
+
+ethernet@25000 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	cell-index = <1>;
+	device_type = "network";
+	model = "eTSEC";
+	compatible = "gianfar";
+	reg = <0x25000 0x1000>;
+	ranges = <0x0 0x25000 0x1000>;
+	fsl,magic-packet;
+	local-mac-address = [ 00 00 00 00 00 00 ];
+	interrupts = <35 2 0 0 36 2 0 0 40 2 0 0>;
+};
+
+mdio@25520 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	compatible = "fsl,gianfar-tbi";
+	reg = <0x25520 0x20>;
+};

@@ -114,18 +114,34 @@ typedef enum {
 // Not supported in Archer platforms
 /* #define RDPA_DHD_HELPER_FEATURE_CODEL_SUPPORT */
 
+#if IS_ENABLED(CONFIG_BCM_DHD_CROSSBOW)
+#define RDPA_DHD_HELPER_FEATURE_DUMMY_TXCOMPL_SUPPORT
+
+#define RDPA_DHD_HELPER_FEATURE_PCAP_SUPPORT
+#define RDPA_DHD_HELPER_FEATURE_TXCPL_EWI_SUPPORT
+#endif
+
 #define RDPA_DHD_HELPER_CPU_QUEUE_SIZE (1024)
 
 #if IS_ENABLED(CONFIG_BCM_DHD_CROSSBOW)
+#if defined(CONFIG_BCM96765)
 #define RDPA_MAX_DHD_OFFL_RADIOS  2
-#else
-#define RDPA_MAX_DHD_OFFL_RADIOS  3
+#elif defined(CONFIG_BCM96766)
+#define RDPA_MAX_DHD_OFFL_RADIOS  1
 #endif
+#else /* !CONFIG_BCM_DHD_CROSSBOW */
+#define RDPA_MAX_DHD_OFFL_RADIOS  3
+#endif /* CONFIG_BCM_DHD_CROSSBOW */
 
 #define RDPA_DHD_TX_POST_SKB_BUFFER_VALUE    0 /* 00: possible value in tx complete only */
 #define RDPA_DHD_TX_POST_HOST_BUFFER_VALUE   1 /* 01: possible value in tx post and tx complete */
 #define RDPA_DHD_TX_POST_BPM_BUFFER_VALUE    2 /* 10: possible value in tx post and tx complete */
 #define RDPA_DHD_TX_POST_FKB_BUFFER_VALUE    3 /* 11: possible value in tx complete only */
+
+#define RDPA_DHD_FLOWRING_FORMAT_WI64           0
+#define RDPA_DHD_FLOWRING_FORMAT_CWI32          1
+#define RDPA_DHD_FLOWRING_FORMAT_MASK           0xF  /* Mask to get basic FR format */
+#define RDPA_DHD_FLOWRING_FORMAT_EXT            (1 << 4)
 
 #include "bcm_rsvmem.h"
 #define RDD_RSV_VIRT_TO_PHYS(_vbase, _pbase, _addr) BcmMemReserveVirtToPhys(_vbase, _pbase, _addr)
@@ -312,6 +328,35 @@ typedef struct rdpa_dhd_complete_data
     uint16_t flow_ring_id;
 } rdpa_dhd_complete_data_t;
 
+typedef enum {
+    PCAP_TX_COPY_PKT,
+    PCAP_RX_COPY_PKT,
+    PCAP_MAX_COPY_PKT
+} rdpa_dhd_pcap_type_t;
+
+/** Tx PCAP descriptor data for host DHD driver */
+typedef struct {
+    uint32_t radio_idx;
+    uint8_t  pcap_type;         /* rdpa_dhd_pcap_type_t */
+    uint32_t pkt_id;            /* Original FPM ID received in Tx/Rx Complete, 0 for SKB/FKB */
+    uint16_t pkt_len;           /* packet length, 0 - NA */
+    uint16_t data_buf_len;      /* whole data buffer length */
+    uint16_t pkt_offset;        /* offset from start of data buffer */
+    uint8_t  buf_type;          /* RDPA_DHD_TX_POST_SKB_BUFFER_VALUE, RDPA_DHD_TX_POST_FKB_BUFFER_VALUE, RDPA_DHD_TX_POST_HOST_BUFFER_VALUE  */
+    uint16_t flags;             /* for Tx - MPDU/AMSDU_FIRST/AMSDU_INTRM/AMSDU_LAST, for Rx - first MSDU/ALL */
+    uint16_t seq_num;           /* free running sequence number incremented on every PCAP packet request in NP */
+    void     *txp;              /* data buffer ptr */
+} rdpa_dhd_pcap_data_t;
+
+/** DHD PCAP configuration */
+typedef struct {
+    /* FlowRings base addresses */
+    uint8_t  rx_copy_en;                     /* 0 - disable */
+    uint8_t  tx_copy_en;                     /* 0 - disable */
+    uint32_t pcap_max_len;                   /* max capture length */
+    uint16_t reserved[8];                    /* reserved for next features to keep structure backward compatibility */
+} rdpa_dhd_pcap_cfg_t;
+
 #define RDPA_CPU_RX_INFO_WL_METADATA_TID_SHIFT  21
 #define RDPA_CPU_RX_INFO_WL_METADATA_TID_MASK   0x7
 
@@ -447,6 +492,29 @@ static inline int rdpa_dhd_helper_dhd_complete_message_get(rdpa_dhd_complete_dat
     bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_DHD_COMPLETE_MESSAGE_GET);
 
     return hook(dhd_complete_info);
+}
+
+static inline int rdpa_dhd_helper_dhd_pcap_packet_get(rdpa_dhd_pcap_data_t *dhd_pcap_info)
+{
+    bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_DHD_PCAP_PACKET_GET);
+
+    return hook(dhd_pcap_info);
+}
+
+typedef struct {
+    bdmf_object_handle mo_;
+    rdpa_dhd_pcap_cfg_t *pcap_cfg;
+} rdpa_dhd_helper_pcap_cfg_set_arg_t;
+
+static inline int rdpa_dhd_helper_pcap_cfg_set(bdmf_object_handle mo_,
+                                               rdpa_dhd_pcap_cfg_t *pcap_cfg)
+{
+    rdpa_dhd_helper_pcap_cfg_set_arg_t arg = { .mo_ = mo_,
+                                               .pcap_cfg = pcap_cfg };
+
+    bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_DHD_PCAP_CFG_SET);
+
+    return hook(&arg);
 }
 
 typedef struct {
@@ -658,9 +726,7 @@ typedef struct {
     int queue;
 } rdpa_cpu_int_arg_t;
 
-#define CC_CROSSBOW_SWBCACPE_60718
-
-#if defined(CONFIG_BCM_DHD_CROSSBOW) && defined(CC_CROSSBOW_SWBCACPE_60718)
+#if defined(CONFIG_BCM_DHD_CROSSBOW)
 static inline int rdpa_cpu_rxq_empty(uint32_t radio_idx, int queue)
 {
     rdpa_cpu_int_arg_t arg = { .radio_idx = radio_idx,

@@ -1,0 +1,8 @@
+QEMU-PPCE500 BOARD
+M:	Alexander Graf <agraf@csgraf.de>
+M:	Bin Meng <bmeng.cn@gmail.com>
+S:	Maintained
+F:	board/emulation/qemu-ppce500/
+F:	board/emulation/common/
+F:	include/configs/qemu-ppce500.h
+F:	configs/qemu-ppce500_defconfig

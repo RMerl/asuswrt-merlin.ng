@@ -1,0 +1,119 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Qualcomm SDM845 chip device tree source
+ *
+ * (C) Copyright 2021 Dzmitry Sankouski <dsankouski@gmail.com>
+ *
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/clock/qcom,gcc-sdm845.h>
+#include "skeleton64.dtsi"
+
+/ {
+	soc: soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0 0 0xffffffff>;
+		compatible = "simple-bus";
+
+		gcc: clock-controller@100000 {
+			compatible = "qcom,gcc-sdm845";
+			reg = <0x100000 0x1f0000>;
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+			#power-domain-cells = <1>;
+		};
+
+		tlmm: pinctrl@3400000 {
+			compatible = "qcom,sdm845-pinctrl";
+			reg = <0x3400000 0xc00000>;
+			gpio-count = <150>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&tlmm 0 0 150>;
+
+			/* DEBUG UART */
+			qup_uart9: qup-uart9-default {
+				pins = "GPIO_4", "GPIO_5";
+				function = "qup9";
+			};
+		};
+
+		qupv3_id_1: geniqup@ac0000 {
+			compatible = "qcom,geni-se-qup";
+			reg = <0x00ac0000 0x6000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+
+			uart9: serial@a84000 {
+				compatible = "qcom,geni-debug-uart";
+				reg = <0xa84000 0x4000>;
+				clock-names = "se";
+				clocks = <&gcc GCC_QUPV3_WRAP1_S1_CLK>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&qup_uart9>;
+			};
+		};
+
+		spmi@c440000 {
+			compatible = "qcom,spmi-pmic-arb";
+			reg = <0xc440000 0x1100>,
+			      <0xc600000 0x2000000>,
+			      <0xe600000 0x100000>;
+			reg-names = "core", "chnls", "obsrvr";
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+
+			qcom,revid@100 {
+				compatible = "qcom,qpnp-revid";
+				reg = <0x100 0x100>;
+			};
+
+			pmic0: pm8998@0 {
+				compatible = "qcom,spmi-pmic";
+				reg = <0x0 0x1>;
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+
+				pm8998_pon: pon@800 {
+					compatible = "qcom,pm8998-pon";
+
+					reg = <0x800 0x100>;
+					mode-bootloader = <0x2>;
+					mode-recovery = <0x1>;
+
+					pm8998_pwrkey: pwrkey {
+						compatible = "qcom,pm8941-pwrkey";
+						debounce = <15625>;
+						bias-pull-up;
+					};
+
+					pm8998_resin: resin {
+						compatible = "qcom,pm8941-resin";
+						debounce = <15625>;
+						bias-pull-up;
+						status = "disabled";
+					};
+				};
+
+				pm8998_gpios: pm8998_gpios@c000 {
+					compatible = "qcom,pm8998-gpio";
+					reg = <0xc000 0x1a00>;
+					gpio-controller;
+					gpio-ranges = <&pm8998_gpios 0 0 26>;
+					#gpio-cells = <2>;
+				};
+			};
+
+			pmic1: pm8998@1 {
+				compatible = "qcom,spmi-pmic";
+				reg = <0x1 0x0>;
+				#address-cells = <0x2>;
+				#size-cells = <0x0>;
+			};
+		};
+	};
+};

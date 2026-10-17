@@ -1,0 +1,6 @@
+RD-AC5X BOARD
+M:	Chris Packham <chris.packham@alliedtelesis.co.nz>
+S:	Maintained
+F:	board/Marvell/mvebu_alleycat-5/
+F:	include/configs/mvebu_alleycat-5.h
+F:	configs/mvebu_ac5_rd_defconfig

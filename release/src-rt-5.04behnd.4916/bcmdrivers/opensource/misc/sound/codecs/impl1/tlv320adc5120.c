@@ -50,7 +50,7 @@ static int init_volume[ADC5120_MAX_CH] = { 21, 21, 21, 21 };
 static int adc_volume[ADC5120_MAX_CH];
 static struct snd_soc_dai *g_dai = NULL;
 static struct task_struct *muteTask;
-static int adc5120_mute(struct snd_soc_dai*, int);
+static int adc5120_mute(struct snd_soc_dai*, int, int);
 
 static const struct regmap_range_cfg adc5120_regmap_pages[] = {
    {
@@ -80,7 +80,7 @@ int kthreadfunc(void *data)
 		set_current_state(TASK_INTERRUPTIBLE);
 		schedule();
 		msleep(MUTE_DURATION);
-		adc5120_mute(g_dai, 0);
+		adc5120_mute(g_dai, 0, 0);
 	}
 	remove_wait_queue(&wqMute, &wq);
 	do_exit(0);
@@ -141,7 +141,7 @@ static int adc5120_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	u8 iface_reg;
 	struct snd_soc_component *component = codec_dai->component;
 
-	iface_reg = snd_soc_component_read32(component,ADC5120_MST_CFG0);
+	iface_reg = snd_soc_component_read(component,ADC5120_MST_CFG0);
 	/* set master/slave audio interface */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 		case SND_SOC_DAIFMT_CBM_CFM:  /* codec clk&frm master */
@@ -157,8 +157,7 @@ static int adc5120_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	snd_soc_component_update_bits(component, ADC5120_MST_CFG0,
 				      ADC5120_MST_SLV_MASK,
 				      iface_reg);
-
-	iface_reg = snd_soc_component_read32(component,ADC5120_ASI_CFG0);
+	iface_reg = snd_soc_component_read(component,ADC5120_ASI_CFG0);
 	iface_reg &= ~ADC5120_ASI_FORMAT_MASK;
 	/* set I2S/DSP/RJF/LJF mode */
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -207,7 +206,6 @@ static int adc5120_hw_params(struct snd_pcm_substream *substream,
                              struct snd_pcm_hw_params *params,
                              struct snd_soc_dai *dai)
 {
-	unsigned int i, ret;
 	struct snd_soc_component *component = dai->component;
 
 	snd_soc_component_write(component, ADC5120_PSEL, 0);
@@ -227,13 +225,13 @@ static int adc5120_hw_params(struct snd_pcm_substream *substream,
 		ADC5120_CHEN_ALL);
 
 	g_dai = dai;
-	adc5120_mute(g_dai, 1); // mute around 150ms
+	adc5120_mute(g_dai, 1, 0); // mute around 150ms
 	wake_up(&wqMute);
 
 	return 0;
 }
 
-static int adc5120_mute(struct snd_soc_dai *dai, int mute)
+static int adc5120_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
 	int i;
 	struct snd_soc_component *component;
@@ -244,7 +242,7 @@ static int adc5120_mute(struct snd_soc_dai *dai, int mute)
 	component = dai->component;
 	for (i=0; i<ADC5120_MAX_CH; i++) {
 		if (mute) { /* The address diff of vol reg for each ch is 5 */
-			adc_volume[i] = snd_soc_component_read32(component,ADC5120_CH1_CFG2+i*5);
+			adc_volume[i] = snd_soc_component_read(component,ADC5120_CH1_CFG2+i*5);
 			snd_soc_component_write(component, ADC5120_CH1_CFG2+i*5, 0);
 		}
 		else
@@ -279,7 +277,6 @@ static int adc5120_trigger(struct snd_pcm_substream *substream, int cmd,
 }
 static const struct snd_soc_dai_ops adc5120_ops = {
    .hw_params    = adc5120_hw_params,
-   .digital_mute = adc5120_mute,
    .set_fmt      = adc5120_set_dai_fmt,
    .set_tdm_slot = adc5120_set_tdm_slot,
    .trigger      = adc5120_trigger,

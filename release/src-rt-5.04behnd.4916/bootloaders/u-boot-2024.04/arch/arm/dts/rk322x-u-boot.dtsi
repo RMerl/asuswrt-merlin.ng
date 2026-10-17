@@ -1,0 +1,56 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	bus_intmem@10080000 {
+		compatible = "mmio-sram";
+		reg = <0x10080000 0x9000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0x10080000 0x9000>;
+
+		smp-sram@0 {
+			compatible = "rockchip,rk322x-smp-sram";
+			reg = <0x00 0x10>;
+		};
+
+		ddr_sram: ddr-sram@1000 {
+			compatible = "rockchip,rk322x-ddr-sram";
+			reg = <0x1000 0x8000>;
+		};
+	};
+
+	dmc: dmc@11200000 {
+		compatible = "rockchip,rk3228-dmc", "syscon";
+		reg = <0x11200000 0x3fc
+		       0x12000000 0x400>;
+		rockchip,cru = <&cru>;
+		rockchip,grf = <&grf>;
+		rockchip,msch = <&service_msch>;
+		rockchip,sram = <&ddr_sram>;
+		bootph-all;
+	};
+
+	service_msch: syscon@31090000 {
+		compatible = "rockchip,rk3228-msch", "syscon";
+		reg = <0x31090000 0x2000>;
+		bootph-all;
+	};
+};
+
+&cru {
+	bootph-all;
+};
+
+&emmc {
+	max-frequency = <150000000>;
+};
+
+&grf {
+	bootph-all;
+};
+
+&sdmmc {
+	max-frequency = <150000000>;
+};

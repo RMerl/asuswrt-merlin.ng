@@ -1,0 +1,15 @@
+if TARGET_IMX8MP_DEBIX_MODEL_A
+
+config SYS_BOARD
+	default "imx8mp_debix_model_a"
+
+config SYS_VENDOR
+	default "polyhex"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_debix_model_a"
+
+config IMX_CONFIG
+	default "board/polyhex/imx8mp_debix_model_a/imximage-8mp-lpddr4.cfg"
+
+endif

@@ -1,0 +1,22 @@
+firmware-version bindings
+-------------------------------
+
+Required properties:
+- image-type-id			: guid for image blob type
+- image-index			: image index
+- lowest-supported-version	: lowest supported version
+
+Example:
+
+	firmware-version {
+		image1 {
+			image-type-id = "09D7CF52-0720-4710-91D1-08469B7FE9C8";
+			image-index = <1>;
+			lowest-supported-version = <3>;
+		};
+		image2 {
+			image-type-id = "5A7021F5-FEF2-48B4-AABA-832E777418C0";
+			image-index = <2>;
+			lowest-supported-version = <7>;
+		};
+	};

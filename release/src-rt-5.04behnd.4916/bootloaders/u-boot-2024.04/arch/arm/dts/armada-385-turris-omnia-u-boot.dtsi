@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Marek Behún <kabel@kernel.org>
+ */
+
+/ {
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2cmux;
+		spi0 = &spi0;
+	};
+};
+
+&i2c0 {
+	bootph-all;
+
+	i2cmux: i2cmux@70 {
+		bootph-all;
+
+		i2c@0 {
+			bootph-all;
+		};
+
+		i2c@1 {
+			bootph-all;
+		};
+
+		i2c@5 {
+			bootph-all;
+
+			crypto@64 {
+				bootph-all;
+			};
+		};
+	};
+};
+
+&mdio {
+	switch@10 {
+		mdio {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			sw_phy0: ethernet-phy@0 {
+				reg = <0x0>;
+			};
+
+			sw_phy1: ethernet-phy@1 {
+				reg = <0x1>;
+			};
+
+			sw_phy2: ethernet-phy@2 {
+				reg = <0x2>;
+			};
+
+			sw_phy3: ethernet-phy@3 {
+				reg = <0x3>;
+			};
+
+			sw_phy4: ethernet-phy@4 {
+				reg = <0x4>;
+			};
+		};
+		ports {
+			ports@0 {
+				phy-handle = <&sw_phy0>;
+				phy-mode = "internal";
+			};
+			ports@1 {
+				phy-handle = <&sw_phy1>;
+				phy-mode = "internal";
+			};
+			ports@2 {
+				phy-handle = <&sw_phy2>;
+				phy-mode = "internal";
+			};
+			ports@3 {
+				phy-handle = <&sw_phy3>;
+				phy-mode = "internal";
+			};
+			ports@4 {
+				phy-handle = <&sw_phy4>;
+				phy-mode = "internal";
+			};
+		};
+	};
+};
+
+#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
+&spi0 {
+	flash@0 {
+		partitions {
+			partition@0 {
+				reg = <0x0 CONFIG_ENV_OFFSET>;
+			};
+
+			partition@f0000 {
+				reg = <CONFIG_ENV_OFFSET CONFIG_ENV_SIZE>;
+				label = "u-boot-env";
+			};
+		};
+	};
+};
+#endif
+
+#include "mvebu-u-boot.dtsi"

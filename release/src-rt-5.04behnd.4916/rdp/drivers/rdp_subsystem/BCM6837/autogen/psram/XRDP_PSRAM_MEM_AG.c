@@ -96,6 +96,9 @@ static const ru_reg_rec *PSRAM_MEM_REGS[] =
 const ru_block_rec PSRAM_MEM_BLOCK =
 {
     "PSRAM_MEM",
+#if RU_INCLUDE_SIZE
+    { 0x00080000 },
+#endif
     PSRAM_MEM_ADDRS,
     2,
     1,

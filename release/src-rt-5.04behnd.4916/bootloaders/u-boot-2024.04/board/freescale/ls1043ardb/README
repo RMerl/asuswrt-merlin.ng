@@ -1,0 +1,54 @@
+Overview
+--------
+The LS1043A Reference Design Board (RDB) is a high-performance computing,
+evaluation, and development platform that supports the QorIQ LS1043A
+LayerScape Architecture processor. The LS1043ARDB provides SW development
+platform for the Freescale LS1043A processor series, with a complete
+debugging environment. The LS1043A RDB is lead-free and RoHS-compliant.
+
+LS1043A SoC Overview
+--------------------
+Please refer arch/arm/cpu/armv8/fsl-layerscape/doc/README.soc for LS1043A
+SoC overview.
+
+ LS1043ARDB board Overview
+ -----------------------
+ - SERDES Connections, 4 lanes supporting:
+      - PCI Express 2.0 with two PCIe connectors supporting: miniPCIe card and
+        standard PCIe card
+      - QSGMII with x4 RJ45 connector
+      - 10GBase-R with x1 RJ45 connector
+ - DDR Controller
+     - 2GB 32bits DDR4 SDRAM. Support rates of up to 1600MT/s
+ -IFC/Local Bus
+    - One 128MB NOR flash 16-bit data bus
+    - One 512 MB NAND flash with ECC support
+    - CPLD connection
+ - USB 3.0
+    - Two super speed USB 3.0 Type A ports
+ - SDHC: connects directly to a full SD/MMC slot
+ - DSPI: 16 MB high-speed flash Memory for boot code and storage (up to 108MHz)
+ - 4 I2C controllers
+ - UART
+   - Two 4-pin serial ports at up to 115.2 Kbit/s
+   - Two DB9 D-Type connectors supporting one Serial port each
+ - ARM JTAG support
+
+Memory map from core's view
+----------------------------
+Start Address	End Address	Description		Size
+0x00_0000_0000	0x00_000F_FFFF	Secure Boot ROM		1MB
+0x00_0100_0000	0x00_0FFF_FFFF	CCSRBAR			240MB
+0x00_1000_0000	0x00_1000_FFFF	OCRAM0			64KB
+0x00_1001_0000	0x00_1001_FFFF	OCRAM1			64KB
+0x00_2000_0000	0x00_20FF_FFFF	DCSR			16MB
+0x00_6000_0000	0x00_67FF_FFFF	IFC - NOR Flash		128MB
+0x00_7E80_0000	0x00_7E80_FFFF	IFC - NAND Flash	64KB
+0x00_7FB0_0000	0x00_7FB0_0FFF	IFC - FPGA		4KB
+0x00_8000_0000	0x00_FFFF_FFFF	DRAM1			2GB
+
+Booting Options
+---------------
+a) NOR boot
+b) NAND boot
+c) SD boot

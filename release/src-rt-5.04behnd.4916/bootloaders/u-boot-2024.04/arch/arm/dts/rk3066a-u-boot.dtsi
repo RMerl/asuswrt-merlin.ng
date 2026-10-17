@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rockchip-u-boot.dtsi"
+#include "rk3xxx-u-boot.dtsi"
+
+&gpio0 {
+	gpio-ranges = <&pinctrl 0 0 32>;
+};
+
+&gpio1 {
+	gpio-ranges = <&pinctrl 0 32 32>;
+};
+
+&gpio2 {
+	gpio-ranges = <&pinctrl 0 64 32>;
+};
+
+&gpio3 {
+	gpio-ranges = <&pinctrl 0 96 32>;
+};
+
+&gpio4 {
+	gpio-ranges = <&pinctrl 0 128 32>;
+};
+
+&gpio6 {
+	status = "disabled";
+};
+

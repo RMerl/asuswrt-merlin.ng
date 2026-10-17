@@ -1,0 +1,9 @@
+T102XRDB BOARD
+M:	Priyanka Jain <priyanka.jain@nxp.com>
+S:	Maintained
+F:	board/freescale/t102xrdb/
+F:	include/configs/T102xRDB.h
+F:	configs/T1024RDB_defconfig
+F:	configs/T1024RDB_NAND_defconfig
+F:	configs/T1024RDB_SDCARD_defconfig
+F:	configs/T1024RDB_SPIFLASH_defconfig

@@ -1,9 +1,0 @@
-ARISTAINETOS BOARD
-M:	Heiko Schocher <hs@denx.de>
-S:	Maintained
-F:	board/aristainetos/
-F:	include/configs/aristainetos.h
-F:	configs/aristainetos_defconfig
-F:	include/configs/aristainetos2.h
-F:	configs/aristainetos2_defconfig
-F:	configs/aristainetos2b_defconfig

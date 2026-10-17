@@ -1,17 +1,17 @@
 #include "6766.dtsi"
 #include "../bcm_voice.dtsi"
 
-/ {
-	memory_controller {
-		memcfg = <(BP_DDR_TYPE_DDR3       | \
-			BP_DDR_SPEED_1067_14_14_14    | \
-			BP_DDR_TOTAL_SIZE_512MB      | \
-			BP_DDR_DEVICE_WIDTH_16        | \
-			BP_DDR_TOTAL_WIDTH_16BIT      | \
-			BP_DDR_6766_DEFAULT           | \
-			BP_DDR_CONFIG_DEBUG)>;
-	};
+&memory_controller {
+	memcfg = <(BP_DDR_TYPE_DDR3       | \
+		BP_DDR_SPEED_1067_14_14_14    | \
+		BP_DDR_TOTAL_SIZE_512MB      | \
+		BP_DDR_DEVICE_WIDTH_16        | \
+		BP_DDR_TOTAL_WIDTH_16BIT      | \
+		BP_DDR_6766_DEFAULT           | \
+		BP_DDR_CONFIG_DEBUG)>;
+};
 
+/ {
 	buttons {
 		compatible = "brcm,buttons";
 		ses_button {
@@ -146,7 +146,7 @@
 
 &nand {
 	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_59>;
-	write-protect = <1>;
+	/delete-property/ brcm,wp-not-connected;
 	status = "okay";
 };
 

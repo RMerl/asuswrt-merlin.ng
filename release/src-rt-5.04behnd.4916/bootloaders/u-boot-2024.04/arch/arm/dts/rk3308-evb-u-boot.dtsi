@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2018-2019 Rockchip Electronics Co., Ltd
+ */
+#include "rk3308-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &emmc;
+	};
+};
+
+&uart4 {
+	bootph-all;
+	clock-frequency = <24000000>;
+	status = "okay";
+};

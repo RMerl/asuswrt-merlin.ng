@@ -85,7 +85,7 @@ static inline int rdpa_cpu_get(rdpa_cpu_port index_, bdmf_object_handle *cpu_obj
 	int fd, ret = 0;
 
 	pa.cmd = RDPA_CPU_GET;
-	pa.parm = (uint64_t)(long)index_;
+	pa.parm = (uint64_t)(bdmf_long_t)index_;
 
 	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
 	if (fd < 0)
@@ -265,7 +265,7 @@ static inline int rdpa_cpu_rxq_flush_set(bdmf_object_handle mo_, bdmf_index ai_,
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.parm = (uint64_t)(long)rxq_flush_;
 	pa.cmd = RDPA_CPU_RXQ_FLUSH_SET;
 
@@ -303,7 +303,7 @@ static inline int rdpa_cpu_rxq_stat_get(bdmf_object_handle mo_, bdmf_index ai_, 
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)rxq_stat_;
 	pa.cmd = RDPA_CPU_RXQ_STAT_GET;
 
@@ -341,7 +341,7 @@ static inline int rdpa_cpu_rxq_stat_set(bdmf_object_handle mo_, bdmf_index ai_, 
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)rxq_stat_;
 	pa.cmd = RDPA_CPU_RXQ_STAT_SET;
 
@@ -379,7 +379,7 @@ static inline int rdpa_cpu_meter_cfg_get(bdmf_object_handle mo_, bdmf_index ai_,
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)meter_cfg_;
 	pa.cmd = RDPA_CPU_METER_CFG_GET;
 
@@ -417,7 +417,7 @@ static inline int rdpa_cpu_meter_cfg_set(bdmf_object_handle mo_, bdmf_index ai_,
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)meter_cfg_;
 	pa.cmd = RDPA_CPU_METER_CFG_SET;
 
@@ -455,7 +455,7 @@ static inline int rdpa_cpu_meter_stat_get(bdmf_object_handle mo_, bdmf_index ai_
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)meter_stat_;
 	pa.cmd = RDPA_CPU_METER_STAT_GET;
 
@@ -493,7 +493,7 @@ static inline int rdpa_cpu_meter_stat_set(bdmf_object_handle mo_, bdmf_index ai_
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.parm = (uint64_t)(long)meter_stat_;
 	pa.cmd = RDPA_CPU_METER_STAT_SET;
 
@@ -791,7 +791,7 @@ static inline int rdpa_cpu_tc_to_rxq_get(bdmf_object_handle mo_, bdmf_index ai_,
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)tc_to_rxq_;
 	pa.cmd = RDPA_CPU_TC_TO_RXQ_GET;
 
@@ -829,7 +829,7 @@ static inline int rdpa_cpu_tc_to_rxq_set(bdmf_object_handle mo_, bdmf_index ai_,
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.parm = (uint64_t)(long)tc_to_rxq_;
 	pa.cmd = RDPA_CPU_TC_TO_RXQ_SET;
 

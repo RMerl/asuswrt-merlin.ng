@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * QorIQ clock control device tree stub [ controller @ offset 0xe1000 ]
+ *
+ * Copyright 2014 Freescale Semiconductor Inc.
+ * Copyright 2020 NXP
+ *
+ */
+
+clockgen: global-utilities@e1000 {
+	compatible = "fsl,qoriq-clockgen-2.0";
+	reg = <0xe1000 0x1000>;
+	#clock-cells = <2>;
+};

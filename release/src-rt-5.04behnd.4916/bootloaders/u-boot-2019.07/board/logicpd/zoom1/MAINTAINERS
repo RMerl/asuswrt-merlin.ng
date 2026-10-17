@@ -1,6 +1,0 @@
-ZOOM1 BOARD
-M:	Nishanth Menon <nm@ti.com>
-S:	Maintained
-F:	board/logicpd/zoom1/
-F:	include/configs/omap3_zoom1.h
-F:	configs/omap3_zoom1_defconfig

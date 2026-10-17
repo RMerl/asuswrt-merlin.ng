@@ -1,0 +1,12 @@
+if BOARD_VOCORE2
+
+config SYS_BOARD
+	default "vocore2"
+
+config SYS_VENDOR
+	default "vocore"
+
+config SYS_CONFIG_NAME
+	default "vocore2"
+
+endif

@@ -1,0 +1,31 @@
+config FWU_MDATA
+	bool "Driver support for accessing FWU Metadata"
+	depends on DM
+	help
+	  Enable support for accessing FWU Metadata partitions. The
+	  FWU Metadata partitions reside on the same storage device
+	  which contains the other FWU updatable firmware images.
+
+choice
+	prompt "Storage Layout Scheme"
+	depends on FWU_MDATA
+	default FWU_MDATA_GPT_BLK
+
+config FWU_MDATA_GPT_BLK
+	bool "FWU Metadata access for GPT partitioned Block devices"
+	select PARTITION_TYPE_GUID
+	select PARTITION_UUIDS
+	depends on FWU_MDATA && BLK && EFI_PARTITION
+	help
+	  Enable support for accessing FWU Metadata on GPT partitioned
+	  block devices.
+
+config FWU_MDATA_MTD
+	bool "Raw MTD devices"
+	depends on MTD
+	help
+	  Enable support for accessing FWU Metadata on non-partitioned
+	  (or non-GPT partitioned, e.g. partition nodes in devicetree)
+	  MTD devices.
+
+endchoice

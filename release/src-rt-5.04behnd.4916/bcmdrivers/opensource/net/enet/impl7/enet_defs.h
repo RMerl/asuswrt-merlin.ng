@@ -36,14 +36,6 @@
 #ifndef ___ENETDEFS_H___
 #define ___ENETDEFS_H___
 
-#include <linux/netlink.h>
-
-#ifndef __KERNEL__
-#include <netlink/genl/genl.h>
-#include <netlink/genl/family.h>
-#include <netlink/genl/ctrl.h>
-#endif
-
 #define NETLINK_UNSUBSCTIBE_GPC_PID ((uint32_t)-1)
 
 #define GENL_GPC_FAMILY_NAME "genl_gpc_family"

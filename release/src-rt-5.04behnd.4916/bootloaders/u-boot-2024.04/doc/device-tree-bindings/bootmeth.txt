@@ -1,0 +1,31 @@
+U-Boot standard boot methods (bootmeth)
+======================================
+
+This provides methods (called bootmeths) for locating bootflows on a boot
+device (bootdev). These are normally created as children of the bootstd device.
+
+Required properties:
+
+compatible:
+   "u-boot,extlinux" - distro boot from a block device
+   "u-boot,extlinux-pxe" - distro boot from a network device
+   "u-boot,distro-efi" - EFI boot from an .efi file
+   "u-boot,efi-bootmgr" - EFI boot using boot manager (bootmgr)
+
+
+Example:
+
+	bootstd {
+		compatible = "u-boot,boot-std";
+
+		filename-prefixes = "/", "/boot/";
+		bootdev-order = "mmc2", "mmc1";
+
+		extlinux {
+			compatible = "u-boot,extlinux";
+		};
+
+		efi {
+			compatible = "u-boot,distro-efi";
+		};
+	};

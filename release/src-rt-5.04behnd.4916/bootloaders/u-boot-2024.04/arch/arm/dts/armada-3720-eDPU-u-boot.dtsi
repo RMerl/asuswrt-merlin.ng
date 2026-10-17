@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				product = "eDPU";
+			};
+
+			baseboard {
+				product = "eDPU";
+			};
+
+			chassis {
+				product = "eDPU";
+			};
+		};
+	};
+};
+
+&spi0 {
+	bootph-all;
+
+	spi-flash@0 {
+		bootph-all;
+	};
+};
+
+&sdhci0 {
+	bootph-all;
+};
+
+&eth1 {
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+/*
+ * eDPU v2 has a MV88E6361 switch on the MDIO bus and U-boot is used
+ * to patch the Linux DTS if its found so enable MDIO by default.
+ */
+&mdio {
+	status = "okay";
+};

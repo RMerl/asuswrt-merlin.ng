@@ -211,7 +211,5 @@ EXPORT_SYMBOL(pmc_rdp_power_up);
 EXPORT_SYMBOL(pmc_rdp_power_down);
 EXPORT_SYMBOL(pmc_rdp_init);
 EXPORT_SYMBOL(pmc_rdp_shut_down);
-#if !defined(CONFIG_BCM94908)
 arch_initcall(pmc_rdp_init);
-#endif
 

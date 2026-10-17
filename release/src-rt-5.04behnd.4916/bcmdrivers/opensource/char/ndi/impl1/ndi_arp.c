@@ -39,19 +39,36 @@
 
 void ndi_parse_arp(struct ndi_classify *p)
 {
-	struct net_device *dev = p->skb->dev;
-	struct in_device *in_dev = __in_dev_get_rcu(dev);
+	struct net_device *dev;
 	struct arphdr *arp;
 	unsigned char *arp_ptr;
 	unsigned char *sha;
 	struct in_addr *addr;
-	u16 dev_type = dev->type;
+	u16 dev_type;
 
-	if (!in_dev)
+	if (p->skb->pkt_type == PACKET_OTHERHOST ||
+	    p->skb->pkt_type == PACKET_LOOPBACK)
+		return;
+
+	dev = p->skb->dev;
+	if (!dev)
+		return;
+
+	/* verify that we have enough packet available */
+	if (unlikely(arp_hdr_len(dev) > skb_headlen(p->skb)))
+		return;
+
+	if (unlikely(arp_hdr_len(dev) > p->skb->len))
 		return;
 
 	arp = arp_hdr(p->skb);
+	if (!arp)
+		return;
 
+	if (arp->ar_hln != dev->addr_len || arp->ar_pln != 4)
+		return;
+
+	dev_type = dev->type;
 	switch (dev_type) {
 	default:
 		if (arp->ar_pro != htons(ETH_P_IP) ||
@@ -97,7 +114,7 @@ void ndi_parse_arp(struct ndi_classify *p)
 	 */
 	arp_ptr = (unsigned char *)(arp + 1);
 	sha	= arp_ptr;
-	addr = (struct in_addr *)(arp_ptr + dev->addr_len);
+	addr	= (struct in_addr *)(arp_ptr + dev->addr_len);
 
 	p->dev = dev_find_or_new(sha, p->skb);
 	if (!p->dev)

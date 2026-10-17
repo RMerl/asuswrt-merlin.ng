@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2020-2021 SiFive, Inc
+ */
+
+#include "binman.dtsi"
+#include "fu740-c000-u-boot.dtsi"
+#include "fu740-hifive-unmatched-a00-ddr.dtsi"
+
+/ {
+	aliases {
+		spi0 = &spi0;
+	};
+
+	memory@80000000 {
+		bootph-pre-ram;
+	};
+
+	config {
+		u-boot,spl-payload-offset = <0x105000>; /* loader2 @1044KB */
+	};
+
+	hfclk {
+		bootph-pre-ram;
+	};
+
+	rtcclk {
+		bootph-pre-ram;
+	};
+
+};
+
+&clint {
+	clocks = <&rtcclk>;
+};
+
+&qspi0 {
+	bootph-pre-ram;
+	flash@0 {
+		bootph-pre-ram;
+	};
+};
+
+&spi0 {
+	mmc@0 {
+		bootph-pre-ram;
+	};
+};
+
+&gpio {
+	bootph-pre-ram;
+};

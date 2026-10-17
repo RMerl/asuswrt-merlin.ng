@@ -1,0 +1,8 @@
+POPMETAL-RK3288
+M:	Lin Huang <hl@rock-chips.com>
+S:	Maintained
+F:	arch/arm/dts/rk3288-popmetal.dts
+F:	arch/arm/dts/rk3288-popmetal-u-boot.dtsi
+F:	board/chipspark/popmetal_rk3288
+F:	include/configs/popmetal_rk3288.h
+F:	configs/popmetal-rk3288_defconfig

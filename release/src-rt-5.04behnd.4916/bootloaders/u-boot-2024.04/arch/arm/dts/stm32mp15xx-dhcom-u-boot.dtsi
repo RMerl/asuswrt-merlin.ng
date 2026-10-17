@@ -1,0 +1,366 @@
+// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+/*
+ * Copyright (C) 2019 Marek Vasut <marex@denx.de>
+ */
+
+#include <dt-bindings/clock/stm32mp1-clksrc.h>
+#include "stm32mp15-u-boot.dtsi"
+#include "stm32mp15-ddr3-dhsom-2x1Gb-1066-binG.dtsi"
+#include "stm32mp15-ddr3-dhsom-2x2Gb-1066-binG.dtsi"
+#include "stm32mp15-ddr3-dhsom-2x4Gb-1066-binG.dtsi"
+
+/ {
+	aliases {
+		i2c1 = &i2c2;
+		i2c3 = &i2c4;
+		i2c4 = &i2c5;
+		mmc0 = &sdmmc1;
+		mmc1 = &sdmmc2;
+		spi0 = &qspi;
+		usb0 = &usbotg_hs;
+		eeprom0 = &eeprom0;
+	};
+
+	config {
+		u-boot,boot-led = "heartbeat";
+		u-boot,error-led = "error";
+		dh,som-coding-gpios = <&gpiof 12 0>, <&gpiof 13 0>, <&gpiof 15 0>;
+		dh,ddr3-coding-gpios = <&gpioz 6 0>, <&gpioz 7 0>;
+	};
+};
+
+&ethernet0 {
+	phy-reset-gpios = <&gpioh 3 GPIO_ACTIVE_LOW>;
+	/delete-property/ st,eth-ref-clk-sel;
+};
+
+&ethernet0_rmii_pins_a {
+	pins1 {
+		pinmux = <STM32_PINMUX('G', 13, AF11)>, /* ETH1_RMII_TXD0 */
+			 <STM32_PINMUX('G', 14, AF11)>, /* ETH1_RMII_TXD1 */
+			 <STM32_PINMUX('B', 11, AF11)>, /* ETH1_RMII_TX_EN */
+			 <STM32_PINMUX('A', 1, AF11)>,  /* ETH1_RMII_REF_CLK */
+			 <STM32_PINMUX('A', 2, AF11)>,  /* ETH1_MDIO */
+			 <STM32_PINMUX('C', 1, AF11)>;  /* ETH1_MDC */
+	};
+};
+
+&i2c4 {
+	bootph-all;
+	bootph-pre-ram;
+
+	eeprom0: eeprom@50 {
+	};
+};
+
+&i2c4_pins_a {
+	bootph-all;
+	pins {
+		bootph-all;
+	};
+};
+
+&phy0 {
+	/delete-property/ reset-gpios;
+};
+
+&pinctrl {
+	mco2_pins_a: mco2-0 {
+		pins {
+			pinmux = <STM32_PINMUX('G', 2, AF1)>; /* MCO2 */
+			bias-disable;
+			drive-push-pull;
+			slew-rate = <2>;
+		};
+	};
+
+	mco2_sleep_pins_a: mco2-sleep-0 {
+		pins {
+			pinmux = <STM32_PINMUX('G', 2, ANALOG)>; /* MCO2 */
+		};
+	};
+};
+
+&pmic {
+	bootph-all;
+	bootph-pre-ram;
+
+	regulators {
+		bootph-pre-ram;
+	};
+};
+
+&flash0 {
+	bootph-pre-ram;
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@0 {
+			label = "fsbl1";
+			reg = <0x00000000 0x00040000>;
+		};
+		partition@40000 {
+			label = "fsbl2";
+			reg = <0x00040000 0x00040000>;
+		};
+		partition@500000 {
+			label = "uboot";
+			reg = <0x00080000 0x00160000>;
+		};
+		partition@900000 {
+			label = "env1";
+			reg = <0x001E0000 0x00010000>;
+		};
+		partition@980000 {
+			label = "env2";
+			reg = <0x001F0000 0x00010000>;
+		};
+	};
+};
+
+&qspi {
+	bootph-pre-ram;
+};
+
+&qspi_clk_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_bk1_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_cs1_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&rcc {
+	/*
+	 * Reinstate clock names from stm32mp151.dtsi, the MCO2 trick
+	 * used in stm32mp15xx-dhcom-som.dtsi is not supported by the
+	 * U-Boot clock framework.
+	 */
+	clock-names = "hse", "hsi", "csi", "lse", "lsi";
+	clocks = <&clk_hse>, <&clk_hsi>, <&clk_csi>,
+		 <&clk_lse>, <&clk_lsi>;
+
+	/* The MCO2 is already configured correctly, remove those. */
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+
+	st,clksrc = <
+		CLK_MPU_PLL1P
+		CLK_AXI_PLL2P
+		CLK_MCU_PLL3P
+		CLK_PLL12_HSE
+		CLK_PLL3_HSE
+		CLK_PLL4_HSE
+		CLK_RTC_LSE
+		CLK_MCO1_DISABLED
+		CLK_MCO2_PLL4P
+	>;
+
+	st,clkdiv = <
+		1 /*MPU*/
+		0 /*AXI*/
+		0 /*MCU*/
+		1 /*APB1*/
+		1 /*APB2*/
+		1 /*APB3*/
+		1 /*APB4*/
+		2 /*APB5*/
+		23 /*RTC*/
+		0 /*MCO1*/
+		1 /*MCO2*/
+	>;
+
+	st,pkcs = <
+		CLK_CKPER_HSE
+		CLK_FMC_ACLK
+		CLK_QSPI_ACLK
+		CLK_ETH_PLL4P
+		CLK_SDMMC12_PLL4P
+		CLK_DSI_DSIPLL
+		CLK_STGEN_HSE
+		CLK_USBPHY_HSE
+		CLK_SPI2S1_PLL3Q
+		CLK_SPI2S23_PLL3Q
+		CLK_SPI45_HSI
+		CLK_SPI6_HSI
+		CLK_I2C46_HSI
+		CLK_SDMMC3_PLL4P
+		CLK_USBO_USBPHY
+		CLK_ADC_CKPER
+		CLK_CEC_LSE
+		CLK_I2C12_HSI
+		CLK_I2C35_HSI
+		CLK_UART1_HSI
+		CLK_UART24_HSI
+		CLK_UART35_HSI
+		CLK_UART6_HSI
+		CLK_UART78_HSI
+		CLK_SPDIF_PLL4P
+		CLK_FDCAN_PLL4R
+		CLK_SAI1_PLL3Q
+		CLK_SAI2_PLL3Q
+		CLK_SAI3_PLL3Q
+		CLK_SAI4_PLL3Q
+		CLK_RNG1_LSI
+		CLK_RNG2_LSI
+		CLK_LPTIM1_PCLK1
+		CLK_LPTIM23_PCLK3
+		CLK_LPTIM45_LSE
+	>;
+
+	/*
+	 * cfg = < DIVM1 DIVN P Q R PQR(p,q,r) >;
+	 * frac = < f >;
+	 *
+	 * PRQ(p,q,r) ... for p,q,r: 0-output disabled / 1-output enabled
+	 * DIVN ... actually multiplier, but RCC_PLL1CFGR1 calls the field DIVN
+	 * m ... for PLL1,2: m=2 ; for PLL3,4: m=1
+	 * XTAL = 24 MHz
+	 *
+	 * VCO = ( XTAL / (DIVM1 + 1) ) * m * ( DIVN + 1 + ( f / 8192 ) )
+	 *   P = VCO / (P + 1)
+	 *   Q = VCO / (Q + 1)
+	 *   R = VCO / (R + 1)
+	 */
+
+	/* VCO = 1066.0 MHz => P = 266 (AXI), Q = 533 (GPU), R = 533 (DDR) */
+	pll2: st,pll@1 {
+		compatible = "st,stm32mp1-pll";
+		reg = <1>;
+		cfg = < 2 65 1 0 0 PQR(1,1,1) >;
+		frac = < 0x1400 >;
+		bootph-all;
+	};
+
+	/* VCO = 417.8 MHz => P = 209, Q = 24, R = 11 */
+	pll3: st,pll@2 {
+		compatible = "st,stm32mp1-pll";
+		reg = <2>;
+		cfg = < 1 33 1 16 36 PQR(1,1,1) >;
+		frac = < 0x1a04 >;
+		bootph-all;
+	};
+
+	/* VCO = 600.0 MHz => P = 100, Q = 50, R = 50 */
+	pll4: st,pll@3 {
+		compatible = "st,stm32mp1-pll";
+		reg = <3>;
+		cfg = < 1 49 5 11 11 PQR(1,1,1) >;
+		bootph-all;
+	};
+};
+
+&sdmmc1 {
+	bootph-pre-ram;
+	st,use-ckin;
+	st,cmd-gpios = <&gpiod 2 0>;
+	st,ck-gpios = <&gpioc 12 0>;
+	st,ckin-gpios = <&gpioe 4 0>;
+};
+
+&sdmmc1_b4_pins_a {
+	bootph-pre-ram;
+	pins1 {
+		bootph-pre-ram;
+	};
+	pins2 {
+		bootph-pre-ram;
+	};
+};
+
+&sdmmc1_dir_pins_a {
+	bootph-pre-ram;
+	pins1 {
+		bootph-pre-ram;
+	};
+	pins2 {
+		bootph-pre-ram;
+	};
+};
+
+&sdmmc2 {
+	bootph-pre-ram;
+};
+
+&sdmmc2_b4_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&sdmmc2_d47_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&uart4 {
+	bootph-all;
+};
+
+&uart4_pins_a {
+	bootph-all;
+	pins1 {
+		bootph-all;
+	};
+	pins2 {
+		bootph-all;
+		/* pull-up on rx to avoid floating level */
+		bias-pull-up;
+	};
+};
+
+&reg11 {
+	bootph-pre-ram;
+};
+
+&reg18 {
+	bootph-pre-ram;
+};
+
+&usb33 {
+	bootph-pre-ram;
+};
+
+&usbotg_hs_pins_a {
+	bootph-pre-ram;
+};
+
+&usbotg_hs {
+	bootph-pre-ram;
+};
+
+&usbphyc {
+	bootph-pre-ram;
+};
+
+&usbphyc_port0 {
+	bootph-pre-ram;
+};
+
+&usbphyc_port1 {
+	bootph-pre-ram;
+};
+
+&vdd_usb {
+	bootph-pre-ram;
+};

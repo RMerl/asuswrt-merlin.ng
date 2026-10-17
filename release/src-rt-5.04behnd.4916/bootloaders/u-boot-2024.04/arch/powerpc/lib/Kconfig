@@ -1,0 +1,9 @@
+config CACHE_FLUSH_WATCHDOG_THRESHOLD
+	int "Bytes to flush between schedule() calls"
+	default 4096
+	help
+	  The flush_cache() function periodically, and by default for
+	  every 4k block, calls schedule() to reset watchdog. When
+	  flushing a large area, that may add a significant amount of
+	  overhead. This option allows you to set a threshold for how
+	  many bytes to flush between each schedule() call.

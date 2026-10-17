@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -41,6 +41,7 @@ typedef struct
 {
 #if defined(USE_BDMF_SHELL)
     void  (*callback)(bdmf_session_handle session, unsigned char *value);
+    void  (*write_callback)(bdmf_session_handle session, unsigned char *value, const bdmfmon_parm_value_t parm[], int write_index);
 #elif defined(ENABLE_CLI)
     void  (*callback)(bcmcli_session *session, unsigned char *value);
 #else
@@ -84,14 +85,24 @@ typedef struct
 
 
 void dump_RDD_PROCESSING_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
+void set_RDD_PROCESSING_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY(bdmf_session_handle session, unsigned char *p);
+void set_RDD_BBH_TX_EGRESS_COUNTER_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_PROCESSING_RX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
+void set_RDD_PROCESSING_RX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_BYTES_4(bdmf_session_handle session, unsigned char *p);
+void set_RDD_BYTES_4(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_BBH_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
+void set_RDD_BBH_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_BB_DESTINATION_ENTRY(bdmf_session_handle session, unsigned char *p);
+void set_RDD_BB_DESTINATION_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_PACKETS_AND_BYTES(bdmf_session_handle session, unsigned char *p);
+void set_RDD_PACKETS_AND_BYTES(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_BYTE_1(bdmf_session_handle session, unsigned char *p);
+void set_RDD_BYTE_1(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_BYTES_2(bdmf_session_handle session, unsigned char *p);
+void set_RDD_BYTES_2(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 void dump_RDD_RX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p);
+void set_RDD_RX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index);
 
 #endif /* __RDD_RUNNER_REG_DUMP_H__ */

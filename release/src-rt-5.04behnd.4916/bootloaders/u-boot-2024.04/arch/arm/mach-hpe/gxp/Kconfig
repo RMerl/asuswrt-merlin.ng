@@ -1,0 +1,9 @@
+if ARCH_GXP
+
+config SOC_GXP
+	bool
+	select CPU_V7A
+
+source "board/hpe/gxp/Kconfig"
+
+endif

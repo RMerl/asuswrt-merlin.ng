@@ -1,0 +1,7 @@
+IMXRT1170 EVALUATION KIT
+M:	Giulio Benetti <giulio.benetti@benettiengineering.com>
+M:	Jesse Taube <Mr.Bossman075@gmail.com>
+S:	Maintained
+F:	board/freescale/imxrt1170-evk
+F:	include/configs/imxrt1170-evk.h
+F:	configs/imxrt1170-evk_defconfig

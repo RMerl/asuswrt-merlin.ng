@@ -1,0 +1,60 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the Salvator-X board
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a77950-salvator-x.dts"
+#include "r8a77950-u-boot.dtsi"
+
+/ {
+	sysinfo {
+		compatible = "renesas,rcar-sysinfo";
+		i2c-eeprom = <&sysinfo_eeprom>;
+		bootph-all;
+	};
+};
+
+&i2c_dvfs {
+	bootph-all;
+
+	sysinfo_eeprom: eeprom@50 {
+		bootph-all;
+		status = "okay";
+	};
+};
+
+&rpc {
+	reg = <0 0xee200000 0 0x100>, <0 0x08000000 0 0x04000000>;
+	status = "disabled";
+};
+
+&sdhi0 {
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr104;
+	max-frequency = <208000000>;
+};
+
+&sdhi2 {
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	mmc-hs400-1_8v;
+	max-frequency = <200000000>;
+};
+
+&sdhi3 {
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr104;
+	max-frequency = <208000000>;
+};
+
+&vcc_sdhi0 {
+	u-boot,off-on-delay-us = <20000>;
+};
+
+&vcc_sdhi3 {
+	u-boot,off-on-delay-us = <20000>;
+};

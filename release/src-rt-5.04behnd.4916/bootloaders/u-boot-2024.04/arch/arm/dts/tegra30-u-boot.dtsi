@@ -1,0 +1,12 @@
+#include <config.h>
+
+#include "tegra-u-boot.dtsi"
+
+/ {
+	host1x@50000000 {
+		bootph-all;
+		dc@54200000 {
+			bootph-all;
+		};
+	};
+};

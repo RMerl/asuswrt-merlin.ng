@@ -1,6 +1,10 @@
 #!/bin/sh
 source /etc/profile
 
+if [ -d /etc/amx ]; then
+    source /etc/mdev_prpl_storage.sh
+    exit 0
+fi
 
 HINT_OF_CMS_STORAGE_INIT_DONE="/var/initStorageServiceDone"
 dev_name=$1
@@ -81,24 +85,26 @@ case "$ACTION" in
         fi
         mkdir -p $mnt
         rc=$?; if [ ${rc} -ne 0 ]; then exit 1;fi
-        mount -t auto /dev/$dev_name $mnt
-        rc=$?;
-        if [ ${rc} -ne 0 ]; then
 
-          if [ -x "/bin/ntfs-3g" ]; then
-            # echo " - mount fail. try ntfs-3g" >> /tmp/hotplug.log;
-            ntfs-3g /dev/$dev_name $mnt -o use_ino,direct_io,big_writes
-            rc=$?;
-            if [ ${rc} -eq 0 ]; then
-               send_cms_message $CMS_MSG_STORAGE_ADD_LOGICAL_VOLUME
-               # echo " - add $dev_name done ntfs-3g" >> /tmp/hotplug.log
-               exit 0
+        if [ -f "/sbin/blkid" ]; then
+            if [ "$(/sbin/blkid /dev/$dev_name -n "ntfs" -s TYPE -o value)" == "ntfs" ];then
+                # echo "mount as ntfs3" $dev_name $mnt >> /tmp/hotplug.log
+                mount -t ntfs3 -o force /dev/$dev_name $mnt
+            else
+                # echo "mount as auto" $dev_name $mnt >> /tmp/hotplug.log
+                mount -t auto /dev/$dev_name $mnt
             fi
-          fi
+        else
+            mount -t auto /dev/$dev_name $mnt
+        fi
+        rc=$?;
+
+        if [ ${rc} -ne 0 ]; then
           umount -l $mnt
           rm -r $mnt
           exit 1
         fi
+
         send_cms_message $CMS_MSG_STORAGE_ADD_LOGICAL_VOLUME
         # echo " - add $dev_name done" >> /tmp/hotplug.log
 

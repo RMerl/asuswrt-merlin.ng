@@ -1,0 +1,22 @@
+if TARGET_DH_STM32MP1_PDK2
+
+config SYS_BOARD
+	default "dh_stm32mp1"
+
+config SYS_VENDOR
+	default "dhelectronics"
+
+config SYS_CONFIG_NAME
+	default "stm32mp15_dh_dhsom"
+
+config ENV_SECT_SIZE
+	default 0x10000 if ENV_IS_IN_SPI_FLASH
+
+config ENV_OFFSET
+	default 0x1E0000 if ENV_IS_IN_SPI_FLASH
+
+config ENV_OFFSET_REDUND
+	default 0x1F0000 if ENV_IS_IN_SPI_FLASH
+
+source "board/st/common/Kconfig"
+endif

@@ -1,0 +1,707 @@
+/dts-v1/;
+
+#include "linux_autoconf.h"
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include "../../boot_rsvdmem.dtsi"
+
+/ {
+	#define MODEL "Broadcom BCM968375"
+	#define COMPATIBLE "brcm,bcm968375"
+
+/* memory reservations */
+#if defined (CONFIG_BCM_DHD_RUNNER) || (CONFIG_BCM_DHD_RUNNER_MODULE) || defined(CONFIG_BCM_DHD_ARCHER) || defined(CONFIG_BCM_DHD_ARCHER_MODULE)
+    #define DT_RESERVED_DHD_IN_UNCACHED_DEV
+#endif
+#if defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE)
+#define	 DT_RESERVED_WLAN_CMA_IN_UNCACHED_DEV
+#endif /* CONFIG_BCM_WLAN */
+
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+            dt_reserved_cma: dt_reserved_cma {
+            compatible = "shared-dma-pool";
+            reusable;
+#if defined(CONFIG_CMA_ALIGNMENT)
+            align = <( (1UL << CONFIG_ARM64_PAGE_SHIFT) << CONFIG_CMA_ALIGNMENT)>;
+#endif
+            /* Bootloader will fill in the total size and offset */
+            reg = <0x0 0x0 0x0 0x0>;
+        };
+    };
+
+    plat_rsvmem_cached_device {
+        compatible = "brcm,plat-rsvmem";
+        dma-coherent;
+        memory-region = <&dt_reserved_cma>;
+
+        dt_reserved_bufmem: dt_reserved_bufmem {
+            rsvd-size = <0x10000000>;
+        };
+    };
+
+    plat_rsvmem_uncached_device {
+        compatible = "brcm,plat-rsvmem";
+        memory-region = <&dt_reserved_cma>;
+    
+        dt_reserved_rnrmem: dt_reserved_rnrmem {
+            rsvd-size = <0x1400000>;
+        };
+
+#if (defined(CONFIG_BCM_HW_FIREWALL) || defined(CONFIG_BCM_HW_FIREWALL_MODULE))
+        dt_reserved_ddosmem: dt_reserved_ddosmem {
+            rsvd-size = <0x400000>;
+        };
+#endif
+#ifdef DT_RESERVED_DHD_IN_UNCACHED_DEV
+        dt_reserved_dhd0:dt_reserved_dhd0 {
+            rsvd-size = <0>;
+        };
+        dt_reserved_dhd1:dt_reserved_dhd1 {
+            rsvd-size = <0>;
+        };
+        dt_reserved_dhd2:dt_reserved_dhd2 {
+            rsvd-size = <0>;
+        };
+        dt_reserved_dhd3:dt_reserved_dhd3 {
+            rsvd-size = <0>;
+        };
+#endif
+#ifdef DT_RESERVED_WLAN_CMA_IN_UNCACHED_DEV
+		dt_reserved_wlan_cma:dt_reserved_wlan_cma {
+			rsvd-size = <0>;
+		};
+#endif
+    };
+
+	aliases {
+		serial0 = &uart0;
+        serial1 = &fuart0;
+        serial2 = &fuart1;
+    };
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "coherent_pool=2M console=ttyS0,115200 earlycon pci=pcie_bus_safe";
+    };
+
+	/* memc */
+    memory_controller {
+        #include "../../ip/memc.dtsi"
+    };
+
+    /* wan type auto detect */
+    wantype_detect {
+        #define GPON_GENERAL_CONFIG_ADDR    0x0 0x80129000
+        #define GPON_GENERAL_CONFIG_SIZE    0x0 0x10
+        #define EPON_TOP_ADDR               0x0 0x80100000
+        #define EPON_TOP_SIZE               0x0 0x1C
+        #define EPON_LIF_ADDR               0x0 0x80101800
+        #define EPON_LIF_SIZE               0x0 0x110
+        #define EPON_XPCSR_ADDR             0x0 0x80103000
+        #define EPON_XPCSR_SIZE             0x0 0x124
+        #define NGPON_RXGEN_ADDR            0x0 0x8015C000
+        #define NGPON_RXGEN_SIZE            0x0 0x80
+        #include "../../ip/bcm_wantype_detect.dtsi"
+    };
+
+    cpufreq: cpufreq {
+        #define OP_MODE "dfs"
+        #include "../../ip/bcm_cpufreq.dtsi"
+        };
+
+    otp: otp {
+        compatible = "brcm,otp";
+        };
+
+    /* pcie common */
+    pcie: pcie {
+        compatible = "brcm,bcm-pcie";
+        device_type = "cpci";
+        brcm,pllclkid = <0x210>;
+    };
+
+    /* pcie core 0 GEN3 */
+    pcie0: pcie@0 {
+        #define PCIE_ID         0
+        #define PCIE_SPI        79
+        #define PCIE_ADDR       0x80080000
+        #define PCIE_SIZE       0x0000B000
+        #define PCIE_RANGE_ADDR 0xC0000000
+        #define PCIE_RANGE_SIZE 0x10000000
+        #include "../../ip/bcm_pcie_core.dtsi"
+    };
+
+    /* pcie core 1 GEN3 */
+    pcie1: pcie@1 {
+        #define PCIE_ID         1
+        #define PCIE_SPI        80
+        #define PCIE_ADDR       0x80090000
+        #define PCIE_SIZE       0x0000B000
+        #define PCIE_RANGE_ADDR 0xD0000000
+        #define PCIE_RANGE_SIZE 0x10000000
+        #include "../../ip/bcm_pcie_core.dtsi"
+    };
+
+    /* pcie core 2 GEN3 */
+    pcie2: pcie@2 {
+        #define PCIE_ID         2
+        #define PCIE_SPI        81
+        #define PCIE_ADDR       0x800A0000
+        #define PCIE_SIZE       0x0000B000
+        #define PCIE_RANGE_ADDR 0xE0000000
+        #define PCIE_RANGE_SIZE 0x10000000
+        #include "../../ip/bcm_pcie_core.dtsi"
+    };
+
+    /* boot state */
+    boot_state: boot_state {
+        #define RESET_REASON_OFFSET                 0x0 0x84120804  // NW1
+        #define RESET_REASON_SIZE                   0x0 0x4
+        #define RESET_STATUS_OFFSET                 0x0 0x84120800  // NW0
+        #define RESET_STATUS_SIZE                   0x0 0x4
+        #include "../../ip/bcm_boot_state_v2.dtsi"
+    };
+
+
+    gpon_drv,  {
+        compatible = "brcm,gpon-drv";
+        reg = <0x0 0x80128000 0x0 0x1c00>;
+        interrupts = <GIC_SPI 174  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_WAN_GPON_RX */
+                     <GIC_SPI 173  IRQ_TYPE_LEVEL_HIGH>; /* INTERRUPT_WAN_GPON_TX */
+        interrupt-names = "gpon_rx", "gpon_tx";
+    };
+
+    ngpon_drv {
+        compatible = "brcm,ngpon-drv";
+        reg = <0x0 0x8015c000 0x0 0x9080>;
+        enforce-long-preamble;
+        interrupts = <GIC_SPI 162  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_WAN_XGRX */
+                     <GIC_SPI 166  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_WAN_XGTX_INTR0 */
+                     <GIC_SPI 165  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_WAN_XGTX_INTR1 */
+                     <GIC_SPI 164  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_WAN_XGTX_INTR2 */
+                     <GIC_SPI 163  IRQ_TYPE_LEVEL_HIGH>; /* INTERRUPT_WAN_XGTX_INTR3 */
+        interrupt-names = "ngpon_rx", "ngpon_tx0", "ngpon_tx1", "ngpon_tx2", "ngpon_tx3";
+    };
+
+    wan_serdes {
+        compatible = "brcm,pon-drv";
+        status = "disabled";
+        reg = <0x0 0x80104000 0x0 0x1cc00>;
+        idx = <0>;
+    };
+
+    wan_serdes1 {
+        compatible = "brcm,pon-drv";
+        status = "disabled";
+        idx = <1>;
+    };
+	
+    epon_drv {
+        compatible = "brcm,epon-drv";
+        reg = <0x0 0x80100000 0x0 0x4000>;
+    };
+
+    /* xrdp,wan_bbh */
+    rdpa_drv {
+        compatible = "brcm,rdpa";
+        reg = <0x0 0x82000000 0x0 0xE60000>,
+              <0x0 0x80170000 0x0 0x12400>;
+        interrupts = <GIC_SPI 129 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_FPM/INTERRUPT_XRDP_QUEUE_32 */
+                     <GIC_SPI 97  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_0 */
+                     <GIC_SPI 98  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_1 */
+                     <GIC_SPI 99  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_2 */
+                     <GIC_SPI 100  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_3 */
+                     <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_4 */
+                     <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_5 */
+                     <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_6 */
+                     <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_7 */
+                     <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_8 */
+                     <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_9 */
+                     <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_10 */
+                     <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_11 */
+                     <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_12 */
+                     <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_13 */
+                     <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_14 */
+                     <GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_15 */
+                     <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_16 */
+                     <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_17 */
+                     <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_18 */
+                     <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_19 */
+                     <GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_20 */
+                     <GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_21 */
+                     <GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_22 */
+                     <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_23 */
+                     <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_24 */
+                     <GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_25 */
+                     <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_26 */
+                     <GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_27 */
+                     <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_28 */
+                     <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_29 */
+                     <GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_30 */
+                     <GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>; /* INTERRUPT_XRDP_QUEUE_31 */
+        interrupt-names = "fpm", "queue0", "queue1", "queue2", "queue3", "queue4", "queue5",
+                          "queue6", "queue7", "queue8", "queue9", "queue10", "queue11", 
+                          "queue12", "queue13", "queue14", "queue15", "queue16", "queue17",
+                          "queue18", "queue19", "queue20", "queue21", "queue22", "queue23",
+                          "queue24", "queue25", "queue26", "queue27", "queue28", "queue29",
+                          "queue30", "queue31";
+    };
+
+	/* clocks */
+	#define PERIPH_CLK		200000000
+	#define HS_SPI_PLL_CLK	200000000
+	#include "../../ip/bcm_clocks.dtsi"
+
+    #define UARTA_DBG       32
+    #define UARTA_FUNC      33
+    #define UARTB_FUNC      207
+    #define UARTC_FUNC      179
+
+    uart_clk: uart_clk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <50000000>;
+
+        };
+
+    refclk200mhz: refclk200mhz {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <200000000>;
+        };
+
+    uart0: serial@8421C000 {
+        compatible = "ns16550a";
+        reg = <0x0 0x8421C000 0x0 0x20>;
+        reg-io-width = <0x4>;
+        reg-shift = <0x2>;
+        interrupts = <GIC_SPI UARTA_DBG IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&uart_clk>;
+
+        };
+
+    fuart0: serial@0x84219000 {
+        compatible = "ns16550a";
+        reg = <0x0 0x84219000 0x0 0x20>;
+        reg-io-width = <0x4>;
+        reg-shift = <0x2>;
+        interrupts = <GIC_SPI UARTA_FUNC IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&refclk200mhz>;
+
+    };
+
+    fuart1: serial@0x84219600 {
+        compatible = "ns16550a";
+        reg = <0x0 0x84219600 0x0 0x20>;
+        reg-io-width = <0x4>;
+        reg-shift = <0x2>;
+        interrupts = <GIC_SPI UARTB_FUNC IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&refclk200mhz>;
+
+    };
+
+    fuart2: serial@0x84219C00 {
+        compatible = "ns16550a";
+        reg = <0x0 0x84219C00 0x0 0x20>;
+        reg-io-width = <0x4>;
+        reg-shift = <0x2>;
+        interrupts = <GIC_SPI UARTC_FUNC IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&refclk200mhz>;
+
+    };
+
+
+    pincontroller: pinctrl {
+            #define PINCTRL_OFFSET      0x0 0x84300630
+            #define PINCTRL_SIZE        0x0 0xc
+            #define PINCTRL_NUM_PINS    90
+            #define PINCTRL_NUM_FUNC    11
+            #define PINCTRL_GPIO_FUNC   4
+            #include "../../ip/bcm_bca_pinctrl.dtsi"
+            #include "68375_pinctrl.dtsi"
+    };
+
+    /* periph timers */
+    timers: timers {
+            #define TIMERS_OFFSET       0x0 0x84300500
+            #define TIMERS__SIZE        0x0 0x48
+            #define TIMER0_SPI          175
+            #define TIMER1_SPI          176
+            #define TIMER2_SPI          177
+            #define TIMER3_SPI          178
+            #include "../../ip/bcm_timer.dtsi"
+    };
+		        /* i2c */
+    i2c0: i2c0 {
+            #define I2C_OFFSET          0x0 0x84213100
+            #define I2C_SIZE            0x0 0x60
+            #include "../../ip/bcm_i2c_bus.dtsi"
+    };
+
+    i2c1: i2c1 {
+            #define I2C_OFFSET          0x0 0x84213180
+            #define I2C_SIZE            0x0 0x60
+            #include "../../ip/bcm_i2c_bus.dtsi"
+    };
+
+    i2c2: i2c2 {
+            #define I2C_OFFSET          0x0 0x84213200
+            #define I2C_SIZE            0x0 0x60
+            #include "../../ip/bcm_i2c_bus.dtsi"
+    };
+
+    i2s: bcm63xx-i2s {
+            compatible      = "brcm,bcm63xx-i2s";
+            reg             = <0x0 0x84301700 0x0 0x80>;
+            interrupts      = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
+            clocks          = <&i2sclk>, <&osc>;
+            clock-names     = "i2sclk","i2sosc";
+    };
+
+    usb_ctrl: usb_ctrl {
+        #define USB_CTRL_ADDR   0x0 0x800CF200
+        #define USB_CTRL_SIZE   0x0 0x200
+        #include "../../ip/bcm_usb_ctrl.dtsi"
+    };
+
+    usb0_xhci: usb0_xhci {
+        #define USB_ADDR    0x0 0x800C0000
+        #define USB_SIZE    0x0 0x4a4
+        #define GBL_ADDR    0x0 0x800CC100
+        #define GBL_SIZE    0x0 0x548
+        #define USB_IRQ     85
+        #include "../../ip/bcm_usb_xhci.dtsi"
+        xhci-no-companion;
+    };
+
+    gpioc: gpioc {
+            #define GPIO_BANKS_BASE     0x0 0x84214000
+            #define GPIO_BANKS_SIZE     0x0 0x200                      
+            #define GPIO_ACCESS_BASE    0x0 0x84213C00
+            #define GPIO_ACCESS_SIZE    0x0 0x24
+            #define GPIO_INTERRUPT      222
+            #define NUM_OF_GPIOS        90
+            #include "../../ip/bcm_bca_gpio_smc.dtsi"
+            brcm,gpio-bank-widths = <32 32 26>;
+    };
+
+
+    /* HS SPI */
+    hsspi: spi {
+            pinctrl-0 = <&spim_group_pins>;
+            pinctrl-names = "default";
+            #define HS_SPI_OFFSET       0x0 0x84301000
+            #define HS_SPI_SIZE         0x0 0x600
+            #define HS_SPI_MAX_FREQ     50000000
+            #define SPIM_CTRL_OFFSET    0x0 0x84210114
+            #define SPIM_CTRL_SIZE      0x0 0x4
+            /* #define HS_SPIM_SPI          36 */
+            #include "../../ip/bcm_bca_hsspi.dtsi"
+    };
+
+    /* watchdog */
+    wdt: watchdog  {
+    	compatible = "brcm,bcm3390-wdt";
+    	reg = <0x0 0x84213700 0x0 0x40>;
+    	interrupts = <GIC_SPI 193 IRQ_TYPE_LEVEL_HIGH>;
+    	interrupt-names = "wd_timeout";
+    };
+
+    /* watchdog reboot */
+    wdt-reboot {
+        compatible	= "wdt-reboot";
+        wdt			= <&wdt>;
+    };
+
+    i2s_clkmclk_syscon: i2s_clkmclk_syscon {
+        compatible          = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+        reg                 = <0x0 0x84301700 0x0 0x4>;
+    };
+};
+
+/ {
+     /* arch */
+    #define PMU_CORE0_SPI   9
+    #define PMU_CORE1_SPI   10
+    #define PMU_CORE2_SPI   11
+    #define PMU_CORE3_SPI   12
+    #include "../../ip/bcm_b55_quad.dtsi"
+};
+
+/ {/* SMC OS */
+
+    flash {
+        compatible = "brcm,vflash", "simple-bus";
+            };
+
+    ftpm {
+        compatible = "brcm,ftpm-smc";
+        rpc-channel = <&rpctpmsmc>;
+    };
+
+    dqm {
+        #define SMC_REG_BASE 0x0 0x84100000
+        #define SMC_ARM_IRQ 213
+        #include "../../ip/bcm_dqm.dtsi"
+            };
+
+    rpc {
+        #include "../../ip/bcm_rpc.dtsi"
+        };
+
+    rpcsmcramlog {
+        compatible = "brcm,smcramlog-rpc";
+        rpc-channel = <&rpcrgsmc>;
+        dummy-channel = <&rpcvflashsmc &rpcavssmc>;
+    };
+
+};
+
+&clocks {
+    osc: oscillator {
+        #clock-cells        = <0>;
+        compatible          = "fixed-clock";
+        clock-frequency     = <200000000>;
+    };
+
+    i2sclk: i2sclk {
+        #clock-cells        = <0>;
+        compatible          = "brcm,i2s-clock";
+        clocks              = <&osc>;
+        clk-mclk-syscon     = <&i2s_clkmclk_syscon>;
+        clock-output-names  = "i2s_clk";
+    };
+
+};
+
+/* Networking */
+/ {
+    xport:xport {
+        compatible = "brcm,xport";
+        reg = <0x0 0x837f0000 0x0 0x8000>,
+              <0x0 0x828b2000 0x0 0x1800>;
+        status = "disabled";
+    };
+
+    ethphytop:ethphytop {
+        compatible = "brcm,eth-phy-top";
+        reg = <0x0 0x837ff000 0x0 0x1000>;
+        xphy0-addr = <0x1>;
+        xphy1-addr = <0x2>;
+        xphy2-addr = <0x3>;
+        xphy3-addr = <0x4>;
+        xphy4-addr = <0x5>;
+        status = "disabled";
+    };
+
+    serdes:serdes {
+        compatible = "brcm,serdes1";
+        reg = <0x0 0x837ff500 0x0 0x200>;
+        status = "disabled";
+    };
+
+    mdio:mdio {
+        compatible = "brcm,mdio1";
+        reg = <0x0 0x837ffd00 0x0 0x10>;
+        status = "disabled";
+    };
+
+    mdio_bus: mdio_bus {
+        compatible = "simple-bus";
+        bus-type = "MDIO_V1";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        xphy0:xphy0 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x1>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy1:xphy1 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x2>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy2:xphy2 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x3>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy3:xphy3 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x4>;
+            caps-no-10000;
+            caps-no-5000;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy4:xphy4 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x5>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes0:serdes0 {
+             compatible = "brcm,bcaphy";
+             phy-type = "MERLIN";
+             reg = <0x10>;
+             serdes-core = <0>;
+             serdes-lane = <0>;
+             status = "disabled";
+        };
+
+        serdes1:serdes1 {
+             compatible = "brcm,bcaphy";
+             phy-type = "MERLIN";
+             reg = <0x11>;
+             serdes-core = <1>;
+             serdes-lane = <0>;
+             status = "disabled";
+        };
+    };
+
+    wan_serdes_bus {
+        compatible = "simple-bus";
+
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        phy_wan_serdes: phy_wan_serdes {
+            compatible = "brcm,bcaphy";
+            phy-type = "PON";
+            reg = <0>;
+            status = "disabled";
+        };
+    };
+
+    switch0:switch0 {
+        compatible = "brcm,enet";
+        label = "bcmsw";
+        sw-type = "RUNNER_SW";
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            port_xgphy0 {
+                reg = <3>;
+                mac-type = "XPORT";
+                mac-index = <4>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy0>;
+                status = "disabled";
+            };
+
+            port_xgphy1 {
+                reg = <4>;
+                mac-type = "XPORT";
+                mac-index = <5>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy1>;
+                status = "disabled";
+            };
+
+            port_xgphy2 {
+                reg = <5>;
+                mac-type = "XPORT";
+                mac-index = <6>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy2>;
+                status = "disabled";
+            };
+
+            port_xgphy3 {
+                reg = <6>;
+                mac-type = "XPORT";
+                mac-index = <7>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy3>;
+                status = "disabled";
+            };
+
+            port_xgphy4 {
+                reg = <2>;
+                mac-type = "XPORT";
+                mac-index = <2>;
+                phy-mode = "xfi";
+                phy-handle = <&xphy4>;
+                status = "disabled";
+            };
+
+            port_slan1@slan_sd {
+                reg = <0>;
+                mac-type = "XPORT";
+                mac-index = <1>;
+                phy-handle = <&serdes1>;
+                phy-mode = "xfi";
+                detect;
+                is-wanconf-ae;
+                port-group = <1>;
+                status = "disabled";
+            };
+
+            port_slan0@xpon_ae {
+                reg = <1>;
+                mac-type = "XPORT";
+                mac-index = <0>;
+                phy-handle = <&serdes0>;
+                phy-mode = "xfi";
+                detect;
+                is-wanconf-ae;
+                port-group = <0>;
+                status = "disabled";
+            };
+
+            port_wan@xpon_ae {
+                reg = <16>;
+                phy-handle = <&phy_wan_serdes>;
+                phy-mode = "serdes";
+                detect;
+                is-wanconf-mux-pon;
+                is-wan;
+                port-group = <0>;
+                status = "disabled";
+            };
+
+            port_wan@slan_sd {
+                reg = <16>;
+                phy-handle = <&phy_wan_serdes>;
+                phy-mode = "serdes";
+                detect;
+                is-wanconf-mux-pon;
+                is-wan;
+                port-group = <1>;
+                status = "disabled";
+            };
+        };
+    };
+};
+
+#ifdef CONFIG_BCM_BSTORM
+/ {
+    #include "68375_bstorm.dtsi"
+};
+#endif

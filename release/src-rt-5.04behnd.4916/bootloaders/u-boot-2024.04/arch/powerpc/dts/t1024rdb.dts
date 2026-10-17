@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * T1024RDB Device Tree Source
+ *
+ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2019-2023 NXP
+ */
+
+/include/ "t102x.dtsi"
+
+/ {
+	model = "fsl,T1024RDB";
+	compatible = "fsl,T1024RDB";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	aliases {
+		sg_2500_aqr105_phy4 = &sg_2500_aqr105_phy4;
+		serial0 = &serial0;
+		serial1 = &serial1;
+		serial2 = &serial2;
+		serial3 = &serial3;
+		spi0 = &espi0;
+	};
+
+	soc: soc@ffe000000 {
+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
+		reg = <0xf 0xfe000000 0 0x00001000>;
+
+		fman@400000 {
+			fm1mac1: ethernet@e0000 {
+				phy-handle = <&xg_aqr105_phy3>;
+				phy-connection-type = "xgmii";
+			};
+
+			fm1mac2: ethernet@e2000 {
+			};
+
+			fm1mac3: ethernet@e4000 {
+				phy-handle = <&rgmii_phy2>;
+				phy-connection-type = "rgmii";
+			};
+
+			fm1mac4: ethernet@e6000 {
+				phy-handle = <&rgmii_phy1>;
+				phy-connection-type = "rgmii";
+			};
+
+			mdio0: mdio@fc000 {
+				rgmii_phy1: ethernet-phy@2 {
+					reg = <0x2>;
+				};
+				rgmii_phy2: ethernet-phy@6 {
+					reg = <0x6>;
+				};
+			};
+
+			xmdio0: mdio@fd000 {
+				xg_aqr105_phy3: ethernet-phy@1 {
+					compatible = "ethernet-phy-ieee802.3-c45";
+					reg = <0x1>;
+				};
+				sg_2500_aqr105_phy4: ethernet-phy@2 {
+					compatible = "ethernet-phy-ieee802.3-c45";
+					reg = <0x2>;
+				};
+			};
+		};
+	};
+};
+
+&espi0 {
+	status = "okay";
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		/* input clock */
+		spi-max-frequency = <10000000>;
+	};
+};
+
+#include "t1024si-post.dtsi"

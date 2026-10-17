@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -160,6 +160,91 @@ void dump_RDD_IPTV_DDR_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char 
 	bdmf_session_print(session, "\n");
 }
 
+void set_RDD_IPTV_DDR_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 0, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 10, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 10, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 13, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 13, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 14, 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 14, 0, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	for (i=0; i<16; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 24, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<16; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 40, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 56, i, (parm[j].number));
+		j++;
+	}
+	
+}
+
 void dump_RDD_PROCESSING_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -289,6 +374,106 @@ void dump_RDD_PROCESSING_TX_DESCRIPTOR(bdmf_session_handle session, unsigned cha
 	bdmf_session_print(session, "\tpayload_offset_sop       = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_PROCESSING_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 0, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 2, 7, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 3, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 3, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 3, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 4, 6, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 6, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 6, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 6, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 4, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 8, 3, 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 8, 0, 19, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 12, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 12, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 12, 0, 30, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DHD_COMPLETE_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -422,7 +607,11 @@ void dump_RDD_DHD_COMPLETE_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsig
 	bdmf_session_print(session, "\trx_post_refill_enable    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 96, 0, 3, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 96, 2, 1, (r));
+	bdmf_session_print(session, "\ttx_cmpl_ext_wi           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 96, 0, 2, (r));
 	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
@@ -434,28 +623,24 @@ void dump_RDD_DHD_COMPLETE_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsig
 	bdmf_session_print(session, "\trx_post_rd_idx           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 100, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 100, (r));
+	bdmf_session_print(session, "\ttx_pcap_seq_num          = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	bdmf_session_print(session, "\tscratchpad               =\n\t");
-	for (i=0,j=0; i<3; i++)
+	MREAD_16((uint8_t *)(p) + 102, (r));
+	bdmf_session_print(session, "\trx_pcap_seq_num          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	bdmf_session_print(session, "\ttx_scratchpad            =\n\t");
+	for (i=0,j=0; i<4; i++)
 	{
 		MREAD_I_32((uint8_t *)(p) + 104, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 	}
 	bdmf_session_print(session, "\n");
-	bdmf_session_print(session, "\treserved2                =\n\t");
-	for (i=0,j=0; i<4; i++)
-	{
-		MREAD_I_8((uint8_t *)(p) + 116, i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
-		j++;
-	}
-	bdmf_session_print(session, "\n");
-	bdmf_session_print(session, "\trch_buff                 =\n\t");
-	for (i=0,j=0; i<18; i++)
+	bdmf_session_print(session, "\trx_scratchpad            =\n\t");
+	for (i=0,j=0; i<32; i++)
 	{
 		MREAD_I_32((uint8_t *)(p) + 120, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
@@ -467,6 +652,158 @@ void dump_RDD_DHD_COMPLETE_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsig
 		}
 	}
 	bdmf_session_print(session, "\n");
+	bdmf_session_print(session, "\trch_buff                 =\n\t");
+	for (i=0,j=0; i<18; i++)
+	{
+		MREAD_I_32((uint8_t *)(p) + 248, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+}
+
+void set_RDD_DHD_COMPLETE_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 48, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 52, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 56, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 60, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 64, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 68, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 72, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 76, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 80, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 82, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 84, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 86, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 88, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 90, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 92, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 94, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 96, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 96, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 96, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 96, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 96, 0, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 97, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 98, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 100, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 102, (parm[j].number));
+	j++;
+	for (i=0; i<4; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 104, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 120, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<18; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 248, i, (parm[j].number));
+		j++;
+	}
+	
 }
 
 void dump_RDD_TX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -488,54 +825,20 @@ void dump_RDD_TX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_RATE_LIMITER_PROFILE(bdmf_session_handle session, unsigned char *p)
+void set_RDD_TX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register RATE_LIMITER_PROFILE\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 2, 14, (r));
-	bdmf_session_print(session, "\talloc_mantissa           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 2, (r));
-	bdmf_session_print(session, "\talloc_exponent           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 2, 2, 14, (r));
-	bdmf_session_print(session, "\tlimit_mantissa           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 0, 2, (r));
-	bdmf_session_print(session, "\tlimit_exponent           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_RATE_LIMITER_BUDGET_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register RATE_LIMITER_BUDGET_DESCRIPTOR\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tcurrent_budget           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\trl_params_desc_0         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 5, (r));
-	bdmf_session_print(session, "\trl_params_desc_1         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 6, (r));
-	bdmf_session_print(session, "\trl_params_desc_2         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 7, (r));
-	bdmf_session_print(session, "\trl_params_desc_3         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 5, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_TRACE_EVENT(bdmf_session_handle session, unsigned char *p)
@@ -555,6 +858,22 @@ void dump_RDD_TRACE_EVENT(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\ttrace_event_info         = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_TRACE_EVENT(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 4, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 2, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 0, 0, 18, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_RX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -580,6 +899,25 @@ void dump_RDD_RX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void set_RDD_RX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 2, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 2, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_BYTES_4(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -589,6 +927,16 @@ void dump_RDD_BYTES_4(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tbits                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_BYTES_4(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
 }
 
 void dump_RDD_RATE_LIMITER_PROFILE_RESIDUE(bdmf_session_handle session, unsigned char *p)
@@ -602,6 +950,16 @@ void dump_RDD_RATE_LIMITER_PROFILE_RESIDUE(bdmf_session_handle session, unsigned
 
 }
 
+void set_RDD_RATE_LIMITER_PROFILE_RESIDUE(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
 void dump_RDD_AQM_SQ_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -613,6 +971,16 @@ void dump_RDD_AQM_SQ_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void set_RDD_AQM_SQ_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
 void dump_RDD_BYTE_1(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -622,6 +990,16 @@ void dump_RDD_BYTE_1(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tbits                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_BYTE_1(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
 }
 
 void dump_RDD_BYTES_8(bdmf_session_handle session, unsigned char *p)
@@ -641,31 +1019,60 @@ void dump_RDD_BYTES_8(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 }
 
-void dump_RDD_GENERAL_TIMER_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_BYTES_8(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<2; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
+}
+
+void dump_RDD_RATE_LIMITER_PROFILE(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register GENERAL_TIMER_ENTRY\n");
+	bdmf_session_print(session, "  Register RATE_LIMITER_PROFILE\n");
 
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tcounter                  = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_16((uint8_t *)(p), 2, 14, (r));
+	bdmf_session_print(session, "\talloc_mantissa           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\ttimeout                  = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 2, (r));
+	bdmf_session_print(session, "\talloc_exponent           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tfunc_ptr                 = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 2, 2, 14, (r));
+	bdmf_session_print(session, "\tlimit_mantissa           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 6, (r));
-	bdmf_session_print(session, "\tenable                   = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 0, 2, (r));
+	bdmf_session_print(session, "\tlimit_exponent           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 7, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
+}
 
+void set_RDD_RATE_LIMITER_PROFILE(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 2, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 2, 2, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 3, 0, 2, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_SYSTEM_CONFIGURATION_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -731,90 +1138,53 @@ void dump_RDD_SYSTEM_CONFIGURATION_ENTRY(bdmf_session_handle session, unsigned c
 
 }
 
-void dump_RDD_SPDTEST_GEN_CFG(bdmf_session_handle session, unsigned char *p)
+void set_RDD_SYSTEM_CONFIGURATION_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register SPDTEST_GEN_CFG\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 4, 4, (r));
-	bdmf_session_print(session, "\ttest_type                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 3, 1, (r));
-	bdmf_session_print(session, "\tis_on                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 1, (r));
-	bdmf_session_print(session, "\tis_endless_tx            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
-	bdmf_session_print(session, "\tnot_valid_license        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 1, (r));
-	bdmf_session_print(session, "\tiperf3_64bit_pktid       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 5, 3, (r));
-	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 5, (r));
-	bdmf_session_print(session, "\tinterrupt_id             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_VPORT_CFG_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register VPORT_CFG_ENTRY\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
-	bdmf_session_print(session, "\texception                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 6, 1, (r));
-	bdmf_session_print(session, "\tcongestion_flow_control  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 6, (r));
-	bdmf_session_print(session, "\tingress_filter_profile   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 5, 3, (r));
-	bdmf_session_print(session, "\tnatc_tbl_id              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 1, 4, (r));
-	bdmf_session_print(session, "\tviq                      = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 1, (r));
-	bdmf_session_print(session, "\tport_dbg_stat_en         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 7, 1, (r));
-	bdmf_session_print(session, "\tmcast_whitelist_skip     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 6, 1, (r));
-	bdmf_session_print(session, "\tis_lan                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 0, 6, (r));
-	bdmf_session_print(session, "\tbb_rx_id                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 3, (r));
-	bdmf_session_print(session, "\tcntr_id                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 4, 0, 21, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
@@ -1114,7 +1484,7 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_16((uint8_t *)(p) + 202, 4, 8, (r));
-	bdmf_session_print(session, "\tPARSER_RESULTS_PARSER_L2_LKP_ENTRY_client_idx= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tPARSER_RESULTS_PARSER_L2_LKP_ENTRY_WAN_FLOW_CLIENT_IDX= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 203, 0, 4, (r));
@@ -1378,7 +1748,7 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 277, 2, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_0= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_wred_high_prio= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 277, 1, 1, (r));
@@ -1401,48 +1771,32 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_command_list_length_32= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 7, 1, (r));
+	MREAD_8((uint8_t *)(p) + 280, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_lag_union= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 7, 1, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_unicast_wfd_nic= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 6, 1, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 6, 1, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_unicast_wfd_any= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 2, 4, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 2, 4, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_priority= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 1, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_prio= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 280, 7, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_idx= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 6, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_wred_high_prio= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 4, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 3, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_ingqos_high_prio= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 2, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_coupled_classic_queue= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_32((uint8_t *)(p) + 280, 0, 18, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_link_specific_union= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 5, 3, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_11= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_prio= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 5, 2, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_idx= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 0, 5, (r));
@@ -1462,7 +1816,7 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 288, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_3= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_score_union= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 290, 7, 1, (r));
@@ -1477,20 +1831,16 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_tx_adjust= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 292, 7, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_4= 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 292, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_score_dcp_bitmask= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 292, 2, 5, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_tunnel_index_ref= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_ingqos_high_prio= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 292, 0, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_5= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 6, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_2= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 6, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_coupled_classic_queue= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 0, 6, (r));
@@ -1505,10 +1855,70 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_policer_id= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+	MREAD_32((uint8_t *)(p) + 296, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_da_crc_valid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 300, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_sa_crc_valid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 304, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ignore_df= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 304, 6, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_eligible_for_ip_fragmentation= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 304, 0, 14, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_max_ip_payload_size= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 306, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_fixed_hdr_size= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 307, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_fragment_ip_hdr_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 308, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_insert_ipv4_ipid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 308, 0, 7, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ipid_cntr_id= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 309, 6, 2, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_8= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 309, 5, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ethmac_validate= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 309, 4, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_vtag_check= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 308, 8, 12, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_vtag= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 311, 5, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved9= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 311, 0, 5, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_llcsnap_length_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_command_list=\n\t");
-	for (i=0,j=0; i<100; i++)
+	for (i=0,j=0; i<84; i++)
 	{
-		MREAD_I_8((uint8_t *)(p) + 296, i, (r));
+		MREAD_I_8((uint8_t *)(p) + 312, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -1542,54 +1952,66 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved5= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_key=\n\t");
-	for (i=0,j=0; i<4; i++)
-	{
-		MREAD_I_32((uint8_t *)(p) + 296, i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
-		j++;
-	}
-	bdmf_session_print(session, "\n");
-	MREAD_32((uint8_t *)(p) + 312, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_key_0_mask= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 316, 4, 4, (r));
+	MREAD_32((uint8_t *)(p) + 296, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved6= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 316, 0, 4, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_type= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 317, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_inner_packet_offset= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 6, 2, (r));
+	MREAD_32((uint8_t *)(p) + 300, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved7= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 5, 1, (r));
+	MREAD_8((uint8_t *)(p) + 304, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_key_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 305, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_inner_pkt_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 306, 2, 6, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved9= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 306, 1, 1, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_esp_o_udp= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 4, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_l2_l3_indication= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 306, 0, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_is_inner_hdr_l3= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 0, 4, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved8= 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 307, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved10= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 319, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_key_0_offset= 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p) + 308, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_key_mask= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved9=\n\t");
-	for (i=0,j=0; i<76; i++)
+	MREAD_32((uint8_t *)(p) + 312, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_flowid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 316, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserv_crc_input_2= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 320, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserv_crc_input_3= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 324, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserv_8b_alignment= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 328, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_crc32_output= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved11=\n\t");
+	for (i=0,j=0; i<64; i++)
 	{
-		MREAD_I_8((uint8_t *)(p) + 320, i, (r));
+		MREAD_I_8((uint8_t *)(p) + 332, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -1769,58 +2191,6 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	MREAD_32((uint8_t *)(p) + 272, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved0= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 276, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 280, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved2= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 284, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved3= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 288, 5, 3, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved4= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 288, 4, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_vtag_check= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 288, 0, 12, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_vtag= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 290, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved5= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 272, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_reserved1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 276, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_reserved2= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 280, 9, 23, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_reserved3= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 282, 0, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_policer_en= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 283, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_policer_id= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 272, (r));
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_MASTER_MC_FLOW_CACHE_CONTEXT_ENTRY_natc_control= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
@@ -1968,46 +2338,10 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 		}
 	}
 	bdmf_session_print(session, "\n");
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 400, 6, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_action= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 400, 3, 3, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_trap_reason= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 400, 0, 11, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_cntr_id= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 402, 7, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_cntr_disable= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 402, 4, 11, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_bytes_cntr_id= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 403, 3, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_bytes_cntr_disable= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 403, 2, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_iq_priority= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 403, 1, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_ct_override= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 403, 0, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_reserved1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_CONTEXT_reserved2=\n\t");
-	for (i=0,j=0; i<12; i++)
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_SCORE_SCRATCH_score_report_scratch=\n\t");
+	for (i=0,j=0; i<104; i++)
 	{
-		MREAD_I_8((uint8_t *)(p) + 404, i, (r));
+		MREAD_I_8((uint8_t *)(p) + 400, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -2017,20 +2351,129 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 		}
 	}
 	bdmf_session_print(session, "\n");
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 416, 7, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_MATCH_match= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_result=\n\t");
+	for (i=0,j=0; i<48; i++)
+	{
+		MREAD_I_8((uint8_t *)(p) + 400, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+	MREAD_32((uint8_t *)(p) + 448, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_da_crc= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 416, 5, 10, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_MATCH_match_index= 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p) + 452, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_sa_crc= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 417, 0, 5, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_MATCH_reserved= 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p) + 456, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_src_ip= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 418, (r));
-	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_RESULT_TCAM_MATCH_reserved1= 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p) + 460, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_dst_ip= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 464, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_src_port= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 466, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_dst_port= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 468, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_ethernet_type= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 470, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_protocol= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 471, 5, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_tpid_vlan_0= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 471, 2, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_tpid_vlan_1= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 471, 1, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_ipv6= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 471, 0, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_ipv4= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 472, 5, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_outer_pbit= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 472, 4, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_outer_cfi= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 472, 0, 12, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_outer_vid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 474, 5, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_inner_pbit= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 474, 4, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_inner_cfi= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 474, 0, 12, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_inner_vid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 476, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_tos= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 477, 3, 5, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_lookup_port= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 477, 0, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_vlans_num= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 478, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_mc_l3= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 478, 6, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_bc= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 478, 5, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_mc= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 478, 4, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_network_layer= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 478, 3, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_generic_class_extra_lkp= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 478, 0, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_reserved3= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 479, (r));
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_TCAM_PARSER_IC_LKP_ENTRY_gem_ssid= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_32((uint8_t *)(p) + 504, (r));
@@ -2122,6 +2565,19 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_NATC_RESULT_EXT_1_natc_result_buff=\n\t");
+	for (i=0,j=0; i<8; i++)
+	{
+		MREAD_I_8((uint8_t *)(p) + 504, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+	bdmf_session_print(session, "\tSCRATCH_UNICAST_FLOW_SCORE_SCRATCH_1_score_report_scratch_1=\n\t");
 	for (i=0,j=0; i<8; i++)
 	{
 		MREAD_I_8((uint8_t *)(p) + 504, i, (r));
@@ -2289,7 +2745,7 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 277, 2, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_0= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_wred_high_prio= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 277, 1, 1, (r));
@@ -2312,48 +2768,32 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_command_list_length_32= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 7, 1, (r));
+	MREAD_8((uint8_t *)(p) + 280, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_lag_union= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 7, 1, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_unicast_wfd_nic= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 6, 1, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 6, 1, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_unicast_wfd_any= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 2, 4, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 2, 4, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_priority= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 280, 1, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_prio= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 280, 7, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_idx= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 6, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_wred_high_prio= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 4, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 3, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_ingqos_high_prio= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 281, 2, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_coupled_classic_queue= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_32((uint8_t *)(p) + 280, 0, 18, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_link_specific_union= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 5, 3, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_11= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_prio= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 5, 2, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_wfd_idx= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 284, 0, 5, (r));
@@ -2373,7 +2813,7 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 288, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_3= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_score_union= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 290, 7, 1, (r));
@@ -2388,20 +2828,16 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_tx_adjust= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 292, 7, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_4= 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 292, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_score_dcp_bitmask= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 292, 2, 5, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_tunnel_index_ref= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_is_ingqos_high_prio= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 292, 0, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_5= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 6, 2, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_2= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 6, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_coupled_classic_queue= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 293, 0, 6, (r));
@@ -2416,10 +2852,70 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_policer_id= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+	MREAD_32((uint8_t *)(p) + 296, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_da_crc_valid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 300, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_sa_crc_valid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 304, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ignore_df= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 304, 6, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_eligible_for_ip_fragmentation= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 304, 0, 14, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_max_ip_payload_size= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 306, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_fixed_hdr_size= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 307, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_fragment_ip_hdr_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 308, 7, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_insert_ipv4_ipid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 308, 0, 7, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ipid_cntr_id= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 309, 6, 2, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved_8= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 309, 5, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ethmac_validate= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 309, 4, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_vtag_check= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 308, 8, 12, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_vtag= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 311, 5, 3, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_reserved9= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 311, 0, 5, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_ip_frag_llcsnap_length_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_ENTRY_command_list=\n\t");
-	for (i=0,j=0; i<100; i++)
+	for (i=0,j=0; i<84; i++)
 	{
-		MREAD_I_8((uint8_t *)(p) + 296, i, (r));
+		MREAD_I_8((uint8_t *)(p) + 312, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -2453,54 +2949,66 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved5= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_key=\n\t");
-	for (i=0,j=0; i<4; i++)
-	{
-		MREAD_I_32((uint8_t *)(p) + 296, i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
-		j++;
-	}
-	bdmf_session_print(session, "\n");
-	MREAD_32((uint8_t *)(p) + 312, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_key_0_mask= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 316, 4, 4, (r));
+	MREAD_32((uint8_t *)(p) + 296, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved6= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 316, 0, 4, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_type= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 317, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_inner_packet_offset= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 6, 2, (r));
+	MREAD_32((uint8_t *)(p) + 300, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved7= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 5, 1, (r));
+	MREAD_8((uint8_t *)(p) + 304, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_key_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 305, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_inner_pkt_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 306, 2, 6, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved9= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 306, 1, 1, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_esp_o_udp= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 4, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_l2_l3_indication= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 306, 0, 1, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_is_inner_hdr_l3= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 318, 0, 4, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved8= 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 307, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved10= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 319, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_key_0_offset= 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p) + 308, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_key_mask= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved9=\n\t");
-	for (i=0,j=0; i<76; i++)
+	MREAD_32((uint8_t *)(p) + 312, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_tunnel_flowid= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 316, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserv_crc_input_2= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 320, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserv_crc_input_3= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 324, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserv_8b_alignment= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 328, (r));
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_crc32_output= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_reserved11=\n\t");
+	for (i=0,j=0; i<64; i++)
 	{
-		MREAD_I_8((uint8_t *)(p) + 320, i, (r));
+		MREAD_I_8((uint8_t *)(p) + 332, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -2677,58 +3185,6 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 
 	MREAD_16((uint8_t *)(p) + 282, (r));
 	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_GDX_ENTRY_gdx_ctx_data= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 272, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved0= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 276, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 280, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved2= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 284, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved3= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 288, 5, 3, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved4= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 288, 4, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_vtag_check= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 288, 0, 12, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_vtag= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 290, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_reserved5= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 272, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_reserved1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 276, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_reserved2= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 280, 9, 23, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_reserved3= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 282, 0, 1, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_policer_en= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 283, (r));
-	bdmf_session_print(session, "\tSCRATCH_MULTICAST_FLOW_NATC_RESULT_CT_LKP_FLOW_CONTEXT_ENTRY_policer_id= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_32((uint8_t *)(p) + 272, (r));
@@ -3083,6 +3539,1700 @@ void dump_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void set_RDD_PACKET_BUFFER(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<160; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 160, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 161, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 161, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 161, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 161, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 161, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 161, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 161, 0, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 162, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 163, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 163, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 163, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 163, 0, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 164, 4, 4, (parm[j].number)) /*defined by rdd_parser_l4_protocol enumeration*/;
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 164, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 164, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 164, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 164, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 165, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 166, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 167, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 168, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 170, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 172, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 172, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 172, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 172, 0, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 173, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 173, 3, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 173, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 174, 4, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 174, 0, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 175, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 176, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 176, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 176, 1, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 176, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 177, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 178, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 179, 4, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 179, 0, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 180, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 181, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 182, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 184, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 188, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 192, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 196, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 200, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 201, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 201, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 202, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 202, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 202, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 202, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 202, 4, 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 203, 0, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 204, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 208, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 212, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 214, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 216, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 220, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 224, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 228, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 232, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 236, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 240, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 242, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 244, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 246, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 247, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 247, 2, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 247, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 247, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 248, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 248, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 248, 0, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 250, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 250, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 250, 0, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 252, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 253, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 253, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 254, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 254, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 254, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 254, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 254, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 254, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 255, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 256, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 260, 6, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 261, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 261, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 261, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 261, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 260, 14, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 262, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 264, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 264, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 264, 4, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 264, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 264, 3, 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 264, 0, 19, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 268, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 268, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 268, 0, 30, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 273, 4, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 273, 2, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 272, 0, 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 278, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 279, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 279, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 2, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 280, 0, 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 284, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 284, 5, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 284, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 285, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 286, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 286, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 288, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 290, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 290, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 291, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 292, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 294, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 295, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 296, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 300, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 304, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 304, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 304, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 306, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 307, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 308, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 308, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 309, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 309, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 309, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 308, 8, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 311, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 311, 0, 5, (parm[j].number));
+	j++;
+	for (i=0; i<84; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 312, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 284, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 288, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 292, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 296, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 300, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 304, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 305, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 306, 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 306, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 306, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 307, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 308, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 312, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 316, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 320, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 324, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 328, (parm[j].number));
+	j++;
+	for (i=0; i<64; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 332, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 276, 6, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 276, 0, 21, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 284, 15, 17, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 286, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 286, 0, 14, (parm[j].number));
+	j++;
+	for (i=0; i<2; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 288, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<100; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 296, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 3, 13, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 282, 0, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 282, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 282, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 2, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 282, 0, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 282, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 276, 0, 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 2, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 283, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 283, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 284, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 286, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 288, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 290, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 292, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 292, 15, 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 294, 0, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 296, (parm[j].number));
+	j++;
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 300, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<112; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 272, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<12; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 384, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<4; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 396, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<104; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 400, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<104; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 400, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<48; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 400, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 448, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 452, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 456, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 460, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 464, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 466, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 468, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 470, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 471, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 471, 2, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 471, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 471, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 472, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 472, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 472, 0, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 474, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 474, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 474, 0, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 476, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 477, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 477, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 478, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 478, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 478, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 478, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 478, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 478, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 479, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 504, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 508, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 509, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 510, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 510, 1, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 511, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 504, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 504, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 504, 12, 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 506, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 506, 0, 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 508, 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 508, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 508, 6, 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 511, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 504, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 508, 15, 17, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 510, 1, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 511, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 504, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 504, 0, 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 508, (parm[j].number));
+	j++;
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 504, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 504, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 272, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 284, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 288, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 292, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 296, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 297, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 298, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 298, 1, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 299, 0, 1, (parm[j].number));
+	j++;
+	for (i=0; i<128; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 272, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 400, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 404, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 405, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 406, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 406, 1, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 407, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 400, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 404, 15, 17, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 406, 1, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 407, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 272, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 273, 4, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 273, 2, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 272, 0, 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 278, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 279, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 279, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 2, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 280, 0, 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 284, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 284, 5, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 284, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 285, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 286, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 286, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 288, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 290, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 290, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 291, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 292, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 294, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 295, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 296, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 300, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 304, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 304, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 304, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 306, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 307, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 308, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 308, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 309, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 309, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 309, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 308, 8, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 311, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 311, 0, 5, (parm[j].number));
+	j++;
+	for (i=0; i<84; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 312, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 284, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 288, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 292, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 296, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 300, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 304, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 305, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 306, 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 306, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 306, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 307, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 308, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 312, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 316, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 320, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 324, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 328, (parm[j].number));
+	j++;
+	for (i=0; i<64; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 332, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 276, 6, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 277, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 276, 0, 21, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 284, 15, 17, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 286, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 286, 0, 14, (parm[j].number));
+	j++;
+	for (i=0; i<2; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 288, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<100; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 296, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 3, 13, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 282, 0, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 282, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 282, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 2, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 282, 0, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 280, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 282, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 272, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 276, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 276, 0, 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 280, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 2, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 281, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 282, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 283, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 283, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 284, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 286, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 288, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 290, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 292, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 293, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 292, 15, 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 294, 0, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 296, (parm[j].number));
+	j++;
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 300, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<112; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 272, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<12; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 384, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<4; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 396, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<36; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 400, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 436, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 438, (parm[j].number));
+	j++;
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 440, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 472, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 400, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 400, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 400, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 400, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 400, 0, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 402, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 404, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 406, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 408, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 410, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 410, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 411, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 412, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 413, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 413, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 414, 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 414, 0, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 416, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 420, (parm[j].number));
+	j++;
+	for (i=0; i<16; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 424, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<16; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 440, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 456, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<64; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 400, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 504, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 508, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 509, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 510, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 510, 1, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 511, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 504, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 508, 15, 17, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 510, 1, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 511, 0, 1, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_DDR_ADDRESS(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -3098,195 +5248,17 @@ void dump_RDD_DDR_ADDRESS(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_FLUSH_CFG_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_DDR_ADDRESS(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register FLUSH_CFG_ENTRY\n");
-
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tpd_num                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\tflush_aggr               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 7, 1, (r));
-	bdmf_session_print(session, "\tenable                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 6, 1, (r));
-	bdmf_session_print(session, "\tdrain_q                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 5, 1, (r));
-	bdmf_session_print(session, "\thw_flush_en              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 4, 1, (r));
-	bdmf_session_print(session, "\tbuffer_cong_mgt          = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 1, 3, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 2, 0, 9, (r));
-	bdmf_session_print(session, "\tqm_queue                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tug_counter_address       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tug_threshold_low         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tug_counter               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register DHD_RX_COMPLETE_DESCRIPTOR\n");
-
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tmsg_type                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\tif_id                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tcommon_hdr_flags         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 3, (r));
-	bdmf_session_print(session, "\tepoch                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\trequest_id               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tcompl_msg_hdr_status     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 10, (r));
-	bdmf_session_print(session, "\tflow_ring_id             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tmeta_buf_len             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 14, (r));
-	bdmf_session_print(session, "\tdata_len                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tdata_offset              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 18, (r));
-	bdmf_session_print(session, "\tflags                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\trx_status_0              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\trx_status_1              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\tdma_done_mark            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_DHD_RING_SIZE(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register DHD_RING_SIZE\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tvalue                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_BYTES_2(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register BYTES_2\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tbits                     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_DHD_RX_POST_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register DHD_RX_POST_DESCRIPTOR\n");
-
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tmsg_type                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\tif_id                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tcommon_hdr_flags         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 3, (r));
-	bdmf_session_print(session, "\tepoch                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\trequest_id               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tmeta_buf_len             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 10, (r));
-	bdmf_session_print(session, "\tdata_len                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tmetadata_buf_addr_low    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tmetadata_buf_addr_hi     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\tdata_buf_addr_low        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\tdata_buf_addr_hi         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_SECONDARY_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -3368,73 +5340,107 @@ void dump_RDD_SECONDARY_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsign
 
 }
 
-void dump_RDD_FPM_POOL_NUMBER(bdmf_session_handle session, unsigned char *p)
+void set_RDD_SECONDARY_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register FPM_POOL_NUMBER\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 2, (r));
-	bdmf_session_print(session, "\tpool_number              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 4, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 2, 0, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 9, 4, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 9, 0, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 10, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 10, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 11, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 11, 0, 7, (parm[j].number));
+	j++;
 }
 
-void dump_RDD_AQM_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+void dump_RDD_DHD_RING_SIZE(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register AQM_QUEUE_DESCRIPTOR\n");
+	bdmf_session_print(session, "  Register DHD_RING_SIZE\n");
 
 	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tCODEL_QUEUE_DESCRIPTOR_window_ts= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tCODEL_QUEUE_DESCRIPTOR_drop_interval= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 1, 15, (r));
-	bdmf_session_print(session, "\tPI2_QUEUE_DESCRIPTOR_probability= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 0, 0, 17, (r));
-	bdmf_session_print(session, "\tPI2_QUEUE_DESCRIPTOR_packet_select_probability= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 1, 15, (r));
-	bdmf_session_print(session, "\tLAQM_QUEUE_DESCRIPTOR_probability= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 0, 2, 15, (r));
-	bdmf_session_print(session, "\tLAQM_QUEUE_DESCRIPTOR_packet_select_probability= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 0, 2, (r));
-	bdmf_session_print(session, "\tLAQM_QUEUE_DESCRIPTOR_reserved= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tvalue                    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
 
-void dump_RDD_TCAM_GENERIC(bdmf_session_handle session, unsigned char *p)
+void set_RDD_DHD_RING_SIZE(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
+void dump_RDD_BYTES_2(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register TCAM_GENERIC\n");
+	bdmf_session_print(session, "  Register BYTES_2\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\toffset                   = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tbits                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 2, 6, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
+}
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 2, (r));
-	bdmf_session_print(session, "\tlayer                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+void set_RDD_BYTES_2(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DISPATCHER_CREDIT_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -3464,54 +5470,75 @@ void dump_RDD_DISPATCHER_CREDIT_DESCRIPTOR(bdmf_session_handle session, unsigned
 
 }
 
-void dump_RDD_TUNNELS_PARSING_CFG(bdmf_session_handle session, unsigned char *p)
+void set_RDD_DISPATCHER_CREDIT_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 4, 12, 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 6, 0, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 8, 12, 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 10, 0, 12, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_GENERAL_TIMER_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register TUNNELS_PARSING_CFG\n");
+	bdmf_session_print(session, "  Register GENERAL_TIMER_ENTRY\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\ttunneling_enable         = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tcounter                  = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\ttimeout                  = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tfunc_ptr                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\tenable                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 7, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
 
-void dump_RDD_IPTV_CFG(bdmf_session_handle session, unsigned char *p)
+void set_RDD_GENERAL_TIMER_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register IPTV_CFG\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tcontext_offset           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tkey_offset               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 6, (r));
-	bdmf_session_print(session, "\thash_tbl_idx             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 7, (r));
-	bdmf_session_print(session, "\tl2_mcast                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_QUEUE_DYNAMIC_MNG_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -3545,6 +5572,304 @@ void dump_RDD_QUEUE_DYNAMIC_MNG_ENTRY(bdmf_session_handle session, unsigned char
 
 }
 
+void set_RDD_QUEUE_DYNAMIC_MNG_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_TUNNELS_PARSING_CFG(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register TUNNELS_PARSING_CFG\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\ttunneling_enable         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_TUNNELS_PARSING_CFG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_IPTV_CFG(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register IPTV_CFG\n");
+
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tcontext_offset           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tkey_offset               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\thash_tbl_idx             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 7, (r));
+	bdmf_session_print(session, "\tl2_mcast                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_IPTV_CFG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_DHD_DOORBELL(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register DHD_DOORBELL\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tdoorbell_value           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_DHD_DOORBELL(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
+void dump_RDD_VPORT_CFG_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register VPORT_CFG_ENTRY\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
+	bdmf_session_print(session, "\texception                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 6, 1, (r));
+	bdmf_session_print(session, "\tcongestion_flow_control  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 6, (r));
+	bdmf_session_print(session, "\tingress_filter_profile   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 5, 3, (r));
+	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 1, 4, (r));
+	bdmf_session_print(session, "\tviq                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 1, (r));
+	bdmf_session_print(session, "\tport_dbg_stat_en         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 7, 1, (r));
+	bdmf_session_print(session, "\tmcast_whitelist_skip     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 6, 1, (r));
+	bdmf_session_print(session, "\tis_lan                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 0, 6, (r));
+	bdmf_session_print(session, "\tbb_rx_id                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 3, (r));
+	bdmf_session_print(session, "\tcntr_id                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_VPORT_CFG_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 1, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 0, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_FPI_CFG(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register FPI_CFG\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 5, 3, (r));
+	bdmf_session_print(session, "\tmode                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 4, 1, (r));
+	bdmf_session_print(session, "\tspecial_gre              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 3, 1, (r));
+	bdmf_session_print(session, "\tforce_l2lkp_on_ethertype = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 1, (r));
+	bdmf_session_print(session, "\tlkp_enable               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
+	bdmf_session_print(session, "\tip_frag_enable           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 1, (r));
+	bdmf_session_print(session, "\tip_reasm_enable          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 7, 1, (r));
+	bdmf_session_print(session, "\tipv6_exthdr_force_trap   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 6, 1, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 6, (r));
+	bdmf_session_print(session, "\tdefault_priority         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_FPI_CFG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 6, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_SCHEDULING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -3554,11 +5879,7 @@ void dump_RDD_SCHEDULING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned 
 	bdmf_session_print(session, "\tprefetch_pd              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 6, 1, (r));
-	bdmf_session_print(session, "\tcodel_dropped_recently   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 6, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 7, (r));
 	bdmf_session_print(session, "\treserved6                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
@@ -3575,7 +5896,7 @@ void dump_RDD_SCHEDULING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned 
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 7, 1, (r));
-	bdmf_session_print(session, "\tcodel_enable             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tqstat_enable             = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 6, 1, (r));
@@ -3591,27 +5912,23 @@ void dump_RDD_SCHEDULING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned 
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 3, 1, (r));
-	bdmf_session_print(session, "\tcodel_dropping           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 2, 1, (r));
 	bdmf_session_print(session, "\tscheduler_type           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 2, 3, 7, (r));
-	bdmf_session_print(session, "\tscheduler_index          = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 1, 2, (r));
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 2, 1, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 2, 0, 1, (r));
 	bdmf_session_print(session, "\tsir_rate_limit_enable    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 1, 1, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 7, 1, (r));
 	bdmf_session_print(session, "\tpir_rate_limit_enable    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 0, 1, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 0, 7, (r));
+	bdmf_session_print(session, "\tscheduler_index          = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	RDP_FIELD_MREAD_8((uint8_t *)(p) + 4, 3, 5, (r));
@@ -3638,6 +5955,234 @@ void dump_RDD_SCHEDULING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned 
 	bdmf_session_print(session, "\tpir_rate_limiter_index   = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_SCHEDULING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 1, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 3, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 3, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 9, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_DHD_RX_COMPLETE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register DHD_RX_COMPLETE_DESCRIPTOR\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tmsg_type                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\tif_id                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tcommon_hdr_flags         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 3, (r));
+	bdmf_session_print(session, "\tepoch                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\trequest_id               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tcompl_msg_hdr_status     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 10, (r));
+	bdmf_session_print(session, "\tflow_ring_id             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\tmeta_buf_len             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 14, (r));
+	bdmf_session_print(session, "\tdata_len                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\tdata_offset              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 18, (r));
+	bdmf_session_print(session, "\tflags                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 20, (r));
+	bdmf_session_print(session, "\trx_status_0              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 24, (r));
+	bdmf_session_print(session, "\trx_status_1              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 28, (r));
+	bdmf_session_print(session, "\tdma_done_mark            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_DHD_RX_COMPLETE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_RATE_LIMITER_BUDGET_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register RATE_LIMITER_BUDGET_DESCRIPTOR\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tcurrent_budget           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\trl_params_desc_0         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 5, (r));
+	bdmf_session_print(session, "\trl_params_desc_1         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\trl_params_desc_2         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 7, (r));
+	bdmf_session_print(session, "\trl_params_desc_3         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_RATE_LIMITER_BUDGET_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_RATE_LIMITER_PARAMS_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -3675,6 +6220,134 @@ void dump_RDD_RATE_LIMITER_PARAMS_DESCRIPTOR(bdmf_session_handle session, unsign
 
 }
 
+void set_RDD_RATE_LIMITER_PARAMS_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p), 14, 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 1, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 2, 0, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 6, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 4, 1, 13, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 4, 0, 17, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_DHD_MONITOR_PKT_INFO(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	int i,j;
+
+	bdmf_session_print(session, "  Register DHD_MONITOR_PKT_INFO\n");
+
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tmax_pkt_delay            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tmin_pkt_delay            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\taver_pkt_delay           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\taccum_pkt_delay          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\taccum_pkt_samples        = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\tts_now                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	bdmf_session_print(session, "\tpkt_delay_hist           =\n\t");
+	for (i=0,j=0; i<8; i++)
+	{
+		MREAD_I_32((uint8_t *)(p) + 20, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+	MREAD_8((uint8_t *)(p) + 52, (r));
+	bdmf_session_print(session, "\thist_bin_shift           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	bdmf_session_print(session, "\treserved1                =\n\t");
+	for (i=0,j=0; i<3; i++)
+	{
+		MREAD_I_8((uint8_t *)(p) + 53, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+	}
+	bdmf_session_print(session, "\n");
+}
+
+void set_RDD_DHD_MONITOR_PKT_INFO(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 20, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 52, (parm[j].number));
+	j++;
+	for (i=0; i<3; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 53, i, (parm[j].number));
+		j++;
+	}
+	
+}
+
 void dump_RDD_POLICER_PARAMS_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -3698,6 +6371,25 @@ void dump_RDD_POLICER_PARAMS_ENTRY(bdmf_session_handle session, unsigned char *p
 
 }
 
+void set_RDD_POLICER_PARAMS_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 7, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_PACKETS_AND_BYTES(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -3713,19 +6405,45 @@ void dump_RDD_PACKETS_AND_BYTES(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_BUFMNG_DESCRIPTOR_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_PACKETS_AND_BYTES(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_FPM_POOL_NUMBER(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register BUFMNG_DESCRIPTOR_ENTRY\n");
+	bdmf_session_print(session, "  Register FPM_POOL_NUMBER\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tbufmng_idx               = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\tbufmng_drop_cntr_idx     = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 2, (r));
+	bdmf_session_print(session, "\tpool_number              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_FPM_POOL_NUMBER(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 2, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_INGRESS_FILTER_CTRL(bdmf_session_handle session, unsigned char *p)
@@ -3751,6 +6469,302 @@ void dump_RDD_INGRESS_FILTER_CTRL(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void set_RDD_INGRESS_FILTER_CTRL(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p), 0, 31, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 4, 0, 31, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_DHD_RX_POST_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register DHD_RX_POST_DESCRIPTOR\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tmsg_type                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\tif_id                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tcommon_hdr_flags         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 3, (r));
+	bdmf_session_print(session, "\tepoch                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\trequest_id               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tmeta_buf_len             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 10, (r));
+	bdmf_session_print(session, "\tdata_len                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\tmetadata_buf_addr_low    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 20, (r));
+	bdmf_session_print(session, "\tmetadata_buf_addr_hi     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 24, (r));
+	bdmf_session_print(session, "\tdata_buf_addr_low        = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 28, (r));
+	bdmf_session_print(session, "\tdata_buf_addr_hi         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_DHD_RX_POST_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_BUFMNG_DESCRIPTOR_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BUFMNG_DESCRIPTOR_ENTRY\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tbufmng_idx               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\tbufmng_drop_cntr_idx     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_BUFMNG_DESCRIPTOR_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_AQM_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register AQM_QUEUE_DESCRIPTOR\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p), 1, 15, (r));
+	bdmf_session_print(session, "\tPI2_QUEUE_DESCRIPTOR_probability= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 0, 0, 17, (r));
+	bdmf_session_print(session, "\tPI2_QUEUE_DESCRIPTOR_packet_select_probability= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p), 1, 15, (r));
+	bdmf_session_print(session, "\tLAQM_QUEUE_DESCRIPTOR_probability= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 0, 2, 15, (r));
+	bdmf_session_print(session, "\tLAQM_QUEUE_DESCRIPTOR_packet_select_probability= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 3, 0, 2, (r));
+	bdmf_session_print(session, "\tLAQM_QUEUE_DESCRIPTOR_reserved= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_AQM_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 0, 0, 17, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 0, 2, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 3, 0, 2, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_IPTV_DDR_CTX_TABLE_ADDRESS(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register IPTV_DDR_CTX_TABLE_ADDRESS\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tlow                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\thigh                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_IPTV_DDR_CTX_TABLE_ADDRESS(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_BUFMNG_STATUS_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	int i,j;
+
+	bdmf_session_print(session, "  Register BUFMNG_STATUS_ENTRY\n");
+
+	bdmf_session_print(session, "\tdhd_tx_queue_occupancy   =\n\t");
+	for (i=0,j=0; i<4; i++)
+	{
+		MREAD_I_32((uint8_t *)(p), i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+	}
+	bdmf_session_print(session, "\n");
+	bdmf_session_print(session, "\tmax_dhd_tx_queue_occupancy=\n\t");
+	for (i=0,j=0; i<4; i++)
+	{
+		MREAD_I_32((uint8_t *)(p) + 16, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+	}
+	bdmf_session_print(session, "\n");
+}
+
+void set_RDD_BUFMNG_STATUS_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<4; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<4; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 16, i, (parm[j].number));
+		j++;
+	}
+	
+}
+
+void dump_RDD_BUFFER_CONG_Q_OCCUPANCY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BUFFER_CONG_Q_OCCUPANCY\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tpacket_cnt               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tbyte_cnt                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_BUFFER_CONG_Q_OCCUPANCY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_MIRRORING_TRUNCATE_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -3762,19 +6776,49 @@ void dump_RDD_MIRRORING_TRUNCATE_ENTRY(bdmf_session_handle session, unsigned cha
 
 }
 
-void dump_RDD_FLUSH_CFG_ENABLE_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_MIRRORING_TRUNCATE_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
+void dump_RDD_MIRRORING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register FLUSH_CFG_ENABLE_ENTRY\n");
+	bdmf_session_print(session, "  Register MIRRORING_DESCRIPTOR\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tenable_fw                = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\tenable_cpu               = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 6, (r));
+	bdmf_session_print(session, "\tdst_vport                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+	RDP_FIELD_MREAD_16((uint8_t *)(p), 0, 9, (r));
+	bdmf_session_print(session, "\tdst_queue                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_MIRRORING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 0, 9, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_VPORT_CFG_EX_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -3812,158 +6856,137 @@ void dump_RDD_VPORT_CFG_EX_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_PI2_PROBABILITY_CALC_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+void set_RDD_VPORT_CFG_EX_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 7, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_IPTV_CLASSIFICATION_CFG_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	int i,j;
+	bdmf_session_print(session, "  Register IPTV_CLASSIFICATION_CFG_ENTRY\n");
 
-	bdmf_session_print(session, "  Register PI2_PROBABILITY_CALC_DESCRIPTOR\n");
-
-	bdmf_session_print(session, "\tpi2_queue_mask           =\n\t");
-	for (i=0,j=0; i<16; i++)
-	{
-		MREAD_I_16((uint8_t *)(p), i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
-		j++;
-		if (j >= 8)
-		{
-			j = 0;
-			bdmf_session_print(session, "\n\t");
-		}
-	}
-	bdmf_session_print(session, "\n");
-	MREAD_16((uint8_t *)(p) + 32, (r));
-	bdmf_session_print(session, "\ttimer_value              = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
+	bdmf_session_print(session, "\tda_prefix_mode_mac       = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 34, (r));
-	bdmf_session_print(session, "\tcalc_iter                = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 6, 1, (r));
+	bdmf_session_print(session, "\tda_prefix_mode_ip        = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 35, (r));
-	bdmf_session_print(session, "\ttarget_delay             = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 5, 1, (r));
+	bdmf_session_print(session, "\tiptv_en                  = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 36, (r));
-	bdmf_session_print(session, "\talpha_coeff              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 38, (r));
-	bdmf_session_print(session, "\tbeta_coeff               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 40, (r));
-	bdmf_session_print(session, "\tticks_per_run            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 41, (r));
-	bdmf_session_print(session, "\tticks_left               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 42, (r));
-	bdmf_session_print(session, "\tds_start_iter            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 43, (r));
-	bdmf_session_print(session, "\tsr_start_iter            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 44, (r));
-	bdmf_session_print(session, "\tus_aqm_q_table           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 46, (r));
-	bdmf_session_print(session, "\tds_aqm_q_table           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 48, (r));
-	bdmf_session_print(session, "\tsr_aqm_q_table           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 50, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 5, (r));
 	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
 
-void dump_RDD_FPI_CFG(bdmf_session_handle session, unsigned char *p)
+void set_RDD_IPTV_CLASSIFICATION_CFG_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 5, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_NAT_CACHE_CFG(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register FPI_CFG\n");
+	bdmf_session_print(session, "  Register NAT_CACHE_CFG\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 5, 3, (r));
-	bdmf_session_print(session, "\tmode                     = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 4, 1, (r));
-	bdmf_session_print(session, "\tspecial_gre              = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tcontext_offset           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 3, 1, (r));
-	bdmf_session_print(session, "\tforce_l2lkp_on_ethertype = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tkey_offset               = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 1, (r));
-	bdmf_session_print(session, "\tlkp_enable               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 6, 4, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 3, 5, (r));
 	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 6, (r));
-	bdmf_session_print(session, "\tdefault_priority         = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 2, 1, (r));
+	bdmf_session_print(session, "\tthree_tuple_enable       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 1, 1, (r));
+	bdmf_session_print(session, "\tesp_filter_action        = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 0, 1, (r));
+	bdmf_session_print(session, "\tesp_filter_enable        = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
 
-void dump_RDD_IPTV_DDR_CTX_TABLE_ADDRESS(bdmf_session_handle session, unsigned char *p)
+void set_RDD_NAT_CACHE_CFG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register IPTV_DDR_CTX_TABLE_ADDRESS\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tlow                      = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\thigh                     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_TR471_SPDSVC_RX_PKT_ID(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register TR471_SPDSVC_RX_PKT_ID\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tsrc_ipaddr               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tdst_ipaddr               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tsrc_port                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 10, (r));
-	bdmf_session_print(session, "\tdst_port                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_LLQ_SELECTOR_ECN(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register LLQ_SELECTOR_ECN\n");
-
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tmask                     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 6, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 6, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 6, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 6, 0, 1, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DHD_TX_COMPLETE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -3992,7 +7015,7 @@ void dump_RDD_DHD_TX_COMPLETE_DESCRIPTOR(bdmf_session_handle session, unsigned c
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tstatus                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tinfo                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 10, (r));
@@ -4005,34 +7028,35 @@ void dump_RDD_DHD_TX_COMPLETE_DESCRIPTOR(bdmf_session_handle session, unsigned c
 
 }
 
-void dump_RDD_DHD_DOORBELL(bdmf_session_handle session, unsigned char *p)
+void set_RDD_DHD_TX_COMPLETE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register DHD_DOORBELL\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tdoorbell_value           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_MIRRORING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register MIRRORING_DESCRIPTOR\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 6, (r));
-	bdmf_session_print(session, "\tdst_vport                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 0, 9, (r));
-	bdmf_session_print(session, "\tdst_queue                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_CPU_RING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -4078,15 +7102,353 @@ void dump_RDD_CPU_RING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_CPU_REDIRECT_MODE_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_CPU_RING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 0, 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 15, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_DHD_PCAP_CONFIG(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register CPU_REDIRECT_MODE_ENTRY\n");
+	bdmf_session_print(session, "  Register DHD_PCAP_CONFIG\n");
 
 	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tmode                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tpcap_rxcopy_en           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\tpcap_txcopy_en           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tpcap_maxlen              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_DHD_PCAP_CONFIG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_TCAM_GENERIC(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register TCAM_GENERIC\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\toffset                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 2, 6, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 2, (r));
+	bdmf_session_print(session, "\tlayer                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_TCAM_GENERIC(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 2, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_DEBUG_PRINT_INFO(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register DEBUG_PRINT_INFO\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\taddr_low                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\taddr_high                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tsize                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\ttable_id                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 12, 0, 24, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_DEBUG_PRINT_INFO(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 12, 0, 24, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_GDX_PARAMS(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register GDX_PARAMS\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tbase_addr_low            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tbase_addr_high           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 10, (r));
+	bdmf_session_print(session, "\thit_value                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 11, (r));
+	bdmf_session_print(session, "\tdrop_value               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_GDX_PARAMS(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 11, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_BUFFER_CONG_MGT(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BUFFER_CONG_MGT\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tdqm_not_empty_address    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tdqm_valid_ctr_address    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tug_counter_address       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\tug_threshold_high        = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\tug_threshold_low         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 20, (r));
+	bdmf_session_print(session, "\tmin_queue_bytes          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 24, 7, 1, (r));
+	bdmf_session_print(session, "\tenabled                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 24, 8, 23, (r));
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 27, (r));
+	bdmf_session_print(session, "\trelative_queue_index     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 28, 7, 9, (r));
+	bdmf_session_print(session, "\tstart_queue              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 28, 14, 9, (r));
+	bdmf_session_print(session, "\tend_queue                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 30, 5, 1, (r));
+	bdmf_session_print(session, "\tfw_state                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 30, 0, 5, (r));
+	bdmf_session_print(session, "\treserved2                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 31, (r));
+	bdmf_session_print(session, "\tnum_pds_to_flush         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 32, (r));
+	bdmf_session_print(session, "\tcong_queue_idx           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 34, (r));
+	bdmf_session_print(session, "\tcong_queue_occupancy     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 36, (r));
+	bdmf_session_print(session, "\tcong_detected            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 40, (r));
+	bdmf_session_print(session, "\tcong_cleared             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 44, (r));
+	bdmf_session_print(session, "\tcong_detection_time      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_BUFFER_CONG_MGT(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 24, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 24, 8, 23, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 27, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 28, 7, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 28, 14, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 30, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 30, 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 31, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 34, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_TCAM_TABLE_CFG(bdmf_session_handle session, unsigned char *p)
@@ -4100,27 +7462,85 @@ void dump_RDD_TCAM_TABLE_CFG(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_IPTV_CLASSIFICATION_CFG_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_TCAM_TABLE_CFG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
+void dump_RDD_ENABLED_QUEUES_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register IPTV_CLASSIFICATION_CFG_ENTRY\n");
+	int i,j;
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
-	bdmf_session_print(session, "\tda_prefix_mode_mac       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "  Register ENABLED_QUEUES_ENTRY\n");
+
+	bdmf_session_print(session, "\tbitmap                   =\n\t");
+	for (i=0,j=0; i<16; i++)
+	{
+		MREAD_I_16((uint8_t *)(p), i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+	MREAD_8((uint8_t *)(p) + 32, (r));
+	bdmf_session_print(session, "\tcalc_iter                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 6, 1, (r));
-	bdmf_session_print(session, "\tda_prefix_mode_ip        = 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 33, (r));
+	bdmf_session_print(session, "\treserved3                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 5, 1, (r));
-	bdmf_session_print(session, "\tiptv_en                  = 0x%08x", (unsigned int)r);
+}
+
+void set_RDD_ENABLED_QUEUES_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<16; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_16((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 33, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_INGRESS_FILTER_CFG(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register INGRESS_FILTER_CFG\n");
+
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 5, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
+}
 
+void set_RDD_INGRESS_FILTER_CFG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
 }
 
 void dump_RDD_UPDATE_FIFO_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -4150,29 +7570,211 @@ void dump_RDD_UPDATE_FIFO_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_BUFMNG_STATUS_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_UPDATE_FIFO_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 2, 0, 9, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register VPORT_TO_RL_OVERHEAD_ENTRY\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\trl_overhead              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_VPORT_TO_RL_OVERHEAD_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
+void dump_RDD_FW_FLUSH_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
 	int i,j;
 
-	bdmf_session_print(session, "  Register BUFMNG_STATUS_ENTRY\n");
+	bdmf_session_print(session, "  Register FW_FLUSH_ENTRY\n");
 
-	bdmf_session_print(session, "\tdhd_tx_queue_occupancy   =\n\t");
-	for (i=0,j=0; i<4; i++)
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
+	bdmf_session_print(session, "\tFLUSH_CFG_enabled        = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p), 6, 9, (r));
+	bdmf_session_print(session, "\tFLUSH_CFG_qm_queue       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 0, 8, 14, (r));
+	bdmf_session_print(session, "\tFLUSH_CFG_reserved       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 3, (r));
+	bdmf_session_print(session, "\tFLUSH_CFG_pi2_start_threshold= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tFLUSH_CFG_pi2_stop_threshold= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 5, (r));
+	bdmf_session_print(session, "\tFLUSH_CFG_pd_limit       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\tFLUSH_REQUEST_U_FLUSH_REQUEST= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	bdmf_session_print(session, "\tflush_queues_bitmap      =\n\t");
+	for (i=0,j=0; i<5; i++)
 	{
-		MREAD_I_32((uint8_t *)(p), i, (r));
+		MREAD_I_32((uint8_t *)(p) + 8, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 	}
 	bdmf_session_print(session, "\n");
-	bdmf_session_print(session, "\tmax_dhd_tx_queue_occupancy=\n\t");
-	for (i=0,j=0; i<4; i++)
+}
+
+void set_RDD_FW_FLUSH_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 6, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 0, 8, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	for (i=0; i<5; i++)
 	{
-		MREAD_I_32((uint8_t *)(p) + 16, i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 8, i, (parm[j].number));
 		j++;
 	}
+	
+}
+
+void dump_RDD_DCL_DATA(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register DCL_DATA\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\trnr_address              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 4, 1, 15, (r));
+	bdmf_session_print(session, "\tsize                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 5, 0, 1, (r));
+	bdmf_session_print(session, "\tdcl_act                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tddr_addr_h               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\tddr_addr_l               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\tstack_addr               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 20, (r));
+	bdmf_session_print(session, "\tstack_addr_1             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 24, (r));
+	bdmf_session_print(session, "\tstack_addr_2             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 28, (r));
+	bdmf_session_print(session, "\ttask_addr                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_DCL_DATA(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 4, 1, 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -4250,50 +7852,62 @@ void dump_RDD_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p
 
 }
 
-void dump_RDD_NAT_CACHE_CFG(bdmf_session_handle session, unsigned char *p)
+void set_RDD_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register NAT_CACHE_CFG\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tcontext_offset           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tkey_offset               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 3, 5, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 2, 1, (r));
-	bdmf_session_print(session, "\tthree_tuple_enable       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 1, 1, (r));
-	bdmf_session_print(session, "\tesp_filter_action        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 6, 0, 1, (r));
-	bdmf_session_print(session, "\tesp_filter_enable        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_VPORT_TO_RL_OVERHEAD_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register VPORT_TO_RL_OVERHEAD_ENTRY\n");
-
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\trl_overhead              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 4, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 2, 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 2, 0, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 7, 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 7, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 7, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DHD_HW_CONFIGURATION(bdmf_session_handle session, unsigned char *p)
@@ -4336,7 +7950,7 @@ void dump_RDD_DHD_HW_CONFIGURATION(bdmf_session_handle session, unsigned char *p
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 14, (r));
-	bdmf_session_print(session, "\treserved2                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\ttx_headroom              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	bdmf_session_print(session, "\tradio_to_db_idx_map      =\n\t");
@@ -4347,6 +7961,47 @@ void dump_RDD_DHD_HW_CONFIGURATION(bdmf_session_handle session, unsigned char *p
 		j++;
 	}
 	bdmf_session_print(session, "\n");
+}
+
+void set_RDD_DHD_HW_CONFIGURATION(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 4, 0, 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+	for (i=0; i<4; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 16, i, (parm[j].number));
+		j++;
+	}
+	
 }
 
 void dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -4364,23 +8019,115 @@ void dump_RDD_AQM_QUEUE_TIMER_DESCRIPTOR(bdmf_session_handle session, unsigned c
 
 }
 
-void dump_RDD_SPDSVC_WLAN_GEN_PARAMS(bdmf_session_handle session, unsigned char *p)
+void set_RDD_AQM_QUEUE_TIMER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 1, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_PI2_PROBABILITY_CALC_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register SPDSVC_WLAN_GEN_PARAMS\n");
+	bdmf_session_print(session, "  Register PI2_PROBABILITY_CALC_DESCRIPTOR\n");
 
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tcomplete_tracked         = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_32((uint8_t *)(p), 8, 24, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\ttx_copies                = 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 3, (r));
+	bdmf_session_print(session, "\ttarget_delay             = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tspdsvc_free_idx          = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\talpha_coeff              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+	MREAD_16((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\tbeta_coeff               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tticks_per_run            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 9, (r));
+	bdmf_session_print(session, "\tticks_left               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 10, (r));
+	bdmf_session_print(session, "\tds_start_iter            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 11, (r));
+	bdmf_session_print(session, "\tsr_start_iter            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\tus_aqm_q_table           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 14, (r));
+	bdmf_session_print(session, "\tds_aqm_q_table           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\tsr_aqm_q_table           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 18, (r));
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_PI2_PROBABILITY_CALC_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p), 8, 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 18, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_FPM_GLOBAL_CFG(bdmf_session_handle session, unsigned char *p)
@@ -4446,69 +8193,53 @@ void dump_RDD_FPM_GLOBAL_CFG(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_DEBUG_PRINT_INFO(bdmf_session_handle session, unsigned char *p)
+void set_RDD_FPM_GLOBAL_CFG(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register DEBUG_PRINT_INFO\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\taddr_low                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\taddr_high                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tsize                     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\ttable_id                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 12, 0, 24, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_GDX_PARAMS(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register GDX_PARAMS\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tbase_addr_low            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tbase_addr_high           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 10, (r));
-	bdmf_session_print(session, "\thit_value                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 11, (r));
-	bdmf_session_print(session, "\tdrop_value               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_INGRESS_FILTER_CFG(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register INGRESS_FILTER_CFG\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tres_offset               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 15, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 25, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 26, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 27, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_MULTICAST_KEY_MASK_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -4526,361 +8257,95 @@ void dump_RDD_MULTICAST_KEY_MASK_ENTRY(bdmf_session_handle session, unsigned cha
 
 }
 
-void dump_RDD_TCPSPDTEST_STREAM(bdmf_session_handle session, unsigned char *p)
+void set_RDD_MULTICAST_KEY_MASK_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_IP_REASM_TUPLE(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register IP_REASM_TUPLE\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tipsa                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tipda                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\tipid                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 12, 1, 31, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 15, 0, 1, (r));
+	bdmf_session_print(session, "\tavailable                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_IP_REASM_TUPLE(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 12, 1, 31, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 15, 0, 1, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_IP_REASM_TIMER_INFO_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
 	int i,j;
 
-	bdmf_session_print(session, "  Register TCPSPDTEST_STREAM\n");
+	bdmf_session_print(session, "  Register IP_REASM_TIMER_INFO_ENTRY\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_CONN_INFO_cpu_rx_rdd_queue= 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tcurr_tick                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_CONN_INFO_up_pppoe_hdr_ofs= 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tcheck_tick               = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_CONN_INFO_up_peer_rx_scale= 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\toldest_reasm_ctx_idx     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 3, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_CONN_INFO_sack_permitted= 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_32((uint8_t *)(p) + 4, 0, 24, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_CONN_INFO_up_tx_mss= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 6, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_CONN_INFO_up_tx_max_pd_len= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_rx_pkts= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_txed_pkts= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_freed_pkts= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_ack_seq= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_tx_seq= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_bad_pkts= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 30, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_src_port= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 32, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_rx_bytes= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 36, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_rx_bytes_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 40, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_expected_bytes= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 44, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_expected_bytes_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 48, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_to_send_bytes= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 52, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_to_send_bytes_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 56, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_no_dispatcher_credits= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 58, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_no_pktgen_tx_credits= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 60, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_cwnd= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 64, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_cwnd_thr= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 68, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_cwnd_initial= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 72, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_cwnd_max= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 76, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_cwnd_budget= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 80, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_last_ack_seq= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 84, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_last_ack_time= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 88, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_sack_bytes= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 92, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_fast_retrans_trig_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 96, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_dup_ack_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 100, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_dup_ack_seq_done= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 104, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_dup_ack_total_pkts_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 106, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_fast_retrans_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 108, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_err_dn_pkt_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 109, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_dn_err_up_pkt_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 110, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_cwnd_rtt_factor= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 111, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_err_dst_port_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 112, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_dynack_bytes_thr= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 114, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_dynack_bytes_thr_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 116, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_dynack_thr_upd_rate= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 117, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_dynack_thr_upd_rate_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 118, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_dup_ack_state= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 119, 6, 2, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_reserved2= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 119, 5, 1, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_dn_is_pkt_drop_driver_wakeup= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 119, 4, 1, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_dn_is_pkt_drop_force_ack= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 119, 3, 1, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_is_rx_win_stop= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 119, 2, 1, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_up_is_timeout= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 119, 1, 1, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_is_stream_active= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 119, 0, 1, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_TCB_is_upload= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 120, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_drop_state= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 121, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_is_win_full= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 122, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_num_errs= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 124, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_wr_ofs= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 126, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_rd_ofs= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 128, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_ack_seq_err_start= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 132, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_rx_l4_seq= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 136, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_ring_rd_wr_ofs= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 140, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_ring_rd_wr_ofs_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 144, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_rx_l3_hdr_len= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 148, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_rx_l3_payload_len= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 152, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_packet_descriptor_0= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 156, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_packet_descriptor_0_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 160, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_packet_descriptor_2= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 164, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_PKT_DROP_saved_packet_descriptor_2_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 168, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_addr_low= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 172, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_addr_high= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 176, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_send_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 180, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_drop_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 184, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_retrans_addr_low= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 188, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_retrans_addr_high= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 192, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_sack_opt_addr_low= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 196, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_sack_opt_addr_high= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 200, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_sack_opt_send_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 204, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_sack_opt_drop_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 208, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_pkt_drop_rx_seq_addr_low= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 212, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_pkt_drop_rx_seq_addr_high= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 216, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_pkt_drop_rx_seq_send_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 220, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_pkt_drop_rx_seq_drop_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 224, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_sack_opt_total_parsed_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 228, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_retrans_receive_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 232, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_scratchpad_metadata_wr_ofs= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 234, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_reserved1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 236, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_coalescing_timeout_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 240, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_coalescing_fill_pkt_cnt= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 244, (r));
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_coalescing_last_time= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_scratchpad=\n\t");
-	for (i=0,j=0; i<8; i++)
+	bdmf_session_print(session, "\tinuse_mask               =\n\t");
+	for (i=0,j=0; i<32; i++)
 	{
-		MREAD_I_32((uint8_t *)(p) + 248, i, (r));
+		MREAD_I_32((uint8_t *)(p) + 8, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -4890,10 +8355,10 @@ void dump_RDD_TCPSPDTEST_STREAM(bdmf_session_handle session, unsigned char *p)
 		}
 	}
 	bdmf_session_print(session, "\n");
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_rto_tx_seq_scratchpad_metadata=\n\t");
-	for (i=0,j=0; i<16; i++)
+	bdmf_session_print(session, "\ttimeout_mask             =\n\t");
+	for (i=0,j=0; i<32; i++)
 	{
-		MREAD_I_32((uint8_t *)(p) + 280, i, (r));
+		MREAD_I_32((uint8_t *)(p) + 136, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -4903,10 +8368,10 @@ void dump_RDD_TCPSPDTEST_STREAM(bdmf_session_handle session, unsigned char *p)
 		}
 	}
 	bdmf_session_print(session, "\n");
-	bdmf_session_print(session, "\tTCPSPDTEST_ENGINE_RING_sack_opt_scratchpad_metadata=\n\t");
-	for (i=0,j=0; i<8; i++)
+	bdmf_session_print(session, "\ttimeout_values           =\n\t");
+	for (i=0,j=0; i<128; i++)
 	{
-		MREAD_I_32((uint8_t *)(p) + 344, i, (r));
+		MREAD_I_16((uint8_t *)(p) + 264, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 		if (j >= 8)
@@ -4918,155 +8383,44 @@ void dump_RDD_TCPSPDTEST_STREAM(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 }
 
-void dump_RDD_PKTGEN_TX_STREAM_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_IP_REASM_TIMER_INFO_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register PKTGEN_TX_STREAM_ENTRY\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_size         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_offset       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_reserved     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr          = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_1        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_2        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_3        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_4        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_5        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 32, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_6        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 36, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_7        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 40, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_8        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 44, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_9        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 48, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_10       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 52, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_11       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 56, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_12       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 60, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_13       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 64, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_14       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 68, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_15       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 72, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_16       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 76, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_17       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 80, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_18       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 84, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_19       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 88, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_20       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 92, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_21       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 96, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_22       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 100, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_23       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 104, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_24       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 108, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_25       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 112, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_26       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 116, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_27       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 120, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_28       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 124, (r));
-	bdmf_session_print(session, "\tREF_PKT_HDR_hdr_29       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 128, (r));
-	bdmf_session_print(session, "\tENTRY_PARMS_wan_flow     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 130, (r));
-	bdmf_session_print(session, "\tENTRY_PARMS_reserved     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 132, (r));
-	bdmf_session_print(session, "\tENTRY_PARMS_tcp_udp_parms= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 4, 0, 24, (parm[j].number));
+	j++;
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 8, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 136, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<128; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_16((uint8_t *)(p) + 264, i, (parm[j].number));
+		j++;
+	}
+	
 }
 
 void dump_RDD_TX_ABS_RECYCLE_COUNTERS_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -5084,362 +8438,172 @@ void dump_RDD_TX_ABS_RECYCLE_COUNTERS_ENTRY(bdmf_session_handle session, unsigne
 
 }
 
-void dump_RDD_PKTGEN_SBPM_HDR_BN(bdmf_session_handle session, unsigned char *p)
+void set_RDD_TX_ABS_RECYCLE_COUNTERS_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register PKTGEN_SBPM_HDR_BN\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 2, 14, (r));
-	bdmf_session_print(session, "\tfirst_bn                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 1, 0, 2, (r));
-	bdmf_session_print(session, "\text_idx                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
 }
 
-void dump_RDD_SPDSVC_GEN_PARAMS(bdmf_session_handle session, unsigned char *p)
+void dump_RDD_IP_REASM_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register SPDSVC_GEN_PARAMS\n");
+	int i,j;
 
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tprocessing_tx_pd_0       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "  Register IP_REASM_CONTEXT_ENTRY\n");
+
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tcurrent_ip_packet_length = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tprocessing_tx_pd_1       = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\texpected_ip_packet_length= 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tpkt_frag_ip_hdr_offset   = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 5, (r));
+	bdmf_session_print(session, "\tpkt_outer_ip_hdr_offset  = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\treserved2                = 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\tflags                    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\treserved3                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\tprocessing_tx_pd_2       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\tprocessing_tx_pd_3       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 32, (r));
-	bdmf_session_print(session, "\ttotal_copies             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 36, (r));
-	bdmf_session_print(session, "\tbucket                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 40, (r));
-	bdmf_session_print(session, "\ttimer_period             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 42, (r));
-	bdmf_session_print(session, "\ttotal_length             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 44, (r));
-	bdmf_session_print(session, "\ttx_packets               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 48, (r));
-	bdmf_session_print(session, "\ttx_dropped               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 52, (r));
-	bdmf_session_print(session, "\ttokens                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 56, (r));
-	bdmf_session_print(session, "\tbucket_size              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_PKTGEN_SBPM_EXT(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register PKTGEN_SBPM_EXT\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 2, 14, (r));
-	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 0, 14, 4, (r));
-	bdmf_session_print(session, "\tnum_of_bns               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 2, 0, 14, (r));
-	bdmf_session_print(session, "\tbn1                      = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_UDPSPDT_STREAM_TX_STAT(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register UDPSPDT_STREAM_TX_STAT\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\ttx_packets_1             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\ttx_packets_0             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\ttx_no_sbpm               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tfirst_ts                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tlast_ts_1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tlast_ts_0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\tiperf3_ts_sec            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\tiperf3_ts_usec           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 32, (r));
-	bdmf_session_print(session, "\tbad_proto_cntr           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 34, (r));
-	bdmf_session_print(session, "\ttime_slice_expire        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 36, (r));
-	bdmf_session_print(session, "\ttx_drops_no_sbpm_timer_stop= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 38, 1, 15, (r));
+	MREAD_8((uint8_t *)(p) + 7, (r));
 	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 39, 0, 1, (r));
-	bdmf_session_print(session, "\tfirst_ts_set             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tip_reasm_pd_info         =\n\t");
+	for (i=0,j=0; i<72; i++)
+	{
+		MREAD_I_8((uint8_t *)(p) + 8, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
 	bdmf_session_print(session, "\n");
-
 }
 
-void dump_RDD_TCPSPDTEST_ENGINE_GLOBAL_INFO(bdmf_session_handle session, unsigned char *p)
+void set_RDD_IP_REASM_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
+	for (i=0; i<72; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 8, i, (parm[j].number));
+		j++;
+	}
+	
+}
+
+void dump_RDD_IP_REASM_PREPEND_DATA(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register TCPSPDTEST_ENGINE_GLOBAL_INFO\n");
+	bdmf_session_print(session, "  Register IP_REASM_PREPEND_DATA\n");
 
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tnum_streams              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 1, (r));
-	bdmf_session_print(session, "\twakeup_stream_id         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tdn_pkt_drop_fw_wakeup_vector= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 3, (r));
-	bdmf_session_print(session, "\tnum_bns                  = 0x%08x", (unsigned int)r);
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tipsa                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tstream_vector            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tipda                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tup_bucket_tokens         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tipid                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tup_bucket_full_tokens    = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\tip_hdr_frag_offset       = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tup_bucket_tokens_fill_rate= 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 14, (r));
+	bdmf_session_print(session, "\tpayload_length           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\tpkt_frag_ip_hdr_offset   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 17, (r));
+	bdmf_session_print(session, "\tpkt_outer_ip_hdr_offset  = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_8((uint8_t *)(p) + 18, (r));
-	bdmf_session_print(session, "\tup_next_stream_id        = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\tflags                    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 19, 1, 7, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 19, 0, 1, (r));
-	bdmf_session_print(session, "\tup_is_timer_active       = 0x%08x", (unsigned int)r);
+	MREAD_8((uint8_t *)(p) + 19, (r));
+	bdmf_session_print(session, "\tflow                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
 
-void dump_RDD_PKTGEN_TX_PARAMS(bdmf_session_handle session, unsigned char *p)
+void set_RDD_IP_REASM_PREPEND_DATA(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register PKTGEN_TX_PARAMS\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tbbmsg_sbpm_mcast_inc_req_0= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tbbmsg_sbpm_mcast_inc_req_1= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tref_pd_0                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tref_pd_1                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tref_pd_2                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tref_pd_3                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 24, 4, 4, (r));
-	bdmf_session_print(session, "\ttask_num                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 24, 0, 28, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\treserved2                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 30, (r));
-	bdmf_session_print(session, "\tbad_tx_num_of_bns        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_SPDSVC_TCPSPDTEST_COMMON_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register SPDSVC_TCPSPDTEST_COMMON_ENTRY\n");
-
-	MREAD_8((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tcpu_rx_copy_is_tcpspdtest_timeout_wakeup= 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_UDPSPDT_TX_PARAMS(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register UDPSPDT_TX_PARAMS\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\ttotal_num_of_pkts        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tpacket_size              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 6, (r));
-	bdmf_session_print(session, "\tlast_packet_size         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tcurr_bucket              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tbucket_budget            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tlast_packet_start_idx    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tmax_bucket_size          = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_PKTGEN_FPM_UG_MGMT_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register PKTGEN_FPM_UG_MGMT_ENTRY\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tfpm_ug_cnt_dummy         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tfpm_ug_cnt               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tfpm_ug_cnt_reg_addr      = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_32((uint8_t *)(p) + 12, 4, 28, (r));
-	bdmf_session_print(session, "\tfpm_ug_threshold         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 15, 0, 4, (r));
-	bdmf_session_print(session, "\tfpm_tokens_quantum       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tbudget                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_PKTGEN_TX_STREAM_SCRATCH_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register PKTGEN_TX_STREAM_SCRATCH_ENTRY\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tcsum_value               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 6, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 17, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 18, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 19, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_CPU_INTERRUPT_COALESCING_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -5467,6 +8631,28 @@ void dump_RDD_CPU_INTERRUPT_COALESCING_ENTRY(bdmf_session_handle session, unsign
 	bdmf_session_print(session, "\trecycle_timer_factor     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_CPU_INTERRUPT_COALESCING_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_SG_DESC_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -5535,6 +8721,54 @@ void dump_RDD_SG_DESC_ENTRY(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 }
 
+void set_RDD_SG_DESC_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 8, i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<4; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_16((uint8_t *)(p) + 40, i, (parm[j].number));
+		j++;
+	}
+	
+}
+
 void dump_RDD_CPU_RING_INTERRUPT_COUNTER_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -5550,6 +8784,19 @@ void dump_RDD_CPU_RING_INTERRUPT_COUNTER_ENTRY(bdmf_session_handle session, unsi
 
 }
 
+void set_RDD_CPU_RING_INTERRUPT_COUNTER_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_CPU_TX_RING_INDICES(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -5563,6 +8810,19 @@ void dump_RDD_CPU_TX_RING_INDICES(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\twrite_idx                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_CPU_TX_RING_INDICES(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_RING_CPU_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -5640,6 +8900,64 @@ void dump_RDD_RING_CPU_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char 
 
 }
 
+void set_RDD_RING_CPU_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 6, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 0, 8, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 8, 4, 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 9, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 9, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 9, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 9, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_CPU_TX_SYNC_FIFO_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -5661,6 +8979,25 @@ void dump_RDD_CPU_TX_SYNC_FIFO_ENTRY(bdmf_session_handle session, unsigned char 
 	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_CPU_TX_SYNC_FIFO_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_SG_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -5782,6 +9119,97 @@ void dump_RDD_SG_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void set_RDD_SG_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 34, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 38, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 42, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 46, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 48, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 50, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 51, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 52, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 54, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 56, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 58, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 60, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 61, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 61, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 62, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_CRYPTO_SESSION_PARAMS(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -5815,12 +9243,12 @@ void dump_RDD_CRYPTO_SESSION_PARAMS(bdmf_session_handle session, unsigned char *
 	bdmf_session_print(session, "\tipv6                     = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 8, 6, 5, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p) + 8, 2, 1, (r));
+	bdmf_session_print(session, "\tipv4_in_ipv6             = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 9, 0, 6, (r));
-	bdmf_session_print(session, "\tchksm_offset             = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_16((uint8_t *)(p) + 8, 0, 10, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_8((uint8_t *)(p) + 10, (r));
@@ -5831,6 +9259,46 @@ void dump_RDD_CRYPTO_SESSION_PARAMS(bdmf_session_handle session, unsigned char *
 	bdmf_session_print(session, "\tiv_size                  = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_CRYPTO_SESSION_PARAMS(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 8, 0, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 11, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_CPU_RX_METER_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -5860,90 +9328,26 @@ void dump_RDD_CPU_RX_METER_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_SPDSVC_ANALYZER_PARAMS(bdmf_session_handle session, unsigned char *p)
+void set_RDD_CPU_RX_METER_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register SPDSVC_ANALYZER_PARAMS\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tstream                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tstream1                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tstream2                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tstream3                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_UDPSPDT_STREAM_RX_STAT(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register UDPSPDT_STREAM_RX_STAT\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\trx_bytes_1               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\trx_bytes_0               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\trx_packets_1             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\trx_packets_0             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tts_first                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tts_last_1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\tts_last_0                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 28, 7, 1, (r));
-	bdmf_session_print(session, "\tts_first_set             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 28, 0, 15, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 30, (r));
-	bdmf_session_print(session, "\tbad_proto_cntr           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 32, (r));
-	bdmf_session_print(session, "\tiperf3_rx_packet_lost_1  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 36, (r));
-	bdmf_session_print(session, "\tiperf3_rx_packet_lost_0  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 40, (r));
-	bdmf_session_print(session, "\tiperf3_rx_out_of_order_1 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 44, (r));
-	bdmf_session_print(session, "\tiperf3_rx_out_of_order_0 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_CSO_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -6064,6 +9468,92 @@ void dump_RDD_CSO_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void set_RDD_CSO_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	for (i=0; i<24; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 32, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 128, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 132, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 136, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 140, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 144, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 148, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 152, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 156, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 160, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 164, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 168, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 170, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 172, 1, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 172, 0, 25, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_CRYPTO_SESSION_SEQ_INFO(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -6166,6 +9656,80 @@ void dump_RDD_CRYPTO_SESSION_SEQ_INFO(bdmf_session_handle session, unsigned char
 	bdmf_session_print(session, "\n");
 }
 
+void set_RDD_CRYPTO_SESSION_SEQ_INFO(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 48, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 52, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 56, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 60, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 64, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 68, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 72, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 76, (parm[j].number));
+	j++;
+	for (i=0; i<12; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 80, i, (parm[j].number));
+		j++;
+	}
+	
+}
+
 void dump_RDD_SPU_OFFLOAD_PARAMS(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -6196,29 +9760,122 @@ void dump_RDD_SPU_OFFLOAD_PARAMS(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	MREAD_32((uint8_t *)(p) + 24, (r));
+	bdmf_session_print(session, "\tprepend_base_lo          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 28, (r));
+	bdmf_session_print(session, "\tprepend_base_hi          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 32, (r));
 	bdmf_session_print(session, "\tdoorbell_reg             = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 28, (r));
+	MREAD_16((uint8_t *)(p) + 36, (r));
 	bdmf_session_print(session, "\twrite_idx                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 30, (r));
+	MREAD_16((uint8_t *)(p) + 38, (r));
 	bdmf_session_print(session, "\tshadow_read_idx          = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 32, (r));
+	MREAD_16((uint8_t *)(p) + 40, (r));
 	bdmf_session_print(session, "\tdiscarded                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 34, (r));
+	MREAD_16((uint8_t *)(p) + 42, (r));
 	bdmf_session_print(session, "\tirq_id                   = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_32((uint8_t *)(p) + 36, (r));
+	MREAD_32((uint8_t *)(p) + 44, (r));
 	bdmf_session_print(session, "\treqid                    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_SPU_OFFLOAD_PARAMS(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 38, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 42, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_SPU_FPI_TUNNEL(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	int i,j;
+
+	bdmf_session_print(session, "  Register SPU_FPI_TUNNEL\n");
+
+	bdmf_session_print(session, "\tmapping                  =\n\t");
+	for (i=0,j=0; i<32; i++)
+	{
+		MREAD_I_8((uint8_t *)(p), i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+}
+
+void set_RDD_SPU_FPI_TUNNEL(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
 }
 
 void dump_RDD_SPDSVC_RX_TS_STAT(bdmf_session_handle session, unsigned char *p)
@@ -6244,19 +9901,23 @@ void dump_RDD_SPDSVC_RX_TS_STAT(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_UDPSPDT_SCRATCH_IPERF3_RX(bdmf_session_handle session, unsigned char *p)
+void set_RDD_SPDSVC_RX_TS_STAT(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register UDPSPDT_SCRATCH_IPERF3_RX\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\trx_packets_0             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\trx_packets_1             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 8, 1, 31, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 11, 0, 1, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -6302,6 +9963,40 @@ void dump_RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY(bdmf_session_handle session, unsigne
 
 }
 
+void set_RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 11, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_DHD_AUX_INFO_CACHE_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -6339,6 +10034,37 @@ void dump_RDD_DHD_AUX_INFO_CACHE_ENTRY(bdmf_session_handle session, unsigned cha
 	bdmf_session_print(session, "\tcodel_drop_counter       = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_DHD_AUX_INFO_CACHE_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DHD_POST_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -6581,71 +10307,313 @@ void dump_RDD_DHD_POST_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsigned 
 	bdmf_session_print(session, "\tbq_num_entries           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	bdmf_session_print(session, "\treserved3                =\n\t");
-	for (i=0,j=0; i<2; i++)
-	{
-		MREAD_I_8((uint8_t *)(p) + 194, i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
-		j++;
-	}
+	MREAD_16((uint8_t *)(p) + 194, (r));
+	bdmf_session_print(session, "\tcur_fr_id                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 196, (r));
+	bdmf_session_print(session, "\tcur_monitor_profile      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
 	bdmf_session_print(session, "\treserved4                =\n\t");
-	for (i=0,j=0; i<4; i++)
+	for (i=0,j=0; i<3; i++)
 	{
-		MREAD_I_8((uint8_t *)(p) + 196, i, (r));
+		MREAD_I_8((uint8_t *)(p) + 197, i, (r));
 		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
 		j++;
 	}
 	bdmf_session_print(session, "\n");
 }
 
-void dump_RDD_FPM_RING_CFG_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_DHD_POST_COMMON_RADIO_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 48, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 50, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 52, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 54, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 56, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 60, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 60, 5, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 60, 2, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 60, 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 60, 0, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 61, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 62, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 63, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 64, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 66, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 67, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 68, (parm[j].number));
+	j++;
+	for (i=0; i<7; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 72, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 100, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 102, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 104, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 104, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 104, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 106, 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 106, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 106, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 106, 0, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 107, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 108, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 112, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 116, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 118, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 119, (parm[j].number));
+	j++;
+	for (i=0; i<64; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 120, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 184, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 185, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 186, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 187, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 188, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 188, 1, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 188, 0, 9, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 190, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 192, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 194, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 196, (parm[j].number));
+	j++;
+	for (i=0; i<3; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p) + 197, i, (parm[j].number));
+		j++;
+	}
+	
+}
+
+void dump_RDD_DHD_MONITOR_BQ_INFO(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	int i,j;
+	bdmf_session_print(session, "  Register DHD_MONITOR_BQ_INFO\n");
 
-	bdmf_session_print(session, "  Register FPM_RING_CFG_ENTRY\n");
-
-	bdmf_session_print(session, "\tbase_addr                =\n\t");
-	for (i=0,j=0; i<2; i++)
-	{
-		MREAD_I_32((uint8_t *)(p), i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
-		j++;
-	}
-	bdmf_session_print(session, "\n");
-	bdmf_session_print(session, "\tidx_addr                 =\n\t");
-	for (i=0,j=0; i<2; i++)
-	{
-		MREAD_I_32((uint8_t *)(p) + 8, i, (r));
-		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
-		j++;
-	}
-	bdmf_session_print(session, "\n");
-	MREAD_16((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tclr_tail_offset          = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tfr_id                    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 18, (r));
-	bdmf_session_print(session, "\tclr_tail_size            = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tradio_id                 = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 20, 7, 1, (r));
-	bdmf_session_print(session, "\tis_valid                 = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tmax_bq_amount            = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_8((uint8_t *)(p) + 20, 6, 1, (r));
-	bdmf_session_print(session, "\tprio                     = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\tmin_bq_amount            = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	RDP_FIELD_MREAD_16((uint8_t *)(p) + 20, 0, 14, (r));
-	bdmf_session_print(session, "\tbuffer_nums              = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 8, (r));
+	bdmf_session_print(session, "\taver_bq_amount           = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_16((uint8_t *)(p) + 22, (r));
-	bdmf_session_print(session, "\tbuffer_size              = 0x%08x", (unsigned int)r);
+	MREAD_16((uint8_t *)(p) + 10, (r));
+	bdmf_session_print(session, "\tmax_bq_delay             = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+	MREAD_16((uint8_t *)(p) + 12, (r));
+	bdmf_session_print(session, "\tmin_bq_delay             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 14, (r));
+	bdmf_session_print(session, "\taver_bq_delay            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 16, (r));
+	bdmf_session_print(session, "\taccum_bq_amount          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 20, (r));
+	bdmf_session_print(session, "\taccum_bq_delay           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 24, (r));
+	bdmf_session_print(session, "\taccum_samples            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 28, (r));
+	bdmf_session_print(session, "\tts_now                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_DHD_MONITOR_BQ_INFO(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DHD_BACKUP_IDX_CACHE_TABLE(bdmf_session_handle session, unsigned char *p)
@@ -6670,15 +10638,88 @@ void dump_RDD_DHD_BACKUP_IDX_CACHE_TABLE(bdmf_session_handle session, unsigned c
 	bdmf_session_print(session, "\n");
 }
 
-void dump_RDD_SPDSVC_WLAN_TXPOST_PARAMS(bdmf_session_handle session, unsigned char *p)
+void set_RDD_DHD_BACKUP_IDX_CACHE_TABLE(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<16; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_16((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
+}
+
+void dump_RDD_FPM_RING_BUFMNG_CNT(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register SPDSVC_WLAN_TXPOST_PARAMS\n");
+	int i,j;
 
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tspdsvc_free_idx          = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "  Register FPM_RING_BUFMNG_CNT\n");
+
+	bdmf_session_print(session, "\tfree_cnt_req             =\n\t");
+	for (i=0,j=0; i<32; i++)
+	{
+		MREAD_I_32((uint8_t *)(p), i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+	bdmf_session_print(session, "\tfree_cnt_done            =\n\t");
+	for (i=0,j=0; i<32; i++)
+	{
+		MREAD_I_32((uint8_t *)(p) + 128, i, (r));
+		bdmf_session_print(session, "0x%08x ", (unsigned int)r);
+		j++;
+		if (j >= 8)
+		{
+			j = 0;
+			bdmf_session_print(session, "\n\t");
+		}
+	}
+	bdmf_session_print(session, "\n");
+	MREAD_32((uint8_t *)(p) + 256, (r));
+	bdmf_session_print(session, "\tfree_cnt_req_addr_low    = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+	MREAD_32((uint8_t *)(p) + 260, (r));
+	bdmf_session_print(session, "\tfree_cnt_req_addr_high   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_FPM_RING_BUFMNG_CNT(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
+	for (i=0; i<32; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_32((uint8_t *)(p) + 128, i, (parm[j].number));
+		j++;
+	}
+	
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 256, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 260, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_SPU_RESPONSE_PARAMS(bdmf_session_handle session, unsigned char *p)
@@ -6735,7 +10776,7 @@ void dump_RDD_SPU_RESPONSE_PARAMS(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 48, (r));
-	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\ticv_error                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 	MREAD_16((uint8_t *)(p) + 50, (r));
@@ -6752,19 +10793,59 @@ void dump_RDD_SPU_RESPONSE_PARAMS(bdmf_session_handle session, unsigned char *p)
 
 }
 
-void dump_RDD_DHD_CODEL_BIAS_SLOPE(bdmf_session_handle session, unsigned char *p)
+void set_RDD_SPU_RESPONSE_PARAMS(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register DHD_CODEL_BIAS_SLOPE\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tbias                     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tslope                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 48, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 50, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 52, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 54, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_DHD_TX_POST_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -6846,6 +10927,67 @@ void dump_RDD_DHD_TX_POST_DESCRIPTOR(bdmf_session_handle session, unsigned char 
 
 }
 
+void set_RDD_DHD_TX_POST_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 16, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 20, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 22, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 23, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 24, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 28, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 32, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 36, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 40, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 42, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 44, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -6865,6 +11007,22 @@ void dump_RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY(bdmf_session_handle session, unsigne
 
 }
 
+void set_RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 2, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 0, 10, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_REPORTING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -6880,19 +11038,17 @@ void dump_RDD_REPORTING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned c
 
 }
 
-void dump_RDD_PAUSE_QUANTA_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_REPORTING_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register PAUSE_QUANTA_ENTRY\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
-	bdmf_session_print(session, "\tignore                   = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_16((uint8_t *)(p), 0, 15, (r));
-	bdmf_session_print(session, "\ttime_unit                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_PROCESSING_RX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -6970,6 +11126,148 @@ void dump_RDD_PROCESSING_RX_DESCRIPTOR(bdmf_session_handle session, unsigned cha
 
 }
 
+void set_RDD_PROCESSING_RX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 4, 6, 10, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 5, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 5, 2, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 4, 14, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 6, 0, 14, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 4, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 8, 3, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p) + 8, 3, 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 8, 0, 19, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 12, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 12, 6, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 12, 0, 30, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_IP_FRAG_PREPEND_DATA(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register IP_FRAG_PREPEND_DATA\n");
+
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tnext_level_q             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tip_frag_max_ip_payload_size= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tip_frag_fixed_hdr_size   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 5, (r));
+	bdmf_session_print(session, "\tip_frag_fragment_ip_hdr_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 6, (r));
+	bdmf_session_print(session, "\tip_frag_counter_id       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 7, (r));
+	bdmf_session_print(session, "\tip_frag_llcsnap_length_offset= 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_IP_FRAG_PREPEND_DATA(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 7, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_PAUSE_QUANTA_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register PAUSE_QUANTA_ENTRY\n");
+
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
+	bdmf_session_print(session, "\tignore                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	RDP_FIELD_MREAD_16((uint8_t *)(p), 0, 15, (r));
+	bdmf_session_print(session, "\ttime_unit                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void set_RDD_PAUSE_QUANTA_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_16((uint8_t *)(p), 0, 15, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_GHOST_REPORTING_GLOBAL_CFG_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -6997,6 +11295,28 @@ void dump_RDD_GHOST_REPORTING_GLOBAL_CFG_ENTRY(bdmf_session_handle session, unsi
 
 }
 
+void set_RDD_GHOST_REPORTING_GLOBAL_CFG_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 5, 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 4, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -7019,6 +11339,20 @@ void dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY(bdmf_session_handle session, unsigned 
 	bdmf_session_print(session, "\n");
 }
 
+void set_RDD_BBH_TX_EGRESS_COUNTER_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<8; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
+}
+
 void dump_RDD_MAC_TYPE_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -7030,6 +11364,16 @@ void dump_RDD_MAC_TYPE_ENTRY(bdmf_session_handle session, unsigned char *p)
 
 }
 
+void set_RDD_MAC_TYPE_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
+}
+
 void dump_RDD_REPORTING_QUEUE_COUNTER(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -7039,6 +11383,16 @@ void dump_RDD_REPORTING_QUEUE_COUNTER(bdmf_session_handle session, unsigned char
 	bdmf_session_print(session, "\tcounter_ptr              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_REPORTING_QUEUE_COUNTER(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_16((uint8_t *)(p), (parm[j].number));
+	j++;
 }
 
 void dump_RDD_QM_QUEUE_COUNTER_DATA(bdmf_session_handle session, unsigned char *p)
@@ -7064,6 +11418,25 @@ void dump_RDD_QM_QUEUE_COUNTER_DATA(bdmf_session_handle session, unsigned char *
 
 }
 
+void set_RDD_QM_QUEUE_COUNTER_DATA(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p), (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 8, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 12, (parm[j].number));
+	j++;
+}
+
 void dump_RDD_TM_FLOW_CNTR_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
@@ -7073,6 +11446,16 @@ void dump_RDD_TM_FLOW_CNTR_ENTRY(bdmf_session_handle session, unsigned char *p)
 	bdmf_session_print(session, "\tcntr_id                  = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
+}
+
+void set_RDD_TM_FLOW_CNTR_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p), (parm[j].number));
+	j++;
 }
 
 void dump_RDD_BBH_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
@@ -7114,126 +11497,70 @@ void dump_RDD_BBH_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p
 
 }
 
-void dump_RDD_BUFFER_CONG_MGT(bdmf_session_handle session, unsigned char *p)
+void set_RDD_BBH_QUEUE_DESCRIPTOR(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
+{
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 7, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 1, 0, 7, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 2, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p) + 4, 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p) + 4, 0, 27, (parm[j].number));
+	j++;
+}
+
+void dump_RDD_TX_EXCEPTION_ENTRY(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
-	bdmf_session_print(session, "  Register BUFFER_CONG_MGT\n");
+	bdmf_session_print(session, "  Register TX_EXCEPTION_ENTRY\n");
 
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tdqm_not_empty_address    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tdqm_valid_ctr_address    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tug_counter_address       = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tug_threshold_high        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tug_threshold_low         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 20, (r));
-	bdmf_session_print(session, "\tenabled                  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 21, (r));
-	bdmf_session_print(session, "\tstart_queue              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 22, (r));
-	bdmf_session_print(session, "\tend_queue                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 23, (r));
-	bdmf_session_print(session, "\tfw_state                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 24, (r));
-	bdmf_session_print(session, "\ttimer_duration           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 26, (r));
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
 	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 28, (r));
-	bdmf_session_print(session, "\tsq_start_queue           = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
+	bdmf_session_print(session, "\tdbg_stat_en              = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
-	MREAD_8((uint8_t *)(p) + 29, (r));
-	bdmf_session_print(session, "\tnum_pds_to_flush         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 30, (r));
-	bdmf_session_print(session, "\tflush_wakeup             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 32, (r));
-	bdmf_session_print(session, "\tflush_cfg_address        = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 34, (r));
-	bdmf_session_print(session, "\tflush_enable_address     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 36, (r));
-	bdmf_session_print(session, "\tsq_flush_wakeup          = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 40, (r));
-	bdmf_session_print(session, "\tsq_flush_wakeup_value    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 44, (r));
-	bdmf_session_print(session, "\tsq_flush_cfg_address     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 48, (r));
-	bdmf_session_print(session, "\tsq_flush_enable_address  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 52, (r));
-	bdmf_session_print(session, "\tcong_queue_idx           = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 54, (r));
-	bdmf_session_print(session, "\tcong_queue_occupancy     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 56, (r));
-	bdmf_session_print(session, "\tcong_detected            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 60, (r));
-	bdmf_session_print(session, "\tcong_cleared             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 64, (r));
-	bdmf_session_print(session, "\tcong_detection_time      = 0x%08x", (unsigned int)r);
+	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 1, (r));
+	bdmf_session_print(session, "\tvlan_cntr_en             = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 
 }
 
-void dump_RDD_BUFFER_CONG_Q_OCCUPANCY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_TX_EXCEPTION_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register BUFFER_CONG_Q_OCCUPANCY\n");
-
-	MREAD_32((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tpacket_cnt               = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tbyte_cnt                 = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 2, 6, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 1, 1, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 0, 1, (parm[j].number));
+	j++;
 }
 
 void dump_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -7258,38 +11585,18 @@ void dump_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY(bdmf_session_handle sess
 	bdmf_session_print(session, "\n");
 }
 
-void dump_RDD_TX_EXCEPTION_ENTRY(bdmf_session_handle session, unsigned char *p)
+void set_RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register TX_EXCEPTION_ENTRY\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 2, 6, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
-	bdmf_session_print(session, "\tdbg_stat_en              = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	RDP_FIELD_MREAD_8((uint8_t *)(p), 0, 1, (r));
-	bdmf_session_print(session, "\tvlan_cntr_en             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
-void dump_RDD_CODEL_BIAS_SLOPE(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register CODEL_BIAS_SLOPE\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tbias                     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tslope                    = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	for (i=0; i<40; i++)
+	{
+		if ((write_index == -1) || (write_index == j))
+			MWRITE_I_8((uint8_t *)(p), i, (parm[j].number));
+		j++;
+	}
+	
 }
 
 void dump_RDD_BBH_TX_WAKE_UP_DATA_ENTRY(bdmf_session_handle session, unsigned char *p)
@@ -7315,46 +11622,22 @@ void dump_RDD_BBH_TX_WAKE_UP_DATA_ENTRY(bdmf_session_handle session, unsigned ch
 
 }
 
-void dump_RDD_CODEL_DROP_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+void set_RDD_BBH_TX_WAKE_UP_DATA_ENTRY(bdmf_session_handle session, unsigned char *p, const bdmfmon_parm_value_t parm[], int write_index)
 {
-	unsigned int r;
-	bdmf_session_print(session, "  Register CODEL_DROP_DESCRIPTOR\n");
-
-	MREAD_16((uint8_t *)(p), (r));
-	bdmf_session_print(session, "\tmax_seq_drops            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 2, (r));
-	bdmf_session_print(session, "\tflush_task_wakeup_value  = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 4, (r));
-	bdmf_session_print(session, "\tflush_cfg_ptr            = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 6, (r));
-	bdmf_session_print(session, "\tflush_enable_ptr         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 8, (r));
-	bdmf_session_print(session, "\tflush_packet_counter     = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_32((uint8_t *)(p) + 12, (r));
-	bdmf_session_print(session, "\tflush_enable             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_16((uint8_t *)(p) + 16, (r));
-	bdmf_session_print(session, "\tscratchpad_1             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 18, (r));
-	bdmf_session_print(session, "\tscratchpad_2             = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-	MREAD_8((uint8_t *)(p) + 19, (r));
-	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
+	int i = 0;
+	int j;
+	j = i;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_8((uint8_t *)(p), 3, 5, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		RDP_FIELD_MWRITE_32((uint8_t *)(p), 8, 19, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_8((uint8_t *)(p) + 3, (parm[j].number));
+	j++;
+	if ((write_index == -1) || (write_index == j))
+		MWRITE_32((uint8_t *)(p) + 4, (parm[j].number));
+	j++;
 }
 

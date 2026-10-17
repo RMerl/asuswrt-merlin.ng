@@ -303,17 +303,20 @@ typedef enum
     rdpa_emac4,             /**< EMAC4 */
     rdpa_emac5,             /**< EMAC5 */
     rdpa_emac6,             /**< EMAC6 */
+#if (defined(BCM6888) || defined(BCM4912) || defined(BCM63146) || defined(BCM63158) || defined(BCM6813) || \
+        defined(BCM6837) || defined(BCM6855) || defined(BCM6856) || defined(BCM6858))
     rdpa_emac7,             /**< EMAC7 */
     rdpa_emac8,             /**< EMAC8 */
     rdpa_emac9,             /**< EMAC9 */
     rdpa_emac10,            /**< EMAC10 */
-#if defined(BCM6888) || defined(BCM6837)
+#if defined(BCM6888) || defined(BCM6837) 
     rdpa_emac11,            /**< EMAC11 */
     rdpa_emac12,            /**< EMAC12 */
 #if defined(BCM6888)
     rdpa_emac13,            /**< EMAC13 */
     rdpa_emac14,            /**< EMAC14 */
     rdpa_emac15,            /**< EMAC15 */
+#endif
 #endif
 #endif
     rdpa_emac__num_of,      /* Max number of EMACs */
@@ -470,12 +473,11 @@ typedef uint64_t rdpa_ports __attribute__((aligned(8)));
 #endif /* CONFIG_BCM_PON */
 
 /** All EMACs */
-#if !defined(XRDP) && !defined(BCM_XRDP)
+#if defined(BCM6885) 
 #define RDPA_PORT_ALL_EMACS \
     (rdpa_emac_id(rdpa_emac0) | rdpa_emac_id(rdpa_emac1) | rdpa_emac_id(rdpa_emac2) | \
-        rdpa_emac_id(rdpa_emac3) | rdpa_emac_id(rdpa_emac4) | rdpa_emac_id(rdpa_emac5))
-#else
-#ifdef BCM6888
+        rdpa_emac_id(rdpa_emac3) | rdpa_emac_id(rdpa_emac4))
+#elif defined(BCM6888) 
 #define RDPA_PORT_ALL_EMACS \
     (rdpa_emac_id(rdpa_emac0) | rdpa_emac_id(rdpa_emac1) | rdpa_emac_id(rdpa_emac2) | \
         rdpa_emac_id(rdpa_emac3) | rdpa_emac_id(rdpa_emac4) | rdpa_emac_id(rdpa_emac5) |\
@@ -489,14 +491,23 @@ typedef uint64_t rdpa_ports __attribute__((aligned(8)));
         rdpa_emac_id(rdpa_emac3) | rdpa_emac_id(rdpa_emac4) | rdpa_emac_id(rdpa_emac5) |\
         rdpa_emac_id(rdpa_emac6) | rdpa_emac_id(rdpa_emac7) | rdpa_emac_id(rdpa_emac8) |\
         rdpa_emac_id(rdpa_emac9) | rdpa_emac_id(rdpa_emac10))
+#elif defined(BCM68375)
+#define RDPA_PORT_ALL_EMACS \
+    (rdpa_emac_id(rdpa_emac0) | rdpa_emac_id(rdpa_emac1) | rdpa_emac_id(rdpa_emac2) | \
+        rdpa_emac_id(rdpa_emac3) | rdpa_emac_id(rdpa_emac4) | rdpa_emac_id(rdpa_emac5) |\
+        rdpa_emac_id(rdpa_emac6))
 #else
 #define RDPA_PORT_ALL_EMACS \
     (rdpa_emac_id(rdpa_emac0) | rdpa_emac_id(rdpa_emac1) | rdpa_emac_id(rdpa_emac2) | \
         rdpa_emac_id(rdpa_emac3) | rdpa_emac_id(rdpa_emac4) | rdpa_emac_id(rdpa_emac5) |\
         rdpa_emac_id(rdpa_emac6) | rdpa_emac_id(rdpa_emac7))
 #endif        
-#endif
 
+
+/** Dummy type */
+typedef enum {
+    dummy,
+} rdpa_dummy_enum_t;
 
 /** System operation mode */
 typedef enum
@@ -551,6 +562,7 @@ typedef enum  port_speed_e
     PORT_2_5_GB ,
     PORT_5_GB ,
     PORT_10_GB ,
+    PORT_SPEED_UNKNOWN ,
 } port_speed_e;
 
 typedef struct
@@ -615,20 +627,22 @@ typedef enum
     rdpa_tm_map_port_emac2,
     rdpa_tm_map_port_emac3,
     rdpa_tm_map_port_emac4,
+#if !defined(BCM6885) 
     rdpa_tm_map_port_emac5,
     rdpa_tm_map_port_emac6,
     rdpa_tm_map_port_emac7,
-#if defined(BCM6888) || defined(BCM4912) || defined(BCM6813) || defined(BCM6837)
+#if defined(BCM6888) || defined(BCM4912) || defined(BCM6813) || defined(BCM6837) || defined(BCM68375)
     rdpa_tm_map_port_emac8,
     rdpa_tm_map_port_emac9,
     rdpa_tm_map_port_emac10,
-#if defined(BCM6888) || defined(BCM6837)
+#if defined(BCM6888) || defined(BCM6837) || defined(BCM68375)
     rdpa_tm_map_port_emac11,
     rdpa_tm_map_port_emac12,
-#if defined(BCM6888)
+#if defined(BCM6888) || defined(BCM68375)
     rdpa_tm_map_port_emac13,
     rdpa_tm_map_port_emac14,
     rdpa_tm_map_port_emac15,
+#endif
 #endif
 #endif
 #endif
@@ -643,6 +657,21 @@ typedef enum
 #endif
     rdpa_tm_map_port__num_of
 } rdpa_system_tm_map_port;
+
+typedef enum
+{
+    rdpa_natc_table_name_l3_ucast,
+    rdpa_natc_table_name_l2_ucast,
+    rdpa_natc_table_name_mcast,
+    rdpa_natc_table_name_ct,
+    rdpa_natc_table_name_ds,
+    rdpa_natc_table_name_us,
+    rdpa_natc_table_name_vlan_action,
+    rdpa_natc_table_name_counter,
+    rdpa_natc_table_name_mcast_whitelist,
+    rdpa_natc_table_name_invalid,
+    rdpa_natc_table_name__num_of = rdpa_natc_table_name_invalid
+} rdpa_natc_table_name_t;
 
 /** @} end of types Doxygen group */
 
@@ -674,6 +703,15 @@ typedef enum
     RDPA_FLOW_MC,
 } rdpa_flow_t;
 
+typedef enum
+{
+    rdpa_tunnel_type_l2_gre           = 0,
+    rdpa_tunnel_type_l3_gre           = 1,
+    rdpa_tunnel_type_ds_lite          = 2,
+    rdpa_tunnel_type_vxlan            = 4,
+    rdpa_tunnel_type_6rd              = 5,
+    rdpa_tunnel_type_l2tp             = 6,
+} rdpa_tunnel_type_t;
 
 typedef enum
 {
@@ -746,8 +784,12 @@ typedef union
         uint8_t client_idx;
     } l2;
     struct {
+        bdmf_mac_t sa;
+        bdmf_mac_t da;
         bdmf_ip_t sip;
         bdmf_ip_t dip;
+        uint16_t src_port;   /**< Source port */
+        uint16_t dst_port;   /**< Destination port */
     } l3;
     struct {
         bdmf_ip_t sip;
@@ -755,10 +797,6 @@ typedef union
         uint32_t vtag0;
         uint32_t vtag1;
         uint8_t vtag_num;
-#if defined(BCM_DSL_RDP)
-        uint8_t tos;
-        uint8_t lkup_port;
-#endif
         uint16_t eth_type;
     } mc;
 } flow_display_info_t;

@@ -1,15 +1,15 @@
 /*
- * <:copyright-BRCM:2020:DUAL/GPL:standard 
- * 
- *    Copyright (c) 2020 Broadcom 
+ * <:copyright-BRCM:2020:DUAL/GPL:standard
+ *
+ *    Copyright (c) 2020 Broadcom
  *    All Rights Reserved
- * 
+ *
  * Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed
  * to you under the terms of the GNU General Public License version 2
  * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
  * with the following added to such license:
- * 
+ *
  *    As a special exception, the copyright holders of this software give
  *    you permission to link this software with independent modules, and
  *    to copy and distribute the resulting executable under terms of your
@@ -18,12 +18,12 @@
  *    An independent module is a module which is not derived from this
  *    software.  The special exception does not apply to any modifications
  *    of the software.
- * 
+ *
  * Not withstanding the above, under no circumstances may you combine
  * this software in any way with any other Broadcom software provided
  * under a license other than the GPL, without Broadcom's express prior
  * written consent.
- * 
+ *
  * :>
  */
 
@@ -39,9 +39,9 @@ static void ndi_dev_nl_process_events(struct work_struct *w);
 
 /* --- variables --- */
 struct ndi_nl_msg_hdlr {
-	int	(*action)(struct sk_buff *, struct nlmsghdr *,
-			  struct netlink_ext_ack *);
-	int	(*dump)(struct sk_buff *, struct netlink_callback *);
+	int	(*action)(struct sk_buff *skb, struct nlmsghdr *nlh,
+			  struct netlink_ext_ack *extack);
+	int	(*dump)(struct sk_buff *skb, struct netlink_callback *cb);
 };
 
 struct ndi_event {
@@ -102,6 +102,9 @@ static int ndia_dump_dev(struct sk_buff *skb, struct ndi_dev *dev)
 		goto nla_put_failure;
 	if (nla_put_u64_64bit(skb, NDIA_DEV_FLAGS, dev->flags,
 			      NDIA_DEV_PADDING))
+		goto nla_put_failure;
+	if (dev->netdev &&
+	    nla_put_string(skb, NDIA_DEV_INTF, dev->netdev->name))
 		goto nla_put_failure;
 
 #if IS_ENABLED(CONFIG_BCM_DPI)
@@ -169,7 +172,7 @@ int ndi_dev_nl_event(struct ndi_dev *dev, int type)
 {
 	struct ndi_event *e;
 
-	if (should_ignore_ndi_dev(dev))
+	if (!dev || should_ignore_ndi_dev(dev))
 		return 0;
 
 	e = kmem_cache_zalloc(event_cache, GFP_ATOMIC);

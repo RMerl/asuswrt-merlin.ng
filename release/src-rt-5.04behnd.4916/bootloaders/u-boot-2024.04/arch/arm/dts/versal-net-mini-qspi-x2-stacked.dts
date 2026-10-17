@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Xilinx Versal NET QSPI x2 Stacked DTS
+ *
+ * (C) Copyright 2023, Advanced Micro Devices, Inc.
+ */
+
+#include "versal-net-mini-qspi.dtsi"
+
+/ {
+	model = "Xilinx Versal NET MINI QSPI X2 STACKED";
+};
+
+&qspi {
+	num-cs = <2>;
+};
+
+&flash0 {
+	reg = <0>, <1>;
+	stacked-memories = /bits/ 64 <0x8000000 0x8000000>; /* 128MB */
+	spi-tx-bus-width = <2>;
+	spi-rx-bus-width = <2>;
+};

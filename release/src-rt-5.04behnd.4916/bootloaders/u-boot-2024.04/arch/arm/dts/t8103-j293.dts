@@ -1,0 +1,116 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * Apple MacBook Pro (13-inch, M1, 2020)
+ *
+ * target-type: J293
+ *
+ * Copyright The Asahi Linux Contributors
+ */
+
+/dts-v1/;
+
+#include "t8103.dtsi"
+#include "t8103-jxxx.dtsi"
+
+/ {
+	compatible = "apple,j293", "apple,t8103", "apple,arm-platform";
+	model = "Apple MacBook Pro (13-inch, M1, 2020)";
+};
+
+&wifi0 {
+	brcm,board-type = "apple,honshu";
+};
+
+/*
+ * Provide labels for the USB type C ports.
+ */
+
+&typec0 {
+	label = "USB-C Left-back";
+};
+
+&typec1 {
+	label = "USB-C Left-front";
+};
+
+&spi3 {
+	status = "okay";
+
+	hid-transport@0 {
+		compatible = "apple,spi-hid-transport";
+		reg = <0>;
+		spi-max-frequency = <8000000>;
+		/*
+		 * cs-setup and cs-hold delays are derived from Apple's ADT
+		 * Mac OS driver meta data secify 45 us for 'cs to clock' and
+		 * 'clock to cs' delays.
+		 */
+		spi-cs-setup-delay-ns = <20000>;
+		spi-cs-hold-delay-ns = <20000>;
+		spi-cs-inactive-delay-ns = <250000>;
+		spien-gpios = <&pinctrl_ap 195 0>;
+		interrupts-extended = <&pinctrl_nub 13 IRQ_TYPE_LEVEL_LOW>;
+	};
+};
+
+/*
+ * Remove unused PCIe ports and disable the associated DARTs.
+ */
+
+&pcie0_dart_1 {
+	status = "disabled";
+};
+
+&pcie0_dart_2 {
+	status = "disabled";
+};
+
+/delete-node/ &port01;
+/delete-node/ &port02;
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <50000>;
+
+	jack_codec: codec@48 {
+		compatible = "cirrus,cs42l83", "cirrus,cs42l42";
+		reg = <0x48>;
+		reset-gpios = <&pinctrl_nub 11 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&pinctrl_ap>;
+		interrupts = <183 IRQ_TYPE_LEVEL_LOW>;
+		#sound-dai-cells = <0>;
+		cirrus,ts-inv = <1>;
+	};
+};
+
+&i2c4 {
+	status = "okay";
+};
+
+/ {
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "MacBook integrated audio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		simple-audio-card,dai-link@0 {
+			bitclock-inversion;
+			frame-inversion;
+			reg = <0>;
+			format = "i2s";
+			mclk-fs = <64>;
+			tdm-slot-width = <32>;
+
+			link0_cpu: cpu {
+				sound-dai = <&mca 2>;
+				bitclock-master;
+				frame-master;
+			};
+
+			link0_codec: codec {
+				sound-dai = <&jack_codec>;
+			};
+		};
+	};
+};

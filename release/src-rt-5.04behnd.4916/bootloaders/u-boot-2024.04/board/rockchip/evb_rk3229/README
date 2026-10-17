@@ -1,0 +1,95 @@
+Get the Source and prebuild binary
+==================================
+
+  > mkdir ~/evb_rk3229
+  > cd ~/evb_rk3229
+  > git clone git://git.denx.de/u-boot.git
+  > git clone https://github.com/OP-TEE/optee_os.git
+  > git clone https://github.com/rockchip-linux/rkbin.git
+  > git clone https://github.com/rockchip-linux/rkdeveloptool.git
+
+Compile the OP-TEE
+===============
+
+  > cd optee_os
+  > make clean
+  > make CROSS_COMPILE=arm-none-eabi- PLATFORM=rockchip-rk322x
+  Get tee-raw.bin in this step, copy it to U-Boot root dir:
+  > cp out/arm-plat-rockchip/core/tee-raw.bin ../u-boot/tee.bin
+
+Compile the U-Boot
+==================
+
+  > cd ../u-boot
+  > make evb-rk3229_defconfig
+  > TEE=tee.bin CROSS_COMPILE=arm-linux-gnueabihf- make
+
+  Get u-boot-rockchip.bin in this step.
+
+Compile the rkdeveloptool
+=======================
+  Follow instructions in latest README
+  > cd ../rkdeveloptool
+  > autoreconf -i
+  > ./configure
+  > make
+  > sudo make install
+
+  Get rkdeveloptool in you Host in this step.
+
+Both origin binaries and Tool are ready now, choose either option 1 or
+option 2 to deploy U-Boot.
+
+Flash the image to eMMC
+=======================
+Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
+  > cd ..
+  > rkdeveloptool/rkdeveloptool db rkbin/rk32/rk322x_loader_v1.04.232.bin
+  > rkdeveloptool/rkdeveloptool wl 64 u-boot/u-boot-rockchip.bin
+  > rkdeveloptool/rkdeveloptool rd
+
+Flash the image to SD card
+==========================
+  > dd if=u-boot/u-boot-rockchip.bin of=/dev/sdb seek=64
+
+You should be able to get U-Boot log message with OP-TEE boot info:
+
+U-Boot TPL 2023.07-00524-gf5346eba55-dirty (Jul 15 2023 - 14:22:51)
+Trying to boot from BOOTROM
+Returning to boot ROM...
+
+U-Boot SPL 2023.07-00524-gf5346eba55-dirty (Jul 15 2023 - 14:22:51 +0200)
+Trying to boot from MMC1
+I/TC:
+I/TC: Non-secure external DT found
+I/TC: Switching console to device: /serial@11030000
+I/TC: OP-TEE version: 3.22.0-27-g893a762d1 (gcc version 10.3.1 20210621 (release) (15:10.3-2021.07-4)) #1 Sat Jul 15 12:14:36 UTC 2023 arm
+I/TC: WARNING: This OP-TEE configuration might be insecure!
+I/TC: WARNING: Please check https://optee.readthedocs.io/en/latest/architecture/porting_guidelines.html
+I/TC: Primary CPU initializing
+M/TC: Not protecting region 1: 0x68400000-0x68600000
+I/TC: Primary CPU switching to normal world boot
+
+
+U-Boot 2023.07-00524-gf5346eba55-dirty (Jul 15 2023 - 14:22:51 +0200)
+
+Model: Rockchip RK3229 Evaluation board
+DRAM:  1 GiB (effective 992 MiB)
+Core:  113 devices, 16 uclasses, devicetree: separate
+MMC:   mmc@30000000: 1, mmc@30020000: 0
+Loading Environment from MMC... Card did not respond to voltage select! : -110
+*** Warning - No block device, using default environment
+
+In:    serial@11030000
+Out:   serial@11030000
+Err:   serial@11030000
+Model: Rockchip RK3229 Evaluation board
+Net:
+Warning: ethernet@30200000 (eth0) using random MAC address - 72:65:2b:f1:c5:0a
+eth0: ethernet@30200000
+Hit any key to stop autoboot:  0
+=>
+
+
+For more detail, please reference to:
+http://opensource.rock-chips.com/wiki_Boot_option

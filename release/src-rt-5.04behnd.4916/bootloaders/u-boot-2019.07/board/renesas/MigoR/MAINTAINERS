@@ -1,6 +1,0 @@
-MIGOR BOARD
-#M:	-
-S:	Maintained
-F:	board/renesas/MigoR/
-F:	include/configs/MigoR.h
-F:	configs/MigoR_defconfig

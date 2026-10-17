@@ -339,137 +339,6 @@ void mac_hwapi_get_configuration(rdpa_emac emacNum,rdpa_emac_cfg_t *emac_cfg);
 /*                                                                            */
 /******************************************************************************/
 void mac_hwapi_set_configuration(rdpa_emac emacNum,rdpa_emac_cfg_t *emac_cfg);
-/******************************************************************************/
-/*                                                                            */
-/* Name:                                                                      */
-/*                                                                            */
-/*   mac_hwapi_get_duplex		                                              */
-/*                                                                            */
-/* Title:                                                                     */
-/*                                                                            */
-/*   MAC Driver - get port duplex                                         	  */
-/*                                                                            */
-/* Abstract:                                                                  */
-/*                                                                            */
-/* 	get the dulplex of a port												  */
-/*                                                                            */
-/* Input:                                                                     */
-/*                                                                            */
-/*   emacNum - emac Port index           	                                  */
-/*                                                                            */
-/*                                                                            */
-/* Output:                                                                    */
-/*    full_duples  :  1 = full dulplex,0 = half_duplex						  */
-/*                                                                            */
-/******************************************************************************/
-void mac_hwapi_get_duplex(rdpa_emac emacNum,int32_t *full_duplex);
-
-/******************************************************************************/
-/*                                                                            */
-/* Name:                                                                      */
-/*                                                                            */
-/*   mac_hwapi_set_duplex		                                              */
-/*                                                                            */
-/* Title:                                                                     */
-/*                                                                            */
-/*   MAC Driver - set port duplex                                         	  */
-/*                                                                            */
-/* Abstract:                                                                  */
-/*                                                                            */
-/* 	set the dulplex of a port												  */
-/*                                                                            */
-/* Input:                                                                     */
-/*                                                                            */
-/*   emacNum - emac Port index           	                                  */
-/*                                                                            */
-/*                                                                            */
-/* Output:                                                                    */
-/*    full_duples  :  1 = full dulplex,0 = half_duplex						  */
-/*                                                                            */
-/******************************************************************************/
-void mac_hwapi_set_duplex(rdpa_emac emacNum,int32_t full_duplex);
-
-
-
-
-/******************************************************************************/
-/*                                                                            */
-/* Name:                                                                      */
-/*                                                                            */
-/*   mac_hwapi_get_speed		                                              */
-/*                                                                            */
-/* Title:                                                                     */
-/*                                                                            */
-/*   MAC Driver - get port speed rate                                      	  */
-/*                                                                            */
-/* Abstract:                                                                  */
-/*                                                                            */
-/* 	get the speed of a port													  */
-/*                                                                            */
-/* Input:                                                                     */
-/*                                                                            */
-/*   emacNum - emac Port index           	                                  */
-/*                              							                  */
-/*                                                                            */
-/* Output:                                                                    */
-/*      rate -   enum of the speed                                            */
-/******************************************************************************/
-void mac_hwapi_get_speed(rdpa_emac emacNum,rdpa_emac_rate *rate);
-
-
-
-
-/******************************************************************************/
-/*                                                                            */
-/* Name:                                                                      */
-/*                                                                            */
-/*   mac_hwapi_set_speed		                                              */
-/*                                                                            */
-/* Title:                                                                     */
-/*                                                                            */
-/*   MAC Driver - set port speed rate                                      	  */
-/*                                                                            */
-/* Abstract:                                                                  */
-/*                                                                            */
-/* 	set the speed of a port													  */
-/*                                                                            */
-/* Input:                                                                     */
-/*                                                                            */
-/*   emacNum - emac Port index           	                                  */
-/*      rate -   enum of the speed   						                  */
-/*                                                                            */
-/* Output:                                                                    */
-/*                                   							              */
-/******************************************************************************/
-
-void mac_hwapi_set_speed(rdpa_emac emacNum,rdpa_emac_rate rate);
-
-
-
-/******************************************************************************/
-/*                                                                            */
-/* Name:                                                                      */
-/*                                                                            */
-/*   mac_hwapi_set_external_conf                                              */
-/*                                                                            */
-/* Title:                                                                     */
-/*                                                                            */
-/*   MAC Driver - en/disable external speed configuration                  	  */
-/*                                                                            */
-/* Abstract:                                                                  */
-/*                                                                            */
-/* 	set port speed external configuration				      				  */
-/*                                                                            */
-/* Input:                                                                     */
-/*                                                                            */
-/*   emacNum - emac Port index           	                                  */
-/*    enable - boolean enable                                                 */
-/*                                                                            */
-/* Output:                                                                    */
-/*                                   							              */
-/******************************************************************************/
-
-void mac_hwapi_set_external_conf(rdpa_emac emacNum, int enable);
 
 
 
@@ -497,7 +366,6 @@ void mac_hwapi_set_external_conf(rdpa_emac emacNum, int enable);
 /*       rxtxEnable  - boolean enable   	                                  */
 /******************************************************************************/
 void mac_hwapi_get_rxtx_enable(rdpa_emac emacNum,int32_t *rxEnable,int32_t *txEnable);
-
 
 
 
@@ -891,30 +759,6 @@ void mac_hwapi_get_flow_control(rdpa_emac emacNum,S_MAC_HWAPI_FLOW_CTRL *flowCon
 void mac_hwapi_set_flow_control(rdpa_emac emacNum,S_MAC_HWAPI_FLOW_CTRL *flowControl);
 
 
-/******************************************************************************/
-/*                                                                            */
-/* Name:                                                                      */
-/*                                                                            */
-/*   mac_hwapi_set_pause_params                                               */
-/*                                                                            */
-/* Title:                                                                     */
-/*                                                                            */
-/*   MAC Driver - set port flow control                                    	  */
-/*                                                                            */
-/* Abstract:                                                                  */
-/*                                                                            */
-/* 	set the flow control of a port											  */
-/*                                                                            */
-/* Input:                                                                     */
-/*                                                                            */
-/*   emacNum - emac Port index           	                                  */
-/*   flowControl - structure with parameters of tx and rx flow control        */
-/*                                                                            */
-/* Output:                                                                    */
-/*   						  												  */
-/*                                                                            */
-/******************************************************************************/
-void mac_hwapi_set_pause_params(rdpa_emac emacNum,int32_t pauseCtrlEnable,uint32_t pauseTimer,uint32_t pauseQuanta);
 
 
 /******************************************************************************/
@@ -1092,6 +936,32 @@ void mac_hwapi_set_unimac_cfg(rdpa_emac emacNum, int32_t enabled);
 /*                                                                            */
 /******************************************************************************/
 void mac_hwapi_set_backpressure_ext(rdpa_emac emacNum, int32_t enable);
+
+/******************************************************************************/
+/*                                                                            */
+/* Name:                                                                      */
+/*                                                                            */
+/*   mac_hwapi_get_eee                                                        */
+/*                                                                            */
+/* Title:                                                                     */
+/*                                                                            */
+/*   MAC Driver - set eee configuration                                       */
+/*                                                                            */
+/* Abstract:                                                                  */
+/*                                                                            */
+/* 	set eee configuration                                                     */
+/*                                                                            */
+/* Input:                                                                     */
+/*                                                                            */
+/*   emacNum - emac Port index                                                */
+/*                                                                            */
+/* Output:                                                                    */
+/*                                                                            */
+/*   enable  - uint32 *enable                                                 */
+/*   timer -   uint32  *timer                                                 */
+/*                                                                            */
+/******************************************************************************/
+void mac_hwapi_get_eee(rdpa_emac emacNum, int32_t *enable, int32_t *sleep_timer, int32_t *wakeup_timer);
 
 /******************************************************************************/
 /*                                                                            */

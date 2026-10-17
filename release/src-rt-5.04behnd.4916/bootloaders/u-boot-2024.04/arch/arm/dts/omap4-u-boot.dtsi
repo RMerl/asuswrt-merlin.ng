@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * (C) Copyright 2020 Tero Kristo <t-kristo@ti.com>
+ */
+
+&l4_cfg {
+	segment@0 {
+		/* SCM Core */
+		target-module@2000 {
+			compatible = "simple-bus";
+		};
+
+		/* USB HS */
+		target-module@64000 {
+			compatible = "simple-bus";
+		};
+	};
+
+	segment@80000 {
+		/* USB OTG */
+		target-module@2b000 {
+			compatible = "simple-bus";
+		};
+	};
+
+};
+
+&l4_per {
+	segment@0 {
+		/* UART3 */
+		target-module@20000 {
+			compatible = "simple-bus";
+		};
+
+		/* I2C1 */
+		target-module@70000 {
+			compatible = "simple-bus";
+		};
+
+		/* MMC1 */
+		target-module@9c000 {
+			compatible = "simple-bus";
+		};
+	};
+};

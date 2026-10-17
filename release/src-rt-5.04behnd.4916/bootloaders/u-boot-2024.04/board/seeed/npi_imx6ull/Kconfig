@@ -1,0 +1,12 @@
+if TARGET_NPI_IMX6ULL
+
+config SYS_BOARD
+	default "npi_imx6ull"
+
+config SYS_VENDOR
+	default "seeed"
+
+config SYS_CONFIG_NAME
+	default "npi_imx6ull"
+
+endif

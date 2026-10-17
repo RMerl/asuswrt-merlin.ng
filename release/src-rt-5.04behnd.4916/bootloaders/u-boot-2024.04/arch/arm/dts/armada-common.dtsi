@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2021 Marvell International Ltd.
+ */
+
+/* Common definitions used by Armada 7K/8K DTs */
+#define PASTER(x, y)		x ## _ ## y
+#define EVALUATOR(x, y)		PASTER(x, y)
+
+/* This define used to create die label:
+ * For example:
+ * CP110 master:
+ *     CP110_LABEL(spi0) -> cp0_spi0
+ * CP110 slave:
+ *     CP110_LABEL(usb0) -> cp1_usb0
+ */
+#define CP110_LABEL(name)	EVALUATOR(CP110_NAME, name)
+
+#define APPEND_NX(A, B)		A ##-## B
+#define APPEND(A, B)		APPEND_NX(A, B)
+
+#define STRINGIZE_NX(x)		#x
+#define STRINGIZE(x)		STRINGIZE_NX(x)
+
+/* Same idea here, but this define convert the name to string:
+ * For example:
+ * master: CP110_STRING_LABEL(ppv2) -> "cp0-ppv2"
+ * slave: CP110_STRING_LABEL(ppv2) -> "cp1-ppv2"
+ */
+#define CP110_STRING_LABEL(name)	STRINGIZE(APPEND(CP110_NAME, name))

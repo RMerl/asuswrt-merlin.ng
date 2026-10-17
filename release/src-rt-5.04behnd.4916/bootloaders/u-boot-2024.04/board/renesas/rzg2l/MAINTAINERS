@@ -1,0 +1,6 @@
+RENESAS RZG2L BOARD FAMILY
+M:	Paul Barker <paul.barker.ct@bp.renesas.com>
+S:	Supported
+F:	arch/arm/dts/rz-smarc-common.dtsi
+N:	rzg2l
+N:	r9a07g044

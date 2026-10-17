@@ -1,0 +1,6 @@
+MT8512
+M:	Mingming lee <mingming.lee@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt8512
+F:	include/configs/mt8512.h
+F:	configs/mt8512_bm1_emmc_defconfig

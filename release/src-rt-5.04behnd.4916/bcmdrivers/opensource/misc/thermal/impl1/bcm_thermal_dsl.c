@@ -14,10 +14,6 @@
 #include <linux/bcm_version_compat.h>
 
 static unsigned int __iomem
-#if defined(CONFIG_BCM94908) && !defined(CONFIG_BCM_CPUIDLE_CLK_DIVIDER) && !defined(CONFIG_CPU_FREQ)
-    *bcr_cluster_clk_ctrl0,
-    *bcr_cluster_clk_pattern0,
-#endif
     *bcr_bac_cpu_therm_temp;
 
     struct bcm_biucfg_reg_addr
@@ -29,10 +25,6 @@ static unsigned int __iomem
 
 #define REG_ADDR(reg)   { .name = #reg, .paddr = &bcr_##reg, }
 static struct bcm_biucfg_reg_addr bra[] = {
-#if defined(CONFIG_BCM94908) && !defined(CONFIG_BCM_CPUIDLE_CLK_DIVIDER) && !defined(CONFIG_CPU_FREQ)
-    REG_ADDR(cluster_clk_ctrl0),
-    REG_ADDR(cluster_clk_pattern0),
-#endif
     REG_ADDR(bac_cpu_therm_temp),
 };
 
@@ -100,10 +92,6 @@ void bcm_cpufreq_set_freq_max(unsigned maxdiv);
 #if !defined(CONFIG_BCM_CPUIDLE_CLK_DIVIDER) && !defined(CONFIG_CPU_FREQ)
 void bcm_cpufreq_set_freq_max(unsigned maxdiv)
 {
-#ifdef CONFIG_BCM94908
-    *bcr_cluster_clk_pattern0 = (maxdiv == 1 ? 0xffffffff : 0x55555555);
-    *bcr_cluster_clk_ctrl0 = 1 << 4;	// enable user clock-patterns
-#endif
 }
 #endif
 
@@ -115,7 +103,9 @@ static struct cpumask brcm_cpu_absent_mask;
 static void brcm_cpu_absent(unsigned int cpu)
 {
     cpumask_clear_cpu(cpu, (struct cpumask *)cpu_present_mask);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
     get_cpu_device(cpu)->offline = true;
+#endif
     cpumask_set_cpu(cpu, &brcm_cpu_absent_mask);
 }
 
@@ -125,7 +115,9 @@ static void brcm_cpu_absent(unsigned int cpu)
 static void brcm_cpu_present(unsigned int cpu)
 {
     cpumask_set_cpu(cpu, (struct cpumask *)cpu_present_mask);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
     get_cpu_device(cpu)->offline = false;
+#endif
     cpumask_clear_cpu(cpu, &brcm_cpu_absent_mask);
 }
 

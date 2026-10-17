@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017
+ * Logic PD - http://www.logicpd.com
+ */
+
+#include "omap3-u-boot.dtsi"
+
+/ {
+	aliases {
+		/delete-property/ serial0;
+		/delete-property/ serial1;
+	};
+
+	ocp@68000000 {
+		/delete-node/ bandgap@48002524;
+	};
+};
+
+&gpio1 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio2 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio3 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio5 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio6 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&mmc2 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&mmc3 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&uart1 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&uart2 {
+	/delete-property/ bootph-pre-ram;
+};

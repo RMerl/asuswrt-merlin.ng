@@ -38,7 +38,7 @@ written consent.
 #include "BPCM.h"
 #include "command.h"
 
-#if IS_BCMCHIP(6858) || defined(PMC_IMPL_3_X)
+#if defined(_BCM96858_) || defined(PMC_IMPL_3_X)
 #include "clk_rst.h"
 #endif
 
@@ -62,30 +62,6 @@ static int SendAndWait(TCommand * cmd, TCommand * rsp)
 	rsp->u.cmdGenericParams.params[1] = 0;
 	return 0;
 #else
-#if IS_BCMCHIP(63138)
-	/* translate new cmdID into old cmdID that the pmc will understand NB:
-	 * requires cmdIDs below to be the new versions
-	 */
-
-	static const unsigned char newToOldcmdIDMap[] = {
-		[cmdSetRunState] = 64,	// cmdSetRunState,
-		[cmdSetPowerState] = 65,	// cmdSetPowerState,
-		[cmdShutdownAllowed] = 66,	// cmdShutdownAllowed,
-		[cmdGetSelect0] = 67,	// cmdGetSelect0,
-		[cmdGetSelect3] = 68,	// cmdGetSelect3,
-		[cmdGetAvsDisableState] = 69,	// cmdGetAvsDisableState,
-		[cmdGetPVT] = 70,	// cmdGetPVT,
-		[cmdPowerDevOnOff] = 129,	// cmdPowerDevOnOff,
-		[cmdPowerZoneOnOff] = 130,	// cmdPowerZoneOnOff,
-		[cmdResetDevice] = 131,	// cmdResetDevice,
-		[cmdResetZone] = 132,	// cmdResetZone,
-		[cmdAllocateG2UDQM] = 133,	// cmdAllocateG2UDQM,
-		[cmdQSMAvailable] = 134,	// cmdQSMAvailable,
-		[cmdRevision] = 135,	// cmdRevision,
-	};
-
-	static int pmc_remap = 0;
-#endif
 	static uint32_t reqdID = 1;
 	int status = kPMC_COMMAND_TIMEOUT;
 	TCommand dummy;
@@ -114,12 +90,6 @@ static int SendAndWait(TCommand * cmd, TCommand * rsp)
 		     rsp->u.cmdGenericParams.params[1], rsp->word0.Bits.error);
 	}
 
-#if IS_BCMCHIP(63138)
-	if (pmc_remap && cmd->word0.Bits.cmdID < sizeof newToOldcmdIDMap &&
-	    newToOldcmdIDMap[cmd->word0.Bits.cmdID])
-		cmd->word0.Bits.cmdID = newToOldcmdIDMap[cmd->word0.Bits.cmdID];
-#endif
-
 	cmd->word0.Bits.msgID = reqdID;
 
 	/* send the command */
@@ -143,13 +113,8 @@ static int SendAndWait(TCommand * cmd, TCommand * rsp)
 	PMC->ctrl.gpTmr2Ctl = (((uint32_t)1 << 31) | (1 << 29) | 400000);	// 400ms
 
 	while (!(PMC->dqm.notEmptySts & PMC_DQM_RPL_STS) &&
-	       (PMC->ctrl.gpTmr2Ctl & ((uint32_t)1 << 31))) {
-#if !defined(_CFE_) && (IS_BCMCHIP(63148) || IS_BCMCHIP(4908))
-		/* Do not tight poll the PMC registers for longer command */
-		if (cmd->word0.Bits.cmdID == cmdCloseAVS)
-			udelay(1000);
-#endif
-	}
+	       (PMC->ctrl.gpTmr2Ctl & ((uint32_t)1 << 31)));
+
 #endif /* CONFIG_BRCM_IKOS */
 
 	if (PMC->dqm.notEmptySts & PMC_DQM_RPL_STS) {
@@ -377,7 +342,7 @@ int PowerOnZone(int devAddr, int zone)
 	BPCM_PWR_ZONE_N_CONTROL reg;
 	int status;
 
-#if IS_BCMCHIP(6858)
+#if defined(_BCM96858_)
 	/* Do not use DQM command cmdPowerZoneOnOff for non 6858 because this command is only available if a
 	   PMC application has been uploaded to expand the PMC boot rom functionality */
 	if (pmc_mode == PMC_MODE_DQM) {
@@ -476,7 +441,7 @@ int ResetDevice(int devAddr)
 	BPCM_PWR_ZONE_N_STATUS sts;
 	int status;
 
-#if IS_BCMCHIP(6858)
+#if defined(_BCM96858_)
 	/* Do not use DQM command cmdResetDevice for non 6858 because this command is only available if a
 	   PMC application has been uploaded to expand the PMC boot rom functionality */
 	if (pmc_mode == PMC_MODE_DQM)
@@ -502,12 +467,12 @@ void pmc_initmode(void)
 	if ((MISC->miscStrapBus & MISC_STRAP_BUS_PMC_ROM_BOOT) == 0)
 		pmc_mode = PMC_MODE_PMB_DIRECT;
 #else // #if defined MISC_STRAP_BUS_PMC_ROM_BOOT
-#if IS_BCMCHIP(6858)
+#if defined(_BCM96858_)
 	pmc_mode = PMC_MODE_DQM;
 #else
 	pmc_mode = PMC_MODE_PMB_DIRECT;
 #ifdef CFG_RAMAPP
-#if IS_BCMCHIP(63158)
+#if defined(_BCM963158_)
 	/* MIPS based PMC */
 	if (PMC->ctrl.softResets == 0)
 		pmc_mode = PMC_MODE_DQM;
@@ -515,9 +480,9 @@ void pmc_initmode(void)
 	/* Maestro based PMC) */
 	if (PROCMON->maestroReg.coreCtrl.coreEnable == 1)
 		pmc_mode = PMC_MODE_DQM;
-#endif // #if IS_BCMCHIP(63158)
+#endif // #if defined(_BCM963158_)
 #endif // #ifdef CFG_RAMAPP
-#endif // #if IS_BCMCHIP(6858)
+#endif // #if defined(_BCM96858_)
 #endif // #if defined MISC_STRAP_BUS_PMC_ROM_BOOT
 }
 

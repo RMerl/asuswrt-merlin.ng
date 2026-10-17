@@ -1,0 +1,44 @@
+if TARGET_CHROMEBOOK_CORAL
+
+config SYS_BOARD
+	default "chromebook_coral"
+
+config SYS_VENDOR
+	default "google"
+
+config SYS_SOC
+	default "apollolake"
+
+config SYS_CONFIG_NAME
+	default "chromebook_coral"
+
+config TEXT_BASE
+	default 0xffe00000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select USE_EARLY_BOARD_INIT
+	select INTEL_APOLLOLAKE
+	select BOARD_ROMSIZE_KB_16384
+
+config PCIE_ECAM_BASE
+	default 0xe0000000
+
+config EARLY_POST_CROS_EC
+	bool "Enable early post to Chrome OS EC"
+	help
+	  Allow post codes to be sent to the Chroem OS EC early during boot,
+	  to enable monitoring of the boot and debugging when things go wrong.
+	  With this option enabled, the EC console can be used to watch post
+	  codes the first part of boot.
+
+config SYS_CAR_ADDR
+	hex
+	default 0xfef00000
+
+config SYS_CAR_SIZE
+	hex
+	default 0xc0000
+
+endif

@@ -1,0 +1,7 @@
+Poleg EVB
+M:	Stanley Chu <yschu@nuvoton.com>
+M:	Jim Liu <JJLIU0@nuvoton.com>
+S:	Maintained
+F:	board/nuvoton/poleg_evb/
+F:	include/configs/poleg.h
+F:	configs/poleg_evb_defconfig

@@ -17,7 +17,7 @@ function squashfs_enabled()
 	[[ "$BRCM_FLASH_NAND_ROOTFS_SQUBI" = "y" ]] ||
 	[[ "$BRCM_FLASH_EMMC_ROOTFS_SQUASHFS" = "y" ]] ||
 	[[ "$BRCM_FLASH_VFBIO_ROOTFS_SQUASHFS" = "y" ]] ||
-	[[ "$BRCM_ROOTFS_SQUASHFS" = "y" ]] ||
+	[[ "$BRCM_FLASH_NOR_ROOTFS_SQUASHFS" = "y" ]] ||
 	[[ "$BUILD_ROOTFS_SQUASHFS_HASH" = "y" ]]
 }
 

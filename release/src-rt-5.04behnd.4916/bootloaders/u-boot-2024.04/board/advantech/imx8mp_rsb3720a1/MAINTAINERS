@@ -1,0 +1,7 @@
+i.MX8MP RSB3720 BOARD
+M:	Ying-Chun Liu (PaulLiu) <paul.liu@linaro.org>
+S:	Maintained
+F:	board/advantech/imx8mp_rsb3720a1/
+F:	include/configs/imx8mp_rsb3720a1.h
+F:	configs/imx8mp_rsb3720a1_4G_defconfig
+F:	configs/imx8mp_rsb3720a1_6G_defconfig

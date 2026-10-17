@@ -40,7 +40,6 @@ struct wl_info;
 struct wl_if;
 
 #if !defined(BCM_PKTFWD)
-extern spinlock_t pktctbl_lock; /* defined PKTC_TBL */
 extern int wl_wfd_bind(struct net_device *net, unsigned int unit);
 extern void wl_wfd_unbind(int wfd_idx);
 #else  /* BCM_PKTFWD */
@@ -51,6 +50,9 @@ extern void wl_wfd_unbind(struct wl_info * wl);
 extern int wl_wfd_registerdevice(int wfd_idx, struct net_device *dev);
 extern int wl_wfd_unregisterdevice(int wfd_idx, struct net_device *dev);
 
-extern int wl_start_int(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *skb);
+extern int (*send_nbuff_to_wfd)(pNBuff_t pNBuff, struct net_device * dev);
+extern int (*send_packet_to_upper_layer)(struct sk_buff * skb);
+extern int inject_to_fastpath;
+extern void (*wfd_path_delay_calc)(struct sk_buff *head, int len, int type);
 
 #endif /* _wl_wfd_h_ */

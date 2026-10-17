@@ -1,0 +1,195 @@
+############################## broadcom environment variables ##############################
+active_port
+  On devices without an integrated L2 switch, if more than one network port is
+  linked up, this variable can be set to the port number to be used to
+  communicate with the external network
+
+avs_mode
+  Used to override the dvfs mode in the device tree on compatible devices
+
+avs_inc_margins
+  Used to increase AVS margin on some devices when condition is met. For Broadcom
+  internal use only
+
+boardid
+  The boardID string
+
+bootargs_append
+  Additional linux boot argument string to append when booting to linux
+
+burn_first_blocks
+  Used to override the number of NAND blocks to flash when migrating from CFE
+  to u-boot using the Trapeze solution. This is for Broadcom internal use only
+
+COMMITTED
+  local flag denoting committed image id. Automatically defined and user should
+  never change it manually.
+
+curr_parts
+  Temporary eMMC partition list for Broadcom internal use only. User must not
+  change it manually.
+
+current_parts
+  Temporary eMMC partition name list for Broadcom internal use only. User must
+  not change it manually.
+
+decimal_serial_num
+  Device serial number from device tree /trust node for console locked-down
+  secure boot. Should never be changed.
+
+default_partitions
+  Default eMMC partitions for bootstrap image. The initial value is defined in
+  the board default env conf file.
+
+default_support_password
+  The default values of support password that BDK uses in place of the
+  compiled-in value when initializing from a restoredefault. It is suggested
+  that these values be uniquely personalized during provisioning
+
+default_user_password
+  The default values of user password that BDK uses in place of the
+  compiled-in value when initializing from a restoredefault. It is suggested
+  that these values be uniquely personalized during provisioning
+
+dev_spec_key_status
+  Temporary status of the device specific key. For Broadcom internal use only.
+
+disable_wdt
+  Set to 1 to disable the watchdog when u-boot boot to linux. Can be used for
+  testing purpose such as booting to a basic shell without the linux watchdog
+  daemon to avoid the reset while in the shell.
+
+env_boot_magic
+  Automatically defined. Keeps track of the size of the Broadcom's boot magic
+  u-boot env and the physical location of each copy in the flash. For example,
+  16384@0x40000,0xb9000 means the env is stored at flash offset 0x40000 and
+  0xb9000 with the max size of 16384
+
+env_boot_magic_updated
+  Broadcom internal flag for env update flag. User must not change this manually
+
+IMAGE
+  The media containing the image. For NAND flash, it defines the image MTD device
+  starting offset and ending offset. For example, NAND:2M,500M means the image
+  MTD UBI device starts at 2M and is 498M in size, unless automatically reduced
+  due to a smaller flash device. If mtdoops partition is defined, its size will
+  be deducted from the image size. This variable is defined in the board default
+  env conf and only used by bootstrap image to create the default mtd partitions.
+
+kaslr_enabled
+  This flag indicates if u-boot provides random seed to linux kernel to activate
+  the KASLR feature. It is set and clear by the "sdk kaslr_status" cmd.
+
+lun_id
+  Temporary vflash LUN id for Broadcom internal use only
+
+MCB
+  The MCB selector value, always interpreted as hex. It can be updated through the
+  memcfg property from the board dts. If bit 31 of this value is set, the remainder
+  is sticky and is not updated to match the board dts.
+
+metadata_committed
+  Temporary metadata commit flag for Broadcom internal use only
+
+mtdoops
+  MTD partition name for mtdoops driver, typically crashdump
+
+mtdoops_size
+  Size of the mtdoops partition, typically 8MB
+
+no_commit_image
+  If no_commit_image is set to 1, then the U-boot and Linux userspace do not
+  automatically commit a new image and reboot after a new image is flashed.
+  This setting is primarily intended for test purposes where the test
+  automation manages the metadata itself.
+
+nummacaddrs
+  Number of MAC addresses, typically 10.
+
+nvram_size
+  Temporary variable for storing the size of CFE nvram mtd partition during the
+  reimage process when migrating CFE based system to u-boot based system.
+
+once
+  Command list that only run one time when the board boots up for the first time
+  The last command in the list sets itself to "true" command essentially
+  preventing it to run again. Defined in the board default env conf file. Can be
+  used to personalize the device by loading and running a script from TFTP during
+  the device provision.
+
+part_size_blk
+  Temporary variable for eMMC partition size. For Broadcom internal use only
+
+part_start_blk
+  Temporary variable for eMMC partition offset. For Broadcom internal use only
+
+rdp1
+  This env is replaced by bufmem. For systems upgrading to 6.1.1 or newer release
+  from 5.04 release, this parameter's value is used to set the new bufmem env and
+  pass to Linux.
+
+  Runner packet buffer memory, defined in decimal MB units. For BCM68XX/BCM4910
+  platforms, this environment value overrides the dtb value, while all other
+  platforms use the maximum of the [dtb, env] value. The value in DTB can also
+  be set in a board-specific dts source file
+
+rdp2
+  This env is replaced by rnrmem. For systems upgrading to 6.1.1 or newer release
+  from 5.04 release, this parameter's value is used to set the new rnrmem env and
+  pass to Linux.
+
+  Memory required for flow management in Runner, defined in decimal MB units. For
+  BCM68XX/BCM4910 platforms, this environment value overrides the dtb value while
+  all other platforms use the maximum of the [dtb, env] value. The value in DTB
+  can also be set in a board-specific dts source file
+
+bufmem
+  Packet buffer memory for Runner or Archer, defined in decimal MB units. U-boot
+  uses the maximum of the [dtb, env] value. The value in DTB can also be set in
+  a board-specific dts source file.
+
+rnrmem
+  Memory required for flow management, defined in decimal MB units. U-boot uses
+  the maximum of the [dtb, env] value. The value in DTB can also be set in a
+  board-specific DTS source file.
+
+dhd0,
+  DHD 0 memory defined in decimal MB unit for DHD offload to runner. For
+  BCM68XX/BCM4910 platforms, the environment value overrides the dtb value while
+  all other platforms use the maximum of the [dtb, env] value. The value in DTB
+  can also be set in a board-specific dts source file.
+
+dhd1
+  See dhd0
+  
+dhd2
+  See dhd0
+
+reformatOnUpgrade
+  Flag to reformat flash partitions before image upgrade
+
+rootfs_opts
+  Automatically defined. rootfs option as part of the boot arguments to linux
+
+sec_ser_num_status
+  Temporary status of the device secure serial number. For Broadcom internal
+  use only.
+
+SEQ
+  Local flag denoting the image sequence number. Automatically defined and user
+  should never change it manually.
+
+update_env
+  Flag to force update of uboot environment if set to y for vflash
+
+VALID
+  Local flag denoting the image is valid. Automatically defined and user should
+  never change it manually.
+  
+vf_1_boot
+  Initial bundle LUN size for vflash
+
+voiceboardid
+  Voice boardID string
+
+

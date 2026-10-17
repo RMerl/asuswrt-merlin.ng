@@ -1,0 +1,10 @@
+SiFive HiFive Unleashed BOARD
+M:	Paul Walmsley <paul.walmsley@sifive.com>
+M:	Palmer Dabbelt <palmer@dabbelt.com>
+M:	Anup Patel <anup.patel@wdc.com>
+M:	Atish Patra <atish.patra@wdc.com>
+S:	Maintained
+F:	board/sifive/unleashed/
+F:	doc/board/sifive/unleashed.rst
+F:	include/configs/sifive-unleashed.h
+F:	configs/sifive_unleashed_defconfig

@@ -1,0 +1,30 @@
+if ARCH_U8500
+
+config SYS_SOC
+	default "u8500"
+
+choice
+	prompt "U8500 board selection"
+
+config TARGET_STEMMY
+	bool "Samsung (stemmy) board"
+	select MISC_INIT_R
+	help
+	  The Samsung "stemmy" board supports Samsung smartphones released with
+	  the ST-Ericsson NovaThor U8500 SoC, e.g.
+
+	      - Samsung Galaxy Ace 2 (GT-I8160)		"codina"
+	      - Samsung Galaxy Amp (SGH-I407)		"kyle"
+	      - Samsung Galaxy Beam (GT-I8530)		"gavini"
+	      - Samsung Galaxy Exhibit (SGH-T599)	"codina" (TMO)
+	      - Samsung Galaxy S Advance (GT-I9070)	"janice"
+	      - Samsung Galaxy S III mini (GT-I8190)	"golden"
+	      - Samsung Galaxy Xcover 2 (GT-S7710)	"skomer"
+
+	  See doc/board/ste/stemmy.rst for details.
+
+endchoice
+
+source "board/ste/stemmy/Kconfig"
+
+endif

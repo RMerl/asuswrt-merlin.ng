@@ -1,0 +1,9 @@
+if ARCH_NPCM
+
+config SYS_SKIP_UART_INIT
+	bool "Skip UART initialization"
+	depends on NPCM_SERIAL
+	help
+	  Select this if the UART you want to use is already
+	  initialized by the time U-Boot starts its execution.
+endif

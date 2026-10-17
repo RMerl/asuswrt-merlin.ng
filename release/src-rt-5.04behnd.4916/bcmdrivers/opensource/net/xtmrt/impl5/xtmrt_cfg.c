@@ -74,7 +74,9 @@ written consent.
 #else
 #include "xtmrt_runner.h"
 #endif
-
+#ifdef XTMRT_TC_INGRESS_CONFIG
+#include "bcm_tc.h"
+#endif
 
 /**** Externs ****/
 
@@ -90,6 +92,9 @@ int bcmxtmrt_in_init_dev = 0;
 static int bcmxtmrt_open(struct net_device *dev);
 static int bcmxtmrt_close(struct net_device *dev);
 static int bcmxtmrt_ioctl(struct net_device *dev, struct ifreq *Req, int nCmd);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
+static int bcmxtmrt_ioctl_private(struct net_device *dev, struct ifreq *Req, void *ptr, int nCmd);
+#endif
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(5,10,0))
 static void bcmxtmrt_timeout(struct net_device *dev, unsigned int txqueue);
 #else
@@ -105,6 +110,7 @@ static void bcmxtmrt_clrStats(struct net_device *dev);
 static int bcmxtmrt_ethtool_ioctl(PBCMXTMRT_DEV_CONTEXT pDevCtx, void *useraddr);
 
 static int bcmxtmrt_change_mtu(struct net_device *dev, int new_mtu);
+static int bcmxtmrt_setup_tc(struct net_device *dev, enum tc_setup_type type, void *type_data);
 static int bcmxtmrt_set_MacAddress (struct net_device *dev, void *p);
 static int DoGlobReInitReq(PXTMRT_GLOBAL_INIT_PARMS pGip);
 static int DoCreateDeviceReq(PXTMRT_CREATE_NETWORK_DEVICE pCnd);
@@ -140,11 +146,16 @@ static const struct net_device_ops bcmXtmRt_netdevops =
       .ndo_open            = bcmxtmrt_open,
       .ndo_stop            = bcmxtmrt_close,
       .ndo_start_xmit      = (HardStartXmitFuncP)bcmxtmrt_xmit,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
+      .ndo_siocdevprivate  = bcmxtmrt_ioctl_private,
+#else
       .ndo_do_ioctl        = bcmxtmrt_ioctl,
+#endif
       .ndo_set_mac_address = bcmxtmrt_set_MacAddress,
       .ndo_tx_timeout      = bcmxtmrt_timeout,
       .ndo_get_stats64     = bcmxtmrt_query,
-      .ndo_change_mtu      = bcmxtmrt_change_mtu
+      .ndo_change_mtu      = bcmxtmrt_change_mtu,
+      .ndo_setup_tc        = bcmxtmrt_setup_tc,
    };
 
 
@@ -315,6 +326,14 @@ static int bcmxtmrt_ioctl(struct net_device *dev, struct ifreq *Req, int nCmd)
     
 }  /* bcmxtmrt_ioctl() */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
+static int bcmxtmrt_ioctl_private(struct net_device *dev, struct ifreq *Req, void *ptr, int nCmd)
+{
+   Req->ifr_data = ptr;
+   return bcmxtmrt_ioctl(dev, Req, nCmd);
+}
+#endif
+
 /*---------------------------------------------------------------------------
  * int bcmxtmrt_set_MacAddress (struct net_device *dev, void *addr)
  * Description:
@@ -418,10 +437,6 @@ static struct rtnl_link_stats64 *bcmxtmrt_query(struct net_device *dev,
 
    if(found)
    {
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-       pDevCtx->DevStats.rx_dropped += rxTotalDropped;
-       pDevCtx->DevStats.tx_dropped += txTotalDropped;
-#endif
        pStats->rx_dropped += rxTotalDropped;
        pStats->tx_dropped += txTotalDropped;
    }
@@ -468,6 +483,29 @@ static int bcmxtmrt_change_mtu(struct net_device *dev, int new_mtu)
 
     dev->mtu = new_mtu;
     return 0;
+}
+
+
+static int bcmxtmrt_setup_tc_block(struct net_device *dev,  void *type_data)
+{
+    int rc = -EOPNOTSUPP;
+
+#if defined(XTMRT_TC_INGRESS_CONFIG)
+    if (((struct flow_block_offload *)type_data)->binder_type == FLOW_BLOCK_BINDER_TYPE_CLSACT_INGRESS)
+        rc = tc_ingress_setup_block(dev, type_data);
+#endif
+
+    return rc;
+}
+
+static int bcmxtmrt_setup_tc(struct net_device *dev, enum tc_setup_type type, void *type_data)
+{
+    switch (type) {
+    case TC_SETUP_BLOCK:
+        return bcmxtmrt_setup_tc_block(dev, type_data);
+    default:
+        return -EOPNOTSUPP;
+    }
 }
 
 
@@ -709,7 +747,7 @@ static int DoGlobReInitReq(PXTMRT_GLOBAL_INIT_PARMS pGip)
 static inline int _xtmrt_netdev_to_rdpa_port_obj(struct net_device *dev, bcm_netdev_priv_info_out_t *info_out)
 {
     int rc = -1;
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
     PBCMXTMRT_GLOBAL_INFO pGi = &g_GlobalInfo;
 
     if (pGi->bdmfWan)
@@ -853,7 +891,10 @@ static int DoCreateDeviceReq(PXTMRT_CREATE_NETWORK_DEVICE pCnd)
       /* Indicate we're supporting extended statistics */
       dev->features |= NETIF_F_EXTSTATS;
 #endif
-        
+#if defined(ENET_TC_CONFIG) || defined (XTMRT_TC_INGRESS_CONFIG) 
+    dev->features |= NETIF_F_HW_TC;
+#endif
+
 #if defined(CONFIG_BLOG)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0))
       dev->clr_stats      = bcmxtmrt_clrStats;

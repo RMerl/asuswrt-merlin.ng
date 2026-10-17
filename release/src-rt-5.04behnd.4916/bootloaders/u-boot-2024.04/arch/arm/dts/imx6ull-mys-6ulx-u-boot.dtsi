@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 Linumiz
+ * Author: Parthiban Nallathambi <parthiban@linumiz.com>
+ */
+
+&pinctrl_uart1 {
+	bootph-all;
+};
+
+&gpmi {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&usdhc2 {
+	bootph-pre-ram;
+	bootph-all;
+};

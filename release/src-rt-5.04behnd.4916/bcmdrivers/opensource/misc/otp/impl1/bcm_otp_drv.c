@@ -472,7 +472,6 @@ int bcm_otp_get_chipvar(unsigned int* val)
     unsigned int row;
     int rval = bcm_otp_get_row(OTP_SEC_CHIPVAR_ROW, &row);
     *val = (row & OTP_SEC_CHIPVAR_MASK) >> OTP_SEC_CHIPVAR_SHIFT;
-
     return rval;
 #else
     *val = 0;
@@ -482,15 +481,6 @@ int bcm_otp_get_chipvar(unsigned int* val)
 EXPORT_SYMBOL(bcm_otp_get_chipvar);
 
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858)
-int bcm_otp_get_chipid(unsigned int* val)
-{
-    unsigned int row;
-    int rval = bcm_otp_get_row(OTP_SEC_CHIPVAR_ROW, &row);
-    *val = (row & OTP_SEC_CHIPVAR_MASK) >> OTP_SEC_CHIPVAR_SHIFT;
-
-    return rval;
-}
-
 int bcm_otp_get_usb_port_disabled(int port, unsigned int* val)
 {
     unsigned int row;
@@ -544,16 +534,12 @@ int bcm_otp_get_nr_cpus(unsigned int* val)
         *val = 2;
 #endif
 
-#if defined(_BCM96846_) || defined(CONFIG_BCM96846)
-    *val = 0;
-#endif
-
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858)
     {
-        unsigned int chipId = 0;
+        unsigned int chipVar = 0;
 
-        bcm_otp_get_chipid(&chipId);
-        if (chipId == 0x5 || chipId == 0x2 || chipId == 0xb)
+        bcm_otp_get_chipvar(&chipVar);
+        if (chipVar == 0x5 || chipVar == 0x2 || chipVar == 0xb)
             *val = 2;
     }
 #endif
@@ -633,7 +619,7 @@ int bcm_otp_is_rescal_enabled(unsigned int* val)
     rval = bcm_otp_get_row(OTP_RESCAL_ENABLE_ROW, &row);
 
     *val = (row & OTP_RESCAL_ENABLE_MASK) >> OTP_RESCAL_ENABLE_SHIFT;
-#elif defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158)
+#elif defined(CONFIG_BCM963158)
     *val = 1;
 #else
     *val = 0;
@@ -713,7 +699,7 @@ static const struct of_device_id* fdt_match_node(unsigned long node, const struc
     if (!match_table)
         return NULL;
 
-    while (match_table->compatible)
+    while (match_table->compatible[0])
     {
         if (of_flat_dt_is_compatible(node, match_table->compatible))
             return match_table;
@@ -842,11 +828,51 @@ static struct platform_driver bcm_otp_driver = {
     .probe = bcm_otp_ioctl_init,
 };
 
+#include <linux/debugfs.h>
+
+static int debug_show_otp(struct seq_file *s, void *data)
+{
+#if defined(OTP_INFO_ROW)
+    unsigned int val = 0;
+
+    bcm_otp_get_row(OTP_INFO_ROW, &val);
+    seq_printf(s, "FAB ID: %d\n", (val & OTP_INFO_MASK) >> OTP_INFO_SHIFT);
+#endif
+    return 0;
+}
+
+static int debug_otp_open(struct inode *inode, struct file *file)
+{
+    return single_open(file, debug_show_otp, NULL);
+}
+
+static const struct file_operations debug_otp_fops = {
+    .open		= debug_otp_open,
+    .read		= seq_read,
+    .llseek		= seq_lseek,
+    .release	= single_release,
+};
+
+static int __init debug_otp_init(void)
+{
+    struct dentry *d;
+
+    d = debugfs_create_file("fab", 0444, NULL, NULL, &debug_otp_fops);
+    if (!d)
+    {
+        printk("Failed to create otp debug file\n");
+        return -ENOMEM;
+    }
+
+    return 0;
+}
+
 static int __init bcm_otp_drv_reg(void)
 {
     int ret;
 
     printk("OTP driver initcall\n");
+    debug_otp_init();
 
     printk("OTP driver scanning DT\n");
     ret = of_scan_flat_dt(bcm_otp_early_scan_dt, NULL);

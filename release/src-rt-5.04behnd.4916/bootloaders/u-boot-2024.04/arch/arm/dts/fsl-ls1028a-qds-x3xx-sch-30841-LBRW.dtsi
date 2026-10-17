@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS1028A-QDS device tree fragment for RCW x3xx
+ *
+ * Copyright 2019-2021 NXP
+ */
+
+/*
+ * This setup is using a SCH-30841-R card with AQR412 quad PHY in slot 2.  This
+ * is used for the 4 integrated ethernet switch in a multiplexes USXGMII set-up.
+ *
+ * We're including the normal .dsti file, not the reworked card .dtsi
+ * intentionally.  We are using multiplexing of the 4 interfaces on a single
+ * lane and the rework doesn't actually disable any port.  The rework is in fact
+ * needed, otherwise the PHY won't work with the default wiring on the QDS/PHY
+ * card.
+ */
+&slot2 {
+#include "fsl-sch-30841.dtsi"
+};
+
+&enetc_port2 {
+	status = "okay";
+};
+
+&mscc_felix {
+	status = "okay";
+};
+
+&mscc_felix_port0 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "usxgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@00}>;
+};
+
+&mscc_felix_port1 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "usxgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@01}>;
+};
+
+&mscc_felix_port2 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "usxgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@02}>;
+};
+
+&mscc_felix_port3 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "usxgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@03}>;
+};
+
+&mscc_felix_port4 {
+	ethernet = <&enetc_port2>;
+	status = "okay";
+};

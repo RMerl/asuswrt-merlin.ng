@@ -80,9 +80,17 @@
 // If we need to give a component name while in CMS mode, use this:
 #define BDK_COMP_CMS_CLASSIC    "CMS_Classic"
 
+// This string is used to identify a BDK concatenated config file
+#define BDK_CONCAT_CONFIG       "BDK_Concatenated_Config"
+
+// This string is used as a return value for invalid config file.
+#define BDK_CONFIG_INVALID      "ERROR_INVALID_CONFIG"
+
 // openwrt_voice_agent is not a component, rather it is an app that sits on the U-Bus in OpenWrt environments.
 #define BDK_APP_WRTVOIPAGT      "wrtvoipagt"
 
 // audio component
 #define BDK_COMP_AUDIO          "audio_md"
+
+#define BDK_WIFICONTROLLER_IN_PRPL		"tr181-wifi"
 #endif /* BDK_H */

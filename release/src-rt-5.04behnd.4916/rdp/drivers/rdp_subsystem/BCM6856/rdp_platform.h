@@ -78,8 +78,7 @@ extern "C"
 
 /* SBPM */
 #define SBPM_BASE_ADDRESS                   0
-#define SBPM_MAX_BUFFER_NUMBER              0x7FF
-#define SBPM_INIT_OFFSET                    (SBPM_MAX_BUFFER_NUMBER - RDPA_MAX_TUNNELS) 
+#define SBPM_INIT_OFFSET                    (PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER - RDPA_MAX_TUNNELS) 
 #define SBPM_UG0_BN_THRESHOLD               0x3FD
 #define SBPM_UG0_EXCL_LOW_THRESHOLD         0x384
 #define SBPM_UG0_EXCL_LOW_HIST              0x14
@@ -92,7 +91,7 @@ extern "C"
 #define SBPM_UG1_EXCL_HIGH_HIST             0xA
 #define SBPM_GLOBAL_HIST                    0xA
 
-#define SBPM_MAX_NUM_OF_BNS                 ((SBPM_MAX_BUFFER_NUMBER + 1) - RDPA_MAX_TUNNELS)
+#define SBPM_MAX_NUM_OF_BNS                 ((PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER + 1) - RDPA_MAX_TUNNELS)
 #define TUNNEL_BN_FIRST                     SBPM_MAX_NUM_OF_BNS
 
 /* BBH_RX */

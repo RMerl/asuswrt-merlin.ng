@@ -1,0 +1,3 @@
+JIRA:BCAWLAN-276478 WLAN-22.1.1 HAL for RDK is not working with release rdkb-2025q1-kirkstone.
+JIRA:BCAWLAN-277319 RDKM: Removed Incompatible Country Codes for OpenBFC25.1 RDKM to fix build error
+JIRA:BCAWLAN-277363 [CMWIFI][RDKM]Removed obsolete patch file

@@ -1,0 +1,15 @@
+if TARGET_PM9263
+
+config LCD_IN_PSRAM
+	def_bool y
+
+config SYS_BOARD
+	default "pm9263"
+
+config SYS_VENDOR
+	default "ronetix"
+
+config SYS_CONFIG_NAME
+	default "pm9263"
+
+endif

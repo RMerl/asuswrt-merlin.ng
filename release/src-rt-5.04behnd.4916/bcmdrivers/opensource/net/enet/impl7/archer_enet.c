@@ -314,7 +314,7 @@ _STATIC_INLINE_ void enet_recycle_handler(pNBuff_t pNBuff, unsigned long context
 
         FkBuff_t* fkb = PNBUFF_2_FKBUFF(pNBuff);
 
-        enet_recycle_pdata(PFKBUFF_TO_PDATA(fkb, BCM_PKT_HEADROOM));
+        enet_recycle_pdata(BCM_PFKBUFF_TO_PDATA(fkb));
     }
     else /* skb */
     {
@@ -323,7 +323,7 @@ _STATIC_INLINE_ void enet_recycle_handler(pNBuff_t pNBuff, unsigned long context
         if (likely(flags & SKB_DATA_RECYCLE))
         {
 #if !defined(CONFIG_BCM_GLB_COHERENCY)
-            void *data_startp = (void *)((uint8_t *)(skb->head) + BCM_PKT_HEADROOM);
+            void *data_startp = BCM_PHEAD_TO_PDATA(skb->head);
             void *data_endp;
 #if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
             {
@@ -366,7 +366,7 @@ _STATIC_INLINE_ void enet_recycle_handler(pNBuff_t pNBuff, unsigned long context
 #endif /* !CONFIG_BCM_GLB_COHERENCY */
 
             /* free the data buffer */
-            enet_recycle_pdata((uint8_t *)(skb->head) + BCM_PKT_HEADROOM);
+            enet_recycle_pdata(BCM_PHEAD_TO_PDATA(skb->head));
         }
 #if defined(CC_ARCHER_ENET_DEBUG)
         else
@@ -438,7 +438,7 @@ void enetxapi_fkb_databuf_recycle(FkBuff_t *fkb)
 {
     ETH_GBPM_TRACK_FKB(fkb, GBPM_VAL_RECYCLE, 0);
 
-    enet_recycle_pdata(PFKBUFF_TO_PDATA(fkb, BCM_PKT_HEADROOM));
+    enet_recycle_pdata(BCM_PFKBUFF_TO_PDATA(fkb));
 }
 
 void enetxapi_buf_recycle(struct sk_buff *skb, uint32_t context, uint32_t flags)
@@ -457,11 +457,12 @@ void enetxapi_buf_recycle(struct sk_buff *skb, uint32_t context, uint32_t flags)
     enet_recycle_handler(skb, context, flags);
 }
 
-int cpu_queues_tx_send (int tx_type, dispatch_info_t *dispatch_info)
+_STATIC_INLINE_ int _cpu_queues_tx_send (int tx_type, dispatch_info_t *dispatch_info)
 {
-    int rc = -1;
+    int rc;
 
-    if(likely(!archer_spdsvc_transmit(dispatch_info)))
+    rc = archer_spdsvc_transmit(dispatch_info);
+    if (likely(!rc))
     {
         unsigned long flags;
 
@@ -479,8 +480,6 @@ int cpu_queues_tx_send (int tx_type, dispatch_info_t *dispatch_info)
             bcm_async_queue_entry_enqueue (&enet_cpu_queues->txq[tx_type]);
 
             ENET_CPU_STATS_UPDATE(enet_cpu_queues->txq[tx_type].stats.writes);
-
-            rc = 0;
         }
         else
         {
@@ -491,6 +490,8 @@ int cpu_queues_tx_send (int tx_type, dispatch_info_t *dispatch_info)
             nbuff_flushfree(dispatch_info->pNBuff);
 #endif
             ENET_CPU_STATS_UPDATE(enet_cpu_queues->txq[tx_type].stats.discards);
+
+            rc = -1;
         }
 
         ENET_CPU_TX_UNLOCK(tx_type, flags);
@@ -502,6 +503,15 @@ int cpu_queues_tx_send (int tx_type, dispatch_info_t *dispatch_info)
     return rc;
 }
 
+int cpu_queues_tx_send_dg(int tx_type, dispatch_info_t *dispatch_info)
+{
+    return _cpu_queues_tx_send(tx_type, dispatch_info);
+}
+
+int cpu_queues_tx_send(int tx_type, dispatch_info_t *dispatch_info)
+{
+    return _cpu_queues_tx_send(tx_type, dispatch_info);
+}
 
 _STATIC_INLINE_ void enet_cpu_queue_recycle_buffers(bcm_async_queue_t *recycleqp)
 {

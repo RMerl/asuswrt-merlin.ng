@@ -142,7 +142,7 @@ int rdpa_cmd_port_ioctl(unsigned long arg)
                 cfg.sal_miss_action = port.param.sal_miss_action;
                 cfg.sal_enable = port.param.sal_enable;
                 cfg.dal_enable = port.param.dal_enable;
-#ifdef XRDP
+
                 if (rdpa_forward_action_forward == port.param.sal_miss_action)
                 {
                     cfg.sal_enable = 0;
@@ -170,7 +170,7 @@ int rdpa_cmd_port_ioctl(unsigned long arg)
                 {
                     cfg.dal_enable = 1;
                 }
-#endif                
+                
                 rc = rdpa_port_cfg_set(port_obj, &cfg);
             }
             break;

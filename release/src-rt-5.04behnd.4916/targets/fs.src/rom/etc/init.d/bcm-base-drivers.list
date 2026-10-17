@@ -57,6 +57,9 @@ extra/bcmbrfp.ko
 # General
 extra/bcm_bp3drv.ko modparam_license_dir="/rom/etc/licenses"
 
+# TC
+extra/bcm_tc.ko
+
 # Ingress QOS module
 # Must be inserted before RDPA_CMD
 extra/bcm_ingqos.ko
@@ -66,6 +69,7 @@ extra/cmdlist.ko
 extra/bcm_fpi.ko
 extra/bcm_archer_gpl.ko
 extra/archer.ko
+
 
 # GDX accelerator module
 # Insert before SpdSvc module
@@ -112,6 +116,7 @@ extra/rdpa_cmd.ko
 extra/tdts.ko
 extra/dpicore.ko
 extra/dpiqos.ko
+extra/kqoe.ko
 # moving pktrunner after bcm_enet to get better FlowCache ICache performance
 -CONFIG_BCM_PKTRUNNER extra/pktrunner.ko
 extra/nciLservices.ko
@@ -176,7 +181,6 @@ extra/hs_uart_drv.ko
 
 extra/isdn.ko
 kernel/drivers/isdn/capi/capi.ko 
-extra/pwrmngtd.ko
 kernel/drivers/char/hw_random/rng-core.ko
 extra/bcmtrng.ko
 extra/bcm2079x-i2c.ko
@@ -203,6 +207,14 @@ extra/bcm_fpi_blog.ko
 # presecure fullsecure modules
 extra/sotp.ko
 
+#ubuscap diagnostics
+extra/ubuscap.ko
+
 # LTE PCIE driver module
 extra/bcm_lte_pcie_drv.ko
 
+# BSTM driver
+-CONFIG_BCM_BSTORM  extra/bstm.ko
+
+# openvpn data channel offload
+extra/ovpn-dco-v2.ko

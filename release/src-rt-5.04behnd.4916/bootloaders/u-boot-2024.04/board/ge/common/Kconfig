@@ -1,0 +1,7 @@
+config GE_VPD
+	bool "Enable GE VPD Support"
+	default y
+
+config GE_RTC
+	bool "Enable GE RTC Support"
+	default y

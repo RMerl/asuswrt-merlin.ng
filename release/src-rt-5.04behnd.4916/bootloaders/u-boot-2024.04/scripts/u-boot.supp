@@ -1,0 +1,53 @@
+{
+	dlmalloc
+	Memcheck:Addr1
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Addr4
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Addr8
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Addr1
+	fun:*
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Addr4
+	fun:*
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Addr8
+	fun:*
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Value4
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Value8
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Cond
+	src:dlmalloc.c
+}
+{
+	dlmalloc
+	Memcheck:Free
+	src:dlmalloc.c
+}

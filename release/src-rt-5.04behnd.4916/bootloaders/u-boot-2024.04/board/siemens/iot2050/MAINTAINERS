@@ -1,0 +1,9 @@
+IOT2050 BOARD
+M:	Le Jin <le.jin@siemens.com>
+M:	Jan Kiszka <jan.kiszka@siemens.com>
+S:	Maintained
+F:	board/siemens/iot2050/
+F:	include/configs/iot2050.h
+F:	configs/iot2050_defconfig
+F:	arch/arm/dts/iot2050-*
+F:	doc/board/siemens/iot2050.rst

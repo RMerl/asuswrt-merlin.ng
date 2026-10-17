@@ -1,6 +1,0 @@
-EBISU BOARD
-M:	Marek Vasut <marek.vasut+renesas@gmail.com>
-S:	Maintained
-F:	board/renesas/ebisu/
-F:	include/configs/ebisu.h
-F:	configs/r8a77990_ebisu_defconfig

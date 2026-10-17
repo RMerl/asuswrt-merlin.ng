@@ -1,0 +1,7 @@
+Compulab IOT-GATE-iMX8 BOARD
+M:	Ying-Chun Liu (PaulLiu) <paul.liu@linaro.org>
+S:	Maintained
+F:	board/compulab/imx8mm-cl-iot-gate/
+F:	include/configs/imx8mm-cl-iot-gate.h
+F:	configs/imx8mm-cl-iot-gate_defconfig
+F:	configs/imx8mm-cl-iot-gate-optee_defconfig

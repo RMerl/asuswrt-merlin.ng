@@ -1,0 +1,29 @@
+if TARGET_SOM_DB5800_SOM_6867
+
+config SYS_BOARD
+	default "som-db5800-som-6867"
+
+config SYS_VENDOR
+	default "advantech"
+
+config SYS_SOC
+	default "baytrail"
+
+config SYS_CONFIG_NAME
+	default "som-db5800-som-6867"
+
+config TEXT_BASE
+	default 0xfff00000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select INTEL_BAYTRAIL
+	select BOARD_ROMSIZE_KB_8192
+	select BOARD_EARLY_INIT_F
+	select SPI_FLASH_MACRONIX
+
+config PCIE_ECAM_BASE
+	default 0xe0000000
+
+endif

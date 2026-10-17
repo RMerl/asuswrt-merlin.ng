@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * Copyright (C) 2023 StarFive Technology Co., Ltd.
+ */
+
+/dts-v1/;
+#include "jh7110-starfive-visionfive-2.dtsi"
+
+/ {
+	compatible = "starfive,visionfive-2-v1.3b", "starfive,jh7110";
+};

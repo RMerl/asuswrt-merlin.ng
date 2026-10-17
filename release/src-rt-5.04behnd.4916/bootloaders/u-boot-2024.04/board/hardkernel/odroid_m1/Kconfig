@@ -1,0 +1,15 @@
+if TARGET_ODROID_M1_RK3568
+
+config SYS_BOARD
+	default "odroid_m1"
+
+config SYS_VENDOR
+	default "hardkernel"
+
+config SYS_CONFIG_NAME
+	default "odroid_m1"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

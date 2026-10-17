@@ -31,8 +31,6 @@
 #include <linux/module.h>
 #include <sound/pcm_params.h>
 #include <sound/soc.h>
-#include <bcm_pinmux.h>
-
 #include <board.h>
 #include "bcm63xx-i2stdm.h"
 
@@ -46,12 +44,17 @@ static int playback_hw_params(struct snd_pcm_substream *substream,
 	int ret;
 	unsigned int width = 32;
 	unsigned int channels;
+#if !defined(CONFIG_SND_SOC_MAPLEGROVE)
+	unsigned int mclk; 
+#endif
 	unsigned int mask  = I2S_TDM_VALID_SLOT_MASK | I2S_BIT_PER_SLOT_MASK;
 
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-	struct snd_soc_dai *codec_dai = rtd->codec_dai;
 	struct device *dev = rtd->card->dev;
+	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
+#if !defined(CONFIG_SND_SOC_MAPLEGROVE)
+	struct snd_soc_dai *codec_dai = asoc_rtd_to_codec(rtd, 0);
+#endif
 
 	channels = params_channels(params);
 	ret = snd_soc_dai_set_tdm_slot(cpu_dai, mask, mask, channels, width);
@@ -62,7 +65,6 @@ static int playback_hw_params(struct snd_pcm_substream *substream,
 	}
 
 #if !defined(CONFIG_SND_SOC_MAPLEGROVE)
-	unsigned int mclk; 
 	mclk = params_rate(params)*SCLK_BIT_PER_CHANNEL*
 			2*MCLK_RATIO*MCLK_RATIO_FACTOR;
 
@@ -87,8 +89,8 @@ static int capture_hw_params(struct snd_pcm_substream *substream,
 	unsigned int mask = I2S_TDM_VALID_SLOT_MASK | I2S_BIT_PER_SLOT_MASK;
 	unsigned int channels;
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
+	struct snd_soc_dai *codec_dai = asoc_rtd_to_codec(rtd, 0);
 	struct device *dev = rtd->card->dev;
 
 	channels = params_channels(params);
@@ -117,25 +119,47 @@ static struct snd_soc_ops capture_ops = {
 	.hw_params = capture_hw_params,
 };
 
+#if defined(CONFIG_SND_SOC_MAPLEGROVE)
+SND_SOC_DAILINK_DEFS(tas2563,
+	DAILINK_COMP_ARRAY(COMP_CPU("merritt-cpu-dai")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("tas2563.0-0048", "tas2563-hifi")),
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("ff802080.bcm63xx-i2s")));
+
+SND_SOC_DAILINK_DEFS(tlv320adc5120,
+	DAILINK_COMP_ARRAY(COMP_CPU("merritt-cpu-dai")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("tlv320adc5120.0-004e", "tlv320adc5120-hifi")),
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("ff802080.bcm63xx-i2s")));
+#else //for other sound card
+SND_SOC_DAILINK_DEFS(tlv320dac3203,
+	DAILINK_COMP_ARRAY(COMP_CPU("merritt-cpu-dai")),
+#if defined(CONFIG_BCM963146)
+	DAILINK_COMP_ARRAY(COMP_CODEC("tlv320dac3203.1-0018", "tlv320dac3203-hifi")),
+#else
+	DAILINK_COMP_ARRAY(COMP_CODEC("tlv320dac3203.0-0018", "tlv320dac3203-hifi")),
+#endif
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("ff802080.bcm63xx-i2s")));
+
+SND_SOC_DAILINK_DEFS(tlv320adc5140,
+	DAILINK_COMP_ARRAY(COMP_CPU("merritt-cpu-dai")),
+#if defined(CONFIG_BCM963146) 
+	DAILINK_COMP_ARRAY(COMP_CODEC("tlv320adc5140.1-004e", "tlv320adc5140-hifi")),
+#else
+	DAILINK_COMP_ARRAY(COMP_CODEC("tlv320adc5140.0-004e", "tlv320adc5140-hifi")),
+#endif
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("ff802080.bcm63xx-i2s")));
+#endif //end of other sound card
+
 static struct snd_soc_dai_link bcm63xx_soc_card_dai[] = 
 {
 	{
 		.name		= "Maple Speaker",
 		.stream_name	= "Playback",
-		.platform_name	= "ff802080.bcm63xx-i2s",
-		.cpu_dai_name	= "merritt-cpu-dai",
-		.codec_dai_name	= "tlv320dac3203-hifi",
-#if defined(CONFIG_BCM96756)
-#if defined(CONFIG_SND_SOC_MAPLEGROVE)
-		.codec_name	= "tas2563.0-0048",
-		.codec_dai_name	= "tas2563-hifi",
-#else
-		.codec_name	= "tlv320dac3203.0-0018",
-#endif
-#else
-		.codec_name	= "tlv320dac3203.1-0018",
-#endif
 		.ops		= &playback_ops,
+#if defined(CONFIG_SND_SOC_MAPLEGROVE)
+		SND_SOC_DAILINK_REG(tas2563),
+#else
+		SND_SOC_DAILINK_REG(tlv320dac3203),
+#endif
 #if defined(CONFIG_SND_SOC_MAPLEGROVE)
 		.dai_fmt	= (SND_SOC_DAIFMT_DSP_A |
 				   SND_SOC_DAIFMT_CBS_CFS	 |
@@ -149,23 +173,12 @@ static struct snd_soc_dai_link bcm63xx_soc_card_dai[] =
 	{
 		.name		= "Maple Mic Array",
 		.stream_name	= "Capture",
-		.platform_name	= "ff802080.bcm63xx-i2s",
-		.cpu_dai_name	= "merritt-cpu-dai",
-#if defined(CONFIG_SND_SOC_MAPLEGROVE)
-		.codec_dai_name	= "tlv320adc5120-hifi",
-#else
-		.codec_dai_name	= "tlv320adc5140-hifi",
-#endif
-#if defined(CONFIG_BCM96756)
-#if defined(CONFIG_SND_SOC_MAPLEGROVE)
-		.codec_name	= "tlv320adc5120.0-004e",
-#else
-		.codec_name	= "tlv320adc5140.0-004e",
-#endif
-#else
-		.codec_name	= "tlv320adc5140.1-004e",
-#endif
 		.ops		= &capture_ops,
+#if defined(CONFIG_SND_SOC_MAPLEGROVE)
+		SND_SOC_DAILINK_REG(tlv320adc5120),
+#else
+		SND_SOC_DAILINK_REG(tlv320adc5140),
+#endif
 		.dai_fmt	= (SND_SOC_DAIFMT_DSP_A |
 				   SND_SOC_DAIFMT_CBS_CFS | 
 				   SND_SOC_DAIFMT_NB_NF),

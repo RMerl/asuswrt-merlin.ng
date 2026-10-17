@@ -112,7 +112,7 @@ bcm_mcast_ifdata *bcm_mcast_if_lookup(int ifindex);
 void bcm_mcast_if_process_device_change(struct net_device *dev);
 
 void bcm_mcast_process_ovs_brinfo_update(t_ovs_mcpd_brcfg_info *pBrcfg);
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
 void bcm_mcast_if_process_blog_enable( int enable );
 #if defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE)
 int bcm_mcast_if_wlan_client_disconnect(struct net_device *dev, char *mac);

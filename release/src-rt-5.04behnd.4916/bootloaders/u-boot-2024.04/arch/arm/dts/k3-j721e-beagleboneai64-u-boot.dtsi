@@ -1,0 +1,360 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * https://beagleboard.org/ai-64
+ *
+ * Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+ * Copyright (C) 2022 Jason Kridner, BeagleBoard.org Foundation
+ * Copyright (C) 2022-2023 Robert Nelson, BeagleBoard.org Foundation
+ */
+
+#include "k3-binman.dtsi"
+
+/ {
+	memory@80000000 {
+		bootph-all;
+	};
+
+	/* Keep the LEDs on by default to indicate life */
+	leds {
+		bootph-all;
+		led-0 {
+			default-state = "on";
+			bootph-all;
+		};
+
+		led-1 {
+			default-state = "on";
+			bootph-all;
+		};
+
+		led-2 {
+			default-state = "on";
+			bootph-all;
+		};
+
+		led-3 {
+			default-state = "on";
+			bootph-all;
+		};
+
+		led-4 {
+			default-state = "on";
+			bootph-all;
+		};
+	};
+};
+
+&cbass_main {
+	bootph-all;
+};
+
+&main_navss {
+	bootph-all;
+};
+
+&cbass_mcu_wakeup {
+	bootph-all;
+
+	chipid@43000014 {
+		bootph-all;
+	};
+};
+
+&mcu_navss {
+	bootph-all;
+};
+
+&mcu_ringacc {
+	reg = <0x0 0x2b800000 0x0 0x400000>,
+		<0x0 0x2b000000 0x0 0x400000>,
+		<0x0 0x28590000 0x0 0x100>,
+		<0x0 0x2a500000 0x0 0x40000>,
+		<0x0 0x28440000 0x0 0x40000>;
+	reg-names = "rt", "fifos", "proxy_gcfg", "proxy_target", "cfg";
+	bootph-all;
+};
+
+&mcu_udmap {
+	reg = <0x0 0x285c0000 0x0 0x100>,
+		<0x0 0x284c0000 0x0 0x4000>,
+		<0x0 0x2a800000 0x0 0x40000>,
+		<0x0 0x284a0000 0x0 0x4000>,
+		<0x0 0x2aa00000 0x0 0x40000>,
+		<0x0 0x28400000 0x0 0x2000>;
+	reg-names = "gcfg", "rchan", "rchanrt", "tchan",
+		"tchanrt", "rflow";
+	bootph-all;
+};
+
+&secure_proxy_main {
+	bootph-all;
+};
+
+&dmsc {
+	bootph-all;
+	k3_sysreset: sysreset-controller {
+		compatible = "ti,sci-sysreset";
+		bootph-all;
+	};
+};
+
+&k3_pds {
+	bootph-all;
+};
+
+&k3_clks {
+	bootph-all;
+};
+
+&k3_reset {
+	bootph-all;
+};
+
+&wkup_pmx0 {
+	bootph-all;
+};
+
+&main_pmx0 {
+	bootph-all;
+};
+
+&main_uart0 {
+	bootph-all;
+};
+
+&main_gpio0 {
+	bootph-all;
+};
+
+&main_uart0_pins_default {
+	bootph-all;
+};
+
+&main_sdhci0 {
+	bootph-all;
+};
+
+&main_sdhci1 {
+	bootph-all;
+	sdhci-caps-mask = <0x00000007 0x00000000>;
+	/delete-property/ cd-gpios;
+	/delete-property/ cd-debounce-delay-ms;
+	/delete-property/ ti,fails-without-test-cd;
+	/delete-property/ no-1-8-v;
+};
+
+&main_mmc1_pins_default {
+	bootph-all;
+};
+
+&mcu_cpsw {
+	bootph-all;
+};
+
+&davinci_mdio {
+	bootph-all;
+};
+
+&phy0 {
+	bootph-all;
+};
+
+&serdes2 {
+	bootph-all;
+};
+
+&serdes_ln_ctrl {
+	bootph-all;
+	u-boot,mux-autoprobe;
+};
+
+&serdes2_usb_link {
+	bootph-all;
+};
+
+&usb_serdes_mux {
+	bootph-all;
+	u-boot,mux-autoprobe;
+};
+
+&serdes_wiz2 {
+	bootph-all;
+};
+
+&main_usbss1_pins_default {
+	bootph-all;
+};
+
+&mcu_usbss1_pins_default {
+	bootph-all;
+};
+
+&usbss1 {
+	bootph-all;
+};
+
+&usb1 {
+	bootph-all;
+};
+
+&wkup_i2c0_pins_default {
+	bootph-all;
+};
+
+&wkup_i2c0 {
+	bootph-all;
+};
+
+#ifdef CONFIG_TARGET_J721E_A72_BEAGLEBONEAI64
+
+#define SPL_NODTB "spl/u-boot-spl-nodtb.bin"
+#define SPL_J721E_BBAI64_DTB "spl/dts/k3-j721e-beagleboneai64.dtb"
+
+#define UBOOT_NODTB "u-boot-nodtb.bin"
+#define J721E_BBAI64_DTB "arch/arm/dts/k3-j721e-beagleboneai64.dtb"
+
+&binman {
+	ti-dm {
+		filename = "ti-dm.bin";
+		blob-ext {
+			filename = "ti-dm/j721e/ipc_echo_testb_mcu1_0_release_strip.xer5f";
+		};
+	};
+
+	ti-spl_unsigned {
+		filename = "tispl.bin_unsigned";
+		pad-byte = <0xff>;
+
+		fit {
+			description = "Configuration to load ATF and SPL";
+			#address-cells = <1>;
+
+			images {
+
+				atf {
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					os = "arm-trusted-firmware";
+					load = <CONFIG_K3_ATF_LOAD_ADDR>;
+					entry = <CONFIG_K3_ATF_LOAD_ADDR>;
+					atf-bl31 {
+						filename = "bl31.bin";
+					};
+				};
+
+				tee {
+					description = "OP-TEE";
+					type = "tee";
+					arch = "arm64";
+					compression = "none";
+					os = "tee";
+					load = <0x9e800000>;
+					entry = <0x9e800000>;
+					tee-os {
+						filename = "tee-raw.bin";
+					};
+				};
+
+				dm {
+					description = "DM binary";
+					type = "firmware";
+					arch = "arm32";
+					compression = "none";
+					os = "DM";
+					load = <0x89000000>;
+					entry = <0x89000000>;
+					blob-ext {
+						filename = "ti-dm.bin";
+					};
+				};
+
+				spl {
+					description = "SPL (64-bit)";
+					type = "standalone";
+					os = "U-Boot";
+					arch = "arm64";
+					compression = "none";
+					load = <CONFIG_SPL_TEXT_BASE>;
+					entry = <CONFIG_SPL_TEXT_BASE>;
+					blob-ext {
+						filename = SPL_NODTB;
+					};
+				};
+
+				fdt-0 {
+					description = "k3-j721e-beagleboneai64";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					blob {
+						filename = SPL_J721E_BBAI64_DTB;
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-0";
+
+				conf-0 {
+					description = "k3-j721e-beagleboneai64";
+					firmware = "atf";
+					loadables = "tee", "dm", "spl";
+					fdt = "fdt-0";
+				};
+			};
+		};
+	};
+
+	u-boot_unsigned {
+		filename = "u-boot.img_unsigned";
+		pad-byte = <0xff>;
+
+		fit {
+			description = "FIT image with multiple configurations";
+
+			images {
+				uboot {
+					description = "U-Boot for j721e board";
+					type = "firmware";
+					os = "u-boot";
+					arch = "arm";
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+					blob {
+						filename = UBOOT_NODTB;
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+
+				fdt-0 {
+					description = "k3-j721e-beagleboneai64";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					blob {
+						filename = J721E_BBAI64_DTB;
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-0";
+
+				conf-0 {
+					description = "k3-j721e-beagleboneai64";
+					firmware = "uboot";
+					loadables = "uboot";
+					fdt = "fdt-0";
+				};
+			};
+		};
+	};
+};
+#endif

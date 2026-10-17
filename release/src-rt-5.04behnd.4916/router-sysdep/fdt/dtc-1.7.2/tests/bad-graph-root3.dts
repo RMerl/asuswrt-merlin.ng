@@ -1,0 +1,14 @@
+/dts-v1/;
+
+ / {
+	bar: bar {
+		port {
+			bar_con: endpoint {
+				remote-endpoint = <&foo_con>;
+			};
+		};
+	};
+	foo_con: endpoint {
+		remote-endpoint = <&bar_con>;
+	};
+};

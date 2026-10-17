@@ -1,0 +1,14 @@
+MT7623
+M:	Ryder Lee <ryder.lee@mediatek.com>
+M:	Weijie Gao <weijie.gao@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7623
+F:	include/configs/mt7623.h
+F:	configs/mt7623n_bpir2_defconfig
+
+UNIELEC U7623
+M:	Ryder Lee <ryder.lee@mediatek.com>
+M:	David Woodhouse <dwmw2@infradead.org>
+S:	Maintained
+F:	arch/arm/dts/mt7623a-unielec-u7623-02-emmc.dts
+F:	configs/mt7623a_unielec_u7623_02_defconfig

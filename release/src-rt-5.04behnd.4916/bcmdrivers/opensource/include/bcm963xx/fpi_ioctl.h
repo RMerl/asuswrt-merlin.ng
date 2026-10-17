@@ -58,10 +58,15 @@ typedef enum {
 	fpictl_subsys_def_prio,
 	fpictl_subsys_flow,
 	fpictl_subsys_stat,
+	fpictl_subsys_gbl_stat,
 	fpictl_subsys_apmac,
 	fpictl_subsys_gre_mode,
 	fpictl_subsys_l2lkp_on_etype,
+	fpictl_subsys_ip_frag_enable,
+	fpictl_subsys_ip_reasm_enable,
 	fpictl_subsys_lkp_enable,
+	fpictl_subsys_gbl_stat_clr_on_rd_enable,
+	fpictl_subsys_ipsec_tunnel,
 	fpictl_subsys_max
 } fpictl_subsys_t;
 
@@ -72,6 +77,7 @@ typedef enum {
 	fpictl_op_del_by_handle,
 	fpictl_op_del_by_key,
 	fpictl_op_getnext,
+	fpictl_op_remap,
 	fpictl_op_max
 } fpictl_op_t;
 
@@ -83,8 +89,14 @@ typedef struct {
 	uint8_t def_prio;
 	fpi_flow_t flow;
 	fpi_stat_t stat;
+	fpi_global_stat_t gbl_stat;
 	fpi_wlan_egress_info_t wl_info;
 	fpi_gre_mode_t gre_mode;
+	fpi_ipsec_tunnel_t ipsec_tun;
+	fpi_ipsec_flows_t ipsec_flows;
+	/* maximum number of forward flows associated with the IPsec tunnel
+	 * refer to FPI_MAX_IPSEC_FWD_FLOWS */
+	uint32_t ipsec_fwd[10];  
 	uint8_t enable;
 	uint32_t handle;
 	int next_idx;

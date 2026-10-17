@@ -1,0 +1,29 @@
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.h b/source/TR-181/sbapi/cosa_wifi_apis.h
+index 56e8e47..7255a7d 100755
+--- a/source/TR-181/sbapi/cosa_wifi_apis.h
++++ b/source/TR-181/sbapi/cosa_wifi_apis.h
+@@ -302,6 +302,8 @@ _COSA_DML_WIFI_AP_SEC_ENCRYPTION
+     COSA_DML_WIFI_AP_SEC_TKIP    = 1,
+     COSA_DML_WIFI_AP_SEC_AES,
+     COSA_DML_WIFI_AP_SEC_AES_TKIP,
++    COSA_DML_WIFI_AP_SEC_AES_GCMP256,
++    COSA_DML_WIFI_AP_SEC_GCMP256,
+     COSA_DML_WIFI_AP_SEC_NONE
+ }
+ COSA_DML_WIFI_AP_SEC_ENCRYPTION, *PCOSA_DML_WIFI_AP_SEC_ENCRYPTION;
+
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.c b/source/TR-181/sbapi/cosa_wifi_apis.c
+index 30c6151..0571c63 100644
+--- a/source/TR-181/sbapi/cosa_wifi_apis.c
++++ b/source/TR-181/sbapi/cosa_wifi_apis.c
+@@ -2263,7 +2263,9 @@ struct wifiSecEncrCosaHalMap wifiSecEncrMap[] =
+       {wifi_encryption_none,     COSA_DML_WIFI_AP_SEC_NONE,     "None"},
+       {wifi_encryption_tkip,     COSA_DML_WIFI_AP_SEC_TKIP,     "TKIP"},
+       {wifi_encryption_aes,      COSA_DML_WIFI_AP_SEC_AES,      "AES"},
+-      {wifi_encryption_aes_tkip, COSA_DML_WIFI_AP_SEC_AES_TKIP, "AES_TKIP"}
++      {wifi_encryption_aes_tkip, COSA_DML_WIFI_AP_SEC_AES_TKIP, "AES_TKIP"},
++      {wifi_encryption_aes_gcmp256, COSA_DML_WIFI_AP_SEC_AES_GCMP256, "AES_GCMP256"},
++      {wifi_encryption_gcmp256, COSA_DML_WIFI_AP_SEC_GCMP256, "GCMP256"}
+ };
+
+ struct wifiSecMfpCosaHalMap wifiSecMFPMap[] =

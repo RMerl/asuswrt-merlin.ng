@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright (C) 2019-2022 Intel Corporation <www.intel.com>
+ */
+
+#include "socfpga_stratix10-u-boot.dtsi"
+
+/{
+	aliases {
+		spi0 = &qspi;
+		freeze_br0 = &freeze_controller;
+	};
+
+	soc {
+		freeze_controller: freeze_controller@f9000450 {
+			compatible = "altr,freeze-bridge-controller";
+			reg = <0xf9000450 0x00000010>;
+			status = "disabled";
+		};
+	};
+};
+
+&clkmgr {
+	bootph-all;
+};
+
+&qspi {
+	status = "okay";
+	bootph-all;
+};
+
+&flash0 {
+	compatible = "jedec,spi-nor";
+	spi-max-frequency = <100000000>;
+	spi-tx-bus-width = <4>;
+	spi-rx-bus-width = <4>;
+	bootph-all;
+};
+
+&sysmgr {
+	bootph-all;
+};
+
+&watchdog0 {
+	status = "okay";
+	bootph-all;
+};

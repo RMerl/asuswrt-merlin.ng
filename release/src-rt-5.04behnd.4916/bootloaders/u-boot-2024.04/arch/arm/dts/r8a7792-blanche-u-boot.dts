@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the Blanche board
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a7792-blanche.dts"
+#include "r8a7792-u-boot.dtsi"
+
+&iic3 {
+	status = "okay";
+};
+
+&scif0 {
+	bootph-all;
+};

@@ -34,7 +34,7 @@
 #include "rdpa_types.h"
 #include "rdpa_ingress_class.h"
 
-#if !defined(BCM_DSL_XRDP) && !defined(BCM_DSL_RDP) && !defined(RDP_UFC)
+#if !defined(BCM_DSL_XRDP) && !defined(RDP_UFC)
 #include "rdpa_ip_class.h"
 #else
 #include "rdpa_ucast.h"
@@ -68,19 +68,13 @@ typedef struct
     uint32_t rx_crc_error_pkt; /**< Received packets with CRC error */
     uint32_t discard_pkt; /**< IPTV Discard Packets */
     uint32_t iptv_lkp_miss_drop;           /**< Drop due to IPTV Hash lookup miss (DA \ DIP) */
-#if !defined(RDP_UFC)
-    uint32_t iptv_src_ip_vid_lkp_miss_drop;     /**< Drop due to IPTV channel Source IP \ VID lookup miss */
-    uint32_t iptv_invalid_ctx_entry_drop;       /**< Drop due to IPTV channel invalid ctx entry */
-#endif
     uint32_t iptv_fpm_sbpm_alloc_nack_drop;     /**< Drop due to exhaustion of FPM buffers */
     uint32_t iptv_first_repl_disp_nack_drop;    /**< Drop due to unavilable dispatcher buffer - first replication */
     uint32_t iptv_exception_drop;               /**< Drop due to IPTV exception */
     uint32_t iptv_other_repl_disp_nack_drop;    /**< Drop due to unavilable dispatcher buffer - other replication */
     uint64_t discard_bytes;                     /**< IPTV total discard packets length in bytes */
-#ifdef BCM6858
-    uint32_t iptv_congestion_drop;              /**< IPTV congestion drops */
-#endif
-    uint32_t iptv_fpm_below_threshold_drop;     /**< Drop due to FPM buffers below threshold */
+    uint32_t iptv_src_ip_vid_lkp_miss_drop;     /**< Drop due to IPTV channel Source IP \ VID lookup miss */
+    uint32_t iptv_invalid_ctx_entry_drop;       /**< Drop due to IPTV channel invalid ctx entry */
 } rdpa_iptv_stat_t;
 
 /** IPTV Chanel key */
@@ -103,13 +97,5 @@ typedef struct {
 #endif
 
 /** @} end of iptv Doxygen group */
-
-/** HW flow modes */
-typedef enum
-{
-    rdpa_iptv_flow_mode_single, /**< Single flow mode */
-    rdpa_iptv_flow_mode_multi, /**< Multi-flow mode */
-} rdpa_iptv_flow_mode_t;
-
 #endif /* _RDPA_IPTV_H_ */
 

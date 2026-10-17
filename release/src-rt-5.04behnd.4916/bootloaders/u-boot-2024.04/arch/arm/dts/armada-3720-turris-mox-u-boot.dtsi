@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * 2022 by Marek Behún <kabel@kernel.org>
+ */
+
+&usb3 {
+	vbus-supply = <&exp_usb3_vbus>;
+};

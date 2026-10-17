@@ -1,0 +1,8 @@
+XILINX_VERSAL_NET BOARDS
+M:	Michal Simek <michal.simek@amd.com>
+S:	Maintained
+T:	git https://gitlab.denx.de/u-boot/custodians/u-boot-microblaze.git
+F:	arch/arm/dts/versal-net*
+F:	board/xilinx/versal-net/
+F:	include/configs/xilinx_versal_net*
+F:	configs/xilinx_versal_net*

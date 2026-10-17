@@ -1,0 +1,15 @@
+DS3232 Real-Time Clock with SRAM
+
+The RTC driver provides time and date functionality. Also read and write
+functions are provided that can be used to access the SRAM memory.
+
+Required properties:
+- compatible     : should contain "dallas,ds3232"
+- reg            : the I2C RTC address
+
+Example:
+
+rtc@68 {
+	compatible = "dallas,ds3232";
+	reg = <0x68>;
+};

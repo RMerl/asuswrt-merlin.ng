@@ -95,34 +95,10 @@ int SendAndWait(TCommand * cmd, TCommand * rsp)
 	rsp->u.cmdGenericParams.params[1] = 0;
 	return 0;
 #else
-#if IS_BCMCHIP(63138)
-	/* translate new cmdID into old cmdID that the pmc will understand NB:
-	 * requires cmdIDs below to be the new versions
-	 */
-
-	static const unsigned char newToOldcmdIDMap[] = {
-		[cmdSetRunState] = 64,	// cmdSetRunState,
-		[cmdSetPowerState] = 65,	// cmdSetPowerState,
-		[cmdShutdownAllowed] = 66,	// cmdShutdownAllowed,
-		[cmdGetSelect0] = 67,	// cmdGetSelect0,
-		[cmdGetSelect3] = 68,	// cmdGetSelect3,
-		[cmdGetAvsDisableState] = 69,	// cmdGetAvsDisableState,
-		[cmdGetPVT] = 70,	// cmdGetPVT,
-		[cmdPowerDevOnOff] = 129,	// cmdPowerDevOnOff,
-		[cmdPowerZoneOnOff] = 130,	// cmdPowerZoneOnOff,
-		[cmdResetDevice] = 131,	// cmdResetDevice,
-		[cmdResetZone] = 132,	// cmdResetZone,
-		[cmdAllocateG2UDQM] = 133,	// cmdAllocateG2UDQM,
-		[cmdQSMAvailable] = 134,	// cmdQSMAvailable,
-		[cmdRevision] = 135,	// cmdRevision,
-	};
-
-	static int pmc_remap = 0;
-#endif
 	static uint32_t reqdID = 1;
 	int status = kPMC_COMMAND_TIMEOUT;
 	TCommand dummy;
-    int early_call = 0;
+	int early_call = 0;
 	volatile Pmc *pmc;
 #if defined(BOOT_MEMC_SRAM)
 	reqdID = 1;
@@ -159,12 +135,6 @@ int SendAndWait(TCommand * cmd, TCommand * rsp)
 		     rsp->u.cmdGenericParams.params[0],
 		     rsp->u.cmdGenericParams.params[1], rsp->word0.Bits.error);
 	}
-
-#if IS_BCMCHIP(63138)
-	if (pmc_remap && cmd->word0.Bits.cmdID < sizeof newToOldcmdIDMap &&
-	    newToOldcmdIDMap[cmd->word0.Bits.cmdID])
-		cmd->word0.Bits.cmdID = newToOldcmdIDMap[cmd->word0.Bits.cmdID];
-#endif
 
 #ifdef PMC_LOG_IN_DTCM
 	if (cmd->word0.Bits.cmdID == cmdCloseAVS)
@@ -208,11 +178,6 @@ int SendAndWait(TCommand * cmd, TCommand * rsp)
 	while (!(pmc->dqm.notEmptySts & PMC_DQM_RPL_STS) &&
 	       (pmc->ctrl.gpTmr2Ctl & (1 << 31))) 
 	{
-#if (IS_BCMCHIP(63148) || IS_BCMCHIP(4908))
-		/* Do not tight poll the PMC registers for longer command */
-		if (cmd->word0.Bits.cmdID == cmdCloseAVS)
-			udelay(1000);
-#endif
 	}
 #endif /* CONFIG_BRCM_IKOS */
 
@@ -458,25 +423,11 @@ EXIT:
 
 int GetPVT(int sel, int island, int *value)
 {
-#if defined(CONFIG_BCM96765) && !defined(CONFIG_BCM96764L)
-	if (sel == kTEMPERATURE) {
-		volatile MaestroMisc *maestro = (volatile MaestroMisc *)g_pmc->maestro_base;
-		*value = maestro->coreState.usrMbx[4];
-		return 0;
-	}
-#endif
 	return read_pvt_direct_keyhole(sel, 0, value);
 }
 
 int GetPVTKH2(int sel, int island, int *value)
 {
-#if defined(CONFIG_BCM96765) && !defined(CONFIG_BCM96764L)
-	if (sel == kTEMPERATURE) {
-		volatile MaestroMisc *maestro = (volatile MaestroMisc *)g_pmc->maestro_base;
-		*value = maestro->coreState.usrMbx[4];
-		return 0;
-	}
-#endif
 	return read_pvt_direct_keyhole(sel, 2, value);
 }
 #else // #if defined(PMC_IMPL_3_X) || defined(PMC_ON_HOSTCPU) || defined(PMC_DIRECT_MODE_ONLY)
@@ -1135,9 +1086,7 @@ int pmc_convert_pvtmon(int sel, int value)
 #else // #if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) ...
 	switch (sel) {
 	case kTEMPERATURE:	// convert value to milli-degree Celsius
-#if IS_BCMCHIP(63148)		// pvt2
-		return (38887551 - 466415 * value / 10) / 100;
-#elif defined(PMC_IMPL_3_X) || IS_BCMCHIP(6878) || IS_BCMCHIP(6855)
+#if defined(PMC_IMPL_3_X) || IS_BCMCHIP(6855)		// pvt2
 		return (41335000 - 49055 * value) / 100;
 #else
 		return (41004000 - 48705 * value) / 100;

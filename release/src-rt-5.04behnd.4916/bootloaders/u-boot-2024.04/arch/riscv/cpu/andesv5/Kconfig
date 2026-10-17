@@ -1,0 +1,16 @@
+config RISCV_NDS
+	bool
+	select ARCH_EARLY_INIT_R
+	imply CPU
+	imply CPU_RISCV
+	imply RISCV_TIMER if (RISCV_SMODE || SPL_RISCV_SMODE)
+	imply ANDES_PLMT_TIMER
+	imply SPL_ANDES_PLMT_TIMER
+	imply ANDES_PLICSW if (RISCV_MMODE || SPL_RISCV_MMODE)
+	imply V5L2_CACHE
+	imply SPL_CPU
+	imply SPL_OPENSBI
+	imply SPL_LOAD_FIT
+	help
+	  Run U-Boot on AndeStar V5 platforms and use some specific features
+	  which are provided by Andes Technology AndeStar V5 families.

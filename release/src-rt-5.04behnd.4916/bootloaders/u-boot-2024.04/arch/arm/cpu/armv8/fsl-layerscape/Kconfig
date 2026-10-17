@@ -1,0 +1,687 @@
+config ARCH_LS1012A
+	bool
+	select ARMV8_SET_SMPEN
+	select ARM_ERRATA_855873 if !TFABOOT
+	select FSL_LAYERSCAPE
+	select FSL_LSCH2
+	select GICV2
+	select SKIP_LOWLEVEL_INIT
+	select SYS_FSL_SRDS_1
+	select SYS_HAS_SERDES
+	select SYS_FSL_DDR_BE
+	select SYS_FSL_MMDC
+	select SYS_FSL_ERRATUM_A010315 if PCIE_LAYERSCAPE
+	select SYS_FSL_ERRATUM_A009798
+	select SYS_FSL_ERRATUM_A008997
+	select SYS_FSL_ERRATUM_A009007
+	select SYS_FSL_ERRATUM_A009008
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select SYS_I2C_MXC_I2C1 if !DM_I2C
+	select SYS_I2C_MXC_I2C2 if !DM_I2C
+	imply PANIC_HANG
+	imply TIMESTAMP
+
+config ARCH_LS1028A
+	bool
+	select ARMV8_SET_SMPEN
+	select ESBC_HDR_LS if CHAIN_OF_TRUST
+	select FSL_LAYERSCAPE
+	select FSL_LSCH3
+	select FSL_TZASC_400
+	select GICV3
+	select NXP_LSCH3_2
+	select SYS_FSL_HAS_CCI400
+	select SYS_FSL_SRDS_1
+	select SYS_HAS_SERDES
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_LE
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SEC_LE
+	select FSL_TZASC_1
+	select FSL_TZPC_BP147
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select SYS_FSL_ERRATUM_A008997
+	select SYS_FSL_ERRATUM_A009007
+	select SYS_FSL_ERRATUM_A008514 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009663 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009942 if !TFABOOT
+	select SYS_FSL_ERRATUM_A050382
+	select SYS_FSL_ERRATUM_A011334
+	select SYS_FSL_ESDHC_UNRELIABLE_PULSE_DETECTION_WORKAROUND
+	select RESV_RAM if GIC_V3_ITS
+	select SYS_HAS_ARMV8_SECURE_BASE
+	imply PANIC_HANG
+
+config ARCH_LS1043A
+	bool
+	select ARMV8_SET_SMPEN
+	select ARM_ERRATA_855873 if !TFABOOT
+	select FSL_IFC if TFABOOT || (!QSPI_BOOT && !SD_BOOT_QSPI && !SD_BOOT)
+	select FSL_LAYERSCAPE
+	select FSL_LSCH2
+	select GICV2
+	select HAS_FSL_XHCI_USB if USB_HOST
+	select SKIP_LOWLEVEL_INIT
+	select SYS_DPAA_FMAN
+	select SYS_FSL_SRDS_1
+	select SYS_HAS_SERDES
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_BE
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_ERRATUM_A008850 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008997
+	select SYS_FSL_ERRATUM_A009008
+	select SYS_FSL_ERRATUM_A009660 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009663 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009798
+	select SYS_FSL_ERRATUM_A009942 if !TFABOOT
+	select SYS_FSL_ERRATUM_A010315 if PCIE_LAYERSCAPE
+	select SYS_FSL_ERRATUM_A010539
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select SYS_I2C_MXC_I2C1 if !DM_I2C
+	select SYS_I2C_MXC_I2C2 if !DM_I2C
+	select SYS_I2C_MXC_I2C3 if !DM_I2C
+	select SYS_I2C_MXC_I2C4 if !DM_I2C
+	select SYS_HAS_ARMV8_SECURE_BASE
+	imply CMD_PCI
+	imply ID_EEPROM
+
+config ARCH_LS1046A
+	bool
+	select ARMV8_SET_SMPEN
+	select FSL_IFC if TFABOOT || (!QSPI_BOOT && !SD_BOOT_QSPI && !SD_BOOT)
+	select FSL_LAYERSCAPE
+	select FSL_LSCH2
+	select GICV2
+	select HAS_FSL_XHCI_USB if USB_HOST
+	select SKIP_LOWLEVEL_INIT
+	select SYS_DPAA_FMAN
+	select SYS_FSL_SRDS_1
+	select SYS_HAS_SERDES
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_BE
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_ERRATUM_A008336 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008511 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008850 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008997
+	select SYS_FSL_ERRATUM_A009008
+	select SYS_FSL_ERRATUM_A009798
+	select SYS_FSL_ERRATUM_A009801
+	select SYS_FSL_ERRATUM_A009803 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009942 if !TFABOOT
+	select SYS_FSL_ERRATUM_A010165 if !TFABOOT
+	select SYS_FSL_ERRATUM_A010539
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_SRDS_2
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select SYS_I2C_MXC_I2C1 if !DM_I2C
+	select SYS_I2C_MXC_I2C2 if !DM_I2C
+	select SYS_I2C_MXC_I2C3 if !DM_I2C
+	select SYS_I2C_MXC_I2C4 if !DM_I2C
+	imply ID_EEPROM
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPL_SYS_I2C_LEGACY
+
+config ARCH_LS1088A
+	bool
+	select ARMV8_SET_SMPEN
+	select ARM_ERRATA_855873 if !TFABOOT
+	select ESBC_HDR_LS if CHAIN_OF_TRUST
+	select FSL_IFC
+	select FSL_LAYERSCAPE
+	select FSL_LSCH3
+	select GICV3
+	select SKIP_LOWLEVEL_INIT
+	select SYS_FSL_SRDS_1
+	select SYS_HAS_SERDES
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_LE
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_EC1
+	select SYS_FSL_EC2
+	select SYS_FSL_ERRATUM_A009803 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009942 if !TFABOOT
+	select SYS_FSL_ERRATUM_A010165 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008511 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008850 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009007
+	select SYS_FSL_HAS_CCI400
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_HAS_RGMII
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SEC_LE
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_SRDS_2
+	select FSL_TZASC_1
+	select FSL_TZASC_400
+	select FSL_TZPC_BP147
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select SYS_I2C_MXC_I2C1 if !TFABOOT
+	select SYS_I2C_MXC_I2C2 if !TFABOOT
+	select SYS_I2C_MXC_I2C3 if !TFABOOT
+	select SYS_I2C_MXC_I2C4 if !TFABOOT
+	select RESV_RAM if GIC_V3_ITS
+	imply ID_EEPROM
+	imply SCSI
+	imply SPL_SYS_I2C_LEGACY
+	imply PANIC_HANG
+
+config ARCH_LS2080A
+	bool
+	select ARMV8_SET_SMPEN
+	select ARM_ERRATA_826974
+	select ARM_ERRATA_828024
+	select ARM_ERRATA_829520
+	select ARM_ERRATA_833471
+	select ESBC_HDR_LS if CHAIN_OF_TRUST
+	select FSL_IFC
+	select FSL_LAYERSCAPE
+	select FSL_LSCH3
+	select SYS_FSL_OTHER_DDR_NUM_CTRLS
+	select GICV3
+	select SKIP_LOWLEVEL_INIT
+	select SYS_FSL_SRDS_1
+	select SYS_HAS_SERDES
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_LE
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_HAS_CCN504
+	select SYS_FSL_HAS_DP_DDR
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SEC_LE
+	select SYS_FSL_SRDS_2
+	select FSL_TZASC_1
+	select FSL_TZASC_2
+	select FSL_TZASC_400
+	select FSL_TZPC_BP147
+	select SYS_FSL_ERRATUM_A008336 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008511 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008514 if !TFABOOT
+	select SYS_FSL_ERRATUM_A008585
+	select SYS_FSL_ERRATUM_A008997
+	select SYS_FSL_ERRATUM_A009007
+	select SYS_FSL_ERRATUM_A009008
+	select SYS_FSL_ERRATUM_A009635
+	select SYS_FSL_ERRATUM_A009663 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009798
+	select SYS_FSL_ERRATUM_A009801
+	select SYS_FSL_ERRATUM_A009803 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009942 if !TFABOOT
+	select SYS_FSL_ERRATUM_A010165 if !TFABOOT
+	select SYS_FSL_ERRATUM_A009203
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select SYS_I2C_MXC_I2C1 if !TFABOOT
+	select SYS_I2C_MXC_I2C2 if !TFABOOT
+	select SYS_I2C_MXC_I2C3 if !TFABOOT
+	select SYS_I2C_MXC_I2C4 if !TFABOOT
+	select RESV_RAM if GIC_V3_ITS
+	imply DISTRO_DEFAULTS
+	imply ID_EEPROM
+	imply PANIC_HANG
+	imply SPL_SYS_I2C_LEGACY
+
+config ARCH_LX2162A
+	bool
+	select ARMV8_SET_SMPEN
+	select ESBC_HDR_LS if CHAIN_OF_TRUST
+	select FSL_DDR_BIST
+	select FSL_DDR_INTERACTIVE
+	select FSL_LAYERSCAPE
+	select FSL_LSCH3
+	select FSL_TZPC_BP147
+	select GICV3
+	select NXP_LSCH3_2
+	select SYS_HAS_SERDES
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_SRDS_2
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_LE
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_EC1
+	select SYS_FSL_EC2
+	select SYS_FSL_ERRATUM_A050204
+	select SYS_FSL_ERRATUM_A011334
+	select SYS_FSL_ESDHC_UNRELIABLE_PULSE_DETECTION_WORKAROUND
+	select SYS_FSL_HAS_RGMII
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_HAS_CCN508
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SEC_LE
+	select SYS_PCI_64BIT if PCI
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select RESV_RAM if GIC_V3_ITS
+	imply DISTRO_DEFAULTS
+	imply PANIC_HANG
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPL_SYS_I2C_LEGACY
+
+config ARCH_LX2160A
+	bool
+	select ARMV8_SET_SMPEN
+	select ESBC_HDR_LS if CHAIN_OF_TRUST
+	select FSL_DDR_BIST
+	select FSL_DDR_INTERACTIVE
+	select FSL_LAYERSCAPE
+	select FSL_LSCH3
+	select FSL_TZPC_BP147
+	select GICV3
+	select HAS_FSL_XHCI_USB if USB_HOST
+	select NXP_LSCH3_2
+	select SYS_HAS_SERDES
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_SRDS_2
+	select SYS_NXP_SRDS_3
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_LE
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_EC1
+	select SYS_FSL_EC2
+	select SYS_FSL_ERRATUM_A050204
+	select SYS_FSL_ERRATUM_A011334
+	select SYS_FSL_ESDHC_UNRELIABLE_PULSE_DETECTION_WORKAROUND
+	select SYS_FSL_HAS_RGMII
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_HAS_CCN508
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SEC_LE
+	select SYS_PCI_64BIT if PCI
+	select ARCH_EARLY_INIT_R
+	select BOARD_EARLY_INIT_F
+	select SYS_I2C_MXC
+	select RESV_RAM if GIC_V3_ITS
+	imply DISTRO_DEFAULTS
+	imply ID_EEPROM
+	imply PANIC_HANG
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPL_SYS_I2C_LEGACY
+
+config FSL_LSCH2
+	bool
+	select SKIP_LOWLEVEL_INIT
+	select SYS_FSL_CCSR_GUR_BE
+	select SYS_FSL_CCSR_SCFG_BE
+	select SYS_FSL_ESDHC_BE
+	select SYS_FSL_IFC_BE
+	select SYS_FSL_PEX_LUT_BE
+	select SYS_FSL_HAS_CCI400
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SEC_BE
+
+config FSL_LSCH3
+	select ARCH_MISC_INIT
+	select SYS_FSL_CCSR_GUR_LE
+	select SYS_FSL_CCSR_SCFG_LE
+	select SYS_FSL_ESDHC_LE
+	select SYS_FSL_IFC_LE
+	select SYS_FSL_PEX_LUT_LE
+	bool
+
+config NXP_LSCH3_2
+	bool
+
+config SYS_FSL_CCSR_GUR_BE
+	bool
+
+config SYS_FSL_CCSR_SCFG_BE
+	bool
+
+config SYS_FSL_PEX_LUT_BE
+	bool
+
+config SYS_FSL_CCSR_GUR_LE
+	bool
+
+config SYS_FSL_CCSR_SCFG_LE
+	bool
+
+config SYS_FSL_ESDHC_LE
+	bool
+
+config SYS_FSL_IFC_LE
+	bool
+
+config SYS_FSL_PEX_LUT_LE
+	bool
+
+menu "Layerscape architecture"
+	depends on FSL_LSCH2 || FSL_LSCH3
+
+config FSL_LAYERSCAPE
+	bool
+	select ARM_SMCCC
+
+config HAS_FEATURE_GIC64K_ALIGN
+	bool
+	default y if ARCH_LS1043A
+
+config HAS_FEATURE_ENHANCED_MSI
+	bool
+	default y if ARCH_LS1043A
+
+config SYS_FSL_ERRATUM_A008997
+	bool "Workaround for USB PHY erratum A008997"
+
+config SYS_FSL_ERRATUM_A009007
+	bool
+	help
+	  Workaround for USB PHY erratum A009007
+
+config SYS_FSL_ERRATUM_A009008
+	bool "Workaround for USB PHY erratum A009008"
+
+config SYS_FSL_ERRATUM_A009798
+	bool "Workaround for USB PHY erratum A009798"
+
+config SYS_FSL_ERRATUM_A050204
+	bool "Workaround for USB PHY erratum A050204"
+	help
+	  USB3.0 Receiver needs to enable fixed equalization
+	  for each of PHY instances in an SOC. This is similar
+	  to erratum A-009007, but this one is for LX2160A and LX2162A,
+	  and the register value is different.
+
+config SYS_FSL_ERRATUM_A010315
+	bool "Workaround for PCIe erratum A010315"
+
+config SYS_FSL_ERRATUM_A010539
+	bool "Workaround for PIN MUX erratum A010539"
+
+config MAX_CPUS
+	int "Maximum number of CPUs permitted for Layerscape"
+	default 2 if ARCH_LS1028A
+	default 4 if ARCH_LS1043A
+	default 4 if ARCH_LS1046A
+	default 16 if ARCH_LS2080A
+	default 8 if ARCH_LS1088A
+	default 16 if ARCH_LX2160A
+	default 16 if ARCH_LX2162A
+	default 1
+	help
+	  Set this number to the maximum number of possible CPUs in the SoC.
+	  SoCs may have multiple clusters with each cluster may have multiple
+	  ports. If some ports are reserved but higher ports are used for
+	  cores, count the reserved ports. This will allocate enough memory
+	  in spin table to properly handle all cores.
+
+config EMC2305
+	bool "Fan controller"
+	help
+	 Enable the EMC2305 fan controller for configuration of fan
+	 speed.
+
+config QSPI_AHB_INIT
+	bool "Init the QSPI AHB bus"
+	help
+	  The default setting for QSPI AHB bus just support 3bytes addressing.
+	  But some QSPI flash size up to 64MBytes, so initialize the QSPI AHB
+	  bus for those flashes to support the full QSPI flash size.
+
+config FSPI_AHB_EN_4BYTE
+	bool "Enable 4-byte Fast Read command for AHB mode"
+	help
+	  The default setting for FlexSPI AHB bus just supports 3-byte addressing.
+	  But some FlexSPI flash sizes are up to 64MBytes.
+	  This flag enables fast read command for AHB mode and modifies required
+	  LUT to support full FlexSPI flash.
+
+config SYS_CCI400_OFFSET
+	hex "Offset for CCI400 base"
+	depends on SYS_FSL_HAS_CCI400
+	default 0x3090000 if ARCH_LS1088A || ARCH_LS1028A
+	default 0x180000 if FSL_LSCH2
+	help
+	  Offset for CCI400 base
+	  CCI400 base addr = CCSRBAR + CCI400_OFFSET
+
+config SYS_FSL_HAS_CCI400
+	bool
+
+config SYS_FSL_HAS_CCN504
+	bool
+
+config SYS_FSL_HAS_CCN508
+	bool
+
+config SYS_FSL_HAS_DP_DDR
+	bool
+	help
+	  Defines the SoC has DP-DDR used for DPAA.
+
+config DP_DDR_CTRL
+	int
+	depends on SYS_FSL_HAS_DP_DDR
+	default 2 if ARCH_LS2080A
+
+config DP_DDR_DIMM_SLOTS_PER_CTLR
+	int
+	depends on SYS_FSL_HAS_DP_DDR
+	default 1 if ARCH_LS2080A
+
+config DP_DDR_NUM_CTRLS
+	int
+	depends on SYS_FSL_HAS_DP_DDR
+	default 1 if ARCH_LS2080A
+
+config SYS_DP_DDR_BASE
+	hex
+	depends on SYS_FSL_HAS_DP_DDR
+	default 0x6000000000 if ARCH_LS2080A
+
+config SYS_DP_DDR_BASE_PHY
+	int
+	depends on SYS_FSL_HAS_DP_DDR
+	default 0 if ARCH_LS2080A
+	help
+	  DDR controller uses this value as the base address for binding.
+	  It is mapped to CONFIG_SYS_DP_DDR_BASE for core to access.
+
+config SYS_NXP_SRDS_3
+	bool
+
+config FSL_TZASC_1
+	bool
+
+config FSL_TZASC_2
+	bool
+
+config FSL_TZASC_400
+	bool
+
+config FSL_TZPC_BP147
+	bool
+endmenu
+
+menu "Layerscape clock tree configuration"
+	depends on FSL_LSCH2 || FSL_LSCH3
+
+config CLUSTER_CLK_FREQ
+	int "Reference clock of core cluster"
+	depends on ARCH_LS1012A
+	default 100000000
+	help
+	  This number is the reference clock frequency of core PLL.
+	  For most platforms, the core PLL and Platform PLL have the same
+	  reference clock, but for some platforms, LS1012A for instance,
+	  they are provided sepatately.
+
+config SYS_FSL_PCLK_DIV
+	int "Platform clock divider"
+	default 1 if ARCH_LS1028A
+	default 1 if ARCH_LS1043A
+	default 1 if ARCH_LS1046A
+	default 1 if ARCH_LS1088A
+	default 2
+	help
+	  This is the divider that is used to derive Platform clock from
+	  Platform PLL, in another word:
+		Platform_clk = Platform_PLL_freq / this_divider
+
+config SYS_FSL_DSPI_CLK_DIV
+	int "DSPI clock divider"
+	default 1 if ARCH_LS1043A
+	default 2
+	help
+	  This is the divider that is used to derive DSPI clock from Platform
+	  clock, in another word DSPI_clk = Platform_clk / this_divider.
+
+config SYS_FSL_DUART_CLK_DIV
+	int "DUART clock divider"
+	default 1 if ARCH_LS1043A
+	default 4 if ARCH_LX2160A
+	default 4 if ARCH_LX2162A
+	default 2
+	help
+	  This is the divider that is used to derive DUART clock from Platform
+	  clock, in another word DUART_clk = Platform_clk / this_divider.
+
+config SYS_FSL_I2C_CLK_DIV
+	int "I2C clock divider"
+	default 1 if ARCH_LS1043A
+	default 4 if ARCH_LS1012A
+	default 4 if ARCH_LS1028A
+	default 8 if ARCH_LX2160A
+	default 8 if ARCH_LX2162A
+	default 8 if ARCH_LS1088A
+	default 2
+	help
+	  This is the divider that is used to derive I2C clock from Platform
+	  clock, in another word I2C_clk = Platform_clk / this_divider.
+
+config SYS_FSL_IFC_CLK_DIV
+	int "IFC clock divider"
+	default 1 if ARCH_LS1043A
+	default 4 if ARCH_LS1012A
+	default 4 if ARCH_LS1028A
+	default 8 if ARCH_LX2160A
+	default 8 if ARCH_LX2162A
+	default 8 if ARCH_LS1088A
+	default 2
+	help
+	  This is the divider that is used to derive IFC clock from Platform
+	  clock, in another word IFC_clk = Platform_clk / this_divider.
+
+config SYS_FSL_LPUART_CLK_DIV
+	int "LPUART clock divider"
+	default 1 if ARCH_LS1043A
+	default 2
+	help
+	  This is the divider that is used to derive LPUART clock from Platform
+	  clock, in another word LPUART_clk = Platform_clk / this_divider.
+
+config SYS_FSL_SDHC_CLK_DIV
+	int "SDHC clock divider"
+	default 1 if ARCH_LS1043A
+	default 1 if ARCH_LS1012A
+	default 2
+	help
+	  This is the divider that is used to derive SDHC clock from Platform
+	  clock, in another word SDHC_clk = Platform_clk / this_divider.
+
+config SYS_FSL_QMAN_CLK_DIV
+	int "QMAN clock divider"
+	default 1 if ARCH_LS1043A
+	default 2
+	help
+	  This is the divider that is used to derive QMAN clock from Platform
+	  clock, in another word QMAN_clk = Platform_clk / this_divider.
+endmenu
+
+config RESV_RAM
+	bool
+	help
+	  Reserve memory from the top, tracked by gd->arch.resv_ram. This
+	  reserved RAM can be used by special driver that resides in memory
+	  after U-Boot exits. It's up to implementation to allocate and allow
+	  access to this reserved memory. For example, the reserved RAM can
+	  be at the high end of physical memory. The reserve RAM may be
+	  excluded from memory bank(s) passed to OS, or marked as reserved.
+
+config SYS_FSL_EC1
+	bool
+	help
+	  Ethernet controller 1, this is connected to
+	  MAC17 for LX2160A and LX2162A or to MAC3 for other SoCs
+	  Provides DPAA2 capabilities
+
+config SYS_FSL_EC2
+	bool
+	help
+	  Ethernet controller 2, this is connected to
+	  MAC18 for LX2160A and LX2162A or to MAC4 for other SoCs
+	  Provides DPAA2 capabilities
+
+config SYS_FSL_ERRATUM_A008336
+	bool
+
+config SYS_FSL_ERRATUM_A008514
+	bool
+
+config SYS_FSL_ERRATUM_A008585
+	bool
+
+config SYS_FSL_ERRATUM_A008850
+	bool
+
+config SYS_FSL_ERRATUM_A009203
+	bool
+
+config SYS_FSL_ERRATUM_A009635
+	bool
+
+config SYS_FSL_ERRATUM_A009660
+	bool
+
+config SYS_FSL_ERRATUM_A050382
+	bool
+
+config SYS_FSL_HAS_RGMII
+	bool
+	depends on SYS_FSL_EC1 || SYS_FSL_EC2
+
+config HAS_FSL_XHCI_USB
+	bool
+	help
+	  For some SoC (such as LS1043A and LS1046A), USB and QE-HDLC multiplex use
+	  pins, select it when the pins are assigned to USB.
+
+config SYS_FSL_BOOTROM_BASE
+	hex
+	depends on FSL_LSCH2
+	default 0x0
+
+config SYS_FSL_BOOTROM_SIZE
+	hex
+	depends on FSL_LSCH2
+	default 0x1000000

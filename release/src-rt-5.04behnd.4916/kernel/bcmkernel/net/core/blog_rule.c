@@ -82,10 +82,6 @@ static blogRule_Ctrl_t blogRuleCtrl;
 blogRuleVlanHook_t blogRuleVlanHook = NULL;
 blogRuleVlanNotifyHook_t blogRuleVlanNotifyHook = NULL;
 
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-blogRuleTcHook_t blogRuleTcHook = NULL;
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
-
 #undef  BLOG_RULE_DECL
 #define BLOG_RULE_DECL(x) #x
 
@@ -536,7 +532,4 @@ EXPORT_SYMBOL(blog_rule_add_action);
 EXPORT_SYMBOL(blog_rule_delete_action);
 EXPORT_SYMBOL(blogRuleVlanHook);
 EXPORT_SYMBOL(blogRuleVlanNotifyHook);
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-EXPORT_SYMBOL(blogRuleTcHook);
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
 #endif /* defined(CONFIG_BLOG) */

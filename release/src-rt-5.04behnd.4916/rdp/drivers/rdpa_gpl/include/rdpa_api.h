@@ -50,7 +50,7 @@
 #include <rdpa_llid.h>
 #include <rdpa_mllid.h>
 #include <rdpa_egress_tm.h>
-#include <rdpa_vlan_action.h>
+
 #include <rdpa_gem.h>
 #include <rdpa_filter.h>
 
@@ -62,29 +62,24 @@
 #include <rdpa_ag_llid.h>
 #include <rdpa_ag_mllid.h>
 #include <rdpa_ag_egress_tm.h>
-#include <rdpa_ag_vlan_action.h>
 #include <rdpa_ag_gem.h>
 
-#if !defined(BCM_DSL_RDP) && !defined(BCM_DSL_XRDP) && !defined(RDP_UFC)
+#if !defined(BCM_DSL_XRDP) && !defined(RDP_UFC)
 #include <rdpa_ip_class.h>
 #include <rdpa_ag_ip_class.h>
-#ifdef XRDP
 #include <rdpa_l2_common.h>
 #include <rdpa_l2_class.h>
 #include <rdpa_ag_l2_class.h>
 #include <rdpa_tunnel.h>
 #include <rdpa_ag_tunnel.h>
 #endif
-#endif
-
-#ifdef XRDP
+#if defined(CONFIG_RNR_BRIDGE_SUPPORT)
+#include <rdpa_vlan.h>
+#include <rdpa_ag_vlan.h>
 #include <rdpa_bridge.h>
 #include <rdpa_ag_bridge.h>
 #endif
 
-#if !defined(BCM_DSL_RDP)
-#include <rdpa_vlan.h>
-#endif
 
 #include <rdpa_qos_mapper.h>
 #include <rdpa_tm.h>
@@ -98,21 +93,21 @@
 #include <rdpa_spdsvc.h>
 #include <rdpa_ag_spdsvc.h>
 #include <rdpa_spdtest_common.h>
-#if defined(XRDP)
 #include <rdpa_tcpspdtest.h>
 #include <rdpa_ag_tcpspdtest.h>
 #include <rdpa_udpspdtest.h>
 #include <rdpa_ag_udpspdtest.h>
-#endif
-#if defined(BCM_DSL_XRDP) || defined(BCM_PON_XRDP)
 #include <rdpa_tr471_spdsvc.h>
 #include <rdpa_ag_tr471_spdsvc.h>
 #endif
+#if defined(SCORE_SUPPORT)
+#include <rdpa_score.h>
+#include <rdpa_ag_score.h>
 #endif
 #if defined(CONFIG_RUNNER_IPSEC)
 #include <rdpa_ipsec.h>
 #endif
-#if defined(BCM_DSL_RDP) || defined(BCM_DSL_XRDP) || defined(RDP_UFC)
+#if defined(BCM_DSL_XRDP) || defined(RDP_UFC)
 #include <rdpa_ucast.h>
 #include <rdpa_mcast.h>
 #include <rdpa_l2_ucast.h>
@@ -125,9 +120,7 @@
 #include <rdpa_xtmflow.h>
 #endif
 
-#if defined(XRDP) && !defined(OPERATION_MODE_PRV) && !defined(G9991_PRV)
 #include <rdpa_mcast_whitelist.h>
-#endif
 
 #ifdef CONFIG_DHD_RUNNER
 #include <rdpa_dhd_helper.h>
@@ -136,7 +129,7 @@
 #if defined(CONFIG_RUNNER_IPSEC)
 #include <rdpa_ag_ipsec.h>
 #endif
-#if defined(BCM_DSL_RDP) || defined(BCM_DSL_XRDP)
+#if defined(BCM_DSL_XRDP)
 #include <rdpa_ag_ucast.h>
 #include <rdpa_ag_mcast.h>
 #if defined(CONFIG_RNR_DSL_INTF_SUPPORT)
@@ -161,15 +154,12 @@
 #include <rdpa_ag_tc_to_queue.h>
 #endif /* DSL_138 */
 
-#if defined(XRDP) && !defined(OPERATION_MODE_PRV) && !defined(G9991_PRV)
 #include <rdpa_ag_mcast_whitelist.h>
-#endif
 
 #include <rdpa_ag_policer.h>
-#if !defined(BCM_DSL_RDP)
 #include <rdpa_ag_dscp_to_pbit.h>
-#include <rdpa_ag_vlan.h>
-#endif
+
+
 #include <rdpa_ag_filter.h>
 
 #ifdef CONFIG_DHD_RUNNER
@@ -195,7 +185,12 @@
 #endif
 
 #ifdef CONFIG_RUNNER_FPI
+#include <rdpa_fpi.h>
 #include <rdpa_ag_fpi.h>
 #endif
+
+/* GPL handwritten API */
+int rdpa_port_get_hw_queue_info(bdmf_object_handle port_obj, uint8_t wan_flow, uint16_t queue_id,
+                              bdmf_object_handle * p_egress_tm_obj, uint8_t *queue_index, uint16_t *hw_queue_id);
 
 #endif /* _RDPA_API_H_ */

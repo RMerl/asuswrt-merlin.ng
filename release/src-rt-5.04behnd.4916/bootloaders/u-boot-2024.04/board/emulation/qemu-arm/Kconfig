@@ -1,0 +1,27 @@
+if TARGET_QEMU_ARM_32BIT || TARGET_QEMU_ARM_64BIT
+
+config TEXT_BASE
+	default 0x00000000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select QFW if ACPI
+	select QFW_MMIO if CMD_QFW
+	imply VIRTIO_MMIO
+	imply VIRTIO_PCI
+	imply VIRTIO_NET
+	imply VIRTIO_BLK
+
+config PRE_CON_BUF_ADDR
+	hex
+	default 0x40100000
+
+endif
+
+if TARGET_QEMU_ARM_64BIT && !TFABOOT
+config BOARD_SPECIFIC_OPTIONS
+	imply SYS_MTDPARTS_RUNTIME
+	imply SET_DFU_ALT_INFO
+
+source "board/emulation/common/Kconfig"
+endif

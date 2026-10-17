@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * dts file for Topic XDP (Xilinx Drone Platform)
+ *
+ * (C) Copyright 2016, Topic Embedded Products BV
+ * Mike Looijmans <mike.looijmans@topic.nl>
+ */
+
+/dts-v1/;
+
+#include "zynqmp.dtsi"
+#include "zynqmp-clk-ccf.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/phy/phy.h>
+
+/ {
+	model = "Topic Miamimp ZynqMP XDP v1r1";
+	compatible = "topic,miamimp-xdp-v1r1", "topic,miamimp-xdp",
+		     "topic,miamimp", "xlnx,zynqmp";
+
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		mmc0 = &sdhci0;
+		mmc1 = &sdhci1;
+		rtc0 = &rtc;
+		serial0 = &uart1;
+		serial1 = &uart0;
+		serial2 = &dcc;
+		spi0 = &qspi;
+		usb0 = &usb0;
+	};
+
+	chosen {
+		bootargs = "earlycon";
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>, <0x8 0x00000000 0x0 0x80000000>;
+	};
+};
+
+&dcc {
+	status = "okay";
+};
+
+&gpio {
+	status = "okay";
+};
+
+&gpu {
+	status = "okay";
+};
+
+&qspi {
+	status = "okay";
+	flash@0 {
+		compatible = "st,m25p80", "n25q256a", "jedec,spi-nor";
+		m25p,fast-read;
+		reg = <0x0>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <166000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "qspi-boot-bin";
+			reg = <0x00000 0x60000>;
+		};
+		partition@60000 {
+			label = "qspi-u-boot-itb";
+			reg = <0x60000 0x100000>;
+		};
+		partition@160000 {
+			label = "qspi-u-boot-env";
+			reg = <0x160000 0x20000>;
+		};
+		partition@200000 {
+			label = "qspi-rootfs";
+			reg = <0x200000 0x1e00000>;
+		};
+	};
+};
+
+&rtc {
+	status = "okay";
+};
+
+/* eMMC device */
+&sdhci0 {
+	status = "okay";
+	non-removable;
+	disable-wp; /* We don't have a write-protect detection */
+	bus-width = <8>;
+	xlnx,mio-bank = <0>;
+};
+
+/* SD1 with level shifter */
+&sdhci1 {
+	status = "okay";
+	xlnx,mio-bank = <1>;
+	disable-wp; /* We don't have a write-protect detection */
+	bus-width = <4>;
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+	status = "okay";
+};

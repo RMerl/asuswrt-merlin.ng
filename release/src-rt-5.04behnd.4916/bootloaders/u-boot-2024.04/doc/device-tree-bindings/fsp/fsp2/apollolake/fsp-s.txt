@@ -1,0 +1,490 @@
+* Intel FSP-S configuration
+
+Several Intel platforms require the execution of the Intel FSP (Firmware
+Support Package) for initialization. The FSP consists of multiple parts, one
+of which is the FSP-S (Silicon initialization phase).
+
+This binding applies to the FSP-S for the Intel Apollo Lake SoC.
+
+The FSP-S is available on Github [1].
+For detailed information on the FSP-S parameters see the documentation in
+FSP/ApolloLakeFspBinPkg/Docs [2].
+
+The properties of this binding are all optional. If no properties are set the
+values of the FSP-S are used.
+
+[1] https://github.com/IntelFsp/FSP
+[2] https://github.com/IntelFsp/FSP/tree/master/ApolloLakeFspBinPkg/Docs
+
+Optional properties:
+- fsps,active-processor-cores: ActiveProcessorCores
+- fsps,disable-core1: Disable Core1
+- fsps,disable-core2: Disable Core2
+- fsps,disable-core2: Disable Core3
+- fsps,vmx-enable: VMX Enable
+- fsps,proc-trace-mem-size: Memory region allocation for Processor Trace
+  0xFF: Disable (default)
+- fsps,proc-trace-enable: Enable Processor Trace
+- fsps,eist: Eist
+- fsps,boot-p-state: Boot PState
+  0: HFM (default)
+  1: LFM
+- fsps,enable-cx: CPU power states (C-states)
+- fsps,c1e: Enhanced C-states
+- fsps,bi-proc-hot: Bi-Directional PROCHOT#
+- fsps,pkg-c-state-limit: Max Pkg Cstate
+  0: PkgC0C1
+  1: PkgC2
+  2: PkgC3 (default)
+  3: PkgC6
+  4: PkgC7
+  5: PkgC7s
+  6: PkgC8
+  7: PkgC9
+  8: PkgC10
+  9: PkgCMax
+  254: PkgCpuDefault
+  255: PkgAuto
+- fsps,c-state-auto-demotion: C-State auto-demotion
+  0: Disable C1 and C3 Auto-demotion (default)
+  1: Enable C3/C6/C7 Auto-demotion to C1
+  2: Enable C6/C7 Auto-demotion to C3
+  3: Enable C6/C7 Auto-demotion to C1 and C3
+- fsps,c-state-un-demotion: C-State un-demotion
+  0: Disable C1 and C3 Un-demotion (default)
+  1: Enable C1 Un-demotion
+  2: Enable C3 Un-demotion
+  3: Enable C1 and C3 Un-demotion
+- fsps,max-core-c-state: Max Core C-State
+  0: Unlimited
+  1: C1
+  2: C3
+  3: C6
+  4: C7
+  5: C8
+  6: C9
+  7: C10
+  8: CCx (default)
+- fsps,pkg-c-state-demotion: Package C-State Demotion
+- fsps,pkg-c-state-un-demotion: Package C-State Un-demotion
+- fsps,turbo-mode: Turbo Mode
+- fsps,hda-verb-table-entry-num: SC HDA Verb Table Entry Number
+  0: (default)
+- fsps,hda-verb-table-ptr: SC HDA Verb Table Pointer
+  0x00000000: (default)
+- fsps,p2sb-unhide: Enable/Disable P2SB device hidden
+- fsps,ipu-en: IPU Enable/Disable
+- fsps,ipu-acpi-mode: IMGU ACPI mode selection
+  0: Auto
+  1: IGFX Child device (default)
+  2: ACPI device
+- fsps,force-wake: Enable ForceWake
+- fsps,gtt-mm-adr: GttMmAdr
+  0xbf000000: (default)
+- fsps,gm-adr: GmAdr
+  0xa0000000: (default)
+- fsps,pavp-lock: Enable PavpLock
+- fsps,graphics-freq-modify: Enable GraphicsFreqModify
+- fsps,graphics-freq-req: Enable GraphicsFreqReq
+- fsps,graphics-video-freq: Enable GraphicsVideoFreq
+- fsps,pm-lock: Enable PmLock
+- fsps,dop-clock-gating: Enable DopClockGating
+- fsps,unsolicited-attack-override: Enable UnsolicitedAttackOverride
+- fsps,wopcm-support: Enable WOPCMSupport
+- fsps,wopcm-size: Enable WOPCMSize
+- fsps,power-gating: Enable PowerGating
+- fsps,unit-level-clock-gating: Enable UnitLevelClockGating
+- fsps,fast-boot: Enable FastBoot
+- fsps,dyn-sr: Enable DynSR
+- fsps,sa-ipu-enable: Enable SaIpuEnable
+- fsps,pm-support: GT PM Support
+- fsps,enable-render-standby: RC6(Render Standby)
+- fsps,logo-size: BMP Logo Data Size
+- fsps,logo-ptr: BMP Logo Data Pointer
+- fsps,graphics-config-ptr: Graphics Configuration Data Pointer
+- fsps,pavp-enable: PAVP Enable
+- fsps,pavp-pr3: PAVP PR3
+- fsps,cd-clock: CdClock Frequency selection
+  0: 144MHz
+  1: 288MHz
+  2: 384MHz
+  3: 576MHz
+  4: 624MHz (default)
+- fsps,pei-graphics-peim-init: Enable/Disable PeiGraphicsPeimInit
+- fsps,write-protection-enable: Write Protection Support
+- fsps,read-protection-enable: Read Protection Support
+- fsps,protected-range-limit: Protected Range Limitation
+  0x0FFF: (default)
+- fsps,protected-range-base: Protected Range Base
+  0x0000: (default)
+- fsps,gmm: Enable SC Gaussian Mixture Models
+- fsps,clk-gating-pgcb-clk-trunk: GMM Clock Gating - PGCB Clock Trunk
+- fsps,clk-gating-sb: GMM Clock Gating - Sideband
+- fsps,clk-gating-sb-clk-trunk: GMM Clock Gating - Sideband
+- fsps,clk-gating-sb-clk-partition: GMM Clock Gating - Sideband Clock
+  Partition
+- fsps,clk-gating-core: GMM Clock Gating - Core
+- fsps,clk-gating-dma: GMM Clock Gating - DMA
+- fsps,clk-gating-reg-access: GMM Clock Gating - Register Access
+- fsps,clk-gating-host: GMM Clock Gating - Host
+- fsps,clk-gating-partition: GMM Clock Gating - Partition
+- fsps,clk-gating-trunk: Clock Gating - Trunk
+- fsps,hda-enable: HD Audio Support
+- fsps,dsp-enable: HD Audio DSP Support
+- fsps,pme: Azalia wake-on-ring
+- fsps,hd-audio-io-buffer-ownership: HD-Audio I/O Buffer Ownership
+  0: HD-Audio link owns all the I/O buffers (default)
+  1: HD-Audio link owns 4 I/O buffers and I2S port owns 4 I/O buffers
+  3: I2S port owns all the I/O buffers
+- fsps,hd-audio-io-buffer-voltage: HD-Audio I/O Buffer Voltage
+  0: 3.3V (default)
+  1: 1.8V
+- fsps,hd-audio-vc-type: HD-Audio Virtual Channel Type
+  0: VC0 (default)
+  1: VC1
+- fsps,hd-audio-link-frequency: HD-Audio Link Frequency
+  0: 6MHz (default)
+  1: 12MHz
+  2: 24MHz
+  3: 48MHz
+  4: 96MHz
+  5: Invalid
+- fsps,hd-audio-i-disp-link-frequency: HD-Audio iDisp-Link Frequency
+  0: 6MHz (default)
+  1: 12MHz
+  2: 24MHz
+  3: 48MHz
+  4: 96MHz
+  5: Invalid
+- fsps,hd-audio-i-disp-link-tmode: HD-Audio iDisp-Link T-Mode
+  0: 2T (default)
+  1: 1T
+- fsps,dsp-endpoint-dmic: HD-Audio Disp DMIC
+  0: disable,
+  1: 2ch array (default)
+  2: 4ch array
+- fsps,dsp-endpoint-bluetooth: HD-Audio Bluetooth
+- fsps,dsp-endpoint-i2s-skp: HD-Audio I2S SHK
+- fsps,dsp-endpoint-i2s-hp: HD-Audio I2S HP
+- fsps,audio-ctl-pwr-gate: HD-Audio Controller Power Gating (deprecated)
+- fsps,audio-dsp-pwr-gate: HD-Audio ADSP Power Gating (deprecated)
+- fsps,mmt: HD-Audio CSME Memory Transfers
+  0: VC0 (default)
+  1: VC2
+- fsps,hmt: HD-Audio Host Memory Transfers
+  0: VC0 (default)
+  1: VC2
+- fsps,hd-audio-pwr-gate: HD-Audio Power Gating
+- fsps,hd-audio-clk-gate: HD-Audio Clock Gating
+- fsps,dsp-feature-mask: Bitmask of DSP Feature
+  0x01: WoV
+  0x02: BT Sideband
+  0x04: Codec VAD
+  0x20: BT Intel HFP
+  0x40: BT Intel A2DP
+  0x80: DSP based speech pre-processing disabled
+- fsps,dsp-pp-module-mask: Bitmask of supported DSP Post-Processing Modules
+  0x01: WoV
+  0x02: BT Sideband
+  0x04: Codec VAD
+  0x20: BT Intel HFP
+  0x40: BT Intel A2DP
+  0x80: DSP based speech pre-processing disabled
+- fsps,bios-cfg-lock-down: HD-Audio BIOS Configuration Lock Down
+- fsps,hpet: Enable High Precision Timer
+- fsps,hpet-bdf-valid: Hpet Valid BDF Value
+- fsps,hpet-bus-number: Bus Number of Hpet
+  0xFA: (default)
+- fsps,hpet-device-number: Device Number of Hpet
+  0x1F: (default)
+- fsps,hpet-function-number: Function Number of Hpet
+  0x00: (default)
+- fsps,io-apic-bdf-valid: IoApic Valid BDF Value
+- fsps,io-apic-bus-number: Bus Number of IoApic
+  0xFA: (default)
+- fsps,io-apic-device-number: Device Number of IoApic
+  0x0F: (default)
+- fsps,io-apic-function-number: Function Number of IoApic
+  0x00: (default)
+- fsps,io-apic-entry24-119: IOAPIC Entry 24-119
+- fsps,io-apic-id: IO APIC ID
+  0x01: (default)
+- fsps,io-apic-range-select: IoApic Range
+  0x00: (default)
+- fsps,ish-enable: ISH Controller
+- fsps,bios-interface: BIOS Interface Lock Down
+- fsps,bios-lock: Bios LockDown Enable
+- fsps,spi-eiss: SPI EISS Status
+- fsps,bios-lock-sw-smi-number: BiosLock SWSMI Number
+  0xA9: (default)
+- fsps,lpss-s0ix-enable: LPSS IOSF PMCTL S0ix Enable
+- fsps,i2c-clk-gate-cfg: LPSS I2C Clock Gating Configuration
+- fsps,hsuart-clk-gate-cfg: LPSS HSUART Clock Gating Configuration
+- fsps,spi-clk-gate-cfg: LPSS SPI Clock Gating Configuration
+- fsps,i2cX-enable: 2C Device X
+  0: Disabled
+  1: PCI Mode (default)
+  2: ACPI Mode
+- fsps,hsuartX-enable: UART Device X
+  0: Disabled
+  1: PCI Mode (default)
+  2: ACPI Mode
+- fsps,spiX-enable: SPI UART Device X
+  0: Disabled
+  1: PCI Mode (default)
+  2: ACPI Mode
+- fsps,os-dbg-enable: OS Debug Feature
+- fsps,dci-en: DCI Feature
+- fsps,uart2-kernel-debug-base-address: UART Debug Base Address
+  0x00000000: (default)
+- fsps,pcie-clock-gating-disabled: Enable PCIE Clock Gating
+- fsps,pcie-root-port8xh-decode: Enable PCIE Root Port 8xh Decode
+- fsps,pcie8xh-decode-port-index: PCIE 8xh Decode Port Index
+  0x00: (default)
+- fsps,pcie-root-port-peer-memory-write-enable: Enable PCIE Root Port Peer
+						Memory Write
+- fsps,pcie-aspm-sw-smi-number: PCIE SWSMI Number
+  0xAA: (default)
+- fsps,pcie-root-port-en: PCI Express Root Port
+- fsps,pcie-rp-hide: Hide PCIE Root Port Configuration Space
+- fsps,pcie-rp-slot-implemented: PCIE Root Port Slot Implement
+- fsps,pcie-rp-hot-plug: Hot Plug
+- fsps,pcie-rp-pm-sci: PCIE PM SCI
+- fsps,pcie-rp-ext-sync: PCIE Root Port Extended Sync
+- fsps,pcie-rp-transmitter-half-swing: Transmitter Half Swing
+- fsps,pcie-rp-acs: ACS
+- fsps,pcie-rp-clk-req-supported: Clock Request Support
+- fsps,pcie-rp-clk-req-number: Configure CLKREQ Number
+- fsps,pcie-rp-clk-req-detect: CLKREQ# Detection
+- fsps,advanced-error-reportingt: Advanced Error Reporting
+- fsps,pme-interrupt: PME Interrupt
+- fsps,unsupported-request-report: URR
+- fsps,fatal-error-report: FER
+- fsps,no-fatal-error-report: NFER
+- fsps,correctable-error-report: CER
+- fsps,system-error-on-fatal-error: SEFE
+- fsps,system-error-on-non-fatal-error: SENFE
+- fsps,system-error-on-correctable-error: SECE
+- fsps,pcie-rp-speed: PCIe Speed
+- fsps,physical-slot-number: Physical Slot Number
+  0: Auto (default)
+  1: Gen1
+  2: Gen2
+  3: Gen3
+- fsps,pcie-rp-completion-timeout: CTO
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05 (default)
+- fsps,enable-ptm: PTM Support
+- fsps,pcie-rp-aspm: ASPM
+- fsps,pcie-rp-l1-substates: L1 Substates
+- fsps,pcie-rp-ltr-enable: PCH PCIe LTR
+- fsps,pcie-rp-ltr-config-lock: PCIE LTR Lock
+- fsps,pme-b0-s5-di: PME_B0_S5 Disable bit
+- fsps,pci-clock-run: PCI Clock Run
+- fsps,timer8254-clk-setting: Enable/Disable Timer 8254 Clock Setting
+- fsps,enable-sata: Chipset SATA
+- fsps,sata-mode: SATA Mode Selection
+  0: AHCI (default)
+  1: RAID
+- fsps,sata-salp-support: Aggressive LPM Support
+- fsps,sata-pwr-opt-enable: SATA Power Optimization
+- fsps,e-sata-speed-limit: eSATA Speed Limit
+- fsps,speed-limit: SATA Speed Limit
+  0x1: 1.5Gb/s(Gen 1)
+  0x2: 3Gb/s(Gen 2)
+  0x3: 6Gb/s(Gen 3)
+- fsps,sata-ports-enable: SATA Port
+- fsps,sata-ports-dev-slp: SATA Port DevSlp
+- fsps,sata-ports-hot-plug: SATA Port HotPlug
+- fsps,sata-ports-interlock-sw: Mechanical Presence Switch
+- fsps,sata-ports-external: External SATA Ports
+- fsps,sata-ports-spin-up: Spin Up Device
+- fsps,sata-ports-solid-state-drive: SATA Solid State
+  0: Hard Disk Drive (default)
+  1: Solid State Drive
+- fsps,sata-ports-enable-dito-config: DITO Configuration
+- fsps,sata-ports-dm-val: DM Value
+  0x0F: Maximum (default)
+- fsps,sata-ports-dito-val: DITO Value
+  0x0271 (default)
+- fsps,sub-system-vendor-id: Subsystem Vendor ID
+  0x8086: (default)
+- fsps,sub-system-id: Subsystem ID
+  0x7270: (default)
+- fsps,crid-setting: CRIDSettings
+  0: Disable (default)
+  1: CRID_1
+  2: CRID_2
+  3: CRID_3
+- fsps,reset-select: ResetSelect
+  0x6: warm reset (default)
+  0xE: cold reset
+- fsps,sdcard-enabled: SD Card Support (D27:F0)
+- fsps,emmc-enabled: SeMMC Support (D28:F0)
+- fsps,emmc-host-max-speed: eMMC Max Speed
+  0: HS400(default)
+  1: HS200
+  2: DDR50
+- fsps,ufs-enabled: UFS Support (D29:F0)
+- fsps,sdio-enabled: SDIO Support (D30:F0)
+- fsps,gpp-lock: GPP Lock Feature
+- fsps,sirq-enable: Serial IRQ
+- fsps,sirq-mode: Serial IRQ Mode
+  0: Quiet mode (default)
+  1: Continuous mode
+- fsps,start-frame-pulse: Start Frame Pulse Width
+  0: ScSfpw4Clk (default)
+  1: ScSfpw6Clk
+  2: ScSfpw8Clk
+- fsps,smbus-enable: SMBus
+- fsps,arp-enable: SMBus ARP Support
+- fsps,num-rsvd-smbus-addresses: SMBus Table Elements
+  0x0080: (default)
+- fsps,rsvd-smbus-address-table: Reserved SMBus Address Table
+   0x00: (default)
+- fsps,disable-compliance-mode: XHCI Disable Compliance Mode
+- fsps,usb-per-port-ctl: USB Per-Port Control
+- fsps,usb30-mode: xHCI Mode
+  0: Disable
+  1: Enable
+  2: Auto (default)
+- fsps,port-usb20-enable: Enable USB2 ports
+- fsps,port-usb20-over-current-pin: USB20 Over Current Pin
+- fsps,usb-otg: XDCI Support
+  0: Disable
+  1: PCI_Mode (default)
+  2: ACPI_mode
+- fsps,hsic-support-enable: Enable XHCI HSIC Support
+- fsps,port-usb30-enable: Enable USB3 ports
+- fsps,port-usb30-over-current-pin: USB30 Over Current Pin
+- fsps,ssic-port-enable: Enable XHCI SSIC Support
+- fsps,dlane-pwr-gating: SSIC Dlane PowerGating
+- fsps,vtd-enable: VT-d
+- fsps,lock-down-global-smi: SMI Lock bit
+- fsps,reset-wait-timer: HDAudio Delay Timer
+  0x012C: (default)
+- fsps,rtc-lock: RTC Lock Bits
+- fsps,sata-test-mode: SATA Test Mode Selection
+- fsps,ssic-rate: XHCI SSIC RATE
+  1: A Series (default)
+  2: B Series
+- fsps,dynamic-power-gating: SMBus Dynamic Power Gating
+- fsps,pcie-rp-ltr-max-snoop-latency: Max Snoop Latency
+  0x0000: (default)
+- fsps,pcie-rp-snoop-latency-override-mode: Snoop Latency Override
+  0: Disable
+  1: Enable
+  2: Auto (default)
+- fsps,pcie-rp-snoop-latency-override-value: Snoop Latency Value
+  0x003C (default)
+- fsps,pcie-rp-snoop-latency-override-multiplier: Snoop Latency Multiplier
+  0: 1ns
+  1: 32ns
+  2: 1024ns (default)
+  3: 32768ns
+  4: 1048576ns
+  5: 33554432ns
+- fsps,skip-mp-init: Skip Multi-Processor Initialization
+- fsps,dci-auto-detect: DCI Auto Detect
+- fsps,pcie-rp-ltr-max-non-snoop-latency: Max Non-Snoop Latency
+  0x0000: (default)
+- fsps,pcie-rp-non-snoop-latency-override-mode: Non Snoop Latency Override
+- fsps,tco-timer-halt-lock: Halt and Lock TCO Timer
+- fsps,pwr-btn-override-period: Power Button Override Period
+  000: 4s (default)
+  001: 6s
+  010: 8s
+  011: 10s
+  100: 12s
+  101: 14s
+- fsps,pcie-rp-non-snoop-latency-override-value:
+  0x003C: (default)
+- fsps,pcie-rp-non-snoop-latency-override-multiplier: Non Snoop Latency Value
+  0: 1ns
+  1: 32ns
+  2: 1024ns (default)
+  3: 32768ns
+  4: 1048576ns
+  5: 33554432ns
+- fsps,pcie-rp-slot-power-limit-scale: PCIE Root Port Slot Power Limit Scale
+  0x00: (default)
+- fsps,pcie-rp-slot-power-limit-value:
+  0x00: (default)
+- fsps,disable-native-power-button: Power Button Native Mode Disable
+- fsps,power-butter-debounce-mode: Power Button Debounce Mode
+- fsps,sdio-tx-cmd-cntl: SDIO_TX_CMD_DLL_CNTL
+  0x505: (default)
+- fsps,sdio-tx-data-cntl1: SDIO_TX_DATA_DLL_CNTL1
+  0xE: (default)
+- fsps,sdio-tx-data-cntl2: SDIO_TX_DATA_DLL_CNTL2
+  0x22272828: (default)
+- fsps,sdio-rx-cmd-data-cntl1: SDIO_RX_CMD_DATA_DLL_CNTL1
+  0x16161616: (default)
+- fsps,sdio-rx-cmd-data-cntl2: SDIO_RX_CMD_DATA_DLL_CNTL2
+  0x10000: (default)
+- fsps,sdcard-tx-cmd-cntl: SDCARD_TX_CMD_DLL_CNTL
+  0x505 (default)
+- fsps,sdcard-tx-data-cntl1: SDCARD_TX_DATA_DLL_CNTL1
+  0xA13: (default)
+- fsps,sdcard-tx-data-cntl2: SDCARD_TX_DATA_DLL_CNTL2
+  0x24242828: (default)
+- fsps,sdcard-rx-cmd-data-cntl1: SDCARD_RX_CMD_DATA_DLL_CNTL1
+  0x73A3637 (default)
+- fsps,sdcard-rx-strobe-cntl: SDCARD_RX_STROBE_DLL_CNTL
+  0x0: (default)
+- fsps,sdcard-rx-cmd-data-cntl2: SDCARD_RX_CMD_DATA_DLL_CNTL2
+  0x10000: (default)
+- fsps,emmc-tx-cmd-cntl: EMMC_TX_CMD_DLL_CNTL
+  0x505: (default)
+- fsps,emmc-tx-data-cntl1: EMMC_TX_DATA_DLL_CNTL1
+  0xC11: (default)
+- fsps,emmc-tx-data-cntl2: EMMC_TX_DATA_DLL_CNTL2
+  0x1C2A2927: (default)
+- fsps,emmc-rx-cmd-data-cntl1: EMMC_RX_CMD_DATA_DLL_CNTL1
+  0x000D162F: (default)
+- fsps,emmc-rx-strobe-cntl: EMMC_RX_STROBE_DLL_CNTL
+  0x0a0a: (default)
+- fsps,emmc-rx-cmd-data-cntl2: EMMC_RX_CMD_DATA_DLL_CNTL2
+  0x1003b: (default)
+- fsps,emmc-master-sw-cntl: EMMC_MASTER_DLL_CNTL
+  0x001: (default)
+- fsps,pcie-rp-selectable-deemphasis: PCIe Selectable De-emphasis
+  1: -3.5 dB (default)
+  0: -6 dB
+- fsps,monitor-mwait-enable: Monitor Mwait Enable
+- fsps,hd-audio-dsp-uaa-compliance: Universal Audio Architecture
+				    compliance for DSP enabled system
+- fsps,ipc: IRQ Interrupt Polarity Control
+- fsps,sata-ports-disable-dynamic-pg: Disable ModPHY dynamic power gate
+- fsps,init-s3-cpu: Init CPU during S3 resume
+- fsps,skip-punit-init: Skip P-unit Initialization
+- fsps,port-usb20-per-port-tx-pe-half: PerPort Half Bit Pre-emphasis
+- fsps,port-usb20-per-port-pe-txi-set: PerPort HS Pre-emphasis Bias
+- fsps,port-usb20-per-port-txi-set: PerPort HS Transmitter Bias
+- fsps,port-usb20-hs-skew-sel: Select the skew direction for HS transition
+- fsps,port-usb20-i-usb-tx-emphasis-en: PerPort HS Transmitter Emphasis
+- fsps,port-usb20-per-port-rxi-set: PerPort HS Receiver Bias
+- fsps,port-usb20-hs-npre-drv-sel: Delay/skew's strength control for HS driver
+- fsps,os-selection: OS Selection
+  0: Windows
+  1: Android
+  3: Linux
+- fsps,dptf-enabled: DPTF
+- fsps,pwm-enabled: PWM Enabled
+
+Example:
+
+&fsp_s {
+	bootph-some-ram;
+
+	fsps,ish-enable = <0>;
+	fsps,enable-sata = <0>;
+	fsps,pcie-root-port-en = [00 00 00 00 00 01];
+	fsps,pcie-rp-hot-plug = [00 00 00 00 00 01];
+	fsps,i2c6-enable = <I2CX_ENABLE_DISABLED>;
+	fsps,i2c7-enable = <I2CX_ENABLE_DISABLED>;
+	fsps,hsuart3-enable = <HSUARTX_ENABLE_DISABLED>;
+	fsps,spi1-enable = <SPIX_ENABLE_DISABLED>;
+	fsps,spi2-enable = <SPIX_ENABLE_DISABLED>;
+	fsps,sdio-enabled = <0>;
+	...
+};

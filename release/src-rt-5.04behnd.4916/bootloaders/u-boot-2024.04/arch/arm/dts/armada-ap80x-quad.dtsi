@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018 Marvell International Ltd.
+ *
+ */
+
+/*
+ * Device Tree file for Marvell Armada AP806/AP807.
+ */
+
+/ {
+	model = "Marvell Armada AP80X Quad";
+	compatible = "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@000 {
+			clocks;
+			bootph-all;
+			device_type = "cpu";
+			compatible = "arm,cortex-a72", "arm,armv8";
+			reg = <0x000>;
+			enable-method = "psci";
+		};
+		cpu@001 {
+			clocks;
+			bootph-all;
+			device_type = "cpu";
+			compatible = "arm,cortex-a72", "arm,armv8";
+			reg = <0x001>;
+			enable-method = "psci";
+		};
+		cpu@100 {
+			clocks;
+			bootph-all;
+			device_type = "cpu";
+			compatible = "arm,cortex-a72", "arm,armv8";
+			reg = <0x100>;
+			enable-method = "psci";
+		};
+		cpu@101 {
+			clocks;
+			bootph-all;
+			device_type = "cpu";
+			compatible = "arm,cortex-a72", "arm,armv8";
+			reg = <0x101>;
+			enable-method = "psci";
+		};
+	};
+};

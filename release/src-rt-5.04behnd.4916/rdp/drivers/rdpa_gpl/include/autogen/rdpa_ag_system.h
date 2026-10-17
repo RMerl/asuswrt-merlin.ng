@@ -58,18 +58,19 @@ typedef enum {
     rdpa_system_attr_ipv4_host_address_table = 10, /* ipv4_host_address_table : RWADF : ipv4[] : IPv4 Host Address Table Entry */
     rdpa_system_attr_ipv6_host_address_table = 11, /* ipv6_host_address_table : RWADF : ipv6[] : IPv6 Host Address Table Entry */
     rdpa_system_attr_qm_cfg = 12, /* qm_cfg : RI : aggregate system_qm_config(rdpa_qm_cfg_t) : Configuration for dynamic Queue allocation */
-    rdpa_system_attr_packet_buffer_cfg = 14, /* packet_buffer_cfg : RW : aggregate system_packet_buffer_cfg(rdpa_packet_buffer_cfg_t) : FPM packet buffer configuration for Us */
-    rdpa_system_attr_high_prio_tc_threshold = 15, /* high_prio_tc_threshold : RI : enum : TC threshold for high priority traffic (TC7 - highest TC) */
-    rdpa_system_attr_counter_cfg = 16, /* counter_cfg : RI : aggregate system_counter_cfg(rdpa_counter_cfg_t) : Define the counter configuration and get available count */
-    rdpa_system_attr_fpm_isr_delay_timer_period = 17, /* fpm_isr_delay_timer_period : RW : number : FPM ISR delay timer period (msec) */
-    rdpa_system_attr_natc_counter = 18, /* natc_counter : RWF : aggregate[] natc_cntr(rdpa_natc_cntr_t) : NAT Cache counters */
-    rdpa_system_attr_ih_cong_threshold = 19, /* ih_cong_threshold : RW : number : IH Buffer threshold for congestion state (congested when IH buffer is below the configured v */
-    rdpa_system_attr_ingress_congestion_ctrl = 20, /* ingress_congestion_ctrl : RW : bool : Enable/Disable ingress congestion control */
-    rdpa_system_attr_parser_cfg = 21, /* parser_cfg : RW : aggregate parser_config(rdpa_parser_cfg_t) : Parser Configuration */
-    rdpa_system_attr_dos_attack_reason = 22, /* dos_attack_reason : RW : enum_mask : Vector of DOS attack reasons */
-    rdpa_system_attr_system_resources = 23, /* system_resources : R : aggregate system_resources(rdpa_system_resources_t) : Return system resources */
-    rdpa_system_attr_fpm_resources = 24, /* fpm_resources : R : aggregate fpm_resources(rdp_fpm_resources_t) : FPM resources */
-    rdpa_system_attr_host_mac_address_table = 25, /* host_mac_address_table : RWADF : ether_addr[] : Host MAC Address Table Entry */
+    rdpa_system_attr_natc_tbl_cfg = 13, /* natc_tbl_cfg : RF : aggregate[] system_natc_tbl_config(rdpa_natc_tbl_cfg_t) : Configuration for NATC Tables */
+    rdpa_system_attr_packet_buffer_cfg = 15, /* packet_buffer_cfg : RW : aggregate system_packet_buffer_cfg(rdpa_packet_buffer_cfg_t) : FPM packet buffer configuration for Us */
+    rdpa_system_attr_high_prio_tc_threshold = 16, /* high_prio_tc_threshold : RI : enum : TC threshold for high priority traffic (TC7 - highest TC) */
+    rdpa_system_attr_counter_cfg = 17, /* counter_cfg : RI : aggregate system_counter_cfg(rdpa_counter_cfg_t) : Define the counter configuration and get available count */
+    rdpa_system_attr_fpm_isr_delay_timer_period = 18, /* fpm_isr_delay_timer_period : RW : number : FPM ISR delay timer period (msec) */
+    rdpa_system_attr_natc_counter = 19, /* natc_counter : RWF : aggregate[] natc_cntr(rdpa_natc_cntr_t) : NAT Cache counters */
+    rdpa_system_attr_ih_cong_threshold = 20, /* ih_cong_threshold : RW : number : IH Buffer threshold for congestion state (congested when IH buffer is below the configured v */
+    rdpa_system_attr_ingress_congestion_ctrl = 21, /* ingress_congestion_ctrl : RW : bool : Enable/Disable ingress congestion control */
+    rdpa_system_attr_parser_cfg = 22, /* parser_cfg : RW : aggregate parser_config(rdpa_parser_cfg_t) : Parser Configuration */
+    rdpa_system_attr_dos_attack_reason = 23, /* dos_attack_reason : RW : enum_mask : Vector of DOS attack reasons */
+    rdpa_system_attr_system_resources = 24, /* system_resources : R : aggregate system_resources(rdpa_system_resources_t) : Return system resources */
+    rdpa_system_attr_fpm_resources = 25, /* fpm_resources : R : aggregate fpm_resources(rdp_fpm_resources_t) : FPM resources */
+    rdpa_system_attr_host_mac_address_table = 26, /* host_mac_address_table : RWADF : ether_addr[] : Host MAC Address Table Entry */
 } rdpa_system_attr_types;
 
 extern int (*f_rdpa_system_get)(bdmf_object_handle *pmo);
@@ -493,6 +494,21 @@ static inline int rdpa_system_qm_cfg_get(bdmf_object_handle mo_, rdpa_qm_cfg_t *
 static inline int rdpa_system_qm_cfg_set(bdmf_object_handle mo_, const rdpa_qm_cfg_t * qm_cfg_)
 {
     return bdmf_attr_set_as_buf(mo_, rdpa_system_attr_qm_cfg, qm_cfg_, sizeof(*qm_cfg_));
+}
+
+
+/** Get system/natc_tbl_cfg attribute entry.
+ *
+ * Get Configuration for NATC Tables.
+ * \param[in]   mo_ system object handle or mattr transaction handle
+ * \param[in]   ai_ Attribute array index
+ * \param[out]  natc_tbl_cfg_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_system_natc_tbl_cfg_get(bdmf_object_handle mo_, bdmf_index ai_, rdpa_natc_tbl_cfg_t * natc_tbl_cfg_)
+{
+    return bdmf_attrelem_get_as_buf(mo_, rdpa_system_attr_natc_tbl_cfg, (bdmf_index)ai_, natc_tbl_cfg_, sizeof(*natc_tbl_cfg_));
 }
 
 

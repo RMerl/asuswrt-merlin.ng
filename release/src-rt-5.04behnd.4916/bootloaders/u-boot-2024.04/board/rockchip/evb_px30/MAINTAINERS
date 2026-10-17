@@ -1,0 +1,7 @@
+EVB-PX30
+M:      Kever Yang <kever.yang@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_px30
+F:      include/configs/evb_px30.h
+F:      configs/evb-px30_defconfig
+F:      configs/firefly-px30_defconfig

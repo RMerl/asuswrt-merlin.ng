@@ -42,6 +42,9 @@
 void __iomem *xport_phys_base;
 void __iomem *xport_virt_base;
 void __iomem *xlif_virt_base;
+
+EXPORT_SYMBOL(xport_virt_base);
+
 #ifdef XPORT_INTERRUPTS
 static int xport_irq0, xport_irq1, xport_irq2;
 #endif
@@ -321,6 +324,7 @@ static int xport_xlmac_reset(xport_xlmac_port_info_s *init_params)
 {
     xport_xlmac_core_ctrl ctrl;
     int rc = XPORT_ERR_INVALID;
+
     if (XPORT_PORT_VALID(init_params->xport_port_id))
     {
         rc = ag_drv_xport_xlmac_core_ctrl_get(init_params->xport_port_id, &ctrl);
@@ -596,15 +600,23 @@ static int xport_msbus_init(xport_xlmac_port_info_s *init_params)
 static int xport_reset(xport_xlmac_port_info_s *init_params)
 {
     int rc;
+    uint32_t port_id = init_params->xport_port_id;
+    uint8_t speed_mode, no_sop_for_crc_hg, hdr_mode;
+
     rc = xport_msbus_reset(init_params);
     rc = rc ? rc : xport_xlmac_reset(init_params);
 #if defined(CONFIG_BCM_MACSEC_FIRELIGHT)
     rc = rc ? rc : macsec_port_reset(init_params);
 #endif
     rc = rc ? rc : xport_xlif_reset(init_params);
+
+    rc = rc ? rc : ag_drv_xport_xlmac_core_mode_get(port_id, &speed_mode, &no_sop_for_crc_hg, &hdr_mode);
+    speed_mode = xport_speed_to_xlmac(XPORT_RATE_10MB);
+    rc = rc ? rc : ag_drv_xport_xlmac_core_mode_set(port_id, speed_mode, no_sop_for_crc_hg, hdr_mode);
+
     __xportInfo("rc = %d; port = %d spd = %s dup = %d\n",
-                  rc, init_params->xport_port_id,
-                  xport_rate_to_str(init_params->port_rate),init_params->port_duplex);
+        rc, port_id, xport_rate_to_str(init_params->port_rate),init_params->port_duplex);
+
     return rc;
 }
 
@@ -673,33 +685,43 @@ static int xport_platform_init(xport_xlmac_port_info_s *init_params)
 {
     int rc = 0;
     int xlmac_num = PID_XLMAC_NUM(init_params->xport_port_id);
-    int xport_num = PID_XPORT_NUM(init_params->xport_port_id);
     int port_id = init_params->xport_port_id;
-    uint8_t link_down_rst_en, enable_sm_run;
-    uint16_t tick_timer_ndiv;
-    xport_portreset_sig_en sig_en;
+    static int xlmac_initialized[XPORT_NUM_OF_XLMACS] = { 0 };
 
-    rc = ag_drv_xport_portreset_config_get(xlmac_num, &link_down_rst_en, &enable_sm_run, &tick_timer_ndiv);
-
-    sig_en.enable_xlmac_rx_disab = sig_en.enable_xlmac_tx_disab = sig_en.enable_xlmac_tx_discard = sig_en.enable_xlmac_soft_reset = 1;
-    sig_en.enable_mab_rx_port_init = sig_en.enable_mab_tx_port_init = sig_en.enable_mab_tx_credit_disab = sig_en.enable_mab_tx_fifo_init = 1;
-    sig_en.enable_port_is_under_reset = 1;
-    sig_en.enable_xlmac_ep_discard = 0;
-
-    switch (xport_num)
+    // do per xlmac init 
+    if (!xlmac_initialized[xlmac_num])
     {
-    case 0: rc = rc ? rc : ag_drv_xport_portreset_p0_sig_en_set(xlmac_num, &sig_en); break;
-    case 1: rc = rc ? rc : ag_drv_xport_portreset_p1_sig_en_set(xlmac_num, &sig_en); break;
-    case 2: rc = rc ? rc : ag_drv_xport_portreset_p2_sig_en_set(xlmac_num, &sig_en); break;
-    case 3: rc = rc ? rc : ag_drv_xport_portreset_p3_sig_en_set(xlmac_num, &sig_en); break;
+        uint8_t link_down_rst_en, enable_sm_run;
+        uint16_t tick_timer_ndiv;
+        xport_portreset_sig_en sig_en;
+
+        //reset SM setting
+        link_down_rst_en = 0x0; /* Disable HW automatic state machine reset to avoid link flipping failure */
+        enable_sm_run = 0; tick_timer_ndiv = 0;
+        rc = ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
+        UDELAY(1000);
+        tick_timer_ndiv = 0xfa;
+        rc = rc ? rc : ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
+
+        sig_en.enable_xlmac_rx_disab = sig_en.enable_xlmac_tx_disab = sig_en.enable_xlmac_tx_discard = sig_en.enable_xlmac_soft_reset = 1;
+        sig_en.enable_mab_rx_port_init = sig_en.enable_mab_tx_port_init = sig_en.enable_mab_tx_credit_disab = sig_en.enable_mab_tx_fifo_init = 1;
+        sig_en.enable_port_is_under_reset = 1;
+        sig_en.enable_xlmac_ep_discard = 0;
+
+        rc = rc ? rc : ag_drv_xport_portreset_p0_sig_en_set(xlmac_num, &sig_en);
+        rc = rc ? rc : ag_drv_xport_portreset_p1_sig_en_set(xlmac_num, &sig_en);
+        rc = rc ? rc : ag_drv_xport_portreset_p2_sig_en_set(xlmac_num, &sig_en);
+        rc = rc ? rc : ag_drv_xport_portreset_p3_sig_en_set(xlmac_num, &sig_en);
+
+        UDELAY(5000);
+
+        enable_sm_run = 0xf;
+        rc = rc ? rc : ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
+
+        xlmac_initialized[xlmac_num] = 1;
     }
 
-    UDELAY(5000);
-    enable_sm_run |= (1 << xport_num);
-    rc = rc ? rc : ag_drv_xport_portreset_config_set(xlmac_num, link_down_rst_en, enable_sm_run, tick_timer_ndiv);
-    UDELAY(5000);
-
-    // do per channel init
+    // do per port init
     {   xport_xlmac_core_rx_lss_ctrl rx_lss_ctrl;
         rc = rc ? rc : ag_drv_xport_xlmac_core_rx_lss_ctrl_get(port_id, &rx_lss_ctrl);
         rx_lss_ctrl.local_fault_disable = 1;
@@ -766,9 +788,8 @@ int xport_handle_link_dn(xport_xlmac_port_info_s *p_info)
     rc = rc ? rc : xport_reset(p_info);
     UDELAY(1000);
     __xportDebug("DONE (rc = %d)\n", rc);
-    //return xport_reset(&local_xport_cfg);
 
-    { //if remote loopback is enabled for this port, during link down diable and then re-enable
+    { //if remote loopback is enabled for this port, during link down disable and then re-enable
         xport_xlmac_reg_rmt_lpbk_cntrl xlmac_rmt_lpbk_cntrl;
         int xlmac_num = PID_XLMAC_NUM(p_info->xport_port_id);
         ag_drv_xport_xlmac_reg_rmt_lpbk_cntrl_get(xlmac_num, &xlmac_rmt_lpbk_cntrl);
@@ -787,6 +808,7 @@ int xport_handle_link_dn(xport_xlmac_port_info_s *p_info)
     }
     return rc;
 }
+
 int xport_get_port_configuration(uint32_t portid, xport_port_cfg_s *port_conf)
 {
     int rc;
@@ -1212,10 +1234,25 @@ int xport_eee_set(uint32_t portid, uint8_t enable)
     return rc;
 }
 
+int xport_eee_get(uint32_t portid, uint32_t *enable, uint32_t *sleep_timer, uint32_t *wakeup_timer)
+{
+    uint16_t ref_count;
+    uint16_t wake_timer;
+    int rc = 0;
+    uint8_t eee_en, rsvd;
+
+    rc = ag_drv_xport_xlmac_core_eee_ctrl_get(portid, &rsvd, &eee_en);
+    rc |= ag_drv_xport_xlmac_core_eee_timers_get(portid, &ref_count, &wake_timer, sleep_timer);
+    *enable = eee_en;
+    *wakeup_timer = wake_timer;
+
+    return rc;
+}
+
 int xport_wol_enable_port(uint32_t portid, wol_params_t *wol_params)
 {
     int ret = 0;
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM968375) || defined(CONFIG_BCM96813)
     int xlmac_num = PID_XLMAC_NUM(portid);
     int xport_num = PID_XPORT_NUM(portid);
 
@@ -1232,7 +1269,7 @@ int xport_wol_enable_port(uint32_t portid, wol_params_t *wol_params)
 int xport_wol_enable_mpd(uint32_t portid, wol_params_t *wol_params)
 {
     int ret = 0;
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM968375) || defined(CONFIG_BCM96813)
     int xlmac_num = PID_XLMAC_NUM(portid);
     uint32_t mac_31_0;
     uint16_t mac_47_32;
@@ -1269,6 +1306,8 @@ int xport_wol_enable_mpd(uint32_t portid, wol_params_t *wol_params)
     /* Enable password and configure number of repetitions */
     ret |= ag_drv_xport_wol_mpd_config_set(xlmac_num, wol_params->en_psw ? 1 : 0, wol_params->repetitions ? : 16);
 
+    /* Clear the detection status bit before enabling it */
+    ag_drv_xport_wol_mpd_control_set(xlmac_num, 0);
     /* Enable Magic packet detection in XPORT */
     ret |= ag_drv_xport_wol_mpd_control_set(xlmac_num, 1);
 #endif
@@ -1279,7 +1318,7 @@ int xport_wol_enable_mpd(uint32_t portid, wol_params_t *wol_params)
 int xport_wol_enable_ard(uint32_t portid, wol_params_t *wol_params)
 {
     int ret = 0;
-#if defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM96837) || defined(CONFIG_BCM968375)
     int xlmac_num = PID_XLMAC_NUM(portid);
 
     if (!wol_params->en_ard)

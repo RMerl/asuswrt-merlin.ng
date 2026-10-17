@@ -37,6 +37,10 @@
  */
 #include "phy_drv_dsl_serdes.h"
 #include "trxbus.h"
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+#include "BcmDiagSerdesEth.h"
+#endif
+#include "phy_drv_psp.h"
 
 #define PHY_SPEED_HIGHEST_SUPPORT PHY_SPEED_10000
 
@@ -95,6 +99,8 @@ static int get_dt_config_xfi(phy_dev_t *phy_dev)
         phy_dev->current_inter_phy_type = INTER_PHY_TYPE_10GBASE_R;
     if (strcasecmp(config_xfi, "USXGMII") == 0)
         phy_dev->current_inter_phy_type = INTER_PHY_TYPE_USXGMII;
+    if (strcasecmp(config_xfi, "SGMII") == 0)
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_SGMII;
 
     phy_dev->configured_current_inter_phy_type = phy_dev->current_inter_phy_type;
     if (an_enabled && !INTER_PHY_TYPE_AN_SUPPORT(phy_dev->current_inter_phy_type))
@@ -123,7 +129,7 @@ int phy_drv_serdes_adjust_speed(phy_dev_t *phy_dev, phy_speed_t max_speed)
     phy_serdes_t *phy_serdes = phy_dev->priv;
     phy_speed_t speed;
     int i;
-    static phy_speed_t speed_list[] = {PHY_SPEED_10, PHY_SPEED_100, PHY_SPEED_1000, PHY_SPEED_2500, PHY_SPEED_5000, PHY_SPEED_10000}; 
+    static phy_speed_t speed_list[] = {PHY_SPEED_10, PHY_SPEED_100, PHY_SPEED_1000, PHY_SPEED_2500, PHY_SPEED_5000, PHY_SPEED_10000};
     phy_speed_t current_max_speed = phy_caps_to_max_speed(phy_serdes->speed_caps);
 
     if (max_speed == 0)
@@ -295,26 +301,26 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     phy_dev->configured_current_inter_phy_type = INTER_PHY_TYPE_AUTO;
     phy_dev->configured_an_enable = PHY_CFG_AN_AUTO;
     dsl_serdes_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps);
-    phy_serdes->adv_caps = phy_serdes->config_speed == PHY_SPEED_AUTO? (supported_caps & PHY_CAP_PURE_SPEED_CAPS) :
+    phy_serdes->adv_caps = phy_serdes->config_speed == PHY_SPEED_AUTO? (supported_caps & PHY_CAP_PURE_SPEED_AN_CAPS) :
         phy_speed_to_cap(phy_serdes->config_speed, PHY_DUPLEX_FULL);
     set_common_speed_range(phy_dev);
-        
+
     if (phy_dev->shared_ref_clk_mhz)
         phy_dev_shared_clock_set(phy_dev);
 
     if (PhyIsPortConnectedToExternalSwitch(phy_dev) || PhyIsFixedConnection(phy_dev))
     {
-            /* Inter switch speed will use definition in the following priority
-            1. DT, 2. Init config_speed value in phy_serdes_t 3. highest speed */
-        if (get_dt_config_speed(phy_dev) == 0)
-            phy_serdes->current_speed = phy_serdes->config_speed;
-
+        /* Inter switch speed will use definition in the following priority
+           1. DT, 2. Init config_speed value in phy_serdes_t 3. highest speed */
         if (get_dt_config_xfi(phy_dev) == 0)
         {
             uint32_t supported_speed_caps;
             get_inter_phy_supported_speed_caps(phy_dev->configured_inter_phy_types, &supported_speed_caps);
             phy_serdes->current_speed = phy_serdes->config_speed = phy_caps_to_max_speed(supported_speed_caps);
         }
+
+        if (get_dt_config_speed(phy_dev) == 0)
+            phy_serdes->current_speed = phy_serdes->config_speed;
 
         if (phy_serdes->config_speed == PHY_SPEED_UNKNOWN)
             phy_serdes->config_speed = phy_serdes->highest_speed;
@@ -326,8 +332,15 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
         goto end;
     }
 
-    phy_serdes->laser_status = -1;
-    dsl_serdes_sfp_lbe_op(phy_dev, LASER_OFF); /* Notify no SFP to turn off laser in the beginning, just in case hardware set on */
+    phy_serdes->laser_enable = -1;
+    dsl_serdes_sfp_laser_op(phy_dev, 0); /* Notify no SFP to turn off laser in the beginning, just in case hardware set on */
+#if defined(SILENT_START_INITIAL_ENABLED)
+    phy_serdes->silent_start_enabled = 1;
+#else
+    if (phy_drv_psp_silent_start_enable())
+        phy_serdes->silent_start_enabled = 1;
+#endif
+
     phy_serdes->sfp_module_type = SFP_FIXED_PHY;
 
 #ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
@@ -351,6 +364,8 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
 #endif
         phy_next = phy_dev->cascade_i2c;		/* replace phy_next by i2c device otherwise we can't read bcmsfp_mon_rxsd_pin in later code */
     }
+    else /* Fixed PHY */
+        phy_dev_caps_set(phy_next, phy_serdes->common_speed_caps);
 #else
     if ((phy_next == NULL))
     {
@@ -360,6 +375,8 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
 #endif
         phy_next = phy_dev->cascade_next;
     }
+    else /* Fixed PHY */
+        phy_dev_caps_set(phy_next, phy_serdes->common_speed_caps);
 #endif
 
     /* Check if SFP signal detect pin is defined or not*/
@@ -441,14 +458,14 @@ static int sfp_phy_get_best_inter_phy_configure_type(phy_dev_t *phy_dev,
 #else
     phy_dev_t *phy_i2c = phy_dev->cascade_next;
 #endif
-    /* Check if non multi speed mode is available since most SFP module only support non multi speed mode */
+    /* Check if non Master-Slave speed mode is available since most SFP module only support non Master-Slave speed mode */
     if (phy_i2c->flag & PHY_FLAG_DYNAMIC && !(phy_i2c->flag & PHY_FLAG_NOT_PRESENTED) &&
         (phy_i2c->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE))
         best_type = phy_get_best_inter_phy_configure_type(phy_dev,
-                inter_phy_types & ((~INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M)|INTER_PHY_TYPE_SGMII_M), speed);
+                inter_phy_types & ((~INTER_PHY_TYPE_MULTI_SPEED_MS_M)|INTER_PHY_TYPE_SGMII_M), speed);
     else
         best_type = phy_get_best_inter_phy_configure_type(phy_dev,
-                inter_phy_types & (~INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M), speed);
+                inter_phy_types & (~INTER_PHY_TYPE_MULTI_SPEED_MS_M), speed);
 
 
     /* If not available for this speed, then check multi speed mode availability */
@@ -513,13 +530,13 @@ static int phy_dsl_verify_txfir(phy_dev_t *phy_dev, phy_txfir_t *txfir)
     if (phy_serdes->cur_power_level == SERDES_POWER_DOWN)
         dsl_powerup_serdes(phy_dev);
 
-    dsl_phy_tx_cfg_get(phy_dev, &save_txfir.pre, &save_txfir.main,
+    dsl_serdes_txfir_get_u32(phy_dev, &save_txfir.pre, &save_txfir.main,
             &save_txfir.post1_def, &save_txfir.post2, &save_txfir.hpf);
 
-    rc = phy_dev_tx_cfg_set(phy_dev, txfir->pre, txfir->main,
+    rc = dsl_serdes_txfir_set(phy_dev, txfir->pre, txfir->main,
             txfir->post1, txfir->post2, txfir->hpf);
 
-    phy_dev_tx_cfg_set(phy_dev, save_txfir.pre, save_txfir.main,
+    dsl_serdes_txfir_set(phy_dev, save_txfir.pre, save_txfir.main,
             save_txfir.post1_def, save_txfir.post2, save_txfir.hpf);
 
     if (org_power_level != phy_serdes->cur_power_level)
@@ -553,16 +570,16 @@ int phy_dsl_txfir_init(phy_dev_t *phy_dev)
 
             txfir->speed_mbps = speed[i];
             if (phy_dsl_txfir_default_is_blank(txfir))
-                rc += dsl_phy_tx_cfg_get(phy_dev, &txfir->pre_def, &txfir->main_def,
+                rc += dsl_serdes_txfir_get_u32(phy_dev, &txfir->pre_def, &txfir->main_def,
                         &txfir->post1_def, &txfir->post2_def, &txfir->hpf_def);
 
             if (phy_dsl_txfir_is_blank(txfir))
-                rc += dsl_phy_tx_cfg_get(phy_dev, &txfir->pre, &txfir->main,
+                rc += dsl_serdes_txfir_get_u32(phy_dev, &txfir->pre, &txfir->main,
                         &txfir->post1, &txfir->post2, &txfir->hpf);
 
             if (txfir->hpf == -1)
             {
-                rc += dsl_phy_tx_cfg_get(phy_dev, &_txfir.pre, &_txfir.main,
+                rc += dsl_serdes_txfir_get_u32(phy_dev, &_txfir.pre, &_txfir.main,
                         &_txfir.post1, &_txfir.post2, &_txfir.hpf);
                 txfir->hpf = _txfir.hpf;
             }
@@ -577,7 +594,7 @@ int phy_dsl_txfir_init(phy_dev_t *phy_dev)
                     dsl_set_txfir_default(txfir);
                 }
 
-                rc += phy_dev_tx_cfg_set(phy_dev, txfir->pre, txfir->main,
+                rc += dsl_serdes_txfir_set(phy_dev, txfir->pre, txfir->main,
                         txfir->post1, txfir->post2, txfir->hpf);
                 phy_dev->txfir_reg_speed_idx = i;
             }
@@ -609,7 +626,7 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
 #endif
 
         if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev) &&
-            !(phy_dev->configured_inter_phy_types & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M) && !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
+            !(phy_dev->configured_inter_phy_types & INTER_PHY_TYPE_MULTI_SPEED_MS_M) && !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
         /* Work around for some non Broadcom PHYs not sync link status between Copper side and Serdes side */
         /* Exclude external switch connection from power down operation */
         {
@@ -623,6 +640,7 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
                 phy_dev->configured_inter_phy_types, phy_serdes->config_speed);
 
     phy_dsl_txfir_init(phy_dev);
+
     return dsl_serdes_cfg_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
 }
 
@@ -700,10 +718,7 @@ int dsl_serdes_priv_fun(phy_dev_t *phy_dev, int op_code, va_list ap)
     spd_dtc_tmr_t *tmr = &phy_serdes->tmr;
     int32_t *stmr_p, *stmr_wt_p, *ltmr_p, *ltmr_wt_p;
     int32_t stmr, stmr_wt, ltmr, ltmr_wt;
-    int val, rc = 0;
-    uint32_t i2c_addr, reg, len;
-    void *buf;
-    phy_dev_t *phy_i2c = cascade_phy_get_next(phy_dev);
+    int val;
 
     switch(op_code)
     {
@@ -728,19 +743,11 @@ int dsl_serdes_priv_fun(phy_dev_t *phy_dev, int op_code, va_list ap)
             else
                 dsl_serdes_poll_timer_config(phy_dev, stmr, stmr_wt, ltmr, ltmr_wt);
             break;
-        case SERDES_OP_DUMP_EEPROM:
-            i2c_addr = va_arg(ap, int32_t);
-            reg = va_arg(ap, int32_t);
-            buf = va_arg(ap, void *);
-            len = va_arg(ap, int32_t);
-            if (trxbus_module_read_raw(phy_i2c->addr, i2c_addr, reg, buf, len) < 0)
-                rc = -1;
-            break;
         default:
             return -1;
     }
 
-    return rc;
+    return 0;
 }
 
 static int dsl_speed_mpbs_to_txfir_idx(int speed_mbps)
@@ -844,7 +851,7 @@ int dsl_txfir_set(phy_dev_t *phy_dev, phy_txfir_t *cfg_txfir)
         if ((phy_dev->link && phy_dev->speed == txfir->speed_mbps) ||
             (!phy_dev->link && phy_serdes->cur_power_level == SERDES_POWER_UP))
         {
-            rc = phy_dev_tx_cfg_set(phy_dev, txfir->pre, txfir->main,
+            rc = dsl_serdes_txfir_set(phy_dev, txfir->pre, txfir->main,
                     txfir->post1, txfir->post2, txfir->hpf);
             /* Read back to IOCTL buffer */
             dsl_read_txfir_reg(phy_dev, cfg_txfir);
@@ -881,7 +888,7 @@ int dsl_serdes_single_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duple
         return 0;
     org_power_level = phy_serdes->cur_power_level;
 
-    if (speed == PHY_SPEED_AUTO && !((1<<phy_dev->current_inter_phy_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M))
+    if (speed == PHY_SPEED_AUTO && !((1<<phy_dev->current_inter_phy_type) & INTER_PHY_TYPE_MULTI_SPEED_MS_M))
     {
         speed = cascade_phy_max_adv_speed_get(phy_dev);
         if (speed == 0)
@@ -919,7 +926,7 @@ end:
 static int dsl_serdes_cfg_txfir(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
-    int idx;
+    int idx, rc;
 
     if (!phy_serdes->read_txfir_reg)
         return 0;
@@ -927,11 +934,56 @@ static int dsl_serdes_cfg_txfir(phy_dev_t *phy_dev)
     if ((idx = dsl_speed_mpbs_to_txfir_idx(phy_dev->speed)) < 0)
         return -1;
 
-    phy_dev_tx_cfg_set(phy_dev, phy_dev->txfir[idx].pre, phy_dev->txfir[idx].main,
+    rc = dsl_serdes_txfir_set(phy_dev, phy_dev->txfir[idx].pre, phy_dev->txfir[idx].main,
             phy_dev->txfir[idx].post1, phy_dev->txfir[idx].post2, phy_dev->txfir[idx].hpf);
     phy_dev->txfir_reg_speed_idx = idx;
 
-    return 0;
+    return rc;
+}
+
+int dsl_serdes_txfir_set_lock(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf)
+{
+    int rc;
+    mutex_lock(&serdes_mutex);
+    rc = dsl_serdes_txfir_set(phy_dev, pre, main, post1, post2, hpf);
+    mutex_unlock(&serdes_mutex);
+    return rc;
+}
+
+
+#define PHY_SERDES_1GMISLINK_CHECK_INTERVAL_MS 1000
+static void phy_dsl_1g_an_mislink(phy_dev_t *phy_dev)
+{
+    phy_serdes_t *phy_serdes = phy_dev->priv;
+    uint32_t rnd;
+
+    /* Avoid back to back link flipping by this detection in both ends */
+    get_random_bytes(&rnd, sizeof(rnd));
+    rnd %= PHY_SERDES_1GMISLINK_CHECK_INTERVAL_MS;
+    msleep(rnd);
+
+    phy_dev->an_enabled = 1;
+    phy_serdes->speed_set(phy_dev, phy_dev->speed, phy_dev->duplex);
+    msleep(2*phy_serdes->tmr.speed_detect_interval);
+    phy_dev->link = 0;
+    phy_serdes->link_stats(phy_dev);
+    phy_dev->an_enabled = 0;
+    if (phy_dev->link) /* If the link can go up with 1000Base-X AN, this is a false link up at FORCED 1000Base-X */
+    {
+        printk("Serdes at %d in Forced 1000Base-X has false link with 1000Base-X AN link partner, Reset the link\n", phy_dev->addr);
+        phy_dev->link = 0; /* Force link down for the false link up */
+        phy_serdes->speed_set(phy_dev, phy_dev->speed, phy_dev->duplex);  /* Set it An Disabled for consistency, or will die!! */
+    }
+    else
+    {
+        phy_serdes->speed_set(phy_dev, phy_dev->speed, phy_dev->duplex);
+        msleep(2*phy_serdes->tmr.speed_detect_interval);
+        phy_serdes->link_stats(phy_dev);
+        if (!phy_dev->link)
+            msleep(rnd + 2*phy_serdes->tmr.speed_detect_interval);
+        phy_serdes->link_stats(phy_dev);
+    }
+
 }
 
 static void serdes_link_stats(phy_dev_t *phy_dev)
@@ -948,6 +1000,7 @@ static void sfp_link_status_check(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
     phy_dev_t *phy_next = phy_dev->cascade_next;
+    int old_link = phy_dev->link;
 
     if (phy_serdes->sfp_module_type == SFP_FIXED_PHY || (phy_next->flag & PHY_FLAG_COPPER_SFP_TYPE) ||
             !dsl_serdes_silent_start_supported(phy_dev) || phy_dev->link)
@@ -956,26 +1009,32 @@ static void sfp_link_status_check(phy_dev_t *phy_dev)
             return;
 
         if (!phy_dev->link)
-            msleep(phy_serdes->tmr.speed_detect_interval);
+            msleep(phy_dev->an_enabled? (2*phy_serdes->tmr.speed_detect_interval): phy_serdes->tmr.speed_detect_interval);
 
         serdes_link_stats(phy_dev);
-        return;
+        goto mislink_chk;
     }
 
-    if (!dsl_serdes_silent_start_light_detected(phy_dev))
-    {
-        dsl_serdes_sfp_lbe_op(phy_dev, LASER_OFF);
-        return;
-    }
-
-    dsl_serdes_sfp_lbe_op(phy_dev, LASER_ON);
     msleep(phy_serdes->tmr.speed_detect_interval);
-
-    if(!phy_dev->link && !dsl_serdes_light_detected(phy_dev))
-        return;
-
     serdes_link_stats(phy_dev);
 
+    if(!phy_dev->link && !dsl_serdes_silent_start_light_detected(phy_dev))
+        dsl_serdes_sfp_laser_op(phy_dev, 0);
+    else
+        dsl_serdes_sfp_laser_op(phy_dev, 1);
+
+
+    serdes_link_stats(phy_dev);
+    
+mislink_chk:
+    if (!old_link && phy_dev->link &&
+        phy_dev->current_inter_phy_type == INTER_PHY_TYPE_1000BASE_X && !phy_dev->an_enabled)
+        phy_dsl_1g_an_mislink(phy_dev);
+}
+
+int dsl_serdes_sfp_silent_start_light_detected(phy_dev_t *phy_dev)
+{
+    return phy_dev->link;
 }
 
 /*
@@ -1007,6 +1066,7 @@ static phy_speed_t get_next_lower_speed(phy_speed_t speed, uint32_t adv_caps)
     return phy_speed_array[i];
 }
 
+#define SCAN_RETRIES 0
 static int dsl_serdes_speed_detect(phy_dev_t *phy_dev)
 {
     static int retry = 0;
@@ -1030,7 +1090,12 @@ static int dsl_serdes_speed_detect(phy_dev_t *phy_dev)
     if (PhyIsPortConnectedToExternalSwitch(phy_dev) || PhyIsFixedConnection(phy_dev))
         return 1;
 
-    if (phy_serdes->config_speed != PHY_SPEED_AUTO && !INTER_PHY_TYPE_AN_AND_FORCED_SPEED(phy_dev->current_inter_phy_type))
+    if (phy_serdes->config_speed != PHY_SPEED_AUTO && !INTER_PHY_TYPE_AN_AND_FORCED_SPEED(phy_dev->configured_current_inter_phy_type))
+        return 1;
+
+    if (phy_dev->configured_current_inter_phy_type != INTER_PHY_TYPE_AUTO &&
+        (!(INTER_PHY_TYPE_AN_AND_FORCED_SPEED(phy_dev->configured_current_inter_phy_type) && phy_dev->an_enabled) ||
+        INTER_PHY_TYPE_IS_MULTI_SPEED_AUTO(phy_dev->configured_current_inter_phy_type)))
         return 1;
 
     if (retry == 0 &&  phy_serdes->sfp_status >= SFP_MODULE_IN)
@@ -1061,7 +1126,7 @@ static int dsl_serdes_speed_detect(phy_dev_t *phy_dev)
         inter_phy_types = phy_dev->configured_inter_phy_types;
 
     // Let's do SGMII detection in the end to avoid mis link up with 1000Base-X
-    inter_phy_types &= (INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M) & (~INTER_PHY_TYPE_SGMII_M); 
+    inter_phy_types &= (INTER_PHY_TYPE_MULTI_SPEED_AUTO_M) & (~INTER_PHY_TYPE_SGMII_M);
     for (inter_type = INTER_PHY_TYPE_MAX - 1; inter_phy_types; inter_type--)
     {
         if ((inter_phy_types & (1<<inter_type)) == 0)
@@ -1075,6 +1140,10 @@ static int dsl_serdes_speed_detect(phy_dev_t *phy_dev)
         dsl_serdes_single_speed_set(phy_dev, PHY_SPEED_AUTO, PHY_DUPLEX_FULL);
         if (!dsl_sfp_module_detect(phy_dev))
             return 0;
+
+        /* Give extra link handshaking time to Multi Speed An since it is most efficent protocol for multi speeds */
+        if (INTER_PHY_TYPE_IS_MULTI_SPEED_AN(inter_type))
+            msleep(2*phy_serdes->tmr.speed_detect_interval);
 
         sfp_link_status_check(phy_dev);
         inter_phy_types &= ~(1<<inter_type);
@@ -1101,6 +1170,11 @@ static int dsl_serdes_speed_detect(phy_dev_t *phy_dev)
                 phy_i2c->current_inter_phy_type = inter_type;
                 if (phy_dev->configured_an_enable == PHY_CFG_AN_AUTO)
                     phy_dev->an_enabled = 1;
+
+                /* Skip CL73 for indivisual speed */
+                if (phy_dev->an_enabled && (phy_dev->configured_inter_phy_types & INTER_PHY_TYPE_MULTI_SPEED_AN_M) && INTER_PHY_TYPE_IS_MULTI_SPEED_AN(inter_type))
+                    continue;
+
                 phy_dev_speed_set(phy_i2c, PHY_SPEED_AUTO, PHY_DUPLEX_FULL);
                 dsl_serdes_single_speed_set(phy_dev, PHY_SPEED_AUTO, PHY_DUPLEX_FULL);
                 if (!dsl_sfp_module_detect(phy_dev))
@@ -1133,6 +1207,11 @@ static int dsl_serdes_speed_detect(phy_dev_t *phy_dev)
                 if (INTER_PHY_TYPE_AN_SUPPORT(inter_type))
                 {
                     phy_dev->an_enabled = 1;    /* AN has higher priority than non AN */
+
+                    /* Skip CL73 for indivisual speed */
+                    if ((phy_dev->configured_inter_phy_types & (INTER_PHY_TYPE_MULTI_SPEED_AN_M)) && INTER_PHY_TYPE_IS_MULTI_SPEED_AN(inter_type))
+                        goto forced_speed;
+
                     if(dsl_serdes_single_speed_set(phy_dev, speed, PHY_DUPLEX_FULL))
                         goto forced_speed;
 
@@ -1168,7 +1247,7 @@ LinkUp:
     if (phy_dev->speed == phy_serdes->common_highest_speed)
         goto end;
 
-    if (retry)
+    if (retry == SCAN_RETRIES)
     {
         phy_dev_status_reverse_propagate(phy_dev);
         goto end; /* If we retried already, return; */
@@ -1193,7 +1272,7 @@ NoLinkUp:
         phy_dev->current_inter_phy_type = sfp_phy_get_best_inter_phy_configure_type(phy_dev,
             phy_dev->configured_inter_phy_types, phy_serdes->common_highest_speed);
 
-        if (INTER_PHY_TYPE_IS_MULTI_SPEED_AN(phy_dev->current_inter_phy_type))
+        if (INTER_PHY_TYPE_IS_MULTI_SPEED_AUTO(phy_dev->current_inter_phy_type))
             dsl_serdes_single_speed_set(phy_dev, PHY_SPEED_AUTO, PHY_DUPLEX_FULL);
         else
         {
@@ -1321,7 +1400,7 @@ static int dsl_serdes_cfg_single_speed_mode_set(phy_dev_t *phy_dev, phy_speed_t 
                 phy_dev->configured_inter_phy_types, phy_serdes->config_speed);
     else
     {
-        if (((1<<inter_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M) == 0)
+        if (((1<<inter_type) & INTER_PHY_TYPE_MULTI_SPEED_MS_M) == 0)
             speed = phy_type_to_single_speed(inter_type);
         phy_dev_current_inter_phy_types_set(phy_dev, INTER_PHY_TYPE_DOWN, inter_type);
     }
@@ -1343,20 +1422,13 @@ static int dsl_serdes_cfg_single_speed_mode_set(phy_dev_t *phy_dev, phy_speed_t 
 
         if (phy_dev->configured_an_enable == PHY_CFG_AN_AUTO)
         {
-            if ((1 << phy_dev->current_inter_phy_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M)
+            if ((1 << phy_dev->current_inter_phy_type) & INTER_PHY_TYPE_MULTI_SPEED_MS_M)
                 phy_dev->an_enabled = 1;
             else
                 phy_dev->an_enabled = 0;
         }
 
         rc = dsl_serdes_single_speed_set(phy_dev, speed, duplex);
-
-        /* Restart cascaded PHY AN to trigger XFI link updated */
-        if (phy_dev->configured_current_inter_phy_type != INTER_PHY_TYPE_AUTO && copper_phy)
-        {
-            phy_dev_an_restart(copper_phy);
-            msleep(2000);
-        }
 
         if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev))
         {
@@ -1368,8 +1440,23 @@ static int dsl_serdes_cfg_single_speed_mode_set(phy_dev_t *phy_dev, phy_speed_t 
                 if( phy_serdes->power_mode == SERDES_ADVANCED_POWER_SAVING)
                     dsl_powerdown_serdes(phy_dev);
             }
-        }
 
+    		/* Restart Copper PHY to trigger XFI AN handshaking for Master-Slave type XFI */
+            if (org_inter_phy_type != phy_dev->current_inter_phy_type)
+            {
+                if (INTER_PHY_TYPE_IS_MULTI_SPEED_AUTO(phy_dev->current_inter_phy_type))
+                {
+                    phy_dev_an_restart(copper_phy);
+                    msleep(100);
+                    phy_dev_read_status(copper_phy);
+                    for (i=0; i<20 && !copper_phy->link; i++)
+                    {
+                        phy_dev_read_status(copper_phy);
+                        msleep(100);
+                    }
+                }
+            }
+        }
     }
 #if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
     else    /* SFP Module */
@@ -1394,24 +1481,10 @@ static int dsl_serdes_cfg_single_speed_mode_set(phy_dev_t *phy_dev, phy_speed_t 
     }
 #endif
 
-    /* Restart Copper PHY to trigger XFI AN handshaking for Master-Slave type XFI */
-    if (phy_serdes->sfp_module_type == SFP_FIXED_PHY &&
-    	!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev) &&
-         INTER_PHY_TYPE_IS_MULTI_SPEED_AN(phy_dev->current_inter_phy_type) &&
-            org_inter_phy_type != phy_dev->current_inter_phy_type)
-    {
-        phy_dev_an_restart(copper_phy);
-        msleep(100);
-        phy_dev_read_status(copper_phy);
-        for (i=0; i<20 && !copper_phy->link; i++)
-        {
-            phy_dev_read_status(copper_phy);
-            msleep(100);
-        }
-    }
     return rc;
 }
 
+/* Manually single XFI mode configuration */
 int dsl_serdes_cfg_speed_mode_set_lock(phy_dev_t *phy_dev, int adv_phy_caps, phy_duplex_t duplex,
         inter_phy_types_dir_t dir, int inter_type, int cfg_an_enable)
 {
@@ -1420,11 +1493,18 @@ int dsl_serdes_cfg_speed_mode_set_lock(phy_dev_t *phy_dev, int adv_phy_caps, phy
     phy_serdes_t *phy_serdes = phy_dev->priv;
     int org_adv_caps = phy_serdes->adv_caps;
     int org_inter_type = phy_dev->current_inter_phy_type;
+    uint32_t supported_speed_caps;
     mutex_lock(&serdes_mutex);
 
-    if (inter_type != INTER_PHY_TYPE_AUTO)
+    if (adv_phy_caps == 0 && inter_type != INTER_PHY_TYPE_AUTO)
         get_inter_phy_supported_speed_caps((1<<inter_type), &adv_phy_caps);
-        
+
+    if ((adv_phy_caps & PHY_CAP_AUTONEG) && (adv_phy_caps & PHY_CAP_PURE_SPEED_CAPS) == 0)
+    {
+        cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_speed_caps);
+        adv_phy_caps |= supported_speed_caps;
+    }
+
     if (phy_serdes->adv_caps != adv_phy_caps)
     {
         phy_serdes->adv_caps = adv_phy_caps;
@@ -1532,32 +1612,6 @@ static int dsl_sfp_module_detected(phy_dev_t *phy_dev)
     return rc;
 }
 
-static int dsl_sfp_is_fiber_sfp(phy_dev_t *phy_dev)
-{
-    int max_len = 0;
-    uint8_t laser_bias_current;
-    uint8_t cable_length[6];
-    phy_dev_t *phy_i2c = phy_dev->cascade_next;
-    int length_unit[] = {1000, 100, 10, 10, 1, 10};
-    int i;
-
-    trxbus_module_read_raw(phy_i2c->addr, SFP_I2C_A0_ADDR, 14, cable_length, 6);
-    
-    for (i=0; i<6; i++)
-    {
-        if (cable_length[i]*length_unit[i] > max_len)
-            max_len = cable_length[i]*length_unit[i];
-    }
-        
-    if (max_len <= SFP_COPPER_MODULE_MAX_LENGTH_METER)
-        return 0;
-
-    if (trxbus_module_read_raw(phy_i2c->addr, SFP_I2C_A2_ADDR, 100, &laser_bias_current, 1) == 0)
-        return 0;
-
-    return laser_bias_current > 0;
-}
-
 /*
    Module detection is not going through SGMII,
    so it can be done even under SGMII power down.
@@ -1567,7 +1621,6 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
     phy_serdes_t *phy_serdes = phy_dev->priv;
     TRX_TYPE trx_type = TRX_TYPE_ETHERNET;
     phy_speed_t max_spd;
-    long sfp_id;    /* The function of trbus_mon_read() defines long *, so we have to use long * here too to match different size of the kernel */
 #ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
     phy_dev_t *phy_i2c; /* use the backup dev as it's always available. cascade_next can be ext PHY */
     if(PhyIsCombo(phy_dev) && phy_dev->i2c_dev_inactive) /* use the backup dev as it's always available. But cascade_next may be ext PHY */
@@ -1601,7 +1654,7 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
         phy_i2c->flag |= PHY_FLAG_NOT_PRESENTED;
         printk("SFP Module at Address %d Core %d is Unplugged\n",
                 phy_dev->addr, phy_serdes->core_num);
-        dsl_serdes_sfp_lbe_op(phy_dev, LASER_OFF);
+        dsl_serdes_sfp_laser_op(phy_dev, 0);
         phy_dev->link = 0;
         phy_i2c->name[0] = 0;
 
@@ -1629,13 +1682,7 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
         trxbus_mon_write(phy_i2c->addr, bcmsfp_mon_tx_enable, 0, 0);
     }
     else
-    {
-        trxbus_mon_read(phy_i2c->addr, bcmsfp_mon_id_connector, 0, &sfp_id);
-        if (sfp_id == SFF8024_CONNECTOR_COPPER_PIGTAIL)
-            phy_serdes->sfp_module_type = SFP_DAC_CABLE;
-        else 
-            phy_serdes->sfp_module_type = dsl_sfp_is_fiber_sfp(phy_dev)? SFP_AE_OPTICAL_MODULE: SFP_AE_COPPER_MODULE;
-    }
+        phy_serdes->sfp_module_type = SFP_AE_MODULE;
 
     phy_i2c->flag &= ~PHY_FLAG_NOT_PRESENTED;
     max_spd = phy_max_speed_get(phy_i2c);
@@ -1643,26 +1690,14 @@ static int dsl_sfp_module_detect(phy_dev_t *phy_dev)
 #ifdef CONFIG_BCM_PHY_COMBO
 	/* combo PHY  - too much trace - can be removed during debugging phase */
 #else
-    switch (phy_serdes->sfp_module_type)
-    {
-        case SFP_GPON_MODULE:
-            printk("GPON Module ");
-            break;
-        case SFP_AE_OPTICAL_MODULE:
-            printk ("Fiber SFP Module ");
-            break;
-        case SFP_AE_COPPER_MODULE:
-            if (phy_dev->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE)
-                printk("%s SGMII Copper SFP Module ", phy_dev_speed_to_str(max_spd));
-            else
-                printk("Copper SFP Module ");
-            break;
-        case SFP_DAC_CABLE:
-            printk("DAC Cable ");
-            break;
-        default:
-            printk("SFP Module ");
-    }
+	if (phy_serdes->sfp_module_type == SFP_GPON_MODULE)
+        printk("GPON Module ");
+    else if (phy_i2c->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE) // SGMII SFP_COPPER
+        printk("%s SGMII Copper SFP Module ", phy_dev_speed_to_str(max_spd));
+    else if (phy_i2c->flag & PHY_FLAG_COPPER_SFP_TYPE) //SFP_COPPER
+        printk("%s Copper SFP Module ", phy_dev_speed_to_str(max_spd));
+    else
+        printk("SFP Module ");
     printk(KERN_CONT "is Plugged in at Serdes address %d core %d lane %d\n", phy_dev->addr,
         phy_dev->core_index, phy_dev->lane_index);
 #endif
@@ -1801,7 +1836,7 @@ sfp_module_in:
             }
 
 //            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
-            if(phy_serdes->sfp_module_type == SFP_GPON_MODULE)    /* PON module */
+            if(phy_serdes->sfp_module_type != SFP_AE_MODULE)    /* PON module */
             {
 //                printk("\n ****** %s:%d set sfp_status to SFP_MODULE_IN goto sfp_end ****** \n", __FUNCTION__, __LINE__);
                 phy_serdes->sfp_status = SFP_MODULE_IN;
@@ -1825,7 +1860,7 @@ sfp_module_in:
 
 //            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
             if (dsl_serdes_silent_start_light_detected(phy_dev))
-                dsl_serdes_sfp_lbe_op(phy_dev, LASER_ON);
+                dsl_serdes_sfp_laser_op(phy_dev, 1);
 
 #ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
             if(PhyIsCombo(phy_dev) && phy_serdes->sfp_status <= SFP_MODULE_IN) /* combo PHY */
@@ -1867,6 +1902,7 @@ sfp_module_in:
                 cascade_phy_set_common_inter_types(phy_dev);
                 phy_dsl_set_configured_types(phy_dev);
                 set_common_speed_range(phy_dev);
+
                 if (phy_dev->configured_current_inter_phy_type == INTER_PHY_TYPE_AUTO)
                     phy_dev->current_inter_phy_type = phy_next->current_inter_phy_type =
                         sfp_phy_get_best_inter_phy_configure_type(phy_dev,
@@ -1879,14 +1915,13 @@ sfp_module_in:
             }
 #endif
 //            printk(KERN_DEBUG "\n ****** %s:%d ****** \n", __FUNCTION__, __LINE__);
-
             if(phy_serdes->sfp_status <= SFP_MODULE_IN)
             {
 //                printk("\n ****** %s:%d set sfp_status to SFP_MODULE_IN ****** \n", __FUNCTION__, __LINE__);
                 phy_serdes->sfp_status = SFP_MODULE_IN;
 
                 if (dsl_serdes_silent_start_light_detected(phy_dev))
-                    dsl_serdes_sfp_lbe_op(phy_dev, LASER_ON);
+                    dsl_serdes_sfp_laser_op(phy_dev, 1);
 
                 /*
                     Even silent start does not detect valid signal ans laser might be off,
@@ -2057,26 +2092,39 @@ int phy_dev_sltstt_get(phy_dev_t *phy_dev, int *mode)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
     if (!dsl_serdes_silent_start_supported(phy_dev))
-        return -1;
+        return ETHCTL_ERROR_FUNCTION_NOT_SUPPORTED;
     *mode = phy_serdes->silent_start_enabled;
+    *mode |= (phy_serdes->laser_enable? ETHCTL_SILENT_START_LASER_ON: 0) | ETHCTL_SILENT_START_LASER_BIT_VALID;
     return 0;
 }
 EXPORT_SYMBOL(phy_dev_sltstt_get);
 
-int phy_dev_sltstt_set(phy_dev_t *phy_dev, int mode)
+int phy_dev_sltstt_set_lock(phy_dev_t *phy_dev, int mode)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
+    int ret = 0;
+
+    mutex_lock(&serdes_mutex);
     if (!dsl_serdes_silent_start_supported(phy_dev))
-        return -1;
+    {
+        ret = ETHCTL_ERROR_FUNCTION_NOT_SUPPORTED;
+        goto end;
+    }
+
     phy_serdes->silent_start_enabled = !!mode;
 
     if (phy_serdes->silent_start_enabled)
-        dsl_serdes_sfp_lbe_op(phy_dev, LASER_OFF);
+    {
+        if (!phy_dev->link)
+            dsl_serdes_sfp_laser_op(phy_dev, 0);
+    }
     else
-        dsl_serdes_sfp_lbe_op(phy_dev, LASER_ON);
-    return 0;
+        dsl_serdes_sfp_laser_op(phy_dev, 1);
+end:
+    mutex_unlock(&serdes_mutex);
+    return ret;
 }
-EXPORT_SYMBOL(phy_dev_sltstt_set);
+EXPORT_SYMBOL(phy_dev_sltstt_set_lock);
 
 int dsl_serdes_power_mode_set(phy_dev_t *phy_dev, int mode)
 {

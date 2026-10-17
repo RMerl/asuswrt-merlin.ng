@@ -1,0 +1,12 @@
+if TARGET_IMX8MP_RSB3720A1_4G || TARGET_IMX8MP_RSB3720A1_6G
+
+config SYS_BOARD
+	default "imx8mp_rsb3720a1"
+
+config SYS_VENDOR
+	default "advantech"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_rsb3720"
+
+endif

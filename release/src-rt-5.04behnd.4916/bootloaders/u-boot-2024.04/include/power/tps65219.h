@@ -1,0 +1,46 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+/*
+ * (C) Copyright 2022 BayLibre, SAS
+ * Author: Neil Armstrong <narmstrong@baylibre.com>
+ */
+
+#ifndef TPS65219_H
+#define TPS65219_H
+
+/* I2C device address for pmic tps65219 */
+#define TPS65219_I2C_ADDR		0x30
+#define TPS65219_LDO_NUM		4
+#define TPS65219_BUCK_NUM		3
+
+/* Drivers name */
+#define TPS65219_LDO_DRIVER		"tps65219_ldo"
+#define TPS65219_BUCK_DRIVER		"tps65219_buck"
+
+#define TPS65219_VOLT_MASK		0x3F
+#define TPS65219_BUCK_VOLT_MAX		3400000
+
+#define TPS65219_ENABLE_CTRL_REG	0x2
+
+#define TPS65219_BUCK1_VOUT_REG		0xa
+#define TPS65219_BUCK2_VOUT_REG		0x9
+#define TPS65219_BUCK3_VOUT_REG		0x8
+
+#define TPS65219_LDO1_VOUT_REG		0x7
+#define TPS65219_LDO2_VOUT_REG		0x6
+
+#define TPS65219_LDO12_BYP_CONFIG	6
+
+#define TPS65219_LDO3_VOUT_REG		0x5
+#define TPS65219_LDO4_VOUT_REG		0x4
+
+#define TPS65219_LDO12_VOLT_BYP_MIN	1500000
+#define TPS65219_LDO12_VOLT_MIN		 600000
+#define TPS65219_LDO12_VOLT_MAX		3400000
+#define TPS65219_LDO12_VOLT_REG_MIN	0
+#define TPS65219_LDO12_VOLT_REG_MAX	0x56
+#define TPS65219_LDO34_VOLT_MIN		1200000
+#define TPS65219_LDO34_VOLT_MAX		3300000
+#define TPS65219_LDO34_VOLT_REG_MIN	0x12
+#define TPS65219_LDO34_VOLT_REG_MAX	0x54
+
+#endif /* TPS65219_H */

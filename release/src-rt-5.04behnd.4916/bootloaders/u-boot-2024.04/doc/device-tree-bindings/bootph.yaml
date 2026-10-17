@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# Copyright 2022 Google LLC
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/bootph.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Boot-phase-specific device nodes
+
+maintainers:
+  - Simon Glass <sjg@chromium.org>
+
+description: |
+  Some programs run in memory-constrained environments yet want to make use
+  of device tree.
+
+  The full device tree is often quite large relative to the available memory
+  of a boot phase, so cannot fit into every phase of the boot process. Even
+  when memory is not a problem, some phases may wish to limit which device
+  nodes are present, so as to reduce execution time.
+
+  This binding supports adding tags to device tree nodes to allow them to be
+  marked according to the phases where they should be included.
+
+  Without any tags, nodes are included only in the final phase, where all
+  memory is available. Any untagged nodes are dropped from previous phases
+  and are ignored before the final phase is reached.
+
+  The build process produces a separate executable for each phase. It can
+  use fdtgrep to drop any nodes which are not needed for a particular build.
+  For example, the pre-sram build will drop any nodes which are not marked
+  with bootph-pre-sram or bootph-all tags.
+
+  Note that phase builds may drop the tags, since they have served their
+  purpose by that point. So when looking at phase-specific device tree files
+  you may not see these tags.
+
+  Multiple tags can be used in the same node.
+
+  Tags in a child node are implied to be present in all parent nodes as well.
+  This is important, since some missing properties (such as "ranges", or
+  "compatible") can cause the child node to be ignored or incorrectly
+  parsed.
+
+  That said, at present, fdtgrep applies tags only to the node they are
+  added to, not to any parents. This means U-Boot device tree files often
+  add the same tag to parent nodes, rather than relying on tooling to do
+  this. This is a limitation of fdtgrep and it will be addressed so that
+  'Linux DTs' do not need to do this.
+
+  The available tags are described as properties below, in order of phase
+  execution.
+
+select: true
+
+properties:
+  bootph-pre-sram:
+    type: boolean
+    description:
+      Enable this node when SRAM is not available. This phase must set up
+      some SRAM or cache-as-RAM so it can obtain data/BSS space to use
+      during execution.
+
+  bootph-verify:
+    type: boolean
+    description:
+      Enable this node in the verification step, which decides which of the
+      available images should be run next.
+
+  bootph-pre-ram:
+    type: boolean
+    description:
+      Enable this node in the phase that sets up SDRAM.
+
+  bootph-some-ram:
+    type: boolean
+    description:
+      Enable this node in the phase that is run after SDRAM is working but
+      before all of it is available. Some RAM is available but it is limited
+      (e.g. it may be split into two pieces by the location of the running
+      program) because the program code is not yet relocated out of the way.
+
+  bootph-all:
+    type: boolean
+    description:
+      Include this node in all phases (for U-Boot see enum u_boot_phase).
+
+additionalProperties: true

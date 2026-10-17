@@ -1,0 +1,33 @@
+#include "bcm_voice_dt_bindings.h"
+
+/dts-v1/;
+/plugin/;
+
+&bcm_voice {
+	compatible = "brcm,voice-card";
+	board_id = "NOSLIC";
+	dev_profile = <VD_NOT_DEFINED>;
+	flags = <VD_NOT_CONNECTED>;
+
+	dev0: dev@0 {
+		reg = <0x0>;
+		dev_type = <VD_NONE>;
+		audio_type = <VD_VDTYPE_NONE>;
+		spi_ss_bx = <VD_SPI_SS_NOT_REQUIRED>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			status ="disabled";
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_NONE>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+		};
+		chn@1 {
+			status ="disabled";
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_NONE>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+		};
+	};
+};

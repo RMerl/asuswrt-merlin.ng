@@ -47,10 +47,15 @@ typedef struct
     uint32_t reason;
     uint32_t extra_skb_flags;
     uint32_t fc_ctxt;
-    uint8_t  is_exception; /* 8bit based on rdpa_cpu_rx_info_t::is_exception*/
-    uint8_t  is_group_fwd_exception; /* Only need 1 bit */
-    /* TODO: This structure needs to be condensed --
-     * allocating 28Byte is not good in main pkt processing path */    
+    union {
+        uint32_t flags;
+        struct {
+            uint32_t is_exception : 8; /* 8bit based on rdpa_cpu_rx_info_t::is_exception*/
+            uint32_t is_group_fwd_exception : 1; /* Only need 1 bit */
+            uint32_t iq_prio : 1;
+            uint32_t reserved : 22;
+        };
+    };
 } enetx_rx_info_t;
 
 #endif

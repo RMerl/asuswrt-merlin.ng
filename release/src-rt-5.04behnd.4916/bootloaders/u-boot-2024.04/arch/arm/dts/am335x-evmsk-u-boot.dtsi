@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * am335x-evmsk U-Boot Additions
+ *
+ * Copyright (C) 2020 Dario Binacchi <dariobin@libero.it>
+ */
+
+#include "am33xx-u-boot.dtsi"
+
+&l4_per {
+
+	segment@300000 {
+
+		target-module@e000 {
+			bootph-all;
+
+			lcdc: lcdc@0 {
+				bootph-all;
+			};
+		};
+	};
+};

@@ -1,0 +1,8 @@
+MX23EVK BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+M:	Otavio Salvador <otavio@ossystems.com.br>
+S:	Maintained
+F:	board/freescale/mx23evk/
+F:	arch/arm/dts/imx23-evk.dts
+F:	include/configs/mx23evk.h
+F:	configs/mx23evk_defconfig

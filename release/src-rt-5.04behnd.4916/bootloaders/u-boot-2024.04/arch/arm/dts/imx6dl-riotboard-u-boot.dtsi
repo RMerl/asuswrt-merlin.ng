@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/ {
+	aliases {
+		mmc0 = &usdhc2;
+		mmc1 = &usdhc3;
+	};
+};

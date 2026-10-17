@@ -1,0 +1,4 @@
+config IMX_SNPS_DDR_PHY
+	bool "i.MX Snopsys DDR PHY"
+	help
+	  Select the DDR PHY driver support on i.MX8M and i.MX9 SOC.

@@ -1,0 +1,108 @@
+if TARGET_LS1012ARDB
+
+config SYS_BOARD
+	default "ls1012ardb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1012ardb"
+
+if CHAIN_OF_TRUST
+config SYS_LS_PFE_ESBC_ADDR
+	hex "PFE Firmware HDR Addr"
+	default 0x40640000
+
+config SYS_LS_PFE_ESBC_LENGTH
+	hex "length of PFE Firmware HDR"
+	default 0xc00
+endif
+
+if FSL_PFE
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select PHYLIB
+	imply PHY_REALTEK
+
+config SYS_LS_PFE_FW_ADDR
+	hex "Flash address of PFE firmware"
+	default 0x40a00000
+
+config SYS_LS_PFE_FW_LENGTH
+	hex "length of PFE firmware"
+	default 0x300000
+
+config DDR_PFE_PHYS_BASEADDR
+	hex "PFE DDR physical base address"
+	default 0x03800000
+
+config DDR_PFE_BASEADDR
+	hex "PFE DDR base address"
+	default 0x83800000
+
+config PFE_EMAC1_PHY_ADDR
+	hex "PFE DDR base address"
+	default 0x2
+
+config PFE_EMAC2_PHY_ADDR
+	hex "PFE DDR base address"
+	default 0x1
+
+endif
+
+endif
+
+if TARGET_LS1012A2G5RDB
+
+config SYS_BOARD
+        default "ls1012ardb"
+
+config SYS_VENDOR
+        default "freescale"
+
+config SYS_SOC
+        default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+        default "ls1012a2g5rdb"
+
+if FSL_PFE
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select PHYLIB
+	imply PHYLIB_10G
+	imply PHY_AQUANTIA
+
+config SYS_LS_PFE_FW_ADDR
+	hex "Flash address of PFE firmware"
+	default 0x40a00000
+
+config SYS_LS_PFE_FW_LENGTH
+	hex "length of PFE firmware"
+	default 0x300000
+
+config DDR_PFE_PHYS_BASEADDR
+	hex "PFE DDR physical base address"
+	default 0x03800000
+
+config DDR_PFE_BASEADDR
+	hex "PFE DDR base address"
+	default 0x83800000
+
+config PFE_EMAC1_PHY_ADDR
+	hex "PFE DDR base address"
+	default 0x2
+
+config PFE_EMAC2_PHY_ADDR
+	hex "PFE DDR base address"
+	default 0x1
+
+endif
+
+endif

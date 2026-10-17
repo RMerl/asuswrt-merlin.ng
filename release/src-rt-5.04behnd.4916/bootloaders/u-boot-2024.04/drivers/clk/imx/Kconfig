@@ -1,0 +1,160 @@
+config SPL_CLK_IMX6Q
+	bool "SPL clock support for i.MX6Q"
+	depends on ARCH_MX6 && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MX6Q platforms.
+
+config CLK_IMX6Q
+	bool "Clock support for i.MX6Q"
+	depends on ARCH_MX6
+	select CLK
+	select CLK_CCF
+	help
+	  This enables DM/DTS support for clock driver in i.MX6Q platforms.
+
+config CLK_IMX8
+	bool "Clock support for i.MX8"
+	depends on ARCH_IMX8
+	select CLK
+	help
+	  This enables support clock driver for i.MX8 platforms.
+
+config SPL_CLK_IMX8MM
+	bool "SPL clock support for i.MX8MM"
+	depends on ARCH_IMX8M && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MX8MM
+
+config CLK_IMX8MM
+	bool "Clock support for i.MX8MM"
+	depends on ARCH_IMX8M
+	select CLK
+	select CLK_CCF
+	help
+	  This enables support clock driver for i.MX8MM platforms.
+
+config SPL_CLK_IMX8MN
+	bool "SPL clock support for i.MX8MN"
+	depends on ARCH_IMX8M && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	select SPL_CLK_COMPOSITE_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MX8MN
+
+config CLK_IMX8MN
+	bool "Clock support for i.MX8MN"
+	depends on ARCH_IMX8M
+	select CLK
+	select CLK_CCF
+	select CLK_COMPOSITE_CCF
+	help
+	  This enables support clock driver for i.MX8MN platforms.
+
+config SPL_CLK_IMX8MP
+	bool "SPL clock support for i.MX8MP"
+	depends on ARCH_IMX8M && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MX8MP
+
+config CLK_IMX8MP
+	bool "Clock support for i.MX8MP"
+	depends on ARCH_IMX8M
+	select CLK
+	select CLK_CCF
+	help
+	  This enables support clock driver for i.MX8MP platforms.
+
+config SPL_CLK_IMX8MQ
+	bool "SPL clock support for i.MX8MQ"
+	depends on ARCH_IMX8M && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	select SPL_CLK_COMPOSITE_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MX8MQ
+
+config CLK_IMX8MQ
+	bool "Clock support for i.MX8MQ"
+	depends on ARCH_IMX8M
+	select CLK
+	select CLK_CCF
+	select CLK_COMPOSITE_CCF
+	help
+	  This enables support clock driver for i.MX8MQ platforms.
+
+config SPL_CLK_IMX93
+	bool "SPL clock support for i.MX93"
+	depends on ARCH_IMX9 && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	select SPL_CLK_COMPOSITE_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MX93
+
+config CLK_IMX93
+	bool "Clock support for i.MX93"
+	depends on ARCH_IMX9
+	select CLK
+	select CLK_CCF
+	select CLK_COMPOSITE_CCF
+	help
+	  This enables support for clock driver in i.MX93
+
+config SPL_CLK_IMXRT1020
+	bool "SPL clock support for i.MXRT1020"
+	depends on ARCH_IMXRT && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	select SPL_CLK_COMPOSITE_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MXRT1020
+
+config CLK_IMXRT1020
+	bool "Clock support for i.MXRT1020"
+	depends on ARCH_IMXRT
+	select CLK
+	select CLK_CCF
+	select CLK_COMPOSITE_CCF
+	help
+	  This enables support clock driver for i.MXRT1020 platforms.
+
+config SPL_CLK_IMXRT1050
+	bool "SPL clock support for i.MXRT1050"
+	depends on ARCH_IMXRT && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	select SPL_CLK_COMPOSITE_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MXRT1050
+
+config CLK_IMXRT1050
+	bool "Clock support for i.MXRT1050"
+	depends on ARCH_IMXRT
+	select CLK
+	select CLK_CCF
+	select CLK_COMPOSITE_CCF
+	help
+	  This enables support clock driver for i.MXRT1050 platforms.
+
+config SPL_CLK_IMXRT1170
+	bool "SPL clock support for i.MXRT1170"
+	depends on ARCH_IMXRT && SPL
+	select SPL_CLK
+	select SPL_CLK_CCF
+	help
+	  This enables SPL DM/DTS support for clock driver in i.MXRT1170.
+
+config CLK_IMXRT1170
+	bool "Clock support for i.MXRT1170"
+	depends on ARCH_IMXRT
+	select CLK
+	select CLK_CCF
+	help
+	  This enables support clock driver for i.MXRT1170 platforms.

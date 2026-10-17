@@ -111,7 +111,9 @@ static int bcm_bca_usb_xhci_probe(struct platform_device *pdev)
     int ret;
     struct bcm_bca_xhci_data *bca_pdata = NULL;
     struct resource *res;
+#if !defined(CONFIG_BCM96765)
     bool coherency_enable = false;
+#endif
     void __iomem *xhci_ecira_base = NULL;
 
     static const struct property_entry properties[] = {
@@ -198,11 +200,13 @@ static int bcm_bca_usb_xhci_probe(struct platform_device *pdev)
 #endif
     }
 
+#if !defined(CONFIG_BCM96765)
 #if defined(CONFIG_BCM_GLB_COHERENCY) 
     if (of_property_read_bool(pdev->dev.of_node, "coherency_enable"))
         coherency_enable = true;
 #endif
     arch_setup_dma_ops(&bca_pdata->xhci->dev, 0,0, NULL, coherency_enable);
+#endif
     dma_coerce_mask_and_coherent(&bca_pdata->xhci->dev, DMA_BIT_MASK(32));
 
     bca_pdata->xhci->dev.parent = &pdev->dev;

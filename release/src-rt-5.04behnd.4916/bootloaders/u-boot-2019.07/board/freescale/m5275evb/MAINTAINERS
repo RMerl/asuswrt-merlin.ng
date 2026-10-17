@@ -1,6 +1,0 @@
-M5275EVB BOARD
-#M:	-
-S:	Maintained
-F:	board/freescale/m5275evb/
-F:	include/configs/M5275EVB.h
-F:	configs/M5275EVB_defconfig

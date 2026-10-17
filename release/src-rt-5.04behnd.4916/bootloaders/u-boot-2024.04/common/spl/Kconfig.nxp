@@ -1,0 +1,124 @@
+menu "PowerPC and LayerScape SPL Boot options"
+	depends on (PPC && SUPPORT_SPL && !SPL_FRAMEWORK) || \
+		   ((ARCH_LS1021A || ARCH_LS1043A || ARCH_LS1046A) && SUPPORT_SPL)
+
+config SPL_NAND_BOOT
+	bool "Load SPL from NAND flash"
+	depends on PPC && (SUPPORT_SPL && !SPL_FRAMEWORK)
+
+config SPL_MMC_BOOT
+	bool "Load SPL from SD Card / eMMC"
+	depends on PPC && (SUPPORT_SPL && !SPL_FRAMEWORK)
+
+config SPL_SPI_BOOT
+	bool "Load SPL from SPI flash"
+	depends on PPC && (SUPPORT_SPL && !SPL_FRAMEWORK)
+
+config SPL_FSL_PBL
+	bool "Create SPL in Freescale PBI format"
+	depends on (PPC || ARCH_LS1021A || ARCH_LS1043A || ARCH_LS1046A) && \
+		    SUPPORT_SPL
+	help
+	  Create boot binary having SPL binary in PBI format concatenated with
+	  u-boot binary.
+
+config SPL_SYS_CCSR_DO_NOT_RELOCATE
+	bool "Ensures that CCSR is not relocated"
+	depends on PPC
+	help
+	  If this is defined, then CFG_SYS_CCSRBAR_PHYS will be forced to a
+	  value that ensures that CCSR is not relocated.
+
+config TPL_SYS_CCSR_DO_NOT_RELOCATE
+	def_bool y
+	depends on SPL_SYS_CCSR_DO_NOT_RELOCATE
+
+menu "PowerPC SPL / TPL specific options"
+	depends on PPC && (SPL && !SPL_FRAMEWORK)
+
+config SPL_INIT_MINIMAL
+	bool "Arch init code will be built for a very small image"
+
+config SPL_FLUSH_IMAGE
+	bool "Clean dcache and invalidate icache after loading the image"
+
+config SPL_SKIP_RELOCATE
+	bool "Skip relocating SPL"
+
+config SPL_GD_ADDR
+	hex "Address to use for global data (gd) in SPL"
+	depends on !SPL_INIT_MINIMAL
+
+config SPL_RELOC_TEXT_BASE
+	hex "Address to relocate SPL to"
+	default SPL_TEXT_BASE
+	help
+	  If unspecified, this is equal to CONFIG_SPL_TEXT_BASE (i.e. no
+	  relocation is done).
+
+config SPL_RELOC_STACK
+	hex "Address of the start of the stack SPL will use after relocation."
+	help
+	  If unspecified, this is equal to CFG_SPL_SYS_MALLOC_START.  Starting
+	  address of the malloc pool used in SPL.  When this option is set the full
+	  malloc is used in SPL and it is set up by spl_init() and before that, the
+	  simple malloc() can be used if CONFIG_SYS_MALLOC_F is defined.
+
+config SPL_RELOC_MALLOC
+	bool "SPL has malloc pool after relocation"
+
+config SPL_RELOC_MALLOC_ADDR
+	hex "Address of malloc pool in SPL"
+	depends on SPL_RELOC_MALLOC
+
+config SPL_RELOC_MALLOC_SIZE
+	hex "Size of malloc pool in SPL"
+	depends on SPL_RELOC_MALLOC
+
+config TPL_GD_ADDR
+	hex "Address to use for global data (gd) in TPL"
+	depends on TPL
+
+config TPL_RELOC_TEXT_BASE
+	hex "Address to relocate TPL to"
+	depends on TPL
+	default TPL_TEXT_BASE
+	help
+	  If unspecified, this is equal to CONFIG_TPL_TEXT_BASE (i.e. no
+	  relocation is done).
+
+config TPL_RELOC_STACK
+	hex "Address of the start of the stack TPL will use after relocation."
+	depends on TPL
+	help
+	  If unspecified, this is equal to CONFIG_SYS_TPL_MALLOC_START.  Starting
+	  address of the malloc pool used in TPL.  When this option is set the full
+	  malloc is used in TPL and it is set up by spl_init() and before that, the
+	  simple malloc() can be used if CONFIG_SYS_MALLOC_F is defined.
+
+config TPL_RELOC_MALLOC
+	bool "TPL has malloc pool after relocation"
+	depends on TPL
+
+config TPL_RELOC_MALLOC_ADDR
+	hex "Address of malloc pool in TPL"
+	depends on TPL_RELOC_MALLOC
+
+config TPL_RELOC_MALLOC_SIZE
+	hex "Size of malloc pool in TPL"
+	depends on TPL_RELOC_MALLOC
+
+config TPL_PAD_TO
+	hex "Offset to which the TPL should be padded before appending the TPL payload"
+	depends on TPL && !TPL_FRAMEWORK
+	default TPL_MAX_SIZE
+	help
+	  Image offset to which the TPL should be padded before appending the
+	  TPL payload. By default, this is defined as CONFIG_TPL_MAX_SIZE, or 0 if
+	  CONFIG_TPL_MAX_SIZE is undefined.  CONFIG_TPL_PAD_TO must be either
+	  0, meaning to append the TPL payload without any padding, or >=
+	  CONFIG_TPL_MAX_SIZE.
+endmenu
+
+endmenu
+

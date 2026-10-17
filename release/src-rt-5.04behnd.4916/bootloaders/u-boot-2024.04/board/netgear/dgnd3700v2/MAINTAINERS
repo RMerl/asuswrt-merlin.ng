@@ -1,0 +1,6 @@
+NETGEAR DGND3700V2 BOARD
+M:	Álvaro Fernández Rojas <noltari@gmail.com>
+S:	Maintained
+F:	board/netgear/dgnd3700v2/
+F:	include/configs/netgear_dgnd3700v2.h
+F:	configs/netgear_dgnd3700v2_ram_defconfig

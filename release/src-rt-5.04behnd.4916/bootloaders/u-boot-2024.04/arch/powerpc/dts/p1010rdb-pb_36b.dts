@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * P1010 RDB Device Tree Source (36-bit address map)
+ *
+ * Copyright 2020 NXP
+ */
+
+/include/ "p1010si-pre.dtsi"
+
+/ {
+	model = "fsl,P1010RDB-PB";
+	compatible = "fsl,P1010RDB-PB";
+
+	/include/ "p1010rdb_36b.dtsi"
+};
+
+/include/ "p1010si-post.dtsi"
+/include/ "p1010rdb.dtsi"

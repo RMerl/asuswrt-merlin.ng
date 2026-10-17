@@ -1,0 +1,46 @@
+gdsys Gazerbeam sysinfo driver
+
+This driver provides capabilities to access the gdsys Gazerbeam board's device
+information. Furthermore, phandles to some internal devices are provided for
+the board files.
+
+Required properties:
+- compatible:  should be "gdsys,sysinfo-gazerbeam"
+- csb:         phandle to the board's coherent system bus (CSB) device node
+- rxaui[0-3]:  phandles to the rxaui control device nodes
+- fpga[0-1]:   phandles to the board's gdsys FPGA device nodes
+- ioep[0-1]:   phandles to the board's IO endpoint device nodes
+- ver-gpios:   GPIO list to read the hardware version from
+- var-gpios:   GPIO list to read the hardware variant information from
+- reset-gpios: GPIO list for the board's reset GPIOs
+
+Example:
+
+
+sysinfo {
+	compatible = "gdsys,sysinfo-gazerbeam";
+	csb = <&board_soc>;
+	serdes = <&SERDES>;
+	rxaui0 = <&RXAUI0>;
+	rxaui1 = <&RXAUI1>;
+	rxaui2 = <&RXAUI2>;
+	rxaui3 = <&RXAUI3>;
+	fpga0 = <&FPGA0>;
+	fpga1 = <&FPGA1>;
+	ioep0 = <&IOEP0>;
+	ioep1 = <&IOEP1>;
+
+	ver-gpios = <&PPCPCA 12 0
+		     &PPCPCA 13 0
+		     &PPCPCA 14 0
+		     &PPCPCA 15 0>;
+
+	/* MC2/SC-Board */
+	var-gpios-mc2 = <&GPIO_VB0 0 0    /* VAR-MC_SC */
+			 &GPIO_VB0 11 0>; /* VAR-CON */
+	/* MC4-Board */
+	var-gpios-mc4 = <&GPIO_VB1 0 0    /* VAR-MC_SC */
+			 &GPIO_VB1 11 0>; /* VAR-CON */
+
+	reset-gpios = <&gpio0 1 0 &gpio0 2 1>;
+};

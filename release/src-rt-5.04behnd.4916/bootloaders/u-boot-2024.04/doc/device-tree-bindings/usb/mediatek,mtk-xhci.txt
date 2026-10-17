@@ -1,0 +1,46 @@
+MediaTek xHCI
+
+The device node for USB3 host controller on MediaTek SoCs.
+
+Required properties:
+ - compatible : should be one of
+	"mediatek,mtk-xhci"
+	"mediatek,mt8195-xhci"
+ - reg : specifies physical base address and size of the registers
+ - reg-names: should be "mac" for xHCI MAC and "ippc" for IP port control
+ - power-domains : a phandle to USB power domain node to control USB's
+	MTCMOS
+ - vusb33-supply : regulator of USB avdd3.3v
+
+ - clocks : a list of phandle + clock-specifier pairs, one for each
+	entry in clock-names
+ - clock-names : must contain
+	"sys_ck": controller clock used by normal mode,
+	the following ones are optional:
+	"ref_ck": reference clock used by low power mode etc,
+	"mcu_ck": mcu_bus clock for register access,
+	"dma_ck": dma_bus clock for data transfer by DMA,
+	"xhci_ck": controller clock
+
+ - phys : list of all the USB PHYs on this HCD
+ - phy-names: name specifier for the USB PHY
+
+Optional properties:
+ - vbus-supply : reference to the VBUS regulator;
+ - mediatek,u3p-dis-msk : mask to disable u3ports, bit0 for u3port0,
+	bit1 for u3port1, ... etc;
+ - mediatek,u2p-dis-msk : mask to disable u2ports, bit0 for u2port0,
+	bit1 for u2port1, ... etc;
+
+Example:
+xhci: usb@1a0c0000 {
+	compatible = "mediatek,mt7629-xhci", "mediatek,mtk-xhci";
+	reg = <0x1a0c0000 0x1000>, <0x1a0c3e00 0x0100>;
+	reg-names = "mac", "ippc";
+	power-domains = <&scpsys MT7629_POWER_DOMAIN_HIF1>;
+	clocks = <&ssusbsys CLK_SSUSB_SYS_EN>, <&ssusbsys CLK_SSUSB_REF_EN>,
+		 <&ssusbsys CLK_SSUSB_MCU_EN>, <&ssusbsys CLK_SSUSB_DMA_EN>;
+	clock-names = "sys_ck", "ref_ck", "mcu_ck", "dma_ck";
+	phys = <&u2port0 PHY_TYPE_USB2>, <&u3port0 PHY_TYPE_USB3>;
+	status = "disabled";
+};

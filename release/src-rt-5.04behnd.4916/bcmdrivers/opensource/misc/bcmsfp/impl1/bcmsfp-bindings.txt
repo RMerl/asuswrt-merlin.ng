@@ -11,6 +11,7 @@ Required properties:
   "brcm,sff" for soldered down SFF modules
   "brcm,sfp" for SFP/XFP modules, same as above, but uses MOD-DEF0 gpio for
     polling Transceiver presence
+  "brcm,mux" for supporting multiple SFP/XFP modules; see appendix below.
 
 - i2c-bus: phandle, I2C bus controller for the SFP
 
@@ -50,3 +51,52 @@ Optional properties:
   set for configuring Transmitter Tx-SD signal (commonly pin 7); used for
   Rogue Tx in some TDMA optical Trx (Powered on) high
 
+
+"brcm,mux" Appendix:
+--------------------
+
+i2c-bus and gpios, as described above, are defined in seperate child nodes, each child node describes a different mux option.
+
+Required properties:
+
+- mux-gpios: array of gpios for selecting mux channel. Channel value will be converted to binary
+  value matching gpio pins order.
+
+- reg: Should be used inside a child node. Represents channel index of the node.
+
+- type: Should be used inside a child node. Either "sff" or "sfp".
+
+
+Optional properties:
+
+- initial-state: A number, initial channel used when booting
+
+
+Example of bcmsfp,mux structure:
+
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_30>;
+        pinctrl-1 = <&pon_lbe_p_pin_30 &rogue_onu_in_pin_27>;
+        compatible = "brcm,sfp-mux";
+        mux-gpios = <&gpioc 25 GPIO_ACTIVE_HIGH>;
+        initial-state = <1>;
+
+        chan0 {
+            reg = <0>;
+            type = "sfp";
+            i2c-bus = <&i2c0mux1>;
+            los-gpio = <&gpioc 26 GPIO_ACTIVE_HIGH>;
+            mod-def0 = <&bca_extintr 76 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            tx-power-gpio = <&gpioc 55 GPIO_ACTIVE_HIGH>;
+        };
+
+        chan1 {
+            reg = <1>;
+            type = "sfp";
+            i2c-bus = <&i2c0mux2>;
+            los-gpio = <&gpioc 26 GPIO_ACTIVE_HIGH>;
+            mod-def0 = <&bca_extintr 76 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            tx-power-gpio = <&gpioc 54 GPIO_ACTIVE_HIGH>;
+        };
+    };

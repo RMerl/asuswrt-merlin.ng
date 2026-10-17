@@ -145,7 +145,7 @@ extern bcm_mcast_ctrl *mcast_ctrl;
 void bcm_mcast_set_pri_queue(int queue);
 void bcm_mcast_set_uplink(int uplinkExists);
 void bcm_mcast_set_admission(int proto, int enable);
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
 void bcm_mcast_process_blog_enable(int enable);
 #endif
 

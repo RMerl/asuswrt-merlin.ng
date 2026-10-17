@@ -1,0 +1,12 @@
+if RAM || SPL_RAM
+
+config CADENCE_DDR_CTRL
+	bool "Enable Cadence DDR controller"
+	depends on DM
+	help
+	  Enable support for Cadence DDR controller, as found on
+	  the Renesas RZ/N1 SoC. This controller has a large number
+	  of registers which need to be programmed, mostly using values
+	  obtained from Denali SOMA files via a TCL script.
+
+endif

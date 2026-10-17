@@ -1,0 +1,305 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "mscc,jr2";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			compatible = "mips,mips24KEc";
+			device_type = "cpu";
+			clocks = <&cpu_clk>;
+			reg = <0>;
+		};
+	};
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	cpuintc: interrupt-controller@0 {
+		#address-cells = <0>;
+		#interrupt-cells = <1>;
+		interrupt-controller;
+		compatible = "mti,cpu-interrupt-controller";
+	};
+
+	cpu_clk: cpu-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <500000000>;
+	};
+
+	ahb_clk: ahb-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <250000000>;
+	};
+
+	ahb {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0x70000000 0x2000000>;
+
+		interrupt-parent = <&intc>;
+
+		cpu_ctrl: syscon@0 {
+			compatible = "mscc,jr2-cpu-syscon", "syscon";
+			reg = <0x0 0x2c>;
+		};
+
+		intc: interrupt-controller@70 {
+			compatible = "mscc,jr2-icpu-intr";
+			reg = <0x70 0x94>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			interrupt-parent = <&cpuintc>;
+			interrupts = <2>;
+		};
+
+		uart0: serial@100000 {
+			pinctrl-0 = <&uart_pins>;
+			pinctrl-names = "default";
+			compatible = "ns16550a";
+			reg = <0x100000 0x20>;
+			interrupts = <6>;
+			clocks = <&ahb_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+
+			status = "disabled";
+		};
+
+		uart2: serial@100800 {
+			pinctrl-0 = <&uart2_pins>;
+			pinctrl-names = "default";
+			compatible = "ns16550a";
+			reg = <0x100800 0x20>;
+			interrupts = <7>;
+			clocks = <&ahb_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+
+			status = "disabled";
+		};
+
+		spi0: spi-master@101000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,jaguar2-spi", "snps,dw-apb-ssi";
+			reg = <0x101000 0x40>;
+			num-chipselect = <4>;
+			bus-num = <0>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+			spi-max-frequency = <18000000>; /* input clock */
+			clocks = <&ahb_clk>;
+
+			status = "disabled";
+		};
+
+		reset@1010008 {
+			compatible = "mscc,jr2-chip-reset";
+			reg = <0x1010008 0x4>;
+		};
+
+		gpio: pinctrl@1070034 {
+			compatible = "mscc,jaguar2-pinctrl";
+			reg = <0x1010038 0x90>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&gpio 0 0 64>;
+
+			sgpio_pins: sgpio-pins {
+				pins = "GPIO_0", "GPIO_1", "GPIO_2", "GPIO_3";
+				function = "sg0";
+			};
+
+			sgpio1_pins: sgpio1-pins {
+				pins = "GPIO_4", "GPIO_5", "GPIO_12", "GPIO_13";
+				function = "sg1";
+			};
+
+			sgpio2_pins: sgpio2-pins {
+				pins = "GPIO_30", "GPIO_31",
+				       "GPIO_32", "GPIO_33";
+				function = "sg2";
+			};
+
+			uart_pins: uart-pins {
+				pins = "GPIO_10", "GPIO_11";
+				function = "uart";
+			};
+
+			uart2_pins: uart2-pins {
+				pins = "GPIO_24", "GPIO_25";
+				function = "uart2";
+			};
+		};
+
+		sgpio: gpio@1010150 {
+			compatible = "mscc,ocelot-sgpio";
+			status = "disabled";
+			pinctrl-0 = <&sgpio_pins>;
+			pinctrl-names = "default";
+			reg = <0x1010150 0x100>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&sgpio 0 0 64>;
+			gpio-bank-name = "sgpio0_";
+			sgpio-clock = <0x14>;
+		};
+
+		sgpio1: gpio@101025c {
+			compatible = "mscc,ocelot-sgpio";
+			status = "disabled";
+			pinctrl-0 = <&sgpio1_pins>;
+			pinctrl-names = "default";
+			reg = <0x101025c 0x100>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&sgpio1 0 0 64>;
+			gpio-bank-name = "sgpio1_";
+			sgpio-clock = <0x14>;
+		};
+
+		sgpio2: gpio@1010368 {
+			compatible = "mscc,ocelot-sgpio";
+			status = "disabled";
+			pinctrl-0 = <&sgpio2_pins>;
+			pinctrl-names = "default";
+			reg = <0x1010368 0x100>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&sgpio2 0 0 64>;
+			gpio-bank-name = "sgpio2_";
+			sgpio-clock = <0x14>;
+		};
+
+		switch: switch@1010000 {
+			compatible = "mscc,vsc7454-switch";
+			reg = <0x01040000 0x0100>,   // VTSS_TO_DEV_0
+			      <0x01050000 0x0100>,   // VTSS_TO_DEV_1
+			      <0x01060000 0x0100>,   // VTSS_TO_DEV_2
+			      <0x01070000 0x0100>,   // VTSS_TO_DEV_3
+			      <0x01080000 0x0100>,   // VTSS_TO_DEV_4
+			      <0x01090000 0x0100>,   // VTSS_TO_DEV_5
+			      <0x010a0000 0x0100>,   // VTSS_TO_DEV_6
+			      <0x010b0000 0x0100>,   // VTSS_TO_DEV_7
+			      <0x010c0000 0x0100>,   // VTSS_TO_DEV_8
+			      <0x010d0000 0x0100>,   // VTSS_TO_DEV_9
+			      <0x010e0000 0x0100>,   // VTSS_TO_DEV_10
+			      <0x010f0000 0x0100>,   // VTSS_TO_DEV_11
+			      <0x01100000 0x0100>,   // VTSS_TO_DEV_12
+			      <0x01110000 0x0100>,   // VTSS_TO_DEV_13
+			      <0x01120000 0x0100>,   // VTSS_TO_DEV_14
+			      <0x01130000 0x0100>,   // VTSS_TO_DEV_15
+			      <0x01140000 0x0100>,   // VTSS_TO_DEV_16
+			      <0x01150000 0x0100>,   // VTSS_TO_DEV_17
+			      <0x01160000 0x0100>,   // VTSS_TO_DEV_18
+			      <0x01170000 0x0100>,   // VTSS_TO_DEV_19
+			      <0x01180000 0x0100>,   // VTSS_TO_DEV_20
+			      <0x01190000 0x0100>,   // VTSS_TO_DEV_21
+			      <0x011a0000 0x0100>,   // VTSS_TO_DEV_22
+			      <0x011b0000 0x0100>,   // VTSS_TO_DEV_23
+			      <0x011c0000 0x0100>,   // VTSS_TO_DEV_24
+			      <0x011d0000 0x0100>,   // VTSS_TO_DEV_25
+			      <0x011e0000 0x0100>,   // VTSS_TO_DEV_26
+			      <0x011f0000 0x0100>,   // VTSS_TO_DEV_27
+			      <0x01200000 0x0100>,   // VTSS_TO_DEV_28
+			      <0x01210000 0x0100>,   // VTSS_TO_DEV_29
+			      <0x01220000 0x0100>,   // VTSS_TO_DEV_30
+			      <0x01230000 0x0100>,   // VTSS_TO_DEV_31
+			      <0x01240000 0x0100>,   // VTSS_TO_DEV_32
+			      <0x01250000 0x0100>,   // VTSS_TO_DEV_33
+			      <0x01260000 0x0100>,   // VTSS_TO_DEV_34
+			      <0x01270000 0x0100>,   // VTSS_TO_DEV_35
+			      <0x01280000 0x0100>,   // VTSS_TO_DEV_36
+			      <0x01290000 0x0100>,   // VTSS_TO_DEV_37
+			      <0x012a0000 0x0100>,   // VTSS_TO_DEV_38
+			      <0x012b0000 0x0100>,   // VTSS_TO_DEV_39
+			      <0x012c0000 0x0100>,   // VTSS_TO_DEV_40
+			      <0x012d0000 0x0100>,   // VTSS_TO_DEV_41
+			      <0x012e0000 0x0100>,   // VTSS_TO_DEV_42
+			      <0x012f0000 0x0100>,   // VTSS_TO_DEV_43
+			      <0x01300000 0x0100>,   // VTSS_TO_DEV_44
+			      <0x01310000 0x0100>,   // VTSS_TO_DEV_45
+			      <0x01320000 0x0100>,   // VTSS_TO_DEV_46
+			      <0x01330000 0x0100>,   // VTSS_TO_DEV_47
+			      <0x01f00000 0x100000>, // ANA_AC
+			      <0x01d00000 0x100000>, // ANA_CL
+			      <0x01e00000 0x100000>, // ANA_L2
+			      <0x01410000 0x10000>,  // ASM
+			      <0x01460000 0x10000>,  // HSIO
+			      <0x01420000 0x00000>,  // LRN
+			      <0x017d0000 0x10000>,  // QFWD
+			      <0x01020000 0x20000>,  // QS
+			      <0x017e0000 0x10000>,  // QSYS
+			      <0x01b00000 0x80000>,  // REW
+			      <0x01010000 0x100>,    // GCB
+			      <0x00000000 0x100>;    // ICPU
+			reg-names = "port0", "port1", "port2", "port3", "port4",
+				    "port5", "port6", "port7", "port8", "port9",
+				    "port10", "port11", "port12", "port13",
+				    "port14", "port15", "port16", "port17",
+				    "port18", "port19", "port20", "port21",
+				    "port22", "port23", "port24", "port25",
+				    "port26", "port27", "port28", "port29",
+				    "port30", "port31", "port32", "port33",
+				    "port34", "port35", "port36", "port37",
+				    "port38", "port39", "port40", "port41",
+				    "port42", "port43", "port44", "port45",
+				    "port46", "port47", "ana_ac", "ana_cl",
+				    "ana_l2", "asm", "hsio", "lrn", "qfwd",
+				    "qs", "qsys", "rew", "gcb", "icpu";
+			status = "okay";
+
+			ethernet-ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+
+		mdio0: mdio@010100c8 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,jr2-miim";
+			reg = <0x010100c8 0x24>;
+			status = "disabled";
+		};
+
+		mdio1: mdio@010100ec {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,jr2-miim";
+			reg = <0x010100ec 0x24>;
+			status = "disabled";
+		};
+
+		mdio2: mdio@01010110 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,jr2-miim";
+			reg = <0x01010110 0x24>;
+			status = "disabled";
+		};
+
+		hsio: syscon@10d0000 {
+			compatible = "mscc,jr2-hsio", "syscon", "simple-mfd";
+			reg = <0x10d0000 0x10000>;
+
+			serdes_hsio: serdes_hsio {
+				compatible = "mscc,vsc7454-serdes";
+				#phy-cells = <3>;
+			};
+		};
+	};
+};

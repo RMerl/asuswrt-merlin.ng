@@ -43,13 +43,13 @@ typedef struct {
     uint8_t digest_size;
     uint8_t key_size;
     uint8_t iv_size;
-    uint8_t chksm_offset;
     uint8_t is_esn:1;
     uint8_t esp_o_udp:1;
     uint8_t transport_mode:1;
     uint8_t is_gcm:1;
     uint8_t ipv6:1;
-    uint8_t reserved:3;
+    uint8_t ipv4_in_ipv6:1;
+    uint8_t reserved:2;
     uint64_t key_buf_dma_addr;
 } rdpa_crypto_session_info_t;
 
@@ -69,13 +69,24 @@ typedef struct
 
 } rdpa_spu_resp_wakeup_info_t;
 
+typedef struct
+{
+    uint32_t num_request;
+    uint32_t num_completed;
+    uint16_t icv_error;
+    uint16_t cmpl_error;
+    uint16_t seqno_error;
+
+} rdpa_spu_offload_stat_t;
+
 extern void rdpa_spu_set_pd_ring(rdpa_spu_pd_ring_info_t *info);
-extern void rdpa_spu_crypto_session_base_set(uint64_t base_addr);
+extern void rdpa_spu_crypto_session_base_set(uint64_t seq_base_addr, uint64_t prepend_base_addr);
 extern void rdpa_crypto_session_info_set(rdpa_crypto_session_info_t *session);
 extern void rdpa_spu_databuf_recycle(uint32_t plen, void *buffer_ptr);
 extern int rdpa_spu_resp_wakeup_information_get(rdpa_spu_resp_wakeup_info_t *info);
 extern int rdpa_spu_set_cpu_irq(struct bdmf_object *mo, int idx);
-extern void rdpa_spu_offload_pkt(uint32_t *req, uint32_t *cmpl);
+extern void rdpa_spu_offload_pkt(rdpa_spu_offload_stat_t *stat);
+extern void rdpa_spu_offload_tunnel_mapping(uint32_t tun_id, int32_t session_id);
 
 /** @} end of SPU Offload Service Doxygen group. */
 

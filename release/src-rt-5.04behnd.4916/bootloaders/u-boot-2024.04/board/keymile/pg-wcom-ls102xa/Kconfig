@@ -1,0 +1,39 @@
+if TARGET_PG_WCOM_SELI8
+
+config SYS_BOARD
+	default "pg-wcom-ls102xa"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_SOC
+	default "ls102xa"
+
+config SYS_CONFIG_NAME
+	default "pg-wcom-seli8"
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	imply FS_CRAMFS
+
+endif
+
+if TARGET_PG_WCOM_EXPU1
+
+config SYS_BOARD
+	default "pg-wcom-ls102xa"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_SOC
+	default "ls102xa"
+
+config SYS_CONFIG_NAME
+	default "pg-wcom-expu1"
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	imply FS_CRAMFS
+
+endif

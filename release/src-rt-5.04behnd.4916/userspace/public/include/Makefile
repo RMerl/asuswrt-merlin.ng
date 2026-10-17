@@ -12,12 +12,14 @@ EXTERNAL_HEADERS := $(VERSION_FILE) $(DHCP_CONFIG_KEY_FILE) \
                     cms.h cms_retcodes.h cms_params.h cms_params_modsw.h \
                     cms_actionlog.h \
                     bdk.h bdk_dbus.h \
-                    beep.h beep_container.h openplat.h \
+                    beep.h beep_container.h openplat.h download_pkginfo.h opsPkgTag.h \
                     bdmf_api.h spdt_api.h vlan_subif.h \
                     bcm_mcast_api_public.h bcm_optrx.h bcm_queue.h \
+                    bcmctl_syslogdefs.h \
                     log_colors.h \
                     omci_msg.h \
-                    uuid.h
+                    uuid.h \
+                    ept_msg.h
 
 all: install
 
@@ -33,6 +35,10 @@ force:
 install: $(VERSION_FILE) $(DHCP_CONFIG_KEY_FILE)
 	mkdir -p $(HEADER_INSTALL_DIR)
 	$(INSTALL_HEADERS_WITH_CP) $(EXTERNAL_HEADERS) $(HEADER_INSTALL_DIR)
+	mkdir -p $(HEADER_INSTALL_DIR)/linux
+	$(INSTALL_HEADERS_WITH_CP) linux/number_defs.h $(HEADER_INSTALL_DIR)/linux
+	$(INSTALL_HEADERS_WITH_CP) linux/os_defs.h $(HEADER_INSTALL_DIR)/linux
+
 
 #
 # Dynamically generate the version.h file.
@@ -47,7 +53,7 @@ cms_version.h:
 	@echo -n $(BRCM_VERSION) >> $(VERSION_FILE)
 	@echo -n "." >> $(VERSION_FILE)
 	@echo -n $(BRCM_RELEASE) >> $(VERSION_FILE)
-	@echo -n "L." >> $(VERSION_FILE)
+	@echo -n "." >> $(VERSION_FILE)
 	@echo -n $(BRCM_EXTRAVERSION) >> $(VERSION_FILE)
 	@echo "\"" >> $(VERSION_FILE)
 	@echo "#endif" >> $(VERSION_FILE)

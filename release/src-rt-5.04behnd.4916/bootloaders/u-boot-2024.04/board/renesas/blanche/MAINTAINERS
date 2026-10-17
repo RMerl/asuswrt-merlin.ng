@@ -1,0 +1,8 @@
+BLANCHE BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+M:	Masakazu Mochizuki <masakazu.mochizuki.wd@hitachi.com>
+S:	Maintained
+F:	arch/arm/dts/r8a7792*
+F:	board/renesas/blanche/
+F:	configs/blanche_defconfig
+F:	include/configs/blanche.h

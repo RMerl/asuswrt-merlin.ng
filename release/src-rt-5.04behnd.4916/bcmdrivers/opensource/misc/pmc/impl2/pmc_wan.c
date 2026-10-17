@@ -33,7 +33,7 @@ written consent.
 
 #include <linux/module.h>
 #include "pmc_drv.h"
-#include "ba_rpc_svc.h"
+#include "power_rpc_svc.h"
 #include "pmc_wan.h"
 
 #define POWER_OFF   0
@@ -53,4 +53,22 @@ int pmc_wan_interface_power_control(WAN_INTF interface, int ctrl)
     return ret;
 }
 EXPORT_SYMBOL(pmc_wan_interface_power_control);
+
+int pmc_wan_interface_get_power_state(WAN_INTF interface)
+{
+    pwr_dom_state state;
+    pwr_dom_reset reset;
+    int ret  = 0;
+    int rc = POWER_OFF;
+
+    ret = bcm_rpc_pwr_get_domain_state(wan_domain_name[interface], PWR_DOMAIN_NAME_MAX_LEN, &state, &reset);
+    if (!ret)
+    {
+        if (state == PWR_DOM_STATE_ON)
+            rc = POWER_ON;
+    }
+
+    return rc;
+}
+EXPORT_SYMBOL(pmc_wan_interface_get_power_state);
 

@@ -1,0 +1,49 @@
+/ {
+	soc {
+		bootph-all;
+
+		timer@60000200 {
+			bootph-all;
+		};
+
+		serial@54006800 {
+			bootph-all;
+		};
+
+		serial@54006900 {
+			bootph-all;
+		};
+
+		serial@54006a00 {
+			bootph-all;
+		};
+
+		soc-glue@5f800000 {
+			bootph-all;
+
+			pinctrl {
+				bootph-all;
+
+				emmc {
+					bootph-all;
+				};
+
+				uart0 {
+					bootph-all;
+				};
+
+				uart1 {
+					bootph-all;
+				};
+
+				uart2 {
+					bootph-all;
+				};
+			};
+		};
+	};
+};
+
+&emmc {
+	bootph-all;
+};

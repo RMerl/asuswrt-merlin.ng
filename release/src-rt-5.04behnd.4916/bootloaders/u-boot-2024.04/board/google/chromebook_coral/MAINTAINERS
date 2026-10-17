@@ -1,0 +1,6 @@
+CHROMEBOOK_CORAL_BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/chromebook_coral/
+F:	include/configs/chromebook_coral.h
+F:	configs/chromebook_coral_defconfig

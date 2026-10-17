@@ -70,6 +70,15 @@ static inline void position_skb_ptrs_to_transport(struct sk_buff *skb, BlogFcArg
 	return;
 }
 
+int bcm_tcp_set_skb_fields(struct sk_buff *skb, BlogFcArgs_t *fc_args)
+{
+	if (unlikely(set_skb_fields(skb, fc_args) != 0))
+        return -1;
+	position_skb_ptrs_to_transport(skb, fc_args);
+    return 0;
+}
+EXPORT_SYMBOL(bcm_tcp_set_skb_fields);
+
 static inline struct sk_buff * __bcm_tcp_prep_skb(pNBuff_t pNBuff, BlogFcArgs_t *fc_args)
 {
 	struct sk_buff *skb;
@@ -608,6 +617,7 @@ int bcm_tcp_blog_emit(struct sk_buff *skb, struct sock *sk)
 		struct net_device *tmpdev;
 		uint32_t encap ;
 		int offset = encap_offset(skb, &encap);
+		struct tcp_sock *tp = tcp_sk(sk);
 
 		if(skb->dev == NULL) 
 		{
@@ -619,18 +629,14 @@ int bcm_tcp_blog_emit(struct sk_buff *skb, struct sock *sk)
 		skb->dev = blogtcp_local_dev;
 		skb->blog_p->local_rx_devid = bcm_netdev_ext_field_get(tmpdev, devid);
 		skb->blog_p->use_xmit_args = 1;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
-		{
-			struct tcp_sock *tp = tcp_sk(sk);
-			if(tp->tcp_discard) {
-				skb->blog_p->tcp_discard = 1;
-				skb->blog_p->fro = 1;
-			}
-		}
-#endif
 
+		if (tp && tp->tcp_discard) {
+			skb->blog_p->tcp_discard = 1;
+			skb->blog_p->fro = 1;
+		}
 		skb->blog_p->local_tcp = 1;
 		skb->blog_p->hw_cso = 1;
+
 		if (is_netdev_accel_gdx_tx(blogtcp_local_dev))
 		{
 			blog_emit_generic(skb, blogtcp_local_dev, 0, BLOG_GENPHY);

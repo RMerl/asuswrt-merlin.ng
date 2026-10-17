@@ -70,46 +70,58 @@ unsigned int mcast_receive(struct sk_buff *skb)
 {
     struct net_bridge_port *p;
 
-	if (br_bcm_mcast_receive)
-	{
+    if (br_bcm_mcast_receive)
+    {
         int rv;
 
         p = br_port_get_rcu(skb->dev);
         if (!p)
             return NF_ACCEPT;
 
-		rv = br_bcm_mcast_receive(p->br->dev->ifindex, skb, 0);
-		if (rv < 0)
-		{
-			/* there was an error with the packet */
-			return NF_DROP;
-		}
-		else if (rv > 0)
-		{
-			/* the packet was consumed */
-			return NF_STOLEN;
-		}
-		/* continue */
-	}
+        if (is_netdev_bcm_hook_skip(p->br->dev))
+            return NF_ACCEPT;
+
+        rv = br_bcm_mcast_receive(p->br->dev->ifindex, skb, 0);
+        if (rv < 0)
+        {
+            /* there was an error with the packet */
+            return NF_DROP;
+        }
+        else if (rv > 0)
+        {
+            /* the packet was consumed */
+            return NF_STOLEN;
+        }
+        /* continue */
+    }
     return NF_ACCEPT;
 }
 
 unsigned int mcast_should_deliver(const struct sk_buff *skb, const struct net_bridge_port *p)
 {  
-	if (!br_bcm_mcast_should_deliver)
+    if (!br_bcm_mcast_should_deliver)
+        return NF_ACCEPT;
+
+    if (is_netdev_bcm_hook_skip(p->br->dev))  
         return NF_ACCEPT;
 
     /* The source device is stored in the state->in pointer for forwarded packets,
      * for local out packets the source device is the bridge device */
     if (0 == br_bcm_mcast_should_deliver(p->br->dev->ifindex, skb, p->dev,
 #if defined(CONFIG_BRIDGE_IGMP_SNOOPING)
-        p->multicast_router == 2 || (p->multicast_router == 1 && timer_pending(&p->multicast_router_timer))))
+        p->multicast_ctx.multicast_router == 2 ||
+        (p->multicast_ctx.multicast_router == 1 &&
+            (timer_pending(&p->multicast_ctx.ip4_mc_router_timer) ||
+             timer_pending(&p->multicast_ctx.ip6_mc_router_timer)
+            )
+        )
+       ))
 #else
-		false))
+       false))
 #endif
-	{
-		return NF_DROP;
-	}
+    {
+        return NF_DROP;
+    }
     return NF_ACCEPT;
 }
 #endif

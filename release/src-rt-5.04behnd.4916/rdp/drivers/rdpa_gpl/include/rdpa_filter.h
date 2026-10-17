@@ -72,11 +72,13 @@ typedef enum
 #endif
     RDPA_FILTER_ICMPV4,                     /**< Filter: ICMPv4 \XRDP_LIMITED             */
     RDPA_FILTER_ICMPV4_ECHO_REPLY,          /**< Filter: ICMPv4 echo reply \XRDP_LIMITED             */
-    RDPA_FILTERS_QUANT
+    RDPA_FILTER_MAX
 } rdpa_filter;
 
 #define RDPA_FILTER_ETYPE_UDEF_INDX_MIN 0
 #define RDPA_FILTER_ETYPE_UDEF_INDX_MAX 3
+
+#define RDPA_FILTER_ETYPE_UNSET 0xFFFF
 
 /** Global configuration */
 typedef struct

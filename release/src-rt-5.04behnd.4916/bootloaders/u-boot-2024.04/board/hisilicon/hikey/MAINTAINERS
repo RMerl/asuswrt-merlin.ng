@@ -1,0 +1,7 @@
+HIKEY BOARD
+M:     Peter Griffin <peter.griffin@linaro.org>
+S:     Maintained
+F:     board/hisilicon/hikey
+F:     doc/board/hisilicon/hikey.rst
+F:     include/configs/hikey.h
+F:     configs/hikey_defconfig

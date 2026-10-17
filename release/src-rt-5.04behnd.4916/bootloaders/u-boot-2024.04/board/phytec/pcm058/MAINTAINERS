@@ -1,0 +1,7 @@
+PHYTEC PHYBOARD MIRA
+M:	Niel Fourie <lusus@denx.de>
+S:	Maintained
+F:	board/phytec/pcm058/
+F:	include/configs/pcm058.h
+F:	configs/pcm058_defconfig
+F:	arch/arm/dts/imx6q-phytec-mira-rdk-nand-u-boot.dtsi

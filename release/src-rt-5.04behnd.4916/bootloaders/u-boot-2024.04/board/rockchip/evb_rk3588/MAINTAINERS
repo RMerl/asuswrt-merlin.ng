@@ -1,0 +1,22 @@
+EVB-RK3588
+M:	Kever Yang <kever.yang@rock-chips.com>
+S:	Maintained
+F:	board/rockchip/evb_rk3588
+F:	include/configs/evb_rk3588.h
+F:	configs/evb-rk3588_defconfig
+F:	arch/arm/dts/rk3588-evb1-v10.dts
+F:	arch/arm/dts/rk3588-evb1-v10-u-boot.dtsi
+
+ORANGEPI-5-RK3588
+M:	Jonas Karlman <jonas@kwiboo.se>
+S:	Maintained
+F:	configs/orangepi-5-rk3588s_defconfig
+F:	arch/arm/dts/rk3588s-orangepi-5.dts
+F:	arch/arm/dts/rk3588s-orangepi-5-u-boot.dtsi
+
+ORANGEPI-5-PLUS-RK3588
+M:	Jonas Karlman <jonas@kwiboo.se>
+S:	Maintained
+F:	configs/orangepi-5-plus-rk3588_defconfig
+F:	arch/arm/dts/rk3588-orangepi-5-plus.dts
+F:	arch/arm/dts/rk3588-orangepi-5-plus-u-boot.dtsi

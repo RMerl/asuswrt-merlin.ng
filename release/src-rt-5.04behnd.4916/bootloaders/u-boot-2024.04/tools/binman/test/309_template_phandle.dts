@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		multiple-images;
+
+		ti_spl_template: template-1 {
+			fit {
+				description = "test-desc";
+				#address-cells = <1>;
+				images {
+					atf {
+						description = "atf";
+						ti-secure {
+							type = "collection";
+							content = <&atf>;
+							keyfile = "key.pem";
+						};
+						atf: atf-bl31 {
+							description = "atf";
+						};
+					};
+				};
+			};
+		};
+
+		image {
+			insert-template = <&ti_spl_template>;
+			fit {
+				images {
+					fdt-0 {
+						description = "fdt";
+						ti-secure {
+							type = "collection";
+							content = <&foo_dtb>;
+							keyfile = "key.pem";
+						};
+						foo_dtb: blob-ext {
+							filename = "vga.bin";
+						};
+					};
+				};
+			};
+		};
+	};
+};

@@ -1,0 +1,6 @@
+AD401
+M:	Neil Armstrong <neil.armstrong@linaro.org>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/ad401/
+F:	configs/ad401_defconfig

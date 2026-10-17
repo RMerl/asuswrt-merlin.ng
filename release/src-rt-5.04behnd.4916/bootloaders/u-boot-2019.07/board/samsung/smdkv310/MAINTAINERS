@@ -1,6 +1,0 @@
-SMDKV310 BOARD
-M:	Chander Kashyap <k.chander@samsung.com>
-S:	Maintained
-F:	board/samsung/smdkv310/
-F:	include/configs/smdkv310.h
-F:	configs/smdkv310_defconfig

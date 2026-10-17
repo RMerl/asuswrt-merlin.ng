@@ -1,0 +1,8 @@
+SOCRATES BOARD
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	board/socrates/
+F:	include/configs/socrates.h
+F:	configs/socrates_defconfig
+F:	arch/powerpc/dts/socrates.dts
+F:	arch/powerpc/dts/socrates-u-boot.dtsi

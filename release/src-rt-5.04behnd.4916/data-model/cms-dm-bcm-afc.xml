@@ -74,6 +74,9 @@
 <object name="InternetGatewayDevice.Device.WiFi.X_BROADCOM_COM_AFC.MobappDaemon." shortObjectName="Dev2WifiMobappdObject" specSource="Broadcom" profile="Device2_WiFiRadio:1" supportLevel="Present" hideObjectFromAcs="true" />
   <description source="BROADCOM">IPC cofiguration between location policy daemon and MobileAppDaemon. </description>
 
+  <parameter name="Mode" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" />
+    <description source="BROADCOM">Mobapp daemon's operation mode. </description>
+
   <parameter name="IpcType" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="unix_socket" />
     <description source="BROADCOM">IPC type for communication between location policy daemon and MobileAppDaemon. </description>
 

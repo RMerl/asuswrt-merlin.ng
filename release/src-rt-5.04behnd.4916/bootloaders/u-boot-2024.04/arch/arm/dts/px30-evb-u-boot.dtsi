@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * (C) Copyright 2020 Rockchip Electronics Co., Ltd
+ */
+
+#include "px30-u-boot.dtsi"
+
+&rng {
+	status = "okay";
+};

@@ -1,0 +1,15 @@
+if TARGET_SILINUX_EK874
+
+config SYS_SOC
+	default "renesas"
+
+config SYS_BOARD
+	default "ek874"
+
+config SYS_VENDOR
+	default "silinux"
+
+config SYS_CONFIG_NAME
+	default "silinux-ek874"
+
+endif

@@ -1,0 +1,18 @@
+if TARGET_BRPPT2
+
+config SYS_BOARD
+	default "brppt2"
+
+config SYS_VENDOR
+	default "BuR"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "brppt2"
+
+config SPL_DM_SPI
+	def_bool y
+
+endif

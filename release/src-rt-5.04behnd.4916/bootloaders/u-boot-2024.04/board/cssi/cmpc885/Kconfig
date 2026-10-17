@@ -1,0 +1,23 @@
+if TARGET_CMPC885
+
+config SYS_BOARD
+	default "cmpc885"
+
+config SYS_VENDOR
+	default "cssi"
+
+config SYS_CONFIG_NAME
+	default "cmpc885"
+
+config TEXT_BASE
+	default 0x40000000
+
+config CPLD_BASE
+	hex
+	default 0xc8000000
+
+config FPGA_BASE
+	hex
+	default 0xd0000000
+
+endif

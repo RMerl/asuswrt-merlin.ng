@@ -90,7 +90,6 @@ static int log_level = 2;
 
 #endif
 
-enum {VCO_NOT_SET, VCO_9P375G, VCO_10G};
 static void merlin28_reg_prog(prog_seq_tbl *prog_seq_tbl_ptr, uint32 CoreNum, uint32 LANE);
 static int parse_sim_opts(char *str)
 {
@@ -1158,7 +1157,7 @@ static void merlin28_lane_config_speed(phy_dev_t *phy_dev, uint32 LNK_SPD, int a
     phy_serdes_t *serdes_core = phy_serdes->priv;
 
     /* Patch for Second lane 2.5G under 10G VCO */
-    if (phy_dev->lane_index == 1 && serdes_core->vco == VCO_10G && phy_serdes->current_speed == PHY_SPEED_2500)
+    if (phy_dev->lane_index == 1 && serdes_core->vco == SERDES_VCO_10P3125G && phy_serdes->current_speed == PHY_SPEED_2500)
     {
         merlin28_pmi_write16(phy_dev->core_index, phy_dev->lane_index, 0x3, 0x9270, 0x0021, 0xc000);
     }
@@ -1232,7 +1231,7 @@ static void merlin28_lane_config_speed(phy_dev_t *phy_dev, uint32 LNK_SPD, int a
             merlin28_pmi_write16(CoreNum, LaneNum, 0x3, 0x9270, 0x0021, 0xc000);
         }
 
-        if (serdes_core->vco == VCO_10G)
+        if (serdes_core->vco == SERDES_VCO_10P3125G)
             merlin28_reg_prog(force_speed_2p5g_vco10g, CoreNum, LaneNum);
         else
             merlin28_reg_prog(force_speed_2p5g_vco9g, CoreNum, LaneNum);
@@ -1685,7 +1684,8 @@ void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
 
             /* Checking missing RX_C. This was observed in 5GBase-R to 2500Base-X mis-linkup */
             rd_data2 = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
-            if (((rd_data|rd_data2) & (1<<4)) == 0 && (rd_data & 7) != 1 && (rd_data2 & 7) != 1)
+            if (((rd_data|rd_data2) & (1<<4)) == 0 && (rd_data & 7) != 1 && (rd_data2 & 7) != 1 && 
+                (rd_data != 0x5005 && rd_data2 != 0x5005) /* LPI pattern */)
             {
                 phy_dev->link = 0;
                 printk("Serdes %d False Link Up with No RX_C Symbols 0x%04x,0x%04x at 3.c466h at speed %dMbps mode %s\n",
@@ -1715,7 +1715,7 @@ void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
         {
             /* Checking missing RX_C. This was observed in 5GBase-R to 2500Base-X mis-linkup */
             rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
-            if ((rd_data & (1<<4)) == 0 && (rd_data & 7) != 1)
+            if ((rd_data & (1<<4)) == 0 && (rd_data & 7) != 1 && rd_data != 0x5005/* LPI pattern */)
             {
                 phy_dev->link = 0;
                 printk("Serdes %d False Link Up with No RX_C Symbols 0x%04x at 3.c466h at speed %dMbps mode %s\n",
@@ -1726,6 +1726,24 @@ void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
         }
     }
 
+    if (phy_dev->an_enabled)
+    {
+        rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 0x3, 0xc4ab);
+        rd_data = (rd_data >> 10) & 0x3;
+        phy_dev->pause_tx = 0;
+        phy_dev->pause_rx = 0;
+        if (rd_data == 1)
+            phy_dev->pause_tx = 1;
+        else if (rd_data == 2)
+            phy_dev->pause_rx = 1;
+        else if (rd_data == 3)
+            phy_dev->pause_tx = phy_dev->pause_rx = 1;
+    }
+    else
+    {
+        phy_dev->pause_tx = PhyIsPauseTxConfigEnabled(phy_dev)>0;
+        phy_dev->pause_rx = PhyIsPauseRxConfigEnabled(phy_dev)>0;
+    }
 
 end:
     return;
@@ -1742,11 +1760,16 @@ static void merlin28_pcs_loopback(int CoreNum)
 static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
+    phy_dev_t *phy_next = cascade_phy_get_next(phy_dev);
 
     switch(phy_dev->current_inter_phy_type)
     {
         case INTER_PHY_TYPE_SGMII:
-            if (phy_serdes->sfp_module_type != SFP_FIXED_PHY) /* SFP module */
+            if (phy_dev->an_enabled == 0)
+                return -1;
+
+            if (phy_serdes->sfp_module_type != SFP_FIXED_PHY || !phy_dev_is_broadcom_phy(phy_next))
+                /* SFP module or Non Broadcom PHYs */
                 phy_serdes->serdes_speed_mode = MLN_SPD_AN_SGMII_SLAVE;
             else    /* Copper PHY, no AN support */
             {
@@ -1762,8 +1785,9 @@ static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
                         phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_10M;
                         break;
                     default:
-                        printk(" Invalid speed setting on SGMII: addr: %d, config_speed: %d\n",
-                            phy_dev->addr, phy_serdes->config_speed);
+                        if (phy_next->link)
+                            printkwarn(" Invalid speed setting on SGMII: addr: %d, config_speed: %d\n",
+                                    phy_dev->addr, phy_serdes->config_speed);
                 }
             }
             break;
@@ -1845,9 +1869,9 @@ static int merlin28_get_vco(phy_dev_t *phy_dev)
          (phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_5GBASE_R ||
           phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_2P5GBASE_R)) ||
         (phy_serdes->config_speed == PHY_SPEED_2500 && PhyIsForced2p5g10GVco(phy_dev)))
-        vco = VCO_10G;
+        vco = SERDES_VCO_10P3125G;
     else
-        vco = VCO_9P375G;
+        vco = SERDES_VCO_9P375G;
 
     return vco;
 }
@@ -1889,13 +1913,13 @@ static int merlin28_speed_set_core(phy_dev_t *phy_dev)
 
         //---Step 5. PLL Configuration
         print_log("%s(): Step 8. PLL Configuration \n", __func__);
-        if (vco == VCO_9P375G) {
+        if (vco == SERDES_VCO_9P375G) {
             print_log("%s(): Initialize 9.375G VCO programming \n", __func__);
             merlin28_reg_prog(Initialize_9p375_VCO, CoreNum, phy_dev->lane_index);
         }
         //--- PLL/PMD setup configuration
         if (parse_sim_opts("-d ML_REFCLK_156P25")) {
-            if (vco == VCO_9P375G) {
+            if (vco == SERDES_VCO_9P375G) {
                 print_log("%s(): PMD Setup 156.25MHz, 12.5GHz VCO programming \n", __func__);
                 merlin28_reg_prog(PMD_setup_156p25_9p375_VCO, CoreNum, phy_dev->lane_index);
             } else {
@@ -1903,7 +1927,7 @@ static int merlin28_speed_set_core(phy_dev_t *phy_dev)
                 merlin28_reg_prog(PMD_setup_156p25_10p3125_VCO, CoreNum, phy_dev->lane_index); //CoreNum = 0x1f for broadcast
             }
         } else {  //default to 50MHz
-            if (vco == VCO_9P375G) {
+            if (vco == SERDES_VCO_9P375G) {
                 print_log("%s(): PMD Setup 50MHz, 9.375GHz VCO programming \n", __func__);
                 merlin28_reg_prog(PMD_setup_50_9p375_VCO, CoreNum, 0x0);
             } else {
@@ -1923,7 +1947,7 @@ static int merlin28_speed_set_core(phy_dev_t *phy_dev)
             //--- Step ??. Set core_congif_from_pcs
             print_log("%s(): Step 10. Set core_congif_from_pcs \n", __func__);
             //??
-            if (vco == VCO_9P375G) {
+            if (vco == SERDES_VCO_9P375G) {
                 vco_rate_real = (9.375 * 4.0) - 22.0;     //28
             } else {
                 vco_rate_real = (10.3125 * 4.0) - 22.0;  //19.25

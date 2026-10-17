@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2020 BayLibre, SAS.
+ * Author: Neil Armstrong <narmstrong@baylibre.com>
+ */
+
+#include "meson-g12-common-u-boot.dtsi"
+
+&sd_emmc_a {
+	compatible = "amlogic,meson-sm1-mmc";
+};
+
+&sd_emmc_b {
+	compatible = "amlogic,meson-sm1-mmc";
+};
+
+&sd_emmc_c {
+	compatible = "amlogic,meson-sm1-mmc";
+};
+

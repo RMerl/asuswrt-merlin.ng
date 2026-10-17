@@ -52,9 +52,7 @@
 #include "access_macros.h"
 #endif
 
-#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
 #define swap4bytes(x)    (x)
-#endif
 
 #if defined(USE_SOC_BASE_ADDR)
 // remove dependency to soc_base_address
@@ -322,7 +320,8 @@ extern uint32_t top_offset;
 #define UNIMAC_RXERR_MASK(e)                               (UNIMAC_TOP_BASE + 0x0024 + UNIMAC_CONF_INSTANCE_OFFSET(e))
 #define UNIMAC_TOPCTRL_MIB_MAX_PKT_SIZE                     UNIMAC_TOP_BASE + 0x0028    /* Value by MIB to differentiate regular and oversized packets */
 
-#elif defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#elif defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || \
+      defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM96855)
 #define UNIMAC_RXERR_MASK(e)                               (UNIMAC_CFG_BASE + 0x0784 + UNIMAC_CONF_INSTANCE_OFFSET(e))
 #define UNIMAC_XIB_CTRL                                     UNIMAC_CFG_BASE + 0x0740    /* XIB Control Register */
 #define XIB_CTRL_STRICT_PREAMBLE_DIS                        (1<<18)
@@ -341,7 +340,8 @@ extern uint32_t top_offset;
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_HD_BKP_CNTL_ipg_config_rx_SHIFT         2
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_HD_BKP_CNTL_hd_fc_ena_MASK              0x00000001
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_HD_BKP_CNTL_hd_fc_ena_SHIFT             0
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || \
+    defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM96855)
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_eth_speed_bit2_MASK                 0x80000000
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_eth_speed_bit2_SHIFT                31
 #endif
@@ -353,12 +353,10 @@ extern uint32_t top_offset;
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_rmt_loop_ena_SHIFT                  25
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_cntl_frm_ena_MASK                   0x00800000
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_cntl_frm_ena_SHIFT                  23
-#if defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_sw_override_rx_MASK                 0x00040000
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_sw_override_rx_SHIFT                18
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_sw_override_tx_MASK                 0x00020000
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_sw_override_tx_SHIFT                17
-#endif
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_lcl_loop_ena_MASK                   0x00008000
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_lcl_loop_ena_SHIFT                  15
 #define UNIMAC_CONFIGURATION_UMAC_0_RDP_CMD_sw_reset_MASK                       0x00002000
@@ -632,7 +630,7 @@ typedef struct
 	uint32_t	tx_addr_ins:1;          //b09
 	/* Ignored when RTH_SPEED[1]==1, gigabit mode. 1: half duplex 0: full duplex Reset value is 0x0.*/
 	uint32_t	hd_ena:1;               //b10
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)  || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t    rx_low_latency_en:1;    //b11
     uint32_t    overflow_en:1;          //b12
 #else
@@ -641,7 +639,7 @@ typedef struct
 #endif
 	/*RX and RX engines are put in reset. 0: come out of SW reset.Reset value is 0x0. */
 	uint32_t	sw_reset:1;             //b13
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t    fcs_corrupt_urun_en:1;  //b14
 #else 
 	/*Reserved bit must be written with 0.  A read returns an unknown value. */
@@ -649,11 +647,11 @@ typedef struct
 #endif
 	/*Enable GMII/MII loopback 1: Loopback enabled. 0: Normal operation.Reset value is 0x0. */
 	uint32_t 	lcl_loop_ena:1;         //b15
-#if defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
     uint32_t    mac_loop_con:1;         //b16
     uint32_t    sw_override_tx:1;       //b17
     uint32_t    sw_override_rx:1;       //b18
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t    oob_efc_mode:1;         //b19
     uint32_t    bypass_oob_efc_sync:1;  //b20
 #else
@@ -675,7 +673,7 @@ typedef struct
 	uint32_t	no_lgth_check:1;        //b24
 	/*Enable remote loopback at the fifo system side. 0: Normal operation.Reset value is 0x0. */
 	uint32_t	rmt_loop_ena:1;         //b25
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t    reserved26:1;
     uint32_t    fd_tx_urun_fix_en:1;    //b27
 #else
@@ -686,7 +684,7 @@ typedef struct
 #endif
 	/*Ignore TX PAUSE frame transmit request.Reset value is 0x0. */
 	uint32_t	tx_pause_ignore:1;      //b28
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t    oob_efc_disab:1;        //b29
 #else
 	/*	This mode only works in auto-config mode: 
@@ -696,7 +694,8 @@ typedef struct
 #endif
 	/*Disable RX side RUNT filtering. 0: Enable  RUNT filtering.Reset value is 0x0. */
 	uint32_t	runt_filter_dis:1;      //b30
-#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || \
+    defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM96855)
     uint32_t    eth_speed_bit2:1;       //b31
 #else
 	/*Reserved bit must be written with 0.  A read returns an unknown value.*/
@@ -722,7 +721,8 @@ typedef struct
 
 }S_UNIMAC_STAT_REG;
 
-#if defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || \
+    defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)  || defined(CONFIG_BCM96855)
 typedef struct
 {
     uint32_t    max_pkt_size:14;

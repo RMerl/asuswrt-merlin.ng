@@ -33,37 +33,8 @@
 
 #include "rdd_data_structures_auto.h"
 
-#ifdef XRDP
-
 #define __debug(fmt, arg...) RDD_BTRACE(fmt, ##arg)
 #define __print(fmt, arg...) RDD_TRACE(fmt, ##arg)
-
-#else /* XRDP */
-
-#define WLAN_MCAST_SSID_MAC_ADDRESS_ENTRY_STRUCT RDD_WLAN_MCAST_SSID_MAC_ADDRESS_ENTRY_DTS
-#define WLAN_MCAST_DHD_LIST_ENTRY_STRUCT RDD_WLAN_MCAST_DHD_LIST_ENTRY_DTS
-#define WLAN_MCAST_DHD_LIST_ENTRY_ARRAY_STRUCT RDD_WLAN_MCAST_DHD_LIST_ENTRY_ARRAY_DTS
-#define WLAN_MCAST_SSID_STATS_ENTRY_STRUCT RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS
-#define WLAN_MCAST_DHD_LIST_TABLE_STRUCT RDD_WLAN_MCAST_DHD_LIST_TABLE_DTS
-#define WLAN_MCAST_DHD_STATION_ENTRY_STRUCT RDD_WLAN_MCAST_DHD_STATION_ENTRY_DTS
-
-#if 0
-#if defined(BDMF_SYSTEM_SIM)
-#define __debug(fmt, arg...) printf("%s,%u: " fmt, __FUNCTION__, __LINE__, ##arg)
-#else
-#define __debug(fmt, arg...) bdmf_trace("%s,%u: " fmt, __FUNCTION__, __LINE__, ##arg)
-#endif
-#else
-#define __debug(fmt, arg...)
-#endif
-
-#if defined(BDMF_SYSTEM_SIM)
-#define __print(fmt, arg...)
-#else
-#define __print(fmt, arg...) printk(fmt, ##arg)
-#endif
-
-#endif /* XRDP */
 
 typedef struct {
     void *virt_p;

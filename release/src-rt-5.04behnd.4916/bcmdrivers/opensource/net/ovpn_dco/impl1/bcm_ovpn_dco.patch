@@ -1,0 +1,31 @@
+diff --git a/udp.c b/udp.c
+index db2b9e5..dfb90f4 100644
+--- a/udp.c
++++ b/udp.c
+@@ -24,6 +24,8 @@
+ #include <net/ipv6_stubs.h>
+ #include <net/udp_tunnel.h>
+ 
++#include <linux/blog.h>
++
+ /**
+  * ovpn_udp_encap_recv() - Start processing a received UDP packet.
+  * If the first byte of the payload is DATA_V2, the packet is further processed,
+@@ -107,6 +109,8 @@ static int ovpn_udp_encap_recv(struct sock *sk, struct sk_buff *skb)
+ 		return 1;
+ 	}
+ 
++	blog_skip(skb, blog_skip_reason_openvpn);
++
+ 	/* pop off outer UDP header */
+ 	__skb_pull(skb, sizeof(struct udphdr));
+ 
+@@ -257,6 +261,8 @@ static int ovpn_udp_output(struct ovpn_struct *ovpn, struct ovpn_bind *bind,
+ 	/* always permit openvpn-created packets to be (outside) fragmented */
+ 	skb->ignore_df = 1;
+ 
++	blog_skip(skb, blog_skip_reason_openvpn);
++
+ 	switch (bind->sa.in4.sin_family) {
+ 	case AF_INET:
+ 		ret = ovpn_udp4_output(ovpn, bind, cache, sk, skb);

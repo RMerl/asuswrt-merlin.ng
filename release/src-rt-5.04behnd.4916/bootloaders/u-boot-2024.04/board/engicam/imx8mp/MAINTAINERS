@@ -1,0 +1,8 @@
+i.Core-MX8M-Plus-EDIMM2.2
+M:	Manoj Sai <abbaraju.manojsai@amarulasolutions.com>
+M:	Matteo Lisi <matteo.lisi@engicam.com>
+S:	Maintained
+F:	board/engicam/imx8mp
+F:	board/engicam/common
+F:	include/configs/imx8mp_icore_mx8mp.h
+F:	configs/imx8mp-icore-mx8mp-edimm2.2_defconfig

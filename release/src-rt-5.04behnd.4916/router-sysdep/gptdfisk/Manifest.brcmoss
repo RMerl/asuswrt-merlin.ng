@@ -1,0 +1,7 @@
+OSS_REFERENCE_Name: gptfdisk
+OSS_REFERENCE_Version: 1.0.9
+OSS_REFERENCE_License: GPLv2
+OSS_REFERENCE_DownloadURL: https://sourceforge.net/projects/gptfdisk/files/gptfdisk/1.0.9/gptfdisk-1.0.9.tar.gz/download
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./gptfdisk-1.0.9.tar.gz
+

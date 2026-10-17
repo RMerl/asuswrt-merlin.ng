@@ -1230,13 +1230,12 @@ int ioctl_extsw_port_irc_set(struct ethswctl_data *e)
         {
             rf = rf / 1000 + 27;
         }
-#if !(defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764))
+#if !defined(SF2_DUAL)
         else
         {
             rf = rf / 1000 / 8 + 115;
             if ( rf > 240) rf = 240;
         }
-
 #else
         else if (e->unit != 0 )
         {
@@ -1258,13 +1257,13 @@ int ioctl_extsw_port_irc_set(struct ethswctl_data *e)
             hg_enable = TRUE;
             rf = rf / 5000 / 8 + 13;
         }
-        else 
+        else
         {
             hg_enable = TRUE;
             rf = rf / 2 / 5000 / 8 + 76;
             if ( rf > 201) rf = 201;
         }
-#endif        
+#endif
 
         SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
         val32 &= ~((REG_PN_BUCK1_SIZE_M << REG_PN_BUCK1_SIZE_S)| (REG_PN_BUCK1_REF_CNT_M << REG_PN_BUCK1_REF_CNT_S));
@@ -1676,7 +1675,10 @@ int port_sw_port_role_set(enetx_port_t *self, port_netdev_role_t role)
         port_role.switch_id = 0;
 #endif
         port_role.port = self->port_info.port;
-        port_role.is_wan = (self->n.port_netdev_role == PORT_NETDEV_ROLE_WAN);
+        if (self->p.parent_sw->port_info.swtag_use_pvid)
+            port_role.is_wan = 0;       // for !brcm switch tag always treat as lan
+        else
+            port_role.is_wan = (self->n.port_netdev_role == PORT_NETDEV_ROLE_WAN);
 
         enet_port_role_notify(&port_role);
 #if defined(ARCHER_DEVICE)

@@ -1,0 +1,42 @@
+config API
+	bool "Enable U-Boot API"
+	depends on CC_IS_GCC
+	help
+	  This option enables the U-Boot API. See api/README for more information.
+
+menu "API"
+	depends on API
+
+config SYS_MMC_MAX_DEVICE
+	int  "Maximum number of MMC devices exposed via the API"
+	default 1
+
+config EXAMPLES
+	bool "Compile API examples"
+	depends on !SANDBOX
+	default y if ARCH_QEMU
+	help
+	  U-Boot provides an API for standalone applications. Examples are
+	  provided in directory examples/.
+
+config STANDALONE_LOAD_ADDR
+	depends on EXAMPLES
+	hex "Address in memory to link standalone applications to"
+	default 0xffffffff80200000 if MIPS && 64BIT
+	default 0x8c000000 if SH
+	default 0x82000000 if ARC
+	default 0x80f00000 if MICROBLAZE
+	default 0x80300000 if ARCH_OMAP2PLUS || FSL_LSCH2 || FSL_LSCH3
+	default 0x80200000 if MIPS && 32BIT
+	default 0x0c100000 if ARM
+	default 0x02000000 if NIOS2
+	default 0x00040000 if PPC || X86
+	default 0x00020000 if M68K
+	default 0x0 if RISCV
+	default SYS_LOAD_ADDR
+	help
+	  This option defines a board specific value for the address where
+	  standalone program gets loaded, thus overwriting the architecture
+	  dependent default settings.
+
+endmenu

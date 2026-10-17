@@ -1,0 +1,35 @@
+menu "MicroBlaze architecture"
+	depends on MICROBLAZE
+
+config SYS_ARCH
+	default "microblaze"
+
+config STATIC_RELA
+	def_bool y
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_MICROBLAZE_GENERIC
+	bool "Support microblaze-generic"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_SERIAL
+	select OF_CONTROL
+	select SUPPORT_SPL
+	select SPL_LIBCOMMON_SUPPORT if SPL
+	select SPL_LIBGENERIC_SUPPORT if SPL
+	select SYSRESET
+	select DM_SPI
+	select DM_SPI_FLASH
+	select MTD
+	select SPI
+	imply CMD_DM
+
+endchoice
+
+source "board/xilinx/Kconfig"
+source "board/xilinx/microblaze-generic/Kconfig"
+
+endmenu

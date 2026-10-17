@@ -1,0 +1,9 @@
+DH_STM32MP1_PDK2 BOARD
+M:	Marek Vasut <marex@denx.de>
+L:	u-boot@dh-electronics.com
+S:	Maintained
+F:	arch/arm/dts/stm32mp15xx-dhcom*
+F:	board/dhelectronics/dh_stm32mp1/
+F:	configs/stm32mp15_dhcom_basic_defconfig
+F:	configs/stm32mp15_dhcor_basic_defconfig
+F:	include/configs/stm32mp15_dh_dhsom.h

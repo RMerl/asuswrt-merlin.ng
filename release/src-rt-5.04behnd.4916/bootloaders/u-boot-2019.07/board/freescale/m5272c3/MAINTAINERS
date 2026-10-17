@@ -1,6 +1,0 @@
-M5272C3 BOARD
-#M:	-
-S:	Maintained
-F:	board/freescale/m5272c3/
-F:	include/configs/M5272C3.h
-F:	configs/M5272C3_defconfig

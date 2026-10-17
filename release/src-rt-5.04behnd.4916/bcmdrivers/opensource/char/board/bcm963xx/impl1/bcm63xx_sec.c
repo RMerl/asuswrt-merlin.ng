@@ -61,7 +61,6 @@
 #include <crypto/sha256_base.h>
 #include <linux/crypto.h>
 #include "bcm_assert_locks.h"
-#include "bcm_mbox_map.h"
 #include <linux/lsm_hooks.h>
 
 #if defined(_HASH_DBG_)

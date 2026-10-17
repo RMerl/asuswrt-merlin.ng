@@ -1,0 +1,277 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) Siemens AG, 2020-2023
+ *
+ * Authors:
+ *   Jan Kiszka <jan.kiszka@siemens.com>
+ *   Chao Zeng <chao.zeng@siemens.com>
+ */
+
+#include <config.h>
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+	common_part: template {
+		pad-byte = <0xff>;
+		size = <0x8c0000>;
+		allow-repack;
+
+		blob-ext@0 {
+			offset = <0x000000>;
+			missing-msg = "iot2050-seboot";
+		};
+
+		fit@180000 {
+			offset = <0x180000>;
+			filename = "tispl.bin";
+			pad-byte = <0xff>;
+			description = "Configuration to load ATF and SPL";
+
+			images {
+				atf {
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					os = "arm-trusted-firmware";
+					load = <CONFIG_K3_ATF_LOAD_ADDR>;
+					entry = <CONFIG_K3_ATF_LOAD_ADDR>;
+					atf-bl31 {
+					};
+				};
+
+				tee {
+					description = "OP-TEE";
+					type = "tee";
+					arch = "arm64";
+					compression = "none";
+					os = "tee";
+					load = <0x9e800000>;
+					entry = <0x9e800000>;
+					tee-os {
+					};
+				};
+
+				dm {
+					description = "DM binary";
+					type = "firmware";
+					arch = "arm32";
+					compression = "none";
+					os = "DM";
+					load = <0x89000000>;
+					entry = <0x89000000>;
+					blob-ext {
+						filename = "/dev/null";
+					};
+				};
+
+				spl {
+					description = "SPL (64-bit)";
+					type = "standalone";
+					os = "U-Boot";
+					arch = "arm64";
+					compression = "none";
+					load = <CONFIG_SPL_TEXT_BASE>;
+					entry = <CONFIG_SPL_TEXT_BASE>;
+					blob-ext {
+						filename = "spl/u-boot-spl-nodtb.bin";
+					};
+				};
+
+				fdt-0 {
+					description = "k3-am65-iot2050-spl.dtb";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					blob-ext {
+						filename = "spl/dts/k3-am65-iot2050-spl.dtb";
+					};
+				};
+			};
+
+			configurations {
+				default = "spl";
+				spl {
+					fdt = "fdt-0";
+					firmware = "atf";
+					loadables = "tee", "dm", "spl";
+				};
+			};
+		};
+
+		fit@380000 {
+			description = "U-Boot for IOT2050";
+			offset = <0x380000>;
+			images {
+				u-boot {
+					description = "U-Boot";
+					type = "standalone";
+					arch = "arm64";
+					os = "u-boot";
+					compression = "none";
+					load = <0x80800000>;
+					entry = <0x80800000>;
+					u-boot-nodtb {
+					};
+					hash {
+						algo = "sha256";
+					};
+				};
+
+				@fdt-SEQ {
+					description = "fdt-NAME";
+					type = "flat_dt";
+					arch = "arm64";
+					compression = "none";
+					hash {
+						algo = "sha256";
+					};
+				};
+
+#ifdef CONFIG_WDT_K3_RTI_FW_FILE
+				k3-rti-wdt-firmware {
+					type = "firmware";
+					load = <0x82000000>;
+					arch = "arm";
+					compression = "none";
+					blob-ext {
+						filename = CONFIG_WDT_K3_RTI_FW_FILE;
+						missing-msg = "k3-rti-wdt-firmware";
+					};
+					hash {
+						algo = "sha256";
+					};
+				};
+#endif
+			};
+
+			configurations {
+				@config-SEQ {
+					description = "NAME";
+					firmware = "u-boot";
+					fdt = "fdt-SEQ";
+					signature {
+						sign-images = "firmware", "fdt", "loadables";
+					};
+				};
+			};
+		};
+
+		fdtmap {
+		};
+
+		/* primary env */
+		fill@680000 {
+			offset = <0x680000>;
+			size   = <0x020000>;
+			fill-byte = [00];
+		};
+		/* secondary env */
+		fill@6a0000 {
+			offset = <0x6a0000>;
+			size   = <0x020000>;
+			fill-byte = [00];
+		};
+
+/* OTP update command block */
+#ifdef CONFIG_IOT2050_EMBED_OTPCMD
+		blob-ext@6c0000 {
+			offset = <0x6c0000>;
+
+			size   = <0x010000>;
+			filename = "otpcmd.bin";
+			missing-msg = "iot2050-otpcmd";
+		};
+#else
+		fill@6c0000 {
+			offset = <0x6c0000>;
+			size   = <0x010000>;
+			fill-byte = [ff];
+		};
+#endif
+	};
+
+	flash-pg1 {
+		filename = "flash-pg1.bin";
+		insert-template = <&common_part>;
+
+		blob-ext@0 {
+			filename = "seboot_pg1.bin";
+		};
+
+		fit@380000 {
+			fit,fdt-list-val = "k3-am6528-iot2050-basic", "k3-am6548-iot2050-advanced";
+
+			configurations {
+				default = "k3-am6528-iot2050-basic";
+				@config-SEQ {
+					loadables =
+#ifdef CONFIG_WDT_K3_RTI_FW_FILE
+						"k3-rti-wdt-firmware",
+#endif
+						<>;
+				};
+			};
+		};
+	};
+
+	flash-pg2 {
+		filename = "flash-pg2.bin";
+		insert-template = <&common_part>;
+
+		blob-ext@0 {
+			filename = "seboot_pg2.bin";
+		};
+
+		fit@380000 {
+			fit,fdt-list-val = "k3-am6528-iot2050-basic-pg2", "k3-am6548-iot2050-advanced-pg2", "k3-am6548-iot2050-advanced-m2";
+
+			images {
+				bkey-usb3-overlay {
+					description = "M.2-bkey-usb3-overlay";
+					type = "blob";
+					load = <0x82100000>;
+					arch = "arm64";
+					compression = "none";
+					blob-ext {
+						filename = "k3-am6548-iot2050-advanced-m2-bkey-usb3-overlay.dtbo";
+					};
+					hash {
+						algo = "sha256";
+					};
+				};
+
+				bkey-ekey-pcie-overlay {
+					description = "M.2-bkey-ekey-pcie-overlay";
+					type = "blob";
+					load = <0x82110000>;
+					arch = "arm64";
+					compression = "none";
+					blob-ext {
+						filename = "k3-am6548-iot2050-advanced-m2-bkey-ekey-pcie-overlay.dtbo";
+					};
+					hash {
+						algo = "sha256";
+					};
+				};
+			};
+
+			configurations {
+				default = "k3-am6528-iot2050-basic-pg2";
+				@config-SEQ {
+					loadables =
+#ifdef CONFIG_WDT_K3_RTI_FW_FILE
+						"k3-rti-wdt-firmware",
+#endif
+						"bkey-usb3-overlay",
+						"bkey-ekey-pcie-overlay";
+				};
+			};
+		};
+	};
+};

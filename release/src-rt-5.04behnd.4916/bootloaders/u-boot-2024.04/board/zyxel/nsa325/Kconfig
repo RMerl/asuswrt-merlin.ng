@@ -1,0 +1,12 @@
+if TARGET_NSA325
+
+config SYS_BOARD
+	default "nsa325"
+
+config SYS_VENDOR
+	default "zyxel"
+
+config SYS_CONFIG_NAME
+	default "nsa325"
+
+endif

@@ -618,7 +618,7 @@ static ssize_t hs_uart_write_mode(struct file *file, const char __user *buffer,
 {
    char locald[16] = {0};
    unsigned long mode;
-   char *endp;
+   char *endp = NULL;
 
    if(!hs_uart_probed)
    {

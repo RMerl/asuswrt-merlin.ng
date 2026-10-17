@@ -1,0 +1,38 @@
+choice
+	prompt "LCD backlight control"
+	optional
+	default S5P4418_ONEWIRE
+
+config S5P4418_ONEWIRE
+	bool "I2C / 1-Wire"
+	help
+	  This enables LCD-Backlight control for FriendlyARM LCD-panels.
+	  I2C is used if available, otherwise 1-Wire is used.
+
+config PWM_NX
+	bool "PWM"
+	select PWM_S5P
+	help
+	  This enables LCD-Backlight control via PWM.
+endchoice
+
+config ROOT_DEV
+	int "ROOT_DEV"
+	help
+	  Environment variable rootdev is set to this value if env. var. firstboot
+	  does not exist. Otherwise rootdev is set to the MMC boot device. rootdev
+	  determines (together with env. var. bootpart) where the OS (linux) is
+	  booted from.
+
+config BOOT_PART
+	int "BOOT_PART"
+	help
+	  Environment variable bootpart is set to this value. bootpart determines
+	  (together with env. var. rootdev) where the OS (linux) is booted from.
+
+config ROOT_PART
+	int "ROOT_PART"
+	help
+	  Environment variable rootpart is set to this value.
+
+source "board/friendlyarm/nanopi2/Kconfig"

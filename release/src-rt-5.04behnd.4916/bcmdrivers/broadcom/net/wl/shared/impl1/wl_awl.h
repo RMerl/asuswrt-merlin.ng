@@ -78,13 +78,16 @@ extern int wl_awl_unregister_dev(struct net_device *dev);
 #if defined(WL_AWL_RX)
 
 extern int  wl_awl_upstream_match(uint8_t * d3addr, struct net_device * rx_net_device);
-extern int  wl_awl_upstream_send_chain(struct wl_info * wl, struct sk_buff * pkt);
+extern int  wl_awl_upstream_send_chain(struct wl_info * wl, void * pkt);
 extern void wl_awl_upstream_add_pkt(struct wl_info * wl, struct net_device * net_device,
                            void * pkt, uint16_t flowid);
 extern void wl_awl_upstream_send_all(struct wl_info *wl);
 
 extern bool wl_awl_process_slowpath_rxpkts(struct wl_info *wl);
 
+#if defined(BCM_SPC_RX) || defined(BCM_WKB)
+extern bool wl_awl_spc_rx_capable(struct wl_info * wl);
+#endif /* BCM_SPC_RX || BCM_WKB */
 #endif /* WL_AWL_RX */
 
 #endif /* BCM_AWL */

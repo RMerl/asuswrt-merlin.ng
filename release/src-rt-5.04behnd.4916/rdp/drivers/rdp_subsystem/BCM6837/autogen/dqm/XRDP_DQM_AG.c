@@ -110,6 +110,9 @@ static const ru_reg_rec *DQM_TOKEN_FIFO_REGS[] =
 const ru_block_rec DQM_TOKEN_FIFO_BLOCK =
 {
     "DQM_TOKEN_FIFO",
+#if RU_INCLUDE_SIZE
+    { 0x00000084 },
+#endif
     DQM_TOKEN_FIFO_ADDRS,
     16,
     1,
@@ -1842,6 +1845,9 @@ static const ru_reg_rec *DQM_REGS[] =
 const ru_block_rec DQM_BLOCK =
 {
     "DQM",
+#if RU_INCLUDE_SIZE
+    { 0x0002F000 },
+#endif
     DQM_ADDRS,
     1,
     28,

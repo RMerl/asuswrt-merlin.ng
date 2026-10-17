@@ -1,0 +1,8 @@
+PINEPHONE_PRO
+M:	Peter Robinson <pbrobinson@gmail.com>
+S:	Maintained
+F:	board/pine64/pinephone-pro-rk3399/
+F:	include/configs/rk3399-pinephone-pro.h
+F:	arch/arm/dts/rk3399-pinephone-pro.dts
+F:	arch/arm/dts/rk3399-pinephone-pro-u-boot.dtsi
+F:	configs/pinephone-pro-rk3399_defconfig

@@ -1,0 +1,6 @@
+MK808
+M:	Johan Jonker <jbx6244@gmail.com>
+S:	Maintained
+F:	board/rikomagic/mk808
+F:	configs/mk808_defconfig
+F:	include/configs/mk808.h

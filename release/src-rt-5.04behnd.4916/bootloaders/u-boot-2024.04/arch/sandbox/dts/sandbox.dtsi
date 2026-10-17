@@ -1,0 +1,506 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * This is the common sandbox device-tree nodes. This is shared between sandbox
+ * and sandbox64 builds.
+ */
+
+#include <config.h>
+#include <dt-bindings/input/input.h>
+
+#define USB_CLASS_HUB			9
+
+/ {
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		event_log: tcg_event_log {
+			no-map;
+			reg = <(CFG_SYS_SDRAM_SIZE - 0x2000) 0x2000>;
+		};
+	};
+
+	binman {
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	alarm_wdt: alarm-wdt {
+		compatible = "sandbox,alarm-wdt";
+		timeout-sec = <5>;
+		u-boot,autostart;
+	};
+
+	audio: audio-codec {
+		compatible = "sandbox,audio-codec";
+		#sound-dai-cells = <1>;
+	};
+
+	bootstd {
+		compatible = "u-boot,boot-std";
+		filename-prefixes = "./";
+
+		cedit-theme {
+			font-size = <30>;
+			menu-inset = <3>;
+			menuitem-gap-y = <1>;
+		};
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+
+		btn1 {
+			gpios = <&gpio_a 3 0>;
+			label = "button1";
+		    linux,code = <BTN_1>;
+		};
+
+		btn2 {
+			gpios = <&gpio_a 4 0>;
+			label = "button2";
+		    linux,code = <BTN_2>;
+		};
+	};
+
+	clk_fixed: clk-fixed {
+		bootph-all;
+		compatible = "sandbox,fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <1234>;
+	};
+
+	clk_sandbox: clk-sbox {
+		bootph-all;
+		compatible = "sandbox,clk";
+		#clock-cells = <1>;
+		assigned-clocks = <&clk_sandbox 3>;
+		assigned-clock-rates = <321>;
+	};
+
+	clk-test {
+		bootph-all;
+		compatible = "sandbox,clk-test";
+		clocks = <&clk_fixed>,
+			 <&clk_sandbox 1>,
+			 <&clk_sandbox 0>,
+			 <&clk_sandbox 3>,
+			 <&clk_sandbox 2>;
+		clock-names = "fixed", "i2c", "spi", "uart2", "uart1";
+	};
+
+	gpio_a: gpios@0 {
+		bootph-some-ram;
+		gpio-controller;
+		compatible = "sandbox,gpio";
+		#gpio-cells = <1>;
+		gpio-bank-name = "a";
+		sandbox,gpio-count = <20>;
+	};
+
+	gpio_b: gpios@1 {
+		bootph-pre-ram;
+		gpio-controller;
+		compatible = "sandbox,gpio";
+		#gpio-cells = <2>;
+		gpio-bank-name = "b";
+		sandbox,gpio-count = <10>;
+	};
+
+	gpio-test {
+		bootph-pre-ram;
+		compatible = "sandbox,gpio-test";
+		test-gpios = <&gpio_b 3 0>;
+	};
+
+	hexagon {
+		compatible = "demo-simple";
+		colour = "white";
+		sides = <6>;
+	};
+
+	i2c_0: i2c@0 {
+		eeprom@2c {
+			reg = <0x2c>;
+			compatible = "i2c-eeprom";
+			sandbox,emul = <&emul_eeprom>;
+		};
+
+		rtc_0: rtc@43 {
+			reg = <0x43>;
+			compatible = "sandbox-rtc";
+			sandbox,emul = <&emul0>;
+			bootph-pre-ram;
+		};
+		sandbox_pmic: sandbox_pmic {
+			reg = <0x40>;
+		};
+
+		mc34708: pmic@41 {
+			reg = <0x41>;
+		};
+
+		i2c_emul: emul {
+			bootph-pre-ram;
+			reg = <0xff>;
+			compatible = "sandbox,i2c-emul-parent";
+			emul_eeprom: emul-eeprom {
+				compatible = "sandbox,i2c-eeprom";
+				sandbox,filename = "i2c.bin";
+				sandbox,size = <256>;
+				#emul-cells = <0>;
+			};
+			emul0: emul0 {
+				bootph-pre-ram;
+				compatible = "sandbox,i2c-rtc-emul";
+				#emul-cells = <0>;
+			};
+		};
+	};
+
+	i2s: i2s {
+		compatible = "sandbox,i2s";
+		#sound-dai-cells = <1>;
+	};
+
+	irq_sandbox: irq-sbox {
+		bootph-pre-ram;
+		compatible = "sandbox,irq";
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	irq-test {
+		bootph-pre-ram;
+		compatible = "sandbox,irq-test";
+		interrupts-extended = <&irq_sandbox 3 0>;
+	};
+
+	lcd {
+		bootph-some-ram;
+		compatible = "sandbox,lcd-sdl";
+		xres = <1366>;
+		yres = <768>;
+		log2-depth = <5>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		iracibble {
+			gpios = <&gpio_a 1 0>;
+			label = "sandbox:red";
+		};
+
+		martinet {
+			gpios = <&gpio_a 2 0>;
+			label = "sandbox:green";
+		};
+	};
+
+	pci@0 {
+		pci@1e,0 {
+			compatible = "sandbox,pmc";
+			reg = <0xf000 0 0 0 0>;
+			sandbox,emul = <&pmc_emul>;
+			gpe0-dwx-mask = <0xf>;
+			gpe0-dwx-shift-base = <4>;
+			gpe0-dw = <6 7 9>;
+			gpe0-sts = <0x20>;
+			gpe0-en = <0x30>;
+		};
+
+		pci@1f,0 {
+			compatible = "pci-generic";
+			reg = <0xf800 0 0 0 0>;
+			sandbox,emul = <&swap_case_emul>;
+		};
+	};
+
+	emul {
+		compatible = "sandbox,pci-emul-parent";
+		pmc_emul: emul@1e,0 {
+			compatible = "sandbox,pmc-emul";
+		};
+		swap_case_emul: emul@1f,0 {
+			compatible = "sandbox,swap-case";
+		};
+	};
+
+	pinctrl {
+		compatible = "sandbox,pinctrl";
+		status = "okay";
+
+		pinctrl_i2c0: i2c0 {
+			groups = "i2c";
+			function = "i2c";
+			bias-pull-up;
+		};
+
+		pinctrl_serial0: uart0 {
+			groups = "serial_a";
+			function = "serial";
+		};
+
+		pinctrl_onewire0: onewire0 {
+			groups = "w1";
+			function = "w1";
+			bias-pull-up;
+		};
+	};
+
+	reset@1 {
+		compatible = "sandbox,reset";
+		bootph-some-ram;
+	};
+
+	rng {
+		compatible = "sandbox,sandbox-rng";
+	};
+
+	scsi {
+		compatible = "sandbox,scsi";
+	};
+
+	sound {
+		compatible = "sandbox,sound";
+		cpu {
+			sound-dai = <&i2s 0>;
+		};
+
+		codec {
+			sound-dai = <&audio 0>;
+		};
+	};
+
+	spi@0 {
+		firmware_storage_spi: flash@0 {
+			bootph-some-ram;
+			reg = <0>;
+			compatible = "spansion,m25p16", "jedec,spi-nor";
+			spi-max-frequency = <40000000>;
+			sandbox,filename = "spi.bin";
+		};
+	};
+
+	spl-test {
+		bootph-pre-ram;
+		compatible = "sandbox,spl-test";
+		boolval;
+		intval = <1>;
+		intarray = <2 3 4>;
+		maybe-empty-int = <>;
+		byteval = [05];
+		bytearray = [06];
+		longbytearray = [09 0a 0b 0c 0d 0e 0f 10 11];
+		stringval = "message";
+		stringarray = "multi-word", "message";
+	};
+
+	spl-test2 {
+		bootph-pre-ram;
+		compatible = "sandbox,spl-test";
+		intval = <3>;
+		intarray = <5>;
+		byteval = [08];
+		bytearray = [01 23 34];
+		longbytearray = [09 0a 0b 0c];
+		stringval = "message2";
+		stringarray = "another", "multi-word", "message";
+	};
+
+	spl-test3 {
+		bootph-pre-ram;
+		compatible = "sandbox,spl-test";
+		stringarray = "one";
+		maybe-empty-int = <1>;
+	};
+
+	spl-test5 {
+		bootph-verify;
+		compatible = "sandbox,spl-test";
+		stringarray = "tpl";
+	};
+
+	spl-test6 {
+		bootph-some-ram;
+		compatible = "sandbox,spl-test";
+		stringarray = "pre-proper";
+	};
+
+	spl-test7 {
+		bootph-pre-ram;
+		compatible = "sandbox,spl-test";
+		stringarray = "spl";
+	};
+
+	square {
+		compatible = "demo-shape";
+		colour = "blue";
+		sides = <4>;
+	};
+
+	timer {
+		compatible = "sandbox,timer";
+		clock-frequency = <1000000>;
+	};
+
+	tpm {
+		compatible = "google,sandbox-tpm";
+	};
+
+	tpm2 {
+		compatible = "sandbox,tpm2";
+		memory-region = <&event_log>;
+	};
+
+	triangle {
+		compatible = "demo-shape";
+		colour = "cyan";
+		sides = <3>;
+		character = <83>;
+		light-gpios = <&gpio_a 2>, <&gpio_b 6 0>;
+	};
+
+	/* Needs to be available prior to relocation */
+	uart0: serial {
+		bootph-pre-ram;
+		bootph-pre-sram;
+		bootph-verify;
+		compatible = "sandbox,serial";
+		sandbox,text-colour = "cyan";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_serial0>;
+	};
+
+	usb@0 {
+		compatible = "sandbox,usb";
+		status = "disabled";
+		hub {
+			compatible = "sandbox,usb-hub";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			flash-stick {
+				reg = <0>;
+				compatible = "sandbox,usb-flash";
+			};
+		};
+	};
+
+	usb@1 {
+		compatible = "sandbox,usb";
+		hub {
+			compatible = "usb-hub";
+			usb,device-class = <USB_CLASS_HUB>;
+			hub-emul {
+				compatible = "sandbox,usb-hub";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				flash-stick {
+					reg = <0>;
+					compatible = "sandbox,usb-flash";
+					sandbox,filepath = "flash.bin";
+				};
+			};
+		};
+	};
+
+	usb@2 {
+		compatible = "sandbox,usb";
+		status = "disabled";
+	};
+
+	spmi: spmi@0 {
+		compatible = "sandbox,spmi";
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		pm8916@0 {
+			compatible = "qcom,spmi-pmic";
+			reg = <0x0 0x1>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+
+			spmi_gpios: gpios@c000 {
+				compatible = "qcom,pm8916-gpio";
+				reg = <0xc000 0x400>;
+				gpio-controller;
+				gpio-count = <4>;
+				#gpio-cells = <2>;
+				gpio-bank-name="spmi";
+			};
+		};
+	};
+
+	axi: axi@0 {
+		compatible = "sandbox,axi";
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		store@0 {
+			compatible = "sandbox,sandbox_store";
+			reg = <0x0 0x400>;
+		};
+	};
+
+	onewire0: onewire {
+		compatible = "w1-gpio";
+		gpios = <&gpio_a 8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_onewire0>;
+		status = "okay";
+
+		sandbox_eeprom0: sandbox_eeprom@0 {
+			compatible = "sandbox,w1-eeprom";
+			status = "okay";
+		};
+	};
+
+	sandbox_tee {
+		compatible = "sandbox,tee";
+	};
+
+	thermal {
+		compatible = "sandbox,thermal";
+	};
+
+	arm-ffa-emul {
+		compatible = "sandbox,arm-ffa-emul";
+
+		sandbox-arm-ffa {
+				compatible = "sandbox,arm-ffa";
+		};
+	};
+
+};
+
+&cros_ec {
+	/*
+	 * This describes the flash memory within the EC. Note
+	 * that the STM32L flash erases to 0, not 0xff.
+	 */
+	flash {
+		image-pos = <0x08000000>;
+		size = <0x20000>;
+		erase-value = <0>;
+
+		/* Information for sandbox */
+		ro {
+			image-pos = <0>;
+			size = <0xf000>;
+		};
+		wp-ro {
+			image-pos = <0xf000>;
+			size = <0x1000>;
+		};
+		rw {
+			image-pos = <0x10000>;
+			size = <0x10000>;
+		};
+	};
+
+	keyboard-controller {
+		bootph-some-ram;
+	};
+};

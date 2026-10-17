@@ -1,0 +1,1785 @@
+# SPDX-License-Identifier: GPL-2.0+
+# Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+#
+# Resource management configuration for J7200
+#
+
+---
+
+rm-cfg:
+        rm_boardcfg:
+                rev:
+                        boardcfg_abi_maj: 0x0
+                        boardcfg_abi_min: 0x1
+                host_cfg:
+                        subhdr:
+                                magic: 0x4C41
+                                size: 356
+                        host_cfg_entries:
+                                -  # 1
+                                        host_id: 3
+                                        allowed_atype: 0b101010
+                                        allowed_qos: 0xAAAA
+                                        allowed_orderid: 0xAAAAAAAA
+                                        allowed_priority: 0xAAAA
+                                        allowed_sched_priority: 0xAA
+                                -  # 2
+                                        host_id: 5
+                                        allowed_atype: 0b101010
+                                        allowed_qos: 0xAAAA
+                                        allowed_orderid: 0xAAAAAAAA
+                                        allowed_priority: 0xAAAA
+                                        allowed_sched_priority: 0xAA
+                                -  # 3
+                                        host_id: 12
+                                        allowed_atype: 0b101010
+                                        allowed_qos: 0xAAAA
+                                        allowed_orderid: 0xAAAAAAAA
+                                        allowed_priority: 0xAAAA
+                                        allowed_sched_priority: 0xAA
+                                -  # 4
+                                        host_id: 13
+                                        allowed_atype: 0b101010
+                                        allowed_qos: 0xAAAA
+                                        allowed_orderid: 0xAAAAAAAA
+                                        allowed_priority: 0xAAAA
+                                        allowed_sched_priority: 0xAA
+                                -  # 5
+                                        host_id: 35
+                                        allowed_atype: 0b101010
+                                        allowed_qos: 0xAAAA
+                                        allowed_orderid: 0xAAAAAAAA
+                                        allowed_priority: 0xAAAA
+                                        allowed_sched_priority: 0xAA
+                                -  # 6
+                                        host_id: 37
+                                        allowed_atype: 0b101010
+                                        allowed_qos: 0xAAAA
+                                        allowed_orderid: 0xAAAAAAAA
+                                        allowed_priority: 0xAAAA
+                                        allowed_sched_priority: 0xAA
+                                -  # 7
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 8
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 9
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 10
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 11
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 12
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 13
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 14
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 15
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 16
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 17
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 18
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 19
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 20
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 21
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 22
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 23
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 24
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 25
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 26
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 27
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 28
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 29
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 30
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 31
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                                -  # 32
+                                        host_id: 0
+                                        allowed_atype: 0
+                                        allowed_qos: 0
+                                        allowed_orderid: 0
+                                        allowed_priority: 0
+                                        allowed_sched_priority: 0
+                resasg:
+                        subhdr:
+                                magic: 0x7B25
+                                size: 8
+                        resasg_entries_size: 2048
+                        reserved: 0
+        resasg_entries:
+                -
+                        start_resource: 0
+                        num_resource: 32
+                        type: 8192
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 32
+                        num_resource: 32
+                        type: 8192
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 24
+                        type: 8320
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 24
+                        num_resource: 24
+                        type: 8320
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 8
+                        type: 8384
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 8
+                        num_resource: 8
+                        type: 8384
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 16
+                        num_resource: 8
+                        type: 8384
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 24
+                        num_resource: 8
+                        type: 8384
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 32
+                        num_resource: 16
+                        type: 8384
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 48
+                        num_resource: 16
+                        type: 8384
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 48
+                        type: 8704
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 8
+                        type: 8768
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 8
+                        num_resource: 8
+                        type: 8768
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 16
+                        num_resource: 8
+                        type: 8768
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 24
+                        num_resource: 8
+                        type: 8768
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 64
+                        type: 13258
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 20480
+                        num_resource: 1024
+                        type: 13261
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 64
+                        type: 13322
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 22528
+                        num_resource: 1024
+                        type: 13325
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 18
+                        num_resource: 86
+                        type: 13386
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 104
+                        num_resource: 32
+                        type: 13386
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 136
+                        num_resource: 16
+                        type: 13386
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 152
+                        num_resource: 16
+                        type: 13386
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 168
+                        num_resource: 32
+                        type: 13386
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 200
+                        num_resource: 24
+                        type: 13386
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 224
+                        num_resource: 32
+                        type: 13386
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 18
+                        num_resource: 1024
+                        type: 13389
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 1042
+                        num_resource: 512
+                        type: 13389
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 1554
+                        num_resource: 128
+                        type: 13389
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 1682
+                        num_resource: 128
+                        type: 13389
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 1810
+                        num_resource: 256
+                        type: 13389
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 2066
+                        num_resource: 512
+                        type: 13389
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 2578
+                        num_resource: 2030
+                        type: 13389
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 4
+                        type: 13440
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 4
+                        num_resource: 4
+                        type: 13440
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 8
+                        num_resource: 4
+                        type: 13440
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 12
+                        num_resource: 4
+                        type: 13440
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 16
+                        num_resource: 16
+                        type: 13440
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 32
+                        num_resource: 16
+                        type: 13440
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 48
+                        num_resource: 16
+                        type: 13440
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 13504
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 120
+                        num_resource: 200
+                        type: 13505
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 320
+                        num_resource: 40
+                        type: 13505
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 360
+                        num_resource: 32
+                        type: 13505
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 392
+                        num_resource: 32
+                        type: 13505
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 424
+                        num_resource: 256
+                        type: 13505
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 680
+                        num_resource: 256
+                        type: 13505
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 936
+                        num_resource: 38
+                        type: 13505
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 64
+                        num_resource: 4
+                        type: 13506
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 68
+                        num_resource: 2
+                        type: 13506
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 70
+                        num_resource: 2
+                        type: 13506
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 72
+                        num_resource: 2
+                        type: 13506
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 74
+                        num_resource: 2
+                        type: 13506
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 76
+                        num_resource: 2
+                        type: 13506
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 78
+                        num_resource: 20
+                        type: 13506
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 98
+                        num_resource: 4
+                        type: 13506
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 102
+                        num_resource: 8
+                        type: 13506
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 110
+                        num_resource: 8
+                        type: 13506
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 118
+                        num_resource: 2
+                        type: 13506
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 4
+                        num_resource: 4
+                        type: 13507
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 8
+                        num_resource: 2
+                        type: 13507
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 10
+                        num_resource: 2
+                        type: 13507
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 12
+                        num_resource: 2
+                        type: 13507
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 14
+                        num_resource: 2
+                        type: 13507
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 16
+                        num_resource: 2
+                        type: 13507
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 18
+                        num_resource: 20
+                        type: 13507
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 38
+                        num_resource: 4
+                        type: 13507
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 42
+                        num_resource: 8
+                        type: 13507
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 50
+                        num_resource: 8
+                        type: 13507
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 58
+                        num_resource: 2
+                        type: 13507
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 62
+                        num_resource: 0
+                        type: 13509
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 62
+                        num_resource: 1
+                        type: 13509
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 62
+                        num_resource: 0
+                        type: 13509
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 63
+                        num_resource: 1
+                        type: 13509
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 60
+                        num_resource: 0
+                        type: 13510
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 60
+                        num_resource: 2
+                        type: 13510
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 0
+                        type: 13511
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 1
+                        type: 13511
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 0
+                        type: 13511
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 3
+                        num_resource: 1
+                        type: 13511
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 13512
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 2
+                        type: 13512
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 1
+                        type: 13514
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 3
+                        num_resource: 1
+                        type: 13514
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 3
+                        type: 13515
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 3
+                        num_resource: 2
+                        type: 13515
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 5
+                        num_resource: 1
+                        type: 13515
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 6
+                        num_resource: 1
+                        type: 13515
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 7
+                        num_resource: 16
+                        type: 13515
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 23
+                        num_resource: 8
+                        type: 13515
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 31
+                        num_resource: 1
+                        type: 13515
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 60
+                        num_resource: 8
+                        type: 13568
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 68
+                        num_resource: 8
+                        type: 13568
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 76
+                        num_resource: 8
+                        type: 13568
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 84
+                        num_resource: 66
+                        type: 13568
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 13569
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 49152
+                        num_resource: 1024
+                        type: 13570
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 13571
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 4
+                        num_resource: 4
+                        type: 13578
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 8
+                        num_resource: 2
+                        type: 13578
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 10
+                        num_resource: 2
+                        type: 13578
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 12
+                        num_resource: 2
+                        type: 13578
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 14
+                        num_resource: 2
+                        type: 13578
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 16
+                        num_resource: 2
+                        type: 13578
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 18
+                        num_resource: 20
+                        type: 13578
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 38
+                        num_resource: 4
+                        type: 13578
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 42
+                        num_resource: 8
+                        type: 13578
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 50
+                        num_resource: 8
+                        type: 13578
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 58
+                        num_resource: 2
+                        type: 13578
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 0
+                        type: 13579
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 1
+                        type: 13579
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 0
+                        type: 13579
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 3
+                        num_resource: 1
+                        type: 13579
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 13580
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 2
+                        type: 13580
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 4
+                        num_resource: 4
+                        type: 13581
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 8
+                        num_resource: 2
+                        type: 13581
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 10
+                        num_resource: 2
+                        type: 13581
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 12
+                        num_resource: 2
+                        type: 13581
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 14
+                        num_resource: 2
+                        type: 13581
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 16
+                        num_resource: 2
+                        type: 13581
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 18
+                        num_resource: 20
+                        type: 13581
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 38
+                        num_resource: 4
+                        type: 13581
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 42
+                        num_resource: 8
+                        type: 13581
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 50
+                        num_resource: 8
+                        type: 13581
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 58
+                        num_resource: 2
+                        type: 13581
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 0
+                        type: 13583
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 1
+                        type: 13583
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 0
+                        type: 13583
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 3
+                        num_resource: 1
+                        type: 13583
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 13584
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 2
+                        type: 13584
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 10
+                        num_resource: 128
+                        type: 13632
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 138
+                        num_resource: 54
+                        type: 13632
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 196
+                        num_resource: 28
+                        type: 13632
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 228
+                        num_resource: 28
+                        type: 13632
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 400
+                        num_resource: 4
+                        type: 13632
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 404
+                        num_resource: 4
+                        type: 13632
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 15
+                        num_resource: 32
+                        type: 14922
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 47
+                        num_resource: 16
+                        type: 14922
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 63
+                        num_resource: 64
+                        type: 14922
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 127
+                        num_resource: 32
+                        type: 14922
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 159
+                        num_resource: 16
+                        type: 14922
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 175
+                        num_resource: 16
+                        type: 14922
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 191
+                        num_resource: 65
+                        type: 14922
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 16399
+                        num_resource: 128
+                        type: 14925
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 16527
+                        num_resource: 128
+                        type: 14925
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 16655
+                        num_resource: 256
+                        type: 14925
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 16911
+                        num_resource: 128
+                        type: 14925
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 17039
+                        num_resource: 128
+                        type: 14925
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 17167
+                        num_resource: 128
+                        type: 14925
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 17295
+                        num_resource: 625
+                        type: 14925
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 1
+                        num_resource: 8
+                        type: 14976
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 9
+                        num_resource: 4
+                        type: 14976
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 13
+                        num_resource: 16
+                        type: 14976
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 29
+                        num_resource: 16
+                        type: 14976
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 45
+                        num_resource: 8
+                        type: 14976
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 53
+                        num_resource: 8
+                        type: 14976
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 61
+                        num_resource: 3
+                        type: 14976
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 15040
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 96
+                        num_resource: 32
+                        type: 15041
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 128
+                        num_resource: 16
+                        type: 15041
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 144
+                        num_resource: 32
+                        type: 15041
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 176
+                        num_resource: 32
+                        type: 15041
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 208
+                        num_resource: 16
+                        type: 15041
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 224
+                        num_resource: 16
+                        type: 15041
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 240
+                        num_resource: 12
+                        type: 15041
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 50
+                        num_resource: 3
+                        type: 15042
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 53
+                        num_resource: 2
+                        type: 15042
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 55
+                        num_resource: 2
+                        type: 15042
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 57
+                        num_resource: 2
+                        type: 15042
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 59
+                        num_resource: 2
+                        type: 15042
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 61
+                        num_resource: 2
+                        type: 15042
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 63
+                        num_resource: 9
+                        type: 15042
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 72
+                        num_resource: 4
+                        type: 15042
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 76
+                        num_resource: 4
+                        type: 15042
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 80
+                        num_resource: 4
+                        type: 15042
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 84
+                        num_resource: 4
+                        type: 15042
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 88
+                        num_resource: 4
+                        type: 15042
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 92
+                        num_resource: 1
+                        type: 15042
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 3
+                        type: 15043
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 5
+                        num_resource: 2
+                        type: 15043
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 7
+                        num_resource: 2
+                        type: 15043
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 9
+                        num_resource: 2
+                        type: 15043
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 11
+                        num_resource: 2
+                        type: 15043
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 13
+                        num_resource: 2
+                        type: 15043
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 15
+                        num_resource: 9
+                        type: 15043
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 24
+                        num_resource: 4
+                        type: 15043
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 28
+                        num_resource: 4
+                        type: 15043
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 32
+                        num_resource: 4
+                        type: 15043
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 36
+                        num_resource: 4
+                        type: 15043
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 40
+                        num_resource: 4
+                        type: 15043
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 44
+                        num_resource: 2
+                        type: 15043
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 48
+                        num_resource: 0
+                        type: 15045
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 48
+                        num_resource: 0
+                        type: 15045
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 48
+                        num_resource: 1
+                        type: 15045
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 49
+                        num_resource: 1
+                        type: 15045
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 15047
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 15047
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 15047
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 1
+                        num_resource: 1
+                        type: 15047
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 1
+                        type: 15050
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 3
+                        num_resource: 1
+                        type: 15050
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 3
+                        type: 15051
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 3
+                        num_resource: 2
+                        type: 15051
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 5
+                        num_resource: 6
+                        type: 15051
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 11
+                        num_resource: 6
+                        type: 15051
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 17
+                        num_resource: 5
+                        type: 15051
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 22
+                        num_resource: 5
+                        type: 15051
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 27
+                        num_resource: 5
+                        type: 15051
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 48
+                        num_resource: 8
+                        type: 15104
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 56
+                        num_resource: 4
+                        type: 15104
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 60
+                        num_resource: 8
+                        type: 15104
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 68
+                        num_resource: 4
+                        type: 15104
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 72
+                        num_resource: 8
+                        type: 15104
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 80
+                        num_resource: 4
+                        type: 15104
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 84
+                        num_resource: 12
+                        type: 15104
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 15105
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 56320
+                        num_resource: 256
+                        type: 15106
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 15107
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 3
+                        type: 15114
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 5
+                        num_resource: 2
+                        type: 15114
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 7
+                        num_resource: 2
+                        type: 15114
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 9
+                        num_resource: 2
+                        type: 15114
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 11
+                        num_resource: 2
+                        type: 15114
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 13
+                        num_resource: 2
+                        type: 15114
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 15
+                        num_resource: 9
+                        type: 15114
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 24
+                        num_resource: 4
+                        type: 15114
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 28
+                        num_resource: 4
+                        type: 15114
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 32
+                        num_resource: 4
+                        type: 15114
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 36
+                        num_resource: 4
+                        type: 15114
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 40
+                        num_resource: 4
+                        type: 15114
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 44
+                        num_resource: 1
+                        type: 15114
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 15115
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 15115
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 15115
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 1
+                        num_resource: 1
+                        type: 15115
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 2
+                        num_resource: 3
+                        type: 15117
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 5
+                        num_resource: 2
+                        type: 15117
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 7
+                        num_resource: 2
+                        type: 15117
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 9
+                        num_resource: 2
+                        type: 15117
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 11
+                        num_resource: 2
+                        type: 15117
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 13
+                        num_resource: 2
+                        type: 15117
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 15
+                        num_resource: 9
+                        type: 15117
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 24
+                        num_resource: 4
+                        type: 15117
+                        host_id: 13
+                        reserved: 0
+                -
+                        start_resource: 28
+                        num_resource: 4
+                        type: 15117
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 32
+                        num_resource: 4
+                        type: 15117
+                        host_id: 5
+                        reserved: 0
+                -
+                        start_resource: 36
+                        num_resource: 4
+                        type: 15117
+                        host_id: 35
+                        reserved: 0
+                -
+                        start_resource: 40
+                        num_resource: 4
+                        type: 15117
+                        host_id: 37
+                        reserved: 0
+                -
+                        start_resource: 44
+                        num_resource: 2
+                        type: 15117
+                        host_id: 128
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 15119
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 0
+                        type: 15119
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 0
+                        num_resource: 1
+                        type: 15119
+                        host_id: 12
+                        reserved: 0
+                -
+                        start_resource: 1
+                        num_resource: 1
+                        type: 15119
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 11
+                        num_resource: 20
+                        type: 15168
+                        host_id: 3
+                        reserved: 0
+                -
+                        start_resource: 36
+                        num_resource: 28
+                        type: 15168
+                        host_id: 5
+                        reserved: 0

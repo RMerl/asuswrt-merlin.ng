@@ -1,0 +1,15 @@
+if TARGET_TBS2910
+
+config SYS_BOARD
+	default "tbs2910"
+
+config SYS_VENDOR
+	default "tbs"
+
+config SYS_CONFIG_NAME
+	default "tbs2910"
+
+config IMX_CONFIG
+	default "board/tbs/tbs2910/tbs2910.cfg"
+
+endif

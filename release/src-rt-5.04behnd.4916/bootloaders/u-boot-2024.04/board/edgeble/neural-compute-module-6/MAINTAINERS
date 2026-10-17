@@ -1,0 +1,13 @@
+RK3588-NEU6
+M:	Jagan Teki <jagan@edgeble.ai>
+S:	Maintained
+F:	board/edgeble/neural-compute-module-6
+F:	include/configs/neural-compute-module-6.h
+F:	configs/neu6a-io-rk3588_defconfig
+F:	configs/neu6b-io-rk3588_defconfig
+F:	arch/arm/dts/rk3588-edgeble-neu6a.dtsi
+F:	arch/arm/dts/rk3588-edgeble-neu6a-io.dts
+F:	arch/arm/dts/rk3588-edgeble-neu6a-io-u-boot.dtsi
+F:	arch/arm/dts/rk3588-edgeble-neu6b.dtsi
+F:	arch/arm/dts/rk3588-edgeble-neu6b-io.dts
+F:	arch/arm/dts/rk3588-edgeble-neu6b-io-u-boot.dtsi

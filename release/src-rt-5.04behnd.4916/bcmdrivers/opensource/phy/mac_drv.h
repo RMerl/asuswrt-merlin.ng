@@ -193,6 +193,7 @@ typedef struct mac_drv_s
     int (*stats_clear)(mac_dev_t *self);
     int (*mtu_set)(mac_dev_t *self, int mtu);
     int (*eee_set)(mac_dev_t *self, int enable);
+    int (*eee_get)(mac_dev_t *self, int *enable, int *sleep_timer, int *wakeup_timer);
     int (*dev_add)(mac_dev_t *self);
     int (*dev_del)(mac_dev_t *self);
     int (*drv_init)(struct mac_drv_s *mac_drv);
@@ -348,6 +349,14 @@ static inline int mac_dev_eee_set(mac_dev_t *mac_dev, int enable)
         enable = 0;
 
     return mac_dev->mac_drv->eee_set(mac_dev, enable);
+}
+
+static inline int mac_dev_eee_get(mac_dev_t *mac_dev, int *enable, int *sleep_timer, int *wakeup_timer)
+{
+    if (!mac_dev->mac_drv->eee_get)
+        return 0;
+
+    return mac_dev->mac_drv->eee_get(mac_dev, enable, sleep_timer, wakeup_timer);
 }
 
 static inline int mac_dev_loopback_set(mac_dev_t *mac_dev, mac_loopback_t loopback_set)

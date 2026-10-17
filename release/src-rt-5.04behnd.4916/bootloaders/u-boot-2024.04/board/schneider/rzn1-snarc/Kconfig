@@ -1,0 +1,18 @@
+if TARGET_SCHNEIDER_RZN1
+
+config TEXT_BASE
+	default 0x20040000
+
+config SYS_MONITOR_LEN
+	default 524288
+
+config SYS_BOARD
+	default "rzn1-snarc"
+
+config SYS_VENDOR
+	default "schneider"
+
+config SYS_CONFIG_NAME
+	default "rzn1-snarc"
+
+endif

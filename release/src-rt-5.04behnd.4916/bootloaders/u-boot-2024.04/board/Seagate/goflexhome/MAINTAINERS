@@ -1,0 +1,6 @@
+GOFLEXHOME BOARD
+M:	Tony Dinh <mibodhi@gmail.com>
+S:	Maintained
+F:	board/Seagate/goflexhome/
+F:	include/configs/goflexhome.h
+F:	configs/goflexhome_defconfig

@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -36,30 +36,42 @@
 
 #include "rdd_ag_processing.h"
 
-int rdd_ag_processing_llq_selector_ecn_get(rdd_llq_selector_ecn_t *llq_selector_ecn)
+int rdd_ag_processing_mirroring_truncate_entry_get(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry)
 {
-    RDD_LLQ_SELECTOR_ECN_MASK_READ_G(llq_selector_ecn->mask, RDD_LLQ_SELECTOR_ECN_MASK_ADDRESS_ARR, 0);
+    if(!mirroring_truncate_entry || _entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_G(mirroring_truncate_entry->truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_llq_selector_ecn_set(rdd_llq_selector_ecn_t *llq_selector_ecn)
+int rdd_ag_processing_mirroring_truncate_entry_set(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry)
 {
-    RDD_LLQ_SELECTOR_ECN_MASK_WRITE_G(llq_selector_ecn->mask, RDD_LLQ_SELECTOR_ECN_MASK_ADDRESS_ARR, 0);
+    if(!mirroring_truncate_entry || _entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(mirroring_truncate_entry->truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_llq_selector_ecn_get_core(rdd_llq_selector_ecn_t *llq_selector_ecn, int core_id)
+int rdd_ag_processing_mirroring_truncate_entry_get_core(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry, int core_id)
 {
-    RDD_LLQ_SELECTOR_ECN_MASK_READ_CORE(llq_selector_ecn->mask, RDD_LLQ_SELECTOR_ECN_MASK_ADDRESS_ARR, 0, core_id);
+    if(!mirroring_truncate_entry || _entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_CORE(mirroring_truncate_entry->truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_llq_selector_ecn_set_core(rdd_llq_selector_ecn_t *llq_selector_ecn, int core_id)
+int rdd_ag_processing_mirroring_truncate_entry_set_core(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry, int core_id)
 {
-    RDD_LLQ_SELECTOR_ECN_MASK_WRITE_CORE(llq_selector_ecn->mask, RDD_LLQ_SELECTOR_ECN_MASK_ADDRESS_ARR, 0, core_id);
+    if(!mirroring_truncate_entry || _entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_CORE(mirroring_truncate_entry->truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
@@ -132,7 +144,6 @@ int rdd_ag_processing_vport_cfg_entry_get(uint32_t _entry, rdd_vport_cfg_entry_t
     RDD_VPORT_CFG_ENTRY_EXCEPTION_READ_G(vport_cfg_entry->exception, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_CONGESTION_FLOW_CONTROL_READ_G(vport_cfg_entry->congestion_flow_control, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_INGRESS_FILTER_PROFILE_READ_G(vport_cfg_entry->ingress_filter_profile, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_READ_G(vport_cfg_entry->natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_PORT_DBG_STAT_EN_READ_G(vport_cfg_entry->port_dbg_stat_en, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_MCAST_WHITELIST_SKIP_READ_G(vport_cfg_entry->mcast_whitelist_skip, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_IS_LAN_READ_G(vport_cfg_entry->is_lan, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
@@ -144,13 +155,12 @@ int rdd_ag_processing_vport_cfg_entry_get(uint32_t _entry, rdd_vport_cfg_entry_t
 
 int rdd_ag_processing_vport_cfg_entry_set(uint32_t _entry, rdd_vport_cfg_entry_t *vport_cfg_entry)
 {
-    if(!vport_cfg_entry || _entry >= RDD_VPORT_CFG_TABLE_SIZE || vport_cfg_entry->ingress_filter_profile >= 64 || vport_cfg_entry->natc_tbl_id >= 8 || vport_cfg_entry->bb_rx_id >= 64)
+    if(!vport_cfg_entry || _entry >= RDD_VPORT_CFG_TABLE_SIZE || vport_cfg_entry->ingress_filter_profile >= 64 || vport_cfg_entry->bb_rx_id >= 64)
           return BDMF_ERR_PARM;
 
     RDD_VPORT_CFG_ENTRY_EXCEPTION_WRITE_G(vport_cfg_entry->exception, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_CONGESTION_FLOW_CONTROL_WRITE_G(vport_cfg_entry->congestion_flow_control, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_INGRESS_FILTER_PROFILE_WRITE_G(vport_cfg_entry->ingress_filter_profile, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_WRITE_G(vport_cfg_entry->natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_PORT_DBG_STAT_EN_WRITE_G(vport_cfg_entry->port_dbg_stat_en, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_MCAST_WHITELIST_SKIP_WRITE_G(vport_cfg_entry->mcast_whitelist_skip, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
     RDD_VPORT_CFG_ENTRY_IS_LAN_WRITE_G(vport_cfg_entry->is_lan, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
@@ -168,7 +178,6 @@ int rdd_ag_processing_vport_cfg_entry_get_core(uint32_t _entry, rdd_vport_cfg_en
     RDD_VPORT_CFG_ENTRY_EXCEPTION_READ_CORE(vport_cfg_entry->exception, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_CONGESTION_FLOW_CONTROL_READ_CORE(vport_cfg_entry->congestion_flow_control, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_INGRESS_FILTER_PROFILE_READ_CORE(vport_cfg_entry->ingress_filter_profile, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_READ_CORE(vport_cfg_entry->natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_PORT_DBG_STAT_EN_READ_CORE(vport_cfg_entry->port_dbg_stat_en, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_MCAST_WHITELIST_SKIP_READ_CORE(vport_cfg_entry->mcast_whitelist_skip, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_IS_LAN_READ_CORE(vport_cfg_entry->is_lan, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
@@ -180,13 +189,12 @@ int rdd_ag_processing_vport_cfg_entry_get_core(uint32_t _entry, rdd_vport_cfg_en
 
 int rdd_ag_processing_vport_cfg_entry_set_core(uint32_t _entry, rdd_vport_cfg_entry_t *vport_cfg_entry, int core_id)
 {
-    if(!vport_cfg_entry || _entry >= RDD_VPORT_CFG_TABLE_SIZE || vport_cfg_entry->ingress_filter_profile >= 64 || vport_cfg_entry->natc_tbl_id >= 8 || vport_cfg_entry->bb_rx_id >= 64)
+    if(!vport_cfg_entry || _entry >= RDD_VPORT_CFG_TABLE_SIZE || vport_cfg_entry->ingress_filter_profile >= 64 || vport_cfg_entry->bb_rx_id >= 64)
           return BDMF_ERR_PARM;
 
     RDD_VPORT_CFG_ENTRY_EXCEPTION_WRITE_CORE(vport_cfg_entry->exception, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_CONGESTION_FLOW_CONTROL_WRITE_CORE(vport_cfg_entry->congestion_flow_control, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_INGRESS_FILTER_PROFILE_WRITE_CORE(vport_cfg_entry->ingress_filter_profile, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_WRITE_CORE(vport_cfg_entry->natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_PORT_DBG_STAT_EN_WRITE_CORE(vport_cfg_entry->port_dbg_stat_en, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_MCAST_WHITELIST_SKIP_WRITE_CORE(vport_cfg_entry->mcast_whitelist_skip, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
     RDD_VPORT_CFG_ENTRY_IS_LAN_WRITE_CORE(vport_cfg_entry->is_lan, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
@@ -410,6 +418,90 @@ int rdd_ag_processing_fpi_cfg_table_lkp_enable_get_core(bdmf_boolean *lkp_enable
     return BDMF_ERR_OK;
 }
 
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_set(bdmf_boolean ip_frag_enable)
+{
+    RDD_FPI_CFG_IP_FRAG_ENABLE_WRITE_G(ip_frag_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_set_core(bdmf_boolean ip_frag_enable, int core_id)
+{
+    RDD_FPI_CFG_IP_FRAG_ENABLE_WRITE_CORE(ip_frag_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_get(bdmf_boolean *ip_frag_enable)
+{
+    RDD_FPI_CFG_IP_FRAG_ENABLE_READ_G(*ip_frag_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_get_core(bdmf_boolean *ip_frag_enable, int core_id)
+{
+    RDD_FPI_CFG_IP_FRAG_ENABLE_READ_CORE(*ip_frag_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_set(bdmf_boolean ip_reasm_enable)
+{
+    RDD_FPI_CFG_IP_REASM_ENABLE_WRITE_G(ip_reasm_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_set_core(bdmf_boolean ip_reasm_enable, int core_id)
+{
+    RDD_FPI_CFG_IP_REASM_ENABLE_WRITE_CORE(ip_reasm_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_get(bdmf_boolean *ip_reasm_enable)
+{
+    RDD_FPI_CFG_IP_REASM_ENABLE_READ_G(*ip_reasm_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_get_core(bdmf_boolean *ip_reasm_enable, int core_id)
+{
+    RDD_FPI_CFG_IP_REASM_ENABLE_READ_CORE(*ip_reasm_enable, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_set(bdmf_boolean ipv6_exthdr_force_trap)
+{
+    RDD_FPI_CFG_IPV6_EXTHDR_FORCE_TRAP_WRITE_G(ipv6_exthdr_force_trap, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_set_core(bdmf_boolean ipv6_exthdr_force_trap, int core_id)
+{
+    RDD_FPI_CFG_IPV6_EXTHDR_FORCE_TRAP_WRITE_CORE(ipv6_exthdr_force_trap, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_get(bdmf_boolean *ipv6_exthdr_force_trap)
+{
+    RDD_FPI_CFG_IPV6_EXTHDR_FORCE_TRAP_READ_G(*ipv6_exthdr_force_trap, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_get_core(bdmf_boolean *ipv6_exthdr_force_trap, int core_id)
+{
+    RDD_FPI_CFG_IPV6_EXTHDR_FORCE_TRAP_READ_CORE(*ipv6_exthdr_force_trap, RDD_FPI_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
 int rdd_ag_processing_fpi_cfg_table_default_priority_set(uint8_t default_priority)
 {
     if(default_priority >= 64)
@@ -604,30 +696,42 @@ int rdd_ag_processing_policer_params_table_color_aware_enabled_get_core(uint32_t
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_spdtest_num_of_rx_flows_set(uint8_t bits)
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_set(uint32_t _entry, uint16_t truncate_offset)
 {
-    RDD_BYTE_1_BITS_WRITE_G(bits, RDD_SPDTEST_NUM_OF_RX_FLOWS_ADDRESS_ARR, 0);
+    if(_entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_G(truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_spdtest_num_of_rx_flows_set_core(uint8_t bits, int core_id)
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_set_core(uint32_t _entry, uint16_t truncate_offset, int core_id)
 {
-    RDD_BYTE_1_BITS_WRITE_CORE(bits, RDD_SPDTEST_NUM_OF_RX_FLOWS_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_WRITE_CORE(truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_spdtest_num_of_rx_flows_get(uint8_t *bits)
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_get(uint32_t _entry, uint16_t *truncate_offset)
 {
-    RDD_BYTE_1_BITS_READ_G(*bits, RDD_SPDTEST_NUM_OF_RX_FLOWS_ADDRESS_ARR, 0);
+    if(_entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_G(*truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_spdtest_num_of_rx_flows_get_core(uint8_t *bits, int core_id)
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_get_core(uint32_t _entry, uint16_t *truncate_offset, int core_id)
 {
-    RDD_BYTE_1_BITS_READ_CORE(*bits, RDD_SPDTEST_NUM_OF_RX_FLOWS_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_RX_MIRRORING_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_MIRRORING_TRUNCATE_ENTRY_TRUNCATE_OFFSET_READ_CORE(*truncate_offset, RDD_RX_MIRRORING_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
@@ -712,278 +816,322 @@ int rdd_ag_processing_tcam_generic_fields_layer_get_core(uint32_t _entry, uint8_
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_set(bdmf_boolean generic_1)
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_set(uint32_t _entry, bdmf_boolean generic_1)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_1_WRITE_G(generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_1_WRITE_G(generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_set_core(bdmf_boolean generic_1, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_set_core(uint32_t _entry, bdmf_boolean generic_1, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_1_WRITE_CORE(generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_1_WRITE_CORE(generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_get(bdmf_boolean *generic_1)
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_get(uint32_t _entry, bdmf_boolean *generic_1)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_1_READ_G(*generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_1_READ_G(*generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_get_core(bdmf_boolean *generic_1, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_get_core(uint32_t _entry, bdmf_boolean *generic_1, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_1_READ_CORE(*generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_1_READ_CORE(*generic_1, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_set(bdmf_boolean generic_2)
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_set(uint32_t _entry, bdmf_boolean generic_2)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_2_WRITE_G(generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_2_WRITE_G(generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_set_core(bdmf_boolean generic_2, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_set_core(uint32_t _entry, bdmf_boolean generic_2, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_2_WRITE_CORE(generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_2_WRITE_CORE(generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_get(bdmf_boolean *generic_2)
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_get(uint32_t _entry, bdmf_boolean *generic_2)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_2_READ_G(*generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_2_READ_G(*generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_get_core(bdmf_boolean *generic_2, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_get_core(uint32_t _entry, bdmf_boolean *generic_2, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_2_READ_CORE(*generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_2_READ_CORE(*generic_2, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_set(bdmf_boolean generic_3)
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_set(uint32_t _entry, bdmf_boolean generic_3)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_3_WRITE_G(generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_3_WRITE_G(generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_set_core(bdmf_boolean generic_3, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_set_core(uint32_t _entry, bdmf_boolean generic_3, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_3_WRITE_CORE(generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_3_WRITE_CORE(generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_get(bdmf_boolean *generic_3)
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_get(uint32_t _entry, bdmf_boolean *generic_3)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_3_READ_G(*generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_3_READ_G(*generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_get_core(bdmf_boolean *generic_3, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_get_core(uint32_t _entry, bdmf_boolean *generic_3, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_3_READ_CORE(*generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_3_READ_CORE(*generic_3, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_set(bdmf_boolean generic_4)
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_set(uint32_t _entry, bdmf_boolean generic_4)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_4_WRITE_G(generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_4_WRITE_G(generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_set_core(bdmf_boolean generic_4, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_set_core(uint32_t _entry, bdmf_boolean generic_4, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_4_WRITE_CORE(generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_4_WRITE_CORE(generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_get(bdmf_boolean *generic_4)
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_get(uint32_t _entry, bdmf_boolean *generic_4)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_4_READ_G(*generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_4_READ_G(*generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_get_core(bdmf_boolean *generic_4, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_get_core(uint32_t _entry, bdmf_boolean *generic_4, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GENERIC_4_READ_CORE(*generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GENERIC_4_READ_CORE(*generic_4, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set(bdmf_boolean ingress_port)
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set(uint32_t _entry, bdmf_boolean ingress_port)
 {
-    RDD_TCAM_TABLE_CFG_INGRESS_PORT_WRITE_G(ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_INGRESS_PORT_WRITE_G(ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set_core(bdmf_boolean ingress_port, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set_core(uint32_t _entry, bdmf_boolean ingress_port, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_INGRESS_PORT_WRITE_CORE(ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_INGRESS_PORT_WRITE_CORE(ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get(bdmf_boolean *ingress_port)
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get(uint32_t _entry, bdmf_boolean *ingress_port)
 {
-    RDD_TCAM_TABLE_CFG_INGRESS_PORT_READ_G(*ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_INGRESS_PORT_READ_G(*ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get_core(bdmf_boolean *ingress_port, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get_core(uint32_t _entry, bdmf_boolean *ingress_port, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_INGRESS_PORT_READ_CORE(*ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_INGRESS_PORT_READ_CORE(*ingress_port, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_gem_set(bdmf_boolean gem)
+int rdd_ag_processing_tcam_table_cfg_table_gem_set(uint32_t _entry, bdmf_boolean gem)
 {
-    RDD_TCAM_TABLE_CFG_GEM_WRITE_G(gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GEM_WRITE_G(gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_gem_set_core(bdmf_boolean gem, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_gem_set_core(uint32_t _entry, bdmf_boolean gem, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GEM_WRITE_CORE(gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GEM_WRITE_CORE(gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_gem_get(bdmf_boolean *gem)
+int rdd_ag_processing_tcam_table_cfg_table_gem_get(uint32_t _entry, bdmf_boolean *gem)
 {
-    RDD_TCAM_TABLE_CFG_GEM_READ_G(*gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GEM_READ_G(*gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_gem_get_core(bdmf_boolean *gem, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_gem_get_core(uint32_t _entry, bdmf_boolean *gem, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_GEM_READ_CORE(*gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_GEM_READ_CORE(*gem, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_set(bdmf_boolean network_layer)
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_set(uint32_t _entry, bdmf_boolean network_layer)
 {
-    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_WRITE_G(network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_WRITE_G(network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_set_core(bdmf_boolean network_layer, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_set_core(uint32_t _entry, bdmf_boolean network_layer, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_WRITE_CORE(network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_WRITE_CORE(network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_get(bdmf_boolean *network_layer)
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_get(uint32_t _entry, bdmf_boolean *network_layer)
 {
-    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_READ_G(*network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_READ_G(*network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_get_core(bdmf_boolean *network_layer, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_get_core(uint32_t _entry, bdmf_boolean *network_layer, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_READ_CORE(*network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_NETWORK_LAYER_READ_CORE(*network_layer, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ssid_set(bdmf_boolean ssid)
+int rdd_ag_processing_tcam_table_cfg_table_ssid_set(uint32_t _entry, bdmf_boolean ssid)
 {
-    RDD_TCAM_TABLE_CFG_SSID_WRITE_G(ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_SSID_WRITE_G(ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ssid_set_core(bdmf_boolean ssid, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_ssid_set_core(uint32_t _entry, bdmf_boolean ssid, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_SSID_WRITE_CORE(ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_SSID_WRITE_CORE(ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ssid_get(bdmf_boolean *ssid)
+int rdd_ag_processing_tcam_table_cfg_table_ssid_get(uint32_t _entry, bdmf_boolean *ssid)
 {
-    RDD_TCAM_TABLE_CFG_SSID_READ_G(*ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
+
+    RDD_TCAM_TABLE_CFG_SSID_READ_G(*ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry);
 
     return BDMF_ERR_OK;
 }
 
-int rdd_ag_processing_tcam_table_cfg_table_ssid_get_core(bdmf_boolean *ssid, int core_id)
+int rdd_ag_processing_tcam_table_cfg_table_ssid_get_core(uint32_t _entry, bdmf_boolean *ssid, int core_id)
 {
-    RDD_TCAM_TABLE_CFG_SSID_READ_CORE(*ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, 0, core_id);
+    if(_entry >= RDD_TCAM_TABLE_CFG_TABLE_SIZE)
+         return BDMF_ERR_PARM;
 
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_set(uint32_t _entry, uint32_t src_ipaddr, uint32_t dst_ipaddr, uint16_t src_port, uint16_t dst_port)
-{
-    if(_entry >= RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_IPADDR_WRITE_G(src_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_IPADDR_WRITE_G(dst_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_PORT_WRITE_G(src_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_PORT_WRITE_G(dst_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_set_core(uint32_t _entry, uint32_t src_ipaddr, uint32_t dst_ipaddr, uint16_t src_port, uint16_t dst_port, int core_id)
-{
-    if(_entry >= RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_IPADDR_WRITE_CORE(src_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_IPADDR_WRITE_CORE(dst_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_PORT_WRITE_CORE(src_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_PORT_WRITE_CORE(dst_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_get(uint32_t _entry, uint32_t *src_ipaddr, uint32_t *dst_ipaddr, uint16_t *src_port, uint16_t *dst_port)
-{
-    if(_entry >= RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_IPADDR_READ_G(*src_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_IPADDR_READ_G(*dst_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_PORT_READ_G(*src_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_PORT_READ_G(*dst_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_get_core(uint32_t _entry, uint32_t *src_ipaddr, uint32_t *dst_ipaddr, uint16_t *src_port, uint16_t *dst_port, int core_id)
-{
-    if(_entry >= RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_SIZE)
-          return BDMF_ERR_PARM;
-
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_IPADDR_READ_CORE(*src_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_IPADDR_READ_CORE(*dst_ipaddr, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_TR471_SPDSVC_RX_PKT_ID_SRC_PORT_READ_CORE(*src_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
-    RDD_TR471_SPDSVC_RX_PKT_ID_DST_PORT_READ_CORE(*dst_port, RDD_TR471_SPDSVC_RX_PKT_ID_TABLE_ADDRESS_ARR, _entry, core_id);
+    RDD_TCAM_TABLE_CFG_SSID_READ_CORE(*ssid, RDD_TCAM_TABLE_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }
@@ -1344,46 +1492,6 @@ int rdd_ag_processing_vport_cfg_table_ingress_filter_profile_get_core(uint32_t _
          return BDMF_ERR_PARM;
 
     RDD_VPORT_CFG_ENTRY_INGRESS_FILTER_PROFILE_READ_CORE(*ingress_filter_profile, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_set(uint32_t _entry, uint8_t natc_tbl_id)
-{
-    if(_entry >= RDD_VPORT_CFG_TABLE_SIZE || natc_tbl_id >= 8)
-          return BDMF_ERR_PARM;
-
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_WRITE_G(natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_set_core(uint32_t _entry, uint8_t natc_tbl_id, int core_id)
-{
-    if(_entry >= RDD_VPORT_CFG_TABLE_SIZE || natc_tbl_id >= 8)
-          return BDMF_ERR_PARM;
-
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_WRITE_CORE(natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_get(uint32_t _entry, uint8_t *natc_tbl_id)
-{
-    if(_entry >= RDD_VPORT_CFG_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_READ_G(*natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry);
-
-    return BDMF_ERR_OK;
-}
-
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_get_core(uint32_t _entry, uint8_t *natc_tbl_id, int core_id)
-{
-    if(_entry >= RDD_VPORT_CFG_TABLE_SIZE)
-         return BDMF_ERR_PARM;
-
-    RDD_VPORT_CFG_ENTRY_NATC_TBL_ID_READ_CORE(*natc_tbl_id, RDD_VPORT_CFG_TABLE_ADDRESS_ARR, _entry, core_id);
 
     return BDMF_ERR_OK;
 }

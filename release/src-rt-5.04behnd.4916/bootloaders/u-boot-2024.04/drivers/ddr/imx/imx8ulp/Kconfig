@@ -1,0 +1,18 @@
+menu "i.MX8ULP DDR controllers"
+	depends on ARCH_IMX8ULP
+
+config IMX8ULP_DRAM
+	bool "imx8m dram"
+
+config IMX8ULP_DRAM_PHY_PLL_BYPASS
+	bool "Enable the DDR PHY PLL bypass mode, so PHY clock is from DDR_CLK "
+	depends on IMX8ULP_DRAM
+
+config SAVED_DRAM_TIMING_BASE
+	hex "Define the base address for saved dram timing"
+	help
+	  The DRAM config timing data need to be saved into sram
+	  for low power use.
+	default 0x20055000
+
+endmenu

@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: (GPL-2.0+)
+/*
+ * Copyright (C) 2019 DH electronics GmbH
+ */
+
+/dts-v1/;
+
+#include "imx6dl.dtsi"
+#include "imx6qdl-dhcom-som.dtsi"
+#include "imx6qdl-dhcom-pdk2.dtsi"
+
+/ {
+	model = "Freescale i.MX6 Duallite/Solo DHCOM Premium Developer Kit (2)";
+	compatible = "dh,imx6dl-dhcom-pdk2", "dh,imx6dl-dhcom", "fsl,imx6dl";
+};

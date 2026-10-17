@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2020-2022 Texas Instruments Incorporated - https://www.ti.com/
+#	Suman Anna <s-anna@ti.com>
+
+if TARGET_AM625_A53_EVM
+
+config SYS_BOARD
+       default "am62x"
+
+config SYS_VENDOR
+       default "ti"
+
+config SYS_CONFIG_NAME
+       default "am62x_evm"
+
+source "board/ti/common/Kconfig"
+
+endif
+
+if TARGET_AM625_R5_EVM
+
+config SYS_BOARD
+       default "am62x"
+
+config SYS_VENDOR
+       default "ti"
+
+config SYS_CONFIG_NAME
+       default "am62x_evm"
+
+config SPL_LDSCRIPT
+	default "arch/arm/mach-omap2/u-boot-spl.lds"
+
+source "board/ti/common/Kconfig"
+
+endif

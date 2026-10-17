@@ -1,0 +1,8 @@
+Hitachi Power Grids SECU1 BOARD
+M:	Holger Brunck <holger.brunck@hitachienergy.com>
+S:	Maintained
+F:	board/keymile/secu1/
+F:	board/keymile/common/
+F:	board/keymile/scripts/
+F:	include/configs/socfpga_arria5_secu1.h
+F:	configs/socfpga_secu1_defconfig

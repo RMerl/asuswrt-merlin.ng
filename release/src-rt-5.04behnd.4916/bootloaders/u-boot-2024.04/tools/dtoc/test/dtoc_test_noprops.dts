@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Test device tree file for dtoc
+ *
+ * Copyright 2017 Google, Inc
+ */
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	i2c@0 {
+		pmic@9 {
+			compatible = "sandbox,pmic";
+			bootph-all;
+			reg = <9>;
+			low-power;
+		};
+	};
+};

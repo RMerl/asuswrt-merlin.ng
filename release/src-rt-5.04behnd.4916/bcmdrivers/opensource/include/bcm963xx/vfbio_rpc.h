@@ -424,15 +424,15 @@ static inline bool vfbio_msg_get_dh_end(rpc_msg *msg)
 {
     return (msg->data[0]) & 0x1;
 }
-static inline bool vfbio_msg_get_dh_pre_eol(rpc_msg *msg)
+static inline u8 vfbio_msg_get_dh_pre_eol(rpc_msg *msg)
 {
     return (msg->data[1]) & 0xFF;
 }
-static inline bool vfbio_msg_get_dh_est_a(rpc_msg *msg)
+static inline u8 vfbio_msg_get_dh_est_a(rpc_msg *msg)
 {
     return (msg->data[1] >> 8) & 0xFF;
 }
-static inline bool vfbio_msg_get_dh_est_b(rpc_msg *msg)
+static inline u8 vfbio_msg_get_dh_est_b(rpc_msg *msg)
 {
     return (msg->data[1] >> 16) & 0xFF;
 }

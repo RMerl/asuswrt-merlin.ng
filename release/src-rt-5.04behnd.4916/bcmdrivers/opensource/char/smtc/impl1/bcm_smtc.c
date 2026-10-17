@@ -40,8 +40,6 @@ written consent.
 #include <linux/of_platform.h>
 #include <linux/gpio/consumer.h>
 #include "board.h"
-#include "bcm_pinmux.h"
-#include "bcm_gpio.h"
 #include "wan_drv.h"
 #include "trxbus.h"
 #include "bcm_smtc.h"

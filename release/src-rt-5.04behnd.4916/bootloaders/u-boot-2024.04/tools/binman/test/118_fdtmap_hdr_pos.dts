@@ -1,0 +1,19 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		size = <0x400>;
+		sort-by-offset;
+		u-boot {
+			offset = <0x100>;
+		};
+		fdtmap {
+		};
+		image-header {
+			offset = <0x80>;
+		};
+	};
+};

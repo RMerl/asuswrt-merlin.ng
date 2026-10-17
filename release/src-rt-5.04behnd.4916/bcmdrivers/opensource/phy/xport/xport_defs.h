@@ -41,9 +41,14 @@
 #define XPORT_NUM_OF_XLMACS             2
 #define XPORT_NUM_M                     3
 #define XLMAC_NUM_S                     2
-#elif defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#elif defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
 #define XPORT_NUM_OF_PORTS_PER_XLMAC    4
 #define XPORT_NUM_OF_XLMACS             3
+#define XPORT_NUM_M                     3
+#define XLMAC_NUM_S                     2
+#elif defined(CONFIG_BCM968375)
+#define XPORT_NUM_OF_PORTS_PER_XLMAC    4
+#define XPORT_NUM_OF_XLMACS             2
 #define XPORT_NUM_M                     3
 #define XLMAC_NUM_S                     2
 #elif defined(CONFIG_BCM963158)

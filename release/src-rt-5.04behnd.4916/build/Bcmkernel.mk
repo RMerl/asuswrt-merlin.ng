@@ -15,7 +15,6 @@ BRCM_RAMDISK_BOOT_EN       \
 BRCM_RAMDISK_SIZE          \
 BRCM_NFS_MOUNT_EN          \
 BRCM_SNMP                  \
-BUILD_VLANCTL              \
 BUILD_DDNSD                \
 BUILD_EBTABLES             \
 BUILD_EPITTCP              \
@@ -43,7 +42,6 @@ BRCM_FLASHBLK_SIZE         \
 BRCM_AUXFS_PERCENT         \
 BRCM_BACKUP_PSI            \
 BUILD_GPONCTL              \
-BUILD_SPUCTL               \
 FLASH_NAND_BLOCK_16KB      \
 FLASH_NAND_BLOCK_128KB     \
 FLASH_NAND_BLOCK_256KB     \
@@ -72,11 +70,21 @@ export BRCM_MAINTAINENCETAG
 #The kernel build will use the value of 'CROSS_COMPILE'. Make.common will calculate the kernel toolchain and set it in KCROSS_COMPILE
 	CROSS_COMPILE:=$(KCROSS_COMPILE)
 
+HOSTCC_ENV=
+ifneq ($(strip $(HOSTCC)),)
+HOSTCC_ENV="HOSTCC=$(HOSTCC)"
+endif
+
 ifeq ($(strip $(DESKTOP_LINUX)),)
-default version_info headers_install bcmkernel_headers_install olddefconfig modules modules_install clean mrproper tools/perf tools/perf_clean dtbs prepare_bcm_driver:
-	$(MAKE) ARCH=$(KARCH) -C $(KERNEL_DIR) $(MAKEOVERRIDES) $(MAKECMDGOALS) $(KERN_TARGET) EXTRAVERSION= LOCALVERSION=
+default version_info headers_install bcmkernel_headers_install olddefconfig modules modules_install bcmlinks_clean tools/perf tools/perf_clean dtbs prepare_bcm_driver vmlinux Image.gz zImage:
+	$(MAKE) ARCH=$(KARCH) -C $(KERNEL_DIR) $(MAKEOVERRIDES) $(MAKECMDGOALS) $(KERN_TARGET) EXTRAVERSION= LOCALVERSION= BUILD_NUMBER= $(HOSTCC_ENV)
+clean:
+	$(MAKE) ARCH=$(KARCH) -C $(KERNEL_DIR) $(MAKEOVERRIDES) clean bcmlinks_clean $(KERN_TARGET) EXTRAVERSION= LOCALVERSION= BUILD_NUMBER= $(HOSTCC_ENV)
+mrproper:
+	$(MAKE) ARCH=$(KARCH) -C $(KERNEL_DIR) $(MAKEOVERRIDES) clean bcmlinks_clean $(KERN_TARGET) EXTRAVERSION= LOCALVERSION= BUILD_NUMBER= $(HOSTCC_ENV)
+	$(MAKE) ARCH=$(KARCH) -C $(KERNEL_DIR) $(MAKEOVERRIDES) mrproper $(KERN_TARGET) EXTRAVERSION= LOCALVERSION= BUILD_NUMBER= $(HOSTCC_ENV)
 else
-default version_info headers_install bcmkernel_headers_install olddefconfig modules modules_install tools/perf tools/perf_clean dtbs prepare_bcm_driver:
+default version_info headers_install bcmkernel_headers_install olddefconfig modules modules_install tools/perf tools/perf_clean dtbs prepare_bcm_driver vmlinux Image.gz zImage:
 	@echo "******************** SKIP kernel build for DESKTOP_LINUX ********************";
 	touch $(KERNEL_DIR)/vmlinux
 mrproper clean:
@@ -86,6 +94,6 @@ endif
 
 bcm_headers_install:
 	$(Q)echo "======================================================"
-	$(Q)$(MAKE) -C $(BRCMDRIVERS_DIR) bcm_headers_install EXTRAVERSION= LOCALVERSION=
+	$(Q)$(MAKE) -C $(BRCMDRIVERS_DIR) bcm_headers_install EXTRAVERSION= LOCALVERSION= BUILD_NUMBER=
 
-.PHONY: nothing bcm_headers_install version_info headers_install default olddefconfig modules modules_install clean mrproper tools/perf tools/perf_clean dtbs
+.PHONY: nothing bcm_headers_install version_info headers_install default olddefconfig modules modules_install clean bcmlinks_clean mrproper tools/perf tools/perf_clean dtbs

@@ -1,0 +1,19 @@
+if TARGET_ARBEL_EVB
+
+config SYS_BOARD
+	default "arbel_evb"
+
+config SYS_VENDOR
+	default "nuvoton"
+
+config SYS_CONFIG_NAME
+	default "arbel"
+
+config SYS_MEM_TOP_HIDE
+	hex "Reserved TOP memory"
+	default 0x0
+	help
+	  Reserve memory for ECC/GFX/OPTEE/TIP/CP.
+
+source "board/nuvoton/common/Kconfig"
+endif

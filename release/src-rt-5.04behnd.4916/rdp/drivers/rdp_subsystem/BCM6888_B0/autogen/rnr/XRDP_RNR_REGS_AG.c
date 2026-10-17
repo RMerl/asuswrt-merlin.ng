@@ -4346,6 +4346,9 @@ static const ru_reg_rec *RNR_REGS_REGS[] =
 const ru_block_rec RNR_REGS_BLOCK =
 {
     "RNR_REGS",
+#if RU_INCLUDE_SIZE
+    { 0x000000F4 },
+#endif
     RNR_REGS_ADDRS,
     14,
     35,

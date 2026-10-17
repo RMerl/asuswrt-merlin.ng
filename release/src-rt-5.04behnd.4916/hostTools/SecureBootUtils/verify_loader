@@ -104,7 +104,7 @@ my $usage = qq[usage: $0 Given 1MB  of bootable flash
 		A public key verification will occur if the file format is given as: XXX-pub.XX
 
 	--sanity <absolute path to the list of demo credentials CHIP> - optional 
-			given the path to GEN3 MFG and FLD credentials and CHIP number (63158/6846/6756 etc) 
+			given the path to GEN3 MFG and FLD credentials and CHIP number (63158/6756 etc) 
 			match them with the correspoing header from the input binary. Validate
 			signatures with extracted public keys from the authenticated header:];
 if ( !GetOptions( \%args, 'in=s', 'mfg:s', 'fld:s', 'sanity:s' )

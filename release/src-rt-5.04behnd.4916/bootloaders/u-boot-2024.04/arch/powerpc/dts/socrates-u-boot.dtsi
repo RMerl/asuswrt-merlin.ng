@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019
+ * Heiko Schocher, DENX Software Engineering, hs@denx.de
+ */
+#include <config.h>
+
+/ {
+	aliases {
+		eeprom0 = &i2c_eeprom0;
+	};
+
+	chosen {
+		stdout-path = &serial0;
+	};
+
+	soc8544@e0000000 {
+		i2c@3000 {
+			bootph-all;
+
+			i2c_eeprom0: eeprom@51{
+				compatible = "atmel,24c64";
+				reg = <0x51>;
+				pagesize = <32>;
+			};
+		};
+	};
+};
+
+&pci0 {
+	clock-frequency = <33000000>;
+	ranges = <0x02000000 0x0 0x80000000 0x80000000 0x0 0x20000000
+		  0x01000000 0x0 0xe2000000 0xe2000000 0x0 0x01000000>;
+};
+
+&serial0 {
+	bootph-all;
+	clock-frequency = <333333330>;
+};
+
+#include "u-boot.dtsi"

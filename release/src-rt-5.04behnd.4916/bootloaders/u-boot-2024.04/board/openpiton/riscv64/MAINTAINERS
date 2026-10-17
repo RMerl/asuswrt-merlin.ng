@@ -1,0 +1,9 @@
+Openpiton BOARD
+M:	Tianrui Wei <tianrui-wei@outlook.com>
+S:	Maintained
+F:	board/openpiton/riscv64/
+F:	include/configs/openpiton-riscv64.h
+F:	configs/openpiton_riscv64_defconfig
+F:	configs/openpiton_riscv64_spl_defconfig
+F:  drivers/mmc/piton_mmc.c
+F:  arch/riscv/dts/openpiton-riscv64.dts

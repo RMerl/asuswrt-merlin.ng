@@ -1,0 +1,17 @@
+Colibri iMX6ULL
+M:	Marcel Ziswiler <marcel.ziswiler@toradex.com>
+W:	http://developer.toradex.com/software/linux/linux-software
+W:	https://www.toradex.com/community
+S:	Maintained
+F:	arch/arm/dts/imx6ull-colibri.dtsi
+F:	arch/arm/dts/imx6ull-colibri-emmc-eval-v3.dts
+F:	arch/arm/dts/imx6ull-colibri-emmc-nonwifi.dtsi
+F:	arch/arm/dts/imx6ull-colibri-eval-v3.dts
+F:	arch/arm/dts/imx6ull-colibri-eval-v3.dtsi
+F:	arch/arm/dts/imx6ull-colibri-nonwifi.dtsi
+F:	arch/arm/dts/imx6ull-colibri-u-boot.dtsi
+F:	board/toradex/colibri-imx6ull/
+F:	board/toradex/common/
+F:	configs/colibri-imx6ull_defconfig
+F:	configs/colibri-imx6ull-emmc_defconfig
+F:	include/configs/colibri-imx6ull.h

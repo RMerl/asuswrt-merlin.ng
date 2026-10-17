@@ -1,0 +1,7 @@
+XEA BOARD
+M:	Lukasz Majewski <lukma@denx.de>
+S:	Maintained
+F:	board/liebherr/xea/
+F:	include/configs/xea.h
+F:	configs/imx28_xea_defconfig
+F:	configs/imx28_xea_sb_defconfig

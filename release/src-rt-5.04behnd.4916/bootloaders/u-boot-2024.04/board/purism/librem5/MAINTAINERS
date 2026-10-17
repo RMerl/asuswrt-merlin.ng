@@ -1,0 +1,8 @@
+PURISM LIBREM5 PHONE
+M:	Angus Ainslie <angus@akkea.ca>
+R:	kernel@puri.sm
+S:	Supported
+F:	arch/arm/dts/imx8mq-librem5*
+F:	board/purism/librem5/
+F:	configs/librem5_defconfig
+F:	include/configs/librem5.h

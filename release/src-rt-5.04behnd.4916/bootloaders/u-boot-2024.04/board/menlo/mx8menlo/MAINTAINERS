@@ -1,0 +1,7 @@
+MX8MENLO BOARD
+M:	Marek Vasut <marex@denx.de>
+M:	Olaf Mandel <o.mandel@menlosystems.com>
+S:	Maintained
+F:	board/menlo/mx8menlo/
+F:	include/configs/imx8mm-mx8menlo.h
+F:	configs/imx8mm-mx8menlo_defconfig

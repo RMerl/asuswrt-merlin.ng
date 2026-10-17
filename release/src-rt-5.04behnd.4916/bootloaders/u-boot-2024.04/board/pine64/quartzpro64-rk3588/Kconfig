@@ -1,0 +1,15 @@
+if TARGET_QUARTZPRO64_RK3588
+
+config SYS_BOARD
+	default "quartzpro64-rk3588"
+
+config SYS_VENDOR
+	default "pine64"
+
+config SYS_CONFIG_NAME
+	default "quartzpro64-rk3588"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal Mini QSPI Configuration
+ *
+ * (C) Copyright 2018-2019, Xilinx, Inc.
+ *
+ * Siva Durga Prasad Paladugu <siva.durga.prasad.paladugu@amd.com>
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "xlnx,versal";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	model = "Xilinx Versal MINI QSPI";
+
+	clk150: clk150 {
+		compatible = "fixed-clock";
+		#clock-cells = <0x0>;
+		clock-frequency = <150000000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "okay";
+		bootph-all;
+	};
+
+	amba: amba {
+		bootph-all;
+		compatible = "simple-bus";
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		ranges;
+
+		qspi: spi@f1030000 {
+			compatible = "xlnx,versal-qspi-1.0";
+			status = "okay";
+			clock-names = "ref_clk", "pclk";
+			num-cs = <0x1>;
+			reg = <0x0 0xf1030000 0x0 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&clk150 &clk150>;
+
+			flash0: flash@0 {
+				compatible = "n25q512a", "micron,m25p80",
+					     "jedec,spi-nor";
+				reg = <0x0>;
+				spi-tx-bus-width = <4>;
+				spi-rx-bus-width = <4>;
+				spi-max-frequency = <20000000>;
+			};
+		};
+	};
+
+	aliases {
+		serial0 = &dcc;
+		spi0 = &qspi;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200";
+	};
+
+	memory@fffc0000 {
+		device_type = "memory";
+		reg = <0x0 0xfffc0000 0x0 0x40000>;
+	};
+};

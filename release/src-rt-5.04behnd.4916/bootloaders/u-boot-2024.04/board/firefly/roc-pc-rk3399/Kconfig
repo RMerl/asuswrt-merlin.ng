@@ -1,0 +1,16 @@
+if TARGET_ROC_PC_RK3399
+
+config SYS_BOARD
+        default "roc-pc-rk3399"
+
+config SYS_VENDOR
+        default "firefly"
+
+config SYS_CONFIG_NAME
+        default "roc-pc-rk3399"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+        def_bool y
+
+endif
+

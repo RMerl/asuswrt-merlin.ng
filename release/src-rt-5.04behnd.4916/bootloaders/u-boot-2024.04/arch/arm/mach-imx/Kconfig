@@ -1,0 +1,202 @@
+config MACH_IMX
+	bool
+
+config HAS_CAAM
+	bool
+
+config IMX_CONFIG
+	string "DCD script to use"
+	depends on MACH_IMX
+	default "arch/arm/mach-imx/spl_sd.cfg"
+
+config ROM_UNIFIED_SECTIONS
+	bool
+
+config SYSCOUNTER_TIMER
+	bool
+
+config GPT_TIMER
+	bool
+
+config MXC_GPT_HCLK
+	bool
+
+config IMX_RDC
+	bool "i.MX Resource domain controller driver"
+	depends on ARCH_MX6 || ARCH_MX7
+	help
+	  i.MX Resource domain controller is used to assign masters
+	  and peripherals to differet domains. This can be used to
+	  isolate resources.
+
+config IMX_BOOTAUX
+	bool "Support boot auxiliary core"
+	depends on ARCH_MX7 || ARCH_MX6 || ARCH_VF610 || ARCH_IMX8 || ARCH_IMX8M
+	select LIB_ELF
+	help
+	  bootaux [addr] to boot auxiliary core.
+
+config IMX_MODULE_FUSE
+	bool "i.MX Module Fuse"
+	depends on ARCH_MX6
+	help
+	  i.MX module fuse to runtime disable some driver, including
+	  Linux OS device node.
+
+config USE_IMXIMG_PLUGIN
+	bool "Use imximage plugin code"
+	depends on ARCH_MX7 || ARCH_MX6 || ARCH_MX7ULP
+	help
+	  i.MX6/7 supports DCD and Plugin. Enable this configuration
+	  to use Plugin, otherwise DCD will be used.
+
+config IMX_HAB
+	bool "Support i.MX HAB features"
+	depends on ARCH_MX7 || ARCH_MX6 || ARCH_MX5 || ARCH_IMX8M || ARCH_MX7ULP
+	select FSL_CAAM if HAS_CAAM
+	select SPL_DRIVERS_MISC if SPL
+	imply CMD_DEKBLOB if HAS_CAAM
+	help
+	  This option enables the support for secure boot (HAB).
+	  See doc/imx/habv4/* for more details.
+
+config CSF_SIZE
+	hex "Maximum size for Command Sequence File (CSF) binary"
+	depends on IMX_HAB
+	default 0x2000 if ARCH_IMX8M
+	default 0x2060
+	help
+	  Define the maximum size for Command Sequence File (CSF) binary
+	  this information is used to define the image boot data.
+
+config CMD_BMODE
+	bool "Support the 'bmode' command"
+	default y
+	depends on ARCH_IMX8M || ARCH_MX7 || ARCH_MX6 || ARCH_MX5
+	help
+	  This enables the 'bmode' (bootmode) command for forcing
+	  a boot from specific media.
+
+	  This is useful for forcing the ROM's usb downloader to
+	  activate upon a watchdog reset which is nice when iterating
+	  on U-Boot.  Using the reset button or running bmode normal
+	  will set it back to normal.  This command currently
+	  supports i.MX53 and i.MX6.
+
+config CMD_DEKBLOB
+	bool "Support the 'dek_blob' command"
+	select IMX_CAAM_DEK_ENCAP if ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP
+	select IMX_OPTEE_DEK_ENCAP if ARCH_IMX8M
+	select IMX_SECO_DEK_ENCAP if ARCH_IMX8
+	select IMX_ELE_DEK_ENCAP if ARCH_IMX8ULP || ARCH_IMX9
+	help
+	  This enables the 'dek_blob' command which is used with the
+	  Freescale secure boot mechanism. This command encapsulates and
+	  creates a blob of data. See also CMD_BLOB and doc/imx/habv4/* for
+	  more information.
+
+config IMX_CAAM_DEK_ENCAP
+	bool "Support the DEK blob encapsulation with CAAM U-Boot driver"
+	help
+	  This enables the DEK blob encapsulation with the U-Boot CAAM driver.
+	  This option is only available on imx6, imx7 and imx7ulp.
+
+config IMX_OPTEE_DEK_ENCAP
+	select TEE
+	select OPTEE
+	bool "Support the DEK blob encapsulation with OP-TEE"
+	help
+	  This enabled the DEK blob encapsulation with OP-TEE. The communication
+	  with OP-TEE is done through a SMC call and OP-TEE shared memory. This
+	  option is available on imx8mm.
+
+config IMX_SECO_DEK_ENCAP
+	bool "Support the DEK blob encapsulation with SECO"
+	help
+	  This enabled the DEK blob encapsulation with the SECO API. This option
+	  is only available on imx8.
+
+config IMX_ELE_DEK_ENCAP
+	bool "Support the DEK blob encapsulation with ELE"
+	help
+	  This enabled the DEK blob encapsulation with the ELE API. This option
+	  is only available on imx8ulp and imx9.
+
+config CMD_PRIBLOB
+	bool "Support the set_priblob_bitfield command"
+	depends on HAS_CAAM && IMX_HAB
+	help
+	  This option enables the priblob command which can be used
+		to set the priblob setting to 0x3.
+
+config CMD_HDMIDETECT
+	bool "Support the 'hdmidet' command"
+	help
+	  This enables the 'hdmidet' command which detects if an HDMI monitor
+	  is connected.
+
+config CMD_NANDBCB
+	bool "i.MX6 NAND Boot Control Block(BCB) command"
+	depends on MTD_RAW_NAND && CMD_MTDPARTS
+	select BCH if MX6UL || MX6ULL
+	default y if ((ARCH_MX6 || ARCH_MX7 || ARCH_IMX8M) && NAND_MXS)
+	help
+	  Unlike normal 'nand write/erase' commands, this command update
+	  Boot Control Block(BCB) for i.MX6 platform NAND IP's.
+
+	  This is similar to kobs-ng, which is used in Linux as separate
+	  rootfs package.
+
+config FSL_MFGPROT
+	bool "Support the 'mfgprot' command"
+	depends on IMX_HAB && (ARCH_MX7 || ARCH_IMX8M)
+	help
+	  This option enables the manufacturing protection command
+	  which can be used has a protection feature for Manufacturing
+	  process. With this tool is possible to authenticate the
+	  chip to the OEM's server.
+
+config NXP_BOARD_REVISION
+	bool "Read NXP board revision from fuses"
+	depends on ARCH_MX6 || ARCH_MX7
+	help
+	  NXP boards based on i.MX6/7 contain the board revision information
+	  stored in the fuses. Select this option if you want to be able to
+	  retrieve the board revision information.
+
+config DDRMC_VF610_CALIBRATION
+	bool "Enable DDRMC (DDR3) on-chip calibration"
+	depends on ARCH_VF610
+	help
+	  Vybrid (vf610) SoC provides some on-chip facility to tune the DDR3
+	  memory parameters. Select this option if you want to calculate them
+	  at boot time.
+	  NOTE:
+	  NXP does NOT recommend to perform this calibration at each boot. One
+	  shall perform it on a new PCB and then use those values to program
+	  the ddrmc_cr_setting on relevant board file.
+
+config IMX8_ROMAPI
+	def_bool y
+	depends on IMX8MN || IMX8MP || IMX8ULP || IMX9
+
+config SPL_IMX_ROMAPI_LOADADDR
+	hex "Default load address to load image through ROM API"
+	depends on IMX8_ROMAPI || SPL_BOOTROM_SUPPORT
+	default 0x0
+
+config IMX_DCD_ADDR
+	hex "DCD Blocks location on the image"
+	default 0x00910000 if !ARCH_MX7ULP
+	default 0x2f010000 if ARCH_MX7ULP
+	help
+	  Indicates where the Device Configuration Data, a binary table used by
+	  the ROM code to configure the device at early boot stage, is located.
+	  This information is shared with the user via mkimage -l just so the
+	  image can be signed.
+
+config IOMUX_LPSR
+	bool
+
+config IOMUX_SHARE_CONF_REG
+	bool

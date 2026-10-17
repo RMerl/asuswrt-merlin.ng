@@ -1,0 +1,8 @@
+Kontron SMARC-sAL28 board
+M:	Michael Walle <michael@walle.cc>
+S:	Maintained
+F:	arch/arm/dts/fsl-ls1028a.dtsi
+F:	arch/arm/dts/fsl-ls1028a-kontron-sl28-*
+F:	board/kontron/sl28/
+F:	configs/kontron_sl28_defconfig
+F:	include/configs/kontron_sl28.h

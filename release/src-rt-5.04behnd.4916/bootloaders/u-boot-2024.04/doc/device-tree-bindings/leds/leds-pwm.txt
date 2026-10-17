@@ -1,0 +1,47 @@
+LEDs connected to PWM (Linux compatible)
+
+Required properties:
+- compatible : should be "pwm-leds".
+
+Each LED is represented as a sub-node of the pwm-leds device.  Each
+node's name represents the name of the corresponding LED.
+
+LED sub-node properties:
+- pwms :  (required) LED pwm channel, see "pwms property" in
+  doc/device-tree-bindings/pwm/pwm.txt
+- label :  (optional) LED label, see "label property" in
+  doc/device-tree-bindings/led/common.txt
+- max-brightness :  (optional, unsigned, default 255) Maximum brightness possible
+  for the LED
+- active-low :  (optional, boolean, default false) For PWMs where the LED is
+  wired to supply rather than ground
+- u-boot,default-brightness :  (optional, unsigned, default 0) Initial state
+  of pwm-leds
+
+Example:
+
+leds {
+    compatible = "pwm-leds";
+    status = "okay";
+
+    blue {
+        label = "led-blue";
+        pwms = <&pwm1 0 100000 0>;
+        max-brightness = <255>;
+        u-boot,default-brightness = <127>;
+    };
+
+    green {
+        label = "led-green";
+        pwms = <&pwm2 0 100000 0>;
+        max-brightness = <255>;
+        u-boot,default-brightness = <127>;
+    };
+
+    red {
+        label = "led-red";
+        pwms = <&pwm3 0 100000 0>;
+        max-brightness = <255>;
+        u-boot,default-brightness = <127>;
+    };
+}

@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: Bridge-utils
+OSS_REFERENCE_Version: 1.7.1
+OSS_REFERENCE_License: GPLv2
+OSS_REFERENCE_DownloadURL: https://www.kernel.org/pub/linux/utils/net/bridge-utils/bridge-utils-1.7.1.tar.gz
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./bridge-utils-1.7.1.tar.gz

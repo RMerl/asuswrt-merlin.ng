@@ -4,8 +4,6 @@
 #include <linux/types.h>
 
 #define ADSL_BASE_ADDR_STR          "adsl"
-#define PARAM1_BASE_ADDR_STR        "rdp1"
-#define PARAM2_BASE_ADDR_STR        "rdp2"
 #define BUFMEM_BASE_ADDR_STR        "bufmem"
 #define RNRMEM_BASE_ADDR_STR        "rnrmem"
 #define DDOSMEM_BASE_ADDR_STR       "ddosmem"
@@ -14,19 +12,17 @@
 #if (defined(CONFIG_BCM_HW_FIREWALL) || defined(CONFIG_BCM_HW_FIREWALL_MODULE))
 #define DDOSTBLS_BASE_ADDR_STR      DDOSMEM_BASE_ADDR_STR
 #endif
-#if defined(CONFIG_BCM963146) || defined(_BCM963146_) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
+#if defined(CONFIG_BCM_XRDP)
 #define FPMPOOL_BASE_ADDR_STR       BUFMEM_BASE_ADDR_STR
 #define RNRTBLS_BASE_ADDR_STR       RNRMEM_BASE_ADDR_STR
-#else
-#define FPMPOOL_BASE_ADDR_STR       PARAM1_BASE_ADDR_STR
-#define RNRTBLS_BASE_ADDR_STR       PARAM2_BASE_ADDR_STR
 #endif
-#define BUFFER_MEMORY_BASE_ADDR_STR PARAM1_BASE_ADDR_STR
-#define FLOW_MEMORY_BASE_ADDR_STR   PARAM2_BASE_ADDR_STR
 #define DHD_BASE_ADDR_STR           "dhd0"
 #define DHD_BASE_ADDR_STR_1         "dhd1"
 #define DHD_BASE_ADDR_STR_2         "dhd2"
 #define DHD_BASE_ADDR_STR_3         "dhd3"
+#if defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE)
+#define WLAN_CMA_BASE_ADDR_STR      "wlan_cma"
+#endif
 #define PLC_BASE_ADDR_STR           "plc"
 #define CMA_BASE_ADDR_STR           "cma"
 #define CMA_PAD_BASE_ADDR_STR       "pad0"
@@ -62,6 +58,12 @@
 #endif
 #endif
 
+#if defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE)
+#define WLAN_CMA_RESERVE_MEM_NUM        1
+#else
+#define WLAN_CMA_RESERVE_MEM_NUM        0
+#endif
+
 #if defined(CONFIG_BCM_DHD_RUNNER) || defined(CONFIG_BCM_DHD_RUNNER_MODULE) || IS_ENABLED(CONFIG_BCM_DHD_ARCHER)
 #define DHD_RESERVE_MEM_NUM             3
 #else
@@ -75,7 +77,8 @@
 #endif
 
 /* one extra for CMA padding reserve memory */
-#define TOTAL_RESERVE_MEM_NUM           (ADSL_RESERVE_MEM_NUM+RDPA_RESERVE_MEM_NUM+DHD_RESERVE_MEM_NUM+\
+#define TOTAL_RESERVE_MEM_NUM           (ADSL_RESERVE_MEM_NUM+RDPA_RESERVE_MEM_NUM+\
+                                        DHD_RESERVE_MEM_NUM+WLAN_CMA_RESERVE_MEM_NUM+\
                                         OPTEE_RESERVE_MEM_NUM+MPM_RESERVE_MEM_NUM+DDOS_RESERVE_MEM_NUM+1)
 
 #define MAX_RESREVE_MEM_NAME_SIZE       32

@@ -1,0 +1,15 @@
+if TARGET_ODROID_GO2
+
+config SYS_BOARD
+	default "odroid_go2"
+
+config SYS_VENDOR
+	default "hardkernel"
+
+config SYS_CONFIG_NAME
+	default "odroid_go2"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

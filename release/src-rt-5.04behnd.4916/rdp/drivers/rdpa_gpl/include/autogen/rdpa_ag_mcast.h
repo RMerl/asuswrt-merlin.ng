@@ -51,7 +51,7 @@ typedef enum {
     rdpa_mcast_attr_flow_disp_pool_ptr = 2, /* flow_disp_pool_ptr : RI : pointer : Flow Display Pool Virtual Address */
     rdpa_mcast_attr_flow = 3, /* flow : RWADF : aggregate[] mcast_flow(rdpa_mcast_flow_t) : Multicast flow entry */
     rdpa_mcast_attr_flow_stat = 4, /* flow_stat : RF : aggregate[] rdpa_stat(rdpa_stat_t) : Multicast flow entry statistics */
-    rdpa_mcast_attr_key_exclude_fields = 5, /* key_exclude_fields : W : enum_mask : List of fields to exclude from basic mcast class key, filter applies both to vlan0, vlan1 */
+    rdpa_mcast_attr_key_exclude_fields = 5, /* key_exclude_fields : RW : enum_mask : List of fields to exclude from basic mcast class key, filter applies both to vlan0, vlan */
 } rdpa_mcast_attr_types;
 
 extern int (*f_rdpa_mcast_get)(bdmf_object_handle *pmo);
@@ -95,7 +95,7 @@ static inline int rdpa_mcast_flow_idx_pool_ptr_get(bdmf_object_handle mo_, void 
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_mcast_attr_flow_idx_pool_ptr, &_nn_);
-    *flow_idx_pool_ptr_ = (void *)(long)_nn_;
+    *flow_idx_pool_ptr_ = (void *)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -110,7 +110,7 @@ static inline int rdpa_mcast_flow_idx_pool_ptr_get(bdmf_object_handle mo_, void 
  */
 static inline int rdpa_mcast_flow_idx_pool_ptr_set(bdmf_object_handle mo_, void * flow_idx_pool_ptr_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_mcast_attr_flow_idx_pool_ptr, (long)flow_idx_pool_ptr_);
+    return bdmf_attr_set_as_num(mo_, rdpa_mcast_attr_flow_idx_pool_ptr, (bdmf_long_t)flow_idx_pool_ptr_);
 }
 
 
@@ -127,7 +127,7 @@ static inline int rdpa_mcast_flow_disp_pool_ptr_get(bdmf_object_handle mo_, void
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_mcast_attr_flow_disp_pool_ptr, &_nn_);
-    *flow_disp_pool_ptr_ = (void *)(long)_nn_;
+    *flow_disp_pool_ptr_ = (void *)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -142,7 +142,7 @@ static inline int rdpa_mcast_flow_disp_pool_ptr_get(bdmf_object_handle mo_, void
  */
 static inline int rdpa_mcast_flow_disp_pool_ptr_set(bdmf_object_handle mo_, void * flow_disp_pool_ptr_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_mcast_attr_flow_disp_pool_ptr, (long)flow_disp_pool_ptr_);
+    return bdmf_attr_set_as_num(mo_, rdpa_mcast_attr_flow_disp_pool_ptr, (bdmf_long_t)flow_disp_pool_ptr_);
 }
 
 
@@ -264,6 +264,24 @@ static inline int rdpa_mcast_flow_stat_get(bdmf_object_handle mo_, bdmf_index ai
 static inline int rdpa_mcast_flow_stat_get_next(bdmf_object_handle mo_, bdmf_index * ai_)
 {
     return bdmf_attrelem_get_next(mo_, rdpa_mcast_attr_flow_stat, (bdmf_index *)ai_);
+}
+
+
+/** Get mcast/key_exclude_fields attribute.
+ *
+ * Get List of fields to exclude from basic mcast class key, filter applies both to vlan0, vlan1.
+ * \param[in]   mo_ mcast object handle or mattr transaction handle
+ * \param[out]  key_exclude_fields_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_mcast_key_exclude_fields_get(bdmf_object_handle mo_, uint32_t *key_exclude_fields_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_mcast_attr_key_exclude_fields, &_nn_);
+    *key_exclude_fields_ = (uint32_t)_nn_;
+    return _rc_;
 }
 
 

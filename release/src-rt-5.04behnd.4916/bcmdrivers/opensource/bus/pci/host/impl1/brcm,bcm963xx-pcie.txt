@@ -65,16 +65,16 @@ Broadcom 963xx specific properties
                        Default: "Enable"
                        Entry  : brcm,acc = <0>;
 
-- brcm,strap-pcie-sata : Optional property. To specify the strap register bit and its value to allow specific pcie core
+- brcm,strap-pcie-sata : Optional property. To specify the strap register bit and its value to allow specific PCIe core
                           to be initialised. 
                           Format: brcm,strap-pcie-sata=<(0..31) (0..1)>;
                           Default: Skip validation.
-- brcm,strap-pcie-rc-mode : Optional property. To specify the strap register bit and its value to define the pcie core
+- brcm,strap-pcie-rc-mode : Optional property. To specify the strap register bit and its value to define the PCIe core
                             as Root Complex
                             Format: brcm,strap-pcie-rc-mode=<(0..31) (0..1)>;
                             Default: Root complex.
 - brcm,linkupretries: Optional property. To specify the number of retries on a link training failure before switching to single lane mode on a dual lane capable core. (0: disable, 1 ... 15: Number of retires)
-                         Default: No tretries
+                         Default: No retries
 
 - brcm,barmask:       Optional property. To specify the BAR numbers usage mask for DDR memory access. (bit:0 reserved, bit 1..6 for each BAR, bit 7..31 reserved)
                        Default: BAR1, BAR3 for DDR memory access
@@ -84,16 +84,53 @@ Broadcom 963xx specific properties
 
 - brcm,vreg-supply:      Optional property. To specify the regulator instance corresponding to the supply-names above
 
-- brcm,serdes:      Optional property. To specify the flags for phy serdes.
-  This is a bitmask with the following meaning
-  ------------------------------------------------------------------
-  | Bit# |       Name              |        Values                 |
-  ------------------------------------------------------------------
-  |  0   |  process type           |  (0: 28hfc, 1: 16ffc)         |
-  |  1   |  Analog core            |  (0: Viper, 1: Black shark)   |
-  |  2   |  Reference Clock/Xtal   |  (0: 50MHz, 1: 80MHz)         |
-  ------------------------------------------------------------------
+- brcm,serdes:         Optional property. To specify the flags for phy serdes.
+                       This is a bitmask with the following meaning
+                       ------------------------------------------------------------------
+                       | Bit# |       Name              |        Values                 |
+                       ------------------------------------------------------------------
+                       |  0   |  process type           |  (0: 28hfc, 1: 16ffc)         |
+                       |  1   |  Analog core            |  (0: Viper, 1: Black shark)   |
+                       |  2   |  Reference Clock/Xtal   |  (0: 50MHz, 1: 80MHz)         |
+                       ------------------------------------------------------------------
+- brcm,prioqueue:      Optional property. To enable usage of priority queues for traffic if supported by the SoC. (0: Disable, 1: Enable)
+                       Default Enable.
+                       Entry  : brcm,prioqueue = <0x00>;
 
+- brcm,fastpath:       Optional property. Fastpath configuration for Mutex and Broadcast messages.
+                       Default Enable incoming with exclusive clear and auto mutex master selection.
+                       Entry  : brcm,fastpath = <0x109>;
+                       This is a bitmask with the following meaning
+                       ------------------------------------------------------------------------
+                       | Bit# |       Name              |        Values                       |
+                       ------------------------------------------------------------------------
+                       |  0   |  Incoming fastpath      |  (0: disable, 1: enable)            |
+                       |  1   |  Outgoing fastpath      |  (0: disable, 1: enable)            |
+                       |  2   |  Mutex clear            |  (0: Exclusive, 1: non-exclusive)   |
+                       |  3   |  Mutex Master Selection |  (0: Auto, 1: manual)               |
+                       | 7-4  |  Reserved               |                                     |
+                       | 11-8 |  Manual Mutex Master    |  (0: PCIe0, 1: PCIe1)               |
+                       |31-12 |  Reserved               |                                     |
+                       ------------------------------------------------------------------------
+
+- brcm,gen3-eq-presets: Optional property. To specify the GEN3 equalization presets for each lane
+                        Default SoC reset value
+                        Entry  : brcm,gen3-eq-presets <0x07050507 0x02050502>;
+
+                        This is a u32 array value with one u32 value per lane starting with lane#0,
+                        lane#1 .. and so on. If array has only one u32 value, the same value will be
+                        applied to all lanes of the core.
+
+                        The u32 array value has the following encoding
+                         --------------------------------------------
+                         | Bits# |   Name                  | Values |
+                         --------------------------------------------
+                         | 31:24 |  US (EP) Rx preset hint |  0-07  |
+                         | 23:16 |  US (EP) Tx preset      |  0-11  |
+                         | 15:07 |  DS (RC) Rx preset hint |  0-07  |
+                         | 07:00 |  DS (RC) Tx Preset      |  0-11  |
+                         --------------------------------------------
+  
 Broadcom Virtual PCIe Core (WLAN) specific properties
 -----------------------------------------------------
 - brcm,devid        : Optional property to specify the device id for the virutal PCIe core
@@ -123,14 +160,14 @@ SOC specific Device Tree file (<soc>.dtsi) with optional internal WiFi core
 ===========================================================================
 
 #if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
-	/* pcie common */
+	/* PCIe common */
 	pcie: pcie {
 		compatible = "brcm,bcm-pcie";
 		device_type = "cpci";
 		brcm,pllclkid = <0x3210>;
 	}
 
-	/* virtual pcie core 0  (internal wifi first) */
+	/* virtual PCIe core 0  (internal wifi first) */
 	vpcie0: vpcie@0 {
 		compatible = "brcm,bcm963xx-vpcie";
 		device_type = "vpci";
@@ -143,7 +180,7 @@ SOC specific Device Tree file (<soc>.dtsi) with optional internal WiFi core
 					 GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>; /* WIFI1 d11mac */
 	};
 
-	/* pcie core 0 */
+	/* PCIe core 0 */
 	pcie0: pcie@0 {
 		#define PCIE_ID				0
 		#define PCIE_SPI			68
@@ -153,7 +190,7 @@ SOC specific Device Tree file (<soc>.dtsi) with optional internal WiFi core
 		#define PCIE_RANGE_SIZE		0x10000000
 		#include "../ip/bcm_pcie_core.dtsi"
 	};
-	/* pcie core 1 */
+	/* PCIe core 1 */
 	pcie1: pcie@1 {
 		#define PCIE_ID				1
 		#define PCIE_SPI			69
@@ -163,7 +200,7 @@ SOC specific Device Tree file (<soc>.dtsi) with optional internal WiFi core
 		#define PCIE_RANGE_SIZE		0x10000000
 		#include "../ip/bcm_pcie_core.dtsi"
 	};
-	/* pcie core 2 */
+	/* PCIe core 2 */
 	pcie2: pcie@2 {
 		#define PCIE_ID				2
 		#define PCIE_SPI			70
@@ -173,7 +210,7 @@ SOC specific Device Tree file (<soc>.dtsi) with optional internal WiFi core
 		#define PCIE_RANGE_SIZE		0x10000000
 		#include "../ip/bcm_pcie_core.dtsi"
 	};
-	/* pcie core 3 */
+	/* PCIe core 3 */
 	pcie3: pcie@3 {
 		#define PCIE_ID				3
 		#define PCIE_SPI			71

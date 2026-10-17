@@ -1,6 +1,0 @@
-BACHMANN ELECTRONIC OT1200 BOARD
-M:	Christian Gmeiner <christian.gmeiner@gmail.com>
-S:	Maintained
-F:	board/bachmann/ot1200
-F:	include/configs/ot1200.h
-F:	configs/ot1200*_defconfig

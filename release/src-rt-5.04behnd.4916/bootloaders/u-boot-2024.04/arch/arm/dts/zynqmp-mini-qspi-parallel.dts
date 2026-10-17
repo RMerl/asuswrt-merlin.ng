@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Xilinx ZynqMP QSPI Quad Parallel DTS
+ *
+ * Copyright (C) 2015 - 2017 Xilinx, Inc.
+ */
+
+#include "zynqmp-mini-qspi.dts"
+
+/ {
+	model = "ZynqMP MINI QSPI PARALLEL";
+};
+
+&qspi {
+	num-cs = <2>;
+};
+
+&flash0 {
+	reg = <0>, <1>;
+	parallel-memories = /bits/ 64 <0x10000000 0x10000000>; /* 256MB */
+};

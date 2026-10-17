@@ -35,7 +35,9 @@
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
 
 #include <bcmutils.h>
-#include <wl_pktc.h>
+#if defined(BCM_PKTFWD)
+#include <wl_pktfwd.h>
+#endif
 #include <wl_br_d3lut.h>
 
 #include "br_private.h"
@@ -45,18 +47,18 @@
 int
 wl_update_d3lut_and_blog(struct net_device *dst_dev, struct sk_buff *skb, ETHHDR_TYPE ethhdr_type)
 {
-	uint32_t chainIdx = PKTC_INVALID_CHAIN_IDX;
 	int ret = BCME_ERROR;
 
-#if defined(PKTC_TBL) || defined(BCM_PKTFWD)
+#if defined(BCM_PKTFWD)
+	uint32_t chainIdx = PKTFWD_INVALID_CHAIN_IDX;
+
 	unsigned char *da = PKT_ETHHDR(skb, ethhdr_type);
 
-	if (wl_pktc_req_hook)
-		chainIdx = wl_pktc_req_hook(PKTC_TBL_UPDATE, (unsigned long)da,
+	if (wl_pktfwd_req_hook)
+		chainIdx = wl_pktfwd_req_hook(wl_pktfwd_req_ins_symbol_e, (unsigned long)da,
 				(unsigned long)dst_dev, 0);
-#endif
 
-	if (chainIdx != PKTC_INVALID_CHAIN_IDX)
+	if (chainIdx != PKTFWD_INVALID_CHAIN_IDX)
 	{
 		/* Update chainIdx in blog */
 #ifdef BCM_BLOG
@@ -66,12 +68,14 @@ wl_update_d3lut_and_blog(struct net_device *dst_dev, struct sk_buff *skb, ETHHDR
 			skb->blog_p->wfd.nic_ucast.is_wfd = 1;
 			skb->blog_p->wfd.nic_ucast.is_chain = 1;
 			skb->blog_p->wfd.nic_ucast.wfd_idx =
-				((chainIdx & PKTC_WFD_IDX_BITMASK) >> PKTC_WFD_IDX_BITPOS);
+				((chainIdx & PKTFWD_WFD_IDX_BITMASK) >> PKTFWD_WFD_IDX_BITPOS);
 			skb->blog_p->wfd.nic_ucast.chain_idx = chainIdx;
 		}
 #endif
 		ret = BCME_OK;
 	}
+#endif /* BCM_PKTFWD */
+
 	return ret;
 }
 
@@ -93,11 +97,11 @@ void wl_handle_br_d3lut(struct net_device *src_dev, struct net_device *dst_dev, 
 	struct net_device *root_dst_dev, *root_src_dev;
 	unsigned char *da = eth_hdr(skb)->h_dest;
 
-#if defined(PKTC_TBL) || defined(BCM_PKTFWD)
+#if defined(BCM_PKTFWD)
 	/* wlan module is not ready/loaded */
-	if (wl_pktc_req_hook == NULL)
+	if (wl_pktfwd_req_hook == NULL)
 		return;
-#endif
+#endif /* BCM_PKTFWD */
 
 	if (skbuff_bcm_ext_br_flood_get(skb))
 		return;
@@ -146,10 +150,8 @@ void wl_handle_br_d3lut(struct net_device *src_dev, struct net_device *dst_dev, 
 		 *----------------------------------------------------------------------------------
 		 */
 
-#if defined(PKTC_TBL) || defined(BCM_PKTFWD)
 		/* Update chaining table for WL (NIC driver) */
 		wl_update_d3lut_and_blog(dst_dev, skb, ETHHDR_BRG);
-#endif
 	}
 
 }

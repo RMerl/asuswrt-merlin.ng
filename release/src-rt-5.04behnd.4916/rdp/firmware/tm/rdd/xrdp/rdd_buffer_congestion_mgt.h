@@ -44,6 +44,16 @@
 #define BUFFER_CONG_MGT_LOW_THRESHOLD_PERCENT      85
 #define BUFFER_CONG_MGT_NUM_PDS_TO_FLUSH           64
 
+/* GEN6.2 checks the WIRED counter to see if BCM should be started or not.
+ * Now since this is counter is relevant to multiple cores, we may see a scenarios where, e.g.,:
+ * DS_0 has an issue but DS_1 and DS_2 are also triggered.
+ * Until the WIRED counter will be split per core (WIRED_0, WIRED_1, ...) we use a mechanism so that
+ * cores that were triggered with no apparent issue will ignore small queues
+ */
+#define BUFFER_CONG_MGT_MIN_QUEUE_BYTES            (1*1024*1024)     /* queues with lower occupancy will be ignored */
+#define BUFFER_CONG_MGT_MIN_QUEUE_BYTES_MIN        (0.5*1024*1024)   /* minimal value */
+#define BUFFER_CONG_MGT_MIN_QUEUE_BYTES_MAX        (8*1024*1024)     /* maximal value */
+
 typedef struct
 {
    uint32_t congestion_detected;    /* Number of times congestion state was detected */
@@ -61,8 +71,14 @@ bdmf_error_t rdd_buffer_congestion_mgt_enable(fpm_ug_id_e ug, bdmf_boolean enabl
 
 /* RDD debug functions */
 /* Read debug statistics */
+#if (CHIP_VER >= RDP_GEN_62)
+bdmf_error_t rdd_buffer_congestion_mgt_stat_get(tm_identifier_e tm_identity, rdd_buffer_congestion_mgt_stat *stats);
+#else
 bdmf_error_t rdd_buffer_congestion_mgt_stat_get(fpm_ug_id_e ug, rdd_buffer_congestion_mgt_stat *stats);
-
+#if (CHIP_VER >= RDP_GEN_60)
+void rdd_buffer_congestion_mgt_stat_get_sq(rdd_buffer_congestion_mgt_stat *stats);
+#endif
+#endif
 /* Read thresholds */
 bdmf_error_t rdd_buffer_congestion_mgt_thresholds_get(fpm_ug_id_e ug, uint32_t *p_high_threshold, uint32_t *p_low_threshold);
 
@@ -74,6 +90,14 @@ bdmf_error_t rdd_buffer_congestion_mgt_num_pds_get(fpm_ug_id_e ug, uint8_t *num_
 
 /* Set num PDs to flush */
 bdmf_error_t rdd_buffer_congestion_mgt_num_pds_set(fpm_ug_id_e ug, uint8_t num_pds);
+
+/* Get/Set min queue bytes */
+bdmf_error_t rdd_buffer_congestion_mgt_min_queue_bytes_set(fpm_ug_id_e ug, uint32_t min_queue_bytes);
+bdmf_error_t rdd_buffer_congestion_mgt_min_queue_bytes_get(fpm_ug_id_e ug, uint32_t *min_queue_bytes);
+
+#if (CHIP_VER >= RDP_GEN_60)
+bdmf_error_t get_tm_range(fpm_ug_id_e ug, tm_identifier_e *tm_start, tm_identifier_e *tm_end);
+#endif
 
 #endif
 

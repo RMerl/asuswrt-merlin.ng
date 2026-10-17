@@ -1,0 +1,25 @@
+&gpio0 {
+	bootph-all;
+};
+
+&gpio1 {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&spi1 {
+	bootph-all;
+};
+
+&I2C0 {
+	bootph-all;
+};
+
+&PCA22 {
+	bootph-all;
+};
+
+#include "mvebu-u-boot.dtsi"

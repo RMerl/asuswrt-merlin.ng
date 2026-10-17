@@ -1,0 +1,125 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2022 Gateworks Corporation
+ */
+
+#include "imx8mm-venice-u-boot.dtsi"
+
+&gpio1 {
+	rs422en {
+		gpio-hog;
+		output-high;
+		gpios = <10 GPIO_ACTIVE_HIGH>;
+		line-name = "rs422_en#";
+	};
+
+	rs485en {
+		gpio-hog;
+		output-high;
+		gpios = <11 GPIO_ACTIVE_HIGH>;
+		line-name = "rs485_en#";
+	};
+
+	rs232en {
+		gpio-hog;
+		output-low;
+		gpios = <12 GPIO_ACTIVE_HIGH>;
+		line-name = "rs232_en#";
+	};
+};
+
+&gpio2 {
+	dig2in {
+		gpio-hog;
+		input;
+		gpios = <0 GPIO_ACTIVE_HIGH>;
+		line-name = "dig2_in";
+	};
+
+	dig2out {
+		gpio-hog;
+		output-high;
+		gpios = <1 GPIO_ACTIVE_HIGH>;
+		line-name = "dig2_out#";
+	};
+
+	dig2ctl {
+		gpio-hog;
+		output-low;
+		gpios = <2 GPIO_ACTIVE_HIGH>;
+		line-name = "dig2_ctl";
+	};
+
+	dig1ctl {
+		gpio-hog;
+		output-low;
+		gpios = <6 GPIO_ACTIVE_HIGH>;
+		line-name = "dig1_ctl";
+	};
+
+	dig1out {
+		gpio-hog;
+		output-high;
+		gpios = <8 GPIO_ACTIVE_HIGH>;
+		line-name = "dig1_out#";
+	};
+
+	dig1in {
+		gpio-hog;
+		input;
+		gpios = <9 GPIO_ACTIVE_HIGH>;
+		line-name = "dig1_in";
+	};
+};
+
+&gpio5 {
+	sim1det {
+		gpio-hog;
+		input;
+		gpios = <7 GPIO_ACTIVE_LOW>;
+		line-name = "sim1_det#";
+	};
+
+	sim2det {
+		gpio-hog;
+		input;
+		gpios = <8 GPIO_ACTIVE_LOW>;
+		line-name = "sim2_det#";
+	};
+
+	sim2sel {
+		gpio-hog;
+		output-low;
+		gpios = <9 GPIO_ACTIVE_HIGH>;
+		line-name = "sim2_sel";
+	};
+
+	pci_wdis {
+		gpio-hog;
+		output-high;
+		gpios = <12 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_wdis#";
+	};
+};
+
+&fec1 {
+	phy-reset-gpios = <&gpio4 25 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <1>;
+	phy-reset-post-delay = <300>;
+};
+
+&pinctrl_fec1 {
+	bootph-pre-ram;
+};
+
+&{/soc@0/bus@30800000/i2c@30a30000/pmic@4b} {
+	bootph-pre-ram;
+};
+
+&{/soc@0/bus@30800000/i2c@30a30000/pmic@4b/regulators} {
+	bootph-pre-ram;
+};
+
+&pinctrl_pmic {
+	bootph-pre-ram;
+};

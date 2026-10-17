@@ -1,0 +1,8 @@
+config IMX6_ENGICAM_COMMON
+	bool "Engicam i.MX6 Common code"
+	depends on SPL && MX6
+	default y if TARGET_MX6Q_ENGICAM || TARGET_MX6UL_ENGICAM
+	help
+	  Common SPL and U-Boot proper code for Engicam i.MX6 targets.
+
+	  Enable it in board Kconfig if it uses i.MX6 variant Engicam boards.

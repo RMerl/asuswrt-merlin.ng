@@ -1,0 +1,46 @@
+JIRA:BCAWLAN-265353 CMWIFI kernel 5.15 wifi extender support - wl sta mode
+JIRA:BCAWLAN-274923 SVT:AP:Feature: SmartMesh: 33941_OpenBFC_6726MCH2_6726MCH5_67263MCH6: Controller Identifying Ethernet Repeater as WiFi Repeater(Agent DWDS v1)
+JIRA:BCAWLAN-274812 SVT_AP: UTF 33941UD_6726(6g)_6726(5g)_6711(2g): BUG: KFENCE: use-after-free read in offload_rx_handler_fpm+0x160/0x320
+JIRA:BCAWLAN-275609 CMWIFI: openbfc generic 24.2 compile hung after build server migrate rh8 and make to version 4.4.1
+JIRA:BCAWLAN-275604 CMWIFI:339xx EasyMesh R4 precert WAN/UCC bridge, EthWAN port config by default with nvram set cmwifi_mesh_cert=1
+JIRA:BCAWLAN-275888 CMWIFI:339xx build break due to a missing file
+JIRA:BCAWLAN-276041 CMWIFI: Fix a compilation issue with make 4.4.1
+JIRA:BCAWLAN-275949 SVT: AP:CERT-WIFI 7-R1:3392+6726:Nvram load is returning help messages
+JIRA:BCAWLAN-276125 CMWIFI: 33941UD: Fix patch failure of jenkins builds
+JIRA:BCAWLAN-275927 CMWIFI:339xx default appeventd_enable=1 for qosmgmtd and smarthaul dependency
+JIRA:BCAWLAN-276122 Add cable team QoS fix into openbfc_diff files for 3392 and 33941
+JIRA:BCAWLAN-276241 CMWIFI: disable powerman for cmwifi
+JIRA:BCAWLAN-276294 SVT::AP:3392_6711 2G cannot reestablish connection after a rc restart
+JIRA:BCAWLAN-276340 CMWIFI: oops.log missing from /data
+JIRA:BCAWLAN-276431 SVT_AP:UTF : RC restart is marked done before the radios are actually up.
+JIRA:BCAWLAN-276503 SVT::AP:3392_6711: Optimize rm_nic_netxl_support
+JIRA:BCAWLAN-275953 SVT: AP: FEATURE-WMF:3392: Observed Unable to receive multicast streaming from server running in WAN/LAN host to wireless STA's connected to 2.4 ,5 GHz and 6GHz radios.
+JIRA:BCAWLAN-276633 CMWIFI: Migrate Nightly builds to 25.1 OpenBFC - cmwifi repo specific checkins
+JIRA:BCAWLAN-276665 CMWIFI: Disable SSC in device tree for collecting AER error occurence statistics and fix PCIE GEN3 retrain crash
+JIRA:BCAWLAN-276548 CMWIFI: fix 3390 internal build compile failure
+JIRA:BCAWLAN-276706 CMWIFI: disable panic on RCU_CPU_STALL
+JIRA:BCAWLAN-276812 CMWIFI: rename netlink functions in unfnvram to avoid linking the duplicate functions
+JIRA:BCAWLAN-276009 SVT:AP:Feature: SmartHaul: 33941_OpenBFC_6726MCH2_6726MCH5_67263MCH6: BH STAs information is displayed under the output of the bsd -s command
+JIRA:BCAWLAN-276694 SVT:AP:Pre-Cert:WiFi OCE: 3392+6711+6726: Hostapd is not starting with preauth nvram set to 1
+JIRA:BCAWLAN-276816 CMWIFI: Remove kill telnet and ushd at rc stop
+JIRA:BCAWLAN-276008 CMWIF: Move acsd2 to foreground for Openbfc Generic platform for SmartMesh
+JIRA:BCAWLAN-276591 SVT:AP:Feature:Smartmesh-OTA: 33941_OpenBFC_6726MCH2_6726MCH5_67263MCH6: 5g & 6g BSS are down after rebooting RootAP
+JIRA:BCAWLAN-275623 SVT:AP:UTF:3392_V20+6711_2G+6726_5G+67263_6G:Observing Kernel panic - not syncing: RCU Stall during traffic
+JIRA:BCAWLAN-276697 SVT_AP:3392a0/33941ud_6711(2g)_6726(5g)_6726(6g) :25.1SDK Internal Nightly/SmartMesh - rpc_rx: user queue for service 4 is full
+JIRA:BCAWLAN-276828 SVT:AP:Pre-Cert:WiFi EasyMesh-R6/R5/R4:3392_OpenBFC_6711MC2_6726MCH5_67263MCH6:MAUT requires additional restart to complete ethernet onboarding.
+JIRA:BCAWLAN-277198 CMWIFI: Missing S40wifi from cmwifi external build due to mogrify
+JIRA:BCAWLAN-277185 CMWIFI: SMC-Based: Lattice: Kernel crash oops logging not working
+JIRA:BCAWLAN-277192 RDKM: updated CM3392 RDKM Readme to OpenBFC25.1 RDKM
+JIRA:BCAWLAN-275938 SVT AP: UTF: 33941ud: 3392 - 2.5G/10G link between endpoint and CM cannot pass traffic after 2.5G/10G SerDes err_code = ERR_CODE_SRDS_REG_ACCESS_FAIL
+JIRA:BCAWLAN-276858 SVT: AP: FEATURE-WMF:3392_BCM96711MC2(3X3)_BCM96726MCH5-B1_BCM967263MCH6: Observed Unable to receive multicast streaming from server running in WAN/LAN host to wireless STA(Intel ax210) connected to 2.4 GHz Band
+JIRA:BCAWLAN-276842 SVT AP:Driverload:OpenBFC_3392_BCM96711MC2(3X3)_BCM96726MCH5-B1_BCM967263MCH6: Observed brcm-dqnet ethernet0 eth3: DROP: failed to alloc FPM buffer in AP serial 
+JIRA:BCAWLAN-275762 SVT:AP:Feature: SmartMesh: 3392_OpenBFC_BCM96711MC2(3X3)_BCM96726MCH5-B1_BCM967263MCH6: Controller Identifying Ethernet Repeater as WiFi Repeater Incorrectly when both Eth & WiFi Links are up
+JIRA:BCAWLAN-276871 Erase kenrel nvram setting as well when erasing wifi settings
+JIRA:BCAWLAN-277456 CMWIFI: FPM invalid token due to uninitialized variable
+JIRA:BCAWLAN-277488 CMWIFI: WMF test observing netxl_fpm_recycle stack dump
+JIRA:BCAWLAN-277689 CMWIFI:3392/33940: SDK Patch: PCIE AER: Allow access to MDIO registers from DHD
+JIRA:BCAWLAN-276820 SVT AP: UTF: 3392ZA0_6726_6711 : rcu: INFO: rcu_sched self-detected stall on CPU -scheduler_thread_fn+0x84/0x200 [wl]
+JIRA:BCAWLAN-277742 CMWIFI make nvram hapd_dm_unregister=1 for EM cert test
+JIRA:BCAWLAN-277823 CMWIFI: eapd ocassionally exits at rc restart with mesh multiple guest VAPs on different bridges
+JIRA:BCAWLAN-277172 SVT:AP:33941_6726_2G+6726_5G+6726_6G:Roaming: PCIe: dev 0000:01:00.0: RC link status registers not available to driver
+JIRA:BCAWLAN-278021 SVT:AP:Pre-Cert:WiFi EasyMesh-R4:MAUT:3392_BCM96711MC2(3X3)_BCM96726MCH5-B1_BCM967263MCH6:No topology Notification Message sent from MAUT to CTT-STA4 with no 802.1Q tag.

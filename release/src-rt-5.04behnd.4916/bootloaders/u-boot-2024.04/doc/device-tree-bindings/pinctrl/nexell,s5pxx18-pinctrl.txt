@@ -1,0 +1,78 @@
+Binding for Nexell s5pxx18 pin cotroller
+========================================
+
+Nexell's ARM bases SoC's integrates a GPIO and Pin mux/config hardware
+controller. It controls the input/output settings on the available pads/pins
+and also provides ability to multiplex and configure the output of various
+on-chip controllers onto these pads.
+
+Please refer to pinctrl-bindings.txt in this directory for details of the
+common pinctrl bindings used by client devices, including the meaning of the
+phrase "pin configuration node".
+
+
+Required properties:
+  - compatible: "nexell,s5pxx18-pinctrl"
+  - reg: should be register base and length as documented in the datasheet
+  - interrupts: interrupt specifier for the controller over gpio and alive pins
+
+Example:
+pinctrl_0: pinctrl@c0010000 {
+	compatible = "nexell,s5pxx18-pinctrl";
+		reg = <0xc0010000 0xf000>;
+		bootph-all;
+};
+
+Nexell's pin configuration nodes act as a container for an arbitrary number of
+subnodes. Each of these subnodes represents some desired configuration for a
+pin, a group, or a list of pins or groups. This configuration can include the
+mux function to select on those pin(s)/group(s), and various pin configuration
+parameters.
+
+  Child nodes must be set at least one of the following settings:
+  - pins = Select pins for using this function.
+  - pin-function = Select the function for use in a selected pin.
+  - pin-pull = Pull up/down configuration.
+  - pin-strength = Drive strength configuration.
+
+  Valid values for nexell,pins are:
+     "gpioX-N" : X in {A,B,C,D,E}, N in {0-31}
+  Valid values for nexell,pin-function are:
+     "N"       : N in {0-3}.
+                 This setting means that the value is different for each pin.
+                 Please refer to datasheet.
+  Valid values for nexell,pin-pull are:
+     "N"       : 0 - Down, 1 - Up, 2 - Off
+  Valid values for nexell,pin-strength are:
+     "N"       : 0,1,2,3
+
+
+Example:
+  - pin settings
+	mmc0_clk: mmc0-clk {
+		pins = "gpioa-29";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <2>;
+	};
+
+	mmc0_cmd: mmc0-cmd {
+		pins = "gpioa-31";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	mmc0_bus4: mmc0-bus-width4 {
+		pins = "gpiob-1, gpiob-3, gpiob-5, gpiob-7";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+  - used by client devices
+	mmc0:mmc@... {
+		pinctrl-names = "default";
+		pinctrl-0 = <&mmc0_clk>, <&mmc0_cmd>, <&mmc0_bus4>;
+		...
+	};

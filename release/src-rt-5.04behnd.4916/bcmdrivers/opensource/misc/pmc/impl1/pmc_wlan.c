@@ -37,7 +37,7 @@ written consent.
 #define MAX_WLAN_PMB_ADDR   8
 #if defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 #define MAX_WLAN_UNIT       2
-#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM96855)
 #define MAX_WLAN_UNIT       1
 #else
 #error "pmc_wlan is not supported"
@@ -70,6 +70,15 @@ int pmc_wlan_ubus_mport[MAX_WLAN_UNIT] = {
 #endif /* MAX_WLAN_UNIT = 2 */
 };
 #endif /* CONFIG_BCM_UBUS_DECODE_REMAP */
+
+#if defined(CONFIG_BCM_UBUS4_DCM) && defined(UBUS_PORT_ID_MLO)
+int pmc_mlo_ubus_mport[MAX_WLAN_UNIT] = {
+	UBUS_PORT_ID_MLO,
+#if (MAX_WLAN_UNIT == 2)
+	UBUS_PORT_ID_MLO1,
+#endif /* MAX_WLAN_UNIT = 2 */
+};
+#endif /* CONFIG_BCM_UBUS4_DCM && UBUS_PORT_ID_MLO */
 
 int pmc_wlan_power_up(int unit)
 {
@@ -107,8 +116,18 @@ int pmc_wlan_power_up(int unit)
 	}
 #endif
 
+#if defined(CONFIG_BCM_UBUS4_DCM)
+	ubus_cong_threshold_wr(pmc_wlan_ubus_mport[unit], 0);
+#if defined(UBUS_PORT_ID_MLO)
+	ubus_cong_threshold_wr(pmc_mlo_ubus_mport[unit], 0);
+#endif
+#endif
+
 #if defined(CONFIG_BCM_UBUS_DECODE_REMAP)
-    ubus_master_remap_port(pmc_wlan_ubus_mport[unit]);
+	ubus_master_remap_port(pmc_wlan_ubus_mport[unit]);
+#if defined(UBUS_PORT_ID_MLO)
+	ubus_master_remap_port(pmc_mlo_ubus_mport[unit]);
+#endif
 #endif
 
 	return rc; 

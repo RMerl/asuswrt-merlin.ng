@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Jagan Teki <jagan@amarulasolutions.com>
+ */
+
+#include "rk3399-u-boot.dtsi"
+#include "rk3399-sdram-lpddr4-100.dtsi"
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &spi_flash, &sdmmc, &sdhci;
+	};
+
+        smbios {
+                compatible = "u-boot,sysinfo-smbios";
+                smbios {
+                        system {
+                                manufacturer = "Pine64";
+                                product = "RockPro64";
+                        };
+
+                        baseboard {
+                                manufacturer = "Pine64";
+                                product = "RockPro64";
+                        };
+
+                        chassis {
+                                manufacturer = "Pine64";
+                                product = "RockPro64";
+                        };
+                };
+        };
+
+
+};
+
+&sdhci {
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+};
+
+&spi1 {
+	spi_flash: flash@0 {
+		bootph-all;
+	};
+};
+
+&vdd_center {
+	regulator-min-microvolt = <950000>;
+	regulator-max-microvolt = <950000>;
+};
+
+&vdd_log {
+	regulator-init-microvolt = <950000>;
+};

@@ -55,7 +55,9 @@ int bcm_mcast_igmp_add_entry(struct net_device *from_dev,
    t_igmp_grp_entry *mc_fdb = NULL;
    t_igmp_rep_entry *rep_entry = NULL;
    struct hlist_head *head = NULL;
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    int ret = 0;
+#endif
 
    mc_fdb = kmem_cache_alloc(mcast_ctrl->ipv4_grp_cache, GFP_ATOMIC);
    if ( !mc_fdb )
@@ -99,7 +101,8 @@ int bcm_mcast_igmp_add_entry(struct net_device *from_dev,
    hlist_add_head(&mc_fdb->hlist, head);
 
    bcm_mcast_notify_event(BCM_MCAST_EVT_SNOOP_ADD, BCM_MCAST_PROTO_IPV4, mc_fdb, rep_entry);
-#if defined(CONFIG_BLOG)
+
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    ret = bcm_mcast_create_flow(pif, 
                                (void*)mc_fdb, 
                                BCM_MCAST_PROTO_IPV4, 
@@ -170,7 +173,7 @@ int bcm_mcast_igmp_del_entry(bcm_mcast_ifdata *pif,
    if(list_empty(&igmp_fdb->rep_list)) 
    {
       hlist_del(&igmp_fdb->hlist);
-#if defined(CONFIG_BLOG) 
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
       __logInfo("Invoking delete flow for snoopentry rxgrp %pI4 txgrp %pI4 clientdev %s udpexcludeport %d rtpseqflag %d ", 
                            &(igmp_fdb->rxGrp.s_addr), &(igmp_fdb->txGrp.s_addr), 
                 igmp_fdb->dst_dev ? igmp_fdb->dst_dev->name : "NULL", 

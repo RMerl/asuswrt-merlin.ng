@@ -27,17 +27,13 @@ projects/XRDP_CFE2/drivers/rdp_subsystem/rdpa_types.h
 # sbpm drivers
 drivers/rdp_subsystem/BCM6858/autogen/psram/xrdp_drv_psram_mem_ag.c
 drivers/rdp_subsystem/BCM6858/autogen/psram/xrdp_drv_psram_mem_ag.h
-drivers/rdp_subsystem/BCM6878/autogen/sbpm/XRDP_SBPM_AG.c
-drivers/rdp_subsystem/BCM6878/autogen/sbpm/XRDP_SBPM_AG.c
-drivers/rdp_subsystem/BCM6878/autogen/sbpm/xrdp_drv_sbpm_ag.c
-drivers/rdp_subsystem/BCM6878/autogen/sbpm/xrdp_drv_sbpm_ag.h
 drivers/rdpa_gpl/include/rdpa_gpl_sbpm.h
 drivers/rdpa_gpl/rdpa_gpl_sbpm.c
 
 
 # RDP Subsystem
-drivers/rdp_subsystem/xrdp/access_macros.h
-drivers/rdp_subsystem/xrdp/access_macros_boot.h
+drivers/rdp_subsystem/common/access_macros.h
+drivers/rdp_subsystem/common/access_macros_boot.h
 projects/XRDP_CFE2/drivers/rdp_subsystem/xrdp/access_logging.h
 projects/XRDP_CFE2/drivers/rdp_subsystem/xrdp/access_logging.c
 drivers/rdp_subsystem/packing.h

@@ -1,0 +1,18 @@
+* Build U-Boot for Meerkat96 board
+
+  $ make mrproper
+  $ make meerkat96_defconfig
+  $ make
+
+  It will generate the U-Boot binary called u-boot-dtb.imx
+
+* Install U-Boot to MicroSD card
+
+  Plug MicroSD card to a Linux machine (with card reader), find the
+  device name and replace sd[x] with the name in the following command.
+
+  $ sudo dd if=u-boot-dtb.imx of=/dev/sd[x] bs=512 seek=2
+
+  It will install U-Boot to MicroSD card at 1KiB offset.  Insert the
+  card to Meerkat96 MicroSD slot, power up the board, and U-Boot should
+  boot from the card.

@@ -238,14 +238,6 @@ typedef void (* blogRuleVlanNotifyHook_t)(struct net_device *dev,
 extern blogRuleVlanHook_t blogRuleVlanHook;
 extern blogRuleVlanNotifyHook_t blogRuleVlanNotifyHook;
 
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-struct blog_t;
-typedef int (*blogRuleTcHook_t)(struct blog_t *bl,
-                                   struct net_device *rxVlanDev,
-                                   struct net_device *txVlanDev);
-extern blogRuleTcHook_t blogRuleTcHook;
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
-
 typedef int (* blogArlHook_t)(void *e);
 
 extern blogArlHook_t bcm_arl_process_hook_g;

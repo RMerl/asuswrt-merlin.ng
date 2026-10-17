@@ -1,0 +1,28 @@
+U-Boot config options used in fec_mxc.c
+
+CONFIG_FEC_MXC
+	Selects fec_mxc.c to be compiled into u-boot. Can read out the
+	ethaddr from the SoC eFuses (see below).
+
+CONFIG_MII
+	Must be defined if CONFIG_FEC_MXC is defined.
+
+CFG_FEC_MXC_SWAP_PACKET
+	Forced on iff MX28.
+	Swaps the bytes order of all words(4 byte units) in the packet.
+	This should not be specified by a board file. It is cpu specific.
+
+CONFIG_PHYLIB
+	fec_mxc supports PHYLIB and should be used for new boards.
+
+CONFIG_FEC_MXC_NO_ANEG
+	Relevant only if PHYLIB not used. Skips auto-negotiation restart.
+
+CFG_FEC_MXC_PHYADDR
+	Optional, selects the exact phy address that should be connected
+	and function fecmxc_initialize will try to initialize it.
+
+Reading the ethaddr from the SoC eFuses:
+if CONFIG_FEC_MXC is defined and the U-Boot environment does not contain the
+ethaddr variable, then its value gets read from the corresponding eFuses in
+the SoC. See the README files of the specific SoC for details.

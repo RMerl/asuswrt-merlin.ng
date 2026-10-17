@@ -1,0 +1,6 @@
+VERSATILE EXPRESS BOARDS
+M:	Kristian Amlie <kristian.amlie@northern.tech>
+S:	Maintained
+F:	board/armltd/vexpress/
+F:	include/configs/vexpress_ca9x4.h
+F:	configs/vexpress_ca9x4_defconfig

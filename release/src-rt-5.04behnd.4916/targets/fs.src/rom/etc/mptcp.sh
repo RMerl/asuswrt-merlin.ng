@@ -87,32 +87,55 @@ case $1 in
 
 ####### Configure Iptables to redirect tcp traffic from LAN to redsocks ########
 
-		echo "configuring iptables rules"
-		# add a new REDSOCKS chain
-		iptables -w -t nat -N REDSOCKS
+		if [ -x "/bin/nft" ]; then 
+			echo "configuring nftable rules"
+			# add a new REDSOCKS chain
+			nft 'add chain ip ip_nat REDSOCKS'
+			
+			# igonre traffic we are not intrested in sending to proxy
+			# adjust as per test setup
+			nft insert rule ip ip_nat REDSOCKS oifname lo counter return
+			nft insert rule ip ip_nat REDSOCKS ip daddr $PROXY_SERVER_ADDR tcp dport $PROXY_SERVER_PORT counter return
+			nft add rule ip ip_nat REDSOCKS ip daddr 127.0.0.0/8 counter return
+			nft add rule ip ip_nat REDSOCKS ip daddr 192.168.0.0/16 counter return
+			nft add rule ip ip_nat REDSOCKS ip daddr 10.0.0.0/8 counter return
+			nft add rule ip ip_nat REDSOCKS ip daddr 169.254.0.0/16 counter return
+			nft add rule ip ip_nat REDSOCKS ip daddr 172.16.0.0/12 counter return
+			nft add rule ip ip_nat REDSOCKS ip daddr 224.0.0.0/4 counter return
+			nft add rule ip ip_nat REDSOCKS ip daddr 240.0.0.0/4 counter return
+			
+			#redirect the tcp packets filtered in REDSOCKS chain to port 12345
+			nft add rule ip ip_nat REDSOCKS ip protocol tcp counter dnat to :12345
 
-		# igonre traffic we are not intrested in sending to proxy
-		# adjust as per test setup
-		iptables -w -t nat -I REDSOCKS -o lo -j RETURN
-		iptables -w -t nat -I REDSOCKS -p tcp -d $PROXY_SERVER_ADDR --dport $PROXY_SERVER_PORT -j RETURN
-		iptables -w -t nat -A REDSOCKS -d 127.0.0.0/8 -j RETURN                                                                                     
-		iptables -w -t nat -A REDSOCKS -d 192.168.0.0/16 -j RETURN
-		iptables -w -t nat -A REDSOCKS -d 10.0.0.0/8 -j RETURN                                                                                      
-		iptables -w -t nat -A REDSOCKS -d 169.254.0.0/16 -j RETURN                                                                                  
-		iptables -w -t nat -A REDSOCKS -d 172.16.0.0/12 -j RETURN                                                                                   
-		iptables -w -t nat -A REDSOCKS -d 224.0.0.0/4 -j RETURN
-		iptables -w -t nat -A REDSOCKS -d 240.0.0.0/4 -j RETURN
+			# add a rule to tap all incoming tcp traffic on br0 into redsocks CHAIN at PREROUTING
+			nft insert rule ip ip_nat Prerouting iifname $LAN_DEV ip protocol tcp counter jump REDSOCKS
+		else
+			echo "configuring iptables rules"
+			# add a new REDSOCKS chain
+			iptables -w -t nat -N REDSOCKS
 
-		#redirect the tcp packets filtered in REDSOCKS chain to port 12345
-		iptables -w -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345
+			# igonre traffic we are not intrested in sending to proxy
+			# adjust as per test setup
+			iptables -w -t nat -I REDSOCKS -o lo -j RETURN
+			iptables -w -t nat -I REDSOCKS -p tcp -d $PROXY_SERVER_ADDR --dport $PROXY_SERVER_PORT -j RETURN
+			iptables -w -t nat -A REDSOCKS -d 127.0.0.0/8 -j RETURN                                                                                     
+			iptables -w -t nat -A REDSOCKS -d 192.168.0.0/16 -j RETURN
+			iptables -w -t nat -A REDSOCKS -d 10.0.0.0/8 -j RETURN                                                                                      
+			iptables -w -t nat -A REDSOCKS -d 169.254.0.0/16 -j RETURN                                                                                  
+			iptables -w -t nat -A REDSOCKS -d 172.16.0.0/12 -j RETURN                                                                                   
+			iptables -w -t nat -A REDSOCKS -d 224.0.0.0/4 -j RETURN
+			iptables -w -t nat -A REDSOCKS -d 240.0.0.0/4 -j RETURN
 
-		# add a rule to tap all incoming tcp traffic on br0 into redsocks CHAIN at PREROUTING
-		iptables -w -t nat -I PREROUTING -i $LAN_DEV -p tcp -j REDSOCKS
+			#redirect the tcp packets filtered in REDSOCKS chain to port 12345
+			iptables -w -t nat -A REDSOCKS -p tcp -j REDIRECT --to-ports 12345
 
-		# add rules to tap locally generated tcp traffic to REDSOCKS
-		#[ ! -z "$WAN1_DEV" ] && iptables -w -t nat -A OUTPUT -o $WAN1_DEV -p tcp -j REDSOCKS
-		#[ ! -z "$WAN2_DEV" ] && iptables -w -t nat -A OUTPUT -o $WAN2_DEV -p tcp -j REDSOCKS
+			# add a rule to tap all incoming tcp traffic on br0 into redsocks CHAIN at PREROUTING
+			iptables -w -t nat -I PREROUTING -i $LAN_DEV -p tcp -j REDSOCKS
 
+			# add rules to tap locally generated tcp traffic to REDSOCKS
+			#[ ! -z "$WAN1_DEV" ] && iptables -w -t nat -A OUTPUT -o $WAN1_DEV -p tcp -j REDSOCKS
+			#[ ! -z "$WAN2_DEV" ] && iptables -w -t nat -A OUTPUT -o $WAN2_DEV -p tcp -j REDSOCKS
+		fi
 	;;
 
 	stop)

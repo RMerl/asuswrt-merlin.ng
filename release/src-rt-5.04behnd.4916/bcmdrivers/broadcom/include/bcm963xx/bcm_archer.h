@@ -49,19 +49,30 @@
 
 #include "pktHdr.h"
 
-#define ARCHER_WLAN_WL_PRIO(skb)   (skb)->wl.awl.wl_prio
-#define ARCHER_WLAN_RADIO_IDX(skb) (skb)->wl.awl.radio
-#define ARCHER_WLAN_INTF_IDX(skb)  (skb)->wl.awl.ifidx
+#define ARCHER_WLAN_WL_PRIO(wl)     (wl).awl.wl_prio
+#define ARCHER_WLAN_RADIO_IDX(wl)   (wl).awl.radio
+#define ARCHER_WLAN_INTF_IDX(wl)    (wl).awl.ifidx
 
 typedef enum {
-    ARCHER_WLAN_RADIO_MODE_SKB,
-    ARCHER_WLAN_RADIO_MODE_FKB,
-    ARCHER_WLAN_RADIO_MODE_MAX
+    ARCHER_WLAN_RADIO_MODE_SKB = 0,
+    ARCHER_WLAN_RADIO_MODE_FKB = 1,
+    ARCHER_WLAN_RADIO_MODE_WKB = 2,
+    ARCHER_WLAN_RADIO_MODE_SPC_CREDITS = 4, /* mode: SKB, feature: SPC_CREDITS */
+    ARCHER_WLAN_RADIO_MODE_MAX = 5
 } archer_wlan_radio_mode_t;
 
+#define ARCHER_WLAN_RADIO_FWQ_MODE(m)       ((m) & 0x3)
+#define ARCHER_WLAN_RADIO_SPC_CREDITS(m)    ((m) & 0x4)
+
+static inline bool archer_wlan_radio_mode_is_valid(int mode)
+{
+    return ((mode < ARCHER_WLAN_RADIO_MODE_SPC_CREDITS) ||
+            (mode & ARCHER_WLAN_RADIO_MODE_SPC_CREDITS));
+ }
+
+#if defined(BCM_PKTFWD)
 
 /* WLAN flow-miss using pktlist instead of single skb */
-#define ARCHER_WLAN_MISS_PKTLIST
 #define ARCHER_WLAN_RX_BUDGET              64
 
 typedef struct {
@@ -127,5 +138,17 @@ static inline void archer_wlan_rx_send(void *void_p, bcmFun_t *hook)
 {
     hook(void_p);
 }
+#endif /* BCM_PKTFWD */
 
+static inline int archer_wlan_get_int_radio_index(int radio_index)
+{
+#if defined(CONFIG_BCM_DHD_CROSSBOW)
+    bcmFun_t *hook = bcmFun_get(BCM_FUN_ID_ARCHER_WLAN_INT_RADIO_INDEX);
+
+    return hook(&radio_index);
+#else /* !CONFIG_BCM_DHD_CROSSBOW */
+	/* Internal and External indexes are same */
+	return radio_index;
+#endif /* !CONFIG_BCM_DHD_CROSSBOW */
+}
 #endif /* __BCM_ARCHER_H__ */

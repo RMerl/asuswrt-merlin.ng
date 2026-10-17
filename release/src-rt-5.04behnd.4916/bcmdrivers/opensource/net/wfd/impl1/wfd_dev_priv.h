@@ -29,9 +29,7 @@ written consent.
 #ifndef _WFD_DEV_PRIV__H_
 #define _WFD_DEV_PRIV__H_
 
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878)
-#define WFD_MAX_OBJECTS   2
-#elif !defined(XRDP_RGEN6) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM963146)
+#if !defined(XRDP_RGEN6) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM963146)
 #define WFD_MAX_OBJECTS   3
 #else
 #define WFD_MAX_OBJECTS 4

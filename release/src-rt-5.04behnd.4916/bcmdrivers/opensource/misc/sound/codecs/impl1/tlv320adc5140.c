@@ -39,6 +39,7 @@
 #include <sound/tlv.h>
 #include <linux/delay.h>
 #include <linux/kthread.h>
+#include <linux/version.h>
 
 #include "tlv320adc5140.h"
 
@@ -47,7 +48,7 @@
 static u8 adc_volume[8];
 DECLARE_WAIT_QUEUE_HEAD(wqMute);
 static struct snd_soc_dai *g_dai = NULL;
-static int adc5140_mute(struct snd_soc_dai*, int);
+static int adc5140_mute(struct snd_soc_dai*, int, int);
 
 static const struct regmap_range_cfg adc5140_regmap_pages[] = {
    {
@@ -77,7 +78,7 @@ int kthreadfunc(void *data)
 		set_current_state(TASK_INTERRUPTIBLE);
 		schedule();
 		msleep(MUTE_DURATION);
-		adc5140_mute(g_dai, 0);
+		adc5140_mute(g_dai, 0, 0);
 	}
 	remove_wait_queue(&wqMute, &wq);
 	do_exit(0);
@@ -125,7 +126,7 @@ static int adc5140_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 {
    struct snd_soc_component *component = codec_dai->component;
    u8 iface_reg_1;
-   iface_reg_1 = snd_soc_component_read32(component,ADC5140_MST_CFG0);
+   iface_reg_1 = snd_soc_component_read(component,ADC5140_MST_CFG0);
 
 	/* set master/slave audio interface */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -142,8 +143,7 @@ static int adc5140_set_dai_fmt(struct snd_soc_dai *codec_dai, unsigned int fmt)
 	snd_soc_component_update_bits(component, ADC5140_MST_CFG0,
 				      ADC5140_MST_SLV_MASK,
 				      iface_reg_1);
-
-	iface_reg_1 = snd_soc_component_read32(component,ADC5140_ASI_CFG0);
+	iface_reg_1 = snd_soc_component_read(component,ADC5140_ASI_CFG0);
 	iface_reg_1 &= ~ADC5140_ASI_FORMAT_MASK;
 	/* set I2S/DSP/RJF/LJF mode */
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
@@ -192,7 +192,7 @@ static int adc5140_hw_params(struct snd_pcm_substream *substream,
                              struct snd_pcm_hw_params *params,
                              struct snd_soc_dai *dai)
 {
-	unsigned int i, ret;
+	unsigned int ret;
 	struct snd_soc_component *component = dai->component;
 
 	snd_soc_component_write(component, ADC5140_PSEL, 0);
@@ -202,7 +202,7 @@ static int adc5140_hw_params(struct snd_pcm_substream *substream,
 	msleep(10);
 
 	/* set TX bus keeper always enabled*/
-	ret = snd_soc_component_read32(component,ADC5140_ASI_CFG1);
+	ret = snd_soc_component_read(component,ADC5140_ASI_CFG1);
 	ret = ret & !(3 << ADC5140_BUS_KEEPER_SHIFT);
 	ret = ret | ADC5140_BUS_KEEPER_ENABLE<<ADC5140_BUS_KEEPER_SHIFT;
 	snd_soc_component_write(component, ADC5140_ASI_CFG1, ret);
@@ -238,13 +238,13 @@ static int adc5140_hw_params(struct snd_pcm_substream *substream,
 		ADC5140_ADC_PDZ | ADC5140_PLL_PDZ);
 
 	g_dai = dai;
-	adc5140_mute(g_dai, 1); // mute around 300ms
+	adc5140_mute(g_dai, 1, 0); // mute around 300ms
 	wake_up(&wqMute);
 
 	return 0;
 }
 
-static int adc5140_mute(struct snd_soc_dai *dai, int mute)
+static int adc5140_mute(struct snd_soc_dai *dai, int mute,int direction)
 {
 	int i;
 	struct snd_soc_component *component;
@@ -255,7 +255,7 @@ static int adc5140_mute(struct snd_soc_dai *dai, int mute)
 	component = dai->component;
 	for (i=0;i<8;i++) {
 		if (mute) {
-			adc_volume[i] = snd_soc_component_read32(component,ADC5140_CH1_CFG2+i*5);
+			adc_volume[i] = snd_soc_component_read(component,ADC5140_CH1_CFG2+i*5);
 			snd_soc_component_write(component, ADC5140_CH1_CFG2+i*5, 0);
 		}
 		else
@@ -266,7 +266,6 @@ static int adc5140_mute(struct snd_soc_dai *dai, int mute)
 
 static const struct snd_soc_dai_ops adc5140_ops = {
    .hw_params    = adc5140_hw_params,
-   .digital_mute = adc5140_mute,
    .set_fmt      = adc5140_set_dai_fmt,
    .set_tdm_slot = adc5140_set_tdm_slot,
 };

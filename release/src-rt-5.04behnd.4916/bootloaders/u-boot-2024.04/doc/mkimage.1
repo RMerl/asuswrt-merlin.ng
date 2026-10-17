@@ -1,0 +1,890 @@
+.\" SPDX-License-Identifier: GPL-2.0
+.\" Copyright (C) 2022 Sean Anderson <seanga2@gmail.com>
+.\" Copyright (C) 2013-20 Simon Glass <sjg@chromium.org>
+.\" Copyright (C) 2010 Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+.\" Copyright (C) 2010 Wolfgang Denk <wd@denx.de>
+.TH MKIMAGE 1 2022-06-11 U-Boot
+.
+.SH NAME
+mkimage \- generate images for U-Boot
+.SH SYNOPSIS
+.SY mkimage
+.OP \-T type
+.BI \-l\~ image-file-name
+.YS
+.
+.SY mkimage
+.RI [ option\~ .\|.\|.\&]
+.OP \-T type
+.I image-file-name
+.YS
+.
+.SY mkimage
+.RI [ option\~ .\|.\|.\&]
+.BI \-f\~ image-tree-source-file\c
+.RB | auto\c
+.RB | auto-conf
+.I image-file-name
+.YS
+.
+.SY mkimage
+.RI [ option\~ .\|.\|.\&]
+.BI \-F\~ image-file-name
+.YS
+.
+.SH DESCRIPTION
+The
+.B mkimage
+command is used to create images for use with the U-Boot boot loader.  These
+images can contain the Linux kernel, device tree blob, root file system image,
+firmware images etc., either separate or combined.
+.P
+.B mkimage
+supports many image formats. Some of these formats may be used by embedded boot
+firmware to load U-Boot. Others may be used by U-Boot to load Linux (or some
+other kernel):
+.P
+The legacy image format concatenates the individual parts (for example, kernel
+image, device tree blob and ramdisk image) and adds a 64 byte header containing
+information about the target architecture, operating system, image type,
+compression method, entry points, time stamp, checksums, etc.
+.P
+The new
+.I FIT
+(Flattened Image Tree) format allows for more flexibility in handling images of
+various types and also enhances integrity protection of images with stronger
+checksums. It also supports verified boot.
+.
+.SH OPTIONS
+.
+.SS General options
+.
+.TP
+.B \-h
+.TQ
+.B \-\-help
+Print a help message and exit.
+.
+.TP
+.B \-l
+.TQ
+.B \-\-list
+.B mkimage
+lists the information contained in the header of an existing U-Boot image.
+.
+.TP
+.B \-s
+.TQ
+.B \-\-no\-copy
+Don't copy in the image data. Depending on the image type, this may create
+just the header, everything but the image data, or nothing at all.
+.
+.TP
+.BI \-T " image-type"
+.TQ
+.BI \-\-type " image-type"
+Parse image file as
+.IR image-type .
+Pass
+.B list
+as
+.I image-type
+to see the list of supported image types. If this option is absent, then it
+defaults to
+.B kernel
+(legacy image). If this option is absent when
+.B \-l
+is passed, then
+.B mkimage
+will attempt to automatically detect the image type. Not all image types support
+automatic detection, so it may be necessary to pass
+.B \-T
+explicitly.
+.IP
+When creating a FIT image with
+.BR \-f ,
+the image type is always set to
+.BR flat_dt .
+In this case,
+.B \-T
+specifies the image node's \(oqtype\(cq property. If
+.B \-T
+is absent, then the \(oqtype\(cq property will default to
+.BR kernel .
+.
+.TP
+.B \-q
+.TQ
+.B \-\-quiet
+Quiet. Don't print the image header.
+.
+.TP
+.B \-v
+.TQ
+.B \-\-verbose
+Verbose. Print file names as they are added to the image.
+.
+.TP
+.B \-V
+.TQ
+.B \-\-version
+Print version information and exit.
+.
+.SS General image-creation options
+.
+.TP
+.BI \-A " architecture"
+.TQ
+.BI \-\-architecture " architecture"
+Set the architecture. Pass
+.B \-h
+as the architecture to see the list of supported architectures. If
+.B \-A
+is absent, it defaults to
+.BR ppc .
+.
+.TP
+.BI \-O " os"
+.TQ
+.BI \-\-os " os"
+Set the operating system. The U-Boot
+.I bootm
+command changes boot method based on the OS type.
+Pass
+.B \-h
+as the
+.I os
+to see the list of supported OSs. If
+.B \-O
+is absent, it defaults to
+.BR linux .
+.
+.TP
+.BI \-C " compression-type"
+.TQ
+.BI \-\-compression " compression-type"
+Set the compression type. The image data should have already been compressed
+using this compression type.
+.B mkimage
+will not automatically compress image data.
+Pass
+.B \-h
+as the
+.I compression-type
+to see the list of supported compression types. If
+.B \-C
+is absent, it defaults to
+.BR gzip .
+.
+.TP
+.BI \-a " load-address"
+.TQ
+.BI \-\-load\-address " load-address"
+Set the absolute address to load the image data to.
+.I load-address
+will be interpreted as a hexadecimal number.
+.
+.TP
+.BI \-e " entry-point"
+.TQ
+.BI \-\-entry\-point " entry-point"
+Set the absolute address of the image entry point. The U-Boot
+.I bootm
+command will jump to this address after loading the image.
+.I entry-point
+will be interpreted as a hexadecimal number.
+.
+.TP
+.BI \-n " primary-configuration"
+.TQ
+.BI \-\-config " primary-configuration"
+Images may require additional configuration not specified with other options,
+often in a image-type-specific format. The image types which support this
+option and the format of their configuration are listed in
+.BR CONFIGURATION .
+.
+.TP
+.BI \-R " secondary-configuration"
+.TQ
+.BI \-\-secondary\-config " secondary-configuration"
+Some image types support a second set of configuration data. The image types
+which support secondary configuration and the formap of their configuration are
+listed in
+.BR CONFIGURATION .
+.
+.TP
+.BI \-d " image-data-file"
+.TQ
+.BI \-\-image " image-data-file"
+Use image data from
+.IR image-data-file .
+If the
+.I image-type
+is
+.BR multi ,
+then multiple images may be specified, separated by colons:
+.RS
+.IP
+.IR image-data-file [\fB:\fP image-data-file .\|.\|.]
+.RE
+.
+.TP
+.B \-x
+.TQ
+.B \-\-xip
+Set the
+.I XIP
+(execute in place) flag. The U-Boot
+.I bootm
+command will not load the image data, and instead will assume it is already
+accessible at the load address (such as via memory-mapped flash).
+.
+.SS Options for creating FIT images
+.
+.TP
+.BI \-b " device-tree-file"
+.TQ
+.BI \-\-device\-tree " device-tree-file"
+Appends the device tree binary file (.dtb) to the FIT.
+.
+.TP
+.BI \-c " comment"
+.TQ
+.BI \-\-comment " comment"
+Specifies a comment to be added when signing. This is typically a message which
+describes how the image was signed or some other useful information.
+.
+.TP
+.BI \-D " dtc-options"
+.TQ
+.BI \-\-dtcopts " dtc-options"
+Provide additional options to the device tree compiler when creating the image.
+See
+.BR dtc (1)
+for documentation of possible options. If
+.B \-D
+is absent, it defaults to
+.BR "\-I dts \-O dtb \-p 500" .
+.
+.TP
+.BI \-E
+.TQ
+.BI \-\-external
+After processing, move the image data outside the FIT and store a data offset
+in the FIT. Images will be placed one after the other immediately after the FIT,
+with each one aligned to a 4-byte boundary. The existing \(oqdata\(cq property
+in each image will be replaced with \(oqdata-offset\(cq and \(oqdata-size\(cq
+properties.  A \(oqdata-offset\(cq of 0 indicates that it starts in the first
+(4-byte-aligned) byte after the FIT.
+.
+.TP
+.BI \-B " alignment"
+.TQ
+.BI \-\-alignment " alignment"
+The alignment, in hexadecimal, that external data will be aligned to. This
+option only has an effect when \-E is specified.
+.
+.TP
+.BI \-p " external-position"
+.TQ
+.BI \-\-position " external-position"
+Place external data at a static external position. Instead of writing a
+\(oqdata-offset\(cq property defining the offset from the end of the FIT,
+.B \-p
+will use \(oqdata-position\(cq as the absolute position from the base of the
+FIT. See
+.B \-E
+for details on using external data.
+.
+.TP
+\fB\-f \fIimage-tree-source-file\fR | \fBauto\fR | \fBauto-conf
+.TQ
+\fB\-\-fit \fIimage-tree-source-file\fR | \fBauto\fR | \fBauto-conf
+Image tree source file that describes the structure and contents of the
+FIT image.
+.IP
+In some simple cases, the image tree source can be generated automatically. To
+use this feature, pass
+.BR "\-f auto" .
+The
+.BR \-d ,
+.BR \-A ,
+.BR \-O ,
+.BR \-T ,
+.BR \-C ,
+.BR \-a ,
+and
+.B \-e
+options may be used to specify the image to include in the FIT and its
+attributes. No
+.I image-tree-source-file
+is required. The
+.BR \-g ,
+.BR \-o ,
+and
+.B \-k
+or
+.B \-G
+options may be used to get \(oqimages\(cq signed subnodes in the generated
+auto FIT. Instead, to get \(oqconfigurations\(cq signed subnodes and
+\(oqimages\(cq hashed subnodes, pass
+.BR "\-f auto-conf".
+In this case
+.BR \-g ,
+.BR \-o ,
+and
+.B \-k
+or
+.B \-G
+are mandatory options.
+.
+.TP
+.B \-F
+.TQ
+.B \-\-update
+Indicates that an existing FIT image should be modified. No dtc compilation will
+be performed and
+.B \-f
+should not be passed. This can be used to sign images with additional keys
+after initial image creation.
+.
+.TP
+.BI \-i " ramdisk-file"
+.TQ
+.BI \-\-initramfs " ramdisk-file"
+Append a ramdisk or initramfs file to the image.
+.
+.TP
+.BI \-k " key-directory"
+.TQ
+.BI \-\-key\-dir " key-directory"
+Specifies the directory containing keys to use for signing. This directory
+should contain a private key file
+.IR name .key
+for use with signing, and a certificate
+.IR name .crt
+(containing the public key) for use with verification. The public key is only
+necessary when embedding it into another device tree using
+.BR \-K .
+.I name
+is the value of the signature node's \(oqkey-name-hint\(cq property.
+.
+.TP
+.BI \-G " key-file"
+.TQ
+.BI \-\-key\-file " key-file"
+Specifies the private key file to use when signing. This option may be used
+instead of \-k. Useful when the private key file basename does not match
+\(oqkey-name-hint\(cq value. But note that it may lead to unexpected results
+when used together with -K and/or -k options.
+.
+.TP
+.BI \-K " key-destination"
+.TQ
+.BI \-\-key\-dest " key-destination"
+Specifies a compiled device tree binary file (typically .dtb) to write
+public key information into. When a private key is used to sign an image,
+the corresponding public key is written into this file for for run-time
+verification. Typically the file here is the device tree binary used by
+CONFIG_OF_CONTROL in U-Boot.
+.
+.TP
+.BI \-g " key-name-hint"
+.TQ
+.BI \-\-key\-name\-hint " key-name-hint"
+Specifies the value of signature node \(oqkey-name-hint\(cq property for
+an automatically generated FIT image. It makes sense only when used with
+.B "\-f auto"
+or
+.BR "\-f auto-conf".
+This option also indicates that the images or configurations included in
+the FIT should be signed. If this option is specified, then
+.B \-o
+must be specified as well.
+.
+.TP
+.BI \-o " checksum" , crypto
+.TQ
+.BI \-\-algo " checksum" , crypto
+Specifies the algorithm to be used for signing a FIT image, overriding value
+taken from the signature node \(oqalgo\(cq property in the
+.IR image-tree-source-file .
+It is mandatory for automatically generated FIT.
+.IP
+The valid values for
+.I checksum
+are:
+.RS
+.IP
+.TS
+lb.
+sha1
+sha256
+sha384
+sha512
+.TE
+.RE
+.IP
+The valid values for
+.I crypto
+are:
+.RS
+.IP
+.TS
+lb.
+rsa2048
+rsa3072
+rsa4096
+ecdsa256
+.TE
+.RE
+.
+.TP
+.B \-r
+.TQ
+.B \-\-key\-required
+Specifies that keys used to sign the FIT are required. This means that images
+or configurations signatures must be verified before using them (i.e. to
+boot). Without this option, the verification will be optional (useful for
+testing but not for release). It makes sense only when used with
+.BR \-K.
+When both, images and configurations, are signed, \(oqrequired\(cq property
+value will be "conf".
+.
+.TP
+.BI \-N " engine"
+.TQ
+.BI \-\-engine " engine"
+The openssl engine to use when signing and verifying the image. For a complete
+list of available engines, refer to
+.BR engine (1).
+.
+.TP
+.B \-t
+.TQ
+.B \-\-touch
+Update the timestamp in the FIT.
+.IP
+Normally the FIT timestamp is created the first time mkimage runs,
+when converting the source .its to the binary .fit file. This corresponds to
+using
+.BR -f .
+But if the original input to mkimage is a binary file (already compiled), then
+the timestamp is assumed to have been set previously.
+.
+.SH CONFIGURATION
+This section documents the formats of the primary and secondary configuration
+options for each image type which supports them.
+.
+.SS aisimage
+The primary configuration is a file containing a series of
+.I AIS
+(Application Image Script) commands, one per line. Each command has the form
+.RS
+.P
+.IR "command argument " .\|.\|.
+.RE
+.P
+See
+.UR https://\:www\:.ti\:.com/\:lit/\:pdf/\:spraag0
+TI application report SPRAAG0E
+.UE
+for details.
+.
+.SS atmelimage
+The primary configuration is a comma-separated list of NAND Flash parameters of
+the form
+.RS
+.P
+\fIparameter\fB=\fIvalue\fR[\fB,\fIparameter\fB=\fIvalue\fR.\|.\|.\&]
+.RE
+.P
+Valid
+.IR parameter s
+are
+.RS
+.P
+.TS
+lb.
+usePmecc
+nbSectorPerPage
+spareSize
+eccBitReq
+sectorSize
+eccOffset
+.TE
+.RE
+.P
+and valid
+.IR value s
+are decimal numbers. See section 11.4.4.1 of the SAMA5D3 Series Data Sheet for
+valid values for each parameter.
+.
+.SS imximage
+The primary configuration is a file containing configuration commands, as
+documented in doc/\:imx/\:mkimage/\:imximage.txt of the U-Boot source.
+.
+.SS imx8image and imx8mimage
+The primary configuration is a file containing configuration commands, as
+documented in doc/\:imx/\:mkimage/\:imx8image.txt of the U-Boot source.
+.
+.SS kwbimage
+The primary configuration is a file containing configuration commands, as
+documented in doc/\:imx/\:mkimage/\:kwbimage.txt of the U-Boot source.
+.
+.SS mtk_image
+The primary configuration is a semicolon-separated list of header options of the
+form
+.RS
+.P
+\fIkey\fB=\fIvalue\fR[\fB;\fIkey\fB=\fIvalue\fR.\|.\|.\&]
+.RE
+.P
+where the valid keys are:
+.RS
+.P
+.TS
+lb lbx
+lb l.
+Key	Description
+_
+lk	T{
+If \fB1\fP, then an \fILK\fP (legacy) image header is used. Otherwise, a
+\fIBootROM\fP image header is used.
+T}
+lkname	T{
+The name of the LK image header. The maximum length is 32 ASCII characters. If
+not specified, the default value is \fBU-Boot\fP.
+T}
+media	The boot device. See below for valid values.
+nandinfo	The desired NAND device type. See below for valid values.
+arm64	If \fB1\fP, then this denotes an AArch64 image.
+hdroffset	Increase the reported size of the BRLYT header by this amount.
+.TE
+.RE
+.P
+Valid values for
+.B media
+are:
+.RS
+.P
+.TS
+lb lb
+lb l.
+Value	Description
+_
+nand	Parallel NAND flash
+snand	Serial NAND flash
+nor	Serial NOR flash
+emmc	\fIeMMC\fP (Embedded Multi-Media Card)
+sdmmc	\fISD\fP (Secure Digital) card
+.TE
+.RE
+.P
+Valid values for
+.B nandinfo
+are:
+.RS
+.P
+.TS
+lb lb lb	lb	lb
+lb l	l	l	l.
+Value	NAND type	Page size	OOB size	Total size
+_
+2k+64	Serial	2KiB	64B
+2k+120	Serial	2KiB	120B
+2k+128	Serial	2KiB	128B
+4k+256	Serial	4KiB	256B
+1g:2k+64	Parallel	2KiB	64B	1Gbit
+2g:2k+64	Parallel	2KiB	64B	2Gbit
+4g:2k+64	Parallel	2KiB	64B	4Gbit
+2g:2k+128	Parallel	2KiB	128B	2Gbit
+4g:2k+128	Parallel	2KiB	128B	4Gbit
+.TE
+.RE
+.
+.SS mxsimage
+The primary configuration is a file containing configuration commands, as
+documented in doc/\:imx/\:mkimage/\:mxsimage.txt of the U-Boot source.
+.
+.SS omapimage
+The primary configuration is the optional value
+.BR byteswap .
+If present, each 32-bit word of the image will have its bytes swapped
+(converting from little-endian to big-endian, or vice versa).
+.
+.SS pblimage
+The primary configuration is a file containing the
+.I PBI
+(Pre-Boot Image) header. Each line of the configuration has the format
+.RS
+.P
+.IR value "[ " value .\|.\|.\&]
+.RE
+.P
+Where
+.I value
+is a 32-bit hexadecimal integer. Each
+.I value
+will, after being converted to raw bytes, be literally prepended to the PBI.
+.P
+The secondary configuration is a file with the same format as the primary
+configuration file. It will be inserted into the image after the primary
+configuration data and before the image data.
+.P
+It is traditional to use the primary configuration file for the
+.I RCW
+(Reset Configuration Word), and the secondary configuration file for any
+additional PBI commands. However, it is also possible to convert an existing PBI
+to the above format and \(lqchain\(rq additional data onto the end of the
+image. This may be especially useful for creating secure boot images.
+.
+.SS rkimage
+The primary configuration is the name of the processor to generate the image
+for. Valid values are:
+.RS
+.P
+.TS
+lb.
+px30
+rk3036
+rk3066
+rk3128
+rk3188
+rk322x
+rk3288
+rk3308
+rk3328
+rk3368
+rk3399
+rv1108
+rk3568
+.TE
+.RE
+.
+.SS spkgimage
+The primary configuration file consists of lines containing key/value pairs
+delimited by whitespace. An example follows.
+.PP
+.RS
+.EX
+# Comments and blank lines may be used
+.I key1 value1
+.I key2 value2
+.EE
+.RE
+.P
+The supported
+.I key
+types are as follows.
+.TP
+.B VERSION
+.TQ
+.B NAND_ECC_BLOCK_SIZE
+.TQ
+.B NAND_ECC_ENABLE
+.TQ
+.B NAND_ECC_SCHEME
+.TQ
+.B NAND_BYTES_PER_ECC_BLOCK
+These all take a positive integer value as their argument.
+The value will be copied directly into the respective field
+of the SPKG header structure. For details on these values,
+refer to Section 7.4 of the Renesas RZ/N1 User's Manual.
+.
+.TP
+.B ADD_DUMMY_BLP
+Takes a numeric argument, which is treated as a boolean. Any nonzero
+value will cause a fake BLp security header to be included in the SPKG
+output.
+.
+.TP
+.B PADDING
+Takes a positive integer value, with an optional
+.B K
+or
+.B M
+suffix, indicating KiB / MiB respectively.
+The output SPKG file will be padded to a multiple of this value.
+.
+.SS sunxi_egon
+The primary configuration is the name to use for the device tree.
+.
+.SS ublimage
+The primary configuration is a file containing configuration commands, as
+documented in doc/\:README.ublimage of the U-Boot source.
+.
+.SS zynqimage and zynqmpimage
+For
+.BR zynqmpimage ,
+the primary configuration is a file containing the
+.I PMUFW
+(Power Management Unit Firmware).
+.B zynqimage
+does not use the primary configuration.
+.P
+For both image types, the secondary configuration is a file containinig
+initialization parameters, one per line. Each parameter has the form
+.RS
+.P
+.I address data
+.RE
+.P
+where
+.I address
+and
+.I data
+are hexadecimal integers. The boot ROM will write each
+.I data
+to
+.I address
+when loading the image. At most 256 parameters may be specified in this
+manner.
+.
+.SH BUGS
+Please report bugs to the
+.UR https://\:source\:.denx\:.de/\:u-boot/\:u-boot/\:issues
+U-Boot bug tracker
+.UE .
+.SH EXAMPLES
+.\" Reduce the width of the tab stops to something reasonable
+.ta T 1i
+List image information:
+.RS
+.P
+.EX
+\fBmkimage \-l uImage
+.EE
+.RE
+.P
+Create legacy image with compressed PowerPC Linux kernel:
+.RS
+.P
+.EX
+\fBmkimage \-A powerpc \-O linux \-T kernel \-C gzip \\
+	\-a 0 \-e 0 \-n Linux \-d vmlinux.gz uImage
+.EE
+.RE
+.P
+Create FIT image with compressed PowerPC Linux kernel:
+.RS
+.P
+.EX
+\fBmkimage \-f kernel.its kernel.itb
+.EE
+.RE
+.P
+Create FIT image with compressed kernel and sign it with keys in the
+/public/signing\-keys directory. Add corresponding public keys into u\-boot.dtb,
+skipping those for which keys cannot be found. Also add a comment.
+.RS
+.P
+.EX
+\fBmkimage \-f kernel.its \-k /public/signing\-keys \-K u\-boot.dtb \\
+	\-c \(dqKernel 3.8 image for production devices\(dq kernel.itb
+.EE
+.RE
+.P
+Add public key to u\-boot.dtb without needing a FIT to sign. This will also
+create a FIT containing an images node with no data named unused.itb.
+.RS
+.P
+.EX
+\fBmkimage \-f auto \-d /dev/null \-k /public/signing\-keys \-g dev \\
+	\-o sha256,rsa2048 \-K u\-boot.dtb unused.itb
+.EE
+.RE
+.P
+Add public key with required = "conf" property to u\-boot.dtb without needing
+a FIT to sign. This will also create a useless FIT named unused.itb.
+.RS
+.P
+.EX
+\fBmkimage \-f auto-conf \-d /dev/null \-k /public/signing\-keys \-g dev \\
+	\-o sha256,rsa2048 \-K u\-boot.dtb -r unused.itb
+.EE
+.RE
+.P
+Update an existing FIT image, signing it with additional keys.
+Add corresponding public keys into u\-boot.dtb. This will resign all images
+with keys that are available in the new directory. Images that request signing
+with unavailable keys are skipped.
+.RS
+.P
+.EX
+\fBmkimage \-F \-k /secret/signing\-keys \-K u\-boot.dtb \\
+	\-c \(dqKernel 3.8 image for production devices\(dq kernel.itb
+.EE
+.RE
+.P
+Create a FIT image containing a kernel, using automatic mode. No .its file
+is required.
+.RS
+.P
+.EX
+\fBmkimage \-f auto \-A arm \-O linux \-T kernel \-C none \-a 43e00000 \-e 0 \\
+	\-c \(dqKernel 4.4 image for production devices\(dq \-d vmlinuz kernel.itb
+.EE
+.RE
+.P
+Create a FIT image containing a kernel and some device tree files, using
+automatic mode. No .its file is required.
+.RS
+.P
+.EX
+\fBmkimage \-f auto \-A arm \-O linux \-T kernel \-C none \-a 43e00000 \-e 0 \\
+	\-c \(dqKernel 4.4 image for production devices\(dq \-d vmlinuz \\
+	\-b /path/to/rk3288\-firefly.dtb \-b /path/to/rk3288\-jerry.dtb kernel.itb
+.EE
+.RE
+.P
+Create a FIT image containing a signed kernel, using automatic mode. No .its
+file is required.
+.RS
+.P
+.EX
+\fBmkimage \-f auto \-A arm \-O linux \-T kernel \-C none \-a 43e00000 \-e 0 \\
+	\-d vmlinuz \-k /secret/signing\-keys \-g dev \-o sha256,rsa2048 kernel.itb
+.EE
+.RE
+.P
+Create a FIT image containing a kernel and some device tree files, signing
+each configuration, using automatic mode. Moreover, the public key needed to
+verify signatures is added to u\-boot.dtb with required = "conf" property.
+.RS
+.P
+.EX
+\fBmkimage \-f auto-conf \-A arm \-O linux \-T kernel \-C none \-a 43e00000 \\
+	\-e 0 \-d vmlinuz \-b /path/to/file\-1.dtb \-b /path/to/file\-2.dtb \\
+	\-k /folder/with/signing\-keys \-g dev \-o sha256,rsa2048 \\
+	\-K u\-boot.dtb -r kernel.itb
+.EE
+.RE
+.P
+Convert an existing FIT image from any of the three types of data storage
+(internal, external data-offset or external data-position) to another type
+of data storage.
+.RS
+.P
+.EX
+\fB// convert FIT from internal data to data-position
+\fBmkimage -p 0x20000 -F internal_data.itb
+.EE
+.EX
+\fB// convert FIT from data-position to data-offset
+\fBmkimage -E -F external_data-position.itb
+.EE
+.EX
+\fB// convert FIT from data-offset to internal data
+\fBmkimage -F external_data-offset.itb
+.EE
+.RE
+.
+.SH SEE ALSO
+.BR dtc (1),
+.BR dumpimage (1),
+.BR openssl (1),
+the\~
+.UR https://\:u-boot\:.readthedocs\:.io/\:en/\:latest/\:index.html
+U-Boot documentation
+.UE

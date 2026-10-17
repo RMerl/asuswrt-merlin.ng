@@ -1,0 +1,29 @@
+if ROCKCHIP_RK3308
+
+config TARGET_EVB_RK3308
+	bool "EVB_RK3308"
+	select BOARD_LATE_INIT
+
+config TARGET_ROC_RK3308_CC
+       bool "Firefly roc-rk3308-cc"
+	select BOARD_LATE_INIT
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0xff000500
+
+config ROCKCHIP_STIMER_BASE
+	default 0xff1b00a0
+
+config SYS_SOC
+	default "rk3308"
+
+config SYS_MALLOC_F_LEN
+	default 0x400
+
+config SPL_SERIAL
+	default y
+
+source "board/rockchip/evb_rk3308/Kconfig"
+source "board/firefly/firefly-rk3308/Kconfig"
+
+endif

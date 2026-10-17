@@ -1,0 +1,20 @@
+# Whitelist in place for this component / branch / twig
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+
+JIRA:BCAWLAN-273868 [ACSD] Few minor acsd changes to facilitate ZDFS and ZDFS_2G when dfs_preism is changed
+JIRA:BCAWLAN-273949 [ACSD] Fix incorrect tx loading threshold in DVT test during ZDFS_2G
+JIRA:BCAWLAN-274450 6716FD444: MLO smartmesh + puncturing +2G ZWDFS: puncturing didn't happen after moving to new channel
+JIRA:BCAWLAN-273031 Acsdv2: Allow CLI command to process on different iface if CLI cmd is already in progress
+JIRA:BCAWLAN-275205 Acsdv2: Don't update acs_record for DFS_AP_MOVE/STUNT/ABORT reasons received from WBD
+JIRA:BCAWLAN-275203 Acsdv2: Preclear DFS channels using BGDFS with one dfs_ap_move iovar command
+JIRA:BCAWLAN-276013 [ACSD] Allow simultaneous acs_restart/autochannel/csscan cli commands for different radio
+JIRA:BCAWLAN-274575 BGDFS entered to an incorrect state after BGDFS timeout happened in ACSD
+JIRA:BCAWLAN-273952 [Acsdv2] Replace EDCRS_EU flag by is_dfs_etsi for the countries which complied EU DFS regulations

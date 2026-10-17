@@ -1,0 +1,18 @@
+* Cadence PCIe endpoint controller
+
+Required properties:
+- compatible: Should contain "cdns,cdns-pcie-ep" to identify the IP used.
+- reg: Should contain the controller register base address.
+
+Optional properties:
+- max-functions: Maximum number of functions that can be configured (default 1).
+- cdns,max-outbound-regions: Set to maximum number of outbound regions (default 8)
+
+Example:
+
+pcie_ep@fc000000 {
+	compatible = "cdns,cdns-pcie-ep";
+	reg = <0x0 0xfc000000 0x0 0x01000000>;
+	cdns,max-outbound-regions = <16>;
+	max-functions = /bits/ 8 <8>;
+};

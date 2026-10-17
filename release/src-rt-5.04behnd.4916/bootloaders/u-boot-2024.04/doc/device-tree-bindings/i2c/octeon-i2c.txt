@@ -1,0 +1,24 @@
+* I2C controller embedded in Marvell Octeon platforms
+
+Required properties :
+- compatible : Must be "cavium,octeon-7890-twsi" or a compatible string
+- reg : Offset and length of the register set for the device
+- clocks: Must contain the input clock of the I2C instance
+- #address-cells = <1>;
+- #size-cells = <0>;
+
+Optional properties :
+- clock-frequency : Desired I2C bus clock frequency in Hz. If not specified,
+  the default 100 kHz frequency will be used. As only Normal, Fast and Fast+
+  modes are implemented, possible values are 100000, 400000 and 1000000.
+
+Example :
+
+	i2c0: i2c@1180000001000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "cavium,octeon-7890-twsi";
+		reg = <0x11800 0x00001000 0x0 0x200>;
+		clock-frequency = <100000>;
+		clocks = <&sclk>;
+	};

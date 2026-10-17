@@ -1,0 +1,12 @@
+altbootcmd=run ${subbootcmds}
+bootcmd=run ${subbootcmds}
+configure=run set_uimage; run set_tftppath; km_setboardid && run try_import_nfs_path && saveenv && reset
+subbootcmds=tftpfdt tftpkernel nfsargs add_default boot
+nfsargs=setenv bootargs root=/dev/nfs rw nfsroot=${serverip}:${toolchain}/${arch}
+tftpfdt=if run set_fdthigh || test ${arch} != arm; then if tftpboot ${fdt_addr_r} ${tftppath}/fdt_0x${IVM_BoardId}_0x${IVM_HWKey}.dtb; then; else tftpboot ${fdt_addr_r} ${tftppath}/${hostname}.dtb; fi; else true; fi
+tftpkernel=tftpboot ${load_addr_r} ${tftppath}/${uimage}
+toolchain=/opt/eldk
+rootfssize=0
+set_uimage=printenv uimage || setenv uimage uImage
+set_tftppath=if test ${hostname} = kmcoge5ne; then setenv tftppath CI5NE; else setenv tftppath ${IVM_Symbol}; fi
+try_import_nfs_path=if tftpboot ${load_addr_r} ${tftppath}/nfs-path.txt; then env import -t ${load_addr_r} ${filesize}; else echo no auto nfs path imported; echo you can set nfsargs in /tftpboot/${tftppath}/nfs-path.txt and rerun develop; fi

@@ -1,0 +1,15 @@
+if TARGET_IMX8MP_EVK
+
+config SYS_BOARD
+	default "imx8mp_evk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_evk"
+
+config IMX_CONFIG
+	default "board/freescale/imx8mp_evk/imximage-8mp-lpddr4.cfg"
+
+endif

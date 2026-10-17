@@ -1,0 +1,9 @@
+RGXX3-RK3566
+M:	Chris Morgan <macromorgan@hotmail.com>
+S:	Maintained
+F:	board/anbernic/rgxx3_rk3566
+F:	include/configs/anbernic-rgxx3-rk3566.h
+F:	configs/anbernic-rgxx3-rk3566_defconfig
+F:	arch/arm/dts/rk3566-anbernic-rgxx3.dts
+F:	arch/arm/dts/rk3566-anbernic-rgxx3.dtsi
+F:	arch/arm/dts/rk3566-anbernic-rgxx3-u-boot.dtsi

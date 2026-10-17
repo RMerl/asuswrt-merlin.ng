@@ -64,6 +64,10 @@
     status = "okay";
 };
 
+&macsec {
+    status = "okay";
+};
+
 &mdio_bus {
     serdes00_xphy {
         phy-magic = <&bca_extintr 12 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;

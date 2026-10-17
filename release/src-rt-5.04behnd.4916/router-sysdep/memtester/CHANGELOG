@@ -1,0 +1,145 @@
+Version 4.5.1
+30 May 2021
+  -documentation-only update.
+  -add note to README about build problem with Tru64, with workaround.
+  Thanks: Víctor Ostorga.
+
+Version 4.5.0
+20 September 2020
+  -add note to README about problems with HP/UX prior to v.11.  Change code
+  so that buffer still gets aligned even if you comment out the use of mlock()
+  on such a platform.  Thanks: Keith Monahan.
+  -fix clear-buffer using incorrect param, causing spurious test failures.
+  Thanks: Debin Dong.
+  -fix shell-ism in Makefile.  Thanks: Fabrice Fontaine.
+
+Version 4.3.0
+9 June 2012
+  -add ability to mmap a device other than /dev/mem, enabling easier testing
+  of memory for hardware engineers et al if their system's kernel exports the 
+  memory they're interested in via /dev/mydevice or similar.  Thanks:
+  Jean-Noël Avila.
+  -add ability to run only specified tests by setting the environment
+  variable MEMTESTER_TEST_MASK to a bitmask of the indexes of the tests to be 
+  run.  Thanks: Ian Alexander.
+
+Version 4.2.2
+22 July 2011
+  -add progress message for one more errno value (EAGAIN) in response to failed
+  mlock; BSDs use this to indicate the lock failed due to being over a system
+  or process limit, much like ENOMEM.
+
+Version 4.2.1
+3 October 2010
+  -fix offsets/addresses were not being reported correctly in test failure 
+  messages.  Thanks: Anton Sergeev.
+
+Version 4.2.0
+30 July 2010
+  -define _FILE_OFFSET_BITS to 64 by default in conf-cc, which causes some 
+  32-bit systems with larger-than-32-bit address spaces to have a 64-bit off_t,
+  allowing testing of larger chunks of memory.  Thanks to Steven A. Falco for
+  the suggestion.  Let me know if this definition causes problems for anyone.
+  -add tests of 8-bit-wide and 16-bit-wide random writes, to enable verifying 
+  the correct operation of hardware.  Thanks: Dick Hollenbeck.  If these tests
+  trigger unaligned access problems on your platform, you can eliminate these
+  tests by removing the -DTEST_NARROW_WRITES definition from the conf-cc file.
+
+Version 4.1.3
+28 February 2010
+  -fix 64-bit data patterns with some versions of gcc.  Thanks: Tony Battersby.
+  -clarify `make install` in readme.  Thanks: Marc Lobelle.
+
+Version 4.1.2
+28 July 2009
+  -fix portability issue with MAP_LOCKED flag.  Thanks: Scott Haneda.
+  -remove debugging output accidentally left in v.4.1.0.
+  -cleanups
+
+Version 4.1.1
+24 July 2009
+
+  -memtester.h was missing from the 4.1.0 tarball; release update to fix that.
+  Thanks: Owen Leonard.
+
+Version 4.1.0
+23 July 2009
+
+  -added the ability to test a specific physical region of memory (by mmap'ing
+  /dev/mem) with the new -p option, which takes a hex starting address as a
+  value.  This is mostly of use to developers trying to verify memory or I/O
+  mapped devices (on an embedded system, for instance). Thanks: Allon Stern.
+  -re-add the ability to set a suffix on the memory to allocate: "3G", "128K", etc,
+  mostly for use with the above new feature, where the "memory" to be tested is
+  less than a megabyte, but also useful for users wanting to test many gigabytes;
+  you no longer have to do the conversion-to-megs in your head.
+  -documentation updates and clarifications.
+
+Version 4.0.8
+21 November 2007
+
+  -add a startup check for amount of memory being greater than the possible
+  address space; prevents user confusion on 32-bit systems that use addressing
+  tricks to have >4GB total system memory.  Thanks: Michael Kelly.
+  -documentation updates
+
+Version 4.0.7
+13 May 2007
+
+  -fix a bug in the align-to-page logic which may have prevented memtester
+  from mlock()ing the memory it was trying to test on some systems.
+  Thanks: Baif Chen.
+
+Version 4.0.6
+15 November 2006
+
+  -test algorithm improvement: the walking 0 bits test was only walking
+  the 0 bit in one direction, instead of walking it up and back down
+  the line the way it was intended to.  Thanks: Tim Rule.
+  -formatting cleanups.
+
+Version 4.0.5
+10 March 2005
+
+  -change to the method of allocating and locking memory; if we get EPERM
+  when trying to mlock(), reset the amount of memory desired to the original
+  amount and try again without mlock().  The reason for this is that on many
+  systems, mlock() won't return EPERM until after having returned ENOMEM for
+  a larger amount.  The new behaviour allows processes without mlock privileges
+  to still test the fully-specified amount or as much memory as can be
+  allocated.  Thanks for the suggestion and testing to Dan Bradley.
+
+Version 4.0.4
+26 August 2004
+
+  -make memtester's exit code meaningful.  See the manpage for its meaning.
+  Thanks to Wurzel Parsons-Keir, who sent a patch for the code, so I only had
+  to document it.
+
+Version 4.0.3
+10 August 2004
+
+  -small changes to enable building with dietlibc and a few other environments
+  that don't even attempt to provide the various Posix definitions.
+  -cosmetic fixes to output.
+  -restore the reduce-and-retry loop of memory locking from version 2.
+
+Version 4.0.2
+9 August 2004
+
+  -add manpage
+
+Version 4.0.1
+8 August 2004
+
+  -fix cosmetic bugs in output
+
+Version 4.0.0
+7 August 2004
+
+  -rewrite to clean up the code (previously an ugly hack), for 64-bit
+  cleanliness
+  -change build system to build on (hopefully) any platform.  Previous
+  versions required hackery on some systems.
+
+Version 3 not publicly released.

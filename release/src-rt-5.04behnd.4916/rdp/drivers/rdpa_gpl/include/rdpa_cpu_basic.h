@@ -77,13 +77,8 @@ typedef enum
     rdpa_cpu_rx_reason_ipsec               = 22, /**< IPSec RX offload */
     rdpa_cpu_rx_reason_group_fwd_and_trap  = 23, /**< Multicast/Flooding group forward-and-trap (either forward and trap, TTL expiry, MTU exceed, etc.) \XRDP_LIMITED */
     rdpa_cpu_rx_reason_group_exception     = 24, /**< Multicast/Flooding group forwarding exception, packet was not forwarded to any port (TTL expiry, MTU exceed, etc.) */
-#if defined(XRDP) || defined(BCM_XRDP)
     rdpa_cpu_rx_reason_bridge_da_mac       = 25, /* \XRDP_LIMITED */
     rdpa_cpu_rx_reason_l2cp                = 26, /* \XRDP_LIMITED */
-#else
-    rdpa_cpu_rx_reason_udp_csum_0          = 25, /**< MAP-T US with UDP CSUM==0 */
-    rdpa_cpu_rx_reason_unused              = 26, /* \RDP_LIMITED */
-#endif
     rdpa_cpu_rx_reason_cpu_mirroring       = 27, /* */
     rdpa_cpu_rx_reason_etype_udef_0        = 28, /**< User defined ethertype 1 */
     rdpa_cpu_rx_reason_etype_udef_1        = 29, /**< User defined ethertype 2 */
@@ -95,22 +90,15 @@ typedef enum
     rdpa_cpu_rx_reason_etype_ptp_1588      = 35, /**< Packet with ethertype 1588 */
     rdpa_cpu_rx_reason_etype_802_1x        = 36, /**< Packet with ethertype 802_1x */
     rdpa_cpu_rx_reason_etype_802_1ag_cfm   = 37, /**< Packet with ethertype v801 Lag CFG*/
-#if defined(XRDP) || defined(BCM_XRDP)
     rdpa_cpu_rx_reason_dns                 = 38, /**< For future use \XRDP_LIMITED*/
     rdpa_cpu_rx_reason_udp_csum_0          = 39, /**< For future use \XRDP_LIMITED */
     rdpa_cpu_rx_reason_unknown_da_flood    = 40, /**< Unknown DA and Runner flooding, SFU only \XRDP_LIMITED */
-#else
-    rdpa_cpu_rx_reason_pci_ip_flow_miss_1  = 38, /**< DHD PCI flow miss radio 1 \RDP_LIMITED */
-    rdpa_cpu_rx_reason_pci_ip_flow_miss_2  = 39, /**< DHD PCI flow miss radio 2 \RDP_LIMITED */
-    rdpa_cpu_rx_reason_pci_ip_flow_miss_3  = 40, /**< DHD PCI flow miss radio 3 \RDP_LIMITED */
-#endif
     rdpa_cpu_rx_reason_ip_flow_miss        = 41, /**< Flow miss indication */
     rdpa_cpu_rx_reason_tcp_flags           = 42, /**< TCP flag indication */
     rdpa_cpu_rx_reason_ttl_expired         = 43, /**< TTL expired indication */
     rdpa_cpu_rx_reason_mtu_exceeded        = 44, /**< MTU exceeded indication */
     rdpa_cpu_rx_reason_parser_error        = 45, /**< Error when parsing packet \XRDP_LIMITED */
     rdpa_cpu_rx_reason_cpu_redirect        = 46, /**< CPU redirect */
-#if defined(XRDP) || defined(BCM_XRDP)
     rdpa_cpu_rx_reason_l4_esp              = 47, /**< Layer-4 ESP protocol */
     rdpa_cpu_rx_reason_udef_0              = 48, /**< User defined 1 */
     rdpa_cpu_rx_reason_udef_1              = 49, /**< User defined 2 */
@@ -128,25 +116,6 @@ typedef enum
     rdpa_cpu_rx_reason_udef_13             = 61, /**< User defined 14 \XRDP_LIMITED */
     rdpa_cpu_rx_reason_udef_14             = 62, /**< User defined 15 \XRDP_LIMITED */
     rdpa_cpu_rx_reason_udef_15             = 63, /**< User defined 16 \XRDP_LIMITED */
-#else
-    rdpa_cpu_rx_reason_l4_icmp             = 47, /**< Layer-4 ICMP protocol */
-    rdpa_cpu_rx_reason_l4_esp              = 48, /**< Layer-4 ESP protocol */
-    rdpa_cpu_rx_reason_l4_gre              = 49, /**< Layer-4 GRE protocol */
-    rdpa_cpu_rx_reason_l4_ah               = 50, /**< Layer-4 AH protocol */
-    rdpa_cpu_rx_reason_l4_ipv6             = 51, /**< Layer-4 IPV6 protocol */
-    rdpa_cpu_rx_reason_l4_udef_0           = 52, /**< User defined layer-4 1 */
-    rdpa_cpu_rx_reason_l4_udef_1           = 53, /**< User defined layer-4 2 */
-    rdpa_cpu_rx_reason_l4_udef_2           = 54, /**< User defined layer-4 3 */
-    rdpa_cpu_rx_reason_l4_udef_3           = 55, /**< User defined layer-4 4 */
-    rdpa_cpu_rx_reason_udef_0              = 56, /**< User defined 1 */
-    rdpa_cpu_rx_reason_udef_1              = 57, /**< User defined 2 */
-    rdpa_cpu_rx_reason_udef_2              = 58, /**< User defined 3 */
-    rdpa_cpu_rx_reason_udef_3              = 59, /**< User defined 4 */
-    rdpa_cpu_rx_reason_udef_4              = 60, /**< User defined 5 */
-    rdpa_cpu_rx_reason_udef_5              = 61, /**< User defined 6 */
-    rdpa_cpu_rx_reason_udef_6              = 62, /**< User defined 7 */
-    rdpa_cpu_rx_reason_udef_7              = 63, /**< User defined 8 */
-#endif
     rdpa_cpu_reason__num_of
 } rdpa_cpu_reason;
 
@@ -155,7 +124,7 @@ typedef enum
 #define WEB_ACCESS_SKB_MARK_PORT   0x5A
 #endif
 
-#if defined(CONFIG_BCM_DSL_XRDP) || defined(CONFIG_BCM_DSL_RDP)
+#if defined(CONFIG_BCM_DSL_XRDP)
 #define rdpa_cpu_rx_reason_hit_trap_high    rdpa_cpu_rx_reason_udef_4
 #define rdpa_cpu_rx_reason_hit_trap_low     rdpa_cpu_rx_reason_udef_5
 #define rdpa_cpu_rx_reason_ingqos           rdpa_cpu_rx_reason_udef_6
@@ -171,11 +140,6 @@ typedef enum
 typedef enum
 {
     rdpa_cpu_port_first = 0,
-#if !defined(XRDP) && !defined(BCM_XRDP)
-    rdpa_cpu_host = rdpa_cpu_port_first,      /**< Host RX */
-    rdpa_cpu_wlan0,     /**< WLAN 0 TX */
-    rdpa_cpu_wlan1,     /* Reserved for future use */
-#else
     rdpa_cpu0 = rdpa_cpu_port_first,
     rdpa_cpu_host = rdpa_cpu0, /**< Host RX */
     rdpa_cpu1,
@@ -192,7 +156,6 @@ typedef enum
     rdpa_cpu_wlan2 = rdpa_cpu6,
     rdpa_cpu7,
     rdpa_cpu_wlan3 = rdpa_cpu7,
-#endif
     rdpa_cpu_port__num_of,
     rdpa_cpu_none
 } rdpa_cpu_port;
@@ -222,10 +185,6 @@ typedef enum
 #define RDPA_CPU_WLAN_RSV_QUEUES 3 /**< Reserved number of queues on CPU WLAN port */
 #define RDPA_CPU_GDX_RSV_QUEUES 2 /**< Min/RSV number of queues on CPU GDX port */
 #define RDPA_CPU_SPU_RSV_QUEUES 1 /**< Min/RSV number of queues on CPU SPU port */
-
-#if !defined(XRDP) && !defined(BCM_XRDP)
-#define RDPA_WLAN_MAX_QUEUES 7 /**< Max number of queues on WLAN port */
-#endif
 
 /** TC */
 #define RDPA_CPU_TC_DEFAULT 0
@@ -319,11 +278,8 @@ typedef struct
 } rdpa_cpu_tx_info_t;
 
 /** Max number of CPU interface meters */
-#if !defined(XRDP) && !defined(BCM_XRDP)
-#define RDPA_CPU_MAX_METERS   16 /**< Number of meters for packets received from WAN/LAN port(s) */
-#else
 #define RDPA_CPU_MAX_METERS   32 /**< Number of meters for packets received from WAN/LAN port(s) */
-#endif
+
 
 /* Number of reasons supporting per-port metering */
 #define RDPA_CPU_PER_PORT_REASON 3

@@ -1,0 +1,69 @@
+* Atmel PIO4 Controller
+
+The Atmel PIO4 controller is used to select the function of a pin and to
+configure it.
+
+Required properties:
+- compatible: "atmel,sama5d2-pinctrl".
+- reg: base address and length of the PIO controller.
+
+Please refer to pinctrl-bindings.txt in this directory for details of the
+common pinctrl bindings used by client devices.
+
+Subnode format
+Each node (or subnode) will list the pins it needs and how to configured these
+pins.
+
+	node {
+		pinmux = <PIN_NUMBER_PINMUX>;
+		GENERIC_PINCONFIG;
+	};
+
+Required properties:
+- pinmux: integer array. Each integer represents a pin number plus mux and
+ioset settings. Use the macros from boot/dts/<soc>-pinfunc.h file to get the
+right representation of the pin.
+
+Optional properties:
+- GENERIC_PINCONFIG: generic pinconfig options to use:
+	- bias-disable, bias-pull-down, bias-pull-up, drive-open-drain,
+	  input-schmitt-enable, input-debounce
+	- slew-rate: 0 - disabled, 1 - enabled (default)
+- atmel,drive-strength: 0 or 1 for low drive, 2 for medium drive and 3 for
+high drive. The default value is low drive.
+
+Example:
+
+#include <sama5d2-pinfunc.h>
+
+...
+{
+	spi0: spi@f8000000 {
+		cs-gpios = <&pioA 17 0>, <0>, <0>, <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_spi0_default>;
+		status = "okay";
+
+		spi_flash@0 {
+			compatible = "jedec,spi-nor";
+			reg = <0>;
+			spi-max-frequency = <50000000>;
+		};
+	};
+
+	...
+
+	pioA: pinctrl@fc038000 {
+		compatible = "atmel,sama5d2-pinctrl";
+		reg = <0xfc038000 0x600>;
+
+		pinctrl_spi0_default: spi0_default {
+			pinmux = <PIN_PA14__SPI0_SPCK>,
+				 <PIN_PA15__SPI0_MOSI>,
+				 <PIN_PA16__SPI0_MISO>;
+			bias-disable;
+		};
+		...
+	};
+};
+...

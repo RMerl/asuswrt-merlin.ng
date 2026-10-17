@@ -98,12 +98,6 @@ static struct file_operations board_fops =
 
 uint32 board_init_success = -1;
 
-int BpGetBoardId( char *pszBoardId)
-{
-    return (envram_get_locked(NVRAM_SZBOARDID, pszBoardId, NVRAM_BOARD_ID_STRING_LEN) <= 0) ? -1 : 0;
-}
-EXPORT_SYMBOL(BpGetBoardId);
-
 #if defined(MODULE)
 int init_module(void)
 {
@@ -123,8 +117,12 @@ static int board_driver_init(void)
 {
     int ret = 0;
   
-    alloc_chrdev_region(&brcmboard_devId, 0, 2, "brcmboard");
-    
+    ret = alloc_chrdev_region(&brcmboard_devId, 0, 2, "brcmboard");
+    if (ret < 0) {
+        printk(KERN_ERR "Error %s char device. Error code %d\n", "brcmboard", ret);
+        return -ENODEV;
+    }
+ 
     /* Create class and device ( /sys entries ) */
     brcmboard_cl = class_create(THIS_MODULE, "brcmboard");
     if(brcmboard_cl == NULL)
@@ -282,10 +280,10 @@ EXPORT_SYMBOL(kerSysFsFileGet);
 EXPORT_SYMBOL(kerSysFsFileSet);
 EXPORT_SYMBOL(kerSysGetSdramSize);
 EXPORT_SYMBOL(kerSysGetDslPhyEnable);
-EXPORT_SYMBOL(kerSysSetOpticalPowerValues);
-EXPORT_SYMBOL(kerSysGetOpticalPowerValues);
+#ifndef CONFIG_BCM_QEMU_SIM
 #if !defined(CONFIG_BCM_BCA_LEGACY_LED_API)
 EXPORT_SYMBOL(kerSysLedCtrl);
+#endif
 #endif
 EXPORT_SYMBOL(kerSysSendtoMonitorTask);
 EXPORT_SYMBOL(kerSysGetAfeId);

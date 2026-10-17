@@ -1,0 +1,23 @@
+MikroTik CRS3XX-98DX3236
+========================
+
+CRS3XX-98DX3236 is a U-Boot port that supports a series of MikroTik switches
+based on the Marvell Prestera 98DX3236 switch with an integrated CPU.
+
+Common specifications:
+ - Marvell Prestera 98DX3236 switch with an integrated ARMv7 CPU
+ - 512 MB DDR3 RAM
+ - UART @ 115200bps
+ - 16 MB SPI flash (Winbond 25Q128JVSM)
+
+Currently supported hardware:
+ - UART boot (using kwboot) and console
+ - SPI boot, environment and load kernel
+
+Planned:
+ - Gigabit Ethernet support (internal CPU <-> switch fabric connection)
+
+Getting binary.0
+================
+binary.0 (DDR3 init phase) can be retrieved/extracted from the integrated bootloader on the SPI flash.
+Then binary.0 can be replaced with the extracted blob.

@@ -1,0 +1,8 @@
+HSDK BOARDs
+M:	Eugeniy Paltsev <paltsev@synopsys.com>
+S:	Maintained
+F:	board/synopsys/hsdk/
+F:	configs/hsdk_defconfig
+F:	configs/hsdk_4xd_defconfig
+F:	include/configs/hsdk-4xd.h
+F:	include/configs/hsdk.h

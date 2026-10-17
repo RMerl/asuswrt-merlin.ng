@@ -4,7 +4,7 @@
 
 NAME = bcm_enet_ingress
 
-ifneq (,$(filter $(BRCM_CHIP),6858 6846 6856 6878 6855 6888 68880 6837))
+ifneq (,$(filter $(BRCM_CHIP),6858 6856 6855 6888 68880 6837))
 obj-$(CONFIG_BCM_ENET) = $(NAME).o
 endif
 
@@ -13,7 +13,7 @@ EXTRA_CFLAGS += -DTEST_INGRESS
 ENET_DIR = $(BRCMDRIVERS_DIR)/opensource/net/enet/bcm9$(BRCM_CHIP)
 
 $(NAME)-objs += enet_ingress.o
-enet_objs = port.o port_types.o mux_index.o
+enet_objs = port.o port_types.o mux_index.o port_group.o
 enet_objs-$(CONFIG_BLOG) += enet_blog.o
 
 EXTRA_CFLAGS += -I$(ENET_DIR) -I$(BRCMDRIVERS_DIR)/opensource/phy
@@ -22,6 +22,7 @@ EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/net/enet/shared
 ifneq ($(strip $(CONFIG_BCM_RDPA)),)
 EXTRA_CFLAGS += $(INC_RDP_FLAGS)
 EXTRA_CFLAGS += -DRUNNER
+enet_objs-$(CONFIG_BCM_ENET_EGRESS_TC) += runner_egress_tc.o
 enet_objs += runner.o runner_standalone.o
 endif
 

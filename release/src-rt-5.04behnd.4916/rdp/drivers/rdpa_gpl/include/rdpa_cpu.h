@@ -108,29 +108,14 @@ void rdpa_rnr_int_clear(uint8_t intr_idx);
 
 /** CPU meter SR validation constants */
 
-
-#ifdef XRDP
 #define RDPA_CPU_METER_MAX_SR       500000     /**< Max CPU meter SR value in pps */
 #define RDPA_CPU_METER_MIN_SR       10         /**< Min CPU meter SR value in pps */
 #define RDPA_CPU_METER_SR_QUANTA    10         /**< CPU meter SR must be a multiple of quanta */
-#else
-#define RDPA_CPU_METER_MAX_SR       40000       /**< Max CPU meter SR value in pps */
-#define RDPA_CPU_METER_MIN_SR       100         /**< Min CPU meter SR value in pps */
-#define RDPA_CPU_METER_SR_QUANTA    100         /**< CPU meter SR must be a multiple of quanta */
-#endif
-
-
 
 /** Reason index. Underlying type of cpu_reason_index aggregate */
 typedef struct
 {
-#if defined(BCM_DSL_RDP)
-    rdpa_traffic_dir dir;       /**< Traffic direction */
-#endif
     rdpa_cpu_reason reason;     /**< CPU reason */
-#if defined(BCM_DSL_RDP)
-    int table_index;            /**< reason table index */
-#endif
     int entry_index;            /* Reserved for internal use. */
 } rdpa_cpu_reason_index_t;
 
@@ -177,14 +162,13 @@ typedef struct
                                 */
     void *data;        /**<data pointer or FPM/BPM hardware token*/
     uint32_t size;        /**<data size */
-    uint32_t data_offset;    /**<data offset inside pointer */
+    int32_t data_offset;    /**<data offset inside pointer */
     struct {
         uint32_t rx_csum_verified:1;
         uint32_t reserved:31;
     };
     uint32_t dest_ssid;   /** <when traffic is to be forward to WFD */
     uint32_t wl_metadata; /** WLAN metadata */
-    uint16_t ptp_index; /**< index of ptp RX entry */
     /* (CONFIG_RUNNER_GDX_SUPPORT) RX */
     uint16_t gdx_pd_data;
     uint8_t mcast_tx_prio; /**< TX priority (0-7) for multicast traffic \XRDP_LIMITED */
@@ -197,9 +181,12 @@ typedef struct
     uint8_t  cpu_redirect_egress_queue;
     uint8_t  cpu_redirect_wan_flow;
     /* (CONFIG_RUNNER_SPU_OFFLOAD) */
-   uint8_t  spu_session_id;
-    /* (not XRDP) */
+    uint8_t  spu_session_id;
+    /* (SCORE_SUPPORT) */
+    uint8_t  wlan_pkt_tlm;
+    /* (not XRDP) TODO: clean */
     uint16_t free_index;
+    rdpa_iq_priority iq_prio;
 } rdpa_cpu_rx_info_t;
 
 /** Extended CPU info (debugging) */
@@ -299,9 +286,7 @@ typedef struct {
     extern_rxq_stat_callback rxq_stat; /**< Optional internal statistics callback */
     long unsigned int irq_affinity_mask; /**< Queue ISR affinity mask - every bit represents CPU */
     uint32_t  ring_prio;         /**< Queue Priority - used for buffer allocation request \RDP_LIMITED  */
-#if defined(CONFIG_RNR_SKB_SHARED_INFO_RESET)
     int8_t buf_type; /**< Host buffer type (data only or shared info to memset) \XRDP_LIMITED */
-#endif
 } rdpa_cpu_rxq_cfg_t;
 
 /** Receive statistics.
@@ -383,7 +368,7 @@ void *rdpa_cpu_data_get(int rdpa_cpu_type);
  * @{
  */
 
-#if defined(BCM_DSL_RDP) || defined(BCM_DSL_XRDP)
+#if defined(BCM_DSL_XRDP)
 /** Extra data that can be passed along with the packet to be transmitted */
 typedef struct
 {
@@ -428,7 +413,7 @@ int rdpa_cpu_send_sysb(bdmf_sysb sysb, const rdpa_cpu_tx_info_t *info);
  */
 int rdpa_cpu_send_sysb_fpm(bdmf_sysb sysb, const rdpa_cpu_tx_info_t *info);
 
-#if defined(BCM_DSL_RDP) || defined(BCM_DSL_XRDP)
+#if defined(BCM_DSL_XRDP)
 /** Send system buffer to Ethernet/DSL WAN Interface
  *
  * \param[in]   sysb          System buffer. Released regardless on the function outcome.
@@ -519,23 +504,6 @@ int rdpa_cpu_queue_is_full(rdpa_cpu_port port, bdmf_index queue);
 void rdpa_cpu_rx_dump_packet(char *name, rdpa_cpu_port port,
     bdmf_index queue, rdpa_cpu_rx_info_t *info, uint32_t dst_ssid);
 
-#ifdef XRDP
-/** Platform buffer */
-typedef void *bdmf_pbuf_t;
-
-static inline void bdmf_pbuf_init(uint32_t size __attribute__ ((unused)), 
-                                  uint32_t offset __attribute__ ((unused)))
-{}
-static inline void bdmf_pbuf_free(bdmf_pbuf_t *pbuf __attribute__ ((unused)))
-{}
-static inline int bdmf_pbuf_alloc(void *data __attribute__ ((unused)),
-                                  uint32_t length __attribute__ ((unused)),
-                                  uint16_t source __attribute__ ((unused)),
-                                  bdmf_pbuf_t *pbuf __attribute__ ((unused)))
-{
-    return 0;
-}
-#endif
 
 #if defined(CONFIG_RNR_SHARED_HW_SW_BUF_POOL)
 /** Send raw packet from pre-allocated FPM.

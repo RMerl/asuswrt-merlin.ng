@@ -50,6 +50,8 @@ typedef enum otp_map_feat {
     OTP_MAP_JU_MODE,
     OTP_MAP_LEDS,
     OTP_MAP_UART_EN,
+    OTP_MAP_FLASH_ENCRYPTED,
+    OTP_MAP_AUTO_FLASH_ENC,
     OTP_MAP_MAX
 } otp_map_feat_t;
 
@@ -59,5 +61,10 @@ typedef enum _otp_map_cmn_err_ {
     OTP_MAP_CMN_ERR_UNSP = -2,
     OTP_MAP_CMN_ERR_INVAL= -3,
 } otp_map_cmn_err_t;
+
+#define OTP_FLASH_ENCRYPTED_SHIFT 33  
+#define OTP_FLASH_ENCRYPTED_MASK  1
+#define OTP_AUTO_FLASH_ENC_SHIFT  32
+#define OTP_AUTO_FLASH_ENC_MASK   1
 
 #endif

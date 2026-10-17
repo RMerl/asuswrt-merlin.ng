@@ -1,0 +1,277 @@
+menu "MTD Support"
+
+config MTD_PARTITIONS
+	bool
+
+config MTD
+	bool "Enable MTD layer"
+	help
+	  Enable the MTD stack, necessary to interact with NAND, NOR,
+	  SPI-NOR, SPI-NAND, OneNAND, etc.
+
+if MTD
+
+config DM_MTD
+	bool "Enable Driver Model for MTD drivers"
+	depends on DM
+	help
+	  Enable driver model for Memory Technology Devices (MTD), such as
+	  flash, RAM and similar chips, often used for solid state file
+	  systems on embedded devices.
+
+config MTD_NOR_FLASH
+	bool "Enable parallel NOR flash support"
+	help
+	  Enable support for parallel NOR flash.
+
+config MTD_CONCAT
+	bool "Enable MTD device concatenation"
+	help
+	  Enable support for concatenating multiple physical MTD devices
+	  into a single logical device. The larger logical device can then
+	  be partitioned.
+
+config SYS_MTDPARTS_RUNTIME
+	bool "Allow MTDPARTS to be configured at runtime"
+	help
+	  This option allows to call the function board_mtdparts_default to
+	  dynamically build the variables mtdids and mtdparts at runtime.
+
+config FLASH_CFI_DRIVER
+	bool "Enable CFI Flash driver"
+	select USE_SYS_MAX_FLASH_BANKS
+	help
+	  The Common Flash Interface specification was developed by Intel,
+	  AMD and other flash manufactures. It provides a universal method
+	  for probing the capabilities of flash devices. If you wish to
+	  support any device that is CFI-compliant, you need to enable this
+	  option. Visit <http://www.amd.com/products/nvd/overview/cfi.html>
+	  for more information on CFI.
+
+choice
+	prompt "Data-width of the flash device"
+	depends on FLASH_CFI_DRIVER
+	default SYS_FLASH_CFI_WIDTH_8BIT
+
+config SYS_FLASH_CFI_WIDTH_8BIT
+	bool "Data-width of the device is 8-bit"
+
+config SYS_FLASH_CFI_WIDTH_16BIT
+	bool "Data-width of the device is 16-bit"
+
+config SYS_FLASH_CFI_WIDTH_32BIT
+	bool "Data-width of the device is 32-bit"
+
+config SYS_FLASH_CFI_WIDTH_64BIT
+	bool "Data-width of the device is 64-bit"
+
+endchoice
+
+config SYS_FLASH_CFI_WIDTH
+	hex
+	depends on FLASH_CFI_DRIVER
+	default 0x1 if SYS_FLASH_CFI_WIDTH_8BIT
+	default 0x2 if SYS_FLASH_CFI_WIDTH_16BIT
+	default 0x4 if SYS_FLASH_CFI_WIDTH_32BIT
+	default 0x8 if SYS_FLASH_CFI_WIDTH_64BIT
+	help
+	  This must be kept in sync with the table in include/flash.h
+
+config FLASH_SHOW_PROGRESS
+	int "Print out a countdown durinng writes"
+	depends on FLASH_CFI_DRIVER
+	default 45
+	help
+	  If set to a non-zero value, print out countdown digits and dots.
+	  Recommended value: 45 (9..1) for 80 column displays, 15 (3..1) for 40
+	  column displays.
+
+config CFI_FLASH
+	bool "Enable Driver Model for CFI Flash driver"
+	depends on DM_MTD
+	select FLASH_CFI_DRIVER
+	help
+	  The Common Flash Interface specification was developed by Intel,
+	  AMD and other flash manufactures. It provides a universal method
+	  for probing the capabilities of flash devices. If you wish to
+	  support any device that is CFI-compliant, you need to enable this
+	  option. Visit <http://www.amd.com/products/nvd/overview/cfi.html>
+	  for more information on CFI.
+
+config CFI_FLASH_USE_WEAK_ACCESSORS
+	bool "Allow read/write functions to be overridden"
+	depends on FLASH_CFI_DRIVER
+	help
+	  Enable this option to allow for the flash_{read,write}{8,16,32,64}
+	  functions to be overridden by the platform.
+
+config SYS_CFI_FLASH_STATUS_POLL
+	bool "Poll status on AMD flash chips"
+	depends on FLASH_CFI_DRIVER
+
+config SYS_FLASH_USE_BUFFER_WRITE
+	bool "Enable buffered writes to flash"
+	depends on FLASH_CFI_DRIVER
+	help
+	  Use buffered writes to flash.
+
+config SYS_FLASH_EMPTY_INFO
+	bool "Enable displaying empty sectors in flash info"
+	depends on FLASH_CFI_DRIVER
+
+config FLASH_SPANSION_S29WS_N
+	bool "Non-standard s29ws-n MirrorBit flash"
+	depends on FLASH_CFI_DRIVER
+	help
+	  Enable this if the s29ws-n MirrorBit flash has non-standard addresses
+	  for buffered write commands.
+
+config FLASH_CFI_MTD
+	bool "Enable CFI MTD driver"
+	depends on FLASH_CFI_DRIVER && MTD
+	help
+	  This option enables the building of the cfi_mtd driver
+	  in the drivers directory. The driver exports CFI flash
+	  to the MTD layer.
+
+config SYS_FLASH_PROTECTION
+	bool "Use hardware flash protection"
+	depends on FLASH_CFI_DRIVER
+	help
+	  If defined, hardware flash sectors protection is used
+	  instead of U-Boot software protection.
+
+config SYS_FLASH_CFI
+	bool "Define extra elements in CFI for flash geometry"
+	depends on FLASH_CFI_DRIVER
+	help
+	  Define if the flash driver uses extra elements in the
+	  common flash structure for storing flash geometry.
+
+config SYS_FLASH_QUIET_TEST
+	bool "Disable printing a warning about not recognizing some flash banks"
+	depends on FLASH_CFI_DRIVER
+	help
+	  If this option is enabled, the common CFI flash doesn't print it's
+	  warning upon not recognized FLASH banks. This is useful, if some of
+	  the configured banks are only optionally available.
+
+config SYS_FLASH_CHECKSUM
+	bool "Compute and print flash CRC if 'flashchecksum' is set in the environment"
+	depends on MTD_NOR_FLASH
+	help
+	  If the variable flashchecksum is set in the environment, perform a CRC
+	  of the flash and print the value to console.
+
+config FLASH_VERIFY
+	bool "Compare writes to NOR flash with source location"
+	depends on MTD_NOR_FLASH
+	help
+	  If enabled, the content of the flash (destination) is compared
+	  against the source after the write operation. An error message will
+	  be printed when the contents are not identical.  Please note that
+	  this option is useless in nearly all cases, since such flash
+	  programming errors usually are detected earlier while
+	  unprotecting/erasing/programming. Please only enable this option if
+	  you really know what you are doing.
+
+config ALTERA_QSPI
+	bool "Altera Generic Quad SPI Controller"
+	depends on DM_MTD
+	select USE_SYS_MAX_FLASH_BANKS
+	help
+	  This enables access to Altera EPCQ/EPCS flash chips using the
+	  Altera Generic Quad SPI Controller. The controller converts SPI
+	  NOR flash to parallel flash interface. Please find details on the
+	  "Embedded Peripherals IP User Guide" of Altera.
+
+config RENESAS_RPC_HF
+	bool "Renesas RCar Gen3 RPC HyperFlash driver"
+	depends on RCAR_GEN3 && DM_MTD
+	help
+	  This enables access to HyperFlash memory through the Renesas
+	  RCar Gen3 RPC controller.
+
+config HBMC_AM654
+	bool "HyperBus controller driver for AM65x SoC"
+	depends on SYSCON
+	help
+	 This is the driver for HyperBus controller on TI's AM65x and
+	 other SoCs
+
+config STM32_FLASH
+	bool "STM32 MCU Flash driver"
+	depends on ARCH_STM32
+	select USE_SYS_MAX_FLASH_BANKS
+	help
+	 This is the driver of embedded flash for some STMicroelectronics
+	 STM32 MCU.
+
+config SYS_MAX_FLASH_SECT
+	int "Maximumm number of sectors on a flash chip"
+	depends on MTD_NOR_FLASH || FLASH_CFI_DRIVER
+	default 512
+
+config SAMSUNG_ONENAND
+	bool "Samsung OneNAND driver support"
+
+config USE_SYS_MAX_FLASH_BANKS
+	bool "Enable Max number of Flash memory banks"
+	help
+	  When this option is enabled, the CONFIG_SYS_MAX_FLASH_BANKS
+	  will be defined.
+
+config SYS_MAX_FLASH_BANKS
+	int "Max number of Flash memory banks"
+	depends on USE_SYS_MAX_FLASH_BANKS
+	default 1
+	help
+	 Max number of Flash memory banks using by the MTD framework, in the
+	 flash CFI driver and in some other driver to define the flash_info
+	 struct declaration.
+
+config SYS_MAX_FLASH_BANKS_DETECT
+	bool "Detection of flash banks number in CFI driver"
+	depends on CFI_FLASH && FLASH_CFI_DRIVER
+	help
+	 This enables detection of number of flash banks in CFI driver,
+	 to reduce the effective number of flash bank, between 0 and
+	 CONFIG_SYS_MAX_FLASH_BANKS
+
+source "drivers/mtd/nand/Kconfig"
+
+config SYS_NAND_MAX_OOBFREE
+	int "Maximum number of free OOB regions supported"
+	depends on SAMSUNG_ONENAND || MTD_RAW_NAND
+	range 2 32
+	default 32
+	help
+	  Set the maximum number of free OOB regions supported.  Useful for
+	  reducing image size, especially with SPL.
+
+config SYS_NAND_MAX_ECCPOS
+	int "Maximum number of ECC bytes supported"
+	depends on SAMSUNG_ONENAND || MTD_RAW_NAND
+	range 48 2147483647
+	default 680
+	help
+	  Set the maximum number of ECC bytes supported.  Useful for reducing
+	  image size, especially with SPL.
+
+config SYS_NAND_MAX_CHIPS
+	int "NAND max chips"
+	depends on MTD_RAW_NAND || CMD_ONENAND || TARGET_S5PC210_UNIVERSAL || \
+		SPL_OMAP3_ID_NAND
+	default 1
+	help
+	  The maximum number of NAND chips per device to be supported.
+
+source "drivers/mtd/spi/Kconfig"
+
+source "drivers/mtd/ubi/Kconfig"
+
+source "drivers/mtd/nvmxip/Kconfig"
+
+endif
+
+endmenu

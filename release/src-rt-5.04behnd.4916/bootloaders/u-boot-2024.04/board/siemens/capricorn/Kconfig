@@ -1,0 +1,30 @@
+if TARGET_GIEDI
+
+config SYS_BOARD
+	default "capricorn"
+
+config SYS_VENDOR
+	default "siemens"
+
+config SYS_CONFIG_NAME
+	default "giedi"
+
+config IMX_CONFIG
+	default "board/siemens/capricorn/imximage.cfg"
+endif
+
+if TARGET_DENEB
+
+config SYS_BOARD
+	default "capricorn"
+
+config SYS_VENDOR
+	default "siemens"
+
+config SYS_CONFIG_NAME
+	default "deneb"
+
+config IMX_CONFIG
+	default "board/siemens/capricorn/imximage.cfg"
+
+endif

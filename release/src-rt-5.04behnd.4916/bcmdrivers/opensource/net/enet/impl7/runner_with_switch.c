@@ -69,20 +69,13 @@ static int _port_sf2_port_init(enetx_port_t *self)
 
     blog_chnl_unit_port_set(self);
 
-#ifndef XRDP
-    create_ingress_filters = 0;
-#endif
-
     if (!(self->priv = create_rdpa_port(self, handle, NULL, 1, 0, create_ingress_filters)))
     {
         enet_err("Failed to create RDPA port object for %s\n", self->obj_name);
         return -1;
     }
 
-#ifdef XRDP
     port_runner_wan_role_set(self, self->port_info.is_wan ? PORT_NETDEV_ROLE_WAN : PORT_NETDEV_ROLE_LAN);
-#endif
-
     enet_dbg("Initialized %s role %s\n", self->obj_name, (self->n.port_netdev_role==PORT_NETDEV_ROLE_WAN)?"wan":"lan" );
 
     return 0;
@@ -143,7 +136,7 @@ static int dispatch_pkt_gbe_wan(dispatch_info_t *dispatch_info)
         info.bits.no_lock = dispatch_info->no_lock;
 
 #if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
-        // on BCM63158 (or XRDP), spdsvc info is part of rdpa_cpu_tx_info_t
+        // on BCM63158 and others, spdsvc info is part of rdpa_cpu_tx_info_t
         info.bits.is_spdsvc_setup_packet = rc;
         info.spdt_so_mark = spdsvc_transmit.so_mark;
 #endif
@@ -377,7 +370,6 @@ static int port_runner_role_set(enetx_port_t *port, port_netdev_role_t role)
 
     rc = port_runner_wan_role_set(port, role);
     if (rc)
-
          return rc;
 #endif
 

@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * Copyright 2021-2022 Marek Vasut <marex@denx.de>
+ */
+#include "imx8mm-verdin-wifi-dev-u-boot.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	aliases {
+		/delete-property/ eeprom1;
+		/delete-property/ eeprom2;
+		usbphy0 = &usbphynop1;
+		usbphy1 = &usbphynop2;
+	};
+};
+
+&aips4 {
+	bootph-pre-ram;
+};
+
+&i2c4 {
+	/delete-node/ codec@1a;
+};
+
+&reg_usb_otg1_vbus {
+	bootph-pre-ram;
+};
+
+&usbmisc1 {
+	bootph-pre-ram;
+};
+
+&usbphynop1 {
+	bootph-pre-ram;
+};
+
+&usbotg1 {
+	bootph-pre-ram;
+};

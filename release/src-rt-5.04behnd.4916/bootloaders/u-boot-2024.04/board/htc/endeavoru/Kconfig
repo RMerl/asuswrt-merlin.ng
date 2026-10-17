@@ -1,0 +1,12 @@
+if TARGET_ENDEAVORU
+
+config SYS_BOARD
+	default "endeavoru"
+
+config SYS_VENDOR
+	default "htc"
+
+config SYS_CONFIG_NAME
+	default "endeavoru"
+
+endif

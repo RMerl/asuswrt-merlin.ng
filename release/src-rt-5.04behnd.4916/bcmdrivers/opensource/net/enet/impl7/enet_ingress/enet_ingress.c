@@ -122,7 +122,7 @@ static inline struct sk_buff *rx_skb(FkBuff_t *fkb, enetx_rx_info_t *rx_info)
         return NULL;
     }
     skb_headerinit((BCM_PKT_HEADROOM + rx_info->data_offset), 
-#if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
+#if defined(CC_NBUFF_FLUSH_OPTIMIZATION) || defined(CONFIG_CPU_RX_FROM_XPM)
             SKB_DATA_ALIGN(fkb->len + BCM_SKB_TAILROOM + rx_info->data_offset),
 #else
             BCM_MAX_PKT_LEN - rx_info->data_offset,

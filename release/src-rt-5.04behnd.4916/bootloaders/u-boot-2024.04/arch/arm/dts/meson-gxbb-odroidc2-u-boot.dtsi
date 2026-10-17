@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2019 BayLibre, SAS.
+ * Author: Neil Armstrong <narmstrong@baylibre.com>
+ */
+
+#include "meson-gx-u-boot.dtsi"
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = "Hardkernel Co., Ltd.";
+				product = "ODROID-C2";
+			};
+
+			baseboard {
+				manufacturer = "Hardkernel Co., Ltd.";
+				product = "ODROID-C2";
+			};
+
+			chassis {
+				manufacturer = "Hardkernel Co., Ltd.";
+				product = "ODROID-C2";
+			};
+		};
+	};
+};
+
+&ethmac {
+	snps,reset-gpio = <&gpio GPIOZ_14 0>;
+	snps,reset-delays-us = <0 10000 1000000>;
+	snps,reset-active-low;
+};
+
+&usb0 {
+	status = "disabled";
+};
+
+&usb1 {
+	hnp-srp-disable;
+};

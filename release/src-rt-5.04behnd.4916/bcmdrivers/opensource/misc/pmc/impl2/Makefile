@@ -36,18 +36,16 @@ EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/misc/pmc/impl$(CONFIG_BCM_PMC_IM
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
 EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)/pmc
-EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
-EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/include/bcm963xx
 
 obj-y	 := pmc_drv.o pmc_drv_linux.o
-ifeq ($(strip $(BRCM_IKOS)),)
 obj-y += clk_rst.o pmc_sysfs.o pmc_pcie.o pmc_usb.o pmc_rpc.o avs_rpc_svc.o
 
 obj-$(CONFIG_BCM968880) += pmc_xrdp.o pmc_xport.o pmc_wan.o pmc_pcm.o  pmc_spu.o pmc_cpu.o  pmc_sdhci.o  pmc_spu.o power_rpc_svc.o clk_rpc_svc.o ba_rpc_svc.o pmc_ethtop.o pmc_rccore.o pmc_shutdown.o
 obj-$(CONFIG_BCM96837)  += pmc_xrdp.o pmc_xport.o pmc_wan.o pmc_pcm.o  pmc_spu.o pmc_cpu.o  pmc_sdhci.o  pmc_spu.o power_rpc_svc.o clk_rpc_svc.o ba_rpc_svc.o pmc_ethtop.o pmc_rccore.o pmc_shutdown.o
-ifneq ($(strip $(CONFIG_BCM_PMC_AUX)),)
-obj-$(CONFIG_BCM968880) +=  pmc_aux.o
-endif
+obj-$(CONFIG_BCM968375)  += pmc_xrdp.o pmc_xport.o pmc_wan.o pmc_pcm.o  pmc_spu.o pmc_cpu.o  pmc_sdhci.o  pmc_spu.o power_rpc_svc.o clk_rpc_svc.o ba_rpc_svc.o pmc_ethtop.o pmc_rccore.o pmc_shutdown.o
+ifneq ($(strip $(CONFIG_BCM_BSTORM)),)
+obj-$(CONFIG_BCM968880) +=  pmc_bstorm.o
+obj-$(CONFIG_BCM968375) +=  pmc_bstorm.o
 endif
 clean:
 	rm -f core *.o *.a *.s

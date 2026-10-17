@@ -50,13 +50,11 @@ typedef enum {
     rdpa_iptv_attr_mcast_prefix_filter = 1, /* mcast_prefix_filter : RW : enum :  Multicast Prefix Filtering Method */
     rdpa_iptv_attr_lookup_miss_action = 2, /* lookup_miss_action : RW : enum : Multicast iptv lookup miss action */
     rdpa_iptv_attr_iptv_stat = 3, /* iptv_stat : RW : aggregate iptv_stat(rdpa_iptv_stat_t) : IPTV global statistics */
-    rdpa_iptv_attr_channel_request = 4, /* channel_request : WAD : aggregate iptv_channel_request(rdpa_iptv_channel_request_t) : Request to view the channel (reflecting  */
-    rdpa_iptv_attr_channel_pm_stats = 6, /* channel_pm_stats : RF : aggregate[] rdpa_stat(rdpa_stat_t) : IPTV channels Performance Monitoring statistics */
-    rdpa_iptv_attr_flush = 7, /* flush : W : bool : Flush IPTV table (remove all configured channels) */
-    rdpa_iptv_attr_flow = 8, /* flow : RWADF : aggregate[] iptv_flow(rdpa_fc_mcast_flow_t) : IPTV client flow entry */
-    rdpa_iptv_attr_flow_stat = 9, /* flow_stat : RF : aggregate[] rdpa_stat(rdpa_stat_t) : IPTV client flow entry statistics */
-    rdpa_iptv_attr_flow_mode = 11, /* flow_mode : R : enum : Indicate what kinf of flows are supported (single-flow or multi-flow) */
-    rdpa_iptv_attr_mcast_key_exclude_fields = 12, /* mcast_key_exclude_fields : RW : enum_mask : List of fields to exclude from basic mcast class key, filter applies both to vlan0 */
+    rdpa_iptv_attr_channel_pm_stats = 5, /* channel_pm_stats : RF : aggregate[] rdpa_stat(rdpa_stat_t) : IPTV channels Performance Monitoring statistics */
+    rdpa_iptv_attr_flush = 6, /* flush : W : bool : Flush IPTV table (remove all configured channels) */
+    rdpa_iptv_attr_flow = 7, /* flow : RWADF : aggregate[] iptv_flow(rdpa_fc_mcast_flow_t) : IPTV client flow entry */
+    rdpa_iptv_attr_flow_stat = 8, /* flow_stat : RF : aggregate[] rdpa_stat(rdpa_stat_t) : IPTV client flow entry statistics */
+    rdpa_iptv_attr_mcast_key_exclude_fields = 10, /* mcast_key_exclude_fields : RW : enum_mask : List of fields to exclude from basic mcast class key, filter applies both to vlan0 */
 } rdpa_iptv_attr_types;
 
 extern int (*f_rdpa_iptv_get)(bdmf_object_handle *pmo);
@@ -190,51 +188,6 @@ static inline int rdpa_iptv_iptv_stat_get(bdmf_object_handle mo_, rdpa_iptv_stat
 static inline int rdpa_iptv_iptv_stat_set(bdmf_object_handle mo_, const rdpa_iptv_stat_t * iptv_stat_)
 {
     return bdmf_attr_set_as_buf(mo_, rdpa_iptv_attr_iptv_stat, iptv_stat_, sizeof(*iptv_stat_));
-}
-
-
-/** Set iptv/channel_request attribute.
- *
- * Set Request to view the channel (reflecting IGMP JOIN/LEAVE membership reports).
- * \param[in]   mo_ iptv object handle or mattr transaction handle
- * \param[in]   channel_request_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task and softirq contexts.
- */
-static inline int rdpa_iptv_channel_request_set(bdmf_object_handle mo_, const rdpa_iptv_channel_request_t * channel_request_)
-{
-    return bdmf_attr_set_as_buf(mo_, rdpa_iptv_attr_channel_request, channel_request_, sizeof(*channel_request_));
-}
-
-
-/** Add iptv/channel_request attribute.
- *
- * Add Request to view the channel (reflecting IGMP JOIN/LEAVE membership reports).
- * \param[in]   mo_ iptv object handle or mattr transaction handle
- * \param[in,out]   ai_ Attribute array index
- * \param[in]   channel_request_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task and softirq contexts.
- */
-static inline int rdpa_iptv_channel_request_add(bdmf_object_handle mo_, rdpa_channel_req_key_t * ai_, const rdpa_iptv_channel_request_t * channel_request_)
-{
-    int rc;
-    rc = bdmf_attrelem_add_as_buf(mo_, rdpa_iptv_attr_channel_request, (bdmf_index *)ai_, channel_request_, sizeof(*channel_request_));
-    return rc;
-}
-
-
-/** Delete iptv/channel_request attribute entry.
- *
- * Delete Request to view the channel (reflecting IGMP JOIN/LEAVE membership reports).
- * \param[in]   mo_ iptv object handle
- * \param[in]   ai_ Attribute array index
- * \return 0 or error code < 0
- * The function can be called in task and softirq contexts.
- */
-static inline int rdpa_iptv_channel_request_delete(bdmf_object_handle mo_, const rdpa_channel_req_key_t * ai_)
-{
-    return bdmf_attrelem_delete(mo_, rdpa_iptv_attr_channel_request, (bdmf_index)ai_);
 }
 
 
@@ -399,24 +352,6 @@ static inline int rdpa_iptv_flow_stat_get(bdmf_object_handle mo_, bdmf_index ai_
 static inline int rdpa_iptv_flow_stat_get_next(bdmf_object_handle mo_, bdmf_index * ai_)
 {
     return bdmf_attrelem_get_next(mo_, rdpa_iptv_attr_flow_stat, (bdmf_index *)ai_);
-}
-
-
-/** Get iptv/flow_mode attribute.
- *
- * Get Indicate what kinf of flows are supported (single-flow or multi-flow).
- * \param[in]   mo_ iptv object handle or mattr transaction handle
- * \param[out]  flow_mode_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_iptv_flow_mode_get(bdmf_object_handle mo_, rdpa_iptv_flow_mode_t *flow_mode_)
-{
-    bdmf_number _nn_;
-    int _rc_;
-    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_iptv_attr_flow_mode, &_nn_);
-    *flow_mode_ = (rdpa_iptv_flow_mode_t)_nn_;
-    return _rc_;
 }
 
 

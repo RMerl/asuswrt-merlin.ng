@@ -1,0 +1,38 @@
+#
+# Intel PINCTRL drivers
+#
+
+if PINCTRL_INTEL
+
+config INTEL_PINCTRL_DUAL_ROUTE_SUPPORT
+	bool
+	default y
+
+config INTEL_PINCTRL_PADCFG_PADTOL
+	bool n
+
+config INTEL_PINCTRL_IOSTANDBY
+	bool
+	default y
+
+config INTEL_PINCTRL_MULTI_ACPI_DEVICES
+	bool
+	default y
+	help
+	  Enable this if the pinctrl devices are modelled as multiple,
+	  separate ACPI devices in the ACPI tables. If enabled, the ACPI
+	  devices match the U-Boot pinctrl devices and the pin 'offset' is
+	  relative to a particular pinctrl device. If disabled, there is a
+	  single ACPI pinctrl device which includes all U-Boot pinctrl devices
+	  and the pin 'offset' is in effect a global pin number.
+
+
+config PINCTRL_INTEL_APL
+	bool "Support Intel Apollo Lake (APL)"
+	help
+	  Add support for Intel Apollo Lake pin-control and pin-mux settings.
+	  These are mostly read from the device tree, with the early-pads
+	  property in the host bridge and the pads property in the fsp-s
+	  subnode of the host bridge.
+
+endif

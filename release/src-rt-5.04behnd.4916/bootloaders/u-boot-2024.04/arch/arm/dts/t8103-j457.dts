@@ -1,0 +1,105 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * Apple iMac (24-inch, 2x USB-C, M1, 2020)
+ *
+ * target-type: J457
+ *
+ * Copyright The Asahi Linux Contributors
+ */
+
+/dts-v1/;
+
+#include "t8103.dtsi"
+#include "t8103-jxxx.dtsi"
+
+/ {
+	compatible = "apple,j457", "apple,t8103", "apple,arm-platform";
+	model = "Apple iMac (24-inch, 2x USB-C, M1, 2020)";
+
+	aliases {
+		ethernet0 = &ethernet0;
+	};
+};
+
+&wifi0 {
+	brcm,board-type = "apple,santorini";
+};
+
+/*
+ * Provide labels for the USB type C ports.
+ */
+
+&typec0 {
+	label = "USB-C Back-right";
+};
+
+&typec1 {
+	label = "USB-C Back-left";
+};
+
+/*
+ * Force the bus number assignments so that we can declare some of the
+ * on-board devices and properties that are populated by the bootloader
+ * (such as MAC addresses).
+ */
+
+&port02 {
+	bus-range = <3 3>;
+	ethernet0: ethernet@0,0 {
+		reg = <0x30000 0x0 0x0 0x0 0x0>;
+		/* To be filled by the loader */
+		local-mac-address = [00 10 18 00 00 00];
+	};
+};
+
+/*
+ * Remove unused PCIe port and disable the associated DART.
+ */
+
+&pcie0_dart_1 {
+	status = "disabled";
+};
+
+/delete-node/ &port01;
+
+&i2c1 {
+	clock-frequency = <50000>;
+
+	jack_codec: codec@48 {
+		compatible = "cirrus,cs42l83", "cirrus,cs42l42";
+		reg = <0x48>;
+		reset-gpios = <&pinctrl_nub 11 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&pinctrl_ap>;
+		interrupts = <183 IRQ_TYPE_LEVEL_LOW>;
+		#sound-dai-cells = <0>;
+		cirrus,ts-inv = <1>;
+	};
+};
+
+/ {
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "iMac integrated audio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		simple-audio-card,dai-link@0 {
+			bitclock-inversion;
+			frame-inversion;
+			reg = <0>;
+			format = "i2s";
+			mclk-fs = <64>;
+			tdm-slot-width = <32>;
+
+			link0_cpu: cpu {
+				sound-dai = <&mca 2>;
+				bitclock-master;
+				frame-master;
+			};
+
+			link0_codec: codec {
+				sound-dai = <&jack_codec>;
+			};
+		};
+	};
+};

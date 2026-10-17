@@ -1,0 +1,267 @@
+menu "Clock"
+
+config CLK
+	bool "Enable clock driver support"
+	depends on DM
+	help
+	  This allows drivers to be provided for clock generators, including
+	  oscillators and PLLs. Devices can use a common clock API to request
+	  a particular clock rate and check on available clocks. Clocks can
+	  feed into other clocks in a tree structure, with multiplexers to
+	  choose the source for each clock.
+
+config SPL_CLK
+	bool "Enable clock support in SPL"
+	depends on CLK && SPL && SPL_DM
+	help
+	  The clock subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use clock drivers in
+	  SPL, enable this option. It might provide a cleaner interface to
+	  setting up clocks within SPL, and allows the same drivers to be
+	  used as U-Boot proper.
+
+config TPL_CLK
+	bool "Enable clock support in TPL"
+	depends on CLK && TPL_DM
+	help
+	  The clock subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use clock drivers in
+	  SPL, enable this option. It might provide a cleaner interface to
+	  setting up clocks within TPL, and allows the same drivers to be
+	  used as U-Boot proper.
+
+config VPL_CLK
+	bool "Enable clock support in VPL"
+	depends on CLK && VPL_DM
+	help
+	  The clock subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use clock drivers in
+	  SPL, enable this option. It might provide a cleaner interface to
+	  setting up clocks within TPL, and allows the same drivers to be
+	  used as U-Boot proper.
+
+config CLK_BCM6345
+	bool "Clock controller driver for BCM6345"
+	depends on CLK && ARCH_BMIPS
+	default y
+	help
+	  This clock driver adds support for enabling and disabling peripheral
+	  clocks on BCM6345 SoCs. HW has no rate changing capabilities.
+
+config CLK_BOSTON
+	def_bool y if TARGET_BOSTON
+	depends on CLK
+	select REGMAP
+	select SYSCON
+	help
+	  Enable this to support the clocks
+
+config SPL_CLK_CCF
+	bool "SPL Common Clock Framework [CCF] support "
+	depends on SPL
+	help
+	  Enable this option if you want to (re-)use the Linux kernel's Common
+	  Clock Framework [CCF] code in U-Boot's SPL.
+
+config SPL_CLK_COMPOSITE_CCF
+	bool "SPL Common Clock Framework [CCF] composite clk support "
+	depends on SPL_CLK_CCF
+	help
+	  Enable this option if you want to (re-)use the Linux kernel's Common
+	  Clock Framework [CCF] composite code in U-Boot's SPL.
+
+config CLK_CCF
+	bool "Common Clock Framework [CCF] support "
+	help
+	  Enable this option if you want to (re-)use the Linux kernel's Common
+	  Clock Framework [CCF] code in U-Boot's clock driver.
+
+config CLK_COMPOSITE_CCF
+	bool "Common Clock Framework [CCF] composite clk support "
+	depends on CLK_CCF
+	help
+	  Enable this option if you want to (re-)use the Linux kernel's Common
+	  Clock Framework [CCF] composite code in U-Boot's clock driver.
+
+config CLK_GPIO
+	bool "GPIO-controlled clock gate driver"
+	depends on CLK
+	help
+	  Enable this option to add GPIO-controlled clock gate driver.
+
+config SPL_CLK_GPIO
+	bool "GPIO-controlled clock gate driver in SPL"
+	depends on SPL_CLK
+	help
+	  Enable this option to add GPIO-controlled clock gate driver
+	  in U-Boot SPL.
+
+config CLK_BCM6345
+	bool "Clock controller driver for BCM6345"
+	depends on CLK && ARCH_BMIPS
+	default y
+	help
+	  This clock driver adds support for enabling and disabling peripheral
+	  clocks on BCM6345 SoCs. HW has no rate changing capabilities.
+
+config CLK_BOSTON
+	def_bool y if TARGET_BOSTON
+	depends on CLK
+	select REGMAP
+	select SYSCON
+	help
+	  Enable this to support the clocks
+
+config CLK_CDCE9XX
+	bool "Enable CDCD9XX clock driver"
+	depends on CLK
+	help
+	   Enable the clock synthesizer driver for CDCE913/925/937/949
+	   series of chips.
+
+config CLK_ICS8N3QV01
+	bool "Enable ICS8N3QV01 VCXO driver"
+	depends on CLK
+	help
+	  Support for the ICS8N3QV01 Quad-Frequency VCXO (Voltage-Controlled
+	  Crystal Oscillator). The output frequency can be programmed via an
+	  I2C interface.
+
+config CLK_INTEL
+	bool "Enable clock driver for Intel x86"
+	depends on CLK && X86
+	help
+	  This provides very basic support for clocks on Intel SoCs. The driver
+	  is barely used at present but could be expanded as needs arise.
+	  Much clock configuration in U-Boot is either set up by the FSP, or
+	  set up by U-Boot itself but only statically. Thus the driver does not
+	  support changing clock rates, only querying them.
+
+config CLK_K210
+	bool "Clock support for Kendryte K210"
+	depends on CLK
+	help
+	  This enables support clock driver for Kendryte K210 platforms.
+
+config CLK_K210_SET_RATE
+	bool "Enable setting the Kendryte K210 PLL rate"
+	depends on CLK_K210
+	help
+	  Add functionality to calculate new rates for K210 PLLs. Enabling this
+	  feature adds around 1K to U-Boot's final size.
+
+config CLK_MPC83XX
+	bool "Enable MPC83xx clock driver"
+	depends on CLK
+	help
+	  Support for the clock driver of the MPC83xx series of SoCs.
+
+config CLK_OCTEON
+	bool "Clock controller driver for Marvell MIPS Octeon"
+	depends on CLK && ARCH_OCTEON
+	default y
+	help
+	  Enable this to support the clocks on Octeon MIPS platforms.
+
+config SANDBOX_CLK_CCF
+	bool "Sandbox Common Clock Framework [CCF] support "
+	depends on SANDBOX
+	select CLK_CCF
+	help
+	  Enable this option if you want to test the Linux kernel's Common
+	  Clock Framework [CCF] code in U-Boot's Sandbox clock driver.
+
+config CLK_SCMI
+	bool "Enable SCMI clock driver"
+	depends on CLK
+	depends on SCMI_FIRMWARE
+	help
+	  Enable this option if you want to support clock devices exposed
+	  by a SCMI agent based on SCMI clock protocol communication
+	  with a SCMI server.
+
+config SPL_CLK_SCMI
+	bool "Enable SCMI clock driver in SPL"
+	depends on SCMI_FIRMWARE && SPL_FIRMWARE
+	help
+	  Enable this option if you want to support clock devices exposed
+	  by a SCMI agent based on SCMI clock protocol communication
+	  with a SCMI server in SPL.
+
+config CLK_HSDK
+	bool "Enable cgu clock driver for HSDK boards"
+	depends on CLK && TARGET_HSDK
+	help
+	  Enable this to support the cgu clocks on Synopsys ARC HSDK and
+	  Synopsys ARC HSDK-4xD boards
+
+config CLK_VERSACLOCK
+	tristate "Enable VersaClock 5/6 devices"
+	depends on CLK
+	depends on CLK_CCF
+	depends on OF_CONTROL
+	help
+	  This driver supports the IDT VersaClock 5 and VersaClock 6
+	  programmable clock generators.
+
+config CLK_VERSAL
+	bool "Enable clock driver support for Versal"
+	depends on (ARCH_VERSAL || ARCH_VERSAL_NET)
+	imply ZYNQMP_FIRMWARE
+	help
+	  This clock driver adds support for clock realted settings for
+	  Versal platform.
+
+config CLK_VEXPRESS_OSC
+	bool "Enable driver for Arm Versatile Express OSC clock generators"
+	depends on CLK && VEXPRESS_CONFIG
+	help
+	  This clock driver adds support for clock generators present on
+	  Arm Versatile Express platforms.
+
+config CLK_XLNX_CLKWZRD
+	bool "Xilinx Clocking Wizard"
+	depends on CLK
+	help
+	  Support for the Xilinx Clocking Wizard IP core clock generator.
+	  The wizard support for dynamically reconfiguring the clocking
+	  primitives for Multiply, Divide, Phase Shift/Offset, or Duty
+	  Cycle. Limited by U-Boot clk uclass without set_phase API and
+	  set_duty_cycle API, this driver only supports set_rate to modify
+	  the frequency.
+
+config CLK_ZYNQ
+	bool "Enable clock driver support for Zynq"
+	depends on CLK && ARCH_ZYNQ
+	default y
+	help
+	  This clock driver adds support for clock related settings for
+	  Zynq platform.
+
+config CLK_ZYNQMP
+	bool "Enable clock driver support for ZynqMP"
+	depends on ARCH_ZYNQMP
+	imply ZYNQMP_FIRMWARE
+	help
+	  This clock driver adds support for clock realted settings for
+	  ZynqMP platform.
+
+source "drivers/clk/analogbits/Kconfig"
+source "drivers/clk/at91/Kconfig"
+source "drivers/clk/exynos/Kconfig"
+source "drivers/clk/imx/Kconfig"
+source "drivers/clk/meson/Kconfig"
+source "drivers/clk/microchip/Kconfig"
+source "drivers/clk/mvebu/Kconfig"
+source "drivers/clk/owl/Kconfig"
+source "drivers/clk/qcom/Kconfig"
+source "drivers/clk/renesas/Kconfig"
+source "drivers/clk/sunxi/Kconfig"
+source "drivers/clk/sifive/Kconfig"
+source "drivers/clk/starfive/Kconfig"
+source "drivers/clk/stm32/Kconfig"
+source "drivers/clk/tegra/Kconfig"
+source "drivers/clk/ti/Kconfig"
+source "drivers/clk/uniphier/Kconfig"
+
+endmenu

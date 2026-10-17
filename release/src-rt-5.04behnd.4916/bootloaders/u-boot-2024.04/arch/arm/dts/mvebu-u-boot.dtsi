@@ -1,0 +1,35 @@
+#include <config.h>
+
+#ifdef CONFIG_ARMADA_32BIT
+
+/ {
+	soc {
+		bootph-all;
+		internal-regs {
+			bootph-all;
+		};
+	};
+};
+
+&uart0 {
+	bootph-all;
+};
+
+#ifdef CONFIG_ARMADA_375
+/* Armada 375 has multiple timers, use timer1 here */
+&timer1 {
+	bootph-all;
+};
+#else
+&timer {
+	bootph-all;
+};
+#endif
+
+#ifdef CONFIG_SPL_SPI
+&spi0 {
+	bootph-all;
+};
+#endif
+
+#endif

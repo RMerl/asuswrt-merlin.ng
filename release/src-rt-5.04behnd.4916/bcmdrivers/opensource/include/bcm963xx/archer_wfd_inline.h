@@ -42,7 +42,7 @@
 #ifdef CONFIG_BCM_WFD_RATE_LIMITER
 #include "rate_limiter.h"
 #endif
-#include "wl_pktc.h"
+#include "wl_pktfwd.h"
 
 #include "bcm_async_queue.h"
 #include "archer_cpu_queues.h"
@@ -146,11 +146,11 @@ static inline void wfd_databuf_free_to_pool(void *datap)
     wfd_dcache_inv((unsigned long)datap, BCM_MAX_PKT_LEN);
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
     ARCHER_WFD_GBPM_TRACK_BUF( datap, GBPM_VAL_FREE, 0 );
-    /* BPM expects data buffer ptr offseted by FkBuff_t, BCM_PKT_HEADROOM */
+    /* BPM expects data buffer ptr pointed to pData */
     gbpm_free_buf((void*)datap);
 #else
-    /* datap points to start of buffer, i.e. pFkBuff */
-    kfree((void *)PDATA_TO_PFKBUFF(datap, BCM_PKT_HEADROOM));
+    /* Get pStart from datap which points to pData */
+    kfree((void *)BCM_PDATA_TO_PSTART(datap));
 #endif
 }
 
@@ -190,21 +190,21 @@ static inline uint32_t wfd_databuf_bulk_alloc(void **bufp, uint32_t num_buffs, u
 
     /* No cache invalidation of buffers is needed for buffers coming from BPM */
 
-    /* BPM would have reserved space for FkBuff_t and BCM_PKT_HEADROOM */
+    /* BPM would have reserved space for Metadata like wkb, fkb, headdroom */
 
     return num_buffs;
 #else
-    uint32_t *datap;
+    uint32_t *pStart;
     /* allocate from kernel directly */
-    datap = kmalloc(BCM_PKTBUF_SIZE, GFP_ATOMIC);
+    pStart = kmalloc(BCM_PKTBUF_SIZE, GFP_ATOMIC);
 
-    if(!datap)
+    if(!pStart)
     {
         return 0;
     }
 
     /* reserve space for headroom & FKB */
-    bufp[0] = (void *)PFKBUFF_TO_PDATA((void *)(datap), BCM_PKT_HEADROOM);
+    bufp[0] = (void *)BCM_PSTART_TO_PDATA(pStart);
 
     /* do a cache invalidate of the DMA-seen data area */
     wfd_dcache_inv((unsigned long)bufp[0], BCM_MAX_PKT_LEN);
@@ -333,7 +333,7 @@ static void archer_wfd_recycle(pNBuff_t pNBuff, unsigned long context, uint32_t 
 
         FkBuff_t* fkb = PNBUFF_2_FKBUFF(pNBuff);
 
-        wfd_databuf_free_to_pool(PFKBUFF_TO_PDATA(fkb, BCM_PKT_HEADROOM));
+        wfd_databuf_free_to_pool(BCM_PFKBUFF_TO_PDATA(fkb));
     }
     else /* skb */
     {
@@ -342,8 +342,7 @@ static void archer_wfd_recycle(pNBuff_t pNBuff, unsigned long context, uint32_t 
         if(likely(flags & SKB_DATA_RECYCLE))
         {
 #if !defined(CONFIG_BCM_GLB_COHERENCY)
-//            void *data_startp = (void *)((uint8_t *)(skb->head) + BCM_PKT_HEADROOM);
-            void *data_startp = BPM_PHEAD_TO_BUF(skb->head);
+            void *data_startp = BCM_PHEAD_TO_PDATA(skb->head);
             void *data_endp;
 #if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
             {
@@ -359,7 +358,7 @@ static void archer_wfd_recycle(pNBuff_t pNBuff, unsigned long context, uint32_t 
                                              (BPM_BUF_TO_END_OFFSET)))
                 {
                     void *shinfoEnd;
-            
+
                     /* skb_shared_info is located in a DMA-able region.
                      * nr_frags could be ++/-- during sk_buff life.
                      */
@@ -386,8 +385,7 @@ static void archer_wfd_recycle(pNBuff_t pNBuff, unsigned long context, uint32_t 
 #endif /* !CONFIG_BCM_GLB_COHERENCY */
 
             /* free the data buffer */
-//            wfd_databuf_free_to_pool((uint8_t *)(skb->head) + BCM_PKT_HEADROOM);
-            wfd_databuf_free_to_pool(BPM_PHEAD_TO_BUF(skb->head));
+            wfd_databuf_free_to_pool(BCM_PHEAD_TO_PDATA(skb->head));
         }
 #if defined(CC_ARCHER_WFD_DEBUG)
         else
@@ -535,7 +533,7 @@ static void wfd_delete_cpu_queue(int qid)
 
         bcm_async_queue_entry_dequeue(cpu_queue_p);
 
-        wfd_databuf_free_to_pool(PFKBUFF_TO_PDATA(fkb_p, BCM_PKT_HEADROOM));
+        wfd_databuf_free_to_pool(BCM_PFKBUFF_TO_PDATA(fkb_p));
     }
 
     // FIXME: Create async_queue free API
@@ -649,7 +647,7 @@ static inline struct sk_buff *_wfd_bulk_cpu_queue_skb(FkBuff_t *fkb_p, uint32_t 
 
     if(likely(skb_p))
     {
-        uint8_t *pData = PFKBUFF_TO_PDATA(fkb_p, BCM_PKT_HEADROOM);
+        uint8_t *pData = BCM_PFKBUFF_TO_PDATA(fkb_p);
         int offset_from_pData = (int)((uintptr_t)(fkb_p->data) - (uintptr_t)(pData));
         int length_at_pData = fkb_p->len + offset_from_pData;
         wlFlowInf_t wl = fkb_p->wl;
@@ -712,7 +710,7 @@ static inline uint32_t _wfd_bulk_cpu_queue_get(uint32_t qid, uint32_t budget,
         {
             if(rl_should_drop(wfd_p->wfd_idx, fkb_p->wl.ucast.dhd.ssid, RL_DIR_TX, length))
             {
-                wfd_databuf_free_to_pool(PFKBUFF_TO_PDATA(fkb_p, BCM_PKT_HEADROOM));
+                wfd_databuf_free_to_pool(BCM_PFKBUFF_TO_PDATA(fkb_p));
 
                 continue;
             }
@@ -744,7 +742,7 @@ static inline uint32_t _wfd_bulk_cpu_queue_get(uint32_t qid, uint32_t budget,
 
                     if (pktfwd_key == ((uint16_t)~0)) {
                         /* Stale packets */
-                        wfd_databuf_free_to_pool(PFKBUFF_TO_PDATA(fkb_p, BCM_PKT_HEADROOM));
+                        wfd_databuf_free_to_pool(BCM_PFKBUFF_TO_PDATA(fkb_p));
                         gs_count_rx_error[qid]++;
                         continue;
                     }
@@ -807,7 +805,7 @@ static inline uint32_t _wfd_bulk_cpu_queue_get(uint32_t qid, uint32_t budget,
             }
             else
             {
-                wfd_databuf_free_to_pool(PFKBUFF_TO_PDATA(fkb_p, BCM_PKT_HEADROOM));
+                wfd_databuf_free_to_pool(BCM_PFKBUFF_TO_PDATA(fkb_p));
             }
         }
     }

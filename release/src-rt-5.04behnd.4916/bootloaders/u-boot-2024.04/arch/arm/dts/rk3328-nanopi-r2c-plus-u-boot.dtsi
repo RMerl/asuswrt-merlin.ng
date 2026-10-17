@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#include "rk3328-nanopi-r2c-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &emmc;
+	};
+};

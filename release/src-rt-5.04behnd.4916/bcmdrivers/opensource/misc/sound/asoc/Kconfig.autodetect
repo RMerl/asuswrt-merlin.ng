@@ -33,6 +33,12 @@ config SND_BCM63xx_PCM_SQUAMISH
 	  Say Y if you want to add support for SoC audio on
 	  PCM SQUAMISH BLOCK.
 
+config SND_SOC_MAPLEGROVE_SW_LOOPBACK
+	bool "SoC Audio Broadcom MAPLEGROVE PCM loopback module"
+	depends on SND_SOC_MAPLEGROVE
+	help
+	  Say Y if you want to use PCM loopback driver code.
+
 config SND_BCM63xx_SOC_I2S_ENG
 	bool "SoC Audio Broadcom BLACKCOMB I2S module"
 	help

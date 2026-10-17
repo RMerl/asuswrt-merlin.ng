@@ -1,0 +1,15 @@
+if TARGET_GRAYHAWK
+
+config SYS_SOC
+	default "renesas"
+
+config SYS_BOARD
+	default "grayhawk"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "grayhawk"
+
+endif

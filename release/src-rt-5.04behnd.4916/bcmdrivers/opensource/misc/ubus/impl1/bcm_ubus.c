@@ -314,7 +314,7 @@ static int ubus_master_decode_wnd_cfg(int master_port_id, int win, phys_addr_t p
     UBUS_REMAP_DEBUG_LOG("\x1b[35m port[%d] win[%d] phys_addr[0x%x] power_of_2[%d] port_id[%d] cache_bit[%d]\x1b[0m\n", 
         master_port_id, win, (u32)phys_addr, size_power_of_2, port_id,cache_bit_en);
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856) || IS_BCMCHIP(6846) || IS_BCMCHIP(6878)
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856)
     if((win > 3) || (size_power_of_2 > 31))
     {
         printk("\x1b[35m Paramets Error:  win[%d] phys_addr[%pap] power_of_2[%d] port_id[%d] cache_bit[%d]\x1b[0m\n", 
@@ -750,50 +750,6 @@ static int configure_biu_pid_to_queue(void)
         printk("Error %s line[%d]\n",__FILE__, __LINE__);
         goto exit_;
     }
-#elif IS_BCMCHIP(6846)
-    lut_idx = 0;
-    srcpid_queus_value[0] = 0;
-    srcpid_queus_value[1] = 0;
-    srcpid_queus_value[2] = 0;
-    srcpid_queus_value[3] = 0;
-    srcpid_queus_value[4] = 0;
-    srcpid_queus_value[5] = 0;
-    srcpid_queus_value[6] = 0;
-    srcpid_queus_value[7] = 2;
-    rc = ubus_remap_to_biu_cfg_queue_srcpid(lut_idx, srcpid_queus_value);
-    if (rc < 0)
-    {
-        printk("Error %s line[%d]\n",__FILE__, __LINE__);
-        goto exit_;
-    }
-
-    lut_idx = 1;
-    srcpid_queus_value[0] = 0;
-    srcpid_queus_value[1] = 0;
-    srcpid_queus_value[2] = 0;
-    srcpid_queus_value[3] = 0;
-    srcpid_queus_value[4] = 0;
-    srcpid_queus_value[5] = 1;
-    srcpid_queus_value[6] = 0;
-    srcpid_queus_value[7] = 3;
-    rc = ubus_remap_to_biu_cfg_queue_srcpid(lut_idx, srcpid_queus_value);
-    if (rc < 0)
-    {
-        printk("Error %s line[%d]\n",__FILE__, __LINE__);
-        goto exit_;
-    }
-
-    depth_idx = 0;
-    depth_queus_value[0] = 0x2d;
-    depth_queus_value[1] = 0x7;
-    depth_queus_value[2] = 0x6;
-    depth_queus_value[3] = 0x6;
-    rc = ubus_remap_to_biu_cfg_queue_depth(depth_idx, depth_queus_value);
-    if (rc < 0)
-    {
-        printk("Error %s line[%d]\n",__FILE__, __LINE__);
-        goto exit_;
-    }
 #elif IS_BCMCHIP(6858)
     unsigned long ref_cnt_idx, inc_idx, thresh_idx;
     unsigned int thresh_queus_value[THRESH_Q_NUM];
@@ -1202,7 +1158,9 @@ static int get_ddr_rate_width_idx(void)
     const __be32 *val;
     struct device_node *np;
 
-    np = of_find_node_opts_by_path("/memory_controller", NULL);
+    np = of_find_compatible_node(NULL, NULL, "brcm,bcm-memc");
+    if (!np)
+        np = of_find_node_opts_by_path("/memory_controller", NULL);
     // avoid using gpl only sympol of_property_read_u32
     // if (np && !of_property_read_u32(np, "memcfg", &memcfg))
     if (np && (val = of_get_property(np, "memcfg", NULL))) {
@@ -1349,6 +1307,9 @@ static int ubus_tokens_show(struct seq_file *m, void *v)
         volatile MstPortNode *master_reg = bcm_get_ubus_mst_addr(ub_mst_addr_map_tbl[i].port_id);
         int j = 0;
 
+        if (!master_reg)
+            continue;
+ 
         seq_printf(m, "\n%9s", ubus_port_id_to_name(ub_mst_addr_map_tbl[i].port_id));
         while (ub_mst_addr_map_tbl[j].port_id != -1)
         {
@@ -1401,7 +1362,7 @@ static int ubus_decode_show(struct seq_file *m, void *v)
 
             strncpy(dest_port, 
                 ubus_port_id_to_name(GET_FIELD(*attr, DECODE_CFG_PORT_ID))
-                ? : "-", sizeof(dest_port));
+                ? : "-", sizeof(dest_port)-1);
 
             seq_printf(m, "%-9s (%08x) | %4d | %08x | %08x | %5s |  %3s   | %x:%x:%x:%x\n",
                 ubus_port_id_to_name(ub_mst_addr_map_tbl[i].port_id),
@@ -1629,7 +1590,7 @@ void ubus_master_rte_cfg(void)
 }
 #endif
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6846) || IS_BCMCHIP(6856)
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856)
 // ucb commands
 
 static void write_reg_thr_sm(uint32_t ucbid, uint32_t addr, uint32_t data)
@@ -1701,7 +1662,7 @@ void ubus_register_port(int ucbid)
     // Never play with invalid ubus id
     if (ucbid < 0) return;
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6846) || IS_BCMCHIP(6856)
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856)
 #if IS_BCMCHIP(6858)
     if ((ucbid==UCB_NODE_ID_MST_USB) || (ucbid==UCB_NODE_ID_SLV_USB) || (ucbid==UCB_NODE_ID_MST_SATA) || (ucbid==UCB_NODE_ID_SLV_SATA))
 #endif
@@ -1753,28 +1714,6 @@ void ubus_master_cpu_enable_axi_write_cache(int enable)
 }
 #endif
 
-#if IS_BCMCHIP(6878)
-/* HW workaround to set FPM\QM endianity and DQM window size*/
-void configure_ubus_biu_fpm_decode(void)
-{
-    volatile MstPortNode *master_addr = NULL;
-
-    master_addr = bcm_get_ubus_mst_addr(UBUS_PORT_ID_BIU);
-    if (!master_addr)
-        return;
-
-    /* HW workaround to set FPM\QM endianity and DQM window size*/
-    master_addr->decode_cfg.window[0].base_addr = 0x0082A000;
-    master_addr->decode_cfg.window[0].remap_addr = 0x0082A000;
-    master_addr->decode_cfg.window[0].attributes = 0x00031509;
-
-    master_addr->decode_cfg.window[1].base_addr = 0x00821000;
-    master_addr->decode_cfg.window[1].remap_addr = 0x00821000;
-    master_addr->decode_cfg.window[1].attributes = 0x00031409;  // 1M instead of 246K
-}
-EXPORT_SYMBOL(configure_ubus_biu_fpm_decode);
-#endif
-
 /*this function is used to set UBUS route credits per ubus master, should be equivalent configuration at masters*/
 int ubus_master_set_token_credits(int master_port_id, int token, int credits)
 {
@@ -1815,7 +1754,7 @@ void bcm_ubus_config(void)
     IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6756) || IS_BCMCHIP(6855)
     ubus_remap_to_biu_cfg_wlu_srcpid(MAX_WLU_SRCPID_NUM, 1);
 #endif
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856) || IS_BCMCHIP(6846) || IS_BCMCHIP(6855) || \
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856) || IS_BCMCHIP(6855) || \
   IS_BCMCHIP(63158) || IS_BCMCHIP(6888) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(68880) || IS_BCMCHIP(6837)
     configure_biu_pid_to_queue();
 #endif

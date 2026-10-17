@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2015 Timesys Corporation.
+ * Copyright 2018 General Electric Company
+ * Based on imx6q-ba16.dtsi and imx6q-bx50v3.dtsi from kernel 4.20.5.
+ */
+
+/dts-v1/;
+
+#include "imx6q-bx50v3.dtsi"
+
+/ {
+	model = "General Electric Bx50v3";
+	compatible = "ge,imx6q-bx50v3", "advantech,imx6q-ba16", "fsl,imx6q";
+
+	chosen {
+		stdout-path = &uart3;
+	};
+};

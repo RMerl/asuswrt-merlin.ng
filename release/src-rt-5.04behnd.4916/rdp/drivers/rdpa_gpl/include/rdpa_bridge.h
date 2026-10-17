@@ -77,11 +77,8 @@ typedef struct
     uint16_t num_fdb;                        /**< RO: Number of FDB entries learned on the bridge. Ignored when setting configuration */
 } rdpa_bridge_fdb_limit_t;
 
-#ifdef XRDP
 #define RDPA_BRIDGE_MAX_BRIDGES 128 /**< Max number of bridge objects */
-#else
-#define RDPA_BRIDGE_MAX_BRIDGES 16 /**< Max number of bridge objects */
-#endif
+
 #define RDPA_BRIDGE_MAX_VIDS 128 /**< Max number of VIDs per bridge */
 #define RDPA_BRIDGE_MAX_FDB_ENTRIES 1024 /**< Max number of entries in FDB, shared for all bridge objects */
 

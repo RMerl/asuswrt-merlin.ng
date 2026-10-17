@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Other devicetree file for running sandbox tests
+ *
+ * This used for tests which want to check they can access multiple device
+ * trees. This one is loaded and checks are made that it is actually visible.
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "sandbox-other";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	node {
+		target = <&target 3 4>;
+
+		subnode {
+			compatible = "sandbox-other2";
+			str-prop = "other";
+		};
+
+		subnode2 {
+		};
+	};
+
+	target: target {
+		compatible = "sandbox-other2";
+		#gpio-cells = <2>;
+		str-prop = "other";
+		reg = <0x8000 0x100>;
+		status = "disabled";
+	};
+};

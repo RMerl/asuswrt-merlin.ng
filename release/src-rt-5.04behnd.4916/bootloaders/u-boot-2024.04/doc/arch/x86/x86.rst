@@ -1,0 +1,489 @@
+.. SPDX-License-Identifier: GPL-2.0+
+.. Copyright (C) 2014, Simon Glass <sjg@chromium.org>
+.. Copyright (C) 2014, Bin Meng <bmeng.cn@gmail.com>
+
+x86
+===
+
+This document describes the information about U-Boot running on x86 targets,
+including supported boards, build instructions, todo list, etc.
+
+Status
+------
+U-Boot supports running as a `coreboot`_ payload on x86. So far only Link
+(Chromebook Pixel), Brya (Alder Lake Chromebook) and `QEMU`_ x86 targets have
+been tested, but it should work with minimal adjustments on other x86 boards
+since coreboot deals with most of the low-level details.
+
+U-Boot is a main bootloader on Intel Edison board.
+
+U-Boot also supports booting directly from x86 reset vector, without coreboot.
+In this case, known as bare mode, from the fact that it runs on the
+'bare metal', U-Boot acts like a BIOS replacement. The following platforms
+are supported:
+
+   - Bayley Bay CRB
+   - Cherry Hill CRB
+   - Congatec QEVAL 2.0 & conga-QA3/E3845
+   - Coral (Apollo Lake - Chromebook 2017)
+   - Cougar Canyon 2 CRB
+   - Crown Bay CRB
+   - Galileo
+   - Link (Ivy Bridge - Chromebook Pixel)
+   - Minnowboard MAX
+   - Samus (Broadwell - Chromebook Pixel 2015)
+   - Coral (Apollo Lake Chromebooks circa 2017)
+   - QEMU x86 (32-bit & 64-bit)
+
+As for loading an OS, U-Boot supports directly booting a 32-bit or 64-bit
+Linux kernel as part of a FIT image. It also supports a compressed zImage.
+U-Boot supports loading an x86 VxWorks kernel. Please check README.vxworks
+for more details. Finally, U-Boot can boot Linux distributions with a UEFI
+interface.
+
+Build Instructions for U-Boot as BIOS replacement (bare mode)
+-------------------------------------------------------------
+Building a ROM version of U-Boot (hereafter referred to as u-boot.rom) is a
+little bit tricky, as generally it requires several binary blobs which are not
+shipped in the U-Boot source tree. Due to this reason, the u-boot.rom build may
+print some warnings if required binary blobs (e.g.: FSP) are not present.
+
+CPU Microcode
+-------------
+Modern CPUs usually require a special bit stream called `microcode`_ to be
+loaded on the processor after power up in order to function properly. U-Boot
+has already integrated these as hex dumps in the source tree.
+
+SMP Support
+-----------
+On a multicore system, U-Boot is executed on the bootstrap processor (BSP).
+Additional application processors (AP) can be brought up by U-Boot. In order to
+have an SMP kernel to discover all of the available processors, U-Boot needs to
+prepare configuration tables which contain the multi-CPUs information before
+loading the OS kernel. Currently U-Boot supports generating two types of tables
+for SMP, called Simple Firmware Interface (`SFI`_) and Multi-Processor (`MP`_)
+tables. The writing of these two tables are controlled by two Kconfig
+options GENERATE_SFI_TABLE and GENERATE_MP_TABLE.
+
+Driver Model
+------------
+x86 has been converted to use driver model for serial, GPIO, SPI, SPI flash,
+keyboard, real-time clock, USB. Video is in progress.
+
+Device Tree
+-----------
+x86 uses device tree to configure the board thus requires CONFIG_OF_CONTROL to
+be turned on. Not every device on the board is configured via device tree, but
+more and more devices will be added as time goes by. Check out the directory
+arch/x86/dts/ for these device tree source files.
+
+Useful Commands
+---------------
+In keeping with the U-Boot philosophy of providing functions to check and
+adjust internal settings, there are several x86-specific commands that may be
+useful:
+
+fsp
+  Display information about Intel Firmware Support Package (FSP).
+  This is only available on platforms which use FSP, mostly Atom.
+iod
+  Display I/O memory
+iow
+  Write I/O memory
+mtrr
+  List and set the Memory Type Range Registers (MTRR). These are used to
+  tell the CPU whether memory is cacheable and if so the cache write
+  mode to use. U-Boot sets up some reasonable values but you can
+  adjust then with this command.
+
+Booting Ubuntu
+--------------
+Typically U-Boot boots distributions automatically so long an `CONFIG_BOOTSTD`,
+`CONFIG_BOOTSTD_DEFAULTS` and `CONFIG_EFI_LOADER` are enabled. See
+:doc:`manual_boot` for how to do this manually.
+
+Test with SeaBIOS
+-----------------
+`SeaBIOS`_ is an open source implementation of a 16-bit x86 BIOS. It can run
+in an emulator or natively on x86 hardware with the use of U-Boot. With its
+help, we can boot some OSes that require 16-bit BIOS services like Windows/DOS.
+
+As U-Boot, we have to manually create a table where SeaBIOS gets various system
+information (eg: E820) from. The table unfortunately has to follow the coreboot
+table format as SeaBIOS currently supports booting as a coreboot payload.
+
+To support loading SeaBIOS, U-Boot should be built with CONFIG_SEABIOS on.
+Booting SeaBIOS is done via U-Boot's bootelf command, like below::
+
+   => tftp bios.bin.elf;bootelf
+   Using e1000#0 device
+   TFTP from server 10.10.0.100; our IP address is 10.10.0.108
+   ...
+   Bytes transferred = 128748 (1f6ec hex)
+   ## Starting application at 0x000fd269 ...
+   SeaBIOS (version rel-1.14.0-0-g155821a)
+   ...
+
+bios.bin.elf is the SeaBIOS image built from SeaBIOS source tree. At the time
+being, SeaBIOS release 1.14.0 has been tested. To build the SeaBIOS image::
+
+   $ echo -e 'CONFIG_COREBOOT=y\nCONFIG_COREBOOT_FLASH=n\nCONFIG_DEBUG_SERIAL=y\nCONFIG_DEBUG_COREBOOT=n' > .config
+   $ make olddefconfig
+   $ make
+   ...
+   Total size: 128512  Fixed: 69216  Free: 2560 (used 98.0% of 128KiB rom)
+   Creating out/bios.bin.elf
+
+Currently this is tested on QEMU x86 target with U-Boot chain-loading SeaBIOS
+to install/boot a Windows XP OS (below for example command to install Windows).
+
+.. code-block:: none
+
+   # Create a 10G disk.img as the virtual hard disk
+   $ qemu-img create -f qcow2 disk.img 10G
+
+   # Install a Windows XP OS from an ISO image 'winxp.iso'
+   $ qemu-system-i386 -serial stdio -bios u-boot.rom -hda disk.img -cdrom winxp.iso -smp 2 -m 512
+
+   # Boot a Windows XP OS installed on the virutal hard disk
+   $ qemu-system-i386 -serial stdio -bios u-boot.rom -hda disk.img -smp 2 -m 512
+
+This is also tested on Intel Crown Bay board with a PCIe graphics card, booting
+SeaBIOS then chain-loading a GRUB on a USB drive, then Linux kernel finally.
+
+If you are using Intel Integrated Graphics Device (IGD) as the primary display
+device on your board, SeaBIOS needs to be patched manually to get its VGA ROM
+loaded and run by SeaBIOS. SeaBIOS locates VGA ROM via the PCI expansion ROM
+register, but IGD device does not have its VGA ROM mapped by this register.
+Its VGA ROM is packaged as part of u-boot.rom at a configurable flash address
+which is unknown to SeaBIOS. An example patch is needed for SeaBIOS below:
+
+.. code-block:: none
+
+   diff --git a/src/optionroms.c b/src/optionroms.c
+   index 65f7fe0..c7b6f5e 100644
+   --- a/src/optionroms.c
+   +++ b/src/optionroms.c
+   @@ -324,6 +324,8 @@ init_pcirom(struct pci_device *pci, int isvga, u64 *sources)
+            rom = deploy_romfile(file);
+        else if (RunPCIroms > 1 || (RunPCIroms == 1 && isvga))
+            rom = map_pcirom(pci);
+   +    if (pci->bdf == pci_to_bdf(0, 2, 0))
+   +        rom = (struct rom_header *)0xfff90000;
+        if (! rom)
+            // No ROM present.
+            return;
+
+Note: the patch above expects IGD device is at PCI b.d.f 0.2.0 and its VGA ROM
+is at 0xfff90000 which corresponds to CONFIG_VGA_BIOS_ADDR on Minnowboard MAX.
+Change these two accordingly if this is not the case on your board.
+
+Development Flow
+----------------
+These notes are for those who want to port U-Boot to a new x86 platform.
+
+Since x86 CPUs boot from SPI flash, a SPI flash emulator is a good investment.
+The Dediprog em100 can be used on Linux.
+
+The em100 tool is available here: http://review.coreboot.org/p/em100.git
+
+On Minnowboard Max the following command line can be used::
+
+   sudo em100 -s -p LOW -d u-boot.rom -c W25Q64DW -r
+
+A suitable clip for connecting over the SPI flash chip is here:
+http://www.dediprog.com/pd/programmer-accessories/EM-TC-8.
+
+This allows you to override the SPI flash contents for development purposes.
+Typically you can write to the em100 in around 1200ms, considerably faster
+than programming the real flash device each time. The only important
+limitation of the em100 is that it only supports SPI bus speeds up to 20MHz.
+This means that images must be set to boot with that speed. This is an
+Intel-specific feature - e.g. tools/ifttool has an option to set the SPI
+speed in the SPI descriptor region.
+
+If your chip/board uses an Intel Firmware Support Package (FSP) it is fairly
+easy to fit it in. You can follow the Minnowboard Max implementation, for
+example. Hopefully you will just need to create new files similar to those
+in arch/x86/cpu/baytrail which provide Bay Trail support.
+
+If you are not using an FSP you have more freedom and more responsibility.
+The ivybridge support works this way, although it still uses a ROM for
+graphics and still has binary blobs containing Intel code. You should aim to
+support all important peripherals on your platform including video and storage.
+Use the device tree for configuration where possible.
+
+For the microcode you can create a suitable device tree file using the
+microcode tool::
+
+   ./tools/microcode-tool -d microcode.dat -m <model> create
+
+or if you only have header files and not the full Intel microcode.dat database::
+
+   ./tools/microcode-tool -H BAY_TRAIL_FSP_KIT/Microcode/M0130673322.h \
+    -H BAY_TRAIL_FSP_KIT/Microcode/M0130679901.h -m all create
+
+These are written to arch/x86/dts/microcode/ by default.
+
+Note that it is possible to just add the micrcode for your CPU if you know its
+model. U-Boot prints this information when it starts::
+
+   CPU: x86_64, vendor Intel, device 30673h
+
+so here we can use the M0130673322 file.
+
+If you platform can display POST codes on two little 7-segment displays on
+the board, then you can use post_code() calls from C or assembler to monitor
+boot progress. This can be good for debugging.
+
+If not, you can try to get serial working as early as possible. The early
+debug serial port may be useful here. See setup_internal_uart() for an example.
+
+During the U-Boot porting, one of the important steps is to write correct PIRQ
+routing information in the board device tree. Without it, device drivers in the
+Linux kernel won't function correctly due to interrupt is not working. Please
+refer to U-Boot `doc <doc/device-tree-bindings/misc/intel,irq-router.txt>`_ for
+the device tree bindings of Intel interrupt router. Here we have more details
+on the intel,pirq-routing property below.
+
+.. code-block:: none
+
+	intel,pirq-routing = <
+		PCI_BDF(0, 2, 0) INTA PIRQA
+		...
+	>;
+
+As you see each entry has 3 cells. For the first one, we need describe all pci
+devices mounted on the board. For SoC devices, normally there is a chapter on
+the chipset datasheet which lists all the available PCI devices. For example on
+Bay Trail, this is chapter 4.3 (PCI configuration space). For the second one, we
+can get the interrupt pin either from datasheet or hardware via U-Boot shell.
+The reliable source is the hardware as sometimes chipset datasheet is not 100%
+up-to-date. Type 'pci header' plus the device's pci bus/device/function number
+from U-Boot shell below::
+
+  => pci header 0.1e.1
+    vendor ID =			0x8086
+    device ID =			0x0f08
+    ...
+    interrupt line =		0x09
+    interrupt pin =		0x04
+    ...
+
+It shows this PCI device is using INTD pin as it reports 4 in the interrupt pin
+register. Repeat this until you get interrupt pins for all the devices. The last
+cell is the PIRQ line which a particular interrupt pin is mapped to. On Intel
+chipset, the power-up default mapping is INTA/B/C/D maps to PIRQA/B/C/D. This
+can be changed by registers in LPC bridge. So far Intel FSP does not touch those
+registers so we can write down the PIRQ according to the default mapping rule.
+
+Once we get the PIRQ routing information in the device tree, the interrupt
+allocation and assignment will be done by U-Boot automatically. Now you can
+enable CONFIG_GENERATE_PIRQ_TABLE for testing Linux kernel using i8259 PIC and
+CONFIG_GENERATE_MP_TABLE for testing Linux kernel using local APIC and I/O APIC.
+
+This script might be useful. If you feed it the output of 'pci long' from
+U-Boot then it will generate a device tree fragment with the interrupt
+configuration for each device (note it needs gawk 4.0.0)::
+
+   $ cat console_output |awk '/PCI/ {device=$4} /interrupt line/ {line=$4} \
+	/interrupt pin/ {pin = $4; if (pin != "0x00" && pin != "0xff") \
+	{patsplit(device, bdf, "[0-9a-f]+"); \
+	printf "PCI_BDF(%d, %d, %d) INT%c PIRQ%c\n", strtonum("0x" bdf[1]), \
+	strtonum("0x" bdf[2]), bdf[3], strtonum(pin) + 64, 64 + strtonum(pin)}}'
+
+Example output::
+
+   PCI_BDF(0, 2, 0) INTA PIRQA
+   PCI_BDF(0, 3, 0) INTA PIRQA
+   ...
+
+Porting Hints
+-------------
+
+Quark-specific considerations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To port U-Boot to other boards based on the Intel Quark SoC, a few things need
+to be taken care of. The first important part is the Memory Reference Code (MRC)
+parameters. Quark MRC supports memory-down configuration only. All these MRC
+parameters are supplied via the board device tree. To get started, first copy
+the MRC section of arch/x86/dts/galileo.dts to your board's device tree, then
+change these values by consulting board manuals or your hardware vendor.
+Available MRC parameter values are listed in include/dt-bindings/mrc/quark.h.
+The other tricky part is with PCIe. Quark SoC integrates two PCIe root ports,
+but by default they are held in reset after power on. In U-Boot, PCIe
+initialization is properly handled as per Quark's firmware writer guide.
+In your board support codes, you need provide two routines to aid PCIe
+initialization, which are board_assert_perst() and board_deassert_perst().
+The two routines need implement a board-specific mechanism to assert/deassert
+PCIe PERST# pin. Care must be taken that in those routines that any APIs that
+may trigger PCI enumeration process are strictly forbidden, as any access to
+PCIe root port's configuration registers will cause system hang while it is
+held in reset. For more details, check how they are implemented by the Intel
+Galileo board support codes in board/intel/galileo/galileo.c.
+
+coreboot
+^^^^^^^^
+
+See scripts/coreboot.sed which can assist with porting coreboot code into
+U-Boot drivers. It will not resolve all build errors, but will perform common
+transformations. Remember to add attribution to coreboot for new files added
+to U-Boot. This should go at the top of each file and list the coreboot
+filename where the code originated.
+
+Debugging ACPI issues with Windows
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Windows might cache system information and only detect ACPI changes if you
+modify the ACPI table versions. So tweak them liberally when debugging ACPI
+issues with Windows.
+
+ACPI Support Status
+-------------------
+Advanced Configuration and Power Interface (`ACPI`_) aims to establish
+industry-standard interfaces enabling OS-directed configuration, power
+management, and thermal management of mobile, desktop, and server platforms.
+
+Linux can boot without ACPI with "acpi=off" command line parameter, but
+with ACPI the kernel gains the capabilities to handle power management.
+For Windows, ACPI is a must-have firmware feature since Windows Vista.
+CONFIG_GENERATE_ACPI_TABLE is the config option to turn on ACPI support in
+U-Boot. This requires Intel ACPI compiler to be installed on your host to
+compile ACPI DSDT table written in ASL format to AML format. You can get
+the compiler via "apt-get install iasl" if you are on Ubuntu or download
+the source from https://www.acpica.org/downloads to compile one by yourself.
+
+Current ACPI support in U-Boot is basically complete. More optional features
+can be added in the future. The status as of today is:
+
+ * Support generating RSDT, XSDT, FACS, FADT, MADT, MCFG tables.
+ * Support one static DSDT table only, compiled by Intel ACPI compiler.
+ * Support S0/S3/S4/S5, reboot and shutdown from OS.
+ * Support booting a pre-installed Ubuntu distribution via 'zboot' command.
+ * Support installing and booting Ubuntu 14.04 (or above) from U-Boot with
+   the help of SeaBIOS using legacy interface (non-UEFI mode).
+ * Support installing and booting Windows 8.1/10 from U-Boot with the help
+   of SeaBIOS using legacy interface (non-UEFI mode).
+ * Support ACPI interrupts with SCI only.
+
+Features that are optional:
+
+ * Dynamic AML bytecodes insertion at run-time. We may need this to support
+   SSDT table generation and DSDT fix up.
+ * SMI support. Since U-Boot is a modern bootloader, we don't want to bring
+   those legacy stuff into U-Boot. ACPI spec allows a system that does not
+   support SMI (a legacy-free system).
+
+ACPI was initially enabled on BayTrail based boards. Testing was done by booting
+a pre-installed Ubuntu 14.04 from a SATA drive. Installing Ubuntu 14.04 and
+Windows 8.1/10 to a SATA drive and booting from there is also tested. Most
+devices seem to work correctly and the board can respond a reboot/shutdown
+command from the OS.
+
+For other platform boards, ACPI support status can be checked by examining their
+board defconfig files to see if CONFIG_GENERATE_ACPI_TABLE is set to y.
+
+The S3 sleeping state is a low wake latency sleeping state defined by ACPI
+spec where all system context is lost except system memory. To test S3 resume
+with a Linux kernel, simply run "echo mem > /sys/power/state" and kernel will
+put the board to S3 state where the power is off. So when the power button is
+pressed again, U-Boot runs as it does in cold boot and detects the sleeping
+state via ACPI register to see if it is S3, if yes it means we are waking up.
+U-Boot is responsible for restoring the machine state as it is before sleep.
+When everything is done, U-Boot finds out the wakeup vector provided by OSes
+and jump there. To determine whether ACPI S3 resume is supported, check to
+see if CONFIG_HAVE_ACPI_RESUME is set for that specific board.
+
+Note for testing S3 resume with Windows, correct graphics driver must be
+installed for your platform, otherwise you won't find "Sleep" option in
+the "Power" submenu from the Windows start menu.
+
+EFI Support
+-----------
+U-Boot supports booting as a 32-bit or 64-bit EFI payload, e.g. with UEFI.
+This is enabled with CONFIG_EFI_STUB to boot from both 32-bit and 64-bit
+UEFI BIOS. U-Boot can also run as an EFI application, with CONFIG_EFI_APP.
+The CONFIG_EFI_LOADER option, where U-Boot provides an EFI environment to
+the kernel (i.e. replaces UEFI completely but provides the same EFI run-time
+services) is supported too. For example, we can even use 'bootefi' command
+to load a 'u-boot-payload.efi', see below test logs on QEMU.
+
+.. code-block:: none
+
+  => load ide 0 3000000 u-boot-payload.efi
+  489787 bytes read in 138 ms (3.4 MiB/s)
+  => bootefi 3000000
+  Scanning disk ide.blk#0...
+  Found 2 disks
+  WARNING: booting without device tree
+  ## Starting EFI application at 03000000 ...
+  U-Boot EFI Payload
+
+
+  U-Boot 2018.07-rc2 (Jun 23 2018 - 17:12:58 +0800)
+
+  CPU: x86_64, vendor AMD, device 663h
+  DRAM:  2 GiB
+  MMC:
+  Video: 1024x768x32
+  Model: EFI x86 Payload
+  Net:   e1000: 52:54:00:12:34:56
+
+  Warning: e1000#0 using MAC address from ROM
+  eth0: e1000#0
+  No controllers found
+  Hit any key to stop autoboot:  0
+
+See :doc:`../../develop/uefi/u-boot_on_efi` and :doc:`../../develop/uefi/uefi`
+for details of EFI support in U-Boot.
+
+Chain-loading
+-------------
+U-Boot can be chain-loaded from another bootloader, such as
+:doc:`../../board/coreboot/index` coreboot or
+:doc:`../../board/intel/slimbootloader`. Typically this is done by building for
+targets 'coreboot' or 'slimbootloader'.
+
+For example, at present we have a 'coreboot' target but this runs very
+different code from the bare-metal targets, such as coral. There is very little
+in common between them.
+
+It is useful to be able to boot the same U-Boot on a device, with or without a
+first-stage bootloader. For example, with chromebook_coral, it is helpful for
+testing to be able to boot the same U-Boot (complete with FSP) on bare metal
+and from coreboot. It allows checking of things like CPU speed, comparing
+registers, ACPI tables and the like.
+
+To do this you can use ll_boot_init() in appropriate places to skip init that
+has already been done by the previous stage. This works by setting a
+GD_FLG_NO_LL_INIT flag when U-Boot detects that it is running from another
+bootloader.
+
+With this feature, you can build a bare-metal target and boot it from
+coreboot, for example.
+
+Note that this is a development feature only. It is not intended for use in
+production environments. Also it is not currently part of the automated tests
+so may break in the future.
+
+SMBIOS tables
+-------------
+
+To generate SMBIOS tables in U-Boot, for use by the OS, enable the
+CONFIG_GENERATE_SMBIOS_TABLE option. The easiest way to provide the values to
+use is via the device tree. For details see
+:download:`smbios.txt <../../device-tree-bindings/sysinfo/smbios.txt>`.
+
+TODO List
+---------
+- Audio
+- Chrome OS verified boot
+
+.. _coreboot: http://www.coreboot.org
+.. _QEMU: http://www.qemu.org
+.. _microcode: http://en.wikipedia.org/wiki/Microcode
+.. _SFI: http://simplefirmware.org
+.. _MP: http://www.intel.com/design/archives/processors/pro/docs/242016.htm
+.. _SeaBIOS: http://www.seabios.org/SeaBIOS
+.. _ACPI: http://www.acpi.info

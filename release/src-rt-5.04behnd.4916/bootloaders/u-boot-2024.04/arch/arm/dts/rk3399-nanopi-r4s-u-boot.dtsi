@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * RK3399-based FriendlyElec boards device tree source
+ *
+ * Copyright (c) 2016 Fuzhou Rockchip Electronics Co., Ltd
+ *
+ * Copyright (c) 2018 FriendlyElec Computer Tech. Co., Ltd.
+ * (http://www.friendlyarm.com)
+ *
+ * Copyright (c) 2018 Collabora Ltd.
+ * Copyright (c) 2019 Arm Ltd.
+ * Copyright (C) 2020 Xiaobo <peterwillcn@gmail.com>
+ */
+
+#include "rk3399-nanopi4-u-boot.dtsi"
+#include "rk3399-sdram-lpddr4-100.dtsi"
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = "FriendlyELEC";
+				product = "NanoPi R4S";
+			};
+
+			baseboard {
+				manufacturer = "FriendlyELEC";
+				product = "NanoPi R4S";
+			};
+
+			chassis {
+				manufacturer = "FriendlyELEC";
+			};
+		};
+	};
+};

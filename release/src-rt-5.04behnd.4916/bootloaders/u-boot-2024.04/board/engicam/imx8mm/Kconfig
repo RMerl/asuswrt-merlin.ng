@@ -1,0 +1,15 @@
+if TARGET_IMX8MM_ICORE_MX8MM
+
+config SYS_BOARD
+	default "imx8mm"
+
+config SYS_VENDOR
+	default "engicam"
+
+config SYS_CONFIG_NAME
+	default "imx8mm_icore_mx8mm"
+
+config IMX_CONFIG
+	default "arch/arm/mach-imx/imx8m/imximage-8mm-lpddr4.cfg"
+
+endif

@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 Siemens AG
+ */
+
+#include "imx8qxp-capricorn.dtsi"
+
+/ {
+	model = "Siemens Deneb";
+};

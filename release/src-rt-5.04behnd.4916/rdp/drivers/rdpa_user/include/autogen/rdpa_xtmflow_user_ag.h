@@ -85,7 +85,7 @@ static inline int rdpa_xtmflow_get(bdmf_number index_, bdmf_object_handle *xtmfl
 	int fd, ret = 0;
 
 	pa.cmd = RDPA_XTMFLOW_GET;
-	pa.parm = (uint64_t)(long)index_;
+	pa.parm = (uint64_t)(bdmf_long_t)index_;
 
 	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
 	if (fd < 0)

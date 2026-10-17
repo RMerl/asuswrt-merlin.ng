@@ -54,7 +54,6 @@ typedef enum {
     rdpa_vlan_attr_discard_prty = 5, /* discard_prty : RW : enum : Discard priority */
     rdpa_vlan_attr_options = 6, /* options : RW : number : reserved */
     rdpa_vlan_attr_is_default = 7, /* is_default : RI : bool : VLAN default vid flag */
-    rdpa_vlan_attr_stat = 8, /* stat : RW : aggregate rdpa_stat_tx_rx_valid(rdpa_stat_tx_rx_valid_t) : vlan statistics */
 } rdpa_vlan_attr_types;
 
 extern int (*f_rdpa_vlan_get)(const char * name_, bdmf_object_handle *pmo);
@@ -332,34 +331,6 @@ static inline int rdpa_vlan_is_default_get(bdmf_object_handle mo_, bdmf_boolean 
 static inline int rdpa_vlan_is_default_set(bdmf_object_handle mo_, bdmf_boolean is_default_)
 {
     return bdmf_attr_set_as_num(mo_, rdpa_vlan_attr_is_default, is_default_);
-}
-
-
-/** Get vlan/stat attribute.
- *
- * Get vlan statistics.
- * \param[in]   mo_ vlan object handle or mattr transaction handle
- * \param[out]  stat_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_vlan_stat_get(bdmf_object_handle mo_, rdpa_stat_tx_rx_valid_t * stat_)
-{
-    return bdmf_attr_get_as_buf(mo_, rdpa_vlan_attr_stat, stat_, sizeof(*stat_));
-}
-
-
-/** Set vlan/stat attribute.
- *
- * Set vlan statistics.
- * \param[in]   mo_ vlan object handle or mattr transaction handle
- * \param[in]   stat_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_vlan_stat_set(bdmf_object_handle mo_, const rdpa_stat_tx_rx_valid_t * stat_)
-{
-    return bdmf_attr_set_as_buf(mo_, rdpa_vlan_attr_stat, stat_, sizeof(*stat_));
 }
 
 /** @} end of vlan Doxygen group */

@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * MPC8548 Silicon/SoC Device Tree Source (post include)
+ *
+ * Copyright 2012 Freescale Semiconductor Inc.
+ * Copyright 2019 NXP
+ */
+
+&soc {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	device_type = "soc";
+	compatible = "fsl,mpc8548-immr", "simple-bus";
+	bus-frequency = <0x0>;
+
+	mpic: pic@40000 {
+		interrupt-controller;
+		#address-cells = <0>;
+		#interrupt-cells = <4>;
+		reg = <0x40000 0x40000>;
+		compatible = "fsl,mpic";
+		device_type = "open-pic";
+		big-endian;
+		single-cpu-affinity;
+		last-interrupt-source = <255>;
+	};
+};
+
+&pcie {
+	compatible = "fsl,mpc8548-pcie", "fsl,pcie-fsl-qoriq";
+	law_trgt_if = <2>;
+	#address-cells = <3>;
+	#size-cells = <2>;
+	device_type = "pci";
+	bus-range = <0x0 0xff>;
+};

@@ -1,0 +1,7 @@
+STM32F469-DISCOVERY BOARD
+M:	Patrice Chotard <patrice.chotard@foss.st.com>
+S:	Maintained
+F:	doc/board/st/
+F:	board/st/stm32f469-discovery/
+F:	include/configs/stm32f469-discovery.h
+F:	configs/stm32f469-discovery_defconfig

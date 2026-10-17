@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	binman {
+		efi-capsule {
+			image-index = <0x1>;
+			/* Image GUID for testing capsule update */
+			image-guid = "binman-test";
+			hardware-instance = <0x0>;
+			oem-flags = <0x8000>;
+
+			blob {
+				filename = "capsule_input.bin";
+			};
+		};
+	};
+};

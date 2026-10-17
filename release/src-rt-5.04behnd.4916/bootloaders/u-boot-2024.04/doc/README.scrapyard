@@ -1,0 +1,11 @@
+Over time, support for more and more boards gets added to U-Boot -
+while other board support code dies a silent death caused by
+negligence in combination with ordinary bitrot.  Sometimes this goes
+by unnoticed, but often build errors will result.  If nobody cares any
+more to resolve such problems, then the code is really dead and will
+be removed from the U-Boot source tree.  The remainders rest in peace
+in the imperishable depths of the git history.  Please use the tools
+git provides to read through this history.  A common example would be:
+$ git log -p --follow -- board/technexion/twister
+to see the history and changes made to the Technexion "twister" board
+from introduction to removal.

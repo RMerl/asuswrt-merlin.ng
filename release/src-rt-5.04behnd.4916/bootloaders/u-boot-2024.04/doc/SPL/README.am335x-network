@@ -1,0 +1,96 @@
+USING AM335x NETBOOT FEATURE
+
+ Some boards (like TI AM335x based ones) have quite big on-chip RAM and
+have support for booting via network in ROM. The following describes
+how to setup network booting and then optionally use this support to flash
+NAND and bricked (empty) board with only a network cable.
+
+ I. Building the required images
+  1. You have to enable generic SPL configuration options (see
+doc/README.SPL) as well as CONFIG_SPL_NET,
+CONFIG_SPL_ETH, CONFIG_SPL_LIBGENERIC_SUPPORT and
+CONFIG_SPL_LIBCOMMON_SUPPORT in your board configuration file to build
+SPL with support for booting over the network. Also you have to enable
+the driver for the NIC used and CONFIG_SPL_BOARD_INIT option if your
+board needs some board-specific initialization (TI AM335x EVM does).
+If you want SPL to use some Vendor Class Identifier (VCI) you can set
+one with CONFIG_SPL_NET_VCI_STRING option. am335x_evm configuration
+comes with support for network booting preconfigured.
+ 2. Define CONFIG_BOOTCOMMAND for your board to load and run debrick
+script after boot:
+#define CONFIG_BOOTCOMMAND					\
+	"setenv autoload no; "					\
+	"bootp; "						\
+	"if tftp 80000000 debrick.scr; then "			\
+		"source 80000000; "				\
+	"fi"
+(Or create additional board configuration with such option).
+ 3. Build U-Boot as usual
+  $ make <your_board_name>
+    You will need u-boot.img and spl/u-boot.bin images to perform
+network boot. Copy them to u-boot-restore.img and
+u-boot-spl-restore.bin respectively to distinguish this version
+(with automatic restore running) from the main one.
+
+ II. Host configuration.
+  1. Setup DHCP server (recommended server is ISC DHCPd).
+   - Install DHCP server and setup it to listen on the interface you
+chose to connect to the board (usually configured in
+/etc/default/dhcpd or /etc/default/isc-dhcp-server). Make sure there
+are no other active DHCP servers in the same network segment.
+   - Edit your dhcpd.conf and subnet declaration matching the address
+on the interface. Specify the range of assigned addresses and bootfile
+to use. IMPORTANT! Both RBL and SPL use the image filename provided
+in the BOOTP reply but obviously they need different images (RBL needs
+raw SPL image -- u-boot-spl-restore.bin while SPL needs main U-Boot
+image -- u-boot-restore.img). So you have to configure DHCP server to
+provide different image filenames to RBL and SPL (and possibly another
+one to main U-Boot). This can be done by checking Vendor Class
+Identifier (VCI) set by BOOTP client (RBL sets VCI to "DM814x ROM v1.0"
+and you can set VCI used by SPL with CONFIG_SPL_NET_VCI_STRING option,
+see above).
+   - If you plan to use TFTP server on another machine you have to set
+server-name option to point to it.
+   - Here is sample configuration for ISC DHCPd, assuming the interface
+used to connect to the board is eth0, and it has address 192.168.8.1:
+
+subnet 192.168.8.0 netmask 255.255.255.0 {
+  range dynamic-bootp 192.168.8.100 192.168.8.199;
+
+  if substring (option vendor-class-identifier, 0, 10) = "DM814x ROM" {
+    filename "u-boot-spl-restore.bin";
+  } elsif substring (option vendor-class-identifier, 0, 17) = "AM335x U-Boot SPL" {
+    filename "u-boot-restore.img";
+  } else {
+    filename "uImage";
+  }
+}
+
+  May the ROM bootloader sends another "vendor-class-identifier"
+  on the shc board with an AM335X it is:
+  "AM335x ROM"
+
+  2. Setup TFTP server.
+     Install TFTP server and put image files to it's root directory
+(likely /tftpboot or /var/lib/tftpboot or /srv/tftp). You will need
+u-boot.img and spl/u-boot-spl-bin files from U-Boot build directory.
+
+ III. Reflashing (debricking) the board.
+  1. Write debrick script. You will need to write a script that will
+be executed after network boot to perform actual rescue actions. You
+can use usual U-Boot commands from this script: tftp to load additional
+files, nand erase/nand write to erase/write the NAND flash.
+
+  2. Create script image from your script. From U-Boot build directory:
+
+$ ./tools/mkimage -A arm -O U-Boot -C none -T script -d <your script> debrick.scr
+
+This will create debrick.scr file with your script inside.
+
+  3. Copy debrick.scr to TFTP root directory. You also need to copy
+there all the files your script tries to load via TFTP. Example script
+loads u-boot.img and MLO. You have to create these files doing regular
+(not restore_flash) build and copy them to tftpboot directory.
+
+  4. Boot the board from the network, U-Boot will load debrick script
+and run it after boot.

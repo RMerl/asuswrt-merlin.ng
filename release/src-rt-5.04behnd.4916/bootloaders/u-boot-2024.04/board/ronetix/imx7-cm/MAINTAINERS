@@ -1,0 +1,6 @@
+i.MX7-CM BOARD
+M:	Ilko Iliev <iliev@ronetix.com>
+S:	Maintained
+F:	board/ronetix/imx7-cm/
+F:	include/configs/imx7-cm.h
+F:	configs/imx7_cm_defconfig

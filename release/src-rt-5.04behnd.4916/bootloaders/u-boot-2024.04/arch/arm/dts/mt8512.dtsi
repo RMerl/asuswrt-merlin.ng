@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2019 MediaTek Inc.
+ * Author: Mingming Lee <mingming.lee@mediatek.com>
+ *
+ */
+
+#include <dt-bindings/clock/mt8512-clk.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/phy/phy.h>
+
+/ {
+	compatible = "mediatek,mt8512";
+	interrupt-parent = <&sysirq>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	gic: interrupt-controller@c000000 {
+		 compatible = "arm,gic-v3";
+		#interrupt-cells = <3>;
+		interrupt-parent = <&gic>;
+		interrupt-controller;
+		reg = <0xc000000 0x40000>,	/* GICD */
+			  <0xc080000 0x200000>; /* GICR */
+		interrupts = <GIC_PPI 9
+			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+	};
+
+	topckgen: clock-controller@10000000 {
+		compatible = "mediatek,mt8512-topckgen";
+		reg = <0x10000000 0x1000>;
+		#clock-cells = <1>;
+	};
+
+	topckgen_cg: clock-controller-cg@10000000 {
+		compatible = "mediatek,mt8512-topckgen-cg";
+		reg = <0x10000000 0x1000>;
+		#clock-cells = <1>;
+	};
+
+	infracfg: clock-controller@10001000 {
+		compatible = "mediatek,mt8512-infracfg";
+		reg = <0x10001000 0x1000>;
+		#clock-cells = <1>;
+	};
+
+	pinctrl: pinctrl@10005000 {
+		compatible = "mediatek,mt8512-pinctrl";
+		reg = <0x10005000 0x1000>;
+		gpio: gpio-controller {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+	};
+
+	watchdog0: watchdog@10007000 {
+		compatible = "mediatek,wdt";
+		reg = <0x10007000 0x1000>;
+		interrupts = <GIC_SPI 190 IRQ_TYPE_EDGE_FALLING>;
+		#reset-cells = <1>;
+		status = "disabled";
+		timeout-sec = <60>;
+		reset-on-timeout;
+	};
+
+	timer0: apxgpt@10008000 {
+		compatible = "mediatek,timer";
+		reg = <0x10008000 0x1000>;
+		interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_LOW>;
+		clocks = <&topckgen CLK_TOP_SYS_26M_D2>,
+			 <&topckgen CLK_TOP_CLK32K>,
+			 <&infracfg CLK_INFRA_APXGPT>;
+		clock-names = "clk13m",
+			 "clk32k",
+			 "bus";
+	};
+
+	apmixedsys: clock-controller@1000c000 {
+		compatible = "mediatek,mt8512-apmixedsys";
+		reg = <0x1000c000 0x1000>;
+		#clock-cells = <1>;
+	};
+
+	sysirq: interrupt-controller@10200a80 {
+		compatible = "mediatek,sysirq";
+		interrupt-controller;
+		#interrupt-cells = <3>;
+		interrupt-parent = <&gic>;
+		reg = <0x10200a80 0x50>;
+	};
+
+	uart0: serial@11002000 {
+		compatible = "mediatek,hsuart";
+		reg = <0x11002000 0x1000>;
+		interrupts = <GIC_SPI 24 IRQ_TYPE_LEVEL_LOW>;
+		clocks = <&topckgen CLK_TOP_CLK26M>,
+			<&infracfg CLK_INFRA_UART0>;
+		clock-names = "baud", "bus";
+		status = "disabled";
+	};
+
+	usb3: usb@11213e00 {
+		compatible = "mediatek,mt8512-mtu3", "mediatek,mtu3";
+		reg = <0x11213e00 0x0100>;
+		reg-names = "ippc";
+		phys = <&u2port0 PHY_TYPE_USB2>, <&u2port1 PHY_TYPE_USB2>;
+		clocks = <&infracfg CLK_INFRA_USB_SYS>,
+			 <&topckgen CLK_TOP_SSUSB_TOP_CK_EN>,
+			 <&infracfg CLK_INFRA_ICUSB>;
+		clock-names = "sys_ck", "ref_ck", "mcu_ck";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		status = "disabled";
+
+		ssusb: usb@11210000 {
+			compatible = "mediatek,ssusb";
+			reg = <0x11210000 0x3e00>;
+			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_LOW>;
+			reg-names = "mac";
+			status = "disabled";
+		};
+	};
+
+	u3phy: usb-phy@11cc0000 {
+		compatible = "mediatek,mt8512-tphy",
+			     "mediatek,generic-tphy-v2";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		status = "disabled";
+
+		u2port0: usb-phy@11cc0000 {
+			reg = <0x11cc0000 0x400>;
+			clocks = <&topckgen CLK_TOP_USB20_48M_EN>;
+			clock-names = "ref";
+			#phy-cells = <1>;
+			status = "okay";
+		};
+
+		u2port1: usb-phy@11c40000 {
+			reg = <0x11c40000 0x400>;
+			#phy-cells = <1>;
+			status = "okay";
+		};
+	};
+
+	mmc0: mmc@11230000 {
+		compatible = "mediatek,mt8512-mmc";
+		reg = <0x11230000 0x1000>,
+		      <0x11cd0000 0x1000>;
+		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_LOW>;
+		clocks = <&topckgen CLK_TOP_MSDC50_0_SEL>,
+			 <&infracfg CLK_INFRA_MSDC0>,
+			 <&infracfg CLK_INFRA_MSDC0_SRC>;
+		clock-names = "source", "hclk", "source_cg";
+		status = "disabled";
+	};
+
+};

@@ -1,0 +1,12 @@
+if BOARD_INTENO_XG6846
+
+config SYS_BOARD
+	default "xg6846"
+
+config SYS_VENDOR
+	default "inteno"
+
+config SYS_CONFIG_NAME
+	default "inteno_xg6846"
+
+endif

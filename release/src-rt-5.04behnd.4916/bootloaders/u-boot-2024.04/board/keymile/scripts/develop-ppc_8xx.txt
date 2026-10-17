@@ -1,0 +1,1 @@
+setup_debug_env=tftpboot ${load_addr_r} scripts/develop-common.txt && env import -t ${load_addr_r} ${filesize} && run configure

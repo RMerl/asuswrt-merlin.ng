@@ -146,10 +146,6 @@ static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 static uintptr_t ns_entry_point;
 
-#if defined (PLATFORM_FLAVOR_63138)
-char mmu_table[1024*16] __attribute__((aligned(4096*4)));
-#endif
-
 const mmap_region_t plat_arm_mmap[] = {
   MAP_REGION_FLAT(DEVICE_BASE,  DEVICE_SIZE, MT_DEVICE | MT_RW | MT_SECURE),
   MAP_REGION_FLAT(GICD_BASE,    DEVICE_SIZE, MT_DEVICE | MT_RW | MT_SECURE),
@@ -174,6 +170,12 @@ const mmap_region_t plat_arm_mmap[] = {
   MAP_REGION_FLAT(TIMR_BASE, TIMR_SIZE, MT_DEVICE | MT_RW | MT_SECURE),
 #elif defined(WDTIMR0_BASE)
   MAP_REGION_FLAT(WDTIMR_BASE,  WDTIMR_SIZE,  MT_DEVICE | MT_RW | MT_SECURE),
+#endif
+#if defined (RNG_BASE)
+  MAP_REGION_FLAT(RNG_BASE,     RNG_SIZE,    MT_DEVICE | MT_RW | MT_SECURE),
+#endif
+#if defined (TRNG_BASE)
+  MAP_REGION_FLAT(TRNG_BASE,    TRNG_SIZE,    MT_DEVICE | MT_RW | MT_SECURE),
 #endif
   MAP_REGION_FLAT(PMC_BASE,     PMC_SIZE,    MT_DEVICE | MT_RW | MT_SECURE),
   {0}
@@ -377,15 +379,11 @@ const struct gicv2_driver_data plat_gicv2_driver_data = {
  ******************************************************************************/
 void arm_bl32_platform_setup(void)
 {
-#if defined (PLATFORM_FLAVOR_63138)
-	a9_gic_secure_init();
-#else
 	/* Initialize the gic cpu and distributor interfaces */
 	gicv2_driver_init(&plat_gicv2_driver_data);
 	gicv2_distif_init();
 	gicv2_pcpu_distif_init();
 	gicv2_cpuif_enable();
-#endif
 }
 
 /*******************************************************************************
@@ -406,62 +404,6 @@ void sp_min_runtime_setup(void)
 	arm_bl32_plat_runtime_setup();
 }
 
-#if defined (PLATFORM_FLAVOR_63138)
-void a9_mmu_setup_region(uint32_t mem_addr, uint32_t mem_size, uint32_t mem_attr)
-{
-#define size_mb(s) ((s + 0xFFFFF) / 0x100000)
-	register uint32_t table_base = (uint32_t)mmu_table;
-	register uint32_t table_size = sizeof(mmu_table);
-
-	/* Align the address to MB and then adjust the size */
-	mem_size += mem_addr & 0xFFFFF;
-	mem_addr &= ~0xFFFFF;
-	/* Convert the mem size in MB */
-	mem_size = size_mb(mem_size);
-
-	__asm__ volatile ("mov r0, %0" : : "r" (table_size) : "r0");
-	__asm__ volatile ("push {r0}");
-	__asm__ volatile ("mov r0, %0" : : "r" (mem_addr)   : "r0");
-	__asm__ volatile ("push {r0}");
-	__asm__ volatile ("mov r0, %0" : : "r" (mem_attr)   : "r0");
-	__asm__ volatile ("push {r0}");
-	__asm__ volatile ("mov r0, %0" : : "r" (mem_size)   : "r0");
-	__asm__ volatile ("push {r0}");
-	__asm__ volatile ("mov r0, %0" : : "r" (mem_addr)   : "r0");
-	__asm__ volatile ("push {r0}");
-	__asm__ volatile ("mov r0, %0" : : "r" (table_base) : "r0");
-	__asm__ volatile ("push {r0}");
-	__asm__ volatile ("pop {r0-r4,r6}");
-
-	__asm__ volatile ("bl a9_mmu_set_scn" ::: "lr");
-}
-
-void a9_bl32_plat_map_mmu(void)
-{
-	int i = 0;
-	int region_cnt = sizeof(plat_arm_mmap) / sizeof(mmap_region_t);
-    /* Initialize the mmu table */
-	memset(mmu_table, 0, sizeof(mmu_table));
-    /* Map the code/data section of ATF */
-	a9_mmu_setup_region(BL32_BASE, BL32_END - BL32_BASE, SECTION_ATTR_CACHED_MEM);
-	for (i = 0; i <  region_cnt - 1; i++ ){
-		a9_mmu_setup_region((uint32_t)plat_arm_mmap[i].base_pa,  plat_arm_mmap[i].size, SECTION_ATTR_DEVICE);
-	}
-}
-
-void a9_bl32_plat_enable_mmu(void)
-{
-	a9_mmu_invalidate_tlb();
-	a9_mmu_set_ttbr (mmu_table);
-	a9_mmu_enable();
-	a9_l1cache_enable_i();
-	a9_l1cache_enable_d();
-	if (plat_my_core_pos() != 0){
-		mmio_write_32(PL310_BASE + PL310_CTRL, 1);
-	}
-}
-#endif
-
 /*******************************************************************************
  * Perform the very early platform specific architectural setup shared between
  * ARM standard platforms. This only does basic initialization. Later
@@ -470,10 +412,6 @@ void a9_bl32_plat_enable_mmu(void)
  ******************************************************************************/
 void arm_bl32_plat_arch_setup(void)
 {
-#if defined (PLATFORM_FLAVOR_63138)
-	a9_bl32_plat_map_mmu();
-	a9_bl32_plat_enable_mmu();
-#else
 	const mmap_region_t bl_regions[] = {
 		MAP_BL_SP_MIN_TOTAL,
 		ARM_MAP_BL_RO,
@@ -488,9 +426,8 @@ void arm_bl32_plat_arch_setup(void)
 	setup_page_tables(bl_regions, plat_arm_get_mmap());
 
 	enable_mmu_svc_mon(0);
-#endif
 
-#if defined(BIUCFG_BASE) && !(defined (PLATFORM_FLAVOR_63138) || defined (PLATFORM_FLAVOR_63148))
+#if defined(BIUCFG_BASE)
 	/* Enable BUS access control for non-secure Linux */
 	*(unsigned int*)(BIUCFG_BASE + 0x300) = 0xFF;
 #endif

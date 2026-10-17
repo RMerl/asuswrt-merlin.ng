@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -41,7 +41,7 @@ static DUMP_RUNNERREG_STRUCT SRAM_PD_FIFO =
 {
 	16,
 	{
-		{ dump_RDD_PROCESSING_TX_DESCRIPTOR, 0x0 },
+		{ dump_RDD_PROCESSING_TX_DESCRIPTOR, set_RDD_PROCESSING_TX_DESCRIPTOR, 0x0 },
 		{ 0, 0 },
 	}
 };
@@ -51,7 +51,7 @@ static DUMP_RUNNERREG_STRUCT US_TM_BBH_TX_EGRESS_COUNTER_TABLE =
 {
 	8,
 	{
-		{ dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, 0x100 },
+		{ dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, set_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, 0x100 },
 		{ 0, 0 },
 	}
 };
@@ -61,7 +61,7 @@ static DUMP_RUNNERREG_STRUCT DIRECT_PROCESSING_PD_TABLE =
 {
 	16,
 	{
-		{ dump_RDD_PROCESSING_RX_DESCRIPTOR, 0x140 },
+		{ dump_RDD_PROCESSING_RX_DESCRIPTOR, set_RDD_PROCESSING_RX_DESCRIPTOR, 0x140 },
 		{ 0, 0 },
 	}
 };
@@ -71,7 +71,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_SCRATCHPAD =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x160 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0x160 },
 		{ 0, 0 },
 	}
 };
@@ -81,7 +81,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_SCRATCHPAD =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0x760 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0x760 },
 		{ 0, 0 },
 	}
 };
@@ -91,7 +91,7 @@ static DUMP_RUNNERREG_STRUCT BBH_TX_RING_TABLE =
 {
 	16,
 	{
-		{ dump_RDD_BBH_TX_DESCRIPTOR, 0xd60 },
+		{ dump_RDD_BBH_TX_DESCRIPTOR, set_RDD_BBH_TX_DESCRIPTOR, 0xd60 },
 		{ 0, 0 },
 	}
 };
@@ -101,7 +101,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_EGRESS_DISPATCHER_CREDIT_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xd70 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0xd70 },
 		{ 0, 0 },
 	}
 };
@@ -111,7 +111,7 @@ static DUMP_RUNNERREG_STRUCT BBH_TX_BB_DESTINATION_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BB_DESTINATION_ENTRY, 0xd7c },
+		{ dump_RDD_BB_DESTINATION_ENTRY, set_RDD_BB_DESTINATION_ENTRY, 0xd7c },
 		{ 0, 0 },
 	}
 };
@@ -121,7 +121,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_CFE_SRAM_COUNTERS =
 {
 	8,
 	{
-		{ dump_RDD_PACKETS_AND_BYTES, 0xd80 },
+		{ dump_RDD_PACKETS_AND_BYTES, set_RDD_PACKETS_AND_BYTES, 0xd80 },
 		{ 0, 0 },
 	}
 };
@@ -131,7 +131,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_INGRESS_DISPATCHER_CREDIT_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xdd0 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0xdd0 },
 		{ 0, 0 },
 	}
 };
@@ -141,7 +141,7 @@ static DUMP_RUNNERREG_STRUCT TASK_IDX =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xddc },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0xddc },
 		{ 0, 0 },
 	}
 };
@@ -151,7 +151,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_INTERRUPT_SCRATCH =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xde0 },
+		{ dump_RDD_BYTE_1, set_RDD_BYTE_1, 0xde0 },
 		{ 0, 0 },
 	}
 };
@@ -161,7 +161,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_INTERRUPT_ID_DDR_ADDR =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xde8 },
+		{ dump_RDD_BYTE_1, set_RDD_BYTE_1, 0xde8 },
 		{ 0, 0 },
 	}
 };
@@ -171,7 +171,7 @@ static DUMP_RUNNERREG_STRUCT PKT_BUFFER_ALLOC_MAP_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xdf0 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0xdf0 },
 		{ 0, 0 },
 	}
 };
@@ -181,7 +181,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_LAST_READ_INDEX =
 {
 	2,
 	{
-		{ dump_RDD_BYTES_2, 0xdfc },
+		{ dump_RDD_BYTES_2, set_RDD_BYTES_2, 0xdfc },
 		{ 0, 0 },
 	}
 };
@@ -191,7 +191,7 @@ static DUMP_RUNNERREG_STRUCT SRAM_DUMMY_STORE =
 {
 	1,
 	{
-		{ dump_RDD_BYTE_1, 0xdfe },
+		{ dump_RDD_BYTE_1, set_RDD_BYTE_1, 0xdfe },
 		{ 0, 0 },
 	}
 };
@@ -201,7 +201,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_CFE_SRAM_COUNTERS =
 {
 	8,
 	{
-		{ dump_RDD_PACKETS_AND_BYTES, 0xe00 },
+		{ dump_RDD_PACKETS_AND_BYTES, set_RDD_PACKETS_AND_BYTES, 0xe00 },
 		{ 0, 0 },
 	}
 };
@@ -211,7 +211,7 @@ static DUMP_RUNNERREG_STRUCT CPU_RX_BB_REPLY_ADDR_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xe50 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0xe50 },
 		{ 0, 0 },
 	}
 };
@@ -221,7 +221,7 @@ static DUMP_RUNNERREG_STRUCT CPU_TX_BB_REPLY_ADDR_TABLE =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xe58 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0xe58 },
 		{ 0, 0 },
 	}
 };
@@ -231,7 +231,7 @@ static DUMP_RUNNERREG_STRUCT DS_TM_BBH_TX_EGRESS_COUNTER_TABLE =
 {
 	8,
 	{
-		{ dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, 0xe80 },
+		{ dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, set_RDD_BBH_TX_EGRESS_COUNTER_ENTRY, 0xe80 },
 		{ 0, 0 },
 	}
 };
@@ -241,7 +241,7 @@ static DUMP_RUNNERREG_STRUCT REGISTERS_BUFFER =
 {
 	4,
 	{
-		{ dump_RDD_BYTES_4, 0xec0 },
+		{ dump_RDD_BYTES_4, set_RDD_BYTES_4, 0xec0 },
 		{ 0, 0 },
 	}
 };
@@ -251,7 +251,7 @@ static DUMP_RUNNERREG_STRUCT RX_FLOW_TABLE =
 {
 	2,
 	{
-		{ dump_RDD_RX_FLOW_ENTRY, 0x1000 },
+		{ dump_RDD_RX_FLOW_ENTRY, set_RDD_RX_FLOW_ENTRY, 0x1000 },
 		{ 0, 0 },
 	}
 };

@@ -1,0 +1,84 @@
+menu "PowerPC architecture"
+	depends on PPC
+
+config SYS_ARCH
+	default "powerpc"
+
+choice
+	prompt "CPU select"
+	optional
+
+config MPC83xx
+	bool "MPC83xx"
+	select CREATE_ARCH_SYMLINK
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+
+config MPC85xx
+	bool "MPC85xx"
+	select CREATE_ARCH_SYMLINK
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_BE
+	select SYS_FSL_IFC_BE
+	select BINMAN if MPC85XX_HAVE_RESET_VECTOR && OF_SEPARATE
+	imply CMD_HASH
+	imply CMD_IRQ
+	imply USB_EHCI_HCD if USB
+
+config MPC8xx
+	bool "MPC8xx"
+	select CREATE_ARCH_SYMLINK
+	select BOARD_EARLY_INIT_F
+	imply CMD_REGINFO
+	imply WDT_MPC8xxx
+
+endchoice
+
+config FSL_LBC
+	def_bool y
+	depends on (MPC85xx || MPC83xx) && !FSL_IFC
+
+config HIGH_BATS
+	bool "Enable high BAT registers"
+	help
+	  Enable BATs (block address translation registers) 4-7 on machines
+	  that support them.
+
+config SYS_INIT_RAM_LOCK
+	bool "Lock some portion of L1 for initial ram stack"
+	depends on MPC83xx || MPC85xx
+
+config SYS_SRIO
+	bool "Serial RapidIO support"
+
+config SRIO1
+	bool "Board has SRIO 1 port available"
+	depends on SYS_SRIO
+
+config SRIO2
+	bool "Board has SRIO 2 port available"
+	depends on SYS_SRIO
+
+config SRIO_PCIE_BOOT_MASTER
+	bool "Board can support master function for Boot from SRIO and PCIE"
+	depends on SYS_SRIO
+
+source "arch/powerpc/cpu/mpc83xx/Kconfig"
+source "arch/powerpc/cpu/mpc85xx/Kconfig"
+source "arch/powerpc/cpu/mpc8xx/Kconfig"
+source "arch/powerpc/lib/Kconfig"
+
+config USE_UBOOTPATH
+	bool "Set a default 'uboot' value in the environment"
+	help
+	  Many default environment scripts will check the "uboot" variable
+	  to determine the name of the file to load via tftp that will then
+	  be written to flash.
+
+config UBOOTPATH
+	string "Value of the default 'uboot' value in the environment"
+	depends on USE_UBOOTPATH
+	default "u-boot.bin"
+
+endmenu

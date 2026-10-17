@@ -1,0 +1,7 @@
+SMEGW01 BOARD
+M:	Fabio Estevam <festevam@denx.de>
+S:	Maintained
+F:	board/storopack/
+F:	arch/arm/dts/imx7d-smegw01.dts
+F:	configs/smegw01_defconfig
+F:	include/configs/smegw01.h

@@ -52,10 +52,18 @@ struct proc_cmd_ops {
 	void (*do_help)(char *str);
 };
 
+struct proc_fio {
+	/*ssize_t (*write)(struct file *file, const char __user *buffer,
+			  size_t count, loff_t *pos);*/
+	ssize_t (*read)(struct file *file, char __user *buffer,
+			  size_t count, loff_t *pos);
+}
+;
 struct proc_cmd_table {
 	const char *module_name;
 	int size;
 	struct proc_cmd_ops *ops;
+	struct proc_fio *fio;
 	void *data;
 	void *data_seq_read;
 	struct mutex lock;
@@ -74,6 +82,17 @@ static int proc_cmd_open(struct inode *inode, struct file *f)
 	if (!f->private_data)
 		return -EPERM;
 	return 0;
+}
+
+static ssize_t proc_read(struct file *file, char __user *buffer,
+			  size_t count, loff_t *pos)
+{
+	struct proc_cmd_table *table = (struct proc_cmd_table *) file->private_data;
+
+	if (table->fio && table->fio->read)
+		return table->fio->read(file, buffer, count, pos);
+	else
+		return -1;
 }
 
 static ssize_t proc_cmd_write(struct file *file, const char __user *buffer,
@@ -143,12 +162,14 @@ static const struct file_operations proc_cmd_fops = {
 	.owner    = THIS_MODULE,
 	.open     = proc_cmd_open,
 	.write    = proc_cmd_write,
+	.read     = proc_read,
 };
 #else
 static const struct proc_ops proc_cmd_fops = {
 	//.owner    = THIS_MODULE,
 	.proc_open     = proc_cmd_open,
 	.proc_write    = proc_cmd_write,
+	.proc_read     = proc_read,
 };
 #endif
 

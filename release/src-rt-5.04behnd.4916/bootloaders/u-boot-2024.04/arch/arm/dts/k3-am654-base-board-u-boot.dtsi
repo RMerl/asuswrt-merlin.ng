@@ -1,0 +1,276 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018-2021 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "k3-am65x-binman.dtsi"
+
+/ {
+	chosen {
+		tick-timer = &mcu_timer0;
+	};
+};
+
+&mcu_timer0 {
+	ti,timer-alwon;
+	clock-frequency = <25000000>;
+	bootph-all;
+};
+
+&vtt_supply {
+	bootph-all;
+};
+
+&cbass_main {
+	bootph-all;
+};
+
+&main_navss {
+	bootph-all;
+};
+
+&cbass_mcu {
+	bootph-all;
+};
+
+&mcu_navss {
+	bootph-all;
+};
+
+&mcu_ringacc {
+	bootph-all;
+};
+
+&mcu_udmap {
+	bootph-all;
+};
+
+&wkup_gpio0 {
+	bootph-all;
+};
+
+&secure_proxy_main {
+	bootph-all;
+};
+
+&cbass_wakeup {
+	bootph-all;
+
+	chipid@43000014 {
+		bootph-all;
+	};
+};
+
+&dmsc {
+	bootph-all;
+};
+
+&k3_pds {
+	bootph-all;
+};
+
+&k3_clks {
+	bootph-all;
+};
+
+&k3_reset {
+	bootph-all;
+};
+
+&main_uart0 {
+	bootph-all;
+};
+
+&wkup_vtm0 {
+	bootph-all;
+};
+
+&wkup_pmx0 {
+	bootph-all;
+};
+
+&wkup_uart0_pins_default {
+	bootph-all;
+};
+
+&ddr_vtt_pins_default {
+	bootph-all;
+};
+
+&mcu_uart0_pins_default {
+	bootph-all;
+};
+
+&wkup_i2c0_pins_default {
+	bootph-all;
+};
+
+&mcu_fss0_ospi0_pins_default {
+	bootph-all;
+};
+
+&main_pmx0 {
+	bootph-all;
+};
+
+&main_uart0_pins_default {
+	bootph-all;
+};
+
+&main_mmc0_pins_default {
+	bootph-all;
+};
+
+&main_mmc1_pins_default {
+	bootph-all;
+};
+
+&main_pmx1 {
+	bootph-all;
+};
+
+&sdhci0 {
+	bootph-all;
+};
+
+&sdhci1 {
+	bootph-all;
+};
+
+&wkup_i2c0 {
+	bootph-all;
+};
+
+&vdd_mpu {
+	bootph-all;
+};
+
+&ospi0 {
+	bootph-all;
+
+	flash@0 {
+		bootph-all;
+	};
+};
+
+&dwc3_0 {
+	bootph-all;
+};
+
+&scm_conf {
+	bootph-all;
+};
+
+&fss {
+	bootph-all;
+};
+
+&pru0_0 {
+	remoteproc-name = "pru0_0";
+};
+
+&rtu0_0 {
+	remoteproc-name = "rtu0_0";
+};
+
+&tx_pru0_0 {
+	remoteproc-name = "tx_pru0_0";
+};
+
+&pru0_1 {
+	remoteproc-name = "pru0_1";
+};
+
+&rtu0_1 {
+	remoteproc-name = "rtu0_1";
+};
+
+&tx_pru0_1 {
+	remoteproc-name = "tx_pru0_1";
+};
+
+&pru1_0 {
+	remoteproc-name = "pru1_0";
+};
+
+&rtu1_0 {
+	remoteproc-name = "rtu1_0";
+};
+
+&tx_pru1_0 {
+	remoteproc-name = "tx_pru1_0";
+};
+
+&pru1_1 {
+	remoteproc-name = "pru1_1";
+};
+
+&rtu1_1 {
+	remoteproc-name = "rtu1_1";
+};
+
+&tx_pru1_1 {
+	remoteproc-name = "tx_pru1_1";
+};
+
+&pru2_0 {
+	remoteproc-name = "pru2_0";
+};
+
+&rtu2_0 {
+	remoteproc-name = "rtu2_0";
+};
+
+&tx_pru2_0 {
+	remoteproc-name = "tx_pru2_0";
+};
+
+&pru2_1 {
+	remoteproc-name = "pru2_1";
+};
+
+&rtu2_1 {
+	remoteproc-name = "rtu2_1";
+};
+
+&tx_pru2_1 {
+	remoteproc-name = "tx_pru2_1";
+};
+
+&mcu_r5fss0 {
+	ti,cluster-mode = <0>;
+};
+
+/*
+ * The DMA driver requires a few extra register ranges
+ * which are missing for the am65x. A patch has been
+ * sent and will be synced after the v6.8-rc1 linux
+ * tag is published
+ */
+&main_udmap {
+	reg = <0x0 0x31150000 0x0 0x100>,
+	      <0x0 0x34000000 0x0 0x100000>,
+	      <0x0 0x35000000 0x0 0x100000>,
+	      <0x0 0x30b00000 0x0 0x10000>,
+	      <0x0 0x30c00000 0x0 0x10000>,
+	      <0x0 0x30d00000 0x0 0x8000>;
+	reg-names = "gcfg", "rchanrt", "tchanrt",
+		    "tchan", "rchan", "rflow";
+};
+
+/*
+ * The DMA driver requires a few extra register ranges
+ * which are missing for the am65x. A patch has been
+ * sent and will be synced after the v6.8-rc1 linux
+ * tag is published
+ */
+&mcu_udmap {
+	reg = <0x0 0x285c0000 0x0 0x100>,
+	      <0x0 0x2a800000 0x0 0x40000>,
+	      <0x0 0x2aa00000 0x0 0x40000>,
+	      <0x0 0x284a0000 0x0 0x4000>,
+	      <0x0 0x284c0000 0x0 0x4000>,
+	      <0x0 0x28400000 0x0 0x2000>;
+	reg-names = "gcfg", "rchanrt", "tchanrt",
+		    "tchan", "rchan", "rflow";
+};

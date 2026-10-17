@@ -102,6 +102,9 @@ static const ru_reg_rec *NATC_KEY_REGS[] =
 const ru_block_rec NATC_KEY_BLOCK =
 {
     "NATC_KEY",
+#if RU_INCLUDE_SIZE
+    { 0x000003D0 },
+#endif
     NATC_KEY_ADDRS,
     8,
     1,
@@ -422,6 +425,9 @@ static const ru_reg_rec *NATC_TBL_REGS[] =
 const ru_block_rec NATC_TBL_BLOCK =
 {
     "NATC_TBL",
+#if RU_INCLUDE_SIZE
+    { 0x000002E0 },
+#endif
     NATC_TBL_ADDRS,
     8,
     4,

@@ -1,0 +1,10 @@
+BOARDS from CS GROUP France
+M:	Christophe Leroy <christophe.leroy@csgroup.eu>
+S:	Maintained
+F:	board/cssi/
+F:	include/configs/mcr3000.h
+F:	configs/MCR3000_defconfig
+F:	include/configs/cmpc885.h
+F:	configs/CMPC885_defconfig
+F:	include/configs/cmpcpro.h
+F:	configs/CMPCPRO_defconfig

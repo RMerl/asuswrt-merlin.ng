@@ -1,0 +1,13 @@
+# MMC boot command
+bootcmd_mmc=load mmc 0:1 ${loadaddr} kernel.itb; bootm
+
+# Network boot command and vars
+bootcmd_net=dhcp; tftpboot ${loadaddr} kernel.itb; bootm
+autoload=no
+serverip=192.168.0.1
+
+# U-Boot will run this after loading this file
+bootcmd_txt=run bootcmd_mmc
+
+# Kernel cmdline
+bootargs=cma=256M console=ttyS1,115200 root=/dev/mmcblk0p3 rootflags=subvol=root rw rootwait

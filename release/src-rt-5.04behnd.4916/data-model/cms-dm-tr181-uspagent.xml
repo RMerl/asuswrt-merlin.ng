@@ -16,7 +16,7 @@
 
 
 
-<object name="InternetGatewayDevice.Device.USPAgent." shortObjectName="Dev2USPAgentObject" specSource="TR181" profile="USPAgent:1" requirements="P" supportLevel="Present" oid="2700" lockZone="8" bbfProtocol="cwmp"/>
+<object name="InternetGatewayDevice.Device.USPAgent." shortObjectName="Dev2USPAgentObject" specSource="TR181" profile="USPAgent:1" requirements="P" supportLevel="Present" oid="2740" lockZone="8" bbfProtocol="cwmp"/>
   <description source="TRx">This object contains general information about the USP Agent itself.  For information related to the Device that hosts the Agent, please reference the DeviceInfo object.         NOTE: The Vendor Log File table (DeviceInfo.VendorLogFile) details are located on the DeviceInfo object. </description>
 
   <parameter name="EndpointID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" bbfProtocol="cwmp" />
@@ -445,6 +445,7 @@
   <element>WebSocket</element>
   <element>STOMP</element>
   <element>MQTT</element>
+  <element>UDS</element>
 
 <validstringarray name="uspMtpStatusValues" />
   <element>Up</element>

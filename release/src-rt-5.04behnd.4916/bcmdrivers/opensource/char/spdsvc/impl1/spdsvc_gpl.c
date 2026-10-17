@@ -65,6 +65,8 @@
 #define __debug(fmt, arg...)
 #endif
 
+#define SPDSVC_BATCH_MODE_BUDGET  5
+
 typedef struct {
     spdsvc_ioctl_command_t spdsvc_ioctl_command;
 } spdsvc_gpl_t;
@@ -160,6 +162,17 @@ int spdsvc_event_unregister_all(void)
 
 static spdsvc_tr471_rx_queue_t *spdsvc_tr471_rx_queue_p = NULL;
 
+void spdsvc_tr471_rx_queue_stats(uint32_t *pPending, uint32_t *pTotal, uint32_t *pWrites, uint32_t *pReads, uint32_t *pDiscards)
+{
+    bcm_async_queue_t *queue_p = &spdsvc_tr471_rx_queue_p->async_queue;
+
+    *pPending      += queue_p->depth - bcm_async_queue_free_entries(queue_p);
+    *pTotal        += queue_p->depth;
+    *pWrites       += queue_p->stats.writes;
+    *pReads        += queue_p->stats.reads;
+    *pDiscards     += queue_p->stats.discards;
+}
+
 void spdsvc_tr471_rx_queue_init(void)
 {
     bcm_async_queue_t *queue_p = &spdsvc_tr471_rx_queue_p->async_queue;
@@ -190,7 +203,12 @@ static int spdsvc_tr471_rx_queue_construct(void)
     return 0;
 }
 
-int spdsvc_tr471_rx_queue_write(spdsvc_tr471_rx_queue_if_entry_t *entry_p)
+inline void spdsvc_tr471_rx_queue_write_event(void)
+{
+    spdsvc_event_send(SPDSVC_TR471_EVT_RX_QUEUE, 1);
+}
+
+int spdsvc_tr471_rx_queue_write(spdsvc_tr471_rx_queue_if_entry_t *entry_p, int event_mode )
 {
     bcm_async_queue_t *queue_p = &spdsvc_tr471_rx_queue_p->async_queue;
 
@@ -207,22 +225,27 @@ int spdsvc_tr471_rx_queue_write(spdsvc_tr471_rx_queue_if_entry_t *entry_p)
 
         queue_p->stats.writes++;
 
-        spdsvc_event_send(SPDSVC_TR471_EVT_RX_QUEUE, 1);
+        if (event_mode == SPDSVC_EVENT_SIGNAL_BATCH_MODE) {
+            if (bcm_async_queue_avail_entries(queue_p) > SPDSVC_BATCH_MODE_BUDGET) {
+                spdsvc_tr471_rx_queue_write_event();
+            }
+        }
+        else
+            spdsvc_tr471_rx_queue_write_event();
 
         return 1;
     }
     else
     {
         queue_p->stats.discards++;
-
-        spdsvc_event_send(SPDSVC_TR471_EVT_RX_QUEUE, 1);
-
+        spdsvc_tr471_rx_queue_write_event();
         return 0;
     }
 }
-int spdsvc_tr471_burst_cmpl_event(void)
+
+int spdsvc_tr471_burst_cmpl_event(uint16_t rx_max_pktlen)
 {
-    spdsvc_event_send(SPDSVC_TR471_EVT_BURST_CMPL, 1);
+    spdsvc_event_send(SPDSVC_TR471_EVT_BURST_CMPL, (uint64_t) rx_max_pktlen);
     return 0;
 }
 /*******************************************************************************
@@ -417,7 +440,9 @@ EXPORT_SYMBOL(spdsvc_event_unregister);
 EXPORT_SYMBOL(spdsvc_event_unregister_all);
 EXPORT_SYMBOL(spdsvc_tr471_rx_queue_write);
 EXPORT_SYMBOL(spdsvc_tr471_rx_queue_init);
+EXPORT_SYMBOL(spdsvc_tr471_rx_queue_stats);
 EXPORT_SYMBOL(spdsvc_tr471_burst_cmpl_event);
+EXPORT_SYMBOL(spdsvc_tr471_rx_queue_write_event);
 EXPORT_SYMBOL(spdsvc_gpl_bind);
 
 MODULE_DESCRIPTION(SPDSVC_MODNAME " GPL");

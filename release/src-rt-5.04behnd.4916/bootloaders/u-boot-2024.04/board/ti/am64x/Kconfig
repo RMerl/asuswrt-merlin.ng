@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2020-2021 Texas Instruments Incorporated - https://www.ti.com/
+
+if TARGET_AM642_A53_EVM
+
+config SYS_BOARD
+       default "am64x"
+
+config SYS_VENDOR
+       default "ti"
+
+config SYS_CONFIG_NAME
+       default "am64x_evm"
+
+source "board/ti/common/Kconfig"
+
+endif
+
+if TARGET_AM642_R5_EVM
+
+config SYS_BOARD
+       default "am64x"
+
+config SYS_VENDOR
+       default "ti"
+
+config SYS_CONFIG_NAME
+       default "am64x_evm"
+
+source "board/ti/common/Kconfig"
+
+endif

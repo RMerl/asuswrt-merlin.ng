@@ -36,7 +36,10 @@
  * =============================================================================
  */
 
+#include <osl.h>
+
 #include <bcm_pktfwd.h>
+#include <bcm_pktfwd_spc.h>
 #include <linux/skbuff.h>
 
 #if defined(BCM_AWL)
@@ -49,6 +52,16 @@
 #define WL_PKTFWD_VERSIONCODE       PKTFWD_VERSIONCODE(WL_PKTFWD)
 
 #if WL_PKTFWD_VERSIONCODE >= PKTFWD_VERSION(1, 1, 0)
+
+/* Constant NBuffPtrType_t to allow compile time resolution of SKB vs WKB type. */
+#if defined(BCM_WKB)
+#define WL_NBUFF_PTR		WKBUFF_PTR
+#define PNBUFF_2_WL_NBUFF	PNBUFF_2_WKBUFF
+#else /* BCM_WKB */
+#define WL_NBUFF_PTR		SKBUFF_PTR
+#define PNBUFF_2_WL_NBUFF	PNBUFF_2_SKBUFF
+#endif /* ! BCM_WKB */
+
 /**
  * On trigger to AMPDU evalutate, appends PKTFWD Ingress pktlist to tail of
  * SCB's AMPDU queue.
@@ -72,10 +85,23 @@
 #define WL_SCBID2LUTID(scb_flowid)  ((scb_flowid) - 1)
 #define WL_FWDID2LUTID(lut_index)   ((lut_index) + 1)
 
+#ifndef CONFIG_BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
+#error "BCM_PKTFWD requires 16bit key"
+#endif
+
+#define PKTFWD_CHAIN_IDX_MASK 0xFFFF      /* 16b chain idx */
+#define PKTFWD_INVALID_CHAIN_IDX  0xFFFF
+#define PKTFWD_WFD_IDX_BITMASK    (0x30000)
+#define PKTFWD_WFD_IDX_BITPOS     16
+
+/** Given a per WFD chain index, convert to global WFD_CHAIN index */
+#define PKTFWD_WFD_CHAIN_IDX(wfd_idx, chain_idx) \
+	((((wfd_idx) << PKTFWD_WFD_IDX_BITPOS) & PKTFWD_WFD_IDX_BITMASK) | \
+	 ((chain_idx) & PKTFWD_CHAIN_IDX_MASK))
+
 /** Forward declarations */
 struct wl_if;
 struct wl_info;
-struct sk_buff;
 struct net_device;
 struct bcmstrbuf;
 struct wlc_if;
@@ -147,8 +173,8 @@ extern void wl_pktfwd_sys_fini(void);
 extern void wl_pktfwd_sys_dump(void);
 
 typedef struct wl_pktfwd_pktlist {
-	struct sk_buff *head;	/* CFP linked pktlist head */
-	struct sk_buff *tail;	/* CFP linked pktlist tail */
+	void	*head;		/* CFP linked pktlist head */
+	void	*tail;		/* CFP linked pktlist tail */
 	uint32_t len;		/* number of packets in pktlist */
 	uint16_t prio;		/* pktlist prio */
 	uint16_t flowid;	/* flowid */
@@ -176,17 +202,20 @@ extern void wl_pktfwd_dispatch_pktlist(struct wl_info *wl, struct wl_if *wlif, u
 #define wl_pktfwd_upstream             wl_awl_upstream_send_chain
 #define wl_pktfwd_pktqueue_add_pkt     wl_awl_upstream_add_pkt
 #define wl_pktfwd_flush_pktqueues      wl_awl_upstream_send_all
+#if defined(BCM_SPC_RX) || defined(BCM_WKB)
+#define wl_pktfwd_spc_rx_capable       wl_awl_spc_rx_capable
+#endif /* BCM_SPC_RX || BCM_WKB */
 
 /* TODO: API to get cfp_flowid in AWL platforms */
 #define wl_pktfwd_get_cfp_flowid(wl, d3addr)    ID16_INVALID
 #else /*  !BCM_AWL || !WL_AWL_RX */
 
 /**
- * Invoked in wlc_rx.c and wlc_amsdu.c: receive is_chainable(PKTC_TBL_FN_CMP)
+ * Invoked in wlc_rx.c and wlc_amsdu.c: receive is_chainable
  * if (d3addr is found and not a loop back) return true, else return false.
  */
 extern int wl_pktfwd_match(uint8_t * d3addr, struct net_device *rx_dev);
-extern int wl_pktfwd_upstream(struct wl_info *wl, struct sk_buff *skb);
+extern int wl_pktfwd_upstream(struct wl_info *wl, void *pkt);
 
 #if defined(WLCFP)
 
@@ -199,15 +228,39 @@ extern void wl_pktfwd_pktqueue_add_pkt(struct wl_info *wl, struct net_device *rx
 /* Callback to flush pktqueues */
 extern void wl_pktfwd_flush_pktqueues(struct wl_info *wl);
 
+#if defined(BCM_SPC_RX) || defined(BCM_WKB)
+static INLINE bool wl_pktfwd_spc_rx_capable(struct wl_info *wl)
+{
+	return FALSE;
+}
+#endif /* BCM_SPC_RX || BCM_WKB */
 #endif /*  !BCM_AWL || !WL_AWL_RX */
 
-#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING) && defined(WL_PKTFWD_INTRABSS)
-int wl_pktfwd_rx_mcast_handler(wl_if_t * wlif, void *skb);
+#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING)
+int wl_pktfwd_rx_mcast_handler(struct wl_if * wlif, void *pkt);
 #endif
 
 #if defined(BCM_PKTFWD_FLCTL)
 extern void wl_pktfwd_update_link_credits(struct wl_info *wl, uint16_t scb_flowid, uint8_t *d3addr,
 	uint32_t prio, int32_t credits, bool add);
+#if defined(BCM_PKTFWD_SPC)
+extern void wl_pktfwd_update_link_agg_params(struct wl_info *wl, uint16_t scb_flowid,
+	uint8_t *d3addr, uint32_t prio, uint16_t max_sframes, uint16_t max_aggbytes);
+#endif /* BCM_PKTFWD_SPC */
 #endif /* BCM_PKTFWD_FLCTL */
+
+extern unsigned long
+(*dhd_pktfwd_req_hook)(int req_id, unsigned long param0,
+	unsigned long param1, unsigned long param2);
+
+extern unsigned long
+(*wl_pktfwd_req_hook)(int request, /* with lock */
+	unsigned long param0, unsigned long param1, unsigned long param2);
+
+/** Hook registered with blog shim */
+extern void (*wl_pktfwd_del_hook) (unsigned long addr, struct net_device * net_device);
+
+/** Hook registered with Linux network stack bridge layer */
+extern int (*fdb_check_expired_wl_hook)(unsigned char *addr, struct net_device * net_device);
 
 #endif /* __wl_pktfwd_h_included__ */

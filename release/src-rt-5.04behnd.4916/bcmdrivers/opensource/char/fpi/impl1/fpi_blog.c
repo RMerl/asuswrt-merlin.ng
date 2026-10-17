@@ -43,12 +43,14 @@ written consent.
 #include <linux/blog.h>
 #include <linux/bcm_skb_defines.h>
 #include <linux/bcm_netdev_path.h>
+#include <linux/bcm_log_mod.h>
+#include <linux/bcm_log.h>
 
 #include "fpi.h"
 #include "idx_pool_util.h"
 #include "bcm_OS_Deps.h"
 
-#define FPI_BLOG_FLOW_MAX	256
+#define FPI_BLOG_FLOW_MAX	FPI_MAX_FLOWS
 #define FPI_BLOG_DEL_INACTIVE	10
 #define FPI_BLOG_TIMER_INTERVAL	msecs_to_jiffies(10 * 1000)
 
@@ -77,6 +79,10 @@ DEFINE_SPINLOCK(FPI_BLOG_LOCK_BH);
 #define FPI_BLOG_LOCK_BH()	do {} while (0)
 #define FPI_BLOG_UNLOCK_BH()	do {} while (0)
 #endif
+
+#define FPI_BLOG_INFO(args...)	BCM_LOG_INFO(BCM_LOG_ID_FPI, ##args)
+#define FPI_BLOG_WARN(args...)	BCM_LOG_NOTICE(BCM_LOG_ID_FPI, ##args)
+#define FPI_BLOG_ERR(args...)	BCM_LOG_ERROR(BCM_LOG_ID_FPI, ##args)
 
 /* return index (>= 0) when succeeds, -1 when fails */
 static int fpi_blog_entry_add(uint32_t handle)
@@ -115,8 +121,8 @@ static int fpi_blog_entry_refresh(int index)
 	} else if (++fpi_blog_entry_p->inactive_cnt >= FPI_BLOG_DEL_INACTIVE) {
 		/* entry has been inactive for a while, delete it */
 		fpi_delete_flow_by_handle(fpi_blog_entry_p->handle);
-		pr_info("%s:%d:flow with handle#%08x is deleted\n",
-		        __func__, __LINE__, fpi_blog_entry_p->handle);
+		FPI_BLOG_INFO("%d:flow with handle#%08x is deleted\n",
+		        __LINE__, fpi_blog_entry_p->handle);
 		memset(fpi_blog_entry_p, 0x0, sizeof(fpi_blog_entry_t));
 		idx_pool_return_index(&fpi_blog_db.idx_pool, index);
 		atomic_dec(&fpi_blog_db.num_flow);
@@ -168,7 +174,7 @@ void fpi_blog_table_flush(void)
 	do {
 		fpi_blog_entry_p = &fpi_blog_db.table_p[index];
 		fpi_delete_flow_by_handle(fpi_blog_entry_p->handle);
-		pr_info("%s:flow with handle#%08x is deleted\n", __func__,
+		FPI_BLOG_INFO("%d:flow with handle#%08x is deleted\n", __LINE__,
 		        fpi_blog_entry_p->handle);
 		memset(fpi_blog_entry_p, 0, sizeof(fpi_blog_entry_t));
 		idx_pool_return_index(&fpi_blog_db.idx_pool, index);
@@ -181,10 +187,10 @@ done_flush:
 	FPI_BLOG_UNLOCK_BH();
 
 	if (atomic_read(&fpi_blog_db.num_flow) != 0)
-		pr_warn("%s:flush isn't complete with %d entry left\n",
-			__func__, atomic_read(&fpi_blog_db.num_flow));
+		FPI_BLOG_WARN("%d:flush isn't complete with %d entry left\n",
+			__LINE__, atomic_read(&fpi_blog_db.num_flow));
 	else
-		pr_info("%s:successfully flush the table\n", __func__);
+		FPI_BLOG_INFO("%d:successfully flush the table\n", __LINE__);
 
 	return;
 }
@@ -210,7 +216,10 @@ static int _fpi_blog_common_parsing(char *hdr_p, BlogHeader_t *bHdr_p,
 	case TYPE_ETH:
 		break;
 	case TYPE_IP:
-		h_proto = htons(BLOG_ETH_P_IPV4);
+		if ((*hdr_p & 0xF0) == 0x40)
+			h_proto = htons(BLOG_ETH_P_IPV4);
+		else
+			h_proto = htons(BLOG_ETH_P_IPV6);
 		goto parse_l3;
 	default:
 		return -1;
@@ -386,7 +395,7 @@ static BlogAction_t fpi_blog_transmit(struct sk_buff *skb_p, void *dev_p,
 	Blog_t *blog_p;
 	char *hdr_p;
 	BlogHeader_t *tx_bHdr_p, *rx_bHdr_p;
-	uint16_t rx_protocol;
+	uint16_t rx_protocol, src_port, dst_port;
 	uint32_t rx_vtag;
 	BlogTupleV6_t rxTupleV6;
 	fpi_flow_t new_flow;
@@ -501,22 +510,45 @@ static BlogAction_t fpi_blog_transmit(struct sk_buff *skb_p, void *dev_p,
 	/* note: small assumption here, supposedly we need to check if
 	 * DST MAC == AP MAC, but it is skipped. */
 
-	/* we only support case where RX and TX IP Version are the same.
-	 * no 6in4 nor 4in6 support yet */
-	if ((rx_bHdr_p->info.bmap.PLD_IPv4 != tx_bHdr_p->info.bmap.PLD_IPv4) ||
-	    (rx_bHdr_p->info.bmap.PLD_IPv6 != tx_bHdr_p->info.bmap.PLD_IPv6))
-		goto skip_learning;
-
 	/* it has to be either IPv4 or IPv6 */
 	if ((rx_bHdr_p->info.bmap.PLD_IPv4 == 0) &&
 	    (rx_bHdr_p->info.bmap.PLD_IPv6 == 0))
 		goto skip_learning;
 
+	/* We only support TCP/UDP and ESP (not ESPoUDP) in this sample
+	 * application */
 	if (((rx_protocol != blog_p->key.protocol) &&
 			(tx_phyHdrType != BLOG_SPU_US)) ||
 	    ((rx_protocol != BLOG_IPPROTO_UDP) &&
 			(rx_protocol != BLOG_IPPROTO_TCP) &&
 			(rx_protocol != BLOG_IPPROTO_ESP)))
+		goto skip_learning;
+
+	/* Skip learning for the following control packets.  They are usually
+	 * handled by the host protocol stack and not accelerated.  Please note
+	 * that customer might have different requirements, and they shall
+	 * implement their own exception tables.  FPI_BLOG, the sample
+	 * application, has to have the following exceptions implemented to
+	 * satisfy and pass some certification testing.
+	 */
+	if (rx_bHdr_p->info.bmap.PLD_IPv4) {
+		src_port = ntohs(rx_bHdr_p->tuple.port.source);
+		dst_port = ntohs(rx_bHdr_p->tuple.port.dest);
+	} else {
+		src_port = ntohs(rxTupleV6.port.source);
+		dst_port = ntohs(rxTupleV6.port.dest);
+	}
+
+	/* skip DHCP */
+	if ((rx_protocol == BLOG_IPPROTO_UDP) &&
+	    ((dst_port == 67) || (dst_port == 68) ||
+	     (dst_port == 546) || (dst_port == 547)))
+		goto skip_learning;
+
+	/* skip DNS */
+	if (((rx_protocol == BLOG_IPPROTO_UDP) ||
+	     (rx_protocol == BLOG_IPPROTO_TCP)) &&
+	    ((src_port == 53) || (dst_port == 53)))
 		goto skip_learning;
 
 	/* we can now create L3L4 Flow.  Fill in Key info. */
@@ -545,12 +577,54 @@ static BlogAction_t fpi_blog_transmit(struct sk_buff *skb_p, void *dev_p,
 		new_flow.key.l3l4_key.dst_port = ntohs(rxTupleV6.port.dest);
 	}
 
-	if (args->esp_over_udp) {
-		new_flow.key.l3l4_key.esp_spi_mode = FPI_ESP_IN_UDP;
-		new_flow.key.l3l4_key.esp_spi = ntohl(args->esp_spi);
-	} else if (tx_phyHdrType == BLOG_SPU_DS || tx_phyHdrType == BLOG_SPU_US) {
-		new_flow.key.l3l4_key.esp_spi_mode = FPI_ESP_IN_IP;
-		new_flow.key.l3l4_key.esp_spi = ntohl(tx_bHdr_p->tuple.esp_spi);
+	if (tx_phyHdrType == BLOG_SPU_US) {
+		if (args->esp_over_udp)
+			new_flow.key.l3l4_key.esp_flow_type = ESP_US_UDP;
+		else
+			new_flow.key.l3l4_key.esp_flow_type = ESP_US;
+		new_flow.context.esp_spi = htonl(args->esp_spi);
+	}
+
+	if (rx_phyHdrType == BLOG_SPU_US) {
+		if (new_flow.key.l3l4_key.l4_proto == IPPROTO_ESP) {
+			new_flow.key.l3l4_key.esp_flow_type = ESP_US_FWD;
+			new_flow.key.l3l4_key.esp_spi = ntohl(rx_bHdr_p->tuple.esp_spi);
+			new_flow.key.l3l4_key.src_port = 0;
+			new_flow.key.l3l4_key.dst_port = 0;
+		} else if (new_flow.key.l3l4_key.l4_proto == IPPROTO_UDP) {
+			new_flow.key.l3l4_key.esp_flow_type = ESP_US_FWD_UDP;
+			new_flow.context.esp_spi = htonl(args->esp_spi);
+		}
+	}
+	if (tx_phyHdrType == BLOG_SPU_DS) {
+		if (new_flow.key.l3l4_key.l4_proto == IPPROTO_ESP) {
+			new_flow.key.l3l4_key.esp_flow_type = ESP_DS;
+			new_flow.key.l3l4_key.esp_spi = ntohl(rx_bHdr_p->tuple.esp_spi);
+			new_flow.key.l3l4_key.src_port = 0;
+			new_flow.key.l3l4_key.dst_port = 0;
+		} else {
+			/* add the outer tunnel flow */
+			new_flow.context.egress_device_ptr = (uint64_t)(uintptr_t)blog_p->tx_dev_p;
+			new_flow.key.l3l4_key.esp_flow_type = ESP_DS_UDP;
+			new_flow.context.esp_spi = ntohl(args->esp_spi);
+			rc = fpi_add_flow(&new_flow, &new_handle);
+			if (rc)
+				goto skip_learning;
+			rc = fpi_blog_entry_add(new_handle);
+			if (rc < 0)
+				FPI_BLOG_ERR("%d:failed added IPsec tunnel "
+					"flow\n", __LINE__);
+			else
+				FPI_BLOG_INFO("%d:successfully added new "
+					"tunnel flow with handle#%08x\n",
+				        __LINE__, new_handle);
+
+			new_flow.key.l3l4_key.esp_flow_type = ESP_DS;
+			new_flow.key.l3l4_key.esp_spi = ntohl(args->esp_spi);
+			new_flow.context.esp_spi = 0;
+			new_flow.key.l3l4_key.src_port = 0;
+			new_flow.key.l3l4_key.dst_port = 0;
+		}
 	}
 
 
@@ -569,7 +643,7 @@ prepare_context:
 				ctx_p->wl_user_priority =
 					blog_p->wfd.dhd_ucast.priority;
 		} else {
-			ctx_p->wl_user_priority = blog_p->rnr.flow_prio << 1;
+			ctx_p->wl_user_priority = blog_p->rnr.priority;
 			ctx_p->egress_priority = 0;
 		}
 	} else
@@ -600,7 +674,7 @@ prepare_context:
 	}
 
 	if (BLOG_IPTOS2DSCP(rx_bHdr_p->tuple.tos) !=
-            BLOG_IPTOS2DSCP(tx_bHdr_p->tuple.tos)) {
+	    BLOG_IPTOS2DSCP(tx_bHdr_p->tuple.tos)) {
 		ctx_p->dscp_rewrite = 1;
 		ctx_p->dscp = BLOG_IPTOS2DSCP(tx_bHdr_p->tuple.tos);
 	}
@@ -611,8 +685,17 @@ prepare_context:
 	if (new_flow.key.mode != fpi_mode_l3l4)
 		goto add_flow;
 
-	if (new_flow.key.l3l4_key.esp_spi_mode == FPI_ESP_IGNORED) {
-		memcpy(ctx_p->dst_mac, &tx_bHdr_p->l2hdr[0], BLOG_ETH_ADDR_LEN);
+	if (BLOG_GET_PHYTYPE(rx_phyHdrType) == BLOG_ENETPHY) {
+		ctx_p->eth_mac_valid_en = 1;
+		memcpy(&ctx_p->dst_mac_valid[0],
+		       &rx_bHdr_p->l2hdr[0], BLOG_ETH_ADDR_LEN);
+		memcpy(&ctx_p->src_mac_valid[0],
+		       &rx_bHdr_p->l2hdr[BLOG_ETH_ADDR_LEN], BLOG_ETH_ADDR_LEN);
+	}
+
+	if (new_flow.key.l3l4_key.esp_flow_type <= ESP_US_FWD) {
+		memcpy(ctx_p->dst_mac, &tx_bHdr_p->l2hdr[0],
+		       BLOG_ETH_ADDR_LEN);
 		memcpy(ctx_p->src_mac, &tx_bHdr_p->l2hdr[BLOG_ETH_ADDR_LEN],
 		       BLOG_ETH_ADDR_LEN);
 
@@ -674,6 +757,12 @@ prepare_context:
 		}
 	}
 
+	if ((new_flow.key.l3l4_key.esp_flow_type == ESP_IGNORE) ||
+	    (new_flow.key.l3l4_key.esp_flow_type == ESP_US_UDP) ||
+	    (new_flow.key.l3l4_key.esp_flow_type == ESP_US)) {
+		ctx_p->ip_frag_en = 1;
+		ctx_p->max_ip_packet_size = blog_getTxMtu(blog_p);
+	}
 add_flow:
 	/* Trigger FPI to create the flow!! */
 	rc = fpi_add_flow(&new_flow, &new_handle);
@@ -686,8 +775,8 @@ add_flow:
 		fpi_delete_flow_by_handle(new_handle);
 		/* goto skip_learning; comment out as this jump is redudant */
 	} else
-		pr_info("%s:%d:successfully added new flow with handle#%08x\n",
-		        __func__, __LINE__, new_handle);
+		FPI_BLOG_INFO("%d:successfully added new flow with handle#%08x\n",
+		        __LINE__, new_handle);
 
 skip_learning:
 
@@ -781,7 +870,7 @@ int fpi_blog_netdev_notifier(struct notifier_block *this, unsigned long event,
 	return NOTIFY_DONE;
 }
 
-#define PROC_DIR		"driver/fpi"
+#define PROC_DIR		"driver/fpi_blog"
 #define ENABLE_PROC_FILE	"enable"
 #define FLUSH_PROC_FILE		"flush"
 
@@ -816,26 +905,26 @@ static ssize_t enable_proc_write(struct file *file, const char *buf,
 	unsigned long input_val;
 
 	if (len >= sizeof(temp_buf)) {
-		pr_err("invalid input value\n");
+		FPI_BLOG_ERR("invalid input value\n");
 		return len;
 	}
 
 	count = min((unsigned long)len, (unsigned long)(sizeof(temp_buf) - 1));
 
 	if (copy_from_user(temp_buf, buf, count) != 0) {
-		pr_err("invalid input value\n");
+		FPI_BLOG_ERR("invalid input value\n");
 		return len;
 	}
 
 	temp_buf[count] = '\0';
 	if (kstrtoul(temp_buf, 0, &input_val)) {
-		pr_err("invalid input value\n");
+		FPI_BLOG_ERR("invalid input value\n");
 		return len;
 	}
 
 	/* input_val can only be 0 and 1 */
 	if (input_val > 1) {
-		pr_err("invalid input value\n");
+		FPI_BLOG_ERR("invalid input value\n");
 		return len;
 	}
 
@@ -937,7 +1026,7 @@ static int __init fpi_proc_init(void)
 
 	proc_dir = proc_mkdir(PROC_DIR, NULL);
 	if (!proc_dir) {
-		pr_err("Failed to create PROC directory %s.\n",
+		FPI_BLOG_ERR("Failed to create PROC directory %s.\n",
 		       PROC_DIR);
 		status = -EIO;
 		goto done;
@@ -946,7 +1035,7 @@ static int __init fpi_proc_init(void)
 	enable_proc_file = proc_create(ENABLE_PROC_FILE, S_IRUSR | S_IWUSR,
 				       proc_dir, &enable_proc_ops);
 	if (!enable_proc_file) {
-		pr_err("Failed to create %s\n", ENABLE_PROC_FILE);
+		FPI_BLOG_ERR("Failed to create %s\n", ENABLE_PROC_FILE);
 		status = -EIO;
 		fpi_proc_exit();
 		goto done;
@@ -955,7 +1044,7 @@ static int __init fpi_proc_init(void)
 	flush_proc_file = proc_create(FLUSH_PROC_FILE, S_IRUSR | S_IWUSR,
 				      proc_dir, &flush_proc_ops);
 	if (!flush_proc_file) {
-		pr_err("Failed to create %s\n", FLUSH_PROC_FILE);
+		FPI_BLOG_ERR("Failed to create %s\n", FLUSH_PROC_FILE);
 		status = -EIO;
 		fpi_proc_exit();
 		goto done;
@@ -977,7 +1066,8 @@ static int __init fpi_blog_init(void)
 		return rc;
 
 	atomic_set(&fpi_blog_db.num_flow, 0);
-	fpi_blog_db.enable = false;
+	/* by default enable it if fpi_blog is initialized/insmod */
+	fpi_blog_db.enable = true;
 
 	fpi_blog_db.table_p = vmalloc(sizeof(fpi_blog_entry_t) * FPI_BLOG_FLOW_MAX);
 	if (fpi_blog_db.table_p == NULL) {
@@ -995,7 +1085,7 @@ static int __init fpi_blog_init(void)
 
 	fpi_proc_init();
 
-	pr_info("Broadcom Sample FPI Control Dataplane Registered!\n");
+	FPI_BLOG_INFO("Broadcom Sample FPI Control Dataplane Registered!\n");
 
 	return 0;
 }
@@ -1012,7 +1102,7 @@ static void __exit fpi_blog_exit(void)
 	vfree(fpi_blog_db.table_p);
 	idx_pool_exit(&fpi_blog_db.idx_pool);
 
-	pr_info("Broadom Sample FPI Control Dataplane Unregistered!\n");
+	FPI_BLOG_INFO("Broadom Sample FPI Control Dataplane Unregistered!\n");
 }
 
 module_init(fpi_blog_init);

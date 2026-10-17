@@ -1,0 +1,150 @@
+Contents
+========
+
+1. Introduction
+2. Get the Source and prebuild binary
+3. Compile the U-Boot
+4. Compile the rkdeveloptool
+5. Package the image
+   5.1. Package the image for U-Boot SPL(option 1)
+   5.2. Package the image for Rockchip miniloader(option 2)
+6. Bootloader storage options
+7. Flash the image to eMMC
+   7.1. Flash the image with U-Boot SPL(option 1)
+   7.2. Flash the image with Rockchip miniloader(option 2)
+8. Create a bootable SD/MMC
+9. And that is it
+
+Introduction
+============
+
+Rock960 board family consists of Rock960 (Consumer Edition) and
+Ficus (Enterprise Edition) 96Boards featuring Rockchip RK3399 SoC.
+
+Common features implemented on both boards:
+	* CPU: ARMv8 64bit Big-Little architecture,
+		* Big: dual-core Cortex-A72
+		* Little: quad-core Cortex-A53
+		* IRAM: 200KB
+	* eMMC: 16/32GB eMMC 5.1
+	* PMU: RK808
+	* SD/MMC
+	* Display: HDMI/DP/MIPI
+	* Low Speed Expansion Connector
+	* High Speed Expansion Connector
+
+Additional features of Rock960:
+	* DRAM: 2GB/4GB LPDDR3 @ 1866MHz
+	* 1x USB 3.0 type A, 1x USB 2.0 type A (host mode only),
+	  1x USB 3.0 type C OTG
+
+Additional features of Ficus:
+	* DRAM: 2GB/4GB DDR3 @ 1600MHz
+	* Ethernet
+	* 2x USB 3.0 type A, 2x USB 2.0 type A (host mode only),
+	  1x USB 3.0 type C OTG
+
+Here is the step-by-step to boot to U-Boot on Rock960 boards.
+
+Get the Source and prebuild binary
+==================================
+
+  > git clone https://github.com/96rocks/rkbin.git
+  > git clone https://github.com/rockchip-linux/rkdeveloptool.git
+
+Compile the U-Boot
+==================
+
+  > cd ../u-boot
+  > cp ../rkbin/rk33/rk3399_bl31_v1.00.elf ./bl31.elf
+  > export CROSS_COMPILE=aarch64-linux-gnu-
+  > make rock960-rk3399_defconfig
+  > make
+
+Compile the rkdeveloptool
+=========================
+
+Follow instructions in latest README
+  > cd ../rkdeveloptool
+  > autoreconf -i
+  > ./configure
+  > make
+  > sudo make install
+
+Package the image
+=================
+
+Package the image for U-Boot SPL(option 1)
+--------------------------------
+  > cd ..
+  > tools/mkimage -n rk3399 -T rksd -d spl/u-boot-spl.bin idbspl.img
+
+  Get idbspl.img in this step.
+
+Package the image for Rockchip miniloader(option 2)
+------------------------------------------
+  > cd ../rkbin
+  > ./tools/loaderimage --pack --uboot u-boot/u-boot-dtb.bin uboot.img 0x200000
+
+  > ../u-boot/tools/mkimage -n rk3399 -T rksd -d rk3399_ddr_933MHz_v1.08.bin idbloader.img
+  > cat ./rk33/rk3399_miniloader_v1.06.bin >> idbloader.img
+
+  Get uboot.img and idbloader.img in this step.
+
+Bootloader storage options
+==========================
+
+There are a few different storage options for the bootloader.
+This document explores two of these: eMMC and removable SD/MMC.
+
+Flash the image to eMMC
+=======================
+
+Flash the image with U-Boot SPL(option 1)
+-------------------------------
+Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
+  > rkdeveloptool db rkbin/rk33/rk3399_loader_v1.08.106.bin
+  > rkdeveloptool wl 64 u-boot/idbspl.img
+  > rkdeveloptool wl 0x4000 u-boot/u-boot.itb
+  > rkdeveloptool rd
+
+Flash the image with Rockchip miniloader(option 2)
+----------------------------------------
+Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
+  > rkdeveloptool db rkbin/rk33/rk3399_loader_v1.08.106.bin
+  > rkdeveloptool wl 0x40 idbloader.img
+  > rkdeveloptool wl 0x4000 uboot.img
+  > rkdeveloptool wl 0x6000 ./img/rk3399/trust.img
+  > rkdeveloptool rd
+
+Create a bootable SD/MMC
+========================
+
+The idbspl.img contains the first stage, and the u-boot.img the second stage.
+As explained in the Rockchip partition table reference [1], the first stage
+(aka loader1) start sector is 64, and the second stage start sector is 16384.
+
+Each sector is 512 bytes, which means the first stage offset is 32 KiB,
+and the second stage offset is 8 MiB.
+
+Note: the second stage location is actually not as per the spec,
+but defined by the SPL. Mainline SPL defines an 8 MiB offset for the second
+stage.
+
+Assuming the SD card is exposed by device /dev/mmcblk0, the commands
+to write the two stages are:
+
+  > dd if=idbspl.img of=/dev/mmcblk0 bs=1k seek=32
+  > dd if=u-boot.itb of=/dev/mmcblk0 bs=1k seek=8192
+
+Setting up the kernel and rootfs is beyond the scope of this document.
+
+And that is it
+==============
+
+You should be able to get U-Boot log in console/UART2(baurdrate 1500000)
+
+For more detail, please reference [2].
+
+[1] http://opensource.rock-chips.com/wiki_Partitions
+[2] http://opensource.rock-chips.com/wiki_Boot_option

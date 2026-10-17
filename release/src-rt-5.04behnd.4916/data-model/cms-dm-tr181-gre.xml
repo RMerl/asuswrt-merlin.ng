@@ -127,6 +127,9 @@
 
   <parameter name="X_BROADCOM_COM_L2_Mode" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
     <description source="BROADCOM">Indicates if this GRE Tunnel Interface is a Bridged service.</description>
+	
+  <parameter name="X_BROADCOM_COM_TOS_Inherit" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Indicates if packet encapsulated by this GRE Tunnel Interface inherits tos value from inner packet.</description>
 
 
 <object name="InternetGatewayDevice.Device.GRE.Tunnel.{i}.Interface.{i}.Stats."  shortObjectName="Dev2GreTunnelInterfaceStatsObject" specSource="TR181" profile="Device2_GREBasic:1" supportLevel="Present" pruneWriteToConfigFile="true" />

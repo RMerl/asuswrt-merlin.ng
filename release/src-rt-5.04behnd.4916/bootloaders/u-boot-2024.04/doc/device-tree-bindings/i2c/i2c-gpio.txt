@@ -1,0 +1,41 @@
+I2C gpio device binding
+=======================
+
+Driver:
+- drivers/i2c/i2c-gpio.c
+
+Software i2c device-tree node properties:
+Required:
+* #address-cells = <1>;
+* #size-cells = <0>;
+* compatible = "i2c-gpio";
+* gpios = <sda ...>, <scl ...>;
+
+Optional:
+* i2c-gpio,delay-us = <5>;
+   The resulting transfer speed can be adjusted by setting the delay[us]
+   between gpio-toggle operations. Speed [Hz] = 1000000 / 4 * udelay[us],
+   It not defined, then default is 5us (~50KHz).
+* i2c-gpio,deblock
+   Run deblocking sequence when the driver gets probed.
+* i2c-gpio,scl-output-only;
+   Set if SCL is an output only
+
+Example:
+
+i2c-gpio@1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	compatible = "i2c-gpio";
+	gpios = <&gpd1 0 GPIO_ACTIVE_HIGH>, /* SDA */
+		<&gpd1 1 GPIO_ACTIVE_HIGH>; /* CLK */
+
+	i2c-gpio,delay-us = <5>;
+
+	some_device@5 {
+		compatible = "some_device";
+		reg = <0x5>;
+		...
+	};
+};

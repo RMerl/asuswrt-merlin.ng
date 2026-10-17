@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * QorIQ SATAv2 device tree stub [ controller @ offset 0x220000 ]
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ */
+
+sata@220000 {
+	compatible = "fsl,pq-sata-v2";
+	reg = <0x220000 0x1000>;
+	interrupts = <68 0x2 0 0>;
+};

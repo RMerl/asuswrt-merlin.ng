@@ -1,0 +1,101 @@
+TI K3 DSP devices
+=================
+
+The TI K3 family of SoCs usually have one or more TI DSP Core sub-systems that
+are used to offload some of the processor-intensive tasks or algorithms, for
+achieving various system level goals.
+
+These processor sub-systems usually contain additional sub-modules like L1
+and/or L2 caches/SRAMs, an Interrupt Controller, an external memory controller,
+a dedicated local power/sleep controller etc. The DSP processor cores in the
+K3 SoCs is usually either a TMS320C66x CorePac processor or a TMS320C71x CorePac
+processor.
+
+DSP Device Node:
+================
+Each DSP Core sub-system is represented as a single DT node. Each node has a
+number of required or optional properties that enable the OS running on the
+host processor (Arm CorePac) to perform the device management of the remote
+processor and to communicate with the remote processor.
+
+Required properties:
+--------------------
+The following are the mandatory properties:
+
+- compatible:		Should be one of the following,
+			    "ti,j721e-c66-dsp" for C66x DSPs on K3 J721E SoCs
+			    "ti,j721e-c71-dsp" for C71x DSPs on K3 J721E SoCs
+
+- reg:			Should contain an entry for each value in 'reg-names'.
+			Each entry should have the memory region's start address
+			and the size of the region, the representation matching
+			the parent node's '#address-cells' and '#size-cells' values.
+
+- reg-names:		Should contain strings with the following names, each
+			representing a specific internal memory region (if
+			present), and should be defined in this order,
+			     "l2sram", "l1pram", "l1dram"
+			NOTE: C71x DSPs do not have a "l1pram" memory.
+
+- ti,sci:		Should be a phandle to the TI-SCI System Controller node
+
+- ti,sci-dev-id:	Should contain the TI-SCI device id corresponding to the
+			DSP Core. Please refer to the corresponding System
+			Controller documentation for valid values for the DSP
+			cores.
+
+- ti,sci-proc-ids:	Should contain 2 integer values. The first cell should
+			contain the TI-SCI processor id for the DSP core device
+			and the second cell should contain the TI-SCI host id to
+			which the processor control ownership should be
+			transferred to.
+
+- resets:		Should contain the phandle to the reset controller node
+			managing the resets for this device, and a reset
+			specifier. Please refer to the following reset bindings
+			for the reset argument specifier,
+			Documentation/devicetree/bindings/reset/ti,sci-reset.txt
+
+Example:
+---------
+
+1. J721E SoC
+	/* J721E remoteproc alias */
+	aliases {
+		rproc6 = &c66_0;
+		rproc8 = &c71_0;
+	};
+
+	cbass_main: interconnect@100000 {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x00 0x64800000 0x00 0x64800000 0x00 0x00800000>, /* C71_0 */
+			 <0x4d 0x80800000 0x4d 0x80800000 0x00 0x00800000>, /* C66_0 */
+			 <0x4d 0x81800000 0x4d 0x81800000 0x00 0x00800000>; /* C66_1 */
+
+		/* J721E C66_0 DSP node */
+		c66_0: dsp@4d80800000 {
+			compatible = "ti,j721e-c66-dsp";
+			reg = <0x4d 0x80800000 0x00 0x00048000>,
+			      <0x4d 0x80e00000 0x00 0x00008000>,
+			      <0x4d 0x80f00000 0x00 0x00008000>;
+			reg-names = "l2sram", "l1pram", "l1dram";
+			ti,sci = <&dmsc>;
+			ti,sci-dev-id = <142>;
+			ti,sci-proc-ids = <0x03 0xFF>;
+			resets = <&k3_reset 142 1>;
+		};
+
+		/* J721E C71_0 DSP node */
+		c71_0: dsp@64800000 {
+			compatible = "ti,j721e-c71-dsp";
+			reg = <0x00 0x64800000 0x00 0x00080000>,
+			      <0x00 0x64e00000 0x00 0x0000c000>;
+			reg-names = "l2sram", "l1dram";
+			ti,sci = <&dmsc>;
+			ti,sci-dev-id = <15>;
+			ti,sci-proc-ids = <0x30 0xFF>;
+			resets = <&k3_reset 15 1>;
+		};
+	};

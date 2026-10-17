@@ -1,5 +1,5 @@
 # ARM Trusted Firmware Makefile
-ARM_TF_VER := 2.8
+ARM_TF_VER := 2.12.0
 ARM_TF_TAR := v$(ARM_TF_VER).tar.gz
 ARM_TF_DIR := arm-trusted-firmware-$(ARM_TF_VER)
 ARM_TF_DBG := 0
@@ -52,6 +52,9 @@ LIBPATH2 := $(shell echo $(KTOOLCHAIN_TOP) | sed -e 's/$$/\/lib\/gcc\/$(KTOOLCHA
 
 export LDLIBS := -L$(LIBPATH1)/$(GCCVERSION)  -L$(LIBPATH2)/$(GCCVERSION) -lgcc
 
+BUILD_PROFILE	:= $(BUILD_DIR)/targets/$(PROFILE)/$(PROFILE)
+RNG_HW_SUPPORT	:= $(shell grep -q BRCM_ARMTF_HW_RNG_SUPPORT=y $(BUILD_PROFILE) && echo 1 || echo 0)
+
 $(ARM_TF_DIR)/Makefile: $(ARM_TF_TAR) $(ARM_TF_VER).patch Makefile
 	$(Q)rm -rf $(ARM_TF_DIR)
 	@echo "Untarring source and overrides..."
@@ -65,7 +68,7 @@ $(ARM_TF_DIR)/Makefile: $(ARM_TF_TAR) $(ARM_TF_VER).patch Makefile
 	$(Q)touch $@
 
 armtf: $(ARM_TF_DIR)/Makefile
-	$(Q)$(MAKE) -C $(ARM_TF_DIR) $(ARM_TF_BUILD_PARMS)
+	$(Q)$(MAKE) -C $(ARM_TF_DIR) $(ARM_TF_BUILD_PARMS) RNG_HW=$(RNG_HW_SUPPORT)
 
 armtf.bin: armtf
 ifeq ($(strip $(KERNEL_ARCH)),aarch64)
@@ -78,7 +81,7 @@ endif
 
 clean:
 	if [ -d $(ARM_TF_DIR) ]; then \
-		$(MAKE) -C $(ARM_TF_DIR) $(ARM_TF_BUILD_PARMS) clean; \
+		$(MAKE) -C $(ARM_TF_DIR) $(ARM_TF_BUILD_PARMS) RNG_HW=$(RNG_HW_SUPPORT) clean; \
 		rm -f armtf.*; \
 		patch -R -p1 -b -N -s -d$(ARM_TF_DIR) < $(ARM_TF_VER).patch; \
 		touch  Makefile; \

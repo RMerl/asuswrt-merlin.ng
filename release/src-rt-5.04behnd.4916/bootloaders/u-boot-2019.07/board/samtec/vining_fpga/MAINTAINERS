@@ -1,5 +1,0 @@
-VINING FPGA BOARD
-M:	Marek Vasut <marex@denx.de>
-S:	Maintained
-F:	include/configs/socfpga_vining_fpga.h
-F:	configs/socfpga_vining_fpga_defconfig

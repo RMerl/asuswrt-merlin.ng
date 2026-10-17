@@ -1,0 +1,21 @@
+if TARGET_NSIM
+
+config SYS_BOARD
+	default "nsim"
+
+config SYS_VENDOR
+	default "synopsys"
+
+config SYS_CONFIG_NAME
+	default "nsim"
+
+config NSIM_BOARD_CPPFLAGS
+	string "board arc-specific compiler options"
+	help
+	  For nSIM we allow to set custom arc-specific compiler options
+	  (like -mcpu=) instead of hardcoding them in its makefile as nSIM
+	  target is used for representing targets without fixed CPU version
+	  like FPGA-based boards and software simulators.
+	  This variable takes space separated compiler options list.
+
+endif

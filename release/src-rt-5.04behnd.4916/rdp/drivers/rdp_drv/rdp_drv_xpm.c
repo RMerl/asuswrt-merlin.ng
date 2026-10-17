@@ -55,8 +55,21 @@ ddr_token_info_t *ddr_token_info;
 uint32_t configured_total_fpm_tokens = TOTAL_FPM_TOKENS;
 bdmf_phys_addr_t ddr_token_info_phy_addr;
 extern dpi_params_t *p_dpi_cfg;
-
 #if defined(CONFIG_CPU_RX_FROM_XPM) || defined(CONFIG_CPU_TX_FROM_XPM)
+atomic64_t num_of_xpm_buffers_to_free;
+bdmf_timer_t bufmng_release_timer;
+
+static void _bufmng_wakeup_timer_task(bdmf_timer_t *timer, unsigned long priv)
+{
+    uint64_t num_of_buffers = ATOMIC_LEVEL64_READ(&num_of_xpm_buffers_to_free);
+
+    if (num_of_buffers)
+    {
+        rdp_reset_xpm_buffer_coalesing_num();
+        rdp_runner_cpu_task_wakeup(get_runner_idx(CPU_RINGS_FPM_REFILL_CORE_NUMBER), CPU_FPM_BUFMNG_RELEASE_TASK);
+    }
+}
+
 atomic64_t *bufmng_free_req_cnt;
 void drv_xpm_buf_cnt_req_init_fw(void);
 #endif
@@ -118,6 +131,7 @@ void drv_xpm_common_init(void *virt_base, uintptr_t phys_base, unsigned int buf_
         }
         memset(bufmng_free_req_cnt, 0, sizeof(atomic64_t) * FPM_MAX_NUM_OF_CPU_BUFMGT_GROUPS);
     }
+    bdmf_timer_init(&bufmng_release_timer, _bufmng_wakeup_timer_task, 0);
 #endif
 }
 
@@ -150,6 +164,11 @@ int drv_xpm_common_update_pool_size(int *pool_size_array)
     return 0;
 }
 
+int drv_xpm_get_xpm_buf_size(uint32_t pool_id)
+{
+    return xpm_common_cfg.buf_size * xpm_common_cfg.pool_size[pool_id];
+}
+
 /* buffer virt/phys address <-> ID conversion APIs */
 void *drv_xpm_buffer_id_to_virt(uint32_t xpm_bn)
 {
@@ -158,7 +177,7 @@ void *drv_xpm_buffer_id_to_virt(uint32_t xpm_bn)
     return (void *)((uint8_t *)xpm_common_cfg.virt_base + (bn << xpm_common_cfg.buf_size_log2));
 }
 
-bdmf_error_t drv_xpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num, uint8_t *pool_num)
+bdmf_error_t drv_xpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num, uint8_t *pool_num, uint8_t no_lock)
 {
     ddr_token_info_t info = {};
     bdmf_error_t rc = BDMF_ERR_OK;
@@ -166,7 +185,7 @@ bdmf_error_t drv_xpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num, uint8
 #ifndef RUNNER_MPM_SUPPORT
     rc = drv_fpm_alloc_buffer(packet_len, buff_num);
 #else
-    rc = drv_mpm_alloc_buffer(packet_len, buff_num);
+    rc = drv_mpm_alloc_buffer(packet_len, buff_num, no_lock);
 #endif
 
     info.pool_id = *buff_num >> FPM_POOL_ID_SHIFT;
@@ -203,6 +222,12 @@ int drv_xpm_ddr_token_info_set(uint32_t token_idx, ddr_token_info_t *info)
         return BDMF_ERR_RANGE;
 
     memcpy(&ddr_token_info[token_idx], info, sizeof(ddr_token_info_t));
+
+#ifdef CONFIG_BCM_CACHE_COHERENCY
+    /* make sure token_info is updated before moving xpm buffer to runner */
+    wmb();
+#endif
+
     return 0;
 }
 
@@ -212,6 +237,11 @@ int drv_xpm_ddr_token_info_clear(uint32_t token_idx)
         return BDMF_ERR_RANGE;
 
     memcpy(&ddr_token_info[token_idx], &zeroed_token_info, sizeof(zeroed_token_info));
+
+#ifdef CONFIG_BCM_CACHE_COHERENCY
+    /* make sure token_info is updated before moving xpm buffer to runner */
+    wmb();
+#endif
 
     return 0;
 }
@@ -375,6 +405,7 @@ const rdp_fpm_resources_t *get_rdp_fpm_resources(void)
 
 void drv_xpm_buf_cnt_req_init_fw()
 {
+#if (CHIP_VER < RDP_GEN_100) /* CRDP-TODO */
     uint32_t i, addr_l, addr_h;
 
     BUG_ON(!bufmng_free_req_cnt);
@@ -390,7 +421,23 @@ void drv_xpm_buf_cnt_req_init_fw()
         RDD_FPM_RING_BUFMNG_CNT_FREE_CNT_REQ_WRITE_G(0, RDD_FPM_RING_BUFMGT_CNT_TABLE_ADDRESS_ARR, 0, i);
         RDD_FPM_RING_BUFMNG_CNT_FREE_CNT_DONE_WRITE_G(0, RDD_FPM_RING_BUFMGT_CNT_TABLE_ADDRESS_ARR, 0, i);
     }
+#endif
+}
 
+void drv_xpm_print_packet_from_token_idx(bdmf_session_handle session, uint32_t token_idx, uint32_t offset)
+{
+    void *buf_p;
+
+    if (token_idx > xpm_common_cfg.num_of_token)
+    {
+        bdmf_session_print(session, "invalid token index %d, maximal allowed %d\n", token_idx, xpm_common_cfg.num_of_token - 1);
+        return;
+    }
+    buf_p = drv_xpm_buffer_id_to_virt(token_idx);
+    buf_p = (void *)((uint8_t *)buf_p + offset);
+    bdmf_session_hexdump(session, buf_p, 0, 128);
+    bdmf_msleep(1000); 
+    bdmf_session_print(session, "========== PACKET DATA 128 bytes end =======\n");
 }
 #endif
 

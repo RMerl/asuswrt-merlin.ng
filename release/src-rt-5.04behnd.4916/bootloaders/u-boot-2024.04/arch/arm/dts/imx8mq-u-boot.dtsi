@@ -1,0 +1,178 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2021 NXP
+ */
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+
+};
+
+&soc {
+	bootph-pre-ram;
+};
+
+&aips1 {
+	bootph-pre-ram;
+};
+
+&aips2 {
+	bootph-pre-ram;
+};
+
+&aips3 {
+	bootph-pre-ram;
+};
+
+&aips4 {
+	bootph-pre-ram;
+};
+
+&iomuxc {
+	bootph-pre-ram;
+};
+
+&binman {
+	u-boot-spl-ddr {
+		align = <4>;
+		align-size = <4>;
+		filename = "u-boot-spl-ddr.bin";
+		pad-byte = <0xff>;
+
+		u-boot-spl {
+			align-end = <4>;
+			filename = "u-boot-spl.bin";
+		};
+
+		ddr-1d-imem-fw {
+			filename = "lpddr4_pmu_train_1d_imem.bin";
+			align-end = <4>;
+			type = "blob-ext";
+		};
+
+		ddr-1d-dmem-fw {
+			filename = "lpddr4_pmu_train_1d_dmem.bin";
+			align-end = <4>;
+			type = "blob-ext";
+		};
+
+		ddr-2d-imem-fw {
+			filename = "lpddr4_pmu_train_2d_imem.bin";
+			align-end = <4>;
+			type = "blob-ext";
+		};
+
+		ddr-2d-dmem-fw {
+			filename = "lpddr4_pmu_train_2d_dmem.bin";
+			align-end = <4>;
+			type = "blob-ext";
+		};
+	};
+
+	signed-hdmi {
+		filename = "signed_hdmi.bin";
+
+		signed-hdmi-imx8m {
+			filename = "signed_hdmi_imx8m.bin";
+			type = "blob-ext";
+		};
+	};
+
+	spl {
+		filename = "spl.bin";
+
+		mkimage {
+			args = "-n spl/u-boot-spl.cfgout -T imx8mimage -e 0x7e1000";
+
+			blob {
+				filename = "u-boot-spl-ddr.bin";
+			};
+		};
+	};
+
+	itb {
+		filename = "u-boot.itb";
+
+		fit {
+			description = "Configuration to load ATF before U-Boot";
+#ifndef CONFIG_IMX_HAB
+			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+#endif
+			#address-cells = <1>;
+
+			images {
+				uboot {
+					arch = "arm64";
+					compression = "none";
+					description = "U-Boot (64-bit)";
+					load = <CONFIG_TEXT_BASE>;
+					type = "standalone";
+
+					uboot-blob {
+						filename = "u-boot-nodtb.bin";
+						type = "blob-ext";
+					};
+				};
+
+#ifndef CONFIG_ARMV8_PSCI
+				atf {
+					arch = "arm64";
+					compression = "none";
+					description = "ARM Trusted Firmware";
+					entry = <0x910000>;
+					load = <0x910000>;
+					type = "firmware";
+
+					atf-blob {
+						filename = "bl31.bin";
+						type = "blob-ext";
+					};
+				};
+#endif
+
+				fdt {
+					compression = "none";
+					description = "NAME";
+					type = "flat_dt";
+
+					uboot-fdt-blob {
+						filename = "u-boot.dtb";
+						type = "blob-ext";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf";
+
+				conf {
+					description = "NAME";
+					fdt = "fdt";
+					firmware = "uboot";
+#ifndef CONFIG_ARMV8_PSCI
+					loadables = "atf";
+#endif
+				};
+			};
+		};
+	};
+
+	imx-boot {
+		filename = "flash.bin";
+		pad-byte = <0x00>;
+
+		spl {
+			filename = "spl.bin";
+			offset = <0x0>;
+			type = "blob-ext";
+		};
+
+		binman_uboot: uboot {
+			filename = "u-boot.itb";
+			offset = <0x57c00>;
+			type = "blob-ext";
+		};
+	};
+};

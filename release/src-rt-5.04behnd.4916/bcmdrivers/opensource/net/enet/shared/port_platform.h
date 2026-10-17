@@ -43,8 +43,6 @@
 
 #if defined(CONFIG_BCM96858) || defined(_BCM96858_) || \
     defined(CONFIG_BCM96856) || defined(_BCM96856_) || \
-    defined(CONFIG_BCM96846) || defined(_BCM96846_) || \
-    defined(CONFIG_BCM96878) || defined(_BCM96878_) || \
     defined(CONFIG_BCM96855) || defined(_BCM96855_)
 #define MAX_SWITCH_PORTS             9
 #elif defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)

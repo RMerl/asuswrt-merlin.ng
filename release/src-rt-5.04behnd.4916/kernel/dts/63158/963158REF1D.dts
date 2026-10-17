@@ -277,6 +277,6 @@
 &nand {
 	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_ce_b_pin_48 &nand_wp_pin_47>;
 	pinctrl-names = "default";
-	write-protect = <0x1>;
+	/delete-property/ brcm,wp-not-connected;
 	status = "okay";
 };

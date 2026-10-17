@@ -294,6 +294,7 @@ typedef enum tm_identifier_e
     TM_MAX = 2,
     TM_MAX_GROUP = TM_ETH_END - TM_ETH_START + 1,
     TM_ERROR = 3,
+    TM_STILL_NOT_DEFINED = 4,
     TM_NUM_OF_IDENTITY = 3
 } tm_identifier_e;
 

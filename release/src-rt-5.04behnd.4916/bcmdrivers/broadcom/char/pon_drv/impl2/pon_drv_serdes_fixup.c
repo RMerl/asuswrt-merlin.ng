@@ -45,9 +45,9 @@ static int state_tracking = STATE_NO_SYNC, sd_timer_id = -1;
 DEFINE_SPINLOCK(state_lock);
 static int enabled;
 
-static void restart_sd_timer(int now)
+static void restart_sd_timer(void)
 {
-    ext_timer_set_period(sd_timer_id, now ? 1 : 1000*1000);
+    ext_timer_set_period(sd_timer_id, 1000*1000);
     ext_timer_start(sd_timer_id);
 }
 
@@ -110,7 +110,7 @@ static void fixup_func(unsigned long data)
     }
 
 restart_timer:
-    restart_sd_timer(0);
+    restart_sd_timer();
 }
 
 
@@ -134,7 +134,7 @@ void pon_serdes_lof_fixup_irq(int lof)
     spin_lock(&state_lock);
     ext_timer_stop(sd_timer_id);
     state_tracking = lof ? STATE_NO_SYNC : STATE_JUST_SYNC;
-    restart_sd_timer(1);
+    tasklet_hi_schedule(&fixup_tasklet);
     spin_unlock(&state_lock);
     wd_log_debug("LOF interrupt lof==%d, state_tracking==%d\n", lof, state_tracking);
 }
@@ -157,7 +157,7 @@ int pon_serdes_lof_fixup_cfg(int enable)
         return -1;
     }
 
-    restart_sd_timer(0);
+    restart_sd_timer();
 
     return 0;
 }

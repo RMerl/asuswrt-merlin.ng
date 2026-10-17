@@ -233,9 +233,9 @@ static int runner_tx_queue_init(bdmf_object_handle xtm, int queueIdx)
    /* create egress tm for this xtmchannel */
    rc = rc? rc : rdpa_egress_tm_level_set(tm_attr, rdpa_tm_level_queue);
    if (queueIdx == 0) {
-      rc = rc? rc : bcmxapiex_dpi_egress_tm_rl_rate_mode_set(tm_attr,
+      rc = rc? rc : bcmxapiex_us_sq_egress_tm_rl_rate_mode_set(tm_attr,
                       rdpa_tm_rl_dual_rate);
-#if IS_ENABLED(CONFIG_BCM_DPI) && defined(TM_C_CODE)
+#if (IS_ENABLED(CONFIG_BCM_DPI_QOS) || IS_ENABLED(CONFIG_BCM_KQOE)) && defined(TM_C_CODE)
       rc = rc? rc : rdpa_egress_tm_mode_set(tm_attr, rdpa_tm_sched_sp);
       rc = rc? rc : rdpa_egress_tm_num_queues_set(tm_attr, 2);
 #else
@@ -670,12 +670,7 @@ int bcmxapi_module_init(void)
           reason == rdpa_cpu_rx_reason_igmp ||
           reason == rdpa_cpu_rx_reason_dhcp ||
           reason == rdpa_cpu_rx_reason_hit_trap_high ||
-#ifndef XRDP
-          reason == rdpa_cpu_rx_reason_l4_icmp ||
-          reason == rdpa_cpu_rx_reason_l4_udef_0 ||
-#else /* XRPD */
           reason == rdpa_cpu_rx_reason_dns ||
-#endif
           reason == rdpa_cpu_rx_reason_ingqos)
       {
          tc = rdpa_cpu_tc_high ;
@@ -683,7 +678,7 @@ int bcmxapi_module_init(void)
       }
 #if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
       else if (reason == rdpa_cpu_rx_reason_hw_firewall_miss) {
-         /* XRDP-only feature. HW_FIREWALL should be lowest priority */
+         /* HW_FIREWALL should be lowest priority */
          tc = XTM_RDPA_CPU_TC_HW_FIREWALL;
          queue_id = RDPA_XTM_CPU_HW_FIREWALL_RX_QUEUE_ID;
       }
@@ -943,7 +938,7 @@ UINT32 bcmxapi_rxtask(UINT32 ulBudget, UINT32 *pulMoreToDo)
 #endif
          bcmxtmrt_processRxPkt(pDevCtx, NULL, (UINT8 *)info.data,
                                (UINT16)info.reason_data, info.size, flow_key,
-                               info.reason == rdpa_cpu_rx_reason_group_exception? 1 : 0);
+                               info.reason == rdpa_cpu_rx_reason_group_exception? 1 : 0, info.iq_prio);
          ulRxPktGood++;
          ulBudget--;
       }
@@ -1130,157 +1125,154 @@ int bcmxapi_DoSetTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
 
    if ((ulPort < MAX_PHY_PORTS) && (pTxQId->ucSubPriority < MAX_SUB_PRIORITIES)) {
 
-      /* Configure a TM egress queue */
-      queueIdx  = pTxQId->ulQueueIndex;
-      egress_tm = pGi->txBdmfObjs[queueIdx].egress_tm;
+       /* Configure a TM egress queue */
+       queueIdx  = pTxQId->ulQueueIndex;
+       egress_tm = pGi->txBdmfObjs[queueIdx].egress_tm;
 
-      if (egress_tm == NULL) {
+       if (egress_tm == NULL) {
 
-         rc = runner_tx_queue_init (pGi->bdmfXtm, queueIdx);
-         if (rc) 
-            goto _End ;
-         egress_tm = pGi->txBdmfObjs[queueIdx].egress_tm;
-      }/* egress_tm */
+           rc = runner_tx_queue_init (pGi->bdmfXtm, queueIdx);
+           if (rc) 
+               goto _End ;
+           egress_tm = pGi->txBdmfObjs[queueIdx].egress_tm;
+       }/* egress_tm */
 
-      if (egress_tm != NULL) {
+       if (egress_tm != NULL) {
 
-         rdpa_tm_queue_cfg_t  queue_cfg = {};
+           rdpa_tm_queue_cfg_t  *pQueueCfg = &pGi->txBdmfObjs[queueIdx].queue_cfg; /* For save & restore */
 
-         queue_cfg.queue_id       = queueIdx;
-         queue_cfg.weight         = 0;
-         BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) Size = %d \n", queueIdx, pTxQId->usQueueSize) ;
-         queue_cfg.drop_threshold = QUEUE_DROP_THRESHOLD(pTxQId->usQueueSize) ;
-         queue_cfg.stat_enable    = 1;
+           pQueueCfg->queue_id       = queueIdx;
+           pQueueCfg->weight         = 0;
+           BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) Size = %d \n", queueIdx, pTxQId->usQueueSize) ;
+           pQueueCfg->drop_threshold = QUEUE_DROP_THRESHOLD(pTxQId->usQueueSize) ;
 #if defined(TM_C_CODE)
-         /* best effort queues in TMC are implemented as subsidery egress tm, that why no need for best_effort bit set in the queue cfg */
-         queue_cfg.best_effort    = 0;
+           /* best effort queues in TMC are implemented as subsidery egress tm, that why no need for best_effort bit set in the queue cfg */
+           pQueueCfg->best_effort    = 0;
 #else
-         queue_cfg.best_effort    = (queueIdx == 0);
+           pQueueCfg->best_effort    = (queueIdx == 0);
 #endif
-         BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) CMBR = %d, Prio-%d \n", queueIdx, pTxQId->ulMBR,
-               pTxQId->ucSubPriority);
-         resvBuffers = (int) QUEUE_RESV_BUFFERS(pTxQId->ulMBR,pTxQId->ucSubPriority);
-         queue_cfg.reserved_packet_buffers = (resvBuffers<0) ? 0 : resvBuffers;
-         BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) Actual MBR = %d \n", queueIdx, queue_cfg.reserved_packet_buffers) ;
+           BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) CMBR = %d, Prio-%d \n", queueIdx, pTxQId->ulMBR,
+                   pTxQId->ucSubPriority);
+           resvBuffers = (int) QUEUE_RESV_BUFFERS(pTxQId->ulMBR,pTxQId->ucSubPriority);
+           pQueueCfg->reserved_packet_buffers = (resvBuffers<0) ? 0 : resvBuffers;
+           BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) Actual MBR = %d \n", queueIdx, pQueueCfg->reserved_packet_buffers) ;
 
-         if (pTxQId->ucDropAlg == WA_RED)
-         {
-            /* Currently Runner firmware does not support RED.
-             * RED can be implemented as WRED with equal low and high
-             * class thresholds.
-             */
-            queue_cfg.drop_alg = rdpa_tm_drop_alg_wred;
-            queue_cfg.low_class.min_threshold  = (pTxQId->ucLoMinThresh * queue_cfg.drop_threshold) / 100;
-            queue_cfg.low_class.max_threshold  = (pTxQId->ucLoMaxThresh * queue_cfg.drop_threshold) / 100;
-            queue_cfg.high_class.min_threshold = queue_cfg.low_class.min_threshold;
-            queue_cfg.high_class.max_threshold = queue_cfg.low_class.max_threshold;
-         }
-         else if (pTxQId->ucDropAlg == WA_WRED)
-         {
-            queue_cfg.drop_alg = rdpa_tm_drop_alg_wred;
-            queue_cfg.low_class.min_threshold  = (pTxQId->ucLoMinThresh * queue_cfg.drop_threshold) / 100;
-            queue_cfg.low_class.max_threshold  = (pTxQId->ucLoMaxThresh * queue_cfg.drop_threshold) / 100;
-            queue_cfg.high_class.min_threshold = (pTxQId->ucHiMinThresh * queue_cfg.drop_threshold) / 100;
-            queue_cfg.high_class.max_threshold = (pTxQId->ucHiMaxThresh * queue_cfg.drop_threshold) / 100;
-         }
-         else
-         {
-            /* DT */
-            queue_cfg.drop_alg = rdpa_tm_drop_alg_dt;
-            queue_cfg.low_class.min_threshold  = 0;
-            queue_cfg.low_class.max_threshold  = 0;
-            queue_cfg.high_class.min_threshold = 0;
-            queue_cfg.high_class.max_threshold = 0;
-         }
+           BCM_XTM_INFO(" bcmxtmrt:  Set TxQ : Current DropAlg = %d:%d \n", queueIdx, pTxQId->ucDropAlg);
 
-         BCM_XTM_NOTICE("bcmxtmrt: Egress TM Q %d Setup. Buffering/Q - %d ", (unsigned int)queueIdx, 
-               (unsigned int) queue_cfg.drop_threshold );
-         BCM_XTM_DEBUG("ulTrafficType:%u, ulHdrType:%u, ucTxVcid:%u, ulTxPafEnabled:%u",
-                                                          pDevCtx->ulTrafficType,
-                                                          pDevCtx->ulHdrType,
-                                                          pDevCtx->ucTxVcid,
-                                                          pDevCtx->ulTxPafEnabled);
-         rc = rdpa_egress_tm_queue_cfg_set(egress_tm, 0, &queue_cfg);
-         if (rc)
-         {
-            BCM_XTM_ERROR(CARDNAME "DoSetTxQueue: rdpa_egress_tm_queue_cfg_set error rc=%d", rc);
-            goto _End;
-         }
+           if (pTxQId->ucDropAlg == WA_RED)
+           {
+               pQueueCfg->drop_alg = rdpa_tm_drop_alg_wred;
+               pQueueCfg->low_class.min_threshold  = (pTxQId->ucLoMinThresh * pQueueCfg->drop_threshold) / 100;
+               pQueueCfg->low_class.max_threshold  = (pTxQId->ucLoMaxThresh * pQueueCfg->drop_threshold) / 100;
+               pQueueCfg->high_class.min_threshold = pQueueCfg->low_class.min_threshold;
+               pQueueCfg->high_class.max_threshold = pQueueCfg->low_class.max_threshold;
+           }
+           else if (pTxQId->ucDropAlg == WA_WRED)
+           {
+               pQueueCfg->drop_alg = rdpa_tm_drop_alg_wred;
+               pQueueCfg->low_class.min_threshold  = (pTxQId->ucLoMinThresh * pQueueCfg->drop_threshold) / 100;
+               pQueueCfg->low_class.max_threshold  = (pTxQId->ucLoMaxThresh * pQueueCfg->drop_threshold) / 100;
+               pQueueCfg->high_class.min_threshold = (pTxQId->ucHiMinThresh * pQueueCfg->drop_threshold) / 100;
+               pQueueCfg->high_class.max_threshold = (pTxQId->ucHiMaxThresh * pQueueCfg->drop_threshold) / 100;
+           }
+           else
+           {
+               /* DT */
+               pQueueCfg->drop_alg = rdpa_tm_drop_alg_dt;
+               pQueueCfg->low_class.min_threshold  = 0;
+               pQueueCfg->low_class.max_threshold  = 0;
+               pQueueCfg->high_class.min_threshold = 0;
+               pQueueCfg->high_class.max_threshold = 0;
+           }
 
-         if (queueIdx == 0) {
-            int idx = 0;
-#ifdef TM_C_CODE
-            uint8_t max_queues;
-            rdpa_egress_tm_num_queues_get(egress_tm, &max_queues); 
-
-            /*  Subsidiary egress TM replaces one of queues of primary egress TM. Take the last one */
-            idx =  max_queues - 1;
-#endif
-            rc = bcmxapiex_dpi_add_best_effort_sub_queues(egress_tm, &queue_cfg, idx);
-            if (rc) {
-               BCM_XTM_ERROR(CARDNAME "DoSetTxQueue: bcmxapiex_dpi_add_best_effort_sub_queues error rc=%d", rc);
+           BCM_XTM_NOTICE("bcmxtmrt: Egress TM Q %d Setup. Buffering/Q - %d ", (unsigned int)queueIdx, 
+                   (unsigned int) pQueueCfg->drop_threshold );
+           BCM_XTM_DEBUG("ulTrafficType:%u, ulHdrType:%u, ucTxVcid:%u, ulTxPafEnabled:%u",
+                   pDevCtx->ulTrafficType,
+                   pDevCtx->ulHdrType,
+                   pDevCtx->ucTxVcid,
+                   pDevCtx->ulTxPafEnabled);
+           rc = rdpa_egress_tm_queue_cfg_set(egress_tm, 0, pQueueCfg);
+           if (rc)
+           {
+               BCM_XTM_ERROR(CARDNAME "DoSetTxQueue: rdpa_egress_tm_queue_cfg_set error rc=%d", rc);
                goto _End;
-            }
-	 }
+           }
 
-         /* create rdpa xtmflows for this queue */
-         if (cfg_xtmflows(queueIdx, pDevCtx->ulTrafficType, pDevCtx->ulHdrType,
-                  pDevCtx->ucTxVcid, pDevCtx->ulTxPafEnabled) != 0)
-         {
-            BCM_XTM_ERROR(CARDNAME "DoSetTxQueue: Failed to create xtmflows for Q %d",
-                  (unsigned int)queueIdx);
-            rc = -EFAULT;
-         }
-         else
-         {
-            UINT32 ulPtmPrioIdx = PTM_FLOW_PRI_LOW;
+           if (queueIdx == 0) {
+               int idx = 0;
+#ifdef TM_C_CODE
+               uint8_t max_queues;
+               rdpa_egress_tm_num_queues_get(egress_tm, &max_queues); 
 
-            txdma->ulPort        = ulPort;
-            txdma->ulPtmPriority = pTxQId->ulPtmPriority;
-            txdma->ulSubPriority = pTxQId->ucSubPriority;
-            txdma->ucDropAlg     = pTxQId->ucDropAlg;
-            txdma->ucLoMinThresh = pTxQId->ucLoMinThresh;
-            txdma->ucLoMaxThresh = pTxQId->ucLoMaxThresh;
-            txdma->ucHiMinThresh = pTxQId->ucHiMinThresh;
-            txdma->ucHiMaxThresh = pTxQId->ucHiMaxThresh;
-            txdma->ulQueueSize   = pTxQId->usQueueSize ;
-            txdma->ulMBR         = pTxQId->ulMBR ;
+               /*  Subsidiary egress TM replaces one of queues of primary egress TM. Take the last one */
+               idx =  max_queues - 1;
+#endif
+               rc = bcmxapiex_us_sq_add_best_effort_sub_queues(egress_tm, pQueueCfg, idx);
+               if (rc) {
+                   BCM_XTM_ERROR(CARDNAME "DoSetTxQueue: bcmxapiex_us_sq_add_best_effort_sub_queues error rc=%d", rc);
+                   goto _End;
+               }
+           }
 
-            if ((pDevCtx->Addr.ulTrafficType == TRAFFIC_TYPE_PTM) ||
-                  (pDevCtx->Addr.ulTrafficType == TRAFFIC_TYPE_PTM_BONDED))
-               ulPtmPrioIdx = (txdma->ulPtmPriority == PTM_PRI_HIGH)?
-                  PTM_FLOW_PRI_HIGH : PTM_FLOW_PRI_LOW;
+           /* create rdpa xtmflows for this queue */
+           if (cfg_xtmflows(queueIdx, pDevCtx->ulTrafficType, pDevCtx->ulHdrType,
+                       pDevCtx->ucTxVcid, pDevCtx->ulTxPafEnabled) != 0) {
 
-            pDevCtx->pTxPriorities[ulPtmPrioIdx][ulPort][txdma->ulSubPriority] = txdma;
-            pDevCtx->pTxQids[pTxQId->ucQosQId] = txdma;
+               BCM_XTM_ERROR(CARDNAME "DoSetTxQueue: Failed to create xtmflows for Q %d",
+                       (unsigned int)queueIdx);
+               rc = -EFAULT;
+           }
+           else
+           {
+               UINT32 ulPtmPrioIdx = PTM_FLOW_PRI_LOW;
 
-            if (pDevCtx->pHighestPrio == NULL ||
-                  pDevCtx->pHighestPrio->ulSubPriority < txdma->ulSubPriority)
-               pDevCtx->pHighestPrio = txdma;
+               txdma->ulPort        = ulPort;
+               txdma->ulPtmPriority = pTxQId->ulPtmPriority;
+               txdma->ulSubPriority = pTxQId->ucSubPriority;
+               txdma->ucDropAlg     = pTxQId->ucDropAlg;
+               txdma->ucLoMinThresh = pTxQId->ucLoMinThresh;
+               txdma->ucLoMaxThresh = pTxQId->ucLoMaxThresh;
+               txdma->ucHiMinThresh = pTxQId->ucHiMinThresh;
+               txdma->ucHiMaxThresh = pTxQId->ucHiMaxThresh;
+               txdma->ulQueueSize   = pTxQId->usQueueSize ;
+               txdma->ulMBR         = pTxQId->ulMBR ;
 
-            /* Increment channels per dev context */
-            pDevCtx->txdma[pDevCtx->ulTxQInfosSize++] = txdma;
+               if ((pDevCtx->Addr.ulTrafficType == TRAFFIC_TYPE_PTM) ||
+                       (pDevCtx->Addr.ulTrafficType == TRAFFIC_TYPE_PTM_BONDED))
+                   ulPtmPrioIdx = (txdma->ulPtmPriority == PTM_PRI_HIGH)?
+                       PTM_FLOW_PRI_HIGH : PTM_FLOW_PRI_LOW;
 
-            txdma->ulDmaIndex = queueIdx;
-            txdma->txEnabled  = 1;
+               pDevCtx->pTxPriorities[ulPtmPrioIdx][ulPort][txdma->ulSubPriority] = txdma;
+               pDevCtx->pTxQids[pTxQId->ucQosQId] = txdma;
 
-            bcmxapiex_SetOrStartTxQueue(&queue_cfg, egress_tm) ;
-         }
+               if (pDevCtx->pHighestPrio == NULL ||
+                       pDevCtx->pHighestPrio->ulSubPriority < txdma->ulSubPriority)
+                   pDevCtx->pHighestPrio = txdma;
 
-         pQDbgStatus->qId = queueIdx ;
-         pQDbgStatus->status = rc ;
-         pQDbgStatus->occupancy = queue_cfg.drop_threshold ;
-         pQDbgStatus->jiffies = jiffies ;
-         pQDbgStatus->operation = Q_SETUP ;
+               /* Increment channels per dev context */
+               pDevCtx->txdma[pDevCtx->ulTxQInfosSize++] = txdma;
 
-         pGi->qLogCurrIndex++ ;
-         if (pGi->qLogCurrIndex == MAX_Q_LOGS)
-            pGi->qLogCurrIndex = 0 ;
+               txdma->ulDmaIndex = queueIdx;
+               txdma->txEnabled  = 1;
 
-         if (rc==0)
-            return rc ;
+               bcmxapiex_SetOrStartTxQueue(pQueueCfg, egress_tm) ;
+           }
 
-      } /* if (egress_tm != NULL) */
+           pQDbgStatus->qId = queueIdx ;
+           pQDbgStatus->status = rc ;
+           pQDbgStatus->occupancy = pQueueCfg->drop_threshold ;
+           pQDbgStatus->jiffies = jiffies ;
+           pQDbgStatus->operation = Q_SETUP ;
+
+           pGi->qLogCurrIndex++ ;
+           if (pGi->qLogCurrIndex == MAX_Q_LOGS)
+               pGi->qLogCurrIndex = 0 ;
+
+           if (rc==0)
+               return rc ;
+
+       } /* if (egress_tm != NULL) */
 
    } /* if ((ulPort < MAX_PHY_PORTS) && (pTxQId->ucSubPriority < MAX_SUB_PRIORITIES)) */
 
@@ -1305,9 +1297,7 @@ _End :
 void bcmxapi_ShutdownTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
                              volatile BcmPktDma_XtmTxDma *txdma)
 {
-   PBCMXTMRT_GLOBAL_INFO pGi = &g_GlobalInfo;
    UINT32   queueIdx;
-   bdmf_object_handle   egress_tm;
    BCM_XTM_DEBUG("ShutdownTxQueue");
 
    /* Changing txEnabled to 0 prevents any more packets
@@ -1318,11 +1308,6 @@ void bcmxapi_ShutdownTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
    
    queueIdx = txdma->ulDmaIndex ;
    
-   egress_tm = pGi->txBdmfObjs[queueIdx].egress_tm;
-
-   if (egress_tm != NULL)
-      bcmxapiex_ShutdownTxQueue (queueIdx, egress_tm) ;
-
    runner_tx_queue_uninit (queueIdx) ;
 
 }  /* bcmxapi_ShutdownTxQueue() */
@@ -1388,13 +1373,22 @@ void bcmxapi_StopTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
    if (egress_tm != NULL)
    {
       int   rc = 0;
-      rdpa_tm_queue_cfg_t  queue_cfg = {};
+      rdpa_tm_queue_cfg_t  queue_cfg = {} ;
+      rdpa_tm_queue_cfg_t  *pQueueCfg = &pGi->txBdmfObjs[queueIdx].queue_cfg; /* For save & restore */
       
+      if ((rc = rdpa_egress_tm_queue_cfg_get(egress_tm, 0, pQueueCfg)))
+      {
+         BCM_XTM_ERROR(CARDNAME "StopTxQueue: rdpa_egress_tm_queue_cfg_get error rc=%d", rc);
+         return ;
+      }
+
+      BCM_XTM_NOTICE(" bcmxtmrt:  Stop TxQ:CurDropAlg:CThr = %d:%d:%d \n", queueIdx, pQueueCfg->drop_alg,
+                       pQueueCfg->drop_threshold);
+
       queue_cfg.queue_id                 = queueIdx;
       queue_cfg.weight                   = 0;
       queue_cfg.drop_alg                 = rdpa_tm_drop_alg_dt;
       queue_cfg.drop_threshold           = 0;
-      queue_cfg.stat_enable              = 1;
       queue_cfg.high_class.min_threshold = 0;
       queue_cfg.high_class.max_threshold = 0;
       queue_cfg.low_class.min_threshold  = 0;
@@ -1409,6 +1403,7 @@ void bcmxapi_StopTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
       if ((rc = rdpa_egress_tm_queue_cfg_set(egress_tm, 0, &queue_cfg)))
       {
          BCM_XTM_ERROR(CARDNAME "StopTxQueue: rdpa_egress_tm_queue_cfg_set error rc=%d", rc);
+         return ;
       }
 
       bcmxapiex_StopTxQueue(&queue_cfg, egress_tm) ;
@@ -1443,62 +1438,30 @@ void bcmxapi_StartTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
    if (egress_tm != NULL)
    {
       int   rc = 0;
-      rdpa_tm_queue_cfg_t  queue_cfg = {};
+      rdpa_tm_queue_cfg_t  *pQueueCfg = &pGi->txBdmfObjs[queueIdx].queue_cfg;
       
-      queue_cfg.queue_id       = queueIdx;
-      queue_cfg.weight         = 0;
-      BCM_XTM_NOTICE(" bcmxtmrt:  Start Tx Q(%d) Size = %d ", queueIdx, txdma->ulQueueSize) ;
-      queue_cfg.drop_threshold = QUEUE_DROP_THRESHOLD(txdma->ulQueueSize) ;
-      queue_cfg.stat_enable    = 1;
+      BCM_XTM_INFO(" bcmxtmrt:  Start TxQ: Current DropAlg = %d:%d \n", queueIdx, pQueueCfg->drop_alg);
+
+      pQueueCfg->queue_id       = queueIdx;
 #ifdef TM_C_CODE
-      queue_cfg.best_effort    = 0;
+      pQueueCfg->best_effort    = 0;
 #else
-      queue_cfg.best_effort    = (queueIdx == 0);
+      pQueueCfg->best_effort    = (queueIdx == 0);
 #endif
+      BCM_XTM_NOTICE(" bcmxtmrt:  Start Tx Q(%d) Size = %d \n ", queueIdx, txdma->ulQueueSize) ;
       BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) CMBR = %d, Prio-%d \n", queueIdx, txdma->ulMBR,
             txdma->ulSubPriority);
       resvBuffers = (int) QUEUE_RESV_BUFFERS(txdma->ulMBR,txdma->ulSubPriority);
-      queue_cfg.reserved_packet_buffers = (resvBuffers<0) ? 0 : resvBuffers;
-      BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) Actual MBR = %d \n", queueIdx, queue_cfg.reserved_packet_buffers) ;
+      pQueueCfg->reserved_packet_buffers = (resvBuffers<0) ? 0 : resvBuffers;
+      BCM_XTM_NOTICE(" bcmxtmrt:  Tx Q(%d) Actual MBR = %d \n", queueIdx, pQueueCfg->reserved_packet_buffers) ;
 
-      BCM_XTM_DEBUG(" bcmxtmrt:  DropAlg = %d ", txdma->ucDropAlg) ;
-      if (txdma->ucDropAlg == WA_RED)
-      {
-         /* Currently Runner firmware does not support RED.
-          * RED can be implemented as WRED with equal low and high
-          * class thresholds.
-          */
-         queue_cfg.drop_alg = rdpa_tm_drop_alg_wred;
-         queue_cfg.low_class.min_threshold  = (txdma->ucLoMinThresh * queue_cfg.drop_threshold) / 100;
-         queue_cfg.low_class.max_threshold  = (txdma->ucLoMaxThresh * queue_cfg.drop_threshold) / 100;
-         queue_cfg.high_class.min_threshold = queue_cfg.low_class.min_threshold;
-         queue_cfg.high_class.max_threshold = queue_cfg.low_class.max_threshold;
-      }
-      else if (txdma->ucDropAlg == WA_WRED)
-      {
-         queue_cfg.drop_alg = rdpa_tm_drop_alg_wred;
-         queue_cfg.low_class.min_threshold  = (txdma->ucLoMinThresh * queue_cfg.drop_threshold) / 100;
-         queue_cfg.low_class.max_threshold  = (txdma->ucLoMaxThresh * queue_cfg.drop_threshold) / 100;
-         queue_cfg.high_class.min_threshold = (txdma->ucHiMinThresh * queue_cfg.drop_threshold) / 100;
-         queue_cfg.high_class.max_threshold = (txdma->ucHiMaxThresh * queue_cfg.drop_threshold) / 100;
-      }
-      else
-      {
-         /* DT */
-         queue_cfg.drop_alg = rdpa_tm_drop_alg_dt;
-         queue_cfg.low_class.min_threshold  = 0;
-         queue_cfg.low_class.max_threshold  = 0;
-         queue_cfg.high_class.min_threshold = 0;
-         queue_cfg.high_class.max_threshold = 0;
-      }
-
-
-      if ((rc = rdpa_egress_tm_queue_cfg_set(egress_tm, 0, &queue_cfg)))
+      if ((rc = rdpa_egress_tm_queue_cfg_set(egress_tm, 0, pQueueCfg)))
       {
          BCM_XTM_ERROR(CARDNAME "StartTxQueue: rdpa_egress_tm_queue_cfg_set error rc=%d", rc);
+         return;
       }
 
-      bcmxapiex_SetOrStartTxQueue(&queue_cfg, egress_tm) ;
+      bcmxapiex_SetOrStartTxQueue(pQueueCfg, egress_tm) ;
    }/* egress_tm */
 
 }  /* bcmxapi_StartTxQueue() */
@@ -1540,30 +1503,19 @@ void bcmxapi_SetPtmBonding(UINT32 bonding)
  */
 void bcmxapi_XtmGetStats(PBCMXTMRT_DEV_CONTEXT pDevCtx, UINT32 *rxDropped, UINT32 *txDropped)
 {
+    /* used to go through all TX queues for discarded/drop count,
+     * but that's already taken care from rdpa_port */
     int rc;
-    uint32_t index;
-    uint32_t queue_id;
-    rdpa_stat_1way_t egress_tm_stat = {};
-    *rxDropped = 0;
-    *txDropped = 0;
-    BCM_LOG_INFO(BCM_LOG_ID_XTM, "num queues:%u", pDevCtx->ulTxQInfosSize);
+    rdpa_port_stat_t stat = {};
 
-    for (index=0;index < pDevCtx->ulTxQInfosSize; index++)
+    rc = rdpa_port_stat_get(g_GlobalInfo.bdmfWan, &stat);
+    if (rc)
     {
-        egress_tm_stat.discarded.packets = 0;
-        queue_id = 0;
-        rc = rdpa_egress_tm_queue_stat_get(g_GlobalInfo.txBdmfObjs[pDevCtx->txdma[index]->ulDmaIndex].egress_tm,
-                                           queue_id,
-                                           &egress_tm_stat);
-        if(!rc)
-        {
-           *txDropped += egress_tm_stat.discarded.packets;
-        }
-        else 
-        {
-           BCM_XTM_ERROR("rdpa_egress_tm_queue_stat_get failed rc %d", rc);
-        }
+        BCM_XTM_ERROR("rdpa_port_stat_get returned error rc %d", rc);
     }
+
+    *txDropped += stat.tx_discard;
+    *rxDropped += stat.discard_pkt;
 
 }  /* bcmxapi_XtmGetStats() */
 

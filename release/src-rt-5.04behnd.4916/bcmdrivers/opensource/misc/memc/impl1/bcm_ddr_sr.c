@@ -31,23 +31,24 @@ Boston, MA 02111-1307, USA.
 #include "bcmbca_memc_dt_bindings.h"
 #include "bcm_memc.h"
 
-// 63138, 63158, 63178, 47622, 6756, 6765, 6766, 63146, 4912, 6813
+// 63158, 63178, 47622, 6756, 6765, 6766, 63146, 4912, 6813
 static unsigned int __iomem
 	// PhyControl.*
 	*mcr_phyctl_idle_pad_en0,
 	*mcr_phyctl_idle_pad_en1,
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963178) || \
-	defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || \
-	defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96846) || \
-	defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
+#if defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+	defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
 	defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 	// PhyByteLane0Control.*
 	*mcr_phybl0_idle_pad_ctl,
 	// PhyByteLane1Control.*
 	*mcr_phybl1_idle_pad_ctl,
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855) || \
-    defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
+
+#if defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
+	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 	// PhyByteLane2Control.*
 	*mcr_phybl2_idle_pad_ctl,
 	// PhyByteLane3Control.*
@@ -60,15 +61,16 @@ static unsigned int __iomem
 #endif
 #if defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
 	defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || \
-	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96846) || \
-	defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
 	defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 	// PhyByteLane0Control.*
 	*mcr_phybl0_clock_idle,
 	// PhyByteLane1Control.*
 	*mcr_phybl1_clock_idle,
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855) || \
+
+#if defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 	// PhyByteLane2Control.*
 	*mcr_phybl2_clock_idle,
@@ -81,14 +83,13 @@ static unsigned int __iomem
 MODULE_PARM_DESC(enable_self_refresh, "enable DDR self refresh");
 static unsigned int enable_self_refresh = 0;
 
-#ifndef CONFIG_BCM963138
 // hw auto self refresh
 #define MEMC_GLB_GCFG_SREF_SLOW_CLK_SHIFT	26
 #define MEMC_GLB_GCFG_SREF_SLOW_CLK_MASK	(1<<MEMC_GLB_GCFG_SREF_SLOW_CLK_SHIFT)
 #define MEMC_DDR_AUTO_SELFREFRESH_EN		(1 << 31)
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || \
-	defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756) || \
-	defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM96878) || \
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM96756) || \
+	defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+	defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 #define MEMC_DDR_AUTO_SR_IDLE_CNT_MASK		(0x7FFFFFFF)
 #elif defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || \
@@ -128,9 +129,9 @@ param_set_autosr_thresh_us(const char *val, const struct kernel_param *kp)
 
 	thresh_new = (autosr_thresh_us * mc_clk_mhz) &
 		MEMC_DDR_AUTO_SR_IDLE_CNT_MASK;
-        /* threshold needs a min value of 1 (MEMC tick) */
-        if (!thresh_new)
-            thresh_new = 1 & MEMC_DDR_AUTO_SR_IDLE_CNT_MASK;
+	/* threshold needs a min value of 1 (MEMC tick) */
+	if (!thresh_new)
+		thresh_new = 1 & MEMC_DDR_AUTO_SR_IDLE_CNT_MASK;
 
 	thresh_cur = *mcr_auto_self_refresh & MEMC_DDR_AUTO_SR_IDLE_CNT_MASK;
 	if (thresh_new != thresh_cur){
@@ -170,57 +171,6 @@ static const struct kernel_param_ops param_ops_autosr_thresh_us = {
 
 module_param(autosr_thresh_us, autosr_thresh_us, 0644);
 
-#else // #ifndef CONFIG_BCM963138
-// sw self refresh
-#define DRAM_CFG_DRAMSLEEP          (1<<11)
-static unsigned int __iomem *mcr_chn_tim_dram_cfg;
-static PWRMNGT_DDR_SR_CTRL ddrSrCtrl = {.word = 0};
-static volatile PWRMNGT_DDR_SR_CTRL *pDdrSrCtrl = &ddrSrCtrl;
-
-void BcmPwrMngtRegisterLmemAddr(PWRMNGT_DDR_SR_CTRL *pDdrSr)
-{
-	int cpu;
-
-	// Initialize to busy status
-	if (NULL != pDdrSr)
-		pDdrSrCtrl = pDdrSr;
-	else
-		pDdrSrCtrl = &ddrSrCtrl;
-
-	pDdrSrCtrl->word = 0;
-	for_each_possible_cpu(cpu)
-		pDdrSrCtrl->host |= 1<<cpu;
-}
-EXPORT_SYMBOL(BcmPwrMngtRegisterLmemAddr);
-
-void bcm_memc_self_refresh_pre_wfi(int cpu_mask)
-{
-	if (!enable_self_refresh)
-		return;
-
-	// On 63138, it was found that accessing the memory assigned by the
-	// DSL driver to pDdrSrCtrl is very slow. A local shadow copy
-	// ddrSrCtrl is first updated and used before deciding to access
-	// pDdrSrCtrl.  On non-DSL chips, the shadow and the pointer are
-	// referring to the same memory
-	ddrSrCtrl.host &= ~cpu_mask;
-	if (!ddrSrCtrl.host) {
-		// Let the PHY MIPS know that all cores on the host will be
-		// executing wfi
-		pDdrSrCtrl->host = 0;
-		// Ensure the PHY MIPS is not active so we can enter SR
-		if (!pDdrSrCtrl->phy && mcr_chn_tim_dram_cfg)
-			*mcr_chn_tim_dram_cfg |= DRAM_CFG_DRAMSLEEP;
-	}
-}
-
-void bcm_memc_self_refresh_post_wfi(int cpu_mask)
-{
-	if (enable_self_refresh)
-		ddrSrCtrl.host |= cpu_mask;
-}
-#endif // #ifndef CONFIG_BCM963138
-
 #define param_check_enable_self_refresh(esr, p_esr) \
 	__param_check(esr, p_esr, unsigned int)
 
@@ -236,7 +186,7 @@ param_set_enable_self_refresh(const char *val, const struct kernel_param *kp)
 	}
 
 	enable_self_refresh = !!enable_self_refresh;
-#ifndef CONFIG_BCM963138
+
 	if (!mcr_auto_self_refresh) {
 		pr_warn("Warning: undefined register auto_self_refresh\n");
 		return 0;
@@ -244,16 +194,13 @@ param_set_enable_self_refresh(const char *val, const struct kernel_param *kp)
 
 	enable_sr_cur = !!(*mcr_auto_self_refresh &
 			MEMC_DDR_AUTO_SELFREFRESH_EN);
-#endif
 
 	if (enable_sr_cur != enable_self_refresh) {
-#ifndef CONFIG_BCM963138
 		if (enable_self_refresh)
 			*mcr_auto_self_refresh |= MEMC_DDR_AUTO_SELFREFRESH_EN;
 		else
 			*mcr_auto_self_refresh &= ~MEMC_DDR_AUTO_SELFREFRESH_EN;
 
-#endif
 		pr_debug("changing DDR self refresh into %sabled\n",
 			enable_self_refresh ? "en" : "dis");
 	}
@@ -264,14 +211,13 @@ param_set_enable_self_refresh(const char *val, const struct kernel_param *kp)
 static int
 param_get_enable_self_refresh(char *buffer, const struct kernel_param *kp)
 {
-#ifndef CONFIG_BCM963138
 	if (!mcr_auto_self_refresh) {
 		pr_warn("Warning: undefined register auto_self_refresh\n");
 		return 0;
 	}
 	enable_self_refresh = !!(*mcr_auto_self_refresh &
 			MEMC_DDR_AUTO_SELFREFRESH_EN);
-#endif
+
 	pr_debug("DDR self refresh is %sabled\n",
 			enable_self_refresh ? "en" : "dis");
 	return scnprintf(buffer, PAGE_SIZE, "%u\n", *((unsigned int *)kp->arg));
@@ -299,15 +245,16 @@ static int __init bcm_memc_map_sr_reg_addr(struct platform_device *pdev)
 		REG_ADDR(phyctl_idle_pad_ctl),
 		REG_ADDR(phyctl_idle_pad_en0),
 		REG_ADDR(phyctl_idle_pad_en1),
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963178) || \
-	defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || \
-	defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96846) || \
-	defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
+#if defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+	defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
 	defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 		REG_ADDR(phybl0_idle_pad_ctl),
 		REG_ADDR(phybl1_idle_pad_ctl),
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855) || \
+
+#if defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 		REG_ADDR(phybl2_idle_pad_ctl),
 		REG_ADDR(phybl3_idle_pad_ctl),
@@ -318,24 +265,21 @@ static int __init bcm_memc_map_sr_reg_addr(struct platform_device *pdev)
 #endif
 #if defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
 	defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || \
-	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96846) || \
-	defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
 	defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 		REG_ADDR(phybl0_clock_idle),
 		REG_ADDR(phybl1_clock_idle),
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855) || \
+
+#if defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 		REG_ADDR(phybl2_clock_idle),
 		REG_ADDR(phybl3_clock_idle),
 #endif
 #endif
-#ifndef CONFIG_BCM963138
 		REG_ADDR(auto_self_refresh),
 		REG_ADDR(glb_gcfg),
-#else
-		REG_ADDR(chn_tim_dram_cfg),
-#endif
 	};
 
 	for (i = 0; i < ARRAY_SIZE(mra); i++) {
@@ -397,24 +341,23 @@ int __init bcm_memc_init_self_refresh(void *pdev)
 	*mcr_phyctl_idle_pad_ctl = 0xe;
 	*mcr_phyctl_idle_pad_en0 = 0x6df;
 	*mcr_phyctl_idle_pad_en1 = 0x3fffff;
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963178) || \
-	defined(CONFIG_BCM947622) || defined(CONFIG_BCM963146) || \
-	defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96846) || \
-	defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
-	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
-
-	// PhyByteLane0Control.*
-	*mcr_phybl0_idle_pad_ctl = 0xfffe;
-	// PhyByteLane1Control.*
-	*mcr_phybl1_idle_pad_ctl = 0xfffe;
-
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855) || \
+#if defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+	defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
 	defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+	// PhyByteLane0Control.*
+	*mcr_phybl0_idle_pad_ctl |= 0xfffe;
+	// PhyByteLane1Control.*
+	*mcr_phybl1_idle_pad_ctl |= 0xfffe;
+
+#if defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
+	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 	// PhyByteLane2Control.*
-	*mcr_phybl2_idle_pad_ctl = 0xfffe;
+	*mcr_phybl2_idle_pad_ctl |= 0xfffe;
 	// PhyByteLane3Control.*
-	*mcr_phybl3_idle_pad_ctl = 0xfffe;
+	*mcr_phybl3_idle_pad_ctl |= 0xfffe;
 #endif
 
 #endif
@@ -427,8 +370,7 @@ int __init bcm_memc_init_self_refresh(void *pdev)
 #endif
 #if defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
 	defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || \
-	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96846) || \
-	defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
 	defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
 	// PhyByteLane0Control.*
@@ -436,7 +378,8 @@ int __init bcm_memc_init_self_refresh(void *pdev)
 	// PhyByteLane1Control.*
 	*mcr_phybl1_clock_idle = 0x7;
 
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855) || \
+#if defined(CONFIG_BCM94912) || \
+	defined(CONFIG_BCM96813) || defined(CONFIG_BCM96855) || \
 	defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 	// PhyByteLane2Control.*
 	*mcr_phybl2_clock_idle = 0x7;
@@ -445,7 +388,6 @@ int __init bcm_memc_init_self_refresh(void *pdev)
 #endif
 #endif
 
-#ifndef CONFIG_BCM963138
 	if (bcm_memc_get_spd_mhz(&mc_clk_mhz))
 		mc_clk_mhz = 533;
 
@@ -456,7 +398,6 @@ int __init bcm_memc_init_self_refresh(void *pdev)
 	*mcr_auto_self_refresh |= (autosr_thresh_us * mc_clk_mhz) &
 			MEMC_DDR_AUTO_SR_IDLE_CNT_MASK;
 	*mcr_glb_gcfg |= MEMC_GLB_GCFG_SREF_SLOW_CLK_MASK;
-#endif // #ifndef CONFIG_BCM963138
 
 	return 0;
 }

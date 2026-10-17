@@ -1,0 +1,4 @@
+config USB_TCPC
+	bool "USB Typec port controller simple driver"
+	help
+	  Enable USB type-c port controller (TCPC) driver

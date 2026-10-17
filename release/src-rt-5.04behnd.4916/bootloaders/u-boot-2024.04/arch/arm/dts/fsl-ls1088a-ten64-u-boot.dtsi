@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include <config.h>
+
+#include "fsl-ls1088a-u-boot.dtsi"
+
+/{
+	aliases {
+		spi0 = &qspi;
+		ethernet0 = &dpmac7;
+		ethernet1 = &dpmac8;
+		ethernet2 = &dpmac9;
+		ethernet3 = &dpmac10;
+		ethernet4 = &dpmac3;
+		ethernet5 = &dpmac4;
+		ethernet6 = &dpmac5;
+		ethernet7 = &dpmac6;
+		ethernet8 = &dpmac2;
+		ethernet9 = &dpmac1;
+	};
+};
+
+&i2c0 {
+	uc: board-controller@7e {
+		compatible = "traverse,ten64-controller";
+		reg = <0x7e>;
+	};
+};
+

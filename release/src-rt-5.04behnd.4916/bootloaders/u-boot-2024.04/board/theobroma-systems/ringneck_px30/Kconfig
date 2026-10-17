@@ -1,0 +1,19 @@
+if TARGET_RINGNECK_PX30
+
+config SYS_BOARD
+	default "ringneck_px30"
+
+config SYS_VENDOR
+	default "theobroma-systems"
+
+config SYS_CONFIG_NAME
+	default "ringneck_px30"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ENV_IS_NOWHERE
+
+config ENV_SIZE
+	default 0x3000
+
+endif

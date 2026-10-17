@@ -62,6 +62,12 @@ static int board_release(struct inode *inode, struct file *filp)
     return 0;
 }
 
+int eNvramGet(char *param, char *value, int len)
+{
+	return 0;
+}
+EXPORT_SYMBOL(eNvramGet);
+
 unsigned long long kerSysGetSdramSize(void)
 {
    return 256*1024*1024;
@@ -217,7 +223,6 @@ int board_ioctl( struct inode *inode, struct file *flip,
     return ret;
 } /* board_ioctl */
 
-#if defined(HAVE_UNLOCKED_IOCTL)
 static DEFINE_MUTEX(ioctlMutex);
 
 long board_unlocked_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
@@ -233,16 +238,11 @@ long board_unlocked_ioctl(struct file *filep, unsigned int cmd, unsigned long ar
     return rt;
     
 }
-#endif
 
 static struct file_operations board_fops =
 {
     open:       board_open,
-#if defined(HAVE_UNLOCKED_IOCTL)
     unlocked_ioctl: board_unlocked_ioctl,
-#else
-    ioctl:      board_ioctl,
-#endif
 #if defined(CONFIG_COMPAT)
     compat_ioctl: compat_board_ioctl,
 #endif    

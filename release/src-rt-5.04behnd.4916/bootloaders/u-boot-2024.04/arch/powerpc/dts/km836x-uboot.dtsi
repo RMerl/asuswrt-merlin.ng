@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Hitachi Power Grids km836x U-Boot specific Device Tree Source parts
+ *
+ * Copyright (C) 2020 Heiko Schocher <hs@denx.de>
+ *
+ */
+
+/ {
+	cpus {
+		bootph-all;
+		PowerPC,8360@0 {
+			bootph-all;
+		};
+	};
+
+	chosen {
+		stdout-path = &serial0;
+	};
+};
+
+&qe {
+	compatible = "fsl,qe", "simple-bus";
+};
+
+&soc {
+	bootph-all;
+
+	par_io@1400 {
+		bootph-all;
+
+		serial_pin@0 {
+			bootph-all;
+		};
+		ucc_pin@0 {
+			bootph-all;
+		};
+		ucc_pin@1 {
+			bootph-all;
+		};
+		ucc_pin@3 {
+			bootph-all;
+		};
+		ucc_pin@4 {
+			bootph-all;
+		};
+		ucc_pin@5 {
+			bootph-all;
+		};
+		ucc_pin@6 {
+			bootph-all;
+		};
+		ucc_pin@7 {
+			bootph-all;
+		};
+	};
+};
+
+&serial0 {
+	bootph-all;
+};

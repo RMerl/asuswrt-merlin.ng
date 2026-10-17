@@ -1,0 +1,136 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016-2020 Hitachi Power Grids
+ */
+
+#include "socfpga_arria5.dtsi"
+#include "socfpga-common-u-boot.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "Hitachi PG SoC SECU1 Board";
+	compatible = "altr,socfpga-secu1", "altr,socfpga";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "console=ttyS0,115200";
+	};
+
+	memory {
+		name = "memory";
+		device_type = "memory";
+		reg = <0x0 0x20000000>; /* 512MB */
+	};
+
+	aliases {
+		/*
+		 * this allow the ethaddr uboot environment variable contents
+		 * to be added to the gmac0 device tree blob.
+		 */
+		ethernet0 = &gmac0;
+		spi0 = &spi1;
+	};
+
+	bootcount@0 {
+		compatible = "u-boot,bootcount-rtc";
+		rtc = <&rtc>;
+		offset = <0x9e>;
+	};
+
+	i2c_gpio: i2c@0 {
+		compatible = "i2c-gpio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		gpios = <&portc 5 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)	/* SDA */
+			 &portc 6 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN)>;	/* SCL */
+		i2c-gpio,delay-us = <5>;	/* ~100 kHz */
+		i2c-gpio,deblock;
+
+		temp_sensor@48 {
+			compatible = "national,lm75";
+			reg = <0x48>;
+		};
+
+		eeprom@50 {
+			compatible = "at,24c08";
+			reg = <0x50>;
+		};
+
+		rtc: rtc@68 {
+			compatible = "st,m41st87";
+			reg = <0x68>;
+			interrupt-parent = <&intc>;
+			interrupts = <0 42 0x4>;
+		};
+	};
+
+	regulator_3_3v: 3-3-v-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "3.3V";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+};
+
+&gmac0 {
+	status = "okay";
+	phy-mode = "rgmii";
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+&gpio2 {
+	status = "okay";
+};
+
+&mmc0 {
+	vmmc-supply = <&regulator_3_3v>;
+	vqmmc-supply = <&regulator_3_3v>;
+	bus-width = <4>;
+	bootph-all;
+};
+
+&nand0 {
+	status = "okay";
+};
+
+&porta {
+	bank-name = "porta";
+};
+
+&portb {
+	bank-name = "portb";
+};
+
+&portc {
+	bank-name = "portc";
+};
+
+&spi1 {
+	status = "okay";
+};
+
+&uart0 {
+	clock-frequency = <100000000>;
+	bootph-all;
+	status = "okay";
+};
+
+&uart1 {
+	clock-frequency = <100000000>;
+};
+
+&watchdog0 {
+	bootph-all;
+	status = "okay";
+};

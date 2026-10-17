@@ -1,0 +1,191 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright (C) 2020-2021 Intel Corporation <www.intel.com>
+ */
+
+#include "socfpga_soc64_fit-u-boot.dtsi"
+#include <dt-bindings/clock/n5x-clock.h>
+
+/{
+	memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		bootph-all;
+	};
+
+	soc {
+		bootph-all;
+
+		ccu: cache-controller@f7000000 {
+			compatible = "arteris,ncore-ccu";
+			reg = <0xf7000000 0x100900>;
+			bootph-all;
+		};
+
+		clocks {
+			dram_eosc_clk: dram-eosc-clk {
+				#clock-cells = <0>;
+				compatible = "fixed-clock";
+			};
+		};
+
+		memclkmgr: mem-clock-controller@f8040000 {
+			compatible = "intel,n5x-mem-clkmgr";
+			reg = <0xf8040000 0x1000>;
+			#clock-cells = <0>;
+			clocks = <&dram_eosc_clk>, <&f2s_free_clk>;
+		};
+	};
+};
+
+&clkmgr {
+	compatible = "intel,n5x-clkmgr";
+	bootph-all;
+};
+
+&gmac0 {
+	clocks = <&clkmgr N5X_EMAC0_CLK>;
+};
+
+&gmac1 {
+	altr,sysmgr-syscon = <&sysmgr 0x48 0>;
+	clocks = <&clkmgr N5X_EMAC1_CLK>;
+};
+
+&gmac2 {
+	altr,sysmgr-syscon = <&sysmgr 0x4c 0>;
+	clocks = <&clkmgr N5X_EMAC2_CLK>;
+};
+
+&i2c0 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+	reset-names = "i2c";
+};
+
+&i2c1 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+	reset-names = "i2c";
+};
+
+&i2c2 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+	reset-names = "i2c";
+};
+
+&i2c3 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+	reset-names = "i2c";
+};
+
+&i2c4 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+	reset-names = "i2c";
+};
+
+&memclkmgr {
+	bootph-all;
+};
+
+&mmc {
+	clocks = <&clkmgr N5X_L4_MP_CLK>,
+		 <&clkmgr N5X_SDMMC_CLK>;
+	resets = <&rst SDMMC_RESET>, <&rst SDMMC_OCP_RESET>;
+};
+
+&pdma {
+	clocks = <&clkmgr N5X_L4_MAIN_CLK>;
+};
+
+&porta {
+	bank-name = "porta";
+};
+
+&portb {
+	bank-name = "portb";
+};
+
+&qspi {
+	bootph-all;
+};
+
+&rst {
+	compatible = "altr,rst-mgr";
+	altr,modrst-offset = <0x20>;
+	bootph-all;
+};
+
+&sdr {
+	compatible = "intel,sdr-ctl-n5x";
+	resets = <&rst DDRSCH_RESET>;
+	clocks = <&memclkmgr>;
+	clock-names = "mem_clk";
+	bootph-all;
+};
+
+&spi0 {
+	clocks = <&clkmgr N5X_L4_MAIN_CLK>;
+};
+
+&spi1 {
+	clocks = <&clkmgr N5X_L4_MAIN_CLK>;
+};
+
+&sysmgr {
+	compatible = "altr,sys-mgr", "syscon";
+	bootph-all;
+};
+
+&timer0 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+};
+
+&timer1 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+};
+
+&timer2 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+};
+
+&timer3 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+};
+
+&uart0 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+	bootph-all;
+};
+
+&uart1 {
+	clocks = <&clkmgr N5X_L4_SP_CLK>;
+};
+
+&usb0 {
+	clocks = <&clkmgr N5X_USB_CLK>;
+	disable-over-current;
+	bootph-all;
+};
+
+&usb1 {
+	clocks = <&clkmgr N5X_USB_CLK>;
+	bootph-all;
+};
+
+&watchdog0 {
+	clocks = <&clkmgr N5X_L4_SYS_FREE_CLK>;
+	bootph-all;
+};
+
+&watchdog1 {
+	clocks = <&clkmgr N5X_L4_SYS_FREE_CLK>;
+};
+
+&watchdog2 {
+	clocks = <&clkmgr N5X_L4_SYS_FREE_CLK>;
+};
+
+&watchdog3 {
+	clocks = <&clkmgr N5X_L4_SYS_FREE_CLK>;
+};

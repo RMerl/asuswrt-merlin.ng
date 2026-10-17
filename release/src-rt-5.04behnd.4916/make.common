@@ -36,8 +36,8 @@ endif
 
 
 # Staring in 5.04L04, the build system will start to add support for
-# "Modular Build".  The support will not be complete by 5.04L04, but major
-# chunks of it will be in place.  
+# "Modular Build".  The support is not complete, but all userspace directories
+# under /packages will support it.)
 # 3 new build variables will be introduced:
 # - BCM_MODULAR_BUILD (either not defined, or defined, preferably "y").
 # - EXT_BUILD_DIR
@@ -46,15 +46,29 @@ endif
 # needs to change.  Just build as you normally do.  BCM_MODULAR_BUILD will not
 # be set, and EXT_BUILD_DIR and EXT_DEVICEFS_DIR will be automatically set
 # to the correct (old) locations.
-# For developers who want to use Modular Build, these 3 variables must be set.
-# e.g. make PROFILE=963158G BCM_MODULAR_BUILD=y EXT_BUILD_DIR=/work/build EXT_DEVICEFS_DIR=/work/devicefs
-# (Support for Modular Build is not complete, so simply setting these
-# variables now will not work.)
+# For developers who want to use Modular Build, BCM_MODULAR_BUILD and
+# EXT_BUILD_DIR must be set,
+# e.g. make PROFILE=963158G BCM_MODULAR_BUILD=y EXT_BUILD_DIR=/work/build
+# Optionally, if you also want the final binary to be installed in a
+# different location, you can set EXT_DEVICEFS_DIR.  Otherwise, it
+# will default to the original location under targets/<profile>/fs.install
 
 ifeq ($(BCM_MODULAR_BUILD),)
 # old way: point new variables at the old places
 EXT_BUILD_DIR    = $(BUILD_DIR)
 EXT_DEVICEFS_DIR = $(BUILD_DIR)/targets/$(PROFILE)/fs.install
+endif
+
+
+# BCM_PKGDIR is the location of files that will eventually be migrated to a
+# separate git repo.  The idea is that our build system will check out the git
+# repo to this directory, and our build system will build the code from there.
+# If BCM_PKGDIR is not set (the default), it will automatically point to the
+# packages dir at the top level, but in theory, could be set to any directory,
+# e.g. make PROFILE=963158G BCM_PKGDIR=/mygitdirs/pkgs
+
+ifeq ($(BCM_PKGDIR),)
+BCM_PKGDIR = $(BUILD_DIR)/packages
 endif
 
 
@@ -82,6 +96,10 @@ LAST_PROFILE        := $(strip $(shell cat $(LAST_PROFILE_COOKIE) 2>/dev/null))
 endif #LAST_PROFILE is not set
 
 export HOST_PERLARCH HOST_PERLARCH_COOKIE LAST_PROFILE_COOKIE LAST_PROFILE
+# env variables below are used by Kconfig.bcmconfig in the kernel/linux-x.y folder
+# kernel souce in the git uses this so non BCM_KF can build
+export KCONFIG_BCM_KF_PATH=$(BUILD_DIR)/kernel/bcmkernel/
+export KCONFIG_BCMDRIVER_PATH=$(BUILD_DIR)/kernel/bcmkernel/
 
 ifeq ($(strip $(PROFILE)),)
 PROFILE=$(LAST_PROFILE)
@@ -111,538 +129,7 @@ ifneq ($(MAKECMDGOALS), menuconfig)
 include $(PROFILE_FILE)
 
 
-
-# When building multi-architecture, CURRENT_ARCH will override PROFILE_ARCH 
-# CURRENT_ARCH switches architectures i.e 64-bit vs 32-bit. It has valid compile time
-# values of 'arm' or 'aarch64'. These values will be mapped to proper PROFILE_ARCH
-# values :
-#           'arm'    - 32-bit arm with software based floating point using soft float ABI
-#           'armsfp' - 32-bit arm with hardware based floating point using soft float ABI
-#           'armhfp' - 32-bit arm with hardware based floating point using hard float ABI
-#           'aarch64'- 64-bit arm cores with hardware based floating point 
-ORIG_PROFILE_ARCH := $(PROFILE_ARCH)
-ifneq ($(strip $(CURRENT_ARCH)),)
-
-# For 32-bit, if we have soft-fp or hard-fp target, override
-# CURRENT_ARCH to reflect current target
-ifeq ($(strip $(PROFILE_ARCH)),armhfp)
-ifeq ($(strip $(CURRENT_ARCH)),arm)
-override CURRENT_ARCH := $(PROFILE_ARCH)
-endif
-endif
-
-ifeq ($(strip $(PROFILE_ARCH)),armsfp)
-ifeq ($(strip $(CURRENT_ARCH)),arm)
-override CURRENT_ARCH := $(PROFILE_ARCH)
-endif
-endif
-
-PROFILE_ARCH := $(CURRENT_ARCH)
-TOOLCHAIN_PREFIX :=
-TOOLCHAIN_TOP :=
-
-endif  #CURRENT_ARCH
-
-# When building multi-architecture, CURRENT_KARCH will override PROFILE_KARCH 
-# CURRENT_KARCH switches architectures i.e 64-bit vs 32-bit. It has valid compile time
-# values of 'arm' or 'aarch64'. These values will be mapped to proper PROFILE_KARCH
-# values :
-#           'arm'    - 32-bit arm with software based floating point using soft float ABI
-#           'armsfp' - 32-bit arm with hardware based floating point using soft float ABI
-#           'armhfp' - 32-bit arm with hardware based floating point using hard float ABI
-#           'aarch64'- 64-bit arm cores with hardware based floating point 
-ifneq ($(strip $(CURRENT_KARCH)),)
-
-# For 32-bit, if we have soft-fp or hard-fp target, override
-# CURRENT_KARCH to reflect current target
-ifeq ($(strip $(PROFILE_KARCH)),armhfp)
-ifeq ($(strip $(CURRENT_KARCH)),arm)
-CURRENT_KARCH := $(PROFILE_KARCH)
-endif
-endif
-
-ifeq ($(strip $(PROFILE_KARCH)),armsfp)
-ifeq ($(strip $(CURRENT_KARCH)),arm)
-CURRENT_KARCH := $(PROFILE_KARCH)
-endif
-endif
-
-ORIG_PROFILE_KARCH := $(PROFILE_KARCH)
-PROFILE_KARCH := $(CURRENT_KARCH)
-KTOOLCHAIN_PREFIX :=
-
-endif  #CURRENT_KARCH
-
-ifndef TOOLCHAIN_BASE
-ifeq ($(strip $(DESKTOP_LINUX)),)
-TOOLCHAIN_BASE := /opt/toolchains/
-endif # DESKTOP_LINUX eq empty
-endif
-
-ifeq ($(strip $(RDK_BUILD)),y)
-  # When using Broadcom toolchain along with an alternate toolchain
-  # TODO: Remove as not needed with new ALT_TOOLCHAIN features
-  BRCM_TOOLCHAIN_BASE:=$(subst $\",,$(BRCM_TOOLCHAIN_BASE))
-endif
-
-# Define variables for Alternate toolchain if configured
-ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN)),y)
-  ifndef BRCM_ALT_TOOLCHAIN_BASE
-    ALT_TOOLCHAIN_BASE = $(TOOLCHAIN_BASE)
-  else
-    ifneq ($(strip $(BRCM_ALT_TOOLCHAIN_BASE)),"")
-      ALT_TOOLCHAIN_BASE  := $(subst $\",,$(strip $(BRCM_ALT_TOOLCHAIN_BASE)))
-    else
-      ALT_TOOLCHAIN_BASE = $(TOOLCHAIN_BASE)
-    endif
-  endif
-
-  ALT_ARM_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_TOPDIR)))
-  ALT_ARM_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_PREFIX)))
-  ALT_ARM_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_BIN_PREFIX)))
-  ALT_ARM_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_SYSROOT_DIR)))
-  ALT_ARM_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_ARM_TOOLCHAIN_VER)))
-  ALT_ARM_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_ARM_TOOLCHAIN_TOPDIR)
-  ALT_ARM_TOOLCHAIN_LIBDIR := $(ALT_ARM_TOOLCHAIN_PREFIX)/$(ALT_ARM_TOOLCHAIN_SYSROOT_DIR)/lib
-  ALT_ARM_TOOLCHAIN_INCDIR := $(ALT_ARM_TOOLCHAIN_PREFIX)/$(ALT_ARM_TOOLCHAIN_SYSROOT_DIR)/usr/include
-
-  ALT_ARMSFP_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_TOPDIR)))
-  ALT_ARMSFP_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_PREFIX)))
-  ALT_ARMSFP_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_BIN_PREFIX)))
-  ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR)))
-  ALT_ARMSFP_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_ARMSFP_TOOLCHAIN_VER)))
-  ALT_ARMSFP_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_ARMSFP_TOOLCHAIN_TOPDIR)
-  ALT_ARMSFP_TOOLCHAIN_LIBDIR := $(ALT_ARMSFP_TOOLCHAIN_PREFIX)/$(ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR)/lib
-  ALT_ARMSFP_TOOLCHAIN_INCDIR := $(ALT_ARMSFP_TOOLCHAIN_PREFIX)/$(ALT_ARMSFP_TOOLCHAIN_SYSROOT_DIR)/usr/include
-  
-  ALT_ARMHFP_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_TOPDIR)))
-  ALT_ARMHFP_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_PREFIX)))
-  ALT_ARMHFP_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_BIN_PREFIX)))
-  ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR)))
-  ALT_ARMHFP_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_ARMHFP_TOOLCHAIN_VER)))
-  ALT_ARMHFP_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_ARMHFP_TOOLCHAIN_TOPDIR)
-  ALT_ARMHFP_TOOLCHAIN_LIBDIR := $(ALT_ARMHFP_TOOLCHAIN_PREFIX)/$(ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR)/lib
-  ALT_ARMHFP_TOOLCHAIN_INCDIR := $(ALT_ARMHFP_TOOLCHAIN_PREFIX)/$(ALT_ARMHFP_TOOLCHAIN_SYSROOT_DIR)/usr/include
-  
-  ALT_AARCH64_TOOLCHAIN_TOPDIR := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_TOPDIR)))
-  ALT_AARCH64_TOOLCHAIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_PREFIX)))
-  ALT_AARCH64_TOOLCHAIN_BIN_PREFIX := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_BIN_PREFIX)))
-  ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR)))
-  ALT_AARCH64_TOOLCHAIN_VER    := $(subst $\",,$(strip $(BRCM_ALT_AARCH64_TOOLCHAIN_VER)))
-  ALT_AARCH64_TOOLCHAIN_TOP    := $(ALT_TOOLCHAIN_BASE)/$(ALT_AARCH64_TOOLCHAIN_TOPDIR)
-  ALT_AARCH64_TOOLCHAIN_LIBDIR := $(ALT_AARCH64_TOOLCHAIN_PREFIX)/$(ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR)/lib
-  ALT_AARCH64_TOOLCHAIN_INCDIR := $(ALT_AARCH64_TOOLCHAIN_PREFIX)/$(ALT_AARCH64_TOOLCHAIN_SYSROOT_DIR)/usr/include
-  
-  export ALT_ARM_TOOLCHAIN_PREFIX
-  export ALT_ARM_TOOLCHAIN_TOP   
-  export ALT_AARCH64_TOOLCHAIN_PREFIX
-  export ALT_AARCH64_TOOLCHAIN_TOP   
-endif
-
-#
-# Get Toolchain versions based
-# on profile
-#
-
-# RDK builds pretty much disables ALT Toolchain logic
-# it uses the ALT_ARM_xx variables, but then hardcodes
-# several other variables in make.common
-# TODO: Make RDK use proper ALT_TOOLCHAIN logic instead
-# of hardcoding variables in make.common, since we now
-# have separate user/kernel ALT_TOOLCHAINS
-ifeq ($(strip $(RDK_BUILD)),)
-  ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN)),y)
-    ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN_USER)),)
-      BRCM_USE_ALT_TOOLCHAIN_USER := y
-    endif
-    ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN_KERNEL)),)
-      BRCM_USE_ALT_TOOLCHAIN_KERNEL := y
-    endif
-  endif
-endif
-
-# for ARM, Linux 4.19
-ifeq ($(strip $(RDK_BUILD)),y)
-  #RDK needs two ARM toolchains in SoC using ARM7
-  #ARM - RDK toolchain for userspace
-  #ARM_2 BRCM toolchain for kernel space
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_ARM        := $(ALT_ARM_TOOLCHAIN_TOP)
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_ARM    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_ARM         := $(ALT_ARM_TOOLCHAIN_PREFIX)
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_ARM         := usr/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_ARM         := usr/include
-  
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_ARMSFP        := $(ALT_ARM_TOOLCHAIN_TOP)
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_ARMSFP    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMSFP         := $(ALT_ARM_TOOLCHAIN_PREFIX)
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_ARMSFP         := usr/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_ARMSFP         := usr/include
-  
-  # arm-softfp toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_ARMSFP_2       := $(BRCM_TOOLCHAIN_BASE)/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_ARMSFP_2    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMSFP_2         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_ARMSFP_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMSFP_2)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_ARMSFP_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMSFP_2)/sysroot/usr/include
-  
-  # arm-soft toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_ARM_2       := $(BRCM_TOOLCHAIN_BASE)/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_ARM_2    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_ARM_2         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_ARM_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARM_2)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_ARM_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARM_2)/sysroot/usr/include
-
-else
-
-  # arm-hfp toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_ARMHFP        := $(TOOLCHAIN_BASE)/crosstools-arm_hf-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_ARMHFP    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMHFP         := arm-buildroot-linux-gnueabihf
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_ARMHFP         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMHFP)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_ARMHFP         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMHFP)/sysroot/usr/include
-  
-  # arm-softfp toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_ARMSFP        := $(TOOLCHAIN_BASE)/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_ARMSFP    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMSFP         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_ARMSFP         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMSFP)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_ARMSFP         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARMSFP)/sysroot/usr/include
-  
-  # Soft-float toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_ARM        := $(TOOLCHAIN_BASE)/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_ARM    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_ARM         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_ARM         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARM)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_ARM         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_ARM)/sysroot/usr/include
-
-endif
-
-# for AARCH64, Linux 4.19
-ifeq ($(strip $(RDK_BUILD)),y)
-  #RDK build, using BRCM toolchain for kernel space in specified location
-  #In RDK 64bit
-  #AARCH64 - RDK toolchain for userspace
-  #AARCH64_2 - BRCM toolchain for kernel
-
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_AARCH64        := $(ALT_AARCH64_TOOLCHAIN_TOP)
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_AARCH64    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64         := $(ALT_AARCH64_TOOLCHAIN_PREFIX)
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_AARCH64         := usr/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_AARCH64         := usr/include
-
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_AARCH64_2       := $(BRCM_TOOLCHAIN_BASE)/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_AARCH64_2    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64_2         := aarch64-buildroot-linux-gnu
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_AARCH64_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_AARCH64_2         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/usr/include
-else
-
-  DEFAULT_TOOLCHAIN_LINUX_4_19_0_AARCH64        := $(TOOLCHAIN_BASE)/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_4_19_0_AARCH64    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64         := aarch64-buildroot-linux-gnu
-  TOOLCHAIN_LIBDIR_LINUX_4_19_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_4_19_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_4_19_0_AARCH64)/sysroot/usr/include
-
-endif
-
-LINUX_ZIP_FILE_LINUX_4_19_0         := src-linux-4.19.tar.gz
-LINUX_SUB_DIR_LINUX_4_19_0          := linux-4.19
-LINUX_VER_STR_LINUX_4_19_0          := 4.19.294
-
-
-# for ARM, Linux 5.15
-ifeq ($(strip $(RDK_BUILD)),y)
-  #RDK needs two ARM toolchains in SoC using ARM7
-  #ARM - RDK toolchain for userspace
-  #ARM_2 BRCM toolchain for kernel space
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM        := $(ALT_ARM_TOOLCHAIN_TOP)
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARM    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM         := $(ALT_ARM_TOOLCHAIN_PREFIX)
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARM         := usr/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARM         := usr/include
-  
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMSFP        := $(ALT_ARM_TOOLCHAIN_TOP)
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMSFP    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP         := $(ALT_ARM_TOOLCHAIN_PREFIX)
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMSFP         := usr/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMSFP         := usr/include
-  
-  # arm-softfp toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMSFP_2       := $(BRCM_TOOLCHAIN_BASE)/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMSFP_2    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP_2         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMSFP_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP_2)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMSFP_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP_2)/sysroot/usr/include
-  
-  # arm-soft toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM_2       := $(BRCM_TOOLCHAIN_BASE)/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARM_2    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM_2         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARM_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM_2)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARM_2         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM_2)/sysroot/usr/include
-
-else
-
-  # arm-hfp toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMHFP        := $(TOOLCHAIN_BASE)/crosstools-arm_hf-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMHFP    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP         := arm-buildroot-linux-gnueabihf
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMHFP         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMHFP         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMHFP)/sysroot/usr/include
-  
-  # arm-softfp toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARMSFP        := $(TOOLCHAIN_BASE)/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARMSFP    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARMSFP         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARMSFP         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARMSFP)/sysroot/usr/include
-  
-  # Soft-float toolchain 
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM        := $(TOOLCHAIN_BASE)/crosstools-arm-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_ARM    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM         := arm-buildroot-linux-gnueabi
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_ARM         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_ARM         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_ARM)/sysroot/usr/include
-
-endif
-
-# for AARCH64, Linux 4.19
-ifeq ($(strip $(RDK_BUILD)),y)
-  #RDK build, using BRCM toolchain for kernel space in specified location
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_AARCH64        := $(BRCM_TOOLCHAIN_BASE)/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_AARCH64    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64         := aarch64-buildroot-linux-gnu
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/usr/include
-
-else
-
-  DEFAULT_TOOLCHAIN_LINUX_5_15_0_AARCH64        := $(TOOLCHAIN_BASE)/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1
-  DEFAULT_TOOLCHAIN_VER_LINUX_5_15_0_AARCH64    := 10.3.0
-  TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64         := aarch64-buildroot-linux-gnu
-  TOOLCHAIN_LIBDIR_LINUX_5_15_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/lib
-  TOOLCHAIN_INCDIR_LINUX_5_15_0_AARCH64         := $(TOOLCHAIN_PREFIX_LINUX_5_15_0_AARCH64)/sysroot/usr/include
-
-endif
-
-LINUX_ZIP_FILE_LINUX_5_15_0         := none
-LINUX_SUB_DIR_LINUX_5_15_0          := linux-5.15
-LINUX_VER_STR_LINUX_5_15_0          := 5.15.94
-
-# set up userspace build tool arch
-# USER_ARCH - Differentiates between 64/32-bit, valid values 'arm' 'aarch64'
-# ARCHCAP   - Used to pick toolchain, valid values 'ARM' 'ARMHFP' 'ARMSFP' 'AARCH64'
-ARCH_ENDIAN := little
-export BRCM_ENDIAN_FLAGS := -l
-
-ifeq ($(strip $(PROFILE_ARCH)),armhfp)
-  ARCHCAP := ARMHFP
-  ARCH :=DEPRECATED_use_USER_ARCH
-  USER_ARCH := arm
-endif
-
-ifeq ($(strip $(PROFILE_ARCH)),armsfp)
-  ARCHCAP := ARMSFP
-  ARCH :=DEPRECATED_use_USER_ARCH
-  USER_ARCH := arm
-endif
-
-ifeq ($(strip $(PROFILE_ARCH)),arm)
-  ARCHCAP := ARM
-  ARCH :=DEPRECATED_use_USER_ARCH
-  USER_ARCH := arm
-endif
-
-ifeq ($(strip $(PROFILE_ARCH)),aarch64)
-  ARCHCAP := AARCH64
-  ARCH :=DEPRECATED_use_USER_ARCH
-  USER_ARCH := aarch64
-endif
-
-ifeq ($(strip $(PROFILE_ARCH)),i386)
-  ARCHCAP := I386
-  ARCH :=DEPRECATED_use_USER_ARCH
-  USER_ARCH := i386
-endif
-
-ifeq ($(strip $(DESKTOP_LINUX)),y)
-  ifeq ($(shell uname -m),x86_64)
-    ARCHCAP := X86_64
-    # uncomment the next two lines to have 64-bit compiling environment if the build machine is a 64-bit system
-    # ARCH :=DEPRECATED_use_USER_ARCH
-    # USER_ARCH := x86_64
-  endif
-  ifeq ($(shell uname -m),i686)
-    ARCHCAP := I686
-    ARCH :=DEPRECATED_use_USER_ARCH
-    USER_ARCH := i686
-  endif
-endif
-
-# set up kernel build tool arch, if PROFILE_KARCH not specified, kernel use the same as user PROFILE_ARCH
-# KERNEL_ARCH - Differentiates between 64/32-bit kernel, valid values 'arm' 'aarch64
-# KARCHCAP    - Used to pick toolchain, valid values 'ARM' 'ARMHFP' 'ARMSFP' 'AARCH64'
-# KARCH       - Used to set 'ARCH' for kernel build. Used for kernel includes. Valid values 'arm' 'arm64'
-ifeq ($(strip $(PROFILE_KARCH)),)
-  PROFILE_KARCH := $(PROFILE_ARCH)
-endif
-
-ifeq ($(strip $(PROFILE_KARCH)),armhfp)
-  ifeq ($(strip $(RDK_BUILD)),)
-    KARCHCAP := ARMHFP
-  else
-    KARCHCAP := ARMHFP_2
-  endif
-  KARCH := arm
-  KERNEL_ARCH := arm
-endif
-
-ifeq ($(strip $(PROFILE_KARCH)),armsfp)
-  ifeq ($(strip $(RDK_BUILD)),)
-    KARCHCAP := ARMSFP
-  else
-    KARCHCAP := ARMSFP_2
-  endif
-  KARCH := arm
-  KERNEL_ARCH := arm
-endif
-
-ifeq ($(strip $(PROFILE_KARCH)),arm)
-  ifeq ($(strip $(RDK_BUILD)),)
-    KARCHCAP := ARM
-  else
-    KARCHCAP := ARM_2
-  endif
-  KARCH := arm
-  KERNEL_ARCH := arm
-endif
-
-ifeq ($(strip $(PROFILE_KARCH)),aarch64)
-  ifeq ($(strip $(RDK_BUILD)),)
-	KARCHCAP := AARCH64
-  else
-	KARCHCAP := AARCH64_2
-  endif
-  # Linux Kernel names 64-bit as arm64 instead of aarch64
-  KARCH := arm64
-  KERNEL_ARCH := aarch64
-endif
-ifeq ($(strip $(KERNEL_ARCH)),i386)
-  KARCHCAP := I386
-  KARCH := i386
-  KERNEL_ARCH := i386
-endif
-
-ifeq ($(strip $(DESKTOP_LINUX)),y)
-  ifeq ($(shell uname -m),x86_64)
-    KARCHCAP := X86
-    KARCH := x86
-    KERNEL_ARCH := x86
-  endif
-  ifeq ($(shell uname -m),i686)
-    KARCHCAP := I686
-    KARCH := i686
-    KERNEL_ARCH := x86
-  endif
-endif
-
-#
-# ---  FINAL USERSPACE TOOLCHAIN DETERMINATION
-#
-ifeq ($(PROFILE_KERNEL_VER),)
-  $(error KERNEL VERSION not specified in profile $(PROFILE_FILE))
-endif
-
-ifndef TOOLCHAIN_TOP
-  ifeq ($(BRCM_USE_ALT_TOOLCHAIN_USER),y)
-    TOOLCHAIN_TOP := ${ALT_${ARCHCAP}_TOOLCHAIN_TOP}
-  else
-    TOOLCHAIN_TOP := ${DEFAULT_TOOLCHAIN_${PROFILE_KERNEL_VER}_${ARCHCAP}}
-  endif
-endif
-
-ifeq ($(strip $(RDK_BUILD)),)
-  # Older toolchains have a toplevel usr under which lie all the bins, includes and libs, if it exists then use it
-  TOOLCHAIN_USR_DIR := $(shell if test -d $(TOOLCHAIN_TOP)/usr ; then echo "usr"; else echo ""; fi; )
-endif
-
-ifeq ($(BRCM_USE_ALT_TOOLCHAIN_USER),y)
-  TOOLCHAIN_VER    := ${ALT_${ARCHCAP}_TOOLCHAIN_VER}
-  TOOLCHAIN_LIBDIR := ${ALT_${ARCHCAP}_TOOLCHAIN_LIBDIR}
-  TOOLCHAIN_INCDIR := ${ALT_${ARCHCAP}_TOOLCHAIN_INCDIR}
-  TOOLCHAIN_PREFIX := ${ALT_${ARCHCAP}_TOOLCHAIN_PREFIX}
-
-  # If the BIN_PREFIX is not specified, simply use PREFIX instead
-  ifeq ($(strip ${ALT_${ARCHCAP}_TOOLCHAIN_BIN_PREFIX}),)
-    TOOLCHAIN_BIN_PREFIX := ${ALT_${ARCHCAP}_TOOLCHAIN_PREFIX}
-  else 
-    TOOLCHAIN_BIN_PREFIX := ${ALT_${ARCHCAP}_TOOLCHAIN_BIN_PREFIX}
-  endif
-else
-   TOOLCHAIN_VER    := ${DEFAULT_TOOLCHAIN_VER_${PROFILE_KERNEL_VER}_${ARCHCAP}}
-   TOOLCHAIN_LIBDIR := ${TOOLCHAIN_LIBDIR_${PROFILE_KERNEL_VER}_${ARCHCAP}}
-   TOOLCHAIN_INCDIR := ${TOOLCHAIN_INCDIR_${PROFILE_KERNEL_VER}_${ARCHCAP}}
-   TOOLCHAIN_PREFIX := ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${ARCHCAP}}
-   TOOLCHAIN_BIN_PREFIX := ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${ARCHCAP}}
-endif   
-export TOOLCHAIN_PREFIX
-
-ifeq ($(strip $(RDK_BUILD)),y)
-  TOOLCHAIN_SYSROOT := $(TOOLCHAIN_TOP)
-else ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN_USER)),y)
-  TOOLCHAIN_SYSROOT := $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX)/${ALT_${ARCHCAP}_TOOLCHAIN_SYSROOT_DIR}
-else
-  TOOLCHAIN_SYSROOT := $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX)/sysroot
-endif
-
-
-#
-# ---  FINAL KERNELSPACE TOOLCHAIN DETERMINATION
-#
-LINUX_VER_STR    := ${LINUX_VER_STR_${PROFILE_KERNEL_VER}}
-
-ifndef KTOOLCHAIN_TOP
-  ifeq ($(BRCM_USE_ALT_TOOLCHAIN_KERNEL),y)
-    KTOOLCHAIN_TOP := ${ALT_${KARCHCAP}_TOOLCHAIN_TOP}
-  else
-    KTOOLCHAIN_TOP := ${DEFAULT_TOOLCHAIN_${PROFILE_KERNEL_VER}_${KARCHCAP}}
-  endif
-endif
-
-ifeq ($(strip $(RDK_BUILD)),)
-  # Older toolchains have a toplevel usr under which lie all the bins, includes and libs, if it exists then use it
-  KTOOLCHAIN_USR_DIR := $(shell if test -d $(KTOOLCHAIN_TOP)/usr ; then echo "usr"; else echo ""; fi; )
-endif
-
-ifeq ($(BRCM_USE_ALT_TOOLCHAIN_KERNEL),y)
-  KTOOLCHAIN_VER   := ${ALT_${KARCHCAP}_TOOLCHAIN_VER}
-  KTOOLCHAIN_PREFIX:= ${ALT_${KARCHCAP}_TOOLCHAIN_PREFIX}
-
-  # If the BIN_PREFIX is not specified, simply use PREFIX instead
-  ifeq ($(strip ${ALT_${KARCHCAP}_TOOLCHAIN_BIN_PREFIX}),)
-    KTOOLCHAIN_BIN_PREFIX := ${ALT_${KARCHCAP}_TOOLCHAIN_PREFIX}
-  else 
-    KTOOLCHAIN_BIN_PREFIX := ${ALT_${KARCHCAP}_TOOLCHAIN_BIN_PREFIX}
-  endif
-else
-  KTOOLCHAIN_VER   := ${DEFAULT_TOOLCHAIN_VER_${PROFILE_KERNEL_VER}_${KARCHCAP}}
-  KTOOLCHAIN_PREFIX:= ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${KARCHCAP}}
-  KTOOLCHAIN_BIN_PREFIX:= ${TOOLCHAIN_PREFIX_${PROFILE_KERNEL_VER}_${KARCHCAP}}
-endif
-
-#                                                                                
-# ---  FINAL USERSPACE LIB INSTALL SUFFIX DETERMINATION                          
-#                                                                                
-ifneq ($(strip $(PROFILE_ARCH)),$(strip $(ORIG_PROFILE_ARCH)))
-# If userspace is by default 32bit, then 64bit libs are installed in lib/aarch64 
-# If userspace is by default 64bit, then 32bit libs are installed in lib/arm
-BCM_INSTALL_SUFFIX := $(USER_ARCH)
-BCM_INSTALL_SUFFIX_DIR := /$(BCM_INSTALL_SUFFIX)
-else
-# PROFILE_ARCH == ORIG_PROFILE_ARCH
-BCM_INSTALL_SUFFIX :=
-BCM_INSTALL_SUFFIX_DIR :=
-endif
+include $(BUILD_DIR)/make.toolchain
 
 pbuildvar:
 	@echo ""
@@ -672,7 +159,6 @@ pbuildvar:
 	@echo "BCM_INSTALL_SUFFIX_DIR        : ${BCM_INSTALL_SUFFIX_DIR}"
 	@echo "----------------------------"
 	@echo ""
-
 
 CONFIG_BCM_KERNEL_CUSTOM:=y
 BCM_KF:=y
@@ -727,7 +213,6 @@ endif #menuconfig
 #
 ###########################################
 
-BL_BUILD_DIR=$(BUILD_DIR)/cfe/build/broadcom/bcm63xx_rom
 BRCM_BOARD := bcm963xx
 BRCMDRIVERS_DIR = $(BUILD_DIR)/bcmdrivers
 
@@ -741,7 +226,7 @@ ifeq ($(strip $(BRCM_CHIP)),63148)
 endif
 
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_63158_6856_6878_63146_4912_6813_6855_6888_6837_68880_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63158_6856_63146_4912_6813_6855_6888_6837_68880_68375_68850_),)
 export BRCM_FULL_CHIP_NAME=$(strip $(BRCM_CHIP)$(subst $\",,$(BRCM_CHIP_REV)))
 endif
 
@@ -753,44 +238,10 @@ ifeq ($(strip $(BRCM_XDSL_DISTPOINT_USE_G9991)),)
     else
         ifeq ($(strip $(BUILD_RDPA_FC)),y)
             RDP_PROJECT=PON_6858_FC
-            ifeq ($(strip $(BUILD_RDPA_PRV)),y)
-                RDP_PROJECT2=PON_6858_PRV
-            endif
-        else
-            RDP_PROJECT=PON_6858_PRV
-        endif
-    endif
-else
-    RDP_PROJECT=PON_6858_G9991
-endif
-else
-endif
-
-ifeq ($(strip $(BRCM_CHIP)),4908)
-ifneq ($(strip $(BUILD_HND_EAP)),)
-    RDP_PROJECT=WL4908_EAP
-else
-    RDP_PROJECT=WL4908
-endif
-endif
-
-ifeq ($(strip $(BRCM_CHIP)),6846)
-    ifneq (,$(filter y,$(BRCM_GPON_HGU) $(BRCM_EPON_HGU)))
-        RDP_PROJECT=PON_6846_FC
-    else
-        ifeq ($(strip $(BUILD_RDPA_FC)),y)
-            RDP_PROJECT=PON_6846_FC
-            ifeq ($(strip $(BUILD_RDPA_PRV)),y)
-                RDP_PROJECT2=PON_6846_PRV
-            endif
-        else
-            RDP_PROJECT=PON_6846_PRV
         endif
     endif
 endif
-
-ifeq ($(strip $(BRCM_CHIP)),6878)
-    RDP_PROJECT=PON_6878_FC
+else
 endif
 
 ifeq ($(strip $(BRCM_CHIP)),6813)
@@ -819,11 +270,6 @@ ifeq ($(strip $(BRCM_CHIP)),6856)
     else
         ifeq ($(strip $(BUILD_RDPA_FC)),y)
             RDP_PROJECT=PON_6856_FC
-            ifeq ($(strip $(BUILD_RDPA_PRV)),y)
-                RDP_PROJECT2=PON_6856_PRV
-            endif
-        else
-            RDP_PROJECT=PON_6856_PRV
         endif
     endif
 endif
@@ -849,6 +295,14 @@ ifeq ($(strip $(BRCM_CHIP)),6837)
     RDP_PROJECT=PON_6837_FC
 endif
 
+ifeq ($(strip $(BRCM_CHIP)),68375)
+    RDP_PROJECT=PON_68375_FC
+endif
+
+ifeq ($(strip $(BRCM_CHIP)),68850)
+    RDP_PROJECT=PON_6885_FC
+endif
+
 ifneq ($(strip $(RDP_PROJECT)),)
 PROJECT_DIR = $(RDPSDK_DIR)/projects/$(RDP_PROJECT)
 RDP_PROJECT_DIR_RELATIVE = ../../rdp/projects/$(RDP_PROJECT)
@@ -864,54 +318,13 @@ DEFAULTCFG_DIR = $(TARGETS_DIR)/defaultcfg
 FSSRC_DIR = $(TARGETS_DIR)/fs.src
 
 # nor flash ()
-ifeq ($(strip $(BUILD_DYNAMIC_CFE)),y)
-# build on the fly
-CFE_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferom_nor/cfe$(BRCM_CHIP).bin
-CFESEC_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferomsec_nor/cfesec$(BRCM_CHIP).bin
-else
-# not build-on-the-fly
-CFE_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP).bin
-CFESEC_FILE = $(TARGETS_DIR)/cfe/cfesec$(BRCM_CHIP).bin
-endif
-
 ifeq ($(strip $(SECURE_BOOT_ARCH)),GEN3)
 include $(BUILD_DIR)/build/sec.mk
 else
 include $(BUILD_DIR)/build/sec.gen2.mk
 endif
-ifeq ($(strip $(BUILD_DYNAMIC_CFE)),y)
-# build on the fly
-export CFE_ROM_XIP = $(BUILD_DIR)/cfe/build/broadcom/build_cferom_nand_xip/cfe$(BRCM_CHIP)rom.bin
-CFE_ROM_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferom_nand/cfe$(BRCM_CHIP)rom.bin
-CFE_ROM_EMMC_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferom_emmc/cfe$(BRCM_CHIP)rom.bin
-CFE_RAM_EMMC_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferam_emmc/cfe$(BRCM_CHIP)ram.bin
-
-CFE_RAM_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferam_nand/cfe$(BRCM_CHIP)ram.bin
-
-else
-# not build-on-the-fly
-CFE_ROM_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)rom.bin
-export CFE_ROM_XIP = $(CFE_ROM_FILE)
-
-ifeq ($(find $(strip $(BRCM_FULL_CHIP_NAME))),6858B0)
-CFE_ROM_EMMC_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)rom_emmc.bin
-CFE_RAM_EMMC_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)ram_emmc_b0.bin
-else
-CFE_ROM_EMMC_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)rom_emmc.bin
-CFE_RAM_EMMC_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)ram_emmc.bin
-endif
-
-CFE_RAM_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)ram.bin
-
-# end not build-on-the-fly
-endif
-
 BUILD_SBI_UNSEC=$(HOSTTOOLS_DIR)/imagetools/image.sbi --smode "UNSEC"
 
-
-ifeq ($(strip $(BRCM_CHIP)),4908)
-PRE_CFE_ROM = --precferom $(TARGETS_DIR)/cfe/precfe$(BRCM_CHIP)rom.bin
-endif
 
 BRCM_DTB = 9$(BRCM_CHIP).dtb
 DTB_DIR = $(DTS_DIR)/dts/$(BRCM_CHIP)
@@ -923,6 +336,7 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 GENDEFCONFIG_CMD = $(HOSTTOOLS_DIR)/scripts/gendefconfig
 
 USERSPACE_PUBLIC_LIBS_DIR=$(BUILD_DIR)/userspace/public/libs
+USERSPACE_PUBLIC_INCLUDE_DIR=$(BUILD_DIR)/userspace/public/include
 USERSPACE_DL_MODULES_DIR=$(BUILD_DIR)/userspace/dlModules
 USERSPACE_DL_MODULES_BEEP_DIR=$(USERSPACE_DL_MODULES_DIR)/beep
 BEEP_PKT_INFO_SUFIX =  -pkginfo.txt
@@ -960,7 +374,7 @@ OALDIR = $(subst LINUX,linux,$(strip $(TARGET_OS)))
 export PROFILE_ARCH PROFILE_KARCH USER_ARCH KERNEL_ARCH KERNEL_DIR BRCMDRIVERS_DIR PROJECT_DIR RDP_PROJECT_DIR_RELATIVE \
        LINUXDIR HOSTTOOLS_DIR TARGETS_DIR DEFAULTCFG_DIR \
        FSSRC_DIR SHARED_DIR CONFIG_BCM_KERNEL_CUSTOM BCM_KF\
-       CMS_LOG_FLAGS OALDIR USERSPACE_PUBLIC_LIBS_DIR \
+       CMS_LOG_FLAGS OALDIR USERSPACE_PUBLIC_LIBS_DIR USERSPACE_PUBLIC_INCLUDE_DIR \
        KARCH ARCH_ENDIAN TOOLCHAIN_BASE BRCM_DTB DTB_DIR
 
 unexport LS_COLORS
@@ -1038,7 +452,8 @@ ifeq ($(strip $(DESKTOP_LINUX)),)
     # The new compiler has a bug that if you specify -Werror=frame-larger-than=X, it treats X as 1 (and errors on all functions)
     #export BRCM_WERROR_CFLAGS :=  -Werror=return-type -Werror=uninitialized -Wframe-larger-than=1024
     #export BRCM_WERROR_CFLAGS :=  -Werror=return-type -Werror=uninitialized -Wno-date-time
-    export BRCM_WERROR_CFLAGS := -Wno-date-time
+    export BRCM_WERROR_CFLAGS := -Wno-date-time -Wno-implicit-fallthrough -Wno-error=implicit-fallthrough
+	export BRCM_WERROR_CFLAGS += -Wno-implicit-fallthrough -Wno-error=implicit-fallthrough -Wno-error=parentheses -Wno-error=unused-variable -Wno-error=format= -Wno-error=address -Wno-error=maybe-uninitialized -Wno-error=unused-function -Wno-error=format-truncation= -Wno-error=unused-but-set-variable -Wno-error=pointer-sign -Wno-error=switch -Wno-error=unused-value -Wno-error=implicit-function-declaration -Wno-error=old-style-declaration -Wno-error=strict-prototypes -Wno-error=missing-field-initializers -Wno-error=return-type -Wno-error=unused-label -Wno-error=format-extra-args -Wno-error=unused-result
     ifeq ($(strip $(BRCM_DRIVER_WIRELESS)), )
       export BRCM_WERROR_CFLAGS +=  -Wtype-limits
     endif
@@ -1046,13 +461,6 @@ ifeq ($(strip $(DESKTOP_LINUX)),)
     export BRCM_WERROR_CFLAGS := -Wno-date-time
   endif
   
-  ifeq ($(PROFILE_KERNEL_VER),LINUX_4_19_0)
-    BRCM_WERROR_CFLAGS += -Wno-implicit-fallthrough -Wno-array-bounds
-    #BRCM_WERROR_CFLAGS += -Wno-implicit-fallthrough -Wno-misleading-indentation -Wno-format-truncation -Wno-stringop-truncation -Wno-format-overflow
-    BRCM_WERROR_CFLAGS += -Wno-format-truncation -Wno-stringop-truncation -Wno-unused-function
-    export BRCM_WERROR_CFLAGS
-  endif
-
  ifeq ($(ARCH),arm)
  ifeq ($(BUILD_IN_UBOOT),y)
  ifneq ($(findstring $(CUR_CHIP_PROFILE),47622 6750 6756 6855),)
@@ -1064,7 +472,11 @@ ifeq ($(strip $(DESKTOP_LINUX)),)
   ifeq ($(PROFILE_ARCH), $(filter $(PROFILE_ARCH),arm armsfp armhfp))
     # Add custom CFLAGS for arm
     ifeq ($(PROFILE_ARCH),armhfp)
-      BRCM_COMMON_CFLAGS := -Os -march=armv7-a -fomit-frame-pointer -mabi=aapcs-linux -marm -fno-common -mfloat-abi=hard -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)
+      ifeq ($(HND_ROUTER_BE),y)
+        BRCM_COMMON_CFLAGS := -Os -march=armv7-a -fomit-frame-pointer -mabi=aapcs-linux -marm -fno-common -mfloat-abi=hard -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)
+	  else
+        BRCM_COMMON_CFLAGS := -Os -march=armv7-a -fomit-frame-pointer -mabi=aapcs-linux -marm -fno-common -mfloat-abi=hard -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)
+	  endif
     else ifeq ($(PROFILE_ARCH),armsfp)
     ifeq ($(HND_ROUTER_BE),y)
       BRCM_COMMON_CFLAGS := -Os -fomit-frame-pointer -fno-common -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)
@@ -1074,6 +486,12 @@ ifeq ($(strip $(DESKTOP_LINUX)),)
     else
       BRCM_COMMON_CFLAGS := -Os -march=armv7-a -fomit-frame-pointer -mabi=aapcs-linux -marm -fno-common -mfloat-abi=soft -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)
     endif
+
+ifeq ($(BUILD_IN_UBOOT),y)
+ifeq ($(PROFILE_ARCH),armhfp)
+	BRCM_COMMON_CFLAGS := -Os -fomit-frame-pointer -fno-common -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)
+endif
+endif
 
     #for mips' -mno-shared (do not generate posistion independent code), arm is -mno-apcs-reentrant which is the default
     ifeq ($(CMS_MEM_LEAK_TRACING),y)
@@ -1141,9 +559,12 @@ ifeq ($(strip $(BRCM_USE_ALT_TOOLCHAIN)),y)
 endif
 
 # If building on desktop, don't strip binaries
-ifeq ($(strip $(DESKTOP_LINUX)),y)
+
+ifneq ($(strip $(DESKTOP_LINUX))$(strip $(BUILD_GDBSERVER)),)
 STRIP  = /bin/touch
+ifeq ($(strip $(BCM_QEMU_SIM)),)
 SSTRIP = /bin/touch
+endif
 endif
 
 # If building on desktop, set LIBDIR for legacy makefiles
@@ -1175,40 +596,30 @@ export TOOLCHAIN_TOP TOOLCHAIN CROSS_COMPILE TOOLCHAIN_INCLUDE_DIR TOOLCHAIN_SYS
 TARGET_FS = $(TARGETS_DIR)/$(PROFILE)/fs
 TARGET_BOOTFS = $(TARGETS_DIR)/$(PROFILE)/bootfs
 PROFILE_DIR = $(TARGETS_DIR)/$(PROFILE)
-# INSTALL_DIR is deprecated, use BCM_FSINSTALL_DIR instead, see comment below for details.
+# INSTALL_DIR is deprecated because it conflicts with a variable of the same
+# name in OpenWrt, so use BCM_FSINSTALL_DIR instead.  (See long comment at
+# the end of this section).
+# Also, if we are doing a BCM_MODULAR_BUILD *and* EXT_DEVICEFS_DIR is
+# specified, use that.  Otherwise, use the traditional location.
 BCM_FSINSTALL_DIR=$(PROFILE_DIR)/fs.install
 INSTALLDIR=$(PROFILE_DIR)/fs.install
 PLATFORMDIR=$(PROFILE_DIR)
+ifneq ($(BCM_MODULAR_BUILD),)
+  ifneq ($(EXT_DEVICEFS_DIR),)
+    BCM_FSINSTALL_DIR=$(EXT_DEVICEFS_DIR)
+  endif
+endif
 BCM_FSBUILD_DIR=$(PROFILE_DIR)/fs.build
 PROFILE_PATH = $(TARGETS_DIR)/$(PROFILE)/$(PROFILE)
 VENDOR_NAME = bcm
 FLASH_BASE_IMAGE_NAME = $(VENDOR_NAME)$(PROFILE)
-FS_KERNEL_IMAGE_NAME = $(FLASH_BASE_IMAGE_NAME)_fs_kernel
-CFE_FS_KERNEL_IMAGE_NAME = $(FLASH_BASE_IMAGE_NAME)_cfe_fs_kernel
-FLASH_IMAGE_NAME = $(FLASH_BASE_IMAGE_NAME)_flash_image_$(BRCM_BOARD_ID)
-FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART = $(FLASH_BASE_IMAGE_NAME)_emmc_datapartition_flash_image_$(BRCM_BOARD_ID)
-FLASH_IMAGE_NAME_EMMC_BOOT_PHYSPART = $(FLASH_BASE_IMAGE_NAME)_emmc_bootpartition_flash_image_$(BRCM_BOARD_ID)
-FLASH_NAND_CFEROM_FS_IMAGE_NAME_16 = $(FLASH_BASE_IMAGE_NAME)_nand_cferom_fs_image_16
-FLASH_NAND_FS_IMAGE_NAME_16 = $(FLASH_BASE_IMAGE_NAME)_nand_fs_image_16
-BCM_FLASH_NAND_CFEROM_FS_IMAGE_NAME_128 = $(FLASH_BASE_IMAGE_NAME)_nand_cferom_fs_image_128
-BCM_FLASH_NAND_FS_IMAGE_NAME_128 = $(FLASH_BASE_IMAGE_NAME)_nand_fs_image_128
-FLASH_NAND_CFEROM_FS_IMAGE_NAME_128 = $(IMGNAME)_cferom
-FLASH_NAND_FS_IMAGE_NAME_128 = $(IMGNAME)
-FLASH_NAND_CFEROM_FS_IMAGE_NAME_256 = $(FLASH_BASE_IMAGE_NAME)_nand_cferom_fs_image_256
-FLASH_NAND_FS_IMAGE_NAME_256 = $(FLASH_BASE_IMAGE_NAME)_nand_fs_image_256
-FLASH_NAND_CFEROM_FS_IMAGE_NAME_512 = $(FLASH_BASE_IMAGE_NAME)_nand_cferom_fs_image_512
-FLASH_NAND_FS_IMAGE_NAME_512 = $(FLASH_BASE_IMAGE_NAME)_nand_fs_image_512
-FLASH_NAND_CFEROM_FS_IMAGE_NAME_1024 = $(FLASH_BASE_IMAGE_NAME)_nand_cferom_fs_image_1024
-FLASH_NAND_FS_IMAGE_NAME_1024 = $(FLASH_BASE_IMAGE_NAME)_nand_fs_image_1024
-FLASH_NAND_CFEROM_FS_IMAGE_NAME_2048 = $(FLASH_BASE_IMAGE_NAME)_nand_cferom_fs_image_2048
-FLASH_NAND_FS_IMAGE_NAME_2048 = $(FLASH_BASE_IMAGE_NAME)_nand_fs_image_2048
 FLASH_NAND_BLOCK_16KB=16384
 FLASH_NAND_BLOCK_128KB=131072
 FLASH_NAND_BLOCK_256KB=262144
 FLASH_NAND_BLOCK_512KB=524288
 FLASH_NAND_BLOCK_1024KB=1048576
 FLASH_NAND_BLOCK_2048KB=2097152
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_6858_63158_6856_6846_63178_47622_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63158_6856_63178_47622_),)
 FLASH_BOOT_OFS=65536
 else
 FLASH_BOOT_OFS=0
@@ -1229,13 +640,11 @@ INC_BRCMSHARED_PRIV_PATH=$(SHARED_DIR)/broadcom/include
 INC_BRCMBOARDPARMS_PATH=$(SHARED_DIR)/opensource/boardparms
 INC_UTILS_PATH=$(SHARED_DIR)/opensource/utils
 INC_SPUDRV_PATH=$(BRCMDRIVERS_DIR)/broadcom/char/spudd/impl1
-INC_PWRMNGTDRV_PATH=$(BRCMDRIVERS_DIR)/broadcom/char/pwrmngt/impl1
 INC_ENETDRV_PATH=$(BRCMDRIVERS_DIR)/opensource/net/enet/impl5
 INC_RDPA_MW_PATH=$(BRCMDRIVERS_DIR)/opensource/char/rdpa_mw/impl1
 
 INC_GENERAL_FLAGS = -I$(INC_BRCMSHARED_PUB_PATH)/rdp \
                         -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD) \
-                        -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) \
                         -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) \
                         -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)/pmc \
                         -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) \
@@ -1264,7 +673,6 @@ INC_RDP_FLAGS = -I$(PROJECT_DIR)/target/bdmf/system \
                  $(PROJ_DEFS)
 
 INC_ENET_DMA_FLAGS = -I$(INC_BRCMSHARED_PUB_PATH)/drv/phys \
-                     -I$(INC_BRCMSHARED_PUB_PATH)/bcm963xx \
                      -I$(BRCMDRIVERS_DIR)/opensource/include/bcm963xx \
                      -I$(BRCMDRIVERS_DIR)/opensource/net/enet/shared \
                      -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
@@ -1359,24 +767,30 @@ CMS_RPATH_OPTION =
 
 endif # DESKTOP_LINUX
 
+# Add proper USER_ARCH suffix to ALLOWED_LIB_DIRS
+ifneq ($(BCM_INSTALL_SUFFIX_DIR),)
+USER_ARCH_ALLOWED_LIB_DIRS = $(ALLOWED_LIB_DIRS):$(subst lib,lib$(BCM_INSTALL_SUFFIX_DIR),$(ALLOWED_LIB_DIRS))
+else
+USER_ARCH_ALLOWED_LIB_DIRS = $(ALLOWED_LIB_DIRS)
+endif
 
 ifeq ($(BCM_MODULAR_BUILD),)
 # Old way:
-CMS_LIB_PATH = $(patsubst %,-L$(INSTALL_DIR)%,$(subst :, ,$(ALLOWED_LIB_DIRS)))
+CMS_LIB_PATH = $(patsubst %,-L$(INSTALL_DIR)%,$(subst :, ,$(USER_ARCH_ALLOWED_LIB_DIRS)))
 # TODO: we should link against the libs in BCM_FSBUILD_DIR not INSTALL_DIR.
 # But most userspace makefiles set ALLOWED_LIB_DIRS incorrectly, and
 # some opensource packages might only install in INSTALL_DIR and not both
 # BCM_FSBUILD_DIR and INSTALL_DIR.  So leave the old variable alone and define
 # a new one for new/fixed Makefiles to use.
-BCM_LIB_PATH = $(patsubst %,-L$(BCM_FSBUILD_DIR)%,$(subst :, ,$(ALLOWED_LIB_DIRS)))
+BCM_LIB_PATH = $(patsubst %,-L$(BCM_FSBUILD_DIR)%,$(subst :, ,$(USER_ARCH_ALLOWED_LIB_DIRS)))
 else
 # New Modular Build way (re-define both old and new variable names):
-CMS_LIB_PATH = $(patsubst %,-L$(BCM_FSBUILD_DIR)%,$(subst :, ,$(ALLOWED_LIB_DIRS)))
-BCM_LIB_PATH = $(patsubst %,-L$(BCM_FSBUILD_DIR)%,$(subst :, ,$(ALLOWED_LIB_DIRS)))
+CMS_LIB_PATH = $(patsubst %,-L$(BCM_FSBUILD_DIR)%,$(subst :, ,$(USER_ARCH_ALLOWED_LIB_DIRS)))
+BCM_LIB_PATH = $(patsubst %,-L$(BCM_FSBUILD_DIR)%,$(subst :, ,$(USER_ARCH_ALLOWED_LIB_DIRS)))
 endif
 
 # For rpath-link
-BCM_RPATH_LINK_PATH = $(BCM_FSBUILD_DIR)$(subst :,:$(BCM_FSBUILD_DIR),$(ALLOWED_LIB_DIRS))
+BCM_RPATH_LINK_PATH = $(BCM_FSBUILD_DIR)$(subst :,:$(BCM_FSBUILD_DIR),$(USER_ARCH_ALLOWED_LIB_DIRS))
 BCM_RPATH_LINK_OPTION = -Wl,-rpath-link=$(BCM_RPATH_LINK_PATH)
 
 
@@ -1384,6 +798,7 @@ BCM_RPATH_LINK_OPTION = -Wl,-rpath-link=$(BCM_RPATH_LINK_PATH)
 # depend on.
 
 ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+# CMS Classic or BDK builds
 # For now, BDK builds still use "CMS_CORE_LIBS"
 # mdm_db uses dlopen, so in theory, -ldl should go after mdm_db.  However, the
 # linaro toolchain seems to require -ld *before* mdm_db, so add -ldl in both
@@ -1394,8 +809,6 @@ CMS_CORE_LIBS := -lcms_core -lcms_msg -ldl -lmdm_db -ldl $(BCM_FLASH_LIBS) -lcms
 BUILD_LIBJSONC=y
 
 ifneq ($(strip $(BUILD_BRCM_CMS)),)
-# This lib is only used in CMS Classic
-CMS_CORE_LIBS +=  -lmdm_cbk_core
 # Only include mdm_cbk_openplat in core libs for BEEPv6
 ifneq ($(strip $(BUILD_MODSW_EE)),)
 CMS_CORE_LIBS += -lmdm_cbk_openplat
@@ -1431,16 +844,19 @@ endif
 endif
 
 ifneq ($(strip $(BRCM_DRIVER_XTM)),)
-CMS_CORE_LIBS +=  -latmctl
-endif
-
-ifneq ($(strip $(BUILD_GPON)),)
-CMS_CORE_LIBS +=  -lgponctl
-BUILD_LIBNL=y
+CMS_CORE_LIBS +=  -lxtmctl
 endif
 
 ifneq ($(strip $(BUILD_GPON)),)
 CMS_CORE_LIBS +=  -lmdm_cbk_gpon
+CMS_CORE_LIBS +=  -lgponctl
+BUILD_LIBNL=y
+BUILD_ZLIB=y
+BUILD_MICRO_HTTPD=y
+endif
+
+ifneq ($(strip $(BCM_QEMU_SIM)),)
+BUILD_LIBNL=y
 endif
 
 ifneq ($(strip $(BUILD_EPON_SDK)),)
@@ -1459,26 +875,8 @@ ifneq ($(strip $(BRCM_VOICE_SUPPORT)),)
 CMS_CORE_LIBS +=  -lmdm_cbk_voice
 endif
 
-# Physical Media Dependent (for PON systems)
-ifneq ($(strip $(BUILD_PMD)),)
-BUILD_LIBJSONC=y
-BUILD_LIBPMD=y
-endif
-
 ifneq ($(strip $(BUILD_VLANSUBIF_LINUX_STD)),)
 CMS_CORE_LIBS +=  -lvlansubif-linux_std
-endif
-
-ifneq ($(strip $(BUILD_VLANSUBIF_VLANCTL)),)
-CMS_CORE_LIBS +=  -lvlansubif-vlanctl
-endif
-
-ifneq ($(strip $(BUILD_VLANCTL)),)
-CMS_CORE_LIBS +=  -lvlanctl
-endif
-
-ifneq ($(strip $(BUILD_SPUCTL)),)
-CMS_CORE_LIBS +=  -lspuctl
 endif
 
 ifneq ($(strip $(BUILD_PWRCTL)),)
@@ -1501,14 +899,10 @@ ifneq ($(strip $(BUILD_BRCTL)),)
 CMS_CORE_LIBS += -lbridgeutil
 endif
 
-ifeq ($(BCM_PON),y)
-CMS_CORE_LIBS += -lponsys
-endif
-
 
 #
 # Several features will trigger the building of libpcap.
-ifneq ($(strip $(BUILD_SENDPACKETS))$(strip $(BUILD_TCPDUMP))$(strip $(BUILD_PPPD)),)
+ifneq ($(strip $(BUILD_SENDPACKETS))$(strip $(BUILD_TCPDUMP))$(strip $(BUILD_PPPD))$(strip $(BUILD_NFDUMP)),)
 BUILD_LIBPCAP=y
 endif
 
@@ -1625,6 +1019,10 @@ BUILD_PURE181_PROFILES := y
 CMS_DMP_FLAGS += -DSUPPORT_DM_PURE181
 endif
 
+ifneq ($(strip $(BUILD_DISTRIBUTED_MDM)),)
+CMS_DMP_FLAGS += -DBUILD_DISTRIBUTED_MDM
+endif
+
 ifneq ($(strip $(BUILD_DM_DETECT)),)
 BUILD_TR98_PROFILES := y
 BUILD_HYBRID181_PROFILES := y
@@ -1736,9 +1134,7 @@ export BUILD_DSL
 export BUILD_XDSLCTL
 
 # Compile flags module or application that use ADSL MIBS
-BUILD_DSL_FLAGS := -DDSL_NONE
-
-BUILD_DSL_FLAGS += -DLINUX_FW_EXTRAVERSION=$(BRCM_VERSION)$(BRCM_RELEASE)$(shell echo $(BRCM_EXTRAVERSION) | head -c 2)
+BUILD_DSL_FLAGS := -DLINUX_FW_EXTRAVERSION=$(BRCM_VERSION)$(shell printf "%02d" $(BRCM_RELEASE))$(shell printf "%02d" $(BRCM_EXTRAVERSION) 2> /dev/null)
 
 CMS_DMP_FLAGS += -DSUPPORT_DSL
 
@@ -1767,10 +1163,6 @@ ifneq ($(strip $(BUILD_DSL_SELT_TEST)),)
 BUILD_DSL_FLAGS += -DSUPPORT_SELT
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_SELT_1
 export BUILD_DSL_SELT_TEST=y
-endif
-
-ifneq ($(strip $(BRCM_DRIVER_PHY_DIAG)),)
-CMS_DMP_FLAGS += -DSUPPORT_PHY_DIAG_DRV
 endif
 
 ifeq ($(strip $(BRCM_PHY_BONDING)),y)
@@ -1808,26 +1200,12 @@ CMS_DMP_FLAGS += -DSUPPORT_ANNEXAB_COMBO
 export BRCM_ANNEXAB_COMBO=y
 endif
 
-DSL_GINP_RTX_DRIVER_DEFINES := -DDSL_NONE
-
 ifeq ($(strip $(BRCM_PHY_GINP_RTX)),y)
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_63158_63146_),)
 CMS_DMP_FLAGS += -DSUPPORT_DSL_GINP_RTX
-DSL_GINP_RTX_DRIVER_DEFINES += -DSUPPORT_DSL_GINP_RTX
 export BRCM_PHY_GINP_RTX=y
 endif
 endif
-export DSL_GINP_RTX_DRIVER_DEFINES
-
-DSL_EXT_BONDING_DRIVER_DEFINES := -DDSL_NONE
-
-ifeq ($(strip $(BRCM_EXT_PHY_BONDING)),y)
-CMS_DMP_FLAGS += -DSUPPORT_DSL_BONDING
-DSL_EXT_BONDING_DRIVER_DEFINES += -DSUPPORT_EXT_DSL_BONDING
-export BRCM_EXT_PHY_BONDING=y
-endif
-
-export DSL_EXT_BONDING_DRIVER_DEFINES
 
 # VDSL flags have to be turned on for VDSL and Multimode phy
 ifneq ($(strip $(BUILD_PHY_VDSL)),)
@@ -1907,31 +1285,30 @@ endif
 # Various technologies as WAN interface selections
 #
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_6888_68880_6837_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_6855_6888_68880_6837_68375_68850_),)
 ifeq ($(BUILD_GPON),y)
 export BCM_PON=y
 endif
 ifeq ($(BUILD_EPON_SDK),y)
 export BCM_PON=y
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_6888_68880_6837_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_6855_6888_68880_6837_68375_68850_),)
 export BCM_PON_XRDP=y
 endif
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_63158_63146_4912_6813_),)
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_),)
-BCM_DSL_RDP=y
-endif
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_63146_4912_6813_),)
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_63146_4912_6813_),)
 export BCM_DSL_XRDP=y
 endif
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63158_6846_6856_6878_63146_4912_6813_6855_6888_68880_6837_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63158_6856_63146_4912_6813_6855_6888_68880_6837_68375_68850_),)
 export BCM_XRDP=y
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_),)
-export BCM_RDP=y
+
+ifeq ($(BCM_PON),y)
+CMS_CORE_LIBS += -lponsys
 endif
+
 
 # this means the user wants to have a ATM WAN interface
 # We don't have a SUPPORT_ATM flag.  It is implied by SUPPORT_DSL.
@@ -1999,6 +1376,12 @@ endif
 ifneq ($(strip $(BUILD_TMCTL)),)
 CMS_CORE_LIBS += -ltmctl
 CMS_DMP_FLAGS += -DSUPPORT_TMCTL
+BUILD_LIBJSONC=y
+endif
+
+ifneq ($(strip $(BRCM_TC_QCONF)),)
+CMS_CORE_LIBS += -ltc_qconf
+CMS_DMP_FLAGS += -DBRCM_TC_QCONF
 endif
 
 ifneq ($(strip $(BRCM_DRIVER_SPDSVC)),)
@@ -2007,6 +1390,21 @@ endif
 
 ifneq ($(strip $(BRCM_DRIVER_SPDTEST)),)
 export BUILD_SPDTEST=y
+endif
+
+ifneq ($(strip $(BRCM_DRIVER_SCORE)),)
+export BUILD_SCORE=y
+
+#TODO add seperete condition for BNL
+export BUILD_BNL=y
+endif
+
+ifneq ($(strip $(BRCM_DRIVER_TC)),)
+export BUILD_TC=y
+endif
+
+ifneq ($(strip $(CONFIG_BCM_INGRESS_QOS)),)
+export BUILD_INGRESS_QOS=y
 endif
 
 # this means user wants to have RDD related features as us such as TM
@@ -2345,11 +1743,25 @@ CMS_DMP_FLAGS += -DDMP_DEVICE2_XMPPADVANCED_1
 export BUILD_XMPP
 endif
 
-ifneq ($(strip $(BUILD_ALLJOYN)),)
-CMS_DMP_FLAGS += -DSUPPORT_ALLJOYN
-export BUILD_ALLJOYN
-export BUILD_LIBCAP=y
-DO_BUILD_OPENSSL=y
+ifneq ($(strip $(BUILD_LCM)),)
+BRCM_MISC1_PARTITION_SIZE=80
+BRCM_CFG_USER_PARTITIONS=y
+BRCM_PARTITION_CFG_FILE="BEEP_partitions.cfg"
+export BUILD_DSLDIAGD=
+export BUILD_BEEP_DSLDIAGD=y
+BUILD_LIBJSONC=y
+BUILD_LIBCURL=y
+BUILD_LIBSQLITE=y
+BUILD_LCMUTILS=y
+BUILD_E2FSPROGS=y
+BUILD_CMS_UTIL=y
+BUILD_CMS_MSG=y
+BUILD_BCM_MSGD=y
+BUILD_LIBSECCOMP=y
+BUILD_APPARMOR=y
+BUILD_LIBATTR=y
+BUILD_LIBCAP=y
+BUILD_LXC=y
 endif
 
 ifneq ($(strip $(BUILD_MODSW_EE)),)
@@ -2359,6 +1771,7 @@ export BUILD_OPEN_PLATFORM
 BUILD_LIBUUID := y
 CMS_DMP_FLAGS += -DSUPPORT_BEEP_HOST_EE
 CMS_DMP_FLAGS += -DDMP_DEVICE2_SM_BASELINE_1
+CMS_DMP_FLAGS += -DDMP_DEVICE2_LOGICAL_1
 BUILD_LIBMODSW := 1
 BUILD_LIBJSONC=y
 BUILD_LIBSQLITE=y
@@ -2377,7 +1790,7 @@ CMS_DMP_FLAGS += -DSUPPORT_MODSWD
 endif
 endif
 
-ifneq ($(strip $(BUILD_BRCM_BDK))$(strip $(BUILD_OPEN_PLATFORM)),)
+ifneq ($(strip $(BUILD_BRCM_BDK))$(strip $(BUILD_OPEN_PLATFORM))$(strip $(BUILD_LCM)),)
 export BUILD_WEB_SOCKETS=y
 BUILD_CERT=dynamic
 BUILD_LIBJSONC=y
@@ -2397,6 +1810,22 @@ ifeq ($(strip $(BUILD_HAL_LIBS)),y)
 BUILD_LIBCURL=y
 endif
 
+ifneq ($(strip $(BUILD_PIPEWIRE)),)
+export BUILD_PIPEWIRE=y
+BUILD_LUA=y
+BUILD_ZLIB=y
+BUILD_FFI=y
+BUILD_GETTEXT=y
+BUILD_GLIB=y
+BUILD_LIBNCURSES=y
+BUILD_LIBPCRE2=y
+endif
+
+ifneq ($(strip $(BUILD_LUA)),)
+BUILD_GETTEXT=y
+BUILD_LIBNCURSES=y
+endif
+
 ifneq ($(strip $(BUILD_AVS_DEVICE_SDK)),)
 BUILD_ZLIB=y
 BUILD_FFI=y
@@ -2409,6 +1838,30 @@ BUILD_LIBCURL=y
 BUILD_LIBCURL_WITH_SSL=y
 BUILD_LIBCURL_WITH_HTTP2=y
 DO_BUILD_OPENSSL=y
+endif
+
+ifneq ($(strip $(BUILD_MATTER)),)
+export BUILD_NINJA_GN=y
+DO_BUILD_OPENSSL=y
+endif
+
+ifneq ($(strip $(BUILD_BCM_BML)),)
+export BUILD_NINJA=y
+endif
+
+ifneq ($(strip $(BUILD_PROCPS)),)
+BUILD_LIBNCURSES=y
+endif
+
+ifneq ($(strip $(BUILD_SYSLOGNG)),)
+BUILD_GLIB=y
+BUILD_FFI=y
+BUILD_FLEX=y
+BUILD_LIBPCRE2=y
+CMS_DMP_FLAGS += -DSUPPORT_SYSLOGNG
+ifneq ($(strip $(BUILD_BAS2)),)
+CMS_DMP_FLAGS += -DSUPPORT_BAS_SYSLOG
+endif
 endif
 
 ifeq ($(strip $(BUILD_GLIB)),y)
@@ -2433,12 +1886,25 @@ DO_BUILD_OPENSSL=y
 endif
 
 ifneq ($(strip $(BUILD_DPI)),)
-CMS_DMP_FLAGS += -DSUPPORT_DPI
+BUILD_DPID=y
+CMS_DMP_FLAGS += -DSUPPORT_DPI -DSUPPORT_US_SQ
 export BUILD_WEB_SOCKETS=y
 BUILD_D3=y
 ifeq ($(strip $(RDK_BUILD)),)
 BUILD_LIBNL=y
 endif
+BUILD_CERT=dynamic
+DO_BUILD_OPENSSL=y
+endif
+
+ifneq ($(strip $(BUILD_QOE)),)
+BUILD_DPID=
+CMS_DMP_FLAGS += -DSUPPORT_US_SQ
+export BUILD_WEB_SOCKETS=y
+BUILD_D3=y
+BUILD_LIBNL=y
+BUILD_LIBYAML=y
+BUILD_LIBJSONC=y
 BUILD_CERT=dynamic
 DO_BUILD_OPENSSL=y
 endif
@@ -2467,6 +1933,14 @@ BUILD_LIBPAHO_MQTT=y
 endif
 endif
 
+ifeq ($(strip $(BUILD_LIGHTTPD)),y)
+export BUILD_MESON_NINJA=y
+endif
+
+ifeq ($(strip $(BUILD_RNG_TOOLS)),y)
+BUILD_LIBCAP=y
+BUILD_LIBJANSSON=y
+endif
 
 ifneq ($(strip $(BUILD_MACSEC)$(BUILD_SERDES_VI)),)
 ifeq ($(strip $(RDK_BUILD)),)
@@ -2514,6 +1988,11 @@ BUILD_ZLIB=y
 BUILD_ELFUTILS=y
 endif
 
+ifneq ($(strip $(BUILD_TRACE_CMD)),)
+BUILD_LIBTRACEEVENT=y
+BUILD_LIBTRACEFS=y
+endif
+
 ifneq ($(strip $(BUILD_USP)),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_USP_1 -DDMP_DEVICE2_STOMPCONN_1 -DDMP_DEVICE2_STOMPHEARTBEAT_1
 CMS_DMP_FLAGS += -DDMP_DEVICE2_LOCALAGENT_1 -DDMP_DEVICE2_STOMPAGENT_1
@@ -2555,12 +2034,18 @@ endif
 #
 ifneq ($(filter y,$(BUILD_GPON) $(BUILD_EPON_SDK)),)
 
+# GPON only section
 ifneq ($(strip $(BUILD_GPON)),)
 CMS_DMP_FLAGS += -DDMP_X_ITU_ORG_GPON_1 -DDMP_X_BROADCOM_COM_GPON_1
-endif
+
 ifeq ($(strip $(RDK_BUILD)),y)
+CMS_DMP_FLAGS += -DDMP_X_RDK_ONT_1
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_GPON_ETHFLOW_1
+else
+CMS_DMP_FLAGS += -DDMP_DEVICE2_XPON_1
 endif
+endif
+# end GPON only section
 
 export BUILD_WAN_HTML=y
 
@@ -2572,7 +2057,7 @@ endif
 ifneq ($(filter y,$(BUILD_EPONWAN) $(BUILD_GPON)),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_XPON_1
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_6846_6878_6855_6837_68880_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_6855_6837_68880_68375_68850_),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_RPSRFS_1
 endif
 endif
@@ -2645,10 +2130,6 @@ endif
 
 ifneq ($(strip $(BUILD_FW_UPGRADE_WDT)),)
 CMS_DMP_FLAGS += -DSUPPORT_FW_UPGRADE_WDT
-endif
-
-ifneq ($(strip $(BUILD_EBTABLES)),)
-CMS_DMP_FLAGS += -DSUPPORT_EBTABLES
 endif
 
 ifneq ($(strip $(BUILD_TOD)),)
@@ -2736,6 +2217,18 @@ ifneq ($(strip $(BUILD_DSLDIAGD)),)
 CMS_DMP_FLAGS += -DSUPPORT_DSLDIAGD
 endif
 
+ifneq ($(strip $(BUILD_BRCM_PHY_DIAG_DRIVER)),)
+CMS_DMP_FLAGS += -DSUPPORT_PHY_DIAG_DRV
+endif
+
+ifeq ($(strip $(BRCM_PHY_DIAG_SERDES_ETH)),y)
+export BRCM_PHY_DIAG_SERDES_ETH=y
+endif
+
+ifeq ($(strip $(BRCM_PHY_DIAG_SERDES_PCIE)),y)
+export BRCM_PHY_DIAG_SERDES_PCIE=y
+endif
+
 ifneq ($(strip $(BUILD_BCMBUSYBOX_NTPD)),)
 CMS_DMP_FLAGS += -DSUPPORT_NTPD
 ifneq ($(strip $(BUILD_TR98_PROFILES)),)
@@ -2783,13 +2276,6 @@ endif
 
 ifneq ($(strip $(BUILD_TMS)),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_ETHERNETOAM_1
-endif
-
-ifneq ($(strip $(BUILD_SPUCTL)),)
-CMS_DMP_FLAGS += -DSUPPORT_SPUCTL
-ifneq ($(strip $(BRCM_DRIVER_SPU_TEST)),)
-CMS_DMP_FLAGS += -DSUPPORT_SPU_TEST
-endif
 endif
 
 ifneq ($(strip $(BUILD_ETHSWCTL)),)
@@ -2888,10 +2374,6 @@ ifneq ($(strip $(BUILD_STORAGESERVICE)),)
 CMS_DMP_FLAGS += -DSUPPORT_STORAGESERVICE -DDMP_STORAGESERVICE_1
 endif
 
-ifneq ($(strip $(BUILD_NTFS_3G)),)
-CMS_DMP_FLAGS += -DSUPPORT_NTFS_3G
-endif
-
 ifneq ($(strip $(BUILD_SAMBA)),)
 CMS_DMP_FLAGS += -DSUPPORT_SAMBA
 endif
@@ -2909,13 +2391,7 @@ ifneq ($(strip $(BUILD_MCAST_SNOOP)),)
       CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_MLDSNOOP_1
    endif
    ifeq ($(BCM_PON),y)
-     ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6856_),)
-       ifneq ($(BRCM_RUNNER_MCAST_FORCE_SINGLE_FLOW_MODE),)
-         CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_DCSP_MCAST_REMARK_1
-       endif
-     else
-       CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_DCSP_MCAST_REMARK_1
-     endif
+      CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_DCSP_MCAST_REMARK_1
    endif
    CMS_CORE_LIBS += -lbcmmcast
 endif
@@ -2947,27 +2423,8 @@ endif
 #  =============== Begin Modular Software Section ===========
 #
 
-# was BUILD_OSGI_JVM
-# Now all the various pieces are individually controlled for maximum flexibility
-#
-ifneq ($(strip $(BUILD_JVM_JAMVM)),)
-CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_JAMVM_1
-CMS_DMP_FLAGS += -DJAMVM_MIN_HEAP=$(JAMVM_MIN_HEAP_SIZE)
-CMS_DMP_FLAGS += -DJAMVM_MAX_HEAP=$(JAMVM_MAX_HEAP_SIZE)
-CMS_DMP_FLAGS += -DJAMVM_STACK=$(JAMVM_STACK_SIZE_PER_THREAD)
-endif
-
-ifneq ($(strip $(BUILD_OSGI_FELIX)),)
-CMS_DMP_FLAGS += -DSUPPORT_OSGI_FELIX
-endif
-
 ifneq ($(strip $(BUILD_OPEN_PLATFORM)),)
 CMS_DMP_FLAGS += -DSUPPORT_OPENPLAT
-endif
-
-ifneq ($(strip $(BUILD_MODSW_OSGIEE)),)
-CMS_DMP_FLAGS += -DDMP_DEVICE2_X_BROADCOM_COM_MODSW_OSGIEE_1
-export BUILD_MODSW_OSGIEE
 endif
 
 ifneq ($(strip $(BUILD_MODSW_DOCKEREE)),)
@@ -2975,16 +2432,9 @@ CMS_DMP_FLAGS += -DDMP_DEVICE2_X_BROADCOM_COM_MODSW_DOCKEREE_1
 export BUILD_MODSW_DOCKEREE
 endif
 
-
-# osgid needs libmodsw, so if it is defined, build libmodsw.
-ifneq ($(strip $(BUILD_OSGI_FELIX)),)
-BUILD_LIBMODSW := 1
-endif
-
 ifneq ($(strip $(BUILD_LIBMODSW)),)
 CMS_DMP_FLAGS += -DSUPPORT_LIBMODSW
 endif
-
 
 ifneq ($(strip $(BUILD_MODSW_CLI)),)
 CMS_DMP_FLAGS += -DSUPPORT_MODSW_CLI
@@ -3090,15 +2540,7 @@ ifneq ($(strip $(BUILD_PURE181_PROFILES)),)
 CMS_DMP_FLAGS += -DSUPPORT_WANVLANMUX -DDMP_DEVICE2_VLANTERMINATION_1
 endif
 
-ifneq ($(strip $(BUILD_VLANCTL)),)
-CMS_DMP_FLAGS += -DSUPPORT_VLANCTL
-endif
-
 ifneq ($(strip $(BUILD_VLANSUBIF_LINUX_STD)),)
-CMS_DMP_FLAGS += -DSUPPORT_VLANSUBIF
-endif
-
-ifneq ($(strip $(BUILD_VLANSUBIF_VLANCTL)),)
 CMS_DMP_FLAGS += -DSUPPORT_VLANSUBIF
 endif
 
@@ -3123,7 +2565,7 @@ ifneq ($(BUILD_RDPA),y)
 CMS_DMP_FLAGS += -DSUPPORT_CMS_ALLOW_REAL_HW_SWITCHING
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_63158_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_),)
 CMS_DMP_FLAGS += -DSUPPORT_CMS_ALLOW_REAL_HW_SWITCHING
 endif
 
@@ -3140,13 +2582,19 @@ endif
 endif
 endif
 
-# EthLag only enabled when Kernel ethernet bonding and PURE181 both are selected
+# EthLag enabled when Kernel ethernet bonding and PURE181 both are selected
 ifneq ($(strip $(BRCM_KERNEL_BONDING)),)
 ifneq ($(strip $(BUILD_DM_PURE181)),)
 CMS_DMP_FLAGS += -DDMP_DEVICE2_ETHLAG_1
 endif
 endif
 
+# EthLag and Team are enabled when Kernel ethernet team and PURE181 both are selected
+ifneq ($(strip $(BRCM_KERNEL_TEAM)),)
+ifneq ($(strip $(BUILD_DM_PURE181)),)
+CMS_DMP_FLAGS += -DDMP_DEVICE2_ETHLAG_TEAM -DDMP_DEVICE2_ETHLAG_1
+endif
+endif
 
 # ==== Begin QoS, rate shaping, policing config section ====
 
@@ -3200,7 +2648,12 @@ endif
 
 # ==== End QoS, rate shaping, policing config section ====
 
+# ==== Begin Score and TCAML section ====
+ifneq ($(strip $(BUILD_TCAMLD)),)
+CMS_DMP_FLAGS += -DSUPPORT_TCAMLD
+endif
 
+# ==== End Score and TCAML ====
 
 ifneq ($(strip $(BRCM_KERNEL_FTRACE)),)
 CMS_DMP_FLAGS += -DSUPPORT_FTRACE
@@ -3351,6 +2804,9 @@ ifneq ($(strip $(BUILD_PURE181_PROFILES)),)
 CMS_DMP_FLAGS += -DDMP_DEVICE2_WIFIRADIO_1 -DDMP_DEVICE2_WIFISSID_1
 # Do we have a define for AP mode?  Always assume it is enabled?
 CMS_DMP_FLAGS += -DDMP_DEVICE2_WIFIACCESSPOINT_1
+ifneq ($(strip $(BUILD_WLDATAELD)),)
+CMS_DMP_FLAGS += -DDMP_DEVICE2_WIFIDATAELEMENTS_1
+endif
 endif
 
 ifneq ($(strip $(BUILD_BSTREAM_IQOS)),)
@@ -3364,20 +2820,12 @@ endif
 
 # this means user wants to have a wifi WAN interface
 ifneq ($(strip $(BUILD_WIFIWAN)),)
-
+ifneq ($(strip $(BUILD_PURE181_PROFILES)),)
 export BUILD_WAN_HTML=y
 CMS_DMP_FLAGS += -DSUPPORT_WIFIWAN
-
-ifneq ($(strip $(BUILD_TR98_PROFILES)),)
-# this flag enables TR98 specific Wifi WAN objects and code
-CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_WIFIWAN_1
-endif
-
-ifneq ($(strip $(BUILD_PURE181_PROFILES)),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_DEV2_WIFIWAN_1
 CMS_DMP_FLAGS += -DDMP_DEVICE2_WIFIENDPOINT_1
 endif
-
 endif
 
 endif
@@ -3410,6 +2858,12 @@ endif
 
 ifneq ($(strip $(BUILD_OPENVPN)),)
 DO_BUILD_OPENSSL=y
+BUILD_LIBLZO=y
+BUILD_LIBNL=y
+endif
+
+ifneq ($(strip $(BCM_TINY_COREDUMP)),)
+BUILD_LIBLZO=y
 endif
 
 # CMS|BDK Once enabled DO_BUILD_OPENSSL, DO_BUILD_EXPAT will be enabled automatically.
@@ -3434,11 +2888,6 @@ ifeq ($(strip $(KERNEL_ARCH)),aarch64)
 CFLAGS += -DKERNEL_64
 else ifeq ($(strip $(DESKTOP_LINUX)),y)
 CFLAGS += -DKERNEL_32
-endif
-
-ifeq ($(strip $(BUILD_SYSTEMD)),y)
-BUILD_LIBCAP=y
-export BUILD_MESON_NINJA=y
 endif
 
 # Special target to support RDK builds.
@@ -3497,14 +2946,8 @@ endif
 ifeq ($(BCM_DSL_XRDP),y)
 CFLAGS += -DBCM_DSL_XRDP
 endif
-ifeq ($(BCM_DSL_RDP),y)
-CFLAGS += -DBCM_DSL_RDP
-endif
 ifeq ($(BCM_XRDP),y)
 CFLAGS += -DBCM_XRDP
-endif
-ifeq ($(BCM_RDP),y)
-CFLAGS += -DBCM_RDP
 endif
 
 ifneq ($(strip $(BRCM_BPM_BUF_TRACKING)),)
@@ -3588,7 +3031,7 @@ export BRCM_PKTCBL_SUPPORT
 endif
 
 ifeq ($(strip $(BRCM_MULTIPLE_TR69C_SUPPORT)),2)
-CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT_1=$(strip $(BRCM_MULTIPLE_TR69C_SUPPORT))
+CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT_1
 endif
 
 ifneq ($(strip $(OVERRIDE_EPON_MAC_ADDR)),)
@@ -3601,10 +3044,6 @@ endif
 
 ifneq ($(strip $(MLLID_SUPPORTED)),)
 CMS_COMPILE_FLAGS +=   -DMLLID_SUPPORTED
-endif
-
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_6858_63138_63148_63158_6856_6846_4908_6878_),)
-CMS_COMPILE_FLAGS += -DSUPPORT_SECURE_BOOT
 endif
 
 ifeq ($(EPON_CLOCK_TRANSPORT),y)
@@ -3626,15 +3065,6 @@ endif
 
 ifneq ($(BRCM_DRIVER_LASER),)
 CFLAGS += -DCONFIG_BCM_LASER
-endif
-
-ifeq ($(BRCM_PLATFORM_RDP_PRV),y)
-CFLAGS += -DCONFIG_BCM_PLATFORM_RDP_PRV
-CFLAGS += -DCONFIG_BCM_RUNNER_VLAN_ACTION
-CFLAGS += -DCONFIG_BCM_RUNNER_BRIDGE
-CFLAGS += -DCONFIG_BCM_RUNNER_VLAN
-CFLAGS += -DCONFIG_BCM_RUNNER_QOS_MAPPER
-CFLAGS += -DCONFIG_BCM_RUNNER_IPTV
 endif
 
 ifeq ($(BRCM_RUNNER_IPTV),y)
@@ -3660,11 +3090,6 @@ endif
 ifneq ($(findstring G9991_FC,$(PROJ_DEFS)),)
 CFLAGS += -DG9991_FC
 endif
-
-ifneq ($(findstring G9991_PRV,$(PROJ_DEFS)),)
-CFLAGS += -DG9991_PRV
-endif
-
 
 # Stack Smashing Protection.
 ifeq ($(strip $(BRCM_USER_SSP)),y)
@@ -3728,6 +3153,13 @@ ifneq ($(strip $(BUILD_PFRING)),)
 export BUILD_PFRING
 endif
 
+ifneq ($(strip $(BUILD_PYTHON3)),)
+BUILD_FFI=y
+BUILD_BZIP2=y
+BUILD_LIBUUID=y
+BUILD_ZLIB=y
+endif
+
 #####################################################################
 #
 # Final combining of all flags into CFLAGS
@@ -3756,15 +3188,25 @@ ifneq ($(strip $(BUILD_MODSW_EE)),)
 CFLAGS += $(CMS_COMPILE_FLAGS)
 endif
 
+ifneq ($(strip $(BUILD_LCM)),)
+CFLAGS += -DBRCM_LCM_BUILD -DCMS_LOG3
+endif
+
 endif  # ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 
 
 ifneq ($(strip $(BUILD_ASAN)),)
 CFLAGS += -fsanitize=address -fsanitize-recover=address -U_FORTIFY_SOURCE -fno-omit-frame-pointer -fno-common --param asan-instrumentation-with-call-threshold=0
 BCM_LD_FLAGS += -fsanitize=address -L$(TOOLCHAIN_TOP)/$(TOOLCHAIN_PREFIX)/lib
-STRIP  = /bin/touch 
-SSTRIP = /bin/touch 
+STRIP  = /bin/touch
+SSTRIP = /bin/touch
 export BUILD_ASAN
+endif
+
+ifneq ($(strip $(BUILD_GPERFTOOLS)),)
+CFLAGS += -funwind-tables -fasynchronous-unwind-tables -fno-omit-frame-pointer -U_FORTIFY_SOURCE
+STRIP  = /bin/touch
+SSTRIP = /bin/touch
 endif
 
 #####################################################################
@@ -3814,8 +3256,6 @@ profile_saved_check:
 	$(info $@: FORCE=$(FORCE))
 	@if [ -e $(LAST_PROFILE_COOKIE) -a $(PROFILE_DIR)/$(PROFILE) -nt $(LAST_PROFILE_COOKIE) ]; then \
 	  if [ -z $(FORCE) ]; then\
-	    echo "$(LAST_PROFILE_COOKIE) timestamp:"; stat -c %.Y $(LAST_PROFILE_COOKIE); \
-	    echo "$(PROFILE_DIR)/$(PROFILE) timastamp:"; stat -c %.Y $(PROFILE_DIR)/$(PROFILE); \
 	    echo "The specified profile, $(PROFILE), has been modified since the last build."; \
 	    echo "You must run make clean before rebuilding."; \
 	    echo "(To skip this check, build with FORCE=1)"; \
@@ -3862,8 +3302,8 @@ oal.a: $(OBJS)
 	$(AR) -rcs $@ $(OBJS)
 
 generic_exe_install: $(EXE)
-	mkdir -p $(INSTALL_DIR)/bin$(BCM_INSTALL_SUFFIX_DIR)
-	install -m 755 $(EXE) $(INSTALL_DIR)/bin$(BCM_INSTALL_SUFFIX_DIR)
+	mkdir -p $(INSTALL_DIR)/bin
+	install -m 755 $(EXE) $(INSTALL_DIR)/bin
 
 generic_public_lib_install: $(LIB)
 	mkdir -p $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
@@ -3954,8 +3394,11 @@ show_build_vars:
 	@echo "BCM_MODULAR_BUILD = $(BCM_MODULAR_BUILD)"
 	@echo "BUILD_DIR         = $(BUILD_DIR)"
 	@echo "EXT_BUILD_DIR     = $(EXT_BUILD_DIR)"
-	@echo "EXT_DEVICEFS_DIR  = $(EXT_DEVICEFS_DIR)"
 	@echo "TARGETS_DIR       = $(TARGETS_DIR)"
+	@echo "BCM_FSBUILD_DIR   = $(BCM_FSBUILD_DIR)"
+	@echo "BCM_FSINSTALL_DIR = $(BCM_FSINSTALL_DIR)"
+	@echo "EXT_DEVICEFS_DIR  = $(EXT_DEVICEFS_DIR)"
+	@echo "BCM_PKGDIR        = $(BCM_PKGDIR)"
 	@echo "========Userspace build vars======="
 	@echo "CURRENT_ARCH      = $(CURRENT_ARCH)"
 	@echo "PROFILE_ARCH      = $(PROFILE_ARCH)"

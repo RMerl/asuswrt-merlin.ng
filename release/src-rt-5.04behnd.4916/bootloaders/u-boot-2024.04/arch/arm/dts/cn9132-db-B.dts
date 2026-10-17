@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018-2021 Marvell International Ltd.
+ */
+
+#include "cn9131-db-B.dts"
+#include "cn9132-db.dtsi"
+
+/ {
+	model = "Marvell CN9132 development board (CP NAND) setup(B)";
+	compatible = "marvell,cn9132-db-B", "marvell,armada-ap806-quad",
+		     "marvell,armada-ap806";
+};

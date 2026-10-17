@@ -1,0 +1,55 @@
+Summary
+=======
+
+LEGO MINDSTORMS EV3 is a toy robot produced by the LEGO Group. It is based
+on the davinci da850 evm. The EV3 has a 16MB spi flash and a SDHC microSD card
+reader.
+
+Booting
+=======
+
+The EV3 contains a bootloader in EEPROM that loads u-boot.bin from address 0x0
+of the SPI flash memory (with a size of 256KiB!). Because the EEPROM is read-
+only and it takes care of low level configuration (PLL and DDR), we don't use
+U-Boot to produce an SPL image.
+
+Using the default configuration, U-Boot had a boot scrips that works as follows:
+
+* Check to see if microSD card is present
+* If it is, try to load boot.scr from the first FAT partition
+* If loading boot.scr was successful, run it
+* Otherwise, try loading uEnv.txt
+* If loading uEnv.txt was successful, import it
+* If there is a uenvcmd variable (from uEnv.txt), run it
+* Try to load uImage from the first FAT partition
+* If it was successful, try to load da850-lego-ev3.dtb
+* If loading uImage was successful, boot it (DT is optional)
+* If none of the above was successful, try booting from flash
+
+Suggested Flash Memory Layout
+=============================
+
+The following is based on the default U-Boot configuration:
+
+| Image (file)       | Start Addr. | Max. Size         |
++--------------------+-------------+-------------------+
+| u-boot.bin         |         0x0 |  0x40000 (256KiB) |
+| da850-lego-ev3.dtb |     0x40000 |  0x10000 (64KiB)  |
+| uImage             |     0x50000 | 0x400000 (4MiB)   |
+| rootfs (squashfs)  |    0x450000 | 0xa00000 (10MiB)  |
+
+Writing image to flash
+======================
+
+The EEPROM contains a program for uploading an image file to the flash memory.
+The program is started by holding down the right button on the EV3 when powering
+it on. You can also `run fwupdateboot` in the u-boot shell to reboot into this
+mode. The image can then be uploaded using the official LEGO MINDSTORMS EV3
+software or a 3rd party program capable of uploading a firmware file.
+
+If you are booting from the microSD card, it is enough to just write uboot.bin
+to the flash. If you are not using a microSD card, you will need to create an
+image file using the layout described above.
+
+IMPORTANT: The EEPROM bootloader only copies 256k, so u-boot.img must not
+exceed that size!

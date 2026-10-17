@@ -1,0 +1,598 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2019" >
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="Broadcom">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly. It will not be inserted into the data model. The Short Object Name must be FakeParentObject.</description>
+
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT." shortObjectName="RdkGponObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="Present" hideObjectFromAcs="true" pruneWriteToConfigFile="true" oid="2200" lockZone="9" />
+  <description source="Broadcom">This object is a root of the RDK GPON data model related objects.</description>
+
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}." shortObjectName="GponPhysicalMediaObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">This table models PON physical media. The table has just one entry if PON protection is not used.</description>
+
+  <parameter name="Status" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" validValuesArray="GponIfOperStatusValues"/>
+    <description source="Broadcom">Physical media interface status.</description>
+
+  <parameter name="Cage" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="SFP" validValuesArray="PhysicalMediaCage" />
+    <description source="Broadcom">Specifies the hardware layout for the optical module, BOSA on board or external SFP.</description>
+
+  <parameter name="ModuleVendor" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="Broadcom">Specifies the vendor name of the optical module.</description>
+
+  <parameter name="ModuleName" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="Broadcom">Specifies the model name of the optical module.</description>
+
+  <parameter name="ModuleVersion" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="Broadcom">Specifies the hardware version of the optical module.</description>
+
+  <parameter name="ModuleFirmwareVersion" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="Broadcom">Specifies the firmware version of the optical module.</description>
+
+  <parameter name="PonMode" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="GPON" validValuesArray="PhysicalMediaPonMode" />
+    <description source="Broadcom">GPON(G.984.3), XG-PON(G.987.3), XGS-PON(G.9807.1), NG-PON2(G.989.3).</description>
+
+  <parameter name="Connector" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="SC" validValuesArray="PhysicalMediaConnector" />
+    <description source="Broadcom">Specifies the fiber connector used by the optical module.</description>
+
+  <parameter name="Enable" type="boolean" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" />
+    <description source="RDK">Enables or disables the optical module.</description>
+
+  <parameter name="RedundancyState" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Active" validValuesArray="PhysicalMediaRedundancyState" />
+    <description source="Broadcom">Specifies the current redundancy state of the optical interface.</description>
+
+  <parameter name="Alias" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" maxLength="64" defaultValue="cpe-transceiver" autoGenerateAlias="true" />
+    <description source="RDK">Alias.</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="RDK">The accumulated time in seconds since the interface entered its current operational state.</description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" />
+    <description source="RDK">Comma-separated list (maximum length 1024) of strings. Note: it is expected that LowerLayers will be ReadOnly and will not be used.</description>
+
+  <parameter name="Upstream" type="boolean" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" />
+    <description source="RDK">Indicates whether the interface points towards the Internet (true) or towards End Devices (false).</description>
+
+  <parameter name="NominalBitRateDownstream" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="0" maxValue="4294967295" />
+    <description source="Broadcom">Specifies the downstream nominal data rate reachable depending the PON mode, expressed in kbps.</description>
+
+  <parameter name="NominalBitRateUpstream" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="0" maxValue="4294967295" />
+    <description source="Broadcom">Specifies the upstream nominal data rate reachable depending the PON mode, expressed in kbps.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}.PerformanceThreshold." shortObjectName="GponPhysicalMediaPmThrObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies OMCI-configured performance monitoring thresholds.</description>
+
+  <parameter name="SignalFail" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="3" maxValue="8" defaultValue="5"/>
+    <description source="Broadcom">Signal fail (SF) threshold. Reference: ITU-T G.988, Clause 9.2.1.</description>
+
+  <parameter name="SignalDegrade" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="4" maxValue="10" defaultValue="9"/>
+    <description source="Broadcom">Signal degrade (SD) threshold. Reference: ITU-T G.988, Clause 9.2.1.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}.RxPower." shortObjectName="GponPhysicalMediaRxPowerObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies optical signal level received and thresholds.</description>
+
+  <parameter name="SignalLevel" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies optical signal level received, expressed in 0.1dBm.</description>
+
+  <parameter name="SignalLevelLowerThreshold" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies the optical level the device uses to declare the low received optical power alarm, expressed in 0.1dBm.</description>
+
+  <parameter name="SignalLevelUpperThreshold" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies the optical level the device uses to declare the high received optical power alarm, expressed in 0.1dBm.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}.TxPower." shortObjectName="GponPhysicalMediaTxPowerObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies optical signal level transmitted and thresholds.</description>
+
+  <parameter name="SignalLevel" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies optical signal level transmitted, expressed in 0.1dBm.</description>
+
+  <parameter name="SignalLevelLowerThreshold" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies the optical level the device uses to declare the low transmitted optical power alarm, expressed in 0.1dBm.</description>
+
+  <parameter name="SignalLevelUpperThreshold" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies the optical level the device uses to declare the high transmitted optical power alarm, expressed in 0.1dBm.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}.Voltage." shortObjectName="GponPhysicalMediaVoltageObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies voltage related parameters.</description>
+
+  <parameter name="VoltageLevel" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies the voltage supplied to the optical module, expressed in mV.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}.Bias." shortObjectName="GponPhysicalMediaBiasObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies current related parameters.</description>
+
+  <parameter name="CurrentBias" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="0" maxValue="131072" />
+    <description source="Broadcom">Specifies the current bias applied to the SOA to pump laser, expressed in uA.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}.Temperature." shortObjectName="GponPhysicalMediaTempObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies temperature related parameters.</description>
+
+  <parameter name="CurrentTemp" type="int" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="-65536" maxValue="65534" />
+    <description source="Broadcom">Specifies the transceiver temperature, expressed in 0.1C.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.PhysicalMedia.{i}.Alarm." shortObjectName="GponPhysicalMediaAlarmsObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies TC layer alarms.</description>
+
+  <parameter name="LOS" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 LOS.</description>
+
+  <parameter name="LOF" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 LOF.</description>
+
+  <parameter name="SF" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 SF.</description>
+
+  <parameter name="SD" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 SD.</description>
+
+  <parameter name="LCDG" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 LCDG.</description>
+
+  <parameter name="TF" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 TF.</description>
+
+  <parameter name="SUF" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 SUF.</description>
+
+  <parameter name="MEM" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 MEM.</description>
+
+  <parameter name="DACT" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 DACT.</description>
+
+  <parameter name="DIS" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 DIS.</description>
+
+  <parameter name="MIS" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 MIS.</description>
+
+  <parameter name="PEE" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 PEE.</description>
+
+  <parameter name="RDI" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.984.3 (01/2014) 11.1.2 RDI.</description>
+
+  <parameter name="LODS" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">ITU-T G.9807.1 (2016)/A.1 Table C.14.3 (10/2017) LODS.</description>
+
+  <parameter name="ROGUE" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Inactive" maxLength="16" />
+    <description source="BROADCOM">Rogue ONU indication.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gtc." shortObjectName="GponGtcObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="Present" />
+  <description source="Broadcom">This table models GTC layer statistics. Reference: ITU-T G.988, 9.2.9 "Forward error correction performance monitoring history data", 9.2.22 "Enhanced FEC performance monitoring history data", 9.2.15 "XG-PON TC performance monitoring history data". The table has just one entry if PON protection is not used.</description>
+
+  <parameter name="CorrectedFecBytes" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Number of bytes that were corrected by the FEC function.</description>
+
+  <parameter name="CorrectedFecCodeWords" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The code words that were corrected by the FEC function.</description>
+
+  <parameter name="UnCorrectedFecCodeWords" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Errored code words that could not be corrected by the FEC function.</description>
+
+  <parameter name="TotalFecCodeWords" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The total received code words.</description>
+
+  <parameter name="HecErrorCount" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">HEC errors detected in the XGTC header. Reference: 'FS HEC error count' defined in Table C.14.1 of ITU-T G.9807. ITU-T G.988, Clause 9.2.15 and 9.2.23.</description>
+
+  <parameter name="PSBdHecErrors" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">HEC errors in any of the fields of the downstream physical sync block. Reference: 'PSBd HEC error count' defined in Table C.14.1 of ITU-T G.9807. ITU-T G.988, Clause 9.2.15 and 9.2.23.</description>
+
+  <parameter name="FrameHecErrors" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The number of instances of an XGEM frame HEC error. Reference: 'Count of XGEM frame header HEC errors' in Table C.14.1 of ITU-T G.9807. ITU-T G.988, Clause 9.2.15 and 9.2.23.</description>
+
+  <parameter name="FramesLost" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The number of 4 byte words lost because of an XGEM frame HEC error. Reference: ITU-T G.988, Clause 9.2.15 and 9.2.23.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Ploam." shortObjectName="GponPloamObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="Present" />
+  <description source="Broadcom">PLOAM related status and statistics.</description>
+
+  <parameter name="OnuId" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">ONU-ID assigned by the OLT.</description>
+
+  <parameter name="VendorId" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="Broadcom">The vendor of the ONU.</description>
+
+  <parameter name="SerialNumber" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="Broadcom">The serial number of the ONU.</description>
+
+  <parameter name="RegistrationState" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="O5" validValuesArray="OnuRegistrationState" />
+    <description source="Broadcom">The ONU registration state.</description>
+
+  <parameter name="ActivationCounter" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The number of times the ONU pass through O5 between reboots.</description>
+
+  <parameter name="TxMessageCount" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The number of PLOAM messages transmitted upstream.</description>
+
+  <parameter name="RxMessageCount" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The number of PLOAM messages received downstream.</description>
+
+  <parameter name="MicErrors" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Counter of received PLOAM messages with MIC errors.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Ploam.RegistrationTimers." shortObjectName="GponPloamRegistrationTimersObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="Present" />
+  <description source="Broadcom">PLOAM registration timers.</description>
+
+  <parameter name="TO1" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="0" maxValue="65535" defaultValue="10000" />
+    <description source="Broadcom">TO1 timer expressed in ms.</description>
+
+  <parameter name="TO2" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="0" maxValue="65535" defaultValue="100" />
+    <description source="Broadcom">TO2 timer expressed in ms.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Omci." shortObjectName="GponOmciObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="Present" />
+  <description source="Broadcom">OMCI statistics.</description>
+
+  <parameter name="RxBaseLineMessageCountValid" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The counter of baseline OMCI messages received by the ONU.</description>
+
+  <parameter name="RxExtendedMessageCountValid" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">The counter of extended OMCI messages received by the ONU.</description>
+
+  <parameter name="MicErrors" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">MIC errors detected in OMCI messages directed to this ONU.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.TcLayerStatus.{i}." shortObjectName="GponTcLayerStatusObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">This object models TC layer status.</description>
+
+  <parameter name="IfType" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" validValuesArray="PhysicalMediaPonMode"/>
+    <description source="Broadcom">GPON(G.984.3), XG-PON(G.987.3), XGS-PON(G.9807.1), NG-PON2(G.989.3).</description>
+
+  <parameter name="OnuState" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="1" minValue="1" maxValue="9" />
+    <description source="Broadcom">1: O1, ..., 9: O9. Reference: ITU-T G.984.3, G.987.3, G.9807.1, G.989.3.</description>
+
+  <parameter name="OnuId" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="0" maxValue="1020" />
+    <description source="Broadcom">TC layer ONU-ID identifier.</description>
+
+  <parameter name="SerialNumber" type="hexBinary" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="4252434D12345678" maxLength="8" />
+    <description source="Broadcom">TC layer ONU serial number.</description>
+
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.WanLinkStatus.{i}." shortObjectName="GponWanLinkStatusObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">This object models the WAN link status at both TC layer and OMCI layer.</description>
+
+  <parameter name="IfName" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" maxLength="32"/>
+    <description source="Broadcom">The WAN link name, e.g., "veip0".</description>
+
+  <parameter name="TcStatus" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" validValuesArray="GponIfOperStatusValues" />
+    <description source="Broadcom">The current operational state of the PON link. Reference: BBF TR-181, Device.Optical.Interface.</description>
+
+  <parameter name="OmciStatus" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" validValuesArray="OmciLayerOperStatusValues"/>
+    <description source="Broadcom">Up: the ONU has been provisioned at OMCI level for the VEIP interface, and it is ready to pass the data traffic. Down: the ONU is not provisioned at OMCI level for the VEIP interface, or it is not ready to pass the data traffic.</description>
+
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Veip.{i}." shortObjectName="GponVeipObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+
+  <parameter name="MeId" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.5.5.</description>
+
+  <parameter name="InterfaceName" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="veip0" maxLength="256" />
+    <description source="Broadcom">Linux interface name associated with this VEIP interface.</description>
+
+  <parameter name="AdministrativeState" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Unlock" />
+    <description source="Broadcom">VEIP interface administrative state. Note in G.988, the values are 0 (unlock) and 1 (lock); in this data model, the values are string type "Lock/Unlock". Reference: ITU-T G.988, Clause 9.5.5.</description>
+
+  <parameter name="OperationalState" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Down" validValuesArray="GponIfOperStatusValues"/>
+    <description source="Broadcom">VEIP interface operational state. Note this is different from the "Operational state" attribute defined in ITU-T G.988, Clause 9.5.5.</description>
+
+  <parameter name="InterDomainName" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="25" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.5.5.</description>
+
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Veip.{i}.EthernetFlow." shortObjectName="GponVeipEthFlowObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the traffic flow on VEIP.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Veip.{i}.EthernetFlow.Ingress." shortObjectName="GponVeipEthFlowIngressObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the traffic flow on VEIP, ingress from the ONU perspective.</description>
+
+  <parameter name="Tagged" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" validValuesArray="NumberOfTagsValues" />
+    <description source="Broadcom">Number of VLAN tags in the flow.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Veip.{i}.EthernetFlow.Ingress.Q-VLAN." shortObjectName="GponVeipEthFlowIngressQvlanObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the Q-VLAN object.</description>
+
+  <parameter name="Vid" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="4096" />
+    <description source="Broadcom">The VLAN ID of the Q-tag.</description>
+
+  <parameter name="Pcp" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="7" />
+    <description source="Broadcom">The Pbits (PCP field) of the Q-tag.</description>
+
+  <parameter name="Dei" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="1" />
+    <description source="Broadcom">The Drop Eligible Indicator (DEI) field of the Q-tag.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Veip.{i}.EthernetFlow.Egress." shortObjectName="GponVeipEthFlowEgressObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the traffic flow on VEIP, egress from the ONU perspective.</description>
+
+  <parameter name="Tagged" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" validValuesArray="NumberOfTagsValues" />
+    <description source="Broadcom">Number of VLAN tags in the flow.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Veip.{i}.EthernetFlow.Egress.Q-VLAN." shortObjectName="GponVeipEthFlowEgressQvlanObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the Q-VLAN object.</description>
+
+  <parameter name="Vid" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="4096" />
+    <description source="Broadcom">The VLAN ID of the Q-tag.</description>
+
+  <parameter name="Pcp" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="7" />
+    <description source="Broadcom">The Pbits (PCP field) of the Q-tag.</description>
+
+  <parameter name="Dei" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="1" />
+    <description source="Broadcom">The Drop Eligible Indicator (DEI) field of the Q-tag.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.TR69.{i}." shortObjectName="GponTr069MgmtServerObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+
+  <parameter name="ManagedEntityId" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.12.16.</description>
+
+  <parameter name="AdministrativeState" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" minValue="0" maxValue="1" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.12.16.</description>
+
+  <parameter name="Url" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="375" />
+    <description source="Broadcom">Reference: 'ACS network address', ITU-T G.988, Clause 9.12.16.</description>
+
+  <parameter name="AcsNetworkAddress" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="375" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.12.16.</description>
+
+  <parameter name="AssociatedTag" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="65535" minValue="0" maxValue="65535" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.12.16.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Stats." shortObjectName="GponStatsObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="Present" />
+
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.GponVeipStats.{i}." shortObjectName="GponVeipStatObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+
+  <parameter name="IfName" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" maxLength="32"/>
+    <description source="Broadcom">The VEIP interface name, e.g., "veip0".</description>
+
+  <parameter name="Direction" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="upstream" validValuesArray="CounterDirectionValues" />
+    <description source="Broadcom">Indicate the direction of the counters, upstream or downstream.</description>
+
+  <parameter name="DropEvents" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Octets" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Frames" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="BroadcastFrames" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="MulticastFrames" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="CrcErroredFrames" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="UndersizeFrames" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="OversizeFrames" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Frames64Octets" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Frames65to127Octets" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Frames128to255Octets" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Frames256to511Octets" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Frames512to1023Octets" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+  <parameter name="Frames1024to1518Octets" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.3.34.</description>
+
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}." shortObjectName="GponGemStatObject" specSource="RDK" profile="X_RDK_ONT:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+
+  <parameter name="PortId" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.2.13.</description>
+
+  <parameter name="TrafficType" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Bidirectional"/>
+    <description source="Broadcom">GEM port traffic type, Unidirectional or Bidirectional.</description>
+
+  <parameter name="AllocId" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="Broadcom">Alloc-Id associated with the GEM port, 0xFFFF if not applicable.</description>
+
+  <parameter name="Type" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Unicast" validValuesArray="GemPortTypeValues" />
+    <description source="Broadcom">GEM port type, unicast, multicast, or broadcast.</description>
+
+  <parameter name="TransmittedFrames" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.2.13.</description>
+
+  <parameter name="ReceivedFrames" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.2.13.</description>
+
+  <parameter name="TransmittedPayloadBytes" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.2.13.</description>
+
+  <parameter name="ReceivedPayloadBytes" type="unsignedLong" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.2.13.</description>
+
+  <parameter name="EncryptionKeyErrors" type="unsignedInt" specSource="RDK" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="Broadcom">Reference: ITU-T G.988, Clause 9.2.13.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}.EthernetFlow." shortObjectName="GponGemEthFlowObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the traffic flow on GEM.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}.EthernetFlow.Ingress." shortObjectName="GponGemEthFlowIngressObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the traffic flow on GEM, ingress from the ONU perspective.</description>
+
+  <parameter name="Tagged" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" validValuesArray="NumberOfTagsValues" />
+    <description source="Broadcom">Number of VLAN tags in the flow.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}.EthernetFlow.Ingress.C-VLAN." shortObjectName="GponGemEthFlowIngressCVlanObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the C-VLAN object.</description>
+
+  <parameter name="Vid" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="4096" />
+    <description source="Broadcom">The VLAN ID of the C-tag.</description>
+
+  <parameter name="Pcp" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="7" />
+    <description source="Broadcom">The Pbits (PCP field) of the C-tag.</description>
+
+  <parameter name="Dei" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="1" />
+    <description source="Broadcom">The Drop Eligible Indicator (DEI) field of the C-tag.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}.EthernetFlow.Ingress.S-VLAN." shortObjectName="GponGemEthFlowIngressSVlanObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the S-VLAN object.</description>
+
+  <parameter name="Vid" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="4096" />
+    <description source="Broadcom">The VLAN ID of the S-tag.</description>
+
+  <parameter name="Pcp" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="7" />
+    <description source="Broadcom">The Pbits (PCP field) of the S-tag.</description>
+
+  <parameter name="Dei" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="1" />
+    <description source="Broadcom">The Drop Eligible Indicator (DEI) field of the S-tag.</description>
+
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}.EthernetFlow.Egress." shortObjectName="GponGemEthFlowEgressObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the traffic flow on GEM, egress from the ONU perspective.</description>
+
+  <parameter name="Tagged" type="string" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" validValuesArray="NumberOfTagsValues" />
+    <description source="Broadcom">Number of VLAN tags in the flow.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}.EthernetFlow.Egress.C-VLAN." shortObjectName="GponGemEthFlowEgressCVlanObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the C-VLAN object.</description>
+
+  <parameter name="Vid" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="4096" />
+    <description source="Broadcom">The VLAN ID of the C-tag.</description>
+
+  <parameter name="Pcp" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="7" />
+    <description source="Broadcom">The Pbits (PCP field) of the C-tag.</description>
+
+  <parameter name="Dei" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="1" />
+    <description source="Broadcom">The Drop Eligible Indicator (DEI) field of the C-tag.</description>
+
+<object name="InternetGatewayDevice.X_RDK_ONT.Gem.{i}.EthernetFlow.Egress.S-VLAN." shortObjectName="GponGemEthFlowEgressSVlanObject" specSource="RDK" profile="X_BROADCOM_COM_Gpon_EthFlow:1" supportLevel="DynamicInstances" />
+  <description source="Broadcom">Specifies the S-VLAN object.</description>
+
+  <parameter name="Vid" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="4096" />
+    <description source="Broadcom">The VLAN ID of the S-tag.</description>
+
+  <parameter name="Pcp" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="7" />
+    <description source="Broadcom">The Pbits (PCP field) of the S-tag.</description>
+
+  <parameter name="Dei" type="unsignedInt" specSource="RDK" profile="Unspecified" supportLevel="ReadWrite" minValue="0" maxValue="1" />
+    <description source="Broadcom">The Drop Eligible Indicator (DEI) field of the S-tag.</description>
+
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+<validstringarray name="PhysicalMediaCage" />
+  <element>SFP</element>
+  <element>BOB</element>
+
+<validstringarray name="PhysicalMediaPonMode" />
+  <element>GPON</element>
+  <element>XG-PON</element>
+  <element>XGS-PON</element>
+  <element>NG-PON2</element>
+
+<validstringarray name="PhysicalMediaConnector" />
+  <element>LC</element>
+  <element>SC</element>
+  <element>ST</element>
+  <element>FC</element>
+  <element>MT-RJ</element>
+
+<validstringarray name="OnuRegistrationState" />
+  <element>O1</element>
+  <element>O2</element>
+  <element>O3</element>
+  <element>O4</element>
+  <element>O5</element>
+  <element>O6</element>
+  <element>O7</element>
+  <element>O8</element>
+  <element>O9</element>
+
+<validstringarray name="GponIfOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="OmciLayerOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+
+<validstringarray name="CounterDirectionValues" />
+  <element>upstream</element>
+  <element>downstream</element>
+
+<validstringarray name="GemPortTypeValues" />
+  <element>Unicast</element>
+  <element>Multicast</element>
+  <element>Broadcast</element>
+
+<validstringarray name="PhysicalMediaRedundancyState" />
+  <element>Active</element>
+  <element>Standby</element>
+
+<validstringarray name="FlowDirectionValues" />
+  <element>Ingress</element>
+  <element>Egress</element>
+
+<validstringarray name="NumberOfTagsValues" />
+  <element>Untagged</element>
+  <element>Single</element>
+  <element>Double</element>
+
+</vsaInfo>
+
+
+<profileInfo>
+<profile name="Baseline:1" />
+<profile name="X_BROADCOM_COM_Baseline:1" />
+<profile name="X_BROADCOM_COM_Gpon:1" />
+<profile name="X_BROADCOM_COM_Gpon_EthFlow:1" />
+<profile name="X_BROADCOM_COM_GponWAN:1" />
+<profile name="X_BROADCOM_COM_GponRG_OMCI_Full:1" />
+<profile name="X_BROADCOM_COM_GponOnt:1" />
+<profile name="X_RDK_ONT:1" />
+<profile name="Unspecified" />
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

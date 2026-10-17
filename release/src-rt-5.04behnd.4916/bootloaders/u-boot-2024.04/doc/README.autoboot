@@ -1,0 +1,162 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2001
+ * Dave Ellis, SIXNET, dge@sixnetio.com
+ *
+ */
+
+Using autoboot configuration options
+====================================
+
+The basic autoboot configuration options are documented in the main
+U-Boot README. See it for details. They are:
+
+  bootdelay
+  bootcmd
+  CONFIG_BOOTDELAY
+  CONFIG_BOOTCOMMAND
+
+Some additional options that make autoboot safer in a production
+product are documented here.
+
+Why use them?
+-------------
+
+The basic autoboot feature allows a system to automatically boot to
+the real application (such as Linux) without a user having to enter
+any commands. If any key is pressed before the boot delay time
+expires, U-Boot stops the autoboot process, gives a U-Boot prompt
+and waits forever for a command. That's a good thing if you pressed a
+key because you wanted to get the prompt.
+
+It's not so good if the key press was a stray character on the
+console serial port, say because a user who knows nothing about
+U-Boot pressed a key before the system had time to boot. It's even
+worse on an embedded product that doesn't have a console during
+normal use. The modem plugged into that console port sends a
+character at the wrong time and the system hangs, with no clue as to
+why it isn't working.
+
+You might want the system to autoboot to recover after an external
+configuration program stops autoboot. If the configuration program
+dies or loses its connection (modems can disconnect at the worst
+time) U-Boot will patiently wait forever for it to finish.
+
+These additional configuration options can help provide a system that
+boots when it should, but still allows access to U-Boot.
+
+What they do
+------------
+
+  CONFIG_BOOT_RETRY_TIME
+  CONFIG_BOOT_RETRY_MIN
+
+  "bootretry" environment variable
+
+	These options determine what happens after autoboot is
+	stopped and U-Boot is waiting for commands.
+
+	CONFIG_BOOT_RETRY_TIME must be defined to enable the boot
+	retry feature. If the environment variable "bootretry" is
+	found then its value is used, otherwise the retry timeout is
+	CONFIG_BOOT_RETRY_TIME. CONFIG_BOOT_RETRY_MIN is optional and
+	defaults to CONFIG_BOOT_RETRY_TIME. All times are in seconds.
+
+	If the retry timeout is negative, the U-Boot command prompt
+	never times out. Otherwise it is forced to be at least
+	CONFIG_BOOT_RETRY_MIN seconds. If no valid U-Boot command is
+	entered before the specified time the boot delay sequence is
+	restarted. Each command that U-Boot executes restarts the
+	timeout.
+
+	If CONFIG_BOOT_RETRY_TIME < 0 the feature is there, but
+	doesn't do anything unless the environment variable
+	"bootretry" is >= 0.
+
+  CONFIG_AUTOBOOT_KEYED
+  CONFIG_AUTOBOOT_KEYED_CTRLC
+  CONFIG_AUTOBOOT_PROMPT
+  CONFIG_AUTOBOOT_DELAY_STR
+  CONFIG_AUTOBOOT_STOP_STR
+
+  "bootdelaykey"  environment variable
+  "bootstopkey"	  environment variable
+
+	These options give more control over stopping autoboot. When
+	they are used a specific character or string is required to
+	stop or delay autoboot.
+
+	Define CONFIG_AUTOBOOT_KEYED (no value required) to enable
+	this group of options.	CONFIG_AUTOBOOT_DELAY_STR,
+	CONFIG_AUTOBOOT_STOP_STR or both should be specified (or
+	specified by the corresponding environment variable),
+	otherwise there is no way to stop autoboot.
+
+	CONFIG_AUTOBOOT_PROMPT is displayed before the boot delay
+	selected by CONFIG_BOOTDELAY starts. If it is not defined
+	there is no output indicating that autoboot is in progress.
+
+	Note that CONFIG_AUTOBOOT_PROMPT is used as the (only)
+	argument to a printf() call, so it may contain '%' format
+	specifications, provided that it also includes, sepearated by
+	commas exactly like in a printf statement, the required
+	arguments. It is the responsibility of the user to select only
+	such arguments that are valid in the given context. A
+	reasonable prompt could be defined as
+
+		#define CONFIG_AUTOBOOT_PROMPT \
+			"autoboot in %d seconds\n",bootdelay
+
+	If CONFIG_AUTOBOOT_DELAY_STR or "bootdelaykey" is specified
+	and this string is received from console input before
+	autoboot starts booting, U-Boot gives a command prompt. The
+	U-Boot prompt will time out if CONFIG_BOOT_RETRY_TIME is
+	used, otherwise it never times out.
+
+	If CONFIG_AUTOBOOT_STOP_STR or "bootstopkey" is specified and
+	this string is received from console input before autoboot
+	starts booting, U-Boot gives a command prompt. The U-Boot
+	prompt never times out, even if CONFIG_BOOT_RETRY_TIME is
+	used.
+
+	The string recognition is not very sophisticated. If a
+	partial match is detected, the first non-matching character
+	is checked to see if starts a new match. There is no check
+	for a shorter partial match, so it's best if the first
+	character of a key string does not appear in the rest of the
+	string.
+
+	The CONFIG_AUTOBOOT_KEYED_CTRLC #define allows for the boot
+	sequence to be interrupted by ctrl-c, in addition to the
+	"bootdelaykey" and "bootstopkey". Setting this variable
+	provides an escape sequence from the limited "password"
+	strings.
+
+  CONFIG_AUTOBOOT_ENCRYPTION
+
+  "bootstopkeysha256"	environment variable
+
+	- Hash value of the input which unlocks the device and
+	  stops autoboot.
+
+	This option allows a string to be entered into U-Boot to stop the
+	autoboot. The string itself is hashed and compared against the hash
+	in the environment variable 'bootstopkeysha256'. If it matches then
+	boot stops and a command-line prompt is presented.
+
+	This provides a way to ship a secure production device which can also
+	be accessed at the U-Boot command line.
+
+  CONFIG_RESET_TO_RETRY
+
+	(Only effective when CONFIG_BOOT_RETRY_TIME is also set)
+	After the countdown timed out, the board will be reset to restart
+	again.
+
+  CONFIG_AUTOBOOT_USE_MENUKEY
+  CONFIG_AUTOBOOT_MENUKEY
+
+	If this key is pressed to stop autoboot, then the commands in the
+	environment variable 'menucmd' will be executed before boot starts.
+	For example, 33 means "!" in ASCII, so pressing ! at boot would take
+	this action.

@@ -199,7 +199,7 @@ void rdp_rnr_write_context(void *__to, void *__from, unsigned int __n)
 
     for (i = 0; i < n; i++, src += 4, dst += 4)
     {
-/* In 68460: and 63158, context memory has logical size 96x128 */
+/* In 63158, context memory has logical size 96x128 */
 #if defined(BCM6858) || defined(BCM6836)
         if ((i & 0x3) == 3)
             continue;
@@ -219,7 +219,7 @@ int drv_rnr_config_clock_autogate(bdmf_boolean auto_gate, uint8_t timer_val)
          rnr_ctrl.enable_powersave_core_0 = auto_gate ? 1 : 0;
          rnr_ctrl.enable_powersave_core_1 = auto_gate ? 1 : 0;
          rnr_ctrl.enable_powersave_core_2 = auto_gate ? 1 : 0;
-#if !defined(BCM6846) && !defined(BCM6878) && !defined(BCM63146) && !defined(BCM4912)
+#if !defined(BCM63146) && !defined(BCM4912)
          rnr_ctrl.enable_powersave_core_3 = auto_gate ? 1 : 0;
 #ifndef BCM6858
          rnr_ctrl.enable_powersave_core_4 = auto_gate ? 1 : 0;

@@ -1,0 +1,19 @@
+MVEBU_ARMADA_8K BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/Marvell/mvebu_armada-8k/
+F:	include/configs/mvebu_armada-8k.h
+F:	configs/mvebu_db_armada8k_defconfig
+
+
+MACCHIATOBin BOARD
+M:	Konstantin Porotchkin <kostap@marvell.com>
+S:	Maintained
+F:	configs/mvebu_mcbin-88f8040_defconfig
+
+Puzzle-M801 BOARD
+M:	Luka Kovacic <luka.kovacic@sartura.hr>
+M:	Luka Perkov <luka.perkov@sartura.hr>
+S:	Maintained
+F:	configs/mvebu_puzzle-m801-88f8040_defconfig
+F:	arch/arm/dts/armada-8040-puzzle-m801.dts

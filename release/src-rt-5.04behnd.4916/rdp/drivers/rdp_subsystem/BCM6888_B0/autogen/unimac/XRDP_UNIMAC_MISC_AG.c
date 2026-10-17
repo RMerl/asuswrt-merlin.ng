@@ -933,6 +933,9 @@ static const ru_reg_rec *UNIMAC_MISC_REGS[] =
 const ru_block_rec UNIMAC_MISC_BLOCK =
 {
     "UNIMAC_MISC",
+#if RU_INCLUDE_SIZE
+    { 0x00000050 },
+#endif
     UNIMAC_MISC_ADDRS,
     4,
     12,

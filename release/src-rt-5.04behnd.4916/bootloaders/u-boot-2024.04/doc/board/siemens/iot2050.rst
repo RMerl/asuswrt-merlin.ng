@@ -1,0 +1,164 @@
+.. SPDX-License-Identifier: GPL-2.0+
+.. sectionauthor:: Jan Kiszka <jan.kiszka@siemens.com>
+
+SIMATIC IOT2050 BASIC and ADVANCED
+==================================
+
+The SIMATIC IOT2050 is an open industrial IoT gateway that is using the TI
+AM6528 GP (Basic variant) or the AM6548 HS (Advanced variant). The Advanced
+variant is prepared for secure boot. M.2 Variant also uses the AM6548 HS.
+Instead of a MiniPCI connector, it comes with two M.2 connectors and can
+support 5G/WIFI/BT applications or connect an SSD.
+
+The IOT2050 starts only from OSPI. It loads a Siemens-provided bootloader
+called SE-Boot for the MCU domain (R5F cores), then hands over to ATF and
+OP-TEE, before booting U-Boot on the A53 cores. This describes how to build all
+open artifacts into a flashable image for the OSPI flash. The flash image will
+work on both variants.
+
+Dependencies
+------------
+
+ATF:    Upstream release 2.4 or newer
+OP-TEE: Upstream release 3.10.0 or newer
+
+Binary dependencies can be found in
+https://github.com/siemens/meta-iot2050/tree/master/recipes-bsp/u-boot/files/prebuild.
+The following binaries from that source need to be present in the build folder:
+
+ - seboot_pg1.bin
+ - seboot_pg2.bin
+
+When using the watchdog, a related firmware for the R5 core(s) is needed, e.g.
+https://github.com/siemens/k3-rti-wdt. The name and location of the image is
+configured via CONFIG_WDT_K3_RTI_FW_FILE.
+
+For building an image containing the OTP key provisioning data, below binary
+needs to be present in the build folder:
+
+ - otpcmd.bin
+
+Regarding how to generating this otpcmd.bin, please refer to:
+https://github.com/siemens/meta-iot2050/tree/master/recipes-bsp/secure-boot-otp-provisioning/files/make-otpcmd.sh
+
+Building
+--------
+
+Make sure that CROSS_COMPILE is set appropriately:
+
+.. code-block:: text
+
+ $ export CROSS_COMPILE=aarch64-linux-gnu-
+
+ATF:
+
+.. code-block:: text
+
+ $ make PLAT=k3 SPD=opteed K3_USART=1
+
+OP-TEE:
+
+.. code-block:: text
+
+ $ make PLATFORM=k3-am65x CFG_ARM64_core=y CFG_TEE_CORE_LOG_LEVEL=2 CFG_CONSOLE_UART=1 CFG_USER_TA_TARGETS="ta_arm64"
+
+U-Boot:
+
+.. code-block:: text
+
+ $ export BL31=/path/to/bl31.bin
+ $ export TEE=/path/to/tee-raw.bin
+ $ make iot2050_defconfig
+
+ $ make
+
+This will generate two different flash images: flash-p1.bin that targets the
+first generation of IOT2050 devices and flash-pg2.bin that runs on PG2
+including M.2 devices.
+
+Flashing
+--------
+
+Via U-Boot:
+
+.. code-block:: text
+
+ IOT2050> sf probe
+ IOT2050> load mmc 0:1 $loadaddr /path/to/flash-pgX.bin
+ IOT2050> sf update $loadaddr 0x0 $filesize
+
+Via external programmer Dediprog SF100 or SF600:
+
+.. code-block:: text
+
+ $ dpcmd --vcc 2 -v -u flash-pgX.bin
+
+Signing (optional)
+------------------
+
+To enable verified boot for the firmware artifacts after the Siemens-managed
+first-stage loader (seboot_pgX.bin), the following steps need to be taken
+before and after the build:
+
+Generate dtsi holding the public key
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: text
+
+ tools/key2dtsi.py -c -s key.pem public-key.dtsi
+
+This will be used to embed the public key into U-Boot SPL and main so that each
+step can validate signatures of the succeeding one.
+
+Adjust U-Boot configuration
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Enabled at least the following options in U-Boot:
+
+.. code-block:: text
+
+ CONFIG_SPL_FIT_SIGNATURE=y
+ CONFIG_DEVICE_TREE_INCLUDES="/path/to/public-key.dtsi"
+ CONFIG_RSA=y
+
+Note that there are more configuration changes needed in order to lock-down
+the command line and the boot process of U-Boot for secure scenarios. These are
+not in scope here.
+
+Build U-Boot
+^^^^^^^^^^^^
+
+See related section above.
+
+Sign flash-pgX.bin
+^^^^^^^^^^^^^^^^^^
+
+In the build folder still containing artifacts from step 3, invoke:
+
+.. code-block:: text
+
+ tools/iot2050-sign-fw.sh /path/to/key.pem
+
+Flash signed flash-pgX.bin
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The signing has happen in-place in flash-pgX.bin, thus the flashing procedure
+described above.
+
+M.2 slot configuration
+----------------------
+
+The M.2 variant of the IOT2050 comes with one B-keyed and one E-keyed slot.
+These are configured by U-Boot depending on the detected usage (auto
+configuration). The device tree loaded later on for the OS will be fixed up
+by U-Boot according to this configuration.
+
+For the case auto configuration does not work reliably, it is possible to set
+the U-Boot environment variable "m2_manual_config" to select the mode manually:
+
+"0"  -  B-key: PCIe x2, USB 2.0
+        E-key: USB 2.0
+"1"  -  B-key: PCIe, USB 2.0
+        E-key: PCIe, USB 2.0
+"2"  -  B-key: USB 3.0,
+        E-key: PCIe, USB 2.0

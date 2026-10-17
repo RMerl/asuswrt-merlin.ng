@@ -1,0 +1,27 @@
+if TARGET_COUGARCANYON2
+
+config SYS_BOARD
+	default "cougarcanyon2"
+
+config SYS_VENDOR
+	default "intel"
+
+config SYS_SOC
+	default "ivybridge"
+
+config SYS_CONFIG_NAME
+	default "cougarcanyon2"
+
+config TEXT_BASE
+	default 0xffe00000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select NORTHBRIDGE_INTEL_IVYBRIDGE
+	select HAVE_FSP
+	select BOARD_ROMSIZE_KB_2048
+	select BOARD_EARLY_INIT_F
+	select SPI_FLASH_WINBOND
+
+endif

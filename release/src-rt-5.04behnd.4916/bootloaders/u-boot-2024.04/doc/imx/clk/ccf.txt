@@ -1,0 +1,102 @@
+Introduction:
+=============
+
+This documentation entry describes the Common Clock Framework [CCF] port from
+Linux kernel (v5.1.12) to U-Boot.
+
+This code is supposed to bring CCF to IMX based devices (imx6q, imx7 imx8).
+Moreover, it also provides some common clock code, which would allow easy
+porting of CCF Linux code to other platforms.
+
+Design decisions:
+=================
+
+* U-Boot's driver model [DM] for clk differs from Linux CCF. The most notably
+  difference is the lack of support for hierarchical clocks and "clock as a
+  manager driver" (single clock DTS node acts as a starting point for all other
+  clocks).
+
+* The clk_get_rate() caches the previously read data if CLK_GET_RATE_NOCACHE is
+  not set (no need for recursive access).
+
+* On purpose the "manager" clk driver (clk-imx6q.c) is not using large table to
+  store pointers to clocks - e.g. clk[IMX6QDL_CLK_USDHC2_SEL] = .... Instead we
+  use udevice's linked list for the same class (UCLASS_CLK).
+
+  Rationale:
+  ----------
+    When porting the code as is from Linux, one would need ~1KiB of RAM to store
+    it. This is way too much if we do plan to use this driver in SPL.
+
+* The "central" structure of this patch series is struct udevice and its
+  uclass_priv field contains the struct clk pointer (to the originally created
+  one).
+
+* To keep things simple the struct udevice's uclass_priv pointer is used to
+  store back pointer to corresponding struct clk. However, it is possible to
+  modify clk-uclass.c file and add there struct uc_clk_priv, which would have
+  clock related members (like pointer to clk). As of this writing there is no
+  such need, so to avoid extra allocations (as it can be auto allocated by
+  setting .per_device_auto = sizeof(struct uc_clk_priv)) the
+  uclass_priv stores the pointer to struct clk.
+
+* Non-CCF clocks do not have a pointer to a clock in clk->dev->priv. In the case
+  of composite clocks, clk->dev->priv may not match clk. Drivers should always
+  use the struct clk which is passed to them, and not clk->dev->priv.
+
+* It is advised to add common clock code (like already added rate and flags) to
+  the struct clk, which is a top level description of the clock.
+
+* U-Boot's driver model already provides the facility to automatically allocate
+  (via private_alloc_size) device private data (accessible via dev->priv). It
+  may look appealing to use this feature to allocate private structures for CCF
+  clk devices e.g. divider (struct clk_divider *divider) for IMX6Q clock.
+
+  The above feature had not been used for following reasons:
+  - The original CCF Linux kernel driver is the "manager" for clocks - it
+    decides when clock is instantiated (and when memory for it is allocated).
+
+  - Using it would change the original structure of the CCF code.
+
+  - To bind (via clk_register()) the clock device with U-Boot driver model we
+    first need udevice for it (the "chicken and egg problem").
+
+* I've added the clk_get_parent(), which reads parent's dev->uclass_priv to
+  provide parent's struct clk pointer. This seems the easiest way to get
+  child/parent relationship for struct clk in U-Boot's udevice based clocks.  In
+  the future arbitrary parents may be supported by adding a get_parent function
+  to clk_ops.
+
+* Linux's CCF 'struct clk_core' corresponds to U-Boot's udevice in 'struct clk'.
+  Clock IP block agnostic flags from 'struct clk_core' (e.g. NOCACHE) have been
+  moved from this struct one level up to 'struct clk'. Many flags are
+  unimplemented at the moment.
+
+* For tests the new ./test/dm/clk_ccf.c and ./drivers/clk/clk_sandbox_ccf.c
+  files have been introduced. The latter setups the CCF clock structure for
+  sandbox by reusing, if possible, generic clock primitives - like divier and
+  mux. The former file provides code to tests this setup.
+
+  For sandbox new CONFIG_SANDBOX_CLK_CCF Kconfig define has been introduced.
+  All new primitives added for new architectures must have corresponding test in
+  the two aforementioned files.
+
+Testing (sandbox):
+==================
+
+make mrproper; make sandbox_defconfig; make -j4
+./u-boot -i -d arch/sandbox/dts/test.dtb
+=> ut dm clk
+
+or in a more "scriptable" way (with -v to print debug output):
+./u-boot --fdt arch/sandbox/dts/test.dtb --command "ut dm clk_ccf" -v
+
+To do:
+------
+
+* Use of OF_PLATDATA in the SPL setup for CCF - as it is now - the SPL grows
+  considerably and using CCF in boards with tiny resources (OCRAM) is
+  problematic.
+
+* On demand port other parts of CCF to U-Boot - as now only features _really_
+  needed by DM/DTS converted drivers are used.

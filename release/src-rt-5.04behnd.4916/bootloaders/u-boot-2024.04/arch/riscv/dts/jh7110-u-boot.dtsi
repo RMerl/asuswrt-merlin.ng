@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * Copyright (C) 2022 StarFive Technology Co., Ltd.
+ */
+
+#include <dt-bindings/reset/starfive,jh7110-crg.h>
+
+/ {
+	cpus: cpus {
+		bootph-pre-ram;
+
+		S7_0: cpu@0 {
+			bootph-pre-ram;
+			status = "okay";
+			cpu0_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+
+		U74_1: cpu@1 {
+			bootph-pre-ram;
+			cpu1_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+
+		U74_2: cpu@2 {
+			bootph-pre-ram;
+			cpu2_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+
+		U74_3: cpu@3 {
+			bootph-pre-ram;
+			cpu3_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+
+		U74_4: cpu@4 {
+			bootph-pre-ram;
+			cpu4_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+	};
+
+	soc {
+		bootph-pre-ram;
+
+		clint: timer@2000000 {
+			bootph-pre-ram;
+		};
+
+		dmc: dmc@15700000 {
+			bootph-pre-ram;
+			compatible = "starfive,jh7110-dmc";
+			reg = <0x0 0x15700000 0x0 0x10000>,
+				<0x0 0x13000000 0x0 0x10000>;
+			resets = <&syscrg JH7110_SYSRST_DDR_AXI>,
+				<&syscrg JH7110_SYSRST_DDR_OSC>,
+				<&syscrg JH7110_SYSRST_DDR_APB>;
+			reset-names = "axi", "osc", "apb";
+			clocks = <&syscrg JH7110_SYSCLK_PLL1_OUT>;
+			clock-names = "pll1_out";
+			clock-frequency = <2133>;
+		};
+	};
+};
+
+&osc {
+	bootph-pre-ram;
+};
+
+&gmac0_rmii_refin {
+	bootph-pre-ram;
+};
+
+&aoncrg {
+	bootph-pre-ram;
+};
+
+&syscrg {
+	bootph-pre-ram;
+};
+
+&stgcrg {
+	bootph-pre-ram;
+};
+
+&sys_syscon {
+	bootph-pre-ram;
+};
+
+&pllclk {
+	bootph-pre-ram;
+};
+
+&S7_0 {
+	status = "okay";
+};

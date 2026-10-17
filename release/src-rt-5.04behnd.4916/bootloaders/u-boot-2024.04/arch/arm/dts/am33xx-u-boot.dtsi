@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 B&R Industrial Automation GmbH -
+ * https://www.br-automation.com/
+ */
+
+/ {
+	ocp {
+		bootph-all;
+	};
+};
+
+&prcm_clocks {
+	compatible = "simple-bus";
+};
+
+&scm_clocks {
+	compatible = "simple-bus";
+};

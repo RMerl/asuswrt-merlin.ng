@@ -1,0 +1,63 @@
+How to Update U-Boot on Warp7 board
+----------------------------------
+
+Required software on the host PC:
+
+- imx_usb_loader: https://github.com/boundarydevices/imx_usb_loader
+
+- dfu-util: http://dfu-util.sourceforge.net/releases/ (if you are in a
+Debian distribution then you can get it via libdfu-dev package)
+
+- libusb: http://libusb.org/ (if you are in a Debian distribution
+then you can get it via libusb-dev and libusb-1.0-0-dev)
+
+In U-Boot folder, build U-Boot for Warp7:
+
+$ make mrproper
+$ make warp7_config
+$ make
+
+This will generate the U-Boot binary called u-boot-dtb.imx.
+
+Put warp7 board in USB download mode:
+
+Remove the CPU board from the base board then put switch 2 in the upper
+position
+
+Connect a USB to serial adapter between the host PC and warp7
+
+Connect a USB cable between the OTG warp7 port and the host PC
+
+Copy u-boot-dtb.imx to the imx_usb_loader folder.
+
+Load u-boot-dtb.imx via USB:
+
+$ sudo ./imx_usb u-boot-dtb.imx
+
+Then U-Boot should start and its messages will appear in the console program.
+
+Open a terminal program such as minicom
+
+Use the default environment variables:
+
+=> env default -f -a
+=> saveenv
+
+Run the DFU command:
+=> dfu 0 mmc 0
+
+Transfer u-boot-dtb.imx that will be flashed into the eMMC:
+
+$ sudo dfu-util -D u-boot-dtb.imx -a boot
+
+Then on the U-Boot prompt the following message should be seen after a
+successful upgrade:
+
+#DOWNLOAD ... OK
+Ctrl+C to exit ...
+
+Remove power from the warp7 board.
+
+Put warp7 board into normal boot mode (put the switch 2 in the lower position)
+
+Power up the board and the new updated U-Boot should boot from eMMC

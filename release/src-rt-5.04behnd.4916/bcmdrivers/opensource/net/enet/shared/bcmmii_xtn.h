@@ -97,10 +97,6 @@ enum {
 
 #define PAGE_SWITCH_EXTEND_REG     0x100
 
-#if defined(CONFIG_BCM94908)
-#define SF2_P11_RGMII_CTRL_REGS             0x53UL
-#define SF2_P11_RGMII_RX_CLK_DELAY_CTRL     0x55UL
-#else
 //  SF2 P5 RGMII Control Register
 #define SF2_P5_RGMII_CTRL_REGS              0x1cUL
 #define SF2_P5_RGMII_RX_CLK_DELAY_CTRL      0x1eUL
@@ -113,7 +109,6 @@ enum {
 //  SF2 P12 RGMII Control Register
 #define SF2_P12_RGMII_CTRL_REGS             0x35UL
 #define SF2_P12_RGMII_RX_CLK_DELAY_CTRL     0x37UL
-#endif /* !4908 */
 
 #define SF2_QUAD_PHY_BASE_REG               0x40024UL  // default quad phy adr base = 1
 #define SF2_QUAD_PHY_SYSTEM_RESET           0x100
@@ -149,12 +144,6 @@ enum {
 #else /* 4x2_CROSSBAR_SUPPORT */
 #define CB_PHY_PORT_MASK                    0x3
 #define CB_PHY_PORT_SHIFT                   0x2
-#if defined(CONFIG_BCM963148)
-#define CB_WAN_LNK_STATUS_SHIFT             4
-#define CB_WAN_LNK_STATUS_MASK              (1<<CB_WAN_LNK_STATUS_SHIFT)
-#define CB_WAN_LNK_STATUS_SRC_SHIFT         5   /* Dummy Constant */
-#define CB_WAN_LNK_STATUS_SRC_MASK          (0<<CB_WAN_LNK_STATUS_SRC_SHIFT)
-#endif
 #endif
 #define SF2_MDIO_COMMAND_REG                (SWITCH_MDIO_BASE)
     #define SF2_MDIO_BUSY                       (1 << 29)

@@ -1,0 +1,15 @@
+if ARCH_IPQ40XX
+
+config SYS_SOC
+	default "ipq40xx"
+
+config SYS_MALLOC_F_LEN
+	default 0x2000
+
+config TEXT_BASE
+	default 0x87300000
+
+config NR_DRAM_BANKS
+	default 1
+
+endif

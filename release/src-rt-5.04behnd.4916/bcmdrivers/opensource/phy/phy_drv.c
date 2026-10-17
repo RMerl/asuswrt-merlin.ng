@@ -49,6 +49,10 @@
 #include "phy_macsec_common.h"
 #endif
 #include "crossbar_dev.h"
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+#include "BcmDiagSerdesEth.h"
+
+#endif
 
 #define MAX_PHY_DEVS 31     /* value should be < 32 */
 
@@ -60,6 +64,7 @@ extern phy_drv_t phy_drv_ext3;
 extern phy_drv_t phy_drv_mptwo;
 extern phy_drv_t phy_drv_shortfin;
 extern phy_drv_t phy_drv_shasta;
+extern phy_drv_t phy_drv_merlin8_phy1;
 extern phy_drv_t phy_drv_wan_ae;
 extern phy_drv_t phy_drv_dsl_gphy;      //TODO_DSL? create 4 different phy types for 138,148,4908, don't know if above types can be reused ...
 extern phy_drv_t phy_drv_serdes_138class;
@@ -69,6 +74,12 @@ extern phy_drv_t phy_drv_serdes_6756class;
 extern phy_drv_t phy_drv_crossbar;
 extern phy_drv_t phy_drv_mac2mac;
 extern phy_drv_t phy_drv_pon;
+#ifdef PHY_RTK_EXT
+extern phy_drv_t phy_drv_rtk_ext;
+#endif
+#ifdef PHY_MXL_EXT
+extern phy_drv_t phy_drv_mxl_ext;
+#endif
 
 phy_drv_t *phy_drivers[PHY_TYPE_MAX] = {};
 
@@ -85,9 +96,6 @@ int eee_enabled = 1;
 int eee_enabled = 0;
 #endif
 EXPORT_SYMBOL(eee_enabled);
-
-int phy_speed_max = PHY_SPEED_AUTO;
-EXPORT_SYMBOL(phy_speed_max);
 
 int phy_driver_set(phy_drv_t *phy_drv)
 {
@@ -132,6 +140,9 @@ int phy_drivers_set(void)
 #ifdef PHY_SHASTA
     ret |= phy_driver_set(&phy_drv_shasta);
 #endif
+#ifdef PHY_MERLIN8_PHY1
+    ret |= phy_driver_set(&phy_drv_merlin8_phy1);
+#endif
 #ifdef PHY_WAN_AE
     ret |= phy_driver_set(&phy_drv_wan_ae);
 #endif
@@ -158,6 +169,12 @@ int phy_drivers_set(void)
 #endif
 #ifdef PHY_PON
     ret |= phy_driver_set(&phy_drv_pon);
+#endif
+#ifdef PHY_RTK_EXT
+    ret |= phy_driver_set(&phy_drv_rtk_ext);
+#endif
+#ifdef PHY_MXL_EXT
+    ret |= phy_driver_set(&phy_drv_mxl_ext);
 #endif
 
     return ret;
@@ -200,6 +217,9 @@ int phy_dev_prog_ext(phy_dev_t *phy_dev, prog_entry_ext_t *prog_entry)
 #ifdef DEBUG
         printk("%2d.0x%04x=0x%04x %s\n", prog_entry->dev, prog_entry->reg, prog_entry->val, prog_entry->desc);
 #endif
+
+        if (prog_entry->dev)
+            prog_entry->type = PROG_TYPE_ENTRY;
 
         switch (prog_entry->type)
         {
@@ -429,6 +449,8 @@ phy_dev_t *phy_dev_add(phy_type_t phy_type, uint32_t addr, void *priv)
     phy_dev->addr = addr;
     phy_dev->priv = priv;
 
+    phy_dev_mutex_init(phy_dev);
+
     return phy_dev;
 }
 EXPORT_SYMBOL(phy_dev_add);
@@ -496,12 +518,15 @@ int phy_priv_fun(phy_dev_t *phy_dev, int op, ...)
 EXPORT_SYMBOL(phy_priv_fun);
 
 #ifdef PHY_LINK_CHANGE_NOTIFY
+static struct timer_list phy_link_timer;
+static int phy_link_timer_refs = 0;
+
 void phy_dev_link_change_notify(phy_dev_t *phy_dev)
 {
     int old_link = phy_dev->link;
     phy_speed_t old_speed = phy_dev->speed;
     phy_duplex_t old_duplex = phy_dev->duplex;
-
+    
     phy_dev_read_status(phy_dev);
 
     /* If speed or duplex changed while link is up, force link to to notify upper layer */
@@ -555,21 +580,10 @@ static void phy_devices_link_change_notify(void)
     }
 }
 
-static int stop_link_timer = 0;
-static struct timer_list phy_link_timer;
-static int phy_link_timer_refs = 0;
-
 static void phy_link_work_cb(struct work_struct *work)
 {
-    if (stop_link_timer)
-    {
-        del_timer(&phy_link_timer);
-    }
-    else
-    {
-        mod_timer(&phy_link_timer, jiffies + msecs_to_jiffies(1000));
-        phy_devices_link_change_notify();
-    }
+    phy_devices_link_change_notify();
+    mod_timer(&phy_link_timer, jiffies + msecs_to_jiffies(1000));
 }
 
 DECLARE_WORK(_work, phy_link_work_cb);
@@ -588,7 +602,7 @@ static void phy_link_timer_start(void)
 
 static void phy_link_timer_stop(void)
 {
-    stop_link_timer = 1;
+    del_timer(&phy_link_timer);
 }
 
 void phy_dev_link_change_register(phy_dev_t *phy_dev, link_change_cb_t cb, void *ctx)
@@ -687,7 +701,7 @@ extern int mac_proc_cmd_stats(int id);
 
 static int phy_proc_cmd_stats(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
 
     if (argc < 2)
         goto Error;
@@ -704,7 +718,7 @@ Error:
 
 static int phy_proc_cmd_status(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     phy_dev_t *phy_dev;
 
     if (argc < 2)
@@ -735,7 +749,7 @@ Error:
 
 static int phy_proc_cmd_init(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     phy_dev_t *phy_dev;
 
     if (argc < 2)
@@ -800,7 +814,7 @@ static int phy_proc_cmd_list(int argc, char *argv[])
 
 static int phy_proc_cmd_read(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     uint16_t reg, val;
     phy_dev_t *phy_dev;
 
@@ -831,7 +845,7 @@ Error:
 
 static int phy_proc_cmd_write(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     uint16_t reg, val;
     phy_dev_t *phy_dev;
 
@@ -865,7 +879,7 @@ Error:
 
 static int phy_proc_cmd_read45(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     uint16_t dev, reg, val;
     phy_dev_t *phy_dev;
 
@@ -899,7 +913,7 @@ Error:
 
 static int phy_proc_cmd_write45(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     uint16_t dev, reg, val;
     phy_dev_t *phy_dev;
 
@@ -937,7 +951,7 @@ Error:
 #ifdef MACSEC_SUPPORT
 static int phy_proc_cmd_read_indirect(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     uint16_t temp=0;
     uint32_t reg, val;
     phy_dev_t *phy_dev;
@@ -988,7 +1002,7 @@ Error:
 
 static int phy_proc_cmd_write_indirect(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     uint32_t reg, val;
     uint16_t temp=0;
     phy_dev_t *phy_dev;
@@ -1038,7 +1052,7 @@ Error:
 
 static int phy_proc_macsec_enable64(int argc, char *argv[])
 {
-    int id, ret, enable;
+    int id = -1, ret, enable;
     phy_dev_t *phy_dev;
     macsec_api_data macsec_data = {};
     macsec_api_settings_t settings = {0,0,0,0,0,0,0,0,1,0,0,0,1};
@@ -1143,7 +1157,7 @@ Error:
 
 static int phy_proc_macsec_enable(int argc, char *argv[])
 {
-    int id, ret, enable;
+    int id = -1, ret, enable;
     phy_dev_t *phy_dev;
     macsec_api_data macsec_data = {};
     macsec_api_settings_t settings = {0,0,0,0,0,0,0,0,1,0,0,0,1};
@@ -1248,7 +1262,7 @@ Error:
 
 static int phy_proc_macsec_enablebp(int argc, char *argv[])
 {
-    int id, ret, enable;
+    int id = -1, ret, enable;
     phy_dev_t *phy_dev;
     macsec_api_data macsec_data = {};
     macsec_api_settings_t settings = {0,0,0,0,0,0,0,0,1,0,0,0,1};
@@ -1365,7 +1379,7 @@ static int phy_proc_cmd_crossbar_list(int argc, char *argv[])
 #if !defined(DSL_DEVICES)
 static int serdes_proc_cmd_diag(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     uint32_t level;
     phy_dev_t *phy_dev;
 
@@ -1438,7 +1452,7 @@ wrong_params:
 
 static int serdes_proc_cmd_prbs(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     int param;
     phy_dev_t *phy_dev;
 
@@ -1466,7 +1480,7 @@ Error:
 
 static int serdes_proc_cmd_txcfg(int argc, char *argv[])
 {
-    int id;
+    int id = -1;
     phy_dev_t *phy_dev;
     uint8_t pre, main, post1, post2, hpf;
 
@@ -1482,7 +1496,7 @@ static int serdes_proc_cmd_txcfg(int argc, char *argv[])
 
     if (argc == 2)
     {
-        if (phy_dev_tx_cfg_get(phy_dev, &pre, &main, &post1, &post2, &hpf))
+        if (phy_dev_txfir_cfg_get(phy_dev, &pre, &main, &post1, &post2, &hpf))
             goto Error;
 
         printk("%d %d %d %d %d\n", pre, main, post1, post2, hpf);
@@ -1507,7 +1521,7 @@ static int serdes_proc_cmd_txcfg(int argc, char *argv[])
     if (kstrtou8(argv[6], 10, &hpf))
         goto Error;
 
-    return phy_dev_tx_cfg_set(phy_dev, pre, main, post1, post2, hpf);
+    return phy_dev_txfir_cfg_set(phy_dev, pre, main, post1, post2, hpf);
 
 Error:
     printk("Usage: txcfg <id> [<pre> <main> <post1> <post2> <hpf>]\n");
@@ -1517,7 +1531,7 @@ Error:
 static int serdes_proc_cmd_temp(int argc, char *argv[])
 {
     int16_t temp;
-    int id;
+    int id = -1;
     phy_dev_t *phy_dev;
 
     if (argc < 2)
@@ -1640,6 +1654,11 @@ int logger_write(int message_verbose_level, const char *format, ...)
     {
         strncpy(leftover, ++eol, LEN-1); // print later
         *eol = '\0';
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+        if(BcmDiagSerdesEthPrintToDiag())
+            BcmDiagWriteString(BcmDiagSerdesEthGetDiagCoreIdx(), DIAG_SERDES_CLIENT, line);
+        else
+#endif
         printk("%s", line); // print now until the last \n
     }
     else

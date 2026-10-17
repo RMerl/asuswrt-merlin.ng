@@ -1,0 +1,45 @@
+if ARCH_IMXRT
+
+config IMXRT
+	bool
+	select BINMAN
+	select SYS_FSL_ERRATUM_ESDHC135
+
+config IMXRT1020
+	bool
+	select IMXRT
+
+config IMXRT1050
+	bool
+	select IMXRT
+
+config IMXRT1170
+	bool
+	select IMXRT
+
+config SYS_SOC
+	default "imxrt"
+
+choice
+	prompt "NXP i.MXRT board select"
+	optional
+
+config TARGET_IMXRT1020_EVK
+	bool "Support imxrt1020 EVK board"
+	select IMXRT1020
+
+config TARGET_IMXRT1050_EVK
+	bool "Support imxrt1050 EVK board"
+	select IMXRT1050
+
+config TARGET_IMXRT1170_EVK
+	bool "Support imxrt1170 EVK board"
+	select IMXRT1170
+
+endchoice
+
+source "board/freescale/imxrt1020-evk/Kconfig"
+source "board/freescale/imxrt1050-evk/Kconfig"
+source "board/freescale/imxrt1170-evk/Kconfig"
+
+endif

@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+/*
+ * ARM Juno Platform additions for U-Boot
+ */
+
+/ {
+	bus@8000000 {
+		motherboard-bus@8000000 {
+			/*
+			 * This should not be marked "disabled" in U-Boot. The
+			 * boot loader is not using some CPU idle states and
+			 * hotplug but may be very interested in accessing the
+			 * flash.
+			 */
+			flash@0 {
+				status = "okay";
+			};
+		};
+	};
+};

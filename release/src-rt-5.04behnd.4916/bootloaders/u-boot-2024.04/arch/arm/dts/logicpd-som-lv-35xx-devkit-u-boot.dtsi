@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017
+ * Logic PD - http://www.logicpd.com
+ */
+
+#include "omap3-u-boot.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	aliases {
+		/delete-property/ serial1;
+		/delete-property/ serial2;
+	};
+
+	ethernet@08000000 {
+		compatible = "smsc,lan9221","smsc,lan9115";
+		reg = <0x08000000 0xff>;
+		bank-width = <2>;
+		vddvario-supply = <&vddvario>;
+		vdd33a-supply = <&vdd33a>;
+		reg-io-width = <4>;
+		smsc,save-mac-address;
+	};
+};
+
+&gpio1 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio2 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio3 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio4 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio5 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&gpio6 {
+	/delete-property/ bootph-pre-ram;
+};
+
+&i2c1 {
+	clock-frequency = <400000>;
+	/delete-property/ bootph-pre-ram;
+};
+
+&i2c2 {
+	clock-frequency = <400000>;
+	/delete-property/ bootph-pre-ram;
+};
+
+/delete-node/ &bandgap;
+/delete-node/ &uart2;
+/delete-node/ &uart3;
+/delete-node/ &mmc2;
+/delete-node/ &mmc3;
+/delete-node/ &thermal_zones;
+

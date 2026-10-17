@@ -1,0 +1,8 @@
+PE2201 BOARD
+M:	lixinde <lixinde@phytium.com.cn>
+M:	weichangzheng <weichangzheng@phytium.com.cn>
+S:	Maintained
+F:	board/phytium/pe2201/*
+F:	include/configs/pe2201.h
+F:	configs/pe2201_defconfig
+F:	arch/arm/dts/phytium-pe2201.dts

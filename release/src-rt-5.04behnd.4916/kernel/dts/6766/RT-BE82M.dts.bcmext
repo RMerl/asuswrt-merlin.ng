@@ -1,0 +1,268 @@
+#include "6766.dtsi"
+
+/ {
+	memory_controller {
+        memcfg = <(BP_DDR_TYPE_DDR4       | \
+            BP_DDR_SPEED_1600_22_22_22    | \
+            BP_DDR_TOTAL_SIZE_1024MB      | \
+            BP_DDR_DEVICE_WIDTH_16        | \
+            BP_DDR_TOTAL_WIDTH_16BIT      | \
+            BP_DDR_TEMP_EXTENDED_ASR      | \
+            BP_DDR_6766_DEFAULT           | \
+            BP_DDR_CONFIG_DEBUG)>;
+	};
+
+	/*
+	 * External MxL86252C switch node.
+	 * Four user-facing GE ports (p0-p3) are each exposed as a NONBRCM
+	 * virtual port backed by one MXL_EXT PHY. VLAN-tag switch-tagging
+	 * (extswtag-use-pvid on port_sgmii0) transports tagged frames between
+	 * the 6766 and the MxL switch over the 10GBase-R SGMII1 link.
+	 */
+	switch_ext: switch_ext {
+		unit = <1>;
+		sw-type = "NONBRCM_SW";
+		compatible = "brcm,bcmbca-extsw";
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			port_ext_p0 {
+				phy-handle = <&phy_m2m0>;
+				reg = <0>;
+				mac-type = "NONBRCM";
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "okay";
+			};
+			port_ext_p1 {
+				phy-handle = <&phy_m2m1>;
+				reg = <1>;
+				mac-type = "NONBRCM";
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "okay";
+			};
+			port_ext_p2 {
+				phy-handle = <&phy_m2m2>;
+				reg = <2>;
+				mac-type = "NONBRCM";
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "okay";
+			};
+			port_ext_p3 {
+				phy-handle = <&phy_m2m3>;
+				reg = <3>;
+				mac-type = "NONBRCM";
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "okay";
+			};
+		};
+	};
+
+/* remove mark if need
+	buttons {
+		compatible = "brcm,buttons";
+
+		reset_button {
+			ext_irq = <&bca_extintr 18 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};
+		};
+
+		ses_button {
+			ext_irq = <&bca_extintr 6 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+*/
+};
+
+&legacy_leds {
+    wl0-led = <&led0>;
+    wl1-led = <&led1>;
+};
+
+&led_ctrl {
+    led0: sw_parallel_led_0 {
+        active_low;
+        brightness = <0>;
+        pinctrl-0 = <&a_per_led_00_pin_0>;
+        status = "okay";
+        label = "WiFi_24";
+    };
+    
+    led1: sw_parallel_led_1 {
+        active_low;
+        brightness = <0>;
+        pinctrl-0 = <&a_per_led_01_pin_1>;
+        status = "okay";
+        label = "WiFi_5";
+    };
+
+    /* WAN_LED_RED */
+    led2: led_gpio_19 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <19>;
+        active_low;
+    };
+    /* WAN_LED */
+    led3: led_gpio_37 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <37>;
+        active_low;
+    };
+    /* LAN_LED */
+    led4: led_gpio_21 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <21>;
+        active_low;
+    };
+
+    /* Power_LED: GPIO LED */
+    led5: led_gpio_7 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <7>;
+        active_high;
+        init_high;
+    };
+
+    /* MxL86252C reset */
+    led6: led_gpio_27 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <27>;
+        active_low;
+    };
+
+    /* USB Power */
+    led7:led_gpio_67 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <67>;
+    };
+};
+
+&nand {
+	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_59>;
+	/delete-property/ brcm,wp-not-connected;
+	status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names="default";
+    pinctrl-0 = <&usb0_pwr_pins>;
+    status = "okay";
+    xhci-enable;
+    pwron-bias-pull-up;
+};
+
+&usb0_xhci {
+    status = "okay";
+};
+
+&mdio_sf2 {
+	/* Port PHY mapping:
+	 *      port_imp  -8#0- (no internal gphy)
+	 *                # 5- port_sgmii0 <--> phy_serdes0 --[10GBase-R SGMII1]--> MxL86252C
+	 *                #                                     |-- switch_ext (NONBRCM_SW)
+	 *                #                                          p2 <--> phy_m2m0 (LAN1)
+	 *                #                                          p3 <--> phy_m2m1 (LAN2)
+	 *                #                                          p4 <--> phy_m2m2 (LAN3)
+	 *                #                                          p5 <--> phy_m2m3 (LAN4)
+	 *                # 6- port_sgmii1 <--> phy_serdes1 --[10GBase-R SGMII0]--> MxL86252C (eth0)
+	 *
+	 * phy_m2m0-3: virtual MXL_EXT PHYs; reg = <0x12..0x15> so that
+	 * (phy_dev->addr - 0x10) gives the MxL port number (p2..p5 for LAN1..LAN4).
+	 * The driver accesses the MxL switch's SMDIO interface at MDIO addr 0x10, MMD 0x1e.
+	 */
+
+	/*
+	 * MXL_EXT virtual PHYs for the four LAN ports of the MxL86252C.
+	 * reg = <0x12..0x15> encode the MxL port numbers p2..p5
+	 * (LAN1..LAN4 per mxl_lanport_maps.txt). The real SMDIO management
+	 * address is 0x10; reg values here are dummy MDIO addresses only.
+	 */
+	phy_m2m0: phy_m2m0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "MXL_EXT";
+		reg = <0x12>;
+		status = "okay";
+	};
+	phy_m2m1: phy_m2m1 {
+		compatible = "brcm,bcaphy";
+		phy-type = "MXL_EXT";
+		reg = <0x13>;
+		status = "okay";
+	};
+	phy_m2m2: phy_m2m2 {
+		compatible = "brcm,bcaphy";
+		phy-type = "MXL_EXT";
+		reg = <0x14>;
+		status = "okay";
+	};
+	phy_m2m3: phy_m2m3 {
+		compatible = "brcm,bcaphy";
+		phy-type = "MXL_EXT";
+		reg = <0x15>;
+		status = "okay";
+	};
+
+	/* SerDes0: 10GBase-R uplink to MxL86252C SGMII1 (external switch trunk) */
+	phy_serdes0 {
+		phy-fixed;
+		config-xfi = "10GBase-R";
+		phy-extswitch;
+		status = "okay";
+	};
+
+	/* SerDes1: 10GBase-R uplink to MxL86252C SGMII0 (direct eth0) */
+	phy_serdes1 {
+		phy-fixed;
+		config-xfi = "10GBase-R";
+		status = "okay";
+	};
+};
+
+&ethphytop {
+    xphy0-enabled;
+    status = "okay";
+};
+
+&switch0 {
+	ports {
+		/*
+		 * port_sgmii0 acts as the tagged trunk uplink for the MxL external
+		 * switch.  extswtag-use-pvid instructs the enet driver to use VLAN
+		 * port-based IDs as switch tags on this link.
+		 */
+		port_sgmii0 {
+			phy-handle = <&phy_serdes0>;
+			link = <&switch_ext>;
+			extswtag-use-pvid;
+			status = "okay";
+		};
+
+		/* port_sgmii1 is a direct 10G Ethernet port (WAN/uplink) */
+		port_sgmii1 {
+			phy-handle = <&phy_serdes1>;
+			status = "okay";
+			label = "eth0";
+		};
+	};
+};

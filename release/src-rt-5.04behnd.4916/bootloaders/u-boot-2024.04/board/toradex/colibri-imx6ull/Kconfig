@@ -1,0 +1,78 @@
+if TARGET_COLIBRI_IMX6ULL
+
+choice
+	prompt "Colibri iMX6ULL variant"
+	optional
+
+config TARGET_COLIBRI_IMX6ULL_NAND
+	bool "Support Colibri iMX6ULL 256MB / 512MB (raw NAND) modules"
+	imply NAND_MXS
+	help
+	  Choose this option if you build for a Toradex Colibri iMX6ULL
+	  256MB or 512MB module which do have raw NAND on-module.
+
+config TARGET_COLIBRI_IMX6ULL_EMMC
+	bool "Support Colibri iMX6ULL 1GB (eMMC) modules"
+	help
+	  Choose this option if you build for a Toradex Colibri iMX6ULL
+	  1GB module which does have eMMC on-module.
+
+endchoice
+
+config SYS_BOARD
+	default "colibri-imx6ull"
+
+config SYS_VENDOR
+	default "toradex"
+
+config SYS_CONFIG_NAME
+	default "colibri-imx6ull-tezi-recovery" if (!TARGET_COLIBRI_IMX6ULL_NAND && !TARGET_COLIBRI_IMX6ULL_EMMC)
+
+config TDX_CFG_BLOCK
+	default y
+
+if TARGET_COLIBRI_IMX6ULL_NAND
+
+config SYS_CONFIG_NAME
+	default "colibri-imx6ull"
+
+config TDX_HAVE_NAND
+	default y
+
+config TDX_CFG_BLOCK_OFFSET
+	default "2048"
+
+config TDX_CFG_BLOCK_OFFSET2
+	default "133120"
+
+endif
+
+if TARGET_COLIBRI_IMX6ULL_EMMC
+
+config SYS_CONFIG_NAME
+	default "colibri-imx6ull"
+
+config TDX_HAVE_MMC
+	default y
+
+config TDX_CFG_BLOCK_DEV
+	default "0"
+
+config TDX_CFG_BLOCK_PART
+	default "1"
+
+# Toradex config block in eMMC, at the end of 1st "boot sector"
+config TDX_CFG_BLOCK_OFFSET
+	default "-512"
+
+endif
+
+config TDX_CFG_BLOCK_2ND_ETHADDR
+	default y
+
+config IMX_CONFIG
+	default "board/toradex/colibri-imx6ull/imximage.cfg"
+
+source "board/toradex/common/Kconfig"
+
+endif

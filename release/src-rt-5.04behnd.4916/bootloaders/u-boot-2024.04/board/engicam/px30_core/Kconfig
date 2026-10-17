@@ -1,0 +1,16 @@
+if TARGET_PX30_CORE
+
+config SYS_BOARD
+	default "px30_core"
+
+config SYS_VENDOR
+	default "engicam"
+
+config SYS_CONFIG_NAME
+	default "px30_core"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select RAM_ROCKCHIP_DDR4
+
+endif

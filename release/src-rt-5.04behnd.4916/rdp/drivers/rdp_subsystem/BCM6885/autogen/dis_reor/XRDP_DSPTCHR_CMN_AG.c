@@ -1,0 +1,4381 @@
+/*
+   Copyright (c) 2015 Broadcom
+   All Rights Reserved
+
+    <:label-BRCM:2015:DUAL/GPL:standard
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
+:>
+*/
+
+
+#include "XRDP_DSPTCHR_CMN_AG.h"
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD, TYPE: Type_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: BASE_ADD *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_BASE_ADD_FIELD =
+{
+    "BASE_ADD",
+#if RU_INCLUDE_DESC
+    "",
+    "Base address within each RNR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_BASE_ADD_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_BASE_ADD_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_BASE_ADD_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: OFFSET_ADD *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_OFFSET_ADD_FIELD =
+{
+    "OFFSET_ADD",
+#if RU_INCLUDE_DESC
+    "",
+    "OFFSET address, in conjunction with base address for each task there will be a different address to where to send the PD\n\nADD = BASE_ADD + (OFFSET_ADD x TASK)\n\nPD size is 128bits\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_OFFSET_ADD_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_OFFSET_ADD_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_OFFSET_ADD_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_BASE_ADD_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_OFFSET_ADD_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD",
+#if RU_INCLUDE_DESC
+    "RNR_PROF_ADDRESS 0..15 Register",
+    "Dispatched address will be calculated\nADD= BASE_ADD + (TASK_NUM x OFFSET)\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_REG_OFFSET },
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_REG_RAM_CNT,
+    4,
+    1399,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF, TYPE: Type_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_0_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_1_FIELD =
+{
+    "RNR_PROF_0_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #1 of RNR 4*i\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_0_2 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_2_FIELD =
+{
+    "RNR_PROF_0_2",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #2 of RNR 4*i\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_2_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_2_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_2_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_1_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_1_FIELD =
+{
+    "RNR_PROF_1_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #1 of RNR 4*i+1\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_1_2 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_2_FIELD =
+{
+    "RNR_PROF_1_2",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #2 of RNR 4*i+1\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_2_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_2_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_2_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_2_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_1_FIELD =
+{
+    "RNR_PROF_2_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #1 of RNR 4*i+2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_2_2 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_2_FIELD =
+{
+    "RNR_PROF_2_2",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #2 of RNR 4*i+2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_2_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_2_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_2_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_3_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_1_FIELD =
+{
+    "RNR_PROF_3_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #1 of RNR 4*i+3\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_PROF_3_2 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_2_FIELD =
+{
+    "RNR_PROF_3_2",
+#if RU_INCLUDE_DESC
+    "",
+    "Mapping profile #2 of RNR 4*i+3\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_2_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_2_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_2_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_1_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_0_2_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_1_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_1_2_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_1_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_2_2_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_1_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_RNR_PROF_3_2_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF",
+#if RU_INCLUDE_DESC
+    "PD_RNR_PROF 0..15 Register",
+    "Each RNR has two profiles to choose from. Selection is done based on RNR GRP (RG_PROF_SEL bit)\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_REG_OFFSET },
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_REG_RAM_CNT,
+    4,
+    1400,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    8,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL, TYPE: Type_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL0 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL0_FIELD =
+{
+    "RNR_G_SEL0",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL0_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL0_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL0_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL1_FIELD =
+{
+    "RNR_G_SEL1",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL2 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL2_FIELD =
+{
+    "RNR_G_SEL2",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL2_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL2_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL2_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL3 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL3_FIELD =
+{
+    "RNR_G_SEL3",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL3_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL3_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL3_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL4 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL4_FIELD =
+{
+    "RNR_G_SEL4",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL4_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL4_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL4_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL5 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL5_FIELD =
+{
+    "RNR_G_SEL5",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL5_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL5_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL5_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL6 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL6_FIELD =
+{
+    "RNR_G_SEL6",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL6_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL6_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL6_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_G_SEL7 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL7_FIELD =
+{
+    "RNR_G_SEL7",
+#if RU_INCLUDE_DESC
+    "",
+    "0- Select profile 1\n1- Select profile 2\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL7_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL7_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL7_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL0_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL1_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL2_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL3_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL4_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL5_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL6_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_RNR_G_SEL7_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL",
+#if RU_INCLUDE_DESC
+    "RG_PROF_SEL Register",
+    "Selects for each RNR Group which profile to use for the RNRs (profile 0 or profile 1)\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_REG_OFFSET },
+    0,
+    0,
+    1401,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    8,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG, TYPE: Type_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SRC_ID *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_SRC_ID_FIELD =
+{
+    "SRC_ID",
+#if RU_INCLUDE_DESC
+    "",
+    "Source ID - Dispatcher\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_SRC_ID_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_SRC_ID_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_SRC_ID_FIELD_SHIFT },
+    32,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DST_ID_OVRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD =
+{
+    "DST_ID_OVRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: OVRIDE_EN *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD =
+{
+    "OVRIDE_EN",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_SRC_ID_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG",
+#if RU_INCLUDE_DESC
+    "BROADBUS_1_CONFIG Register",
+    "Allow override of a specific BB destination with a new Route ADDR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_REG_OFFSET },
+    0,
+    0,
+    1402,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    3,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT, TYPE: Type_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: ROUTE_OVERRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD =
+{
+    "ROUTE_OVERRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT",
+#if RU_INCLUDE_DESC
+    "BROADBUS_1_CONFIG_RT Register",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_REG_OFFSET },
+    0,
+    0,
+    1403,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG, TYPE: Type_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SRC_ID *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_SRC_ID_FIELD =
+{
+    "SRC_ID",
+#if RU_INCLUDE_DESC
+    "",
+    "Source ID - Dispatcher\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_SRC_ID_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_SRC_ID_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_SRC_ID_FIELD_SHIFT },
+    32,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DST_ID_OVRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD =
+{
+    "DST_ID_OVRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: OVRIDE_EN *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD =
+{
+    "OVRIDE_EN",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_SRC_ID_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG",
+#if RU_INCLUDE_DESC
+    "BROADBUS_2_CONFIG Register",
+    "Allow override of a specific BB destination with a new Route ADDR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_REG_OFFSET },
+    0,
+    0,
+    1404,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    3,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT, TYPE: Type_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: ROUTE_OVERRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD =
+{
+    "ROUTE_OVERRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT",
+#if RU_INCLUDE_DESC
+    "BROADBUS_2_CONFIG_RT Register",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_REG_OFFSET },
+    0,
+    0,
+    1405,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG, TYPE: Type_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: LB_MODE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_LB_MODE_FIELD =
+{
+    "LB_MODE",
+#if RU_INCLUDE_DESC
+    "",
+    "RoundRobin = 0\nStrictPriority = 1\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_LB_MODE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_LB_MODE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_LB_MODE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SP_THRSHLD *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_SP_THRSHLD_FIELD =
+{
+    "SP_THRSHLD",
+#if RU_INCLUDE_DESC
+    "",
+    "Configures the threshold in which the LB mechanism opens activates a new RNR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_SP_THRSHLD_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_SP_THRSHLD_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_SP_THRSHLD_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_LB_MODE_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_SP_THRSHLD_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG",
+#if RU_INCLUDE_DESC
+    "LB_CONFIG Register",
+    "Selects which Load Balancing mechanism to use\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_REG_OFFSET },
+    0,
+    0,
+    1406,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1, TYPE: Type_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_0 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_0_FIELD =
+{
+    "TSK_CNT_RG_0",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_0_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_0_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_0_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_1_FIELD =
+{
+    "TSK_CNT_RG_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_0_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_TSK_CNT_RG_1_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1",
+#if RU_INCLUDE_DESC
+    "RG_AVAILABLE_TASK_0_1 Register",
+    "Available tasks in all runners related to a RNR Group. In case value is zero there are no tasks available for this RNR Group for dispatch hence it should be excluded from the next RNR Group selection\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_REG_OFFSET },
+    0,
+    0,
+    1407,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3, TYPE: Type_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_0 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_0_FIELD =
+{
+    "TSK_CNT_RG_0",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_0_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_0_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_0_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_1_FIELD =
+{
+    "TSK_CNT_RG_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_0_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_TSK_CNT_RG_1_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3",
+#if RU_INCLUDE_DESC
+    "RG_AVAILABLE_TASK_2_3 Register",
+    "Available tasks in all runners related to a RNR Group. In case value is zero there are no tasks available for this RNR Group for dispatch hence it should be excluded from the next RNR Group selection\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_REG_OFFSET },
+    0,
+    0,
+    1408,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5, TYPE: Type_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_0 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_0_FIELD =
+{
+    "TSK_CNT_RG_0",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_0_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_0_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_0_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_1_FIELD =
+{
+    "TSK_CNT_RG_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_0_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_TSK_CNT_RG_1_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5",
+#if RU_INCLUDE_DESC
+    "RG_AVAILABLE_TASK_4_5 Register",
+    "Available tasks in all runners related to a RNR Group. In case value is zero there are no tasks available for this RNR Group for dispatch hence it should be excluded from the next RNR Group selection\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_REG_OFFSET },
+    0,
+    0,
+    1409,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7, TYPE: Type_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_0 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_0_FIELD =
+{
+    "TSK_CNT_RG_0",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_0_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_0_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_0_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK_CNT_RG_1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_1_FIELD =
+{
+    "TSK_CNT_RG_1",
+#if RU_INCLUDE_DESC
+    "",
+    "Counter the amount of available (free) tasks in a RNR Group\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_1_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_0_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_TSK_CNT_RG_1_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7",
+#if RU_INCLUDE_DESC
+    "RG_AVAILABLE_TASK_6_7 Register",
+    "Available tasks in all runners related to a RNR Group. In case value is zero there are no tasks available for this RNR Group for dispatch hence it should be excluded from the next RNR Group selection\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_REG_OFFSET },
+    0,
+    0,
+    1410,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK, TYPE: Type_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR0 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR0_FIELD =
+{
+    "RNR0",
+#if RU_INCLUDE_DESC
+    "",
+    "Each bit indicats which task is Free for dispatch\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR0_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR0_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR0_FIELD_SHIFT },
+    65535,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR1 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR1_FIELD =
+{
+    "RNR1",
+#if RU_INCLUDE_DESC
+    "",
+    "Each bit indicats which task is Free for dispatch\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR1_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR1_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR1_FIELD_SHIFT },
+    65535,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR0_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_RNR1_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK",
+#if RU_INCLUDE_DESC
+    "FREE_TASKS_TWO_RNRS 0..31 Register",
+    "Each bit indicates if the Task is Free for dispatch:\n\nTasks  0..15 belong to First  RNR\nTasks 16..32 Belong to Second RNR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_REG_OFFSET },
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_REG_RAM_CNT,
+    4,
+    1411,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS, TYPE: Type_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TSK *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_TSK_FIELD =
+{
+    "TSK",
+#if RU_INCLUDE_DESC
+    "",
+    "Task to enable/disable\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_TSK_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_TSK_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_TSK_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_FIELD =
+{
+    "RNR",
+#if RU_INCLUDE_DESC
+    "",
+    "RNR to enable/disable task\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: EN_DIS *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_EN_DIS_FIELD =
+{
+    "EN_DIS",
+#if RU_INCLUDE_DESC
+    "",
+    "0 - Disable Task\n1 - Enable Task\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_EN_DIS_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_EN_DIS_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_EN_DIS_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: RNR_ALL *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_ALL_FIELD =
+{
+    "RNR_ALL",
+#if RU_INCLUDE_DESC
+    "",
+    "0 - Enable/Disable specific task of RNR\n1 - Enable/Disable all tasks of RNR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_ALL_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_ALL_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_ALL_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: VLD *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_VLD_FIELD =
+{
+    "VLD",
+#if RU_INCLUDE_DESC
+    "",
+    "Start Enable/Disable\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_VLD_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_VLD_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_VLD_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DONE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_DONE_FIELD =
+{
+    "DONE",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable/Disable complete\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_DONE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_DONE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_DONE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_TSK_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_EN_DIS_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_RNR_ALL_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_VLD_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_DONE_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS",
+#if RU_INCLUDE_DESC
+    "TASK_EN_DIS Register",
+    "Disable or re-enable specific task or all task of Runner Core\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_REG_OFFSET },
+    0,
+    0,
+    1412,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    6,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0, TYPE: Type_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: MASK *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_MASK_FIELD =
+{
+    "MASK",
+#if RU_INCLUDE_DESC
+    "",
+    "MASK\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_MASK_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_MASK_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_MASK_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_MASK_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_REG =
+{
+    "TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0",
+#if RU_INCLUDE_DESC
+    "TASK_MASK 0..255 Register",
+    "Address 0 ->  255:224\nAddress 4 ->  223:192\nAddress 8 ->  191:160\nAddress C ->  159:128\nAddress 10 ->  127:96\nAddress 14 ->   95:64\nAddress 18 ->   63:32\nAddress 1C ->   31: 0\n\n\n8 RG x 32 Regs per RG = 128 registers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_REG_OFFSET },
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_REG_RAM_CNT,
+    4,
+    1413,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE, TYPE: Type_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN0_CFG_FIELD =
+{
+    "CHN0_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 0 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN0_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN0_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN0_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN1_CFG_FIELD =
+{
+    "CHN1_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 1 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN1_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN1_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN1_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN2_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN2_CFG_FIELD =
+{
+    "CHN2_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 2 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN2_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN2_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN2_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN3_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN3_CFG_FIELD =
+{
+    "CHN3_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 3 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN3_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN3_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN3_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN4_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN4_CFG_FIELD =
+{
+    "CHN4_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 4 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN4_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN4_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN4_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN5_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN5_CFG_FIELD =
+{
+    "CHN5_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 5 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN5_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN5_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN5_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN6_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN6_CFG_FIELD =
+{
+    "CHN6_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 6 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN6_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN6_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN6_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN7_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN7_CFG_FIELD =
+{
+    "CHN7_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 7 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN7_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN7_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN7_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN8_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN8_CFG_FIELD =
+{
+    "CHN8_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 8 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN8_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN8_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN8_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN9_CFG *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN9_CFG_FIELD =
+{
+    "CHN9_CFG",
+#if RU_INCLUDE_DESC
+    "",
+    "Channel 9 Config\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN9_CFG_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN9_CFG_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN9_CFG_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN_CRDT_INIT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_FIELD =
+{
+    "CHN_CRDT_INIT",
+#if RU_INCLUDE_DESC
+    "",
+    "Initialize credit towards QM for all 100G Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN_CRDT_INIT_VAL *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_VAL_FIELD =
+{
+    "CHN_CRDT_INIT_VAL",
+#if RU_INCLUDE_DESC
+    "",
+    "Init credit value towards QM for all 100G Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_VAL_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_VAL_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_VAL_FIELD_SHIFT },
+    160,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN0_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN1_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN2_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN3_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN4_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN5_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN6_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN7_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN8_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN9_CFG_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_CHN_CRDT_INIT_VAL_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_REG =
+{
+    "TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE",
+#if RU_INCLUDE_DESC
+    "CHN_MODE Register",
+    "For each channel what is its mode:\n0x0 - 100 G\n0x1 - 200 G\n0x2 - 400 G\n0x3 - Resrved\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_REG_OFFSET },
+    0,
+    0,
+    1414,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    12,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG, TYPE: Type_TASK_ARB_REORD_REORD_CFG_REORD_CFG
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DSP_HALF *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_DSP_HALF_FIELD =
+{
+    "DSP_HALF",
+#if RU_INCLUDE_DESC
+    "",
+    "To which half the Common Reorder belongs to\n0 - Half 0\n1 - Half 1\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_DSP_HALF_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_DSP_HALF_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_DSP_HALF_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_DSP_HALF_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_REG =
+{
+    "TASK_ARB_REORD_REORD_CFG_REORD_CFG",
+#if RU_INCLUDE_DESC
+    "REORD_CFG Register",
+    "Reorder Configuration fields\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_REG_OFFSET },
+    0,
+    0,
+    1415,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG, TYPE: Type_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SRC_ID *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_SRC_ID_FIELD =
+{
+    "SRC_ID",
+#if RU_INCLUDE_DESC
+    "",
+    "Source ID - Dispatcher\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_SRC_ID_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_SRC_ID_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_SRC_ID_FIELD_SHIFT },
+    32,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DST_ID_OVRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD =
+{
+    "DST_ID_OVRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: OVRIDE_EN *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD =
+{
+    "OVRIDE_EN",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_SRC_ID_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_DST_ID_OVRIDE_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_OVRIDE_EN_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_REG =
+{
+    "TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG",
+#if RU_INCLUDE_DESC
+    "BROADBUS_1_CONFIG Register",
+    "Allow override of a specific BB destination with a new Route ADDR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_REG_OFFSET },
+    0,
+    0,
+    1416,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    3,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT, TYPE: Type_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: ROUTE_OVERRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD =
+{
+    "ROUTE_OVERRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_ROUTE_OVERRIDE_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_REG =
+{
+    "TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT",
+#if RU_INCLUDE_DESC
+    "BROADBUS_1_CONFIG_RT Register",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_REG_OFFSET },
+    0,
+    0,
+    1417,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG, TYPE: Type_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SRC_ID *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_SRC_ID_FIELD =
+{
+    "SRC_ID",
+#if RU_INCLUDE_DESC
+    "",
+    "Source ID - Dispatcher\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_SRC_ID_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_SRC_ID_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_SRC_ID_FIELD_SHIFT },
+    32,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DST_ID_OVRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD =
+{
+    "DST_ID_OVRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: OVRIDE_EN *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD =
+{
+    "OVRIDE_EN",
+#if RU_INCLUDE_DESC
+    "",
+    "Enable dispatcher reorder block\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_SRC_ID_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_DST_ID_OVRIDE_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_OVRIDE_EN_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_REG =
+{
+    "TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG",
+#if RU_INCLUDE_DESC
+    "BROADBUS_2_CONFIG Register",
+    "Allow override of a specific BB destination with a new Route ADDR\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_REG_OFFSET },
+    0,
+    0,
+    1418,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    3,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT, TYPE: Type_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: ROUTE_OVERRIDE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD =
+{
+    "ROUTE_OVERRIDE",
+#if RU_INCLUDE_DESC
+    "",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_ROUTE_OVERRIDE_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_REG =
+{
+    "TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT",
+#if RU_INCLUDE_DESC
+    "BROADBUS_2_CONFIG_RT Register",
+    "BB Route address override\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_REG_OFFSET },
+    0,
+    0,
+    1419,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP0_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1420,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP1_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1421,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP2_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1422,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP3_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1423,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP4_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1424,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP5_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1425,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP6_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1426,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP7_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1427,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP8_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1428,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT, TYPE: Type_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD =
+{
+    "CHN0_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for even channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_BYTE_WGHT *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD =
+{
+    "CHN1_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "",
+    "number of bytes for odd channel weight\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD_SHIFT },
+    12288,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN0_BYTE_WGHT_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_CHN1_BYTE_WGHT_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_REG =
+{
+    "TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT",
+#if RU_INCLUDE_DESC
+    "DISP9_BYTE_WGHT Register",
+    "number of bytes for channel weight\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_REG_OFFSET },
+    0,
+    0,
+    1429,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR, TYPE: Type_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN0_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN0_INC_CNTR_FIELD =
+{
+    "CHN0_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN0_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN0_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN0_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN1_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN1_INC_CNTR_FIELD =
+{
+    "CHN1_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN1_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN1_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN1_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN2_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN2_INC_CNTR_FIELD =
+{
+    "CHN2_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN2_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN2_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN2_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN3_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN3_INC_CNTR_FIELD =
+{
+    "CHN3_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN3_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN3_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN3_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN0_INC_CNTR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN1_INC_CNTR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN2_INC_CNTR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_CHN3_INC_CNTR_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_REG =
+{
+    "TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "CHN03_INC_CNTR Register",
+    "Number of increments of PD number before asserting inc_update for the channel\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_REG_OFFSET },
+    0,
+    0,
+    1430,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    4,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR, TYPE: Type_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN4_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN4_INC_CNTR_FIELD =
+{
+    "CHN4_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN4_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN4_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN4_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN5_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN5_INC_CNTR_FIELD =
+{
+    "CHN5_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN5_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN5_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN5_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN6_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN6_INC_CNTR_FIELD =
+{
+    "CHN6_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN6_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN6_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN6_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN7_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN7_INC_CNTR_FIELD =
+{
+    "CHN7_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN7_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN7_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN7_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN4_INC_CNTR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN5_INC_CNTR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN6_INC_CNTR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_CHN7_INC_CNTR_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_REG =
+{
+    "TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "CHN47_INC_CNTR Register",
+    "Number of increments of PD number before asserting inc_update for the channel\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_REG_OFFSET },
+    0,
+    0,
+    1431,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    4,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR, TYPE: Type_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN8_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN8_INC_CNTR_FIELD =
+{
+    "CHN8_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN8_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN8_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN8_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CHN9_INC_CNTR *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN9_INC_CNTR_FIELD =
+{
+    "CHN9_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "",
+    "Number of increments to update PD number\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN9_INC_CNTR_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN9_INC_CNTR_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN9_INC_CNTR_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN8_INC_CNTR_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_CHN9_INC_CNTR_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_REG =
+{
+    "TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR",
+#if RU_INCLUDE_DESC
+    "CHN89_INC_CNTR Register",
+    "Number of increments of PD number before asserting inc_update for the channel\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_REG_OFFSET },
+    0,
+    0,
+    1432,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_01 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_01_FIELD =
+{
+    "SN_CNTR_01",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 01 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_01_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_01_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_01_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_23 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_23_FIELD =
+{
+    "SN_CNTR_23",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 23 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_23_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_23_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_23_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_01_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_SN_CNTR_23_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS",
+#if RU_INCLUDE_DESC
+    "AGG_SN_CNTR_03_0_STS Register",
+    "Aggregation SN counter Status\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_REG_OFFSET },
+    0,
+    0,
+    1433,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_01 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_01_FIELD =
+{
+    "SN_CNTR_01",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 01 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_01_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_01_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_01_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_23 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_23_FIELD =
+{
+    "SN_CNTR_23",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 23 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_23_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_23_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_23_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_01_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_SN_CNTR_23_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS",
+#if RU_INCLUDE_DESC
+    "AGG_SN_CNTR_58_0_STS Register",
+    "Aggregation SN counter Status\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_REG_OFFSET },
+    0,
+    0,
+    1434,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_01 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_01_FIELD =
+{
+    "SN_CNTR_01",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 01 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_01_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_01_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_01_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_23 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_23_FIELD =
+{
+    "SN_CNTR_23",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 23 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_23_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_23_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_23_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_01_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_SN_CNTR_23_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS",
+#if RU_INCLUDE_DESC
+    "AGG_SN_CNTR_03_1_STS Register",
+    "Aggregation SN counter Status\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_REG_OFFSET },
+    0,
+    0,
+    1435,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_01 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_01_FIELD =
+{
+    "SN_CNTR_01",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 01 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_01_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_01_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_01_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: SN_CNTR_23 *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_23_FIELD =
+{
+    "SN_CNTR_23",
+#if RU_INCLUDE_DESC
+    "",
+    "SN Counter of 23 Dispatchers\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_23_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_23_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_23_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_01_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_SN_CNTR_23_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS",
+#if RU_INCLUDE_DESC
+    "AGG_SN_CNTR_58_1_STS Register",
+    "Aggregation SN counter Status\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_REG_OFFSET },
+    0,
+    0,
+    1436,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    2,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: CNTR_RST *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_CNTR_RST_FIELD =
+{
+    "CNTR_RST",
+#if RU_INCLUDE_DESC
+    "",
+    "Reset AGG SN Counters.\nWrite 1 to reset\nBit 0 - Reset Disp 01 Chn 0\nBit 1 - Reset Disp 01 Chn 1\nBit 2 - Reset Disp 23 Chn 0\nBit 3 - Reset Disp 23 Chn 1\nBit 4 - Reset Disp 56 Chn 0\nBit 5 - Reset Disp 56 Chn 1\nBit 6 - Reset Disp 78 Chn 0\nBit 7 - Reset Disp 78 Chn 1\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_CNTR_RST_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_CNTR_RST_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_CNTR_RST_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_CNTR_RST_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST",
+#if RU_INCLUDE_DESC
+    "AGG_SN_RST Register",
+    "Reset AGG SN Counters\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_REG_OFFSET },
+    0,
+    0,
+    1437,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: QM_CRDT_CNTR_STS *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_QM_CRDT_CNTR_STS_FIELD =
+{
+    "QM_CRDT_CNTR_STS",
+#if RU_INCLUDE_DESC
+    "",
+    "QM Credit Counter status\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_QM_CRDT_CNTR_STS_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_QM_CRDT_CNTR_STS_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_QM_CRDT_CNTR_STS_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_QM_CRDT_CNTR_STS_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS",
+#if RU_INCLUDE_DESC
+    "QM_CRDT_CNTR_STS Register",
+    "QM Credit Counter status\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_REG_OFFSET },
+    0,
+    0,
+    1438,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: REORD_FULL *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REORD_FULL_FIELD =
+{
+    "REORD_FULL",
+#if RU_INCLUDE_DESC
+    "",
+    "Full Status of all PD fifos\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REORD_FULL_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REORD_FULL_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REORD_FULL_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REORD_FULL_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS",
+#if RU_INCLUDE_DESC
+    "FIFO_FULL_STS Register",
+    "Full Status of all PD fifos\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REG_OFFSET },
+    0,
+    0,
+    1439,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: REORD_EMPTY *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REORD_EMPTY_FIELD =
+{
+    "REORD_EMPTY",
+#if RU_INCLUDE_DESC
+    "",
+    "Empty Status of all PD fifos\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REORD_EMPTY_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REORD_EMPTY_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REORD_EMPTY_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REORD_EMPTY_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS",
+#if RU_INCLUDE_DESC
+    "FIFO_EMPTY_STS Register",
+    "Empty Status of all PD fifos\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REG_OFFSET },
+    0,
+    0,
+    1440,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    1,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP0_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN0_UW_FIELD =
+{
+    "DISP0_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp0 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP0_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN1_UW_FIELD =
+{
+    "DISP0_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp0 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP1_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN0_UW_FIELD =
+{
+    "DISP1_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp1 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP1_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN1_UW_FIELD =
+{
+    "DISP1_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp1 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP0_CHN1_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_DISP1_CHN1_UW_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01",
+#if RU_INCLUDE_DESC
+    "PD_FIFO_USED_WORDS_01 Register",
+    "Used words count for incoming PDs Fifo for Dispatchers 0/1\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_REG_OFFSET },
+    0,
+    0,
+    1441,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    4,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP2_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN0_UW_FIELD =
+{
+    "DISP2_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp2 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP2_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN1_UW_FIELD =
+{
+    "DISP2_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp2 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP3_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN0_UW_FIELD =
+{
+    "DISP3_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp3 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP3_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN1_UW_FIELD =
+{
+    "DISP3_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp3 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP2_CHN1_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_DISP3_CHN1_UW_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23",
+#if RU_INCLUDE_DESC
+    "PD_FIFO_USED_WORDS_23 Register",
+    "Used words count for incoming PDs Fifo for Dispatchers 2/3\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_REG_OFFSET },
+    0,
+    0,
+    1442,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    4,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP5_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN0_UW_FIELD =
+{
+    "DISP5_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp5 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP5_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN1_UW_FIELD =
+{
+    "DISP5_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp5 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP6_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN0_UW_FIELD =
+{
+    "DISP6_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp6 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP6_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN1_UW_FIELD =
+{
+    "DISP6_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp6 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP5_CHN1_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_DISP6_CHN1_UW_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56",
+#if RU_INCLUDE_DESC
+    "PD_FIFO_USED_WORDS_56 Register",
+    "Used words count for incoming PDs Fifo for Dispatchers 5/6\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_REG_OFFSET },
+    0,
+    0,
+    1443,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    4,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP7_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN0_UW_FIELD =
+{
+    "DISP7_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp7 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP7_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN1_UW_FIELD =
+{
+    "DISP7_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp7 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP8_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN0_UW_FIELD =
+{
+    "DISP8_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp8 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP8_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN1_UW_FIELD =
+{
+    "DISP8_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp8 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP7_CHN1_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_DISP8_CHN1_UW_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78",
+#if RU_INCLUDE_DESC
+    "PD_FIFO_USED_WORDS_78 Register",
+    "Used words count for incoming PDs Fifo for Dispatchers 7/8\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_REG_OFFSET },
+    0,
+    0,
+    1444,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    4,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49, TYPE: Type_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP4_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN0_UW_FIELD =
+{
+    "DISP4_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp4 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP4_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN1_UW_FIELD =
+{
+    "DISP4_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp4 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP9_CHN0_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN0_UW_FIELD =
+{
+    "DISP9_CHN0_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp9 Chn0 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN0_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN0_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN0_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: DISP9_CHN1_UW *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN1_UW_FIELD =
+{
+    "DISP9_CHN1_UW",
+#if RU_INCLUDE_DESC
+    "",
+    "Disp9 Chn1 PD Fifo Used Words\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN1_UW_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN1_UW_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN1_UW_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP4_CHN1_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN0_UW_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_DISP9_CHN1_UW_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49 *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_REG =
+{
+    "TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49",
+#if RU_INCLUDE_DESC
+    "PD_FIFO_USED_WORDS_49 Register",
+    "Used words count for incoming PDs Fifo for Dispatchers 4/9\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_REG_OFFSET },
+    0,
+    0,
+    1445,
+#if RU_INCLUDE_ACCESS
+    ru_access_read,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    4,
+    DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_FIELDS,
+#endif
+};
+
+/******************************************************************************
+ * Register: NAME: DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL, TYPE: Type_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL
+ ******************************************************************************/
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: BYPASS_CLK_GATE *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_BYPASS_CLK_GATE_FIELD =
+{
+    "BYPASS_CLK_GATE",
+#if RU_INCLUDE_DESC
+    "",
+    "If set to 1b1 will disable the clock gate logic such to always enable the clock\nTRIGGERS_HW\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_BYPASS_CLK_GATE_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_BYPASS_CLK_GATE_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_BYPASS_CLK_GATE_FIELD_SHIFT },
+    1,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: TIMER_VAL *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_TIMER_VAL_FIELD =
+{
+    "TIMER_VAL",
+#if RU_INCLUDE_DESC
+    "",
+    "For how long should the clock stay active once all conditions for clock disable are met.\n\nMin value for Dispatcher is 0x14\nTRIGGERS_HW\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_TIMER_VAL_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_TIMER_VAL_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_TIMER_VAL_FIELD_SHIFT },
+    15,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: KEEP_ALIVE_EN *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_EN_FIELD =
+{
+    "KEEP_ALIVE_EN",
+#if RU_INCLUDE_DESC
+    "",
+    "Enables the keep alive logic which will periodically enable the clock to assure that no deadlock of clock being removed completely will occur\nTRIGGERS_HW\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_EN_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_EN_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_EN_FIELD_SHIFT },
+    0,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: KEEP_ALIVE_INTRVL *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_INTRVL_FIELD =
+{
+    "KEEP_ALIVE_INTRVL",
+#if RU_INCLUDE_DESC
+    "",
+    "If the KEEP alive option is enabled the field will determine for how many cycles should the clock be active\nTRIGGERS_HW\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_INTRVL_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_INTRVL_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_INTRVL_FIELD_SHIFT },
+    2,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+/***** Field: KEEP_ALIVE_CYC *****/
+const ru_field_rec DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_CYC_FIELD =
+{
+    "KEEP_ALIVE_CYC",
+#if RU_INCLUDE_DESC
+    "",
+    "If the KEEP alive option is enabled this field will determine for how many cycles should the clock be disabled (minus the KEEP_ALIVE_INTERVAL)\n\nSo KEEP_ALIVE_CYCLE must be larger than KEEP_ALIVE_INTERVAL.\nTRIGGERS_HW\n\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_CYC_FIELD_MASK },
+    0,
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_CYC_FIELD_WIDTH },
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_CYC_FIELD_SHIFT },
+    15,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+};
+#endif
+
+#if RU_INCLUDE_FIELD_DB
+static const ru_field_rec *DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_FIELDS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_BYPASS_CLK_GATE_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_TIMER_VAL_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_EN_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_INTRVL_FIELD,
+    &DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_KEEP_ALIVE_CYC_FIELD,
+};
+#endif /* RU_INCLUDE_FIELD_DB */
+
+/***** Register struct: DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL *****/
+const ru_reg_rec DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_REG =
+{
+    "TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL",
+#if RU_INCLUDE_DESC
+    "CLOCK_GATE_CONTROL Register",
+    "Clock Gate control register including timer config and bypass control\n",
+#endif
+    { DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_REG_OFFSET },
+    0,
+    0,
+    1446,
+#if RU_INCLUDE_ACCESS
+    ru_access_rw,
+#endif
+#if RU_INCLUDE_FIELD_DB
+    5,
+    DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_FIELDS,
+#endif
+};
+
+unsigned long DSPTCHR_CMN_ADDRS[] =
+{
+    0xB1C00000,
+};
+
+static const ru_reg_rec *DSPTCHR_CMN_REGS[] =
+{
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_ADD_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_PD_RNR_PROF_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_QUEUE_MAPPING_RG_PROF_SEL_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_1_CFG_RT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_BB_CFG_BB_2_CFG_RT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_LB_CFG_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_0_1_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_2_3_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_4_5_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_RG_AVLABL_TSK_6_7_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_FREE_TASK_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_LOAD_BALANCING_TASK_EN_DIS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_TASK_ARB_MASK_MSK_TSK_1023_0_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CHN_CFG_CHN_MODE_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_CFG_REORD_CFG_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_1_CFG_RT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_BB_CFG_BB_2_CFG_RT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP0_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP1_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP2_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP3_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP4_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP5_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP6_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP7_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP8_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_DWRR_CFG_DISP9_BYTE_WGHT_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN03_INC_CNTR_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN47_INC_CNTR_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_XON_INC_CHN89_INC_CNTR_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_0_STS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_0_STS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_03_1_STS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_CNTR_58_1_STS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_AGG_SN_RST_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_QM_CRDT_CNTR_STS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_FULL_STS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_FIFO_EMPTY_STS_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_01_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_23_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_56_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_78_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_REORD_STATUS_PD_FIFO_USED_WORDS_49_REG,
+    &DSPTCHR_CMN_TASK_ARB_REORD_CLOCK_GATE_CONTROL_CLK_GATE_CNTRL_REG,
+};
+
+const ru_block_rec DSPTCHR_CMN_BLOCK =
+{
+    "DSPTCHR_CMN",
+#if RU_INCLUDE_SIZE
+    { 0x00000904 },
+#endif
+    DSPTCHR_CMN_ADDRS,
+    1,
+    48,
+    DSPTCHR_CMN_REGS,
+};

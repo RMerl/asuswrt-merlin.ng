@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source for the SH7751 R2Dplus
+ *
+ * Copyright (C) 2019 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+/dts-v1/;
+/ {
+	model = "R2D";
+	compatible = "renesas,r2d", "renesas,sh7751";
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &scif1;
+	};
+
+	scif_clks: scif60 {
+		#clock-cells = <0>;
+		compatible = "fixed-clock";
+		clock-frequency = <60000000>;
+		bootph-all;
+	};
+
+	scif1: serial@ffe80000 {
+		compatible = "renesas,scif";
+		reg = <0 0xffe80000 0 0x1000>;
+		clocks = <&scif_clks>;
+		clock-names = "fck";
+		status = "okay";
+		bootph-all;
+	};
+
+	pci@fe200000 {
+		compatible = "renesas,pci-sh7751";
+		device_type = "pci";
+		reg = <0 0xfe200000 0 0x1000>;
+		status = "okay";
+
+		bus-range = <0 0>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		#interrupt-cells = <1>;
+		ranges = <0x01000000 0 0xfe240000 0 0xfe240000 0 0x00040000
+			  0x02000000 0 0xfd000000 0 0xfd000000 0 0x01000000
+			  0x42000000 0 0x0c000000 0 0x8c000000 0 0x04000000>;
+	};
+};

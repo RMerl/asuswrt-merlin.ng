@@ -49,7 +49,7 @@ static int rdpa_user_xtmflow_get(rdpa_ioctl_cmd_t *pa)
 {
 	BDMF_TRACE_DBG("inside rdpa_user_xtmflow_drv\n");
 
-	if ((pa->ret = rdpa_xtmflow_get((bdmf_number)(long)pa->parm, &pa->mo)))
+	if ((pa->ret = rdpa_xtmflow_get((bdmf_number)(bdmf_long_t)pa->parm, &pa->mo)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmflow_get failed ret: %d\n", pa->ret);
 	}
@@ -68,7 +68,7 @@ static int rdpa_user_xtmflow_index_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmflow_index_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -82,7 +82,7 @@ static int rdpa_user_xtmflow_index_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmflow_user_index_set\n");
 
-	if ((pa->ret = rdpa_xtmflow_index_set(pa->mo, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_xtmflow_index_set(pa->mo, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmflow_index_set failed, ret:%d\n", pa->ret);
 	}
@@ -101,7 +101,7 @@ static int rdpa_user_xtmflow_hdr_type_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmflow_hdr_type_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -115,7 +115,7 @@ static int rdpa_user_xtmflow_hdr_type_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmflow_user_hdr_type_set\n");
 
-	if ((pa->ret = rdpa_xtmflow_hdr_type_set(pa->mo, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_xtmflow_hdr_type_set(pa->mo, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmflow_hdr_type_set failed, ret:%d\n", pa->ret);
 	}
@@ -134,7 +134,7 @@ static int rdpa_user_xtmflow_fstat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmflow_fstat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -148,7 +148,7 @@ static int rdpa_user_xtmflow_fstat_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmflow_user_fstat_set\n");
 
-	if ((pa->ret = rdpa_xtmflow_fstat_set(pa->mo, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_xtmflow_fstat_set(pa->mo, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmflow_fstat_set failed, ret:%d\n", pa->ret);
 	}
@@ -167,7 +167,7 @@ static int rdpa_user_xtmflow_us_cfg_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmflow_us_cfg_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_xtmflow_us_cfg_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_xtmflow_us_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -182,7 +182,7 @@ static int rdpa_user_xtmflow_us_cfg_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmflow_user_us_cfg_set\n");
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_xtmflow_us_cfg_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_xtmflow_us_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -207,7 +207,7 @@ static int rdpa_user_xtmflow_stat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmflow_stat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_xtmflow_stat_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_xtmflow_stat_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -222,7 +222,7 @@ static int rdpa_user_xtmflow_stat_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmflow_user_stat_set\n");
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_xtmflow_stat_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_xtmflow_stat_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -247,7 +247,7 @@ static int rdpa_user_xtmflow_ptmBonding_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmflow_ptmBonding_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -261,7 +261,7 @@ static int rdpa_user_xtmflow_ptmBonding_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmflow_user_ptmBonding_set\n");
 
-	if ((pa->ret = rdpa_xtmflow_ptmBonding_set(pa->mo, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_xtmflow_ptmBonding_set(pa->mo, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmflow_ptmBonding_set failed, ret:%d\n", pa->ret);
 	}
@@ -269,7 +269,7 @@ static int rdpa_user_xtmflow_ptmBonding_set(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
-long rdpa_xtmflow_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
+bdmf_long_t rdpa_xtmflow_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
 

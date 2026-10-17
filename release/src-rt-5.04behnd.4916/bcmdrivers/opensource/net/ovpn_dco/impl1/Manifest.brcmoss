@@ -1,0 +1,7 @@
+OSS_REFERENCE_Name: OpenVPN Data Channel Offload in the linux kernel
+OSS_REFERENCE_Version: 0.2.20240712
+OSS_REFERENCE_License: GPLv2
+OSS_REFERENCE_DownloadURL: https://github.com/OpenVPN/ovpn-dco/archive/refs/tags/v0.2.20240712.tar.gz
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./v0.2.20240712.tar.gz
+

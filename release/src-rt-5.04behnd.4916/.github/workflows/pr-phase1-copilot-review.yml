@@ -1,0 +1,103 @@
+name: PR Phase 1 Copilot Review (Guideline G2) [SHADOW MODE — pilot draft]
+
+# v1 DRAFT — validated end-to-end on PR #274 (2026-09-01): M1 mechanical recompute, throttling,
+# comment identity/persistence/error-handling, and Copilot CLI positive+negative detection for
+# R1/R2/R5/R6 all confirmed working. See https://github.com/ASUS-WL/pr-review-guideline
+# (GUIDELINE.md §2/§3, and its §12.0/§12.0.1/§12.0.2 for the full validation history).
+#
+# SHADOW MODE: comment-only, never fails the job. This is intentional for the pilot — the point
+# of this phase is to catch integration bugs (prompt construction, output parsing, throttling
+# logic), not to re-validate whether Copilot's judgment is good (that's already established in
+# production use elsewhere, see pr-review-guideline CHANGELOG.md 2026-08-31). Do not add
+# `core.setFailed()` / non-zero exit here until the shadow-mode observation period is reviewed
+# and someone explicitly flips this to gate mode per GUIDELINE.md §3.
+#
+# KNOWN GAP (confirm before relying on this in CI): the exact supported install method for the
+# GitHub Copilot CLI on a GitHub-hosted runner is not yet confirmed in this repo — see the
+# "Install Copilot CLI" step below for the placeholder and what to check.
+#
+# NOTE: this repo has three monitored branches (GUIDELINE.md §1.1), unlike the axhnd pilot's
+# single branch — all three are listed below since this is shadow mode (comment-only), so the
+# larger trigger surface doesn't carry gate-time risk. Revisit if/when this flips to gate mode.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - "SDK-504L04"
+      - "SDK-6.2.0_25.438.64.0"
+      - "SDK-6.4.0_26.522.24.0"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-phase1-copilot-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  phase1-copilot-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR head (full history for diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # 2026-08-31 fix: fetch-depth:0 unconditionally fetches every branch's ref list on
+          # this repo (80+ stale branches). `filter: blob:none` keeps that (cheap) but defers
+          # downloading file *content* until git diff/show actually needs it for the commits
+          # in range, instead of eagerly pulling every branch's full blob history.
+          filter: blob:none
+
+      - name: Checkout guideline repo (ASUS-WL/pr-review-guideline)
+        uses: actions/checkout@v4
+        with:
+          repository: ASUS-WL/pr-review-guideline
+          # 2026-09-02: bootstrap-guideline-v1 was merged into main and then deleted — read main
+          # directly now. (Prior to the merge this pointed at bootstrap-guideline-v1 temporarily;
+          # keep pointing at main going forward, this repo's own branch policy requires PR+admin
+          # review to change main, so it won't drift unexpectedly.)
+          ref: main
+          path: .pr-review-guideline
+          token: ${{ secrets.GA_PAT }}
+
+      # TODO(confirm): official docs are https://docs.github.com/copilot/how-tos/copilot-cli —
+      # verify the current supported non-interactive install method for CI runners before relying
+      # on this step. This placeholder assumes an npm-distributed package; replace with whatever
+      # the docs / org's DevOps actually confirm.
+      - name: Install Copilot CLI
+        run: |
+          npm install -g @github/copilot || {
+            echo "::warning::Copilot CLI install failed — confirm the correct install command from https://docs.github.com/copilot/how-tos/copilot-cli before re-running.";
+            exit 1;
+          }
+          copilot --version
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run Phase 1 review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 2026-08-31 fix: do NOT set GH_TOKEN here. `gh` CLI checks GH_TOKEN before
+          # GITHUB_TOKEN, so setting it to GA_PAT made every `gh api` comment call in the
+          # script authenticate (and post/appear) as GA_PAT's owner instead of
+          # github-actions[bot]. Copilot CLI gets its own dedicated secret via
+          # COPILOT_GITHUB_TOKEN below instead, which `gh` does not read, so the two no
+          # longer collide. GA_PAT is a classic PAT and Copilot CLI explicitly rejects
+          # those (2026-08-31 finding) — COPILOT_CLI_TOKEN is a separate fine-grained PAT
+          # created with resource owner = a personal account (not the org — Copilot-related
+          # permissions live under personal Account permissions, not Organization permissions;
+          # see GUIDELINE.md/plan-doc §12.0.2 for the full story), used specifically for
+          # Copilot CLI login. Validated working end-to-end 2026-09-01.
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_ACTION: ${{ github.event.action }}
+          REPO_SHORTNAME: "asuswrt-src-rt-5.04behnd.4916"
+          GUIDELINE_DIR: "${{ github.workspace }}/.pr-review-guideline"
+        run: node .github/scripts/pr-phase1-copilot-review.js

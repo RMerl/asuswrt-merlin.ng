@@ -1,0 +1,196 @@
+#include "bcm_voice_dt_bindings.h"
+
+/dts-v1/;
+/plugin/;
+
+&bcm_voice {
+	compatible = "brcm,voice-card";
+	board_id = "SI32287_16FXS";
+	dev_profile = <VD_LCCB>;
+	flags = <(FLAG_DSP_PCMHAL_ENABLE|FLAG_DAISY_CHAIN)>;
+
+	dev0: dev@0 {
+		reg = <0x0>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_FXS1>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <0 1>;
+			ts_rx_cfg = <0 1>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <2 3>;
+			ts_rx_cfg = <2 3>;
+		};
+	};
+	dev1: dev@1 {
+		reg = <0x1>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <4 5>;
+			ts_rx_cfg = <4 5>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <6 7>;
+			ts_rx_cfg = <6 7>;
+		};
+	};
+	dev2: dev@2 {
+		reg = <0x2>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <8 9>;
+			ts_rx_cfg = <8 9>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <10 11>;
+			ts_rx_cfg = <10 11>;
+		};
+	};
+	dev3: dev@3 {
+		reg = <0x3>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <12 13>;
+			ts_rx_cfg = <12 13>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <14 15>;
+			ts_rx_cfg = <14 15>;
+		};
+	};
+	dev4: dev@4 {
+		reg = <0x4>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <16 17>;
+			ts_rx_cfg = <16 17>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <18 19>;
+			ts_rx_cfg = <18 19>;
+		};
+	};
+	dev5: dev@5 {
+		reg = <0x5>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <20 21>;
+			ts_rx_cfg = <20 21>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <22 23>;
+			ts_rx_cfg = <22 23>;
+		};
+	};
+	dev6: dev@6 {
+		reg = <0x6>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <24 25>;
+			ts_rx_cfg = <24 25>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <26 27>;
+			ts_rx_cfg = <26 27>;
+		};
+	};
+	dev7: dev@7 {
+		reg = <0x7>;
+		dev_type = <VD_SILABS_32286>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_NOT_REQUIRED>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <28 29>;
+			ts_rx_cfg = <28 29>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <30 31>;
+			ts_rx_cfg = <30 31>;
+		};
+	};
+};

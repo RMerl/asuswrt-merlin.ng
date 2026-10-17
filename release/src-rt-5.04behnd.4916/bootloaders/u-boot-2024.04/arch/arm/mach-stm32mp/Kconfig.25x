@@ -1,0 +1,43 @@
+if STM32MP25X
+
+choice
+	prompt "STM32MP25x board select"
+	optional
+
+config TARGET_ST_STM32MP25X
+	bool "STMicroelectronics STM32MP25x boards"
+	imply BOOTSTAGE
+	imply CMD_BOOTSTAGE
+	help
+		target the STMicroelectronics board with SOC STM32MP25x
+		managed by board/st/stm32mp2
+		The difference between board are managed with devicetree
+
+endchoice
+
+config TEXT_BASE
+	default 0x84000000
+
+config PRE_CON_BUF_ADDR
+	default 0x84800000
+
+config PRE_CON_BUF_SZ
+	default 4096
+
+config BOOTSTAGE_STASH_ADDR
+	default 0x87000000
+
+if DEBUG_UART
+
+config DEBUG_UART_BOARD_INIT
+	default y
+
+# debug on USART2 by default
+config DEBUG_UART_BASE
+	default 0x400e0000
+
+endif
+
+source "board/st/stm32mp2/Kconfig"
+
+endif

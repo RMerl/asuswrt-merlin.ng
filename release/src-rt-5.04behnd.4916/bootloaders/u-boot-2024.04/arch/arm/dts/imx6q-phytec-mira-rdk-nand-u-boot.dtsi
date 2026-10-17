@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2020
+ * Niel Fourie, DENX Software Engineering, lusus@denx.de.
+ */
+#include "imx6qdl-u-boot.dtsi"
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio6 {
+	bootph-pre-ram;
+};
+
+&pinctrl_uart2 {
+	bootph-pre-ram;
+};
+
+&uart2 {
+	bootph-pre-ram;
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc1 {
+	bootph-pre-ram;
+};
+
+&ecspi1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_ecspi1 {
+	bootph-pre-ram;
+};
+
+&m25p80 {
+	bootph-pre-ram;
+};
+
+&gpmi {
+	fsl,legacy-bch-geometry;
+};

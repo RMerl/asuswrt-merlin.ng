@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Device Tree For RD-AC5X.
+ *
+ * Copyright (C) 2021 Marvell
+ * Copyright (C) 2022 Allied Telesis Labs
+ */
+/*
+ * Device Tree file for Marvell Alleycat 5X development board
+ * This board file supports the B configuration of the board
+ */
+
+/dts-v1/;
+
+#include "ac5-98dx35xx.dtsi"
+
+/ {
+	model = "Marvell RD-AC5X Board";
+	compatible = "marvell,rd-ac5x", "marvell,ac5x", "marvell,ac5";
+
+	aliases {
+		serial0 = &uart0;
+		spiflash0 = &spiflash0;
+		gpio0 = &gpio0;
+		gpio1 = &gpio1;
+		ethernet0 = &eth0;
+		ethernet1 = &eth1;
+		spi0 = &spi0;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		usb0 = &usb0;
+		usb1 = &usb1;
+		pinctrl0 = &pinctrl0;
+	};
+
+	usb1phy: usb-phy {
+		compatible = "usb-nop-xceiv";
+		#phy-cells = <0>;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&mdio {
+	phy0: ethernet-phy@0 {
+	      reg = <0>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+};
+
+&eth0 {
+	status = "okay";
+	phy-handle = <&phy0>;
+};
+
+/* USB0 is a host USB */
+&usb0 {
+	status = "okay";
+};
+
+/* USB1 is a peripheral USB */
+&usb1 {
+	status = "okay";
+	phys = <&usb1phy>;
+	phy-names = "usb-phy";
+	dr_mode = "peripheral";
+};
+
+&spi0 {
+	status = "okay";
+
+	spiflash0: flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		spi-tx-bus-width = <1>; /* 1-single, 2-dual, 4-quad */
+		spi-rx-bus-width = <1>; /* 1-single, 2-dual, 4-quad */
+		reg = <0>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
+&pinctrl0 {
+	/*
+	 * MPP Bus:     MPP#     mode#
+	 * eMMC          [0-11]   0x1
+	 * SPI[0]        [12-17]  0x1
+	 * TSEN_INT      [18]     0x1
+	 * DEV_INIT      [19]     0x1
+	 * SPI[1]        [20-23]  0x3
+	 * UART[1]       [24-25]  0x3
+	 * I2C[0]        [26-27]  0x1
+	 * XSMI[0]       [28-29]  0x1 // SCH use SMI[0], reversed due to CPSS problem
+	 * SMI[1]        [30-31]  0x2 // SCH use XSMI[1], reversed due to CPSS problem
+	 * UART[0]       [32-33]  0x1
+	 * OOB_SMI       [34-35]  0x1
+	 * PTP_CLK0_OUT  [36]     0x1
+	 * PTP_PULSE_OUT [37]     0x1
+	 * RCVR_CLK_OUT  [38]     0x1
+	 * GPIO(in/out)  [39]     0x0
+	 * GPIO(in/out)  [40]     0x0
+	 * PTP_REF_CLK   [41]     0x1
+	 * PTP_CLK0      [42]     0x1
+	 * LED0_CLK      [43]     0x1
+	 * LED0_STB      [44]     0x1
+	 * LED0_DATA     [45]     0x1
+	 */
+	/*	     0    1    2    3    4    5    6    7    8    9 */
+	pin-func = < 1    1    1    1    1    1    1    1    1    1
+		     1    1    1    1    1    1    1    1    1    1
+		     3    3    3    3    3    3    1    1    1    1
+		     2    2    1    1    1    1    1    1    1    0
+		     0    1    1    1    1    1    >;
+};

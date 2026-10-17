@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Empty devicetree file for xenguest_arm64
+ *
+ * This is required to make the board build with CONFIG OF_SEPARATE
+ * Build instructions at xenguest_arm64.rst are inadequate for obtaining a real
+ * devicetree.
+ *
+ * Copyright 2021 Google LLC
+ */
+
+/dts-v1/;
+
+/ {
+};

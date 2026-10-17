@@ -83,7 +83,9 @@ static const struct snd_pcm_hardware bcm63xx_pcm_hardware = {
 
 struct i2s_dma_desc   *pdma_desc[STREAM_CAPTURE+1]={ NULL, NULL };
 
-static int bcm63xx_pcm_hw_params(struct snd_pcm_substream *substream,struct snd_pcm_hw_params *params)
+static int bcm63xx_pcm_hw_params(struct snd_soc_component *component,
+				 struct snd_pcm_substream *substream,
+				 struct snd_pcm_hw_params *params)
 {
    struct snd_pcm_runtime      *runtime = substream->runtime;
    struct device *dev                   = substream->pcm->card->dev;
@@ -120,7 +122,7 @@ static int bcm63xx_pcm_hw_params(struct snd_pcm_substream *substream,struct snd_
    return 0;
 }
 
-static int bcm63xx_pcm_hw_free(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_hw_free(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
    if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
    {
@@ -144,7 +146,7 @@ static int bcm63xx_pcm_hw_free(struct snd_pcm_substream *substream)
    return 0;
 }
 
-static int bcm63xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
+static int bcm63xx_pcm_trigger(struct snd_soc_component *component,struct snd_pcm_substream *substream, int cmd)
 {
    int ret = 0;
    if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
@@ -203,7 +205,7 @@ static int bcm63xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
    return ret;
 }
 
-static int bcm63xx_pcm_prepare(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_prepare(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
    struct snd_pcm_runtime *runtime   = substream->runtime;
 
@@ -234,31 +236,31 @@ static int bcm63xx_pcm_prepare(struct snd_pcm_substream *substream)
    return 0;
 }
 
-static snd_pcm_uframes_t bcm63xx_pcm_pointer(
-                                          struct snd_pcm_substream *substream)
+static snd_pcm_uframes_t bcm63xx_pcm_pointer(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
+   snd_pcm_uframes_t x;
    struct bcm63xx_runtime_data *prtd = substream->runtime->private_data;
 
    if((void *) prtd->dma_addr_next == NULL)
       prtd->dma_addr_next = substream->runtime->dma_addr;
 
-   snd_pcm_uframes_t x = bytes_to_frames(substream->runtime, 
+   x = bytes_to_frames(substream->runtime, 
                          prtd->dma_addr_next - substream->runtime->dma_addr);
 
    return x == substream->runtime->buffer_size ? 0 : x;
 }
 
-static int bcm63xx_pcm_mmap(struct snd_pcm_substream *substream,
-                            struct vm_area_struct *vma)
+static int bcm63xx_pcm_mmap(struct snd_soc_component *component,struct snd_pcm_substream *substream,
+			    struct vm_area_struct *vma)
 {
    struct snd_pcm_runtime *runtime = substream->runtime;
-   return dma_mmap_writecombine(substream->pcm->card->dev, vma,
-                                runtime->dma_area,
-                                runtime->dma_addr,
-                                runtime->dma_bytes);
+	return dma_mmap_wc(substream->pcm->card->dev, vma,
+				     runtime->dma_area,
+				     runtime->dma_addr,
+				     runtime->dma_bytes);
 }
 
-static int bcm63xx_pcm_open(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_open(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
    int ret = 0;
    struct snd_pcm_runtime *runtime = substream->runtime;
@@ -298,7 +300,7 @@ out:
    return ret;
 }
 
-static int bcm63xx_pcm_close(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_close(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
    struct snd_pcm_runtime *runtime = substream->runtime;
    struct bcm63xx_runtime_data *prtd = runtime->private_data;
@@ -309,6 +311,7 @@ static int bcm63xx_pcm_close(struct snd_pcm_substream *substream)
    return 0;
 }
 
+#if 0 // Kevin test ALSA
 static struct snd_pcm_ops bcm63xx_pcm_ops = {
    .open      = bcm63xx_pcm_open,
    .close     = bcm63xx_pcm_close,
@@ -320,12 +323,18 @@ static struct snd_pcm_ops bcm63xx_pcm_ops = {
    .pointer   = bcm63xx_pcm_pointer,
    .mmap      = bcm63xx_pcm_mmap,
 };
+#endif
 
 static irqreturn_t i2s_dma_isr(int irq, void *snd_pcm_array)
 {
    int ret;
    unsigned int availdepth,ifflevel,offlevel,int_status,val_1,val_2;
    struct snd_pcm **psnd_pcm=(struct snd_pcm  **)snd_pcm_array;
+
+   struct snd_pcm_str          *streams;
+   struct snd_pcm_substream    *substream;
+   struct snd_pcm_runtime      *runtime;
+   struct bcm63xx_runtime_data *prtd;
 
    if( capturedeviceidx  >= WHISTLER_MAX_DEVICE || 
        playbackdeviceidx >= WHISTLER_MAX_DEVICE )
@@ -344,16 +353,15 @@ static irqreturn_t i2s_dma_isr(int irq, void *snd_pcm_array)
 
    if( int_status & I2S_RX_DESC_OFF_INTR )
    {
-     if( capturedeviceidx < 0 || !psnd_pcm[capturedeviceidx]->streams )
+     if( capturedeviceidx < 0 )
      {
          printk(KERN_ERR "invalid playback streams.\n");
          return IRQ_NONE;
      }
-     struct snd_pcm_str         *streams = psnd_pcm[capturedeviceidx]->streams;
-     struct snd_pcm_substream   *substream = 
-                                   streams[SNDRV_PCM_STREAM_CAPTURE].substream;
-     struct snd_pcm_runtime     *runtime   = substream->runtime;
-     struct bcm63xx_runtime_data *prtd      = runtime->private_data;
+     streams   = psnd_pcm[capturedeviceidx]->streams;
+     substream = streams[SNDRV_PCM_STREAM_CAPTURE].substream;
+     runtime   = substream->runtime;
+     prtd      = runtime->private_data;
      
      offlevel = 
             int_status >> I2S_RX_DESC_OFF_LEVEL_SHIFT & I2S_RX_DESC_LEVEL_MASK;
@@ -418,17 +426,15 @@ static irqreturn_t i2s_dma_isr(int irq, void *snd_pcm_array)
    
    if( int_status & I2S_DESC_OFF_INTR )
    {
-      if(playbackdeviceidx < 0 || !psnd_pcm[playbackdeviceidx]->streams )
+      if(playbackdeviceidx < 0 )
       {
          printk(KERN_ERR "invalid playback streams.\n");
          return IRQ_NONE;
       }
-      struct snd_pcm_str       *streams   = 
-                                  psnd_pcm[playbackdeviceidx]->streams;
-      struct snd_pcm_substream *substream = 
-                                 streams[SNDRV_PCM_STREAM_PLAYBACK].substream;
-      struct snd_pcm_runtime      *runtime   = substream->runtime;
-      struct bcm63xx_runtime_data *prtd      = runtime->private_data;
+      streams   = psnd_pcm[playbackdeviceidx]->streams;
+      substream = streams[SNDRV_PCM_STREAM_PLAYBACK].substream;
+      runtime   = substream->runtime;
+      prtd      = runtime->private_data;
 
       offlevel = int_status >> I2S_DESC_OFF_LEVEL_SHIFT & I2S_DESC_LEVEL_MASK;
       while( offlevel )
@@ -510,7 +516,7 @@ static int bcm63xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
    buf->dev.type     = SNDRV_DMA_TYPE_DEV;
    buf->dev.dev      = pcm->card->dev;
    buf->private_data = NULL;
-   buf->area         = dma_alloc_writecombine(pcm->card->dev, size,&buf->addr,
+   buf->area         = dma_alloc_wc(pcm->card->dev, size,&buf->addr,
                                               GFP_KERNEL);
    
    if (!buf->area)
@@ -523,7 +529,7 @@ static int bcm63xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
 }
 
 
-static int bcm63xx_soc_pcm_new(struct snd_soc_pcm_runtime *rtd)
+static int bcm63xx_soc_pcm_new(struct snd_soc_component *component,struct snd_soc_pcm_runtime *rtd)
 {
    struct snd_card *card = rtd->card->snd_card;
    struct snd_pcm *pcm = rtd->pcm;
@@ -591,7 +597,7 @@ out:
    return ret;
 }
 
-void bcm63xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
+void bcm63xx_pcm_free_dma_buffers(struct snd_soc_component *component,struct snd_pcm *pcm)
 {
    struct snd_pcm_substream *substream;
    struct snd_dma_buffer *buf;
@@ -605,15 +611,22 @@ void bcm63xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
       buf = &substream->dma_buffer;
       if (!buf->area)
          continue;
-      dma_free_writecombine(pcm->card->dev, buf->bytes,	buf->area, buf->addr);
+      dma_free_wc(pcm->card->dev, buf->bytes,	buf->area, buf->addr);
       buf->area = NULL;
    }
 }
 
 static const struct snd_soc_component_driver bcm63xx_soc_platform = {
-   .ops      = &bcm63xx_pcm_ops,
-   .pcm_new  = bcm63xx_soc_pcm_new,
-   .pcm_free = bcm63xx_pcm_free_dma_buffers,
+	.open = bcm63xx_pcm_open,
+	.close = bcm63xx_pcm_close,
+	.hw_params = bcm63xx_pcm_hw_params,
+	.hw_free = bcm63xx_pcm_hw_free,
+	.prepare = bcm63xx_pcm_prepare,
+	.trigger = bcm63xx_pcm_trigger,
+	.pointer = bcm63xx_pcm_pointer,
+	.mmap  = bcm63xx_pcm_mmap,
+	.pcm_construct = bcm63xx_soc_pcm_new,
+	.pcm_destruct = bcm63xx_pcm_free_dma_buffers,
 };
 
 int bcm63xx_soc_platform_probe(struct platform_device *pdev)

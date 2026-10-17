@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Device tree fragment for RCW SCH-30842 card
+ *
+ * Copyright 2019-2021 NXP
+ */
+
+/*
+ * SCH-30842 is a single port add-on card used with various FSL QDS boards.
+ * It integrates a AQR112 PHY, which supports several protocols - SGMII,
+ * 2500base-x, USXGMII, 10GBase-R.
+ * PHY address is 0x02.
+ */
+phy@02 {
+	reg = <0x02>;
+	mdi-reversal = <1>;
+	smb-addr = <0x25>;
+};

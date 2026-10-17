@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: ARM Trusted Firmware
+OSS_REFERENCE_Version: 2.12.0
+OSS_REFERENCE_License: BSD
+OSS_REFERENCE_DownloadURL: git clone https://github.com/ARM-software/arm-trusted-firmware.git
+OSS_REFERENCE_BroadcomURL:
+OSS_Broadcom_RelativePath: ./v2.12.0.tar.gz

@@ -1,0 +1,49 @@
+U-Boot for Wandboard
+--------------------
+
+This file contains information for the port of U-Boot to the Wandboard.
+
+Wandboard is a development board that has three variants based on the following
+SoCs: mx6 quad, mx6 quad plus, mx6 dual lite and mx6 solo.
+
+For more details about Wandboard, please refer to:
+http://www.wandboard.org/
+
+Building U-Boot for Wandboard
+-----------------------------
+
+To build U-Boot for the Wandboard:
+
+$ make wandboard_config
+$ make
+
+Flashing U-Boot into the SD card
+--------------------------------
+
+- After the 'make' command completes, the generated 'SPL' binary must be
+flashed into the SD card;
+
+$ sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+
+(Note - the SD card node may vary, so adjust this as needed).
+
+- Flash the u-boot.img image into the SD card:
+
+sudo dd if=u-boot-dtb.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Insert the SD card into the slot located in the bottom of the board (same side
+as the mx6 processor)
+
+- Connect the serial cable to the host PC
+
+- Power up the board and U-Boot messages will appear in the serial console.
+
+Debug UART
+----------
+
+The following settings provide a debug UART for the Wandboard:
+
+CONFIG_DEBUG_UART=y
+CONFIG_DEBUG_UART_MXC=y
+CONFIG_DEBUG_UART_BASE=0x02020000
+CONFIG_DEBUG_UART_CLOCK=80000000

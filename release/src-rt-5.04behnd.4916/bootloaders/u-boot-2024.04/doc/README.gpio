@@ -1,0 +1,40 @@
+
+GPIO hog (CONFIG_GPIO_HOG)
+--------
+
+All the GPIO hog are initialized using DM_FLAG_PROBE_AFTER_BIND DM flag
+after bind().
+
+Example, for the device tree:
+
+        tca6416@20 {
+                compatible = "ti,tca6416";
+                reg = <0x20>;
+                #gpio-cells = <2>;
+                gpio-controller;
+
+                env_reset {
+                        gpio-hog;
+                        input;
+                        gpios = <6 GPIO_ACTIVE_LOW>;
+                };
+                boot_rescue {
+                        gpio-hog;
+                        input;
+                        line-name = "foo-bar-gpio";
+                        gpios = <7 GPIO_ACTIVE_LOW>;
+                };
+        };
+
+You can than access the gpio in your board code with:
+
+	struct gpio_desc *desc;
+	int ret;
+
+	ret = gpio_hog_lookup_name("boot_rescue", &desc);
+	if (ret)
+		return;
+	if (dm_gpio_get_value(desc) == 1)
+		printf("\nBooting into Rescue System\n");
+	else if (dm_gpio_get_value(desc) == 0)
+		printf("\nBoot normal\n");

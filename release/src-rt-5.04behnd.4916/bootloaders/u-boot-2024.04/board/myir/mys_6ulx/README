@@ -1,0 +1,52 @@
+How to use U-Boot on MYiR MYS-6ULX Single Board Computer
+--------------------------------------------------------
+
+- Configure and build U-Boot for MYS-6ULX iMX6ULL:
+
+    $ make mrproper
+    $ make myir_mys_6ulx_defconfig
+    $ make
+
+  This will generate SPL and u-boot-dtb.img images.
+
+Boot from MMC/SD:
+- The SPL and u-boot-dtb.img images need to be flashed into the micro SD card:
+
+    $ sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+    $ sudo dd if=u-boot-dtb.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Boot mode settings:
+
+  Boot switch position: SW1 -> 0
+			SW2 -> 1
+			SW3 -> 0
+			SW4 -> 1
+
+Boot from NAND:
+- Boot the board using SD/MMC or Serial download and load the SPL into memory
+either from SD/MMC or TFTP.
+
+Default MTD layout is 512k(spl),1m(uboot),1m(uboot-dup),-(ubi)
+
+Flash SPL to NAND from SD/MMC,
+
+    $ ext4load mmc 0:2 $loadaddr SPL
+    $ nand erase.part spl
+    $ nandbcb init $loadaddr 0x0 $filesize
+
+Flash u-boot proper to NAND from SD/MMC,
+
+    $ ext4load mmc 0:2 $loadaddr u-boot-dtb.img
+    $ nand erase.part uboot
+    $ nand write $loadaddr uboot $filesize
+
+- Boot mode settings:
+
+  Boot switch position: SW1 -> 1
+			SW2 -> 0
+			SW3 -> 0
+			SW4 -> 1
+
+- Connect the Serial cable to UART0 and the PC for the console.
+
+- Reset the board using and U-Boot should boot from NAND.

@@ -1,0 +1,430 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx ZynqMP Generic System Controller
+ *
+ * (C) Copyright 2021 - 2022, Xilinx, Inc.
+ * (C) Copyright 2022 - 2023, Advanced Micro Devices, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+/dts-v1/;
+
+#include "zynqmp.dtsi"
+#include "zynqmp-clk-ccf.dtsi"
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/net/ti-dp83867.h>
+#include <dt-bindings/pinctrl/pinctrl-zynqmp.h>
+#include <dt-bindings/phy/phy.h>
+
+/ {
+	model = "ZynqMP Generic System Controller";
+	compatible = "xlnx,zynqmp-sc-revB", "xlnx,zynqmp-sc", "xlnx,zynqmp";
+
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		mmc0 = &sdhci0;
+		mmc1 = &sdhci1;
+		nvmem0 = &eeprom;
+		rtc0 = &rtc;
+		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &dcc;
+		spi0 = &qspi;
+		spi1 = &spi0;
+		spi2 = &spi1;
+	};
+
+	chosen {
+		bootargs = "earlycon";
+		stdout-path = "serial1:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		autorepeat;
+		fwuen {
+			label = "sw16";
+			gpios = <&gpio 12 GPIO_ACTIVE_LOW>;
+			linux,code = <BTN_MISC>;
+			wakeup-source;
+			autorepeat;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		ds40-led {
+			label = "heartbeat";
+			gpios = <&gpio 7 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+		};
+		ds44-led {
+			label = "status";
+			gpios = <&gpio 8 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	si5332_2: si5332-2 { /* u42 */
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <26000000>;
+	};
+
+	pwm-fan {
+		compatible = "pwm-fan";
+		status = "okay";
+		pwms = <&ttc0 2 40000 1>;
+	};
+};
+
+&gpio {
+	status = "okay";
+	gpio-line-names = "QSPI_CLK", "QSPI_DQ1", "QSPI_DQ2", "QSPI_DQ3", "QSPI_DQ0", /* 0 - 4 */
+		"QSPI_CS_B", "", "LED1", "LED2", "", /* 5 - 9 */
+		"", "ZU4_TRIGGER", "FWUEN", "EMMC_DAT0", "EMMC_DAT1", /* 10 - 14 */
+		"EMMC_DAT2", "EMMC_DAT3", "EMMC_DAT4", "EMMC_DAT5", "EMMC_DAT6", /* 15 - 19 */
+		"EMMC_DAT7", "EMMC_CMD", "EMMC_CLK", "EMMC_RST_B", "I2C1_SCL", /* 20 - 24 */
+		"I2C1_SDA", "UART0_RXD", "UART0_TXD", "", "", /* 25 - 29 */
+		"", "", "", "", "I2C0_SCL", /* 30 - 34 */
+		"I2C0_SDA", "UART1_TXD", "UART1_RXD", "GEM_TX_CLK", "GEM_TX_D0", /* 35 - 39 */
+		"GEM_TX_D1", "GEM_TX_D2", "GEM_TX_D3", "GEM_TX_CTL", "GEM_RX_CLK", /* 40 - 44 */
+		"GEM_RX_D0", "GEM_RX_D1", "GEM_RX_D2", "GEM_RX_D3", "GEM_RX_CTL", /* 45 - 49 */
+		"GEM_MDC", "GEM_MDIO", "USB0_CLK", "USB0_DIR", "USB0_DATA2", /* 50 - 54 */
+		"USB0_NXT", "USB0_DATA0", "USB0_DATA1", "USB0_STP", "USB0_DATA3", /* 55 - 59 */
+		"USB0_DATA4", "USB0_DATA5", "USB0_DATA6", "USB0_DATA7", "", /* 60 - 64 */
+		"", "", "", "", "", /* 65 - 69 */
+		"", "", "", "", "", /* 70 - 74 */
+		"", "", "ETH_RESET_B", /* 75 - 77, MIO end and EMIO start */
+		"", "", /* 78 - 79 */
+		"", "", "", "", "", /* 80 - 84 */
+		"", "", "", "", "", /* 85 -89 */
+		"", "", "", "", "", /* 90 - 94 */
+		"", "", "", "", "", /* 95 - 99 */
+		"", "", "", "", "", /* 100 - 104 */
+		"", "", "", "", "", /* 105 - 109 */
+		"", "", "", "", "", /* 110 - 114 */
+		"", "", "", "", "", /* 115 - 119 */
+		"", "", "", "", "", /* 120 - 124 */
+		"", "", "", "", "", /* 125 - 129 */
+		"", "", "", "", "", /* 130 - 134 */
+		"", "", "", "", "", /* 135 - 139 */
+		"", "", "", "", "", /* 140 - 144 */
+		"", "", "", "", "", /* 145 - 149 */
+		"", "", "", "", "", /* 150 - 154 */
+		"", "", "", "", "", /* 155 - 159 */
+		"", "", "", "", "", /* 160 - 164 */
+		"", "", "", "", "", /* 165 - 169 */
+		"", "", "", ""; /* 170 - 173 */
+};
+
+&gem1 { /* gem1 MIO38-49, MDIO MIO50/51 */
+	status = "okay";
+	phy-mode = "rgmii-id";
+	phy-handle = <&phy0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gem1_default>;
+
+	mdio: mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy0: ethernet-phy@1 {
+			#phy-cells = <1>;
+			compatible = "ethernet-phy-id2000.a231";
+			reg = <1>;
+			ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_25_NS>;
+			ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_75_NS>;
+			ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+			ti,dp83867-rxctrl-strap-quirk;
+			reset-gpios = <&gpio 77 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <100>;
+			reset-deassert-us = <280>;
+		};
+	};
+};
+
+&i2c0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	clock-frequency = <100000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c0_default>;
+	pinctrl-1 = <&pinctrl_i2c0_gpio>;
+	scl-gpios = <&gpio 34 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	sda-gpios = <&gpio 35 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+};
+
+&i2c1 { /* i2c1 MIO 24-25 */
+	status = "okay";
+	bootph-all;
+	clock-frequency = <100000>;
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c1_default>;
+	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+	scl-gpios = <&gpio 24 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	sda-gpios = <&gpio 25 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+
+	/* Use for storing information about SC board */
+	eeprom: eeprom@54 { /* u34 - m24128 16kB */
+		compatible = "st,24c128", "atmel,24c128";
+		reg = <0x54>; /* & 0x5c */
+		bootph-all;
+	};
+};
+
+/* USB 3.0 only */
+&psgtr {
+	status = "okay";
+	/* nc, nc, usb3 */
+	clocks = <&si5332_2>;
+	clock-names = "ref2";
+};
+
+&qspi { /* MIO 0-5 */
+	status = "okay";
+	/* QSPI should also have PINCTRL setup */
+	flash@0 {
+		compatible = "mt25qu512a", "m25p80", "jedec,spi-nor"; /* mt25qu512abb8e12 512Mib */
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <40000000>; /* 40MHz */
+		partition@0 {
+			label = "Image Selector";
+			reg = <0x0 0x80000>; /* 512KB */
+			read-only;
+			lock;
+		};
+		partition@80000 {
+			label = "Image Selector Golden";
+			reg = <0x80000 0x80000>; /* 512KB */
+			read-only;
+			lock;
+		};
+		partition@100000 {
+			label = "Persistent Register";
+			reg = <0x100000 0x20000>; /* 128KB */
+		};
+		partition@120000 {
+			label = "Persistent Register Backup";
+			reg = <0x120000 0x20000>; /* 128KB */
+		};
+		partition@140000 {
+			label = "Open_1";
+			reg = <0x140000 0xC0000>; /* 768KB */
+		};
+		partition@200000 {
+			label = "Image A (FSBL, PMU, ATF, U-Boot)";
+			reg = <0x200000 0xD00000>; /* 13MB */
+		};
+		partition@f00000 {
+			label = "ImgSel Image A Catch";
+			reg = <0xF00000 0x80000>; /* 512KB */
+			read-only;
+			lock;
+		};
+		partition@f80000 {
+			label = "Image B (FSBL, PMU, ATF, U-Boot)";
+			reg = <0xF80000 0xD00000>; /* 13MB */
+		};
+		partition@1c80000 {
+			label = "ImgSel Image B Catch";
+			reg = <0x1C80000 0x80000>; /* 512KB */
+			read-only;
+			lock;
+		};
+		partition@1d00000 {
+			label = "Open_2";
+			reg = <0x1D00000 0x100000>; /* 1MB */
+		};
+		partition@1e00000 {
+			label = "Recovery Image";
+			reg = <0x1E00000 0x200000>; /* 2MB */
+			read-only;
+			lock;
+		};
+		partition@2000000 {
+			label = "Recovery Image Backup";
+			reg = <0x2000000 0x200000>; /* 2MB */
+			read-only;
+			lock;
+		};
+		partition@2200000 {
+			label = "U-Boot storage variables";
+			reg = <0x2200000 0x20000>; /* 128KB */
+		};
+		partition@2220000 {
+			label = "U-Boot storage variables backup";
+			reg = <0x2220000 0x20000>; /* 128KB */
+		};
+		partition@2240000 {
+			label = "SHA256";
+			reg = <0x2240000 0x40000>; /* 256B but 256KB sector */
+			read-only;
+			lock;
+		};
+		partition@2280000 {
+			label = "Secure OS Storage";
+			reg = <0x2280000 0x20000>; /* 128KB */
+		};
+		partition@22A0000 {
+			label = "User";
+			reg = <0x22A0000 0x1d60000>; /* 29.375 MB */
+		};
+	};
+};
+
+&sdhci0 { /* emmc MIO 13-23 - with some settings MTFC16GAPALBH 16GB */
+	status = "okay";
+	non-removable;
+	disable-wp;
+	bus-width = <8>;
+	xlnx,mio-bank = <0>;
+};
+
+&ttc0 {
+	status = "okay";
+	#pwm-cells = <3>;
+};
+
+&uart1 { /* uart0 MIO36-37 */
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_default>;
+};
+
+&pinctrl0 { /* required by spec */
+	status = "okay";
+
+	pinctrl_uart1_default: uart1-default {
+		conf {
+			groups = "uart1_9_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			drive-strength = <12>;
+		};
+
+		conf-rx {
+			pins = "MIO37";
+			bias-high-impedance;
+		};
+
+		conf-tx {
+			pins = "MIO36";
+			bias-disable;
+		};
+
+		mux {
+			groups = "uart1_9_grp";
+			function = "uart1";
+		};
+	};
+
+	pinctrl_i2c0_default: i2c0-default {
+		mux {
+			groups = "i2c0_8_grp";
+			function = "i2c0";
+		};
+
+		conf {
+			groups = "i2c0_8_grp";
+			bias-pull-up;
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+	};
+
+	pinctrl_i2c0_gpio: i2c0-gpio-grp {
+		mux {
+			groups = "gpio0_34_grp", "gpio0_35_grp";
+			function = "gpio0";
+		};
+
+		conf {
+			groups = "gpio0_34_grp", "gpio0_35_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+	};
+
+	pinctrl_i2c1_default: i2c1-default {
+		conf {
+			groups = "i2c1_6_grp";
+			bias-pull-up;
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		mux {
+			groups = "i2c1_6_grp";
+			function = "i2c1";
+		};
+	};
+
+	pinctrl_i2c1_gpio: i2c1-gpio-grp {
+		conf {
+			groups = "gpio0_24_grp", "gpio0_25_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		mux {
+			groups = "gpio0_24_grp", "gpio0_25_grp";
+			function = "gpio0";
+		};
+	};
+
+	pinctrl_gem1_default: gem1-default {
+		conf {
+			groups = "ethernet1_0_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+		};
+
+		conf-rx {
+			pins = "MIO44", "MIO46", "MIO48";
+			bias-high-impedance;
+			low-power-disable;
+		};
+
+		conf-bootstrap {
+			pins = "MIO45", "MIO47", "MIO49";
+			bias-disable;
+			low-power-disable;
+		};
+
+		conf-tx {
+			pins = "MIO38", "MIO39", "MIO40",
+				"MIO41", "MIO42", "MIO43";
+			bias-disable;
+			low-power-enable;
+		};
+
+		conf-mdio {
+			groups = "mdio1_0_grp";
+			slew-rate = <SLEW_RATE_SLOW>;
+			power-source = <IO_STANDARD_LVCMOS18>;
+			bias-disable;
+		};
+
+		mux-mdio {
+			function = "mdio1";
+			groups = "mdio1_0_grp";
+		};
+
+		mux {
+			function = "ethernet1";
+			groups = "ethernet1_0_grp";
+		};
+	};
+};

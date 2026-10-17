@@ -1,0 +1,103 @@
+.\" SPDX-License-Identifier: GPL-2.0
+.\" Copyright (C) 2022 Sean Anderson <seanga2@gmail.com>
+.TH DUMPIMAGE 1 2022-06-11 U-Boot
+.SH NAME
+dumpimage \- extract data from U-Boot images
+.
+.SH SYNOPSIS
+.SY dumpimage
+.OP \-T type
+.BI \-l\~ image
+.YS
+.SY dumpimage
+.OP \-T type
+.OP \-p position
+.BI \-o\~ outfile
+.I image
+.YS
+.SY dumpimage
+.B \-h
+.YS
+.SY dumpimage
+.B \-V
+.YS
+.
+.SH DESCRIPTION
+.B dumpimage
+lists and extracts data from U-Boot images. If
+.B \-l
+is specified,
+.B dumpimage
+lists the components in
+.IR image .
+Otherwise,
+.B dumpimage
+extracts the component at
+.IR position " to " outfile .
+.
+.SH OPTIONS
+.TP
+.B \-h
+Print usage information and exit.
+.
+.TP
+.B \-l
+Print the header information for
+.IR image ,
+including a list of components.
+.
+.TP
+.BI \-o " outfile"
+The file to write the dumped component to.
+.TP
+.BI \-p " position"
+Specify the
+.I position
+of the component to dump. This should be a numeric index, starting at 0. If not
+specified, the default
+.I position
+is 0.
+.
+.TP
+.BI \-T " type"
+Specify the
+.I type
+of the image. If not specified, the image type will be automatically detected. A
+list of supported image types may be printed by running
+.BR "mkimage\~\-T\~list" .
+.
+.TP
+.B \-V
+Print version information and exit.
+.
+.SH BUGS
+Please report bugs to the
+.UR https://\:source\:.denx\:.de/\:u-boot/\:u-boot/\:issues
+U-Boot bug tracker
+.UE .
+.SH EXAMPLES
+Create a multi-file image and then extract part of that image
+.PP
+.EX
+.in +4
+$ \c
+.B mkimage \-A x86 \-O linux \-T multi \-n x86 \\\\\&
+.in +4
+.B \-d vmlinuz:initrd.img:System.map multi.img
+.in
+Image Name:   x86
+Created:      Thu Jul 25 10:29:13 2013
+Image Type:   Intel x86 Linux Multi-File Image (gzip compressed)
+Data Size:    13722956 Bytes = 13401.32 kB = 13.09 MB
+Load Address: 00000000
+Entry Point:  00000000
+Contents:
+   Image 0: 4040128 Bytes = 3945.44 kB = 3.85 MB
+   Image 1: 7991719 Bytes = 7804.41 kB = 7.62 MB
+   Image 2: 1691092 Bytes = 1651.46 kB = 1.61 MB
+$ \c
+.B dumpimage -p 2 -o System.map multi.img
+.EE
+.in
+.SH SEE ALSO
+.BR mkimage (1)

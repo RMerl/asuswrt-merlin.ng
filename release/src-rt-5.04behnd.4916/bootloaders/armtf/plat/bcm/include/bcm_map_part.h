@@ -30,23 +30,11 @@
 #ifndef __BCM_MAP_H
 #define __BCM_MAP_H
 
-#if defined (_BCM963138_)
-#include "63138_map_part.h"
-#endif
-#if defined (_BCM963148_)
-#include "63148_map_part.h"
-#endif
-#if defined (_BCM94908_)
-#include "4908_map_part.h"
-#endif
 #if defined (_BCM96858_)
 #include "6858_map_part.h"
 #endif
 #if defined (_BCM963158_)
 #include "63158_map_part.h"
-#endif
-#if defined (_BCM96846_)
-#include "6846_map_part.h"
 #endif
 #if defined (_BCM96856_)
 #include "6856_map_part.h"
@@ -59,9 +47,6 @@
 #endif
 #if defined (_BCM947622_)
 #include "47622_map_part.h"
-#endif
-#if defined (_BCM96878_)
-#include "6878_map_part.h"
 #endif
 #if defined (_BCM94912_)
 #include "4912_map_part.h"
@@ -83,6 +68,9 @@
 #endif
 #if defined (_BCM96837_)
 #include "6837_map_part.h"
+#endif
+#if defined (_BCM968375_)
+#include "68375_map_part.h"
 #endif
 #if defined (_BCM96765_)
 #include "6765_map_part.h"

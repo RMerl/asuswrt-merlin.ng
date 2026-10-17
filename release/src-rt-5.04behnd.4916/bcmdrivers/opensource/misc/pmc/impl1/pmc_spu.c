@@ -55,6 +55,10 @@ int pmc_spu_power_up(void)
 	apply_ubus_credit_each_master(UBUS_PORT_ID_SPU);
 #endif
 
+#if defined(CONFIG_BCM_UBUS4_DCM)
+	ubus_cong_threshold_wr(UBUS_PORT_ID_SPU, 0);
+#endif
+
 #if defined(CONFIG_BCM_UBUS_DECODE_REMAP)
 	err = ubus_master_remap_port(UBUS_PORT_ID_SPU);
 	if (err) {

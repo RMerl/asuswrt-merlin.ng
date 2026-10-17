@@ -78,7 +78,7 @@ dump_port_lfh() { # dump_port_lfh <port>
 
 sf2_xgmii() { #sf2_xgmii <unit>
     local unit=$1
-    read_chip $unit
+    read_chip $unit $2
     if [ $sf2_unit == -1 ]
     then echo "device has no (connected) sf2 switch!!"; return;
     fi

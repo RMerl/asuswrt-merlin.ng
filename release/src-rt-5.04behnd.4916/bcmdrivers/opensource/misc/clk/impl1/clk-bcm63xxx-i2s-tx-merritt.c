@@ -33,7 +33,6 @@
 #include <linux/slab.h>
 #include <linux/regmap.h>
 
-#include <bcm_pinmux.h>
 
 #define I2S_TX_CFG			( 0x0000 ) /* 0x00 -- 0x2080 cfg */
 #define I2S_TX_MCLK_RATIO_SHIFT		20

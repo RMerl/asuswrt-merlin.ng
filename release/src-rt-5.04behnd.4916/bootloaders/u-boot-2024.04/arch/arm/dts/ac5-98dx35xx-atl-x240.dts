@@ -1,0 +1,212 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include "ac5-98dx35xx.dtsi"
+
+/ {
+	model = "Allied Telesis x240";
+	compatible = "alliedtelesis,x240", "marvell,ac5x", "marvell,ac5";
+
+	aliases {
+		serial0 = &uart0;
+		spiflash0 = &spiflash0;
+		gpio0 = &gpio0;
+		gpio1 = &gpio1;
+		spi0 = &spi0;
+		i2c0 = &i2c0;
+		usb0 = &usb0;
+		pinctrl0 = &pinctrl0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	boot-board {
+		compatible = "atl,boot-board";
+		present-gpio = <&gpio1 6 GPIO_ACTIVE_HIGH>;
+		override-gpio = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		fault {
+			label = "fault:red";
+			gpios = <&system_gpio 11 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+		};
+	};
+};
+
+&nand {
+	pinctrl-names = "default";
+	pinctrl-0 = <&nand_pins>;
+
+	nand-ecc-strength = <4>;
+	nand-ecc-step-size = <512>;
+	status = "okay";
+
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		partition@user {
+			reg = <0x00000000 0x10000000>;
+			label = "user";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+
+	mux@71 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nxp,pca9546";
+		reg = <0x71>;
+		i2c-mux-idle-disconnect;
+		reset-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;               /* MPP36 */
+		status = "okay";
+
+		i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+
+			hwmon@2e {
+				compatible = "adi,adt7476";
+				reg = <0x2e>;
+			};
+
+			rtc@68 {
+				compatible = "adi,max31331";
+				reg = <0x68>;
+			};
+
+			system_gpio: gpio@27 {
+				compatible = "nxp,pca9555";
+				gpio-controller;
+				#gpio-cells= <2>;
+				reg = <0x27>;
+				interrupt-parent = <&gpio0>;
+				interrupts = <25 IRQ_TYPE_LEVEL_LOW>;   /* MPP25 */
+			};
+		};
+	};
+};
+
+&spi0 {
+	status = "okay";
+	spiflash0: flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		spi-tx-bus-width = <1>; /* 1-single, 2-dual, 4-quad */
+		spi-rx-bus-width = <1>; /* 1-single, 2-dual, 4-quad */
+		reg = <0>;
+
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
+&gpio0 {
+	phy-reset {
+		gpio-hog;
+		gpios = <19 GPIO_ACTIVE_LOW>;
+		output-high;
+		line-name = "phy-reset";
+	};
+
+	usb-en {
+		gpio-hog;
+		gpios = <28 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "usb-en";
+	};
+
+	led-oe-n {
+		gpio-hog;
+		gpios = <23 GPIO_ACTIVE_LOW>;
+		output-low;
+		line-name = "led-oe-n";
+	};
+};
+
+&gpio1 {
+	nand-protect {
+		gpio-hog;
+		gpios = <8 GPIO_ACTIVE_LOW>;
+		output-low;
+		line-name = "nand-protect";
+	};
+};
+
+&pinctrl0 {
+	/*
+	 * MPP Bus:              MPP#
+	 * NF_IO                 [0-7]
+	 * NF_Wen                [8]
+	 * NF_ALE                [9]
+	 * NF_CLE                [10]
+	 * NF_Cen                [11]
+	 * QSPI_SCK/SPI0_SCK     [12]
+	 * QSPI_CSn/SPI0_CSn     [13]
+	 * QSPI_DIO[0]/SPI0_MOSI [14]
+	 * QSPI_DIO[1]/SPI0_MISO [15]
+	 * NF_Ren                [16]
+	 * NF_RBn                [17]
+	 * WD_INTn               [18]
+	 * B_B_OVRIDE_N          [19]
+	 * GREEN_SW_N            [20]
+	 * PHY_INT_N[0]          [21]
+	 * SPI_WPn               [22]
+	 * LED_OE_N              [23]
+	 * USB_PWR_FLT_N         [24]
+	 * SFP_INT_N             [25]
+	 * I2C0_SCL              [26]
+	 * I2C0_SDA              [27]
+	 * USB_EN                [28]
+	 * MONITOR_INT_N         [29]
+	 * XM1_MDC               [30]
+	 * XM1_MDIO              [31]
+	 * UA0_RXD               [32]
+	 * UA0_TXD               [33]
+	 * PHY_RST0n             [34]
+	 * TPM_INT_N             [35]
+	 * I2CMUX_RESET_N        [36]
+	 * SPI_SRAM_SEL_N        [37]
+	 * B_B_PRESENT           [38]
+	 * SPI_FLASH_SEL_N       [39]
+	 * NF_WP_N               [40]
+	 * POE_INT_N             [41]
+	 * PoE_RST_N             [42]
+	 * LED0_CLK              [43]
+	 * LED0_STB              [44]
+	 * LED0_DATA             [45]
+	 */
+	/*	     0    1    2    3    4    5    6    7    8    9 */
+	pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 1    1    1    1    0xff 0xff 0    0
+		     0    0    0    0    0    0    1    1    0    0
+		     1    1    1    1    0    0    0    0    0    0
+		     0    0    0    1    1    1    >;
+
+	nand_pins: nand-pins {
+		marvell,pins = <0 1 2 3 4 5 6 7 8 9 10 11 16 17>;
+		marvell,function = <2>;
+	};
+};

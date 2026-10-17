@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	dmc: dmc@20004000 {
+		compatible = "rockchip,rk3128-dmc", "syscon";
+		reg = <0x0 0x20004000 0x0 0x1000>;
+		bootph-all;
+	};
+};
+
+&cru {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};

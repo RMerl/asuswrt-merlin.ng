@@ -1,0 +1,149 @@
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - https://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * Based on "dra7.dtsi"
+ */
+
+#ifdef CONFIG_DRA7XX
+/{
+	chosen {
+		tick-timer = &timer2;
+	};
+
+	aliases {
+		usb0 = &usb1;
+		usb1 = &usb2;
+	};
+
+	ocp {
+		bootph-pre-ram;
+
+		ocp2scp@4a080000 {
+			compatible = "ti,omap-ocp2scp", "simple-bus";
+			bootph-pre-ram;
+		};
+
+		ocp2scp@4a090000 {
+			compatible = "ti,omap-ocp2scp", "simple-bus";
+		};
+
+		bandgap@4a0021e0 {
+			bootph-pre-ram;
+		};
+	};
+};
+
+&uart1 {
+	bootph-pre-ram;
+	reg-shift = <2>;
+};
+
+&uart3 {
+	bootph-pre-ram;
+	reg-shift = <2>;
+};
+
+&mmc1 {
+	bootph-pre-ram;
+};
+
+&mmc2 {
+	bootph-pre-ram;
+};
+
+&l4_cfg {
+	bootph-pre-ram;
+};
+
+&scm {
+	bootph-pre-ram;
+};
+
+&scm_conf {
+	bootph-pre-ram;
+};
+
+&qspi {
+	bootph-pre-ram;
+
+	m25p80@0 {
+		compatible = "jedec,spi-nor";
+		bootph-pre-ram;
+	};
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&gpio6 {
+	bootph-pre-ram;
+};
+
+&gpio7 {
+	bootph-pre-ram;
+};
+
+&i2c1 {
+	bootph-pre-ram;
+};
+
+#else /* OMAP54XX */
+&l4_cfg {
+	segment@0 {
+		/* SCM Core */
+		target-module@2000 {
+			compatible = "simple-bus";
+		};
+
+		/* USB HS */
+		target-module@64000 {
+			compatible = "simple-bus";
+		};
+	};
+};
+
+&l4_per {
+	segment@0 {
+		/* UART3 */
+		target-module@20000 {
+			compatible = "simple-bus";
+		};
+
+		/* I2C1 */
+		target-module@70000 {
+			compatible = "simple-bus";
+		};
+
+		/* MMC1 */
+		target-module@9c000 {
+			compatible = "simple-bus";
+		};
+
+		/* MMC2 */
+		target-module@b4000 {
+			compatible = "simple-bus";
+		};
+	};
+};
+
+#endif

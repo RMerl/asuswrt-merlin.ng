@@ -664,7 +664,7 @@ BCMXTM_STATUS BcmXtm_GetXTMPStatus( PXTM_XTMP_STATUS pXTMPStatus );
 
 #define XTM_SUPPORT_DSL_SRA
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146)
 #define XTM_USE_DSL_SYSCTL    /* needed for XTM traffic/mode sensing functionality */
 
 /* Support for non bonding connection on port 1*/

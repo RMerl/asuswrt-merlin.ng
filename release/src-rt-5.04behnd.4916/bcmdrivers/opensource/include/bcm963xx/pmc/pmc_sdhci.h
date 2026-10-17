@@ -31,5 +31,5 @@ written consent.
 #define PMC_SDHCI_H
 #include <linux/of.h>
 
-int pmc_sdhci_set_base_clk( uint64_t freq, struct device_node *node );
+int pmc_sdhci_set_base_clk( uint32_t pll_base_clk, uint32_t sdhci_base_clk );
 #endif

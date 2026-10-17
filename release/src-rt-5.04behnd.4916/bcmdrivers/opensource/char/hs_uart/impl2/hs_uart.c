@@ -49,12 +49,6 @@
 #include "hs_uart.h"
 #include "shared_utils.h"
 
-#if defined(CONFIG_BCM963138)
-#include "bcm_ioremap_shared.h"
-#define ARMUARTEN 0x04
-volatile uint32_t* prog_out_reg = NULL;
-#endif
-
 /* Note on locking policy: All uart ops take the
    port->lock, except startup shutdown and termios */
 
@@ -756,11 +750,6 @@ static int init_hs_uart_port( struct uart_port * port )
    /* Assign HC data */
    HS_UART_REG(port)->ptu_hc = HS_UART_PTU_HC_DATA;
 
-#if defined(CONFIG_BCM963138)
-   /* Route hsuart signals out on uart2 pins */
-   *prog_out_reg |= ARMUARTEN;
-#endif
-
    /* Disable/Clear interrupts */
    HS_UART_REG(port)->uart_int_stat = HS_UART_INT_MASK;
    HS_UART_REG(port)->uart_int_en = HS_UART_INT_MASK_DISABLE;
@@ -907,13 +896,6 @@ static int bcm_hs_uart_probe(struct platform_device *pdev)
     if (IS_ERR(port->membase))
         return PTR_ERR(port->membase);
 
-#if defined(CONFIG_BCM963138)
-    res_mem = platform_get_resource_byname(pdev, IORESOURCE_MEM, "prog_out");
-    if (res_mem)
-    {
-        prog_out_reg=devm_ioremap_shared_resource(&pdev->dev, res_mem);
-    }
-#endif
     res_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
     if (!res_irq)
     {

@@ -1,0 +1,18 @@
+
+
+exit 0
+		;;
+
+	stop)
+		echo "removing bcm late drivers not implemented yet..."
+		exit 1
+		;;
+
+	*)
+		echo "bcmlatedrivers: unrecognized option $1"
+		exit 1
+		;;
+
+esac
+
+

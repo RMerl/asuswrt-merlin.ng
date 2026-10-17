@@ -1,6 +1,0 @@
-DUOVERO BOARD
-M:	Ash Charles <ash@gumstix.com>
-S:	Maintained
-F:	board/gumstix/duovero/
-F:	include/configs/duovero.h
-F:	configs/duovero_defconfig

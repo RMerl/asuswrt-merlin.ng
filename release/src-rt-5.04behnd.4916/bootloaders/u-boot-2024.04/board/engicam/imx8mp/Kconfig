@@ -1,0 +1,15 @@
+if TARGET_IMX8MP_ICORE_MX8MP
+
+config SYS_BOARD
+	default "imx8mp"
+
+config SYS_VENDOR
+	default "engicam"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_icore_mx8mp"
+
+config IMX_CONFIG
+	default "board/engicam/imx8mp/imximage-lpddr4.cfg"
+
+endif

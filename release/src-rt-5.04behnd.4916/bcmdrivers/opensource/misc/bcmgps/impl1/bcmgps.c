@@ -46,6 +46,7 @@
 #include <linux/version.h>
 #include <bcm_bca_extintr.h>
 #include <linux/spi/spi.h>
+#include <linux/of_irq.h>
 
 /****************************************************************************
  * PRIVATE SYMBOLIC CONSTANTS
@@ -53,6 +54,12 @@
 #define HOST_REQ_GPIO_OF_NAME "ext_irq"
 #define NSTANDBY_GPIO_OF_NAME "reset"
 #define HOST_REQ_GPIO_DEV_NAME "bcmgps_host_req"
+
+enum com_type {
+	COM_TYPE_UART,
+	COM_TYPE_SPI,
+	COM_TYPE_NONE,
+};
 
 /****************************************************************************
  * PRIVATE FUNCTION PROTOTYPES
@@ -65,6 +72,8 @@ static ssize_t bcmgps_nstandby_store(struct device *dev,
 									 struct device_attribute *attr,
 									 const char *buf, size_t count);
 static ssize_t spidev_show(struct class *c, struct class_attribute *attr,
+						   char *data);
+static ssize_t uart_port_show(struct class *c, struct class_attribute *attr,
 						   char *data);
 static ssize_t raw_debug_show(struct class *c, struct class_attribute *attr,
 							  char *data);
@@ -80,6 +89,7 @@ static DEVICE_ATTR(host_req, S_IRUGO, bcmgps_host_req_show, NULL);
 static DEVICE_ATTR(nstandby, (S_IRUGO | S_IWUSR), bcmgps_nstandby_show,
 				   bcmgps_nstandby_store);
 static CLASS_ATTR_RO(spidev);
+static CLASS_ATTR_RO(uart_port);
 static CLASS_ATTR_RW(raw_debug);
 
 /****************************************************************************
@@ -95,14 +105,16 @@ struct bcmgps_priv {
 	bool is_host_req_rising;
 	struct miscdevice misc_host_req;
 	int raw_debug;
+	unsigned int com_type;
 };
 static struct bcmgps_priv *g_priv;
 
 /* Declare attributes table (listing in fact sysfs files) */
 static struct attribute *bcmgps_gpio_attrs[] = {
-	&dev_attr_host_req.attr,
 	&dev_attr_nstandby.attr,
-	NULL};
+	&dev_attr_host_req.attr,
+	NULL
+};
 
 /* Declare attribute group (specifying in fact sysfs directory) */
 static struct attribute_group bcmgps_gpio_group = {
@@ -181,7 +193,9 @@ bcmgps_host_req_isr(int irq, void *arg)
 {
 	struct bcmgps_priv *priv = arg;
 
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 	bcm_bca_extintr_mask(irq);
+#endif
 
 	dev_dbg(priv->dev, "%s(): interrupt called irq %d!\n", __func__, irq);
 
@@ -190,8 +204,10 @@ bcmgps_host_req_isr(int irq, void *arg)
 	/* wake up the waitqueue */
 	wake_up(&wait_queue_host_req);
 
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 	bcm_bca_extintr_clear(irq);
 	bcm_bca_extintr_unmask(irq);
+#endif
 
 	return IRQ_HANDLED;
 }
@@ -205,6 +221,9 @@ bcmgps_host_req_show(struct device *dev,
 {
 	struct bcmgps_priv *priv = dev_get_drvdata(dev);
 	int value = -1;
+
+	if (priv->com_type != COM_TYPE_SPI)
+		return sprintf(buf, "not supported\n");
 
 	value = gpiod_get_value_cansleep(priv->gpiod_host_req);
 
@@ -291,12 +310,40 @@ spidev_show(struct class *class,
 }
 
 static ssize_t
+uart_port_show(struct class *class,
+			struct class_attribute *attr, char *buf)
+{
+	struct bcmgps_priv *priv = g_priv;
+	struct device_node *snp;
+	struct device *gdev;
+	struct platform_device *pdev;
+
+	if (!priv)
+		return sprintf(buf, "none\n");
+
+	gdev = priv->dev;
+	/* get uart-port device node from this module */
+	snp = of_parse_phandle(gdev->of_node, "uart-port", 0);
+	if (!snp) {
+		dev_err(gdev, "failed to get uart_port node in bcmgps\n");
+		return sprintf(buf, "none\n");
+	}
+	/* get platform device from device node */
+	pdev = of_find_device_by_node(snp);
+	if (!pdev) {
+		dev_err(gdev, "failed to get platform device from device node in bcmgps\n");
+		return sprintf(buf, "none\n");
+	}
+	return sprintf(buf, "/dev/ttyH%d\n", pdev->id);
+}
+
+static ssize_t
 raw_debug_show(struct class *class,
 			   struct class_attribute *attr, char *buf)
 {
 	struct bcmgps_priv *priv = g_priv;
 
-	return sprintf(buf, "%lu\n", priv->raw_debug);
+	return sprintf(buf, "%u\n", priv->raw_debug);
 }
 
 static ssize_t
@@ -316,6 +363,20 @@ raw_debug_store(struct class *class, struct class_attribute *attr,
 	return size;
 }
 
+static unsigned int
+get_com_type(struct device *dev)
+{
+	unsigned int com_type = COM_TYPE_NONE;
+
+	if (of_find_property(dev->of_node, "spi-bus", NULL)) 
+		com_type = COM_TYPE_SPI;
+
+	if (of_find_property(dev->of_node, "uart-port", NULL)) 
+		com_type = COM_TYPE_UART;
+
+	return com_type;
+}
+
 /****************************************************************************
  * PLATFORM DEVIDE FUNCTIONS
  ****************************************************************************/
@@ -325,7 +386,7 @@ bcmgps_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct bcmgps_priv *priv;
 	int status, is_group, is_misc_reg;
-	int is_spidev_file, is_raw_debug_file;
+	int is_spidev_file, is_uart_port_file, is_raw_debug_file;
 
 	/* allocate private data */
 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
@@ -338,6 +399,9 @@ bcmgps_probe(struct platform_device *pdev)
 	priv->is_host_req_rising = false;
 	priv->raw_debug = 0;
 	g_priv = priv;
+
+	/* check communication device from node */
+	priv->com_type = get_com_type(dev); 
 
 	/* sysfs: create class sysfs under /sys/class */
 	priv->sysfs_class = class_create(THIS_MODULE, "bcmgps");
@@ -363,14 +427,6 @@ bcmgps_probe(struct platform_device *pdev)
 		goto err_unlock_return;
 	}
 
-	/* sysfs: create class file for reading spidev name */
-	is_spidev_file = class_create_file(priv->sysfs_class, &class_attr_spidev);
-	if (is_spidev_file) {
-		dev_err(dev, "failed to create class file(spidev) under sysfs\n");
-		status = is_spidev_file;
-		goto err_unlock_return;
-	}
-
 	/* sysfs: create class file for raw debug */
 	is_raw_debug_file = class_create_file(priv->sysfs_class, &class_attr_raw_debug);
 	if (is_raw_debug_file) {
@@ -393,44 +449,97 @@ bcmgps_probe(struct platform_device *pdev)
 	}
 	gpiod_direction_output(priv->gpiod_nstandby, 0);
 
-	/* host_req: request external interrupt and get gpio description */
-	priv->host_req_intr = bcm_bca_extintr_request(dev,
-												  NULL,
-												  HOST_REQ_GPIO_OF_NAME,
-												  bcmgps_host_req_isr,
-												  priv,
-												  dev_name(dev),
-												  NULL);
-	if (priv->host_req_intr < 0) {
-		dev_err(dev, "failed to request extintr for host_req (irq=%d)\n",
-				priv->host_req_intr);
-		status = priv->host_req_intr;
+	is_spidev_file = is_uart_port_file = is_misc_reg = -ENOENT;
+	if (priv->com_type == COM_TYPE_SPI) {
+		/* sysfs: create class file for reading spidev name */
+		is_spidev_file = class_create_file(priv->sysfs_class, &class_attr_spidev);
+		if (is_spidev_file) {
+			dev_err(dev, "failed to create class file(spidev) under sysfs\n");
+			status = is_spidev_file;
+			goto err_unlock_return;
+		}
+#if defined(CONFIG_BCM_BCA_EXTINTR)
+		/* host_req: request external interrupt and get gpio description */
+		priv->host_req_intr = bcm_bca_extintr_request(dev,
+													  NULL,
+													  HOST_REQ_GPIO_OF_NAME,
+													  bcmgps_host_req_isr,
+													  priv,
+													  dev_name(dev),
+													  NULL);
+		if (priv->host_req_intr < 0) {
+			dev_err(dev, "failed to request extintr for host_req (irq=%d)\n",
+					priv->host_req_intr);
+			status = priv->host_req_intr;
+			goto err_unlock_return;
+		}
+		priv->gpiod_host_req = bcm_bca_extintr_get_gpiod(priv->host_req_intr);
+#else
+		priv->gpiod_host_req = devm_gpiod_get(dev, HOST_REQ_GPIO_OF_NAME, GPIOD_IN);
+		if (IS_ERR(priv->gpiod_host_req)) {
+			status = (int)(PTR_ERR(priv->gpiod_host_req));
+			dev_err(dev, "failed to request host_req gpio %s-gpio, err %d\n",
+					HOST_REQ_GPIO_OF_NAME, status);
+			goto err_unlock_return;
+		}
+		priv->host_req_intr = irq_of_parse_and_map(dev->of_node, 0);
+		if (priv->host_req_intr) {
+			status = devm_request_threaded_irq(dev, priv->host_req_intr, bcmgps_host_req_isr,
+					NULL, 0, dev_name(dev), priv);
+		} else
+			status = -ENOENT;
+
+		if (status || !priv->host_req_intr) {
+			dev_err(dev, "failed to request extintr for host_req (irq=%d) err %d\n",
+				priv->host_req_intr, status);
+			goto err_unlock_return;
+		}
+#endif
+		/* host_req: register misc device for host_req gpio */
+		priv->misc_host_req.minor = MISC_DYNAMIC_MINOR;
+		priv->misc_host_req.name = (const char *)HOST_REQ_GPIO_DEV_NAME;
+		priv->misc_host_req.fops = &bcmgps_host_req_fops;
+		is_misc_reg = misc_register(&priv->misc_host_req);
+		if (is_misc_reg) {
+			dev_err(dev, "failed to register host_req misc (err=%d)\n", status);
+			status = is_misc_reg;
+			goto err_unlock_return;
+		}
+	} else if (priv->com_type == COM_TYPE_UART) {
+		/* sysfs: create class file for reading uart port name */
+		is_uart_port_file = class_create_file(priv->sysfs_class, &class_attr_uart_port);
+		if (is_uart_port_file) {
+			dev_err(dev, "failed to create class file(uart_port) under sysfs\n");
+			status = is_uart_port_file;
+			goto err_unlock_return;
+		}
+	} else {
+		dev_err(dev, "com type is not defined in bcmgps.\n");
 		goto err_unlock_return;
 	}
-	priv->gpiod_host_req = bcm_bca_extintr_get_gpiod(priv->host_req_intr);
 
-	/* host_req: register misc device for host_req gpio */
-	priv->misc_host_req.minor = MISC_DYNAMIC_MINOR;
-	priv->misc_host_req.name = (const char *)HOST_REQ_GPIO_DEV_NAME;
-	priv->misc_host_req.fops = &bcmgps_host_req_fops;
-	is_misc_reg = misc_register(&priv->misc_host_req);
-	if (is_misc_reg) {
-		dev_err(dev, "failed to register host_req misc (err=%d)\n", status);
-		status = is_misc_reg;
-		goto err_unlock_return;
-	}
 
-	dev_info(dev,"Broadcom GPS GPIO driver is registered (irq=%d)\n", priv->host_req_intr);
+	dev_info(dev,"Broadcom GPS GPIO driver is registered (COM_TYPE=%d, irq=%d)\n", priv->com_type, priv->host_req_intr);
 
 	return 0;
 
 err_unlock_return:
 	if (!is_misc_reg)
 		misc_deregister(&priv->misc_host_req);
-	if (priv->host_req_intr > 0)
+
+	if (priv->host_req_intr > 0) {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 		bcm_bca_extintr_free(dev, priv->host_req_intr, priv);
+#else
+		devm_free_irq(dev, priv->host_req_intr, NULL);
+		devm_gpiod_put(dev, priv->gpiod_host_req);
+#endif
+	}
+
 	if (!is_spidev_file)
 		class_remove_file(priv->sysfs_class, &class_attr_spidev);
+	if (!is_uart_port_file)
+		class_remove_file(priv->sysfs_class, &class_attr_uart_port);
 	if (!is_raw_debug_file)
 		class_remove_file(priv->sysfs_class, &class_attr_raw_debug);
 	if (!is_group)
@@ -451,12 +560,23 @@ bcmgps_remove(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct bcmgps_priv *priv = dev_get_drvdata(dev);
 
-	misc_deregister(&priv->misc_host_req);
+	if (!g_priv)
+		return 0;
+
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 	if (priv->host_req_intr > 0)
 		bcm_bca_extintr_free(dev, priv->host_req_intr, priv);
-	class_remove_file(priv->sysfs_class, &class_attr_spidev);
-	class_remove_file(priv->sysfs_class, &class_attr_raw_debug);
+#endif
+
+	if (priv->com_type == COM_TYPE_SPI) {
+	    misc_deregister(&priv->misc_host_req);
+	    class_remove_file(priv->sysfs_class, &class_attr_spidev);
+	} else if (priv->com_type == COM_TYPE_UART) {
+		class_remove_file(priv->sysfs_class, &class_attr_uart_port);
+	}
+
 	sysfs_remove_group(&priv->sysfs_dev->kobj, &bcmgps_gpio_group);
+	class_remove_file(priv->sysfs_class, &class_attr_raw_debug);
 	device_destroy(priv->sysfs_class, 0);
 	class_destroy(priv->sysfs_class);
 

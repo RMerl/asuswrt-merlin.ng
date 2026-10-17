@@ -40,6 +40,9 @@ written consent.
 #include "fpi.h"
 #include "fpi_hw.h"
 #include "pktrunner_host_common.h"
+#include <net/xfrm.h>
+#include "linux/bcm_log.h"
+#include "bcmspumsg.h"
 
 #define FLOW_HW_INVALID	0xFFFFFFFF
 extern int fhwPktRunnerActivate(Blog_t *blog_p, uint32_t key_in);
@@ -126,6 +129,48 @@ int pktrunner_fpi_get_def_prio(uint8_t *prio_p)
 }
 
 /*
+ * Getting FPI system statistics
+ * Return:
+ * 	0 if succeeds. otherwise, fails */
+int pktrunner_fpi_get_system_stat(fpi_global_stat_t *stat_p)
+{
+	rdpa_fpi_stat_t rdpa_fpi_stat;
+	int rc = 0;
+
+	rc = rdpa_fpi_stat_get(rdpa_fpi_obj, &rdpa_fpi_stat);
+	if (rc)
+		return -EINVAL;
+
+	/* IP Frag stat */
+	stat_p->ip_frag.packets_received =
+			rdpa_fpi_stat.ip_frag_packets_received;
+	stat_p->ip_frag.fragments_transmitted =
+			rdpa_fpi_stat.ip_frag_fragments_transmitted;
+	stat_p->ip_frag.no_buffer_drop = rdpa_fpi_stat.ip_frag_no_buffers_drop;
+
+	/* IP Reassembly stat */
+	stat_p->ip_reasm.fragments_received =
+			rdpa_fpi_stat.ip_reasm_fragments_received;
+	stat_p->ip_reasm.packets_reassembled =
+			rdpa_fpi_stat.ip_reasm_packets_reassembled;
+	stat_p->ip_reasm.too_many_fragments_trap =
+			rdpa_fpi_stat.ip_reasm_too_many_fragments_trap;
+	stat_p->ip_reasm.packet_length_too_big_trap =
+			rdpa_fpi_stat.ip_reasm_packet_length_too_big_trap;
+	stat_p->ip_reasm.buffer_type_mismatch_trap =
+			rdpa_fpi_stat.ip_reasm_psram_ddr_mismatch_trap;
+	stat_p->ip_reasm.no_buffer_trap =
+			rdpa_fpi_stat.ip_reasm_no_buffers_trap;
+	stat_p->ip_reasm.no_available_ctx_trap =
+			rdpa_fpi_stat.ip_reasm_no_available_ctx_trap;
+	stat_p->ip_reasm.flow_miss_trap =
+			rdpa_fpi_stat.ip_reasm_flow_miss_trap;
+	stat_p->ip_reasm.timeout_trap = rdpa_fpi_stat.ip_reasm_timeout_trap;
+
+	return 0;
+}
+
+/*
  * Adding flow.
  * Input:
  * 	blog_p: pointer to blog
@@ -168,6 +213,42 @@ int pktrunner_fpi_delete_flow(int handle)
 }
 
 /*
+ * Allocating IP->ID counter
+ * If no more counter available, rdpa will return the default counter which
+ * is usually the last counter.  In this case, also return error code, so
+ * FPI can handle it differently if needed.
+ * Input:
+ * Output:
+ * 	ipid_cntr_p: memory to store 8-bit IP->ID counter ID
+ * Return:
+ * 	0 if succeeds. otherwise, fails
+ */
+int pktrunner_fpi_alloc_ipid_cntr(uint8_t *ipid_cntr_p)
+{
+	int rc;
+
+	rc = rdpa_fpi_ipid_cntr_alloc(ipid_cntr_p);
+	if (rc)
+		return -ENOSPC;
+
+	return rc;
+}
+
+/*
+ * Freeing IP->ID counter
+ * Even if counter ID provided is default counter, user can still call the
+ * API.  RDPA will make sure the default counter is not freed.
+ * Input:
+ * 	ipid_cntr: 8-bit IP->ID counter ID to be freed
+ * Output:
+ * Return:
+ */
+void pktrunner_fpi_free_ipid_cntr(uint8_t ipid_cntr)
+{
+	rdpa_fpi_ipid_cntr_free(ipid_cntr);
+}
+
+/*
  * Getting the statistics for flow
  * Input:
  * 	handle: handle for the flow
@@ -177,8 +258,8 @@ int pktrunner_fpi_delete_flow(int handle)
  * Return:
  * 	0 if succeeds. otherwise, fails
  */
-int pktrunner_fpi_get_stat(int handle, uint32_t *pkt_cnt_p,
-			   uint64_t *byte_cnt_p)
+int pktrunner_fpi_get_flow_stat(int handle, uint32_t *pkt_cnt_p,
+				uint64_t *byte_cnt_p)
 {
 	int rc = fhwPktRunnerRefresh(handle, pkt_cnt_p, byte_cnt_p);
 	return rc? -EINVAL : 0;
@@ -257,23 +338,120 @@ int pktrunner_fpi_set_lkp_enable(bool enable)
 	return rc? -EINVAL : 0;
 }
 
+/*
+ * Setting enable IP fragmentation for FPI
+ * Return:
+ * 	0 if succeeds. otherwise, fails */
+int pktrunner_fpi_set_ip_frag_enable(bool enable)
+{
+	int rc = 0;
+
+	rc = rdpa_fpi_ip_frag_enable_set(rdpa_fpi_obj, (bdmf_boolean)enable);
+
+	return rc? -EINVAL : 0;
+}
+
+/*
+ * Setting enable IP reassembly for FPI
+ * Return:
+ * 	0 if succeeds. otherwise, fails */
+int pktrunner_fpi_set_ip_reasm_enable(bool enable)
+{
+	int rc = 0;
+
+	rc = rdpa_fpi_ip_reasm_enable_set(rdpa_fpi_obj, (bdmf_boolean)enable);
+
+	return rc? -EINVAL : 0;
+}
+
+/*
+ * Adding IPsec tunnel
+ * Return:
+ * 	0 if succeeds. otherwise, fails */
+int pktrunner_fpi_add_ipsec_tunnel(struct xfrm_state *x, uint32_t tun_id, uint8_t is_us)
+{
+	int rc = -1;
+	bcmFun_t *spu_add_tunnel = bcmFun_get(BCM_FUN_ID_SPU_FPI_TUNNEL_CREATE);
+
+	if (spu_add_tunnel)
+	{
+		struct spu_fpi_tunnel_args a = {};
+		a.add.tun_id = tun_id;
+		a.add.x = x;
+		a.add.is_us = is_us;
+		rc = spu_add_tunnel(&a);
+	}
+	return rc;
+}
+
+/*
+ * Delete IPsec tunnel
+ * Return:
+ * 	0 if succeeds. otherwise, fails */
+int pktrunner_fpi_del_ipsec_tunnel(uint32_t tun_id, uint8_t is_us, uint32_t esp_spi)
+{
+	int rc = -1;
+	bcmFun_t *spu_del_tunnel = bcmFun_get(BCM_FUN_ID_SPU_FPI_TUNNEL_DELETE);
+
+	if (spu_del_tunnel)
+	{
+		struct spu_fpi_tunnel_args a = {};
+		a.del.tun_id = tun_id;
+		a.del.is_us = is_us;
+		a.del.esp_spi = esp_spi;
+		rc = spu_del_tunnel(&a);
+	}
+	
+	return rc;
+}
+
+/*
+ * Remap IPsec tunnel
+ * Return:
+ * 	0 if succeeds. otherwise, fails */
+int pktrunner_fpi_remap_ipsec_tunnel(uint32_t tun_id1, uint32_t esp_spi1,
+				     uint32_t tun_id2, uint32_t esp_spi2)
+{
+	int rc = -1;
+	bcmFun_t *spu_remap_tunnel = bcmFun_get(BCM_FUN_ID_SPU_FPI_TUNNEL_REMAP);
+
+	if (spu_remap_tunnel)
+	{
+		struct spu_fpi_tunnel_args a = {};
+		a.remap.tun_id1 = tun_id1;
+		a.remap.esp_spi1 = esp_spi1;
+		a.remap.tun_id2 = tun_id2;
+		a.remap.esp_spi2 = esp_spi2;
+		rc = spu_remap_tunnel(&a);
+	}
+	return rc;
+}
+
 static const fpi_hw_info_t hw_info_db = {
 	.set_mode = pktrunner_fpi_set_mode,
 	.get_mode = pktrunner_fpi_get_mode,
 	.set_default_priority = pktrunner_fpi_set_def_prio,
 	.get_default_priority = pktrunner_fpi_get_def_prio,
+	.get_system_stat = pktrunner_fpi_get_system_stat,
 	.add_flow = pktrunner_fpi_add_flow,
 	.delete_flow = pktrunner_fpi_delete_flow,
 	.delete_flow_by_blog = NULL,
-	.get_stat = pktrunner_fpi_get_stat,
+	.get_flow_stat = pktrunner_fpi_get_flow_stat,
+	.alloc_ipid_cntr = pktrunner_fpi_alloc_ipid_cntr,
+	.free_ipid_cntr = pktrunner_fpi_free_ipid_cntr,
 	.add_ap_mac = pktrunner_fpi_add_ap_mac,
 	.delete_ap_mac = pktrunner_fpi_delete_ap_mac,
 	.set_gre_mode = pktrunner_fpi_set_gre_mode,
 	.set_l2lkp_on_etype = pktrunner_fpi_set_l2lkp_on_etype,
 	.set_lkp_enable = pktrunner_fpi_set_lkp_enable,
+	.set_ip_frag_enable = pktrunner_fpi_set_ip_frag_enable,
+	.set_ip_reasm_enable = pktrunner_fpi_set_ip_reasm_enable,
+	.add_ipsec_tunnel = pktrunner_fpi_add_ipsec_tunnel,
+	.del_ipsec_tunnel = pktrunner_fpi_del_ipsec_tunnel,
+	.remap_ipsec_tunnel = pktrunner_fpi_remap_ipsec_tunnel,
 };
 
-int __init pktrunner_fpi_init(void)
+int pktrunner_fpi_init(void)
 {
 	BDMF_MATTR_ALLOC(fpi_attr, rdpa_fpi_drv());
 	int rc = 0;
@@ -285,16 +463,27 @@ int __init pktrunner_fpi_init(void)
 		return rc;
 	}
 
+	rc = rdpa_fpi_ipv6_exthdr_force_trap_set(rdpa_fpi_obj,
+		(bdmf_boolean)true);
+	if (rc) {
+		pr_err("Fail to enable IPv6 exthdr force trap\n");
+		bdmf_destroy(rdpa_fpi_obj);
+		BDMF_MATTR_FREE(fpi_attr);
+		return rc;
+	}
+
 	rc = fpi_register_hw(&hw_info_db);
 	if (rc)
 		pr_err("%s:%d:Fail to register PktRunner to Flow "
 		       "Provisioning API Driver!\n", __func__, __LINE__);
+
 	pr_info("Successfully register PktRunner to Flow Provisioning "
 		"API Driver\n");
+
 	return rc;
 }
 
-void __exit pktrunner_fpi_exit(void)
+void pktrunner_fpi_exit(void)
 {
 	fpi_unregister_hw((fpi_hw_info_t *)&hw_info_db);
 	bdmf_destroy(rdpa_fpi_obj);

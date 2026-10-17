@@ -1,0 +1,13 @@
+config BCM_TC
+	tristate "TC kernel driver"
+	default m
+
+config BCM_TC_IMPL
+	int "Implementaion version of tc driver"
+	depends on BCM_TC
+	default 1
+
+config BRCM_TC_QCONF
+	tristate "BRCM TC queue config"
+	depends on BCM_TC
+	default n

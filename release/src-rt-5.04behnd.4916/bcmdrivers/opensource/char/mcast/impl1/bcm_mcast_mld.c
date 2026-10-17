@@ -435,7 +435,7 @@ void bcm_mcast_mld_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev, 
 {
    t_mld_grp_entry *mc_fdb;
    int i;
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    int ret;
 #endif
 
@@ -466,7 +466,7 @@ void bcm_mcast_mld_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev, 
          else if ( (mc_fdb->dst_dev == dev) ||
                    (mc_fdb->from_dev == dev) )
          {
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
             if (0 == activate)
             {
                 __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d dev %s",
@@ -497,7 +497,7 @@ void bcm_mcast_mld_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev, 
    }
 
    /* activate snoop entries for dev*/
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    if ((dev != NULL) && (1 == activate))
    {
       for (i = 0; i < BCM_MCAST_HASH_SIZE; i++) 
@@ -653,8 +653,8 @@ void bcm_mcast_mld_wipe_grp_reporter_for_port (bcm_mcast_ifdata *pif,
     spin_unlock_bh(&pif->mc_mld_lock);
 }
 
-#if defined(CONFIG_BLOG)
-void bcm_mcast_mld_process_blog_enable( bcm_mcast_ifdata *pif, int enable)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
+void bcm_mcast_mld_process_blog_enable(bcm_mcast_ifdata *pif, int enable)
 {
    t_mld_grp_entry *mc_fdb;
    int i;
@@ -925,7 +925,7 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
    int               first;
    int               tstamp;
 
-   seq_printf(seq, "%-6s %-6s %-6s %-7s %02d    0x%04x   0x%04x%04x  0x%x", 
+   seq_printf(seq, "%-6s %-6s    %-6s    %-7s %02d    0x%04x   0x%04x%04x  0x%x", 
               pif->dev->name, 
               dst->dst_dev->name, 
               dst->to_accel_dev->name, 
@@ -936,13 +936,13 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
               (dst->wan_tci & 0xFFFF),
               dst->info);
 
-   seq_printf(seq, " %08x:%08x:%08x:%08x",
+   seq_printf(seq, "  %08x:%08x:%08x:%08x",
               htonl(dst->grp.s6_addr32[0]),
               htonl(dst->grp.s6_addr32[1]),
               htonl(dst->grp.s6_addr32[2]),
               htonl(dst->grp.s6_addr32[3]));
 
-   seq_printf(seq, " %-4s %08x:%08x:%08x:%08x", 
+   seq_printf(seq, "        %-4s  %08x:%08x:%08x:%08x", 
               (dst->src_entry.filt_mode == MCAST_EXCLUDE) ? 
                "EX" : "IN",
               htonl(dst->src_entry.src.s6_addr32[0]), 
@@ -965,9 +965,9 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
 
       if(first)
       {
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
          bcm_mcast_flowhdl_t *flowhdl_p = (bcm_mcast_flowhdl_t *)dst->flowhdl;
-         seq_printf(seq, " %-7d %08x:%08x:%08x:%08x %d\n", 
+         seq_printf(seq, "     %-7d  %08x:%08x:%08x:%08x   %d\n", 
                     tstamp,
                     htonl(rep_entry->rep.s6_addr32[0]),
                     htonl(rep_entry->rep.s6_addr32[1]),
@@ -975,7 +975,7 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
                     htonl(rep_entry->rep.s6_addr32[3]), 
                     flowhdl_p->numkeys);
 #else
-         seq_printf(seq, " %-7d %08x:%08x:%08x:%08x\n", 
+         seq_printf(seq, "     %-7d  %08x:%08x:%08x:%08x\n", 
                     tstamp,
                     htonl(rep_entry->rep.s6_addr32[0]),
                     htonl(rep_entry->rep.s6_addr32[1]),
@@ -986,7 +986,7 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
       }
       else 
       {
-         seq_printf(seq, "%124s %-7d %08x:%08x:%08x:%08x\n", " ", 
+         seq_printf(seq, "%154s  %-7d  %08x:%08x:%08x:%08x\n", " ", 
                     tstamp,
                     htonl(rep_entry->rep.s6_addr32[0]),
                     htonl(rep_entry->rep.s6_addr32[1]),
@@ -1019,13 +1019,13 @@ int bcm_mcast_mld_display(struct seq_file *seq, bcm_mcast_ifdata *pif)
          dev_put(lowerDev);
       }
    }
-   seq_printf(seq, "bridge dstdev dstaccdev src-dev #tags lan-tci  wan-tci info");
-   seq_printf(seq, "    group                               mode source");
-#if defined(CONFIG_BLOG)
-   seq_printf(seq, "                              timeout reporter");
-   seq_printf(seq, "                            Index\n");
+   seq_printf(seq, "bridge dstdev dstaccdev src-dev  #tags   lan-tci   wan-tci    info");
+   seq_printf(seq, "               group                        mode            source");
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
+   seq_printf(seq, "                      timeout           reporter");
+   seq_printf(seq, "                      Index\n");
 #else
-   seq_printf(seq, "                              timeout reporter\n");
+   seq_printf(seq, "                      timeout           reporter\n");
 #endif
    spin_lock_bh(&pif->mc_mld_lock);
    for (i = 0; i < BCM_MCAST_HASH_SIZE; i++) 
@@ -1050,11 +1050,14 @@ int bcm_mcast_mld_display(struct seq_file *seq, bcm_mcast_ifdata *pif)
    bcm_mcast_hostclient_entries_dump();
 #endif
 
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    if (bcmLog_logIsEnabled(BCM_LOG_ID_MCAST, BCM_LOG_LEVEL_INFO)) 
    {
        bcm_mcast_fc_flowhdl_dump();
        bcm_mcast_dump_grpinfo_all();
    }
+#endif
+
    return 0;
 }
 

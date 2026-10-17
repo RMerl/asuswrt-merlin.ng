@@ -1,0 +1,42 @@
+Sandbox SPI/SPI Flash Implementation
+====================================
+
+U-Boot supports SPI and SPI flash emulation in sandbox. This must be enabled
+via a device tree.
+
+For example:
+
+	spi@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0 1>;
+		compatible = "sandbox,spi";
+		cs-gpios = <0>, <&gpio_a 0>;
+		spi.bin@0 {
+			reg = <0>;
+			compatible = "spansion,m25p16", "jedec,spi-nor";
+			spi-max-frequency = <40000000>;
+			sandbox,filename = "spi.bin";
+		};
+	};
+
+Supported chips are W25Q16 (2MB), W25Q32 (4MB) and W25Q128 (16MB). Once
+U-Boot it started you can use 'sf' commands as normal. For example:
+
+$ dd if=/dev/zero of=spi.bin bs=1M count=2
+$ u-boot -T
+
+Since the SPI bus is fully implemented as well as the SPI flash connected to
+it, you can also use low-level SPI commands to access the flash. For example
+this reads the device ID from the emulated chip:
+
+=> sspi 0 32 9f
+SF: Detected m25p16 with page size 256 Bytes, erase size 64 KiB, total 2 MiB
+FF202015
+
+
+Simon Glass
+sjg@chromium.org
+7/11/2013
+Note that the sandbox SPI implementation was written by Mike Frysinger
+<vapier@gentoo.org>.

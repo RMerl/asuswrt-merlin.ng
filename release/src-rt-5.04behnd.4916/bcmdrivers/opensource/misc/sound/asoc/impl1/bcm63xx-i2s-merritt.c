@@ -166,10 +166,8 @@ static int bcm63xx_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	int ret = 0;
-	unsigned int channels,slot;
 	struct clk *i2s_clk;
 	struct bcm_i2s_priv *i2s_priv = snd_soc_dai_get_drvdata(dai);
-	struct regmap *regmap_i2s = i2s_priv->regmap_i2s;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 		i2s_clk = i2s_priv->i2s_tx_clk;
@@ -187,7 +185,7 @@ static int bcm63xx_i2s_hw_params(struct snd_pcm_substream *substream,
 static int bcm63xx_i2s_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	unsigned int slavemode,mode;
+	unsigned int mode;
 	struct bcm_i2s_priv *i2s_priv = snd_soc_dai_get_drvdata(dai);
 	struct regmap *regmap_i2s = i2s_priv->regmap_i2s;
 
@@ -363,7 +361,7 @@ static int bcm63xx_i2s_dev_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	void __iomem *regs;
-	struct resource *r_mem, *region;
+	struct resource *r_mem;
 	struct bcm_i2s_priv *i2s_priv;
 	struct regmap *regmap_i2s;
 	struct clk *i2s_tx_clk,*i2s_rx_clk;
@@ -429,7 +427,7 @@ static int bcm63xx_i2s_dev_probe(struct platform_device *pdev)
 	if (ret)
 		dev_err(&pdev->dev, "failed to register the pcm\n");
 
-   printk(KERN_NOTICE "%s successfully executed!\n",  __FUNCTION__);
+	dev_notice(&pdev->dev, "%s successfully executed!\n",  __FUNCTION__);
 
 	return ret;
 }

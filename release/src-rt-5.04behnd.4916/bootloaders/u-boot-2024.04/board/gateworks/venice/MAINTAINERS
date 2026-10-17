@@ -1,0 +1,8 @@
+i.MX8MM Venice
+M:	Tim Harvey <tharvey@gateworks.com>
+S:	Maintained
+F:	arch/arm/dts/imx8m*-venice*
+F:	board/gateworks/venice/
+F:	doc/board/gateworks/*venice*
+F:	include/configs/imx8m*_venice.h
+F:	configs/imx8m*_venice_defconfig

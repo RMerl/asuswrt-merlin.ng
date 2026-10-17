@@ -223,11 +223,11 @@
 };
 
 /* 
- * For BT Coex 
+ * For BT Coex  and Wifi active signals
  */
 &pincontroller {
     pinctrl-names = "default";
-    pinctrl-0 = <&wifi1_seci_in_pin_22 &wifi1_seci_out_pin_30>; /* SECI */
+    pinctrl-0 = <&wifi1_seci_in_pin_22 &wifi1_seci_out_pin_30 &wifi0_tx_active_pin_95 &c_wifi1_tx_active_pin_97 >; /* SECI and wifi active */
 };
 
 &led_ctrl {

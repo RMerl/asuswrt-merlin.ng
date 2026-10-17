@@ -1,0 +1,15 @@
+if TARGET_HIKEY960
+
+config SYS_BOARD
+	default "hikey960"
+
+config SYS_VENDOR
+	default "hisilicon"
+
+config SYS_SOC
+	default "hi3660"
+
+config SYS_CONFIG_NAME
+	default "hikey960"
+
+endif

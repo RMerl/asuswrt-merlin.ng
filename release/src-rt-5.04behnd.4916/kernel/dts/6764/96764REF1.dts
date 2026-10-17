@@ -1,18 +1,17 @@
 #include "6764.dtsi"
 #include "../bcm_voice.dtsi"
 
+&memory_controller {
+	memcfg = <(BP_DDR_TYPE_DDR3       | \
+		BP_DDR_SPEED_1067_14_14_14    | \
+		BP_DDR_TOTAL_SIZE_512MB      | \
+		BP_DDR_DEVICE_WIDTH_16         | \
+		BP_DDR_TOTAL_WIDTH_16BIT      | \
+		BP_DDR_6764_DEFAULT           | \
+		BP_DDR_CONFIG_DEBUG)>;
+};
+
 / {
-
-	memory_controller {
-		memcfg = <(BP_DDR_TYPE_DDR3       | \
-			BP_DDR_SPEED_1067_14_14_14    | \
-			BP_DDR_TOTAL_SIZE_512MB      | \
-			BP_DDR_DEVICE_WIDTH_16         | \
-			BP_DDR_TOTAL_WIDTH_16BIT      | \
-			BP_DDR_6764_DEFAULT           | \
-			BP_DDR_CONFIG_DEBUG)>;
-	};
-
 	buttons {
 		compatible = "brcm,buttons";
 		reset_button {
@@ -52,9 +51,11 @@
                                                                        ##3- port_ext_gphy3 <--> phy_ext_gphy3
 	 */
 	phy_gphy {
+		wake-on-lan;
 		status = "okay";
 	};
 	phy_serdes0 {
+		wake-on-lan;
 		phy-extswitch;
 		config-xfi="2500Base-X";
 		phy-xfi-tx-polarity-inverse;
@@ -68,6 +69,7 @@
 		status = "okay";
 	};
 	phy_serdes1 {
+		wake-on-lan;
 		phy-handle = <&phy_cascade1>;
 		phy-xfi-tx-polarity-inverse;
 		phy-xfi-rx-polarity-inverse;

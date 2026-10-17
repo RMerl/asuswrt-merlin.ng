@@ -1888,18 +1888,18 @@ bdmf_error_t ag_drv_rnr_quad_parser_ipv6_filter_set(uint8_t quad_idx, const rnr_
     if ((quad_idx >= BLOCK_ADDR_COUNT) ||
        (parser_ipv6_filter->hop_by_hop_match >= _1BITS_MAX_VAL_) ||
        (parser_ipv6_filter->routing_eh >= _1BITS_MAX_VAL_) ||
-       (parser_ipv6_filter->dest_opt_eh >= _1BITS_MAX_VAL_))
+       (parser_ipv6_filter->dest_opt_eh >= _1BITS_MAX_VAL_) ||
+       (parser_ipv6_filter->ah_match >= _1BITS_MAX_VAL_))
     {
         bdmf_trace("ERROR driver %s:%u| err=%s (%d)\n", __FILE__, __LINE__, bdmf_strerror(BDMF_ERR_RANGE), BDMF_ERR_RANGE);
         return BDMF_ERR_RANGE;
     }
 #endif
 
-    RU_REG_READ(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg);
-
     reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg = RU_FIELD_SET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, HOP_BY_HOP_MATCH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg, parser_ipv6_filter->hop_by_hop_match);
     reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg = RU_FIELD_SET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, ROUTING_EH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg, parser_ipv6_filter->routing_eh);
     reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg = RU_FIELD_SET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, DEST_OPT_EH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg, parser_ipv6_filter->dest_opt_eh);
+    reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg = RU_FIELD_SET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, AH_MATCH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg, parser_ipv6_filter->ah_match);
 
     RU_REG_WRITE(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg);
 
@@ -1928,6 +1928,7 @@ bdmf_error_t ag_drv_rnr_quad_parser_ipv6_filter_get(uint8_t quad_idx, rnr_quad_p
     parser_ipv6_filter->hop_by_hop_match = RU_FIELD_GET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, HOP_BY_HOP_MATCH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg);
     parser_ipv6_filter->routing_eh = RU_FIELD_GET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, ROUTING_EH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg);
     parser_ipv6_filter->dest_opt_eh = RU_FIELD_GET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, DEST_OPT_EH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg);
+    parser_ipv6_filter->ah_match = RU_FIELD_GET(quad_idx, RNR_QUAD, PARSER_CORE_CONFIGURATION_IPV6_HDR_EXT_FLTR_MASK_CFG, AH_MATCH, reg_parser_core_configuration_ipv6_hdr_ext_fltr_mask_cfg);
 
     return BDMF_ERR_OK;
 }
@@ -5426,7 +5427,7 @@ static int ag_drv_rnr_quad_cli_set(bdmf_session_handle session, const bdmfmon_cm
     }
     case cli_rnr_quad_parser_ipv6_filter:
     {
-        rnr_quad_parser_ipv6_filter parser_ipv6_filter = { .hop_by_hop_match = parm[2].value.unumber, .routing_eh = parm[3].value.unumber, .dest_opt_eh = parm[4].value.unumber};
+        rnr_quad_parser_ipv6_filter parser_ipv6_filter = { .hop_by_hop_match = parm[2].value.unumber, .routing_eh = parm[3].value.unumber, .dest_opt_eh = parm[4].value.unumber, .ah_match = parm[5].value.unumber};
         ag_err = ag_drv_rnr_quad_parser_ipv6_filter_set(parm[1].value.unumber, &parser_ipv6_filter);
         break;
     }
@@ -5960,6 +5961,7 @@ int bcm_rnr_quad_cli_get(bdmf_session_handle session, const bdmfmon_cmd_parm_t p
         bdmf_session_print(session, "hop_by_hop_match = %u = 0x%x\n", parser_ipv6_filter.hop_by_hop_match, parser_ipv6_filter.hop_by_hop_match);
         bdmf_session_print(session, "routing_eh = %u = 0x%x\n", parser_ipv6_filter.routing_eh, parser_ipv6_filter.routing_eh);
         bdmf_session_print(session, "dest_opt_eh = %u = 0x%x\n", parser_ipv6_filter.dest_opt_eh, parser_ipv6_filter.dest_opt_eh);
+        bdmf_session_print(session, "ah_match = %u = 0x%x\n", parser_ipv6_filter.ah_match, parser_ipv6_filter.ah_match);
         break;
     }
     case cli_rnr_quad_parser_core_configuration_eng:
@@ -7676,24 +7678,24 @@ static int ag_drv_rnr_quad_cli_test(bdmf_session_handle session, const bdmfmon_c
     }
 
     {
-        rnr_quad_parser_ipv6_filter parser_ipv6_filter = {.hop_by_hop_match = gtmv(m, 1), .routing_eh = gtmv(m, 1), .dest_opt_eh = gtmv(m, 1)};
-        bdmf_session_print(session, "ag_drv_rnr_quad_parser_ipv6_filter_set(%u %u %u %u)\n", quad_idx,
-            parser_ipv6_filter.hop_by_hop_match, parser_ipv6_filter.routing_eh, parser_ipv6_filter.dest_opt_eh);
+        rnr_quad_parser_ipv6_filter parser_ipv6_filter = {.hop_by_hop_match = gtmv(m, 1), .routing_eh = gtmv(m, 1), .dest_opt_eh = gtmv(m, 1), .ah_match = gtmv(m, 1)};
+        bdmf_session_print(session, "ag_drv_rnr_quad_parser_ipv6_filter_set(%u %u %u %u %u)\n", quad_idx,
+            parser_ipv6_filter.hop_by_hop_match, parser_ipv6_filter.routing_eh, parser_ipv6_filter.dest_opt_eh, parser_ipv6_filter.ah_match);
         ag_err = ag_drv_rnr_quad_parser_ipv6_filter_set(quad_idx, &parser_ipv6_filter);
         if (!ag_err)
             ag_err = ag_drv_rnr_quad_parser_ipv6_filter_get(quad_idx, &parser_ipv6_filter);
 
         if (!ag_err)
         {
-            bdmf_session_print(session, "ag_drv_rnr_quad_parser_ipv6_filter_get(%u %u %u %u)\n", quad_idx,
-                parser_ipv6_filter.hop_by_hop_match, parser_ipv6_filter.routing_eh, parser_ipv6_filter.dest_opt_eh);
+            bdmf_session_print(session, "ag_drv_rnr_quad_parser_ipv6_filter_get(%u %u %u %u %u)\n", quad_idx,
+                parser_ipv6_filter.hop_by_hop_match, parser_ipv6_filter.routing_eh, parser_ipv6_filter.dest_opt_eh, parser_ipv6_filter.ah_match);
         }
         else
         {
             return BDMF_ERR_IO;
         }
 
-        if (parser_ipv6_filter.hop_by_hop_match != gtmv(m, 1) || parser_ipv6_filter.routing_eh != gtmv(m, 1) || parser_ipv6_filter.dest_opt_eh != gtmv(m, 1))
+        if (parser_ipv6_filter.hop_by_hop_match != gtmv(m, 1) || parser_ipv6_filter.routing_eh != gtmv(m, 1) || parser_ipv6_filter.dest_opt_eh != gtmv(m, 1) || parser_ipv6_filter.ah_match != gtmv(m, 1))
         {
             test_failure_cnt++;
             bdmf_session_print(session, "  register failed match; failures=%u\n", test_failure_cnt);        }
@@ -10426,6 +10428,7 @@ bdmfmon_handle_t ag_drv_rnr_quad_cli_init(bdmfmon_handle_t root_dir)
             BDMFMON_MAKE_PARM("hop_by_hop_match", "hop_by_hop_match", BDMFMON_PARM_UNUMBER, 0),
             BDMFMON_MAKE_PARM("routing_eh", "routing_eh", BDMFMON_PARM_UNUMBER, 0),
             BDMFMON_MAKE_PARM("dest_opt_eh", "dest_opt_eh", BDMFMON_PARM_UNUMBER, 0),
+            BDMFMON_MAKE_PARM("ah_match", "ah_match", BDMFMON_PARM_UNUMBER, 0),
             BDMFMON_PARM_LIST_TERMINATOR
         };
         static bdmfmon_cmd_parm_t set_parser_core_configuration_eng[] = {

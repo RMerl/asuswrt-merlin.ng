@@ -42,13 +42,15 @@
  * ORCA A0          1.1.02
  * ORCA B0          2.3.13
  * BLACKFIN A0      0.2.04
- * BLACKFIN B0      2.3.03
+ * BLACKFIN B0      2.3.05
  * SHORTFIN B0      2.3.05
- * LONGFIN A0/B0    2.2.15
+ * LONGFIN A0/B0    2.3.01
  * LANAI A0         1.0.03
  * KAUAI_A0         1.0.04
- * NIIHAU_A0        0.2.00
- * XPHY             0.0.14
+ * NIIHAU_A0        0.1.00
+ * XPHY_16          0.0.14
+ * XPHY_8 10G       0.0.01
+ * XPHY_8 2.5G      0.0.02
  */
 
 #include <linux/path.h>
@@ -58,6 +60,7 @@
 #include "phy_drv.h"
 #include "phy_drv_mii.h"
 #include "xrdp_led_init.h"
+#include "dt_access.h"
 #ifdef MACSEC_SUPPORT
 #include "phy_macsec_api.h"
 #endif
@@ -72,14 +75,14 @@ struct firmware_s {
 };
 
 struct phy_desc_s {
-	u16 phyid1;
-	u16 phyid2;
+    uint16_t phyid1;
+    uint16_t phyid2;
     char *name;
     firmware_t *firmware;
-	u32 inter_phy_types;
-	u32 flag;
-	u16 packageid1;
-	u16 packageid2;
+    uint32_t inter_phy_types;
+	uint32_t flag;
+    uint16_t packageid1;
+    uint16_t packageid2;
 #define PHY_DESC_FLAG_VALID_PACKAGEID  (1<<0)
 };
 
@@ -89,8 +92,11 @@ static int load_mako(firmware_t *firmware);
 #if defined(CONFIG_BCM_PHY_ORCA_A0) || defined(CONFIG_BCM_PHY_ORCA_B0)
 static int load_orca(firmware_t *firmware);
 #endif
-#if defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY)
+#if defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY_16)
 static int load_blackfin(firmware_t *firmware);
+#endif
+#if defined(CONFIG_BCM_PHY_XPHY_8)
+static int load_xphy_8(firmware_t *firmware);
 #endif
 #ifdef CONFIG_BCM_PHY_SHORTFIN_B0
 static int load_shortfin(firmware_t *firmware);
@@ -139,8 +145,12 @@ firmware_t niihau_a0_m = { "niihau_a0", load_niihau, 0 };
 firmware_t longfin_a0_m = { "longfin_a0", load_blackfin, 0 };
 firmware_t longfin_a0 = { "longfin_a0", load_blackfin, 0 };
 #endif
-#ifdef CONFIG_BCM_PHY_XPHY
-firmware_t xphy = { "xphy", load_blackfin, 0 };
+#ifdef CONFIG_BCM_PHY_XPHY_16
+firmware_t xphy_16 = { "xphy_16", load_blackfin, 0 };
+#endif
+#ifdef CONFIG_BCM_PHY_XPHY_8
+firmware_t xphy_8_2p5G = { "xphy_8_2p5G", load_xphy_8, 0 };
+firmware_t xphy_8_10G = { "xphy_8_10G", load_xphy_8, 0 };
 #endif
 
 #if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_KAUAI_A0)
@@ -164,13 +174,13 @@ static firmware_t *firmware_list[] = {
     &blackfin_b0,
 #endif
 #if defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0)
-    &longfin_a0_m,
     &longfin_a0,
+    &longfin_a0_m,
 #endif
 #if defined(CONFIG_BCM_PHY_SHORTFIN_B0)
     &shortfin_b0,
 #endif
-#ifdef CONFIG_BCM_PHY_KAUAI_A0
+#if defined(CONFIG_BCM_PHY_KAUAI_A0)
     &kauai_a0,
 #endif
 #if defined(CONFIG_BCM_PHY_LANAI_A0)
@@ -181,8 +191,12 @@ static firmware_t *firmware_list[] = {
     &niihau_a0,
     &niihau_a0_m,
 #endif
-#ifdef CONFIG_BCM_PHY_XPHY
-    &xphy,
+#ifdef CONFIG_BCM_PHY_XPHY_16
+    &xphy_16,
+#endif
+#ifdef CONFIG_BCM_PHY_XPHY_8
+    &xphy_8_2p5G,
+    &xphy_8_10G,
 #endif
 };
 
@@ -287,7 +301,7 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x501d, "54994EL  B0", &shortfin_b0, INTER_PHY_TYPE_USXGMII_MP_M },
 #endif
 #ifdef CONFIG_BCM_PHY_KAUAI_A0
-    { 0x3590, 0x53c0, "54904EL  A0", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M},
+    { 0x3590, 0x53c0, "54904EL  A0", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M },
     { 0x3590, 0x53c1, "54904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x002a, 0x0000 },
     { 0x3590, 0x53c1, "50904EL  A1", &kauai_a0, INTER_PHY_TYPE_USXGMII_MP_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x003a, 0x0000 },
 #endif
@@ -296,6 +310,7 @@ static phy_desc_t phy_desc[] = {
     { 0xf7a6, 0x1c10, "54901E   A0", &lanai_a0, INTER_PHY_TYPES_QS1K2XR_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0000, 0x0000 },
     { 0xf7a6, 0x1c10, "54901EM  A0", &lanai_a0_m, INTER_PHY_TYPES_QS1K2XR_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0003, 0x0000 },
     { 0xf7a6, 0x1c10, "54901EMX A0", &lanai_a0_m, INTER_PHY_TYPES_QS1K2XR_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0013, 0x0000 },
+    { 0xf7a6, 0x1c18, "54110    A0", &lanai_a0, INTER_PHY_TYPES_QS1K_M },
 #endif
 #ifdef CONFIG_BCM_PHY_NIIHAU_A0
     { 0xf7a6, 0x1c40, "84991    A0", &niihau_a0_m, INTER_PHY_TYPES_US1K2XIR5KIR10R_M, PHY_DESC_FLAG_VALID_PACKAGEID, 0x0000, 0x0000 },
@@ -341,27 +356,36 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x51f1, "54994H   B0", &longfin_a0_m, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
     { 0x3590, 0x51f5, "54994SK  B0", &longfin_a0_m, INTER_PHY_TYPES_US1K2XIR5KIR10R_M },
 #endif
-#ifdef CONFIG_BCM_PHY_XPHY
-    { 0x3590, 0x50c0, "XPHY6888_X A0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50c4, "XPHY6888_5 A0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50c8, "XPHY6888_2 A0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50cc, "XPHY6888_1 A0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x5371, "XPHY6888_X B0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x5375, "XPHY6888_5 B0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x5379, "XPHY6888_2 B0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x537d, "XPHY6888_1 B0", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50e0, "XPHY6813_X ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50e4, "XPHY6813_5 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50e8, "XPHY6813_2 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50ec, "XPHY6813_1 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50e1, "XPHY4916_X ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50e5, "XPHY4916_5 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50e9, "XPHY4916_2 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x50ed, "XPHY4916_1 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x51e0, "XPHY6765_X ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x51e4, "XPHY6765_5 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x51e8, "XPHY6765_2 ", &xphy, 0 },                         // integrated XPHY
-    { 0x3590, 0x51ec, "XPHY6765_1 ", &xphy, 0 },                         // integrated XPHY
+#ifdef CONFIG_BCM_PHY_XPHY_16
+    { 0x3590, 0x50c0, "XPHY6888_X A0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50c4, "XPHY6888_5 A0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50c8, "XPHY6888_2 A0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50cc, "XPHY6888_1 A0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x5371, "XPHY6888_X B0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x5375, "XPHY6888_5 B0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x5379, "XPHY6888_2 B0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x537d, "XPHY6888_1 B0", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50e0, "XPHY6813_X   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50e4, "XPHY6813_5   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50e8, "XPHY6813_2   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50ec, "XPHY6813_1   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50e1, "XPHY4916_X   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50e5, "XPHY4916_5   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50e9, "XPHY4916_2   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x50ed, "XPHY4916_1   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x51e0, "XPHY6765_X   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x51e4, "XPHY6765_5   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x51e8, "XPHY6765_2   ", &xphy_16, 0 },                         // integrated xphy_16
+    { 0x3590, 0x51ec, "XPHY6765_1   ", &xphy_16, 0 },                         // integrated xphy_16
+#endif
+#ifdef CONFIG_BCM_PHY_XPHY_8
+    { 0xf7a6, 0x1d30, "XPHY68375_X  ", &xphy_8_10G,  0, 0x0000, 0x0000 },     // integrated xphy_8
+    { 0xf7a6, 0x1db0, "XPHY68375_X  ", &xphy_8_10G,  0, 0x0000, 0x0000 },     // integrated xphy_8
+    { 0xf7a6, 0x1db4, "XPHY68375_5  ", &xphy_8_10G,  0, 0x0000, 0x0000 },     // integrated xphy_8
+    { 0xf7a6, 0x1db8, "XPHY68375_2  ", &xphy_8_10G,  0, 0x0000, 0x0000 },     // integrated xphy_8
+    { 0xf7a6, 0x1dbc, "XPHY68375_1  ", &xphy_8_10G,  0, 0x0000, 0x0000 },     // integrated xphy_8
+    { 0xf7a6, 0x1d38, "DPHY68375_2  ", &xphy_8_2p5G, 0, 0x0000, 0x0000 },     // integrated xphy_8
+    { 0xf7a6, 0x1d3c, "DPHY68375_1  ", &xphy_8_2p5G, 0, 0x0000, 0x0000 },     // integrated xphy_8
 #endif
 };
 
@@ -388,6 +412,7 @@ static int inline _bus_write(uint32_t addr, uint16_t dev, uint16_t reg, uint16_t
 #define PHY_COMP_READ(a, b, c, d, ri, ro)        if ((ret = phy_bus_c45_comp_read(a, b, c, d, ri, ro))) goto Exit;
 #define PHY_COMP_WRITE(a, b, c, d, ri, ro)       if ((ret = phy_bus_c45_comp_write(a, b, c, d, ri, ro))) goto Exit;
 
+
 static phy_desc_t *_phy_get_desc_from_phydev(phy_dev_t *phy_dev)
 {
     int ret;
@@ -408,15 +433,14 @@ static phy_desc_t *_phy_get_desc_from_phydev(phy_dev_t *phy_dev)
     for (i = 0; i < (int)ARRAY_SIZE(phy_desc); i++)
     {
         _phy_desc = &phy_desc[i];
-	if (_phy_desc->phyid1 != phy_dev->phy_id1 || _phy_desc->phyid2 != phy_dev->phy_id2)
+        if (_phy_desc->phyid1 != phy_dev->phy_id1 || _phy_desc->phyid2 != phy_dev->phy_id2)
             continue;
-
-	if (!(_phy_desc->flag & PHY_DESC_FLAG_VALID_PACKAGEID) || 
+        if (!(_phy_desc->flag & PHY_DESC_FLAG_VALID_PACKAGEID) || 
             (_phy_desc->packageid1 == phy_dev->pkg_id1 && _phy_desc->packageid2 == phy_dev->pkg_id2))
-    {
+        {
             phy_dev->descriptor = _phy_desc;
             break;
-    }
+        }
         phy_desc_candidate = _phy_desc;
     }
 
@@ -425,7 +449,7 @@ static phy_desc_t *_phy_get_desc_from_phydev(phy_dev_t *phy_dev)
         phy_dev->descriptor = phy_desc_candidate;
         phy_dev->flag |= PHY_FLAG_IGNORE_PKGID;
     }
-
+ 
 Exit:
     return phy_dev->descriptor;
 }
@@ -491,8 +515,10 @@ static inline int _phy_use_firmware(phy_dev_t *phy_dev, firmware_t *firmware)
 #define CMD_GET_LOWER_TEMP_WARNING_LEVEL            0x8035
 #define CMD_GET_HW_FR_EMI_MODE_ENABLE               0x803A
 #define CMD_SET_HW_FR_EMI_MODE_ENABLE               0x803B
-#define CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST    0x8040
-#define CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST    0x8041
+#define CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST2   0x803c
+#define CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST2   0x803d
+#define CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST1   0x8040
+#define CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST1   0x8041
 #define CMD_GET_DYNAMIC_PARTITION_SELECT            0x8042
 #define CMD_SET_DYNAMIC_PARTITION_SELECT            0x8043
 #define CMD_SET_WOL_ENABLE                          0x805A
@@ -570,8 +596,8 @@ int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t
     int ret;
     uint16_t cmd_status = 0;
 
-#ifdef CONFIG_BCM_PHY_XPHY
-    if (_phy_use_firmware(phy_dev, &xphy))
+#ifdef CONFIG_BCM_PHY_XPHY_16
+    if (_phy_use_firmware(phy_dev, &xphy_16))
     {
         switch (cmd_code)
         {
@@ -619,7 +645,8 @@ int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t
     case CMD_SET_UPPER_TEMP_WARNING_LEVEL:
     case CMD_SET_LOWER_TEMP_WARNING_LEVEL:
     case CMD_SET_HW_FR_EMI_MODE_ENABLE:
-    case CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST:
+    case CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST1:
+    case CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST2:
     case CMD_SET_DYNAMIC_PARTITION_SELECT:
     case CMD_SET_WOL_ENABLE:
     case CMD_SET_MACSEC_ENABLE:
@@ -665,7 +692,8 @@ int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t
     case CMD_GET_UPPER_TEMP_WARNING_LEVEL:
     case CMD_GET_LOWER_TEMP_WARNING_LEVEL:
     case CMD_GET_HW_FR_EMI_MODE_ENABLE:
-    case CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST:
+    case CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST1:
+    case CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST2:
     case CMD_GET_DYNAMIC_PARTITION_SELECT:
     case CMD_GET_WOL_ENABLE:
     case CMD_GET_MACSEC_ENABLE:
@@ -736,6 +764,50 @@ int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t
         return 0;
     }
 
+Exit:
+    return ret;
+}
+
+int _phy_tx_pwr_get(phy_dev_t *phy_dev, int *enable, int *tx_pwr)
+{
+    int command_handler;
+    uint16_t _enable = 0;
+    uint16_t _tx_pwr = 0;
+    int ret;
+
+#ifdef CONFIG_BCM_PHY_MAKO_A0
+    if (_phy_use_firmware(phy_dev, &mako_a0))
+        command_handler = CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST1;
+    else
+#endif
+        command_handler = CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST2;
+    if ((ret = cmd_handler(phy_dev, command_handler, &_enable, &_tx_pwr, NULL, NULL, NULL)))
+        goto Exit;
+
+    *enable = _enable;
+    *tx_pwr = _tx_pwr;
+Exit:
+    return ret;
+}
+
+int _phy_tx_pwr_set(phy_dev_t *phy_dev, int enable, int tx_pwr)
+{
+    int command_handler;
+    uint16_t _enable = enable;
+    uint16_t _tx_pwr = tx_pwr;
+    int ret;
+
+#ifdef CONFIG_BCM_PHY_MAKO_A0
+    if (_phy_use_firmware(phy_dev, &mako_a0))
+        command_handler = CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST1;
+    else
+#endif
+        command_handler = CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST2;
+
+    if ((ret = cmd_handler(phy_dev, command_handler, &_enable, &_tx_pwr, NULL, NULL, NULL)))
+        goto Exit;
+
+    phy_dev_an_restart(phy_dev);
 Exit:
     return ret;
 }
@@ -874,6 +946,65 @@ static int get_usxgmii_m_aggregated_port(phy_dev_t *phy_dev)
     return (phy_dev->addr - core_id);
 }
 
+#define PHY_FIRMWARE_WORD(main, branch, build)   ((main << 11) | (branch << 4) | build )
+#define BLACKFIN_B0_USXGMII_DATA5_HANDLING PHY_FIRMWARE_WORD(2, 3, 5)   /* 2.3.05 */
+#define LONGFIN_B0_USXGMII_DATA5_HANDLING  PHY_FIRMWARE_WORD(2, 3, 1)   /* 2.3.01 */
+
+static int get_firmware_version_digits(int phy_addr, uint16_t *fw_version, uint16_t *fw_main, uint16_t *fw_build, uint16_t *fw_branch)
+{
+    int ret = 0;
+
+    BUS_READ(phy_addr, 0x1e, 0x400f, fw_version);
+
+    *fw_branch = (*fw_version >> 0) & 0x7f;
+    *fw_main = (*fw_version >> 7) & 0x1f;
+    *fw_build = (*fw_version >> 12) & 0xf;
+    *fw_version = PHY_FIRMWARE_WORD(*fw_main, *fw_branch, *fw_build);
+Exit:
+    return ret;
+}
+
+static void phy_usxgmii_data5_setting(phy_dev_t *phy_dev, uint16_t *data5)
+{
+#if defined(CONFIG_BCM_PHY_BLACKFIN_B0) || (defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0))
+    uint16_t fw_version, fw_build, fw_main, fw_branch;
+#endif
+
+#ifdef CONFIG_BCM_PHY_BLACKFIN_B0
+    if (_phy_use_firmware(phy_dev, &blackfin_b0))
+    {
+        get_firmware_version_digits(phy_dev->addr, &fw_version, &fw_main, &fw_build, &fw_branch);
+        if (fw_version >= BLACKFIN_B0_USXGMII_DATA5_HANDLING)
+            goto set_data5;
+    }
+#endif
+
+#if defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0)
+    if (_phy_use_firmware(phy_dev, &longfin_a0) || _phy_use_firmware(phy_dev, &longfin_a0_m))
+    {
+        get_firmware_version_digits(phy_dev->addr, &fw_version, &fw_main, &fw_build, &fw_branch);
+        if (fw_version >= LONGFIN_B0_USXGMII_DATA5_HANDLING)
+            goto set_data5;
+    }
+#endif
+    *data5 = 0;
+    return;
+
+#if defined(CONFIG_BCM_PHY_BLACKFIN_B0) || (defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0))
+set_data5:
+#endif
+    if (phy_dev->shared_ref_clk_mhz)   /* Shared clock */
+    {
+        *data5 = 0;
+    }
+    else
+    {
+        *data5 = 1;
+    }
+
+    return;
+}
+
 #define XFI_MODE_IDLE_STUFFING           0 /* Idle Stuffing mode over XFI interface */
 #define XFI_MODE_BASE_X                  1 /* 2.5GBase-X or 5GBase-X */
 #define XFI_MODE_BASE_R                  2 /* 2.5GBase-R or 5GBase-R */
@@ -926,7 +1057,7 @@ static int _phy_inter_phy_types_set(phy_dev_t *phy_dev, int inter_phy_types)
 #endif
             data3 = 0x124; /* baud rate 10G, quad speed 2.5G */
         data4 = 0; /* 0 = Broadcom mode */
-        data5 = 0; /* 0 = MAC/PHY frequency is locked without PPM offset */
+        phy_usxgmii_data5_setting(phy_dev, &data5);
 
         if ((ret = cmd_handler(phy_dev, CMD_SET_USXGMII, &data1, &data2, &data3, &data4, &data5)))
             goto Exit;
@@ -1115,6 +1246,7 @@ static int inter_phy_type_usxgmii_m_set(phy_dev_t *phy_dev, inter_phy_types_dir_
             return -1;
     }
 
+    phy_usxgmii_data5_setting(phy_dev, &data5);
     for (i = base_port; i < base_port + total_ports; i++)
     {
         phy_dev->addr = i;
@@ -1170,6 +1302,7 @@ static int inter_phy_type_usxgmii_set(phy_dev_t *phy_dev, inter_phy_types_dir_t 
         }
     }
 
+    phy_usxgmii_data5_setting(phy_dev, &data5);
     rc += cmd_handler(phy_dev, CMD_SET_USXGMII, &data1, &data2, &data3, &data4, &data5);
 
     return rc;
@@ -1266,12 +1399,27 @@ end:
     return rc;
 }
 
-/* Setting PHY with exlusive XFI single mode for manul configuration */
+/* Setting PHY with exlusive XFI single mode for manual configuration */
 static int _phy_configured_speed_type(phy_dev_t *phy_dev, int adv_phy_caps, phy_duplex_t duplex,
         inter_phy_types_dir_t if_dir, int type, int cfg_an_enable)
 {
     int rc = 0;
-    phy_speed_t speed;
+    int type_adv_caps;
+
+    /* Override AN flag if it is not auto */
+    switch (cfg_an_enable)
+    {
+        case PHY_CFG_AN_AUTO:
+            break; /* Do not change AN */
+        case PHY_CFG_AN_OFF:
+            adv_phy_caps &= ~(PHY_CAP_AUTONEG);
+            phy_dev->an_enabled = 0;
+            break;
+        case PHY_CFG_AN_ON:
+            adv_phy_caps |= PHY_CAP_AUTONEG;
+            phy_dev->an_enabled = 1;
+            break;
+    }
 
     if (type != INTER_PHY_TYPE_AUTO && !((1<<type) & phy_dev->common_inter_phy_types))
         return -1;
@@ -1280,27 +1428,98 @@ static int _phy_configured_speed_type(phy_dev_t *phy_dev, int adv_phy_caps, phy_
         return -1;
 
     if (type == INTER_PHY_TYPE_AUTO)
+    {
         rc += phy_dev_configured_inter_phy_types_set(phy_dev, if_dir, phy_dev->common_inter_phy_types);
+        rc += phy_dev_caps_set(phy_dev, adv_phy_caps);
+    }
     else
     {
         rc += inter_phy_type_usxgmii_set(phy_dev, if_dir, type);
         rc += inter_phy_type_2p5g5g_set(phy_dev, if_dir, type);
 
-        if (adv_phy_caps == 0)
-            speed = phy_type_to_single_speed(type);
+        get_inter_phy_supported_speed_caps((1<<type), &type_adv_caps);
+        if (adv_phy_caps == PHY_CAP_AUTONEG)
+            adv_phy_caps = type_adv_caps;
         else
-            speed = phy_caps_to_max_speed(adv_phy_caps);
-    }
-
-    if (adv_phy_caps == 0)
-        rc += phy_dev_speed_set(phy_dev, speed, PHY_DUPLEX_FULL);
-    else
+            adv_phy_caps &= type_adv_caps;
         rc += phy_dev_caps_set(phy_dev, adv_phy_caps);
+    }
 
     phy_dev_configured_current_inter_phy_type_set(phy_dev, type);
     phy_dev_current_inter_phy_types_set(phy_dev, INTER_PHY_TYPE_UP, type);
 
     return rc;
+}
+
+static int _phy_mdix_mode_set(phy_dev_t *phy_dev, phy_mdix_t mdix_mode)
+{
+    int ret;
+    uint16_t val;
+    int auto_mdix, force_mdix;
+
+    if (mdix_mode == PHY_MDIX_AUTO)
+    {
+        auto_mdix = 1;
+        force_mdix = 0;
+    }
+    else
+    {
+        auto_mdix = 0;
+        force_mdix = mdix_mode == PHY_MDIX_ON ? 1 : 0;
+    }
+
+    PHY_READ(phy_dev, 0x07, 0x9000, &val);
+
+    if (auto_mdix)
+        val &= ~(1 << 14); /* Enable Auto MDIX */
+    else
+        val |= (1 << 14); /* Disable Auto MDIX */
+
+    PHY_WRITE(phy_dev, 0x07, 0x9000, val);
+
+    PHY_READ(phy_dev, 0x07, 0x900e, &val);
+
+    if (force_mdix)
+        val |= (1 << 7); /* Enable MDIX Swap */
+    else
+        val &= ~(1 << 7); /* Disable MDIX Swap */
+
+    PHY_WRITE(phy_dev, 0x07, 0x900e, val);
+
+Exit:
+    return ret;
+}
+
+static int _phy_mdix_mode_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode)
+{
+    int ret;
+    uint16_t val1, val2;
+
+    *mdix_mode = PHY_MDIX_UNKNOWN;
+
+    PHY_READ(phy_dev, 0x07, 0x9000, &val1);
+    PHY_READ(phy_dev, 0x07, 0x900e, &val2);
+
+    if (val1 & (1 << 14))
+        *mdix_mode = val2 & (1 << 7) ? PHY_MDIX_ON : PHY_MDIX_OFF; /* Force MDIX */
+    else
+        *mdix_mode = PHY_MDIX_AUTO; /* Auto MDIX Enabled */
+
+Exit:
+    return ret;
+}
+
+static int _phy_mdix_status_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode)
+{
+    int ret;
+    uint16_t val;
+
+    PHY_READ(phy_dev, 0x07, 0x9001, &val);
+
+    *mdix_mode = val & (1 << 13) ? PHY_MDIX_ON : PHY_MDIX_OFF; /* MDIX Enabled */
+
+Exit:
+    return ret;
 }
 
 static int _phy_force_auto_mdix_set(phy_dev_t *phy_dev, int enable)
@@ -1321,6 +1540,7 @@ Exit:
     return ret;
 }
 
+#if 0
 static int _phy_force_auto_mdix_get(phy_dev_t *phy_dev, int *enable)
 {
     int ret;
@@ -1333,6 +1553,7 @@ static int _phy_force_auto_mdix_get(phy_dev_t *phy_dev, int *enable)
 Exit:
     return ret;
 }
+#endif
 
 static int _phy_eth_wirespeed_set(phy_dev_t *phy_dev, int enable)
 {
@@ -1421,6 +1642,7 @@ static int _phy_xfi_txrx_polarity_set(phy_dev_t *phy_dev, int inverse, int tx_di
             data2 = inverse > 0;
         else
             data3 = inverse > 0;
+
         data1 = data4 = data5 = 0;
     }
 
@@ -1442,6 +1664,20 @@ static int _phy_xfi_tx_polarity_set(phy_dev_t *phy_dev, int inverse)
 static int _phy_xfi_rx_polarity_set(phy_dev_t *phy_dev, int inverse)
 {
     return _phy_xfi_txrx_polarity_set(phy_dev, inverse, 0);
+}
+
+static int _phy_jumbo_packet_set(phy_dev_t *phy_dev, int enable)
+{
+    int ret = 0;
+#if defined(CONFIG_BCM_JUMBO_FRAME)
+    uint16_t data1 = enable ? 1 : 0;
+
+    if ((ret = cmd_handler(phy_dev, CMD_SET_JUMBO_PACKET, &data1, NULL, NULL, NULL, NULL)))
+        goto Exit;
+
+Exit:
+#endif
+    return ret;
 }
 
 static int _phy_apd_get(phy_dev_t *phy_dev, int *enable)
@@ -1583,14 +1819,11 @@ static int _phy_eee_mode_set(phy_dev_t *phy_dev, uint32_t caps)
         uint32_t phy_id;
         phy_dev_phyid_get(phy_dev, &phy_id);
         if (phy_id == PHY_ID_54904EL_A0)
+        {
+            printk("ERROR: EEE is not supported in 54904EL_A0 at this firmware version yet.\n");
             return 0;
+        }
     }
-
-#if defined(CONFIG_BCM_PHY_LANAI_A0)
-    /* 50901E/LANAI will flip link at 100M speed when EEE is on, disable EEE before the issue is fixed */
-    if (_phy_use_firmware(phy_dev, &lanai_a0))
-        caps = 0;
-#endif
 
     data1 = XFI_MODE_BASE_X;
     data2 = XFI_MODE_BASE_X;
@@ -1599,9 +1832,10 @@ static int _phy_eee_mode_set(phy_dev_t *phy_dev, uint32_t caps)
         goto Exit;
 
     /* 10G          bits 0:1 */
-    /* 100M/1G      bits 2:3 */
+    /* 10M/100M/1G  bits 2:3 */
     /* 2.5G         bits 4:5 */
     /* 5G           bits 6:7 */
+    modes |= ((caps & PHY_CAP_10_HALF) || (caps & PHY_CAP_10_FULL)) ? (mode << 2) : 0;
     modes |= ((caps & PHY_CAP_100_HALF) || (caps & PHY_CAP_100_FULL)) ? (mode << 2) : 0;
     modes |= ((caps & PHY_CAP_1000_HALF) || (caps & PHY_CAP_1000_FULL)) ? (mode << 2) : 0;
     modes |= ((caps & PHY_CAP_2500) ? ((data1 == XFI_MODE_IDLE_STUFFING ? EEE_MODE_NATIVE_EEE : mode) << 4) : 0);
@@ -1727,14 +1961,32 @@ Exit:
     return ret;
 }
 
+static int _phy_support_10m(phy_dev_t *phy_dev)
+{
+    int ret = 0;
+
+#if defined(DSL_DEVICES)    /* DSL uses run time checking */
+    return 1;
+#endif
+
+#ifdef CONFIG_BCM_PHY_KAUAI_A0
+    if (_phy_use_firmware(phy_dev, &kauai_a0))
+        ret = 1;
+#endif
+
+#ifdef CONFIG_BCM_PHY_LANAI_A0
+    if (_phy_use_firmware(phy_dev, &lanai_a0))
+        ret = 1;
+#endif
+
+    return ret;
+}
+
 int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
 {
     int ret = 0;
     uint16_t val = 0;
     uint32_t caps = 0;
-
-    if ((caps_type != CAPS_TYPE_ADVERTISE) && (caps_type != CAPS_TYPE_SUPPORTED))
-        goto Exit;
 
     if (caps_type == CAPS_TYPE_SUPPORTED)
     {
@@ -1744,12 +1996,18 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
         /* MII status */
         PHY_READ(phy_dev, 0x07, 0xffe1, &val);
 
-        if (val & (1 << 11))
-            caps |= PHY_CAP_10_HALF;
-        if (val & (1 << 12))
-            caps |= PHY_CAP_10_FULL;
+        if (_phy_support_10m(phy_dev))
+        {
+            if (val & (1 << 11))
+                caps |= PHY_CAP_10_HALF;
+
+            if (val & (1 << 12))
+                caps |= PHY_CAP_10_FULL;
+        }
+
         if (val & (1 << 13))
             caps |= PHY_CAP_100_HALF;
+
         if (val & (1 << 14))
             caps |= PHY_CAP_100_FULL;
 
@@ -1758,6 +2016,7 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
 
         if (val & (1 << 12))
             caps |= PHY_CAP_1000_HALF;
+
         if (val & (1 << 13))
             caps |= PHY_CAP_1000_FULL;
 
@@ -1766,56 +2025,109 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
         return 0;
     }
 
-    /* 1000Base-T/100Base-TX MII control */
-    PHY_READ(phy_dev, 0x07, 0xffe0, &val);
+    if (caps_type == CAPS_TYPE_LP_ADVERTISED)
+    {
+        uint16_t lpa = 0, stat1000 = 0, an_stat = 0;
 
-    if (val & (1 << 12))
+        PHY_READ(phy_dev, 0x07, 0xffea, &stat1000);
+        PHY_READ(phy_dev, 0x07, 0xffe5, &lpa);
+        PHY_READ(phy_dev, 0x07, 0x0021, &an_stat);
+
+        if (!(lpa & (1 << 14)))
+            goto Exit;
+
         caps |= PHY_CAP_AUTONEG;
 
-    /* Copper auto-negotiation advertisement */
-    PHY_READ(phy_dev, 0x07, 0xffe4, &val);
+        if (lpa & (1 << 10))
+            caps |= PHY_CAP_PAUSE;
 
-    if (val & (1 << 10))
-        caps |= PHY_CAP_PAUSE;
+        if (lpa & (1 << 11))
+            caps |= PHY_CAP_PAUSE_ASYM;
 
-    if (val & (1 << 11))
-        caps |= PHY_CAP_PAUSE_ASYM;
+        if (lpa & (1 << 5))
+            caps |= PHY_CAP_10_HALF;
 
-    if (val & (1 << 5))
-        caps |= PHY_CAP_10_HALF;
+        if (lpa & (1 << 6))
+            caps |= PHY_CAP_10_FULL;
 
-    if (val & (1 << 6))
-        caps |= PHY_CAP_10_FULL;
+        if (lpa & (1 << 7))
+            caps |= PHY_CAP_100_HALF;
 
-    if (val & (1 << 7))
-        caps |= PHY_CAP_100_HALF;
+        if (lpa & (1 << 8))
+            caps |= PHY_CAP_100_FULL;
 
-    if (val & (1 << 8))
-        caps |= PHY_CAP_100_FULL;
+        if (stat1000 & (1 << 10))
+            caps |= PHY_CAP_1000_HALF;
 
-    /* 1000Base-T control */
-    PHY_READ(phy_dev, 0x07, 0xffe9, &val);
+        if (stat1000 & (1 << 11))
+            caps |= PHY_CAP_1000_FULL;
 
-    if (val & (1 << 8))
-        caps |= PHY_CAP_1000_HALF;
+        if (an_stat & (1 << 5))
+            caps |= PHY_CAP_2500;
 
-    if (val & (1 << 9))
-        caps |= PHY_CAP_1000_FULL;
+        if (an_stat & (1 << 6))
+            caps |= PHY_CAP_5000;
 
-    if (val & (1 << 10))
-        caps |= PHY_CAP_REPEATER;
+        if (an_stat & (1 << 11))
+            caps |= PHY_CAP_10000;
+    }
 
-    /* 10GBase-T AN control */
-    PHY_READ(phy_dev, 0x07, 0x0020, &val);
+    if (caps_type == CAPS_TYPE_ADVERTISE)
+    {
+        /* 1000Base-T/100Base-TX MII control */
+        PHY_READ(phy_dev, 0x07, 0xffe0, &val);
 
-    if (val & (1 << 7))
-        caps |= PHY_CAP_2500;
+        if (val & (1 << 12))
+            caps |= PHY_CAP_AUTONEG;
 
-    if (val & (1 << 8))
-        caps |= PHY_CAP_5000;
+        /* Copper auto-negotiation advertisement */
+        PHY_READ(phy_dev, 0x07, 0xffe4, &val);
 
-    if (val & (1 << 12))
-        caps |= PHY_CAP_10000;
+        if (val & (1 << 10))
+            caps |= PHY_CAP_PAUSE;
+
+        if (val & (1 << 11))
+            caps |= PHY_CAP_PAUSE_ASYM;
+
+        if (_phy_support_10m(phy_dev))
+        {
+            if (val & (1 << 5))
+                caps |= PHY_CAP_10_HALF;
+
+            if (val & (1 << 6))
+                caps |= PHY_CAP_10_FULL;
+        }
+
+        if (val & (1 << 7))
+            caps |= PHY_CAP_100_HALF;
+
+        if (val & (1 << 8))
+            caps |= PHY_CAP_100_FULL;
+
+        /* 1000Base-T control */
+        PHY_READ(phy_dev, 0x07, 0xffe9, &val);
+
+        if (val & (1 << 8))
+            caps |= PHY_CAP_1000_HALF;
+
+        if (val & (1 << 9))
+            caps |= PHY_CAP_1000_FULL;
+
+        if (val & (1 << 10))
+            caps |= PHY_CAP_REPEATER;
+
+        /* 10GBase-T AN control */
+        PHY_READ(phy_dev, 0x07, 0x0020, &val);
+
+        if (val & (1 << 7))
+            caps |= PHY_CAP_2500;
+
+        if (val & (1 << 8))
+            caps |= PHY_CAP_5000;
+
+        if (val & (1 << 12))
+            caps |= PHY_CAP_10000;
+    }
 
     *pcaps = caps;
 
@@ -1836,11 +2148,14 @@ int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
 
     val &= ~((1 << 5) | (1 << 6) | (1 << 7) | (1 << 8) | (1 << 10) | (1 << 11));
 
-    if (caps & PHY_CAP_10_HALF)
-        val |= (1 << 5);
+    if (_phy_support_10m(phy_dev))
+    {
+        if (caps & PHY_CAP_10_HALF)
+            val |= (1 << 5);
 
-    if (caps & PHY_CAP_10_FULL)
-        val |= (1 << 6);
+        if (caps & PHY_CAP_10_FULL)
+            val |= (1 << 6);
+    }
 
     if (caps & PHY_CAP_100_HALF)
         val |= (1 << 7);
@@ -1904,9 +2219,6 @@ int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
     if (caps & (PHY_CAP_10_FULL | PHY_CAP_100_FULL | PHY_CAP_1000_FULL))
         val |= (1 << 8);
 
-    if (caps & PHY_CAP_AUTONEG)
-        val |= (1 << 12);
-
     PHY_WRITE(phy_dev, 0x07, 0xffe0, val);
 
     if (!(caps & PHY_CAP_AUTONEG))
@@ -1921,8 +2233,7 @@ int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
         goto Exit;
 
     /* Restart auto negotiation */
-    val |= (1 << 9);
-    PHY_WRITE(phy_dev, 0x07, 0xffe0, val);
+    ret = _phy_an_restart(phy_dev);
 
 Exit:
     return ret;
@@ -2110,6 +2421,7 @@ static int _phy_super_isolate(phy_dev_t *phy_dev, int isolate)
 
     if (ret)
         goto Exit;
+
     do {
         udelay(1000);
         PHY_READ(phy_dev, 0x1e, 0x400e, &data);
@@ -2177,7 +2489,7 @@ static const struct of_device_id of_platform_table[] = {
 
 static struct platform_driver of_platform_driver = {
     .driver = {
-        .name = "brcm-xphy-rescal",
+        .name = "brcm-xphy_16-rescal",
         .of_match_table = of_platform_table,
     },
     .probe = xphy_rescal_probe,
@@ -2214,7 +2526,7 @@ static void xphy_rescal(int phy_addr)
 
     if (!xphy_rescal_reg)
     {
-        printk("WARNING: xphy_rescal_reg is not set!!\n");
+        printk("\e[0;30;103mWARNING: xphy_rescal_reg is not set!!\e[0m\n");
         return;
     }
 
@@ -2231,7 +2543,7 @@ static void xphy_rescal(int phy_addr)
 #endif
 
 #if defined(DSL_DEVICES)
-#ifdef CONFIG_BCM_PHY_XPHY
+#ifdef CONFIG_BCM_PHY_XPHY_16
 static int dsl_xphy_extra_init(phy_dev_t *phy_dev)
 {
     int ret;
@@ -2274,10 +2586,17 @@ static int _phy_init_dsl(phy_dev_t *phy_dev)
     if (ret)
         goto Exit;
 
-#ifdef CONFIG_BCM_PHY_XPHY
-    if (_phy_use_firmware(phy_dev, &xphy))
+    /* Enable jumbo packet support */
+    if ((ret = _phy_jumbo_packet_set(phy_dev, 1)))
+        goto Exit;
+
+#ifdef CONFIG_BCM_PHY_XPHY_16
+    if (_phy_use_firmware(phy_dev, &xphy_16))
         dsl_xphy_extra_init(phy_dev);
 #endif
+
+    if (phy_dev->tx_power != -1)
+        phy_dev_tx_pwr_set(phy_dev, 1, phy_dev->tx_power);
 
 #ifdef MACSEC_SUPPORT
 #if defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0)
@@ -2346,7 +2665,7 @@ static int _phy_init(phy_dev_t *phy_dev)
         goto Exit;
 
     /* Enable Ethernet@Wirespeed mode */
-    if ((ret = _phy_eth_wirespeed_set(phy_dev, 1)))
+    if ((ret = _phy_eth_wirespeed_set(phy_dev, 0)))
         goto Exit;
 
     /* Set pair-swap mode */
@@ -2361,14 +2680,18 @@ static int _phy_init(phy_dev_t *phy_dev)
     if ((ret = _phy_xfi_rx_polarity_set(phy_dev, phy_dev->xfi_rx_polarity_inverse)))
         goto Exit;
 
+    /* Enable jumbo packet support */
+    if ((ret = _phy_jumbo_packet_set(phy_dev, 1)))
+        goto Exit;
+
     if ((ret = phy_dev_caps_set(phy_dev, PHY_CAP_PAUSE | PHY_CAP_REPEATER)))
         goto Exit;
 
-    /* Set led control type */
-    if ((ret = _phy_led_control_mode_set(phy_dev, 0)))
+    if ((ret = _phy_speed_set(phy_dev, PHY_SPEED_10000, PHY_DUPLEX_FULL)))
         goto Exit;
 
-    if ((ret = _phy_speed_set(phy_dev, PHY_SPEED_10000, PHY_DUPLEX_FULL)))
+    /* Set LED control type after AN is enabled */
+    if ((ret = _phy_led_control_mode_set(phy_dev, 0)))
         goto Exit;
 
 #ifdef MACSEC_SUPPORT
@@ -2485,7 +2808,7 @@ static inline uint32_t bcast_phy_map(uint32_t phy_map)
 
 #if defined(CONFIG_BCM_PHY_SHORTFIN_B0) || defined(CONFIG_BCM_PHY_MAKO_A0) || defined(CONFIG_BCM_PHY_ORCA_A0) || defined(CONFIG_BCM_PHY_ORCA_B0) \
         || defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) \
-        || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY) || defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_LANAI_A0) \
+        || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY_16) || defined(CONFIG_BCM_PHY_KAUAI_A0) || defined(CONFIG_BCM_PHY_LANAI_A0) \
         || defined(CONFIG_BCM_PHY_NIIHAU_A0)
 static int get_file_size(const char *file_path)
 {
@@ -2500,7 +2823,7 @@ static int get_file_size(const char *file_path)
     return ks.size;
 }
 
-static int verify_firmware_file(int phy_addr, char *name, loading_reg_t *load_reg)
+static int verify_firmware_file(int phy_addr, firmware_t *firmware, loading_reg_t *load_reg)
 {
     struct file *fp;
     int len = 0, ret = 0;
@@ -2514,7 +2837,7 @@ static int verify_firmware_file(int phy_addr, char *name, loading_reg_t *load_re
     if (!load_reg)
         load_reg = &default_load_reg;
 
-    snprintf(fw_path, sizeof(fw_path), "/rom/etc/fw/%s_firmware.bin", name);
+    snprintf(fw_path, sizeof(fw_path), "/rom/etc/fw/%s_firmware.bin", firmware->name);
 
     fw_size = get_file_size(fw_path);
     if (fw_size <= 0)
@@ -2545,7 +2868,7 @@ static int verify_firmware_file(int phy_addr, char *name, loading_reg_t *load_re
     _bus_read(phy_addr, load_reg->devid, load_reg->data_low, &data_lo);
     _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0038);
 
-    step = fw_size / 10;
+    step = fw_size / STEPS;
 
     while (1)
     {
@@ -2574,7 +2897,7 @@ static int verify_firmware_file(int phy_addr, char *name, loading_reg_t *load_re
             read += sizeof(uint32_t);
 
             if ((read - (read / step * step)) < sizeof(uint32_t))
-                printk("%d%%\e[1A\n", ((1000 * read / fw_size) + 5) / 10);
+                printk("%d%%\e[1A\n", ((1000 * read / fw_size) + 5) / STEPS);
         }
     }
     printk("\n");
@@ -2623,7 +2946,7 @@ static int _load_firmware_file(int phy_addr, char *name, loading_reg_t *load_reg
     fp->f_pos = 0;
 
     printk("Upload the firmware into the on-chip memory: file=%s size=%d\n", fw_path, fw_size);
-    step = fw_size / 10;
+    step = fw_size / STEPS;
 
     bus_cfg_get(bus_drv, &bus_cfg);
     bus_cfg.fast_mode = 1;
@@ -2652,7 +2975,7 @@ static int _load_firmware_file(int phy_addr, char *name, loading_reg_t *load_reg
             written += sizeof(uint32_t);
 
             if ((written - (written / step * step)) < sizeof(uint32_t))
-                printk("%d%%\e[1A\n", ((1000 * written / fw_size) + 5) / 10);
+                printk("%d%%\e[1A\n", ((1000 * written / fw_size) + 5) / STEPS);
         }
     }
     _bus_write(phy_addr, load_reg->devid, load_reg->ctrl, 0x0000);
@@ -2673,7 +2996,7 @@ Exit:
     return ret;
 }
 
-static int load_firmware_file(int phy_addr, char *name, loading_reg_t *load_reg)
+static int load_firmware_file(int phy_addr, firmware_t *firmware, loading_reg_t *load_reg)
 {
 #ifdef DEBUG_FW_LOADING
     uint32_t start_time, end_time;
@@ -2687,7 +3010,7 @@ static int load_firmware_file(int phy_addr, char *name, loading_reg_t *load_reg)
     printk("           addr_low:%04x, addr_high:%04x, data_low:%04x, data_high:%04x",
         load_reg->addr_low, load_reg->addr_high, load_reg->data_low, load_reg->data_high);
 
-    if (_load_firmware_file(phy_addr, name, load_reg))
+    if (_load_firmware_file(phy_addr, firmware->name, load_reg))
         return -1;
 
 #ifdef DEBUG_FW_LOADING
@@ -2697,7 +3020,7 @@ static int load_firmware_file(int phy_addr, char *name, loading_reg_t *load_reg)
 
     start_time = jiffies;
 
-    if (verify_firmware_file(phy_addr, firmware->name, load_reg))
+    if (verify_firmware_file(phy_addr, firmware, load_reg))
         return -1;
 
     end_time = jiffies;
@@ -2711,20 +3034,14 @@ static int load_firmware_file(int phy_addr, char *name, loading_reg_t *load_reg)
 
 static char *get_firmware_version(int phy_addr)
 {
-    int ret;
     uint16_t fw_version, fw_build, fw_main, fw_branch;
     static char buf[256];
 
-    BUS_READ(phy_addr, 0x1e, 0x400f, &fw_version);
-    fw_branch = (fw_version >> 0) & 0x7f;
-    fw_main = (fw_version >> 7) & 0x1f;
-    fw_build = (fw_version >> 12) & 0xf;
-
-    if (fw_version == 0)
-        return "";
-
+    buf[0] = 0;
+    if(get_firmware_version_digits(phy_addr, &fw_version, &fw_main, &fw_build, &fw_branch) ||
+        fw_version == 0)
+        goto Exit;
     sprintf(buf, "(%d.%d.%d)", fw_main, fw_branch, fw_build);
-
 Exit:
     return buf;
 }
@@ -2825,7 +3142,7 @@ static int load_mako(firmware_t *firmware)
     BUS_WRITE_ALL(phy_map, 0x1e, 0x4181, 0x0000);
 
     /* 3. Upload the firmware into the on-chip memory of the devices */
-    ret = load_firmware_file(base_phy_addr, firmware->name, 0);
+    ret = load_firmware_file(base_phy_addr, firmware, 0);
     if (ret)
         goto Exit;
 
@@ -2879,7 +3196,7 @@ static int load_mako(firmware_t *firmware)
 
 Exit:
     if (ret)
-        verify_firmware_file(base_phy_addr, firmware->name, 0);
+        verify_firmware_file(base_phy_addr, firmware, 0);
     return ret;
 }
 #endif
@@ -2924,7 +3241,7 @@ static int load_orca(firmware_t *firmware)
     }
 
     /* 3. Upload the firmware into the on-chip memory of the devices */
-    ret = load_firmware_file(base_phy_addr, firmware->name, 0);
+    ret = load_firmware_file(base_phy_addr, firmware, 0);
     if (ret)
         goto Exit;
 
@@ -2973,7 +3290,7 @@ static int load_orca(firmware_t *firmware)
 
 Exit:
     if (ret)
-        verify_firmware_file(base_phy_addr, firmware->name, 0);
+        verify_firmware_file(base_phy_addr, firmware, 0);
     return ret;
 }
 #endif
@@ -3114,7 +3431,7 @@ static int load_shortfin(firmware_t *firmware)
 
 
     printk("Step8. Upload the firmware file content into the on-chip memory of the device\n");
-    if ((ret = load_firmware_file(master_addr, firmware->name, 0))) /* Load to single address */
+    if ((ret = load_firmware_file(master_addr, firmware, 0))) /* Load to single address */
         goto Exit;
 
     printk("Step9. Disable broadcast mode for device 1\n");
@@ -3141,7 +3458,7 @@ static int load_shortfin(firmware_t *firmware)
         goto Exit;
 
     /* 7. Verify that the firmware has been loaded into the on-chip memory with a good CRC */
-    printk("Verify that the firmware has been loaded with good CRC: ");
+    pr_cont("Verify that the firmware has been loaded with good CRC: ");
 
     i = 1000;
     do
@@ -3160,13 +3477,13 @@ static int load_shortfin(firmware_t *firmware)
 
 Exit:
     if (ret)
-        verify_firmware_file(master_addr, firmware->name, 0);
+        verify_firmware_file(master_addr, firmware, 0);
     return ret;
 }
 #endif
 
 void phy_config_shared_ref_clk_map(int phy_map);
-#if defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY)
+#if defined(CONFIG_BCM_PHY_BLACKFIN_A0) || defined(CONFIG_BCM_PHY_BLACKFIN_B0) || defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0) || defined(CONFIG_BCM_PHY_XPHY_16)
 static int load_blackfin(firmware_t *firmware)
 {
     int i, ret, base_phy_addr, phy_cnt;
@@ -3208,7 +3525,7 @@ static int load_blackfin(firmware_t *firmware)
     }
 
     /* 3. Upload the firmware into the on-chip memory of the devices */
-    ret = load_firmware_file(base_phy_addr, firmware->name, 0);
+    ret = load_firmware_file(base_phy_addr, firmware, 0);
     if (ret)
         goto Exit;
 
@@ -3269,8 +3586,18 @@ static int load_blackfin(firmware_t *firmware)
 
 Exit:
     if (ret)
-        verify_firmware_file(base_phy_addr, firmware->name, 0);
+        verify_firmware_file(base_phy_addr, firmware, 0);
     return ret;
+}
+#endif
+
+#if defined(CONFIG_BCM_PHY_XPHY_8)
+static int load_xphy_8(firmware_t *firmware)
+{
+    /* TODO */
+    load_blackfin(firmware);
+
+    return 0;
 }
 #endif
 
@@ -3340,7 +3667,7 @@ static int load_kauai(firmware_t *firmware)
     BUS_WRITE_ALL(mphy_non_master_base_map, 0x1e, 0x4117, 0xf001);
 
     printk("Step8. Upload the firmware file content into the on-chip memory of the device\n");
-    if ((ret = load_firmware_file(master_addr, firmware->name, &load_reg))) /* Load to single address */
+    if ((ret = load_firmware_file(master_addr, firmware, &load_reg))) /* Load to single address */
         goto Exit;
 
     printk("Step10. Bring CPU0 out of halt\n");
@@ -3383,7 +3710,7 @@ static int load_kauai(firmware_t *firmware)
 
 Exit:
     if (ret)
-        verify_firmware_file(master_addr, firmware->name, &load_reg);
+        verify_firmware_file(master_addr, firmware, &load_reg);
 
     return ret;
 }
@@ -3416,7 +3743,6 @@ static int load_lanai(firmware_t *firmware)
     mphy_non_master_base_map = mphy_base_map &~(1<<master_addr);
 
     phy_cnt = phy_count(phy_map_with_base);
-
 
     printk("phy_map:%08x, mphy_base_map:%08x, phy_map_with_base:%08x, mphy_non_master_base_map:%08x, master_addr:%d, phy_cnt:%d\n",
         phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map, master_addr, phy_cnt);
@@ -3452,7 +3778,7 @@ static int load_lanai(firmware_t *firmware)
     BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4117, 0xf001);
 
     printk("Step8. Upload the firmware file content into the on-chip memory of the device\n");
-    if ((ret = load_firmware_file(master_addr, firmware->name, &load_reg)))
+    if ((ret = load_firmware_file(master_addr, firmware, &load_reg)))
         goto Exit;
 
     printk("Step9. Step9. Disable broadcast mode for device 1\n");
@@ -3497,7 +3823,7 @@ static int load_lanai(firmware_t *firmware)
 
 Exit:
     if (ret)
-        verify_firmware_file(master_addr, firmware->name, &load_reg);
+        verify_firmware_file(master_addr, firmware, &load_reg);
     return ret;
 }
 #endif
@@ -3513,7 +3839,7 @@ static int load_niihau(firmware_t *firmware)
     uint32_t phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map;
 
     static loading_reg_t load_reg = {
-        .ram_addr	= 0x00000000,
+        .ram_addr   = 0x00000000,
         .devid      = 0x1e,
         .ctrl       = 0x4138,
         .addr_low   = 0x413a,
@@ -3526,7 +3852,7 @@ static int load_niihau(firmware_t *firmware)
     mphy_base_map = phy_map;
     phy_map_with_base = phy_map | mphy_base_map;
     master_addr = get_base_phy_addr(phy_map_with_base); /* select the min PHY address for broadcast operation */
-	mphy_non_master_base_map = mphy_base_map & ~(1 << master_addr);
+    mphy_non_master_base_map = mphy_base_map &~(1<<master_addr);
 
 #if defined(GT7) || defined(GS7_PRO_MAX) /* fake to override */
     phy_map |= (1 << 0x19);
@@ -3537,43 +3863,56 @@ static int load_niihau(firmware_t *firmware)
 
     phy_cnt = phy_count(phy_map_with_base);
 
-	printk("Niihau Driver Version: 1.0 for v0.2.0 firmware\n");
-	printk("phy_map:%08x, mphy_base_map:%08x, phy_map_with_base:%08x, mphy_non_master_base_map:%08x, master_addr:%d, phy_cnt:%d\n",
-		phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map, master_addr, phy_cnt);
 
+    printk("phy_map:%08x, mphy_base_map:%08x, phy_map_with_base:%08x, mphy_non_master_base_map:%08x, master_addr:%d, phy_cnt:%d\n",
+        phy_map, mphy_base_map, phy_map_with_base, mphy_non_master_base_map, master_addr, phy_cnt);
 
-	printk("Step3. Put All CPUs in Halt.\n");
-	bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000121, 9, &load_reg);
+    #if 0
+    printk("Step1. Set in Chip broadcast.\n");
+    BUS_WRITE_ALL(mphy_base_map, 0x1e, 0x8914, 0xffff);
+    printk(" Set XGP table for mdio2arm_devad (for the the 1st port of each chip except the Master.\n");
+    BUS_WRITE_ALL(mphy_non_master_base_map, 0x1e, 0x4107, (0x0400|(master_addr & 0x1f) << 5) | (0x1e));
+    BUS_WRITE_ALL(mphy_non_master_base_map, 0x1e, 0x4117, 0xf001);
+    #endif
 
-	printk("Step4. Set 0x1e.88a6 to 0 to re-do PLL\n");
-	bus_write_reg32_all(mphy_base_map, 0xf23d114c, 0x0000, 5, &load_reg);
+    printk("Step2. Reset and clear Watchdog timer and enable clocks.\n");
+    BUS_WRITE_ALL(mphy_base_map, 0x1e, 0x418c, 0x0000);
+    BUS_WRITE_ALL(mphy_base_map, 0x1e, 0x4188, 0x48f0);
 
-	printk("Step6. Issue soft reset on all ports.\n");
-	bus_write_reg32_all(mphy_base_map, 0xf2020000, 0x8000, 5, &load_reg);
+    printk("Step3. Put All CPUs in halt\n");
+    bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000121, 9, &load_reg);
 
-	printk("Step6.5 Clear TMUX_MODE to 0.\n");
-	bus_write_reg32_all(mphy_base_map, 0xf23d1502, 0x0000, 5, &load_reg);
+    printk("Step4. Set 0x1e.88a6 to 0 to re-do PLL\n");
+    BUS_WRITE_ALL(phy_map_with_base, 0x1e, 0x88a6, 0);
 
-	printk("Step7. Enable broadcast mode for device 1.  \n");
-	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c820e, (0x0400 | ((master_addr & 0x1f) << 5) | 0x1e), 5, &load_reg);
-	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c822e, 0xf001, 5, &load_reg);
+    printk("Step6. Issue soft reset on all ports\n");
+    BUS_WRITE_ALL(phy_map_with_base, 0x1, 0x0000, 0x8000);
 
-	printk("Step8. Upload the firmware file content into the on-chip memory of the device\n");
-	ret = load_firmware_file(master_addr, firmware->name, &load_reg);
-	if (ret)
-		goto Exit;
+    printk("Step6.2. Clear TMUX_MODE to 0\n");
+    BUS_WRITE_ALL(phy_map_with_base, 0x1e, 0x8a81, 0x0000);
 
-	printk("Step9. Disable broadcast mode for device 1.  \n");
-	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c820e, 0, 5, &load_reg);
-	bus_write_reg32_all((phy_map_with_base & ~(1 << master_addr)), 0xf23c822e, 0, 5, &load_reg);
+    printk("Step7. Step7. Enable broadcast mode for device 1\n");
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4107, 0x0400|((master_addr & 0x1f)<<5)|0x1e);
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4117, 0xf001);
 
-	printk("Step10. Bring CPU0 out of halt.\n");
-	bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000020, 9, &load_reg);
+    printk("Step8. Upload the firmware file content into the on-chip memory of the device\n");
+    if ((ret = load_firmware_file(master_addr, firmware, &load_reg)))
+        goto Exit;
+
+    printk("Step9. Step9. Disable broadcast mode for device 1\n");
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4107, 0x0000);
+    BUS_WRITE_ALL((phy_map_with_base & ~(1<<master_addr)), 0x1e, 0x4117, 0x0000);
+
+    printk("Step10. Bring CPU0 out of halt\n");
+    printk("Step11. Finished uploading Firmware, CORTEXR4 jumping to address 0x00000000.\n");
+    bus_write_reg32_all(mphy_base_map, 0xf0003000, 0x00000020, 9, &load_reg);
+
 
     /* 6. Verify that the processors are running */
     pr_cont("Verify that the processors are running: ");
     i = 1000;
-	do {
+    do
+    {
         udelay(2000);
         ret = _bus_read_all(phy_map_with_base, 0x01, 0x0000, 0x2040, 0xffff);
     } while ((ret != phy_map_with_base) && i--);
@@ -3586,7 +3925,8 @@ static int load_niihau(firmware_t *firmware)
     /* 7. Verify that the firmware has been loaded into the on-chip memory with a good CRC */
     printk("Verify that the firmware has been loaded with good CRC: ");
     i = 8000;
-	do {
+    do
+    {
         udelay(2000);
         ret = _bus_read_all(phy_map_with_base, 0x1e, 0x400d, 0x4000, 0xc000);
     } while ((ret != phy_map_with_base) && i--);
@@ -3601,7 +3941,7 @@ static int load_niihau(firmware_t *firmware)
 
 Exit:
     if (ret)
-        verify_firmware_file(master_addr, firmware->name, &load_reg);
+        verify_firmware_file(master_addr, firmware, &load_reg);
     return ret;
 }
 #endif
@@ -3647,7 +3987,8 @@ static int phy_config_is_shared_ref_clk_set(phy_dev_t *phy_dev)
     uint16_t v16;
 
     /* Check firmware CRC bit to see if the PHY has been initialized in BSP */
-    phy_bus_c45_read(phy_dev, 0x1e, 0x400d, &v16);
+    if (phy_bus_c45_read(phy_dev, 0x1e, 0x400d, &v16))
+        return -1;
 
     return (v16 & 0xc000) == 0x4000;
 }
@@ -3659,14 +4000,24 @@ static void phy_config_shared_ref_clk(phy_dev_t *phy_dev)
     if (!phy_dev->shared_ref_clk_mhz)
         return;
 
-    if (phy_dev->flag & PHY_FLAG_SHARED_CLOCK_BOOTSTRAP)
+    /* Only BlackFin/LongFin family needs frequency adjustment */
+    if ( 1
+#if defined(CONFIG_BCM_PHY_LONGFIN_A0) || defined(CONFIG_BCM_PHY_LONGFIN_B0)
+        && !_phy_use_firmware(phy_dev, &longfin_a0) && !_phy_use_firmware(phy_dev, &longfin_a0_m)
+#endif
+#ifdef CONFIG_BCM_PHY_BLACKFIN_B0
+        && !_phy_use_firmware(phy_dev, &blackfin_b0)
+#endif
+        )
     {
-        printk("%d MHZ clock sharing on XGPHY at address %d set by bootstrapping\n",
-            phy_dev->shared_ref_clk_mhz, phy_dev->addr);
+        printk("%d MHZ shared reference clock on XGPHY at address %d is supported natively\n",
+                phy_dev->shared_ref_clk_mhz, phy_dev->addr);
         return;
     }
 
-    phy_bus_c45_read(phy_dev, 0x1e, 0x80a8, &v16);
+    if (phy_bus_c45_read(phy_dev, 0x1e, 0x80a8, &v16))
+        return;
+
     switch(phy_dev->shared_ref_clk_mhz)
     {
         case 80:
@@ -3682,13 +4033,13 @@ static void phy_config_shared_ref_clk(phy_dev_t *phy_dev)
 #endif
             break;
         default:
-            printk("Error: Unknown REF CLK at address %d: %d\n", phy_dev->addr, phy_dev->shared_ref_clk_mhz);
+            printk("%d MHz Shared Reference Clock is natively supported by PHY at %d\n", phy_dev->shared_ref_clk_mhz, phy_dev->addr);
             return;
     }
 
     PhySetSharedRefClk(phy_dev);
     printk("Set %d MHZ clock sharing on XGPHY at address %d\n",
-            phy_dev->shared_ref_clk_mhz, phy_dev->addr);
+        phy_dev->shared_ref_clk_mhz, phy_dev->addr);
 }
 
 void phy_config_shared_ref_clk_map(int phy_map)
@@ -3807,9 +4158,9 @@ static int _phy_cfg(void)
             continue;
         }
         phy_desc->firmware->map |= (1 << i);
-
+ 
 #if defined(RESCAL_BY_XPHY)
-        if (phy_desc->firmware == &xphy)
+        if (phy_desc->firmware == &xphy_16)
             xphy_rescal(i);
 #endif
         printk("    0x%x --> %s %04x:%04x,%04x:%04x\n", i, phy_desc->name, 
@@ -4382,7 +4733,7 @@ Exit:
     return ret;
 }
 
-static int _phy_tx_cfg_get(phy_dev_t *phy_dev, int8_t *pre, int8_t *main, int8_t *post1, int8_t *post2, int8_t *hpf)
+static int _phy_txfir_cfg_get(phy_dev_t *phy_dev, int8_t *pre, int8_t *main, int8_t *post1, int8_t *post2, int8_t *hpf)
 {
     int ret;
     uint16_t data1, data2, data3, data4, data5;
@@ -4404,7 +4755,7 @@ Exit:
     return ret;
 }
 
-static int _phy_tx_cfg_set(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf)
+static int _phy_txfir_cfg_set(phy_dev_t *phy_dev, int8_t pre, int8_t main, int8_t post1, int8_t post2, int8_t hpf)
 {
     int ret;
     uint16_t data1, data2, data3, data4, data5;
@@ -4446,8 +4797,9 @@ phy_drv_t phy_drv_ext3 =
     .caps_get = _phy_caps_get,
     .caps_set = _phy_caps_set,
     .phyid_get = _phy_phyid_get,
-    .auto_mdix_set = _phy_force_auto_mdix_set,
-    .auto_mdix_get = _phy_force_auto_mdix_get,
+    .mdix_mode_set = _phy_mdix_mode_set,
+    .mdix_mode_get = _phy_mdix_mode_get,
+    .mdix_status_get = _phy_mdix_status_get,
     .wirespeed_set = _phy_eth_wirespeed_set,
     .wirespeed_get = _phy_eth_wirespeed_get,
     .init = _phy_init,
@@ -4470,9 +4822,11 @@ phy_drv_t phy_drv_ext3 =
     .diag = _phy_diag,
     .an_restart = _phy_an_restart,
     .wol_enable = _phy_wol_enable,
-    .tx_cfg_get = _phy_tx_cfg_get,
-    .tx_cfg_set = _phy_tx_cfg_set,
+    .txfir_cfg_get = _phy_txfir_cfg_get,
+    .txfir_cfg_set = _phy_txfir_cfg_set,
     .xfi_tx_polarity_inverse_set = _phy_xfi_tx_polarity_set,
     .xfi_rx_polarity_inverse_set = _phy_xfi_rx_polarity_set,
     .shared_clock_set = _phy_shared_clock_set,
+    .tx_pwr_get = _phy_tx_pwr_get,
+    .tx_pwr_set = _phy_tx_pwr_set,
 };

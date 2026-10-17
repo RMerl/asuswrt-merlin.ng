@@ -1,0 +1,6 @@
+IMXRT1020 EVALUATION KIT
+M:	Giulio Benetti <giulio.benetti@benettiengineering.com>
+S:	Maintained
+F:	board/freescale/imxrt1020-evk
+F:	include/configs/imxrt1020-evk.h
+F:	configs/imxrt1020-evk_defconfig

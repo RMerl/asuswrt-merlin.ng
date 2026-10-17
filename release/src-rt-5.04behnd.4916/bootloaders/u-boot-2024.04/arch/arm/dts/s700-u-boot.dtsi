@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2020 Amit Singh Tomar <amittomer25@gmail.com>
+ */
+
+/{
+	soc {
+		bootph-all;
+
+		gmac:  ethernet@e0220000 {
+			compatible = "actions,s700-ethernet";
+			reg = <0 0xe0220000 0 0x2000>;
+			interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			local-mac-address = [ 00 18 fe 66 66 66 ];
+			clocks = <&cmu CLK_ETHERNET>, <&cmu CLK_RMII_REF>;
+			clock-names = "ethernet", "rmii_ref";
+			phy-mode = "rmii";
+			status = "okay";
+                };
+
+		mmc0: mmc@e0210000 {
+			compatible = "actions,s700-mmc", "actions,owl-mmc";
+			reg = <0x0 0xe0210000 0x0 0x4000>;
+			interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&cmu CLK_SD0>;
+			dmas = <&dma 2>;
+			dma-names = "mmc";
+			bus-width = <4>;
+			status = "okay";
+		};
+	};
+};
+
+&uart3 {
+	bootph-all;
+};
+
+&cmu {
+	bootph-all;
+};

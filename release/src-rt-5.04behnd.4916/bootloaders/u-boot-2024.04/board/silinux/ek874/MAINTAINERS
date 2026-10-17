@@ -1,0 +1,6 @@
+SILINUX_EK874 BOARD
+M:	Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+S:	Maintained
+F:	board/silinux/ek874/
+F:	include/configs/silinux-ek874.h
+F:	configs/silinux_ek874_defconfig

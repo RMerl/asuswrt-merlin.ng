@@ -1,0 +1,22 @@
+if TARGET_IMXRT1050_EVK
+
+config SYS_BOARD
+	string
+	default "imxrt1050-evk"
+
+config SYS_VENDOR
+	string
+	default "freescale"
+
+config SYS_SOC
+	string
+	default "imxrt1050"
+
+config SYS_CONFIG_NAME
+	string
+	default "imxrt1050-evk"
+
+config IMX_CONFIG
+	default "board/freescale/imxrt1050-evk/imximage.cfg"
+
+endif

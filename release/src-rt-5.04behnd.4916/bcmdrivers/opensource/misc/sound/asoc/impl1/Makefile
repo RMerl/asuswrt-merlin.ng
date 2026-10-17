@@ -10,9 +10,6 @@ snd-soc-bcm63xx-i2s-merritt-single-clk-objs := bcm63xx-i2s-merritt-single-clk.o
 snd-soc-bcm63xx-i2s-squamish-objs := bcm63xx-i2s-squamish.o
 snd-soc-bcm63xx-pcm-squamish-objs := bcm63xx-pcm-squamish.o
 
-snd-soc-bcm63148-clk-objs  := bcm63148clk.o
-
-snd-soc-bcm63148-mach-objs := bcm63148refbmu.o
 snd-soc-bcm63xx-mach-objs  := bcm63xxmachine.o
 snd-soc-bcm-tdm-mach-objs  := bcmtdmmachine.o
 snd-soc-bcm68560-mach-objs := bcm68560gref.o
@@ -33,10 +30,6 @@ endif
 #BCM63xxx PCM engine
 obj-$(CONFIG_SND_BCM63xx_PCM_SQUAMISH) += snd-soc-bcm63xx-i2s-squamish.o
 obj-$(CONFIG_SND_BCM63xx_PCM_SQUAMISH) += snd-soc-bcm63xx-pcm-squamish.o
-
-# BCM63148/138 machine/clk support
-obj-$(CONFIG_SND_BCM63148_SOC_I2S) += snd-soc-bcm63148-clk.o
-obj-$(CONFIG_SND_BCM63148_SOC_I2S) += snd-soc-bcm63148-mach.o
 
 # BCM6856 machine support
 obj-$(CONFIG_SND_BCM6856_SOC_I2S)  += snd-soc-bcm68560-mach.o

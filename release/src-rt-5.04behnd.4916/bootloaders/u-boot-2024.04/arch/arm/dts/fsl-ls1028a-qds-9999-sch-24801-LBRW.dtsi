@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS1028A-QDS device tree fragment for RCW 9999
+ *
+ * Copyright 2019-2021 NXP
+ */
+
+/*
+ * This setup is using SCH-24801 cards with VSC8234 quad SGMII PHY.
+ * LS1028A QDS boards with lane B rework require two cards for the 4 switch
+ * ports, QDS boards without the lane B rework only require one card.
+ *
+ * Switch ports are routed as follows:
+ * Port 0 goes to 1st port of VSC8234 quad card in slot 1,
+ * Port 1:
+ *   - if the QDS has had lane B rework, it is 1st port in slot 2,
+ *   - otherwise it is 2nd port in slot 1.
+ * Port 2:
+ *   - if DIP SW5[1] = 0 it is 3rd port in slot 1,
+ *   - otherwise it is 1st port in slot 3.
+ * Port 3:
+ *   - if DIP SW5[2-3] = 00b it is 4th port in slot 1,
+ *   - if DIP SW5[2-3] = 01b it is 2nd port in slot 3,
+ *   - if DIP SW5[2-3] = 11b it is 1st port in slot 4.
+ *
+ * The following DTS assumes QDS lane B rework and DIP SW5[1-3] = 000b.  Two
+ * SCH-24801 cards are required in slots 1 and 2.
+ */
+&slot1 {
+	#include "fsl-sch-24801.dtsi"
+};
+
+&slot2 {
+	#include "fsl-sch-24801.dtsi"
+};
+
+&enetc_port2 {
+	status = "okay";
+};
+
+&mscc_felix {
+	status = "okay";
+};
+
+&mscc_felix_port0 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@40/phy@1c}>;
+};
+
+&mscc_felix_port1 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@1c}>;
+};
+
+&mscc_felix_port2 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@40/phy@1e}>;
+};
+
+&mscc_felix_port3 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "sgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@40/phy@1f}>;
+};
+
+&mscc_felix_port4 {
+	ethernet = <&enetc_port2>;
+	status = "okay";
+};

@@ -1,0 +1,15 @@
+EFI-X86_APP32 BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/efi/Kconfig
+F:	board/efi/efi-x86_app/
+F:	include/configs/efi-x86_app.h
+F:	configs/efi-x86_app32_defconfig
+
+EFI-X86_APP64 BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/efi/Kconfig
+F:	board/efi/efi-x86_app/
+F:	include/configs/efi-x86_app.h
+F:	configs/efi-x86_app64_defconfig

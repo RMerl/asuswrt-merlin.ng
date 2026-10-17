@@ -34,6 +34,8 @@
 #include "mpm.h"
 #endif
 
+static bdmf_fastlock mpm_alloc_lock;
+static bdmf_fastlock mpm_free_lock;
 
 #if !defined(RDP_SIM)
 #define RDP_MPM_ALLOC_RING_SIZE_LOG2  5 // 32
@@ -77,20 +79,41 @@ void drv_mpm_init(void *virt_base, uintptr_t phys_base, unsigned int buf_size,
     bdmf_trace("\talloc_ring#%d, free_ring#%d\n", mpm_alloc_ring_index,
                mpm_free_ring_index);
 #endif
+
+    bdmf_fastlock_init(&mpm_alloc_lock);
+    bdmf_fastlock_init(&mpm_free_lock);
 }
 
-bdmf_error_t drv_mpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num)
+bdmf_error_t drv_mpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num,
+                                  uint8_t no_lock)
 {
 #ifndef RDP_SIM
 #define RX_POST_INIT_WAIT_CYCLES 200 // 1 cycle = 10usec
 
     uint8_t *buff_ptr;
     int wait_cycles;
-
     wait_cycles = RX_POST_INIT_WAIT_CYCLES;
-    do {
-        /* we assume all the packet_len should be handled/covered by PDATA type */
+
+    if (unlikely(no_lock))
+    {
         buff_ptr = (uint8_t *)mpm_alloc_fkb(mpm_alloc_ring_index);
+        if (buff_ptr == NULL)
+            return BDMF_ERR_NOMEM;
+
+        *buff_num = mpm_virt_to_idx(buff_ptr);
+        if (*buff_num == 0xffffffff)
+        {
+            mpm_free_fkb(mpm_free_ring_index, (FkBuff_t *)buff_ptr);
+            return BDMF_ERR_NOMEM;
+        }
+        return 0;
+    }
+
+    do {
+    /* we assume all the packet_len should be handled/covered by PDATA type */
+        bdmf_fastlock_lock(&mpm_alloc_lock);
+        buff_ptr = (uint8_t *)mpm_alloc_fkb(mpm_alloc_ring_index);
+        bdmf_fastlock_unlock(&mpm_alloc_lock);
         if (buff_ptr) {
             break;
         }
@@ -107,29 +130,58 @@ bdmf_error_t drv_mpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num)
     *buff_num = mpm_virt_to_idx(buff_ptr);
     if (*buff_num == 0xffffffff)
     {
+        bdmf_fastlock_lock(&mpm_free_lock);
         mpm_free_fkb(mpm_free_ring_index, (FkBuff_t *)buff_ptr);
+        bdmf_fastlock_unlock(&mpm_free_lock);
         return BDMF_ERR_NOMEM;
     }
 
     return 0;
 #else
-    return rdp_cpu_fpm_alloc(packet_len, buff_num, xpm_common_cfg.buf_size);
+    bdmf_error_t rc;
+    if (likely(no_lock == 0))
+        bdmf_fastlock_lock(&mpm_alloc_lock);
+    rc = rdp_cpu_fpm_alloc(packet_len, buff_num, xpm_common_cfg.buf_size);
+    if (likely(no_lock == 0))
+        bdmf_fastlock_unlock(&mpm_alloc_lock);
+    return rc;
 #endif
 }
 
-bdmf_error_t drv_mpm_free_buffer(uint32_t packet_len, uint32_t buff_num, void *info)
+bdmf_error_t drv_mpm_free_buffer(uint32_t packet_len, uint32_t buff_num, void *info_in)
 {
+    uint32_t token_idx = buff_num & FPM_INDX_MASK;
 #ifndef RDP_SIM
     uint8_t *buff_ptr;
+#endif
+#if defined(CONFIG_CPU_RX_FROM_XPM) || defined(CONFIG_CPU_TX_FROM_XPM)
+    ddr_token_info_t *info;
+#endif
 
+#if defined(CONFIG_CPU_RX_FROM_XPM) || defined(CONFIG_CPU_TX_FROM_XPM)
+    if (!info_in)
+        info = drv_xpm_ddr_token_info_get(token_idx);
+    else
+        info = (ddr_token_info_t *)info_in;
+
+    if (info->bufmng_cnt_id != BDMF_INDEX_UNASSIGNED)
+        drv_xpm_buffer_update_cpu_free_cnt(token_idx, info->bufmng_cnt_id, info->pool_id);
+#endif
+
+    drv_xpm_ddr_token_info_clear(token_idx);
+
+    bdmf_fastlock_lock(&mpm_free_lock);
+#ifndef RDP_SIM
     buff_ptr = mpm_idx_to_virt(buff_num);
-    mpm_free_fkb(mpm_free_ring_index, (FkBuff_t *)buff_ptr);
 
-    return 0;
+    mpm_free_fkb(mpm_free_ring_index, (FkBuff_t *)buff_ptr);
 #else
     rdp_cpu_fpm_free(buff_num & FPM_INDX_MASK);
-    return 0;
 #endif
+    bdmf_fastlock_unlock(&mpm_free_lock);
+
+
+    return 0;
 }
 
 bdmf_error_t drv_mpm_check_xoff(uint32_t num_of_token)
@@ -139,6 +191,47 @@ bdmf_error_t drv_mpm_check_xoff(uint32_t num_of_token)
 #endif
 
     return 0;
+}
+
+int drv_fpm_data_path_mpm_init(dpi_params_t *p_dpi_cfg)
+{
+    bdmf_error_t rc;
+    int token_total;
+
+#ifndef RDP_SIM
+    int token_size, pool_size[4], temp;
+
+    rc = mpm_ebuf_info_get(&token_size, &token_total, pool_size);
+    if (rc) 
+        goto exit;
+    p_dpi_cfg->fpm_buf_size = token_size;
+#else
+    token_total = TOTAL_FPM_TOKENS;
+    rc = 0;
+#endif
+    drv_mpm_init(p_dpi_cfg->rdp_ddr_pkt_base_virt,
+                 p_dpi_cfg->rdp_ddr_pkt_base_phys, p_dpi_cfg->fpm_buf_size,
+                 p_dpi_cfg->fpm_pool_memory_size, token_total);
+
+#ifndef RDP_SIM
+    mpm_runner_xon_xoff_thld_set(drv_xpm_xon_thld(p_dpi_cfg->fpm_buf_size),
+                                 drv_xpm_xoff_thld(p_dpi_cfg->fpm_buf_size));
+
+    /* pool_size array from mpm is in ascending order, but in XRDP it has to be
+     * descending order */
+    temp = pool_size[3];
+    pool_size[3] = pool_size[0];
+    pool_size[0] = temp;
+    temp = pool_size[2];
+    pool_size[2] = pool_size[1];
+    pool_size[1] = temp;
+    drv_xpm_common_update_pool_size(pool_size);
+    update_rdp_fpm_resources(p_dpi_cfg->fpm_pool_memory_size, p_dpi_cfg->fpm_buf_size,
+                                 TOTAL_FPM_TOKENS, token_total, pool_size);
+
+exit:
+#endif
+    return rc;
 }
 
 #endif /* RUNNER_MPM_SUPPORT */

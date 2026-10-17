@@ -1,0 +1,93 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019
+ * Lukasz Majewski, DENX Software Engineering, lukma@denx.de
+ *
+ * SPDX-License-Identifier:     GPL-2.0+ or X11
+ */
+
+/*
+ * The minimal augmentation DTS U-Boot file to allow eMMC driver
+ * configuration in SPL for falcon boot.
+ */
+#include "imx28-u-boot.dtsi"
+/ {
+	aliases {
+		/delete-property/ spi1;
+		/delete-property/ usbphy0;
+		/delete-property/ usbphy1;
+	};
+	apb@80000000 {
+		bootph-pre-ram;
+
+		apbh@80000000 {
+			bootph-pre-ram;
+		};
+
+		apbx@80040000 {
+			bootph-pre-ram;
+		};
+	};
+};
+
+&clks {
+	bootph-pre-ram;
+	status = "disable";
+};
+
+&duart {
+	/delete-property/ clocks;
+	bootph-pre-ram;
+	type = <1>; /* TYPE_PL011 */
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&mac0 {
+	phy-mode = "rmii";
+	pinctrl-names = "default";
+	pinctrl-0 = <&mac0_pins_a>;
+	phy-supply = <&reg_fec_3v3>;
+	phy-reset-gpios = <&gpio2 13 GPIO_ACTIVE_LOW>;
+	phy-reset-duration = <1>;
+	phy-reset-post-delay = <1>;
+	status = "okay";
+
+	fixed-link {
+		speed = <100>;
+		full-duplex;
+	};
+};
+
+&pinctrl {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	bootph-pre-ram;
+};
+
+&reg_fec_3v3 {
+	gpio = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+	enable-active-high;
+	regulator-boot-on;
+};
+
+&ssp0 {
+	bootph-pre-ram;
+};
+
+&ssp3 {
+	num-cs = <2>;
+	spi-max-frequency = <40000000>;
+	bootph-pre-ram;
+};
+
+/delete-node/ &ssp2;
+/delete-node/ &usb0;
+/delete-node/ &usbphy0;
+/delete-node/ &usb1;
+/delete-node/ &usbphy1;
+/delete-node/ &hog_pins_a;
+/delete-node/ &hog_pins_tiva;
+/delete-node/ &hog_pins_coding;

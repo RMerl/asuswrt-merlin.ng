@@ -1,0 +1,16 @@
+if TARGET_RV1126_NEU2
+
+config SYS_BOARD
+	default "neural-compute-module-2"
+
+config SYS_VENDOR
+	default "edgeble"
+
+config SYS_CONFIG_NAME
+	default "neural-compute-module-2"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select RAM_ROCKCHIP_LPDDR4
+
+endif

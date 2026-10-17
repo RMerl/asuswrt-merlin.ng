@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2020 Dario Binacchi <dariobin@libero.it>
+#
+
+config CLK_TI_AM3_DPLL
+	bool "TI AM33XX Digital Phase-Locked Loop (DPLL) clock drivers"
+	depends on CLK && OF_CONTROL
+	help
+	  This enables the DPLL clock drivers support on AM33XX SoCs. The DPLL
+	  provides all interface clocks and functional clocks to the processor.
+
+config CLK_TI_CTRL
+	bool "TI OMAP4 clock controller"
+	depends on CLK && OF_CONTROL
+	help
+	  This enables the clock controller driver support on TI's SoCs.
+
+config CLK_TI_DIVIDER
+	bool "TI divider clock driver"
+	depends on CLK && OF_CONTROL && CLK_CCF
+	help
+	  This enables the divider clock driver support on TI's SoCs.
+
+config CLK_TI_GATE
+	bool "TI gate clock driver"
+	depends on CLK && OF_CONTROL
+	help
+	  This enables the gate clock driver support on TI's SoCs.
+
+config CLK_TI_MUX
+	bool "TI mux clock driver"
+	depends on CLK && OF_CONTROL && CLK_CCF
+	help
+	  This enables the mux clock driver support on TI's SoCs.
+
+config CLK_TI_SCI
+	bool "TI System Control Interface (TI SCI) clock driver"
+	depends on CLK && TI_SCI_PROTOCOL && OF_CONTROL
+	help
+	  This enables the clock driver support over TI System Control Interface
+	  available on some new TI's SoCs. If you wish to use clock resources
+	  managed by the TI System Controller, say Y here. Otherwise, say N.
+
+config CLK_K3_PLL
+	bool "PLL clock support for K3 SoC family of devices"
+	depends on CLK && LIB_RATIONAL
+	help
+	  Enables PLL clock support for K3 SoC family of devices.
+
+config SPL_CLK_K3_PLL
+	bool "PLL clock support for K3 SoC family of devices"
+	depends on CLK && LIB_RATIONAL && SPL
+	help
+	  Enables PLL clock support for K3 SoC family of devices.
+
+config CLK_K3
+	bool "Clock support for K3 SoC family of devices"
+	depends on CLK
+	help
+	  Enables the clock translation layer from DT to device clocks.
+
+config SPL_CLK_K3
+	bool "Clock support for K3 SoC family of devices"
+	depends on CLK && SPL
+	help
+	  Enables the clock translation layer from DT to device clocks.

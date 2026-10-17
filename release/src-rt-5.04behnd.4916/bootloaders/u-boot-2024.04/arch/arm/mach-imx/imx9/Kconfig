@@ -1,0 +1,52 @@
+if ARCH_IMX9
+
+config AHAB_BOOT
+    bool "Support i.MX9 AHAB features"
+    help
+    This option enables the support for AHAB secure boot.
+
+config IMX9_LOW_DRIVE_MODE
+    bool "Configure to i.MX9 low drive mode"
+    help
+    This option enables the settings for iMX9 low drive mode.
+
+config IMX9
+	bool
+	select BINMAN
+	select HAS_CAAM
+	select ROM_UNIFIED_SECTIONS
+
+config IMX93
+	bool
+	select IMX9
+	select ARMV8_SPL_EXCEPTION_VECTORS
+
+config SYS_SOC
+	default "imx9"
+
+choice
+	prompt  "NXP i.MX9 board select"
+	optional
+
+config TARGET_IMX93_11X11_EVK
+	bool "imx93_11x11_evk"
+	select IMX93
+
+config TARGET_IMX93_VAR_SOM
+	bool "imx93_var_som"
+	select IMX93
+	select IMX9_LPDDR4X
+
+config TARGET_PHYCORE_IMX93
+	bool "phycore_imx93"
+	select IMX93
+	select IMX9_LPDDR4X
+
+endchoice
+
+source "board/freescale/imx93_evk/Kconfig"
+source "board/phytec/phycore_imx93/Kconfig"
+source "board/variscite/imx93_var_som/Kconfig"
+
+endif
+

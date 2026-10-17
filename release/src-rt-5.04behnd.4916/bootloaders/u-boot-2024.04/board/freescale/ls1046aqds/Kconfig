@@ -1,0 +1,15 @@
+if TARGET_LS1046AQDS
+
+config SYS_BOARD
+	default "ls1046aqds"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1046aqds"
+
+endif

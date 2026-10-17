@@ -1,6 +1,0 @@
-TINKER-RK3288
-M:	Lin Huang <hl@rock-chips.com>
-S:	Maintained
-F:	board/rockchip/tinker_rk3288
-F:	include/configs/tinker_rk3288.h
-F:	configs/tinker-rk3288_defconfig

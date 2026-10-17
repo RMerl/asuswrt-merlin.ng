@@ -29,6 +29,7 @@
 
 #ifndef __DHD_NBUFF_H__
 #define __DHD_NBUFF_H__
+
 #if defined(BCM_NBUFF)
 #ifdef mips
 #undef ABS
@@ -42,51 +43,11 @@
 #define FKB_IS_MASTER(pkt) (!(_is_fkb_cloned_pool_(PNBUFF_2_FKBUFF(pkt))))
 #define FKB_IS_CLONED(pkt) ((_is_fkb_cloned_pool_(PNBUFF_2_FKBUFF(pkt))))
 
-#ifndef BCM_NBUFF_PKT
-
-extern void *osl_pkt_get_tag(void *pkt);
-extern int osl_pkttag_attach(void *osh, void *pkt);
-extern void *osl_pktlink(void *skb);
-extern void osl_pktsetlink(void *skb, void *x);
-extern uint osl_pktprio(void *skb);
-extern void osl_pktsetprio(void *skb, uint x);
-extern uchar *osl_pktdata(osl_t *osh, void *skb);
-extern uint osl_pktlen(osl_t *osh, void *skb);
-extern uint nbuff_pktheadroom(osl_t *osh, void *skb);
-extern uint osl_pktflowid(void *skb);
-extern void osl_pktsetflowid(void *skb, uint x);
-extern uchar *nbuff_pktpush(osl_t *osh, void *skb, int bytes);
-extern uchar *nbuff_pktpull(osl_t *osh, void *skb, int bytes);
-extern void osl_pktsetlen(osl_t *osh, void *skb, uint len);
-extern void osl_pkt_set_dirtyp_len(osl_t *osh, void *p, int len);
-
-#define PKTATTACHTAG(osh, skb)           osl_pkttag_attach((osh), (skb))
-#ifdef PKTPUSH
-#undef PKTPUSH
-#endif
-#define PKTPUSH(osh, skb, bytes)        nbuff_pktpush((osh), (skb), (bytes))
-#ifdef PKTPULL
-#undef PKTPULL
-#endif
-#define PKTPULL(osh, skb, bytes)        nbuff_pktpull((osh), (skb), (bytes))
-#ifdef PKTSETLEN
-#undef PKTSETLEN
-#endif
-#define PKTSETLEN(osh, skb, len)        osl_pktsetlen((osh), (skb), (len))
-#ifdef PKTFLOWID
-#undef PKTFLOWID
-#endif
-#define PKTFLOWID(skb)                  osl_pktflowid((skb))
-#ifdef PKTSETFLOWID
-#undef PKTSETFLOWID
-#endif
-#define PKTSETFLOWID(skb, x)    osl_pktsetflowid((skb), (x))
-#ifdef PKTSETDIRTYPLEN
-#undef PKTSETDIRTYPLEN
-#endif
-#define PKTSETDIRTYPLEN(osh, skb, len) osl_pkt_set_dirtyp_len(osh, skb, len)
-
-#endif /* !BCM_NBUFF_PKT */
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: PKTLIST
+ * ------------------------------------------------------------------------------------------------
+ */
 
 /*
  *  NBUFF (fkb) type packet does not have prev or next pointers,
@@ -95,6 +56,13 @@ extern void osl_pkt_set_dirtyp_len(osl_t *osh, void *p, int len);
  *  to help make double linked list for packets
  */
 typedef struct dll DHD_PKT_LIST;
+
+void dhd_pkt_queue_purge(osl_t *osh, DHD_PKT_LIST *list);
+void *dhd_pkt_dequeue(DHD_PKT_LIST *list);
+void dhd_pkt_unlink(DHD_PKT_LIST *list, void *pkt);
+void dhd_pkt_queue_head(DHD_PKT_LIST *list,	void *newpkt);
+void dhd_pkt_queue_head_init(DHD_PKT_LIST *list);
+
 #ifdef PKTLIST_INIT
 #undef PKTLIST_INIT
 #endif
@@ -116,20 +84,37 @@ typedef struct dll DHD_PKT_LIST;
 #endif
 #define PKTLIST_FINI(osh, x)	dhd_pkt_queue_purge((osl_t *)(osh), (DHD_PKT_LIST *)(x))
 
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: PKTTAG POOL
+ * ------------------------------------------------------------------------------------------------
+ */
 
 #define DHD_PKTTAG_WMF_FKB_UCAST    0x0004  /* tag as wmf handled fkb unicast pkt */
-#ifdef BCM_NBUFF
+
 #define DHD_PKT_GET_WMF_FKB_UCAST(pkt) \
 	((DHD_PKTTAG_FD(pkt))->flags & DHD_PKTTAG_WMF_FKB_UCAST) ? TRUE : FALSE
 #define DHD_PKT_SET_WMF_FKB_UCAST(pkt)  ((DHD_PKTTAG_FD(pkt))->flags |= DHD_PKTTAG_WMF_FKB_UCAST)
 #define DHD_PKT_CLR_WMF_FKB_UCAST(pkt)  ((DHD_PKTTAG_FD(pkt))->flags &= ~DHD_PKTTAG_WMF_FKB_UCAST)
-#else
-#define DHD_PKT_GET_WMF_FKB_UCAST(pkt)  FALSE
-#define DHD_PKT_SET_WMF_FKB_UCAST(pkt)  ({ BCM_REFERENCE(pkt); })
-#define DHD_PKT_CLR_WMF_FKB_UCAST(pkt)  ({ BCM_REFERENCE(pkt); })
-#endif /* BCM_NBUFF */
 
 #define DHD_PKTTAG_FKBPOOL 0x0020  /* tag as FKB */
+
+int dhd_pkttag_pool_init(void);
+void dhd_pkttag_pool_free(void);
+/* dhd pkttags pool size.
+	Check FKBC clone pool(2080) to have more that this when you change it to bigger num.
+*/
+void *dhd_pkttags_pool_get(void);
+void dhd_pkttags_pool_put(void *tag);
+#define DHD_PKTTAGS_POOL_GET() dhd_pkttags_pool_get()
+#define DHD_PKTTAGS_POOL_PUT(t) dhd_pkttags_pool_put(t)
+
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: FKBPOOL
+ * ------------------------------------------------------------------------------------------------
+ */
+
 #ifdef WLCSM_DEBUG
 void dhd_pkt_set_fkbclone(void *pkt);
 #define DHD_PKT_SET_FKBPOOL(pkt)  dhd_pkt_set_fkbclone(pkt)
@@ -143,6 +128,7 @@ void dhd_pkt_set_fkbclone(void *pkt);
 
 #define DHD_PKT_CLR_FKBPOOL(pkt)  ((DHD_PKTTAG_FD(pkt))->flags &= ~DHD_PKTTAG_FKBPOOL)
 
+#define FKB_IS_FKBPOOL(pkt)  (DHD_PKT_GET_FKBPOOL(pkt))
 
 #define DHD_PKTTAG_DATA_DHDHDR  0x0040 /* tag as DHDHDR MOVED */
 
@@ -157,17 +143,6 @@ void dhd_clr_fkb_dhdhdr_flag(void *pkt);
 
 #define  FKB_HAS_DHDHDR(pkt) DHD_PKT_GET_DATA_DHDHDR(pkt)
 
-int dhd_pkttag_pool_init(void);
-void dhd_pkttag_pool_free(void);
-/* dhd pkttags pool size.
-	Check FKBC clone pool(2080) to have more that this when you change it to bigger num.
-*/
-void osl_pkt_clear_tag(void *pkt);
-void *dhd_pkttags_pool_get(void);
-void dhd_pkttags_pool_put(void *tag);
-#define DHD_PKTTAGS_POOL_GET() dhd_pkttags_pool_get()
-#define DHD_PKTTAGS_POOL_PUT(t) dhd_pkttags_pool_put(t)
-
 #ifndef BCM_NBUFF_WLMCAST
 enum WLEMF_CMD {
     WLEMF_CMD_GETIGSC,         //get igsc instance
@@ -180,261 +155,59 @@ enum WLEMF_CMD {
 };
 #endif
 
-
-/* PKTLIST */
-void dhd_pkt_queue_purge(osl_t *osh, DHD_PKT_LIST *list);
-void *dhd_pkt_dequeue(DHD_PKT_LIST *list);
-void dhd_pkt_unlink(DHD_PKT_LIST *list, void *pkt);
-void dhd_pkt_queue_head(DHD_PKT_LIST *list,	void *newpkt);
-void dhd_pkt_queue_head_init(DHD_PKT_LIST *list);
-int dhd_nbuff_free(void *p);
-void *osl_nbuff_dup(osl_t *osh, void *skb);
-int dhd_nbuff_dup(osl_t *osl, void *p, void **ret_p);
-extern void dhd_nbuff_dump(void *dhdp, void *strbuf);
-#define DHD_PKT_GET_FLOWID(pkt)     PKTFLOWID(pkt)
-#define DHD_PKT_SET_FLOWID(pkt, fid)    PKTSETFLOWID(pkt, fid)
-#define DHD_PKT_SET_MAC(pkt, mac)   \
-	(bcopy((mac), DHD_PKTTAG_FD((pkt))->mac_address, ETHER_ADDR_LEN))
-#define DHD_PKT_GET_MAC(pkt)        ((DHD_PKTTAG_FD(pkt))->mac_address)
-
-#ifndef BCM_NBUFF_PKT
-
-#ifdef PKTDUP_CPY
-#undef PKTDUP_CPY
-#endif
-#define PKTDUP_CPY(osh, pkt) \
-	(IS_SKBUFF_PTR(pkt) ? osl_pktdup_cpy((osh), pkt) : DHD_FKB_CLONE2UNICAST((osh), pkt, NULL))
-
-#ifdef  PKTHEADROOM
-#undef PKTHEADROOM
-#endif
-#define PKTHEADROOM(osh, skb)           nbuff_pktheadroom((osh), (skb))
-
-#ifdef PKTDATA
-#undef PKTDATA
-#endif
-#define PKTDATA(osh, skb)               osl_pktdata((osh), (skb))
-
-#ifdef PKTLEN
-#undef PKTLEN
-#endif
-#define PKTLEN(osh, skb)                osl_pktlen((osh), (skb))
-
-#ifdef PKTFRMNATIVE
-#undef PKTFRMNATIVE
-#define PKTFRMNATIVE(osh, skb)  (IS_SKBUFF_PTR(skb) ? (osl_pkt_frmnative((osh), (skb))) : skb)
-#endif
-
-#ifdef  PKTISFRMNATIVE
-#undef  PKTISFRMNATIVE
-#endif
-#define PKTISFRMNATIVE(osh, skb) (IS_SKBUFF_PTR(skb) ? (osl_pkt_is_frmnative((osh), (skb))) : FALSE)
-
-#ifdef  PKTTONATIVE
-#undef  PKTTONATIVE
-#endif
-/* TODO: implicit variable skb used in PKTTONATIVE macro definition. Bug or intended ??? */
-#define PKTTONATIVE(osh, pkt) (IS_SKBUFF_PTR(skb) ? (osl_pkt_tonative((osh), (pkt))) : pkt)
-
-#ifdef PKTLINK
-#undef PKTLINK
-#endif
-#define PKTLINK(skb)                    osl_pktlink((skb))
-
-#ifdef PKTSETLINK
-#undef PKTSETLINK
-#endif
-#define PKTSETLINK(skb, x)              osl_pktsetlink((skb), (x))
-
-#ifdef PKTPRIO
-#undef PKTPRIO
-#endif
-#define PKTPRIO(skb)                    osl_pktprio((skb))
-
-#ifdef PKTSETPRIO
-#undef PKTSETPRIO
-#endif
-
-#define PKTSETPRIO(skb, x)              osl_pktsetprio((skb), (x))
-
-#ifdef PKTDUP
-#undef PKTDUP
-#endif
-#define PKTDUP(osh, pkt) \
-	(IS_SKBUFF_PTR(pkt) ? (osl_pktdup((osh), (pkt))) : osl_nbuff_dup((osh), pkt))
-
-#ifdef PKTFREE
-#undef PKTFREE
-#endif
-#define  PKTFREE(osh, pkt, c) \
-	(IS_SKBUFF_PTR(pkt) ? (osl_pktfree((osh), (pkt), c)): dhd_nbuff_free((pkt)))
-
-#ifdef PKTTAG
-#undef PKTTAG
-#endif
-#define PKTTAG(pkt)                     ((dhd_pkttag_fd_t *)osl_pkt_get_tag(pkt))
-
-#ifdef PKTC
-
-#ifdef PKTCSETATTR
-#undef PKTCSETATTR
-#endif
-#define	PKTCSETATTR(s, f, p, b)	(IS_SKBUFF_PTR(s) ? ({CHAIN_NODE(s)->flags = (f); \
-			CHAIN_NODE(s)->pkts = (p); CHAIN_NODE(s)->bytes = (b);}) : BCM_REFERENCE(s))
-#ifdef PKTCCLRATTR
-#undef PKTCCLRATTR
-#endif
-#define	PKTCCLRATTR(skb)	(IS_SKBUFF_PTR(skb) ? ({CHAIN_NODE(skb)->flags = \
-			CHAIN_NODE(skb)->pkts = CHAIN_NODE(skb)->bytes = 0;}) : BCM_REFERENCE(skb))
-#ifdef PKTCGETATTR
-#undef PKTCGETATTR
-#endif
-#define	PKTCGETATTR(skb)	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags << 29 | \
-			CHAIN_NODE(skb)->pkts << 20 | CHAIN_NODE(skb)->bytes) : BCM_REFERENCE(skb))
-#ifdef PKTCCNT
-#undef PKTCCNT
-#endif
-#define	PKTCCNT(skb)		(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts) : 1)
-#ifdef PKTCLEN
-#undef PKTCLEN
-#endif
-#define	PKTCLEN(skb)		(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->bytes) : PKTLEN(skb))
-#ifdef PKTCGETFLAGS
-#undef PKTCGETFLAGS
-#endif
-#define	PKTCGETFLAGS(skb)	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags) : BCM_REFERENCE(skb))
-#ifdef PKTCSETFLAGS
-#undef PKTCSETFLAGS
-#endif
-#define	PKTCSETFLAGS(skb, f) \
-		(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags = (f)) : BCM_REFERENCE(skb))
-#ifdef PKTCCLRFLAGS
-#undef PKTCCLRFLAGS
-#endif
-#define	PKTCCLRFLAGS(skb) \
-		(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags = 0) : BCM_REFERENCE(skb))
-#ifdef PKTCFLAGS
-#undef PKTCFLAGS
-#endif
-#define	PKTCFLAGS(skb)		(PKTCGETFLAGS(skb))
-#ifdef PKTCSETCNT
-#undef PKTCSETCNT
-#endif
-#define	PKTCSETCNT(skb, c) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts = (c)) : BCM_REFERENCE(skb))
-#ifdef PKTCINCRCNT
-#undef PKTCINCRCNT
-#endif
-#define	PKTCINCRCNT(skb) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts++) : BCM_REFERENCE(skb))
-#ifdef PKTCADDCNT
-#undef PKTCADDCNT
-#endif
-#define	PKTCADDCNT(skb, c) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts += (c)) : BCM_REFERENCE(skb))
-#ifdef PKTCSETLEN
-#undef PKTCSETLEN
-#endif
-#define	PKTCSETLEN(skb, l) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->bytes = (l)) : BCM_REFERENCE(skb))
-#ifdef PKTCADDLEN
-#undef PKTCADDLEN
-#endif
-#define	PKTCADDLEN(skb, l) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->bytes += (l)) : BCM_REFERENCE(skb))
-#ifdef PKTCSETFLAG
-#undef PKTCSETFLAG
-#endif
-#define	PKTCSETFLAG(skb, fb) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags |= (fb)) : BCM_REFERENCE(skb))
-#ifdef PKTCCLRFLAG
-#undef PKTCCLRFLAG
-#endif
-#define	PKTCCLRFLAG(skb, fb) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags &= ~(fb)) : BCM_REFERENCE(skb))
-#ifdef PKTCLINK
-#undef PKTCLINK
-#endif
-#define	PKTCLINK(skb) 		(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->link) : NULL)
-#ifdef PKTSETCLINK
-#undef PKTSETCLINK
-#endif
-#define	PKTSETCLINK(skb, x) \
-	(IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->link = (struct sk_buff*)(x)) : BCM_REFERENCE(skb))
-
-#ifdef FOREACH_CHAINED_PKT
-#undef FOREACH_CHAINED_PKT
-#endif
-#define FOREACH_CHAINED_PKT(skb, nskb) \
-	for (; (skb) != NULL; (skb) = (nskb)) \
-		  if ((nskb) = (PKTISCHAINED(skb) ? PKTCLINK(skb) : NULL), \
-				  PKTSETCLINK((skb), NULL), 1)
-
-#ifdef PKTCFREE
-#undef PKTCFREE
-#endif
-#define PKTCFREE(osh, skb, send) \
-	(IS_SKBUFF_PTR(skb) ? \
-		({do { \
-			void *nskb; \
-			ASSERT((skb) != NULL); \
-			FOREACH_CHAINED_PKT((skb), nskb) { \
-				PKTCLRCHAINED((osh), (skb)); \
-				PKTCCLRFLAGS((skb)); \
-				PKTFREE((osh), (skb), (send)); \
-			} \
-		} while (0); }) : \
-		PKTFREE(osh, skb, send))
-
-#ifdef PKTCENQTAIL
-#undef PKTCENQTAIL
-#endif
-#define PKTCENQTAIL(h, t, p) \
-	(IS_SKBUFF_PTR(p) ? \
-		({do { \
-			if ((t) == NULL) { \
-				(h) = (t) = (p); \
-			} else { \
-				PKTSETCLINK((t), (p)); \
-				(t) = (p); \
-			} \
-		} while (0); }) : BCM_REFERENCE(p))
-
-#endif /* PKTC */
-
-#endif /* !BCM_NBUFF_PKT */
-
 #define ETHER_ADD_LEN (6)
 
 #define IS_FKBWMFUCAST_NONFKBCLONE(pkt) \
 		((DHD_PKT_GET_WMF_FKB_UCAST(pkt)) && (!(DHD_PKT_GET_FKBPOOL(pkt))))
 #define IS_FKB_WMF_UCAST(pkt) ((DHD_PKT_GET_WMF_FKB_UCAST(pkt)))
 
-
-void dhd_nbuff_detach(void);
-int dhd_nbuff_attach(void);
-
-#define FKB_IS_FKBPOOL(pkt)  (DHD_PKT_GET_FKBPOOL(pkt))
 #define FKB_IS_WMF_UCAST(pkt) (DHD_PKT_GET_WMF_FKB_UCAST(pkt))
 #include <dhd_nic_common.h>
 
-#else
 
-#define DHD_PKT_GET_FKBPOOL(pkt)   FALSE
-#define DHD_PKT_SET_FKBPOOL(pkt)   ({ ((void)(pkt)); })
-#define DHD_PKT_CLR_FKBPOOL(pkt)   ({ ((void)(pkt)); })
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: DHD specific NBUFF (SKB|FKB) Packet Primitives - PKTxyz
+ * ------------------------------------------------------------------------------------------------
+ */
+extern int	nbuff_pkttag_attach(void * osh, void * pkt);
+extern uint	nbuff_pktflowid(void * pkt);
+extern void	nbuff_pktsetflowid(void * pkt, uint flowid);
+extern void *	nbuff_pkt_get_tag(void *pkt);
 
-#endif /* BCM_NBUFF */
+#define PKTATTACHTAG(osh, pkt)		nbuff_pkttag_attach((osh), (pkt))
+#define PKTFLOWID(pkt)			nbuff_pktflowid((pkt))
+#define PKTSETFLOWID(pkt, flowid)	nbuff_pktsetflowid((pkt), (flowid))
 
+#define DHD_PKT_GET_FLOWID(pkt)		PKTFLOWID(pkt)
+#define DHD_PKT_SET_FLOWID(pkt, fid)	PKTSETFLOWID(pkt, fid)
+#define DHD_PKT_SET_MAC(pkt, mac)	\
+	(bcopy((mac), DHD_PKTTAG_FD((pkt))->mac_address, ETHER_ADDR_LEN))
+#define DHD_PKT_GET_MAC(pkt)		((DHD_PKTTAG_FD(pkt))->mac_address)
+
+
+extern int	dhd_nbuff_attach(void);
+extern void	dhd_nbuff_detach(void);
+#if defined(DSLCPE) || defined(BCM_NBUFF_WLMCAST)
+/* Add nbuff dump output to a buffer */
+extern void	dhd_nbuff_dump(void *dhd, void *strb);
+#endif /* DSLCPE || BCM_NBUFF_WLMCAST */
+
+/**
+ * ------------------------------------------------------------------------------------------------
+ * Section: BPM based data buffers
+ * ------------------------------------------------------------------------------------------------
+ */
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
 #if !(defined(BCM_AWL) || defined(DHD_SKB))
 #define BCM_NBUFF_PKT_BPM /* Packet data buffers, are from BPM pool */
 #include <linux/gbpm.h>
 #else /* (defined(BCM_AWL) || defined(DHD_SKB)) */
 #include <bpm.h>
-#if defined(BCM_NBUFF_PKT) && defined(CC_BPM_SKB_POOL_BUILD)
+
+#if defined(CC_BPM_SKB_POOL_BUILD)
 #define BCM_NBUFF_PKT_BPM_SKB /* Packet buffers are from BPM SKB pool */
-#endif /* BCM_NBUFF_PKT && CC_BPM_SKB_POOL_BUILD */
+#endif /* CC_BPM_SKB_POOL_BUILD */
 #endif /* !(defined(BCM_AWL) || defined(DHD_SKB)) */
 #endif /* (CONFIG_BCM_BPM || CONFIG_BCM_BPM_MODULE) */
 
@@ -473,5 +246,7 @@ void dhd_nbuff_recycle(pNBuff_t pNBuff, unsigned long context, uint32_t flags);
 #else
 #define DHD_NBUFF_PTR_TYPE      FKBUFF_PTR
 #endif /* defined(DHD_SKB) */
+
+#endif /* BCM_NBUFF */
 
 #endif /* __DHD_NBUFF_H__ */

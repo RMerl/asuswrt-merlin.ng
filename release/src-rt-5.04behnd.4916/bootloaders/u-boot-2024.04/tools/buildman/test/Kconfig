@@ -1,0 +1,72 @@
+# Board properties
+config SYS_ARCH
+	string
+
+config SYS_CPU
+	string
+
+config SYS_SOC
+	string
+
+config SYS_VENDOR
+	string
+
+config SYS_BOARD
+	string
+
+config SYS_CONFIG_NAME
+	string
+
+
+# Available targets
+config TARGET_BOARD0
+	bool "board 9"
+
+config TARGET_BOARD2
+	bool "board 2"
+
+
+# Settings for each board
+if TARGET_BOARD0
+
+config SYS_ARCH
+	default "arm"
+
+config SYS_CPU
+	default "armv7"
+
+#config SYS_SOC
+#	string
+
+config SYS_VENDOR
+	default "Tester"
+
+config SYS_BOARD
+	default "ARM Board 0"
+
+config SYS_CONFIG_NAME
+	default "config0"
+
+endif
+
+if TARGET_BOARD2
+
+config SYS_ARCH
+	default "powerpc"
+
+config SYS_CPU
+	default "ppc"
+
+config SYS_SOC
+	default "mpc85xx"
+
+config SYS_VENDOR
+	default "Tester"
+
+config SYS_BOARD
+	default "PowerPC board 1"
+
+config SYS_CONFIG_NAME
+	default "config2"
+
+endif

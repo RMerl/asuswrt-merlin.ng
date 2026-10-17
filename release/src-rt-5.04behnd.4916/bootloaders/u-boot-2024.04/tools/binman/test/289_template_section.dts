@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		u-boot-img {
+		};
+
+		common_part: template {
+			u-boot {
+			};
+
+			intel-vga {
+				filename = "vga.bin";
+			};
+		};
+
+		first {
+			type = "section";
+			insert-template = <&common_part>;
+
+			u-boot-dtb {
+			};
+		};
+
+		section {
+			second {
+				type = "section";
+				insert-template = <&common_part>;
+
+				u-boot-dtb {
+				};
+
+				intel-vga {
+					filename = "vga2.bin";
+				};
+			};
+		};
+
+		second {
+			type = "section";
+			insert-template = <&common_part>;
+
+			u-boot-dtb {
+			};
+		};
+	};
+};

@@ -1,0 +1,116 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+#  Copyright (C) 2015
+#
+#  Lukasz Majewski <l.majewski@majess.pl>
+
+Device Firmware Upgrade (DFU) - extension to use TFTP
+=====================================================
+
+Why?
+----
+
+* Update TFTP (CONFIG_UPDATE_TFTP) only supports writing
+code to NAND memory via TFTP.
+* DFU supports writing data to the variety of mediums (NAND,
+eMMC, SD, partitions, RAM, etc) via USB.
+
+Combination of both solves their shortcomings!
+
+
+Overview
+--------
+
+This document briefly describes how to use DFU for
+upgrading firmware (e.g. kernel, u-boot, rootfs, etc.)
+via TFTP protocol.
+
+By using Ethernet (TFTP protocol to be precise) it is
+possible to overcome the major problem of USB based DFU -
+the relatively low transfer speed for large files.
+This was caused by DFU standard, which imposed utilization
+of only EP0 for transfer. By using Ethernet we can circumvent
+this shortcoming.
+
+Beagle Bone Black rev. C (BBB) powered by TI's am335x CPU has
+been used as a demo board.
+
+To utilize this feature, one needs to first enable support
+for USB based DFU (CONFIG_DFU_*) and DFU TFTP update
+(CONFIG_DFU_TFTP) described in ./doc/README.update.
+
+The "dfu" command has been extended to support transfer via TFTP - one
+needs to type for example "dfu tftp 0 mmc 0"
+
+As of this writing (SHA1:8d77576371381ade83de475bb639949b44941e8c v2015.10-rc2)
+the update.c code is not enabled (CONFIG_UPDATE_TFTP) by any board in the
+contemporary u-boot tree.
+
+
+Environment variables
+---------------------
+
+The "dfu tftp" command can be used in the "preboot" environment variable
+(when it is enabled by defining CONFIG_PREBOOT).
+This is the preferable way of using this command in the early boot stage
+as opposed to legacy update_tftp() function invocation.
+
+
+Beagle Bone Black (BBB) setup
+-----------------------------
+
+1. Setup tftp env variables:
+   *  select desired eth device - 'ethact' variable ["ethact=cpsw"]
+      (use "bdinfo" to check current setting)
+   *  setup "serverip" and "ipaddr" variables
+   *  set "loadaddr" as a fixed buffer where incoming data is placed
+      ["loadaddr=0x81000000"]
+
+#########
+# BONUS #
+#########
+It is possible to use USB interface to emulate ETH connection by setting
+"ethact=usb_ether". In this way one can have very fast DFU transfer via USB.
+
+For 33MiB test image the transfer rate was 1MiB/s for ETH over USB and 200KiB/s
+for pure DFU USB transfer.
+
+2. Setup update_tftp variables:
+   *  set "updatefile" - the file name to be downloaded via TFTP (stored on
+      the HOST at e.g. /srv/tftp)
+
+3. If required, to update firmware on boot, put the "dfu tftp 0 mmc 0" in the
+    "preboot" env variable. Otherwise use this command from u-boot prompt.
+
+4. Inspect "dfu" specific variables:
+   * "dfu_alt_info" - information about available DFU entities
+   * "dfu_bufsiz"   - variable to set buffer size [in bytes] - when it is not
+		    possible to set large enough default buffer (8 MiB @ BBB)
+
+
+FIT image format for download
+-----------------------------
+
+To create FIT image for download one should follow the update tftp README file
+(./doc/README.update) with one notable difference:
+
+The original snippet of ./doc/uImage.FIT/update_uboot.its
+
+	images {
+		update@1 {
+			description = "U-Boot binary";
+
+should look like
+
+	images {
+		u-boot.bin@1 {
+			description = "U-Boot binary";
+
+where "u-boot.bin" is the DFU entity name to be stored.
+
+
+To do
+-----
+
+* Extend dfu-util command to support TFTP based transfers
+* Upload support (via TFTP)

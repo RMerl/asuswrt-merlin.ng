@@ -1,0 +1,588 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "k3-binman.dtsi"
+
+#ifdef CONFIG_TARGET_J721E_R5_EVM
+
+&binman {
+	tiboot3-j721e_sr1_1-hs-evm.bin {
+		filename = "tiboot3-j721e_sr1_1-hs-evm.bin";
+		ti-secure-rom {
+			content = <&u_boot_spl>;
+			core = "public";
+			load = <CONFIG_SPL_TEXT_BASE>;
+			keyfile = "custMpk.pem";
+		};
+		u_boot_spl: u-boot-spl {
+			no-expanded;
+		};
+	};
+
+	tiboot3-j721e_sr2-hs-evm.bin {
+		filename = "tiboot3-j721e_sr2-hs-evm.bin";
+		ti-secure-rom {
+			content = <&u_boot_spl_sr2>;
+			core = "public";
+			load = <CONFIG_SPL_TEXT_BASE>;
+			keyfile = "custMpk.pem";
+		};
+		u_boot_spl_sr2: u-boot-spl {
+			no-expanded;
+		};
+	};
+
+	sysfw {
+		filename = "sysfw.bin";
+		ti-secure-rom {
+			content = <&ti_fs_cert>;
+			core = "secure";
+			load = <0x40000>;
+			keyfile = "custMpk.pem";
+			countersign;
+		};
+		ti_fs_cert: ti-fs-cert.bin {
+			filename = "ti-sysfw/ti-fs-firmware-j721e_sr1_1-hs-cert.bin";
+			type = "blob-ext";
+			optional;
+		};
+		ti-fs-firmware-j721e_sr1_1-hs-enc.bin {
+			filename = "ti-sysfw/ti-fs-firmware-j721e_sr1_1-hs-enc.bin";
+			type = "blob-ext";
+			optional;
+		};
+	};
+
+	sysfw_sr2 {
+		filename = "sysfw.bin_sr2";
+		ti-secure-rom {
+			content = <&ti_fs_cert_sr2>;
+			core = "secure";
+			load = <0x40000>;
+			keyfile = "custMpk.pem";
+			countersign;
+		};
+		ti_fs_cert_sr2: ti-fs-cert.bin {
+			filename = "ti-sysfw/ti-fs-firmware-j721e_sr2-hs-cert.bin";
+			type = "blob-ext";
+			optional;
+		};
+		ti-fs-firmware-j721e_sr2-hs-enc.bin {
+			filename = "ti-sysfw/ti-fs-firmware-j721e_sr2-hs-enc.bin";
+			type = "blob-ext";
+			optional;
+		};
+	};
+
+	itb {
+		filename = "sysfw-j721e_sr1_1-hs-evm.itb";
+		insert-template = <&itb_template>;
+	};
+
+	itb_sr2 {
+		filename = "sysfw-j721e_sr2-hs-evm.itb";
+		insert-template = <&itb_template>;
+		fit {
+			images {
+				sysfw.bin {
+					blob-ext {
+						filename = "sysfw.bin_sr2";
+					};
+				};
+				board-cfg.bin {
+					ti-secure {
+						content = <&board_cfg_sr2>;
+					};
+					board_cfg_sr2: board-cfg {
+						filename = "board-cfg.bin";
+					};
+				};
+				pm-cfg.bin {
+					ti-secure {
+						content = <&pm_cfg_sr2>;
+					};
+					pm_cfg_sr2: pm-cfg {
+						filename = "pm-cfg.bin";
+					};
+				};
+				rm-cfg.bin {
+					ti-secure {
+						content = <&rm_cfg_sr2>;
+					};
+					rm_cfg_sr2: rm-cfg {
+						filename = "rm-cfg.bin";
+					};
+				};
+				sec-cfg.bin {
+					ti-secure {
+						content = <&sec_cfg_sr2>;
+					};
+					sec_cfg_sr2: sec-cfg {
+						filename = "sec-cfg.bin";
+					};
+				};
+
+			};
+		};
+	};
+};
+
+&binman {
+	tiboot3-j721e_sr2-hs-fs-evm.bin {
+		filename = "tiboot3-j721e_sr2-hs-fs-evm.bin";
+		ti-secure-rom {
+			content = <&u_boot_spl_fs>;
+			core = "public";
+			load = <CONFIG_SPL_TEXT_BASE>;
+			keyfile = "custMpk.pem";
+		};
+		u_boot_spl_fs: u-boot-spl {
+			no-expanded;
+		};
+	};
+	sysfw_fs {
+		filename = "sysfw.bin_fs";
+		ti-fs-cert-fs.bin {
+			filename = "ti-sysfw/ti-fs-firmware-j721e_sr2-hs-fs-cert.bin";
+			type = "blob-ext";
+			optional;
+		};
+		ti-fs-firmware-j721e-hs-fs-enc.bin {
+			filename = "ti-sysfw/ti-fs-firmware-j721e_sr2-hs-fs-enc.bin";
+			type = "blob-ext";
+			optional;
+		};
+	};
+	itb_fs {
+		filename = "sysfw-j721e_sr2-hs-fs-evm.itb";
+		insert-template = <&itb_unsigned_template>;
+	};
+};
+
+&binman {
+	tiboot3-j721e-gp-evm.bin {
+		filename = "tiboot3-j721e-gp-evm.bin";
+		symlink = "tiboot3.bin";
+		ti-secure-rom {
+			content = <&u_boot_spl_unsigned>;
+			core = "public";
+			load = <CONFIG_SPL_TEXT_BASE>;
+			sw-rev = <CONFIG_K3_X509_SWRV>;
+			keyfile = "ti-degenerate-key.pem";
+		};
+		u_boot_spl_unsigned: u-boot-spl {
+			no-expanded;
+		};
+	};
+	sysfw_gp {
+		filename = "sysfw.bin_gp";
+		ti-secure-rom {
+			content = <&ti_fs>;
+			core = "secure";
+			load = <0x40000>;
+			sw-rev = <CONFIG_K3_X509_SWRV>;
+			keyfile = "ti-degenerate-key.pem";
+		};
+		ti_fs: ti-fs.bin {
+			filename = "ti-sysfw/ti-fs-firmware-j721e-gp.bin";
+			type = "blob-ext";
+			optional;
+		};
+	};
+	itb_gp {
+		filename = "sysfw-j721e-gp-evm.itb";
+		symlink = "sysfw.itb";
+		insert-template = <&itb_unsigned_template>;
+
+		fit {
+			images {
+				sysfw.bin {
+					blob-ext {
+					    filename = "sysfw.bin_gp";
+					};
+				};
+			};
+		};
+	};
+};
+#endif
+
+#ifdef CONFIG_TARGET_J721E_A72_EVM
+
+#define SPL_J721E_EVM_DTB "spl/dts/k3-j721e-common-proc-board.dtb"
+#define SPL_J721E_SK_DTB "spl/dts/k3-j721e-sk.dtb"
+
+#define J721E_EVM_DTB "u-boot.dtb"
+#define J721E_SK_DTB "arch/arm/dts/k3-j721e-sk.dtb"
+
+&binman {
+	ti-dm {
+		filename = "ti-dm.bin";
+		blob-ext {
+			filename = "ti-dm/j721e/ipc_echo_testb_mcu1_0_release_strip.xer5f";
+		};
+	};
+	ti-spl {
+		insert-template = <&ti_spl_template>;
+
+		fit {
+			images {
+				atf {
+					ti-secure {
+						auth-in-place = <0xa02>;
+
+						firewall-257-0 {
+							/* cpu_0_cpu_0_msmc Background Firewall */
+							insert-template = <&firewall_bg_1>;
+							id = <257>;
+							region = <0>;
+						};
+
+						firewall-257-1 {
+							/* cpu_0_cpu_0_msmc Foreground Firewall */
+							insert-template = <&firewall_armv8_atf_fg>;
+							id = <257>;
+							region = <1>;
+						};
+
+						firewall-284-0 {
+							/* dru_0_msmc Background Firewall */
+							insert-template = <&firewall_bg_3>;
+							id = <284>;
+							region = <0>;
+						};
+
+						firewall-284-1 {
+							/* dru_0_msmc Foreground Firewall */
+							insert-template = <&firewall_armv8_atf_fg>;
+							id = <284>;
+							region = <1>;
+						};
+
+						/*	firewall-4760-0 {
+						 *		nb_slv0__mem0 Background Firewall
+						 *		Already configured by the secure entity
+						 *	};
+						 */
+
+						firewall-4760-1 {
+							/* nb_slv0__mem0 Foreground Firewall */
+							insert-template = <&firewall_armv8_atf_fg>;
+							id = <4760>;
+							region = <1>;
+						};
+
+						/*	firewall-4761-0 {
+						 *		nb_slv1__mem0 Background Firewall
+						 *		Already configured by the secure entity
+						 *	};
+						 */
+
+						firewall-4761-1 {
+							/* nb_slv1__mem0 Foreground Firewall */
+							insert-template = <&firewall_armv8_atf_fg>;
+							id = <4761>;
+							region = <1>;
+						};
+
+					};
+				};
+
+				tee {
+					ti-secure {
+						auth-in-place = <0xa02>;
+
+						/* cpu_0_cpu_0_msmc region 0 and 1 configured
+						 * during ATF Firewalling
+						 */
+
+						firewall-257-2 {
+							/* cpu_0_cpu_0_msmc Foreground Firewall */
+							insert-template = <&firewall_armv8_optee_fg>;
+							id = <257>;
+							region = <2>;
+						};
+
+						/* dru_0_msmc region 0 and 1 configured
+						 * during ATF Firewalling
+						 */
+
+						firewall-284-2 {
+							/* dru_0_msmc Foreground Firewall */
+							insert-template = <&firewall_armv8_optee_fg>;
+							id = <284>;
+							region = <2>;
+						};
+
+						firewall-4762-0 {
+							/* nb_slv2__mem0 Background Firewall */
+							insert-template = <&firewall_bg_3>;
+							id = <4762>;
+							region = <0>;
+						};
+
+						firewall-4762-1 {
+							/* nb_slv2__mem0 Foreground Firewall */
+							insert-template = <&firewall_armv8_optee_fg>;
+							id = <4762>;
+							region = <1>;
+						};
+
+						firewall-4763-0 {
+							/* nb_slv3__mem0 Background Firewall */
+							insert-template = <&firewall_bg_3>;
+							id = <4763>;
+							region = <0>;
+						};
+
+						firewall-4763-1 {
+							/* nb_slv3__mem0 Foreground Firewall */
+							insert-template = <&firewall_armv8_optee_fg>;
+							id = <4763>;
+							region = <1>;
+						};
+					};
+				};
+				dm {
+					ti-secure {
+						content = <&dm>;
+						keyfile = "custMpk.pem";
+					};
+					dm: ti-dm {
+						filename = "ti-dm.bin";
+					};
+				};
+
+				fdt-0 {
+					description = "k3-j721e-common-proc-board";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&spl_j721e_evm_dtb>;
+						keyfile = "custMpk.pem";
+					};
+					spl_j721e_evm_dtb: blob-ext {
+						filename = SPL_J721E_EVM_DTB;
+					};
+				};
+
+				fdt-1 {
+					description = "k3-j721e-sk";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&spl_j721e_sk_dtb>;
+						keyfile = "custMpk.pem";
+
+					};
+					spl_j721e_sk_dtb: blob-ext {
+						filename = SPL_J721E_SK_DTB;
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-0";
+
+				conf-0 {
+					description = "k3-j721e-common-proc-board";
+					firmware = "atf";
+					loadables = "tee", "dm", "spl";
+					fdt = "fdt-0";
+				};
+
+				conf-1 {
+					description = "k3-j721e-sk";
+					firmware = "atf";
+					loadables = "tee", "dm", "spl";
+					fdt = "fdt-1";
+				};
+			};
+		};
+	};
+};
+
+&binman {
+	u-boot {
+		insert-template = <&u_boot_template>;
+		fit {
+
+			images {
+				uboot {
+					description = "U-Boot for J721E Board";
+				};
+
+				fdt-0 {
+					description = "k3-j721e-common-proc-board";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&j721e_evm_dtb>;
+						keyfile = "custMpk.pem";
+
+					};
+					j721e_evm_dtb: blob-ext {
+						filename = J721E_EVM_DTB;
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+
+				fdt-1 {
+					description = "k3-j721e-sk";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&j721e_sk_dtb>;
+						keyfile = "custMpk.pem";
+
+					};
+					j721e_sk_dtb: blob-ext {
+						filename = J721E_SK_DTB;
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-0";
+
+				conf-0 {
+					description = "k3-j721e-common-proc-board";
+					firmware = "uboot";
+					loadables = "uboot";
+					fdt = "fdt-0";
+				};
+
+				conf-1 {
+					description = "k3-j721e-sk";
+					firmware = "uboot";
+					loadables = "uboot";
+					fdt = "fdt-1";
+				};
+			};
+		};
+	};
+};
+
+&binman {
+	ti-spl_unsigned {
+		insert-template = <&ti_spl_unsigned_template>;
+
+		fit {
+			images {
+				dm {
+					ti-dm {
+						filename = "ti-dm.bin";
+					};
+				};
+
+				fdt-0 {
+					description = "k3-j721e-common-proc-board";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					blob {
+						filename = SPL_J721E_EVM_DTB;
+					};
+				};
+
+				fdt-1 {
+					description = "k3-j721e-sk";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					blob {
+						filename = SPL_J721E_SK_DTB;
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-0";
+
+				conf-0 {
+					description = "k3-j721e-common-proc-board";
+					firmware = "atf";
+					loadables = "tee", "dm", "spl";
+					fdt = "fdt-0";
+				};
+
+				conf-1 {
+					description = "k3-j721e-sk";
+					firmware = "atf";
+					loadables = "tee", "dm", "spl";
+					fdt = "fdt-1";
+				};
+			};
+		};
+	};
+};
+
+&binman {
+	u-boot_unsigned {
+		insert-template = <&u_boot_unsigned_template>;
+
+		fit {
+			images {
+				uboot {
+					description = "U-Boot for J721E Board";
+				};
+
+				fdt-0 {
+					description = "k3-j721e-common-proc-board";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					blob {
+						filename = J721E_EVM_DTB;
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+
+				fdt-1 {
+					description = "k3-j721e-sk";
+					type = "flat_dt";
+					arch = "arm";
+					compression = "none";
+					blob {
+						filename = J721E_SK_DTB;
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-0";
+
+				conf-0 {
+					description = "k3-j721e-common-proc-board";
+					firmware = "uboot";
+					loadables = "uboot";
+					fdt = "fdt-0";
+				};
+
+				conf-1 {
+					description = "k3-j721e-sk";
+					firmware = "uboot";
+					loadables = "uboot";
+					fdt = "fdt-1";
+				};
+			};
+		};
+	};
+};
+#endif

@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "hi3798mv200-u-boot.dtsi"
+
+/* The clock driver is missing */
+&sd0 {
+	status = "disabled";
+};

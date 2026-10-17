@@ -1,0 +1,256 @@
+menu "VPL options"
+	depends on VPL
+
+config VPL_BANNER_PRINT
+	bool "Enable output of the VPL banner 'U-Boot VPL ...'"
+	default y
+	help
+	  If this option is enabled, VPL will print the banner with version
+	  info. Disabling this option could be useful to reduce VPL boot time
+	  (e.g. approx. 6 ms faster, when output on i.MX6 with 115200 baud).
+
+config VPL_BOARD_INIT
+	bool "Call board-specific initialization in VPL"
+	help
+	  If this option is enabled, U-Boot will call the function
+	  spl_board_init() from board_init_r(). This function should be
+	  provided by the board.
+
+config VPL_CACHE
+	depends on CACHE
+	bool "Support cache drivers in VPL"
+	help
+	  Enable support for cache drivers in VPL.
+
+config VPL_CRC32
+	bool "Support CRC32 in VPL"
+	default y if VPL_ENV_SUPPORT || VPL_BLOBLIST
+	help
+	  Enable this to support CRC32 in uImages or FIT images within VPL.
+	  This is a 32-bit checksum value that can be used to verify images.
+	  For FIT images, this is the least secure type of checksum, suitable
+	  for detected accidental image corruption. For secure applications you
+	  should consider SHA1 or SHA256.
+
+config VPL_DM_SPI
+	bool "Support SPI DM drivers in VPL"
+	help
+	  Enable support for SPI DM drivers in VPL.
+
+config VPL_DM_SPI_FLASH
+	bool "Support SPI DM FLASH drivers in VPL"
+	help
+	  Enable support for SPI DM flash drivers in VPL.
+
+config VPL_FRAMEWORK
+	bool "Support VPL based upon the common SPL framework"
+	default y
+	help
+	  Enable the SPL framework under common/spl/ for VPL builds.
+	  This framework supports MMC, NAND and YMODEM and other methods
+	  loading of U-Boot's next stage. If unsure, say Y.
+
+config VPL_HANDOFF
+	bool "Pass hand-off information from VPL to SPL"
+	depends on HANDOFF && VPL_BLOBLIST
+	default y
+	help
+	  This option enables VPL to write handoff information. This can be
+	  used to pass information like the size of SDRAM from VPL to SPL. Also
+	  VPL can receive information from TPL in the same place if that is
+	  enabled.
+
+config VPL_LIBCOMMON_SUPPORT
+	bool "Support common libraries"
+	default y if SPL_LIBCOMMON_SUPPORT
+	help
+	  Enable support for common U-Boot libraries within VPL. See
+	  SPL_LIBCOMMON_SUPPORT for details.
+
+config VPL_LIBGENERIC_SUPPORT
+	bool "Support generic libraries"
+	default y if SPL_LIBGENERIC_SUPPORT
+	help
+	  Enable support for generic U-Boot libraries within VPL. These
+	  libraries include generic code to deal with device tree, hashing,
+	  printf(), compression and the like. This option is enabled on many
+	  boards. Enable this option to build the code in lib/ as part of a
+	  VPL build.
+
+config VPL_DRIVERS_MISC
+	bool "Support misc drivers"
+	default y if TPL_DRIVERS_MISC
+	help
+	  Enable miscellaneous drivers in VPL. These drivers perform various
+	  tasks that don't fall nicely into other categories, Enable this
+	  option to build the drivers in drivers/misc as part of a VPL
+	  build, for those that support building in VPL (not all drivers do).
+
+config VPL_ENV_SUPPORT
+	bool "Support an environment"
+	help
+	  Enable environment support in VPL. The U-Boot environment provides
+	  a number of settings (essentially name/value pairs) which can
+	  control many aspects of U-Boot's operation. Enabling this option will
+	  make env_get() and env_set() available in VSPL.
+
+config VPL_GPIO
+	bool "Support GPIO in VPL"
+	default y if SPL_GPIO
+	help
+	  Enable support for GPIOs (General-purpose Input/Output) in VPL.
+	  GPIOs allow U-Boot to read the state of an input line (high or
+	  low) and set the state of an output line. This can be used to
+	  drive LEDs, control power to various system parts and read user
+	  input. GPIOs can be useful in VPL to enable a 'sign-of-life' LED,
+	  for example. Enable this option to build the drivers in
+	  drivers/gpio as part of a VPL build.
+
+config VPL_HANDOFF
+	bool "Pass hand-off information from VPL to SPL and U-Boot proper"
+	depends on HANDOFF && VPL_BLOBLIST
+	default y
+	help
+	  This option enables VPL to write handoff information. This can be
+	  used to pass information like the size of SDRAM from VPL to U-Boot
+	  proper. The information is also available to VPL if it is useful
+	  there.
+
+config VPL_HASH
+	bool "Support hashing drivers in VPL"
+	select SHA1
+	select SHA256
+	help
+	  Enable hashing drivers in VPL. These drivers can be used to
+	  accelerate secure boot processing in secure applications. Enable
+	  this option to build system-specific drivers for hash acceleration
+	  as part of a VPL build.
+
+config VPL_I2C_SUPPORT
+	bool "Support I2C in VPL"
+	default y if SPL_I2C_SUPPORT
+	help
+	  Enable support for the I2C bus in VPL. Vee SPL_I2C_SUPPORT for
+	  details.
+
+config VPL_MMC
+	bool "Support MMC in VPL"
+	depends on VPL && MMC
+	default y if MMC
+	help
+	  Enable support for MMC (Multimedia Card) within VPL This enables
+	  the MMC protocol implementation and allows any enabled drivers to
+	  be used within VPL. MMC can be used with or without disk partition
+	  support depending on the application (SPL_LIBDISK_SUPPORT). Enable
+	  this option to build the drivers in drivers/mmc as part of an VPL
+	  build.
+
+config VPL_DM_MMC
+	bool "Enable MMC controllers using Driver Model in VPL"
+	depends on VPL_DM && DM_MMC
+	default y
+	help
+	  This enables the MultiMediaCard (MMC) uclass which supports MMC and
+	  Secure Digital I/O (SDIO) cards. Both removable (SD, micro-SD, etc.)
+	  and non-removable (e.g. eMMC chip) devices are supported. These
+	  appear as block devices in U-Boot and can support filesystems such
+	  as EXT4 and FAT.
+
+config VPL_MMC_WRITE
+	bool "MMC/SD/SDIO card support for write operations in VPL"
+	depends on VPL_MMC
+	default y
+	help
+	  Enable write access to MMC and SD Cards in VPL
+
+config VPL_PCH_SUPPORT
+	bool "Support PCH drivers"
+	default y if TPL_PCH_SUPPORT
+	help
+	  Enable support for PCH (Platform Controller Hub) devices in VPL.
+	  These are used to set up GPIOs and the SPI peripheral early in
+	  boot. This enables the drivers in drivers/pch as part of a VPL
+	  build.
+
+config VPL_PCI
+	bool "Support PCI drivers"
+	default y if SPL_PCI
+	help
+	  Enable support for PCI in VPL. For platforms that need PCI to boot,
+	  or must perform some init using PCI in VPL, this provides the
+	  necessary driver support. This enables the drivers in drivers/pci
+	  as part of a VPL build.
+
+config VPL_RTC
+	bool "Support RTC drivers"
+	help
+	  Enable RTC (Real-time Clock) support in VPL. This includes support
+	  for reading and setting the time. Some RTC devices also have some
+	  non-volatile (battery-backed) memory which is accessible if
+	  needed. This enables the drivers in drivers/rtc as part of a VPL
+	  build.
+
+config VPL_SERIAL
+	bool "Support serial"
+	default y if TPL_SERIAL
+	select VPL_PRINTF
+	select VPL_STRTO
+	help
+	  Enable support for serial in VPL. See SPL_SERIAL for
+	  details.
+
+config VPL_SIZE_LIMIT
+	hex "Maximum size of VPL image"
+	default 0x0
+	help
+	  Specifies the maximum length of the U-Boot VPL image.
+	  If this value is zero, it is ignored.
+
+config VPL_SPI
+	bool "Support SPI drivers"
+	help
+	  Enable support for using SPI in VPL. See SPL_SPI_SUPPORT for
+	  details.
+
+config VPL_SPI_FLASH_SUPPORT
+	bool "Support SPI flash drivers"
+	help
+	  Enable support for using SPI flash in VPL, and loading U-Boot from
+	  SPI flash. SPI flash (Serial Peripheral Bus flash) is named after
+	  the SPI bus that is used to connect it to a system. It is a simple
+	  but fast bidirectional 4-wire bus (clock, chip select and two data
+	  lines). This enables the drivers in drivers/mtd/spi as part of a
+	  VPL build. This normally requires VPL_SPI_SUPPORT.
+
+config VPL_TEXT_BASE
+	hex "VPL Text Base"
+	default 0x0
+	help
+	  The address in memory that VPL will be running from.
+
+config VPL_BINMAN_SYMBOLS
+	bool "Declare binman symbols in VPL"
+	depends on VPL_FRAMEWORK && BINMAN
+	default y
+	help
+	  This enables use of symbols in VPL which refer to other entries in
+	  the same binman image as the VPL. These can be declared with the
+	  binman_sym_declare(type, entry, prop) macro and accessed by the
+	  binman_sym(type, entry, prop) macro defined in binman_sym.h.
+
+	  See tools/binman/binman.rst for a detailed explanation.
+
+config VPL_BINMAN_UBOOT_SYMBOLS
+	bool "Declare binman symbols for U-Boot phases in VPL"
+	depends on VPL_BINMAN_SYMBOLS
+	default n if ARCH_IMX8M || ARCH_IMX9
+	default y
+	help
+	  This enables use of symbols in VPL which refer to U-Boot phases,
+	  enabling VPL to obtain the location and size of its next phase simply
+	  by calling spl_get_image_pos() and spl_get_image_size().
+
+	  For this to work, you must have all U-Boot phases in the same binman
+	  image, so binman can update VPL with the locations of everything.
+
+endmenu

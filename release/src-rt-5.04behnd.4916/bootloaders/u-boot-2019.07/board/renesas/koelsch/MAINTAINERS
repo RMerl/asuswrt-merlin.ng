@@ -1,6 +1,0 @@
-KOELSCH BOARD
-M:	Nobuhiro Iwamatsu <nobuhiro.iwamatsu.yj@renesas.com>
-S:	Maintained
-F:	board/renesas/koelsch/
-F:	include/configs/koelsch.h
-F:	configs/koelsch_defconfig

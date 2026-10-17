@@ -1,6 +1,0 @@
-CAIRO BOARD
-M:	Albert ARIBAUD (3ADEV) <albert.aribaud@3adev.fr>
-S:	Maintained
-F:	board/quipos/cairo/
-F:	include/configs/omap3_cairo.h
-F:	configs/cairo_defconfig

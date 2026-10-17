@@ -28,7 +28,7 @@ static inline int l2_header_need_llc_snap(uint8_t radio_idx) { return 1; }
 #include "fcachehw.h"
 #include "linux/bcm_skb_defines.h"
 #include "idx_pool_util.h"
-#include <bcmdpi.h>
+#include <us_sq.h>
 #include "pktrunner_common.h"
 
 #define blog_error(X, P) __logError(X, P ? ((struct net_device *) P)->name:"NULL")

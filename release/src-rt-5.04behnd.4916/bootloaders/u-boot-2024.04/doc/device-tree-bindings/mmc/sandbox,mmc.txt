@@ -1,0 +1,18 @@
+Sandbox MMC
+===========
+
+Required properties:
+- compatible : "sandbox,mmc"
+
+Optional properties:
+- filename : Name of backing file, if any. This is mapped into the MMC device
+    so can be used to provide a filesystem or other test data
+
+
+Example
+-------
+
+mmc2 {
+	compatible = "sandbox,mmc";
+	non-removable;
+};

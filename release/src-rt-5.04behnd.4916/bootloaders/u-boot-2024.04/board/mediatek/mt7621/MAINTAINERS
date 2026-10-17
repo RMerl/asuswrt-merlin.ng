@@ -1,0 +1,8 @@
+MT7621_RFB BOARD
+M:	Weijie Gao <weijie.gao@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7621
+F:	configs/mt7621_rfb_defconfig
+F:	configs/mt7621_nand_rfb_defconfig
+F:	arch/mips/dts/mediatek,mt7621-rfb.dts
+F:	arch/mips/dts/mediatek,mt7621-nand-rfb.dts

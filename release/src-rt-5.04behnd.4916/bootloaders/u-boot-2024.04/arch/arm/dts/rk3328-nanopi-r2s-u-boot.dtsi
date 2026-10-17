@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2018-2019 Rockchip Electronics Co., Ltd
+ * (C) Copyright 2020 David Bauer
+ */
+
+#include "rk3328-u-boot.dtsi"
+#include "rk3328-sdram-ddr4-666.dtsi"
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &emmc;
+	};
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&pinctrl {
+	bootph-pre-ram;
+};
+
+&sdmmc0m1_pin {
+	bootph-pre-ram;
+};
+
+&pcfg_pull_up_4ma {
+	bootph-pre-ram;
+};
+
+/* Need this and all the pinctrl/gpio stuff above to set pinmux */
+&vcc_sd {
+	bootph-pre-ram;
+};
+
+&gmac2io {
+	snps,reset-gpio = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 10000 50000>;
+};

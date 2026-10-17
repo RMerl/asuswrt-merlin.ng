@@ -1,0 +1,213 @@
+menu "M68000 architecture"
+	depends on M68K
+
+config SYS_ARCH
+	default "m68k"
+
+config STATIC_RELA
+	default y
+
+# processor family
+config MCF520x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF52x2
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF523x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF530x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF5301x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF532x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF537x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF5441x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+# processor type
+config M5208
+	bool
+	select MCF520x
+
+config M5235
+	bool
+	select MCF523x
+
+config M5249
+	bool
+	select MCF52x2
+
+config M5253
+	bool
+	select MCF52x2
+
+config M5271
+	bool
+	select MCF52x2
+
+config M5272
+	bool
+	select MCF52x2
+
+config M5275
+	bool
+	select MCF52x2
+
+config M5282
+	bool
+	select MCF52x2
+
+config M5307
+	bool
+	select MCF530x
+
+config M53015
+	bool
+	select MCF5301x
+
+config M5329
+	bool
+	select MCF532x
+
+config M5373
+	bool
+	select MCF532x
+	select MCF537x
+
+config M54418
+	bool
+	select MCF5441x
+
+# peripherals
+config CF_DSPI
+	bool
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_M5235EVB
+	bool "Support M5235EVB"
+	select M5235
+
+config TARGET_COBRA5272
+	bool "Support cobra5272"
+	select M5272
+
+config TARGET_EB_CPU5282
+	bool "Support eb_cpu5282"
+	select M5282
+	select HW_WATCHDOG
+
+config TARGET_M5208EVBE
+	bool "Support M5208EVBE"
+	select M5208
+
+config TARGET_M5249EVB
+	bool "Support M5249EVB"
+	select M5249
+
+config TARGET_M5253DEMO
+	bool "Support M5253DEMO"
+	select M5253
+
+config TARGET_M5272C3
+	bool "Support M5272C3"
+	select M5272
+
+config TARGET_M5275EVB
+	bool "Support M5275EVB"
+	select M5275
+
+config TARGET_M5282EVB
+	bool "Support M5282EVB"
+	select M5282
+
+config TARGET_ASTRO_MCF5373L
+	bool "Support astro_mcf5373l"
+	select M5373
+
+config TARGET_M53017EVB
+	bool "Support M53017EVB"
+	select M53015
+
+config TARGET_M5329EVB
+	bool "Support M5329EVB"
+	select M5329
+
+config TARGET_M5373EVB
+	bool "Support M5373EVB"
+	select M5373
+
+config TARGET_AMCORE
+	bool "Support AMCORE"
+	select M5307
+
+config TARGET_STMARK2
+        bool "Support stmark2"
+        select CF_DSPI
+        select M54418
+
+endchoice
+
+source "board/BuS/eb_cpu5282/Kconfig"
+source "board/astro/mcf5373l/Kconfig"
+source "board/cobra5272/Kconfig"
+source "board/freescale/m5208evbe/Kconfig"
+source "board/freescale/m5235evb/Kconfig"
+source "board/freescale/m5249evb/Kconfig"
+source "board/freescale/m5253demo/Kconfig"
+source "board/freescale/m5272c3/Kconfig"
+source "board/freescale/m5275evb/Kconfig"
+source "board/freescale/m5282evb/Kconfig"
+source "board/freescale/m53017evb/Kconfig"
+source "board/freescale/m5329evb/Kconfig"
+source "board/freescale/m5373evb/Kconfig"
+source "board/sysam/amcore/Kconfig"
+source "board/sysam/stmark2/Kconfig"
+
+config M68K_QEMU
+	bool "Build with workarounds for incomplete QEMU emulation"
+	help
+	  QEMU 8.x currently does not implement RAMBAR accesses and
+	  DMA timers. Enable this option for U-Boot CI purposes only
+	  to skip the RAMBAR accesses.
+
+config MCFTMR
+	bool "Use DMA timer"
+	default y if !M68K_QEMU
+	default n if M68K_QEMU
+
+endmenu

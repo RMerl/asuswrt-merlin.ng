@@ -247,22 +247,13 @@ int rdppll_ch_freq_get(unsigned int pll_addr, unsigned int ch, unsigned int *fre
 	return 0;
 }
 #endif
-
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6856) || \
-	IS_BCMCHIP(6846) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
-	IS_BCMCHIP(6878) || IS_BCMCHIP(63146) || IS_BCMCHIP(6855) || \
-	IS_BCMCHIP(4912) || IS_BCMCHIP(6813)  || IS_BCMCHIP(6756) || \
-	IS_BCMCHIP(6888) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || \
-	IS_BCMCHIP(6764)
+			
 int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 {
 	int ret = 0;
 	PLL_DECNDIV_REG pll_decndiv;
 	PLL_DECPDIV_REG pll_decpdiv;
-#if IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
-	IS_BCMCHIP(63146) || IS_BCMCHIP(6855) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || \
-	IS_BCMCHIP(6756) || IS_BCMCHIP(6888) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || \
-	IS_BCMCHIP(6764)
+#if !IS_BCMCHIP(6858) && !IS_BCMCHIP(6856)
 	PLL_NDIV_REG ndiv_reg;
 	PLL_PDIV_REG pdiv_reg;
 #endif
@@ -280,10 +271,7 @@ int pll_vco_freq_get(unsigned int pll_addr, unsigned int *fvco)
 	*fvco =
 	    (PLL_REFCLK * (pll_decndiv.Bits.ndiv_int)) / pll_decpdiv.Bits.pdiv;
 
-#if IS_BCMCHIP(63158) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
-	IS_BCMCHIP(63146)  || IS_BCMCHIP(6855) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) ||  \
-	IS_BCMCHIP(6756) || IS_BCMCHIP(6888) || IS_BCMCHIP(6765) || IS_BCMCHIP(6766) || \
-	IS_BCMCHIP(6764)
+#if !IS_BCMCHIP(6858) && !IS_BCMCHIP(6856)
 	if (!ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(pdiv), &pdiv_reg.Reg32)
 	    && pdiv_reg.Bits.ndiv_pdiv_override
 	    && !ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(ndiv),
@@ -422,96 +410,21 @@ int biu_ch_freq_get(unsigned int ch, unsigned int *freq)
 {
     return pll_ch_freq_get(PMB_ADDR_BIU_PLL, ch, freq);
 }
-#else
-int biu_ch_freq_get(unsigned int ch, unsigned int *freq)
-{
-    *freq = 0;
-    printk("biu_ch_freq_get NOT supported in pmc driver!\n");
-    return -1;
-}
-#endif
 EXPORT_SYMBOL(biu_ch_freq_get);
 
 unsigned long get_rdp_freq(unsigned int *rdp_freq)
 {
 	int ret = -1;
-#if IS_BCMCHIP(6878)
-	unsigned int fvco, mdiv;
-	PLL_DECNDIV_REG pll_decndiv;
-	PLL_DECPDIV_REG pll_decpdiv;
-
-	ret =
-	    ReadBPCMRegister(PMB_ADDR_SYSPLL, PLLCLASSICBPCMRegOffset(decndiv),
-			     &pll_decndiv.Reg32);
-	ret |=
-	    ReadBPCMRegister(PMB_ADDR_SYSPLL, PLLCLASSICBPCMRegOffset(decpdiv),
-			     &pll_decpdiv.Reg32);
-	// Let's ignore ndiv_frac, it is set to zero anyway by HW.
-	fvco =
-	    (PLL_REFCLK * (pll_decndiv.Bits.ndiv_int)) / pll_decpdiv.Bits.pdiv;
-
-	// read mdiv of channel 0
-	ret =
-	    ReadBPCMRegister(PMB_ADDR_SYSPLL, PLLCLASSICBPCMRegOffset(decpdiv),
-			     &pll_decpdiv.Reg32);
-	mdiv = pll_decpdiv.Bits.mdiv0;
-
-	*rdp_freq = fvco / mdiv;
-
-
-#elif IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6856) || \
-	IS_BCMCHIP(6846) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888)
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6856) || \
+	IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6888)
 	ret =
 	    pll_ch_freq_get(PMB_ADDR_RDPPLL, XRDPPLL_RUNNER_CHANNEL, rdp_freq);
-#if IS_BCMCHIP(6856) || IS_BCMCHIP(6846)
+#if IS_BCMCHIP(6856)
 	*rdp_freq /= 2;
 #endif
 
 #elif IS_BCMCHIP(6855)
-
-    ret = pll_ch_freq_get(PMB_ADDR_SYSPLL, XRDPPLL_RUNNER_CHANNEL, rdp_freq);
-
-#elif IS_BCMCHIP(63138) || IS_BCMCHIP(63148) || IS_BCMCHIP(4908)
-/* FIXME!! when knowing the real frequency info for 4908/62118 RDP */
-
-#define RDP_PLL_REFCLK		50	/* 50 MHz for 63138 */
-
-/* the formula here is
- * F_vco = (1 / pdiv) * (ndiv_int + ndiv_frac / (2 ^ 20)) * F_ref
- * F_clkout,n = (F_vco / mdiv_n)
- * ch#0 connects to runner block
- * ch#1 connects to test block
- * ch#2 connects to ipsec & rng block
- *
- * default values are:
- * ndiv_int = 0x8c (140)
- * ndiv_frac = 0
- * pdiv = 2
- * mdiv[0] = 0x5
- * mdiv[1] = 0xa
- * mdiv[2] = 0x23 (35).
- *
- * F_vco = 3500 MHz
- * F_clkout,0 = 700 MHz -> runner
- */
-
-	PLL_NDIV_REG pll_ndiv;
-	PLL_PDIV_REG pll_pdiv;
-	PLL_CHCFG_REG pll_ch01_cfg;
-
-	ret = ReadBPCMRegister(PMB_ADDR_RDPPLL, PLLBPCMRegOffset(ndiv),
-				&pll_ndiv.Reg32);
-	ret |= ReadBPCMRegister(PMB_ADDR_RDPPLL, PLLBPCMRegOffset(pdiv),
-				&pll_pdiv.Reg32);
-	ret |= ReadBPCMRegister(PMB_ADDR_RDPPLL, PLLBPCMRegOffset(ch01_cfg),
-				&pll_ch01_cfg.Reg32);
-	if (ret != 0)
-		return -1;
-
-	*rdp_freq = RDP_PLL_REFCLK * (pll_ndiv.Bits.ndiv_int);
-	// FIXME! for simplicity, ndiv_frac is taken out.  Otherwise, the value
-	// will be in form of double.
-	*rdp_freq = *rdp_freq / pll_pdiv.Bits.pdiv / pll_ch01_cfg.Bits.mdiv0;
+	ret = pll_ch_freq_get(PMB_ADDR_SYSPLL, XRDPPLL_RUNNER_CHANNEL, rdp_freq);
 #endif
 
 	return ret;
@@ -631,7 +544,7 @@ int pll_ch_freq_vco_set(unsigned int pll_addr, unsigned int ch,
 }
 #endif
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(4908)
+#if IS_BCMCHIP(6858)
 int bcm_change_cpu_clk(BCM_CPU_CLK clock)
 {
 	int ret = 0;
@@ -682,21 +595,13 @@ void clk_divide_50mhz_to_25mhz(void)
 EXPORT_SYMBOL(clk_divide_50mhz_to_25mhz);
 #endif
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(6846) || IS_BCMCHIP(6856) || IS_BCMCHIP(6878) || IS_BCMCHIP(63158)\
+#if IS_BCMCHIP(6858) || IS_BCMCHIP(6856) || IS_BCMCHIP(63158)\
 	|| IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(63146)
-#if IS_BCMCHIP(6878)
-#define PMD_CLOCK_REG pmd_xtal_cntl
-#define CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV (2)
-#define CLOCK_RESET_XTAL_CONTROL_BIT_PWRON  (27)
-#define PMD_CLOCK_REG2 pmd_xtal_cntl2
-#define CLOCK_RESET_XTAL_CONTROL2_BIT_PD    (0)
-#else
 #define PMD_CLOCK_REG xtal_control
 #if IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(63146)
 #define CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV (20)
 #else
 #define CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV (17)
-#endif
 #endif
 int bcm_enable_xtal_clk(void)
 {
@@ -709,22 +614,10 @@ int bcm_enable_xtal_clk(void)
 	data |= (0x1 << CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV);
 #else	
 	data &= ~(0x1 << CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV);
-#if IS_BCMCHIP(6878)
-	data |= (0x1 << CLOCK_RESET_XTAL_CONTROL_BIT_PWRON);
-#endif
 #endif
 	ret |= WriteBPCMRegister(PMB_ADDR_CHIP_CLKRST,
 				CLKRSTBPCMRegOffset(PMD_CLOCK_REG), data);
 
-#if IS_BCMCHIP(6878)
-	ret |= ReadBPCMRegister(PMB_ADDR_CHIP_CLKRST,
-			     CLKRSTBPCMRegOffset(PMD_CLOCK_REG2), &data);
-
-	data &= ~(0x1 << CLOCK_RESET_XTAL_CONTROL2_BIT_PD);
-
-	ret |= WriteBPCMRegister(PMB_ADDR_CHIP_CLKRST,
-				CLKRSTBPCMRegOffset(PMD_CLOCK_REG2), data);
-#endif
 
 	if (ret)
 		printk("Failed to enable xtal clk\n");
@@ -777,7 +670,7 @@ void set_vreg_clk(void)
 #endif
 }
 
-#if IS_BCMCHIP(4908) || IS_BCMCHIP(6858)
+#if IS_BCMCHIP(6858)
 
 #if IS_BCMCHIP(6858)
 #define C0_CLK_CONTROL (0x70 >> 2)
@@ -789,10 +682,6 @@ uint32_t get_cluster_clk_pattern(void)
     uint32_t pattern = 0;
 #if IS_BCMCHIP(6858) 
 	ReadBPCMRegister(PMB_ADDR_BIU_BPCM, C0_CLK_PATTERN, &pattern);
-#elif IS_BCMCHIP(4908)
-    void __iomem *cpu_cluster_base = ioremap(BIU_CLUSTER_CLK_BASE, 0x10);
-	pattern = readl(cpu_cluster_base + BIU_CLUSTER_CLK_PATERN_OFFSET);
-    iounmap(cpu_cluster_base);
 #endif
     return pattern;
 }
@@ -801,10 +690,6 @@ void set_cluster_clk_pattern(uint32_t pattern)
 {
 #if IS_BCMCHIP(6858) 
 	WriteBPCMRegister(PMB_ADDR_BIU_BPCM, C0_CLK_PATTERN, pattern);
-#elif IS_BCMCHIP(4908)
-    void __iomem *cpu_cluster_base = ioremap(BIU_CLUSTER_CLK_BASE, 0x10);
-	writel(pattern, (cpu_cluster_base + BIU_CLUSTER_CLK_PATERN_OFFSET));
-    iounmap(cpu_cluster_base);
 #endif
 }
 
@@ -818,36 +703,7 @@ void reset_cluster_clock(void)
 	WriteBPCMRegister(PMB_ADDR_BIU_BPCM, C0_CLK_PATTERN, ~0);
 	// cluster clock control: enable pattern
 	WriteBPCMRegister(PMB_ADDR_BIU_BPCM, C0_CLK_CONTROL, 0x80000010);
-#elif IS_BCMCHIP(4908)
-	{
-		uint32_t clk_ctrl, clk_pattern;
-        void __iomem *cpu_cluster_base = ioremap(BIU_CLUSTER_CLK_BASE, 0x10);
-		clk_ctrl = readl(cpu_cluster_base + BIU_CLUSTER_CLK_CTRL_OFFSET);
-
-		if ((clk_ctrl & (1 << 4)) == 0)
-		{
-			clk_pattern = ~0;
-			clk_ctrl = (1<<4);
-			writel(clk_pattern, (cpu_cluster_base + BIU_CLUSTER_CLK_PATERN_OFFSET));	// full-speed user clock-pattern
-			writel(clk_ctrl, (cpu_cluster_base + BIU_CLUSTER_CLK_CTRL_OFFSET));	// enable user clock-patterns
-		}
-        iounmap(cpu_cluster_base);
-	}
 #endif
-}
-#endif
-
-#if IS_BCMCHIP(63148)
-void set_b15_mdiv(unsigned int value)
-{
-	PLL_CHCFG_REG ch01_cfg;
-	ReadBPCMRegister(PMB_ADDR_B15_PLL, PLLBPCMRegOffset(ch01_cfg), &ch01_cfg.Reg32);
-	if (ch01_cfg.Bits.mdiv0 != value ) 
-    {
-		printk("%s: set CPU PLL mdiv to %d and start cpu freq at 1.5GHz\n", __func__, value);
-		ch01_cfg.Bits.mdiv0 = value;
-		WriteBPCMRegister(PMB_ADDR_B15_PLL, PLLBPCMRegOffset(ch01_cfg), ch01_cfg.Reg32);
-	}
 }
 #endif
 

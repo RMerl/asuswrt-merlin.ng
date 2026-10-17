@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		sort-by-offset;
+		end-at-4gb;
+		size = <0x200>;
+		cbfs {
+			size = <0x200>;
+			offset = <0xfffffe00>;
+			u-boot {
+				cbfs-offset = <0x40>;
+				cbfs-type = "raw";
+			};
+			u-boot-dtb {
+				cbfs-offset = <0x140>;
+				cbfs-type = "raw";
+			};
+		};
+	};
+};

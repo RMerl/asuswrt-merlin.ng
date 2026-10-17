@@ -1,0 +1,8 @@
+TEN64 BOARD
+M:	Mathew McBride <matt@traverse.com.au>
+S:	Maintained
+F:	arch/arm/dts/fsl-ls1088a-ten64.dts
+F:	board/traverse/ten64/
+F:	board/traverse/common/
+F:	include/configs/ten64.h
+F:	configs/ten64_tfa_defconfig

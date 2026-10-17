@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config ARM_FFA_TRANSPORT
+	bool "Enable Arm Firmware Framework for Armv8-A driver"
+	depends on DM && (ARM64 || SANDBOX)
+	select ARM_SMCCC if !SANDBOX
+	select ARM_SMCCC_FEATURES if !SANDBOX
+	imply CMD_ARMFFA
+	select LIB_UUID
+	select DEVRES
+	help
+	  The Firmware Framework for Arm A-profile processors (FF-A)
+	  describes interfaces (ABIs) that standardize communication
+	  between the Secure World and Normal World leveraging TrustZone
+	  technology.
+
+	  The FF-A support in U-Boot is based on FF-A specification v1.0 and uses SMC32
+	  calling convention.
+
+	  FF-A specification:
+
+	  https://developer.arm.com/documentation/den0077/a/?lang=en
+
+	  In U-Boot FF-A design, FF-A is considered as a discoverable bus.
+	  FF-A bus is discovered using ARM_SMCCC_FEATURES mechanism performed
+	  by the PSCI driver.
+	  The Secure World is considered as one entity to communicate with
+	  using the FF-A bus.
+	  FF-A communication is handled by one device and one instance (the bus).
+	  The FF-A support on U-Boot  takes care of all the interactions between Normal
+	  world and Secure World.
+
+	  Generic FF-A methods are implemented in the Uclass (arm-ffa-uclass.c).
+	  Arm specific methods are implemented in the Arm driver (arm-ffa.c).
+
+	  FF-A sandbox is provided to run FF-A under sandbox and allows to test the FF-A Uclass.
+	  Sandbox support includes an emulator for Arm FF-A which emulates the FF-A side of
+	  the Secure World and provides FF-A ABIs inspection methods (ffa-emul-uclass.c).
+	  An FF-A sandbox driver is also provided for FF-A communication with the emulated
+	  Secure World (sandbox_ffa.c).
+
+	  For more details about the FF-A support, please refer to doc/arch/arm64.ffa.rst

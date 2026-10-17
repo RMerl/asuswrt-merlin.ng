@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "px30-u-boot.dtsi"
+
+/ {
+	config {
+		u-boot,mmc-env-offset = <0x5000>;      /* @  20KB */
+		u-boot,efi-partition-entries-offset = <0x200000>; /* 2MB */
+		u-boot,boot-led = "module_led";
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		u-boot,spl-boot-order = "same-as-spl", &emmc, &sdmmc;
+	};
+};
+
+&binman {
+	simple-bin {
+		fit {
+			offset = <((CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - 64) * 512)>;
+		};
+	};
+};
+
+&emmc_clk {
+	bootph-all;
+};
+
+&emmc_cmd {
+	bootph-all;
+};
+
+&emmc_bus8 {
+	bootph-all;
+};
+
+&gpio0 {
+	bootph-all;
+};
+
+&gpio1 {
+	bootph-all;
+};
+
+&gpio2 {
+	bootph-all;
+
+	/*
+	 * The Qseven BIOS_DISABLE signal on the PX30-µQ7 keeps the on-module
+	 * eMMC powered-down initially (in fact it keeps the reset signal
+	 * asserted). BIOS_DISABLE_OVERRIDE pin allows to re-enable eMMC after
+	 * the SPL has been booted from SD Card.
+	 */
+	bios-disable-override-hog {
+		bootph-all;
+	};
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&pcfg_pull_none_8ma {
+	bootph-all;
+};
+
+&pcfg_pull_up_8ma {
+	bootph-all;
+};
+
+&sdmmc_bus4 {
+	bootph-all;
+};
+
+&sdmmc_clk {
+	bootph-all;
+};
+
+&sdmmc_cmd {
+	bootph-all;
+};
+
+&sdmmc_det {
+	bootph-all;
+};
+
+&uart0 {
+	clock-frequency = <24000000>;
+	bootph-all;
+};

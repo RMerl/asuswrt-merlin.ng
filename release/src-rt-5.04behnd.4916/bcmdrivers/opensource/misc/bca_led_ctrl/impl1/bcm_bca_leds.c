@@ -658,6 +658,9 @@ static int bca_leds_probe(struct platform_device *pdev)
         dev_err(dev, "Failed to register SW LED %d error %d \n", led->pin, ret);
         goto error;
     }
+    led->cdev.dev->fwnode = of_fwnode_handle(dev->of_node);
+    led->cdev.dev->of_node = dev->of_node;
+
     dev_info(dev, "led %d registered\n", led->pin);
 
     bca_leds_init_done = 1;

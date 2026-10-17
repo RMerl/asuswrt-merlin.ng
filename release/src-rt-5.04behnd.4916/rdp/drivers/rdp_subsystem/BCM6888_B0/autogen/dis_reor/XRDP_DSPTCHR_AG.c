@@ -10620,6 +10620,9 @@ static const ru_reg_rec *DSPTCHR_REGS[] =
 const ru_block_rec DSPTCHR_BLOCK =
 {
     "DSPTCHR",
+#if RU_INCLUDE_SIZE
+    { 0x0000C000 },
+#endif
     DSPTCHR_ADDRS,
     1,
     114,

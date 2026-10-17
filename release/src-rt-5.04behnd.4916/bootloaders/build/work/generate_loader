@@ -20,6 +20,7 @@ my $ptr = 0;
 my $ldrsize = 0;
 my %files;
 my $splprefix = '';
+my $nopad = 0;
 
 GetOptions("out=s" , \$out,"layout=s",\$layout, "splprefix:s", \$splprefix) or die("$usage");
 die($usage) unless ($out && $layout);
@@ -33,7 +34,7 @@ open(L,"<$layout") or die("cant open $layout");
 open(OF,">$out") or die("cant open $out");
 open(OFM,">${out}.map") or die("cant open ${out}.map");
 
-print OFM "loader layout map file: offset, Binary, (size)\n";
+print OFM "loader layout $layout map file: offset, Binary, (size)\n";
 print OFM "----------------------------------------------\n";
 
 while (my $line = <L>) {
@@ -46,23 +47,61 @@ while (my $line = <L>) {
     if (($files{$line}) || (!$files{$pf})) {
         $pf = $line;
     }
+    # set total loader size, if we exceed this we error out
     if ($line =~ /^loader:\s*(\d+)([MK]?)\s*$/i) {
         my $mult = $1;
         $mult = $mult * 1024 if ($2 && (uc($2) eq 'K'));
         $mult = $mult * 1024 * 1024 if ($2 && (uc($2) eq 'M'));
-        $obuff = chr(255) x $mult;
         $ldrsize = $mult;
         printf("loader region size %d\n",$ldrsize);
+        $obuff = chr(255) x 8388608;
     } elsif ($line =~ /^offset:\s*(\d+)([MK]?)\s*$/i) {
+    	# set offset size, pad to offset unless we've already exceeded it
         my $mult = $1;
         $mult = $mult * 1024 if ($2 && (uc($2) eq 'K'));
         $mult = $mult * 1024 * 1024 if ($2 && (uc($2) eq 'M'));
-    if ($ptr <= $mult) {
-        printf OFM "Pad by %d bytes\n",$mult - $ptr;
+        if ($ptr <= $mult) {
+            printf OFM "Pad by %d bytes\n",$mult - $ptr;
             $ptr = $mult;
         } else {
             printf("already %d beyond %d\n",$ptr - $mult, $mult);
         }
+    } elsif ($line =~ /^point:\s*(\d+)([MK]?)\s*$/i) {
+        # go to this point even if we have gone past, this allows multiple copies that
+        # may go past a boundary to be truncated
+        my $mult = $1;
+        $mult = $mult * 1024 if ($2 && (uc($2) eq 'K'));
+        $mult = $mult * 1024 * 1024 if ($2 && (uc($2) eq 'M'));
+        if ($mult > $ptr) {
+            printf("point to %d\n",$mult);
+            printf OFM "point to %d bytes\n",$mult;
+        } else {
+            printf("truncate to %d\n",$mult);
+            printf OFM "truncate to %d bytes\n",$mult;
+        }
+        $ptr = $mult;
+    } elsif ($line =~ /^check:\s*(\d+)([MK]?)\s*$/i) {
+        # check boundary, error out if we are beyond this point but don't adjust pointer
+        my $mult = $1;
+        $mult = $mult * 1024 if ($2 && (uc($2) eq 'K'));
+        $mult = $mult * 1024 * 1024 if ($2 && (uc($2) eq 'M'));
+        printf OFM "check we are within %d bytes\n",$mult;
+        if ($ptr > $mult) {
+            printf("already %d beyond boundary %d\n",$ptr - $mult, $mult);
+            die();
+        }
+    } elsif ($line =~ /^align:\s*(\d+)([MK]?)\s*$/i) {
+        # set alignment, align to this amount to avoid being in same block
+        my $mult = $1;
+        $mult = $mult * 1024 if ($2 && (uc($2) eq 'K'));
+        $mult = $mult * 1024 * 1024 if ($2 && (uc($2) eq 'M'));
+        my $val = int(($ptr + $mult - 1) / $mult);
+        $mult = $val * $mult;
+        printf OFM "pad by %d bytes\n",$mult - $ptr;
+        $ptr = $mult;
+    } elsif ($line =~ /^nopad:\s*(\d+)$/i) {
+        # define if we need to pad image to ldrsize
+        $nopad = $1;
     } elsif ( ($pf =~ /\w/ ) && ($files{$pf}) && (-r $files{$pf})) {
         print "add $files{$pf}\n";
         local $/;
@@ -78,5 +117,9 @@ printf OFM "end at 0x%08x\n",$ptr;
 if ($ptr > $ldrsize) {
     die("loader binary exceeded the size of loader region");
 }
-print OF $obuff;
+if ($nopad == 1) {
+    print OF substr($obuff, 0, $ptr);
+} else {
+    print OF substr($obuff, 0, $ldrsize);
+}
 

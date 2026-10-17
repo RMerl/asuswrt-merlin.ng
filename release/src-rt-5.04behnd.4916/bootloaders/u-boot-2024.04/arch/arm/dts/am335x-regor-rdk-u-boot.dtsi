@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 Linumiz
+ */
+
+#include "am33xx-u-boot.dtsi"
+
+/ {
+	chosen {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootargs = "console=ttyO0,115200 earlyprintk";
+		stdout-path = &uart0;
+	};
+
+	ocp {
+		bootph-all;
+	};
+};
+
+&i2c0 {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&mmc1 {
+	bootph-all;
+	cd-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+};

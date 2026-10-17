@@ -1,0 +1,36 @@
+# OpenBFC RDKM  build, default
+# Note, the configuration in this file is for Broadcom internal WFA
+# EasyMesh Pre-Cert test environment. For the official WFA lab cert test,
+# please modify the configuration accordingly.
+#
+brctl addbr brlan1
+brctl addbr brlan2
+brctl addbr brlan3
+
+ifconfig brlan1 192.168.100.1
+ifconfig brlan2 192.168.101.1
+ifconfig brlan3 192.168.102.1
+
+ifconfig brlan1 up
+ifconfig brlan2 up
+ifconfig brlan3 up
+
+nvram set lan1_ifname=brlan1
+nvram set lan2_ifname=brlan2
+nvram set lan3_ifname=brlan3
+
+# Broadcom WFA EasyMesh Pre-Cert Sigma Agent MAUT IPAddr,
+# and EthWAN eth2 example for the vendor control network
+# note, eth2 has to be removed from default nvram lan_ifnames
+if [ "`nvram get cmwifi_mesh_cert`" == "1" ]; then
+	brctl addbr br100
+	ifconfig br100 10.10.1.198
+	ifconfig br100 up
+
+	brctl delif brlan0 eth2
+	brctl addif br100 eth2
+	telnetd -b 10.10.1.198 -l /bin/sh
+
+	nvram set hapd_dm_unregister=1
+fi
+

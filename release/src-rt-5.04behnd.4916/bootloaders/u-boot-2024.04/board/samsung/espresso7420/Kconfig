@@ -1,0 +1,19 @@
+if TARGET_ESPRESSO7420
+
+config EXYNOS7420
+	def_bool y
+
+config SYS_BOARD
+	default "espresso7420"
+	help
+	  Espresso7420 is a development/evaluation board for Exynos7420 SoC.
+	  It includes multiple onboard compoments (EMMC/Codec) and various
+	  interconnects (USB/HDMI).
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "espresso7420"
+
+endif

@@ -33,14 +33,11 @@
 #include "rdp_drv_proj_cntr.h"
 #include "rdp_drv_xpm.h"
 #include "rdp_drv_rnr.h"
-#ifdef CONFIG_MCAST_TASK_LIMIT
-#include "rdp_drv_cnpl.h"
-#endif
 #include "rdd_runner_proj_defs.h"
 #include "rdd_tcam_ic.h"
 #include "rdd_defs.h"
 #include "rdp_mm.h"
-#include "rdpa_vlan_action_basic.h"
+#include "rdpa_gem.h"
 #include "xrdp_drv_drivers_common_ag.h"
 
 #define LAYER2_HEADER_COPY_DST_OFFSET_ARRAY(var, offset) \
@@ -77,19 +74,18 @@
         [29] = offset - 2,  \
     }
 
-
 #if defined(RDP_UFC)
 void rdd_init_c_stack(void)
 {
     int i, j, core_id;
     uint32_t *base_addr;
 
-    /* coverity[dead_error_begin] */
-    /* coverity[dead_error_condition] */
+    /* coverity[dead_error_begin:SUPPRESS] */
+    /* coverity[dead_error_condition:SUPPRESS] */
     for (i = 0; i < NUMBER_OF_STACK_TABLES; i++)
     {
-        /* coverity[dead_error_begin] */
-        /* coverity[dead_error_condition] */
+        /* coverity[dead_error_begin:SUPPRESS] */
+        /* coverity[dead_error_condition:SUPPRESS] */
         core_id = RUNNER_STACK_TABLES[i].core - CORE_0_INDEX;
         base_addr = (uint32_t *)(DEVICE_ADDRESS(rdp_runner_core_addr[core_id] + RUNNER_STACK_TABLES[i].base_address));
         for (j = 0; j < RUNNER_STACK_TABLES[i].size/sizeof(uint32_t); j++)
@@ -104,12 +100,12 @@ int rdd_check_c_stack(bdmf_session_handle session, bdmfmon_cmd_parm_t parm[], ui
     int i, core_id, rc = BDMF_ERR_OK;
     uint32_t *base_addr;
 
-    /* coverity[dead_error_begin] */
-    /* coverity[dead_error_condition] */
+    /* coverity[dead_error_begin:SUPPRESS] */
+    /* coverity[dead_error_condition:SUPPRESS] */
     for (i = 0; i < NUMBER_OF_STACK_TABLES; i++)
     {
-        /* coverity[dead_error_begin] */
-        /* coverity[dead_error_condition] */
+        /* coverity[dead_error_begin:SUPPRESS] */
+        /* coverity[dead_error_condition:SUPPRESS] */
         core_id = RUNNER_STACK_TABLES[i].core - CORE_0_INDEX;
         base_addr = (uint32_t *)(DEVICE_ADDRESS(rdp_runner_core_addr[core_id] + RUNNER_STACK_TABLES[i].base_address));
         /* stack grows up, base_addr is a last address of stack */
@@ -118,6 +114,7 @@ int rdd_check_c_stack(bdmf_session_handle session, bdmfmon_cmd_parm_t parm[], ui
             bdmf_session_print(session, "\n %s, core: %d overflow\n base addr = 0x%x\n",
                 RUNNER_STACK_TABLES[i].table_name, core_id, RUNNER_STACK_TABLES[i].base_address);
 
+            LOG_EVENT(system_set, 0, ev_c_stack_overflow, core_id, RUNNER_STACK_TABLES[i].base_address);
             rc = BDMF_ERR_OVERFLOW;
         }
     }
@@ -126,12 +123,18 @@ int rdd_check_c_stack(bdmf_session_handle session, bdmfmon_cmd_parm_t parm[], ui
 }
 #endif
 
+#if defined(CONFIG_BCM_TCONT)
 void rdd_mac_type_cfg(rdd_mac_type wan_mac_type)
 {
-     RDD_MAC_TYPE_ENTRY_TYPE_WRITE_G(wan_mac_type, RDD_MAC_TYPE_ADDRESS_ARR, 0);
+    RDD_MAC_TYPE_ENTRY_TYPE_WRITE_G(wan_mac_type, RDD_MAC_TYPE_ADDRESS_ARR, 0);
 }
 
-#if !defined(OPERATION_MODE_PRV)
+void rdd_mac_type_get(rdd_mac_type *wan_mac_type)
+{
+     RDD_MAC_TYPE_ENTRY_TYPE_READ_G(*wan_mac_type, RDD_MAC_TYPE_ADDRESS_ARR, 0);
+}
+#endif
+
 #if !defined(PKTRUNNER_IMPL2)
 void rdd_layer2_header_copy_mapping_init(void)
 {
@@ -143,7 +146,6 @@ void rdd_layer2_header_copy_mapping_init(void)
     for (i = 0; i < RDD_LAYER2_HEADER_COPY_MAPPING_TABLE_SIZE; i++)
         RDD_LAYER2_HEADER_COPY_MAPPING_ENTRY_DST_BUFFER_OFFSET_WRITE_G(layer2_header_copy_dst_offset_arr[i], RDD_LAYER2_HEADER_COPY_MAPPING_TABLE_ADDRESS_ARR, i);
 }
-#endif
 #endif
 
 void rdd_full_flow_cache_cfg(bdmf_boolean control)
@@ -176,9 +178,6 @@ void rdd_drop_precedence_cfg(rdpa_traffic_dir dir, uint16_t eligibility_vector)
 #endif
 }
 
-#ifdef OPERATION_MODE_PRV
-rx_def_flow_context_t *g_rx_flow_context_ptr;
-#endif
 
 void rdd_rx_flow_entry_set(uint32_t flow_index, RX_FLOW_ENTRY_STRUCT *entry_ptr)
 {
@@ -239,7 +238,9 @@ void rdd_rx_flow_del(uint32_t flow_index)
 
     RDD_RX_FLOW_ENTRY_FLOW_DEST_WRITE_G(0, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
 #if CHIP_VER < RDP_GEN_62
-    RDD_RX_FLOW_ENTRY_VIRTUAL_PORT_WRITE_G(0, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
+    /* For GEM flow virtual port is always RDD_WAN0_VPORT - don't delete after creation */
+    if (flow_index >= RDPA_MAX_GEM_FLOW)
+        RDD_RX_FLOW_ENTRY_VIRTUAL_PORT_WRITE_G(0, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
 #endif
     RDD_RX_FLOW_ENTRY_CNTR_ID_WRITE_G(RX_FLOW_CNTR_GROUP_INVLID_CNTR, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
 #if !defined(RDP_UFC)
@@ -317,12 +318,7 @@ void rdd_rx_flow_init()
 #endif
 
 #if CHIP_VER < RDP_GEN_62
-#if defined G9991_PRV
-    /* vport field is 5 bits - use system port as invalid vport*/
-    flow_entry.virtual_port = RDD_WAN0_VPORT;
-#else
     flow_entry.virtual_port = PROJ_DEFS_NUMBER_OF_VPORTS;
-#endif
 #endif
     flow_entry.cntr_id = RX_FLOW_CNTR_GROUP_INVLID_CNTR;
     flow_entry.flow_dest = FLOW_DEST_ETH_ID;
@@ -346,95 +342,6 @@ void rdd_rx_flow_init()
 #endif
 }
 
-#ifdef OPERATION_MODE_PRV
-void rdd_rx_default_flow_init()
-{
-    uint32_t i;
-    rdd_ic_context_t context = {.cntr_id = TCAM_DEF_CNTR_GROUP_INVLID_CNTR,
-        .vlan_command_id.ds_vlan_command_flow_default = RDPA_DS_TRANSPARENT_VLAN_ACTION};
-    bdmf_phys_addr_t phys_addr_p = 0;
-    uintptr_t addr_hi, addr_lo;
-
-    context.action = rdpa_forward_action_drop;
-    context.policer = -1;
-
-    g_rx_flow_context_ptr = rdp_mm_aligned_alloc(sizeof(rx_def_flow_context_t) * RX_FLOW_CONTEXTS_NUMBER,
-        &phys_addr_p);
-    if (!g_rx_flow_context_ptr)
-        BDMF_TRACE_ERR("Can't allocate Memory space for default flow context");
-    GET_ADDR_HIGH_LOW(addr_hi, addr_lo, phys_addr_p);
-    RDD_BTRACE("phys addr 0x%08x%08x", (uint32_t)addr_hi, (uint32_t)addr_lo);
-
-#ifdef OPERATION_MODE_PRV
-    RDD_DEF_FLOW_CONTEXT_DDR_ADDR_HIGH_WRITE_G(addr_hi, RDD_RX_FLOW_CONTEXT_DDR_ADDR_ADDRESS_ARR, 0);
-    RDD_DEF_FLOW_CONTEXT_DDR_ADDR_LOW_WRITE_G(addr_lo, RDD_RX_FLOW_CONTEXT_DDR_ADDR_ADDRESS_ARR, 0);
-#endif
-
-    for (i = 0; i < RX_FLOW_CONTEXTS_NUMBER; i++)
-    {
-        rdd_rx_default_flow_cfg(i, 0, &context);
-    }
-}
-
-void rdd_rx_default_flow_cfg(uint32_t flow_index, uint16_t ctx_index, rdd_ic_context_t *context)
-{
-    rx_def_flow_context_t *rx_def_flow_context_p;
-    uint8_t entry[16] = {};
-
-    RDD_BTRACE("flow_index = %d, context = %px = { tx_flow = %d, egress_port = %d, qos_method = %d, priority = %d, "
-        "action = %d, vlan_command_id = %d}, cntr_id = %d\n",
-        flow_index, context, context->tx_flow, context->egress_port, context->qos_method, context->priority,
-        context->action, context->vlan_command_id.us_vlan_command, context->cntr_id);
-
-    /* keep context in DDR as TCAM entry. Cast to uint16_t is safe, since index value cannot exceed 16 bits */
-    rdd_tcam_ic_result_entry_compose(ctx_index, context, &entry[0]);
-
-#ifdef FIRMWARE_LITTLE_ENDIAN
-    SWAPBYTES(entry, sizeof(rx_def_flow_context_t));
-#endif
-
-    rx_def_flow_context_p = g_rx_flow_context_ptr + flow_index;
-    memcpy(rx_def_flow_context_p, entry, sizeof(rx_def_flow_context_t));
-}
-
-void _rdd_rx_default_flow_context_get(uint32_t entry_index, rx_def_flow_context_t *rx_flow_context)
-{
-    rx_def_flow_context_t *rx_flow_context_p;
-    uint8_t entry[16] = {};
-
-    rx_flow_context_p = g_rx_flow_context_ptr + entry_index;
-    memcpy(entry, rx_flow_context_p, sizeof(rx_def_flow_context_t));
-
-#ifdef FIRMWARE_LITTLE_ENDIAN
-    SWAPBYTES(entry, sizeof(rx_def_flow_context_t));
-#endif
-
-    memcpy(rx_flow_context, entry, sizeof(rx_def_flow_context_t));
-}
-
-void rdd_rx_default_flow_context_get(uint32_t flow_index, RULE_BASED_CONTEXT_ENTRY_STRUCT *context)
-{
-    rx_def_flow_context_t rx_flow_context;
-
-    RDD_BTRACE("flow_index = %d}\n", flow_index);
-
-    _rdd_rx_default_flow_context_get(flow_index, &rx_flow_context);
-
-    memcpy(context, &rx_flow_context.rule_base_context, sizeof(RULE_BASED_CONTEXT_ENTRY_STRUCT));
-}
-
-uint32_t rdd_rx_default_flow_cntr_id_get(uint32_t flow_index)
-{
-    rx_def_flow_context_t rx_flow_context;
-
-    RDD_BTRACE("flow_index = %d}\n", flow_index);
-
-    _rdd_rx_default_flow_context_get(flow_index, &rx_flow_context);
-
-    return rx_flow_context.rule_base_context.cntr_id;
-}
-#endif
-
 void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean enable, uint16_t rx_truncate_size)
 {
     RDD_BTRACE("vport = %d, enable = %d, rx_truncate_size = %d\n", vport, enable, rx_truncate_size);
@@ -448,6 +355,7 @@ void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean enable, uint16_t rx_
 #endif
 }
 
+#if (CHIP_VER < RDP_GEN_100) /* CRDP-TODO */
 void rdd_tx_mirroring_cfg(rdd_mirroring_cfg_t *rdd_mirroring_cfg, rdd_rdd_vport vport, bdmf_boolean enable, uint16_t tx_truncate_size)
 {
 #if !defined(BCM_DSL_XRDP) || CHIP_VER >= RDP_GEN_60
@@ -491,6 +399,7 @@ void rdd_tx_mirroring_cfg(rdd_mirroring_cfg_t *rdd_mirroring_cfg, rdd_rdd_vport 
     }
 #endif
 }
+#endif
 
 void rdd_rx_mirroring_direct_cfg(bdmf_boolean enable)
 {
@@ -499,7 +408,6 @@ void rdd_rx_mirroring_direct_cfg(bdmf_boolean enable)
     GROUP_MWRITE_8(RDD_RX_MIRRORING_DIRECT_ENABLE_ADDRESS_ARR, 0, enable);
 }
 
-#if defined(XRDP)
 static uint8_t g_lookup_port_init_mapping_table[RDD_VPORT_TO_LOOKUP_PORT_MAPPING_TABLE_SIZE];
 
 void rdd_lookup_ports_mapping_table_init(void)
@@ -538,7 +446,7 @@ int rdd_lookup_ports_mapping_table_restore(rdd_vport_id_t vport)
 
     return rc;
 }
-#endif
+
 
 void rdd_loopback_cfg(rdd_rdd_vport vport, bdmf_boolean control)
 {
@@ -609,7 +517,7 @@ void rdd_tm_flow_cntr_cfg(uint32_t cntr_entry, uint32_t cntr_id)
         RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_DS_TM_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, cntr_entry-RDD_TM_FLOW_CNTR_TABLE_SIZE);
 #elif defined(BCM63158)
     if (RDD_IS_TM_PON_FLOW_ID(cntr_entry))
-        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
+        RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_PON_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_PON_FLOW_ID(cntr_entry));
     else if (RDD_IS_TM_DSL_FLOW_ID(cntr_entry))
         RDD_TM_FLOW_CNTR_ENTRY_CNTR_ID_WRITE_G(cntr_id, RDD_US_TM_DSL_TM_FLOW_CNTR_TABLE_ADDRESS_ARR, RDD_TX_DSL_FLOW_ID(cntr_entry));
     else if (cntr_entry < RDD_TM_FLOW_CNTR_TABLE_SIZE)
@@ -896,7 +804,7 @@ void rdd_fpm_pool_number_mapping_cfg(uint16_t fpm_base_token_size)
 #endif
 }
 
-#if defined(BCM_PON_XRDP) && !defined(RDP_UFC) && !defined(OPERATION_MODE_PRV)
+#if defined(BCM_PON_XRDP) && !defined(RDP_UFC)
 void rdd_max_pkt_len_table_init(void)
 {
     /* index 0 in the table is used by invalid pathstat_idx and dummy flows (natc_miss bypass) */
@@ -947,7 +855,7 @@ bdmf_error_t rdd_iptv_lkp_miss_action_cfg(rdpa_forward_action new_lookup_miss_ac
 
 void rdd_ecn_remark_enable_cfg(bdmf_boolean ecn_remark_enable)
 {
-#if defined(BCM_PON_XRDP) && !defined(RDP_UFC) && !defined(OPERATION_MODE_PRV)
+#if defined(BCM_PON_XRDP) && !defined(RDP_UFC)
     RDD_ECN_IPV6_REMARK_ENTRY_ENABLED_WRITE_G(ecn_remark_enable, RDD_ECN_IPV6_REMARK_TABLE_ADDRESS_ARR, 0);
 #endif
 }
@@ -955,7 +863,7 @@ void rdd_ecn_remark_enable_cfg(bdmf_boolean ecn_remark_enable)
 bdmf_boolean rdd_ecn_remark_enable_get(void)
 {
     bdmf_boolean ecn_remark_enable = 0;
-#if defined(BCM_PON_XRDP) && !defined(RDP_UFC) && !defined(OPERATION_MODE_PRV)
+#if defined(BCM_PON_XRDP) && !defined(RDP_UFC)
     RDD_ECN_IPV6_REMARK_ENTRY_ENABLED_READ_G(ecn_remark_enable, RDD_ECN_IPV6_REMARK_TABLE_ADDRESS_ARR, 0);
 #endif
     return ecn_remark_enable;
@@ -1011,40 +919,56 @@ bdmf_boolean rdd_system_congestion_ctrl_get(void)
 #endif
 }
 
-#ifdef CONFIG_MCAST_TASK_LIMIT
-void rdd_mcast_max_tasks_limit_cfg(uint16_t mcast_max_tasks_limit)
-{
-    RDD_BYTES_2_BITS_WRITE_G(mcast_max_tasks_limit, RDD_MCAST_BBH_OVERRUN_MAX_TASKS_LIMIT_ADDRESS_ARR, 0);
-#ifndef RDP_SIM
-    drv_cnpl_counter_set(CNPL_GROUP_TWO_BYTE_CNTR, COUNTER_IPTV_PROCESSING_TASKS_LIMIT, mcast_max_tasks_limit);
-#endif
-}
-
-void rdd_mcast_min_tasks_limit_cfg(uint16_t mcast_min_tasks_limit)
-{
-    /* both values min/max are written to the data SRAM, but the CNPL which contain single value for task limit */
-    /* will be set with the max value */
-    RDD_BYTES_2_BITS_WRITE_G(mcast_min_tasks_limit, RDD_MCAST_BBH_OVERRUN_MIN_TASKS_LIMIT_ADDRESS_ARR, 0);
-}
-#endif 
 #if defined(TM_C_CODE)
 static uint8_t ds_bbh_queue_mapping_vector[RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_NUMBER] = {};
 
-void bbh_queue_to_bbh_queue_desc_mapping_init(void)
+void bbh_queue_to_bbh_queue_desc_mapping_init(rdp_runner_image_e runner_image)
 {
     uint8_t max_bbh_queue_mapping_index;
-    uint8_t ds_max_tm_index, i, j;
+    uint8_t max_tm_index, i, j;
+#if defined(TM_CORE_LOAD_BALANCING)
+#if defined(BCM63146)
+    uint8_t bbh_queue_desc_idx_default[2] = {RDD_US_CHANNEL_OFFSET_ETHWAN,
+                                             RDD_US_CHANNEL_OFFSET_DSL};
+#else
+    uint8_t bbh_queue_desc_idx_default[3] = {RDD_US_CHANNEL_OFFSET_ETHWAN,
+                                             RDD_US_CHANNEL_OFFSET_ETHWAN_1,
+                                             RDD_US_CHANNEL_OFFSET_TCONT};
+#endif
+#else
+    uint8_t bbh_queue_desc_idx_default[3] = {0, 0, 0};
+#endif
 
-    DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *ds_entry = RDD_DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(get_runner_idx(ds_tm_runner_image));
-
+    DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *ds_entry = RDD_DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(get_runner_idx(runner_image));
     max_bbh_queue_mapping_index = RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_NUMBER;
-    ds_max_tm_index = RDD_DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_SIZE;
+    max_tm_index = RDD_DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_SIZE;
+
+#if defined(TM_CORE_LOAD_BALANCING)
+    if (runner_image == us_tm_runner_image)
+    {
+        US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *us_entry =
+                RDD_US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(
+                        get_runner_idx(runner_image));
+
+        max_tm_index = RDD_US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_SIZE;
+        for (j = 0; j < max_tm_index; j++)
+        {
+            for (i = 0; i < max_bbh_queue_mapping_index; i++)
+            {
+                RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(
+                        bbh_queue_desc_idx_default[j], &us_entry->entry[j], i);
+            }
+        }
+        return;
+    }
+#endif
         
-    for (j = 0; j < ds_max_tm_index; j++)
+    for (j = 0; j < max_tm_index; j++)
     {
         for (i = 0; i < max_bbh_queue_mapping_index; i++)
         {
-            RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(0xFF, &ds_entry->entry[j], i);
+            RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(
+                    bbh_queue_desc_idx_default[j], &ds_entry->entry[j], i);
         }
     }
 }
@@ -1069,7 +993,14 @@ uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_
 #endif
     if (first_time)
     {
-        bbh_queue_to_bbh_queue_desc_mapping_init();
+        bbh_queue_to_bbh_queue_desc_mapping_init(ds_tm_runner_image);
+#if ((!defined(MULTIPLE_TM_ON_RNR_CORE) && defined(MULTIPLE_BBH_TX_LAN)))
+        bbh_queue_to_bbh_queue_desc_mapping_init(ds_tm_1_runner_image);
+        bbh_queue_to_bbh_queue_desc_mapping_init(ds_tm_2_runner_image);
+#endif
+#if defined(TM_CORE_LOAD_BALANCING)
+        bbh_queue_to_bbh_queue_desc_mapping_init(us_tm_runner_image);
+#endif
         first_time = 0;
     }
 
@@ -1155,14 +1086,29 @@ uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_get(rdpa_port_type type, uint32_
     }
 }
 
-void rdd_bbh_queue_to_bbh_queue_desc_mapping_clr(uint8_t tm_index, uint8_t bbh_queue, rdpa_traffic_dir dir)
+
+
+void rdd_bbh_queue_to_bbh_queue_desc_mapping_clr(rdpa_port_type type, uint32_t index, uint8_t bbh_queue)
 {
-    DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *ds_entry = RDD_DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(get_runner_idx(ds_tm_runner_image));
     US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *us_entry = RDD_US_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(get_runner_idx(us_tm_runner_image));
+    uint8_t tm_index = port_mapping_tm_ds_index_get(type, index);
+    DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_STRUCT *ds_entry;
+    uint8_t core_index = port_mapping_tx_runner_core_get(type, index);
     uint8_t val;
+    rdpa_traffic_dir dir;
+    ds_entry = RDD_DS_TM_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_TABLE_PTR(core_index);
+    dir = port_mapping_tm_index_get(type, index);
+
+#if !defined(MULTIPLE_TM_ON_RNR_CORE)
+    /* tm per core (index should be zero) */
+    tm_index = 0;
+#endif
 
     if (dir == rdpa_dir_us)
-        RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(0xFF, &us_entry->entry, bbh_queue);
+    {
+        RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(0, &us_entry->entry, bbh_queue);
+        return;
+    }
     else
     {
         uint8_t i;
@@ -1172,7 +1118,7 @@ void rdd_bbh_queue_to_bbh_queue_desc_mapping_clr(uint8_t tm_index, uint8_t bbh_q
             RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_READ(val, &ds_entry->entry[tm_index], bbh_queue);
             if (val == i)
             {
-                RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(0xFF, &ds_entry->entry[tm_index], bbh_queue);
+                RDD_BBH_QUEUE_TO_BBH_QUEUE_DESC_MAPPING_ENTRY_INDEX_WRITE(0, &ds_entry->entry[tm_index], bbh_queue);
                 ds_bbh_queue_mapping_vector[i] = 0;
                 return;
             }
@@ -1191,4 +1137,94 @@ void rdd_dbg_power_measure_mode_set(int enable)
     RDD_SYSTEM_CONFIGURATION_ENTRY_DBG_POWER_MEASURE_MODE_WRITE_G(enable, RDD_SYSTEM_CONFIGURATION_ADDRESS_ARR, 0);
 }
 #endif
+
+#if defined(XRDP_FLUSH_STALE_PACKETS)
+static void _rdd_fw_flush_thresholds_set(uint32_t fw_flush_table_addr_array[], uint8_t pd_limit,
+                                         uint8_t pi2_start_thr, uint8_t pi2_stop_thr)
+{
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_PD_LIMIT_WRITE_G(pd_limit, fw_flush_table_addr_array, 0);
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_PI2_START_THRESHOLD_WRITE_G(pi2_start_thr, fw_flush_table_addr_array, 0);
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_PI2_STOP_THRESHOLD_WRITE_G(pi2_stop_thr, fw_flush_table_addr_array, 0);
+}
+
+static void _rdd_fw_flush_thresholds_get(uint32_t fw_flush_table_addr_array[], uint8_t *pd_limit,
+                                         uint8_t *pi2_start_thr, uint8_t *pi2_stop_thr)
+{
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_PD_LIMIT_READ_G(*pd_limit, fw_flush_table_addr_array, 0);
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_PI2_START_THRESHOLD_READ_G(*pi2_start_thr, fw_flush_table_addr_array, 0);
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_PI2_STOP_THRESHOLD_READ_G(*pi2_stop_thr, fw_flush_table_addr_array, 0);
+}
+
+static void rdd_fw_flush_thresholds_set_defaults(void)
+{
+    _rdd_fw_flush_thresholds_set(RDD_SQ_TM_FW_FLUSH_TABLE_ADDRESS_ARR, FW_FLUSH_PD_LIMIT,
+                                 FW_FLUSH_PI2_START_THRESHOLD, FW_FLUSH_PI2_STOP_THRESHOLD);
+    _rdd_fw_flush_thresholds_set(RDD_PON_TM_FW_FLUSH_TABLE_ADDRESS_ARR, FW_FLUSH_PD_LIMIT,
+                                 FW_FLUSH_PI2_START_THRESHOLD, FW_FLUSH_PI2_STOP_THRESHOLD);
+    _rdd_fw_flush_thresholds_set(RDD_ETH_TM_FW_FLUSH_TABLE_ADDRESS_ARR, FW_FLUSH_PD_LIMIT,
+                                 FW_FLUSH_PI2_START_THRESHOLD, FW_FLUSH_PI2_STOP_THRESHOLD);
+}
+
+#define FW_FLUSH_PARAM_NUM 3
+
+static int rdd_fw_flush_thresholds(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    uint8_t pd_limit, pi2_start, pi2_stop;
+
+    if (n_parms == 0)
+    {
+        _rdd_fw_flush_thresholds_get(RDD_ETH_TM_FW_FLUSH_TABLE_ADDRESS_ARR, &pd_limit, &pi2_start, &pi2_stop);
+        bdmf_session_print(session, "pd_limit %d pi2 start/stop %d/%d msec.\n", pd_limit, pi2_start, pi2_stop);
+    }
+    else if (n_parms == FW_FLUSH_PARAM_NUM)
+    {
+        pd_limit = parm[0].value.number;
+        pi2_start = parm[1].value.number;
+        pi2_stop = parm[2].value.number;
+
+        if (pi2_start <= pi2_stop)
+        {
+            bdmf_session_print(session, "default start threshold must be higher than stop threshold\n");
+            return BDMF_ERR_PARM;
+        }
+
+        _rdd_fw_flush_thresholds_set(RDD_SQ_TM_FW_FLUSH_TABLE_ADDRESS_ARR,  pd_limit, pi2_start, pi2_stop);
+        _rdd_fw_flush_thresholds_set(RDD_PON_TM_FW_FLUSH_TABLE_ADDRESS_ARR, pd_limit, pi2_start, pi2_stop);
+        _rdd_fw_flush_thresholds_set(RDD_ETH_TM_FW_FLUSH_TABLE_ADDRESS_ARR, pd_limit, pi2_start, pi2_stop);
+    }
+    else
+    {
+        bdmf_session_print(session, "must have %d parameters\n", FW_FLUSH_PARAM_NUM);
+        return BDMF_ERR_PARM;
+    }
+
+    return BDMF_ERR_OK;
+}
+
+void rdd_fw_flush_shell_cmds_init(bdmfmon_handle_t rdd_dir)
+{
+    BDMFMON_MAKE_CMD(rdd_dir, "fwflush_thr", "FW Flush thresholds get/set", rdd_fw_flush_thresholds,
+        BDMFMON_MAKE_PARM_RANGE_DEFVAL("pd_limit", "maximum number of PDs to flush consecutively (zero means no limit)",
+                                       BDMFMON_PARM_UNUMBER, 0, 0, FW_FLUSH_MAX_PD_LIMIT, FW_FLUSH_PD_LIMIT),
+        BDMFMON_MAKE_PARM_RANGE_DEFVAL("pi2_start_thr", "threshold to start flushing (units of 1.024 msec)",
+                                       BDMFMON_PARM_UNUMBER, 0, 0, FW_FLUSH_PI2_MAX_THRESHOLD, FW_FLUSH_PI2_START_THRESHOLD),
+        BDMFMON_MAKE_PARM_RANGE_DEFVAL("pi2_stop_thr", "threshold to stop flushing (units of 1.024 msec)",
+                                       BDMFMON_PARM_UNUMBER, 0, 0, FW_FLUSH_PI2_MAX_THRESHOLD, FW_FLUSH_PI2_STOP_THRESHOLD));
+}
+
+void rdd_fw_flush_enable(bdmf_boolean enable)
+{
+    static int first_time = 1;
+
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_ENABLED_WRITE_G(enable, RDD_ETH_TM_FW_FLUSH_TABLE_ADDRESS_ARR, 0);
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_ENABLED_WRITE_G(enable, RDD_PON_TM_FW_FLUSH_TABLE_ADDRESS_ARR, 0);
+    RDD_FW_FLUSH_ENTRY_FLUSH_CFG_ENABLED_WRITE_G(enable, RDD_SQ_TM_FW_FLUSH_TABLE_ADDRESS_ARR, 0);
+
+    if (first_time)
+    {
+        rdd_fw_flush_thresholds_set_defaults();
+        first_time = 0;
+    }
+}
+#endif /* XRDP_FLUSH_STALE_PACKETS */
 

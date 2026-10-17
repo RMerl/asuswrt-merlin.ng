@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+&gpio0 {
+	gpio-ranges = <&{/apb@80000000/apbh@80000000/pinctrl@80018000} 0 0 32>;
+};
+
+&gpio1 {
+	gpio-ranges = <&{/apb@80000000/apbh@80000000/pinctrl@80018000} 0 32 31>;
+};
+
+&gpio2 {
+	gpio-ranges = <&{/apb@80000000/apbh@80000000/pinctrl@80018000} 0 63 32>;
+};

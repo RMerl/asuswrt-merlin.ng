@@ -1,0 +1,47 @@
+if TARGET_LS1028AQDS
+
+config SYS_BOARD
+	default "ls1028a"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1028aqds"
+
+config EMMC_BOOT
+	bool "Support for booting from EMMC"
+
+config TEXT_BASE
+	default 0x96000000 if SD_BOOT || EMMC_BOOT
+	default 0x82000000 if TFABOOT
+	default 0x20100000
+
+endif
+
+if TARGET_LS1028ARDB
+
+config SYS_BOARD
+	default "ls1028a"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1028ardb"
+
+config EMMC_BOOT
+	bool "Support for booting from EMMC"
+
+config TEXT_BASE
+	default 0x96000000 if SD_BOOT || EMMC_BOOT
+	default 0x82000000 if TFABOOT
+	default 0x20100000
+
+endif

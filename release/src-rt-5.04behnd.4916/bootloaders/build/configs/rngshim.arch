@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig(shift);
+
+######   Any config changes start here #####
+
+$c->set('CONFIG_RNG_SHIM','y');
+$c->set('CONFIG_ARM_SMCCC','y');
+$c->set('CONFIG_RNG_IPROC200','n');
+$c->set('CONFIG_BCMBCA_TRNG','n');
+
+#####   End of config changes #####
+$c->write();

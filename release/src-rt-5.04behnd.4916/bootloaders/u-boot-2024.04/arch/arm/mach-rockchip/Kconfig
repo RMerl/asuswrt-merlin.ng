@@ -1,0 +1,546 @@
+if ARCH_ROCKCHIP
+
+config ROCKCHIP_PX30
+	bool "Support Rockchip PX30"
+	select ARM64
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SPL
+	select TPL
+	select TPL_TINY_FRAMEWORK if TPL
+	select TPL_NEEDS_SEPARATE_STACK if TPL
+	imply SPL_SEPARATE_BSS
+	select SPL_SERIAL
+	select TPL_SERIAL
+	select DEBUG_UART_BOARD_INIT
+	imply ROCKCHIP_COMMON_BOARD
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	help
+	  The Rockchip PX30 is a ARM-based SoC with a quad-core Cortex-A35
+	  including NEON and GPU, Mali-400 graphics, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UART, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3036
+	bool "Support Rockchip RK3036"
+	select CPU_V7A
+	select SUPPORT_SPL
+	select SPL
+	imply USB_FUNCTION_ROCKUSB
+	imply CMD_ROCKUSB
+	imply ROCKCHIP_COMMON_BOARD
+	help
+	  The Rockchip RK3036 is a ARM-based SoC with a dual-core Cortex-A7
+	  including NEON and GPU, Mali-400 graphics, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UART, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3066
+	bool "Support Rockchip RK3066"
+	select CPU_V7A
+	select SPL_BOARD_INIT if SPL
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SPL
+	select TPL
+	select TPL_ROCKCHIP_BACK_TO_BROM
+	select TPL_ROCKCHIP_EARLYRETURN_TO_BROM
+	imply ROCKCHIP_COMMON_BOARD
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	imply SPL_SERIAL
+	imply TPL_ROCKCHIP_COMMON_BOARD
+	imply TPL_SERIAL
+	help
+	  The Rockchip RK3066 is a ARM-based SoC with a dual-core Cortex-A9
+	  including NEON and GPU, 512KB L2 cache, Mali-400 graphics, two
+	  video interfaces, several memory options and video codec support.
+	  Peripherals include Fast Ethernet, USB2 host and OTG, SDIO, I2S,
+	  UART, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3128
+	bool "Support Rockchip RK3128"
+	select CPU_V7A
+	imply ROCKCHIP_COMMON_BOARD
+	help
+	  The Rockchip RK3128 is a ARM-based SoC with a quad-core Cortex-A7
+	  including NEON and GPU, Mali-400 graphics, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UART, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3188
+	bool "Support Rockchip RK3188"
+	select CPU_V7A
+	select SPL_BOARD_INIT if SPL
+	select SUPPORT_SPL
+	select SPL
+	select SPL_CLK
+	select SPL_REGMAP
+	select SPL_SYSCON
+	select SPL_RAM
+	select SPL_DRIVERS_MISC
+	select SPL_ROCKCHIP_EARLYRETURN_TO_BROM
+	select SPL_ROCKCHIP_BACK_TO_BROM
+	select BOARD_LATE_INIT
+	imply ROCKCHIP_COMMON_BOARD
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	help
+	  The Rockchip RK3188 is a ARM-based SoC with a quad-core Cortex-A9
+	  including NEON and GPU, 512KB L2 cache, Mali-400 graphics, two
+	  video interfaces, several memory options and video codec support.
+	  Peripherals include Fast Ethernet, USB2 host and OTG, SDIO, I2S,
+	  UART, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK322X
+	bool "Support Rockchip RK3228/RK3229"
+	select CPU_V7A
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SPL
+	select SPL_DM
+	select SPL_OF_LIBFDT
+	select TPL
+	select TPL_DM
+	select TPL_OF_LIBFDT
+	select TPL_NEEDS_SEPARATE_STACK if TPL
+	select SPL_DRIVERS_MISC
+	imply ROCKCHIP_COMMON_BOARD
+	imply SPL_SERIAL
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	select SPL_OPTEE_IMAGE if SPL_FIT
+	imply TPL_SERIAL
+	imply TPL_ROCKCHIP_COMMON_BOARD
+	select TPL_LIBCOMMON_SUPPORT
+	select TPL_LIBGENERIC_SUPPORT
+	help
+	  The Rockchip RK3229 is a ARM-based SoC with a dual-core Cortex-A7
+	  including NEON and GPU, Mali-400 graphics, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UART, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3288
+	bool "Support Rockchip RK3288"
+	select CPU_V7A
+	select OF_SYSTEM_SETUP
+	select SKIP_LOWLEVEL_INIT_ONLY
+	select SUPPORT_SPL
+	select SPL
+	select SUPPORT_TPL
+	select FDT_64BIT
+	imply PRE_CONSOLE_BUFFER
+	imply ROCKCHIP_COMMON_BOARD
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	imply TPL_CLK
+	imply TPL_DM
+	imply TPL_DRIVERS_MISC
+	imply TPL_LIBCOMMON_SUPPORT
+	imply TPL_LIBGENERIC_SUPPORT
+	imply TPL_NEEDS_SEPARATE_STACK
+	imply TPL_OF_CONTROL
+	imply TPL_OF_PLATDATA
+	imply TPL_RAM
+	imply TPL_REGMAP
+	imply TPL_ROCKCHIP_COMMON_BOARD
+	imply TPL_SERIAL
+	imply TPL_SYSCON
+	imply USB_FUNCTION_ROCKUSB
+	imply CMD_ROCKUSB
+	help
+	  The Rockchip RK3288 is a ARM-based SoC with a quad-core Cortex-A17
+	  including NEON and GPU, 1MB L2 cache, Mali-T7 graphics, two
+	  video interfaces supporting HDMI and eDP, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UARTs, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3308
+	bool "Support Rockchip RK3308"
+	select ARM64
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SPL
+	select SPL_ATF
+	select SPL_ATF_NO_PLATFORM_PARAM
+	select SPL_LOAD_FIT
+	imply ROCKCHIP_COMMON_BOARD
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	imply SPL_CLK
+	imply SPL_REGMAP
+	imply SPL_SYSCON
+	imply SPL_RAM
+	imply SPL_SERIAL
+	imply SPL_SEPARATE_BSS
+	help
+	  The Rockchip RK3308 is a ARM-based Soc which embedded with quad
+	  Cortex-A35 and highly integrated audio interfaces.
+
+config ROCKCHIP_RK3328
+	bool "Support Rockchip RK3328"
+	select ARM64
+	select SUPPORT_SPL
+	select SPL
+	select SUPPORT_TPL
+	select TPL
+	select TPL_NEEDS_SEPARATE_STACK if TPL
+	imply ROCKCHIP_COMMON_BOARD
+	imply ROCKCHIP_SDRAM_COMMON
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	imply SPL_SERIAL
+	imply TPL_SERIAL
+	imply SPL_SEPARATE_BSS
+	select ENABLE_ARM_SOC_BOOT0_HOOK
+	select DEBUG_UART_BOARD_INIT
+	select SYS_NS16550
+	help
+	  The Rockchip RK3328 is a ARM-based SoC with a quad-core Cortex-A53.
+	  including NEON and GPU, 1MB L2 cache, Mali-T7 graphics, two
+	  video interfaces supporting HDMI and eDP, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UARTs, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3368
+	bool "Support Rockchip RK3368"
+	select ARM64
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select TPL_NEEDS_SEPARATE_STACK if TPL
+	imply ROCKCHIP_COMMON_BOARD
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	imply SPL_SEPARATE_BSS
+	imply SPL_SERIAL
+	imply TPL_SERIAL
+	imply TPL_ROCKCHIP_COMMON_BOARD
+	help
+	  The Rockchip RK3368 is a ARM-based SoC with a octa-core (organised
+	  into a big and little cluster with 4 cores each) Cortex-A53 including
+	  AdvSIMD, 512KB L2 cache (for the big cluster) and 256 KB L2 cache
+	  (for the little cluster), PowerVR G6110 based graphics, one video
+	  output processor supporting LVDS/HDMI/eDP, several DDR3 options and
+	  video codec support.
+
+	  On-chip peripherals include Gigabit Ethernet, USB2 host and OTG, SDIO,
+	  I2S, UARTs, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3399
+	bool "Support Rockchip RK3399"
+	select ARM64
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SPL
+	select SPL_ATF
+	select SPL_BOARD_INIT if SPL
+	select SPL_LOAD_FIT
+	select SPL_CLK if SPL
+	select SPL_PINCTRL if SPL
+	select SPL_RAM if SPL
+	select SPL_REGMAP if SPL
+	select SPL_SYSCON if SPL
+	select TPL_NEEDS_SEPARATE_STACK if TPL
+	select SPL_SEPARATE_BSS
+	select SPL_SERIAL
+	select SPL_DRIVERS_MISC
+	select CLK
+	select FIT
+	select PINCTRL
+	select RAM
+	select REGMAP
+	select SYSCON
+	select DM_PMIC
+	select DM_REGULATOR_FIXED
+	select BOARD_LATE_INIT
+	imply PARTITION_TYPE_GUID
+	imply PRE_CONSOLE_BUFFER
+	imply ROCKCHIP_COMMON_BOARD
+	imply ROCKCHIP_SDRAM_COMMON
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	imply TPL_SERIAL
+	imply TPL_LIBCOMMON_SUPPORT
+	imply TPL_LIBGENERIC_SUPPORT
+	imply TPL_SYS_MALLOC_SIMPLE
+	imply TPL_DRIVERS_MISC
+	imply TPL_OF_CONTROL
+	imply TPL_DM
+	imply TPL_REGMAP
+	imply TPL_SYSCON
+	imply TPL_RAM
+	imply TPL_CLK
+	imply TPL_TINY_MEMSET
+	imply TPL_ROCKCHIP_COMMON_BOARD
+	imply SYS_BOOTCOUNT_SINGLEWORD if BOOTCOUNT_LIMIT
+	imply BOOTSTD_FULL
+	imply CMD_BOOTCOUNT if BOOTCOUNT_LIMIT
+	help
+	  The Rockchip RK3399 is a ARM-based SoC with a dual-core Cortex-A72
+	  and quad-core Cortex-A53.
+	  including NEON and GPU, 1MB L2 cache, Mali-T7 graphics, two
+	  video interfaces supporting HDMI and eDP, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UARTs, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3568
+	bool "Support Rockchip RK3568"
+	select ARM64
+	select SUPPORT_SPL
+	select SPL
+	select CLK
+	select PINCTRL
+	select RAM
+	select REGMAP
+	select SYSCON
+	select BOARD_LATE_INIT
+	select DM_REGULATOR_FIXED
+	select DM_RESET
+	imply SPL_ATF_NO_PLATFORM_PARAM if SPL_ATF
+	imply ROCKCHIP_COMMON_BOARD
+	imply OF_LIBFDT_OVERLAY
+	imply ROCKCHIP_OTP
+	imply MISC_INIT_R
+	imply MMC_HS200_SUPPORT if MMC_SDHCI_ROCKCHIP
+	imply SPL_MMC_HS200_SUPPORT if SPL_MMC && MMC_HS200_SUPPORT
+	help
+	  The Rockchip RK3568 is a ARM-based SoC with quad-core Cortex-A55,
+	  including NEON and GPU, 512K L3 cache, Mali-G52 based graphics,
+	  two video interfaces supporting HDMI and eDP, several DDR3 options
+	  and video codec support. Peripherals include Gigabit Ethernet,
+	  USB2 host and OTG, SDIO, I2S, UARTs, SPI, I2C and PWMs.
+
+config ROCKCHIP_RK3588
+	bool "Support Rockchip RK3588"
+	select ARM64
+	select SUPPORT_SPL
+	select SPL
+	select CLK
+	select PINCTRL
+	select RAM
+	select REGMAP
+	select SYSCON
+	select BOARD_LATE_INIT
+	select DM_REGULATOR_FIXED
+	select DM_RESET
+	imply SPL_ATF_NO_PLATFORM_PARAM if SPL_ATF
+	imply ROCKCHIP_COMMON_BOARD
+	imply OF_LIBFDT_OVERLAY
+	imply ROCKCHIP_OTP
+	imply MISC_INIT_R
+	imply MMC_HS200_SUPPORT if MMC_SDHCI_ROCKCHIP
+	imply SPL_MMC_HS200_SUPPORT if SPL_MMC && MMC_HS200_SUPPORT
+	imply CLK_SCMI
+	imply SCMI_FIRMWARE
+	imply BOOTSTD_FULL
+	help
+	  The Rockchip RK3588 is a ARM-based SoC with quad-core Cortex-A76 and
+	  quad-core Cortex-A55 including NEON and GPU, 6TOPS NPU, Mali-G610 MP4,
+	  HDMI Out, HDMI In, DP, eDP, MIPI DSI, MIPI CSI2, LPDDR4/4X/5, eMMC5.1,
+	  SD3.0/MMC4.5, USB OTG 3.0, Type-C, USB 2.0, PCIe 3.0, SATA 3, Ethernet,
+	  SDIO3.0 I2C, UART, SPI, GPIO and PWM.
+
+config ROCKCHIP_RV1108
+	bool "Support Rockchip RV1108"
+	select CPU_V7A
+	imply ROCKCHIP_COMMON_BOARD
+	help
+	  The Rockchip RV1108 is a ARM-based SoC with a single-core Cortex-A7
+	  and a DSP.
+
+config ROCKCHIP_RV1126
+	bool "Support Rockchip RV1126"
+	select CPU_V7A
+	select SKIP_LOWLEVEL_INIT_ONLY
+	select TPL
+	select SUPPORT_TPL
+	select TPL_NEEDS_SEPARATE_STACK
+	select TPL_ROCKCHIP_BACK_TO_BROM
+	select SPL
+	select SUPPORT_SPL
+	select SPL_STACK_R
+	select CLK
+	select FIT
+	select PINCTRL
+	select RAM
+	select ROCKCHIP_SDRAM_COMMON
+	select REGMAP
+	select SYSCON
+	select DM_PMIC
+	select DM_REGULATOR_FIXED
+	select DM_RESET
+	select REGULATOR_RK8XX
+	select PMIC_RK8XX
+	select BOARD_LATE_INIT
+	imply ROCKCHIP_COMMON_BOARD
+	select SPL_OPTEE_IMAGE if SPL_FIT
+	imply OF_LIBFDT_OVERLAY
+	imply ROCKCHIP_OTP
+	imply MISC_INIT_R
+	imply TPL_DM
+	imply TPL_LIBCOMMON_SUPPORT
+	imply TPL_LIBGENERIC_SUPPORT
+	imply TPL_OF_CONTROL
+	imply TPL_OF_PLATDATA
+	imply TPL_RAM
+	imply TPL_ROCKCHIP_COMMON_BOARD
+	imply TPL_SERIAL
+	imply SPL_CLK
+	imply SPL_DM
+	imply SPL_DRIVERS_MISC
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_OF_CONTROL
+	imply SPL_RAM
+	imply SPL_REGMAP
+	imply SPL_ROCKCHIP_COMMON_BOARD
+	imply SPL_SERIAL
+	imply SPL_SYSCON
+
+config ROCKCHIP_USB_UART
+	bool "Route uart output to usb pins"
+	help
+	  Rockchip SoCs have the ability to route the signals of the debug
+	  uart through the d+ and d- pins of a specific usb phy to enable
+	  some form of closed-case debugging. With this option supported
+	  SoCs will enable this routing as a debug measure.
+
+config SPL_ROCKCHIP_BACK_TO_BROM
+	bool "SPL returns to bootrom"
+	default y if ROCKCHIP_RK3036
+	select ROCKCHIP_BROM_HELPER
+	select SPL_BOOTROM_SUPPORT
+	depends on SPL
+	help
+	  Rockchip SoCs have ability to load SPL & U-Boot binary. If enabled,
+          SPL will return to the boot rom, which will then load the U-Boot
+          binary to keep going on.
+
+config TPL_ROCKCHIP_BACK_TO_BROM
+	bool "TPL returns to bootrom"
+	default y
+	select ROCKCHIP_BROM_HELPER if !ROCKCHIP_RK3066
+	select TPL_BOOTROM_SUPPORT
+	depends on TPL
+	help
+	  Rockchip SoCs have ability to load SPL & U-Boot binary. If enabled,
+          SPL will return to the boot rom, which will then load the U-Boot
+          binary to keep going on.
+
+config ROCKCHIP_COMMON_BOARD
+	bool "Rockchip common board file"
+	help
+	  Rockchip SoCs have similar boot process, Common board file is mainly
+	  in charge of common process of board_init() and board_late_init() for
+	  U-Boot proper.
+
+config SPL_ROCKCHIP_COMMON_BOARD
+	bool "Rockchip SPL common board file"
+	depends on SPL
+	help
+	  Rockchip SoCs have similar boot process, SPL is mainly in charge of
+	  load and boot Trust ATF/U-Boot firmware, and DRAM init if there is
+	  no TPL for the board.
+
+config TPL_ROCKCHIP_COMMON_BOARD
+	bool "Rockchip TPL common board file"
+	depends on TPL
+	help
+	  Rockchip SoCs have similar boot process, prefer to use TPL for DRAM
+	  init and back to bootrom, and SPL as Trust ATF/U-Boot loader. TPL
+	  common board is a basic TPL board init which can be shared for most
+	  of SoCs to avoid copy-paste for different SoCs.
+
+config ROCKCHIP_EXTERNAL_TPL
+	bool "Use external TPL binary"
+	default y if ROCKCHIP_RK3308 || ROCKCHIP_RK3568 || ROCKCHIP_RK3588
+	help
+	  Some Rockchip SoCs require an external TPL to initialize DRAM.
+	  Enable this option and build with ROCKCHIP_TPL=/path/to/ddr.bin to
+	  include the external TPL in the image built by binman.
+
+config ROCKCHIP_BOOT_MODE_REG
+	hex "Rockchip boot mode flag register address"
+	help
+	  The Soc will enter to different boot mode(defined in asm/arch-rockchip/boot_mode.h)
+	  according to the value from this register.
+
+config ROCKCHIP_RK8XX_DISABLE_BOOT_ON_POWERON
+	bool "Disable device boot on power plug-in"
+	depends on PMIC_RK8XX
+	---help---
+	  Say Y here to prevent the device from booting up because of a plug-in
+	  event. When set, the device will boot briefly to determine why it was
+	  powered on, and if it was determined because of a plug-in event
+	  instead of a button press event it will shut back off.
+
+config ROCKCHIP_STIMER
+	bool "Rockchip STIMER support"
+	default y
+	help
+	  Enable Rockchip STIMER support.
+
+config ROCKCHIP_STIMER_BASE
+	hex
+	depends on ROCKCHIP_STIMER
+
+config ROCKCHIP_SPL_RESERVE_IRAM
+	hex "Size of IRAM reserved in SPL"
+	default 0x0
+	help
+	  SPL may need reserve memory for firmware loaded by SPL, whose load
+	  address is in IRAM and may overlay with SPL text area if not
+	  reserved.
+
+config ROCKCHIP_BROM_HELPER
+	bool
+
+config SPL_ROCKCHIP_EARLYRETURN_TO_BROM
+        bool "SPL requires early-return (for RK3188-style BROM) to BROM"
+	depends on SPL && ENABLE_ARM_SOC_BOOT0_HOOK
+	help
+	  Some Rockchip BROM variants (e.g. on the RK3188) load the
+	  first stage in segments and enter multiple times. E.g. on
+	  the RK3188, the first 1KB of the first stage are loaded
+	  first and entered; after returning to the BROM, the
+	  remainder of the first stage is loaded, but the BROM
+	  re-enters at the same address/to the same code as previously.
+
+	  This enables support code in the BOOT0 hook for the SPL stage
+	  to allow multiple entries.
+
+config TPL_ROCKCHIP_EARLYRETURN_TO_BROM
+        bool "TPL requires early-return (for RK3188-style BROM) to BROM"
+	depends on TPL && ENABLE_ARM_SOC_BOOT0_HOOK
+	help
+	  Some Rockchip BROM variants (e.g. on the RK3188) load the
+	  first stage in segments and enter multiple times. E.g. on
+	  the RK3188, the first 1KB of the first stage are loaded
+	  first and entered; after returning to the BROM, the
+	  remainder of the first stage is loaded, but the BROM
+	  re-enters at the same address/to the same code as previously.
+
+	  This enables support code in the BOOT0 hook for the TPL stage
+	  to allow multiple entries.
+
+config SPL_MMC
+	default y if !SPL_ROCKCHIP_BACK_TO_BROM
+
+config ROCKCHIP_SPI_IMAGE
+	bool "Build a SPI image for rockchip"
+	help
+	  Some Rockchip SoCs support booting from SPI flash. Enable this
+	  option to produce a SPI-flash image containing U-Boot. The image
+	  is built by binman. U-Boot sits near the start of the image.
+
+config LNX_KRNL_IMG_TEXT_OFFSET_BASE
+	default TEXT_BASE
+
+source "arch/arm/mach-rockchip/px30/Kconfig"
+source "arch/arm/mach-rockchip/rk3036/Kconfig"
+source "arch/arm/mach-rockchip/rk3066/Kconfig"
+source "arch/arm/mach-rockchip/rk3128/Kconfig"
+source "arch/arm/mach-rockchip/rk3188/Kconfig"
+source "arch/arm/mach-rockchip/rk322x/Kconfig"
+source "arch/arm/mach-rockchip/rk3288/Kconfig"
+source "arch/arm/mach-rockchip/rk3308/Kconfig"
+source "arch/arm/mach-rockchip/rk3328/Kconfig"
+source "arch/arm/mach-rockchip/rk3368/Kconfig"
+source "arch/arm/mach-rockchip/rk3399/Kconfig"
+source "arch/arm/mach-rockchip/rk3568/Kconfig"
+source "arch/arm/mach-rockchip/rk3588/Kconfig"
+source "arch/arm/mach-rockchip/rv1108/Kconfig"
+source "arch/arm/mach-rockchip/rv1126/Kconfig"
+endif

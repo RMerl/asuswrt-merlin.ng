@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LX2162AQDS device tree source for the SERDES block #1 - protocol 20
+ *
+ * Some assumptions are made:
+ *    * Mezzanine card M8 is connected to IO SLOT1
+ *        (xlaui4 for DPMAC 1)
+ *
+ * Copyright 2020-2021 NXP
+ *
+ */
+
+#include "fsl-lx2160a-qds.dtsi"
+
+&dpmac1 {
+	status = "okay";
+	phy-handle = <&cortina_phy1_0>;
+	phy-connection-type = "xlaui4";
+};
+
+&emdio1_slot1 {
+	cortina_phy1_0: ethernet-phy@0 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		reg = <0x0>;
+	};
+};
+
+&esdhc1 {
+	mmc-hs200-1_8v;
+	mmc-hs400-1_8v;
+	bus-width = <8>;
+};

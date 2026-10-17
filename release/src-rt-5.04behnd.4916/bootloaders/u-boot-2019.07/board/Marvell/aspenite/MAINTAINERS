@@ -1,6 +1,0 @@
-ASPENITE BOARD
-M:	Prafulla Wadaskar <prafulla@marvell.com>
-S:	Maintained
-F:	board/Marvell/aspenite/
-F:	include/configs/aspenite.h
-F:	configs/aspenite_defconfig

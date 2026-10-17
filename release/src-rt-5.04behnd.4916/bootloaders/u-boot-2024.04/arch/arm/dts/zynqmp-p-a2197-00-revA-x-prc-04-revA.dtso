@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx ZynqMP System Controller X-PRC-04 revA (SE4)
+ *
+ * (C) Copyright 2019 - 2022, Xilinx, Inc.
+ * (C) Copyright 2022 - 2023, Advanced Micro Devices, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+/dts-v1/;
+/plugin/;
+
+/{
+	compatible = "xlnx,zynqmp-x-prc-04-revA", "xlnx,zynqmp-x-prc-04";
+
+	fragment@0 {
+		target = <&dc_i2c>;
+
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			x_prc_eeprom: eeprom@52 { /* u120 */
+				compatible = "atmel,24c02";
+				reg = <0x52>;
+			};
+
+			x_prc_tca9534: gpio@22 { /* u121 tca9534 */
+				compatible = "nxp,pca9534";
+				reg = <0x22>;
+				gpio-controller; /* IRQ not connected */
+				#gpio-cells = <2>;
+				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
+						  "", "", "", "";
+				gtr-sel0 {
+					gpio-hog;
+					gpios = <0 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_1";
+				};
+				gtr-sel1 {
+					gpio-hog;
+					gpios = <1 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_2";
+				};
+				gtr-sel2 {
+					gpio-hog;
+					gpios = <2 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_3";
+				};
+				gtr-sel3 {
+					gpio-hog;
+					gpios = <3 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_4";
+				};
+			};
+
+			si570_gem_tsu: clock-generator@5d { /* u164 */
+				#clock-cells = <0>;
+				compatible = "silabs,si570";
+				reg = <0x5d>;
+				temperature-stability = <50>;
+				factory-fout = <300000000>; /* FIXME */
+				clock-frequency = <300000000>;
+				clock-output-names = "si570_gem_tsu_clk";
+			};
+		};
+	};
+
+	fragment@1 {
+		target = <&i2c1>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			eeprom_versal: eeprom@51 { /* u153 */
+				compatible = "atmel,24c02";
+				reg = <0x51>;
+			};
+		};
+	};
+};

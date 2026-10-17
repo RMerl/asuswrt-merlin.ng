@@ -30,7 +30,7 @@
 #ifndef _BCM_NF_REGARDLESSDROP_
 #define _BCM_NF_REGARDLESSDROP_
 
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
 #include <linux/iqos.h>
 #endif
 
@@ -81,14 +81,14 @@ static inline void ct_set_curr_safe_list(struct nf_conn *ct)
 {
 	/*first try to move to HW list */
 	if(ct->bcm_ext.hw_accel_flows) {
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
 		if (ct->bcm_ext.iq_prio == IQOS_PRIO_HIGH)
 			ct->bcm_ext.curr_safe_list = &ct_safe_lists.hi_hw_accel;
 		else
 #endif
 			ct->bcm_ext.curr_safe_list = &ct_safe_lists.low_hw_accel;
 	}else if(ct->bcm_ext.sw_accel_flows) {
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
 		if (ct->bcm_ext.iq_prio == IQOS_PRIO_HIGH)
 			ct->bcm_ext.curr_safe_list = &ct_safe_lists.hi_sw_accel;
 		else
@@ -96,7 +96,7 @@ static inline void ct_set_curr_safe_list(struct nf_conn *ct)
 			ct->bcm_ext.curr_safe_list = &ct_safe_lists.low_sw_accel;
 	}else{
 		/*move to SW only list */
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
 		if (ct->bcm_ext.iq_prio == IQOS_PRIO_HIGH)
 			ct->bcm_ext.curr_safe_list = &ct_safe_lists.hi;
 		else

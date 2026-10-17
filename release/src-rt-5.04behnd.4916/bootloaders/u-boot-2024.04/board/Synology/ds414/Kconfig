@@ -1,0 +1,12 @@
+if TARGET_DS414
+
+config SYS_BOARD
+	default "ds414"
+
+config SYS_VENDOR
+	default "Synology"
+
+config SYS_CONFIG_NAME
+	default "ds414"
+
+endif

@@ -1,0 +1,168 @@
+.. SPDX-License-Identifier: GPL-2.0+
+
+M68K / ColdFire
+===============
+
+History
+-------
+* November 02, 2017	Angelo Dureghello <angelo@kernel-space.org>
+* August   08, 2005	Jens Scharsig <esw@bus-elektronik.de>
+  MCF5282 implementation without preloader
+* January  12, 2004	<josef.baumgartner@telex.de>
+
+This file contains status information for the port of U-Boot to the
+Motorola ColdFire series of CPUs.
+
+Overview
+--------
+
+The ColdFire instruction set is "assembly source" compatible but an evolution
+of the original 68000 instruction set. Some not much used instructions has
+been removed. The instructions are only 16, 32, or 48 bits long, a
+simplification compared to the 68000 series.
+
+Bernhard Kuhn ported U-Boot 0.4.0 to the Motorola ColdFire architecture.
+The patches of Bernhard support the MCF5272 and MCF5282. A great disadvantage
+of these patches was that they needed a pre-bootloader to start U-Boot.
+Because of this, a new port was created which no longer needs a first stage
+booter.
+
+Thanks mainly to Freescale but also to several other contributors, U-Boot now
+supports nearly the entire range of ColdFire processors and their related
+development boards.
+
+
+Supported CPU families
+----------------------
+
+Please "make menuconfig" and select "m68k" or check arch/m68k/cpu to see the
+currently supported processor and families.
+
+
+Supported boards
+----------------
+
+U-Boot supports actually more than 40 ColdFire based boards.
+Board configuration can be done trough include/configs/<boardname>.h but the
+current recommended method is to use the new and more friendly approach as
+the "make menuconfig" way, very similar to the Linux way.
+
+To know details as memory map, build targets, default setup, etc, of a
+specific board please check:
+
+* include/configs/<boardname>.h
+
+and/or
+
+* configs/<boardname>_defconfig
+
+It is possible to build all ColdFire boards in a single command-line command,
+from u-boot root directory, as::
+
+   ./tools/buildman/buildman m68k
+
+Build U-Boot for a specific board
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A bash script similar to the one below may be used:
+
+.. code-block:: shell
+
+   #!/bin/bash
+
+   export CROSS_COMPILE=/opt/toolchains/m68k/gcc-4.9.0-nolibc/bin/m68k-linux-
+
+   board=M5249EVB
+
+   make distclean
+   make ${board}_defconfig
+   make KBUILD_VERBOSE=1
+
+
+Adopted toolchains
+------------------
+
+Please check:
+https://www.denx.de/wiki/U-Boot/ColdFireNotes
+
+
+ColdFire specific configuration options/settings
+------------------------------------------------
+
+Configuration to use a pre-loader
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If U-Boot should be loaded to RAM and started by a pre-loader
+CONFIG_MONITOR_IS_IN_RAM must be enabled. If it is enabled the
+initial vector table and basic processor initialization will not
+be compiled in. The start address of U-Boot must be adjusted in
+the boards defconfig file (CONFIG_SYS_MONITOR_BASE) and Makefile
+(CONFIG_TEXT_BASE) to the load address.
+
+ColdFire CPU specific options/settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To specify a CPU model, some defines shoudl be used, i.e.:
+
+CONFIG_MCF52x2:
+  defined for all MCF52x2 CPUs
+CONFIG_M5272:
+  defined for all Motorola MCF5272 CPUs
+
+Other options, generally set inside include/configs/<boardname>.h, they may
+apply to one or more cpu for the ColdFire family:
+
+CFG_SYS_MBAR:
+  defines the base address of the MCF5272 configuration registers
+CFG_SYS_SCR:
+  defines the contents of the System Configuration Register
+CFG_SYS_SPR:
+  defines the contents of the System Protection Register
+CFG_SYS_MFD:
+  defines the PLL Multiplication Factor Divider
+  (see table 9-4 of MCF user manual)
+CFG_SYS_RFD:
+  defines the PLL Reduce Frequency Devider
+  (see table 9-4 of MCF user manual)
+CONFIG_SYS_CSx_BASE:
+  defines the base address of chip select x
+CONFIG_SYS_CSx_SIZE:
+  defines the memory size (address range) of chip select x
+CONFIG_SYS_CSx_WIDTH:
+  defines the bus with of chip select x
+CONFIG_SYS_CSx_MASK:
+  defines the mask for the related chip select x
+CONFIG_SYS_CSx_RO:
+  if set to 0 chip select x is read/write else chip select is read only
+CONFIG_SYS_CSx_WS:
+  defines the number of wait states  of chip select x
+CFG_SYS_CACHE_ICACR:
+  cache-related registers config
+CFG_SYS_CACHE_DCACR:
+  cache-related registers config
+CONFIG_SYS_CACHE_ACRX:
+  cache-related registers config
+CFG_SYS_SDRAM_BASE:
+  SDRAM config for SDRAM controller-specific registers
+CFG_SYS_SDRAM_SIZE:
+  SDRAM config for SDRAM controller-specific registers
+CFG_SYS_SDRAM_BASEX:
+  SDRAM config for SDRAM controller-specific registers
+CFG_SYS_SDRAM_CFG1:
+  SDRAM config for SDRAM controller-specific registers
+CFG_SYS_SDRAM_CFG2:
+  SDRAM config for SDRAM controller-specific registers
+CFG_SYS_SDRAM_CTRL:
+  SDRAM config for SDRAM controller-specific registers
+CFG_SYS_SDRAM_MODE:
+  SDRAM config for SDRAM controller-specific registers
+CFG_SYS_SDRAM_EMOD:
+  SDRAM config for SDRAM controller-specific registers, please
+  see arch/m68k/cpu/<specific_cpu>/start.S files to see how
+  these options are used.
+CONFIG_MCFUART:
+  defines enabling of ColdFire UART driver
+CFG_SYS_UART_PORT:
+  defines the UART port to be used (only a single UART can be actually enabled)
+CFG_SYS_SBFHDR_SIZE:
+  size of the prepended SBF header, if any

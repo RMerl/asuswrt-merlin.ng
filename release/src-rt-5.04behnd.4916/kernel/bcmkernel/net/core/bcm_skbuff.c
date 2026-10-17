@@ -177,7 +177,7 @@ void bcm_skb_set_tail_pointer(struct sk_buff *skb, const int offset)
 }
 EXPORT_SYMBOL(bcm_skb_set_tail_pointer);
 
-static void skb_headerinit_fields(unsigned int headroom, unsigned int datalen,
+static inline void _skb_headerinit_fields(unsigned int headroom, unsigned int datalen,
 		    struct sk_buff *skb, unsigned char *data,
 		    RecycleFuncP recycle_hook, unsigned long recycle_context,
 		    struct blog_t *blog_p)	/* defined(CONFIG_BLOG) */
@@ -219,9 +219,6 @@ static void skb_headerinit_fields(unsigned int headroom, unsigned int datalen,
 		blog_p->skb_p = skb;
 	// skb->tunl = NULL; memset in _skb_headerreset
 #endif
-#if (defined(CONFIG_BCM_VLAN) || defined(CONFIG_BCM_VLAN_MODULE))
-	// skb->vlan_count = 0; memset in _skb_headerreset
-#endif
 #if IS_ENABLED(CONFIG_BCM_MAP)
 	// skb->map_id = 0; memset in _skb_headerreset
 	// skb->map_offset = 0; memset in skb_headerreset
@@ -261,7 +258,7 @@ void skb_headerinit(unsigned int headroom, unsigned int datalen,
 {
 	_skb_headerreset(skb); /* memset to tail */
 
-	skb_headerinit_fields(headroom, datalen, skb, data, recycle_hook,
+	_skb_headerinit_fields(headroom, datalen, skb, data, recycle_hook,
 			      recycle_context, blog_p);
 
 	_skb_shinforeset(skb_shinfo(skb));
@@ -290,16 +287,16 @@ int bcm_kfree_skbmem(struct sk_buff *skb)
 
 #if IS_ENABLED(CONFIG_BCM_BPM)
 	if (skb->recycle_flags & SKB_HW_RECYCLE_CAPABLE) {
-		gbpm_recycle_hw_buf(skb, skb->recycle_context);
+		gbpm_recycle_hw_skb(skb, skb->recycle_context);
 		return 1;
 	}
 #endif
 
 	/* If the skb came from a preallocated pool, pass it to recycler hook */
 	if (skb->recycle_hook && (skb->recycle_flags & SKB_RECYCLE)){
-		/* TODO: resetting of flags & fileds here may  help in catching  
+		/* TODO: resetting of flags & fileds here may  help in catching
 		 * double frees a bit early,(null pointer access)
-		 */	
+		 */
 #if 0
 		skb->head = NULL;
 		skb->data = NULL;
@@ -323,7 +320,7 @@ int bcm_skb_free_head(struct sk_buff *skb)
 
 #if IS_ENABLED(CONFIG_BCM_BPM)
 	if (skb->recycle_flags & SKB_DATA_HW_RECYCLE_CAPABLE) {
-		gbpm_recycle_hw_buf(PHEAD_TO_PFKBUFF(skb->head), skb->recycle_context);
+		gbpm_recycle_hw_buf(BCM_PHEAD_TO_PSTART(skb->head), skb->recycle_context);
 		skb->recycle_flags &= ~(SKB_DATA_RECYCLE | SKB_DATA_HW_RECYCLE_CAPABLE);
 		return 1;
 	}
@@ -335,7 +332,7 @@ int bcm_skb_free_head(struct sk_buff *skb)
 		return 1;
 	}
 
-	return 0;/* buffer not freed, caller has to free*/ 
+	return 0;/* buffer not freed, caller has to free*/
 }
 
 
@@ -349,36 +346,55 @@ void skb_header_free(struct sk_buff *skb)
 }
 EXPORT_SYMBOL(skb_header_free);
 
-
 /*
- * Translate a fkb to a skb, by allocating a skb from the skbuff_head_cache.
- * PS. skb->dev is not set during initialization.
+ * kfree_skb_monitor_enabled is used to control the kfree_skb monitor action.
+ * By default 0, means do nothing.
+ * When bit 0 is set, to log the kfree_skb information.
+ * When bit 1 is set, to log the stack.
  *
- * Caller verifies whether the fkb is unshared:
- *  if fkb_p==NULL||IS_FKB_CLONE(fkb_p)||fkb_p->users>1 and return NULL skb.
+ * The drop monitor bit in skb->bcm_ext.bcmmark can be marked to let bcm_kfree_skb_monitor
+ * log the skb's kfree_skb event.
  */
-struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
+int kfree_skb_monitor_enabled = 0;
+#define KFREE_SKB_MONITOR_ACTION_LOG_INFO  1
+#define KFREE_SKB_MONITOR_ACTION_LOG_STACK (1 << 1)
+void bcm_kfree_skb_monitor(struct sk_buff *skb, enum skb_drop_reason reason)
 {
-	struct sk_buff * skb_p;
+	if (!SKB_BCMMARK_GET_DROP_MONITOR(skb->bcm_ext.bcmmark))
+		return;
 
-	/* Optimization: use preallocated pool of skb with SKB_POOL_RECYCLE flag */
-	skb_p = kmem_cache_alloc(skbuff_head_cache, GFP_ATOMIC);
-	if (!skb_p)
-		return skb_p;
-	skb_p->fclone = SKB_FCLONE_UNAVAILABLE;
+	if (kfree_skb_monitor_enabled & KFREE_SKB_MONITOR_ACTION_LOG_INFO) {
+		printk("kfree_skb with skbaddr=%p protocol=%u mark=0x%x bcmmark=0x%x reason=%d\n",
+			skb, skb->protocol, skb->mark, skb->bcm_ext.bcmmark, reason);
+	}
 
-	memset(skb_p, 0, offsetof(struct sk_buff, tail));
+	if (kfree_skb_monitor_enabled & KFREE_SKB_MONITOR_ACTION_LOG_STACK) {
+		dump_stack();
+	}
+}
+EXPORT_SYMBOL(bcm_kfree_skb_monitor);
 
+void bcm_kfree_skb_monitor_config(int action)
+{
+	kfree_skb_monitor_enabled = action;
+	printk("kfree_skb_monitor_enabled %d\n", kfree_skb_monitor_enabled);
+}
+EXPORT_SYMBOL(bcm_kfree_skb_monitor_config);
+
+
+
+static inline void __skb_xlate_dp(struct sk_buff * skb_p, struct fkbuff * fkb_p, uint8_t *dirty_p)
+{
 	skb_p->data = fkb_p->data;
-	skb_p->head = (unsigned char *)(fkb_p + 1 );
+	skb_p->head = BCM_PFKBUFF_TO_PHEAD(fkb_p);
 	skb_set_tail_pointer(skb_p, fkb_p->len);
 
 	/* here assumption is head is cachealigned and  data has not expanded
 	 * at tail yet 
 	 */
 	WARN_ONCE(((uintptr_t)skb_p->head & (SMP_CACHE_BYTES -1)),
-				"skb->head pointer not cache aligned, skb=%px skb->head=%px ",
-				skb_p, skb_p->head);
+			"skb->head pointer not cache aligned, skb=%px skb->head=%px ",
+			skb_p, skb_p->head);
 	bcm_skb_set_end_pointer(skb_p, SKB_DATA_ALIGN((skb_p->data -skb_p->head) +
 				fkb_p->len + BCM_SKB_TAILROOM));
 	skb_p->truesize = SKB_TRUESIZE(skb_end_offset(skb_p));
@@ -421,24 +437,32 @@ struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
 	 * can shorten the cache flush when the buffer is recycled.  Improves
 	 * wlan perf by 10%.
 	 */
-	skb_shinfo(skb_p)->dirty_p = dirty_p;
-	/* any change to skb_shinfo initialization in __alloc_skb must be ported
-	 * to this block. */
-	skb_shinfo(skb_p)->meta_len = 0;
-	skb_shinfo(skb_p)->nr_frags = 0;
-	skb_shinfo(skb_p)->tx_flags = 0;
-	skb_shinfo(skb_p)->gso_size = 0;
-	skb_shinfo(skb_p)->gso_segs = 0;
-	skb_shinfo(skb_p)->frag_list = NULL;
-	memset(&(skb_shinfo(skb_p)->hwtstamps), 0,
-	       sizeof(skb_shinfo(skb_p)->hwtstamps));
-	skb_shinfo(skb_p)->gso_type = 0;
-	skb_shinfo(skb_p)->tskey = 0;
+	_skb_shinforeset(skb_shinfo(skb_p));
 	atomic_set(&(skb_shinfo(skb_p)->dataref), 1);
-	skb_shinfo(skb_p)->destructor_arg = NULL;
+	skb_shinfo(skb_p)->dirty_p = dirty_p;
+#undef F2S
+}
+/*
+ * Translate a fkb to a skb, by allocating a skb from the skbuff_head_cache.
+ * PS. skb->dev is not set during initialization.
+ *
+ * Caller verifies whether the fkb is unshared:
+ *  if fkb_p==NULL||IS_FKB_CLONE(fkb_p)||fkb_p->users>1 and return NULL skb.
+ */
+struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
+{
+	struct sk_buff * skb_p;
+
+	/* Optimization: use preallocated pool of skb with SKB_POOL_RECYCLE flag */
+	skb_p = kmem_cache_alloc(skbuff_head_cache, GFP_ATOMIC);
+	if (!skb_p)
+		return skb_p;
+	skb_p->fclone = SKB_FCLONE_UNAVAILABLE;
+	memset(skb_p, 0, offsetof(struct sk_buff, tail));
+
+	__skb_xlate_dp(skb_p, fkb_p, dirty_p);
 
 	return skb_p;
-#undef F2S
 }
 EXPORT_SYMBOL(skb_xlate_dp);
 
@@ -450,6 +474,17 @@ struct sk_buff *skb_xlate(struct fkbuff * fkb_p)
 }
 EXPORT_SYMBOL(skb_xlate);
 
+/*similar to skb_xlate_dp but here skb is passed by user instead of allocating*/
+void skb_xlate_morph(struct sk_buff * skb_p,
+		struct fkbuff * fkb_p, uint8_t *dirty_p, bool clear_cb)
+{
+	if(clear_cb)
+		memset(skb_p->cb, 0, sizeof(skb_p->cb));
+	/*TODO do we need to clear wl_cb i.e call skb_cb_zero */    
+	__skb_xlate_dp(skb_p, fkb_p, dirty_p);
+}
+EXPORT_SYMBOL(skb_xlate_morph);
+
 #ifdef CONFIG_BLOG
 static inline netdev_tx_t __bcm_skb_direct_xmit_args(pNBuff_t nbuff, 
 			struct net_device *dev, 
@@ -458,7 +493,7 @@ static inline netdev_tx_t __bcm_skb_direct_xmit_args(pNBuff_t nbuff,
 	struct sk_buff *skb;
 	netdev_tx_t ret = NETDEV_TX_BUSY;
 	struct netdev_queue *txq;
-	int cpu = smp_processor_id();
+	int cpu;
 
 	skb = nbuff_xlate(nbuff);
 
@@ -480,6 +515,7 @@ static inline netdev_tx_t __bcm_skb_direct_xmit_args(pNBuff_t nbuff,
 	txq = netdev_core_pick_tx(dev, skb, NULL);
 #endif
 	local_bh_disable();
+	cpu = get_cpu();
 	HARD_TX_LOCK(dev, txq, cpu);
 
 	if (!netif_xmit_frozen_or_drv_stopped(txq)) {
@@ -496,6 +532,7 @@ static inline netdev_tx_t __bcm_skb_direct_xmit_args(pNBuff_t nbuff,
 	}
 
 	HARD_TX_UNLOCK(dev, txq);
+	put_cpu();
 	local_bh_enable();
 
 	if (!dev_xmit_complete(ret)) {
@@ -615,7 +652,9 @@ void bcm_skbuff_copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
 	skbuff_bcm_ext_vlan_get(new, bcm_flags) = skbuff_bcm_ext_vlan_get(old, bcm_flags);
 	skbuff_bcm_ext_vlan_get(new, vlan_count) = skbuff_bcm_ext_vlan_get(old, vlan_count);
 	skbuff_bcm_ext_vlan_get(new, vlan_tpid) = skbuff_bcm_ext_vlan_get(old, vlan_tpid);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
 	skbuff_bcm_ext_vlan_get(new, cfi_save) = skbuff_bcm_ext_vlan_get(old, cfi_save);
+#endif
 	skbuff_bcm_ext_vlan_get(new, rxdev) = skbuff_bcm_ext_vlan_get(old, rxdev);
 	memcpy(skbuff_bcm_ext_vlan_get(new, vlan_header), skbuff_bcm_ext_vlan_get(old, vlan_header), sizeof(skbuff_bcm_ext_vlan_get(old, vlan_header)));
 
@@ -645,6 +684,9 @@ void bcm_skbuff_copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
 		new->bcm_ext.clone_fc_head = new->data -  (int)(old->data - old->bcm_ext.clone_fc_head);
 	}
 #endif
+
+	/* Copy bcmmark  */
+	new->bcm_ext.bcmmark = old->bcm_ext.bcmmark;
 
 	/* fkbInSkb field has garbage in new skb, initialize it to NULL, currently
 	 * this field is just used as a placeholder in skb, so no need to copy
@@ -680,9 +722,8 @@ void bcm_skbuff_skb_clone(struct sk_buff *n, struct sk_buff *skb)
 	/* Copy flags */
 	n->bcm_ext.flags = skb->bcm_ext.flags;
 
-	/* Reset spc fields */
-	n->is_spc = 0;
-	n->spc_tot_len = 0;
+	/* Reset spc-tlm fields */
+	n->spc_tlm_u32 = 0;
 
 	/* Copy over map_forward */
 	skbuff_bcm_ext_map_get(n, map_forward) = skbuff_bcm_ext_map_get(skb, map_forward);
@@ -702,6 +743,9 @@ void bcm_skbuff_skb_clone(struct sk_buff *n, struct sk_buff *skb)
 		blog_clone(skb, n->blog_p);
 	}
 #endif
+
+	/* Copy bcmmark  */
+	n->bcm_ext.bcmmark = skb->bcm_ext.bcmmark;
 }
 
 /**
@@ -795,3 +839,53 @@ int bcm_convert_linear_to_nonlinear_skb(struct sk_buff *skb, uint32_t hdrlen)
     return 0;
 }
 EXPORT_SYMBOL(bcm_convert_linear_to_nonlinear_skb);
+
+bool skb_has_qstat_telemetry(struct sk_buff *skb)
+{
+	return skb->frags_have_qstat_telemetry;
+}
+EXPORT_SYMBOL(skb_has_qstat_telemetry);
+
+bool skb_data_has_qstat_telemetry(struct sk_buff *skb)
+{
+	return skb->frags_have_qstat_telemetry & SKB_DATA_HAS_TELEMETRY_MASK;
+}
+EXPORT_SYMBOL(skb_data_has_qstat_telemetry);
+
+bool skb_spc_frag_has_qstat_telemetry(struct sk_buff *skb, u8 frag)
+{
+	return skb->frags_have_qstat_telemetry & SKB_FRAG_HAS_TELEMETRY_MASK(frag);
+}
+EXPORT_SYMBOL(skb_spc_frag_has_qstat_telemetry);
+
+void skb_data_set_qstat_telemetry(struct sk_buff *skb)
+{
+	skb->frags_have_qstat_telemetry |= SKB_DATA_HAS_TELEMETRY_MASK;
+}
+EXPORT_SYMBOL(skb_data_set_qstat_telemetry);
+
+void skb_spc_frag_set_qstat_telemetry(struct sk_buff *skb, u8 frag)
+{
+	BUG_ON(skb_shinfo(skb)->nr_frags < frag);
+	skb->frags_have_qstat_telemetry |= SKB_FRAG_HAS_TELEMETRY_MASK(frag);
+}
+EXPORT_SYMBOL(skb_spc_frag_set_qstat_telemetry);
+
+void skb_data_clr_qstat_telemetry(struct sk_buff *skb)
+{
+	skb->frags_have_qstat_telemetry &= ~SKB_DATA_HAS_TELEMETRY_MASK;
+}
+EXPORT_SYMBOL(skb_data_clr_qstat_telemetry);
+
+void skb_spc_frag_clr_qstat_telemetry(struct sk_buff *skb, u8 frag)
+{
+	BUG_ON(skb_shinfo(skb)->nr_frags < frag);
+	skb->frags_have_qstat_telemetry &= ~SKB_FRAG_HAS_TELEMETRY_MASK(frag);
+}
+EXPORT_SYMBOL(skb_spc_frag_clr_qstat_telemetry);
+
+void skb_spc_clr_all_qstat_telemetry(struct sk_buff *skb)
+{
+	skb->frags_have_qstat_telemetry = 0;
+}
+EXPORT_SYMBOL(skb_spc_clr_all_qstat_telemetry);

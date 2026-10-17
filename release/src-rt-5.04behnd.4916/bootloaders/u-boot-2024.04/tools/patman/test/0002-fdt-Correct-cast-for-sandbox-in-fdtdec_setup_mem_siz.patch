@@ -1,0 +1,83 @@
+From 5ab48490f03051875ab13d288a4bf32b507d76fd Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Sat, 15 Apr 2017 15:39:08 -0600
+Subject: [RFC 2/2] fdt: Correct cast for sandbox in fdtdec_setup_mem_size_base()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This gives a warning with some native compilers:
+
+lib/fdtdec.c:1203:8: warning: format ‘%llx’ expects argument of type
+   ‘long long unsigned int’, but argument 3 has type
+   ‘long unsigned int’ [-Wformat=]
+
+Fix it with a cast.
+
+Signed-off-by: Simon Glass <sjg@chromium.org>
+Series-to: u-boot
+Series-prefix: RFC
+Series-cc: Stefan Brüns <stefan.bruens@rwth-aachen.de>
+Cover-letter-cc: Lord Mëlchett <clergy@palace.gov>
+Series-version: 3
+Patch-cc: fred
+Series-process-log: sort, uniq
+Series-changes: 4
+- Some changes
+- Multi
+  line
+  change
+
+Commit-changes: 2
+- Changes only for this commit
+
+Cover-changes: 4
+- Some notes for the cover letter
+
+Cover-letter:
+test: A test patch series
+This is a test of how the cover
+letter
+works
+END
+---
+ fs/fat/fat.c                | 1 +
+ lib/efi_loader/efi_memory.c | 1 +
+ lib/fdtdec.c                | 3 ++-
+ 3 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/fs/fat/fat.c b/fs/fat/fat.c
+index a71bad1..ba169dc 100644
+--- a/fs/fat/fat.c
++++ b/fs/fat/fat.c
+@@ -1,3 +1,4 @@
++
+ /*
+  * fat.c
+  *
+diff --git a/lib/efi_loader/efi_memory.c b/lib/efi_loader/efi_memory.c
+index db2ae19..05f75d1 100644
+--- a/lib/efi_loader/efi_memory.c
++++ b/lib/efi_loader/efi_memory.c
+@@ -1,3 +1,4 @@
++
+ /*
+  *  EFI application memory management
+  *
+diff --git a/lib/fdtdec.c b/lib/fdtdec.c
+index c072e54..942244f 100644
+--- a/lib/fdtdec.c
++++ b/lib/fdtdec.c
+@@ -1200,7 +1200,8 @@ int fdtdec_setup_mem_size_base(void)
+ 	}
+ 
+ 	gd->ram_size = (phys_size_t)(res.end - res.start + 1);
+-	debug("%s: Initial DRAM size %llx\n", __func__, (u64)gd->ram_size);
++	debug("%s: Initial DRAM size %llx\n", __func__,
++	      (unsigned long long)gd->ram_size);
+ 
+ 	return 0;
+ }
+-- 
+2.7.4
+

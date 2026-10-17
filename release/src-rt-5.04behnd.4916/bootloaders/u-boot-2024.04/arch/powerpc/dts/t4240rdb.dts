@@ -1,0 +1,176 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * T4240RDB Device Tree Source
+ *
+ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2019-2023 NXP
+ */
+
+/include/ "t4240.dtsi"
+
+/ {
+	model = "fsl,T4240RDB";
+	compatible = "fsl,T4240RDB";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	aliases {
+		spi0 = &espi0;
+		serial0 = &serial0;
+		serial1 = &serial1;
+		serial2 = &serial2;
+		serial3 = &serial3;
+	};
+};
+
+&soc {
+	fman@400000 {
+		ethernet@e0000 {
+			phy-handle = <&sgmiiphy21>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e2000 {
+			phy-handle = <&sgmiiphy22>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e4000 {
+			phy-handle = <&sgmiiphy23>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e6000 {
+			phy-handle = <&sgmiiphy24>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e8000 {
+			status = "disabled";
+		};
+
+		ethernet@ea000 {
+			status = "disabled";
+		};
+
+		ethernet@f0000 {
+			phy-handle = <&xfiphy1>;
+			phy-connection-type = "xgmii";
+		};
+
+		ethernet@f2000 {
+			phy-handle = <&xfiphy2>;
+			phy-connection-type = "xgmii";
+		};
+	};
+
+	fman@500000 {
+		ethernet@e0000 {
+			phy-handle = <&sgmiiphy41>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e2000 {
+			phy-handle = <&sgmiiphy42>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e4000 {
+			phy-handle = <&sgmiiphy43>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e6000 {
+			phy-handle = <&sgmiiphy44>;
+			phy-connection-type = "sgmii";
+		};
+
+		ethernet@e8000 {
+			status = "disabled";
+		};
+
+		ethernet@ea000 {
+			status = "disabled";
+		};
+
+		ethernet@f0000 {
+			phy-handle = <&xfiphy3>;
+			phy-connection-type = "xgmii";
+		};
+
+		ethernet@f2000 {
+			phy-handle = <&xfiphy4>;
+			phy-connection-type = "xgmii";
+		};
+
+		mdio@5fc000 {
+			sgmiiphy21: ethernet-phy@0 {
+				reg = <0x0>;
+			};
+
+			sgmiiphy22: ethernet-phy@1 {
+				reg = <0x1>;
+			};
+
+			sgmiiphy23: ethernet-phy@2 {
+				reg = <0x2>;
+			};
+
+			sgmiiphy24: ethernet-phy@3 {
+				reg = <0x3>;
+			};
+
+			sgmiiphy41: ethernet-phy@4 {
+				reg = <0x4>;
+			};
+
+			sgmiiphy42: ethernet-phy@5 {
+				reg = <0x5>;
+			};
+
+			sgmiiphy43: ethernet-phy@6 {
+				reg = <0x6>;
+			};
+
+			sgmiiphy44: ethernet-phy@7 {
+				reg = <0x7>;
+			};
+		};
+
+		mdio@5fd000 {
+			xfiphy1: ethernet-phy@10 {
+				compatible = "ethernet-phy-id13e5.1002";
+				reg = <0x10>;
+			};
+
+			xfiphy2: ethernet-phy@11 {
+				compatible = "ethernet-phy-id13e5.1002";
+				reg = <0x11>;
+			};
+
+			xfiphy3: ethernet-phy@13 {
+				compatible = "ethernet-phy-id13e5.1002";
+				reg = <0x13>;
+			};
+
+			xfiphy4: ethernet-phy@12 {
+				compatible = "ethernet-phy-id13e5.1002";
+				reg = <0x12>;
+			};
+		};
+	};
+};
+
+&espi0 {
+	status = "okay";
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		spi-max-frequency = <10000000>; /* input clock */
+	};
+};
+
+/include/ "t4240si-post.dtsi"

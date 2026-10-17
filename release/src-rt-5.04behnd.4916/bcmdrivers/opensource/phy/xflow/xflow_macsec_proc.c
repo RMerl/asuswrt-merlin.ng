@@ -484,6 +484,7 @@ static int macsec_proc_cmd_mdev_dump(int argc, char *argv[])
     pr_info("Port %d mdev:\n", port);
     pr_info("  macsec_unit       %d\n", mdev->macsec_unit);
     pr_info("  macsec_port       %d\n", mdev->macsec_port);
+    pr_info("  enabled           %d\n", mdev->enabled); 
     pr_info("  assoc_num         %d\n", mdev->assoc_num);
     pr_info("  include_sci       %d\n", mdev->include_sci);
     pr_info("  chan_id_encrypt   %08x\n", mdev->chan_id_encrypt);
@@ -497,10 +498,10 @@ static int macsec_proc_cmd_mdev_dump(int argc, char *argv[])
     pr_info("  policy_id_encrypt %08x\n", mdev->policy_id_encrypt);
     pr_info("  policy_id_decrypt %08x\n", mdev->policy_id_decrypt);
     pr_info("  flow_id_decrypt   %08x\n", mdev->flow_id_decrypt);
-    pr_info("  egress_sci        %llx\n", mdev->egress_sci);
-    pr_info("  ingress_sci       %llx\n", mdev->ingress_sci);
-    pr_info("  egress_sci_mask   %llx\n", mdev->egress_sci_mask);
-    pr_info("  ingress_sci_mask  %llx\n", mdev->ingress_sci_mask);
+    pr_info("  egress_sci        %016llx\n", mdev->egress_sci);
+    pr_info("  ingress_sci       %016llx\n", mdev->ingress_sci);
+    pr_info("  egress_sci_mask   %016llx\n", mdev->egress_sci_mask);
+    pr_info("  ingress_sci_mask  %016llx\n", mdev->ingress_sci_mask);
     pr_info("  svtag_sig         %02x\n", mdev->svtag_sig);
     pr_info("  ssci_encrypt      %08x\n", mdev->ssci_encrypt);
     pr_info("  ssci_decrypt      %08x\n", mdev->ssci_decrypt);

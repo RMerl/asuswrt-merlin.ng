@@ -1,0 +1,60 @@
+# Whitelist in place for this component / branch / twig
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info (driver part)
+#
+JIRA:BCAWLAN-273296 [6716] enable forcetxgatedClksOn before phy_tx_tone
+JIRA:BCAWLAN-266420 SVT:FTM:11AZ:43740B1,47722_43730: Ranging Accuracy Failures is seen with 949428 rSTA. issue is seen across distance band/bandwidth - 6G
+JIRA:BCAWLAN-273092 [6716B1]EVM regression in 3 plus 1 RF test cases on the 6716mch5DW board
+JIRA:BCAWLAN-273390 [6765] [6764] Ensure PA droop function doesn't require old parameters when per subband mode is enabled
+JIRA:BCAWLAN-273236 [Access 11BE Chips] Increase the energy drop len of HWOBSS filter
+JIRA:BCAWLAN-273660 STA_UL / EVM, UUT failure on the 6715mch6TW board
+JIRA:BCAWLAN-272535 [47722][Aruba/Tomcat] 2G and 6G Rx performance issue
+JIRA:BCAWLAN-273464 [slopecal] Force estPwrLut to be monotonically increased/decreased
+JIRA:BCAWLAN-273704 SVT:AP:47722_43730,49428_43740:11az:5GHZ/6GHZ-40Mhz/160Mhz:Observing status: -1031(timeout) when doing NTB ranging from RSTA to ISTA.
+JIRA:BCAWLAN-274047 [6766] phy_wifi_wifi_coex_11b_sc IOVAR bug
+JIRA:BCAWLAN-273948 [6711] Change txcore_shutdown_lut for throttling
+JIRA:BCAWLAN-273826: Improve JPN V14/V16 radar detection
+JIRA:BCAWLAN-273359 Do not execute wlc_phy_populate_recipcoeffs_acphy for scanning
+JIRA:BCAWLAN-274189 Dynamic BW performance degraded due to regression caused by BCAWLAN-273236
+JIRA:BCAWLAN-274151 [6766 5G] Remove phyreg overwriting to enable per-pkt RXIQ WAReng
+JIRA:BCAWLAN-274149 [6766 5G] shift rxiq cal tonefreq for the BW40 spur channels with DSSF
+JIRA:BCAWLAN-273357 [6766] REF2DFW 2G new lot chips EVM degraded
+JIRA:BCAWLAN-274466 [6765/6764/6766 2x2] sync hwobss setting to phyrev133
+JIRA:BCAWLAN-273956 Enable nonpaydecode & cckpaydecode timeout, and set nonpaydecodeLen for all chips
+JIRA:BCAWLAN-274699 [6726] Enable bypassing DCfixCorr war of 20M and 4KQAM
+JIRA:BCAWLAN-274830 [6711] Skip forcing RFseq and bbmult while doing afe_cal in wbpapd
+JIRA:BCAWLAN-274791 [6765][6766 2x2][6764] Port the removal of resetcca WAR for tx 11ag pkt based on lsig length
+JIRA:BCAWLAN-274879 [6711] Revise comment in wlc_phy_radio20714_afe_cal_main()
+JIRA:BCAWLAN-274610 [6766REF2] 6766ref2dfw 5G HP/MP DVT: 5G HP/MP BW80/BW160 rxglitch item1 100% failure at lower Rx power(<-60dBm)
+JIRA:BCAWLAN-275027 Make IOVAR phy_skippapd avaible for external builds to fix customers' method of scanning which causes Continuous wl3 crashes seen during boot up
+JIRA:BCAWLAN-275708 [WiFi7] SP-only Beacon Power Violation w.o AFC info
+JIRA:BCAWLAN-275740 [WiFi7] TxFDIQCAL code revise, removed redundant tone playback that migth cause PhyTxErr and Tx stuckness
+JIRA:BCAWLAN-275132 [6726] update txframe stuck resetcca war timer setting, increase cck timeout to 33.5 ms [warEng binary update]
+JIRA:BCAWLAN-275980 PHY changes for TPC freeze save restore during 11AZ ranging
+JIRA:BCAWLAN-272413 [6764] REF2DFW P201 HP 5G bw20 low channel EVM floor higher
+JIRA:BCAWLAN-274857 XB10/XER10 TX 5G high EVM floor, eFuse reliability (CS00012377125)
+JIRA:BCAWLAN-265727 SVT:AP:11mc: 47722EAP_43730:5G-20/40/80/160 Mhz:11mc ranging is failed with status=-1031(timeout) with iperf traffic from RSTA --> ISTA in background.
+JIRA:BCAWLAN-276167 AM-copy:  Compute RSSI for valid phy rx status packets only
+JIRA:BCAWLAN-273429 [6764REF2DFW] P255 WSD 5G MP BW20 EVM needs more tuning
+JIRA:BCAWLAN-268542 SVT : AP : 43730 : main core in 2g : txbcn inactivity
+JIRA:BCAWLAN-276646 AP txpower incorrect and after explicitly scan due to scan optimizations 
+JIRA:BCAWLAN-276406 SVT:AP:11az:Pre-Cert:LOC-R2-6.4.2.2: Not getting "Ranging NDP Announcement frame" frame from APUT in associated test scenarios.
+JIRA:BCAWLAN-275962 AP5020 WDO crash in hnd_delay_ex
+JIRA:BCAWLAN-277202 [CS00012362829] Tx power accuracy to flatten in a sub-band for SerComm
+JIRA:BCAWLAN-277190 Implement eFuse CRC-8 checksum for WSD FEM
+JIRA:BCAWLAN-275617 [6711A0] 6711MCH2 DVT : 2G BW20 RxPER see spike at low rate @ -8x dBm
+JIRA:BCAWLAN-277400 [6710] Save restore tx index during scan - 2
+JIRA:BCAWLAN-277120 [6710] Save restore TX index during scan
+JIRA:BCAWLAN-277335 43730 reduce Core1 logen_core_buf_ctune from 30 to 10 for spur mitigation on AUX core
+JIRA:BCAWLAN-274716 SVT:AP:11az: 47722EAP_43730,4722LEAP,47722LEAP6,47722_43720 : 6G160/6G80, 5G80/160: >1m error is observed in reported distance with 4M/8M OTA setup.
+JIRA:BCAWLAN-277311 [6765] Enable bypassing DCfixCorr war of 20M and 4KQAM
+JIRA:BCAWLAN-276768 [phy] SVT:AP:11mc: 47722EAP/47722L/49428_43740 :5G 80/40Mhz:The distance value between the initiator and the responder in 5M OTA setup is continuously fluctuating.
+JIRA:BCAWLAN-277557 AP7xx Tx Power don't work after 7.2ESDK integration
+JIRA:BCAWLAN-277790 [FTM][11mc][phy] FTM recalibration of 47722
+JIRA:BCAWLAN-277721 SVT:AP:11az:Pre-Cert:LOC-R2-6.4.2.4_24G:observed Kernel panic - not syncing: Oops: Fatal exception in AP during FTMR session from ISTA

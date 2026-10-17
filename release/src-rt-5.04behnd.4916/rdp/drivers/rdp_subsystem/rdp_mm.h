@@ -38,6 +38,7 @@
 #define _RDP_MM_H_
 #include "bdmf_data_types.h"
 #include "bdmf_system.h"
+#include "access_macros.h"
 
 #if defined(__KERNEL__) && (defined(CONFIG_ARM) || defined(CONFIG_ARM64))
 #include <linux/device.h>
@@ -108,7 +109,6 @@ static inline void rdp_mm_aligned_free(void *ptr, uint32_t size)
 #define rdp_mm_aligned_alloc_atomic(_size, _phy_addr_p) __rdp_mm_aligned_alloc((_size), (_phy_addr_p))
 static inline void *__rdp_mm_aligned_alloc(uint32_t size, bdmf_phys_addr_t *phy_addr_p)
 {
-#ifdef XRDP
     void *mem;
     void **ptr;
     uint32_t size_padded_aligned;
@@ -122,20 +122,11 @@ static inline void *__rdp_mm_aligned_alloc(uint32_t size, bdmf_phys_addr_t *phy_
     ptr = rsv_phys_to_virt(*phy_addr_p);
     ptr[-1] = mem;
     return ptr;
-#else
-    void *phys_addr = malloc(size);
-
-    *phy_addr_p = (bdmf_phys_addr_t)phys_addr;
-    return phys_addr;
-#endif
 }
 
 static inline void rdp_mm_aligned_free(void *ptr, uint32_t size)
 {
-#ifndef XRDP
-/* in case of simulator we don't free the memory because we don't manage shared memory segments */
-    free(ptr);
-#endif
+
 }
 #endif
 

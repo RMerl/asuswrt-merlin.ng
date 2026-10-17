@@ -1,4 +1,5 @@
 #include "inc/68560.dtsi"
+#include "../bcm_voice.dtsi"
 
 / {
     memory_controller {
@@ -10,9 +11,23 @@
                    BP_DDR_CONFIG_DEBUG)>;
     };
 
-      wan_serdes {
-          status = "okay";
-      };
+    xfp_sfp: xfp_sfp {
+        compatible = "brcm,sfp";
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_22>;
+        pinctrl-1 = <&pon_lbe_p_pin_22 &a_rogue_onu_in_pin_10>;
+        i2c-bus = <&mux0_i2c0>;
+        los-gpio = <&gpioc 8 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 23 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 12 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+            status = "okay";
+            trx = <&xfp_sfp>;
+            pon-led = <&led20>;
+            alarm-led = <&led0>;
+    };
 };
 
 / {
@@ -266,11 +281,19 @@
     pinctrl-0 = <&i2c_scl_pin_20 &i2c_sda_pin_19>;
     pinctrl-names = "default";
     status = "okay";
+
+    i2cswitch {
+        compatible = "nxp,pca9548";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        reg = <0x72>;
+
+        mux0_i2c0: i2c0@1 {
+            reg = <0x1>;
+        };
+    };
 };
 &sdhci {
-	status = "okay";
-};
-&hsspi {
 	status = "okay";
 };
 
@@ -282,6 +305,22 @@
 };
 &pcie2 {
 	status = "okay";
+};
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+ };
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&spim_ss1_b_pin_81>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 11 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
 };
 
 &phy_wan_serdes {

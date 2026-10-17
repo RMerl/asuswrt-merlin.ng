@@ -143,7 +143,7 @@ static inline int rdpa_tcont_egress_tm_get(bdmf_object_handle mo_, bdmf_object_h
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_tcont_attr_egress_tm, &_nn_);
-    *egress_tm_ = (bdmf_object_handle)(long)_nn_;
+    *egress_tm_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -158,7 +158,7 @@ static inline int rdpa_tcont_egress_tm_get(bdmf_object_handle mo_, bdmf_object_h
  */
 static inline int rdpa_tcont_egress_tm_set(bdmf_object_handle mo_, bdmf_object_handle egress_tm_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_tcont_attr_egress_tm, (long)egress_tm_);
+    return bdmf_attr_set_as_num(mo_, rdpa_tcont_attr_egress_tm, (bdmf_long_t)egress_tm_);
 }
 
 
@@ -257,7 +257,7 @@ static inline int rdpa_tcont_pbit_to_queue_get(bdmf_object_handle mo_, bdmf_obje
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_tcont_attr_pbit_to_queue, &_nn_);
-    *pbit_to_queue_ = (bdmf_object_handle)(long)_nn_;
+    *pbit_to_queue_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 

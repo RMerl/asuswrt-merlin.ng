@@ -1,0 +1,6 @@
+Qualcomm GENI UART
+
+Required properties:
+- compatible: must be "qcom,geni-debug-uart"
+- reg: start address and size of the registers
+- clock: interface clock (must accept baudrate as a frequency)

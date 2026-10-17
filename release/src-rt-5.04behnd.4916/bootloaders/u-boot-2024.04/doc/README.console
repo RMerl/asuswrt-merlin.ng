@@ -1,0 +1,100 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2000
+ * Paolo Scaffardi, AIRVENT SAM s.p.a - RIMINI(ITALY), arsenio@tin.it
+ */
+
+U-Boot console handling
+========================
+
+HOW THE CONSOLE WORKS?
+----------------------
+
+At system startup U-Boot initializes a serial console. When U-Boot
+relocates itself to RAM, all console drivers are initialized (they
+will register all detected console devices to the system for further
+use).
+
+If not defined in the environment, the first input device is assigned
+to the 'stdin' file, the first output one to 'stdout' and 'stderr'.
+
+You can use the command "coninfo" to see all registered console
+devices and their flags. You can assign a standard file (stdin,
+stdout or stderr) to any device you see in that list simply by
+assigning its name to the corresponding environment variable. For
+example:
+
+    setenv stdin serial		<- To use the serial input
+    setenv stdout video		<- To use the video console
+
+Do a simple "saveenv" to save the console settings in the environment
+and get them working on the next startup, too.
+
+HOW CAN I USE STANDARD FILE INTO THE SOURCES?
+---------------------------------------------
+
+You can use the following functions to access the console:
+
+* STDOUT:
+    putc	(to put a char to stdout)
+    puts	(to put a string to stdout)
+    printf	(to format and put a string to stdout)
+
+* STDIN:
+    tstc	(to test for the presence of a char in stdin)
+    getc	(to get a char from stdin)
+
+* STDERR:
+    eputc	(to put a char to stderr)
+    eputs	(to put a string to stderr)
+    eprintf	(to format and put a string to stderr)
+
+* FILE (can be 'stdin', 'stdout', 'stderr'):
+    fputc	(like putc but redirected to a file)
+    fputs	(like puts but redirected to a file)
+    fprintf	(like printf but redirected to a file)
+    ftstc	(like tstc but redirected to a file)
+    fgetc	(like getc but redirected to a file)
+
+Remember that all FILE-related functions CANNOT be used before
+U-Boot relocation (done in 'board_init_r' in arch/*/lib/board.c).
+
+HOW CAN I USE STANDARD FILE INTO APPLICATIONS?
+----------------------------------------------
+
+Use the 'bd_mon_fnc' field of the bd_info structure passed to the
+application to do everything you want with the console.
+
+But REMEMBER that that will work only if you have not overwritten any
+U-Boot code while loading (or uncompressing) the image of your
+application.
+
+For example, you won't get the console stuff running in the Linux
+kernel because the kernel overwrites U-Boot before running. Only
+some parameters like the framebuffer descriptors are passed to the
+kernel in the high memory area to let the applications (the kernel)
+use the framebuffers initialized by U-Boot.
+
+SUPPORTED DRIVERS
+-----------------
+
+Working drivers:
+
+    serial	(architecture dependent serial stuff)
+    video	(mpc8xx video controller)
+
+Work in progress:
+
+    wl_kbd	(Wireless 4PPM keyboard)
+
+Waiting for volounteers:
+
+    lcd	(mpc8xx lcd controller; to )
+
+TESTED CONFIGURATIONS
+---------------------
+
+The driver has been tested with the following configurations (see
+CREDITS for other contact informations):
+
+- MPC823FADS with AD7176 on a PAL TV (YCbYCr)	- arsenio@tin.it

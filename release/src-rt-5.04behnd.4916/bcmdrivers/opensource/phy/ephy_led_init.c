@@ -41,7 +41,7 @@
 
 #define MAX_LED_SW_NUM             2
 
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
 #define MAX_LED_PORT_NUM           16
 #else
 #define MAX_LED_PORT_NUM           12
@@ -141,18 +141,13 @@ int led_port2idx_map[MAX_LED_SW_NUM][MAX_LED_PORT_NUM] = {
     { -1, -1, -1, -1,  6,  7, -1, -1, -1, -1, -1, -1},
     /* sw 1 sf2: port 0-3, 4, 6 map to sw led reg */
     {  0,  1,  2,  3,  4, -1,  5, -1, -1, -1, -1, -1}
-#elif defined(CONFIG_BCM94908)
-    /* sw 0 rnr: only port 3 map to sw led reg*/
-    { -1, -1, -1,  5,  -1, -1, -1, -1, -1, -1, -1, -1},
-    /* sw 1 sf2: port 0-3, 7 map to sw led reg */
-    {  0,  1,  2,  3,  -1, -1, -1,  4, -1, -1, -1, -1}
 #elif defined(CONFIG_BCM94912)
     {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, -1},
     {  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
 #elif defined(CONFIG_BCM96813)
     {  0,  1,  2,  3,  5,  4,  6,  7,  8,  9, 10, -1},
     {  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
-#elif defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#elif defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     {  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15},
     {  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
 #else
@@ -206,11 +201,6 @@ static int ephyled_probe(dt_device_t *pdev)
         agg_ctrl.Bits.act_sel = 0;
         agg_ctrl.Bits.act_pol_sel = 0;
         agg_ctrl.Bits.lnk_pol_sel = 0;
-#if defined(CONFIG_BCM94908)
-	/* link led polarity is reversed from hw.  Suppose to be active low but it is active high.
-	 * change the polarity in led ctrl registr and also enable all 5 GPHY ports */
-        agg_ctrl.Bits.lnk_pol_sel = 1;
-#endif
         PEPHY_LED->led_aggregate_ctrl->Reg32 = agg_ctrl.Reg32;
 
     }
@@ -297,7 +287,7 @@ int ephy_leds_init(void *_leds_info)
 
     if ( PEPHY_LED->led_aggregate_ctrl != NULL )
     {
-#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
         if (!leds_info->skip_in_aggregate && sw == 1)
 #else
         if (!leds_info->skip_in_aggregate && sw == 0)

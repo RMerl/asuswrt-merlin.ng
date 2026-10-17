@@ -36,7 +36,6 @@
 #include <linux/kernel.h>
 
 #include "bcmtypes.h"
-#include "bcm_hwdefs.h"
 #include "flash_api.h"
 #include <bcm_strap_drv.h>
 
@@ -67,11 +66,7 @@ static flash_device_info_t flash_dummy_dev =
 #if defined(CONFIG_MTD_BCM_SPI_NAND) || defined(CONFIG_MTD_SPI_NAND)
 static int strap_check_spinand(void)
 {
-#if !defined(CONFIG_BCM963148)
     return (bcm_get_boot_device() == SPI_NAND);
-#else
-    return 0;
-#endif
 }
 #endif
 

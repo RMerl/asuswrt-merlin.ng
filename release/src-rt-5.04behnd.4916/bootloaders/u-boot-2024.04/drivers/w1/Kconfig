@@ -1,0 +1,36 @@
+#
+# W1 subsystem configuration
+#
+
+menu "1-Wire support"
+
+config W1
+	bool "Enable 1-wire controllers support"
+	depends on DM
+	help
+	  Support for the Dallas 1-Wire bus.
+
+if W1
+
+config W1_GPIO
+	bool "Enable 1-wire GPIO bitbanging"
+	depends on DM_GPIO
+	help
+	  Emulate a 1-wire bus using a GPIO.
+
+config W1_MXC
+	bool "Enable 1-wire controller on i.MX processors"
+	depends on ARCH_MX31 || ARCH_MX5
+	help
+	  Support the one wire controller found in some members of the NXP
+	  i.MX SoC family.
+	  There are currently two silicon variants:
+	  V1: i.MX21, i.MX27, i.MX31, i.MX51
+	  V2: i.MX25, i.MX35, i.MX50, i.MX53
+	  Newer i.MX SoCs such as the i.MX6 do not have one wire controllers.
+
+	  The driver supports both silicon variants.
+
+endif
+
+endmenu

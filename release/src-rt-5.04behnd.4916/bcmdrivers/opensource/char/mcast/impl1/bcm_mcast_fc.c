@@ -27,12 +27,14 @@ written consent.
 :>
 */
 
+#include <linux/spinlock.h>
 #include "bcm_mcast_priv.h"
 /* Global variable to hold mode = PRV/Flow-cache */
 int bcm_mcast_mode_prv = 0;
 static int bcm_mcast_fc_flow_add(Blog_t *blog_p, BlogTraffic_t traffic, bcm_mcast_flowkey_t *flow_key_p);
 static Blog_t* bcm_mcast_fc_flow_delete(bcm_mcast_flowkey_t flow_key, BlogTraffic_t traffic);
 
+DEFINE_SPINLOCK(flowhdl_list_lock);
 struct list_head      flowhdl_list;
 struct kmem_cache    *flowhdl_cache = NULL;
 struct kmem_cache    *flowkey_cache = NULL;
@@ -102,8 +104,11 @@ void bcm_mcast_fc_flowhdl_dump()
 {
     bcm_mcast_flowhdl_t *flowhdl_p = NULL;
 
+    spin_lock_bh(&flowhdl_list_lock);
+
     if ( list_empty(&flowhdl_list) )
     {
+        spin_unlock_bh(&flowhdl_list_lock);
         printk("***No flowhdl entries found***\n");
         return;
     }
@@ -115,6 +120,8 @@ void bcm_mcast_fc_flowhdl_dump()
             bcm_mcast_flowhdl_dump(flowhdl_p);
         }
     }
+
+    spin_unlock_bh(&flowhdl_list_lock);
 }
 
 static inline int bcm_mcast_flowhdl_init(uintptr_t flowhdl)
@@ -160,7 +167,9 @@ int bcm_mcast_create_flow(bcm_mcast_ifdata  *pif,
     __logInfo("numactivates %d", numactivates);
     if ( numactivates > 0 )
     {
+        spin_lock_bh(&flowhdl_list_lock);
         list_add(&flowhdl_p->list, &flowhdl_list); //success
+        spin_unlock_bh(&flowhdl_list_lock);
     } 
     else
     {
@@ -201,7 +210,9 @@ void bcm_mcast_delete_flow(int proto, uintptr_t *flowhdl)
         __logError("Number of flowkeys %d not 0 before deleting flow handle", flowhdl_p->numkeys);
         flowhdl_p->numkeys = 0;
     }
+    spin_lock_bh(&flowhdl_list_lock);
     list_del(&flowhdl_p->list);
+    spin_unlock_bh(&flowhdl_list_lock);
     bcm_mcast_flowhdl_free(flowhdl_p);
 
     //Reset the flow handle in the mcast fdb
@@ -898,11 +909,13 @@ void bcm_mcast_fc_exit()
 {
     bcm_mcast_flowhdl_t *flowhdl_p;
 
+    spin_lock_bh(&flowhdl_list_lock);
     list_for_each_entry(flowhdl_p, &flowhdl_list, list)
     {
         list_del(&flowhdl_p->list);
         kmem_cache_free(flowhdl_cache, flowhdl_p);
     }
+    spin_unlock_bh(&flowhdl_list_lock);
 
     if ( flowhdl_cache )
     {

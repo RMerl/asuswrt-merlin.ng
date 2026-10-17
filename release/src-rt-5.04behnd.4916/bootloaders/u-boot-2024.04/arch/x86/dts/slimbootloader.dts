@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Intel Corporation <www.intel.com>
+ */
+
+/dts-v1/;
+
+/include/ "skeleton.dtsi"
+/include/ "reset.dtsi"
+#include "tsc_timer.dtsi"
+
+/ {
+	model = "slimbootloader x86 payload";
+	compatible = "slimbootloader,x86-payload";
+
+	chosen {
+		stdout-path = &serial;
+	};
+
+	serial: serial {
+		compatible = "intel,slimbootloader-uart";
+	};
+
+	pci {
+		compatible = "pci-x86";
+	};
+};

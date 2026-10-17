@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright 2022 Google LLC
+ */
+#include "socfpga_arria10_chameleonv3_480_2_handoff.h"
+#include "socfpga_arria10-handoff.dtsi"
+#include "socfpga_arria10_handoff_u-boot.dtsi"
+#include "socfpga_arria10_mercury_aa1-u-boot.dtsi"
+
+&fpga_mgr {
+	altr,bitstream = "fpga-270-2.itb";
+};

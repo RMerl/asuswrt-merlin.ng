@@ -79,8 +79,7 @@ int bcm_mcast_blog_get_wlan_reporter_info(struct net_device *repDev, unsigned ch
    wlan_client_get_info_t wlan_client_get_info_func_ptr;
 
    /* Get root reporting device since wlan_client_get_info hook is only registered
-      on the root device. Any VLANCtl interfaces created on top of the root
-      devices do not have this function pointer set. */
+      on the root device. */
    struct net_device *rootRepDev = netdev_path_get_root(repDev);
 
    *info = 0;
@@ -174,22 +173,6 @@ void bcm_mcast_blog_release(int proto, bcm_mcast_flowkey_t flow_key)
 
    return;
 }
-
-
-#if defined(CONFIG_BCM_VLAN) || defined(CONFIG_BCM_VLAN_MODULE)
-static void bcm_mcast_blog_vlan_notify_for_blog_update(struct net_device             *ndev,
-                                                       blogRuleVlanNotifyDirection_t  direction,
-                                                       uint32_t                       nbrOfTags)
-{
-   if(is_netdev_wan(ndev) && (direction == BLOG_RULE_VLAN_NOTIFY_DIR_TX))
-   {
-      return;
-   }
-
-   bcm_mcast_if_update_bydev(BCM_MCAST_PROTO_ALL, ndev, 1);
-   return;
-}
-#endif
 
 int bcm_mcast_activate_blog(bcm_mcast_ifdata  *pif,
                                            blogRule_t        *rule_p,
@@ -289,6 +272,8 @@ int bcm_mcast_activate_blog(bcm_mcast_ifdata  *pif,
                       new_blog_p->wlsta_id);
             BCM_MCAST_DBG_PRINT_V6_ADDR("Group", blog_p->tupleV6.daddr.p16);
         }
+
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
         if (bcm_mcast_add_flowkey_to_flowhdl(flowhdl, &flow_key) != 0)
         {
             /* Flowkey add failed. Delete the flow */
@@ -297,6 +282,7 @@ int bcm_mcast_activate_blog(bcm_mcast_ifdata  *pif,
             blog_put(new_blog_p);
             return -1;
         }
+#endif
     }
     __logDebug("EXIT");
     return 0;
@@ -575,6 +561,7 @@ int bcm_mcast_blog_process(bcm_mcast_ifdata *pif,
       blog_p->tx.info.bmap.PLD_IPv4 = 1;
       blog_p->wl = igmp_fdb->info;
       blog_p->wlsta_id=blog_p->wfd.mcast.sta_id;
+      blog_p->tx_vtag[0] = igmp_fdb->lan_tci;
 
       repMac = (list_last_entry(&((t_igmp_grp_entry *)mc_fdb)->rep_list, t_igmp_rep_entry, list)->repMac);
    }
@@ -588,6 +575,7 @@ int bcm_mcast_blog_process(bcm_mcast_ifdata *pif,
       blog_p->tx.info.bmap.PLD_IPv6 = 1;
       blog_p->wl = mld_fdb->info;
       blog_p->wlsta_id=blog_p->wfd.mcast.sta_id;
+      blog_p->tx_vtag[0] = mld_fdb->lan_tci;
 
       /* SSM is defined as "Multicast with non-zero Source Address" */
       if (!( ( blog_p->tupleV6.saddr.p32[0] == 0 ) &&
@@ -640,11 +628,11 @@ int bcm_mcast_blog_process(bcm_mcast_ifdata *pif,
    }
 
    /* Note that the blogrule process function must be called even if there are no
-      vlandevices in the vlandev list. This just means that it is either a LAN2LAN
+      lower layer (virtual) devices. This just means that it is either a LAN2LAN
       scenario or the WAN from_dev received from MCPD does not have any lower
-      VLANctl devices. For example, the WAN from device could be a bridge with
-      no vlanctl devices. Another example is RDK platforms where vlanctl driver is
-      not enabled. In this case, both lan and wan vlan devices would be empty/NULL
+      devices. For example, the WAN from device could be a bridge with
+      no virtual devices. Another example is RDK platforms where virtual devices management driver 
+      is not enabled. In this case, both lan and wan virtual devices would be empty/NULL
       and the blog rule would have no actions */
    i = 0;
    do
@@ -672,17 +660,11 @@ int bcm_mcast_blog_process(bcm_mcast_ifdata *pif,
 
 __init int bcm_mcast_blog_init(void)
 {
-#if defined(CONFIG_BCM_VLAN) || defined(CONFIG_BCM_VLAN_MODULE)
-    blogRuleVlanNotifyHook = bcm_mcast_blog_vlan_notify_for_blog_update;
-#endif
    return 0;
 }
 
 void bcm_mcast_blog_exit(void)
 {
-#if defined(CONFIG_BCM_VLAN) || defined(CONFIG_BCM_VLAN_MODULE)
-    blogRuleVlanNotifyHook = NULL;
-#endif   
 }
 
 #endif /* CONFIG_BLOG */

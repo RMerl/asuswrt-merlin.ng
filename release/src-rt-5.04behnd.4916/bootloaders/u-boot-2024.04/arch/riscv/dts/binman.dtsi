@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2021, Bin Meng <bmeng.cn@gmail.com>
+ */
+
+#include <config.h>
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+	itb {
+
+#ifndef CONFIG_SPL_LOAD_FIT_OPENSBI_OS_BOOT
+		filename = "u-boot.itb";
+#else
+		filename = "linux.itb";
+#endif
+
+		fit {
+			description = "Configuration to load OpenSBI before U-Boot";
+			#address-cells = <2>;
+			fit,fdt-list = "of-list";
+
+			images {
+#ifndef CONFIG_SPL_LOAD_FIT_OPENSBI_OS_BOOT
+				uboot {
+					description = "U-Boot";
+					type = "standalone";
+					os = "U-Boot";
+					arch = "riscv";
+					compression = "none";
+					load = /bits/ 64 <CONFIG_TEXT_BASE>;
+
+					uboot_blob: blob-ext {
+						filename = "u-boot-nodtb.bin";
+					};
+				};
+#else
+				linux {
+					description = "Linux";
+					type = "standalone";
+					os = "Linux";
+					arch = "riscv";
+					compression = "none";
+					load = /bits/ 64 <CONFIG_TEXT_BASE>;
+
+					linux_blob: blob-ext {
+						filename = "Image";
+					};
+				};
+#endif
+
+				opensbi {
+					description = "OpenSBI fw_dynamic Firmware";
+					type = "firmware";
+					os = "opensbi";
+					arch = "riscv";
+					compression = "none";
+					load = /bits/ 64 <CONFIG_SPL_OPENSBI_LOAD_ADDR>;
+					entry = /bits/ 64 <CONFIG_SPL_OPENSBI_LOAD_ADDR>;
+
+					opensbi_blob: opensbi {
+						filename = "fw_dynamic.bin";
+						missing-msg = "opensbi";
+					};
+				};
+
+#ifndef CONFIG_OF_BOARD
+				@fdt-SEQ {
+					description = "NAME";
+					type = "flat_dt";
+					compression = "none";
+				};
+#endif
+			};
+
+			configurations {
+				default = "conf-1";
+
+#ifndef CONFIG_OF_BOARD
+				@conf-SEQ {
+#else
+				conf-1 {
+#endif
+					description = "NAME";
+					firmware = "opensbi";
+#ifndef CONFIG_SPL_LOAD_FIT_OPENSBI_OS_BOOT
+					loadables = "uboot";
+#else
+					loadables = "linux";
+#endif
+#ifndef CONFIG_OF_BOARD
+					fdt = "fdt-SEQ";
+#endif
+				};
+			};
+		};
+	};
+};

@@ -903,7 +903,7 @@ static int bcm_mcast_if_seq_show_ipv6(struct seq_file *seq, void *v)
 }
 #endif
 
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
 void bcm_mcast_if_process_blog_enable( int enable )
 {
    bcm_mcast_ifdata *pif;
@@ -953,7 +953,7 @@ int bcm_mcast_if_wlan_client_disconnect(struct net_device *dev, char *mac)
    return 0;
 }
 #endif /* CONFIG_BCM_WLAN */
-#endif /* CONFIG_BLOG */
+#endif /* CONFIG_BCM_PKTFLOW */
 #endif /* CONFIG_BR_IGMP_SNOOP || CONFIG_BR_MLD_SNOOP */
 
 void bcm_mcast_if_exit( void )

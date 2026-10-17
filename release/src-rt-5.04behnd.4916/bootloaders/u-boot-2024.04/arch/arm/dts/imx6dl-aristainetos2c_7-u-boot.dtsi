@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+ or X11
+/*
+ * Copyright (C) 2019 Heiko Schocher <hs@denx.de>
+ */
+
+#include <imx6qdl-aristainetos2c-u-boot.dtsi>
+/ {
+	vdd_panel_reg: regulator-panel {
+		compatible = "regulator-fixed";
+		regulator-name = "panel_regulator";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+	};
+};
+
+&panel0 {
+	power-supply = <&vdd_panel_reg>;
+};

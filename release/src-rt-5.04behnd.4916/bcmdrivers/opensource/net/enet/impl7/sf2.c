@@ -97,6 +97,10 @@ static uint32_t platform_scan_portmap(enetx_port_t *sw, int sw_unit)
 
 #include "sf2_platform.h"
 
+#if defined(PORT_WITH_8TXQ)
+static int port_with_8txq = PORT_WITH_8TXQ;
+#endif
+
 #if defined(CONFIG_NET_SWITCHDEV)
 #define SW_SET_HW_FWD(s)      (s)->n.flags |= PORT_FLAG_HW_FWD
 #define SW_CLR_HW_FWD(s)      (s)->n.flags &= ~PORT_FLAG_HW_FWD
@@ -336,9 +340,9 @@ static uint32_t acb_xoff_threshold;
 static int acb_port_xoff_threshold;
 
 #define TTL_DROP_MAX_FACTOR  53/100     /* Max Percentage of Drop Thred to total buffer */
-#define PAUSE_DELAY_BUF_IN_PAGE  33     /* IEEE requested Pause buffering */
+#define PAUSE_DELAY_BUF_IN_PAGE  40     /* IEEE requested Pause buffering */
 #define TTL_PAUSE_MAX_FACTOR  10/100    /* Max Total Pause thread reduction from Drop Total Pause Thread in percentage of total buffer */
-#define PORT_PAUSE_MAX_FACTOR 3/100    /* Max Port Pause Thread reduction from Port Pause Thread in percentage of total buffer */
+#define PORT_PAUSE_MAX_FACTOR 5/100    /* Max Port Pause Thread reduction from Port Pause Thread in percentage of total buffer */
 #define TXQ_RSRVD_MAX_FACTOR  5/100     /* Max TXQ Reserved Thread percentage to total buffer */
 
 static void _sf2_conf_que_thred(int unit)
@@ -953,7 +957,7 @@ static void config_wan_queue_acb_map(void)
 #endif
 }
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
 #define ACB_ALG2_OPTION     1   //  chips after 63158 always use ALG2 so no more option
 #endif
 
@@ -1064,7 +1068,7 @@ void _sf2_conf_acb_conges_profile(int profile)
         // due to jira37197 strict priorty use acb_xoff_threshold * 3 queues + extra as port xoff limit
         // instead of using acb_port_xoff_threshold which is still used in Congestion calculation.
 #if defined(PORT_WITH_8TXQ)
-        if (q == PORT_WITH_8TXQ)
+        if (q == port_with_8txq)
             // for port with 8 txqs use 7.5 multiplier to support 8 SP.
             *(sf2_acb_port_config + q) = SF2_ACB_PORT_XOFF_EN | (acb_xoff_threshold*15/2);
         else
@@ -1235,9 +1239,16 @@ int ioctl_extsw_cosq_sched(enetx_port_t *self, struct ethswctl_data *e)
                       // some or all queues in weighted mode.
             SF2SW_RREG(e->unit, PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 +
                            e->port * REG_PN_QOS_WEIGHTS, data, DATA_TYPE_HOST_ENDIAN | REG_PN_QOS_WEIGHTS);
-            i = e->port_qos_sched.weights_upper? (BCM_COS_COUNT/2): 0;
-            for (j = 0; j < BCM_COS_COUNT/2; i++, j++) {
-                data[i] = e->weights[i];
+            if (e->port_qos_sched.weights_upper == Q_WEIGHT_ALL) {
+                for (i = 0; i < BCM_COS_COUNT; i++) {
+                    data[i] = e->weights[i];
+                }
+                
+            } else {
+                i = e->port_qos_sched.weights_upper? (BCM_COS_COUNT/2): 0;
+                for (j = 0; j < BCM_COS_COUNT/2; i++, j++) {
+                    data[i] = e->weights[i];
+                }
             }
             SF2SW_WREG(e->unit, PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 + e->port * REG_PN_QOS_WEIGHTS,
                             data, DATA_TYPE_HOST_ENDIAN | REG_PN_QOS_WEIGHTS);
@@ -1438,7 +1449,7 @@ static int tr_set_port_num_of_q(enetx_port_t *port, void *ctxt)
 
     for (ndx = 0; ndx < BCM_ENET_SYSPORT_QUEUE_MAP_PRIORITY_MAX; ndx++) {
 #if defined(PORT_WITH_8TXQ)
-        if ((port->port_info.port == PORT_WITH_8TXQ) && PORT_ON_ROOT_SW(port) &&
+        if ((port->port_info.port == port_with_8txq) && PORT_ON_ROOT_SW(port) &&
             (port->n.port_netdev_role == PORT_NETDEV_ROLE_WAN)) {
             port->n.flags |= PORT_FLAG_8_TXQS;
         } else
@@ -2956,7 +2967,7 @@ static int tr_fill_sysp_conf(enetx_port_t *port, void *ctxt)
         ch->switch_id = 0;
         ch->port = port->port_info.port;
 #if defined(PORT_WITH_8TXQ)
-        ch->nbr_of_queues = (port->port_info.port == PORT_WITH_8TXQ) ? 8 : 4;
+        ch->nbr_of_queues = (port->port_info.port == port_with_8txq) ? 8 : 4;
 #else
         ch->nbr_of_queues = 4;
 #endif
@@ -2975,7 +2986,7 @@ static int tr_fill_sysp_conf(enetx_port_t *port, void *ctxt)
         ch->switch_id = PORT_ON_ROOT_SW(port)?0:1;
         ch->port = port->port_info.port;
 #if defined(PORT_WITH_8TXQ)
-        ch->nbr_of_queues = (port->port_info.port == PORT_WITH_8TXQ && PORT_ON_ROOT_SW(port)) ? 8 : 4;
+        ch->nbr_of_queues = (port->port_info.port == port_with_8txq && PORT_ON_ROOT_SW(port)) ? 8 : 4;
 #else
         ch->nbr_of_queues = 4;
 #endif
@@ -3137,6 +3148,7 @@ static int tr_find_sf2_sw(enetx_port_t *sw, void *_ctx)
         gpiod_set_value(gpio, 1);   /* reset active */
         mdelay(100);
         gpiod_set_value(gpio, 0);   /* reset clear */
+        mdelay(100);
     }
     return 0;
 }
@@ -3398,6 +3410,11 @@ int port_sf2_port_init(enetx_port_t *self)
 
     enet_dbg("Initialized %s role %s\n", self->obj_name, (self->n.port_netdev_role==PORT_NETDEV_ROLE_WAN)?"wan":"lan" );
 
+#if defined(PORT_WITH_8TXQ)
+    if (PORT_ON_ROOT_SW(self) && self->port_info.wan_use_8txq) {
+        port_with_8txq = self->port_info.port;
+    }
+#endif
     return 0;
 }
 

@@ -1,0 +1,12 @@
+config BCM_VOICE_PWRCTL
+	bool "Broadcom Voice SLIC power On/Off"
+	default n
+	help
+	  Enable voice SLIC power control on Broadcom DSL/PON SoCs
+
+config BCM_VOICE_PWRCTL_IMPL
+	int "Implementation index for voice SLIC power control"
+	depends on BCM_VOICE_PWRCTL
+	default 1
+	
+

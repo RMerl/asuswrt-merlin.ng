@@ -225,7 +225,9 @@ static struct cpumask brcm_cpu_absent_mask;
 static void brcm_cpu_absent(unsigned int cpu)
 {
   cpumask_clear_cpu(cpu, (struct cpumask *)cpu_present_mask);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
   get_cpu_device(cpu)->offline = true;
+#endif
   cpumask_set_cpu(cpu, &brcm_cpu_absent_mask);
 }
 
@@ -235,7 +237,9 @@ static void brcm_cpu_absent(unsigned int cpu)
 static void brcm_cpu_present(unsigned int cpu)
 {
   cpumask_set_cpu(cpu, (struct cpumask *)cpu_present_mask);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
   get_cpu_device(cpu)->offline = false;
+#endif
   cpumask_clear_cpu(cpu, &brcm_cpu_absent_mask);
 }
 

@@ -1,0 +1,53 @@
+if TARGET_STARFIVE_VISIONFIVE2
+
+config SYS_CPU
+	default "jh7110"
+
+config SYS_BOARD
+	default "visionfive2"
+
+config SYS_VENDOR
+	default "starfive"
+
+config SYS_CONFIG_NAME
+	default "starfive-visionfive2"
+
+config TEXT_BASE
+	default 0x40200000 if SPL
+	default 0x40000000 if !RISCV_SMODE
+	default 0x40200000 if RISCV_SMODE
+
+config SPL_TEXT_BASE
+	default 0x08000000
+
+config SPL_OPENSBI_LOAD_ADDR
+	default 0x80000000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select STARFIVE_JH7110
+	select SUPPORT_SPL
+	select BINMAN
+	imply CMD_CPU
+	imply CMD_DHCP
+	imply CMD_EXT2
+	imply CMD_EXT4
+	imply CMD_FAT
+	imply CMD_FS_GENERIC
+	imply CMD_GPIO
+	imply CMD_GPT
+	imply CMD_MMC
+	imply CMD_NET
+	imply CMD_PING
+	imply CMD_SF
+	imply DM_GPIO
+	imply DOS_PARTITION
+	imply EFI_PARTITION
+	imply MII
+	imply IP_DYN
+	imply ISO_PARTITION
+	imply PARTITION_TYPE_GUID
+	imply PHY_LIB
+	imply PHY_MSCC
+
+endif

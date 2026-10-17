@@ -29,10 +29,15 @@ written consent.
 
 #include "pmc_drv.h"
 #include "BPCM.h"
+#include "bcm_ubus4.h"
 
 void pmc_mpm_en(void)
 {
     PowerOnDevice(PMB_ADDR_MPM);
+
+#if defined(CONFIG_BCM_UBUS4_DCM)
+    ubus_cong_threshold_wr(UBUS_PORT_ID_MPM, 0);
+#endif
 }
 
 EXPORT_SYMBOL(pmc_mpm_en);

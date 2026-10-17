@@ -1,6 +1,0 @@
-TITANIUM BOARD
-M:	Stefan Roese <sr@denx.de>
-S:	Maintained
-F:	board/barco/titanium/
-F:	include/configs/titanium.h
-F:	configs/titanium_defconfig

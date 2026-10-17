@@ -1,6 +1,0 @@
-COMTREND WAP-5813N BOARD
-M:	Álvaro Fernández Rojas <noltari@gmail.com>
-S:	Maintained
-F:	board/comtrend/wap-5813n/
-F:	include/configs/comtrend_wap-5813n.h
-F:	configs/comtrend_wap5813n_ram_defconfig

@@ -11,12 +11,15 @@
 
 BRCM_CHIP = 63158
 UBOOT_CONFIG = bcm963158_defconfig
+DPFE_CONFIGS =
 STANDALONE_CONFIGS = DDR3 DDR4
 STANDALONE_TYPE =
 ARCH = aarch64
 SEC_ARCH = GEN3
+BRCM_CHIP_TYPE =
 
-UBOOT_CROSS_COMPILE = /opt/toolchains/crosstools-aarch64-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1/usr/bin/aarch64-linux-
+
+UBOOT_CROSS_COMPILE = /opt/toolchains/crosstools-aarch64-gcc-10.3-linux-5.15-glibc-2.36-binutils-2.36.1/usr/bin/aarch64-linux-
 
 #- [layout]
 #- Flash layout Section
@@ -29,9 +32,10 @@ bcm_uboot_envsize = 16384
 bcm_uboot_env = env_NAND_2M_63158_provision.conf
 bcm_uboot_layout = loader_2M_saddr34_sec.conf
 bcm_uboot_image_offset = 2M
-# bcm_spinor_squashfs_offset = 6M
+bcm_meminit_layout  = memlayout.conf
+bcm_spinor_squashfs_offset =
 prebuilt_bin = precferom_4908.bin_headered
-# BOOTLOADER_EXTRA := $(mdir)/../targets/avs/avs6855.bin
+BOOTLOADER_EXTRA = 
 
 #- [spl]
 #- SPL compilation control section
@@ -41,6 +45,7 @@ prebuilt_bin = precferom_4908.bin_headered
 
 bcm_uboot_spl_prefix = nand_
 bcm_uboot_spl_arch = nand
+bcm_uboot_failsafe_dir =
 
 #- [loadersec]
 #- LOADER secure boot settings
@@ -48,12 +53,45 @@ bcm_uboot_spl_arch = nand
 #-   This section is ignored if BLD_LOADER is set to something other than source
 #-
 
+bcm_sech_arch_ver =
+bcm_cred_dir_suffix =
 bcm_uboot_spl_secmode = field
 bcm_uboot_spl_sign = targets/keys/demo/GEN3/Krot-fld.pem
 bcm_uboot_spl_signer = sign_openssl_simple.sh
 bcm_uboot_spl_encryptor = encrypt_openssl_simple.sh 
+bcm_uboot_spl_encryptor_args =
 bcm_uboot_spl_encrypt = targets/keys/demo/GEN3/Kroe-fld-ek.bin targets/keys/demo/GEN3/Kroe-fld-iv.bin
 bcm_uboot_tpl_encrypt = targets/keys/demo/GEN3/Kroe-fld-ek.bin targets/keys/demo/GEN3/Kroe-fld-iv.bin
+bcm_uboot_aes_len =
+bcm_cred_dir = targets/keys/demo/GEN3
+bcm_uboot_fld_sec_opt =
+
+
+#- [loadersec - Gen4]
+bcm_sec_tpl_roe_ek =
+bcm_sec_tpl_roe_iv =
+bcm_sec_tpl_roe_options =
+bcm_sec_tpl_rot =
+
+#- [secswitch - Gen4]
+#- Gen4 Security Switch Options
+bcm_sec_switch_certificate =
+bcm_sec_switch_ksb =
+bcm_sec_switch_roe_ek =
+bcm_sec_switch_roe_iv =
+bcm_sec_switch_rot =
+bcm_sec_encryptor =
+bcm_sec_key_map =
+bcm_sec_signer =
+
+
+
+
+#- [armtf/secureos ]
+bcm_armtf_bin =
+bcm_secure_os_bin =
+
+
 
 #- [uboot]
 #- Uboot proper compilation control
@@ -80,20 +118,34 @@ bcm_uboot_pmcfw_data_addr = 0x80380100
 #- FIT Image Signing and Security features
 #-
 
-bcm_cred_dir = targets/keys/demo/GEN3
 bcm_uboot_fit_sign = targets/keys/demo/GEN3/Krot-fld.pem
 bcm_uboot_fit_signer = sign_openssl_simple.sh
+bcm_uboot_fit_img_enc =
+bcm_uboot_fit_img_enc_algo =
+bcm_uboot_fit_img_enc_keydir =
+
+#- [fitsec - Gen4]
+
+bcm_sec_uboot_fit_cypher =
+bcm_sec_uboot_fit_sign =
+
 
 #- [advancedsec]
 #- Advanced Security Operations (delegation, policy, and encoded keys)
 #-
+#- Key-owner encrypted binaries are specified via an encryption record specified in 'bcm_uboot_delg_sec_enc_bins'
+#- The corresponding decryption keys will be stored in encrypted form in the security policy ITS specified in
+#- 'bcm_uboot_delg_sec_pol'
+#- NOTE: This delegate package DOES NOT exist in the SDK and will need to be created by the key-owners by customising
+#- and running the gen_delegate_package_example.sh script
 
 bcm_uboot_delg_sec_pol = bootloaders/build/work/delg_package/12345_sec_policy.itb
 bcm_uboot_delg_sec_pol_sig = bootloaders/build/work/delg_package/12345_sec_policy.itb.sig
 bcm_uboot_delg_sec_sdr = bootloaders/build/work/delg_package/12345_sec_sdr.bin
 bcm_uboot_delg_sec_sdr_sig = bootloaders/build/work/delg_package/12345_sec_sdr.bin.sig
 bcm_uboot_delg_fit_sign =  bootloaders/build/work/delg_package/Krsa-delg.pem
-bcm_uboot_delg_aes_base = build/work/delg_package/Kaes-delg
+bcm_uboot_delg_aes_base = bootloaders/build/work/delg_package/Kaes-delg
+bcm_uboot_delg_sec_enc_bins = bootloaders/build/work/delg_package/12345_sec_enc_bin.rec
 
 bcm_uboot_fit_security = build/configs/security_trust_fit.dtsi
 bcm_uboot_rootfs_encrypt = encrypt_verity_rootfs.pl
@@ -112,6 +164,7 @@ bcm_uboot_tkmfg_fld_roe = targets/keys/demo/GEN3/Kroe-fld-ek.bin targets/keys/de
 bcm_uboot_tkmfg_args = --args req=FLD --args arch=GEN3 --args abort_timeout=3 --args byteorder=little --args align=4
 bcm_uboot_mfg_sec_opt = opt<mfgpad unsec_eligible>
 
+
 #- [trapeze]
 #- TRAPEZE Options
 #-
@@ -125,4 +178,5 @@ bcm_uboot_reimage_btrm = 1
 #- MISC Options that dont belong elsewhere or could belong in more than one place
 #-
 
-bcm_uboot_rootfs_hash =
+
+bcm_support_fallback = 1

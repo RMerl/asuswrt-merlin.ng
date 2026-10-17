@@ -1,0 +1,37 @@
+if TARGET_NETSPACE_V2
+
+choice
+	prompt "Board variant"
+
+config INETSPACE_V2
+	bool "INETSPACE v2"
+	select KW88F6281
+
+config NETSPACE_LITE_V2
+	bool "NETSPACE LITE v2"
+	select KW88F6192
+
+config NETSPACE_MAX_V2
+	bool "NETSPACE MAX v2"
+	select KW88F6281
+
+config NETSPACE_MINI_V2
+	bool "NETSPACE MINI v2"
+	select KW88F6192
+
+config NETSPACE_V2
+	bool "NETSPACE v2"
+	select KW88F6281
+
+endchoice
+
+config SYS_BOARD
+	default "netspace_v2"
+
+config SYS_VENDOR
+	default "LaCie"
+
+config SYS_CONFIG_NAME
+	default "lacie_kw"
+
+endif

@@ -1,0 +1,16 @@
+phyCORE AM335x R2 WEGA BOARD
+M:	Niel Fourie <lusus@denx.de>
+M:	Parthiban Nallathambi <parthiban@linumiz.com>
+S:	Maintained
+F:	arch/arm/dts/am335x-regor.dtsi
+F:	arch/arm/dts/am335x-regor-rdk.dts
+F:	arch/arm/dts/am335x-regor-rdk-u-boot.dtsi
+F:	board/phytec/phycore_am335x_r2
+F:	include/configs/phycore_am335x_r2.h
+F:	configs/phycore-am335x-r2-regor_defconfig
+F:	configs/phycore-am335x-r2-wega_defconfig
+
+phyCORE AM335x R3 WEGA BOARD
+M:	Matwey V. Kornilov <matwey.kornilov@gmail.com>
+S:	Maintained
+F:	configs/pcm051_rev3_defconfig

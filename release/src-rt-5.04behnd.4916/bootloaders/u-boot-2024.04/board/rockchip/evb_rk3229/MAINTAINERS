@@ -1,0 +1,8 @@
+EVB-RK3229
+M:      Kever Yang <kever.yang@rock-chips.com>
+S:      Maintained
+F:	arch/arm/dts/rk3229-evb.dts
+F:	arch/arm/dts/rk3229-evb-u-boot.dtsi
+F:      board/rockchip/evb_rk3229
+F:      include/configs/evb_rk3229.h
+F:      configs/evb-rk3229_defconfig

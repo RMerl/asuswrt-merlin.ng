@@ -1,0 +1,34 @@
+Freescale ColdFire DSPI controller
+
+Required properties:
+- compatible : "fsl,mcf-dspi"
+- #address-cells: <1>, as required by generic SPI binding
+- #size-cells: <0>, also as required by generic SPI binding
+- reg : offset and length of the register set for the device
+
+Optional properties:
+- spi-max-frequency : max supported spi frequency
+- num-cs : the number of the chipselect signals
+- spi-mode: spi motorola mode, 0 to 3
+- ctar-params: CTAR0 to 7 register configuration, as an array
+  of 8 integer fields for each register, where each register
+  is defined as: <fmsz, pcssck, pasc, pdt, cssck, asc, dt, br>.
+- fsl,spi-cs-sck-delay: a delay in nanoseconds between activating chip
+  select and the start of clock signal, at the start of a transfer.
+- fsl,spi-sck-cs-delay: a delay in nanoseconds between stopping the clock
+  signal and deactivating chip select, at the end of a transfer.
+
+Example:
+
+dspi0: dspi@fc05c000 {
+	compatible = "fsl,mcf-dspi";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	reg = <0xfc05c000 0x100>;
+	spi-max-frequency = <50000000>;
+	num-cs = <4>;
+	spi-mode = <0>;
+	ctar-fields = <7, 0, 0, 0, 0, 0, 1, 6>,
+		      <7, 0, 0, 0, 0, 0, 1, 6>,
+		      <7, 0, 0, 0, 0, 0, 1, 6>;
+};

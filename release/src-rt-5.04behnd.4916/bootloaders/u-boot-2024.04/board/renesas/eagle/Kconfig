@@ -1,0 +1,15 @@
+if TARGET_EAGLE
+
+config SYS_SOC
+	default "renesas"
+
+config SYS_BOARD
+	default "eagle"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "rcar-gen3-common"
+
+endif

@@ -44,7 +44,12 @@
                          SNDRV_PCM_FMTBIT_S24_LE | \
                          SNDRV_PCM_FMTBIT_S32_LE)
 
-#define ADC5120_TX_LOOPBACK_EN 		I2S_SW_LOOPBACK
+#ifdef CONFIG_SND_SOC_MAPLEGROVE_SW_LOOPBACK
+#define ADC5120_TX_LOOPBACK_EN 		1
+#else
+#define ADC5120_TX_LOOPBACK_EN 		0
+#endif
+
 #define ADC5120_NUM_TX_LOOPBACK_CH	2
 #define ADC5120_MIN_CH			2
 #define ADC5120_MAX_CH			4

@@ -1,0 +1,7 @@
+<PUBLISH>
+@@  @@
+-BRCM_DRIVER_GDX=m
+-BRCM_DRIVER_GDX_HW=y
++# BRCM_DRIVER_GDX is not set
++# BRCM_DRIVER_GDX_HW is not set
+

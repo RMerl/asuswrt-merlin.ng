@@ -1,0 +1,11 @@
+Kontron SL/BL i.MX6UL/ULL Boards (N63xx/N64xx)
+M:	Frieder Schrempf <frieder.schrempf@kontron.de>
+S:	Maintained
+F:	arch/arm/dts/imx6ul-kontron-sl*
+F:	arch/arm/dts/imx6ul-kontron-bl*
+F:	arch/arm/dts/imx6ull-kontron-sl*
+F:	arch/arm/dts/imx6ull-kontron-bl*
+F:	board/kontron/sl-mx6ul
+F:	configs/kontron-sl-mx6ul_defconfig
+F:	doc/board/kontron/sl-mx6ul.rst
+F:	include/configs/kontron-sl-mx6ul.h

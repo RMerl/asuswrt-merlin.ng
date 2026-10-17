@@ -1,0 +1,111 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2019 MediaTek Inc.
+ * Author: Mingming Lee <mingming.lee@mediatek.com>
+ *
+ */
+
+#include <dt-bindings/clock/mt8518-clk.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	compatible = "mediatek,mt8518";
+	interrupt-parent = <&sysirq>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+
+
+	topckgen: clock-controller@10000000 {
+		compatible = "mediatek,mt8518-topckgen";
+		reg = <0x10000000 0x1000>;
+		#clock-cells = <1>;
+	};
+
+	gic: interrupt-controller@0c000000 {
+		 compatible = "arm,gic-v3";
+		#interrupt-cells = <3>;
+		interrupt-parent = <&gic>;
+		interrupt-controller;
+		reg = <0xc000000 0x40000>,	/* GICD */
+			  <0xc100000 0x200000>; /* GICR */
+		interrupts = <GIC_PPI 9
+			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+	};
+
+	sysirq: interrupt-controller@10200a80 {
+		compatible = "mediatek,sysirq";
+		interrupt-controller;
+		#interrupt-cells = <3>;
+		interrupt-parent = <&gic>;
+		reg = <0x10200a80 0x50>;
+	};
+
+	timer0: apxgpt@10008000 {
+		compatible = "mediatek,timer";
+		reg = <0x10008000 0x1000>;
+		interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_LOW>;
+		clocks = <&topckgen CLK_TOP_CLK26M_D2>,
+			 <&topckgen CLK_TOP_CLK32K>,
+			 <&topckgen CLK_TOP_APXGPT>;
+		clock-names = "clk13m",
+			 "clk32k",
+			 "bus";
+	};
+
+	watchdog0: watchdog@10007000 {
+		compatible = "mediatek,wdt";
+		reg = <0x10007000 0x1000>;
+		interrupts = <GIC_SPI 190 IRQ_TYPE_EDGE_FALLING>;
+		#reset-cells = <1>;
+		status = "disabled";
+		timeout-sec = <60>;
+		reset-on-timeout;
+	};
+
+	pinctrl: pinctrl@10005000 {
+		compatible = "mediatek,mt8518-pinctrl";
+		reg = <0x10005000 0x1000>;
+		gpio: gpio-controller {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+	};
+
+	usb0: usb@11100000 {
+		compatible = "mediatek,mt8518-musb";
+		reg = <0x11100000 0x1000>;
+		reg-names = "control";
+		clocks = <&topckgen CLK_TOP_USB20_48M>,
+			 <&topckgen CLK_TOP_USBIF>,
+			 <&topckgen CLK_TOP_USB>;
+		clock-names = "usbpll", "usbmcu", "usb";
+		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_LOW>;
+		interrupt-names = "mc";
+		status = "okay";
+	};
+
+	mmc0: mmc@11120000 {
+		compatible = "mediatek,mt8516-mmc";
+		reg = <0x11120000 0x1000>;
+		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_LOW>;
+		clocks = <&topckgen CLK_TOP_MSDC0>,
+			<&topckgen CLK_TOP_MSDC0>,
+			<&topckgen CLK_TOP_MSDC0_B>;
+		clock-names = "source", "hclk", "source_cg";
+		status = "disabled";
+	};
+
+	uart0: serial@11005000 {
+		compatible = "mediatek,hsuart";
+		reg = <0x11005000 0x1000>;
+		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_LOW>;
+		clocks = <&topckgen CLK_TOP_UART0_SEL>,
+			<&topckgen CLK_TOP_UART0>;
+		clock-names = "baud", "bus";
+		status = "disabled";
+	};
+
+};

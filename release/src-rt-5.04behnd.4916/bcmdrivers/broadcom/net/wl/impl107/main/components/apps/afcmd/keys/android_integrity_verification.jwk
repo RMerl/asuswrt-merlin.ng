@@ -1,0 +1,9 @@
+{
+  "copyright": "$ Copyright Broadcom $",
+  "iptag": "<<Broadcom-WL-IPTag/Proprietary>>",
+  "crv": "P-256",
+  "kid": "ZYZynKwSz3NGsqNIJ2dRmVScKTPAKLJbsr1-b1AtcDk",
+  "kty": "EC",
+  "x": "Uc1Kg7VIQadOtEB8hwLFnr2Aa1Ywcky7Q8co4tCT448",
+  "y": "ffDWQ08sdpe8lVwE-LRk5xWs--nPNevNOkbw0TQWAIs"
+}

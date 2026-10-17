@@ -1,0 +1,29 @@
+config OPTEE_LIB
+	bool "Support OPTEE library"
+	default y if OPTEE || OPTEE_IMAGE
+	help
+	  Selecting this option will enable the shared OPTEE library code.
+
+config OPTEE_IMAGE
+	bool "Support OPTEE images"
+	help
+	  Selecting this option to boot OPTEE images.
+	  This option enable the OPTEE specific checks done before booting
+	  an OPTEE image created with mkimage
+
+config OPTEE_TZDRAM_SIZE
+	hex "Amount of Trust-Zone RAM for the OPTEE image"
+	default 0x0000000
+	depends on OPTEE_LIB
+	help
+	  The size of pre-allocated Trust Zone DRAM to allocate for the OPTEE
+	  runtime.
+
+config BOOTM_OPTEE
+	bool "Support OPTEE bootm command"
+	select BOOTM_LINUX
+	select OPTEE_IMAGE
+	help
+	  Select this command to enable chain-loading of a Linux kernel
+	  via an OPTEE firmware.
+	  The bootflow is BootROM -> u-boot -> OPTEE -> Linux in this case.

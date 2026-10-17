@@ -20,10 +20,12 @@ my $out_path;
 my $sdr;
 my @keyrings;
 my %keyring;
+my $kroe_aes_len_bits;
+my $kdelg_aes_ek;
 
 my $usage = q[
 Usage: gen_sec_delg_obj --delg_id=delegate_id --rollback=anti_rollback_level --secits=security_policy_template.its
-   --kencaesdelg=encrypted_delgated_aes_key --krsadelgpub=delegated_rsa_pub_key [--krsadbgpub=debug_group_pub_key] [--legacy_sdr] [--keyring=keyring_file] --out_path=path_to_output_dir  
+   --kencaesdelg=encrypted_delgated_aes_key --krsadelgpub=delegated_rsa_pub_key --kdelgaesek=delegated_aes_ek --kroeaeslen=row_aes_ek_length [--krsadbgpub=debug_group_pub_key] [--legacy_sdr] [--keyring=keyring_file] --out_path=path_to_output_dir  
 ];
 
 GetOptions( 
@@ -31,11 +33,13 @@ GetOptions(
 	"rollback=i", 		\$rollback, 
 	"secits=s", 		\$sec_template_its, 
 	"kencaesdelg=s", 	\$kenc_aes, 
+	"kdelgaesek=s", 	\$kdelg_aes_ek,
 	"krsadelgpub=s", 	\$kdelg_pub, 
 	"krsadbgpub=s", 	\$kdbg_pub, 
+	"kroeaeslen=i",		\$kroe_aes_len_bits,
 	"out_path=s", 		\$out_path, 
 	"legacy_sdr", 		\$leg_sdr,
-	"keyring=s",		\@keyrings
+	"keyring=s", 		\@keyrings
 ) or die("$usage");
 
 die($usage) unless ($delg_id && $rollback && $sec_template_its && $kenc_aes && $kdelg_pub && $out_path);
@@ -44,10 +48,23 @@ die($usage) unless ($delg_id && $rollback && $sec_template_its && $kenc_aes && $
 {
 	local $/; # slurp!
 	open(S,"<$kdelg_pub") or die("$kdelg_pub open failed");
+	my $delg_pub_size = -s $kdelg_pub;
+
+	# If the delegate RSA key is for RSA2048 we will encode its size as 0. This
+	# is done to ensure backwards/forwards compatibility with older delegations
+	# where the TPL only supports RSA2048 delegate keys AND TPL does NOT parse 
+	# the delegate RSA key size from the SDR
+	if($delg_pub_size <= 256) {
+		$delg_pub_size = 0;
+	}
+
+	# [31:8] delegate public key size, [7:0] Rollback level
+	my $combined_rollback_pubsize = ($rollback & 0xFF) | ($delg_pub_size << 8);
+
 	if($leg_sdr) {
-		$sdr = pack('VVV',BCM_TAG_FIT_HDR_SEC_DELG_REC,$delg_id,$rollback) . <S>;
+		$sdr = pack('VVV',BCM_TAG_FIT_HDR_SEC_DELG_REC,$delg_id,$combined_rollback_pubsize) . <S>;
 	} else {
-		$sdr = pack('VVVV',BCM_TAG_FIT_HDR_SEC_DELG_REC,0,$delg_id,$rollback) . <S>;
+		$sdr = pack('VVVV',BCM_TAG_FIT_HDR_SEC_DELG_REC,0,$delg_id,$combined_rollback_pubsize) . <S>;
 	}
 	close(S);
 
@@ -80,6 +97,14 @@ close(B);
 $sec_template_txt =~ s/%DELG_ID%/$delg_id/g;
 $sec_template_txt =~ s/%DELG_AES_KEY_DATA%/$delg_aes_key_data/g;
 
+# Encryption algorithm is based on size of roe aes_ek
+my $delg_aes_key_algo = "aes-cbc-".$kroe_aes_len_bits;
+$sec_template_txt =~ s/%DELG_AES_KEY_ALGO%/$delg_aes_key_algo/g;
+
+# Size of unencrypted key = unencrypted size of delg aes_ek + 16 bytes of iv (128-bits)
+my $delg_aes_key_size_unenc = (-s $kdelg_aes_ek) + 16;
+$sec_template_txt =~ s/%DELG_AES_KEY_SIZE%/$delg_aes_key_size_unenc/g;
+
 # (optional) - Read and parse debug group public key
 if( $kdbg_pub )
 {
@@ -94,7 +119,7 @@ if( $kdbg_pub )
 	$sec_template_txt =~ s/%DELG_DBG_GRP_PUB%/$dbg_pub_key_data/;
 }
 
-# (optional) - Read and parse encoded keys
+# (optional) - Read and parse key-owner encoded keys
 if( @keyrings )
 {
 	@keyrings = ( split( /,/, join( ',', @keyrings ) ) );
@@ -127,8 +152,14 @@ if( @keyrings )
 			}
 		}
 		else {
-			# Remove data value
+			# Remove value;
 			$sec_template_txt =~ s/^(\s*\w.*)%$k%.*$//m;
+
+			# Remove entire encoded key NODE if applicable:
+			# looks for a node which has no 'data' value between 'description' and
+			# 'key_name' and removes the entire node including ending ';'
+			$sec_template_txt =~ s/\b\w+\s*\{[^{}]*?description(?![^{}]*?data)[^{}]*?key_name[^{}]*?\}\s*;?//gs;
+
 		}
 	}
 }

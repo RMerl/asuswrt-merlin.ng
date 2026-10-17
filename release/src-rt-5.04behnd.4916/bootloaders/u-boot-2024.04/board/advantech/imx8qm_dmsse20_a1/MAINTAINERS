@@ -1,0 +1,7 @@
+i.MX8QM ROM DMSSE20 a1 BOARD
+M:	Oliver Graute <oliver.graute@kococonnector.com>
+S:	Maintained
+F:	board/advantech/imx8qm_dmsse20_a1/
+F:	arch/arm/dts/imx8qm-dmsse20-a1.dtb
+F:	include/configs/imx8qm_dmsse20.h
+F:	configs/imx8qm_dmsse20a1_defconfig

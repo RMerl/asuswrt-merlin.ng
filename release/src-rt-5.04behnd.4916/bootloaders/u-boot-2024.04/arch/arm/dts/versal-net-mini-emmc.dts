@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal NET Mini eMMC Configuration
+ *
+ * (C) Copyright 2023, Advanced Micro Devices, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ * Ashok Reddy Soma <ashok.reddy.soma@amd.com>
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "xlnx,versal-net-mini";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	model = "Xilinx Versal NET MINI eMMC";
+
+	aliases {
+		serial0 = &dcc;
+		mmc0 = &sdhci1;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0 0 0 0x20000000>;
+	};
+
+	clk200: clk200 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <200000000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "okay";
+		bootph-all;
+	};
+
+	amba: amba {
+		bootph-all;
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		sdhci1: sdhci@f1050000 {
+			compatible = "xlnx,versal-net-emmc";
+			status = "okay";
+			non-removable;
+			disable-wp;
+			bus-width = <8>;
+			reg = <0 0xf1050000 0 0x10000>;
+			clock-names = "clk_xin", "clk_ahb";
+			clocks = <&clk200>, <&clk200>;
+			xlnx,mio-bank = <0>;
+		};
+	};
+};

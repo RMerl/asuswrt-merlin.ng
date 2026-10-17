@@ -1,0 +1,12 @@
+if TARGET_OPOS6ULDEV
+
+config SYS_BOARD
+	default "opos6uldev"
+
+config SYS_VENDOR
+	default "armadeus"
+
+config SYS_CONFIG_NAME
+	default "opos6uldev"
+
+endif

@@ -1,0 +1,15 @@
+if TARGET_SOMLABS_VISIONSOM_6ULL
+
+config SYS_BOARD
+	default "visionsom-6ull"
+
+config SYS_VENDOR
+	default "somlabs"
+
+config SYS_CONFIG_NAME
+	default "somlabs_visionsom_6ull"
+
+config IMX_CONFIG
+	default "board/somlabs/visionsom-6ull/imximage.cfg"
+
+endif

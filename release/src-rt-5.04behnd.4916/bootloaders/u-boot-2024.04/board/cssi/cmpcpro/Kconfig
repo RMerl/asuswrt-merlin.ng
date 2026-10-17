@@ -1,0 +1,26 @@
+if TARGET_CMPCPRO
+
+config SYS_BOARD
+	default "cmpcpro"
+
+config SYS_VENDOR
+	default "cssi"
+
+config SYS_CONFIG_NAME
+	default "cmpcpro"
+
+config TEXT_BASE
+	default 0x40000000
+
+config CPLD_BASE
+	hex
+	default 0x90000000
+
+config FPGA_BASE
+	hex
+	default 0x80000000
+
+config PCI
+	default no
+
+endif

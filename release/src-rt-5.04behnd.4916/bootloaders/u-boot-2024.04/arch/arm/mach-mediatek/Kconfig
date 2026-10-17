@@ -1,0 +1,161 @@
+if ARCH_MEDIATEK
+
+config SYS_SOC
+	default "mediatek"
+
+config SYS_VENDOR
+	default "mediatek"
+
+config MT8512
+	bool "MediaTek MT8512 SoC"
+
+choice
+	prompt "MediaTek board select"
+
+config TARGET_MT7622
+	bool "MediaTek MT7622 SoC"
+	select ARM64
+	help
+	  The MediaTek MT7622 is a ARM64-based SoC with a dual-core Cortex-A53.
+	  including UART, SPI, USB3.0, SD and MMC cards, NAND, SNFI, PWM, PCIe,
+	  Gigabit Ethernet, I2C, built-in Wi-Fi, and PCIe.
+
+config TARGET_MT7623
+	bool "MediaTek MT7623 SoC"
+	select CPU_V7A
+	help
+	  The MediaTek MT7623 is a ARM-based SoC with a quad-core Cortex-A7
+	  including NEON and GPU, Mali-450 graphics, several DDR3 options,
+	  crypto engine, built-in Wi-Fi / Bluetooth combo chip, JPEG decoder,
+	  video interfaces supporting HDMI and MIPI, and video codec support.
+	  Peripherals include Gigabit Ethernet, switch, USB3.0 and OTG, PCIe,
+	  I2S, PCM, S/PDIF, UART, SPI, I2C, IR TX/RX, and PWM.
+
+config TARGET_MT7629
+	bool "MediaTek MT7629 SoC"
+	select CPU_V7A
+	select SPL
+	help
+	  The MediaTek MT7629 is a ARM-based SoC with a dual-core Cortex-A7
+	  including DDR3, crypto engine, 3x3 11n/ac Wi-Fi, Gigabit Ethernet,
+	  switch, USB3.0, PCIe, UART, SPI, I2C and PWM.
+
+config TARGET_MT7981
+	bool "MediaTek MT7981 SoC"
+	select ARM64
+	select CPU
+	help
+	  The MediaTek MT7981 is a ARM64-based SoC with a dual-core Cortex-A53.
+	  including UART, SPI, USB, NAND, SNFI, PWM, Gigabit Ethernet, I2C,
+          built-in Wi-Fi, and PCIe.
+
+config TARGET_MT7986
+	bool "MediaTek MT7986 SoC"
+	select ARM64
+	select CPU
+	help
+	  The MediaTek MT7986 is a ARM64-based SoC with a quad-core Cortex-A53.
+	  including UART, SPI, SPI flash, USB3.0, MMC, NAND, SNFI, PWM, PCIe,
+	  Gigabit Ethernet, I2C, built-in 4x4 Wi-Fi, and PCIe.
+
+config TARGET_MT7988
+	bool "MediaTek MT7988 SoC"
+	select ARM64
+	select CPU
+	help
+	  The MediaTek MT7988 is a ARM64-based SoC with a quad-core Cortex-A73.
+	  including UART, SPI, SPI flash, USB3.0, MMC, NAND, SNFI, PWM, PCIe,
+	  10 Gigabit Ethernet , I2C, and PCIe.
+
+config TARGET_MT8183
+	bool "MediaTek MT8183 SoC"
+	select ARM64
+	help
+	  The MediaTek MT8183 is a ARM64-based SoC with a quad-core Cortex-A73 and
+	  a quad-core Cortex-A53. It is including UART, SPI, USB3.0 dual role,
+	  SD and MMC cards, UFS, PWM, I2C, I2S, S/PDIF, and several LPDDR3
+	  and LPDDR4 options.
+
+config TARGET_MT8365
+	bool "MediaTek MT8365 SoC"
+	select ARM64
+	help
+	  The MediaTek MT8365 is a ARM64-based SoC with a quad-core Cortex-A53.
+	  It is including UART, SPI, USB2.0 dual role, SD and MMC cards, NAND, PWM,
+	  I2C, I2S, S/PDIF, and several LPDDR3 and LPDDR4 options.
+
+config TARGET_MT8512
+        bool "MediaTek MT8512 M1 Board"
+        select ARM64
+	select MT8512
+        help
+          The MediaTek MT8512 is a ARM64-based SoC with a dual-core Cortex-A53.
+          including UART, SPI, USB2.0 and OTG, SD and MMC cards, NAND, PWM,
+          IR RX, I2C, I2S, S/PDIF, and built-in Wi-Fi / Bluetooth digital
+          and several LPDDR3 and LPDDR4 options.
+
+config TARGET_MT8516
+	bool "MediaTek MT8516 SoC"
+	select ARM64
+	help
+	  The MediaTek MT8516 is a ARM64-based SoC with a quad-core Cortex-A35.
+	  including UART, SPI, USB2.0 and OTG, SD and MMC cards, NAND, PWM,
+	  Ethernet, IR TX/RX, I2C, I2S, S/PDIF, and built-in Wi-Fi / Bluetooth combo
+	  chip and several DDR3 and DDR4 options.
+
+config TARGET_MT8518
+	bool "MediaTek MT8518 SoC"
+	select ARM64
+	help
+	  The MediaTek MT8518 is a ARM64-based SoC with a quad-core Cortex-A53.
+	  including UART, SPI, USB2.0 and OTG, SD and MMC cards, NAND, PWM,
+	  Ethernet, IR TX/RX, I2C, I2S, S/PDIF, and built-in Wi-Fi / Bluetooth combo
+	  chip and several DDR3 and DDR4 options.
+
+endchoice
+
+config SYS_BOARD
+	string "Board name"
+	default "mt7622" if TARGET_MT7622
+	default "mt7623" if TARGET_MT7623
+	default "mt7629" if TARGET_MT7629
+	default "mt7981" if TARGET_MT7981
+	default "mt7986" if TARGET_MT7986
+	default "mt7988" if TARGET_MT7988
+	default "mt8183" if TARGET_MT8183
+	default "mt8512" if TARGET_MT8512
+	default "mt8516" if TARGET_MT8516
+	default "mt8518" if TARGET_MT8518
+	default ""
+	help
+	  This option contains information about board name.
+	  Based on this option board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD> will
+	  be used.
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "mt7622" if TARGET_MT7622
+	default "mt7623" if TARGET_MT7623
+	default "mt7629" if TARGET_MT7629
+	default "mt7981" if TARGET_MT7981
+	default "mt7986" if TARGET_MT7986
+	default "mt7988" if TARGET_MT7988
+	default "mt8183" if TARGET_MT8183
+	default "mt8365" if TARGET_MT8365
+	default "mt8512" if TARGET_MT8512
+	default "mt8516" if TARGET_MT8516
+	default "mt8518" if TARGET_MT8518
+	default ""
+	help
+	  This option contains information about board configuration name.
+	  Based on this option include/configs/<CONFIG_SYS_CONFIG_NAME>.h header
+	  will be used for board configuration.
+
+config MTK_BROM_HEADER_INFO
+	string
+	default "media=nor" if TARGET_MT8518 || TARGET_MT8512 || TARGET_MT7629 || TARGET_MT7622
+	default "media=emmc" if TARGET_MT8516 || TARGET_MT8365 || TARGET_MT8183
+	default "media=snand;nandinfo=2k+64" if TARGET_MT7981 || TARGET_MT7986 || TARGET_MT7988
+	default "lk=1" if TARGET_MT7623
+
+endif

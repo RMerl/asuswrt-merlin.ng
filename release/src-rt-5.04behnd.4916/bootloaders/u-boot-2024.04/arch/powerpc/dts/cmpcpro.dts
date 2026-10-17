@@ -1,0 +1,189 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * CMPC885 Device Tree Source
+ *
+ * Copyright 2020 CS GROUP France
+ *
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/clk/mpc83xx-clk.h>
+
+/ {
+	model = "CMPCPRO";
+	compatible = "fsl, cmpc85xx", "fsl,mod85xx", "CMPCPRO", "MPC8321E", "fsl,cmpcpro";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {
+		stdout-path = &serial0;
+	};
+	WDT: watchdog@0 {
+		device_type = "watchdog";
+		compatible = "fsl,pq1-wdt";
+	};
+
+	aliases {
+		ethernet0 = &eth0;
+		etehrnet1 = &eth1;
+		serial0 = &serial0;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		PowerPC,8321@0 {
+			device_type = "cpu";
+			reg = <0x0>;
+			d-cache-line-size = <0x20>;	// 32 bytes
+			i-cache-line-size = <0x20>;	// 32 bytes
+			d-cache-size = <16384>;	// L1, 16K
+			i-cache-size = <16384>;	// L1, 16K
+			timebase-frequency = <0>;
+			bus-frequency = <0>;
+			clock-frequency = <0>;
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x20000000>;
+	};
+
+	soc8321@b0000000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "soc";
+		compatible = "simple-bus";
+		ranges = <0x0 0xb0000000 0x00100000>;
+		reg = <0xb0000000 0x00000200>;
+		bus-frequency = <0>;
+		pmc: power@b00 {
+			compatible = "fsl,mpc8323-pmc", "fsl,mpc8349-pmc";
+			reg = <0xb00 0x100 0xa00 0x100>;
+			interrupts = <80 0x8>;
+			interrupt-parent = <&ipic>;
+		};
+		serial0: serial@4500 {
+			clocks = <&socclocks MPC83XX_CLK_CSB>;
+			cell-index = <0>;
+			device_type = "serial";
+			compatible = "fsl,ns16550", "ns16550";
+			reg = <0x4500 0x100>;
+			clock-frequency = <0>;
+			interrupts = <9 0x8>;
+			interrupt-parent = <&ipic>;
+		};
+		ipic:pic@700 {
+			interrupt-controller;
+			#address-cells = <0>;
+			#interrupt-cells = <2>;
+			reg = <0x700 0x100>;
+			device_type = "ipic";
+		};
+		par_io@1400 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0x1400 0x100>;
+			ranges;
+			compatible = "fsl,mpc8323-qe-pario","simple-bus";
+			device_type = "par_io";
+			num-ports = <7>;
+			qe_pio_a: gpio-controller@1400 {
+				#gpio-cells = <2>;
+				compatible = "fsl,mpc8323-qe-pario-bank","fsl,mpc8308-gpio";
+				reg = <0x1400 0x18>;
+				gpio-controller;
+			};
+			qe_pio_b: gpio-controller@1418 {
+				#gpio-cells = <2>;
+				compatible = "fsl,mpc8323-qe-pario-bank","fsl,mpc8308-gpio";
+				reg = <0x1418 0x18>;
+				gpio-controller;
+			};
+			qe_pio_c: gpio-controller@1430 {
+				#gpio-cells = <2>;
+				compatible = "fsl,mpc8323-qe-pario-bank","fsl,mpc8308-gpio";
+				reg = <0x1430 0x18>;
+				gpio-controller;
+			};
+			qe_pio_d: gpio-controller@1448 {
+				#gpio-cells = <2>;
+				compatible = "fsl,mpc8323-qe-pario-bank","fsl,mpc8308-gpio";
+				reg = <0x1448 0x18>;
+				gpio-controller;
+			};
+		};
+	};
+	socclocks: clocks {
+		bootph-all;
+		compatible = "fsl,mpc832x-clk";
+		#clock-cells = <1>;
+	};
+	qe@b0100000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "qe";
+		compatible = "fsl,qe","simple-bus";
+		ranges = <0x0 0xb0100000 0x00100000>;
+		reg = <0xb0100000 0x480>;
+		brg-frequency = <0>;
+		bus-frequency = <198000000>;
+		fsl,qe-num-riscs = <1>;
+		fsl,qe-num-snums = <28>;
+		spi@4c0 {
+			clocks = <&socclocks MPC83XX_CLK_CSB>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			cell-index = <0>;
+			compatible = "fsl,mpc832x-spi";
+			reg = <0x4c0 0x40>;
+			mode = "cpu";
+			gpios = <&qe_pio_d 3 1>;
+			clock-frequency = <0>;
+			eeprom@3 {
+				compatible = "atmel,at25", "cs,eeprom";
+				cell-index = <1>;
+			};
+		};
+		eth0: ucc@3000 {
+			device_type = "network";
+			compatible = "ucc_geth";
+			cell-index = <2>;
+			reg = <0x3000 0x200>;
+			rx-clock-name = "clk17";
+			tx-clock-name = "clk17";
+			phy-handle = <&phy1>;
+			phy-connection-type = "rmii";
+		};
+		eth1: ucc@2200 {
+			device_type = "network";
+			compatible = "ucc_geth";
+			cell-index = <3>;
+			reg = <0x2200 0x200>;
+			rx-clock-name = "clk12";
+			tx-clock-name = "clk12";
+			phy-handle = <&phy2>;
+			phy-connection-type = "rmii";
+		};
+		mdio@3120 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x3120 0x18>;
+			compatible = "fsl,ucc-mdio";
+			phy1:ethernet-phy@1 {
+				interrupt-parent = <&ipic>;
+				reg = <0x1>;
+				interrupts = <17 8>;
+				device_type = "ethernet-phy";
+			};
+			phy2:ethernet-phy@2 {
+				interrupt-parent = <&ipic>;
+				reg = <0x2>;
+				interrupts = <17 8>;
+				device_type = "ethernet-phy";
+			};
+		};
+	};
+};

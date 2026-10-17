@@ -1,0 +1,23 @@
+QUARTZ64-RK3566
+M:	Nicolas Frattaroli <frattaroli.nicolas@gmail.com>
+R:	Jonas Karlman <jonas@kwiboo.se>
+S:	Maintained
+F:	board/pine64/quartz64_rk3566/
+F:	include/configs/quartz64_rk3566.h
+F:	configs/quartz64-a-rk3566_defconfig
+F:	configs/quartz64-b-rk3566_defconfig
+F:	configs/soquartz-blade-rk3566_defconfig
+F:	configs/soquartz-cm4-rk3566_defconfig
+F:	configs/soquartz-model-a-rk3566_defconfig
+F:	arch/arm/dts/rk3566-quartz64-a.dts
+F:	arch/arm/dts/rk3566-quartz64-a-u-boot.dtsi
+F:	arch/arm/dts/rk3566-quartz64-b.dts
+F:	arch/arm/dts/rk3566-quartz64-b-u-boot.dtsi
+F:	arch/arm/dts/rk3566-soquartz.dtsi
+F:	arch/arm/dts/rk3566-soquartz-u-boot.dtsi
+F:	arch/arm/dts/rk3566-soquartz-blade.dts
+F:	arch/arm/dts/rk3566-soquartz-blade-u-boot.dtsi
+F:	arch/arm/dts/rk3566-soquartz-cm4.dts
+F:	arch/arm/dts/rk3566-soquartz-cm4-u-boot.dtsi
+F:	arch/arm/dts/rk3566-soquartz-model-a.dts
+F:	arch/arm/dts/rk3566-soquartz-model-a-u-boot.dtsi

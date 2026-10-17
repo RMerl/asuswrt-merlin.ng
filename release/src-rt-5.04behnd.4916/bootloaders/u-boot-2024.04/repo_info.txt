@@ -1,0 +1,2 @@
+commit=9d43ff3c411203b666b56c7aac7e72a94797f740
+branch=bca-2024.04_patches/CustomBranches/Asustek/6.2.0

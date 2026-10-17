@@ -62,5 +62,8 @@ typedef enum
 
 int bcm_rpc_pwr_set_domain_state(char *name, uint8_t name_size, pwr_dom_state state, pwr_dom_reset reset);
 int bcm_rpc_pwr_get_domain_state(char *name, uint8_t name_size, pwr_dom_state *state, pwr_dom_reset *reset);
+int bcm_rpc_pwr_en_ddr_auto_self_refresh(uint32_t ddr_thre);
+int bcm_rpc_pwr_dis_ddr_auto_self_refresh(void);
+
 
 #endif

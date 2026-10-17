@@ -1,0 +1,6 @@
+PICOPI IMX8MQ BOARD
+M:	Marek Vasut <marek.vasut@gmail.com>
+S:	Maintained
+F:	board/technexion/pico-imx8mq/
+F:	include/configs/pico-imx8mq.h
+F:	configs/pico-imx8mq_defconfig

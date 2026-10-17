@@ -1,0 +1,67 @@
+How to Update U-Boot on imx6ulz_smm_m2 board
+--------------------------------------------
+
+Required software on the host PC:
+
+- UUU: https://github.com/NXPmicro/mfgtools
+
+Build U-Boot for m2:
+
+$ make mrproper
+$ make imx6ulz_smm_m2_defconfig
+$ make
+
+This generates the SPL and u-boot-dtb.img binaries.
+
+1. Loading U-Boot via USB Serial Download Protocol
+
+Copy SPL and u-boot-dtb.img to the uuu folder.
+
+Load the U-Boot via USB:
+
+$ sudo uuu -v -b nand_script.lst u-boot-with-spl.imx
+
+where nand_script.lst contains the following:
+
+uuu_version 1.2.39
+
+# @_flash.bin            | bootloader
+# @_image   [_flash.bin] | image burn to nand, default is the same as bootloader
+
+# This command will be run when i.MX6/7 i.MX8MM, i.MX8MQ
+SDP: boot -f _flash.bin
+
+# This command will be run when ROM support stream mode
+# i.MX8QXP, i.MX8QM
+SDPS: boot -f _flash.bin
+
+# These commands will be run when use SPL and will be skipped if no spl
+# SDPU will be deprecated. please use SDPV instead of SDPU
+# {
+SDPU: delay 1000
+SDPU: write -f _flash.bin -offset 0x57c00
+SDPU: jump
+# }
+
+# These commands will be run when use SPL and will be skipped if no spl
+# if (SPL support SDPV)
+# {
+SDPV: delay 1000
+SDPV: write -f _flash.bin -offset 0x11000
+SDPV: jump
+# }
+
+FB: ucmd setenv fastboot_buffer ${loadaddr}
+FB: download -f _image
+FB: ucmd if test ! -n "$fastboot_bytes"; then setenv fastboot_bytes $filesize; else true; fi
+# Burn image to nandfit partition if needed
+FB: ucmd if env exists nandfit_part; then nand erase.part nandfit; nand write ${fastboot_buffer} nandfit ${fastboot_bytes}; else true; fi;
+FB: ucmd nandbcb init ${fastboot_buffer} nandboot ${fastboot_bytes}
+FB: Done
+
+Then U-Boot starts and its messages appear in the console program.
+
+Use the default environment variables:
+
+=> env default -f -a
+=> saveenv

@@ -200,8 +200,6 @@ typedef enum
    CMSRET_EE_UPDATE_VERSION_EXISTED = 9860,/**< Invalid Execution Environment Update, version already exists
                                                     * (associated with ChangeEEState:update)
                                                     */
-   CMSRET_PMD_CALIBRATION_FILE_SUCCESS = 9861, /**<Success. PMD Calibration file was uploaded.*/
-   CMSRET_PMD_TEMP2APD_FILE_SUCCESS = 9862, /**<Success. PMD Temp2Apd file was uploaded.*/
    CMSRET_MANIFEST_PARSE_ERROR = 9863,   /**< Manifest parse error. */
    CMSRET_USERNAME_IN_USE = 9864,   /**< Username in use. */
    CMSRET_ADD_USER_ERROR = 9865,    /**< Add user error. */
@@ -221,7 +219,10 @@ typedef enum
    CMSRET_MANIFEST_NO_PRIVILEGE_INFO = 9877, /**<Manifest without privilege information*/
    CMSRET_UNINSTALL_IN_PROCESS = 9878,    /**<Uninstall operation is still in process. */
    CMSRET_UPGRADE_IN_PROCESS = 9879,    /**<Upgrade operation is still in process. */
-   CMSRET_PMD_JSON_FILE_SUCCESS = 9880, /**<Success. PMD JSON file was uploaded.*/
+   CMSRET_DU_MAX_EXCEED = 9881,/**< Fail to install Deployment Unit due to reaching max number
+                                  * (associated with ChangeDUState:install)
+                                  */
+   CMSRET_SM_UNAVAILABLE_ROLE  = 9882,/**<Unavailable Role fault code */
    CMSRET_UNKNOWN_ERROR = 9899,  /**< Can't figure out the real cause.  Use sparingly. */
 } CmsRet;
 

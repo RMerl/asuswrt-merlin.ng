@@ -1053,6 +1053,9 @@ static const ru_reg_rec *NATC_DDR_CFG_REGS[] =
 const ru_block_rec NATC_DDR_CFG_BLOCK =
 {
     "NATC_DDR_CFG",
+#if RU_INCLUDE_SIZE
+    { 0x000004B4 },
+#endif
     NATC_DDR_CFG_ADDRS,
     1,
     6,

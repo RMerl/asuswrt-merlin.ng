@@ -1,0 +1,9 @@
+MYS_6ULX BOARD
+M:	Parthiban Nallathambi <parthiban@linumiz.com>
+S:	Maintained
+F:	arch/arm/dts/imx6ull-myir-mys-6ulx-nand.dts
+F:	arch/arm/dts/imx6ull-myir-mys-6ulx.dtsi
+F:	arch/arm/dts/imx6ull-mys-6ulx-u-boot.dtsi
+F:	board/myir/mys_6ulx/
+F:	configs/myir_mys_6ulx_defconfig
+F:	include/configs/mys_6ulx.h

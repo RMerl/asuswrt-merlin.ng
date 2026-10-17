@@ -30,10 +30,12 @@
 #ifndef _RDD_DEFS_H
 #define _RDD_DEFS_H
 
+#include <bdmf_system.h>
+
 #include "rdd_fw_defs.h"
 #include "packing.h"
 #include "rdpa_types.h"
-#if !defined(OPERATION_MODE_PRV) && !defined(RDP_UFC)
+#if !defined(RDP_UFC)
 #include "rdpa_ip_class_basic.h"
 #elif defined(RDP_UFC)
 #include "rdpa_ucast.h"
@@ -63,6 +65,8 @@
 #else
 #if CHIP_VER>=RDP_GEN_62
 #define RDD_NUM_OF_RX_WAN_FLOWS                                 RDD_RX_FLOW_TABLE_SIZE
+#elif defined(BCM6855)
+#define RDD_NUM_OF_RX_WAN_FLOWS                                 128
 #else
 #define RDD_NUM_OF_RX_WAN_FLOWS                                 256
 #endif
@@ -200,11 +204,16 @@ typedef enum
 } rdd_fc_fwd_action_t;
 
 #define RDD_DDR_SOP_OFFSET0 0
+
+#ifdef DHD_PCAP_SUPPORT
+#define RDD_DDR_SOP_OFFSET1 320 /* for PCAP 320B required */
+#elif defined(RDP_UFC)
+#define RDD_DDR_SOP_OFFSET1 128 /* this headroom required to TCP Speed Test and it limited up to 128-32 */
+#else
 #define RDD_DDR_SOP_OFFSET1 88 /* this headroom required to TCP Speed Test and it limited up to 128-32 */
+#endif
 
 #if !defined(PKTRUNNER_IMPL2)
-#define RDD_FLOW_CACHE_L2_HEADER_BYTE_SIZE 30
-#if !defined(OPERATION_MODE_PRV)
 typedef struct
 {
     bdmf_index conn_index;
@@ -217,7 +226,6 @@ typedef struct
     bdmf_index service_queue_id;
     rdpa_qos_method	qos_method;
 
-    bdmf_ip_family ip_version;
     uint16_t nat_port;
     bdmf_ip_t nat_ip;
     uint8_t ds_lite_hdr_index;
@@ -249,9 +257,13 @@ typedef struct
     int8_t l2_hdr_offset;
     uint8_t l2_hdr_size;
     uint8_t l2_hdr_number_of_tags;
-    uint8_t l2_header[RDD_FLOW_CACHE_L2_HEADER_BYTE_SIZE];
+    uint8_t l2_header[RDPA_FLOW_CACHE_L2_HEADER_BYTE_SIZE];
     uint8_t drop_eligibility;              /* drop_eligibility bit 0: 0=non drop eligible class high, 1=drop eligible low, bit 1: enabler */
     uint32_t pathstat_idx;                 /* index path for statistics */
+    uint8_t score_stream_incarn;           /* SCORE stream incarnation */
+    uint8_t score_stream_dir;              /* SCORE stream direction */
+    uint16_t score_stream_id;              /* SCORE stream ID  */
+    uint16_t score_dcp_bitmask;            /* SCORE Data Collection profiles bitmask   */
     uint16_t max_pkt_len;                  /* Rx max packet length according to egress MTU */
     uint8_t is_tcpspdtest;                 /* is_tcpspdtest */
     uint8_t spdtest_stream_id;             /* tcpspdtest/udpspdtest stream_id */
@@ -271,7 +283,6 @@ typedef struct
     uint16_t gdx_ctx_data;
 #endif
 } rdd_fc_context_t;
-#endif /* not Operation mode PRV */
 #else
 typedef union
 {
@@ -281,9 +292,6 @@ typedef union
 #if defined(CONFIG_RUNNER_GDX_SUPPORT) /* TX */
     FC_UCAST_FLOW_CONTEXT_GDX_ENTRY_STRUCT fc_ucast_flow_context_gdx_entry;
 #endif
-#if defined(CONFIG_RUNNER_FPI)
-    FC_UCAST_FLOW_CONTEXT_FPI_ENTRY_STRUCT fc_ucast_flow_context_fpi_entry;
-#endif
 #if defined(CONFIG_RNR_HW_FIREWALL)
     CT_LKP_FLOW_CONTEXT_ENTRY_STRUCT ct_lkp_flow_context_entry;
 #endif
@@ -292,12 +300,14 @@ typedef union
     FC_UCAST_FLOW_CONTEXT_ENTRY_STRUCT         fc_ucast_flow_context_entry;
     FC_UCAST_FLOW_CONTEXT_RNR_DHD_ENTRY_STRUCT fc_ucast_flow_context_rnr_dhd_entry;
     FC_UCAST_FLOW_CONTEXT_WFD_DHD_ENTRY_STRUCT fc_ucast_flow_context_wfd_dhd_entry;
-#ifdef RDP_UFC    
+#if defined(RDP_UFC) || defined(BCM63158)
     FC_UCAST_FLOW_CONTEXT_TUNNEL_ENTRY_STRUCT  fc_ucast_flow_context_tunnel_entry;
+#endif
+#ifdef RDP_UFC
     FC_UCAST_FLOW_CONTEXT_DYNAMIC_DATA_ENTRY_STRUCT   fc_ucast_flow_context_dynamic_data_entry;
 #endif
 #if defined(CONFIG_RNR_UNKNOWN_UCAST_FLOODING)
-    FC_UCAST_FLOOD_CONTEXT_ENTRY_STRUCT  fc_ucast_flow_flood_context_entry;    
+    FC_UCAST_FLOOD_CONTEXT_ENTRY_STRUCT  fc_ucast_flow_flood_context_entry;
 #endif
 } rdd_fc_context_t;
 
@@ -318,7 +328,6 @@ typedef enum
 #endif
 
 
-#if !defined(OPERATION_MODE_PRV)
 /** 5-tuple based IP flow key.\n
  * This key is used to classify traffic.\n
  */
@@ -331,9 +340,6 @@ typedef struct {
     rdpa_traffic_dir dir;/**< Traffic direction */
     uint16_t lookup_port; /**< ingress vport */
     uint8_t tcp_pure_ack;/**< TCP pure ack flow */
-#if defined(BCM_DSL_RDP)
-    uint8_t ingress_radio_idx;
-#endif
     uint8_t pbit;
 #if defined(XRDP_RGEN6)
     uint8_t vtag_num;
@@ -344,6 +350,10 @@ typedef struct {
 #if defined(CONFIG_RUNNER_FPI)
     rdpa_fpi_mode_t fpi_mode;
 #endif
+    uint8_t  is_inner_flow;
+    uint32_t tunnel_key;
+    uint32_t tunnel_key_mask;
+    uint32_t tunnel_flowid;
 } rdd_l3_flow_key_t;
 
 typedef struct
@@ -363,9 +373,6 @@ typedef struct {
     uint8_t tos;         /**< ToS */
     rdpa_traffic_dir dir;/**< Traffic direction */
     uint8_t lookup_port; /**< Ingress port */
-#if defined(BCM_DSL_RDP)
-    uint8_t ingress_radio_idx;
-#endif
     uint16_t wan_flow;   /**< WAN Flow, used f ingress port is wan (e.g. gem_flow), ignored otherwise \XRDP_LIMITED */
     uint8_t client_idx;  /**< Client index used for  L2 flooding, Zeroed otherwise \XRDP_LIMITED */
     uint8_t tcp_pure_ack;/**< TCP pure ack flow */
@@ -374,6 +381,12 @@ typedef struct {
 #if defined(CONFIG_RUNNER_FPI)
     rdpa_fpi_mode_t fpi_mode;
 #endif
+    uint8_t  is_inner_flow;
+    uint32_t tunnel_key;
+    uint32_t tunnel_key_mask;
+    uint32_t tunnel_flowid;
+    uint8_t reserved_is_flood_mcast; /**< For inner use flooding/mcast flag */
+    uint8_t is_wan_flow; /**< For inner use flooding/mcast flag */
 } rdd_l2_flow_key_t;
 
 typedef struct
@@ -383,8 +396,6 @@ typedef struct
     rdd_fc_context_t context_entry;
     uint32_t entry_index;
 } rdd_l2_flow_t;
-
-#endif
 
 typedef enum
 {
@@ -423,6 +434,8 @@ typedef enum
 } rdpa_rdd_sched_type_t;
 #endif
 
+#define RDD_SCORE_TIMESTAMP_CAL_PERIOD 500
+
 typedef enum
 {
     RDD_RL_TYPE_BASIC,
@@ -444,6 +457,10 @@ static inline int get_runner_idx(rdp_runner_image_e module_idx)
         if (rdp_core_to_image_map[i] == module_idx)
             return i;
 
+    BDMF_TRACE_ERR("module_idx %d not in rdp_core_to_image_map\n", module_idx);
+    BUG();
+    
+    /* For platforms ignoring the BUG(), return a value indicating an error */
     return NUM_OF_RUNNER_CORES;
 }
 
@@ -505,9 +522,15 @@ static inline uint32_t rdd_period_to_low_pps_limit(uint32_t period)
 static inline uint32_t rdd_rate_to_alloc_unit(uint32_t rate, uint32_t period, uint32_t *residue)
 {
     uint32_t low_pps_limit = rdd_period_to_low_pps_limit(period);
-    uint32_t reisdue_low_pps_limit = rdd_period_to_low_pps_limit(period*RESIDUE_NUMBER_OF_CYCLES);
+    uint32_t reisdue_low_pps_limit;
     uint32_t temp;
 
+#ifdef TM_C_CODE
+    /* The residue is added each N cycles of the generic timer itsef, it isn't related to the budget allocator period */
+    reisdue_low_pps_limit = rdd_period_to_low_pps_limit(GENERAL_TIMER_PERIODICITY*RESIDUE_NUMBER_OF_CYCLES);
+#else
+    reisdue_low_pps_limit = rdd_period_to_low_pps_limit(period*RESIDUE_NUMBER_OF_CYCLES);
+#endif
     temp = (rate/10000)*10000;
     *residue = rate - temp;
     *residue = *residue / reisdue_low_pps_limit;
@@ -528,14 +551,6 @@ typedef struct
     uint64_t tx_bytes;
     uint32_t crc_err;
     uint32_t rx_drop_pkt;
-#ifdef OPERATION_MODE_PRV
-    uint32_t rx_multicast_pkt;
-    uint32_t rx_broadcast_pkt;
-    uint32_t rx_unicast_pkt;
-    uint32_t tx_multicast_pkt;
-    uint32_t tx_broadcast_pkt;
-    uint32_t tx_unicast_pkt;
-#endif
 } rdd_vport_pm_counters_t;
 
 typedef struct
@@ -552,35 +567,11 @@ typedef struct
     uint32_t bytes_cntr_id;
     uint8_t trap_reason;
     uint8_t iq_priority;             /**< Ingress Qos drop priority in ingress congestion */
-    bdmf_index policer;              /**< Policer ID */
-    bdmf_index tunnel;               /**< Tunnel ID */
-    bdmf_boolean is_vlan_action;
-    rdpa_forwarding_mode forw_mode;  /** < flow/pkt based */
-    uint8_t gem_mapping_table;
-    rdpa_qos_method gem_mapping_mode;
-    bdmf_boolean dscp_remark;        /**< enable dscp remark */
-    rdpa_dscp dscp_val;              /**< dscp remark value */
-    bdmf_boolean opbit_remark;       /**< enable outer pbit remark */
-    rdpa_pbit opbit_val;	         /**< outer pbit remark value */
-    bdmf_boolean ipbit_remark;       /**< enable inner pbit remark */
-    rdpa_pbit ipbit_val;             /**< inner pbit remark value */
-    bdmf_boolean qos_rule_wan_flow_overrun; /**< enable overrun wan flow value by qos rule   */
-    bdmf_boolean include_mcast;      /**< include mcast flow flag  */
-    bdmf_boolean loopback;           /**< enable loopback on flow  */
-    bdmf_boolean ttl;           /**< enable ttl action */
-    bdmf_boolean service_queue_mode; /**< enable service queue  */
-    uint8_t service_queue;           /**< service queue ID  */
     bdmf_boolean ct_override;        /**< Trap packets not in CT */
-    union
-    {
-        uint8_t us_vlan_command;
-        struct
-        {
-            uint8_t ds_vlan_command[PROJ_DEFS_NUMBER_OF_VPORTS];
-            uint8_t ds_vlan_command_flow_default;
-            bdmf_boolean ds_vlan_command_per_port_set[PROJ_DEFS_NUMBER_OF_VPORTS];
-        };
-    } vlan_command_id;
+    rdpa_forwarding_mode forw_mode;  /** < flow/pkt based */
+#if defined(RDP_UFC)
+    bdmf_boolean flow_miss;          /**< Rule action performed on Flow Cache miss > */
+#endif
 } rdd_ic_context_t;
 
 #if defined(USE_BDMF_SHELL)
@@ -624,4 +615,6 @@ extern uint32_t g_rdd_trace;
 #define RDD_VPORT_NONE (PROJ_DEFS_NUMBER_OF_VPORTS + 1)
 #endif
 
-
+#if !defined(LOG_EVENT)
+#define LOG_EVENT(...)
+#endif

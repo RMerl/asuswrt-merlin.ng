@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2016 Rockchip Electronics Co., Ltd
+ */
+
+/dts-v1/;
+#include "rk3288-miqi.dtsi"
+
+/ {
+	model = "mqmaker MiQi";
+	compatible = "mqmaker,miqi", "rockchip,rk3288";
+
+	chosen {
+		stdout-path = "serial2:115200n8";
+	};
+};

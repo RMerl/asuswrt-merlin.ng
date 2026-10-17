@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016- 2021 Marvell International Ltd.
+ */
+
+/*
+ * Device Tree file for the Armada 8040 SoC, made of an AP806 Quad and
+ * two CP110.
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-common.dtsi"
+#include "armada-8k.dtsi"
+#include "armada-ap806.dtsi"
+#include "armada-ap80x-quad.dtsi"
+
+/* CP110-0 Settings */
+#define CP110_NAME		cp0
+#define CP110_NUM		0
+
+#include "armada-cp110.dtsi"
+
+#undef CP110_NAME
+#undef CP110_NUM
+
+/* CP110-1 Settings */
+#define CP110_NAME		cp1
+#define CP110_NUM		1
+
+#include "armada-cp110.dtsi"
+
+#undef CP110_NAME
+#undef CP110_NUM
+
+
+/ {
+	model = "Marvell Armada 8040";
+	compatible = "marvell,armada8040", "marvell,armada-ap806-quad",
+		     "marvell,armada-ap806";
+};
+
+&cp0_pinctl {
+	compatible = "marvell,mvebu-pinctrl", "marvell,armada-8k-cpm-pinctrl";
+	bank-name ="cp0-110";
+
+	cp0_i2c0_pins: cp0-i2c-pins-0 {
+		marvell,pins = < 37 38 >;
+		marvell,function = <2>;
+	};
+	cp0_i2c1_pins: cp0-i2c-pins-1 {
+		marvell,pins = < 35 36 >;
+	marvell,function = <2>;
+	};
+	cp0_ge1_rgmii_pins: cp0-ge-rgmii-pins-0 {
+		marvell,pins = < 0 1 2 3 4 5 6 7 8 9 10 11>;
+		marvell,function = <3>;
+	};
+	cp0_ge2_rgmii_pins: cp0-ge-rgmii-pins-1 {
+		marvell,pins = < 44 45 46 47 48 49 50 51
+				 52 53 54 55 >;
+		marvell,function = <1>;
+	};
+	cp0_pca0_pins: cp0-pca0_pins {
+		marvell,pins = <62>;
+		marvell,function = <0>;
+	};
+	cp0_sdhci_pins: cp0-sdhi-pins-0 {
+		marvell,pins = < 56 57 58 59 60 61 >;
+		marvell,function = <14>;
+	};
+	cp0_spi0_pins: cp0-spi-pins-0 {
+		marvell,pins = < 13 14 15 16 >;
+		marvell,function = <3>;
+	};
+};
+
+&cp1_pinctl {
+	compatible = "marvell,mvebu-pinctrl", "marvell,armada-8k-cps-pinctrl";
+	bank-name ="cp1-110";
+
+	cp1_ge1_rgmii_pins: cp1-ge-rgmii-pins-0 {
+		marvell,pins = < 0 1 2 3 4 5 6 7 8 9 10 11 >;
+		marvell,function = <3>;
+	};
+	cp1_spi1_pins: cp1-spi-pins-1 {
+		marvell,pins = < 13 14 15 16 >;
+		marvell,function = <3>;
+	};
+};

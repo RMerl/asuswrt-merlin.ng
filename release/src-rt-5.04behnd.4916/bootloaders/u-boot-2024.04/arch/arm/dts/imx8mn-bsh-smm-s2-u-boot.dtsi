@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2021 Collabora Ltd.
+ * Copyright 2021 BSH Hausgeraete GmbH
+ */
+
+#include "imx8mn-bsh-smm-s2-u-boot-common.dtsi"
+
+&pinctrl_gpmi_nand {
+	bootph-pre-ram;
+};
+
+&gpmi {
+	bootph-pre-ram;
+};

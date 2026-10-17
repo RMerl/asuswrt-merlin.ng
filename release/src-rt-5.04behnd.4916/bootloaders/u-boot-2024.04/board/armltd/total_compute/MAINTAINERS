@@ -1,0 +1,7 @@
+TOTAL_COMPUTE BOARD
+M:	Usama Arif <usama.arif@arm.com>
+S:	Maintained
+F:	board/armltd/total_compute/
+F:	include/configs/total_compute.h
+F:	configs/total_compute_defconfig
+F:	arch/arm/dts/total_compute.dts

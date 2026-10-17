@@ -1,0 +1,139 @@
+#include "inc/68375.dtsi"
+/ {
+        memory_controller {
+                memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+                           BP1_DDR_TYPE_LPDDR4         | \
+                           BP1_DDR_SPEED_2133_36_39_39 | \
+                           BP1_DDR_WIDTH_32BIT         | \
+                           BP1_DDR_TOTAL_SIZE_16Gb      | \
+                           BP1_DDR_SSC_CONFIG_1 )>;
+        };
+};
+
+/ {
+    model = "968575DV";
+};
+
+&wdt {
+    status = "okay";
+};
+
+&uart0 {
+    status = "okay";
+};
+
+&i2c0 {
+    pinctrl-0 = <&bsc_m0_scl_pin_28 &bsc_m0_sda_pin_29>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+    xhci-enable;
+    status = "okay";
+};
+
+&usb0_xhci {
+    status = "okay";
+
+    usb_port1: port1 {
+        reg = <1>;
+        #trigger-source-cells = <0>;
+    };
+
+    usb_port2: port2 {
+        reg = <2>;
+        #trigger-source-cells = <0>;
+    };
+};
+
+&hsspi {
+    status = "okay";
+};
+
+&i2s {
+    pinctrl-names = "default";
+    pinctrl-0 = <&b_i2s_tx_mclk_pin_77 &b_i2s_rx_sclk_pin_78 &b_i2s_rx_lrck_pin_79 &b_i2s_rx_mclk_pin_80>;
+    status = "okay";
+};
+
+&xport {
+    status = "okay";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    xphy1-enabled;
+    xphy2-enabled;
+    xphy3-enabled;
+    xphy4-enabled;
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+&mdio_bus {
+    xphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    xphy2 {
+        status = "okay";
+    };
+    xphy3 {
+        status = "okay";
+    };
+    xphy4 {
+        status = "okay";
+    };
+    serdes0 {
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+    serdes1 {
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_xgphy0 {
+            status = "okay";
+        };
+        port_xgphy1 {
+            status = "okay";
+        };
+        port_xgphy2 {
+            status = "okay";
+        };
+        port_xgphy3 {
+            status = "okay";
+        };
+        port_xgphy4 {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_slan1 {
+            status = "okay";
+        };
+    };
+};

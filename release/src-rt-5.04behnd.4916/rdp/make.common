@@ -3,19 +3,9 @@
 # to suck in the common defines.
 #
 
-ifeq ($(OS),Windows_NT)
-	OS_PLATFORM = cyg
-    ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
-        #64 bit
-    endif
-    ifeq ($(PROCESSOR_ARCHITECTURE),x86)
-        #32 bit
-    endif
-else
-    OS_PLATFORM = linux
-    ifeq ("$(CMAKE_FW_BUILD)", "y")
-        include $(TOP_DIR)/make.cmake
-    endif
+OS_PLATFORM = linux
+ifeq ("$(CMAKE_FW_BUILD)", "y")
+    include $(TOP_DIR)/make.cmake
 endif
 
 # In release branch below value should be change to "yes"
@@ -23,11 +13,10 @@ endif
 # 1. tools are not built (exe files are taken from "rdp/tools" local directory)
 # 2. table manager is taken from local directory "rdp/tools/xrdp_table/manager"
 
-REL_BRANCH ?= yes
+REL_BRANCH ?= no
 
-GEN ?= 3
+GEN ?= 4
 RGEN ?= $(GEN)
-LLVM_VER ?= 3.9.1
 FW_CHECK ?= y
 RUNNER_FW := runner_fw
 RUNNER_C_FW := runner_c_fw
@@ -36,6 +25,8 @@ FIRMWARE_DIR ?= $(TOP_DIR)/firmware
 DRIVERS_DIR := $(TOP_DIR)/drivers
 PROJECTS_DIR := $(TOP_DIR)/projects
 PROJECT_DIR := $(PROJECTS_DIR)/$(PROJECT)
+DRIVERS_PROJ_DIR := $(DRIVERS_DIR)/rdp_subsystem
+
 
 ifeq ("$(REL_BRANCH)", "no")
 BUILD_TOOLS ?= yes
@@ -51,16 +42,14 @@ ASM_TOOLS_DIR := $(TOOLS_DIR)/src/AsmTools/
 PROJ_XRDP_DEBUG := $(FIRMWARE_DIR)/xrdp_debug
 TARGET := target$(BLD)
 
-RDP_PROJ = Rdp$(GEN)G
-
 include $(PROJECT_DIR)/make.proj_flags
 ifneq ("$(QEMU)", "y")
-ifneq ($(findstring ___$(strip $(PROJECT))___,___PON_6858_FC___PON_6846_FC___PON_6856_FC___PON_6878_FC___),)
+ifneq ($(findstring ___$(strip $(PROJECT))___,___PON_6858_FC___PON_6856_FC___),)
 include $(TOP_DIR)/make.rdp_sim_impl1
 endif
 endif
 
-ifneq ($(findstring __$(strip $(PROJECT))__,__DSL_63158__BCM63146__PON_6855_FC__BCM4912__BCM6813__BCM6813_FPI__PON_6888_FC__PON_6888_G9991__PON_6837_FC__PON_6888_B0_FC__),)
+ifneq ($(findstring __$(strip $(PROJECT))__,__DSL_63158__BCM63146__PON_6855_FC__BCM4912__BCM6813__BCM6813_FPI__PON_6888_FC__PON_6885_FC__PON_6837_FC__PON_68375_FC__PON_6888_B0_FC__),)
 include $(TOP_DIR)/make.rdp_sim_impl2
 endif
 
@@ -112,15 +101,9 @@ PROJ_FW_TARGET := $(TARGET)/firmware
 PROJ_FW_OUTPUT := $(PROJ_FW_TARGET)/fw_output/
 BB_ERR := $(PROJECT_DIR)/$(PROJ_FW_TARGET)/bb_errors.txt
 
-ifdef TOOLS_WIN
-TOOLS_RUNNER_BIN := $(TOOLS_BIN)/Runner$(RGEN)G/
-PORTABLE_TOOLS_RUNNER_BIN := `cygpath -w $(TOOLS_RUNNER_BIN)`
-PORTABLE_PROJ_FW_OUTPUT := `cygpath -w $(PROJ_FW_OUTPUT)`
-else
 TOOLS_RUNNER_BIN := $(TOOLS_BIN)/Runner$(RGEN)G/$(OS_PLATFORM)/
 PORTABLE_TOOLS_RUNNER_BIN := $(TOOLS_RUNNER_BIN)
 PORTABLE_PROJ_FW_OUTPUT := $(PROJ_FW_OUTPUT)
-endif
 PROJ_RDD_TARGET := $(PROJECT_DIR)/$(TARGET)/rdd
 PROJ_FW := $(PROJECT_DIR)/firmware
 
@@ -182,7 +165,7 @@ endif
 PROJECT_INCLUDE_FLAGS := -I$(PROJ_RDD_TARGET) -I$(PROJ_RDP_SUBSYS_TARGET)
 
 BCMLIBS_INCLUDE_PATH := -I$(TOP_DIR)/../bcmdrivers/opensource/char/bcmlibs/include/ 
-BCMLIBS_INCLUDE_PATH += -I$(TOP_DIR)/../shared/opensource/include/bcm963xx 
+BCMLIBS_INCLUDE_PATH += -I$(TOP_DIR)/../bcmdrivers/opensource/include/bcm963xx 
 BCMLIBS_INCLUDE_PATH += -I$(TOP_DIR)/../bcmdrivers/broadcom/include/bcm963xx
 
 COMMON_INCLUDE_FLAGS := $(RDPA_INCLUDE_FLAGS) $(PROJECT_INCLUDE_FLAGS) $(BCMLIBS_INCLUDE_PATH)
@@ -190,17 +173,18 @@ COMMON_CFLAGS := $(COMMON_INCLUDE_FLAGS) -c -Wall -Werror -Wvla -g -ggdb -DFIRMW
 COMMON_CFLAGS += -Wno-int-in-bool-context -Wno-unused-const-variable -Wno-format-truncation
 LD_LIBRARY_PATH = $(TOOLS_DIR)/src/AsmTools/Packages/boost_lib_$(OS_PLATFORM)
 
+
 CC = gcc$(GCC_VERSION)
 GCC_VERSION_MAJOR=$(shell $(CC) -dumpversion | awk -F. '{print $$1}')
-GCC_VERSION_MAJOR_GE_9=$(shell test $(GCC_VERSION_MAJOR) -ge 9 && echo -n "y" || echo -n "n")
-ifeq ("$(GCC_VERSION_MAJOR_GE_9)", "y")
+GCC_VERSION_MAJOR_GE_8=$(shell test $(GCC_VERSION_MAJOR) -ge 8 && echo -n "y" || echo -n "n")
+ifeq ("$(GCC_VERSION_MAJOR_GE_8)", "y")
     COMMON_CFLAGS += -Wno-packed-not-aligned
 endif
 
 AR = ar -rcs
 ifeq ($(OS_PLATFORM),linux)
 PERL ?= perl
-HOST_EDITLINE ?= y
+HOST_EDITLINE = n
 else
 PERL ?= perl
 HOST_EDITLINE ?= n
@@ -268,6 +252,7 @@ endif
 endif
 
 prepare_fw_headers: project_prepare_dirs $(PROJ_FW_SRC_LIST)
+	$(foreach src,$(shell grep "\.h" $(PROJ_FW_SRC_LIST)),$(shell $(RM) $(PROJECT_DIR)/$(PROJ_FW_TARGET)/$(src)))
 	$(foreach src,$(shell grep "\.h" $(PROJ_FW_SRC_LIST)),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJECT_DIR)/$(PROJ_FW_TARGET)))
 
 prepare_fw_links: prepare_fw_headers $(PROJ_FW_SRC_LIST)
@@ -276,11 +261,7 @@ prepare_fw_links: prepare_fw_headers $(PROJ_FW_SRC_LIST)
 ifeq ($(GEN),4)
 ifeq ("$(FW_CHECK)", "y")
 
-ifeq ($(PROJECT),PON_6878_FC)
-	$(foreach src,$(shell grep "\.uc" $(PROJ_FW_SRC_LIST)),python $(TOOLS_BIN)/fw_checkpatch.py R1_CHECK_TURN_ON $(TOP_DIR)/$(src))
-else
 	$(foreach src,$(shell grep "\.uc" $(PROJ_FW_SRC_LIST)),python $(TOOLS_BIN)/fw_checkpatch.py $(TOP_DIR)/$(src))
-endif
 endif
 endif
 
@@ -297,11 +278,7 @@ $(HW_HDR_FILE): $(HW_XML_FILES)
 	$(RM) runner_copyright.h
 	touch $(HW_HDR_FILE)
 
-ifeq ($(BUILD_TOOLS), yes)
 hw_dts_gen: $(HW_HDR_FILE)
-else
-hw_dts_gen:
-endif
 
 run_table_manager: $(AGH_DONE)
 
@@ -414,6 +391,15 @@ prepare_rdp_subsys_links: $(PREPARE_RDP_SUBSYS_LINKS_DONE)
 $(PREPARE_RDP_SUBSYS_LINKS_DONE): project_target_prepare $(PROJ_DRV_SRC_LIST)
 	$(foreach src,$(shell grep "drivers/rdp_subsystem" $(PROJ_DRV_SRC_LIST)),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDP_SUBSYS_TARGET)))
 	$(foreach src,$(shell grep "firmware_bin/" $(PROJ_DRV_SRC_LIST)),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDP_SUBSYS_TARGET)))
+	cat $(PROJ_RDP_SUBSYS_TARGET)/predict_runner_fw_*.c >$(PROJ_RDP_SUBSYS_TARGET)/predict_runner_fw.c
+	cat $(PROJ_RDP_SUBSYS_TARGET)/runner_fw_*.c >$(PROJ_RDP_SUBSYS_TARGET)/runner_fw.c
+	rm $(PROJ_RDP_SUBSYS_TARGET)/predict_runner_fw_*.c
+	rm $(PROJ_RDP_SUBSYS_TARGET)/runner_fw_*.c
+	@if [ -f $(TOP_DIR)/tools/bin/generate_combined_func.py ]; then \
+		python $(TOP_DIR)/tools/bin/generate_combined_func.py ${PROJ_FW_BIN}; \
+	else \
+		echo "Skipping generation of combined functions - not needed for this build."; \
+	fi
 	$(foreach src,$(shell grep "drivers/rdp_drv/" $(PROJ_DRV_SRC_LIST)),$(shell $(LN) $(TOP_DIR)/$(src) $(PROJ_RDP_SUBSYS_TARGET)))
 	touch $(PREPARE_RDP_SUBSYS_LINKS_DONE)
 
@@ -445,11 +431,11 @@ tarball_prepare_dirs:
 	$(MKDIR) $(TARBALL_DIR)
 
 export TOP_DIR FIRMWARE_DIR DRIVERS_DIR TOOLS_DIR TOOLS_BIN PROJECT PROJECT_DIR \
-	SPLIT_LIVENESS PROJ_FW_OUTPUT PROJ_FW_SRC PROJ_UT_SRC PROJ_UT_TARGET OPT TOOLS_WIN
+	SPLIT_LIVENESS PROJ_FW_OUTPUT PROJ_FW_SRC PROJ_UT_SRC PROJ_UT_TARGET OPT
 
 sim:
 ifeq ($(BUILD_TOOLS), yes)
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) sim CHIP_TYPE=$(CHIP_TYPE)
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) sim CHIP_TYPE=$(CHIP_TYPE) $(RDP_PROJ_SIM)
 endif
 
 coverage:
@@ -458,36 +444,28 @@ ifeq ($(BUILD_TOOLS), yes)
 endif
 
 asm_tools:
-ifeq ($(BUILD_TOOLS), yes)
 	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) asm_tools
-endif
-
-llvm_tools:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) LLVM_VER=$(LLVM_VER) llvm_tools
 
 standalone:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) standalone CHIP_TYPE=$(CHIP_TYPE)
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) standalone CHIP_TYPE=$(CHIP_TYPE) $(RDP_PROJ_SIM)
 
 standalone_rebuild:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) standalone_rebuild CHIP_TYPE=$(CHIP_TYPE)
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) standalone_rebuild CHIP_TYPE=$(CHIP_TYPE) $(RDP_PROJ_SIM)
 
 standalone_install:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) standalone_install CHIP_TYPE=$(CHIP_TYPE) RUNNER_VERSION_FOR_TOOLS=$(RUNNER_VERSION_FOR_TOOLS)
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) standalone_install CHIP_TYPE=$(CHIP_TYPE) $(RDP_PROJ_SIM) RUNNER_VERSION_FOR_TOOLS=$(RUNNER_VERSION_FOR_TOOLS)
 
 sim_rebuild:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) sim_rebuild CHIP_TYPE=$(CHIP_TYPE)
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) sim_rebuild CHIP_TYPE=$(CHIP_TYPE) $(RDP_PROJ_SIM)
 
 asm_tools_rebuild:
 	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) asm_tools_rebuild
 
-llvm_tools_rebuild:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) llvm_tools_rebuild
-
 tools:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) all CHIP_TYPE=$(CHIP_TYPE)
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) all CHIP_TYPE=$(CHIP_TYPE) $(RDP_PROJ_SIM)
 
 tools_rebuild:
-	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) rebuild CHIP_TYPE=$(CHIP_TYPE)
+	$(MAKE) -C $(TOOLS_DIR) GEN=$(GEN) RGEN=$(RGEN) HAS_VERILATED_CORE=$(HAS_VERILATED_CORE) rebuild CHIP_TYPE=$(CHIP_TYPE) $(RDP_PROJ_SIM)
 
 rebuild_hal:
 	@which flex

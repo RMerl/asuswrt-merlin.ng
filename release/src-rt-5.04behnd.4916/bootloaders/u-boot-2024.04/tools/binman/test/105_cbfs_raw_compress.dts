@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		cbfs {
+			size = <0x140>;
+			u-boot {
+				type = "text";
+				text = "compress xxxxxxxxxxxxxxxxxxxxxx data";
+				cbfs-type = "raw";
+				cbfs-compress = "lz4";
+			};
+			u-boot-dtb {
+				type = "text";
+				text = "compress xxxxxxxxxxxxxxxxxxxxxx data";
+				cbfs-type = "raw";
+				cbfs-compress = "lzma";
+			};
+		};
+	};
+};

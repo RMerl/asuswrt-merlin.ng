@@ -1,0 +1,206 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016- 2021 Marvell International Ltd.
+ */
+
+/*
+ * Device Tree file for Marvell Armada 7040 Development board platform
+ * Boot device: SPI NOR, 0x32 (SW3)
+ */
+
+#include "armada-7040.dtsi"
+
+/ {
+	model = "Marvell Armada 7040 DB board";
+	compatible = "marvell,armada7040-db", "marvell,armada7040",
+		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		i2c0 = &cp0_i2c0;
+		spi0 = &cp0_spi1;
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+};
+
+&ap_pinctl {
+	   /* MPP Bus:
+	    * SDIO  [0-5]
+	    * UART0 [11,19]
+	    */
+		  /* 0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 1 1 1 1 1 1 0 0 0 0
+		     0 3 0 0 0 0 0 0 0 3 >;
+};
+
+&uart0 {
+	status = "okay";
+};
+
+
+&cp0_pcie2 {
+	status = "okay";
+};
+
+&cp0_i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cp0_i2c0_pins>;
+	status = "okay";
+	clock-frequency = <100000>;
+};
+
+&cp0_pinctl {
+		/* MPP Bus:
+		 * TDM	 [0-11]
+		 * SPI   [13-16]
+		 * SATA1 [28]
+		 * UART0 [29-30]
+		 * SMI	 [32,34]
+		 * XSMI  [35-36]
+		 * I2C	 [37-38]
+		 * RGMII1[44-55]
+		 * SD	 [56-62]
+		 */
+		/*   0   1   2   3   4   5   6   7   8   9 */
+	pin-func = < 4   4   4   4   4   4   4   4   4   4
+		     4   4   0   3   3   3   3   0   0   0
+		     0   0   0   0   0   0   0   0   9   0xA
+		     0xA 0   7   0   7   7   7   2   2   0
+		     0   0   0   0   1   1   1   1   1   1
+		     1   1   1   1   1   1   0xE 0xE 0xE 0xE
+		     0xE 0xE 0xE >;
+};
+
+&cp0_spi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cp0_spi0_pins>;
+	status = "okay";
+
+	spi-flash@0 {
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		compatible = "jedec,spi-nor";
+		reg = <0x0>;
+		spi-max-frequency = <20000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "U-Boot";
+				reg = <0x0 0x200000>;
+			};
+
+			partition@400000 {
+				label = "Filesystem";
+				reg = <0x200000 0xe00000>;
+			};
+		};
+	};
+};
+
+&cp0_sata0 {
+	status = "okay";
+};
+
+&cp0_usb3_0 {
+	status = "okay";
+};
+
+&cp0_usb3_1 {
+	status = "okay";
+};
+
+&cp0_comphy {
+	phy0 {
+		phy-type = <COMPHY_TYPE_SGMII1>;
+		phy-speed = <COMPHY_SPEED_1_25G>;
+	};
+
+	phy1 {
+		phy-type = <COMPHY_TYPE_USB3_HOST0>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy2 {
+		phy-type = <COMPHY_TYPE_SFI0>;
+		phy-speed = <COMPHY_SPEED_10_3125G>;
+	};
+
+	phy3 {
+		phy-type = <COMPHY_TYPE_SATA1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy4 {
+		phy-type = <COMPHY_TYPE_USB3_HOST1>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+
+	phy5 {
+		phy-type = <COMPHY_TYPE_PEX2>;
+		phy-speed = <COMPHY_SPEED_5G>;
+	};
+};
+
+&cp0_utmi0 {
+	status = "okay";
+};
+
+&cp0_utmi1 {
+	status = "okay";
+};
+
+&ap_sdhci0 {
+	status = "okay";
+	bus-width = <4>;
+	no-1-8-v;
+	non-removable;
+};
+
+&cp0_sdhci0 {
+	status = "okay";
+	bus-width = <4>;
+	no-1-8-v;
+	non-removable;
+};
+
+&cp0_mdio {
+	status = "okay";
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&cp0_ethernet {
+	status = "okay";
+};
+
+&cp0_eth0 {
+	status = "okay";
+	phy-mode = "sfi"; /* lane-2 */
+};
+
+&cp0_eth1 {
+	status = "okay";
+	phy = <&phy0>;
+	phy-mode = "sgmii";
+};
+
+&cp0_eth2 {
+	status = "okay";
+	phy = <&phy1>;
+	phy-mode = "rgmii-id";
+};

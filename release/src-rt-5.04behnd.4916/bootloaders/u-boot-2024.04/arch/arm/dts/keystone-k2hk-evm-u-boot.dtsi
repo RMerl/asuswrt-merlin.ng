@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+/{
+	soc {
+		bootph-all;
+	};
+};
+
+&i2c1 {
+	bootph-all;
+};
+
+&usb_phy {
+	#phy-cells = <0>;
+	psc-domain = <2>;
+};
+
+&usb {
+	dwc3@2690000 {
+		phys = <&usb_phy>;
+		dr_mode = "host";
+		snps,u2ss_inp3_quirk;
+		status = "okay";
+	};
+};

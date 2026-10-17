@@ -1,0 +1,7 @@
+STM32F429-DISCOVERY BOARD
+M:	Kamil Lulko <kamil.lulko@gmail.com>
+S:	Maintained
+F:	doc/board/st/
+F:	board/st/stm32f429-discovery/
+F:	include/configs/stm32f429-discovery.h
+F:	configs/stm32f429-discovery_defconfig

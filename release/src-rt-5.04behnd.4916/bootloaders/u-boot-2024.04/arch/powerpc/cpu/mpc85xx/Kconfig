@@ -1,0 +1,1545 @@
+menu "mpc85xx CPU"
+	depends on MPC85xx
+
+config PPC_SPINTABLE_COMPATIBLE
+	depends on MP
+	def_bool y
+	help
+	  To comply with ePAPR 1.1, the spin table has been moved to
+	  cache-enabled memory. Old OS may not work with this change. A patch
+	  is waiting to be accepted for Linux kernel. Other OS needs similar
+	  fix to spin table.  For OSes with old spin table code, we can enable
+	  this temporary fix by setting environmental variable
+	  "spin_table_compat". For new OSes, set "spin_table_compat=no". After
+	  Linux is fixed, we can remove this macro and related code. For now,
+	  it is enabled by default.
+
+config SYS_CPU
+	default "mpc85xx"
+
+config CMD_ERRATA
+	bool "Enable the 'errata' command"
+	depends on MPC85xx
+	default y
+	help
+	  This enables the 'errata' command which displays a list of errata
+	  work-arounds which are enabled for the current board.
+
+config FSL_PREPBL_ESDHC_BOOT_SECTOR
+	bool "Generate QorIQ pre-PBL eSDHC boot sector"
+	depends on MPC85xx
+	depends on SDCARD
+	help
+	  With this option final image would have prepended QorIQ pre-PBL eSDHC
+	  boot sector suitable for SD card images. This boot sector instruct
+	  BootROM to configure L2 SRAM and eSDHC then load image from SD card
+	  into L2 SRAM and finally jump to image entry point.
+
+	  This is alternative to Freescale boot_format tool, but works only for
+	  SD card images and only for L2 SRAM booting. U-Boot images generated
+	  with this option should not passed to boot_format tool.
+
+	  For other configuration like booting from eSPI or configuring SDRAM
+	  please use Freescale boot_format tool without this option. See file
+	  doc/README.mpc85xx-sd-spi-boot
+
+config FSL_PREPBL_ESDHC_BOOT_SECTOR_START
+	int "QorIQ pre-PBL eSDHC boot sector start offset"
+	depends on FSL_PREPBL_ESDHC_BOOT_SECTOR
+	range 0 23
+	default 0
+	help
+	  QorIQ pre-PBL eSDHC boot sector may be located on one of the first
+	  24 SD card sectors. Select SD card sector on which final U-Boot
+	  image (with this boot sector) would be installed.
+
+	  By default first SD card sector (0) is used. But this may be changed
+	  to allow installing U-Boot image on some partition (with fixed start
+	  sector).
+
+	  Please note that any sector on SD card prior this boot sector must
+	  not contain ASCII "BOOT" bytes at sector offset 0x40.
+
+config FSL_PREPBL_ESDHC_BOOT_SECTOR_DATA
+	int "Relative data sector for QorIQ pre-PBL eSDHC boot sector"
+	depends on FSL_PREPBL_ESDHC_BOOT_SECTOR
+	default 1
+	range 1 8388607
+	help
+	  Select data sector from the beginning of QorIQ pre-PBL eSDHC boot
+	  sector on which would be stored raw U-Boot image.
+
+	  By default is it second sector (1) which is the first available free
+	  sector (on the first sector is stored boot sector). It can be any
+	  sector number which offset in bytes can be expressed by 32-bit number.
+
+	  In case this final U-Boot image (with this boot sector) is put on
+	  the FAT32 partition into reserved boot area, this data sector needs
+	  to be at least 2 (third sector) because FAT32 use second sector for
+	  its data.
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_SOCRATES
+	bool "Support socrates"
+	select ARCH_MPC8544
+	select BINMAN
+
+config TARGET_P3041DS
+	bool "Support P3041DS"
+	select PHYS_64BIT
+	select ARCH_P3041
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select FSL_NGPIXIS
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_P4080DS
+	bool "Support P4080DS"
+	select PHYS_64BIT
+	select ARCH_P4080
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select FSL_NGPIXIS
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_P5040DS
+	bool "Support P5040DS"
+	select PHYS_64BIT
+	select ARCH_P5040
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select FSL_NGPIXIS
+	select SYS_FSL_RAID_ENGINE
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_MPC8548CDS
+	bool "Support MPC8548CDS"
+	select ARCH_MPC8548
+	select FSL_VIA
+	select SYS_CACHE_SHIFT_5
+
+config TARGET_P1010RDB_PA
+	bool "Support P1010RDB_PA"
+	select ARCH_P1010
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_L2_SIZE_256KB
+	imply CMD_EEPROM
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_P1010RDB_PB
+	bool "Support P1010RDB_PB"
+	select ARCH_P1010
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select SYS_L2_SIZE_256KB
+	imply CMD_EEPROM
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_P1020RDB_PC
+	bool "Support P1020RDB-PC"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARCH_P1020
+	select SYS_L2_SIZE_256KB
+	imply CMD_EEPROM
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_P1020RDB_PD
+	bool "Support P1020RDB-PD"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARCH_P1020
+	select SYS_L2_SIZE_256KB
+	imply CMD_EEPROM
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_P2020RDB
+	bool "Support P2020RDB-PC"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select ARCH_P2020
+	select SYS_L2_SIZE_512KB
+	imply CMD_EEPROM
+	imply CMD_SATA
+	imply SATA_SIL
+
+config TARGET_P2041RDB
+	bool "Support P2041RDB"
+	select ARCH_P2041
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select FSL_CORENET
+	select PHYS_64BIT
+	select SYS_L3_SIZE_1024KB
+	imply CMD_SATA
+	imply FSL_SATA
+
+config TARGET_QEMU_PPCE500
+	bool "Support qemu-ppce500"
+	select ARCH_QEMU_E500
+	select PHYS_64BIT
+	select SYS_RAMBOOT
+	imply OF_HAS_PRIOR_STAGE
+
+config TARGET_T1024RDB
+	bool "Support T1024RDB"
+	select ARCH_T1024
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select SUPPORT_SPL
+	select PHYS_64BIT
+	select FSL_DDR_INTERACTIVE
+	select SYS_L3_SIZE_256KB
+	imply CMD_EEPROM
+	imply PANIC_HANG
+
+config TARGET_T1042D4RDB
+	bool "Support T1042D4RDB"
+	select ARCH_T1042
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select SUPPORT_SPL
+	select PHYS_64BIT
+	select SYS_L3_SIZE_256KB
+	imply PANIC_HANG
+
+config TARGET_T2080QDS
+	bool "Support T2080QDS"
+	select ARCH_T2080
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select SUPPORT_SPL
+	select PHYS_64BIT
+	select FSL_DDR_FIRST_SLOT_QUAD_CAPABLE
+	select FSL_DDR_INTERACTIVE
+	select SYS_L3_SIZE_512KB
+	imply CMD_SATA
+
+config TARGET_T2080RDB
+	bool "Support T2080RDB"
+	select ARCH_T2080
+	select BOARD_LATE_INIT if CHAIN_OF_TRUST
+	select SUPPORT_SPL
+	select PHYS_64BIT
+	select SYS_L3_SIZE_512KB
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_T4240RDB
+	bool "Support T4240RDB"
+	select ARCH_T4240
+	select SUPPORT_SPL
+	select PHYS_64BIT
+	select FSL_DDR_FIRST_SLOT_QUAD_CAPABLE
+	select SYS_L3_SIZE_512KB
+	imply CMD_SATA
+	imply PANIC_HANG
+
+config TARGET_KMP204X
+	bool "Support kmp204x"
+	select VENDOR_KM
+
+config TARGET_KMCENT2
+	bool "Support kmcent2"
+	select VENDOR_KM
+	select EVENT
+	select FSL_CORENET
+	select SYS_DPAA_FMAN
+	select SYS_DPAA_PME
+	select SYS_L3_SIZE_256KB
+
+endchoice
+
+config ARCH_B4420
+	bool
+	select E500MC
+	select E6500
+	select FSL_CORENET
+	select FSL_LAW
+	select HETROGENOUS_CLUSTERS
+	select SYS_FSL_DDR_VER_47
+	select SYS_FSL_ERRATUM_A004477
+	select SYS_FSL_ERRATUM_A005871
+	select SYS_FSL_ERRATUM_A006379
+	select SYS_FSL_ERRATUM_A006384
+	select SYS_FSL_ERRATUM_A006475
+	select SYS_FSL_ERRATUM_A006593
+	select SYS_FSL_ERRATUM_A007075
+	select SYS_FSL_ERRATUM_A007186 if CHAIN_OF_TRUST
+	select SYS_FSL_ERRATUM_A007212
+	select SYS_FSL_ERRATUM_A009942
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS2
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select SYS_FSL_USB1_PHY_ENABLE
+	select SYS_PPC64
+	select FSL_IFC
+	imply CMD_EEPROM
+	imply CMD_NAND
+	imply CMD_REGINFO
+
+config ARCH_B4860
+	bool
+	select E500MC
+	select E6500
+	select FSL_CORENET
+	select FSL_LAW
+	select HETROGENOUS_CLUSTERS
+	select SYS_FSL_DDR_VER_47
+	select SYS_FSL_ERRATUM_A004477
+	select SYS_FSL_ERRATUM_A005871
+	select SYS_FSL_ERRATUM_A006379
+	select SYS_FSL_ERRATUM_A006384
+	select SYS_FSL_ERRATUM_A006475
+	select SYS_FSL_ERRATUM_A006593
+	select SYS_FSL_ERRATUM_A007075
+	select SYS_FSL_ERRATUM_A007186 if CHAIN_OF_TRUST
+	select SYS_FSL_ERRATUM_A007212
+	select SYS_FSL_ERRATUM_A007907
+	select SYS_FSL_ERRATUM_A009942
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS2
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_SRDS_2
+	select SYS_FSL_SRIO_LIODN
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select SYS_FSL_USB1_PHY_ENABLE
+	select SYS_PPC64
+	select FSL_IFC
+	imply CMD_EEPROM
+	imply CMD_NAND
+	imply CMD_REGINFO
+
+config ARCH_BSC9131
+	bool
+	select FSL_LAW
+	select SYS_FSL_DDR_VER_44
+	select SYS_FSL_ERRATUM_A004477
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select FSL_IFC
+	imply CMD_EEPROM
+	imply CMD_NAND
+	imply CMD_REGINFO
+
+config ARCH_BSC9132
+	bool
+	select FSL_LAW
+	select SYS_FSL_DDR_VER_46
+	select SYS_FSL_ERRATUM_A004477
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_A005434
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_ERRATUM_I2C_A004447
+	select SYS_FSL_ERRATUM_IFC_A002769
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v22
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_IFC
+	imply CMD_EEPROM
+	imply CMD_MTDPARTS
+	imply CMD_NAND
+	imply CMD_PCI
+	imply CMD_REGINFO
+
+config ARCH_C29X
+	bool
+	select FSL_LAW
+	select SYS_FSL_DDR_VER_46
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ESDHC111
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_6
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_IFC
+	imply CMD_NAND
+	imply CMD_PCI
+	imply CMD_REGINFO
+
+config ARCH_MPC8536
+	bool
+	select FSL_LAW
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR2
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+	imply CMD_NAND
+	imply CMD_SATA
+	imply CMD_REGINFO
+
+config ARCH_MPC8540
+	bool
+	select FSL_LAW
+	select SYS_FSL_HAS_DDR1
+
+config ARCH_MPC8544
+	bool
+	select BTB
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_5
+	select SYS_FSL_ERRATUM_A005125
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR2
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+
+config ARCH_MPC8548
+	bool
+	select BTB
+	select FSL_LAW
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_NMG_DDR120
+	select SYS_FSL_ERRATUM_NMG_LBC103
+	select SYS_FSL_ERRATUM_NMG_ETSEC129
+	select SYS_FSL_ERRATUM_I2C_A004447
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR2
+	select SYS_FSL_HAS_DDR1
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_RMU
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	imply CMD_REGINFO
+
+config ARCH_MPC8560
+	bool
+	select FSL_LAW
+	select SYS_FSL_HAS_DDR1
+
+config ARCH_P1010
+	bool
+	select A003399_NOR_WORKAROUND if SYS_FSL_ERRATUM_IFC_A003399 && !SPL
+	select BTB
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_5
+	select SYS_HAS_SERDES
+	select SYS_FSL_ERRATUM_A004477
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_A005275
+	select SYS_FSL_ERRATUM_A006261
+	select SYS_FSL_ERRATUM_A007075
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_ERRATUM_I2C_A004447
+	select SYS_FSL_ERRATUM_IFC_A002769
+	select SYS_FSL_ERRATUM_P1010_A003549
+	select SYS_FSL_ERRATUM_SEC_A003571
+	select SYS_FSL_ERRATUM_IFC_A003399
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v22
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_USB1_PHY_ENABLE
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_IFC
+	imply CMD_EEPROM
+	imply CMD_MTDPARTS
+	imply CMD_NAND
+	imply CMD_SATA
+	imply CMD_PCI
+	imply CMD_REGINFO
+	imply FSL_SATA
+	imply TIMESTAMP
+
+config ARCH_P1011
+	bool
+	select FSL_LAW
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ELBC_A001
+	select SYS_FSL_ERRATUM_ESDHC111
+	select FSL_PCIE_DISABLE_ASPM
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+
+config ARCH_P1020
+	bool
+	select BTB
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_5
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ELBC_A001
+	select SYS_FSL_ERRATUM_ESDHC111
+	select FSL_PCIE_DISABLE_ASPM
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+	imply CMD_NAND
+	imply CMD_SATA
+	imply CMD_PCI
+	imply CMD_REGINFO
+	imply SATA_SIL
+
+config ARCH_P1021
+	bool
+	select FSL_LAW
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ELBC_A001
+	select SYS_FSL_ERRATUM_ESDHC111
+	select FSL_PCIE_DISABLE_ASPM
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+	imply CMD_REGINFO
+	imply CMD_NAND
+	imply CMD_SATA
+	imply CMD_REGINFO
+	imply SATA_SIL
+
+config ARCH_P1023
+	bool
+	select FSL_LAW
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_I2C_A004447
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v22
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select FSL_ELBC
+
+config ARCH_P1024
+	bool
+	select FSL_LAW
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ELBC_A001
+	select SYS_FSL_ERRATUM_ESDHC111
+	select FSL_PCIE_DISABLE_ASPM
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_RMU
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+	imply CMD_EEPROM
+	imply CMD_NAND
+	imply CMD_SATA
+	imply CMD_PCI
+	imply CMD_REGINFO
+	imply SATA_SIL
+
+config ARCH_P1025
+	bool
+	select FSL_LAW
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ELBC_A001
+	select SYS_FSL_ERRATUM_ESDHC111
+	select FSL_PCIE_DISABLE_ASPM
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+	imply CMD_SATA
+	imply CMD_REGINFO
+
+config ARCH_P2020
+	bool
+	select BTB
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_5
+	select SYS_FSL_ERRATUM_A004477
+	select SYS_FSL_ERRATUM_A004508
+	select SYS_FSL_ERRATUM_A005125
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_ERRATUM_ESDHC_A001
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_2
+	select SYS_PPC_E500_USE_DEBUG_TLB
+	select FSL_ELBC
+	imply CMD_EEPROM
+	imply CMD_NAND
+	imply CMD_REGINFO
+	imply TIMESTAMP
+
+config ARCH_P2041
+	bool
+	select BACKSIDE_L2_CACHE
+	select E500MC
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_DPAA_FMAN
+	select SYS_DPAA_PME
+	select SYS_DPAA_RMAN
+	select SYS_FSL_ERRATUM_A004510
+	select SYS_FSL_ERRATUM_A004849
+	select SYS_FSL_ERRATUM_A005275
+	select SYS_FSL_ERRATUM_A006261
+	select SYS_FSL_ERRATUM_CPU_A003999
+	select SYS_FSL_ERRATUM_DDR_A003
+	select SYS_FSL_ERRATUM_DDR_A003474
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_ERRATUM_I2C_A004447
+	select SYS_FSL_ERRATUM_NMG_CPU_A011
+	select SYS_FSL_ERRATUM_SRIO_A004034
+	select SYS_FSL_ERRATUM_USB14
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS1
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v22
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_USB1_PHY_ENABLE
+	select SYS_FSL_USB2_PHY_ENABLE
+	select FSL_ELBC
+	imply CMD_NAND
+
+config ARCH_P3041
+	bool
+	select BACKSIDE_L2_CACHE
+	select E500MC
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_FSL_DDR_VER_44
+	select SYS_FSL_ERRATUM_A004510
+	select SYS_FSL_ERRATUM_A004849
+	select SYS_FSL_ERRATUM_A005275
+	select SYS_FSL_ERRATUM_A005812
+	select SYS_FSL_ERRATUM_A006261
+	select SYS_FSL_ERRATUM_CPU_A003999
+	select SYS_FSL_ERRATUM_DDR_A003
+	select SYS_FSL_ERRATUM_DDR_A003474
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_ERRATUM_I2C_A004447
+	select SYS_FSL_ERRATUM_NMG_CPU_A011
+	select SYS_FSL_ERRATUM_SRIO_A004034
+	select SYS_FSL_ERRATUM_USB14
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS1
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v22
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_USB1_PHY_ENABLE
+	select SYS_FSL_USB2_PHY_ENABLE
+	select FSL_ELBC
+	imply CMD_NAND
+	imply CMD_SATA
+	imply CMD_REGINFO
+	imply FSL_SATA
+
+config ARCH_P4080
+	bool
+	select BACKSIDE_L2_CACHE
+	select E500MC
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_FSL_DDR_VER_44
+	select SYS_FSL_ERRATUM_A004510
+	select SYS_FSL_ERRATUM_A004580
+	select SYS_FSL_ERRATUM_A004849
+	select SYS_FSL_ERRATUM_A005812
+	select SYS_FSL_ERRATUM_A007075
+	select SYS_FSL_ERRATUM_CPC_A002
+	select SYS_FSL_ERRATUM_CPC_A003
+	select SYS_FSL_ERRATUM_CPU_A003999
+	select SYS_FSL_ERRATUM_DDR_A003
+	select SYS_FSL_ERRATUM_DDR_A003474
+	select SYS_FSL_ERRATUM_ELBC_A001
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_ERRATUM_ESDHC13
+	select SYS_FSL_ERRATUM_ESDHC135
+	select SYS_FSL_ERRATUM_I2C_A004447
+	select SYS_FSL_ERRATUM_NMG_CPU_A011
+	select SYS_FSL_ERRATUM_SRIO_A004034
+	select SYS_FSL_PCIE_COMPAT_P4080_PCIE
+	select SYS_P4080_ERRATUM_CPU22
+	select SYS_P4080_ERRATUM_PCIE_A003
+	select SYS_P4080_ERRATUM_SERDES8
+	select SYS_P4080_ERRATUM_SERDES9
+	select SYS_P4080_ERRATUM_SERDES_A001
+	select SYS_P4080_ERRATUM_SERDES_A005
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS1
+	select SYS_FSL_RMU
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select FSL_ELBC
+	imply CMD_SATA
+	imply CMD_REGINFO
+	imply SATA_SIL
+
+config ARCH_P5040
+	bool
+	select BACKSIDE_L2_CACHE
+	select E500MC
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_FSL_DDR_VER_44
+	select SYS_FSL_ERRATUM_A004510
+	select SYS_FSL_ERRATUM_A004699
+	select SYS_FSL_ERRATUM_A005275
+	select SYS_FSL_ERRATUM_A005812
+	select SYS_FSL_ERRATUM_A006261
+	select SYS_FSL_ERRATUM_DDR_A003
+	select SYS_FSL_ERRATUM_DDR_A003474
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_ERRATUM_USB14
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS1
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_USB1_PHY_ENABLE
+	select SYS_FSL_USB2_PHY_ENABLE
+	select SYS_PPC64
+	select FSL_ELBC
+	imply CMD_SATA
+	imply CMD_REGINFO
+	imply FSL_SATA
+
+config ARCH_QEMU_E500
+	bool
+	select SYS_CACHE_SHIFT_5
+
+config ARCH_T1024
+	bool
+	select BACKSIDE_L2_CACHE
+	select E500MC
+	select E5500
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_DPAA_FMAN
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_ERRATUM_A008378
+	select SYS_FSL_ERRATUM_A008109
+	select SYS_FSL_ERRATUM_A009663
+	select SYS_FSL_ERRATUM_A009942
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS2
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SINGLE_SOURCE_CLK
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select SYS_FSL_USB_DUAL_PHY_ENABLE
+	select FSL_IFC
+	imply CMD_EEPROM
+	imply CMD_NAND
+	imply CMD_MTDPARTS
+	imply CMD_REGINFO
+
+config ARCH_T1040
+	bool
+	select BACKSIDE_L2_CACHE
+	select E500MC
+	select E5500
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_DPAA_FMAN
+	select SYS_DPAA_PME
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_ERRATUM_A008044
+	select SYS_FSL_ERRATUM_A008378
+	select SYS_FSL_ERRATUM_A008109
+	select SYS_FSL_ERRATUM_A009663
+	select SYS_FSL_ERRATUM_A009942
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS2
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SINGLE_SOURCE_CLK
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select SYS_FSL_USB_DUAL_PHY_ENABLE
+	select FSL_IFC
+	imply CMD_MTDPARTS
+	imply CMD_NAND
+	imply CMD_REGINFO
+
+config ARCH_T1042
+	bool
+	select BACKSIDE_L2_CACHE
+	select E500MC
+	select E5500
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_DPAA_FMAN
+	select SYS_DPAA_PME
+	select SYS_FSL_DDR_VER_50
+	select SYS_FSL_ERRATUM_A008044
+	select SYS_FSL_ERRATUM_A008378
+	select SYS_FSL_ERRATUM_A008109
+	select SYS_FSL_ERRATUM_A009663
+	select SYS_FSL_ERRATUM_A009942
+	select SYS_FSL_ERRATUM_ESDHC111
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_DDR4
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS2
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_5
+	select SYS_FSL_SINGLE_SOURCE_CLK
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select SYS_FSL_USB_DUAL_PHY_ENABLE
+	select FSL_IFC
+	imply CMD_MTDPARTS
+	imply CMD_NAND
+	imply CMD_REGINFO
+
+config ARCH_T2080
+	bool
+	select E500MC
+	select E6500
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_DPAA_DCE if !NOBQFMAN
+	select SYS_DPAA_FMAN if !NOBQFMAN
+	select SYS_DPAA_PME if !NOBQFMAN
+	select SYS_DPAA_RMAN if !NOBQFMAN
+	select SYS_FSL_DDR_VER_47
+	select SYS_FSL_ERRATUM_A006379
+	select SYS_FSL_ERRATUM_A006593
+	select SYS_FSL_ERRATUM_A007186 if CHAIN_OF_TRUST
+	select SYS_FSL_ERRATUM_A007212
+	select SYS_FSL_ERRATUM_A007815
+	select SYS_FSL_ERRATUM_A007907
+	select SYS_FSL_ERRATUM_A008109
+	select SYS_FSL_ERRATUM_A009942
+	select SYS_FSL_ERRATUM_ESDHC111
+	select FSL_PCIE_RESET
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS2
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v30
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_SRDS_2
+	select SYS_FSL_SRIO_LIODN
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select SYS_FSL_USB_DUAL_PHY_ENABLE
+	select SYS_PMAN if !NOBQFMAN
+	select SYS_PPC64
+	select FSL_IFC
+	imply CMD_SATA
+	imply CMD_NAND
+	imply CMD_REGINFO
+	imply FSL_SATA
+	imply ID_EEPROM
+
+config ARCH_T4240
+	bool
+	select E500MC
+	select E6500
+	select FSL_CORENET
+	select FSL_LAW
+	select SYS_CACHE_SHIFT_6
+	select SYS_DPAA_DCE if !NOBQFMAN
+	select SYS_DPAA_FMAN if !NOBQFMAN
+	select SYS_DPAA_PME if !NOBQFMAN
+	select SYS_DPAA_RMAN if !NOBQFMAN
+	select SYS_FSL_DDR_VER_47
+	select SYS_FSL_ERRATUM_A004468
+	select SYS_FSL_ERRATUM_A005871
+	select SYS_FSL_ERRATUM_A006261
+	select SYS_FSL_ERRATUM_A006379
+	select SYS_FSL_ERRATUM_A006593
+	select SYS_FSL_ERRATUM_A007186 if CHAIN_OF_TRUST
+	select SYS_FSL_ERRATUM_A007798
+	select SYS_FSL_ERRATUM_A007815
+	select SYS_FSL_ERRATUM_A007907
+	select SYS_FSL_ERRATUM_A008109
+	select SYS_FSL_ERRATUM_A009942
+	select SYS_FSL_HAS_DDR3
+	select SYS_FSL_HAS_SEC
+	select SYS_FSL_QORIQ_CHASSIS2
+	select SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v30
+	select SYS_FSL_SEC_BE
+	select SYS_FSL_SEC_COMPAT_4
+	select SYS_FSL_SRDS_1
+	select SYS_FSL_SRDS_2
+	select SYS_FSL_SRIO_LIODN
+	select SYS_FSL_QMAN_V3 if SYS_DPAA_QBMAN
+	select SYS_FSL_USB_DUAL_PHY_ENABLE
+	select SYS_PMAN if !NOBQFMAN
+	select SYS_PPC64
+	select FSL_IFC
+	imply CMD_SATA
+	imply CMD_NAND
+	imply CMD_REGINFO
+	imply FSL_SATA
+
+config MPC85XX_HAVE_RESET_VECTOR
+	bool "Indicate reset vector at CFG_RESET_VECTOR_ADDRESS - 0xffc"
+	depends on MPC85xx
+
+config BTB
+	bool "toggle branch predition"
+
+config BOOKE
+	bool
+	default y
+
+config E500
+	bool
+	default y
+	help
+		Enable PowerPC E500 cores, including e500v1, e500v2, e500mc
+
+config E500MC
+	bool
+	select BTB
+	imply CMD_PCI
+	help
+		Enble PowerPC E500MC core
+
+config E5500
+	bool
+
+config E6500
+	bool
+	select BTB
+	help
+		Enable PowerPC E6500 core
+
+config NOBQFMAN
+	bool
+
+config FSL_LAW
+	bool
+	help
+		Use Freescale common code for Local Access Window
+
+config HETROGENOUS_CLUSTERS
+	bool
+
+config MAX_CPUS
+	int "Maximum number of CPUs permitted for MPC85xx"
+	default 12 if ARCH_T4240
+	default 8 if ARCH_P4080
+	default 4 if ARCH_B4860 || \
+		     ARCH_P2041 || \
+		     ARCH_P3041 || \
+		     ARCH_P5040 || \
+		     ARCH_T1040 || \
+		     ARCH_T1042 || \
+		     ARCH_T2080
+	default 2 if ARCH_B4420 || \
+		     ARCH_BSC9132 || \
+		     ARCH_P1020 || \
+		     ARCH_P1021 || \
+		     ARCH_P1023 || \
+		     ARCH_P1024 || \
+		     ARCH_P1025 || \
+		     ARCH_P2020 || \
+		     ARCH_T1024
+	default 1
+	help
+	  Set this number to the maximum number of possible CPUs in the SoC.
+	  SoCs may have multiple clusters with each cluster may have multiple
+	  ports. If some ports are reserved but higher ports are used for
+	  cores, count the reserved ports. This will allocate enough memory
+	  in spin table to properly handle all cores.
+
+config SYS_CCSRBAR_DEFAULT
+	hex "Default CCSRBAR address"
+	default	0xff700000 if	ARCH_BSC9131	|| \
+				ARCH_BSC9132	|| \
+				ARCH_C29X	|| \
+				ARCH_MPC8536	|| \
+				ARCH_MPC8540	|| \
+				ARCH_MPC8544	|| \
+				ARCH_MPC8548	|| \
+				ARCH_MPC8560	|| \
+				ARCH_P1010	|| \
+				ARCH_P1011	|| \
+				ARCH_P1020	|| \
+				ARCH_P1021	|| \
+				ARCH_P1024	|| \
+				ARCH_P1025	|| \
+				ARCH_P2020
+	default 0xff600000 if	ARCH_P1023
+	default 0xfe000000 if	ARCH_B4420	|| \
+				ARCH_B4860	|| \
+				ARCH_P2041	|| \
+				ARCH_P3041	|| \
+				ARCH_P4080	|| \
+				ARCH_P5040	|| \
+				ARCH_T1024	|| \
+				ARCH_T1040	|| \
+				ARCH_T1042	|| \
+				ARCH_T2080	|| \
+				ARCH_T4240
+	default 0xe0000000 if ARCH_QEMU_E500
+	help
+		Default value of CCSRBAR comes from power-on-reset. It
+		is fixed on each SoC. Some SoCs can have different value
+		if changed by pre-boot regime. The value here must match
+		the current value in SoC. If not sure, do not change.
+
+config SYS_DPAA_PME
+	bool
+
+config SYS_DPAA_DCE
+	bool
+
+config SYS_DPAA_RMAN
+	bool
+
+config A003399_NOR_WORKAROUND
+	bool
+	help
+	  Enables a workaround for IFC erratum A003399. It is only required
+	  during NOR boot.
+
+config A008044_WORKAROUND
+	bool
+	help
+	  Enables a workaround for T1040/T1042 erratum A008044. It is only
+	  required during NAND boot and valid for Rev 1.0 SoC revision
+
+config SYS_FSL_ERRATUM_A004468
+	bool
+
+config SYS_FSL_ERRATUM_A004477
+	bool
+
+config SYS_FSL_ERRATUM_A004508
+	bool
+
+config SYS_FSL_ERRATUM_A004580
+	bool
+
+config SYS_FSL_ERRATUM_A004699
+	bool
+
+config SYS_FSL_ERRATUM_A004849
+	bool
+
+config SYS_FSL_ERRATUM_A004510
+	bool
+
+config SYS_FSL_ERRATUM_A004510_SVR_REV
+	hex
+	depends on SYS_FSL_ERRATUM_A004510
+	default 0x20 if ARCH_P4080
+	default 0x10
+
+config SYS_FSL_ERRATUM_A004510_SVR_REV2
+	hex
+	depends on (SYS_FSL_ERRATUM_A004510 && (ARCH_P2041 || ARCH_P3041))
+	default 0x11
+
+config SYS_FSL_ERRATUM_A005125
+	bool
+
+config SYS_FSL_ERRATUM_A005434
+	bool
+
+config SYS_FSL_ERRATUM_A005812
+	bool
+
+config SYS_FSL_ERRATUM_A005871
+	bool
+
+config SYS_FSL_ERRATUM_A005275
+	bool
+
+config SYS_FSL_ERRATUM_A006261
+	bool
+
+config SYS_FSL_ERRATUM_A006379
+	bool
+
+config SYS_FSL_ERRATUM_A006384
+	bool
+
+config SYS_FSL_ERRATUM_A006475
+	bool
+
+config SYS_FSL_ERRATUM_A006593
+	bool
+
+config SYS_FSL_ERRATUM_A007075
+	bool
+
+config SYS_FSL_ERRATUM_A007186
+	bool
+
+config SYS_FSL_ERRATUM_A007212
+	bool
+
+config SYS_FSL_ERRATUM_A007815
+	bool
+
+config SYS_FSL_ERRATUM_A007798
+	bool
+
+config SYS_FSL_ERRATUM_A007907
+	bool
+
+config SYS_FSL_ERRATUM_A008044
+	bool
+	select A008044_WORKAROUND if MTD_RAW_NAND
+
+config SYS_FSL_ERRATUM_CPC_A002
+	bool
+
+config SYS_FSL_ERRATUM_CPC_A003
+	bool
+
+config SYS_FSL_ERRATUM_CPU_A003999
+	bool
+
+config SYS_FSL_ERRATUM_ELBC_A001
+	bool
+
+config SYS_FSL_ERRATUM_I2C_A004447
+	bool
+
+config SYS_FSL_A004447_SVR_REV
+	hex
+	depends on SYS_FSL_ERRATUM_I2C_A004447
+	default 0x00 if ARCH_MPC8548
+	default 0x10 if ARCH_P1010
+	default 0x11 if ARCH_P1023 || ARCH_P2041 || ARCH_BSC9132
+	default 0x20 if ARCH_P3041 || ARCH_P4080
+
+config SYS_FSL_ERRATUM_IFC_A002769
+	bool
+
+config SYS_FSL_ERRATUM_IFC_A003399
+	bool
+
+config SYS_FSL_ERRATUM_NMG_CPU_A011
+	bool
+
+config SYS_FSL_ERRATUM_NMG_ETSEC129
+	bool
+
+config SYS_FSL_ERRATUM_NMG_LBC103
+	bool
+
+config SYS_FSL_ERRATUM_P1010_A003549
+	bool
+
+config SYS_FSL_ERRATUM_SATA_A001
+	bool
+
+config SYS_FSL_ERRATUM_SEC_A003571
+	bool
+
+config SYS_FSL_ERRATUM_SRIO_A004034
+	bool
+
+config SYS_FSL_ERRATUM_USB14
+	bool
+
+config SYS_P4080_ERRATUM_CPU22
+	bool
+
+config SYS_P4080_ERRATUM_PCIE_A003
+	bool
+
+config SYS_P4080_ERRATUM_SERDES8
+	bool
+
+config SYS_P4080_ERRATUM_SERDES9
+	bool
+
+config SYS_P4080_ERRATUM_SERDES_A001
+	bool
+
+config SYS_P4080_ERRATUM_SERDES_A005
+	bool
+
+config FSL_PCIE_DISABLE_ASPM
+	bool
+
+config FSL_PCIE_RESET
+	bool
+
+config SYS_PMAN
+	bool
+
+config SYS_FSL_RAID_ENGINE
+	bool
+
+config SYS_FSL_RMU
+	bool
+
+config SYS_FSL_QORIQ_CHASSIS1
+	bool
+
+config SYS_FSL_QORIQ_CHASSIS2
+	bool
+
+config SYS_FSL_NUM_LAWS
+	int "Number of local access windows"
+	depends on FSL_LAW
+	default 32 if	ARCH_B4420	|| \
+			ARCH_B4860	|| \
+			ARCH_P2041	|| \
+			ARCH_P3041	|| \
+			ARCH_P4080	|| \
+			ARCH_P5040	|| \
+			ARCH_T2080	|| \
+			ARCH_T4240
+	default 16 if	ARCH_T1024	|| \
+			ARCH_T1040	|| \
+			ARCH_T1042
+	default 12 if	ARCH_BSC9131	|| \
+			ARCH_BSC9132	|| \
+			ARCH_C29X	|| \
+			ARCH_MPC8536	|| \
+			ARCH_P1010	|| \
+			ARCH_P1011	|| \
+			ARCH_P1020	|| \
+			ARCH_P1021	|| \
+			ARCH_P1023	|| \
+			ARCH_P1024	|| \
+			ARCH_P1025	|| \
+			ARCH_P2020
+	default 10 if	ARCH_MPC8544	|| \
+			ARCH_MPC8548
+	default 8 if	ARCH_MPC8540	|| \
+			ARCH_MPC8560
+	help
+		Number of local access windows. This is fixed per SoC.
+		If not sure, do not change.
+
+config SYS_FSL_CORES_PER_CLUSTER
+	int
+	depends on SYS_FSL_QORIQ_CHASSIS2
+	default 4 if ARCH_B4860 || ARCH_T2080 || ARCH_T4240
+	default 2 if ARCH_B4420
+	default 1 if ARCH_T1024 || ARCH_T1040 || ARCH_T1042
+
+config SYS_FSL_THREADS_PER_CORE
+	int
+	depends on SYS_FSL_QORIQ_CHASSIS2
+	default 2 if E6500
+	default 1
+
+config SYS_NUM_TLBCAMS
+	int "Number of TLB CAM entries"
+	default 64 if E500MC
+	default 16
+	help
+		Number of TLB CAM entries for Book-E chips. 64 for E500MC,
+		16 for other E500 SoCs.
+
+config L2_CACHE
+	bool "Enable L2 cache support"
+
+if HETROGENOUS_CLUSTERS
+
+config SYS_MAPLE
+	def_bool y
+
+config SYS_CPRI
+	def_bool y
+
+config PPC_CLUSTER_START
+	int
+	default 0
+
+config DSP_CLUSTER_START
+	int
+	default 1
+
+config SYS_CPRI_CLK
+	int
+	default 3
+
+config SYS_ULB_CLK
+	int
+	default 4
+
+config SYS_ETVPE_CLK
+	int
+	default 1
+
+config MAX_DSP_CPUS
+	int
+	default 12 if ARCH_B4860
+	default 2 if ARCH_B4420
+endif
+
+config SYS_L2_SIZE_256KB
+	bool
+
+config SYS_L2_SIZE_512KB
+	bool
+
+config SYS_L2_SIZE
+	int
+	default 262144 if SYS_L2_SIZE_256KB
+	default 524288 if SYS_L2_SIZE_512KB
+
+config BACKSIDE_L2_CACHE
+	bool
+
+config SYS_L3_SIZE_256KB
+	bool
+
+config SYS_L3_SIZE_512KB
+	bool
+
+config SYS_L3_SIZE_1024KB
+	bool
+
+config SYS_L3_SIZE
+	int
+	default 262144 if SYS_L3_SIZE_256KB
+	default 524288 if SYS_L3_SIZE_512KB
+	default 1048576 if SYS_L3_SIZE_512KB
+
+config SYS_PPC64
+	bool
+
+config SYS_PPC_E500_USE_DEBUG_TLB
+	bool
+
+config FSL_ELBC
+	bool
+
+config SYS_PPC_E500_DEBUG_TLB
+	int "Temporary TLB entry for external debugger"
+	depends on SYS_PPC_E500_USE_DEBUG_TLB
+	default 0 if	ARCH_MPC8544 || ARCH_MPC8548
+	default 1 if	ARCH_MPC8536
+	default 2 if	ARCH_P1011	|| \
+			ARCH_P1020	|| \
+			ARCH_P1021	|| \
+			ARCH_P1024	|| \
+			ARCH_P1025	|| \
+			ARCH_P2020
+	default 3 if	ARCH_P1010	|| \
+			ARCH_BSC9132	|| \
+			ARCH_C29X
+	help
+		Select a temporary TLB entry to be used during boot to work
+                around limitations in e500v1 and e500v2 external debugger
+                support. This reduces the portions of the boot code where
+                breakpoints and single stepping do not work. The value of this
+                symbol should be set to the TLB1 entry to be used for this
+                purpose. If unsure, do not change.
+
+config SYS_FSL_IFC_CLK_DIV
+	int "Divider of platform clock"
+	depends on FSL_IFC
+	default 2 if	ARCH_B4420	|| \
+			ARCH_B4860	|| \
+			ARCH_T1024	|| \
+			ARCH_T1040	|| \
+			ARCH_T1042	|| \
+			ARCH_T4240
+	default 1
+	help
+		Defines divider of platform clock(clock input to
+		IFC controller).
+
+config SYS_FSL_LBC_CLK_DIV
+	int "Divider of platform clock"
+	depends on FSL_ELBC || ARCH_MPC8540 || \
+		ARCH_MPC8548 || \
+		ARCH_MPC8560
+
+	default 2 if	ARCH_P2041	|| \
+			ARCH_P3041	|| \
+			ARCH_P4080	|| \
+			ARCH_P5040
+	default 1
+
+	help
+		Defines divider of platform clock(clock input to
+		eLBC controller).
+
+config ENABLE_36BIT_PHYS
+	bool "Enable 36bit physical address space support"
+
+config SYS_BOOK3E_HV
+	bool "Category E.HV is supported"
+	depends on BOOKE
+
+config FSL_CORENET
+	bool
+	select SYS_FSL_CPC
+
+config FSL_NGPIXIS
+	bool
+
+config SYS_CPC_REINIT_F
+	bool
+	help
+	  The CPC is configured as SRAM at the time of U-Boot entry and is
+	  required to be re-initialized.
+
+config SYS_FSL_CPC
+	bool
+
+config SYS_CACHE_STASHING
+	bool "Enable cache stashing"
+
+config SYS_FSL_PCIE_COMPAT_P4080_PCIE
+	bool
+
+config SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v22
+	bool
+
+config SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	bool
+
+config SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v30
+	bool
+
+config SYS_FSL_PCIE_COMPAT
+	string
+	depends on FSL_CORENET
+	default "fsl,p4080-pcie" if SYS_FSL_PCIE_COMPAT_P4080_PCIE
+	default "fsl,qoriq-pcie-v2.2" if SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v22
+	default "fsl,qoriq-pcie-v2.4" if SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v24
+	default "fsl,qoriq-pcie-v3.0" if SYS_FSL_PCIE_COMPAT_QORIQ_PCIE_v30
+	help
+	  Defines the string to utilize when trying to match PCIe device tree
+	  nodes for the given platform.
+
+config SYS_FSL_SINGLE_SOURCE_CLK
+	bool
+
+config SYS_FSL_SRIO_LIODN
+	bool
+
+config SYS_FSL_TBCLK_DIV
+	int
+	default 32 if ARCH_P2041 || ARCH_P3041
+	default 16 if ARCH_P4080 || ARCH_P5040 || ARCH_T4240 || ARCH_B4860 || \
+			ARCH_B4420 || ARCH_T1040 || ARCH_T1042 || \
+			ARCH_T1024 || ARCH_T2080
+	default 8
+	help
+	  Defines the core time base clock divider ratio compared to the system
+	  clock. On most PQ3 devices this is 8, on newer QorIQ devices it can
+	  be 16 or 32. The ratio varies from SoC to Soc.
+
+config SYS_FSL_USB1_PHY_ENABLE
+	bool
+
+config SYS_FSL_USB2_PHY_ENABLE
+	bool
+
+config SYS_FSL_USB_DUAL_PHY_ENABLE
+	bool
+
+config SYS_MPC85XX_NO_RESETVEC
+	bool "Discard resetvec section and move bootpg section up"
+	depends on MPC85xx && !MPC85XX_HAVE_RESET_VECTOR
+	help
+	  If this variable is specified, the section .resetvec is not kept and
+	  the section .bootpg is placed in the previous 4k of the .text section.
+
+config SPL_SYS_MPC85XX_NO_RESETVEC
+	bool "Discard resetvec section and move bootpg section up, in SPL"
+	depends on MPC85xx && SPL && !MPC85XX_HAVE_RESET_VECTOR
+	help
+	  If this variable is specified, the section .resetvec is not kept and
+	  the section .bootpg is placed in the previous 4k of the .text section,
+	  of the SPL portion of the binary.
+
+config TPL_SYS_MPC85XX_NO_RESETVEC
+	bool "Discard resetvec section and move bootpg section up, in TPL"
+	depends on MPC85xx && TPL && !MPC85XX_HAVE_RESET_VECTOR
+	help
+	  If this variable is specified, the section .resetvec is not kept and
+	  the section .bootpg is placed in the previous 4k of the .text section,
+	  of the SPL portion of the binary.
+
+config FSL_VIA
+	bool
+
+source "board/emulation/qemu-ppce500/Kconfig"
+source "board/freescale/mpc8548cds/Kconfig"
+source "board/freescale/p1010rdb/Kconfig"
+source "board/freescale/p1_p2_rdb_pc/Kconfig"
+source "board/freescale/p2041rdb/Kconfig"
+source "board/freescale/t102xrdb/Kconfig"
+source "board/freescale/t104xrdb/Kconfig"
+source "board/freescale/t208xqds/Kconfig"
+source "board/freescale/t208xrdb/Kconfig"
+source "board/freescale/t4rdb/Kconfig"
+source "board/socrates/Kconfig"
+
+endmenu

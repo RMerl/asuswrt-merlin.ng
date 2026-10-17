@@ -45,6 +45,7 @@ written consent.
 #include <stdint.h>
 #endif 
 #include "ru_config.h"
+#include "ru_types.h"
 #include "ru_chip.h"
 
 //#define RU_TO_BBS /* <- uncomment to enable BBS register access */

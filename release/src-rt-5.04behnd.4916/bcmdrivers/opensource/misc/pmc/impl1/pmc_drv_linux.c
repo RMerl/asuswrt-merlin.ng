@@ -209,7 +209,7 @@ static irqreturn_t pmc_isr(int irq, void *dev_id)
 		orderly_reboot();
 		pr_emerg("%s: !!! CPU Too HOT, performing orderly reboot ...\n",
 			 __func__);
-	} 
+	}
 	else
 	{
 		pr_info("%s: pmc->ctrl.hostMboxOut=0x%08x\n",
@@ -261,12 +261,12 @@ void install_pmc_temp_warn_isr(uint32_t virq)
 
 int RecloseAVS(int iscold)
 {
-#if defined(PMC_RECLOSE_SUPPORT) 
+#if defined(PMC_RECLOSE_SUPPORT)
 	static int last_slow, last_fast;
 	int slow, fast;		// margins
 
-	void __iomem *res = ioremap(JTAG_OTP_PHYS_BASE, 0x4); 
-	uint32_t cap = readl(res); 
+	void __iomem *res = ioremap(JTAG_OTP_PHYS_BASE, 0x4);
+	uint32_t cap = readl(res);
 
 	iounmap(res);
 
@@ -287,51 +287,14 @@ int RecloseAVS(int iscold)
 
 EXPORT_SYMBOL(RecloseAVS);
 
-#if defined(CONFIG_BCM963138)
-static void pmc_patch_63138(void)
-{
-#define logsize (8 << 10)
-	static const __attribute__ ((aligned(logsize)))
-#include "restart.h"
-	unsigned linkaddr = 0x9fc10000;	// translated code start
-	const void *physaddr = restart_bin;
-	TCommand rsp;
-	volatile Pmc *pmc = (volatile Pmc *)g_pmc->pmc_base;
-
-	if (((pmc->ctrl.hostMboxIn >> 24) & 7) !=
-	    kPMCRunStateAVSCompleteWaitingForImage)
-		return;
-
-	/* window 2 baseout specifies destination of pmcapp image */
-	/* e4k will translate the block at BaseIn to BaseOut */
-	/* pmc ram command at linkaddr */
-	pmc->ctrl.addr2WndwMask = -(logsize);
-	pmc->ctrl.addr2WndwBaseIn = linkaddr & 0x1fffffff;
-	pmc->ctrl.addr2WndwBaseOut = virt_to_phys(physaddr);
-
-	// register command
-	SendCommand(cmdRegisterCmdHandler, 0, 0, 0, 96, linkaddr, &rsp);
-	if (rsp.word0.Bits.error)
-		printk("%s %d\n", "cmdRegisterCmdHandler",
-		       rsp.word0.Bits.error);
-	else {
-		// send command with option to enable AVS
-		SendCommand(96, 1, 0, 0, 75, 75, &rsp);
-		printk("%s:%x %x %x\n", __func__,
-		       rsp.word1.Reg32, rsp.u.cmdResponse.word2,
-		       rsp.u.cmdResponse.word3);
-	}
-}
-#endif
-
 #if defined(PMC_ON_HOSTCPU)
 void pmc_tracking_init(void);
 #endif
 
 static void pmc_init_rescal(void)
 {
-	/* only 28nm chip need HW RESCAL. This include 4908, 63158, 6756. 
-	 * 16nm chips has RESCAL enabled by default. The old 28nm chip like 
+	/* only 28nm chip need HW RESCAL. This include 63158, 6756.
+	 * 16nm chips has RESCAL enabled by default. The old 28nm chip like
 	 * 63138, 63148 need call GetRCalSetting to read resister value
 	 * and program to serdes/pcie manually
 	 */
@@ -353,7 +316,7 @@ static void pmc_init_rescal(void)
 	value |= RESCAL_RSTB;
 	writel(value, rescal_base + RESCAL_CTRL_CFG_OFFSET);
 	udelay(10);
-	
+
 	value = readl(rescal_base + RESCAL_CTRL_CFG_OFFSET);
 	value &= ~RESCAL_PWRDN;
 	writel(value, rescal_base + RESCAL_CTRL_CFG_OFFSET);
@@ -363,7 +326,7 @@ static void pmc_init_rescal(void)
 		value = readl(rescal_base + RESCAL_CTRL_STATUS_OFFSET);
 	} while(!(value&RESCAL_DONE));
 #endif
-	
+
 	iounmap(rescal_base);
 #endif
 
@@ -383,11 +346,6 @@ int pmc_init(void)
 	       pmc_mode == PMC_MODE_PMB_DIRECT ? "PMB_DIRECT" : "DQM");
 	if (pmc_mode == PMC_MODE_PMB_DIRECT)
 		return 0;
-
-#if defined CONFIG_BCM963138
-	pmc_patch_63138();
-#endif
-
 
 	_devices_power_down_init();
 

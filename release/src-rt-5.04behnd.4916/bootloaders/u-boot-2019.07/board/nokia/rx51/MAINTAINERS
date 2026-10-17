@@ -1,6 +1,0 @@
-RX51 BOARD
-M:	Pali Rohár <pali.rohar@gmail.com>
-S:	Maintained
-F:	board/nokia/rx51/
-F:	include/configs/nokia_rx51.h
-F:	configs/nokia_rx51_defconfig

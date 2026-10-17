@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/dts-v1/;
+/include/ "mcf5329.dtsi"
+
+/ {
+	model = "Freescale M5329AFEE";
+	compatible = "fsl,M5329AFEE";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&uart0 {
+	bootph-all;
+	status = "okay";
+};
+
+&fec0 {
+	status = "okay";
+};
+
+&i2c0 {
+	clock-frequency = <80000>;
+	u-boot,i2c-slave-addr = <0x7f>;
+	status = "okay";
+};

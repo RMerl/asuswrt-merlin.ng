@@ -5340,6 +5340,9 @@ static const ru_reg_rec *SBPM_REGS[] =
 const ru_block_rec SBPM_BLOCK =
 {
     "SBPM",
+#if RU_INCLUDE_SIZE
+    { 0x00000210 },
+#endif
     SBPM_ADDRS,
     1,
     54,

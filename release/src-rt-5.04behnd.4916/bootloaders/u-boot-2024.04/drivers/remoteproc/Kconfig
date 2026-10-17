@@ -1,0 +1,105 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2015
+# Texas Instruments Incorporated - https://www.ti.com/
+#
+
+menu "Remote Processor drivers"
+
+# REMOTEPROC gets selected by drivers as needed
+# All users should depend on DM
+config REMOTEPROC
+	bool
+	depends on DM
+
+# Please keep the configuration alphabetically sorted.
+config K3_SYSTEM_CONTROLLER
+	bool "Support for TI' K3 System Controller"
+	select REMOTEPROC
+	depends on DM
+	depends on ARCH_K3
+	depends on OF_CONTROL
+	help
+	  Say 'y' here to add support for TI' K3 System Controller.
+
+config REMOTEPROC_SANDBOX
+	bool "Support for Test processor for Sandbox"
+	select REMOTEPROC
+	depends on DM
+	depends on SANDBOX
+	help
+	  Say 'y' here to add support for test processor which does dummy
+	  operations for sandbox platform.
+
+config REMOTEPROC_STM32_COPRO
+	bool "Support for STM32 coprocessor"
+	select REMOTEPROC
+	depends on DM
+	depends on ARCH_STM32MP
+	depends on OF_CONTROL
+	help
+	  Say 'y' here to add support for STM32 Cortex-M4 coprocessors via the
+	  remoteproc framework.
+
+config REMOTEPROC_TI_K3_ARM64
+	bool "Support for TI's K3 based ARM64 remoteproc driver"
+	select REMOTEPROC
+	depends on DM
+	depends on ARCH_K3
+	depends on OF_CONTROL
+	help
+	  Say y here to support TI's ARM64 processor subsystems
+	  on various TI K3 family of SoCs through the remote processor
+	  framework.
+
+config REMOTEPROC_TI_K3_DSP
+	bool "TI K3 C66 and C71 remoteproc support"
+	select REMOTEPROC
+	depends on ARCH_K3
+	depends on TI_SCI_PROTOCOL
+	help
+	  Say y here to support TI's C66/C71 remote processor subsystems
+	  on various TI K3 family of SoCs through the remote processor
+	  framework.
+
+config REMOTEPROC_TI_K3_R5F
+	bool "TI K3 R5F remoteproc support"
+	select REMOTEPROC
+	depends on ARCH_K3
+	depends on TI_SCI_PROTOCOL
+	help
+	  Say y here to support TI's R5F remote processor subsystems
+	  on various TI K3 family of SoCs through the remote processor
+	  framework.
+
+config REMOTEPROC_TI_POWER
+	bool "Support for TI Power processor"
+	select REMOTEPROC
+	depends on DM
+	depends on ARCH_KEYSTONE
+	depends on OF_CONTROL
+	help
+	  Say 'y' here to add support for TI power processors such as those
+	  found on certain TI keystone and OMAP generation SoCs.
+
+config REMOTEPROC_TI_PRU
+	bool "Support for TI's K3 based PRU remoteproc driver"
+	select REMOTEPROC
+	depends on DM
+	depends on TI_PRUSS
+	depends on ARCH_K3
+	depends on OF_CONTROL
+	help
+	  Say 'y' here to add support for TI' K3 remoteproc driver.
+
+config REMOTEPROC_TI_IPU
+	bool "Support for TI's K3 based IPU remoteproc driver"
+	select REMOTEPROC
+	depends on DM
+	depends on SPL_DRIVERS_MISC
+	depends on SPL_FS_LOADER
+	depends on OF_CONTROL
+	help
+	  Say 'y' here to add support for TI' K3 remoteproc driver.
+
+endmenu

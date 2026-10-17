@@ -5,7 +5,7 @@ ARCH := arm
 SEC_ARCH := GEN3
 
 BOOTLOADER_EXTRA := $(mdir)/../targets/avs/avs6855.bin
-UBOOT_CROSS_COMPILE = /opt/toolchains/crosstools-arm_softfp-gcc-10.3-linux-4.19-glibc-2.32-binutils-2.36.1/usr/bin/arm-buildroot-linux-gnueabi-
+UBOOT_CROSS_COMPILE = /opt/toolchains/crosstools-arm_hf-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41/usr/bin/arm-buildroot-linux-gnueabihf-
 
 bcm_uboot_envsize = 16384
 bcm_uboot_env = env_NAND_2M_GT10.conf

@@ -1,0 +1,48 @@
+# $ Copyright Broadcom $
+#
+#
+# <<Broadcom-WL-IPTag/Proprietary>>
+
+# This is a list of regular expressions matching error messages
+# from the cmwifi build which don't indicate real errors.
+# NOTE: the preferred solution is always to avoid printing
+# bogus error messages in the first place. Swallowing or
+# modifying them is a fallback option for cases we cannot
+# otherwise fix, especially in third-party code.
+# If a matching RE contains a () capture group the captured
+# parts will be modified, if not the entire line is dropped.
+#
+# Matched capture groups are modified by inserting spaces such
+# that "fatal:" becomes "f a t a l :". These lines remain
+# readable but are no longer found by the error grepper.
+#
+# It's recommended to use one or more capture groups in each RE
+# so the line isn't dropped entirely which could be misleading.
+
+# Spurious messages not (yet) fixed on trunk.
+arm-linux-gnueabihf/bin/gcc: (Command not found)$
+(fatal): not a git repository
+(ERROR): Kernel configuration is invalid
+gpl/apps/busybox': (No such file or directory)$
+(fatal error): cms_image.h: (No such file or directory)
+cp: (cannot stat) .\.\./lighttpd-1.4.64-patch/newfiles.*: (No such file or directory)
+(ERROR): No hash found for
+evalerror \(_\("(syntax error):
+msg = EOF_Reached \? _\("(syntax error):
+help2man: (command not found)
+printf "(Error):
+pkg-rsync-list.txt: (No such file or directory)
+grep: \./\.config: (No such file or directory)
+'\*.sh': (No such file or directory)
+cannot stat '.*/public/include.*/\*.h': (No such file or directory)
+(svn): E200009: Could not display info
+
+# These are solved on trunk but obscuring still needed for old branches/twigs/tags.
+/usr/bin/grep: \\: (No such file or directory)
+cp: cannot stat '.*/fs.install/bin/erase': (No such file or directory)
+cp: cannot stat '.*/fs.install/lib/libairiq.so': (No such file or directory)
+cp: cannot stat '.*/fs.install/lib/libairiq_sirp.so': (No such file or directory)
+/usr/bin/find: '../\d+/src/wl/clm/src/\*.GEN': (No such file or directory)
+/usr/bin/find: '../\d+/src/wl/clm/src/\*.clm_blob': (No such file or directory)
+/usr/bin/find: 'components/router/arm\*': (No such file or directory)
+/usr/bin/find: '.*/components/router/.*-glibc/target': (No such file or directory)

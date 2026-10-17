@@ -1,0 +1,6 @@
+config TEN64_CONTROLLER
+	bool "Enable Ten64 board controller driver"
+	depends on TARGET_TEN64
+	help
+		Support for the board microcontroller on the Traverse
+		Ten64 family of boards.

@@ -108,7 +108,7 @@ typedef struct
 } rdpa_dp_key_t;
 
 /** IPTV Table Size \n
-  * The IPTV table size, can be changed only on BCM6846/BCM6856 platforms. Default value 256 \n
+  * The IPTV table size, can be changed only on BCM6856 platforms. Default value 256 \n
   * For other platforms IPTV table size is fixed, for details refer to \ref appendixes "Runner Resources Table"
   * 
   * Changing IPTV table size alters the MAC table size as well. 
@@ -126,7 +126,7 @@ typedef enum
  *  counter has three mode: \n
  *  -# drop (default)     [packet, bytes] \n
  *  -# queue watermark    [packet, bytes]\n
- *  -# drop according to color (Supported only on BCM6846/BCM6856 platforms.) \n
+ *  -# drop according to color (Supported only on BCM6856 platforms.) \n
  *                        [green packets, yellow packets]
  */
 typedef enum
@@ -151,6 +151,11 @@ typedef struct
     bdmf_boolean us_ddr_queue_enable; /**< WAN TX queue DDR offload enable. Not supported in XRDP (value ignored) */
     rdpa_iptv_table_size iptv_table_size; /**< 256(default) / 1024 */
     uint32_t dhd_offload_bitmask;          /**< DHD offloaf configuration bitmask */
+    uint16_t number_of_natc_tables; /**< define the number of enabled NATC table - Read Only */
+    uint32_t reserved_bufmem_size; /**< size of reserved bufmem - Read only */
+    uint32_t used_bufmem_size; /**< size of bufmem used - Read only */
+    uint32_t reserved_rnrmem_size; /**< size of reserved rnrmem - Read only */
+    uint32_t used_rnrmem_size; /**< size of rnrmem used - Read only */
 } rdpa_system_init_cfg_t;
 
 /** RDPA QM configuration.
@@ -164,16 +169,26 @@ typedef struct
     uint16_t number_of_queue_tm_core_0; /**< number of queue used by TM Core#0 - Read Only \XRDP_LIMITED*/
     uint16_t number_of_queue_tm_core_1; /**< number of queue used by TM Core#1 - Read Only \XRDP_LIMITED*/
     uint16_t max_dynamic_queues_num; /**< Max dyamic queues number - Read Only \XRDP_LIMITED*/
- } rdpa_qm_cfg_t;
+} rdpa_qm_cfg_t;
  
+/** RDPA NATC configuration.
+ * This is underlying structure of system aggregate.
+ */
+typedef struct
+{
+    rdpa_natc_table_name_t table_name;
+    uint32_t number_of_entries; /**< define the number of entries */
+    uint16_t key_size; /**< define the size of key */
+    uint16_t result_size; /**< define the size of result */
+    uint32_t size_of_table; /**< define the size of table in byte */
+    uint32_t memory_shared_mask;
+} rdpa_natc_tbl_cfg_t;
+
 /** RDPA counter configuration.
  * This is underlying structure of system aggregate.
  */
 typedef struct
 {
-    bdmf_boolean vlan_stats_enable;     /**< enable vlan counters.
-                                        When enabled, reduces amount of available Ingress Classifier rule counters to
-                                        half of total amount of Ingress Classifier rules \XRDP_LIMITED  */
     uint32_t shared_counters;           /**< quantity of shared counters - read only */
 } rdpa_counter_cfg_t;
 
@@ -252,15 +267,12 @@ typedef struct
     rdpa_rx_redirect_cpu_t cpu_redirect_mode;  /* CPU redirection mode (debug) */
     rdpa_drop_counter_mode counter_type; /**<  [packet,byte] / [green,yellow] / [queue watermark] \XRDP_LIMITED */
     bdmf_boolean buffer_cong_mgmt; /**< Enable/Disable dynamic buffer congestion management_mode */
+    bdmf_boolean fw_flush; /**< Enable/Disable fw flushing of stale packets */
     bdmf_boolean force_dscp_remark; /**< Force DSCP remark */
-#if defined(RDP_UFC)
     bdmf_boolean disable_non_accel_sq; /**< Disable service queues for non-accelerated packets */
-#endif
 } rdpa_system_cfg_t;
 
 /** System-level drop statistics. */
-#if defined(XRDP) || defined(BCM_XRDP)
-
 typedef struct
 {
     uint32_t protocol_us_ipv4;                  /**< Drop due to IPV4 protocol filter  */
@@ -286,7 +298,6 @@ typedef struct
     uint32_t ingress_resources_congestion;      /**< Drop due to XRDP resources congestion ingress */
     uint32_t egress_resources_congestion;       /**< Drop due to XRDP resources congestion egress */
     uint32_t ingress_isolation_drop;            /**< Ingress VLAN isolation drop */
-    uint32_t egress_isolation_drop;             /**< Egress VLAN isolation drop */
     uint32_t disabled_tx_flow;                  /**< TX flow is not defined */
     uint32_t cpu_rx_tc_to_rxq_map;              /**< Drop due to CPU RX TC to RXQ map */
     uint32_t cpu_rx_vport_to_cpu_obj_map;       /**< Drop due to CPU RX vport to CPU object map */
@@ -307,28 +318,29 @@ typedef struct
     uint32_t qm_ddr_byte_cong_drop;             /**< Drop due to DDR byte congestion */
     uint32_t qm_pd_cong_drop;                   /**< Drop due to PD congestion */
     uint32_t qm_psram_egress_cong;              /**< Drop due to PSSRAM egress congestion */
-#if defined(BCM_PON_XRDP) || defined(RDP_UFC)
     uint32_t tx_mirroring_drop_no_credit;       /**< Drop tx mirrored packet due to no dispatcher token for mirroring */
     uint32_t tx_mirroring_drop_sbpm;            /**< Drop tx mirrored packet due to packet in sbpm */
     uint32_t tx_mirroring_drop_abs;             /**< Drop tx mirrored packet due to packet in abs */
-#endif
-#if !defined(BCM_DSL_XRDP)
     uint32_t tunnel_no_sbpm_drop;               /**< Drop US tunnel packet, no SBPM packet */
-#endif
-#if defined(RDP_UFC)
-    uint32_t rx_error_drop;                     /**< Drop rx packet due to error */
-    uint32_t packet_modify_drop;                /**< Drop packet due to failure in FW packet modification */
-    uint32_t padding_short_packet_drop;         /**< Drop packet due to sbpm alloc failure for padding short packet */
-    uint32_t tx_mirroring_exception;            /**< Drop tx mirrored packet due to inner invalid conditions packet not in FPM, etc */
-#endif
     uint32_t cpu_tx_ingress_packets;            /**< Total packets sent to runner via CPU Tx ingress method */
     uint32_t cpu_tx_egress_packets;             /**< Total packets sent to runner via CPU Tx egress method */
-#if !defined(BCM_DSL_XRDP)
-    uint32_t flush_egress_queue_packets;        /**< Total packets which were flushed */
-#endif
+    uint32_t flush_egress_queue_packets;        /**< Total packets which were flushed by driver*/
+    uint32_t fw_flush_bcm_packets;              /**< Total packets which were flushed by FW by BCM */
+    uint32_t fw_flush_stale_packets;            /**< Total packets which were flushed by FW becuase they were stale */
     uint32_t mcast_fpm_to_sbpm_drop;            /**< Multicast drop due to lack of SBPMs */
     uint32_t aqm_drop;                          /**< Total PDs droped by AQM */
     uint32_t dos_attack_drop;                   /**< Drop due to one of dos attack reasons */
+    /* for GEN6+ */
+    struct
+    {
+        uint32_t rx_error_drop;                     /**< Drop rx packet due to error */
+        uint32_t packet_modify_drop;                /**< Drop packet due to failure in FW packet modification */
+        uint32_t padding_short_packet_drop;         /**< Drop packet due to sbpm alloc failure for padding short packet */
+        uint32_t tx_mirroring_exception;            /**< Drop tx mirrored packet due to inner invalid conditions packet not in FPM, etc */
+        uint32_t red_policer_drop;                  /**< Drop by red policer */
+    };
+    uint32_t flood_client_flow_miss;            /**< flood client flow miss */
+    uint32_t flood_exception_drop;              /**< flood exception drop */
 } rdpa_system_common_stat_t;
 
 typedef struct
@@ -359,51 +371,6 @@ typedef struct
     uint32_t dos_attack_icmpv6_longping; /**< DOS_ATTACK_ICMPv6_LongPing detected */
 } rdpa_system_dos_attack_stat_t;
 
-#else
-
-/** US system-level drop statistics. */
-typedef struct
-{
-    uint16_t eth_flow_action;                   /**< Flow action = drop */
-    uint16_t sa_lookup_failure;                 /**< SA lookup failure */
-    uint16_t da_lookup_failure;                 /**< DA lookup failure */
-    uint16_t sa_action;                         /**< SA action == drop */
-    uint16_t da_action;                         /**< DA action == drop */
-    uint16_t forwarding_matrix_disabled;        /**< Disabled in forwarding matrix */
-    uint16_t connection_action;                 /**< Connection action == drop */
-    uint16_t parsing_exception;                 /**< Parsing exception */
-    uint16_t parsing_error;                     /**< Parsing error */
-    uint16_t local_switching_congestion;        /**< Local switching congestion */
-    uint16_t vlan_switching;                    /**< VLAN switching */
-    uint16_t tpid_detect;                       /**< Invalid TPID */
-    uint16_t invalid_subnet_ip;                 /**< Invalid subnet */
-    uint16_t acl_oui;                           /**< Dropped by OUI ACL */
-    uint16_t acl;                               /**< Dropped by ACL */
-} rdpa_system_us_stat_t;
-
-/** DS system-level drop statistics */
-typedef struct
-{
-    uint16_t eth_flow_action;                   /**< Flow action = drop */
-    uint16_t sa_lookup_failure;                 /**< SA lookup failure */
-    uint16_t da_lookup_failure;                 /**< DA lookup failure */
-    uint16_t sa_action;                         /**< SA action == drop */
-    uint16_t da_action;                         /**< DA action == drop */
-    uint16_t forwarding_matrix_disabled;        /**< Disabled in forwarding matrix */
-    uint16_t connection_action;                 /**< Connection action == drop */
-    uint16_t policer;                           /**< Dropped by policer */
-    uint16_t parsing_exception;                 /**< Parsing exception */
-    uint16_t parsing_error;                     /**< Parsing error */
-    uint16_t iptv_layer3;                       /**< IPTV L3 drop */
-    uint16_t vlan_switching;                    /**< VLAN switching */
-    uint16_t tpid_detect;                       /**< Invalid TPID */
-    uint16_t dual_stack_lite_congestion;        /**< DSLite congestion */
-    uint16_t invalid_subnet_ip;                 /**< Invalid subnet */
-    uint16_t invalid_layer2_protocol;           /**< Invalid L2 protocol */
-    uint16_t firewall;                          /**< Dropped by firewall */
-    uint16_t dst_mac_non_router;                /**< DST MAC is not equal to the router's MAC */
-} rdpa_system_ds_stat_t;
-#endif /* !XRDP */
 
 typedef struct
 {
@@ -417,16 +384,30 @@ typedef struct
     uint32_t ingress_congestion_low_wan;        /**< Ingress_congestion on wan */
     uint32_t parser_exception_path;             /**< packet pass VPORT_EXCEPTION_PATH */
     uint32_t vport_exception_path;              /**< packet pass PARSER_EXCEPTION_PATH */
+    uint32_t is_hw_cso_and_sq;                  /**< Illigal configuration detected: is_hw_cso + service queue  */
+#ifdef DEBUG_PD
+    uint32_t debug_pd_err_ddr_bit;              /**< debug pd */
+    uint32_t debug_pd_err_abs_ploam_agg_bit;    /**< debug pd */
+    uint32_t debug_pd_err_sop_bit;              /**< debug pd */
+    uint32_t debug_pd_err_buff_num;             /**< debug pd */
+    uint32_t debug_pd_err_buff_link_list;       /**< debug pd */
+    uint32_t debug_pd_err_buff_num_0;           /**< debug pd */
+    uint32_t debug_direct_pd_err_ddr_bit;       /**< debug direct pd */
+    uint32_t debug_direct_pd_err_abs_agg_bit;   /**< debug direct pd */
+    uint32_t debug_direct_pd_err_sop_bit;       /**< debug direct pd */
+    uint32_t debug_direct_pd_err_buff_num;      /**< debug direct pd */
+    uint32_t debug_direct_pd_err_buff_link_list;/**< debug direct pd */
+    uint32_t debug_direct_pd_err_buff_num_0;    /**< debug direct pd */
+#endif
 } rdpa_debug_stat_t;
 
 typedef struct
 {
     rdpa_system_us_stat_t us;                   /**< Upstream drop statistics */
     rdpa_system_ds_stat_t ds;                   /**< Downstream drop statistics */
-#if defined(XRDP) || defined(BCM_XRDP)
     rdpa_system_common_stat_t common;           /**< Common drop statistic */
     rdpa_system_dos_attack_stat_t dos_attack;   /**< DOS Attack drop statistic */
-#endif
+
 } rdpa_system_stat_t;
 
 
@@ -487,12 +468,7 @@ typedef struct
     uint32_t fpm_token_size; /**< Fpm token size */
     uint8_t num_dscp2pbit_tables; /**< Number of dscp to pbit tables */
 #endif
-#if !defined(XRDP) 
-    uint32_t num_ds_policers; /**< Number ds of policers */
-    uint32_t num_us_policers; /**< Number us of policers */
-#else
     uint32_t num_policers; /**< Number of policers */
-#endif
 } rdpa_system_resources_t;
 
 #define RDPA_DEFAULT_MAX_TCONTS                     32

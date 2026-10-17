@@ -1,0 +1,123 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 NXP
+ */
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&pinctrl_uart1 {
+	bootph-pre-ram;
+};
+
+&uart1 {
+	bootph-pre-ram;
+};
+
+&binman {
+	 u-boot-spl-ddr {
+		filename = "u-boot-spl-ddr.bin";
+		pad-byte = <0xff>;
+		align-size = <4>;
+		align = <4>;
+
+		u-boot-spl {
+			align-end = <4>;
+		};
+
+		ddr-1d-imem-fw {
+			filename = "lpddr4_pmu_train_1d_imem.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-1d-dmem-fw {
+			filename = "lpddr4_pmu_train_1d_dmem.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-2d-imem-fw {
+			filename = "lpddr4_pmu_train_2d_imem.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-2d-dmem-fw {
+			filename = "lpddr4_pmu_train_2d_dmem.bin";
+			type = "blob-ext";
+			align-end = <4>;
+		};
+	};
+
+	flash {
+		mkimage {
+			args = "-n spl/u-boot-spl.cfgout -T imx8mimage -e 0x7e1000";
+
+			blob {
+				filename = "u-boot-spl-ddr.bin";
+			};
+		};
+	};
+
+	itb {
+		filename = "u-boot.itb";
+
+		fit {
+			description = "Configuration to load ATF before U-Boot";
+			#address-cells = <1>;
+			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+
+			images {
+				uboot {
+					description = "U-Boot (64-bit)";
+					type = "standalone";
+					arch = "arm64";
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+
+					uboot_blob: blob-ext {
+						filename = "u-boot-nodtb.bin";
+					};
+				};
+
+				atf {
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					load = <0x910000>;
+					entry = <0x910000>;
+
+					atf_blob: blob-ext {
+						filename = "bl31.bin";
+					};
+				};
+
+				fdt {
+					description = "NAME";
+					type = "flat_dt";
+					compression = "none";
+
+					uboot_fdt_blob: blob-ext {
+						filename = "u-boot.dtb";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf";
+
+				conf {
+					description = "NAME";
+					firmware = "uboot";
+					loadables = "atf";
+					fdt = "fdt";
+				};
+			};
+		};
+	};
+};

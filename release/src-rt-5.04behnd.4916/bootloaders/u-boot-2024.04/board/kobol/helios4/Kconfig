@@ -1,0 +1,19 @@
+menu "Helios4 configuration"
+	depends on TARGET_HELIOS4
+
+config ENV_SIZE
+	hex "Environment Size"
+	default 0x10000
+
+config ENV_OFFSET
+	hex "Environment offset"
+	default 0xF0000
+
+config ENV_SECT_SIZE
+	hex "Environment Sector-Size"
+	# Use SPI or SATA flash erase block size of 4 KiB
+	default 0x1000 if MVEBU_SPL_BOOT_DEVICE_SPI || MVEBU_SPL_BOOT_DEVICE_SATA
+	# Use optimistic 64 KiB erase block, will vary between actual media
+	default 0x10000 if MVEBU_SPL_BOOT_DEVICE_MMC || MVEBU_SPL_BOOT_DEVICE_UART
+
+endmenu

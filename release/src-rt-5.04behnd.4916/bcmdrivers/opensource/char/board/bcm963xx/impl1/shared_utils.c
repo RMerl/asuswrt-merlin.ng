@@ -42,6 +42,7 @@
 
 #define INVALID_CHIP_ID 0xffffffff
 
+#ifndef CONFIG_BCM_QEMU_SIM
 static unsigned int UtilGetChipIdLC(void)
 {
     u32 __iomem *reg;
@@ -58,9 +59,11 @@ static unsigned int UtilGetChipIdLC(void)
 
     return chipid_lc;
 }
+#endif
 
 unsigned int UtilGetChipIdRaw(void)
 {
+#ifndef CONFIG_BCM_QEMU_SIM
     u32 __iomem *reg;
     u32 chipid;
 
@@ -73,13 +76,24 @@ unsigned int UtilGetChipIdRaw(void)
     chipid = readl(reg);
 
     bcm_unmap_ioreg(reg);
-
     return chipid;
+#else
+#if defined(CONFIG_BCM968880)
+    return 0x68880;
+#elif defined(CONFIG_BCM96837)
+    return 0x6837;
+#elif defined(CONFIG_BCM968375)
+    return 0x68375;    
+#else
+#error unsupported chipset
+#endif
+#endif
 }
 EXPORT_SYMBOL(UtilGetChipIdRaw);
 
 unsigned int UtilGetChipId(void)
 {
+#ifndef CONFIG_BCM_QEMU_SIM
     unsigned int chipId;
     unsigned int chipIdLC;
     u32 chipid_mask, chipid_shift;
@@ -103,21 +117,25 @@ unsigned int UtilGetChipId(void)
     if (chipIdLC)
         chipId = (chipId << 4) | chipIdLC;
 
-#if defined(CONFIG_BCM94908)
-    // 62118 and 62116 use 20 bits to represent the chip id
-    // as compared to 16 in case of 4908/4906
-    if((chipId & 0x49000) == 0x49000)
-    {
-        chipId = chipId >> 4;
-    }
-#endif
-
 #if defined (CONFIG_BCM96856)
     bcm_otp_get_chipvar(&chipvar);
     if ((chipId==0x68560) && (chipvar==3))
         chipId=0x68560B;
 #endif
     return  chipId;
+#else
+#if defined(CONFIG_BCM968880)
+    return 0x68880;
+#elif defined(CONFIG_BCM96837)
+    return 0x6837;
+#elif defined(CONFIG_BCM968375)
+    return 0x68375;
+#elif defined(CONFIG_BCM968850)
+    return 0x68850;    
+#else
+#error unsupported chipset
+#endif
+#endif
 }
 
 /* Wrapper of UtilGetChipId for RDPA compilation*/
@@ -132,6 +150,7 @@ EXPORT_SYMBOL(util_get_chip_id);
 
 unsigned int UtilGetChipRev(void)
 {
+#ifndef CONFIG_BCM_QEMU_SIM
     unsigned int revId;
     u32 chiprev_mask;
     bool ret;
@@ -144,21 +163,28 @@ unsigned int UtilGetChipRev(void)
     }
 
     revId = revId & chiprev_mask;
-#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) 
     revId += 0xA0;
 #endif
 
     return  revId;
+#else
+#if defined(CONFIG_BCM968880)
+    return 0xb0;
+#elif defined(CONFIG_BCM96837)
+    return 0xa0;
+#elif defined(CONFIG_BCM968375)
+    return 0xa0;    
+#else
+#error unsupported chipset
+#endif
+#endif
 }
 EXPORT_SYMBOL(UtilGetChipRev);
 
 unsigned int UtilGetChipIsLP(void)
 {
-#if defined (CONFIG_BCM963138)
-    return ( (UtilGetChipId() == 0x63132) || (1 == num_online_cpus()) );
-#else
     return 0;
-#endif
 }
 EXPORT_SYMBOL(UtilGetChipIsLP);
 
@@ -166,20 +192,20 @@ char *UtilGetChipName(char *buf, int len) {
     unsigned int chipId;
     unsigned int revId;
     char *mktname = NULL;
-#if defined (CONFIG_BCM96765) || defined (CONFIG_BCM96764)
+#if defined(CONFIG_BCM96765) || defined(CONFIG_BCM96764) || defined(CONFIG_BCM96858)
     unsigned int chipvar;
 #endif
 
     revId = UtilGetChipRev();
 #if defined(CONFIG_BCM96858)
-    if (bcm_otp_get_chipid(&chipId))
-        chipId = 0;
+    if (bcm_otp_get_chipvar(&chipvar))
+        chipvar = 0;
 #else
     chipId = UtilGetChipId();
 #endif
 
 #if defined (CONFIG_BCM96858)
-    switch (chipId) {
+    switch (chipvar) {
     case(0x0):
     case(0x1):
         mktname = "68580X";
@@ -223,48 +249,13 @@ char *UtilGetChipName(char *buf, int len) {
     default:
         mktname = NULL;
     }
-#elif defined (CONFIG_BCM96878)
-    switch (chipId) {
-    case 0x6878A:
-        mktname = "68782G";
-        break;
-    case 0x68781:
-    case 0x43505:
-        mktname = "68781";
-        break;
-    case 0x68782:
-        mktname = "68782";
-        break;
-    case 0x68789:
-        mktname = "68781H";
-        break;
-    case 0x6878C:
-        mktname = "68789";
-        break;
-    case 0x6878E:
-        mktname = "68782N";
-        break;
-    case 0x6878D:
-        mktname = "68781G";
-        break;
-    default:
-        mktname = NULL;
-    }
-#elif defined (CONFIG_BCM96846)
-    switch (chipId) {
-    case(0x68463):
-        mktname = "68460U";
-        break;
-    case(0x68464):
-        mktname = "68461S";
-        break;
-    default:
-        mktname = NULL;
-    }
 #elif defined (CONFIG_BCM96855)
     switch (chipId) {
     case(0x68252d):
         mktname = "68252R";
+        break;
+    case(0x68252e):
+        mktname = "68252CR";
         break;
     case(0x67530):
         mktname = "6753";

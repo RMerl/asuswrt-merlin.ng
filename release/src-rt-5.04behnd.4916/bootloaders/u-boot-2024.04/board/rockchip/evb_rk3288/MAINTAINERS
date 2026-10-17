@@ -1,0 +1,15 @@
+EVB-RK3288
+M:	Lin Huang <hl@rock-chips.com>
+S:	Maintained
+F:	arch/arm/dts/rk3288-evb.dts
+F:	arch/arm/dts/rk3288-evb.dtsi
+F:	arch/arm/dts/rk3288-evb-u-boot.dtsi
+F:	board/rockchip/evb_rk3288
+F:	include/configs/evb_rk3288.h
+F:	configs/evb-rk3288_defconfig
+
+ROCK-PI-N8
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/rock-pi-n8-rk3288_defconfig
+F:	arch/arm/dts/rk3288-rock-pi-n8-u-boot.dtsi

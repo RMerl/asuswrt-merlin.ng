@@ -1,0 +1,9 @@
+Sielaff i.MX6 Solo Board
+M:	Frieder Schrempf <frieder.schrempf@kontron.de>
+S:	Maintained
+F:	arch/arm/dts/imx6dl-sielaff*
+F:	board/sielaff/imx6dl-sielaff/
+F:	configs/imx6dl_sielaff_defconfig
+F:	doc/board/sielaff/imx6dl-sielaff.rst
+F:	include/configs/imx6dl-sielaff.h
+F:	include/configs/kontron-sl-mx6ul.h

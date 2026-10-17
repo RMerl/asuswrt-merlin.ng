@@ -1,0 +1,13 @@
+if ARCH_ORION5X
+
+config 88F5182
+	bool
+
+config FEROCEON
+	bool
+
+config SYS_SOC
+	default "orion5x"
+
+
+endif

@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2022 Vyacheslav Bocharov <adeep@lexina.in>
+ * Author: Vyacheslav Bocharov <adeep@lexina.in>
+ */
+
+&saradc {
+	status = "okay";
+	vref-supply = <&vddio_ao18>;
+};

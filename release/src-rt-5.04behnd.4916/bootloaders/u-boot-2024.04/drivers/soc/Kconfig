@@ -1,0 +1,46 @@
+menu "SOC (System On Chip) specific Drivers"
+
+config SOC_DEVICE
+	bool "Enable SoC Device ID drivers using Driver Model"
+	help
+	  This allows drivers to be provided for SoCs to help in identifying
+	  the SoC in use and matching SoC attributes for selecting SoC
+	  specific data. This is useful for other device drivers that may
+	  need different parameters or quirks enabled depending on the
+	  specific device variant in use.
+
+config SOC_DEVICE_TI_K3
+	depends on SOC_DEVICE && ARCH_K3
+	bool "Enable SoC Device ID driver for TI K3 SoCs"
+	help
+	  This allows Texas Instruments Keystone 3 SoCs to identify
+	  specifics about the SoC in use.
+
+config SOC_XILINX_ZYNQMP
+	bool "Enable SoC Device ID driver for Xilinx ZynqMP"
+	depends on SOC_DEVICE && ARCH_ZYNQMP
+	help
+	  Enable this option to select SoC device id driver for Xilinx ZynqMP.
+	  This allows other drivers to verify the SoC familiy & revision
+	  using matching SoC attributes.
+
+config SOC_XILINX_VERSAL
+	bool "Enable SoC Device ID driver for Xilinx Versal"
+	depends on SOC_DEVICE && ARCH_VERSAL
+	help
+	  Enable this option to select SoC device id driver for Xilinx Versal.
+	  This allows other drivers to verify the SoC familiy & revision using
+	  matching SoC attributes.
+
+config SOC_XILINX_VERSAL_NET
+	bool "Enable SoC Device ID driver for Xilinx Versal NET"
+	depends on SOC_DEVICE && ARCH_VERSAL_NET
+	help
+	  Enable this option to select SoC device id driver for Xilinx Versal NET.
+	  This allows other drivers to verify the SoC familiy & revision using
+	  matching SoC attributes.
+
+source "drivers/soc/samsung/Kconfig"
+source "drivers/soc/ti/Kconfig"
+
+endmenu

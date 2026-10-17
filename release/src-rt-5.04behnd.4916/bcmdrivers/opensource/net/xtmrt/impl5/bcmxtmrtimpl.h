@@ -39,7 +39,7 @@ written consent.
 #include <bcmtypes.h>
 #include "bcmnet.h"
 #include "bcmxtmrt.h"
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
 #include <rdpa_api.h>
 #endif
 #if defined(CONFIG_BCM963178)
@@ -257,7 +257,7 @@ typedef struct BcmPktDma_LocalXtmTxDma
 #define BcmPktDma_XtmTxDma BcmPktDma_LocalXtmTxDma
 #endif
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
 
 typedef struct BcmXtm_TxQueue
 {
@@ -281,6 +281,7 @@ typedef struct BcmXtm_TxBdmfObj {
    bdmf_object_handle   xtmchannel; //tcont;
    bdmf_object_handle   egress_tm;
    bdmf_object_handle   xtmflow[MAX_CIRCUIT_TYPES];  //gem[MAX_CIRCUIT_TYPES];
+   rdpa_tm_queue_cfg_t  queue_cfg;
 } BcmXtm_TxBdmfObj;
 
 #endif
@@ -356,7 +357,7 @@ typedef struct bcmxtmrt_dev_context
 #define ATM_BONDED_CELL_HDR_VCI_MASK           0x00000FF0
 #define ATM_CELL_HDR_VCI_SHIFT                 4
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
 
 #define MAX_Q_LOGS              100
 #define Q_SETUP                   0
@@ -438,7 +439,7 @@ typedef struct bcmxtmrt_global_info
     struct kmem_cache *xtmSkbCache;
 #endif
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963146)
     bdmf_object_handle  bdmfXtm;
     bdmf_object_handle  bdmfWan;
     BcmXtm_TxBdmfObj    txBdmfObjs[MAX_TRANSMIT_QUEUES];
@@ -455,7 +456,7 @@ extern BCMXTMRT_GLOBAL_INFO g_GlobalInfo;
 int bcmxtmrt_xmit(pNBuff_t pNBuf, struct net_device *dev);
 UINT32 bcmxtmrt_processRxPkt(PBCMXTMRT_DEV_CONTEXT pDevCtx, void *rxdma,
                              UINT8  *pData, UINT16 bufStatus, UINT32 len, UINT32 flow_key,
-                             UINT8 is_group_fwd_exp);
+                             UINT8 is_group_fwd_exp, INT iq_prio);
 void bcmxtmrt_processRxCell(UINT8 *pData);
                              
                              

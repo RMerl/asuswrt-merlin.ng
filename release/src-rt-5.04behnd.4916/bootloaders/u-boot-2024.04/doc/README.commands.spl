@@ -1,0 +1,31 @@
+The spl command is used to export a boot parameter image to RAM. Later
+it may implement more functions connected to the SPL.
+
+SUBCOMMAND EXPORT
+To execute the command everything has to be in place as if bootm should be
+used. (kernel image, initrd-image, fdt-image etc.)
+
+export has two subcommands:
+	atags: exports the ATAGS
+	fdt: exports the FDT
+
+Call is:
+spl export <fdt|atags> [kernel_addr] [initrd_addr] [fdt_addr if fdt]
+
+
+TYPICAL CALL
+
+on OMAP3:
+nandecc hw
+nand read 0x82000000 0x280000 0x400000	/* Read kernel image from NAND*/
+spl export atags			/* export ATAGS */
+nand erase 0x680000 0x20000		/* erase - one page */
+nand write 0x80000100 0x680000 0x20000	/* write the image - one page */
+
+call with FDT:
+nandecc hw
+nand read 0x82000000 0x280000 0x400000	/* Read kernel image from NAND*/
+tftpboot 0x80000100 devkit8000.dtb /* Read fdt */
+spl export fdt 0x82000000 - 0x80000100	/* export FDT */
+nand erase 0x680000 0x20000		/* erase - one page */
+nand write <adress shown by spl export> 0x680000 0x20000

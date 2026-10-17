@@ -32,13 +32,8 @@
 /*****************************************************************************
 *    Description:
 *
-*      OMCI Inter Process Communication related definitions.
-*      The OMCI processs exchanges the following messages.
-*        CMS_MSG_OMCI_IGMP_ADMISSION_CONTROL
-*        CMS_MSG_OMCI_GPON_WAN_SERVICE_STATUS_CHANGE
-*        CMS_MSG_OMCI_RG_WAN_SERVICE_STAUTS_CHANGE
-*        CMS_MSG_PING_DATA
-*        CMS_MSG_TRACERT_DATA
+*      OMCI Inter Process Communication related definitions, used by CMS
+*      Messaging or OMCI IPC.
 *
 *****************************************************************************/
 
@@ -71,6 +66,7 @@ typedef enum
     OMCI_DUMP_PM_MAX    = 0x10020,
     OMCI_DUMP_PAL_MIN   = 0x10021,
     OMCI_DUMP_PAL_TC    = OMCI_DUMP_PAL_MIN,
+    OMCI_DUMP_PAL_CONF,
     OMCI_DUMP_PAL_MAX   = 0x10030
 } OmciDumpInfoCmd;
 
@@ -110,7 +106,7 @@ typedef enum
     OMCI_DEBUG_DATA_MAX
 } OmciDebugDataType;
 
-/** Data body for CMS_MSG_OMCI_IGMP_ADMISSION_CONTROL message type.
+/** Data body for OMCI_IPC_IGMP_ACL_REQ.
  *
  */
 typedef struct
@@ -189,19 +185,6 @@ typedef struct
      UINT8 icmpReply[30];      /**< pkt of unexpected ICMP response */
    } msg;
 } OmciTracertDataMsgBody;
-
-/** Data body for the CMS_MSG_OMCI_DEBUG_OMCI_MSG_GEN
- *
- */
-typedef struct
-{
-   UINT16 msgType;
-   UINT16 meClass;
-   UINT16 meInst;
-   UINT16 attrMask;
-   UINT16 alarmNum;
-   UBOOL8 flagB;
-} OmciMsgGenCmd;
 
 /** Data body for the OMCI_IPC_SET_DEBUG_DATA_REQ
  *

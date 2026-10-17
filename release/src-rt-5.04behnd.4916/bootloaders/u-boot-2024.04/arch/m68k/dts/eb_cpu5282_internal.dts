@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/dts-v1/;
+/include/ "mcf5282.dtsi"
+
+/ {
+	model = "BuS eb_cpu5282_internals";
+	compatible = "bus,eb_cpu5282_internals";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&uart0 {
+	bootph-all;
+	status = "okay";
+};
+
+&fec0 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+
+	rtc@68 {
+		compatible = "dallas,ds1338";
+		reg = <0x68>;
+	};
+};

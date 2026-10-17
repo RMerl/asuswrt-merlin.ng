@@ -1,0 +1,3 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+dtb-y += $(patsubst %,%.dtb,$(subst ",,$(CONFIG_DEFAULT_DEVICE_TREE) $(CONFIG_OF_LIST) $(CONFIG_SPL_OF_LIST)))

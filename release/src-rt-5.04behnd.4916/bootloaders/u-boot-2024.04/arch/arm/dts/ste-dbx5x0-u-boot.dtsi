@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#include "skeleton.dtsi"
+#include "ste-dbx5x0.dtsi"
+
+/ {
+	/* FIXME: Remove this when clk driver is implemented */
+	sdmmcclk: sdmmcclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+	};
+
+	soc {
+		mtu@a03c6000 {
+			clock-frequency = <133000000>;
+		};
+		uart@80120000 {
+			clock = <38400000>;
+		};
+		uart@80121000 {
+			clock = <38400000>;
+		};
+		uart@80007000 {
+			clock = <38400000>;
+		};
+		mmc@80005000 {
+			clocks = <&sdmmcclk>;
+		};
+	};
+
+	reboot {
+		compatible = "syscon-reboot";
+		regmap = <&prcmu>;
+		offset = <0x228>; /* PRCM_APE_SOFTRST */
+		mask = <0x1>;
+	};
+};

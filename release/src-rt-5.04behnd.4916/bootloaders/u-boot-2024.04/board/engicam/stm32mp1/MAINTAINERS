@@ -1,0 +1,27 @@
+MicroGEA-STM32MP1-MICRODEV2.0
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Matteo Lisi <matteo.lisi@engicam.com>
+S:	Maintained
+F:	arch/arm/dts/stm32mp15*microgea*
+F:	configs/stm32mp15-microgea-stm32mp1-microdev2_defconfig
+
+MicroGEA-STM32MP1-MICRODEV2.0-OF7
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Matteo Lisi <matteo.lisi@engicam.com>
+S:	Maintained
+F:	configs/stm32mp15-microgea-stm32mp1-microdev2-of7_defconfig
+
+i.Core-STM32MP1-CTOUCH2.0
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Matteo Lisi <matteo.lisi@engicam.com>
+S:	Maintained
+F:	configs/stm32mp15-icore-stm32mp1-ctouch2_defconfig
+
+i.Core-STM32MP1-EDIMM2.2
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Matteo Lisi <matteo.lisi@engicam.com>
+S:	Maintained
+F:	arch/arm/dts/stm32mp15*icore*
+F:	board/engicam/stm32mp1
+F:	board/engicam/common
+F:	configs/stm32mp15-icore-stm32mp1-edimm2.2_defconfig

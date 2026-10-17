@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2022 NXP
+ */
+
+&pinctrl_uart1 {
+	bootph-all;
+};
+
+&rngb {
+	bootph-all;
+};

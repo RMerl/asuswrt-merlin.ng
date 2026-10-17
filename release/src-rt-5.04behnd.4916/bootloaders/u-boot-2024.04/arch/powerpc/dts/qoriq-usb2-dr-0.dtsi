@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * QorIQ USB DR device tree stub [ controller @ offset 0x211000 ]
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ */
+
+usb@211000 {
+	compatible = "fsl,mpc85xx-usb2-dr", "fsl-usb2-dr";
+	reg = <0x211000 0x1000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	interrupts = <45 0x2 0 0>;
+};

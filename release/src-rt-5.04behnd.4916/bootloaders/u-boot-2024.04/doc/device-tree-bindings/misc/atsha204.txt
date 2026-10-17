@@ -1,0 +1,4 @@
+Atmel ATSHA204 and ATSHA204A i2c h/w symmetric crypto module
+
+Required properties:
+- compatible : should be "atmel,atsha204" or "atmel,atsha204a"

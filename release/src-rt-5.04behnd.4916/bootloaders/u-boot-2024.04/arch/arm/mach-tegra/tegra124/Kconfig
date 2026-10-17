@@ -1,0 +1,58 @@
+if TEGRA124
+
+choice
+	prompt "Tegra124 board select"
+	optional
+
+config TARGET_APALIS_TK1
+	bool "Toradex Apalis TK1 module"
+	select ARCH_SUPPORT_PSCI
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+
+config TARGET_JETSON_TK1
+	bool "NVIDIA Tegra124 Jetson TK1 board"
+	select ARCH_SUPPORT_PSCI
+	select BOARD_LATE_INIT
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+
+config TARGET_CEI_TK1_SOM
+	bool "Colorado Engineering Inc Tegra124 TK1-som board"
+	select ARCH_SUPPORT_PSCI
+	select BOARD_LATE_INIT
+	select CPU_V7_HAS_NONSEC if !SPL_BUILD
+	select CPU_V7_HAS_VIRT if !SPL_BUILD
+	help
+	  The Colorado Engineering Tegra TK1-SOM is a very compact
+	  (51mmx58mm) board that is functionally almost the same as
+	  the Jetson TK1.  The main differences are in which balls on
+	  the SoC are assigned to which functions, and the PCIEe
+	  configuration.
+
+config TARGET_NYAN_BIG
+	bool "Google/NVIDIA Nyan-big Chromebook"
+	select BOARD_LATE_INIT
+	help
+	  Nyan Big is a Tegra124 clamshell board that is very similar
+	  to venice2, but it has a different panel, the sdcard CD and WP
+	  sense are flipped, and it has a different revision of the AS3722
+	  PMIC. The retail name is the Acer Chromebook 13 CB5-311-T7NN
+	  (13.3-inch HD, NVIDIA Tegra K1, 2GB).
+
+config TARGET_VENICE2
+	bool "NVIDIA Tegra124 Venice2"
+	select BOARD_LATE_INIT
+
+endchoice
+
+config SYS_SOC
+	default "tegra124"
+
+source "board/cei/cei-tk1-som/Kconfig"
+source "board/nvidia/jetson-tk1/Kconfig"
+source "board/nvidia/nyan-big/Kconfig"
+source "board/nvidia/venice2/Kconfig"
+source "board/toradex/apalis-tk1/Kconfig"
+
+endif

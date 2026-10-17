@@ -41,7 +41,7 @@ int bcm_parse_gso_hdrs(struct sk_buff *skb, struct gso_hdrs *hdrs)
     struct ipv6hdr *ipv6;
     struct tcphdr *tcp_hdr;
     int header = -1;
-    void *data = skb->data;
+    void *data = (void *)skb->data;
     unsigned int skbheadlen = skb_headlen(skb);
     /*assumes first header is ETH always */
     uint16_t proto = ETH_P_802_3;
@@ -116,7 +116,7 @@ int bcm_parse_gso_hdrs(struct sk_buff *skb, struct gso_hdrs *hdrs)
 
             case ETH_P_IP:
 
-                ipv4 = data;
+                ipv4 = (struct iphdr *)data;
                 ipv4_hdr_cnt++;
                 hdrs->ip_len = ntohs(ipv4->tot_len);
                 hdrs->l3proto = BCM_L3_PROTO_IPV4;
@@ -143,7 +143,7 @@ int bcm_parse_gso_hdrs(struct sk_buff *skb, struct gso_hdrs *hdrs)
                 __attribute__((__fallthrough__));
             case ETH_P_IPV6:
 
-                ipv6 = data;
+                ipv6 = (struct ipv6hdr *)data;
                 hdrs->ip_len = ntohs(ipv6->payload_len);
                 hdrs->l3proto = BCM_L3_PROTO_IPV6;
                 proto = ipv6->nexthdr;
@@ -157,7 +157,7 @@ int bcm_parse_gso_hdrs(struct sk_buff *skb, struct gso_hdrs *hdrs)
                     */
 
                     struct frag_hdr *fh = NULL;
-                    fh = data + sizeof(struct ipv6hdr);
+                    fh = (struct frag_hdr *)(data + sizeof(struct ipv6hdr));
                     proto = fh->nexthdr; //For L4 proto 
                     v6_next_hdr_tot_sz+= sizeof(struct frag_hdr);
                 }
@@ -177,7 +177,7 @@ int bcm_parse_gso_hdrs(struct sk_buff *skb, struct gso_hdrs *hdrs)
                 break;
 
             case IPPROTO_TCP :
-                tcp_hdr = data;
+                tcp_hdr = (struct tcphdr *)data;
 
                 hdrs->l4hdr = data;
                 hdrs->l4proto = IPPROTO_TCP;

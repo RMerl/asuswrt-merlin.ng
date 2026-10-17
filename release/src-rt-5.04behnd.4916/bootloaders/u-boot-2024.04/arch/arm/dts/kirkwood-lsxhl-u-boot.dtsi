@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+&eth0 {
+	status = "disabled";
+};
+
+&hdd_power {
+	/delete-property/ regulator-always-on;
+};
+
+&usb_power {
+	/delete-property/ regulator-always-on;
+};

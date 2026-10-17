@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * QorIQ BMan device tree stub [ controller @ offset 0x31a000 ]
+ *
+ * Copyright 2011 - 2014 Freescale Semiconductor Inc.
+ */
+
+bman: bman@31a000 {
+	compatible = "fsl,bman";
+	reg = <0x31a000 0x1000>;
+	interrupts = <16 2 1 2>;
+	fsl,bman-portals = <&bportals>;
+	memory-region = <&bman_fbpr>;
+};

@@ -1,0 +1,40 @@
+if TARGET_OPENPITON_RISCV64
+
+config SYS_BOARD
+	default "riscv64"
+
+config SYS_VENDOR
+	default "openpiton"
+
+config SYS_CPU
+	default "generic"
+
+config SYS_CONFIG_NAME
+	default "openpiton-riscv64"
+
+config TEXT_BASE
+	default 0x81000000 if SPL
+	default 0x80000000 if !RISCV_SMODE
+	default 0x81000000 if RISCV_SMODE
+
+config SPL_TEXT_BASE
+	default 0x82000000
+
+config SPL_OPENSBI_LOAD_ADDR
+	default 0x80000000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_EARLY_INIT_R
+	select SUPPORT_SPL
+	imply CPU_RISCV
+	imply RISCV_TIMER
+	imply SPL_RISCV_ACLINT
+	imply CMD_CPU
+	imply SPL_CPU_SUPPORT
+	imply SPL_SMP
+	imply SPL_MMC
+	imply SMP
+	imply SPL_RISCV_MMODE
+
+endif

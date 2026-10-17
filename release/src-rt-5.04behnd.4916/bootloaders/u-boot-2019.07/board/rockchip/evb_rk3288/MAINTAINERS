@@ -1,6 +1,0 @@
-EVB-RK3288
-M:	Lin Huang <hl@rock-chips.com>
-S:	Maintained
-F:	board/rockchip/evb_rk3288
-F:	include/configs/evb_rk3288.h
-F:	configs/evb-rk3288_defconfig

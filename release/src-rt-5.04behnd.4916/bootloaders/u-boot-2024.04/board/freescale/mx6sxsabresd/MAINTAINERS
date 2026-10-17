@@ -1,0 +1,6 @@
+MX6SXSABRESD BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/freescale/mx6sxsabresd/
+F:	include/configs/mx6sxsabresd.h
+F:	configs/mx6sxsabresd_defconfig

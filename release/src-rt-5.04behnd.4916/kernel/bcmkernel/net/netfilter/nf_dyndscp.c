@@ -210,6 +210,7 @@ int setWanIfFlag(char *name)
 	 }
 }
 
+#if defined(CONFIG_IPV6)
 /*
  * updating tos field before pulling ipv6 header leads checksum error
  * Fix: pull header before tos update and push after tos update
@@ -223,6 +224,7 @@ static void set_ipv6_dsfield(struct sk_buff *skb, struct ipv6hdr *ipv6h, __u8 ma
 
 	skb_postpush_rcsum(skb, ipv6h, 4);
 }
+#endif
 
 /* Entry point into dyndscp module at pre-routing
  * this  function is the core engine of this module

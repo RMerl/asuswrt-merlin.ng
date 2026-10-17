@@ -1,0 +1,35 @@
+Udp framework
+
+The udp framework is build on top of network framework and is designed
+to define new protocol or new command based on udp without modifying
+the network framework.
+
+The udp framework define a function udp_loop that take as argument
+a structure udp_ops (defined in include/net/udp.h) :
+
+struct udp_ops {
+	int (*prereq)(void *data);
+	int (*start)(void *data);
+	void *data;
+};
+
+The callback prereq define if all the requirements are
+valid before running the network/udp loop.
+
+The callback start define the first step in the network/udp loop,
+and it may also be used to configure a timemout and udp handler.
+
+The pointer data is used to store private data that
+could be used by both callback.
+
+A simple example to use this framework:
+
+static struct udp_ops udp_ops = {
+	.prereq = wmp_prereq,
+	.start = wmp_start,
+	.data = NULL,
+};
+
+...
+
+err = udp_loop(&udp_ops);

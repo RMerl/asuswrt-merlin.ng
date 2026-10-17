@@ -34,30 +34,6 @@
 	};
 };
 
-/{
-	periph {
-
-		i2c@0 {
-			compatible = "i2c-gpio";
-			gpios = <&gpioc 3 0 &gpioc 4 0>;/* sda and scl */
-			i2c-gpio,delay-us   = <50>;     /* ~10 kHz */
-			i2c-gpio,timeout-ms = <100>;    /* 100ms */
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			codec_playback:codec_playback@18{
-		  compatible = "ti,tlv320dac3203";
-		  reg = <0x18>;
-		  };
-			codec_capture:codec_capture@19{
-		  compatible = "ti,tlv320adc3101";
-		  reg = <0x19>;
-		  };
-		};
-	};
-
-};
-
 &mdio_sf2 {
     /* Port PHY mapping:
             port_imp -8#0- port_gphy0 <--> phy_gphy0

@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		fit {
+			description = "test desc";
+
+			images {
+				u-boot {
+					encrypted {
+						algo = "algo-name";
+						key-source = "key-source-value";
+						iv-filename = "encrypted-file.iv";
+					};
+				};
+			};
+		};
+	};
+};

@@ -30,30 +30,30 @@ encoded_keys {
 	//              is present and has a value of 'yes' the decoded	key will
 	//              be exported to Linux via dtb.   
 	// key1 {
-		// description = "OPTEE Key";
-		// data = [ %OPTEE_KEY% ];
-		// size = <0x0 >;
-		// algo = "aes-cbc-128";
-		// load_addr = <0x0>;
-		// key_name = "optee_aes";
-		// permission = "secure";
-		// os_export = "no";
-	// }; 
+	//	description = "OPTEE Key";
+	//	data = [ %OPTEE_KEY% ];
+	//	size = < %OPTEE_KEY_SIZE% >;
+	//	algo = " %ENC_KEY_ALGO% ";
+	//	load_addr = <0x0>;
+	//	key_name = "optee_aes";
+	//	permission = "secure";
+	//	os_export = "no";
+	// };
 	key2 {
 		description = "Image decryption Key";
 		data = [ %IMAGE_KEY% ];
-		size = < 0x20 >;
-		algo = "aes-cbc-128";
+		size = <%IMAGE_KEY_SIZE%>;
+		algo = "%ENC_KEY_ALGO%";
 		load_addr = <0x0>;
 		key_name = "image_aes";
 		permission = "nonsecure";
-		os_export = "no";
+		os_export = "yes";
 	};
 	key3 {
 		description = "Bootloader CLI Key seed";
 		data = [ %CMD_KEY% ];
-		size = < 0x20 >;
-		algo = "aes-cbc-128";
+		size = <%CMD_KEY_SIZE%>;
+		algo = "%ENC_KEY_ALGO%";
 		load_addr = <0x0>;
 		key_name = "cli_seed";
 		permission = "nonsecure";
@@ -62,8 +62,8 @@ encoded_keys {
 	key4 {
 		description = "rpmb authentication key for provisioning image";
 		data = [ %RPMB_KEY% ];
-		size = < 0x20 >;
-		algo = "aes-cbc-128";
+		size = <%RPMB_KEY_SIZE%>;
+		algo = "%ENC_KEY_ALGO%";
 		load_addr = <0x0>;
 		key_name = "rpmb_auth";
 		permission = "nonsecure";
@@ -72,23 +72,80 @@ encoded_keys {
 	//key4 {
 	//	description = "rpmb authentication key for production image";
 	//	data = [ %RPMB_KEY% ];
-	//	size = < 0x20 >;
-	//	algo = "aes-cbc-128";
+	//	size = <%RPMB_KEY_SIZE%>;
+	//	algo = "%ENC_KEY_ALGO%";
 	//	load_addr = <0x0>;
 	//	key_name = "rpmb_auth";
 	//	permission = "secure";
 	//	os_export = "no";
 	//};
-        key5 {
-                description = "Fscrypt Key salt";
-                data = [ %FSCRYPT_SALT% ];
-                size = < 0x20 >;
-                algo = "aes-cbc-128";
-                load_addr = <0x0>;
-                key_name = "fscrypt_salt";
-                permission = "secure";
-                os_export = "no";
-        };
+	key5 {
+		description = "Fscrypt Key salt";
+		data = [ %FSCRYPT_SALT% ];
+		size = <%FSCRYPT_SALT_SIZE%>;
+		algo = "%ENC_KEY_ALGO%";
+		load_addr = <0x0>;
+		key_name = "fscrypt_salt";
+		permission = "secure";
+		os_export = "no";
+	};
+
+	key6 {
+		description = "Fit Image Kernel Decryption Key";
+		data = [ %kernel% ];
+		size = <%kernel_SIZE%>;
+		algo = "%ENC_KEY_ALGO%";
+		load_addr = <0x0>;
+		key_name = "kernel";
+		permission = "nonsecure";
+		os_export = "no";
+	};
+
+	key7 {
+		description = "Fit Image U-boot Decryption Key";
+		data = [ %uboot% ];
+		size = <%uboot_SIZE%>;
+		algo = "%ENC_KEY_ALGO%";
+		load_addr = <0x0>;
+		key_name = "uboot";
+		permission = "secure";
+		os_export = "no";
+	};
+
+	key8 {
+		description = "Fit Image DTB Decryption Key";
+		data = [ %dtb% ];
+		size = <%dtb_SIZE%>;
+		algo = "%ENC_KEY_ALGO%";
+		load_addr = <0x0>;
+		key_name = "dtb";
+		permission = "nonsecure";
+		os_export = "no";
+	};
+
+	//key9 {
+	//	description = "Fit Image Atf Decryption Key. Uncomment if key-owner is NOT encrypting ATF";
+	//	data = [ %atf% ];
+	//	size = <%atf_SIZE%>;
+	//	algo = "%ENC_KEY_ALGO%";
+	//	load_addr = <0x0>;
+	//	key_name = "atf";
+	//	permission = "secure";
+	//	os_export = "no";
+	//};
+
+	//key10 {
+	//	description = "Fit Image OPTEE Decryption Key. Uncomment if key-owner is NOT encrypting OPTEE";
+	//	data = [ %optee% ];
+	//	size = <%optee_SIZE%>;
+	//	algo = "%ENC_KEY_ALGO%";
+	//	load_addr = <0x0>;
+	//	key_name = "optee";
+	//	permission = "secure";
+	//	os_export = "no";
+	//};
+
+
 };
 
 // List of items that need to be exported from the secure environment in TPL

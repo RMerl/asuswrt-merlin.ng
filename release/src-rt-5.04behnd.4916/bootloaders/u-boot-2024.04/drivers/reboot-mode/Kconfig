@@ -1,0 +1,40 @@
+#
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (c), Vaisala Oyj
+#
+
+menu "Reboot Mode Support"
+
+config DM_REBOOT_MODE
+	bool "Enable reboot mode using Driver Model"
+	depends on DM
+	help
+		Enable support for reboot mode control. This will allow users to
+		adjust the boot process based on reboot mode parameter
+		passed to U-Boot.
+
+config DM_REBOOT_MODE_GPIO
+	bool "Use GPIOs as reboot mode backend"
+	depends on DM_REBOOT_MODE
+	help
+		Use GPIOs to control the reboot mode. This will allow users to boot
+		a device in a specific mode by using a GPIO that can be controlled
+		outside U-Boot.
+
+config DM_REBOOT_MODE_RTC
+	bool "Use RTC as reboot mode backend"
+	depends on DM_REBOOT_MODE
+	help
+		Use RTC non volatile memory to control the reboot mode. This will allow users to boot
+		a device in a specific mode by using a register(s) that can be controlled
+		outside U-Boot (e.g. Kernel).
+
+config REBOOT_MODE_NVMEM
+	bool "Use NVMEM reboot mode"
+	depends on DM_REBOOT_MODE && NVMEM
+	help
+	  Use any kind of non-volatile memory (EEPROM, RTC, etc) to control the
+	  reboot mode.
+
+endmenu

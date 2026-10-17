@@ -1,0 +1,196 @@
+menu "Tools options"
+
+config MKIMAGE_DTC_PATH
+	string "Path to dtc binary for use within mkimage"
+	default "dtc"
+	help
+	  The mkimage host tool will, in order to generate FIT images make
+	  calls to the dtc application in order to create the output.  In
+	  some cases the system dtc may not support all required features
+	  and the path to a different version should be given here.
+
+config TOOLS_CRC32
+	def_bool y
+	help
+	  Enable CRC32 support in the tools builds
+
+config TOOLS_LIBCRYPTO
+	bool "Use OpenSSL's libcrypto library for host tools"
+	default y
+	help
+	  Cryptographic signature, verification, and encryption of images is
+	  provided by host tools using OpenSSL's libcrypto. Select 'n' here if
+	  you wish to build host tools without OpenSSL. mkimage will not have
+	  the ability to sign images.
+	  This selection does not affect target features, such as runtime FIT
+	  signature verification.
+
+config TOOLS_KWBIMAGE
+	bool "Enable kwbimage support in host tools"
+	default y
+	select TOOLS_LIBCRYPTO
+
+config TOOLS_FIT
+	def_bool y
+	help
+	  Enable FIT support in the tools builds.
+
+config TOOLS_FIT_FULL_CHECK
+	def_bool y
+	help
+	  Do a full check of the FIT before using it in the tools builds
+
+config TOOLS_FIT_PRINT
+	def_bool y
+	help
+	  Print the content of the FIT verbosely in the tools builds
+
+config TOOLS_FIT_RSASSA_PSS
+	def_bool y
+	help
+	  Support the rsassa-pss signature scheme in the tools builds
+
+config TOOLS_FIT_SIGNATURE
+	depends on TOOLS_LIBCRYPTO
+	def_bool y
+	help
+	  Enable signature verification of FIT uImages in the tools builds
+
+config TOOLS_FIT_SIGNATURE_MAX_SIZE
+	hex
+	depends on TOOLS_FIT_SIGNATURE
+	default 0x10000000
+
+config TOOLS_FIT_VERBOSE
+	def_bool y
+	help
+	  Support verbose FIT output in the tools builds
+
+config TOOLS_MD5
+	def_bool y
+	help
+	  Enable MD5 support in the tools builds
+
+config TOOLS_OF_LIBFDT
+	def_bool y
+	help
+	  Enable libfdt support in the tools builds
+
+config TOOLS_SHA1
+	def_bool y
+	help
+	  Enable SHA1 support in the tools builds
+
+config TOOLS_SHA256
+	def_bool y
+	help
+	  Enable SHA256 support in the tools builds
+
+config TOOLS_SHA384
+	def_bool y
+	help
+	  Enable SHA384 support in the tools builds
+
+config TOOLS_SHA512
+	def_bool y
+	help
+	  Enable SHA512 support in the tools builds
+
+config TOOLS_MKEFICAPSULE
+	bool "Build efimkcapsule command"
+	default y if EFI_CAPSULE_ON_DISK
+	help
+	  This command allows users to create a UEFI capsule file and,
+	  optionally sign that file. If you want to enable UEFI capsule
+	  update feature on your target, you certainly need this.
+
+menuconfig FSPI_CONF_HEADER
+	bool "FlexSPI Header Configuration"
+	help
+	  FSPI Header Configuration
+
+config FSPI_CONF_FILE
+	string "FlexSPI Header File"
+	depends on FSPI_CONF_HEADER
+	help
+	  FlexSPI Header File name
+
+config READ_CLK_SOURCE
+	hex "Sampling Clock Source"
+	default 0x00
+	depends on FSPI_CONF_HEADER
+	help
+	  Sample Clock source for Flash, default is internal loopback clock
+
+config DEVICE_TYPE
+	hex "Flash Type"
+	default 0x01
+	depends on FSPI_CONF_HEADER
+	help
+	  Flash type: Serial NOR (0X01) and Serial NAND (0x02)
+
+config FLASH_PAD_TYPE
+	hex "Flash Pad Type"
+	default 0x01
+	depends on FSPI_CONF_HEADER
+	help
+	  Flash Pad type :
+	  Single Pad 0x01
+	  Dual Pads  0x02
+	  Quad Pad   0x04
+	  Octal Pad  0x08
+
+config SERIAL_CLK_FREQUENCY
+	hex "Serial Clock Frequency"
+	default 0x02
+	depends on FSPI_CONF_HEADER
+	help
+	  Chip specific frequency: other value 30MHz
+	  1-30MHz  2-50MHz 3-60MHz 4-75MHz 5-80MHz 6-100MHz 7-133MHz 8-166MHz
+
+config FSPI_COL_ADDR_W
+	hex "Column Address With"
+	default 0x00
+	depends on FSPI_CONF_HEADER
+	help
+	  Default 0. For HyperBus protocol, it is fixed to 3
+
+config FSPI_CONTROLLER_MISC
+	hex "FSPI miscellaneous control"
+	default 0x00000000
+	depends on FSPI_CONF_HEADER
+	help
+	  Default 0. [0x40] Controller Misc Options
+
+config FSPI_FLASH_A1_SIZE
+	hex "Size in bytes of Flash A1"
+	default 0x10000000
+	depends on FSPI_CONF_HEADER
+	help
+	  Size of Flash connected to A1 in bytes
+
+config LUT_CUSTOM_SEQUENCE
+	hex "Enable Custom Look Up Table(LUT) Sequence"
+	default 0x00
+	depends on FSPI_CONF_HEADER
+	help
+	  0 - Use predefined LUT Sequence
+	  1 - Use LUT Sequence provided
+
+config LUT_SEQUENCE
+	string "Look Up Table Sequence"
+	default "0x0b, 0x04, 0x18, 0x08, 0x08, 0x30, 0x04, 0x24"
+	depends on FSPI_CONF_HEADER
+	help
+	  Look Up Table Sequence
+
+config TOOLS_MKFWUMDATA
+	bool "Build mkfwumdata command"
+	default y if FWU_MULTI_BANK_UPDATE
+	help
+	  This command allows users to create a raw image of the FWU
+	  metadata for initial installation of the FWU multi bank
+	  update on the board. The installation method depends on
+	  the platform.
+
+endmenu

@@ -1,0 +1,8 @@
+PDU001 BOARD
+M:	Felix Brack <fb@ltec.ch>
+S:	Maintained
+F:	board/eets/
+F:	include/configs/pdu001.h
+F:	configs/am335x_pdu001_defconfig
+F:	arch/arm/dts/am335x-pdu001-u-boot.dtsi
+F:	arch/arm/dts/am335x-pdu001.dts

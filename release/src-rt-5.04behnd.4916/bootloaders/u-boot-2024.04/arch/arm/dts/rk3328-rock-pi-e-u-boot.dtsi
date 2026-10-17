@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2020 Radxa
+ */
+
+#include "rk3328-u-boot.dtsi"
+#include "rk3328-sdram-ddr3-666.dtsi"
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = "radxa";
+				product = "rock-pi-e_rk3328";
+			};
+
+			baseboard {
+				manufacturer = "radxa";
+				product = "rock-pi-e_rk3328";
+			};
+
+			chassis {
+				manufacturer = "radxa";
+				product = "rock-pi-e_rk3328";
+			};
+		};
+	};
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&pinctrl {
+	bootph-pre-ram;
+};
+
+&sdmmc0m1_pin {
+	bootph-pre-ram;
+};
+
+&pcfg_pull_up_4ma {
+	bootph-pre-ram;
+};
+
+/* Need this and all the pinctrl/gpio stuff above to set pinmux */
+&vcc_sd {
+	bootph-pre-ram;
+};

@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2019 DENX Software Engineering GmbH
+ */
+
+#include "am33xx-u-boot.dtsi"
+
+/ {
+	chosen {
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		bootargs = "console=ttyO0,115200 earlyprintk";
+		stdout-path = &uart0;
+	};
+
+	ocp {
+		bootph-all;
+
+		l4_wkup@44c00000 {
+			bootph-all;
+
+			segment@200000 {
+				bootph-all;
+
+				target-module@9000 {
+					bootph-all;
+				};
+			};
+		};
+	};
+};
+
+&i2c0 {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&mmc1 {
+	bootph-all;
+	cd-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+};

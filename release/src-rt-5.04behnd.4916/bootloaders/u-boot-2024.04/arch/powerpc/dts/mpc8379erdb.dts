@@ -1,0 +1,153 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * MPC8379E RDB Device Tree Source
+ *
+ * Copyright 2020 NXP
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "fsl,mpc8379erdb";
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		serial0 = &serial0;
+		serial1 = &serial1;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		PowerPC,8379@0 {
+			device_type = "cpu";
+			reg = <0x0>;
+			d-cache-line-size = <32>;
+			i-cache-line-size = <32>;
+			d-cache-size = <32768>;
+			i-cache-size = <32768>;
+			timebase-frequency = <0>;
+			bus-frequency = <0>;
+			clock-frequency = <0>;
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x10000000>;  // 256MB at 0
+	};
+
+	localbus@e0005000 {
+		#address-cells = <2>;
+		#size-cells = <1>;
+		compatible = "fsl,elbc", "simple-bus";
+		reg = <0xe0005000 0x1000>;
+		interrupts = <77 0x8>;
+		interrupt-parent = <&ipic>;
+	};
+
+	immr@e0000000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "soc";
+		compatible = "simple-bus";
+		ranges = <0 0xe0000000 0x00100000>;
+		reg = <0xe0000000 0x00000200>;
+		bus-frequency = <0>;
+
+		sdhc@2e000 {
+			compatible = "fsl,esdhc";
+			reg = <0x2e000 0x1000>;
+			bus-width = <0x4>;
+			clock-frequency = <0>;
+		};
+
+		serial0: serial@4500 {
+			cell-index = <0>;
+			device_type = "serial";
+			compatible = "fsl,ns16550", "ns16550";
+			reg = <0x4500 0x100>;
+			clock-frequency = <333333000>;
+			interrupts = <9 0x8>;
+			interrupt-parent = <&ipic>;
+			bootph-all;
+		};
+
+		serial1: serial@4600 {
+			cell-index = <1>;
+			device_type = "serial";
+			compatible = "fsl,ns16550", "ns16550";
+			reg = <0x4600 0x100>;
+			clock-frequency = <333333000>;
+			interrupts = <10 0x8>;
+			interrupt-parent = <&ipic>;
+			bootph-all;
+		};
+
+		ipic: interrupt-controller@700 {
+			compatible = "fsl,ipic";
+			interrupt-controller;
+			#address-cells = <0>;
+			#interrupt-cells = <2>;
+			reg = <0x700 0x100>;
+			device_type = "ipic";
+		};
+
+		usb@23000 {
+			compatible = "fsl-usb2-dr";
+			reg = <0x23000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			interrupt-parent = <&ipic>;
+			interrupts = <38 0x8>;
+			phy_type = "ulpi";
+		};
+
+		enet0: ethernet@24000 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			cell-index = <0>;
+			device_type = "network";
+			model = "eTSEC";
+			compatible = "fsl,etsec2";
+			reg = <0x24000 0x1000>;
+			ranges = <0x0 0x24000 0x1000>;
+			local-mac-address = [ 00 00 00 00 00 00 ];
+			interrupts = <32 0x8 33 0x8 34 0x8>;
+			phy-connection-type = "mii";
+			interrupt-parent = <&ipic>;
+			fixed-link = <1 0 1000 0 0>;
+			phy-handle = <&phy>;
+			fsl,magic-packet;
+
+			mdio@520 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "fsl,etsec2-mdio";
+				reg = <0x520 0x20>;
+
+				phy: ethernet-phy@2 {
+					interrupt-parent = <&ipic>;
+					interrupts = <17 0x8>;
+					reg = <0x2>;
+					device_type = "ethernet-phy";
+				};
+			};
+		};
+
+		pci0: pci@e0008300 {
+	                #address-cells = <3>;
+	                #size-cells = <2>;
+	                #interrupt-cells = <1>;
+	                device_type = "pci";
+	                reg = <0x0 0xe0008300 0x0 0x00000fff>;
+			compatible = "fsl,mpc837x-pci";
+	                clock-frequency = <0>;
+		};
+
+	};
+
+};

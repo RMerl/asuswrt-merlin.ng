@@ -87,7 +87,7 @@ int get_arm_core_ratio(struct bcm63xx_cpuclk *cpuclk, int *ratio, int *ratio_bas
 {
 #if defined(CONFIG_BCM_PMC)
 	u32 pattern = 0;
-    pattern = get_cluster_clk_pattern();	
+	pattern = get_cluster_clk_pattern();
 	CLK_BCM_LOG("pattern register 0x%x\n", pattern);
 	/* no need to update mdiv. Fixed post divider */
 	*ratio_base = 32;
@@ -101,7 +101,7 @@ long round_arm_core_rate(struct bcm63xx_cpuclk *cpuclk, unsigned long rate)
 {
 	long new_rate = 0;
 
-	/* b53 always use fix pll mdiv_in(2 by default) output(base_rate) and then apply cpu 
+	/* b53 always use fix pll mdiv_in(2 by default) output(base_rate) and then apply cpu
 	   core ratio between 1 and 1/32. Only support ratio in the freq_pattern table */
 	unsigned long cpu_base_rate = cpuclk->pllclk/cpuclk->mdiv;
 	int ratio = (rate*32)/cpu_base_rate;
@@ -130,15 +130,11 @@ int set_arm_core_clock(struct bcm63xx_cpuclk *cpuclk, unsigned long parent_rate,
 
 int init_arm_core_pll(struct bcm63xx_cpuclk *cpuclk)
 {
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM94908)
 #if defined(CONFIG_BCM96858)
 	cpuclk->pllclk = FREQ_MHZ(1500);
-#elif defined(CONFIG_BCM94908)
-	cpuclk->pllclk = FREQ_MHZ(1800);
-#endif
 	cpuclk->mdiv = 1;
 #if defined(CONFIG_BCM_PMC)
-    reset_cluster_clock();
+	reset_cluster_clock();
 #endif
 #endif
 	return 0;

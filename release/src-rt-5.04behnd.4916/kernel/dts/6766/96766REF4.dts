@@ -1,17 +1,17 @@
 #include "6766.dtsi"
 #include "../bcm_voice.dtsi"
 
-/ {
-	memory_controller {
-		memcfg = <(BP_DDR_TYPE_DDR4       | \
-			BP_DDR_SPEED_1600_22_22_22    | \
-			BP_DDR_TOTAL_SIZE_4096MB      | \
-			BP_DDR_DEVICE_WIDTH_8         | \
-			BP_DDR_TOTAL_WIDTH_16BIT      | \
-			BP_DDR_6766_DEFAULT           | \
-			BP_DDR_CONFIG_DEBUG)>;
-	};
+&memory_controller {
+	memcfg = <(BP_DDR_TYPE_DDR4       | \
+		BP_DDR_SPEED_1600_22_22_22    | \
+		BP_DDR_TOTAL_SIZE_4096MB      | \
+		BP_DDR_DEVICE_WIDTH_8         | \
+		BP_DDR_TOTAL_WIDTH_16BIT      | \
+		BP_DDR_6766_DEFAULT           | \
+		BP_DDR_CONFIG_DEBUG)>;
+};
 
+/ {
 	buttons {
 		compatible = "brcm,buttons";
 
@@ -176,7 +176,7 @@
 
 &nand {
 	pinctrl-0 = <&nand_data_pins &nand_ctrl_pins &nand_wp_b_pin_59>;
-	write-protect = <1>;
+	/delete-property/ brcm,wp-not-connected;
 	status = "okay";
 };
 
@@ -211,6 +211,7 @@
 		 */
 	phy_gphy {
 		phy-extswitch;
+		phy-shrink-ipg;
 		status = "okay";
 	};
 
@@ -266,6 +267,7 @@
 		phy-type = "EGPHY";
 		phy-reset = <&gpioc 10 GPIO_ACTIVE_LOW>;
 		phy-external;
+		phy-shrink-ipg;
 		status = "okay";
 	};
 };

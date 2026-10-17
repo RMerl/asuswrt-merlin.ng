@@ -50,7 +50,7 @@
 #ifdef BCM_PKTFWD
 #include <bcm_pktfwd.h>
 #include <dhd_pktfwd.h>
-#include <wl_pktc.h>
+#include <wl_pktfwd.h>
 #endif /* BCM_PKTFWD */
 
 #if defined(BCM_AWL)
@@ -196,7 +196,7 @@ dhd_handle_wfd_blog(dhd_pub_t * dhdp, struct net_device *net, int ifidx,
 				if (!b_pkt_mc) {
 #ifdef BCM_PKTFWD
 					/* Insert D3lut element */
-					pktfwd_key = dhd_pktc_req_hook(PKTC_TBL_UPDATE,
+					pktfwd_key = dhd_pktfwd_req_hook(wl_pktfwd_req_ins_symbol_e,
 						(unsigned long)&eh->ether_dhost,
 						(unsigned long)net, (unsigned long)TRUE);
 					if (pktfwd_key != DHD_PKTFWD_KEY_INVALID_UL) {
@@ -255,7 +255,7 @@ dhd_handle_wfd_blog(dhd_pub_t * dhdp, struct net_device *net, int ifidx,
 			 */
 			if (!(b_pkt_mc || b_wmf_unicast)) {
 				/* Insert D3lut element */
-				pktfwd_key = dhd_pktc_req_hook(PKTC_TBL_UPDATE,
+				pktfwd_key = dhd_pktfwd_req_hook(wl_pktfwd_req_ins_symbol_e,
 						(unsigned long)&eh->ether_dhost,
 						(unsigned long)net, (unsigned long)TRUE);
 				if (pktfwd_key != DHD_PKTFWD_KEY_INVALID_UL) {
@@ -381,7 +381,7 @@ int dhd_wfd_get_fpi_metadata(struct net_device *net, u8 *sa, u8 *da, u8 prio,
 		/* Hardware accelerated */
 		/* Insert D3lut element first */
 		DHD_LOCK(dhdp);
-		pktfwd_key = dhd_pktc_req_hook(PKTC_TBL_UPDATE,
+		pktfwd_key = dhd_pktfwd_req_hook(wl_pktfwd_req_ins_symbol_e,
 			(unsigned long)da, (unsigned long)net, (unsigned long)TRUE);
 		DHD_UNLOCK(dhdp);
 		if (pktfwd_key == DHD_PKTFWD_KEY_INVALID_UL) {
@@ -414,7 +414,7 @@ int dhd_wfd_get_fpi_metadata(struct net_device *net, u8 *sa, u8 *da, u8 prio,
 valid_metadata:
 	*data = metadata.wl;
 
-	DHD_ERROR(("wl[%d.%d]: %s(0x%px, "MACDBG" , "MACDBG" , %d) = 0x%x\n",
+	DHD_INFO(("wl[%d.%d]: %s(0x%px, "MACDBG" , "MACDBG" , %d) = 0x%x\n",
 		dhdp->unit, ifidx, __FUNCTION__, net, MAC2STRDBG(sa), MAC2STRDBG(da),
 		prio, *data));
 
@@ -584,6 +584,9 @@ _dhd_wfd_mcasthandler(uint32_t wl_radio_idx, uint32_t ifidx, void *fkb)
 	}
 #endif /* DHD_WMF */
 	DHD_PKT_CLR_WFD_BUF(pNBuf);
+#ifdef MLO_BCMC
+	DHD_PKT_CLR_MLO_BCMC(pNBuf);
+#endif /* MLO_BCMC */
 	ret = dhd_flowid_update(dhdp, ifidx, dhdp->flow_prio_map[(PKTPRIO(pNBuf))], pNBuf);
 	if (ret == BCME_OK) {
 #if defined(DSLCPE) && defined(BCM_COUNTER_EXTSTATS)
@@ -616,7 +619,7 @@ unlock:
 }
 
 static void BCMFASTPATH
-dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, qunsigned long p_ssid_vector)
+dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long p_ssid_vector)
 {
 
 	uint32_t wl_if_index;

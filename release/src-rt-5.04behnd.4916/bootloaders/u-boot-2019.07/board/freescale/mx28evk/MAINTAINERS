@@ -1,9 +1,0 @@
-MX28EVK BOARD
-M:	Fabio Estevam <fabio.estevam@nxp.com>
-S:	Maintained
-F:	board/freescale/mx28evk/
-F:	include/configs/mx28evk.h
-F:	configs/mx28evk_defconfig
-F:	configs/mx28evk_auart_console_defconfig
-F:	configs/mx28evk_nand_defconfig
-F:	configs/mx28evk_spi_defconfig

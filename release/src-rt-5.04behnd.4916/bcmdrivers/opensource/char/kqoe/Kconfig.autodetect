@@ -1,0 +1,7 @@
+config BCM_KQOE
+	tristate "Support Kernel Quality of Experience Manager"
+
+config BCM_KQOE_IMPL
+	int "Implementation index for KQOE module"
+	depends on BCM_KQOE
+	default 1

@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		fit {
+			description = "test desc";
+			#address-cells = <1>;
+			fit,fdt-list = "of-list";
+
+			images {
+				u-boot {
+					description = "test u-boot";
+					type = "standalone";
+					arch = "arm64";
+					os = "u-boot";
+					compression = "none";
+					load = <0x00000000>;
+					entry = <0x00000000>;
+
+					u-boot-nodtb {
+					};
+				};
+				tee {
+					description = "test tee";
+					type = "tee";
+					arch = "arm64";
+					os = "tee";
+					compression = "none";
+					load = <0x00200000>;
+
+					tee-os {
+						optional;
+					};
+				};
+				@atf-SEQ {
+					fit,operation = "split-elf";
+					description = "test tf-a";
+					type = "firmware";
+					arch = "arm64";
+					os = "arm-trusted-firmware";
+					compression = "none";
+					fit,load;
+					fit,entry;
+					fit,data;
+
+					atf-bl31 {
+					};
+				};
+				@fdt-SEQ {
+					description = "test fdt";
+					type = "flat_dt";
+					compression = "none";
+				};
+			};
+
+			configurations {
+				default = "@conf-uboot-DEFAULT-SEQ";
+				@conf-uboot-SEQ {
+					description = "uboot config";
+					fdt = "fdt-SEQ";
+					fit,firmware = "u-boot";
+					fit,loadables;
+				};
+				@conf-atf-SEQ {
+					description = "atf config";
+					fdt = "fdt-SEQ";
+					fit,firmware = "atf-1", "u-boot";
+					fit,loadables;
+				};
+				@conf-missing-uboot-SEQ {
+					description = "missing uboot config";
+					fdt = "fdt-SEQ";
+					fit,firmware = "missing-1", "u-boot";
+					fit,loadables;
+				};
+				@conf-missing-atf-SEQ {
+					description = "missing atf config";
+					fdt = "fdt-SEQ";
+					fit,firmware = "missing-1", "atf-1", "u-boot";
+					fit,loadables;
+				};
+				@conf-missing-tee-SEQ {
+					description = "missing tee config";
+					fdt = "fdt-SEQ";
+					fit,firmware = "atf-1", "u-boot", "tee";
+					fit,loadables;
+				};
+			};
+		};
+	};
+};

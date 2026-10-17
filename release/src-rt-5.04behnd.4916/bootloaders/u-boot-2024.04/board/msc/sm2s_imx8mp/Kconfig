@@ -1,0 +1,15 @@
+if TARGET_MSC_SM2S_IMX8MP
+
+config SYS_BOARD
+	default "sm2s_imx8mp"
+
+config SYS_VENDOR
+	default "msc"
+
+config SYS_CONFIG_NAME
+	default "msc_sm2s_imx8mp"
+
+config IMX_CONFIG
+	default "board/msc/sm2s_imx8mp/imximage-8mp-lpddr4.cfg"
+
+endif

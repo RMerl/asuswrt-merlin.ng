@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) Siemens AG, 2018-2021
+ *
+ * Authors:
+ *   Jan Kiszka <jan.kiszka@siemens.com>
+ */
+
+/dts-v1/;
+
+#include "k3-am65-iot2050-common.dtsi"
+#include "k3-am65-iot2050-common-u-boot.dtsi"
+
+/ {
+	compatible = "siemens,iot2050", "ti,am654";
+	model = "Siemens IOT2050";
+};

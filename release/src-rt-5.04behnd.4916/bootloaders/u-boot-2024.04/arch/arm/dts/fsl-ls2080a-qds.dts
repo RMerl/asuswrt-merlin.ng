@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Freescale ls2080a QDS defaul board device tree source
+ *
+ * Copyright 2013-2015 Freescale Semiconductor, Inc.
+ */
+
+/dts-v1/;
+
+#include "fsl-ls2080a-qds.dtsi"
+
+/ {
+	model = "Freescale Layerscape 2080a QDS Board";
+	compatible = "fsl,ls2080a-qds", "fsl,ls2080a";
+
+	aliases {
+		spi0 = &qspi;
+		spi1 = &dspi;
+	};
+};

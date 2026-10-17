@@ -1,0 +1,8 @@
+OSS_REFERENCE_Name: Ninja
+OSS_REFERENCE_Version: 1.12.1
+OSS_REFERENCE_License: Apache 2.0
+OSS_REFERENCE_DownloadURL: https://github.com/ninja-build/ninja/releases/tag/v1.12.1
+OSS_REFERENCE_BroadcomURL:
+OSS_Broadcom_RelativePath: ./v1.12.1.tar.gz
+OSS_Broadcom_comment: needed by Matter
+

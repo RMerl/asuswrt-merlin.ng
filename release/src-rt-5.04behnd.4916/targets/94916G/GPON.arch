@@ -5,6 +5,7 @@
 -# BRCM_DRIVER_GPON is not set
 -BCM_MAX_GEM_PORTS=0
 -# BUILD_OMCI is not set
+-# BUILD_OMCI_TC is not set
 -# BUILD_BCMIPC is not set
 +BRCM_DRIVER_GPON=m
 +BCM_MAX_GEM_PORTS=128
@@ -14,6 +15,7 @@
 +# BUILD_NGPON_AMD2 is not set
 +BUILD_OMCI=y
 +BUILD_BCMIPC=y
++BUILD_OMCI_TC=y
 +BUILD_OMCI_AUTH=y
 +# BUILD_VENDOR_OMCI is not set
 -# USE_GPONRG_OMCI_FULL is not set

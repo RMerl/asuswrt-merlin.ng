@@ -1,0 +1,31 @@
+menu "SuperH architecture"
+	depends on SH
+
+config CPU_SH4
+	bool
+
+config CPU_SH7751
+	bool
+	select CPU_SH4
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_R2DPLUS
+	bool "Renesas R2D-PLUS"
+	select CPU_SH7751
+
+endchoice
+
+config SYS_ARCH
+	default "sh"
+
+config SYS_CPU
+	default "sh4" if CPU_SH4
+
+source "arch/sh/lib/Kconfig"
+
+source "board/renesas/r2dplus/Kconfig"
+
+endmenu

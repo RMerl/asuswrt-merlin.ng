@@ -1,0 +1,18 @@
+if ARCH_NPCM8XX
+
+config SYS_CPU
+	default "armv8"
+
+config SYS_SOC
+	default "npcm8xx"
+
+config TARGET_ARBEL_EVB
+	bool "Arbel Evaluation Board"
+	help
+	  ARBEL_EVB is Nuvoton evaluation board for NPCM845 SoC,
+	  supports general functions of Basebase Management Controller
+	  (BMC).
+
+source "board/nuvoton/arbel_evb/Kconfig"
+
+endif

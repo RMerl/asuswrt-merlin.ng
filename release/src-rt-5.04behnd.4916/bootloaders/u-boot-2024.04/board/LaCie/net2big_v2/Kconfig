@@ -1,0 +1,23 @@
+if TARGET_NET2BIG_V2
+
+choice
+	prompt "Board variant"
+
+config D2NET_V2
+	bool "D2NET v2"
+
+config NET2BIG_V2
+	bool "NET2BIG v2"
+
+endchoice
+
+config SYS_BOARD
+	default "net2big_v2"
+
+config SYS_VENDOR
+	default "LaCie"
+
+config SYS_CONFIG_NAME
+	default "lacie_kw"
+
+endif

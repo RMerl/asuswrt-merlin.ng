@@ -91,7 +91,7 @@ typedef int (*spu_offload_cbk)(struct bcmspu_offload_resp *resp_info);
 #define MAX_SPU_OFFLOAD_BITMAP     (MAX_REPLAY_WIN_SIZE / 32)
 
 #define MAX_SPU_HEADER_SIZE        200
-#define OUTER_HEADER_SIZE          48
+#define OUTER_HEADER_SIZE          40
 #define GCM_RFC4106_IV_SIZE        8
 #define ESP_SPI_LEN                4
 #define GCM_IV_AAD2_SIZE           GCM_RFC4106_IV_SIZE + ESP_SPI_LEN
@@ -109,7 +109,7 @@ struct bcmspu_offload_parm {
          uint8_t data_limit  : 1;
          uint8_t long_bitmap : 1;
          uint8_t is_gcm      : 1;
-         uint8_t null_enc    : 1;
+         uint8_t ipv4_in_ipv6: 1;
          uint8_t ipv6        : 1;
       };
       uint8_t u8_0;
@@ -142,12 +142,43 @@ struct spu_offload_parm_args {
 };
 
 struct spu_offload_prephdr_args {
-    uint32_t session_id;
+    union {
+        uint32_t session_id;
+        uint32_t tunnel_id;
+    };
+
 #if defined(CONFIG_BLOG)
     Blog_t *blog_p;
 #endif
     uint8_t prepend_size;
-    uint8_t spu_prepend[MAX_SPU_HEADER_SIZE]; 
+    uint32_t prepend_word;
+};
+
+struct spu_fpi_tunnel_add_args {
+    uint32_t tun_id;
+    struct xfrm_state *x;
+    uint8_t is_us;
+};
+
+struct spu_fpi_tunnel_del_args {
+    uint32_t tun_id;
+    uint32_t esp_spi;
+    uint8_t is_us;
+};
+
+struct spu_fpi_tunnel_remap_args {
+    uint32_t tun_id1;
+    uint32_t esp_spi1;
+    uint32_t tun_id2;
+    uint32_t esp_spi2;
+};
+
+struct spu_fpi_tunnel_args {
+    union {
+        struct spu_fpi_tunnel_add_args add;
+        struct spu_fpi_tunnel_del_args del;
+        struct spu_fpi_tunnel_remap_args remap;
+    };
 };
 
 struct spu_offload_tracker {
@@ -165,8 +196,20 @@ struct spu_offload_stats_args {
     uint32_t *bitmap;
     uint32_t num_request;
     uint32_t num_response;
+    uint16_t icv_err;
+    uint16_t seqno_err;
 };
 
+struct spu_fpi_tun_map {
+    union {
+        uint32_t tun_id;
+        uint32_t session_id1;
+    };
+    union {
+        uint32_t session_id;
+        uint32_t session_id2;
+    };
+};
 
 #if defined(CONFIG_BCM_SPU_HW_OFFLOAD)
 typedef int (*spu_offload_parm_update)(struct spu_offload_parm_args *arg);

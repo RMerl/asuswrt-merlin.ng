@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0+
+# Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+#
+# Power management configuration for J721E
+#
+
+---
+
+pm-cfg:
+        rev:
+                boardcfg_abi_maj: 0x0
+                boardcfg_abi_min: 0x1

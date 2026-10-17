@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal NET
+ *
+ * Copyright (C) 2021 - 2022, Xilinx, Inc.
+ * Copyright (C) 2022, Advanced Micro Devices, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "xlnx,versal-net-mini";
+	model = "Xilinx Versal NET MINI";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	memory: memory@0 {
+		reg = <0 0xBBF00000 0 0x100000>, <0 0 0 0x80000000>;
+		device_type = "memory";
+	};
+
+	aliases {
+		/* serial0 = &serial0; */
+		serial0 = &dcc;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200";
+	};
+
+	clk1: clk1 {
+		bootph-all;
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <1000000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "okay";
+		bootph-all;
+	};
+
+	amba: axi {
+		compatible = "simple-bus";
+		bootph-all;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		serial0: serial@f1920000 {
+			bootph-all;
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0 0xf1920000 0 0x1000>;
+			reg-io-width = <4>;
+			clock-names = "uartclk", "apb_pclk";
+			clocks = <&clk1>, <&clk1>;
+			clock = <1000000>;
+			current-speed = <115200>;
+			skip-init;
+		};
+	};
+};

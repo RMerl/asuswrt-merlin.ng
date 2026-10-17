@@ -1,0 +1,15 @@
+* Marvell MDIO Ethernet Controller interface
+
+The Ethernet controllers of the Marvel Armada 3700 and Armada 7k/8k
+have an identical unit that provides an interface with the MDIO bus.
+This driver handles this MDIO interface.
+
+Mandatory properties:
+SoC specific:
+	- #address-cells: Must be <1>.
+	- #size-cells: Must be <0>.
+	- compatible: Should be "marvell,orion-mdio" (for SMI)
+				"marvell,xmdio"	     (for XSMI)
+	- reg: Base address and size SMI/XMSI bus.
+
+Please refer to "mdio.txt" for generic MDIO bus bindings.

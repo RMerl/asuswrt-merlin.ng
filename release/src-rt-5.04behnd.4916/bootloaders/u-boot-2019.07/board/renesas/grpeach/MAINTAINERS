@@ -1,6 +1,0 @@
-GRPEACH BOARD
-M:	Marek Vasut <marek.vasut@gmail.com>
-S:	Maintained
-F:	board/renesas/grpeach/
-F:	include/configs/grpeach.h
-F:	configs/grpeach_defconfig

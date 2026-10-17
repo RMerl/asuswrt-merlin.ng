@@ -1,0 +1,117 @@
+config RAM
+	bool "Enable RAM drivers using Driver Model"
+	depends on DM
+	help
+	  This allows drivers to be provided for SDRAM and other RAM
+	  controllers and their type to be specified in the board's device
+	  tree. Generally some parameters are required to set up the RAM and
+	  the RAM size can either be statically defined or dynamically
+	  detected.
+
+config SPL_RAM
+	bool "Enable RAM support in SPL"
+	depends on RAM && SPL_DM
+	help
+	  The RAM subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use RAM drivers in
+	  SPL, enable this option. It might provide a cleaner interface to
+	  setting up RAM (e.g. SDRAM / DDR) within SPL.
+
+config TPL_RAM
+	bool "Enable RAM support in TPL"
+	depends on RAM && TPL
+	help
+	  The RAM subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use RAM drivers in
+	  TPL, enable this option. It might provide a cleaner interface to
+	  setting up RAM (e.g. SDRAM / DDR) within TPL.
+
+config STM32_SDRAM
+	bool "Enable STM32 SDRAM support"
+	depends on RAM
+	help
+	  STM32F7 family devices support flexible memory controller(FMC) to
+	  support external memories like sdram, psram & nand.
+	  This driver is for the sdram memory interface with the FMC.
+
+config MPC83XX_SDRAM
+	bool "Enable MPC83XX SDRAM support"
+	depends on RAM
+	help
+	  Enable support for the internal DDR Memory Controller of the MPC83xx
+	  family of SoCs. Both static configurations, as well as configuring
+	  the RAM through the use of SPD (Serial Presence Detect) is supported
+	  via device tree settings.
+
+config K3_AM654_DDRSS
+	bool "Enable AM654 DDRSS support"
+	depends on RAM && SOC_K3_AM654
+	help
+	  K3 based AM654 devices has DDR memory subsystem that comprises
+	  Synopys DDR controller, Synopsis DDR phy and wrapper logic to
+	  intergrate these blocks into the device. This DDR subsystem
+	  provides an interface to external SDRAM devices. Enabling this
+	  config add support for the initialization of the external
+	  SDRAM devices connected to DDR subsystem.
+
+config K3_DDRSS
+	bool "Enable K3 DDRSS support"
+	depends on RAM
+
+choice
+	depends on K3_DDRSS
+	prompt "K3 DDRSS Arch Support"
+
+	default K3_J721E_DDRSS if SOC_K3_J721E || SOC_K3_J721S2
+	default K3_AM64_DDRSS if SOC_K3_AM642
+	default K3_AM64_DDRSS if SOC_K3_AM625
+	default K3_AM62A_DDRSS if SOC_K3_AM62A7
+
+config K3_J721E_DDRSS
+	bool "Enable J721E DDRSS support"
+	help
+	  The J721E DDR subsystem comprises DDR controller, DDR PHY and
+	  wrapper logic to integrate these blocks in the device. The DDR
+	  subsystem is used to provide an interface to external SDRAM
+	  devices which can be utilized for storing program or data.
+	  Enabling this config adds support for the DDR memory controller
+	  on J721E family of SoCs.
+
+config K3_AM64_DDRSS
+	bool "Enable AM64 DDRSS support"
+	help
+	  The AM64 DDR subsystem comprises DDR controller, DDR PHY and
+	  wrapper logic to integrate these blocks in the device. The DDR
+	  subsystem is used to provide an interface to external SDRAM
+	  devices which can be utilized for storing program or data.
+	  Enabling this config adds support for the DDR memory controller
+	  on AM642 family of SoCs.
+
+config K3_AM62A_DDRSS
+	bool "Enable AM62A DDRSS support"
+	help
+	  The AM62A DDR subsystem comprises of a DDR controller, DDR PHY and
+	  wrapper logic to integrate these blocks into once device. The DDR
+	  subsystem is used to provide an interface to external SDRAM devices
+	  which can be utilized for storing programs or any other data.
+	  Enabling this option adds support for the DDR memory controller for
+	  the AM62A family of SoCs.
+
+endchoice
+
+config IMXRT_SDRAM
+	bool "Enable i.MXRT SDRAM support"
+	depends on RAM
+	help
+	  i.MXRT family devices support smart external memory controller(SEMC)
+	  to support external memories like sdram, psram & nand.
+	  This driver is for the sdram memory interface with the SEMC.
+
+source "drivers/ram/aspeed/Kconfig"
+source "drivers/ram/cadence/Kconfig"
+source "drivers/ram/octeon/Kconfig"
+source "drivers/ram/rockchip/Kconfig"
+source "drivers/ram/sifive/Kconfig"
+source "drivers/ram/stm32mp1/Kconfig"
+source "drivers/ram/starfive/Kconfig"
+source "drivers/ram/sunxi/Kconfig"

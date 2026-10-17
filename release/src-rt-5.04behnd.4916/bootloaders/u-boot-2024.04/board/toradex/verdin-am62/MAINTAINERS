@@ -1,0 +1,17 @@
+Verdin AM62
+F:	arch/arm/dts/k3-am625-verdin-lpddr4-1600MTs.dtsi
+F:	arch/arm/dts/k3-am625-verdin-r5.dts
+F:	arch/arm/dts/k3-am625-verdin-wifi-dev.dts
+F:	arch/arm/dts/k3-am625-verdin-wifi-dev-binman.dtsi
+F:	arch/arm/dts/k3-am625-verdin-wifi-dev-u-boot.dtsi
+F:	arch/arm/dts/k3-am62-verdin-dev.dtsi
+F:	arch/arm/dts/k3-am62-verdin.dtsi
+F:	arch/arm/dts/k3-am62-verdin-wifi.dtsi
+F:	board/toradex/verdin-am62/
+F:	configs/verdin-am62_a53_defconfig
+F:	configs/verdin-am62_r5_defconfig
+F:	doc/board/toradex/verdin-am62.rst
+F:	include/configs/verdin-am62.h
+M:	Marcel Ziswiler <marcel.ziswiler@toradex.com>
+S:	Maintained
+W:	https://www.toradex.com/computer-on-modules/verdin-arm-family/ti-am-62

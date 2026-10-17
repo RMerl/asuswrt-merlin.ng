@@ -1,9 +1,0 @@
-P1022 BOARD
-M:	Dirk Eibach <dirk.eibach@gdsys.cc>
-S:	Maintained
-F:	board/gdsys/p1022/
-F:	include/configs/controlcenterd.h
-F:	configs/controlcenterd_36BIT_SDCARD_defconfig
-F:	configs/controlcenterd_36BIT_SDCARD_DEVELOP_defconfig
-F:	configs/controlcenterd_TRAILBLAZER_defconfig
-F:	configs/controlcenterd_TRAILBLAZER_DEVELOP_defconfig

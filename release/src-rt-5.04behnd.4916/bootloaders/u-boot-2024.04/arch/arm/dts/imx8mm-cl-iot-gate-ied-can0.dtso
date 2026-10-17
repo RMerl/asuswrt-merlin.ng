@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2021 Linaro
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+#include "imx8mm-pinfunc.h"
+
+&{/} {
+	clocks {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clk40m: clk@1 {
+			compatible = "fixed-clock";
+			reg = <1>;
+			#clock-cells = <0>;
+			clock-frequency = <40000000>;
+			clock-output-names = "clk40m";
+		};
+	};
+};
+
+&ecspi2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	can0: can@0 {
+		compatible = "microchip,mcp2518fd";
+		reg = <0>;
+		microchip,rx-int = <&gpio4 31 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_can0>;
+		interrupt-parent = <&gpio5>;
+		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+		spi-max-frequency = <20000000>;
+		clocks = <&clk40m>;
+		status = "okay";
+	};
+};
+
+&iomuxc {
+	pinctrl_can0: can0grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_SAI3_TXC_GPIO5_IO0		0x00
+			MX8MM_IOMUXC_SAI3_TXFS_GPIO4_IO31       0x00
+		>;
+	};
+};

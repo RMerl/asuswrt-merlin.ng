@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-2.0+
+# Copyright 2022 Google LLC
+
+config TEST_KCONFIG
+	bool "Enable detection of Kconfig macro errors"
+	depends on SANDBOX
+	help
+	  This is used to test that the IF_ENABLED_INT() macro causes a build error
+	  if the value is used when the CONFIG is not enabled.
+
+if TEST_KCONFIG
+
+config TEST_KCONFIG_ENABLE
+	bool "Provide a value for the Kconfig test"
+	help
+	  This is the option that controls whether the value is present.
+
+config TEST_KCONFIG_VALUE
+	int "Value used in Kconfig test"
+	depends on TEST_KCONFIG_ENABLE
+	help
+	  This is the value which is present if TEST_KCONFIG_ENABLE is enabled.
+
+endif # TEST_KCONFIG

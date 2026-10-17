@@ -1,0 +1,37 @@
+[0;31m
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Initialized empty Git repository in /auto/bcajenkins/workspace/CommEngine_6.2_Stage_Dorel/opt1/linux_968880GWO_WL25DX_WLMLO/bootloaders/u-boot-2024.04/.git/
+Total 23814 (delta 7064), reused 17276 (delta 7064)
+From ssh://bca-sdk-git.bca.broadcom.net:29418/bca/u-boot
+ * branch              2886cce3fa38b79de3332c606a8c60cfa94515c4 -> FETCH_HEAD
+Note: switching to '2886cce3fa38b79de3332c606a8c60cfa94515c4'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 2886cce3 bcmbca: pmc: Update 6765 and 6766 AVS settings
+AUTOFETCH irv:2024.04 => site {'rsync': 'bcacpe-irv-1.lvn.broadcom.net:/auto/hudson_workspace_new/CommEngine_BRANCH_NAME_UBOOT_Clean/uboot/', 'git': 'bca-sdk-git.bca.broadcom.net:29418/bca/u-boot'} using git
+
+get_from_git cmd: git init . && git remote add origin ssh://bca-sdk-git.bca.broadcom.net:29418/bca/u-boot && git fetch --depth=1 origin 2886cce3fa38b79de3332c606a8c60cfa94515c4 && git checkout 2886cce3fa38b79de3332c606a8c60cfa94515c4 && touch .git_clone_complete
+[0m

@@ -1,0 +1,91 @@
+if TARGET_QEMU_VIRT
+
+config SYS_BOARD
+	default "qemu-riscv"
+
+config SYS_VENDOR
+	default "emulation"
+
+config SYS_CPU
+	default "generic"
+
+config SYS_CONFIG_NAME
+	default "qemu-riscv"
+
+config TEXT_BASE
+	default 0x81200000 if SPL
+	default 0x80000000 if !RISCV_SMODE
+	default 0x80200000 if RISCV_SMODE && ARCH_RV64I
+	default 0x80400000 if RISCV_SMODE && ARCH_RV32I
+
+config SPL_TEXT_BASE
+	default 0x80000000
+
+config SPL_OPENSBI_LOAD_ADDR
+	hex
+	default 0x80100000
+
+config PRE_CON_BUF_ADDR
+	hex
+	default 0x81000000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select GENERIC_RISCV
+	select SUPPORT_SPL
+	select QFW if ACPI
+	select QFW_MMIO if QFW
+	imply AHCI
+	imply SMP
+	imply BOARD_LATE_INIT
+	imply PCI_INIT_R
+	imply SPL_RAM_SUPPORT
+	imply SPL_RAM_DEVICE
+	imply CMD_PCI
+	imply CMD_POWEROFF
+	imply CMD_SBI
+	imply CMD_SCSI
+	imply CMD_PING
+	imply CMD_EXT2
+	imply CMD_EXT4
+	imply CMD_FAT
+	imply CMD_FS_GENERIC
+	imply DOS_PARTITION
+	imply ISO_PARTITION
+	imply EFI_PARTITION
+	imply SCSI_AHCI
+	imply AHCI_PCI
+	imply E1000
+	imply PCI
+	imply NVME_PCI
+	imply PCIE_ECAM_GENERIC
+	imply DM_RNG
+	imply DM_RTC
+	imply RTC_GOLDFISH
+	imply SCSI
+	imply SYS_NS16550
+	imply SIFIVE_SERIAL
+	imply HTIF_CONSOLE if 64BIT
+	imply SYSRESET
+	imply SYSRESET_CMD_POWEROFF
+	imply SYSRESET_SYSCON
+	imply VIRTIO_MMIO
+	imply VIRTIO_PCI
+	imply VIRTIO_NET
+	imply VIRTIO_BLK
+	imply MTD_NOR_FLASH
+	imply CFI_FLASH
+	imply OF_HAS_PRIOR_STAGE
+	imply VIDEO
+	imply VIDEO_BOCHS
+	imply SYS_WHITE_ON_BLACK
+	imply PRE_CONSOLE_BUFFER
+	imply USB
+	imply USB_XHCI_HCD
+	imply USB_XHCI_PCI
+	imply USB_KEYBOARD
+	imply CMD_USB
+	imply UFS
+	imply UFS_PCI
+
+endif

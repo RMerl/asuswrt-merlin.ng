@@ -1,0 +1,32 @@
+--- a/main/src/include/bcmstdarg.h
++++ b/main/src/include/bcmstdarg.h
+@@ -30,7 +30,7 @@
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
+ #include <stdarg.h>
+ #else
+-#include <linux/stdarg.h>
++#include <stdarg.h>
+ #endif /* KERNEL < 5.15 */
+ #else
+ #include <stdarg.h>
+--- a/sys/src/include/bcmstdarg.h
++++ b/sys/src/include/bcmstdarg.h
+@@ -30,7 +30,7 @@
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
+ #include <stdarg.h>
+ #else
+-#include <linux/stdarg.h>
++#include <stdarg.h>
+ #endif /* KERNEL < 5.15 */
+ #else
+ #include <stdarg.h>
+--- a/main/components/apps/hspot/router/hspot_ap/Makefile
++++ b/main/components/apps/hspot/router/hspot_ap/Makefile
+@@ -48,6 +48,7 @@
+ ifneq ($(CMWIFI),)
+ ifneq ($(CMWIFI_33940),)
+ CFLAGS += -Werror
++CFLAGS += -Wno-error=cast-qual
+ endif
+ endif
+ 

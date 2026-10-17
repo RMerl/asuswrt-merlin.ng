@@ -1,0 +1,12 @@
+if RCAR_64
+
+config SYS_MALLOC_F_LEN
+	default 0x8000 if RCAR_64
+
+config OF_LIBFDT_OVERLAY
+	default y if RCAR_64
+
+source "arch/arm/mach-renesas/Kconfig.rcar3"
+source "arch/arm/mach-renesas/Kconfig.rcar4"
+
+endif

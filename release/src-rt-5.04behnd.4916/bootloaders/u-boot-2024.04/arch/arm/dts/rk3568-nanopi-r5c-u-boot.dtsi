@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+#include "rk3568-nanopi-r5s-u-boot.dtsi"
+
+&pcie3x2 {
+	/delete-property/ vpcie3v3-supply;
+};

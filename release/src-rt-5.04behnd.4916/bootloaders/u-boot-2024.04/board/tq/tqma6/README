@@ -1,0 +1,38 @@
+U-Boot for the TQ-Systems TQMa6 modules
+
+This file contains information for the port of
+U-Boot to the TQ-Systems TQMa6 modules.
+
+1. Boot source
+--------------
+
+The following boot source is supported:
+
+- SD/eMMC
+- SPI NOR
+
+2. Building
+------------
+
+To build U-Boot for the TQ-Systems TQMa6 modules:
+
+	make tqma6<x>_<baseboard>_<boot>_config
+	make
+
+x is a placeholder for the CPU variant
+q - means i.MX6Q/D: TQMa6Q (i.MX6Q) and TQMa6D  (i.MX6D)
+dl - means i.MX6DL: TQMa6DL  (i.MX6DL)
+s - means i.MX6S: TQMa6S  (i.MX6S)
+
+baseboard is a placeholder for the boot device
+mmc - means eMMC
+spi - mean SPI NOR
+
+This gives the following configurations:
+
+tqma6q_mba6_mmc_config
+tqma6q_mba6_spi_config
+tqma6dl_mba6_mmc_config
+tqma6dl_mba6_spi_config
+tqma6s_mba6_mmc_config
+tqma6s_mba6_spi_config

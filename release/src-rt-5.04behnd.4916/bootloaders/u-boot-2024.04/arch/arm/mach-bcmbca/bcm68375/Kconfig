@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2021 Broadcom Ltd
+#
+
+if BCM68375
+
+config TARGET_BCM968375
+	bool "Broadcom 68375 Reference Board"
+	depends on ARCH_BCMBCA
+	select BCMBCA_GPIO_SMC if PINCTRL_BCMBCA
+
+config SYS_SOC
+	default "bcm68375"
+
+
+
+source "board/broadcom/bcmbca/Kconfig"
+
+endif

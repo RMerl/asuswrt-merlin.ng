@@ -1,0 +1,52 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot on R8A774C0 SoC
+ *
+ * Copyright (C) 2021 Renesas Electronics Corp.
+ *
+ */
+
+#include "r8a779x-u-boot.dtsi"
+
+/ {
+	soc {
+		rpc: spi@ee200000 {
+			compatible = "renesas,r8a774c0-rpc-if", "renesas,rcar-gen3-rpc-if";
+			reg = <0 0xee200000 0 0x100>, <0 0x08000000 0 0x04000000>;
+			clocks = <&cpg CPG_MOD 917>;
+			bank-width = <2>;
+			status = "disabled";
+		};
+	};
+};
+
+/delete-node/ &can0;
+/delete-node/ &can1;
+/delete-node/ &canfd;
+/delete-node/ &pwm0;
+/delete-node/ &pwm1;
+/delete-node/ &pwm2;
+/delete-node/ &pwm3;
+/delete-node/ &pwm4;
+/delete-node/ &pwm5;
+/delete-node/ &pwm6;
+/delete-node/ &vin4;
+/delete-node/ &vin5;
+/delete-node/ &rcar_sound;
+/delete-node/ &audma0;
+/delete-node/ &sdhi1;
+/delete-node/ &vspb0;
+/delete-node/ &vspd0;
+/delete-node/ &vspd1;
+/delete-node/ &vspi0;
+/delete-node/ &fcpvb0;
+/delete-node/ &fcpvd0;
+/delete-node/ &fcpvd1;
+/delete-node/ &fcpvi0;
+/delete-node/ &csi40;
+/delete-node/ &du;
+/delete-node/ &lvds0;
+/delete-node/ &lvds1;
+/delete-node/ &hdmi_con_out;
+/delete-node/ &sound;
+/delete-node/ &tda19988;

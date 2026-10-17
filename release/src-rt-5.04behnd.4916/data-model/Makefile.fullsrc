@@ -166,34 +166,33 @@ all: $(DMFILE) $(DMFILE2) $(DMFILE2_DEVINFO) $(DMFILE2_DSL) \
      mdm_object.h \
      mdm_validstrings.h \
      mdm_params.h \
-     $(BUILD_DIR)/router-sysdep/mdm/Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_devinfo/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_dsl/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_gpon/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_epon/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_voice/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_diag/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_sysmgmt/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_openplat/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_tr69/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_usp/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/mdm2_wifi/Device2_Baseline_1.c \
-     $(BUILD_DIR)/router-sysdep/cms_core/mdm_oidInfoArray.c \
-     $(BUILD_DIR)/userspace/private/libs/mdm_cbk_core/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_devinfo/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_dsl/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_gpon/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_epon/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_voice/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_diag/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_openplat/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_tr69/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_usp/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/mdm_cbk_wifi/mdm2_oidInfoArray.c \
-     $(BUILD_DIR)/router-sysdep/cms_core/rcl.h \
-     $(BUILD_DIR)/router-sysdep/cms_core/stl.h  \
+     rclstl.h \
+     $(BCM_FSBUILD_DIR)/private/include/mdm/Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_devinfo/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_dsl/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_gpon/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_epon/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_voice/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_diag/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_sysmgmt/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_openplat/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_tr69/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_usp/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm2_wifi/Device2_Baseline_1.c \
+     $(BCM_FSBUILD_DIR)/private/include/cms_core/mdm_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_core/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_devinfo/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_dsl/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_gpon/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_epon/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_voice/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_diag/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_openplat/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_tr69/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_usp/mdm2_oidInfoArray.c \
+     $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_wifi/mdm2_oidInfoArray.c \
      $(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor_registerdm.c
 
 
@@ -236,44 +235,57 @@ $(DMFILE2_USP): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_USP_DIR) $(DM_FILES)
 $(DMFILE2_WIFI): $(GENERATE) $(PERL_MODULES) $(MERGE_DEV2_WIFI_DIR) $(DM_FILES)
 	$(GENERATE) merge2 $(BUILD_DIR) $(MERGE_DEV2_WIFI_DIR) $(DMFILE2_WIFI)
 
-$(BUILD_DIR)/router-sysdep/mdm/Baseline_1.c: $(DMFILE)
-	$(GENERATE) mdm $(BUILD_DIR) $(DMFILE) mdm
+$(BCM_FSBUILD_DIR)/private/include/mdm/Baseline_1.c: $(DMFILE)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm $(dir $@) $(DMFILE)
 
-$(BUILD_DIR)/router-sysdep/mdm2/Device2_Baseline_1.c: $(DMFILE2)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2) mdm2
+$(BCM_FSBUILD_DIR)/private/include/mdm2/Device2_Baseline_1.c: $(DMFILE2)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2)
 
-$(BUILD_DIR)/router-sysdep/mdm2_devinfo/Device2_Baseline_1.c: $(DMFILE2_DEVINFO)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_DEVINFO) mdm2_devinfo
+$(BCM_FSBUILD_DIR)/private/include/mdm2_devinfo/Device2_Baseline_1.c: $(DMFILE2_DEVINFO)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_DEVINFO)
 
-$(BUILD_DIR)/router-sysdep/mdm2_dsl/Device2_Baseline_1.c: $(DMFILE2_DSL)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_DSL) mdm2_dsl
+$(BCM_FSBUILD_DIR)/private/include/mdm2_dsl/Device2_Baseline_1.c: $(DMFILE2_DSL)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_DSL)
 
-$(BUILD_DIR)/router-sysdep/mdm2_gpon/Device2_Baseline_1.c: $(DMFILE2_GPON)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_GPON) mdm2_gpon
+$(BCM_FSBUILD_DIR)/private/include/mdm2_gpon/Device2_Baseline_1.c: $(DMFILE2_GPON)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_GPON)
 
-$(BUILD_DIR)/router-sysdep/mdm2_epon/Device2_Baseline_1.c: $(DMFILE2_EPON)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_EPON) mdm2_epon
+$(BCM_FSBUILD_DIR)/private/include/mdm2_epon/Device2_Baseline_1.c: $(DMFILE2_EPON)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_EPON)
 
-$(BUILD_DIR)/router-sysdep/mdm2_voice/Device2_Baseline_1.c: $(DMFILE2_VOICE)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_VOICE) mdm2_voice
+$(BCM_FSBUILD_DIR)/private/include/mdm2_voice/Device2_Baseline_1.c: $(DMFILE2_VOICE)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_VOICE)
 
-$(BUILD_DIR)/router-sysdep/mdm2_diag/Device2_Baseline_1.c: $(DMFILE2_DIAG)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_DIAG) mdm2_diag
+$(BCM_FSBUILD_DIR)/private/include/mdm2_diag/Device2_Baseline_1.c: $(DMFILE2_DIAG)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_DIAG)
 
-$(BUILD_DIR)/router-sysdep/mdm2_sysmgmt/Device2_Baseline_1.c: $(DMFILE2_SYSMGMT)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_SYSMGMT) mdm2_sysmgmt
+$(BCM_FSBUILD_DIR)/private/include/mdm2_sysmgmt/Device2_Baseline_1.c: $(DMFILE2_SYSMGMT)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_SYSMGMT)
 
-$(BUILD_DIR)/router-sysdep/mdm2_openplat/Device2_Baseline_1.c: $(DMFILE2_OPENPLAT)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_OPENPLAT) mdm2_openplat
+$(BCM_FSBUILD_DIR)/private/include/mdm2_openplat/Device2_Baseline_1.c: $(DMFILE2_OPENPLAT)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_OPENPLAT)
 
-$(BUILD_DIR)/router-sysdep/mdm2_tr69/Device2_Baseline_1.c: $(DMFILE2_TR69)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_TR69) mdm2_tr69
+$(BCM_FSBUILD_DIR)/private/include/mdm2_tr69/Device2_Baseline_1.c: $(DMFILE2_TR69)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_TR69)
 
-$(BUILD_DIR)/router-sysdep/mdm2_usp/Device2_Baseline_1.c: $(DMFILE2_USP)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_USP) mdm2_usp
+$(BCM_FSBUILD_DIR)/private/include/mdm2_usp/Device2_Baseline_1.c: $(DMFILE2_USP)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_USP)
 
-$(BUILD_DIR)/router-sysdep/mdm2_wifi/Device2_Baseline_1.c: $(DMFILE2_WIFI)
-	$(GENERATE) mdm2 $(BUILD_DIR) $(DMFILE2_WIFI) mdm2_wifi
+$(BCM_FSBUILD_DIR)/private/include/mdm2_wifi/Device2_Baseline_1.c: $(DMFILE2_WIFI)
+	mkdir -p $(dir $@)
+	$(GENERATE) mdm2 $(dir $@) $(DMFILE2_WIFI)
 
 mdm_params.h: $(DMFILE) $(DMFILE2)
 	$(GENERATE) mdmparams $(BUILD_DIR) $(DMFILE) $(DMFILE2)
@@ -295,47 +307,63 @@ mdm_validstrings.h: $(DMFILE) $(DMFILE2)
 	mkdir -p $(BCM_FSBUILD_DIR)/public/include
 	$(INSTALL_HEADERS_WITH_CP) $@ $(BCM_FSBUILD_DIR)/public/include
 
-$(BUILD_DIR)/router-sysdep/cms_core/rcl.h $(BUILD_DIR)/router-sysdep/cms_core/stl.h: $(DMFILE) $(DMFILE2)
-	$(GENERATE) prototypes $(BUILD_DIR) $(DMFILE) $(DMFILE2)
+rclstl.h: $(DMFILE) $(DMFILE2)
+	$(GENERATE) prototypes $(DMFILE) $(DMFILE2)
+	mkdir -p $(BCM_FSBUILD_DIR)/private/include/cms_core
+	$(INSTALL_HEADERS_WITH_CP) rcl.h $(BCM_FSBUILD_DIR)/private/include/cms_core
+	$(INSTALL_HEADERS_WITH_CP) stl.h $(BCM_FSBUILD_DIR)/private/include/cms_core
 
-$(BUILD_DIR)/router-sysdep/cms_core/mdm_oidInfoArray.c: $(DMFILE)
-	$(GENERATE) oidinfo $(BUILD_DIR) $(DMFILE) cms_core
-	
-$(BUILD_DIR)/userspace/private/libs/mdm_cbk_core/mdm2_oidInfoArray.c: $(DMFILE2)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2) mdm_cbk_core
+$(BCM_FSBUILD_DIR)/private/include/cms_core/mdm_oidInfoArray.c: $(DMFILE)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo $(dir $@) $(DMFILE)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_devinfo/mdm2_oidInfoArray.c: $(DMFILE2_DEVINFO)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_DEVINFO) mdm_cbk_devinfo
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_core/mdm2_oidInfoArray.c: $(DMFILE2)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_dsl/mdm2_oidInfoArray.c: $(DMFILE2_DSL)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_DSL) mdm_cbk_dsl
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_devinfo/mdm2_oidInfoArray.c: $(DMFILE2_DEVINFO)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_DEVINFO)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_gpon/mdm2_oidInfoArray.c: $(DMFILE2_GPON)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_GPON) mdm_cbk_gpon
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_dsl/mdm2_oidInfoArray.c: $(DMFILE2_DSL)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_DSL)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_epon/mdm2_oidInfoArray.c: $(DMFILE2_EPON)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_EPON) mdm_cbk_epon
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_gpon/mdm2_oidInfoArray.c: $(DMFILE2_GPON)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_GPON)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_voice/mdm2_oidInfoArray.c: $(DMFILE2_VOICE)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_VOICE) mdm_cbk_voice
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_epon/mdm2_oidInfoArray.c: $(DMFILE2_EPON)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_EPON)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_diag/mdm2_oidInfoArray.c: $(DMFILE2_DIAG)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_DIAG) mdm_cbk_diag
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_voice/mdm2_oidInfoArray.c: $(DMFILE2_VOICE)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_VOICE)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c: $(DMFILE2_SYSMGMT)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_SYSMGMT) mdm_cbk_sysmgmt
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_diag/mdm2_oidInfoArray.c: $(DMFILE2_DIAG)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_DIAG)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_openplat/mdm2_oidInfoArray.c: $(DMFILE2_OPENPLAT)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_OPENPLAT) mdm_cbk_openplat
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c: $(DMFILE2_SYSMGMT)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_SYSMGMT)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_tr69/mdm2_oidInfoArray.c: $(DMFILE2_TR69)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_TR69) mdm_cbk_tr69
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_openplat/mdm2_oidInfoArray.c: $(DMFILE2_OPENPLAT)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_OPENPLAT)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_usp/mdm2_oidInfoArray.c: $(DMFILE2_USP)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_USP) mdm_cbk_usp
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_tr69/mdm2_oidInfoArray.c: $(DMFILE2_TR69)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_TR69)
 
-$(BUILD_DIR)/router-sysdep/mdm_cbk_wifi/mdm2_oidInfoArray.c: $(DMFILE2_WIFI)
-	$(GENERATE) oidinfo2 $(BUILD_DIR) $(DMFILE2_WIFI) mdm_cbk_wifi
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_usp/mdm2_oidInfoArray.c: $(DMFILE2_USP)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_USP)
+
+$(BCM_FSBUILD_DIR)/private/include/mdm_cbk_wifi/mdm2_oidInfoArray.c: $(DMFILE2_WIFI)
+	mkdir -p $(dir $@)
+	$(GENERATE) oidinfo2 $(dir $@) $(DMFILE2_WIFI)
 
 $(BUILD_DIR)/router-sysdep/obuspa/obuspa/src/vendor/vendor_registerdm.c: $(DMFILE2_DEVINFO) $(DMFILE2_DSL) \
 	$(DMFILE2_GPON) $(DMFILE2_EPON) $(DMFILE2_VOICE) $(DMFILE2_SYSMGMT) $(DMFILE2_DIAG) $(DMFILE2_OPENPLAT) \
@@ -435,34 +463,35 @@ clean: clean_bbf_files clean_customer_files
 	rm -f $(BCM_FSBUILD_DIR)/public/include/mdm_object.h
 	rm -f $(BCM_FSBUILD_DIR)/public/include/mdm_params.h
 	rm -f $(BCM_FSBUILD_DIR)/public/include/mdm_validstrings.h
-	rm -f $(BUILD_DIR)/router-sysdep/cms_core/mdm_oidInfoArray.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm_cbk_core/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_devinfo/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_dsl/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_gpon/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_epon/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_voice/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_diag/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_openplat/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_tr69/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_usp/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm_cbk_wifi/mdm2_oidInfoArray.c
-	rm -f $(BUILD_DIR)/router-sysdep/cms_core/rcl.h
-	rm -f $(BUILD_DIR)/router-sysdep/cms_core/stl.h
-	rm -f $(BUILD_DIR)/router-sysdep/mdm/*.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm2/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_devinfo/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_dsl/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_gpon/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_epon/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_voice/*.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm2_diag/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_sysmgmt/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_openplat/*.c
-	rm -f $(BUILD_DIR)/router-sysdep/mdm2_tr69/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_usp/*.c
-	rm -f $(BUILD_DIR)/userspace/private/libs/mdm2_wifi/*.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/cms_core/mdm_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_core/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_devinfo/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_dsl/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_gpon/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_epon/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_voice/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_diag/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_sysmgmt/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_openplat/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_tr69/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_usp/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/mdm_cbk_wifi/mdm2_oidInfoArray.c
+	rm -f $(BCM_FSBUILD_DIR)/private/include/cms_core/rcl.h
+	rm -f $(BCM_FSBUILD_DIR)/private/include/cms_core/stl.h
+	rm -f rcl.h stl.h
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_devinfo
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_dsl
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_gpon
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_epon
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_voice
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_diag
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_sysmgmt
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_openplat
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_tr69
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_usp
+	rm -rf $(BCM_FSBUILD_DIR)/private/libs/mdm2_wifi
 	# obuspa application needs to be cleaned here because its Makefle was
 	# generated with autogenerated vendor.am, and clean rule of this application
 	# needs to be executed before the autogenerated sources are being deleted here

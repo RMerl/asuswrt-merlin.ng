@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  Main sandbox devicetree
+ */
+
+/dts-v1/;
+
+#include <config.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	model = "sandbox";
+	compatible = "sandbox";
+
+	aliases {
+		i2c0 = &i2c_0;
+		pci0 = &pcic;
+		rtc0 = &rtc_0;
+		axi0 = &axi;
+		spi0 = &spi;
+	};
+
+	binman: binman {
+	};
+
+	memory {
+		reg = <0 CFG_SYS_SDRAM_SIZE>;
+	};
+
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		reservation_test0 {
+			size = <0x4000>;
+			alignment = <0x2000>;
+		};
+
+		reservation_test1: restest@a000 {
+			reg = <0x00d0a000 0x2000>;
+		};
+
+		reservation_test2: restest@7000 {
+			reg = <0x00d07000 0x1000>;
+		};
+	};
+
+	cros_ec: cros-ec {
+		reg = <0 0>;
+		bootph-some-ram;
+		compatible = "google,cros-ec-sandbox";
+	};
+
+	dsi_host: dsi_host {
+		compatible = "sandbox,dsi-host";
+		status = "okay";
+	};
+
+	ethrawbus {
+		compatible = "sandbox,eth-raw-bus";
+		skip-localhost = <0>;
+	};
+
+	eth@10002000 {
+		compatible = "sandbox,eth";
+		reg = <0x10002000 0x1000>;
+	};
+
+	i2c_0: i2c@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0 0>;
+		compatible = "sandbox,i2c";
+		clock-frequency = <400000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c0>;
+		bootph-pre-ram;
+	};
+
+	pcic: pci@0 {
+		compatible = "sandbox,pci";
+		device_type = "pci";
+		bus-range = <0x00 0xff>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		ranges = <0x02000000 0 0x10000000 0x10000000 0 0x2000
+				0x01000000 0 0x20000000 0x20000000 0 0x2000>;
+	};
+
+	spi: spi@0 {
+		bootph-some-ram;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0 0>;
+		compatible = "sandbox,spi";
+		cs-gpios = <0>, <&gpio_a 0>;
+	};
+};
+
+#include "sandbox.dtsi"
+#include "cros-ec-keyboard.dtsi"
+#include "sandbox_pmic.dtsi"
+
+#if IS_ENABLED(CONFIG_SUPPORT_VPL)
+#include "sandbox_vpl.dtsi"
+#endif

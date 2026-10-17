@@ -1,0 +1,9 @@
+ROCK5A-RK3588
+M:	Eugen Hristev <eugen.hristev@collabora.com>
+R:	Jonas Karlman <jonas@kwiboo.se>
+S:	Maintained
+F:	board/radxa/rock5a-rk3588s
+F:	include/configs/rock5a-rk3588s.h
+F:	configs/rock5a-rk3588s_defconfig
+F:	arch/arm/dts/rk3588s-rock-5a.dts
+F:	arch/arm/dts/rk3588s-rock-5a-u-boot.dtsi

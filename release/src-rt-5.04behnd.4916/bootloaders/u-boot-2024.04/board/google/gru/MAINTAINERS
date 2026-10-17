@@ -1,0 +1,14 @@
+CHROMEBOOK BOB BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/gru/
+F:	include/configs/gru.h
+F:	configs/chromebook_bob_defconfig
+
+CHROMEBOOK KEVIN BOARD
+M:	Simon Glass <sjg@chromium.org>
+M:	Alper Nebi Yasak <alpernebiyasak@gmail.com>
+S:	Maintained
+F:	board/google/gru/
+F:	include/configs/gru.h
+F:	configs/chromebook_kevin_defconfig

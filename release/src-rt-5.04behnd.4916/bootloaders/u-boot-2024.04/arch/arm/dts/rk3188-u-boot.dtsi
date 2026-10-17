@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Jagan Teki <jagan@amarulasolutions.com>
+ */
+
+#include "rockchip-u-boot.dtsi"
+#include "rk3xxx-u-boot.dtsi"
+
+&global_timer {
+	status = "okay";
+};
+
+&gpio0 {
+	compatible = "rockchip,gpio-bank";
+	gpio-ranges = <&pinctrl 0 0 32>;
+};
+
+&gpio1 {
+	gpio-ranges = <&pinctrl 0 32 32>;
+};
+
+&gpio2 {
+	gpio-ranges = <&pinctrl 0 64 32>;
+};
+
+&gpio3 {
+	gpio-ranges = <&pinctrl 0 96 32>;
+};
+
+&pmu {
+	compatible = "rockchip,rk3188-pmu", "syscon", "simple-mfd";
+};
+

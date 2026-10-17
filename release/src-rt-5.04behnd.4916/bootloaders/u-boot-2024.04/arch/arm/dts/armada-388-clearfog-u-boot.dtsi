@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+&spi1 {
+	bootph-pre-ram;
+
+	spi-flash@0 {
+		bootph-pre-ram;
+	};
+};
+
+&sdhci {
+	bootph-pre-ram;
+	non-removable; /* assume that the card is always present, required for eMMC variant */
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&ahci0 {
+	bootph-pre-ram;
+};
+
+&ahci1 {
+	bootph-pre-ram;
+};
+
+&i2c0 {
+	bootph-pre-ram;
+
+	eeprom@52 {
+		bootph-pre-ram;
+	};
+
+	eeprom@53 {
+		bootph-pre-ram;
+	};
+};
+
+#include "mvebu-u-boot.dtsi"

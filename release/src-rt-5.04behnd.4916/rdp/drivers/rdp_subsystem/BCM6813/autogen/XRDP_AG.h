@@ -30,7 +30,7 @@
 #ifndef _XRDP_AG_H_
 #define _XRDP_AG_H_
 
-#include "ru_types.h"
+#include "ru.h"
 
 /******************************************************************************
  * XRDP_ Fields

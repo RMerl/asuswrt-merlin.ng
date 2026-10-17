@@ -1,0 +1,28 @@
+I2C controller embedded in Nexell's/Samsung's SoC S5P4418 and S5P6818
+
+Driver:
+- drivers/i2c/nx_i2c.c
+
+Required properties:
+- #address-cells = <1>;
+- #size-cells = <0>;
+- compatible = "nexell,s5pxx18-i2c";
+- reg = <i2c_base 0x100>;
+        Where i2c_base has to be the base address of the i2c-register set.
+        I2C0: 0xc00a4000
+        I2C1: 0xc00a5000
+        I2C2: 0xc00a6000
+
+Optional properties:
+- clock-frequency: Desired I2C bus frequency in Hz, default value is 100000.
+- i2c-sda-delay-ns (S5P6818 only): SDA delay in ns, default value is 0.
+- Child nodes conforming to i2c bus binding.
+
+Example:
+	i2c0:i2c@c00a4000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,s5pxx18-i2c";
+		reg = <0xc00a4000 0x100>;
+		clock-frequency = <400000>;
+	};

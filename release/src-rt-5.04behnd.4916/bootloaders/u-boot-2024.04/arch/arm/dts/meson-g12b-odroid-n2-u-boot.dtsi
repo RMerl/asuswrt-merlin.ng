@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2019 BayLibre, SAS.
+ * Author: Neil Armstrong <narmstrong@baylibre.com>
+ */
+
+#include "meson-g12-common-u-boot.dtsi"
+
+/* SARADC is needed for proper board variant detection */
+&saradc {
+	status = "okay";
+	vref-supply = <&vddao_1v8>;
+};

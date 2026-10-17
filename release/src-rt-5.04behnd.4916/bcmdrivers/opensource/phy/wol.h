@@ -45,4 +45,5 @@ typedef struct {
     int repetitions;
 } wol_params_t;
 
+void wol_enable(char *dev_name, wol_params_t *wol_params);
 #endif

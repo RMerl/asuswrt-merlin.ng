@@ -1,0 +1,44 @@
+if TARGET_ANDES_AE350
+
+config SYS_CPU
+	default "andesv5"
+
+config SYS_BOARD
+	default "ae350"
+
+config SYS_VENDOR
+	default "AndesTech"
+
+config SYS_SOC
+	default "ae350"
+
+config SYS_CONFIG_NAME
+	default "ae350"
+
+config ENV_SIZE
+	default 0x2000 if ENV_IS_IN_SPI_FLASH
+
+config ENV_OFFSET
+	default 0x140000 if ENV_IS_IN_SPI_FLASH
+
+config SPL_TEXT_BASE
+	default 0x800000
+
+config SPL_OPENSBI_LOAD_ADDR
+	default 0x00000000
+
+config SYS_FDT_BASE
+	hex
+	default 0x800f0000 if OF_SEPARATE
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select RISCV_NDS
+	select SUPPORT_SPL
+	select BINMAN if SPL
+	imply SMP
+	imply SPL_RAM_SUPPORT
+	imply SPL_RAM_DEVICE
+	imply OF_HAS_PRIOR_STAGE
+
+endif

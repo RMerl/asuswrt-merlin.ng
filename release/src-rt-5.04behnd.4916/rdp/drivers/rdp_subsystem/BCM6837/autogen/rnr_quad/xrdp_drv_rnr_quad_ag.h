@@ -85,6 +85,7 @@ typedef struct
     bdmf_boolean hop_by_hop_match;
     bdmf_boolean routing_eh;
     bdmf_boolean dest_opt_eh;
+    bdmf_boolean ah_match;
 } rnr_quad_parser_ipv6_filter;
 
 typedef struct
@@ -607,6 +608,8 @@ bdmf_error_t ag_drv_rnr_quad_parser_snap_conf_get(uint8_t quad_idx, rnr_quad_par
  * routing_eh: 
  *     Routing extension header option match filter mask
  * dest_opt_eh: 
+ *     Destination Options extension header option match filter mask
+ * ah_match: 
  *     Destination Options extension header option match filter mask
  **********************************************************************************************************************/
 bdmf_error_t ag_drv_rnr_quad_parser_ipv6_filter_set(uint8_t quad_idx, const rnr_quad_parser_ipv6_filter *parser_ipv6_filter);

@@ -1,0 +1,12 @@
+if TARGET_DRAGONBOARD845C
+
+config SYS_BOARD
+	default "dragonboard845c"
+
+config SYS_CONFIG_NAME
+	default "dragonboard845c"
+
+config SYS_VENDOR
+	default "qualcomm"
+
+endif

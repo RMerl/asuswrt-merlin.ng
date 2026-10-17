@@ -1,0 +1,132 @@
+.. SPDX-License-Identifier: GPL-2.0+
+
+System configuration
+====================
+
+There are a number of different aspects to configuring U-Boot to build and then
+run on a given platform or set of platforms. Broadly speaking, some aspects of
+the world can be configured at run time and others must be done at build time.
+In general run time configuration is preferred over build time configuration.
+But when making these decisions, we also need to consider if we're talking about
+a feature that could be useful to virtually every platform or something specific
+to a single hardware platform. The resulting image size is also another
+important consideration. Finally, run time configuration has additional overhead
+both in terms of resource requirements and wall clock time. All of this means
+that care must be taken when writing new code to select the most appropriate
+configuration mechanism.
+
+When adding new features to U-Boot, be they a new subsystem or SoC support or
+new platform for an existing supported SoC, the preferred configuration order
+is:
+
+#. Hardware based run time configuration. Examples of this include reading
+   processor specific registers, or a set of board specific GPIOs or an EEPROM
+   with a known format to it. These are the cases where we either cannot or
+   should not be relying on device tree checks. We use this for cases such as
+   optimized boot time or starting with a generic device tree and then enabling
+   or disabling features as we boot.
+
+#. Making use of our Kconfig infrastructure and C preprocessor macros that have
+   the prefix ``CONFIG``. This is the primary method of build time
+   configuration. This is generally the best fit for when we want to enable or
+   disable some sort of feature, such as the SoC or network support. The
+   ``CONFIG`` prefix for C preprocessor macros is strictly reserved for Kconfig
+   usage only.
+
+#. Making use of the :doc:`device tree <devicetree/control>` to determine at
+   run time how to configure a feature that we have enabled via Kconfig. For
+   example, we would use Kconfig to enable an I2C chip driver, but use the device
+   tree to know where the I2C chip resides in memory and other details we need
+   in order to configure the bus.
+
+#. Making use of C header files directly and defining C preprocessor macros that
+   have the ``CFG`` prefix. While the ``CFG`` prefix is reserved for this build
+   time configuration mechanism, the usage is ad hoc. This is to be used when the
+   previously mentioned mechanisms are not possible, or for legacy code that has
+   not been converted.
+
+Dynamic run time configuration methods.
+---------------------------------------
+
+Details of hardware specific run time configuration methods are found within the
+documentation for a given processor family or board.
+
+Details of how to use run time configuration based on :doc:`driver model
+<driver-model/index>` are covered in that documentation section.
+
+Static build time configuration methods
+---------------------------------------
+
+There are two mechanisms used to control the build time configuration of U-Boot.
+One is utilizing Kconfig and ``CONFIG`` prefixed macros and the other is ad hoc
+usage of ``CFG`` prefixed macros. Both of these are used when it is either not
+possible or not practical to make a run time determination about some
+functionality of the hardware or a required software feature or similar. Each of
+these has their own places where they are better suited than the other for use.
+
+The `Kconfig language
+<https://www.kernel.org/doc/html/latest/kbuild/kconfig-language.html>`_ is well
+documented and used in a number of projects, including the Linux kernel. We
+implement this with the Kconfig files found throughout our sources. This
+mechanism is the preferred way of exposing new configuration options as there
+are a number of ways for both users and system integrators to manage and change
+these options. Some common examples here are to enable a specific command within
+U-Boot or even a whole subsystem such as NAND flash or network connectivity.
+
+The ``CFG`` mechanism is implemented directly as C preprocessor values or
+macros, depending on what they are in turn describing. While we have some
+functionality that is very reasonable to expose to the end user to enable or
+disable we have other places where we need to describe things such as register
+locations or values, memory map ranges and so on. When practical, we should be
+getting these values from the device tree. However, there are cases where this
+is either not practical due to when we need the information and may not have a
+device tree yet or due to legacy reasons code has not been rewritten.
+
+When to use each mechanism
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+While there are some cases where it should be fairly obvious where to use each
+mechanism, as for example a command would be done via Kconfig, a new I2C driver
+should use Kconfig and be configured via driver model and a header of values
+generated by an external tool should be ``CFG``, there will be cases where it's
+less clear and one needs to take care when implementing it. In general,
+configuration *options* should be done in Kconfig and configuration *settings*
+should be done in driver model or ``CFG``. Let us discuss things to keep in mind
+when picking the appropriate mechanism.
+
+A thing to keep in mind is that we have a strong preference for using Kconfig as
+the primary build time configuration mechanism. Options expressed this way let
+us easily express dependencies and abstractions. In addition, given that many
+projects use this mechanism means it has a broad set of tooling and existing
+knowledge base.
+
+Consider the example of a SHA256 hardware acceleration engine. This would be a
+feature of the SoC and so something to not ask the user if it exists, but we
+would want to have our generic framework for such engines be optionally
+available and depend on knowing we have this engine on a given hardware
+platform. Expressing this should be done as a hidden Kconfig symbol that is
+``select``'ed by the SoC symbol which would in turn be ``select``'ed by the
+board option, which is user visible. Hardware features that are either present
+or not present should be expressed in Kconfig and in a similar manner, features
+which will always have a constant value such as "this SoC always has 4 cores and
+4 threads per core" should be as well.
+
+This brings us to differentiating between a configuration *setting* versus a
+hardware feature. To build on the previous example, while we may know the number
+of cores and threads, it's possible that within a given family of SoCs the base
+addresses of peripherals has changed, but the register offsets within have not.
+The preference in this case is to get our information from the device tree and
+perform run time configuration. However, this is not always practical and in
+those cases we instead rely on the ``CFG`` mechanism. While it would be possible
+to use Kconfig in this case, it would result in using calculated rather than
+constructed values, resulting in less clear code. Consider the example of a set
+of register values for a memory controller. Defining this as a series of logical
+ORs and shifts based on other defines is more clear than the Kconfig entry that
+sets the calculated value alone.
+
+When it has been determined that the practical solution is to utilize the
+``CFG`` mechanism, the next decision is where to place these settings. It is
+strongly encouraged to place these in the architecture header files, if they are
+generic to a given SoC, or under the board directory if board specific. Placing
+them under the board.h file in the *include/configs/* directory should be seen
+as a last resort.

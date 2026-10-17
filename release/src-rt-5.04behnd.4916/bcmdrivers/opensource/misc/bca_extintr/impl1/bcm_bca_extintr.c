@@ -509,7 +509,7 @@ void bcm_bca_extintr_clear(unsigned int irq)
             data = readl(reg + EXT_IRQ_CTRL_REG);
             writel(data | (0xff << EI_CLEAR_SHFT), reg + EXT_IRQ_CTRL_REG);
             writel(1 << ext, reg + EXT_IRQ_CLEAR_REG);
-        } while ((readl(reg + EXT_IRQ_STATUS_REG) & (1 << ext)) && EI_STATUS_MASK);
+        } while (((readl(reg + EXT_IRQ_STATUS_REG) & (1 << ext)) & EI_STATUS_MASK));
     }
     else
     {

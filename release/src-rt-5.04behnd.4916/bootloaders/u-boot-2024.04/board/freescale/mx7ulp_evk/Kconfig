@@ -1,0 +1,15 @@
+if TARGET_MX7ULP_EVK
+
+config SYS_BOARD
+	default "mx7ulp_evk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "mx7ulp_evk"
+
+config IMX_CONFIG
+	default "board/freescale/mx7ulp_evk/imximage.cfg"
+
+endif

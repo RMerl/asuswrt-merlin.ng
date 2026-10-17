@@ -1,0 +1,15 @@
+if TARGET_LS1021ATWR
+
+config SYS_BOARD
+	default "ls1021atwr"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "ls102xa"
+
+config SYS_CONFIG_NAME
+	default "ls1021atwr"
+
+endif

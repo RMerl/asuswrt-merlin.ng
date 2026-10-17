@@ -30,7 +30,6 @@ written consent.
 #ifndef PMC_SHUTDOWN_H
 #define PMC_SHUTDOWN_H
 
-#if defined(CONFIG_BRCM_SMC_BOOT)
 typedef enum {
     WAKE_NONE,
     WAKE_XPORT,
@@ -40,11 +39,12 @@ typedef enum {
     WAKE_LAST, //Must be last
 } wake_type_t;
 
+#if defined(CONFIG_BRCM_SMC_BOOT)
 int pmc_deep_sleep(void);
 int pmc_setup_wake_trig(wake_type_t wake_type, int param);
 #else
 #define pmc_deep_sleep() (0)
-#define pmc_setup_wake_trig(x) (0)
+#define pmc_setup_wake_trig(x,y) (0)
 #endif
 
 

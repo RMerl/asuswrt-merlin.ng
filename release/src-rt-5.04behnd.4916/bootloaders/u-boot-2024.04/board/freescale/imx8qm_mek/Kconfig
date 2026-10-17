@@ -1,0 +1,15 @@
+if TARGET_IMX8QM_MEK
+
+config SYS_BOARD
+	default "imx8qm_mek"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "imx8qm_mek"
+
+config IMX_CONFIG
+	default "board/freescale/imx8qm_mek/imximage.cfg"
+
+endif

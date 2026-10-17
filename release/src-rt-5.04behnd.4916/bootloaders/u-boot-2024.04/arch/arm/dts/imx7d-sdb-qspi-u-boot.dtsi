@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+#include "imx7s-u-boot.dtsi"
+
+&qspi {
+	flash0: mx25l51245g@0 {
+		compatible = "jedec,spi-nor";
+	};
+};

@@ -1,0 +1,55 @@
+LX2160ARDB BOARD
+M:	Meenakshi Aggarwal <meenakshi.aggarwal@nxp.com>
+M:	Priyanka Jain <priyanka.jain@nxp.com>
+M:	Wasim Khan <wasim.khan@nxp.com>
+S:	Maintained
+F:	board/freescale/lx2160a/
+F:	include/configs/lx2160a_common.h
+F:	include/configs/lx2160ardb.h
+F:	configs/lx2160ardb_tfa_defconfig
+F:	configs/lx2160ardb_tfa_stmm_defconfig
+F:	arch/arm/dts/fsl-lx2160a-rdb.dts
+
+LX2160ARDB_SECURE_BOOT BOARD
+M:	Udit Agarwal <udit.agarwal@nxp.com>
+S:	Maintained
+F:	configs/lx2160ardb_tfa_SECURE_BOOT_defconfig
+
+LX2160AQDS BOARD
+M:	Meenakshi Aggarwal <meenakshi.aggarwal@nxp.com>
+M:	Wasim Khan <wasim.khan@nxp.com>
+S:	Maintained
+F:	board/freescale/lx2160a/eth_lx2160aqds.h
+F:	include/configs/lx2160aqds.h
+F:	configs/lx2160aqds_tfa_defconfig
+F:	arch/arm/dts/fsl-lx2160a-qds.dts
+
+LX2160AQDS_SECURE_BOOT BOARD
+M:	Udit Agarwal <udit.agarwal@nxp.com>
+S:	Maintained
+F:	configs/lx2160aqds_tfa_SECURE_BOOT_defconfig
+
+LX2162AQDS BOARD
+M:	Meenakshi Aggarwal <meenakshi.aggarwal@nxp.com>
+M:	Wasim Khan <wasim.khan@nxp.com>
+S:	Maintained
+F:	board/freescale/lx2160a/eth_lx2162aqds.h
+F:	include/configs/lx2162aqds.h
+F:	configs/lx2162aqds_tfa_defconfig
+F:	arch/arm/dts/fsl-lx2162a-qds.dts
+F:	arch/arm/dts/fsl-lx2162a-qds-17-x.dts
+F:	arch/arm/dts/fsl-lx2162a-qds-18-x.dts
+F:	arch/arm/dts/fsl-lx2162a-qds-20-x.dts
+F:	arch/arm/dts/fsl-lx2162a-qds-sd1-17.dtsi
+F:	arch/arm/dts/fsl-lx2162a-qds-sd1-18.dtsi
+F:	arch/arm/dts/fsl-lx2162a-qds-sd1-20.dtsi
+
+LX2162AQDS_SECURE_BOOT BOARD
+M:	Manish Tomar <Manish.Tomar@nxp.com>
+S:	Maintained
+F:	configs/lx2162aqds_tfa_SECURE_BOOT_defconfig
+
+LX2162AQDS_VERIFIED_BOOT BOARD
+M:	Manish Tomar <Manish.Tomar@nxp.com>
+S:	Maintained
+F:	configs/lx2162aqds_tfa_verified_boot_defconfig

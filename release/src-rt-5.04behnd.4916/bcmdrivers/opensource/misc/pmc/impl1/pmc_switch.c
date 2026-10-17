@@ -39,22 +39,10 @@ written consent.
 int pmc_switch_enable_rgmii_zone_clk(int z1_clk_enable, int z2_clk_enable)
 {
 	int ret = 0;
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158)
 #if defined(CONFIG_BCM963158)
 	BPCM_GLOBAL_CNTL_1 global_cntl_1;
 	BPCM_GLOBAL_CNTL_2 global_cntl_2;
-#else
-	BPCM_GLOBAL_CNTL global_cntl;
-#endif	
-#if defined(CONFIG_BCM963148)
-	BPCM_SGPHY_CNTL sgphy_cntl;
 
-	sgphy_cntl.Reg32 = 0x33;
-	ret = WriteBPCMRegister(PMB_ADDR_SWITCH,
-			BPCMRegOffset(sgphy_cntl), sgphy_cntl.Reg32);
-#endif
-
-#if defined(CONFIG_BCM963158)
 	ret = ReadBPCMRegister(PMB_ADDR_SWITCH,
 			BPCMRegOffset(global_control_1), &global_cntl_1.Reg32);
 	ret = ReadBPCMRegister(PMB_ADDR_SWITCH,
@@ -80,26 +68,6 @@ int pmc_switch_enable_rgmii_zone_clk(int z1_clk_enable, int z2_clk_enable)
 		BPCMRegOffset(global_control_1), global_cntl_1.Reg32);
 	ret = WriteBPCMRegister(PMB_ADDR_SWITCH,
 		BPCMRegOffset(global_control_2), global_cntl_2.Reg32);
-
-#else
-	ret = ReadBPCMRegister(PMB_ADDR_SWITCH,
-			BPCMRegOffset(global_control), &global_cntl.Reg32);
-
-
-	global_cntl.Bits.z1_ck250_clk_en = 0;
-	global_cntl.Bits.z2_ck250_clk_en = 0;
-	ret = WriteBPCMRegister(PMB_ADDR_SWITCH,
-			BPCMRegOffset(global_control), global_cntl.Reg32);
-
-	ret = ReadBPCMRegister(PMB_ADDR_SWITCH,
-			BPCMRegOffset(global_control), &global_cntl.Reg32);
-   	if( z1_clk_enable )
-		global_cntl.Bits.z1_ck250_clk_en = 1;
-	if( z2_clk_enable )
-		global_cntl.Bits.z2_ck250_clk_en = 1;
-	ret = WriteBPCMRegister(PMB_ADDR_SWITCH,
-		BPCMRegOffset(global_control), global_cntl.Reg32);
-#endif
 
 	printk("%s: Rgmii Tx clock zone1 enable %d zone2 enable %d. \n", __FUNCTION__, z1_clk_enable, z2_clk_enable);
 #endif

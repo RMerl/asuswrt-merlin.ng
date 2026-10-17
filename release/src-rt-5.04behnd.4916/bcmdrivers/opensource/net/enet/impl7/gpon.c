@@ -42,6 +42,10 @@
 #include "enet_defs.h"
 #include <net/genetlink.h>
 
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+#include "runner_egress_tc.h"
+#endif
+
 extern rdpa_system_init_cfg_t init_cfg;
 static int gpon_shutdown_done = 0;
 static uint32_t gpc_pid = 0; /* gponpwrctl pid */
@@ -289,6 +293,14 @@ static int port_runner_gpon_init(enetx_port_t *self)
     self->p.port_cap = PORT_CAP_WAN_ONLY;
     self->n.port_netdev_role = PORT_NETDEV_ROLE_WAN;
 
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+    hash_init(self->nodes_hash_table);
+    self->tc_setup_egress_tm = runner_pon_tc_config_egress_tm;
+    self->tc_remove_egress_tm = runner_tc_remove_egress_tm;
+    self->tc_ets_update_stat = port_runner_pon_update_queues_stat;
+    self->tc_get_egress_tm_caps = runner_tc_get_caps;
+#endif
+
     blog_chnl_with_mark_set(BLOG_GPONPHY, self); /* blog_chnl will be set to/from gem */
 
     if (!self->p.mac || self->p.mac->mac_drv->mac_type != MAC_TYPE_xGPON)
@@ -338,7 +350,7 @@ static int port_runner_gpon_init(enetx_port_t *self)
         rdpa_port_dp_cfg_t port_cfg;
 
         rdpa_port_cfg_get(*(bdmf_object_handle *)&self->priv, &port_cfg);
-        /* XRDP: For WAN port, SAL and DAL should be disabled by default */
+        /* For WAN port, SAL and DAL should be disabled by default */
         port_cfg.sal_enable = 0;
         port_cfg.dal_enable = 0;
         rdpa_port_cfg_set(*(bdmf_object_handle *)&self->priv, &port_cfg);
@@ -437,7 +449,7 @@ nlmsg_fail:
     return -1;
 }
 
-#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+#if defined(CONFIG_BCM_FTTDP_G9991)
 extern void __dispatch_pkt_skb_check_bcast_mcast(dispatch_info_t *dispatch_info);
 #endif
 static int dispatch_pkt_gpon(dispatch_info_t *dispatch_info)
@@ -455,11 +467,12 @@ static int dispatch_pkt_gpon(dispatch_info_t *dispatch_info)
 
     if (dispatch_info->channel == 0)
     {
+        /* Do not send Ethernet frames to the OMCI GEM port. */
         nbuff_flushfree(dispatch_info->pNBuff);
         return 0;
     }
 
-#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+#if defined(CONFIG_BCM_FTTDP_G9991)
     if (IS_SKBUFF_PTR(dispatch_info->pNBuff))
         __dispatch_pkt_skb_check_bcast_mcast(dispatch_info);
 #endif

@@ -1,0 +1,18 @@
+if TARGET_MX51EVK
+
+config SYS_BOARD
+	default "mx51evk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "mx51evk"
+
+config IMX_CONFIG
+	default "board/freescale/mx51evk/imximage.cfg"
+
+endif

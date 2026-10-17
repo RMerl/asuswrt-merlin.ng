@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019
+ * Lukasz Majewski, DENX Software Engineering, lukma@denx.de
+ *
+ * SPDX-License-Identifier:     GPL-2.0+ or X11
+ */
+
+/*
+ * The minimal augmentation DTS U-Boot file to allow UART5
+ * configuration in the pre-relocation stage of U-Boot
+ * proper.
+ *
+ * As the same UART is already configured in SPL, we don't need
+ * setup pinmux for it again.
+ */
+
+/ {
+	aliases {
+		mmc0 = &usdhc4;
+	};
+
+	soc {
+		bootph-all;
+
+		bus@2100000 {
+			bootph-all;
+		};
+	};
+
+	chosen {
+		stdout-path = &uart5;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+	};
+};
+
+&i2c3 {
+	at24@50 {
+		u-boot,i2c-offset-len = <2>;
+	};
+};
+
+&uart5 {
+	bootph-all;
+};

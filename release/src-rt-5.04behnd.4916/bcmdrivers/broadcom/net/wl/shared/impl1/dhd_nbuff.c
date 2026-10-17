@@ -40,7 +40,11 @@
 
 #include <dhd_dbg.h>
 
-/* PKTTAG POOL */
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: PKTTAG POOL
+ * ------------------------------------------------------------------------------------------------
+ */
 
 #define DHD_PKTTAGS_POOL_SIZE	(1280)
 #define DHD_PKTTAG_POOL_MAX_SIZE (2560)
@@ -54,23 +58,9 @@ DEFINE_SPINLOCK(g_dhd_pkttags_pool_lock);
 static uint g_dhd_pkttags_pool_free = 0;
 static dhd_pkttag_fd_t *g_dhd_pkttags_pool_free_p = NULL;
 static dhd_pkttag_fd_t *g_dhd_pkttags_pool_p = NULL;
-uint g_dhd_fkbpool_size = DHD_FKBPOOL_DEFAULT_SIZE;
 
-DEFINE_SPINLOCK(g_dhd_fkb_pool_lock);
-uint g_dhd_fkb_pool_free = 0;
-#ifdef WLCSM_DEBUG
-uint g_dhd_fkb_pool_max_usage = 0;
-#endif
-FkBuff_t *g_dhd_fkb_pool_free_p = NULL;
 int g_dhd_pool_available = 0;
 extern char *wlcsm_nvram_k_get(char *name);
-
-#if defined(BCM_NBUFF_PKT_BPM)
-#define NBUFF_DATABUFF_CACHE(osh) \
-	(((osl_pubinfo_nbuff_t *)(osh))->databuf_cache)
-#define NBUFF_DATABUFF_CACHE_IDX(osh) \
-	(((osl_pubinfo_nbuff_t *)(osh))->databuf_cache_idx)
-#endif /* BCM_NBUFF_PKT_BPM */
 
 #define OSH_NBUFF_COUNTERS(osh) \
 		(((osl_pubinfo_nbuff_t *)(osh))->nbuff_counters)
@@ -83,7 +73,7 @@ extern char *wlcsm_nvram_k_get(char *name);
 
 void inline dhd_fkb_clear_tag(FkBuff_t * fkb)
 {
-	void *tag = PFKBUFF_TO_PHEAD(fkb);
+	void *tag = BCM_PFKBUFF_TO_PHEAD(fkb);
 	memset(tag, 0, sizeof(dhd_pkttag_fd_t));
 }
 
@@ -162,76 +152,20 @@ void dhd_pkttag_pool_free(void)
 
 /* ENDOF PKTTAG POOL */
 
-/* GENERIC NBUFF */
-INLINE BCMFASTPATH int dhd_nbuff_free(void *p)
-{
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: FKBPOOL
+ * ------------------------------------------------------------------------------------------------
+ */
+
+uint g_dhd_fkbpool_size = DHD_FKBPOOL_DEFAULT_SIZE;
+
+DEFINE_SPINLOCK(g_dhd_fkb_pool_lock);
+uint g_dhd_fkb_pool_free = 0;
 #ifdef WLCSM_DEBUG
-	if (IS_FKBUFF_PTR(p)) {
+uint g_dhd_fkb_pool_max_usage = 0;
 #endif
-		FkBuff_t *fkb_p = PNBUFF_2_FKBUFF(p);
-		/* if fkb is from system FKB pool, release it to system pool and
-		 * release pkttag to pkttag pool if it is cloned fkb
-		 */
-		if (_is_fkb_cloned_pool_(fkb_p) && (fkb_p->dhd_pkttag_info_p)) {
-			DHD_PKTTAGS_POOL_PUT((void *)fkb_p->dhd_pkttag_info_p);
-			fkb_p->dhd_pkttag_info_p = NULL;
-		} else if (_is_in_skb_tag_(fkb_p->ptr, fkb_p->flags)) {
-			/* free fkbinSkb , convert back to skb and free */
-			fkb_p->dirty_p = 0x0;	/* blog_p is reset here */
-#if defined(BCM_BLOG)
-			p = (pNBuff_t) (struct sk_buff *)
-				((uintptr_t) fkb_p - BLOG_OFFSETOF(sk_buff, fkbInSkb));
-#endif
-		}
-
-		nbuff_free((pNBuff_t) p);
-		return 0;
-#ifdef WLCSM_DEBUG
-	} else {
-		printk("%s:%d: WHY SKB COMING TO HERE???	\n",
-		       __FUNCTION__, __LINE__);
-		return 1;
-	}
-#endif
-}
-
-void *osl_nbuff_dup(osl_t * osh, void *skb)
-{
-
-	dhd_pkttag_fd_t *tag = (dhd_pkttag_fd_t *) DHD_PKTTAGS_POOL_GET();
-	FkBuff_t *fkb_dup, *fkb_p = PNBUFF_2_FKBUFF(skb);
-	void *fkb;
-
-	if (tag) {
-		if ((fkb_dup = fkb_clone(fkb_p))) {
-
-			tag->flags = DHD_PKTTAG_FD(skb)->flags;
-			fkb_dup->dhd_pkttag_info_p = tag;
-			fkb = FKBUFF_2_PNBUFF(fkb_dup);
-			DHD_PKT_CLR_FKBPOOL(fkb);
-			return fkb;
-		} else {
-			/* Free the tag back to its pool */
-			DHD_PKTTAGS_POOL_PUT(tag);
-		}
-	} else
-		NBUFF_PKTTAG_NOFBUF(osh)++;
-	NBUFF_DUP_NOBUF(osh)++;
-	return NULL;
-}
-
-int dhd_nbuff_dup(osl_t * osh, void *skb, void **ret_p)
-{
-	if (IS_FKBUFF_PTR(skb)) {
-		*ret_p = osl_nbuff_dup(osh, skb);
-		return 0;
-	} else
-		return 1;
-}
-
-/* END of GENERIC NBUFF */
-
-/* FKBPOOL */
+FkBuff_t *g_dhd_fkb_pool_free_p = NULL;
 
 #ifdef DHD_DEBUG
 extern uint dhd_console_ms;
@@ -251,11 +185,7 @@ static void *dhd_fkb_2_skb_unicast(osl_t * osh, void *txp, char *unicast_mac)
 	/* first to restore tag and mac address from orignal FKB as txp itself
 	 * has chance to be recycled in the API calls, do it at beginning
 	 */
-#ifdef BCM_NBUFF_PKT
 	void *nbuf_tag = nbuff_pkt_get_tag(txp);
-#else
-	void *nbuf_tag = osl_pkt_get_tag(txp);
-#endif
 	void *skb_p, *skb_fkbp;
 	FkBuff_t *fkb_p = (FkBuff_t *) PNBUFF_2_PBUF(txp);
 	int fkb_is_clone = _is_fkb_cloned_pool_(fkb_p);
@@ -322,8 +252,8 @@ int dhd_fkb_pool_init(void)
 	FkBuff_t *fkb_p;
 	if (poolsize && (kstrtol(poolsize, 0, &i) == 0) && (i <= DHD_FKBPOOL_MAX_SIZE))
 		g_dhd_fkbpool_size = (uint) i;
-	printk("DHD_FKB_POOL size is:%u and entry size:%zu\n",
-	       g_dhd_fkbpool_size, DHD_FKBPOOL_ENTRY_SIZE);
+	printk("DHD_FKB_POOL size is:%u and entry size:%u\n",
+	       g_dhd_fkbpool_size, (uint)DHD_FKBPOOL_ENTRY_SIZE);
 	if (g_dhd_fkbpool_size == 0)
 		return 0;
 	si_meminfo(&sys_info);
@@ -335,15 +265,17 @@ int dhd_fkb_pool_init(void)
 		return 0;
 	}
 	for (i = 0; i < g_dhd_fkbpool_size; ++i) {
-		fkb_p =
-		    (FkBuff_t *) (kmalloc(DHD_FKBPOOL_ENTRY_SIZE, GFP_ATOMIC));
-		if (!fkb_p) {
+		void *pStart;
+		pStart = kmalloc(DHD_FKBPOOL_ENTRY_SIZE, GFP_ATOMIC);
+		if (!pStart) {
 			g_dhd_fkbpool_size = i;
 			printk
 			    ("..Could not allocate mem for DHD FKB pool,allocated:%d\r\n",
 			     g_dhd_fkbpool_size);
 			break;
 		}
+
+		fkb_p = BCM_PSTART_TO_PFKBUFF(pStart);
 		_fkb_set_ref(fkb_p, 0);
 		dhd_fkb_pool_put(fkb_p, 0, 0);
 	}
@@ -363,7 +295,7 @@ void dhd_fkb_pool_free(void)
 	/* no lock needed as pool is not availabe to get now */
 	while ((fkb_free_p = g_dhd_fkb_pool_free_p)) {
 		g_dhd_fkb_pool_free_p = fkb_free_p->list;
-		kfree(fkb_free_p);
+		kfree(BCM_PFKBUFF_TO_PSTART(fkb_free_p));
 	}
 	g_dhd_fkb_pool_free_p = NULL;
 	g_dhd_fkb_pool_free = -1;
@@ -440,7 +372,7 @@ FkBuff_t *dhd_fkb_pool_clone2unicast(osl_t * osh, FkBuff_t * fkb_p, void *mac)
 			memcpy(clone_fkb_p->data, mac, ETHER_ADD_LEN);
 		if (is_clone_fkb) {
 			/* for cloned_fkb copy its pkttag to the cloned pkttag */
-			memcpy((void *)(PFKBUFF_TO_PHEAD(clone_fkb_p)),
+			memcpy((void *)(BCM_PFKBUFF_TO_PHEAD(clone_fkb_p)),
 			       pkttag_p, sizeof(dhd_pkttag_fd_t));
 			clone_fkb_p->flowid = flowid;
 		}
@@ -461,7 +393,11 @@ FkBuff_t *dhd_fkb_pool_clone2unicast(osl_t * osh, FkBuff_t * fkb_p, void *mac)
 
 /* --END of FKBPOOL -- */
 
-/* PKTLIST */
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: PKTLIST
+ * ------------------------------------------------------------------------------------------------
+ */
 
 INLINE BCMFASTPATH void dhd_pkt_queue_head_init(DHD_PKT_LIST * list)
 {
@@ -504,33 +440,78 @@ void dhd_pkt_queue_purge(osl_t * osh, DHD_PKT_LIST * list)
 	}
 }
 
-#if defined(DSLCPE) || defined(BCM_NBUFF_WLMCAST)
-/* Add nbuff dump output to a buffer */
-void dhd_nbuff_dump(void *dhd, void *strb)
+/**
+ * ------------------------------------------------------------------------------------------------
+ *  SECTION: DHD specific NBUFF (SKB|WKB|FKB) Packet Primitives - PKTxyz
+ * ------------------------------------------------------------------------------------------------
+ */
+
+/* XXX: BCM_WKB_TEST: TODO: Extend dhd_nbuff.[c,h] to support WKB */
+
+STATIC INLINE BCMFASTPATH
+int dhd_nbuff_free(void *p)
 {
-	dhd_pub_t *dhdp = (dhd_pub_t *) dhd;
+	FkBuff_t *fkb_p;
 
-	struct bcmstrbuf *strbuf = (struct bcmstrbuf *)strb;
-	bcm_bprintf(strbuf, "tx_nodup:		%u\n", NBUFF_DUP_NOBUF(dhdp->osh));
-	bcm_bprintf(strbuf,
-		"tx_tag_nobuf:	%u	,free tags in the pool:	%u	,used:%u \n",
-		NBUFF_PKTTAG_NOFBUF(dhdp->osh), g_dhd_pkttags_pool_free,
-		g_dhd_pkttags_pool_size - g_dhd_pkttags_pool_free);
-	bcm_bprintf(strbuf,
-		"fkbpool_nobuf:	%u	,free fkbs in the pool: %u	,used:%u\n",
-		NBUFF_FKBPOOL_NOFBUF(dhdp->osh), g_dhd_fkb_pool_free,
-		g_dhd_fkbpool_size - g_dhd_fkb_pool_free);
+#ifdef WLCSM_DEBUG
+	if (!IS_FKBUFF_PTR(p)) {
+		printk("%s:%d: WHY SKB COMING TO HERE???	\n",
+		       __FUNCTION__, __LINE__);
+		return 1;
+	}
+#endif /* WLCSM_DEBUG */
 
-	return;
-}
-#endif /* DSLCPE || BCM_NBUFF_WLMCAST */
+	fkb_p = PNBUFF_2_FKBUFF(p);
 
-BCMFASTPATH
-#ifdef BCM_NBUFF_PKT
-void inline *nbuff_pkt_get_tag(void *pkt)
-#else
-void inline *osl_pkt_get_tag(void *pkt)
+	/* if fkb is from system FKB pool, release it to system pool and
+	 * release pkttag to pkttag pool if it is cloned fkb
+	 */
+	if (_is_fkb_cloned_pool_(fkb_p) && (fkb_p->dhd_pkttag_info_p)) {
+		DHD_PKTTAGS_POOL_PUT((void *)fkb_p->dhd_pkttag_info_p);
+		fkb_p->dhd_pkttag_info_p = NULL;
+	} else if (_is_in_skb_tag_(fkb_p->ptr, fkb_p->flags)) {
+		/* free fkbinSkb , convert back to skb and free */
+		fkb_p->dirty_p = 0x0;	/* blog_p is reset here */
+#if defined(BCM_BLOG)
+		p = (pNBuff_t) (struct sk_buff *)
+			((uintptr_t) fkb_p - BLOG_OFFSETOF(sk_buff, fkbInSkb));
 #endif
+	}
+
+	nbuff_free((pNBuff_t) p);
+	return 0;
+}
+
+STATIC void *
+dhd_nbuff_dup(osl_t *osh, void *skb)
+{
+	dhd_pkttag_fd_t *tag = (dhd_pkttag_fd_t *) DHD_PKTTAGS_POOL_GET();
+	FkBuff_t *fkb_dup, *fkb_p = PNBUFF_2_FKBUFF(skb);
+	void *fkb;
+
+	if (tag) {
+		if ((fkb_dup = fkb_clone(fkb_p))) {
+
+			tag->flags = DHD_PKTTAG_FD(skb)->flags;
+			fkb_dup->dhd_pkttag_info_p = tag;
+			fkb = FKBUFF_2_PNBUFF(fkb_dup);
+			DHD_PKT_CLR_FKBPOOL(fkb);
+			return fkb;
+		} else {
+			/* Free the tag back to its pool */
+			DHD_PKTTAGS_POOL_PUT(tag);
+		}
+	} else  {
+		NBUFF_PKTTAG_NOFBUF(osh)++;
+	}
+
+	NBUFF_DUP_NOBUF(osh)++;
+	return NULL;
+}
+
+
+void INLINE * BCMFASTPATH
+nbuff_pkt_get_tag(void *pkt)
 {
 	if (IS_SKBUFF_PTR(pkt)) {
 		return ((void *)(((struct sk_buff *)(pkt))->cb));
@@ -539,77 +520,12 @@ void inline *osl_pkt_get_tag(void *pkt)
 		if (_is_fkb_cloned_pool_(fkb_p))
 			return (void *)fkb_p->dhd_pkttag_info_p;
 		else
-			return ((void *)(PFKBUFF_TO_PHEAD(fkb_p)));
-	}
-}
-
-#ifdef BCM_NBUFF_PKT
-void inline nbuff_pkt_clear_tag(void *pkt)
-#else
-void inline osl_pkt_clear_tag(void *pkt)
-#endif
-{
-#ifdef BCM_NBUFF_PKT
-	void *tag = nbuff_pkt_get_tag(pkt);
-#else
-	void *tag = osl_pkt_get_tag(pkt);
-#endif
-
-	*(uint32 *) (tag) = 0;
-	*(uint32 *) (tag + 4) = 0;
-	*(uint32 *) (tag + 8) = 0;
-	*(uint32 *) (tag + 12) = 0;
-	*(uint32 *) (tag + 16) = 0;
-	*(uint32 *) (tag + 20) = 0;
-	*(uint32 *) (tag + 24) = 0;
-	*(uint32 *) (tag + 28) = 0;
-}
-
-INLINE BCMFASTPATH uint
-#ifdef BCM_NBUFF_PKT
-nbuff_pktprio(void *pkt)
-#else
-osl_pktprio(void *pkt)
-#endif
-{
-	uint32 prio = 0;
-	if (IS_SKBUFF_PTR(pkt)) {
-		prio = ((struct sk_buff *)pkt)->mark >> PRIO_LOC_NFMARK & 0x7;
-	} else {		/* manuplated in dhd, 3bit prio + 10bit flowid */
-		FkBuff_t *fkb_p = PNBUFF_2_FKBUFF(pkt);
-		prio = fkb_p->wl.ucast.dhd.wl_prio;	/* Same bit pos used for mcast */
-	}
-
-	if (prio > 7) {
-		prio = 0;
-	}
-
-	return prio;
-}
-
-INLINE BCMFASTPATH void
-#ifdef BCM_NBUFF_PKT
-nbuff_pktsetprio(void *pkt, uint x)
-#else
-osl_pktsetprio(void *pkt, uint x)
-#endif
-{
-	if (IS_SKBUFF_PTR(pkt)) {
-		((struct sk_buff *)pkt)->mark &= ~(0x7 << PRIO_LOC_NFMARK);
-		((struct sk_buff *)pkt)->mark |= (x & 0x7) << PRIO_LOC_NFMARK;
-		((struct sk_buff *)pkt)->wl.ucast.dhd.wl_prio = x;
-	} else {
-		FkBuff_t *fkb_p = PNBUFF_2_FKBUFF(pkt);
-		fkb_p->wl.ucast.dhd.wl_prio = x;	/* Same bit pos used for mcast */
+			return ((void *)(BCM_PFKBUFF_TO_PHEAD(fkb_p)));
 	}
 }
 
 INLINE BCMFASTPATH uint
-#ifdef BCM_NBUFF_PKT
 nbuff_pktflowid(void *pkt)
-#else
-osl_pktflowid(void *pkt)
-#endif
 {
 	uint fid = -1;
 
@@ -624,11 +540,7 @@ osl_pktflowid(void *pkt)
 }
 
 INLINE BCMFASTPATH void
-#ifdef BCM_NBUFF_PKT
 nbuff_pktsetflowid(void *pkt, uint x)
-#else
-osl_pktsetflowid(void *pkt, uint x)
-#endif
 {
 	if (IS_SKBUFF_PTR(pkt)) {
 		((struct sk_buff *)pkt)->wl.ucast.dhd.flowring_idx = x;
@@ -640,141 +552,9 @@ osl_pktsetflowid(void *pkt, uint x)
 	return;
 }
 
-uchar *
-#ifdef BCM_NBUFF_PKT
-nbuff_pktdata(osl_t * osh, void *pkt)
-#else
-osl_pktdata(osl_t * osh, void *pkt)
-#endif
-{
-	BCM_REFERENCE(osh);
-	return nbuff_get_data((pNBuff_t) pkt);
-}
-
-uint
-#ifdef BCM_NBUFF_PKT
-nbuff_pktlen(osl_t * osh, void *pkt)
-#else
-osl_pktlen(osl_t * osh, void *pkt)
-#endif
-{
-	BCM_REFERENCE(osh);
-	return nbuff_get_len((pNBuff_t) pkt);
-}
-
-INLINE BCMFASTPATH void
-#ifdef BCM_NBUFF_PKT
-nbuff_pktsetlen(osl_t * osh, void *pkt, uint len)
-#else
-osl_pktsetlen(osl_t * osh, void *pkt, uint len)
-#endif
-{
-	BCM_REFERENCE(osh);
-	if (IS_SKBUFF_PTR((pNBuff_t) pkt))
-		__pskb_trim((struct sk_buff *)pkt, len);
-	/* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
-	else
-		nbuff_set_len((pNBuff_t) pkt, len);
-}
-
-INLINE BCMFASTPATH uint nbuff_pktheadroom(osl_t * osh, void *pkt)
-{
-	BCM_REFERENCE(osh);
-
-	if (IS_FKBUFF_PTR(pkt))
-		return (uint) fkb_headroom((FkBuff_t *) PNBUFF_2_PBUF(pkt));
-	else
-		return (uint) skb_headroom((struct sk_buff *)pkt);
-}
-
-INLINE BCMFASTPATH uint nbuff_pkttailroom(osl_t * osh, void *pkt)
-{
-	BCM_REFERENCE(osh);
-
-	if (IS_FKBUFF_PTR(pkt)) {
-		printk("%s: no such operation for fkb!\n", __FUNCTION__);
-		return 0;
-	} else {
-		return (uint) skb_tailroom((struct sk_buff *)pkt);
-	}
-}
-
-INLINE BCMFASTPATH uchar * nbuff_pktpush(osl_t * osh, void *pkt, int bytes)
-{
-	BCM_REFERENCE(osh);
-	return (nbuff_push(pkt, bytes));
-}
-
-INLINE BCMFASTPATH uchar * nbuff_pktpull(osl_t * osh, void *pkt, int bytes)
-{
-	BCM_REFERENCE(osh);
-	return (nbuff_pull(pkt, bytes));
-}
-
-INLINE BCMFASTPATH bool nbuff_pktshared(void *pkt)
-{
-	if (IS_SKBUFF_PTR(pkt)) {
-		return (((struct sk_buff *)pkt)->cloned);
-	} else {
-		printk("%s: no such operation for fkb!\n", __FUNCTION__);
-		return FALSE;
-	}
-}
-
-INLINE BCMFASTPATH void *
-#ifdef BCM_NBUFF_PKT
-nbuff_pktlink(void *pkt)
-#else
-osl_pktlink(void *pkt)
-#endif
-{
-	if (IS_FKBUFF_PTR(pkt))
-		return nbuff_get_queue(pkt);
-	else
-		return (((struct sk_buff *)(pkt))->prev);
-}
-
-INLINE BCMFASTPATH void
-#ifdef BCM_NBUFF_PKT
-nbuff_pktsetlink(void *pkt, void *x)
-#else
-osl_pktsetlink(void *pkt, void *x)
-#endif
-{
-	if (IS_FKBUFF_PTR(pkt))
-		nbuff_set_queue(pkt, x);
-	else
-		(((struct sk_buff *)(pkt))->prev = (struct sk_buff *)(x));
-}
-
-INLINE BCMFASTPATH void nbuff_pktsetnext(osl_t * osh, void *pkt, void *x)
-{
-	BCM_REFERENCE(osh);
-	if (IS_FKBUFF_PTR(pkt))
-		printk("%s: no such operation for fkb!\n", __FUNCTION__);
-	else
-		(((struct sk_buff *)(pkt))->next = (struct sk_buff *)(x));
-}
-
-INLINE BCMFASTPATH void *nbuff_pktnext(osl_t * osh, void *pkt)
-{
-	BCM_REFERENCE(osh);
-	if (IS_FKBUFF_PTR(pkt)) {
-		printk("%s: no such operation for fkb!\n", __FUNCTION__);
-
-		return NULL;
-	} else {
-		return (((struct sk_buff *)(pkt))->next);
-	}
-}
-
 /*  for cloned FKB, attach tag info to it */
-INLINE BCMFASTPATH
-#ifdef BCM_NBUFF_PKT
-int nbuff_pkttag_attach(void *osh, void *pkt)
-#else
-int osl_pkttag_attach(void *osh, void *pkt)
-#endif
+INLINE BCMFASTPATH int
+nbuff_pkttag_attach(void *osh, void *pkt)
 {
 #if defined(NBUFF_FKBUFF_OR_SKBUFF)
 	if (IS_FKBUFF_PTR(pkt) && _is_fkb_cloned_pool_(PNBUFF_2_FKBUFF(pkt))) {
@@ -792,54 +572,50 @@ int osl_pkttag_attach(void *osh, void *pkt)
 		fkb_p->dhd_pkttag_info_p = tag;
 	}
 #endif /* defined(NBUFF_FKBUFF_OR_SKBUFF) */
+
 	DHD_PKT_CLR_WFD_BUF(pkt);
 	DHD_PKT_CLR_WMF_FKB_UCAST(pkt);
 	DHD_PKT_CLR_WAN_MCAST(pkt);
 	return 0;
 }
 
-INLINE BCMFASTPATH void *osl_pkt_get_dirtyp(osl_t * osh, void *pkt)
+void *
+nbuff_pktdup(osl_t *osh, void *pkt)
 {
-	if (pkt) {
-		if (IS_FKBUFF_PTR(pkt)) {
-			return
-			    _to_kptr_from_dptr_(((FkBuff_t *)
-						 PNBUFF_2_PBUF(pkt))->dirty_p);
-		} else
-			return skb_shinfo((struct sk_buff *)(pkt))->dirty_p;
+	void *p = NULL;
+
+	if (IS_SKBUFF_PTR(pkt)) {
+		p = osl_pktdup(osh, pkt);
+	} else {
+		p = dhd_nbuff_dup(osh, pkt);
 	}
-	return NULL;
+	return p;
 }
 
-INLINE BCMFASTPATH void osl_pkt_set_dirtyp(osl_t * osh, void *pkt, void *addr)
+void *
+nbuff_pktdup_cpy(osl_t *osh, void *pkt)
 {
-	if (pkt) {
-		if (IS_FKBUFF_PTR(pkt)) {
-			((FkBuff_t *) PNBUFF_2_PBUF(pkt))->dirty_p =
-			    _to_dptr_from_kptr_(addr);
-		} else {
-			skb_shinfo((struct sk_buff *)(pkt))->dirty_p = addr;
-		}
+	void *p = NULL;
+
+	if (IS_SKBUFF_PTR(pkt)) {
+		p = osl_pktdup_cpy(osh, pkt);
+	} else {
+		p = DHD_FKB_CLONE2UNICAST(osh, pkt, NULL);
 	}
+	return p;
 }
 
-BCMFASTPATH void inline osl_pkt_set_dirtyp_len(osl_t * osh, void *p, int len)
+void
+nbuff_pktfree(osl_t *osh, void *pkt, bool docb, bool send)
 {
-	if (p) {
-		if (IS_FKBUFF_PTR(p)) {
-			FkBuff_t *fkb_p = (FkBuff_t *) PNBUFF_2_PBUF(p);
-			len = fkb_p->len > len ? len : fkb_p->len;
-			if (fkb_p->dirty_p < (uint8 *) (fkb_p->data + len))
-				fkb_p->dirty_p =
-				    _to_dptr_from_kptr_(fkb_p->data + len);
-		} else {
-			if (skb_shinfo((struct sk_buff *)(p))->dirty_p <
-			    ((uint8 *) (((struct sk_buff *)p)->data) + len))
-				skb_shinfo((struct sk_buff *)(p))->dirty_p =
-				    (((struct sk_buff *)p)->data) + len;
-		}
+	if (IS_SKBUFF_PTR(pkt)) {
+		linux_pktfree(osh, pkt, docb, send);
+	} else {
+		dhd_nbuff_free(pkt);
 	}
+	return;
 }
+
 
 #ifdef DSLCPE_CACHE_SMARTFLUSH
 INLINE BCMFASTPATH uint32 osl_dirtyp_is_valid(osl_t * osh, void *p)
@@ -941,12 +717,33 @@ void dhd_nbuff_detach(void)
 
 }
 
+#if defined(DSLCPE) || defined(BCM_NBUFF_WLMCAST)
+/* Add nbuff dump output to a buffer */
+void dhd_nbuff_dump(void *dhd, void *strb)
+{
+	dhd_pub_t *dhdp = (dhd_pub_t *) dhd;
+	struct bcmstrbuf *strbuf = (struct bcmstrbuf *)strb;
+
+	bcm_bprintf(strbuf, "tx_nodup:		%u\n", NBUFF_DUP_NOBUF(dhdp->osh));
+	bcm_bprintf(strbuf,
+		"tx_tag_nobuf:	%u	,free tags in the pool:	%u	,used:%u \n",
+		NBUFF_PKTTAG_NOFBUF(dhdp->osh), g_dhd_pkttags_pool_free,
+		g_dhd_pkttags_pool_size - g_dhd_pkttags_pool_free);
+	bcm_bprintf(strbuf,
+		"fkbpool_nobuf:	%u	,free fkbs in the pool: %u	,used:%u\n",
+		NBUFF_FKBPOOL_NOFBUF(dhdp->osh), g_dhd_fkb_pool_free,
+		g_dhd_fkbpool_size - g_dhd_fkb_pool_free);
+
+	return;
+}
+#endif /* DSLCPE || BCM_NBUFF_WLMCAST */
+
 void dhd_set_fkb_dhdhdr_flag(void *pkt)
 {
 	FkBuff_t *fkb_master = NULL, *fkb_p = (FkBuff_t *) PNBUFF_2_PBUF(pkt);
 	dhd_pkttag_fd_t *pkttag = NULL;
 	fkb_master = _is_fkb_cloned_pool_(fkb_p) ? fkb_p->master_p : fkb_p;
-	pkttag = (dhd_pkttag_fd_t *) (PFKBUFF_TO_PHEAD(fkb_master));
+	pkttag = (dhd_pkttag_fd_t *) (BCM_PFKBUFF_TO_PHEAD(fkb_master));
 	pkttag->flags |= DHD_PKTTAG_DATA_DHDHDR;
 	return;
 }
@@ -956,7 +753,7 @@ bool dhd_get_fkb_dhdhdr_flag(void *pkt)
 	FkBuff_t *fkb_master = NULL, *fkb_p = (FkBuff_t *) PNBUFF_2_PBUF(pkt);
 	dhd_pkttag_fd_t *pkttag = NULL;
 	fkb_master = _is_fkb_cloned_pool_(fkb_p) ? fkb_p->master_p : fkb_p;
-	pkttag = (dhd_pkttag_fd_t *) (PFKBUFF_TO_PHEAD(fkb_master));
+	pkttag = (dhd_pkttag_fd_t *) (BCM_PFKBUFF_TO_PHEAD(fkb_master));
 	return (pkttag->flags & DHD_PKTTAG_DATA_DHDHDR) ? TRUE : FALSE;
 }
 
@@ -965,7 +762,7 @@ void dhd_clr_fkb_dhdhdr_flag(void *pkt)
 	FkBuff_t *fkb_master = NULL, *fkb_p = (FkBuff_t *) PNBUFF_2_PBUF(pkt);
 	dhd_pkttag_fd_t *pkttag = NULL;
 	fkb_master = _is_fkb_cloned_pool_(fkb_p) ? fkb_p->master_p : fkb_p;
-	pkttag = (dhd_pkttag_fd_t *) (PFKBUFF_TO_PHEAD(fkb_master));
+	pkttag = (dhd_pkttag_fd_t *) (BCM_PFKBUFF_TO_PHEAD(fkb_master));
 	pkttag->flags &= ~DHD_PKTTAG_DATA_DHDHDR;
 	return;
 }
@@ -977,65 +774,6 @@ void dhd_pkt_set_fkbclone(void *pkt)
 }
 #endif
 
-#ifdef BCM_NBUFF_PKT
-void *nbuff_pktdup(osl_t * osh, void *pkt)
-{
-	void *p = NULL;
-
-	if (IS_SKBUFF_PTR(pkt)) {
-		p = osl_pktdup(osh, pkt);
-	} else {
-		p = osl_nbuff_dup(osh, pkt);
-	}
-	return p;
-}
-
-void *nbuff_pktdup_cpy(osl_t * osh, void *pkt)
-{
-	void *p = NULL;
-
-	if (IS_SKBUFF_PTR(pkt)) {
-		p = osl_pktdup_cpy(osh, pkt);
-	} else {
-		p = DHD_FKB_CLONE2UNICAST(osh, pkt, NULL);
-	}
-	return p;
-}
-
-void BCMFASTPATH nbuff_pktfree(osl_t * osh, void *pkt, bool send)
-{
-	if (IS_SKBUFF_PTR(pkt)) {
-		linux_pktfree(osh, pkt, FALSE, send);
-	} else {
-		dhd_nbuff_free(pkt);
-	}
-	return;
-}
-
-struct sk_buff *nbuff_pkt_tonative(osl_t * osh, void *pkt)
-{
-	struct sk_buff *p;
-
-	if (IS_SKBUFF_PTR(pkt))
-		p = osl_pkt_tonative(osh, pkt);
-	else
-		p = (struct sk_buff *)pkt;
-
-	return p;
-}
-
-void *nbuff_pkt_frmnative(osl_t * osh, void *pkt)
-{
-	struct sk_buff *p;
-
-	if (IS_SKBUFF_PTR(pkt))
-		p = osl_pkt_frmnative(osh, pkt);
-	else
-		p = (struct sk_buff *)pkt;
-
-	return p;
-}
-
 #if defined(BCM_NBUFF_PKT_BPM)
 
 /**
@@ -1043,6 +781,11 @@ void *nbuff_pkt_frmnative(osl_t * osh, void *pkt)
  * Section: BPM based data buffers
  * =============================================================================
  */
+
+#define NBUFF_DATABUFF_CACHE(osh) \
+	(((osl_pubinfo_nbuff_t *)(osh))->databuf_cache)
+#define NBUFF_DATABUFF_CACHE_IDX(osh) \
+	(((osl_pubinfo_nbuff_t *)(osh))->databuf_cache_idx)
 
 /**
  * -----------------------------------------------------------------------------
@@ -1154,8 +897,6 @@ void dhd_nbuff_bpm_deinit(dhd_pub_t * dhdp)
 
 #endif /* BCM_NBUFF_PKT_BPM */
 
-#endif /* BCM_NBUFF_PKT */
-
 #if defined(BCM_NBUFF_PKT_BPM_SKB)
 struct sk_buff *dhd_nbuff_bpm_skb_get(dhd_pub_t * dhdp, int len)
 {
@@ -1177,13 +918,13 @@ void dhd_nbuff_recycle(pNBuff_t pNBuff, unsigned long context, uint32_t flags)
 	if (IS_FKBUFF_PTR(pNBuff)) {
 		/* Transmit driver is expected to perform cache invalidations */
 		FkBuff_t *fkb = PNBUFF_2_FKBUFF(pNBuff);
-		gbpm_free_buf(PFKBUFF_TO_PDATA(fkb, BCM_PKT_HEADROOM));
+		gbpm_free_buf(BCM_PFKBUFF_TO_PDATA(fkb));
 	} else {		/* skb */
 
 		struct sk_buff *skb = PNBUFF_2_SKBUFF(pNBuff);
 		if (likely(flags & SKB_DATA_RECYCLE)) {
 #if !defined(CONFIG_BCM_GLB_COHERENCY)
-			void *data_startp = (void *)((uint8_t *) (skb->head) + BCM_PKT_HEADROOM);
+			void *data_startp = BCM_PHEAD_TO_PDATA(skb->head);
 			void *data_endp;
 #if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
 			{
@@ -1230,19 +971,10 @@ void dhd_nbuff_recycle(pNBuff_t pNBuff, unsigned long context, uint32_t flags)
 #endif /* !CONFIG_BCM_GLB_COHERENCY */
 
 			/* free the data buffer */
-			gbpm_free_buf((uint8_t *) (skb->head) + BCM_PKT_HEADROOM);
+			gbpm_free_buf(BCM_PHEAD_TO_PDATA(skb->head));
 		}
 	}
 }
 #endif /* BCM_NBUFF_PKT_BPM */
-
-void *
-nbuff_pktpoolget(osl_t *osh, int len)
-{
-	/* XXX: TODO: Maintain a local cache of BPM buffers and
-	 * allocate a packet return from cache
-	 */
-	return linux_pktget(osh, len);
-}
 
 #endif /* BCM_NBUFF */

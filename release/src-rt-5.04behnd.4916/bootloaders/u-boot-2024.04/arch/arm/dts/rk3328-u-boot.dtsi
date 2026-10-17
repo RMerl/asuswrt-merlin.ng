@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2019 Rockchip Electronics Co., Ltd
+ */
+
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	aliases {
+		mmc0 = &emmc;
+		mmc1 = &sdmmc;
+		spi0 = &spi0;
+	};
+
+	chosen {
+		u-boot,spl-boot-order = &emmc, &sdmmc;
+	};
+
+	dmc: dmc {
+		bootph-all;
+		compatible = "rockchip,rk3328-dmc";
+		reg = <0x0 0xff400000 0x0 0x1000
+		       0x0 0xff780000 0x0 0x3000
+		       0x0 0xff100000 0x0 0x1000
+		       0x0 0xff440000 0x0 0x1000
+		       0x0 0xff720000 0x0 0x1000
+		       0x0 0xff798000 0x0 0x1000>;
+	};
+
+	rng: rng@ff060000 {
+		compatible = "rockchip,cryptov1-rng";
+		reg = <0x0 0xff060000 0x0 0x4000>;
+		status = "okay";
+	};
+};
+
+&cru {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};
+
+&uart2 {
+	bootph-all;
+	clock-frequency = <24000000>;
+};
+
+&emmc {
+	bootph-all;
+
+	/* mmc to sram can't do dma, prevent aborts transfering TF-A parts */
+	u-boot,spl-fifo-mode;
+};
+
+&sdmmc {
+	bootph-all;
+
+	/* mmc to sram can't do dma, prevent aborts transfering TF-A parts */
+	u-boot,spl-fifo-mode;
+};
+
+&usb20_otg {
+	hnp-srp-disable;
+};
+
+&spi0 {
+	bootph-all;
+};

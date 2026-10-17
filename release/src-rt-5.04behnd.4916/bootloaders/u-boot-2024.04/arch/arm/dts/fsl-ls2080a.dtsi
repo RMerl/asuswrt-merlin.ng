@@ -1,0 +1,396 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls2080a SOC common device tree source
+ *
+ * Copyright 2020-2021 NXP
+ * Copyright 2013-2015 Freescale Semiconductor, Inc.
+ */
+
+#include <dt-bindings/clock/fsl,qoriq-clockgen.h>
+
+/ {
+	compatible = "fsl,ls2080a";
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &serial0;
+		serial1 = &serial1;
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x00000000 0x80000000 0 0x80000000>;
+		      /* DRAM space - 1, size : 2 GB DRAM */
+	};
+
+	sysclk: sysclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+		clock-output-names = "sysclk";
+	};
+
+	gic: interrupt-controller@6000000 {
+		compatible = "arm,gic-v3";
+		reg = <0x0 0x06000000 0 0x10000>, /* GIC Dist */
+		      <0x0 0x06100000 0 0x100000>; /* GICR (RD_base + SGI_base) */
+		#interrupt-cells = <3>;
+		interrupt-controller;
+		interrupts = <1 9 0x4>;
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <1 13 0x8>, /* Physical Secure PPI, active-low */
+			     <1 14 0x8>, /* Physical Non-Secure PPI, active-low */
+			     <1 11 0x8>, /* Virtual PPI, active-low */
+			     <1 10 0x8>; /* Hypervisor PPI, active-low */
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		dma-ranges = <0x0 0x0 0x0 0x0 0x10000 0x00000000>;
+
+		clockgen: clocking@1300000 {
+			compatible = "fsl,ls2080a-clockgen";
+			reg = <0 0x1300000 0 0xa0000>;
+			#clock-cells = <2>;
+			clocks = <&sysclk>;
+		};
+
+		serial0: serial@21c0500 {
+			compatible = "fsl,ns16550", "ns16550a";
+			reg = <0x0 0x21c0500 0x0 0x100>;
+			clocks = <&clockgen QORIQ_CLK_PLATFORM_PLL
+					    QORIQ_CLK_PLL_DIV(4)>;
+			interrupts = <0 32 0x4>; /* Level high type */
+			bootph-all;
+		};
+
+		serial1: serial@21c0600 {
+			compatible = "fsl,ns16550", "ns16550a";
+			reg = <0x0 0x21c0600 0x0 0x100>;
+			clocks = <&clockgen QORIQ_CLK_PLATFORM_PLL
+					    QORIQ_CLK_PLL_DIV(4)>;
+			interrupts = <0 32 0x4>; /* Level high type */
+			bootph-all;
+		};
+	};
+
+	i2c0: i2c@2000000 {
+		status = "disabled";
+		compatible = "fsl,vf610-i2c";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0x2000000 0x0 0x10000>;
+		interrupts = <0 34 0x4>; /* Level high type */
+	};
+
+	i2c1: i2c@2010000 {
+		status = "disabled";
+		compatible = "fsl,vf610-i2c";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0x2010000 0x0 0x10000>;
+		interrupts = <0 34 0x4>; /* Level high type */
+	};
+
+	i2c2: i2c@2020000 {
+		status = "disabled";
+		compatible = "fsl,vf610-i2c";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0x2020000 0x0 0x10000>;
+		interrupts = <0 35 0x4>; /* Level high type */
+	};
+
+	i2c3: i2c@2030000 {
+		status = "disabled";
+		compatible = "fsl,vf610-i2c";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0x2030000 0x0 0x10000>;
+		interrupts = <0 35 0x4>; /* Level high type */
+	};
+
+	dspi: dspi@2100000 {
+		compatible = "fsl,vf610-dspi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0x2100000 0x0 0x10000>;
+		interrupts = <0 26 0x4>; /* Level high type */
+		spi-num-chipselects = <6>;
+	};
+
+	qspi: quadspi@1550000 {
+		compatible = "fsl,ls2080a-qspi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0x20c0000 0x0 0x10000>,
+			<0x0 0x20000000 0x0 0x10000000>;
+		reg-names = "QuadSPI", "QuadSPI-memory";
+		status = "disabled";
+	};
+
+	esdhc: esdhc@0 {
+		compatible = "fsl,esdhc";
+		reg = <0x0 0x2140000 0x0 0x10000>;
+		interrupts = <0 28 0x4>; /* Level high type */
+		little-endian;
+		bus-width = <4>;
+	};
+
+	gpio0: gpio@2300000 {
+		compatible = "fsl,ls2080a-gpio", "fsl,qoriq-gpio";
+		reg = <0x0 0x2300000 0x0 0x10000>;
+		interrupts = <0 36 0x4>; /* Level high type */
+		gpio-controller;
+		little-endian;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	gpio1: gpio@2310000 {
+		compatible = "fsl,ls2080a-gpio", "fsl,qoriq-gpio";
+		reg = <0x0 0x2310000 0x0 0x10000>;
+		interrupts = <0 36 0x4>; /* Level high type */
+		gpio-controller;
+		little-endian;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	gpio2: gpio@2320000 {
+		compatible = "fsl,ls2080a-gpio", "fsl,qoriq-gpio";
+		reg = <0x0 0x2320000 0x0 0x10000>;
+		interrupts = <0 37 0x4>; /* Level high type */
+		gpio-controller;
+		little-endian;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	gpio3: gpio@2330000 {
+		compatible = "fsl,ls2080a-gpio", "fsl,qoriq-gpio";
+		reg = <0x0 0x2330000 0x0 0x10000>;
+		interrupts = <0 37 0x4>; /* Level high type */
+		gpio-controller;
+		little-endian;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	usb0: usb3@3100000 {
+		compatible = "fsl,layerscape-dwc3";
+		reg = <0x0 0x3100000 0x0 0x10000>;
+		interrupts = <0 80 0x4>; /* Level high type */
+		dr_mode = "host";
+	};
+
+	usb1: usb3@3110000 {
+		compatible = "fsl,layerscape-dwc3";
+		reg = <0x0 0x3110000 0x0 0x10000>;
+		interrupts = <0 81 0x4>; /* Level high type */
+		dr_mode = "host";
+	};
+
+	pcie1: pcie@3400000 {
+		compatible = "fsl,ls-pcie", "snps,dw-pcie";
+		reg = <0x00 0x03400000 0x0 0x80000   /* dbi registers */
+		       0x00 0x03480000 0x0 0x80000   /* lut registers */
+		       0x10 0x00000000 0x0 0x20000>; /* configuration space */
+		reg-names = "dbi", "lut", "config";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		num-lanes = <4>;
+		bus-range = <0x0 0xff>;
+		ranges = <0x81000000 0x0 0x00000000 0x10 0x00020000 0x0 0x00010000   /* downstream I/O */
+			  0x82000000 0x0 0x40000000 0x10 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
+	};
+
+	pcie2: pcie@3500000 {
+		compatible = "fsl,ls-pcie", "snps,dw-pcie";
+		reg = <0x00 0x03500000 0x0 0x80000   /* dbi registers */
+		       0x00 0x03580000 0x0 0x80000   /* lut registers */
+		       0x12 0x00000000 0x0 0x20000>; /* configuration space */
+		reg-names = "dbi", "lut", "config";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		num-lanes = <4>;
+		bus-range = <0x0 0xff>;
+		ranges = <0x81000000 0x0 0x00000000 0x12 0x00020000 0x0 0x00010000   /* downstream I/O */
+			  0x82000000 0x0 0x40000000 0x12 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
+	};
+
+	pcie3: pcie@3600000 {
+		compatible = "fsl,ls-pcie", "snps,dw-pcie";
+		reg = <0x00 0x03600000 0x0 0x80000   /* dbi registers */
+		       0x00 0x03680000 0x0 0x80000   /* lut registers */
+		       0x14 0x00000000 0x0 0x20000>; /* configuration space */
+		reg-names = "dbi", "lut", "config";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		num-lanes = <8>;
+		bus-range = <0x0 0xff>;
+		ranges = <0x81000000 0x0 0x00000000 0x14 0x00020000 0x0 0x00010000   /* downstream I/O */
+			  0x82000000 0x0 0x40000000 0x14 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
+	};
+
+	pcie4: pcie@3700000 {
+		compatible = "fsl,ls-pcie", "snps,dw-pcie";
+		reg = <0x00 0x03700000 0x0 0x80000   /* dbi registers */
+		       0x00 0x03780000 0x0 0x80000   /* lut registers */
+		       0x16 0x00000000 0x0 0x20000>; /* configuration space */
+		reg-names = "dbi", "lut", "config";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		num-lanes = <4>;
+		bus-range = <0x0 0xff>;
+		ranges = <0x81000000 0x0 0x00000000 0x16 0x00020000 0x0 0x00010000   /* downstream I/O */
+			  0x82000000 0x0 0x40000000 0x16 0x40000000 0x0 0x40000000>; /* non-prefetchable memory */
+	};
+
+	sata: sata@3200000 {
+			compatible = "fsl,ls2080a-ahci";
+			reg = <0x0 0x3200000 0x0 0x10000>;
+			interrupts = <0 133 0x4>; /* Level high type */
+			status = "disabled";
+	};
+
+	crypto: crypto@8000000 {
+		compatible = "fsl,sec-v5.0", "fsl,sec-v4.0";
+		fsl,sec-era = <8>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x0 0x00 0x8000000 0x100000>;
+		reg = <0x00 0x8000000 0x0 0x100000>;
+		interrupts = <0 139 0x4>;  /* Level high type */
+		dma-coherent;
+
+		sec_jr0: jr@10000 {
+			compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+			reg	   = <0x10000 0x10000>;
+			interrupts = <0 140 0x4>;  /* Level high type */
+		};
+
+		sec_jr1: jr@20000 {
+			compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+			reg	   = <0x20000 0x10000>;
+			interrupts = <0 141 0x4>;  /* Level high type */
+		};
+
+		sec_jr2: jr@30000 {
+			compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+			reg	   = <0x30000 0x10000>;
+			interrupts = <0 142 0x4>;  /* Level high type */
+		};
+
+		sec_jr3: jr@40000 {
+			compatible = "fsl,sec-v5.0-job-ring",
+				     "fsl,sec-v4.0-job-ring";
+			reg	   = <0x40000 0x10000>;
+			interrupts = <0 143 0x4>;  /* Level high type */
+		};
+	};
+
+	fsl_mc: fsl-mc@80c000000 {
+		compatible = "fsl,qoriq-mc", "simple-mfd";
+		reg = <0x00000008 0x0c000000 0 0x40>,    /* MC portal base */
+		      <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
+		#address-cells = <3>;
+		#size-cells = <1>;
+
+		/*
+		 * Region type 0x0 - MC portals
+		 * Region type 0x1 - QBMAN portals
+		 */
+		ranges = <0x0 0x0 0x0 0x8 0x0c000000 0x4000000
+			0x1 0x0 0x0 0x8 0x18000000 0x8000000>;
+
+		dpmacs {
+			compatible = "simple-mfd";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			dpmac1: dpmac@1 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x1>;
+				status = "disabled";
+			};
+
+			dpmac2: dpmac@2 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x2>;
+				status = "disabled";
+			};
+
+			dpmac3: dpmac@3 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x3>;
+				status = "disabled";
+			};
+
+			dpmac4: dpmac@4 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x4>;
+				status = "disabled";
+			};
+
+			dpmac5: dpmac@5 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x5>;
+				status = "disabled";
+			};
+
+			dpmac6: dpmac@6 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x6>;
+				status = "disabled";
+			};
+
+			dpmac7: dpmac@7 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x7>;
+				status = "disabled";
+			};
+
+			dpmac8: dpmac@8 {
+				compatible = "fsl,qoriq-mc-dpmac";
+				reg = <0x8>;
+				status = "disabled";
+			};
+		};
+	};
+
+	emdio1: mdio@8B96000 {
+		compatible = "fsl,ls-mdio";
+		reg = <0x0 0x8B96000 0x0 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+	};
+
+	emdio2: mdio@8B97000 {
+		compatible = "fsl,ls-mdio";
+		reg = <0x0 0x8B97000 0x0 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+	};
+};

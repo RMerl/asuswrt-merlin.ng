@@ -11952,6 +11952,9 @@ static const ru_reg_rec *XUMAC_RDP_REGS[] =
 const ru_block_rec XUMAC_RDP_BLOCK =
 {
     "XUMAC_RDP",
+#if RU_INCLUDE_SIZE
+    { 0x0000078C },
+#endif
     XUMAC_RDP_ADDRS,
     4,
     189,

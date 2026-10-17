@@ -1,0 +1,6 @@
+config CORTINA_PLATFORM
+       bool "Cortina-Access Platform"
+       default y
+       help
+         Select this option for Cortina-Access platforms
+	 to enables selection of CAxxxx drivers

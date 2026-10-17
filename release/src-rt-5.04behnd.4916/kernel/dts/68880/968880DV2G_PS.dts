@@ -1,0 +1,109 @@
+#include "inc/968880DV2G_PS.dtsi"
+
+/ {
+    model = "968880DV2G_PS";
+
+    wan_serdes {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&xfp_sfp {
+    status = "okay";
+};
+
+&i2cmux {
+    status = "okay";
+};
+
+&mdio_bus {
+    egphy0 {
+        status = "okay";
+    };
+    egphy1 {
+        status = "okay";
+    };
+    egphy2 {
+        status = "okay";
+    };
+    egphy3 {
+        status = "okay";
+    };
+    xphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    serdes00_xphy {
+        status = "okay";
+    };
+    serdes00 {
+        phy-handle = <&serdes00_xphy>;
+        status = "okay";
+    };
+    serdes10_xphy {
+        status = "okay";
+    };
+    serdes11_xphy {
+        status = "okay";
+    };
+    serdes12_xphy {
+        status = "okay";
+    };
+    serdes10 {
+        status = "okay";
+    };
+    serdes11 {
+        status = "okay";
+    };
+    serdes12 {
+        status = "okay";
+    };
+    wan_ae {
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    ports {
+        port_gphy0 {
+            status = "okay";
+        };
+        port_gphy1 {
+            status = "okay";
+        };
+        port_gphy2 {
+            status = "okay";
+        };
+        port_gphy3 {
+            status = "okay";
+        };
+        port_xgphy0 {
+            status = "okay";
+        };
+        port_xgphy1 {
+            status = "okay";
+        };
+        port_slan0 {
+            status = "okay";
+        };
+        port_qlan0 {
+            status = "okay";
+        };
+        port_qlan1 {
+            status = "okay";
+        };
+        port_qlan2 {
+            status = "okay";
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+        port_wan@ae {
+            status = "okay";
+        };
+    };
+};

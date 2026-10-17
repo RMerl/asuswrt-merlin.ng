@@ -1,0 +1,15 @@
+if TARGET_SPIDER
+
+config SYS_SOC
+	default "renesas"
+
+config SYS_BOARD
+	default "spider"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "spider"
+
+endif

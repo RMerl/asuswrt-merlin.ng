@@ -1,0 +1,7 @@
+MT7628_RFB BOARD
+M:	Weijie Gao <weijie.gao@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7628
+F:	include/configs/mt7628.h
+F:	configs/mt7628_rfb_defconfig
+F:	arch/mips/dts/mediatek,mt7628-rfb.dts

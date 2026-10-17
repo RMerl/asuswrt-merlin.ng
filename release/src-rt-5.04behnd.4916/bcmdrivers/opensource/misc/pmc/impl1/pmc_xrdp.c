@@ -128,6 +128,9 @@ int pmc_xrdp_init(void)
 #ifdef UBUS_PORT_ID_DMA2
     ubus_cong_threshold_wr(UBUS_PORT_ID_DMA2, 0);
 #endif
+#ifdef UBUS_PORT_ID_DMA3
+    ubus_cong_threshold_wr(UBUS_PORT_ID_DMA3, 0);
+#endif
     ubus_cong_threshold_wr(UBUS_PORT_ID_RQ0, 0);
 #ifdef UBUS_PORT_ID_RQ1
     ubus_cong_threshold_wr(UBUS_PORT_ID_RQ1, 0);
@@ -141,6 +144,12 @@ int pmc_xrdp_init(void)
 #ifdef UBUS_PORT_ID_SWH
     ubus_cong_threshold_wr(UBUS_PORT_ID_SWH, 0);
 #endif
+#ifdef UBUS_PORT_ID_XRDP_BUFF
+    ubus_cong_threshold_wr(UBUS_PORT_ID_XRDP_BUFF, 0);
+#endif
+#ifdef UBUS_PORT_ID_QM
+    ubus_cong_threshold_wr(UBUS_PORT_ID_QM, 0);
+#endif
 #endif // #ifdef CONFIG_BCM_UBUS4_DCM
 
     return status;
@@ -151,7 +160,7 @@ int pmc_xrdp_shutdown(void)
     int status = 0;
     int i;
 
-    for (i = 0; i <= sizeof(xrdp_pmb)/sizeof(pmb_init_t);i++)
+    for (i = 0; i < sizeof(xrdp_pmb)/sizeof(pmb_init_t);i++)
     {
         status =  PowerOffDevice(xrdp_pmb[i].pmb_addr, 0);
         if(status)

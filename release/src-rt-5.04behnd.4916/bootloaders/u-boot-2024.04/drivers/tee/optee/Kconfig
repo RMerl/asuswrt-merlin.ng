@@ -1,0 +1,50 @@
+# OP-TEE Trusted Execution Environment Configuration
+config OPTEE
+	bool "OP-TEE"
+	depends on ARM_SMCCC
+	help
+	  This implements the OP-TEE Trusted Execution Environment (TEE)
+	  driver. OP-TEE is a Trusted OS designed primarily to rely on the
+	  ARM TrustZone(R) technology as the underlying hardware isolation
+	  mechanism. This driver can request services from OP-TEE, but also
+	  handle Remote Procedure Calls (RPC) from OP-TEE needed to
+	  execute a service. For more information see: https://www.op-tee.org
+
+if OPTEE || SANDBOX
+
+menu "OP-TEE options"
+
+config OPTEE_TA_AVB
+	bool "Support AVB TA"
+	default y
+	help
+	  Enables support for the AVB Trusted Application (TA) in OP-TEE.
+	  The TA can support the "avb" subcommands "read_rb", "write"rb"
+	  and "is_unlocked".
+
+config OPTEE_TA_RPC_TEST
+	bool "Support RPC TEST TA"
+	depends on SANDBOX_TEE
+	default y
+	help
+	  Enables support for RPC test trusted application emulation, which
+	  permits to test reverse RPC calls to TEE supplicant. Should
+	  be used only in sandbox env.
+
+config OPTEE_TA_SCP03
+	bool "Support SCP03 TA"
+	default y
+	help
+	  Enables support for controlling (enabling, provisioning) the
+	  Secure Channel Protocol 03 operation in the OP-TEE SCP03 TA.
+
+config OPTEE_SERVICE_DISCOVERY
+	bool "OP-TEE service discovery"
+	default y
+	help
+	  This implements automated driver binding of OP-TEE service drivers by
+	  requesting OP-TEE firmware to enumerate its hosted services.
+
+endmenu
+
+endif

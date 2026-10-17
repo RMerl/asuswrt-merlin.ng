@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/ {
+	compatible = "fsl,mcf54x5";
+
+	aliases {
+		/* TO DO, clarify on serial, this SoC seems to have SPC and
+		 * no UARTS.
+		 */
+		spi0 = &dspi0;
+		fec0 = &fec0;
+		fec1 = &fec1;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		mbar: mbar@80000000 {
+			compatible = "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x00000000 0x80000000 0x10000>;
+			reg = <0x80000000 0x10000>;
+
+			dspi0: dspi@8a00 {
+				compatible = "fsl,mcf-dspi";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x8a00 0x100>;
+				spi-max-frequency = <50000000>;
+				num-cs = <4>;
+				spi-mode = <0>;
+				status = "disabled";
+			};
+
+			fec0: ethernet@9000 {
+				compatible = "fsl,mcf-dma-fec";
+				reg = <0x9000 0x800>;
+				mii-base = <0>;
+				max-speed = <100>;
+				timeout-loop = <50000>;
+				rx-task = <0>;
+				tx-task = <1>;
+				rx-piority = <6>;
+				tx-piority = <7>;
+				rx-init = <16>;
+				tx-init = <17>;
+				status = "disabled";
+			};
+
+			fec1: ethernet@9800 {
+				compatible = "fsl,mcf-dma-fec";
+				reg = <0x9800 0x800>;
+				mii-base = <1>;
+				max-speed = <100>;
+				timeout-loop = <50000>;
+				rx-task = <2>;
+				tx-task = <3>;
+				rx-piority = <6>;
+				tx-piority = <7>;
+				rx-init = <30>;
+				tx-init = <31>;
+				status = "disabled";
+			};
+		};
+	};
+};

@@ -1,0 +1,6 @@
+i.MX8MQ-CM BOARD
+M:	Ilko Iliev <iliev@ronetix.at>
+S:	Maintained
+F:	board/ronetix/imx8mq-cm/
+F:	include/configs/imx8mq_cm.h
+F:	configs/imx8mq_cm_defconfig

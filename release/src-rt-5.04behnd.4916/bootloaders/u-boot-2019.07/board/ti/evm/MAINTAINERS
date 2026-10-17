@@ -1,6 +1,0 @@
-EVM BOARD
-M:	Derald D. Woods <woods.technical@gmail.com>
-S:	Maintained
-F:	board/ti/evm/
-F:	include/configs/omap3_evm.h
-F:	configs/omap3_evm_defconfig

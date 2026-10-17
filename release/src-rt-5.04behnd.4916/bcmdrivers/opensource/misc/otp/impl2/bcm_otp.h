@@ -57,7 +57,6 @@ otp_map_cmn_err_t bcm_otp_commit(void);
 #define bcm_otp_set(_feat, data) bcm_otp_write(_feat, data, sizeof(unsigned int))
 
 int bcm_otp_get_cpu_clk(unsigned int* val);
-int bcm_otp_get_chipid(unsigned int* val);
 int bcm_otp_get_nr_cpus(unsigned int* val);
 
 int bcm_otp_get_ldo_trim(unsigned int * val);

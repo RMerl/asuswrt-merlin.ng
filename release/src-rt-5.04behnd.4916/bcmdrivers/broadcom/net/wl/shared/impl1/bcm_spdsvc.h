@@ -40,12 +40,12 @@
 
 #if defined(BCMDONGLEHOST)
 extern void dhd_spdsvc_init(void);
-extern int dhd_spdsvc_rx(struct sk_buff *skb);
+extern int dhd_spdsvc_rx(void *pkt);
 extern int dhd_spdsvc_tx(dhd_pub_t *dhdp, void **pktbuf);
 #else /* NIC */
 extern void wl_spdsvc_init(void);
-extern int wl_spdsvc_rx(struct sk_buff *skb);
-extern int wl_spdsvc_tx(struct sk_buff *skb, struct net_device *dev);
+extern int wl_spdsvc_rx(void *pkt);
+extern int wl_spdsvc_tx(void *pkt, struct net_device *dev);
 #endif /* BCMDONGLEHOST */
 
 #endif /* _bcm_spdsvc_h_ */

@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2023 Gateworks Corporation
+ */
+#include "imx8mm-venice-gw700x-u-boot.dtsi"
+
+&gpio1 {
+	app_gpioa {
+		gpio-hog;
+		input;
+		gpios = <13 GPIO_ACTIVE_HIGH>;
+		line-name = "gpioa";
+	};
+
+	app_gpiob {
+		gpio-hog;
+		input;
+		gpios = <14 GPIO_ACTIVE_HIGH>;
+		line-name = "gpiob";
+	};
+};
+
+&gpio4 {
+	pci_usb_sel {
+		gpio-hog;
+		output-low;
+		gpios = <3 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_usb_sel";
+	};
+
+	pci_wdis {
+		gpio-hog;
+		output-high;
+		gpios = <7 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_wdis#";
+	};
+};
+
+&gpio5 {
+	app_gpioc {
+		gpio-hog;
+		input;
+		gpios = <4 GPIO_ACTIVE_HIGH>;
+		line-name = "gpioc";
+	};
+
+	app_gpiod {
+		gpio-hog;
+		input;
+		gpios = <5 GPIO_ACTIVE_HIGH>;
+		line-name = "gpiod";
+	};
+};
+
+/* Disable SOM interfaces not used on baseboard */
+&fec1 {
+	status = "disabled";
+};

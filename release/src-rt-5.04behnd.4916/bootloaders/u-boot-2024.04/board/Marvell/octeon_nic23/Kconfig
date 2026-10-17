@@ -1,0 +1,19 @@
+if TARGET_OCTEON_NIC23
+
+config SYS_BOARD
+	string
+	default "octeon_nic23"
+
+config SYS_VENDOR
+	string
+	default "Marvell"
+
+config SYS_CONFIG_NAME
+	string
+	default "octeon_nic23"
+
+config DEFAULT_DEVICE_TREE
+	string
+	default "mrvl,octeon-nic23"
+
+endif

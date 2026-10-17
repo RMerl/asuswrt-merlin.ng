@@ -31,21 +31,14 @@ written consent.
 #define DETECT_H_INCLUDED
 
 #include "opticaldet_ioctl.h"
-#include "pmd.h"
-
-
-#define EPON2G (1 << 31)
-#define RDPA_WAN_MASK 0xF
 
 
 #define OPTICALDET_IOCTL_DETECT 1
-#define OPTICALDET_IOCTL_SD 2
 
 #define OPTICALDET_SUCCESS      0
 #define OPTICALDET_INVPARM      1
 #define OPTICALDET_NOBUS        2
 #define OPTICALDET_NOSFP        3
-#define OPTICALDET_INVSFP       4
 
 #define SMTC_VENDOR_PN          "GN28L96 A"
 #define TRX_EEPROM_OFFSET_PN    40
@@ -62,7 +55,6 @@ typedef struct
 typedef struct
 {
     int signal_detect_required;
-    pmd_wan_type_auto_detect_settings pmd_settings;
     wan_type_auto_detect_result result;
 } wan_type_auto_detect_info;
 
@@ -74,13 +66,6 @@ extern int trx_get_vendor_name_part_num(int bus, char *vendor_name_p, int vendor
 extern int trx_get_tx_sd_supported(int bus, TRX_SIG_PRESENCE *signal_supported_p);
 extern int trx_get_type(int bus, TRX_TYPE *trx_type);
 extern int trx_get_full_info(int bus, TRX_INFOMATION *trx_info);
-
-#ifdef CONFIG_BP_PHYS_INTF
-extern int opticaldet_get_i2c_bus_num(unsigned short intf_type, int intf_idx, int* bus);
-#endif
-extern int opticaldet_get_xpon_i2c_bus_num(int* bus);
-extern int opticaldet_get_sgmii_i2c_bus_num(int* bus);
-extern int opticaldet_is_xpon_sfp_present(void);
 
 typedef struct _TRX_DESCRIPTOR TRX_DESCRIPTOR;
 #ifndef CONFIG_BCM_OPTICALDET

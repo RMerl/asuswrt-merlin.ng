@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 MediaTek Inc.
+ *
+ * Author: Weijie Gao <weijie.gao@mediatek.com>
+ */
+
+/dts-v1/;
+
+#include "mt7628a.dtsi"
+
+/ {
+	compatible = "mediatek,mt7628-rfb", "ralink,mt7628a-soc";
+	model = "MediaTek MT7628 RFB";
+
+	aliases {
+		serial0 = &uart0;
+		spi0 = &spi0;
+	};
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+
+&pinctrl {
+	state_default: pin_state {
+		pleds {
+			groups = "p0led", "p1led", "p2led", "p3led", "p4led";
+			function = "led";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	num-cs = <2>;
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <25000000>;
+		reg = <0>;
+	};
+};
+
+&eth {
+	mediatek,wan-port = <0>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&ephy_router_mode>;
+};
+
+&mmc {
+	bus-width = <4>;
+	cap-sd-highspeed;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&sd_router_mode>;
+
+	status = "okay";
+};

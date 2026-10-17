@@ -20,11 +20,9 @@
 -BUILD_GLIB=y
 -BUILD_LIBSQLITE=y
 -BUILD_MOSQUITTO=y
-@@ Original PON profiles had these 3 enabled, although it is unlikley they are used in Legacy98 config.
 -BUILD_RDK_HAL_HEADERS=y
 -BUILD_HAL_LIBS=y
 -BUILD_LIBJSONC=y
-@@ Disable all USP related vars
 -BUILD_USP=y
 -BUILD_OBUSPA=y
 -BUILD_ZLIB=y
@@ -35,5 +33,16 @@
 -BUILD_LIBCURL_WITH_SSL=y
 -BUILD_LIBCURL_WITH_HTTP2=y
 -BUILD_MOSQUITTO=y
-@@ TR471 not supported in CMS
 -BUILD_TR471=y
+-# NF_IPEBTABLES is not set
+-NF_NFTABLES=y
+-# BUILD_IPTABLES is not set
+-# BUILD_EBTABLES is not set
+-BUILD_NF_TABLES=y
+-BUILD_LIBNFTNL=y
+-BUILD_LIBMNL=y
+-# BRCM_NFT_OFFLOAD_SUPPORT is not set
++NF_IPEBTABLES=y
++# NF_NFTABLES is not set
++BUILD_IPTABLES=y
++BUILD_EBTABLES=y

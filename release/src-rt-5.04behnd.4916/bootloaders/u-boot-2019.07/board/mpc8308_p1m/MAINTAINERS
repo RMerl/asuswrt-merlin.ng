@@ -1,6 +1,0 @@
-MPC8308_P1M BOARD
-M:	Ilya Yanok <yanok@emcraft.com>
-S:	Maintained
-F:	board/mpc8308_p1m/
-F:	include/configs/mpc8308_p1m.h
-F:	configs/mpc8308_p1m_defconfig

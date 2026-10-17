@@ -1,0 +1,60 @@
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - https://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * Based on "dra7.dtsi"
+ */
+
+#include "am4372-u-boot.dtsi"
+
+/{
+	ocp {
+		bootph-pre-ram;
+	};
+};
+
+&uart0 {
+	bootph-pre-ram;
+};
+
+&mmc1 {
+	bootph-pre-ram;
+};
+
+&mac {
+	bootph-pre-ram;
+};
+
+&davinci_mdio {
+	bootph-pre-ram;
+};
+
+&cpsw_emac0 {
+	bootph-pre-ram;
+};
+
+&phy_sel {
+	bootph-pre-ram;
+};
+
+&i2c0 {
+	bootph-pre-ram;
+};
+
+&l4_wkup {
+	bootph-pre-ram;
+};
+
+&scm {
+	bootph-pre-ram;
+};
+
+&scm_conf {
+	bootph-pre-ram;
+};
+
+&ethphy0 {
+	bootph-pre-ram;
+};

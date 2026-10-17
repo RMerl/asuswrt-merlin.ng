@@ -53,6 +53,7 @@ int xport_get_port_rxtx_enable(uint32_t portid, uint8_t *rx_en, uint8_t *tx_en);
 int xport_get_port_status(uint32_t portid, xport_port_status_s *port_status);
 int xport_get_port_link_status(uint32_t portid, uint8_t *link_up);
 int xport_eee_set(uint32_t portid, uint8_t enable);
+int xport_eee_get(uint32_t portid, uint32_t *enable, uint32_t *sleep_timer, uint32_t *wakeup_timer);
 int xport_wol_enable(uint32_t portid, wol_params_t *wol_params);
 int xport_reset_phy_cfg(uint32_t portid, xport_port_phycfg_s *phycfg);
 int xport_rgmii_ate_start(uint32_t portid, uint32_t num_of_packets, uint8_t pkt_gen_en);

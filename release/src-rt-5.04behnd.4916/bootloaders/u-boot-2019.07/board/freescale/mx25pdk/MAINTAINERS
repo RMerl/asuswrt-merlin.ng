@@ -1,6 +1,0 @@
-MX25PDK BOARD
-M:	Fabio Estevam <fabio.estevam@nxp.com>
-S:	Maintained
-F:	board/freescale/mx25pdk/
-F:	include/configs/mx25pdk.h
-F:	configs/mx25pdk_defconfig

@@ -1,0 +1,13 @@
+#include "rk3036-u-boot.dtsi"
+
+&uart2 {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};

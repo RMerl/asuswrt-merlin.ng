@@ -1,0 +1,8 @@
+DURIAN BOARD
+M:	liuhao <liuhao@phytium.com.cn>
+M:	shuyiqi <shuyiqi@phytium.com.cn>
+S:	Maintained
+F:	board/phytium/durian/*
+F:	include/configs/durian.h
+F:	configs/durian_defconfig
+

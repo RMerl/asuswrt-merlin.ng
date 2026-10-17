@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright (c) 2014, 2015 FUKAUMI Naoki <naobsd@gmail.com>
+ */
+
+/dts-v1/;
+#include "rk3288-firefly.dtsi"
+
+/ {
+	model = "Firefly-RK3288";
+	compatible = "firefly,firefly-rk3288", "rockchip,rk3288";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&ir {
+	gpios = <&gpio7 0 GPIO_ACTIVE_LOW>;
+};
+
+&pinctrl {
+	act8846 {
+		pmic_vsel: pmic-vsel {
+			rockchip,pins = <7 14 RK_FUNC_GPIO &pcfg_output_low>;
+		};
+	};
+
+	ir {
+		ir_int: ir-int {
+			rockchip,pins = <7 0 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+	usb_host {
+		host_vbus_drv: host-vbus-drv {
+			rockchip,pins = <0 14 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};
+
+&pwm1 {
+	status = "okay";
+};

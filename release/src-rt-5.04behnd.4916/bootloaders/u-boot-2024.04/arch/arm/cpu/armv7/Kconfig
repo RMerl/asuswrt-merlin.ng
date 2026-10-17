@@ -1,0 +1,131 @@
+if CPU_V7A
+
+config CPU_V7_HAS_NONSEC
+        bool
+
+config CPU_V7_HAS_VIRT
+        bool
+
+config ARCH_SUPPORT_PSCI
+        bool
+
+config ARMV7_NONSEC
+	bool "Enable support for booting in non-secure mode" if EXPERT
+	depends on CPU_V7_HAS_NONSEC
+	default y
+	---help---
+	Say Y here to enable support for booting in non-secure / SVC mode.
+
+config ARMV7_BOOT_SEC_DEFAULT
+	bool "Boot in secure mode by default" if EXPERT
+	depends on ARMV7_NONSEC
+	default y if ARCH_TEGRA
+	---help---
+	Say Y here to boot in secure mode by default even if non-secure mode
+	is supported. This option is useful to boot kernels which do not
+	suppport booting in non-secure mode. Only set this if you need it.
+	This can be overridden at run-time by setting the bootm_boot_mode env.
+	variable to "sec" or "nonsec".
+
+config HAS_ARMV7_SECURE_BASE
+	bool "Enable support for a ahardware secure memory area"
+	default y if ARCH_LS1021A || ARCH_MX7 || ARCH_MX7ULP || ARCH_STM32MP \
+			|| MACH_SUN6I || MACH_SUN7I || MACH_SUN8I || TEGRA124
+
+config ARMV7_SECURE_BASE
+	hex "Base address for secure mode memory"
+	depends on HAS_ARMV7_SECURE_BASE
+	default 0xfff00000 if TEGRA124
+	default 0x2ffc0000 if ARCH_STM32MP
+	default 0x2f000000 if ARCH_MX7ULP
+	default 0x10010000 if ARCH_LS1021A
+	default 0x00900000 if ARCH_MX7
+	default 0x00044000 if MACH_SUN8I
+	default 0x00020000 if MACH_SUN6I || MACH_SUN7I
+
+config ARMV7_SECURE_RESERVE_SIZE
+	hex
+	depends on TEGRA124 && HAS_ARMV7_SECURE_BASE
+	default 0x100000
+	help
+	  Reserve top 1M for secure RAM
+
+config ARMV7_SECURE_MAX_SIZE
+	hex
+	depends on ARMV7_SECURE_BASE && ARCH_STM32MP || MACH_SUN6I \
+			|| MACH_SUN7I || MACH_SUN8I
+	default 0xbc00 if MACH_SUN8I && !MACH_SUN8I_H3
+	default 0x3c00 if MACH_SUN8I && MACH_SUN8I_H3
+	default 0x10000
+
+config ARM_GIC_BASE_ADDRESS
+	hex
+	depends on ARMV7_NONSEC
+	depends on ARCH_EXYNOS5 || MACH_SUN8I_R528
+	default 0x10480000 if ARCH_EXYNOS5
+	default 0x03020000 if MACH_SUN8I_R528
+	help
+	  Override the GIC base address if the Arm Cortex defined
+	  CBAR/PERIPHBASE system register holds the wrong value.
+	  Used by the PSCI code to configure the secure side of the GIC.
+
+config ARMV7_VIRT
+	bool "Enable support for hardware virtualization" if EXPERT
+	depends on CPU_V7_HAS_VIRT && ARMV7_NONSEC
+	default y
+	---help---
+	Say Y here to boot in hypervisor (HYP) mode when booting non-secure.
+
+config ARMV7_PSCI
+	bool "Enable PSCI support" if EXPERT
+	depends on ARMV7_NONSEC && ARCH_SUPPORT_PSCI
+	default y
+	help
+	  Say Y here to enable PSCI support.
+
+choice
+	prompt "Supported PSCI version"
+	depends on ARMV7_PSCI
+	default ARMV7_PSCI_0_1 if ARCH_SUNXI
+	default ARMV7_PSCI_1_0
+	help
+	  Select the supported PSCI version.
+
+config ARMV7_PSCI_1_0
+	bool "PSCI V1.0"
+
+config ARMV7_PSCI_0_2
+	bool "PSCI V0.2"
+
+config ARMV7_PSCI_0_1
+	bool "PSCI V0.1"
+endchoice
+
+config ARMV7_PSCI_NR_CPUS
+	int "Maximum supported CPUs for PSCI"
+	depends on ARMV7_NONSEC
+	default 4
+	help
+	  The maximum number of CPUs supported in the PSCI firmware.
+	  It is no problem to set a larger value than the number of
+	  CPUs in the actual hardware implementation.
+
+config ARMV7_LPAE
+	bool "Use LPAE page table format" if EXPERT
+	depends on CPU_V7A
+	default y if ARMV7_VIRT
+	---help---
+	Say Y here to use the long descriptor page table format. This is
+	required if U-Boot runs in HYP mode.
+
+config ARMV7_SET_CORTEX_SMPEN
+	bool
+	help
+	  Enable the ARM Cortex ACTLR.SMP enable bit in U-Boot.
+
+config SPL_ARMV7_SET_CORTEX_SMPEN
+	bool
+	help
+	  Enable the ARM Cortex ACTLR.SMP enable bit on SPL startup.
+
+endif

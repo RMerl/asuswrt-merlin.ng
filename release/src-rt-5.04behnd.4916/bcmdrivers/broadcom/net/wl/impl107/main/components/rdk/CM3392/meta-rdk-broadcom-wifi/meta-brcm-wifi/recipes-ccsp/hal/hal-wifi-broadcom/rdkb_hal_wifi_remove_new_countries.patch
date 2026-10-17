@@ -1,0 +1,17 @@
+diff -urN a/wifi_hal.c b/wifi_hal.c
+--- a/wifi_hal.c
++++ b/wifi_hal.c
+@@ -7137,13 +7137,6 @@
+ 	{wifi_countrycode_ZA, "ZA"}, /**< SOUTH AFRICA */
+ 	{wifi_countrycode_ZM, "ZM"}, /**< ZAMBIA */
+ 	{wifi_countrycode_ZW, "ZW"}, /**< ZIMBABWE */
+-#if defined(WIFI_HAL_VERSION_GE_3_0_6)
+-	{wifi_countrycode_AX, "AX"}, /**< ALAND_ISLANDS */
+-	{wifi_countrycode_BL, "BL"}, /**< SAINT_BARTHELEMY */
+-	{wifi_countrycode_CW, "CW"}, /**< CURACAO */
+-	{wifi_countrycode_MF, "MF"}, /**< SAINT_MARTIN */
+-	{wifi_countrycode_SX, "SX"}, /**< SINT_MAARTEN */
+-#endif /* WIFI_HAL_VERSION_GE_3_0_6 */
+ 	{wifi_countrycode_max, NULL}, /**< Max number of country code */
+ };
+ 

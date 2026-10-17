@@ -1,0 +1,54 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2018, Bin Meng <bmeng.cn@gmail.com>
+
+config SIFIVE_FU540
+	bool
+	select ARCH_EARLY_INIT_R
+	select SUPPORT_SPL
+	select RAM
+	select SPL_RAM if SPL
+	imply CPU
+	imply CPU_RISCV
+	imply RISCV_TIMER if (RISCV_SMODE || SPL_RISCV_SMODE)
+	imply SPL_RISCV_ACLINT
+	imply CMD_CPU
+	imply SPL_CPU
+	imply SPL_OPENSBI
+	imply SPL_LOAD_FIT
+	imply SMP
+	imply CLK_SIFIVE
+	imply CLK_SIFIVE_PRCI
+	imply SIFIVE_CACHE
+	imply SIFIVE_CCACHE
+	imply SIFIVE_SERIAL
+	imply MACB
+	imply MII
+	imply SPI
+	imply SPI_SIFIVE
+	imply MMC
+	imply MMC_SPI
+	imply MMC_BROKEN_CD
+	imply CMD_MMC
+	imply DM_GPIO
+	imply SIFIVE_GPIO
+	imply CMD_GPIO
+	imply MISC
+	imply SIFIVE_OTP
+	imply DM_PWM
+	imply PWM_SIFIVE
+	imply DM_I2C
+	imply SYS_I2C_OCORES
+
+if ENV_IS_IN_SPI_FLASH
+
+config ENV_OFFSET
+	default 0x505000
+
+config ENV_SIZE
+	default 0x20000
+
+config ENV_SECT_SIZE
+	default 0x10000
+
+endif # ENV_IS_IN_SPI_FLASH

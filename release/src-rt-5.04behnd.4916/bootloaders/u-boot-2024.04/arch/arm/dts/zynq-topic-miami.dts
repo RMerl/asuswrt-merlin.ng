@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Topic Miami board DTS
+ *
+ * Copyright (C) 2014-2016 Topic Embedded Products
+ */
+/dts-v1/;
+#include "zynq-7000.dtsi"
+
+/ {
+	model = "Topic Miami Zynq Board";
+	compatible = "topic,miami", "xlnx,zynq-7000";
+
+	aliases {
+		serial0 = &uart0;
+		spi0 = &qspi;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		mmc0 = &sdhci0;
+		usbotg0 = &usb0;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x40000000>;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&qspi {
+	bootph-all;
+	status = "okay";
+	num-cs = <1>;
+	flash@0 {
+		compatible = "st,m25p80", "n25q256a", "jedec,spi-nor";
+		m25p,fast-read;
+		reg = <0x0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <100000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "qspi-u-boot-spl";
+			reg = <0x00000 0x10000>;
+		};
+		partition@10000 {
+			label = "qspi-u-boot-img";
+			reg = <0x10000 0x60000>;
+		};
+		partition@70000 {
+			label = "qspi-device-tree";
+			reg = <0x70000 0x10000>;
+		};
+		partition@80000 {
+			label = "qspi-linux";
+			reg = <0x80000 0x400000>;
+		};
+		partition@480000 {
+			label = "qspi-rootfs";
+			reg = <0x480000 0x1b80000>;
+		};
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <400000>;
+};
+
+&i2c1 {
+	status = "okay";
+	clock-frequency = <400000>;
+};
+
+&clkc {
+	ps-clk-frequency = <33333333>;
+};
+
+&sdhci0 {
+	bootph-all;
+	status = "okay";
+};
+
+&uart0 {
+	bootph-all;
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+};

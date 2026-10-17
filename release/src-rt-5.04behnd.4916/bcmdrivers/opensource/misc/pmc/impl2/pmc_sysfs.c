@@ -43,6 +43,7 @@ written consent.
 #include <linux/irqflags.h>
 #include <asm/io.h>
 #include <linux/dma-mapping.h>
+#include "bcm_memc.h"
 
 #ifdef CONFIG_PM
 extern struct kobject *power_kobj; 
@@ -377,9 +378,80 @@ static const struct bpcm_attribute dvfs_attrs[] = {
         { { "state_table", 0444, }, dvfs_pstates_get,      NULL, 0 },
 };
 
+
+static ssize_t en_set_thre_ddr_autosr(struct kobject *kobj, struct kobj_attribute *kattr, const char *buf, size_t count)
+{
+    uint32_t ddr_thre = 0;
+    char s_value[16];
+    ssize_t res = count;
+    int ret = 0;
+
+    sscanf(buf, "%s", s_value);
+
+    if (!strcmp("-1", s_value))
+    {
+        ret = disable_ddr_auto_self_refresh();
+        if (ret)
+            return ret;
+
+        return count;
+    }
+
+    if (kstrtouint(s_value, 0, &ddr_thre)) 
+    {
+        printk("%s: not a number\n", buf);
+        return -EEXIST;
+    }
+
+    ret = enable_ddr_auto_self_refresh(ddr_thre);
+    if (ret)
+    {
+        printk("ERROR: %s: failed (%d)\n", __FUNCTION__,ret);
+        res = ret;
+    }
+
+    return res;
+}
+
+static ssize_t dis_ddr_autosr(struct kobject *kobj, struct kobj_attribute *kattr, const char *buf, size_t count)
+{
+    int ret = 0;
+    ssize_t res = count;
+
+    ret = disable_ddr_auto_self_refresh();
+    if (ret)
+    {
+        printk("ERROR: %s: failed (%d)\n", __FUNCTION__,ret);
+        res = ret;
+    }
+
+    return res;
+}
+
+static ssize_t en_set_thre_ddr_autosr_dscr(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+    int thre = ddr_auto_self_refresh_thres_get();
+
+    if (thre == -1)
+        return -1;
+
+    return sprintf(buf, "%d\n", thre);
+}
+
+static ssize_t dis_ddr_autosr_dscr(struct kobject *kobj, struct kobj_attribute *kattr, char *buf)
+{
+    return sprintf(buf, "Disable DDR AUTO self Refresh\n");
+}
+
+
+static struct bpcm_attribute ddr_attrs[] = {
+        { { "en_set_thresh_ddr_autosr",    0644, }, en_set_thre_ddr_autosr_dscr, en_set_thre_ddr_autosr, 1},
+        { { "dis_ddr_ddr_autosr",   0644, }, dis_ddr_autosr_dscr, dis_ddr_autosr, 0 },
+};
+
 static int __init pmc_sysfs_init(void)
 {
-    struct kobject *bpcmkobj;
+    struct kobject *bpcmkobj, *memc_kobj, *ddr_kobj;
     struct kobject *dvfskobj;
     struct bpcm_attribute *pmcattr;
     unsigned d;
@@ -417,6 +489,31 @@ static int __init pmc_sysfs_init(void)
         pmcattr[d] = dvfs_attrs[d];
         sysfs_attr_init(&pmcattr[d].attr);
         error = sysfs_create_file(dvfskobj, (struct attribute *)&pmcattr[d]);
+    }
+
+    /* create memc object ourselves? */
+    if (!memc_kobj) {
+        memc_kobj = kobject_create_and_add("memc", NULL);
+        if (!memc_kobj)
+            return -ENOENT;
+    }
+
+    /* create ddr auto self refresh subdirectory */
+    ddr_kobj = kobject_create_and_add("ddr", memc_kobj);
+    if (!ddr_kobj) {
+            pr_err("failed to create subdirectory ddr under pwr\n");
+            return -ENOMEM;
+    }
+    d = ARRAY_SIZE(ddr_attrs);
+    while (d--) {
+            struct attribute *pattr = &ddr_attrs[d].attr;
+            sysfs_attr_init(pattr);
+            error = sysfs_create_file(ddr_kobj, pattr);
+            if (error) {
+                    pr_err("failed to create avs attr %s, error=%d\n",
+                                            pattr->name, error);
+                    return error;
+            }
     }
 
     return 0;

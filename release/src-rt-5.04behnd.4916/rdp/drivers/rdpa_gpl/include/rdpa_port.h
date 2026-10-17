@@ -244,5 +244,9 @@ typedef struct {
     uint32_t            ic_idx; /** < IC context for wan-wan loopback */
 } rdpa_port_loopback_t;
 
+#if defined(CONFIG_DYNAMIC_LB_LAG_SUPPORT)
+int rdpa_lag_hash_stat_get(uint32_t hash_idx, uint64_t *tx_bytes);
+#endif
+
 /** @} end of port Doxygen group */
 #endif /* _RDPA_PORT_H_ */

@@ -39,52 +39,38 @@ written consent.
 #define CFG_RAMAPP
 #endif
 
+
 #include "bcm_map_part.h"
 #include "bcm_mem_reserve.h"
 
-#ifndef IS_BCMCHIP
-#define IS_BCMCHIP(num) (defined(_BCM9##num##_) || \
-		defined(CONFIG_BCM9##num) || defined(CONFIG_BCM##num))
-#endif
-
-#if IS_BCMCHIP(63138)
-#include "pmc_addr_63138.h"
-#elif IS_BCMCHIP(63148)
-#include "pmc_addr_63148.h"
-#elif IS_BCMCHIP(6858)
+#if defined(_BCM96858_)
 #include "pmc_addr_6858.h"
-#elif IS_BCMCHIP(6846)
-#include "pmc_addr_6846.h"
-#elif IS_BCMCHIP(6878)
-#include "pmc_addr_6878.h"
-#elif IS_BCMCHIP(4908)
-#include "pmc_addr_4908.h"
-#elif IS_BCMCHIP(63158)
+#elif defined(_BCM963158_)
 #include "pmc_addr_63158.h"
-#elif IS_BCMCHIP(63178)
+#elif defined(_BCM963178_)
 #include "pmc_addr_63178.h"
-#elif IS_BCMCHIP(47622)
+#elif defined(_BCM947622_)
 #include "pmc_addr_47622.h"
-#elif IS_BCMCHIP(6856)
+#elif defined(_BCM96856_)
 #include "pmc_addr_6856.h"
-#elif IS_BCMCHIP(63146)
+#elif defined(_BCM963146_)
 #include "pmc_addr_63146.h"
-#elif IS_BCMCHIP(4912)
+#elif defined(_BCM94912_)
 #include "pmc_addr_4912.h"
-#elif IS_BCMCHIP(6813)
+#elif defined(_BCM96813_)
 #include "pmc_addr_6813.h"
-#elif IS_BCMCHIP(6855)
+#elif defined(_BCM96855_)
 #include "pmc_addr_6855.h"
-#elif IS_BCMCHIP(6756)
+#elif defined(_BCM96756_)
 #include "pmc_addr_6756.h"
-#elif IS_BCMCHIP(6888)
+#elif defined(_BCM96888_)
 #include "pmc_addr_6888.h"
 #include "bpcm_6888.h"
-#elif IS_BCMCHIP(6765)
+#elif defined(_BCM96765_)
 #include "pmc_addr_6765.h"
-#elif IS_BCMCHIP(6766)
+#elif defined(_BCM96766_)
 #include "pmc_addr_6766.h"
-#elif IS_BCMCHIP(6764)
+#elif defined(_BCM96764_)
 #include "pmc_addr_6764.h"
 #endif
 
@@ -120,7 +106,7 @@ extern int getAVSConfig(void);
 #include <linux/delay.h>
 void pmc_spin_lock(void);
 void pmc_spin_unlock(void);
-#if defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96855)
 void keyhole_spin_lock(void);
 void keyhole_spin_unlock(void);
 #endif
@@ -130,7 +116,7 @@ void keyhole_spin_unlock(void);
 #endif
 #define pmc_spin_lock(...) do { } while (0)
 #define pmc_spin_unlock(...) do { } while (0)
-#if defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96855)
 #define keyhole_spin_lock(...) do { } while (0)
 #define keyhole_spin_unlock(...) do { } while (0)
 #endif

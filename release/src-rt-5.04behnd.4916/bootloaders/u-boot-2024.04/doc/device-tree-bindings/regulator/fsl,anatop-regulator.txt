@@ -1,0 +1,45 @@
+ANATOP REGULATOR
+
+Anatop is an integrated regulator inside i.MX6 SoC.
+
+Required properties:
+- compatible:		Must be "fsl,anatop-regulator".
+- regulator-name:	Name of the regulator
+- anatop-reg-offset:	u32 value representing the anatop MFD register offset.
+- anatop-vol-bit-shift:	u32 value representing the bit shift for the register.
+- anatop-vol-bit-width:	u32 value representing the number of bits used in the
+			register.
+- anatop-min-bit-val:	u32 value representing the minimum value of this
+			register.
+- anatop-min-voltage:	u32 value representing the minimum voltage of this
+			regulator.
+- anatop-max-voltage:	u32 value representing the maximum voltage of this
+			regulator.
+
+Optional properties:
+- anatop-delay-reg-offset: u32 value representing the anatop MFD step time
+			   register offset.
+- anatop-delay-bit-shift: u32 value representing the bit shift for the step
+			  time register.
+- anatop-delay-bit-width: u32 value representing the number of bits used in
+			  the step time register.
+- anatop-enable-bit:	  u32 value representing regulator enable bit offset.
+- vin-supply:		  input supply phandle.
+
+Example:
+	regulator-vddpu {
+		compatible = "fsl,anatop-regulator";
+		regulator-name = "vddpu";
+		regulator-min-microvolt = <725000>;
+		regulator-max-microvolt = <1300000>;
+		regulator-always-on;
+		anatop-reg-offset = <0x140>;
+		anatop-vol-bit-shift = <9>;
+		anatop-vol-bit-width = <5>;
+		anatop-delay-reg-offset = <0x170>;
+		anatop-delay-bit-shift = <24>;
+		anatop-delay-bit-width = <2>;
+		anatop-min-bit-val = <1>;
+		anatop-min-voltage = <725000>;
+		anatop-max-voltage = <1300000>;
+	};

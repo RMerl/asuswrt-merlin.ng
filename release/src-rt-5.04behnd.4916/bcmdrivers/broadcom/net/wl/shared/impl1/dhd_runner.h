@@ -32,218 +32,102 @@
 
 #include <bcmmsgbuf.h>
 
-/* Enable miscellaneous acceleration features */
-#if defined(BCM_DHD_RUNNER)
+#if defined(BCM_DHD_OFFLOAD)
 
-/* DHD_D2H_SOFT_DOORBELL_SUPPORT enables D2H direct Runner thread wakeup */
-#define DHD_D2H_SOFT_DOORBELL_SUPPORT
+#include <dhd_offload.h>
 
-/**
- * DHD runner add-on features
- * Used by upper layers to query and enable
- */
-#define DHD_RNR_LBR_AGGR
-#define DHD_RNR_NO_NONACCPKT_TXSTSOFFL
+typedef struct dhd_offload              dhd_runner_hlp_t;
 
-/**
- * Runner need bigger ring sizes as it does not have any back up queues
- * Redefine PCIE ring max item sizes (bcmmsgbuf.h) to meet runner architecture
- */
-#if defined(H2DRING_TXPOST_MAX_ITEM)
-#undef H2DRING_TXPOST_MAX_ITEM
-#endif /* H2DRING_TXPOST_MAX_ITEM */
-#define H2DRING_TXPOST_MAX_ITEM                   2560
+#define DHD_RNR_LBR_AGGR                DHD_OFFLOAD_LBR_AGGR
+#define DHD_RNR_NO_NONACCPKT_TXSTSOFFL  DHD_OFFLOAD_NO_NONACCPKT_TXSTSOFFL
 
-#if defined(H2DRING_RXPOST_MAX_ITEM)
-#undef H2DRING_RXPOST_MAX_ITEM
-#endif /* H2DRING_RXPOST_MAX_ITEM */
-#define H2DRING_RXPOST_MAX_ITEM                  1024
+/* dhd_runner_dma_buf_t */
+#define ATTACH_R2D_WR_BUF               ATTACH_O2D_WR_BUF
+#define ATTACH_R2D_RD_BUF               ATTACH_O2D_RD_BUF
+#define ATTACH_D2R_WR_BUF               ATTACH_D2O_WR_BUF
+#define ATTACH_D2R_RD_BUF               ATTACH_D2O_RD_BUF
+#define DETACH_R2D_WR_BUF               DETACH_O2D_WR_BUF
+#define DETACH_R2D_RD_BUF               DETACH_O2D_RD_BUF
+#define DETACH_D2R_WR_BUF               DETACH_D2O_WR_BUF
+#define DETACH_D2R_RD_BUF               DETACH_D2O_RD_BUF
 
-#if defined(D2HRING_RXCMPLT_MAX_ITEM)
-#undef D2HRING_RXCMPLT_MAX_ITEM
-#endif /* H2DRING_RXPOST_MAX_ITEM */
-#define D2HRING_RXCMPLT_MAX_ITEM                 1024
+/* dhd_runner_ops_t */
+/* Host DHD to Runner Notifications (H ---> R) */
+#define H2R_DMA_BUF_NOTIF               D2O_DMA_BUF_NOTIF
+#define H2R_INIT_NOTIF                  D2O_INIT_NOTIF
+#define H2R_RXPOST_NOTIF                D2O_RXPOST_NOTIF
+#define H2R_RXPOST_FREE_NOTIF           D2O_RXPOST_FREE_NOTIF
+#define H2R_TXPOST_NOTIF                D2O_TXPOST_NOTIF
+#define H2R_RX_COMPL_NOTIF              D2O_RX_COMPL_NOTIF
+#define H2R_TX_COMPL_NOTIF              D2O_TX_COMPL_NOTIF
+#define H2R_FLRING_INIT_NOTIF           D2O_FLRING_INIT_NOTIF
 
-#endif /* BCM_DHD_RUNNER */
+#define H2R_FLRING_ENAB_NOTIF           D2O_FLRING_ENAB_NOTIF
+#define H2R_FLRING_DISAB_NOTIF          D2O_FLRING_DISAB_NOTIF
+#define H2R_FLRING_FLUSH_NOTIF          D2O_FLRING_FLUSH_NOTIF
+#define H2R_AGGR_CONFIG_NOTIF           D2O_AGGR_CONFIG_NOTIF
+#define H2R_TXSTS_CONFIG_NOTIF          D2O_TXSTS_CONFIG_NOTIF
+#define H2R_MSGRING_FORMAT_NOTIF        D2O_MSGRING_FORMAT_NOTIF
+#define H2R_RXPOST_REINIT_NOTIF         D2O_RXPOST_REINIT_NOTIF
+#define H2R_PCIE_IPC_CAP_NOTIF          D2O_PCIE_IPC_CAP_NOTIF
+#define H2R_PCIE_IPC_CAP1_NOTIF         D2O_PCIE_IPC_CAP1_NOTIF
+#define H2R_FLRING_BQSIZE_NOTIF         D2O_FLRING_BQSIZE_NOTIF
+#define H2R_PCAP_CFG_NOTIF              D2O_PCAP_CFG_NOTIF
 
-/* forward declerations */
-struct dhd_runner_hlp;
+#define H2R_IDX_BUF_RD_REQUEST          D2O_IDX_BUF_RD_REQUEST
+#define H2R_IDX_BUF_WR_REQUEST          D2O_IDX_BUF_WR_REQUEST
 
-/**
- * Types of DMA buffers shared between DHD and Runner
- * Used as sub_ops for dhd_runner_notify ops: H2R_DMA_BUF_NOTIF
- */
-typedef enum dhd_runner_dma_buf
-{
-	DMA_BUF_MASK    = 0xFFFF,
-
-	/** DMA Indices array buffers for: H2D WR and RD, and D2H WR and RD */
-	ATTACH_DMA_INDX_BUF    = 1 << 16, /* Alloc uncached and register */
-	ATTACH_R2D_WR_BUF      = ATTACH_DMA_INDX_BUF + H2D_DMA_INDX_WR_BUF,
-	ATTACH_R2D_RD_BUF      = ATTACH_DMA_INDX_BUF + H2D_DMA_INDX_RD_BUF,
-	ATTACH_D2R_WR_BUF      = ATTACH_DMA_INDX_BUF + D2H_DMA_INDX_WR_BUF,
-	ATTACH_D2R_RD_BUF      = ATTACH_DMA_INDX_BUF + D2H_DMA_INDX_RD_BUF,
-
-	DETACH_DMA_INDX_BUF    = 1 << 17, /* Free */
-	DETACH_R2D_WR_BUF      = DETACH_DMA_INDX_BUF + H2D_DMA_INDX_WR_BUF,
-	DETACH_R2D_RD_BUF      = DETACH_DMA_INDX_BUF + H2D_DMA_INDX_RD_BUF,
-	DETACH_D2R_WR_BUF      = DETACH_DMA_INDX_BUF + D2H_DMA_INDX_WR_BUF,
-	DETACH_D2R_RD_BUF      = DETACH_DMA_INDX_BUF + D2H_DMA_INDX_RD_BUF,
-
-
-	/** Common Rings and Flowrings DMA buf configuration */
-	ATTACH_RING_BUF        = 1 << 18,
-	DETACH_RING_BUF        = 1 << 19,
-	/* + ring_id to identify the common and flow rings */
-
-} dhd_runner_dma_buf_t;
-
-
-/**
- * Host(DHD) to Runner requests and Runner to host(DHD) notifications.
- */
-typedef enum dhd_runner_ops
-{
-	/* Host DHD to Runner Notifications (H ---> R) */
-	H2R_DMA_BUF_NOTIF,      /* Host notifies Runner to configure a DMA Buf */
-	H2R_INIT_NOTIF,         /* Host notifies Runner to complete configuration */
-	H2R_RXPOST_NOTIF,       /* Host notifies Runner to post initial buffers */
-	H2R_RXPOST_FREE_NOTIF,  /* Host notifies Runner to free buffers in RxPost */
-	H2R_TXPOST_NOTIF,       /* Host notifies Runner to post tx packets */
-	H2R_RX_COMPL_NOTIF,     /* Host notifies Runner to process D2H RxCompl */
-	H2R_TX_COMPL_NOTIF,     /* Host notifies Runner to process D2H TxCompl */
-
-	H2R_FLRING_INIT_NOTIF,  /* Host notifies Runner to init flowring cache entry */
-
-	H2R_FLRING_ENAB_NOTIF,  /* Host notifies Runner to enable a flowring */
-	H2R_FLRING_DISAB_NOTIF, /* Host notifies Runner to disable a flowring */
-	H2R_FLRING_FLUSH_NOTIF, /* Host notifies Runner to flush a flowring */
-	H2R_AGGR_CONFIG_NOTIF,  /* Host notifies Runner to configure aggregation */
-	H2R_TXSTS_CONFIG_NOTIF, /* Host notifies Runner to send nonaccpkt TXSTS */
-	H2R_MSGRING_FORMAT_NOTIF, /* Host notifies Runner message ring format and size */
-	H2R_RXPOST_REINIT_NOTIF,  /* Host notifies Runner to re-initialize RxPost buffers */
-	H2R_PCIE_IPC_CAP_NOTIF,  /* Host notifies DoR IPC Capabilities1 (mask, *cap) */
-	H2R_PCIE_IPC_CAP1_NOTIF = H2R_PCIE_IPC_CAP_NOTIF, /* for compatibility */
-	H2R_FLRING_BQSIZE_NOTIF, /* Host notifies Runner to update quueue depth */
-
-	/* Host DHD to Runner Requests (H ---> R) */
-	H2R_IDX_BUF_RD_REQUEST, /* Host requests Runner to read DMA index buffer */
-	H2R_IDX_BUF_WR_REQUEST, /* Host requests Runner to write DMA index buffer */
-
-	/* Runner to Host DHD Requests (R ---> H) */
-	R2H_RX_COMPL_REQUEST,   /* Runner requests Host to receive a packet */
-	R2H_TX_COMPL_REQUEST,   /* Runner requests Host to free a packet */
-	R2H_WAKE_DNGL_REQUEST,  /* Runner requests Host to wake dongle */
-
-} dhd_runner_ops_t;
+#define R2H_RX_COMPL_REQUEST            O2D_RX_COMPL_REQUEST
+#define R2H_TX_COMPL_REQUEST            O2D_TX_COMPL_REQUEST
+#define R2H_WAKE_DNGL_REQUEST           O2D_WAKE_DNGL_REQUEST
+typedef uint32                          dhd_runner_ops_t;
 
 /* configuration structure used for H2R_AGGR_CONFIG_NOTIF */
-typedef struct dhd_runner_aggr_config {
-	uint32 en_mask;       /* aggregation enable bit mask */
-	uint32 len;           /* aggregation number of packets */
-	uint32 timeout;       /* aggregation release timeout in msec */
-} dhd_runner_aggr_config_t;
+typedef dhd_offload_aggr_config_t dhd_runner_aggr_config_t;
 
 /**
  * H2R_TXSTS_CONFIG_NOTIF bitmap values
  */
-#define DHD_RNR_TXSTS_CFG_ACCPKT_OFFL       0x1
-#define DHD_RNR_TXSTS_CFG_NONACCPKT_OFFL    0x2
-#define DHD_RNR_TXSTS_CFG_OFFL_MASK         \
-	(DHD_RNR_TXSTS_CFG_ACCPKT_OFFL|DHD_RNR_TXSTS_CFG_NONACCPKT_OFFL)
+#define DHD_RNR_TXSTS_CFG_ACCPKT_OFFL   DHD_OFFLOAD_TXSTS_CFG_ACCPKT_OFFL
+#define DHD_RNR_TXSTS_CFG_NONACCPKT_OFFL DHD_OFFLOAD_TXSTS_CFG_NONACCPKT_OFFL
+#define DHD_RNR_TXSTS_CFG_OFFL_MASK      DHD_OFFLOAD_TXSTS_CFG_OFFL_MASK
 
 /**
  * H2R_PCIE_IPC_CAP_NOTIF bitmap values
  *
  * The values are not guaranteed to have same as PCIE_IPC_DCAPX_XXXX
  */
-#define H2R_PCIE_IPC_CAP_HBQD        0x00000002 /* DCAP2_PCIE_HBQD */
-#define H2R_PCIE_IPC_CAP_RX_CMPL_V2  0x00000004 /* DCAP2_RX_CMPL_V2 */
-#define H2R_PCIE_IPC_CAP_RX_CMPL_RCH 0x00000008 /* DCAP2_RX_CMPL_RCH */
-#define H2R_PCIE_IPC_CAP_BA256CFG    0x00000020 /* DCAP2_BA256 */
-#define H2R_PCIE_IPC_CAP_IDMA64      0x00000100 /* DCAP2_IDMA64 */
-#define H2R_PCIE_IPC_CAP_FFRD        0x00010000 /* DCAP1_FAST_DELETE_RING */
-
-/**
- * H2R_FLRING_BQSIZE_NOTIF bitmap values
- *
- * __________________________________________________________
- * |           SIZE                 |         FLAGS         |
- * ----------------------------------------------------------
- * |15|14|13|12|11|10| 9 | 8 | 7 | 6| 5 | 4 | 3 | 2 | 1 | 0 |
- * ----------------------------------------------------------
- * |                                |               | D | G |
- * ----------------------------------------------------------
- */
-/* Size should be in multiples of 64 */
-#define FLRING_BQSIZE_NOTIF_SIZE_MASK  (0xFFC0)
-#define FLRING_BQSIZE_NOTIF_FLAGS_MASK (0x003F)
-#define FLRING_BQSIZE_NOTIF_GROUP      (1ul << 0)
-#define FLRING_BQSIZE_NOTIF_DIRECT     (1ul << 1)
+#define H2R_PCIE_IPC_CAP_HBQD        D2O_PCIE_IPC_CAP_HBQD
+#define H2R_PCIE_IPC_CAP_RX_CMPL_V2  D2O_PCIE_IPC_CAP_RX_CMPL_V2
+#define H2R_PCIE_IPC_CAP_RX_CMPL_RCH D2O_PCIE_IPC_CAP_RX_CMPL_RCH
+#define H2R_PCIE_IPC_CAP_BA256CFG    D2O_PCIE_IPC_CAP_BA256CFG
+#define H2R_PCIE_IPC_CAP_IDMA64      D2O_PCIE_IPC_CAP_IDMA64
+#define H2R_PCIE_IPC_CAP_DUMMYTXC    D2O_PCIE_IPC_CAP_DUMMYTXC
+#define H2R_PCIE_IPC_CAP_FFRD        D2O_PCIE_IPC_CAP_FFRD
 
 /**
  * Configuration key id's
  */
-typedef enum dhd_runner_iovar {
-	DHD_RNR_IOVAR_PROFILE,    /* id for flowring profile configuration */
-	DHD_RNR_IOVAR_POLICY,     /* id for flowring profile configuration */
-	DHD_RNR_IOVAR_RXOFFL,     /* id for rx offload configuration */
-	DHD_RNR_IOVAR_RNR_STATS,  /* id for dhd runner intf stats */
-	DHD_RNR_IOVAR_DUMP,       /* id for dhd runner dump */
-	DHD_RNR_IOVAR_STATUS,     /* id for dhd runner flowrings */
-	DHD_RNR_MAX_IOVARS        /* delimiter */
-} dhd_runner_iovar_t;
+#define DHD_RNR_IOVAR_PROFILE        DHD_OFFLOAD_IOV_PROFILE
+#define DHD_RNR_IOVAR_POLICY         DHD_OFFLOAD_IOV_POLICY
+#define DHD_RNR_IOVAR_RXOFFL         DHD_OFFLOAD_IOV_RXOFFL
+#define DHD_RNR_IOVAR_RNR_STATS      DHD_OFFLOAD_IOV_STATS
+#define DHD_RNR_IOVAR_DUMP           DHD_OFFLOAD_IOV_DUMP
+#define DHD_RNR_IOVAR_STATUS         DHD_OFFLOAD_IOV_STATUS
+#define DHD_RNR_MAX_IOVARS           DHD_OFFLOAD_IOV_MAX
+typedef uint32                       dhd_runner_iovar_t;
 
 /* buffer structure used for DHD_RNR_IOVAR_RNR_STATS */
-typedef struct dhd_helper_rnr_stats {
-	uint16 ifidx;            /* interface index */
-
-	uint32 mcast_pkts;       /* TX multicast packets */
-	uint32 mcast_bytes;      /* TX multicast bytes */
-	uint32 dropped_pkts;     /* dropped TX packets */
-} dhd_helper_rnr_stats_t;
-
-typedef struct dhd_helper_feat {
-	uint32 txoffl:1;                  /* Tx post offload */
-	uint32 rxoffl:1;                  /* Rx post,complete offload */
-	uint32 txcmpl2host:1;             /* Tx complete to host for nonaccpkts */
-	uint32 dhdhdr:1;                  /* add llcsnap header */
-	uint32 lbraggr:1;                 /* lbr aggregation */
-	uint32 msgringformat:3;           /* msg ring formats */
-	uint32 bkupq:1;                   /* Runner backup queues */
-	uint32 hwawkup:1;                 /* ARM-HWA format to wake up dongle */
-	uint32 ffrd:1;                    /* fast flow ring delete support */
-	uint32 nplusm:1;                  /* Partial Tx offload mode (N+M) */
-	uint32 hbqd:1;                    /* Host backup queue depth */
-	uint32 dynbkupq:1;                /* Dynamic flow-ring backup queue size */
-	uint32 codel:1;                   /* Runner Codel feature */
-	uint32 cmnrngsz:1;                /* Configurable Common Ring Sizes */
-	uint32 rxcmplv2:1;                /* RxComplete V2 (TID) */
-	uint32 rxcmplrch:1;               /* RxComplete RCH (RxC in Headroom) */
-	uint32 ba256cfg:1;                /* Rings configuration for ba256 */
-	uint32 idma64:1;                  /* iDMA64 groups support */
-	uint32 idmagrpcfg:1;              /* iDMA group configuration */
-} dhd_helper_feat_t;
-
+typedef dhd_offload_stats_t          dhd_helper_rnr_stats_t;
+typedef dhd_offload_feat_t           dhd_helper_feat_t;
 /* buffer structure used for DHD_RNR_IOVAR_RNR_STATUS */
-typedef struct dhd_helper_status {
-	dhd_helper_feat_t sup_features;   /* supported runner features */
-	dhd_helper_feat_t en_features;    /* enabled runner features */
-	uint16 hw_flowrings;              /* Total HW flowrings */
-	uint16 sw_flowrings;              /* Total SW flowrings */
-} dhd_helper_status_t;
+typedef dhd_offload_status_t         dhd_helper_status_t;
 
 /* structure used for sending non-accelerated TXSTS messages to prot layer */
-typedef struct dhd_runner_txsts {
-	host_txbuf_cmpl_t dngl_txsts; /* txsts message from dongle */
-	void *pkt;                    /* tx packet */
-} dhd_runner_txsts_t;
+typedef dhd_offload_txsts_t          dhd_runner_txsts_t;
 
 /* structure used for sending non-accelerated RXCMPL messages to prot layer */
-typedef struct dhd_runner_rxcmplt {
-	host_rxbuf_cmpl_t dngl_rxcmplt; /* rx complete message from dongle */
-	void *pkt;                      /* rx packet */
-} dhd_runner_rxcmplt_t;
+typedef dhd_offload_rxcmplt_t        dhd_runner_rxcmplt_t;
 
 /**
  * dhd_runner_attach():
@@ -256,69 +140,98 @@ typedef struct dhd_runner_rxcmplt {
  * At this point in time, the DHD does not know the number of TxPost flowrings
  * that are advertized by the dongle (dhd_prot_init phase)
  */
-extern struct dhd_runner_hlp *dhd_runner_attach(dhd_pub_t *dhd,
-	bcmpcie_soft_doorbell_t *soft_doobells);
-
+static inline dhd_runner_hlp_t *dhd_runner_attach(dhd_pub_t *dhd,
+	bcmpcie_soft_doorbell_t *soft_doorbells)
+{
+	return (dhd_runner_hlp_t *)dhd_offload_attach(dhd, soft_doorbells);
+}
 /**
  * dhd_runner_detach():
  * Runner de-initializes itself.
  * Invoked as part of rmmod, dhd_dettach -> dhd_prot_dettach
  */
-extern void dhd_runner_detach(dhd_pub_t * dhd, struct dhd_runner_hlp *dhd_hlp);
-
-
+static inline void dhd_runner_detach(dhd_pub_t * dhd, dhd_runner_hlp_t *dhd_hlp)
+{
+	return dhd_offload_detach(dhd, (struct dhd_offload_obj *)dhd_hlp);
+}
 /**
  * dhd_runner_notify():
  * Host DHD notifies Runner to perform an operation.
  */
-extern int dhd_runner_notify(struct dhd_runner_hlp *dhd_hlp,
-	dhd_runner_ops_t ops, unsigned long arg1, unsigned long arg2);
-
+static inline int dhd_runner_notify(dhd_runner_hlp_t *dhd_hlp,
+	dhd_runner_ops_t ops, unsigned long arg1, unsigned long arg2)
+{
+	return dhd_offload_notify((struct dhd_offload_obj *)dhd_hlp, ops, arg1, arg2);
+}
 /**
  * dhd_runner_request():
  * Runner requests Host DHD to handle an operation.
  */
-extern int dhd_runner_request(struct dhd_runner_hlp *dhd_hlp,
-	dhd_runner_ops_t ops, unsigned long arg1, unsigned long arg2);
-
+static inline int dhd_runner_request(dhd_runner_hlp_t *dhd_hlp,
+	dhd_runner_ops_t ops, unsigned long arg1, unsigned long arg2)
+{
+	return dhd_offload_request((struct dhd_offload_obj *)dhd_hlp, ops, arg1, arg2);
+}
 /**
  * dhd_runner_flowmgr_init():
  * Initializes a flowid allocator for Runner.
  */
-extern void *dhd_runner_flowmgr_init(struct dhd_runner_hlp *dhd_hlp,
-	int max_h2d_rings, int max_bss);
-
+static inline void *dhd_runner_flowmgr_init(dhd_runner_hlp_t *dhd_hlp,
+	int max_h2d_rings, int max_bss)
+{
+	return dhd_offload_flowmgr_init((struct dhd_offload_obj *)dhd_hlp, max_h2d_rings,
+	    max_bss);
+}
 /**
  * dhd_runner_flowmgr_fini():
  * Deallocates a flowid allocator for Runner.
  */
-extern void *dhd_runner_flowmgr_fini(struct dhd_runner_hlp *dhd_hlp,
-	void *flowmgr);
-
+static inline void *dhd_runner_flowmgr_fini(dhd_runner_hlp_t *dhd_hlp,
+	void *flowmgr)
+{
+	return dhd_offload_flowmgr_fini((struct dhd_offload_obj *)dhd_hlp, flowmgr);
+}
 /**
  * dhd_runner_flowmgr_alloc():
  * Allocate a flowid, given the sta, wme_ac
  */
-extern uint16 dhd_runner_flowmgr_alloc(void *flowmgr,
-	int ifidx, int prio, uint8 *mac, bool d11ac, bool *is_hw_ring);
-
+static inline uint16 dhd_runner_flowmgr_alloc(void *flowmgr,
+	int ifidx, int prio, uint8 *mac, bool d11ac, bool *is_hw_ring)
+{
+	return dhd_offload_flowmgr_alloc(flowmgr, ifidx, prio, mac, d11ac,
+	    is_hw_ring);
+}
 /**
  * dhd_runner_flowmgr_free():
  * Free a previously allocated flowid
  */
-extern int dhd_runner_flowmgr_free(void *flowmgr, uint16 flow_id);
-
+static inline int dhd_runner_flowmgr_free(void *flowmgr, uint16 flow_id)
+{
+	return dhd_offload_flowmgr_free(flowmgr, flow_id);
+}
 /**
  * dhd_runner_do_iovar():
  * Fill the iovar buffer with the profiles information
  */
-extern int dhd_runner_do_iovar(struct dhd_runner_hlp *dhd_hlp,
-	dhd_runner_iovar_t key, bool set, char *buf, int buflen);
-
+static inline int dhd_runner_do_iovar(dhd_runner_hlp_t *dhd_hlp,
+	dhd_runner_iovar_t key, bool set, char *buf, int buflen)
+{
+	return dhd_offload_do_iov((struct dhd_offload_obj *)dhd_hlp, key, set, buf,
+	    buflen);
+}
 /**
  * dhd_runner_process_cpu_queue():
  * Process the Runner-> Host CPU Queue for TxComplete and RxComplete messages
  */
-extern bool dhd_runner_process_cpu_queue(struct dhd_runner_hlp *dhd_hlp, bool resched);
+static inline bool dhd_runner_process_cpu_queue(dhd_runner_hlp_t *dhd_hlp,
+	bool resched)
+{
+	return dhd_offload_process_cpu_queue((struct dhd_offload_obj *)dhd_hlp,
+	    resched);
+}
+#else
 
+#error "BCM_DHD_RUNNER deprecated, use code that supports BCM_DHD_OFFLOAD"
+
+#endif /* BCM_DHD_OFFLOAD */
 #endif /* _dhd_runner_h_ */

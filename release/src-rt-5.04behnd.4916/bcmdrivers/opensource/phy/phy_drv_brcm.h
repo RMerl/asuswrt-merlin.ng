@@ -79,6 +79,9 @@ int brcm_rdb_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val);
 int brcm_egphy_read(phy_dev_t *phy_dev, uint16_t reg, uint16_t *val);
 int brcm_egphy_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val);
 
+int brcm_egphy_mdix_mode_set(phy_dev_t *phy_dev, phy_mdix_t mdix_mode);
+int brcm_egphy_mdix_mode_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode);
+int brcm_egphy_mdix_status_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode);
 int brcm_egphy_force_auto_mdix_set(phy_dev_t *phy_dev, int enable);
 int brcm_egphy_force_auto_mdix_get(phy_dev_t *phy_dev, int *enable);
 
@@ -108,6 +111,9 @@ int brcm_shadow_1c_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val);
 int brcm_shadow_18_ext_pkt_len_set(phy_dev_t *phy_dev, int enable);
 int brcm_shadow_18_ext_pkt_len_get(phy_dev_t *phy_dev, int *enable);
 
+int brcm_shadow_18_mdix_mode_set(phy_dev_t *phy_dev, phy_mdix_t mdix_mode);
+int brcm_shadow_18_mdix_mode_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode);
+int brcm_shadow_18_mdix_status_get(phy_dev_t *phy_dev, phy_mdix_t *mdix_mode);
 int brcm_shadow_18_force_auto_mdix_set(phy_dev_t *phy_dev, int enable);
 int brcm_shadow_18_force_auto_mdix_get(phy_dev_t *phy_dev, int *enable);
 
@@ -121,6 +127,7 @@ int brcm_shadow_rgmii_init(phy_dev_t *phy_dev);
 int brcm_loopback_set(phy_dev_t *phy_dev, int enable, phy_speed_t speed);
 int brcm_loopback_get(phy_dev_t *phy_dev, int *enable, phy_speed_t *speed);
 
+int brcm_egphy_eee_mode_set(phy_dev_t *phy_dev, int autogreeen);
 
 #define IsC45Phy(phy) (phy->phy_drv && phy->phy_drv->phy_type == PHY_TYPE_EXT3)
 

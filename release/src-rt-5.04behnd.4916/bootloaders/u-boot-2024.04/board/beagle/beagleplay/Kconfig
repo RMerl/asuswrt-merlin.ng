@@ -1,0 +1,60 @@
+# SPDX-License-Identifier:     GPL-2.0+
+#
+# Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+# Copyright (C) 2022-2023 Robert Nelson, BeagleBoard.org Foundation
+#
+
+choice
+	prompt "BeagleBoard.org AM625 based BeaglePlay board"
+	optional
+
+config TARGET_AM625_A53_BEAGLEPLAY
+	bool "BeagleBoard.org AM625 BeaglePlay running on A53"
+	select ARM64
+	select BINMAN
+
+config TARGET_AM625_R5_BEAGLEPLAY
+	bool "BeagleBoard.org AM625 BeaglePlay running on R5"
+	select CPU_V7R
+	select SYS_THUMB_BUILD
+	select K3_LOAD_SYSFW
+	select RAM
+	select SPL_RAM
+	select K3_DDRSS
+	select BINMAN
+	imply SYS_K3_SPL_ATF
+
+endchoice
+
+if TARGET_AM625_A53_BEAGLEPLAY
+
+config SYS_BOARD
+       default "beagleplay"
+
+config SYS_VENDOR
+       default "beagle"
+
+config SYS_CONFIG_NAME
+       default "am62x_evm"
+
+source "board/ti/common/Kconfig"
+
+endif
+
+if TARGET_AM625_R5_BEAGLEPLAY
+
+config SYS_BOARD
+       default "beagleplay"
+
+config SYS_VENDOR
+       default "beagle"
+
+config SYS_CONFIG_NAME
+       default "am62x_evm"
+
+config SPL_LDSCRIPT
+	default "arch/arm/mach-omap2/u-boot-spl.lds"
+
+source "board/ti/common/Kconfig"
+
+endif

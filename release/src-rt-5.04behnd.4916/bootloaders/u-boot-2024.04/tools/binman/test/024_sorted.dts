@@ -1,0 +1,17 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		sort-by-offset;
+		u-boot {
+			offset = <30>;
+		};
+
+		u-boot-spl {
+			offset = <1>;
+		};
+	};
+};

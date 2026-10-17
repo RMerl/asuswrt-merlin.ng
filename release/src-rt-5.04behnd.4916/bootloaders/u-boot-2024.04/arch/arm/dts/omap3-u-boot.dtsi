@@ -1,0 +1,82 @@
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - https://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * Based on "omap5-u-boot.dtsi"
+ */
+
+/{
+	ocp@68000000 {
+		bootph-pre-ram;
+
+		bandgap@48002524 {
+			bootph-pre-ram;
+		};
+	};
+};
+
+&uart1 {
+	bootph-pre-ram;
+	reg-shift = <2>;
+};
+
+&uart2 {
+	bootph-pre-ram;
+	reg-shift = <2>;
+};
+
+&uart3 {
+	bootph-pre-ram;
+	reg-shift = <2>;
+};
+
+&mmc1 {
+	bootph-pre-ram;
+};
+
+&mmc2 {
+	bootph-pre-ram;
+};
+
+&l4_core {
+	bootph-pre-ram;
+};
+
+&scm {
+	bootph-pre-ram;
+};
+
+&scm_conf {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&gpio6 {
+	bootph-pre-ram;
+};
+
+&i2c1 {
+	bootph-pre-ram;
+	clock-frequency = <100000>;
+};

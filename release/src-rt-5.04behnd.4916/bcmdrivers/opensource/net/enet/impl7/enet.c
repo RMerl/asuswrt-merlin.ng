@@ -47,7 +47,6 @@
 #include "crossbar_dev.h"
 #include "bcmenet_proc.h"
 #include "enet_dbg.h"
-#include "bcmenet_tc.h"
 #include "enet_bonding.h"
 #ifdef RUNNER
 #include "rdpa_api.h"
@@ -80,6 +79,12 @@
 #endif
 #include "fm_nft.h"
 
+#ifdef CONFIG_BCM_ENET_EGRESS_TC
+#include "enet_egress_tc.h"
+#endif
+#ifdef ENET_TC_INGRESS_CONFIG
+#include "bcm_tc.h"
+#endif
 
 #ifdef CONFIG_BCM_ETHTOOL
 #include "bcmenet_ethtool.h"
@@ -93,6 +98,11 @@ extern int flctl_lite_handle(struct sk_buff *skb);
 
 int register_enet_platform_device(void);
 
+#ifdef CONFIG_BCM_ENET_EGRESS_TC
+#define ENET_MAX_NUM_OF_TXQS 32
+#else
+#define ENET_MAX_NUM_OF_TXQS 1
+#endif
 
 /*
  * Model an EAP forwarder to leverage PKTFWD handoff to WLAN
@@ -125,8 +135,11 @@ static int open_count;
 static int bp3_htoa_license = 0;
 #endif
 
-#if defined (CONFIG_BRCM_QEMU)
+#if defined(CONFIG_BRCM_QEMU)
 uint32_t g_qemu_test_rx_pkt;
+#if !defined(CONFIG_BCM_QEMU_SIM)
+extern uint8_t g_qemu_data[1536];
+#endif
 #endif
 
 enetx_port_t *root_sw;
@@ -139,18 +152,28 @@ enetx_port_t *root_sw;
 */
 static struct semaphore enet_init_sem;
 bool enet_init_done = false;
-EXPORT_SYMBOL(enet_init_done);
 
-void wait_enet_ready(void)
+void wait_enet_ready(bool under_rtnl)
 {
     /* In non delay case, there could be multiple paths calling to here from the main insmod thread and cause dead lock loop;
         filtering out such calls here in center place will remove all these dead lock loops from different sources */
 #if defined(ENET_DELAYED_INIT)
     if (!enet_init_done)
     {
+        if (under_rtnl)
+        {
+            /* yield rtnl to other threads, and block the caller by enet_init_sem instead */
+            ASSERT_RTNL();
+            rtnl_unlock();
+        }
         /* block here until init done */
         pr_notice_once("%s ...\n", __FUNCTION__); /* always prints out this to to avoid silent wait */
         down(&enet_init_sem);
+        if (under_rtnl)
+        {
+            /* re-acquire rtnl */
+            rtnl_lock();
+        }
         up(&enet_init_sem);
         pr_notice_once("%s done\n", __FUNCTION__);
     }
@@ -185,13 +208,12 @@ int enetx_queue_work(enetx_work_func_t func, void *arg1, int arg2)
     return 0;
 }
 
-void set_mac_cfg_by_phy(enetx_port_t *p)
+static void set_mac_cfg_by_phy(enetx_port_t *p)
 {
     mac_dev_t *mac_dev = p->p.mac;
     phy_dev_t *phy_dev = p->p.phy;
     mac_cfg_t mac_cfg = {};
 
-    mac_dev_disable(mac_dev);
     mac_dev_cfg_get(mac_dev, &mac_cfg);
 
     if (phy_dev->speed == PHY_SPEED_10)
@@ -216,12 +238,12 @@ void set_mac_cfg_by_phy(enetx_port_t *p)
     if (phy_dev->link)
     {
         mac_dev_pause_set(mac_dev, phy_dev->pause_rx, phy_dev->pause_tx, p->dev ? p->dev->dev_addr : eth_internal_pause_addr);
-        mac_dev_enable(mac_dev);
     }
 }
 
-void set_mac_eee_by_phy(enetx_port_t *p)
+static void set_mac_eee_by_phy(void *arg1, int arg2)
 {
+    enetx_port_t *p = arg1;
     mac_dev_t *mac_dev = p->p.mac;
     phy_dev_t *phy_dev = p->p.phy;
     int enabled = 0;
@@ -237,11 +259,6 @@ void set_mac_eee_by_phy(enetx_port_t *p)
     mac_dev_eee_set(mac_dev, enabled);
 }
 
-static void _set_mac_eee_by_phy(void *p, int a)
-{
-    set_mac_eee_by_phy((enetx_port_t *)p);
-}
-
 static void synce_eth_link_change_cb(phy_dev_t *phy_dev)
 {
     void (*cb)(phy_dev_t *) = (void (*)(phy_dev_t *))bcmFun_get(BCM_FUN_ID_SYNCE_ETH_LINK_CHANGE);
@@ -250,37 +267,37 @@ static void synce_eth_link_change_cb(phy_dev_t *phy_dev)
         cb(phy_dev);
 }
 
-void phy_link_change_cb(void *ctx) /* ctx is a PORT_CLASS_PORT enetx_port_t */ 
+static void _set_cfg_by_phy(enetx_port_t *p)
 {
-    enetx_port_t *p = ctx;
+    if (p == NULL || p->p.phy == NULL || p->p.mac == NULL)
+        return;
 
     p->p.phy_last_change = (jiffies * 100) / HZ;
+
+    /* Print new status to console */
+    if (p->dev)
+        port_print_status(p);
+
+    mac_dev_disable(p->p.mac);
+
+    /* Align speed of previous PHY(s) */
     phy_dev_status_propagate(p->p.phy);
 
-    if (p->p.mac)
-    {
-        /* Update mac cfg according to phy */
-        set_mac_cfg_by_phy(p);
-
-        /* Update mac eee according to phy */
-        enetx_queue_work(_set_mac_eee_by_phy, p, 0);
-    }
+    /* Update the MAC configuration according to the PHY */
+    set_mac_cfg_by_phy(p);
 
     if (p->dev)
     {
-        /* Print new status to console */
-        port_print_status(p);
-
         if (p->p.phy->link)
         {
-            if(!netif_carrier_ok(p->dev))
+            if (!netif_carrier_ok(p->dev))
             {
                 netif_carrier_on(p->dev);
             }
         }
         else
         {
-            if(netif_carrier_ok(p->dev))
+            if (netif_carrier_ok(p->dev))
             {
                 netif_carrier_off(p->dev);
             }
@@ -288,12 +305,23 @@ void phy_link_change_cb(void *ctx) /* ctx is a PORT_CLASS_PORT enetx_port_t */
     }
 
     port_link_change(p, p->p.phy->link);
+
     if (p->p.phy->link && p->p.phy->macsec_dev)
     {
         uint64_t restart = 0;
         phy_dev_macsec_oper(p->p.phy, &restart);
     }
+
     synce_eth_link_change_cb(p->p.phy);
+
+    if (p->p.phy->link)
+        mac_dev_enable(p->p.mac);
+}
+
+void phy_link_change_cb(void *ctx) /* ctx is a PORT_CLASS_PORT enetx_port_t */ 
+{
+    _set_cfg_by_phy(ctx);
+    enetx_queue_work(set_mac_eee_by_phy, ctx, 0);
 }
 
 static inline void dumpHexData1(uint8_t *pHead, uint32_t len)
@@ -354,7 +382,7 @@ static inline int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_
         return -1;
     }
     skb_headerinit((BCM_PKT_HEADROOM + rx_info->data_offset), 
-#if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
+#if defined(CC_NBUFF_FLUSH_OPTIMIZATION) || defined(CONFIG_CPU_RX_FROM_XPM)
             SKB_DATA_ALIGN(fkb->len + BCM_SKB_TAILROOM + rx_info->data_offset),
 #else
             BCM_MAX_PKT_LEN - rx_info->data_offset,
@@ -364,14 +392,15 @@ static inline int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_
     ETH_GBPM_TRACK_SKB( skb, GBPM_VAL_ALLOC, 0);
     ETH_GBPM_TRACK_SKB( skb, GBPM_VAL_RX, 0);
 
+    skb_trim(skb,fkb->len);
+
     if (port->p.ops->rx_pkt_swtag_mod)
         port->p.ops->rx_pkt_swtag_mod(port, skb);
-
-    skb_trim(skb,fkb->len);
 
     skb->recycle_flags &= SKB_NO_RECYCLE; /* no skb recycle,just do data recyle */
     skb->recycle_flags |= rx_info->extra_skb_flags;
 
+    skbuff_bcm_ext_iq_prio_set(skb, rx_info->iq_prio);
     skb->priority = fkb->priority;
     skb->dev = dev;
 
@@ -428,10 +457,7 @@ static inline int rx_skb(FkBuff_t *fkb, enetx_port_t *port, enetx_rx_info_t *rx_
     return 0;
 }
 
-#ifdef CONFIG_BRCM_QEMU
-extern uint8_t g_qemu_data[1536];
-#endif
-
+extern int axltest;
 /* Read up to budget packets from queue.
  * Return number of packets received on queue */
 static inline int rx_pkt_from_q(int hw_q_id, int budget)
@@ -465,14 +491,14 @@ static inline int rx_pkt_from_q(int hw_q_id, int budget)
         rc = enetxapi_rx_pkt(hw_q_id, &fkb, &rx_info);
         if (unlikely(rc))
         { 
-#ifdef CONFIG_BRCM_QEMU
+#if defined(CONFIG_BRCM_QEMU) && !defined(CONFIG_BCM_QEMU_SIM)
             if (unlikely(rc != BDMF_ERR_NO_MORE) && unlikely(rc != BDMF_ERR_PARM))
                 printk("===>QEMU pckt[%d] not recieved\n", g_qemu_test_rx_pkt);
 #endif
             continue;
         }
 
-#ifdef CONFIG_BRCM_QEMU
+#if defined(CONFIG_BRCM_QEMU) && !defined(CONFIG_BCM_QEMU_SIM)
         if (memcmp((void*)fkb->data, (void *)&g_qemu_data, fkb->len - 14) != 0)
         {
             printk("==============================>len[%d]\n",fkb->len);
@@ -488,7 +514,7 @@ static inline int rx_pkt_from_q(int hw_q_id, int budget)
         if (unlikely(g_debug_mode))
         {
             count++;
-            enetxapi_fkb_databuf_recycle(PDATA_TO_PFKBUFF(fkb, BCM_PKT_HEADROOM));
+            enetxapi_fkb_databuf_recycle(fkb);
             continue;
         }
 #endif
@@ -527,6 +553,13 @@ static inline int rx_pkt_from_q(int hw_q_id, int budget)
         enet_dbg_rx("rx >>>> %s \n", port->obj_name);
         dumpHexData1(fkb->data, fkb->len);
 #endif
+        if (axltest)
+        {
+            printk("rx >>>> %s \n", port->obj_name);
+            dumpHexData1(fkb->data, fkb->len);
+            printk("\n");
+        }
+
         if (is_multicast_ether_addr(fkb->data))
         {
             //dumpHexData1(fkb->data, fkb->len);
@@ -563,6 +596,13 @@ static inline int rx_pkt_from_q(int hw_q_id, int budget)
 #if defined(CONFIG_BLOG)
         /* Copy over multicast forwarding exception indication to flow-cache */
         fc_args.group_fwd_exception = rx_info.is_group_fwd_exception;
+#ifdef RUNNER
+        /* When blog_mcast_learn_pkt_drop_g is disabled, group_fwd_and_trap
+           will be treated as group_fwd_exception*/
+        if (unlikely(!blog_mcast_learn_pkt_drop_g))
+            fc_args.group_fwd_exception |= (rx_info.reason == rdpa_cpu_rx_reason_group_fwd_and_trap);
+#endif
+            
         fc_args.fc_ctxt = rx_info.fc_ctxt;
 
 #if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
@@ -705,7 +745,7 @@ static int enet_open(struct net_device *dev)
     enetx_channel *chan = enetx_channels;
     enetx_port_t *port = ((enetx_netdev *)netdev_priv(dev))->port;
 
-    wait_enet_ready();
+    wait_enet_ready(true);
     enet_opened++;
     if (port->port_class == PORT_CLASS_SW)
         return 0;
@@ -730,9 +770,6 @@ static int enet_open(struct net_device *dev)
 
     netif_start_queue(dev);
 
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-    bcmenet_tc_enet_open(dev);
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
     return 0;
 }
 
@@ -741,6 +778,7 @@ static int enet_stop(struct net_device *dev)
     enetx_channel *chan = enetx_channels;
     enetx_port_t *port = ((enetx_netdev *)netdev_priv(dev))->port;
 
+    wait_enet_ready(true);
     if (port->port_class == PORT_CLASS_SW)
         return 0;
 
@@ -749,10 +787,6 @@ static int enet_stop(struct net_device *dev)
     netif_stop_queue(dev);
 
     port_stop(port);
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-    bcmenet_tc_enet_stop(dev);
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
-
     open_count--;
 
     if (open_count == 0)
@@ -922,8 +956,8 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
 #if defined(DSL_DEVICES) || defined(FLOW_BASED_PRIORITY)
         else if ( isDpConfigured )
         {
-            /* This means the drop precedence has been configured in vlanctl module.
-               For GPON implementations, the drop precedence is set via the vlanctl module
+            /* This means the drop precedence has been configured in data path.
+               For GPON implementations, the drop precedence is set via data path
                and typically the TC ID value in the skb->mark is not set.
                So, pass down the drop eligibility value to runner as a TC value with
                possible TC values of 0 and 1 with TC value 0 being high priority and  1
@@ -1016,6 +1050,13 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
         enet_dbg_tx("tx %s >>>>\n", port->obj_name);
         dumpHexData1(data, len);
 #endif
+
+        if (axltest)
+        {
+            printk("tx %s >>>>\n", port->obj_name);
+            dumpHexData1(data, len);
+            printk("\n");
+        }
 
         /* 
          * 1. Check the least significant bit of an address's first octet is
@@ -1145,11 +1186,9 @@ static void enet_get_stats64(struct net_device *dev, struct rtnl_link_stats64 *n
 
 extern int enet_ioctl_compat(struct net_device *dev, struct ifreq *rq, int cmd);
 /* Called with rtnl_lock */
-static int enet_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+static int enet_eth_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 {
-    int rc;
-
-    wait_enet_ready();
+    wait_enet_ready(true);
     switch (cmd)
     {
         case SIOCGMIIPHY:
@@ -1160,11 +1199,16 @@ static int enet_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 #else
             return _handle_mii(dev, ifr, cmd);
 #endif
+#ifdef CONFIG_BCM_PTP_1588
+        case SIOCSHWTSTAMP:
+            return ptp_ioctl_hwtstamp_set(dev, ifr);
+        case SIOCGHWTSTAMP:
+            return ptp_ioctl_hwtstamp_get(dev, ifr);
+#endif
     }
 
-#ifdef IOCTL_COMPAT
-    rc = enet_ioctl_compat(dev, ifr, cmd);
-    return rc;
+#if defined(IOCTL_COMPAT) && (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+    return enet_ioctl_compat(dev, ifr, cmd);
 #else
     return -EOPNOTSUPP;
 #endif
@@ -1173,8 +1217,14 @@ static int enet_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
 static int enet_ioctl_private(struct net_device *dev, struct ifreq *ifr, void *ptr, int cmd)
 {
+    wait_enet_ready(true);
+
 	ifr->ifr_data=ptr;
-	return enet_ioctl(dev, ifr, cmd);
+#ifdef IOCTL_COMPAT
+    return enet_ioctl_compat(dev, ifr, cmd);
+#else
+    return -EOPNOTSUPP;
+#endif
 }
 #endif
 
@@ -1234,28 +1284,91 @@ static int __fm_setup_tc(struct net_device *dev, enum tc_setup_type type, void *
 }
 #endif
 
+static int enet_setup_tc_block(struct net_device *dev, void *type_data)
+{
+    int rc = -EOPNOTSUPP;
+
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+    rc = enet_setup_policer_tc_block(dev, type_data);
+#endif
+
+#if defined(ENET_TC_INGRESS_CONFIG)
+    if (((struct flow_block_offload *)type_data)->binder_type == FLOW_BLOCK_BINDER_TYPE_CLSACT_INGRESS)
+        rc = tc_ingress_setup_block(dev, type_data);
+#endif
+
+    return rc;
+}
+
+static int enet_setup_tc(struct net_device *dev, enum tc_setup_type type,
+			     void *type_data)
+{
+    switch (type) {
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+    case TC_SETUP_QDISC_MQPRIO:
+        return enet_setup_mqprio(dev, type_data);
+    case TC_SETUP_QDISC_PON:
+        return enet_setup_pon(dev, type_data);
+    case TC_SETUP_QDISC_ETS:
+        return enet_setup_ets(dev, type_data);
+    case TC_SETUP_QDISC_HTB:
+        return enet_setup_htb(dev, type_data);
+    case TC_SETUP_QDISC_RED:
+        return enet_setup_red(dev, type_data);
+    case TC_SETUP_QDISC_GRED:
+        return enet_setup_gred(dev, type_data);
+    case TC_SETUP_QDISC_PIE:
+        return enet_setup_pie(dev, type_data);
+    case TC_SETUP_QDISC_DUALPI2:
+        return enet_setup_dualpi2(dev, type_data);
+#endif /* defined(CONFIG_BCM_ENET_EGRESS_TC) */
+    case TC_SETUP_BLOCK:
+        return enet_setup_tc_block(dev, type_data);
+#if defined(CONFIG_BCM_NFT_OFFLOAD)
+    case TC_SETUP_FT:
+        return __fm_setup_tc(dev, type, type_data);
+#endif
+    default:
+        return -EOPNOTSUPP;
+    }
+}
+
+static int enet_setup_tc_sw(struct net_device *dev, enum tc_setup_type type,
+			     void *type_data)
+{
+#if defined(ENET_TC_INGRESS_CONFIG)
+    if (is_netdev_tc_all_ports(dev))
+        return enet_setup_tc(dev, type, type_data);
+#endif
+    return -EOPNOTSUPP;
+}
+
+#ifdef CONFIG_BCM_KERNEL_TEAM
+static void enet_set_rx_mode_dummy(struct net_device *dev) {}
+#endif
+
 static const struct net_device_ops enet_netdev_ops_port =
 {
     .ndo_open = enet_open,
     .ndo_stop = enet_stop,
     .ndo_start_xmit = (HardStartXmitFuncP)enet_xmit,
-#if defined(CONFIG_BCM_NFT_OFFLOAD)
-    .ndo_setup_tc = __fm_setup_tc,
-#elif defined(CONFIG_BCM_ENET_TC_OFFLOAD)
-    .ndo_setup_tc = bcmenet_setup_tc,
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
     .ndo_siocdevprivate = enet_ioctl_private,
+    .ndo_eth_ioctl = enet_eth_ioctl,
 #else
-    .ndo_do_ioctl = enet_ioctl,
+    .ndo_do_ioctl = enet_eth_ioctl,
 #endif
     .ndo_get_stats64 = enet_get_stats64,
     .ndo_change_mtu = enet_change_mtu,
     .ndo_set_mac_address  = enet_set_mac_addr,
     .ndo_set_features = enet_set_features,
+    .ndo_setup_tc     = enet_setup_tc,
 #ifdef CONFIG_BCM_XDP
     .ndo_bpf = enet_xdp,
     .ndo_xdp_xmit = enet_xdp_xmit,
+#endif
+#ifdef CONFIG_BCM_KERNEL_TEAM
+    .ndo_set_rx_mode = enet_set_rx_mode_dummy,
 #endif
 };
 
@@ -1264,10 +1377,11 @@ static const struct net_device_ops enet_netdev_ops_sw =
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
     .ndo_siocdevprivate = enet_ioctl_private,
 #else    
-    .ndo_do_ioctl = enet_ioctl,
+    .ndo_do_ioctl = enet_eth_ioctl,
 #endif
     .ndo_get_stats64 = enet_get_stats64,
     .ndo_set_mac_address  = enet_set_mac_addr,
+    .ndo_setup_tc = enet_setup_tc_sw,
 };
 
 extern int port_by_netdev(struct net_device *dev, enetx_port_t **match);
@@ -1327,12 +1441,7 @@ static int tr_sw_update_br_pbvlan(enetx_port_t *sw, void *_ctx)
     if (!portMap)
         return 0;
 
-#if defined(CONFIG_BCM_OVS)
-    // when OVS is compiled in don't adjust switch port PBVLAN during configuration
-    return 0;
-#else
     return sw->s.ops->update_pbvlan(sw, portMap);
-#endif
 }
 
 static void bridge_update_pbvlan(struct net_device *br_dev)
@@ -1655,7 +1764,7 @@ int enet_create_netdevice(enetx_port_t *p)
 
     rc = _port_role_set(p, p->n.port_netdev_role);
 
-    dev = alloc_etherdev(sizeof(enetx_netdev));
+    dev = alloc_etherdev_mqs(sizeof(enetx_netdev), ENET_MAX_NUM_OF_TXQS, 1);
     if (!dev)
     {
         enet_err("failed to allocate etherdev for %s\n", p->name);
@@ -1674,12 +1783,6 @@ int enet_create_netdevice(enetx_port_t *p)
     ndev = netdev_priv(dev);
     ndev->port = p;
     ndev->priv_feat = 0;
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-    INIT_LIST_HEAD(&ndev->enet_devs);
-    INIT_LIST_HEAD(&ndev->ig_chains);
-    INIT_LIST_HEAD(&ndev->eg_chains);
-    ndev->enet_netdev = dev;
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
 #if defined(CONFIG_BCM_NFT_OFFLOAD)
     rc = nft_init(&ndev->fm_nft_ctx, dev, enet_xdp_get_progs_by_dev);
     if (rc) {
@@ -1688,14 +1791,20 @@ int enet_create_netdevice(enetx_port_t *p)
       return rc;
     }
 #endif
+#ifdef CONFIG_BCM_ENET_EGRESS_TC
+    INIT_LIST_HEAD(&ndev->port->policer_list);
+#endif
 
     if (p->port_class == PORT_CLASS_SW)
     {
         dev->priv_flags |= IFF_DONT_BRIDGE;
         dev->netdev_ops = &enet_netdev_ops_sw;
+        if (!strcmp(dev->name, ETHERNET_ROOT_DEVICE_NAME))
+            netdev_tc_all_ports_set(dev);
     }
     else if (p->port_class == PORT_CLASS_PORT)
     {
+       dev->priv_flags |= IFF_NO_QUEUE;
 #ifdef CONFIG_BLOG
         netdev_path_set_hw_port(dev, p->n.blog_chnl, p->n.blog_phy);
 #endif
@@ -1719,7 +1828,9 @@ int enet_create_netdevice(enetx_port_t *p)
 #if defined(CONFIG_BCM_KF_EXTSTATS)
     dev->features |= NETIF_F_EXTSTATS; /* support extended statistics */
 #endif
-
+#if defined(CONFIG_BCM_ENET_EGRESS_TC) || defined (ENET_TC_INGRESS_CONFIG)
+    dev->features |= NETIF_F_HW_TC;
+#endif
 #if defined(CONFIG_BCM_ARCHER_GSO)
      dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
      dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
@@ -1737,7 +1848,7 @@ int enet_create_netdevice(enetx_port_t *p)
              ndev->priv_feat &= ~BCMENET_PRIV_FEAT_SW_GSO;
 #endif         
      }
-#elif defined(CONFIG_BCM_PKTRUNNER_GSO) || defined(CONFIG_BCM_SW_GSO)
+#elif defined(CONFIG_BCM_SW_GSO)
      switch (p->p.port_cap)
      {
          // HW-GSO is supported only on LAN ports
@@ -1745,7 +1856,7 @@ int enet_create_netdevice(enetx_port_t *p)
              dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
-#if !defined(CONFIG_BCM_PKTRUNNER_GSO) && defined(CONFIG_BCM_SW_GSO)
+#if defined(CONFIG_BCM_SW_GSO)
              ndev->priv_feat |= BCMENET_PRIV_FEAT_SW_GSO;
 #endif
              break;
@@ -1820,7 +1931,6 @@ int enet_create_netdevice(enetx_port_t *p)
 
 void enet_remove_netdevice(enetx_port_t *p)
 {
-    bool self_lock = false;
 #ifdef CONFIG_BCM_NFT_OFFLOAD
     enetx_netdev * ndev = netdev_priv(p->dev);
     nft_uninit(ndev->fm_nft_ctx); 
@@ -1831,17 +1941,16 @@ void enet_remove_netdevice(enetx_port_t *p)
 
     enet_dev_mac_set(p, 0);
 
-    if (!rtnl_is_locked())
+    if (p->p.delayed_init)
     {
-        /* This may be called under workqueue context(delayed_init_work_cb), where rtnl_lock is not already held, so hold it */
+        /* This may be called under delayed init context(delayed_init_work_cb), where rtnl_lock is not held, so hold it */
         rtnl_lock();
-        self_lock = true;
     }
 
     /* XXX: Should syncronize_net even when one port is removed ? */
     unregister_netdevice(p->dev);
 
-    if (self_lock)
+    if (p->p.delayed_init)
     {
         rtnl_unlock();
     }
@@ -1860,7 +1969,7 @@ static int enet_netdev_event(struct notifier_block *this, unsigned long event, v
         {
             struct net_device *upper_dev = info->upper_dev;
 
-            if (netif_is_bond_master(upper_dev) && netif_is_bond_slave(dev))
+            if (netif_is_lag_master(upper_dev) && netif_is_lag_port(dev))
                 return bonding_change_event(dev, upper_dev, info->linking) ? NOTIFY_BAD : NOTIFY_DONE;
 
             if (netif_is_bridge_port(dev))
@@ -1920,12 +2029,17 @@ int port_mac_phy_init(enetx_port_t *port);
 
 static int tr_port_delayed_init(enetx_port_t *p, void *_ctx)
 {
-    if (p->p.delayed_mac && !port_mac_phy_init(p) && p->dev)
+    if (!p->p.delayed_mac)
+        return 0;
+
+    p->p.delayed_init = true;
+    if (!port_mac_phy_init(p) && p->dev)
     {
         port_generic_mtu_set(p, p->dev->mtu);
         if (p->dev->flags & IFF_UP)
             port_generic_open(p);
     }
+    p->p.delayed_init = false;
 
     return 0;
 }
@@ -2004,6 +2118,10 @@ int bcm_enet_init_post(void)
         goto exit;
 #endif
 
+#ifdef CONFIG_BCM_ENET_EGRESS_TC
+    enet_remove_tc_egress_sysfs();
+#endif
+
      rc = enetx_queue_work(delayed_init_work_cb, 0, 0);
 exit:
     if (rc)
@@ -2039,6 +2157,9 @@ exit:
         bcm_enet_exit();
         BUG();
     }
+#ifdef CONFIG_BCM_ENET_EGRESS_TC
+    enet_create_tc_egress_sysfs();
+#endif
 
     return rc;
 }

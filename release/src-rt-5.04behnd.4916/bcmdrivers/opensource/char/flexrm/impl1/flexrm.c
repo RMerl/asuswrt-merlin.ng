@@ -40,7 +40,10 @@ written consent.
  */
 
 //#define DEBUG
-
+#define pr_dbg(fmt, ...)                                   \
+	pr_debug("cpu%d:%pSR->%s:%d " fmt, smp_processor_id(), \
+		__builtin_return_address(0),__func__,__LINE__,	   \
+		## __VA_ARGS__);
 #include <asm/barrier.h>
 #include <asm/byteorder.h>
 #include <linux/atomic.h>
@@ -432,14 +435,22 @@ written consent.
 
 #define CS_OFF 0
 #define CS_ON  1
+
+#define DEFAULT_PWR_SHUT_DOWN_HYSTERESYS_USEC 1000
 /* ====== FlexRM data structures ===== */
+
+typedef enum {
+	_IRQ_STAT_NOT_REQUESTED = 0,
+	_IRQ_STAT_DISABLED,
+	_IRQ_STAT_ENABLED
+} irq_status_t;
 
 struct flexrm_ring {
 	/* Unprotected members */
 	char *name;
 	int num;
 	void __iomem *regs;
-	bool irq_requested;
+	irq_status_t irq_status;
 	unsigned int irq;
 	cpumask_t irq_aff_hint;
 	unsigned int msi_timer_val;
@@ -481,6 +492,9 @@ struct flexrm_power_t {
 	spinlock_t lock;
 	atomic_t in_progress;
 	SPU_PWR_STATUS status;
+	const atomic_t *session_cnt_ref;
+	atomic_t pwr_down_hyst_usec;
+	struct work_struct shutdown_work;
 };
 
 struct flexrm_global {
@@ -858,8 +872,11 @@ static void *flexrm_write_descs(struct bcmspu_message *msg, u32 nhcnt, u32 pcnt,
 	unsigned int dst_target = 0;
 	struct scatterlist *src_sg, *dst_sg;
 
-	if (!msg || !desc_ptr || !start_desc || !end_desc)
+	if (!msg || !desc_ptr || !start_desc || !end_desc) {
+		pr_dbg("msg %px desc_ptr %px start_desc %px end_desc %px\n",
+				msg, desc_ptr, start_desc, end_desc);
 		return ERR_PTR(-ENOTSUPP);
+	}
 
 	if ((desc_ptr < start_desc) || (end_desc <= desc_ptr))
 		return ERR_PTR(-ERANGE);
@@ -1344,6 +1361,8 @@ int flexrm_send_data(int chan, struct bcmspu_message *msg)
 			exit_cleanup = true;
 			goto exit;
 		}
+		pr_dbg("msg %px nhcnt %d pcnt %d next %px\n",
+				msg, nhcnt, pcnt, next);
 		msg->next_ptr = next;
 
 #ifndef DOORBELL_MODE
@@ -1489,14 +1508,13 @@ static int flexrm_ring_initialize_bd(int chan)
 
 static int flexrm_ring_startup(int chan)
 {
-	u32 val, i, cpumask;
+	u32 val, i;
 	int ret = 0;
 	struct flexrm_ring *ring = &flexrm_g->rings[chan];
 
 	/* Initialize members of driver ring structs */
 	ring->num = chan;
 	ring->regs = flexrm_g->regs + (RING_REGS_SIZE * chan);
-	ring->irq_requested = false;
 	ring->msi_timer_val = 0xff00;
 	ring->msi_count_threshold = 0x1;
 	memset(ring->requests, 0, sizeof(ring->requests));
@@ -1517,16 +1535,6 @@ static int flexrm_ring_startup(int chan)
 	ring->reqid = 0;
 	ring->req_in_transit = 0;
 	ring->cmpl_read_offset = 0;
-
-	/* assign an unique thread name to each ring */
-	if ((!ring->name) && 
-	    (ring->name = kzalloc(strlen(FLEXRM_MODNAME) + 3, GFP_ATOMIC)) == NULL) {
-		dev_err(flexrm_g->dev,
-			"can't allocate memory for naming ring%d\n",
-			ring->num);
-		return -ENOMEM;
-	}
-	sprintf(ring->name, "%s-%d", FLEXRM_MODNAME, ring->num);
 
 	/* Allocate BD memory */
 	if (!ring->bd_base) {
@@ -1566,32 +1574,11 @@ static int flexrm_ring_startup(int chan)
 		goto done_host_irq;
 #endif
 
-	ring->irq = irq_of_parse_and_map(flexrm_g->dev->of_node, chan);
+	if (_IRQ_STAT_DISABLED == ring->irq_status) {
+		enable_irq(ring->irq);
+		ring->irq_status = _IRQ_STAT_ENABLED;
+	}
 
-	ret = request_threaded_irq(ring->irq, flexrm_irq_event,
-				flexrm_irq_thread, 0, ring->name, ring);
-	if (ret) {
-		dev_err(flexrm_g->dev,
-			"failed to request IRQ# %d for ring #%d\n", ring->irq, ring->num);
-		goto fail_free_cmpl_memory;
-	} 
-	ring->irq_requested = true;
-
-	/* Set IRQ affinity hint */
-#if defined(CONFIG_BRCM_IKOS)
-	cpumask = (ring->num % num_online_cpus());
-#else
-	/* since bcmsw_rx is bound to CPU0, hint ring0->CPU1, ring1->CPU2, etc.*/
-	cpumask = (ring->num % (num_online_cpus() - 1)) + 1;
-#endif
-	cpumask_set_cpu(cpumask, &ring->irq_aff_hint);
-	ret = irq_set_affinity_hint(ring->irq, &ring->irq_aff_hint);
-	if (ret) {
-		dev_err(flexrm_g->dev,
-			"failed to set IRQ affinity hint for ring%d\n",
-			ring->num);
-		goto fail_free_irq;
-	} 
 #ifdef CONFIG_BCM_FLEXRM_V2_IRQ
 	writel_relaxed(BIT(chan), flexrm_g->regs + CPUIF_MASKSET);
 #else
@@ -1707,14 +1694,6 @@ done_host_irq:
 
 	return 0;
 
-fail_free_irq:
-	free_irq(ring->irq, ring);
-	ring->irq_requested = false;
-fail_free_cmpl_memory:
-	dma_pool_free(flexrm_g->cmpl_pool,
-		      ring->cmpl_base, ring->cmpl_dma_base);
-	ring->cmpl_base = NULL;
-	ring->cmpl_dma_base = 0;
 fail_free_resp_memory:
 
 #if defined (FLEXRM_OFFLOAD)
@@ -1730,9 +1709,7 @@ fail_free_bd_memory:
 		      ring->bd_base, ring->bd_dma_base);
 	ring->bd_base = NULL;
 fail:
-	if (ring->name)
-		kfree(ring->name);
-	ring->name = NULL;
+
 	return ret;
 }
 
@@ -1797,11 +1774,9 @@ static void flexrm_ring_shutdown(int chan)
 	ring->reqid = 0;
 	ring->req_in_transit = 0;
 
-	/* Release IRQ */
-	if (ring->irq_requested) {
-		irq_set_affinity_hint(ring->irq, NULL);
-		free_irq(ring->irq, ring);
-		ring->irq_requested = false;
+	if (_IRQ_STAT_ENABLED == ring->irq_status) {
+		disable_irq_nosync(ring->irq);
+		ring->irq_status = _IRQ_STAT_DISABLED;
 	}
 
 	/* Free-up completion descriptor ring */
@@ -1828,11 +1803,6 @@ static void flexrm_ring_shutdown(int chan)
 		ring->resp_base = NULL;
 		ring->resp_dma_base = 0;
 	}
-
-	/* Free-up memory allocated for naming the IRQ thread */
-	if (ring->name)
-		kfree(ring->name);
-	ring->name = NULL;
 
 	/* Avoid double shutdown, reasigned in flexrm_ring_startup */
 	ring->regs = NULL;
@@ -1898,14 +1868,16 @@ int flexrm_spu_and_rings_on(void)
 		udelay(1);
 		spin_lock(&flexrm_g->power_ctrl.lock);
 	}
-	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_ON);
-	spin_unlock(&flexrm_g->power_ctrl.lock);
 
-	/* things might change while you're asleep */
+	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_ON);
+	/* Things might change while you're asleep */
 	if (SPU_PWR_STATUS_ON == flexrm_pwr_status_get()) {
 		atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+		spin_unlock(&flexrm_g->power_ctrl.lock);
 		return 0;
 	}
+
+	spin_unlock(&flexrm_g->power_ctrl.lock);
 
 	ret = pmc_spu_power_up();
 	if (ret) {
@@ -2014,9 +1986,11 @@ int flexrm_spu_and_rings_on(void)
 		if (ret)
 			goto fail;
 	}
-	
+
+	spin_lock(&flexrm_g->power_ctrl.lock);	
 	flexrm_pwr_status_set(SPU_PWR_STATUS_ON);
 	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+	spin_unlock(&flexrm_g->power_ctrl.lock);
 	return 0;
 
 fail:
@@ -2028,48 +2002,155 @@ fail:
 			dev_crit(flexrm_g->dev, "FlexRM device failed to power down. Error %d.", rc);
 		}
 	}
-
+	spin_lock(&flexrm_g->power_ctrl.lock);
 	flexrm_pwr_status_set(SPU_PWR_STATUS_OFF);
 	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+	spin_unlock(&flexrm_g->power_ctrl.lock);
 	return ret;
 }
 EXPORT_SYMBOL(flexrm_spu_and_rings_on);
+/**
+ * @brief 
+ * @return true 
+ * @return false 
+ */
+static inline bool is_active_session(void) {
+	return ((NULL != flexrm_g->power_ctrl.session_cnt_ref) && 
+	        (0 != atomic_read(flexrm_g->power_ctrl.session_cnt_ref)));
+}
+/**
+ * @brief 
+ * @param cnt_down 
+ * @return true 
+ * @return false 
+ */
+static inline bool is_wait_shutdown_hysteresis(uint32_t cnt_down) {
 
+	return ((0 != atomic_read(&flexrm_g->power_ctrl.pwr_down_hyst_usec)) && 
+			(false == is_active_session()) && 
+			(0 < cnt_down));
+}
 /**
  * @brief shuts dowm DMA rings, cleans DMA pools and  shuts the SPU power down 
+ */
+void flexrm_pwr_shutdown_work_fn(struct work_struct *work)
+{
+	int index, ret = 0;
+	uint32_t cnt_down = atomic_read(&flexrm_g->power_ctrl.pwr_down_hyst_usec);
+	/* Hysteresis loop */
+	for (; true == is_wait_shutdown_hysteresis(cnt_down); cnt_down--) {
+		udelay(1);
+	}
+	spin_lock(&flexrm_g->power_ctrl.lock);
+	if (false == is_active_session()) {
+		while(CS_ON == atomic_read(&flexrm_g->power_ctrl.in_progress)) {
+			spin_unlock(&flexrm_g->power_ctrl.lock);
+			udelay(1);
+			spin_lock(&flexrm_g->power_ctrl.lock);
+		}
+		atomic_set(&flexrm_g->power_ctrl.in_progress, CS_ON);
+		/* Things might change while you're asleep */
+		if (SPU_PWR_STATUS_ON == flexrm_pwr_status_get()) {
+			spin_unlock(&flexrm_g->power_ctrl.lock);
+			for (index = 0; index < flexrm_g->num_rings; index++) {
+				flexrm_ring_shutdown(index);
+			}
+			clean_dma_pools();
+			if (0 != (ret = pmc_spu_power_down())) {
+				dev_crit(flexrm_g->dev, "FlexRM device failed to power down. Error %d.", ret);
+			}
+			flexrm_pwr_status_set(SPU_PWR_STATUS_OFF);
+		} else {
+
+			spin_unlock(&flexrm_g->power_ctrl.lock);
+		}
+		spin_lock(&flexrm_g->power_ctrl.lock);
+		atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+	}
+	spin_unlock(&flexrm_g->power_ctrl.lock);
+}
+/**
+ * @brief 
  * @return int 
  */
 int flexrm_spu_and_rings_shutdown(void)
 {
-	int index, ret = 0;
+	queue_work(system_power_efficient_wq, &flexrm_g->power_ctrl.shutdown_work);
+	return 0;
+}
+EXPORT_SYMBOL(flexrm_spu_and_rings_shutdown);
+/**
+ * @brief 
+ * @param session_cnt_ref 
+ */
+void flexrm_spu_set_session_cnt_ref(const atomic_t *session_cnt_ref)
+{
+	flexrm_g->power_ctrl.session_cnt_ref = session_cnt_ref;
+}
+EXPORT_SYMBOL(flexrm_spu_set_session_cnt_ref);
+/**
+ * @brief Set the rings irqs object
+ * @return int 
+ */
+static int set_rings_irqs(void)
+{
+	int channel, ret = 0;
+	u32 cpumask = 0;
 
-	spin_lock(&flexrm_g->power_ctrl.lock);
-	while(CS_ON == atomic_read(&flexrm_g->power_ctrl.in_progress)) {
-		spin_unlock(&flexrm_g->power_ctrl.lock);
-		udelay(1);
-		spin_lock(&flexrm_g->power_ctrl.lock);
-	}
-	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_ON);
-	spin_unlock(&flexrm_g->power_ctrl.lock);
+	for (channel = 0; (0 == ret) && (channel < flexrm_g->num_rings); channel++) {
 
-	/* things might change while you're asleep */
-	if (SPU_PWR_STATUS_ON == flexrm_pwr_status_get()) {
-
-		for (index = 0; index < flexrm_g->num_rings; index++) {
-			flexrm_ring_shutdown(index);
+		flexrm_g->rings[channel].irq = irq_of_parse_and_map(flexrm_g->dev->of_node, channel);
+		if(0 == (ret = request_threaded_irq(flexrm_g->rings[channel].irq, flexrm_irq_event,
+								   			flexrm_irq_thread, 0, flexrm_g->rings[channel].name, &flexrm_g->rings[channel]))) {
+			/* assign a unique thread name to each ring */
+			if (NULL == (flexrm_g->rings[channel].name = kzalloc(strlen(FLEXRM_MODNAME) + 3, GFP_ATOMIC))) {
+				dev_err(flexrm_g->dev,"can't allocate memory for naming ring%d\n", flexrm_g->rings[channel].num);
+				ret = -ENOMEM;
+			} else {
+				sprintf(flexrm_g->rings[channel].name, "%s-%d", FLEXRM_MODNAME, flexrm_g->rings[channel].num);
+				flexrm_g->rings[channel].irq_status = _IRQ_STAT_ENABLED;
+				/* Set IRQ affinity hint */
+#if defined(CONFIG_BRCM_IKOS)
+				cpumask = (flexrm_g->rings[channel].num % num_online_cpus());
+#else
+				/* since bcmsw_rx is bound to CPU0, hint ring0->CPU1, ring1->CPU2, etc.*/
+				cpumask = (flexrm_g->rings[channel].num % (num_online_cpus() - 1)) + 1;
+#endif
+				cpumask_set_cpu(cpumask, &flexrm_g->rings[channel].irq_aff_hint);
+				if (0 != (ret = irq_set_affinity_hint(flexrm_g->rings[channel].irq, &flexrm_g->rings[channel].irq_aff_hint))) {
+					dev_err(flexrm_g->dev, "failed to set IRQ affinity hint for ring%d\n",flexrm_g->rings[channel].num);
+					free_irq(flexrm_g->rings[channel].irq, &flexrm_g->rings[channel]);
+					flexrm_g->rings[channel].irq_status = _IRQ_STAT_NOT_REQUESTED;
+				}
+			}
 		}
-		clean_dma_pools();
-		if (0 != (ret = pmc_spu_power_down())) {
-			dev_crit(flexrm_g->dev, "FlexRM device failed to power down. Error %d.", ret);
-		}
-		flexrm_pwr_status_set(SPU_PWR_STATUS_OFF);
 	}
-	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
-
 	return ret;
 }
+/**
+ * @brief 
+ * @return int 
+ */
+static int unset_rings_irqs(void)
+{
+	int ret = 0, channel;
+	for (channel = 0; (0 == ret) && (channel < flexrm_g->num_rings); channel++) {
 
-EXPORT_SYMBOL(flexrm_spu_and_rings_shutdown);
+		/* Release IRQ */
+		if (_IRQ_STAT_NOT_REQUESTED != flexrm_g->rings[channel].irq_status) {
+
+			irq_set_affinity_hint(flexrm_g->rings[channel].irq, NULL);
+			free_irq(flexrm_g->rings[channel].irq, &flexrm_g->rings[channel]);
+			flexrm_g->rings[channel].irq_status = _IRQ_STAT_DISABLED;
+		}
+		if (NULL != flexrm_g->rings[channel].name){
+
+			kfree(flexrm_g->rings[channel].name);
+			flexrm_g->rings[channel].name = NULL;
+		}
+	}
+	return ret;
+}
 
 /* ====== FlexRM platform driver ===== */
 static int flexrm_probe(struct platform_device *pdev)
@@ -2216,7 +2297,13 @@ skip_debugfs:
 
 	spin_lock_init(&flexrm_g->power_ctrl.lock);
 	atomic_set(&flexrm_g->power_ctrl.in_progress, CS_OFF);
+	atomic_set(&flexrm_g->power_ctrl.pwr_down_hyst_usec, DEFAULT_PWR_SHUT_DOWN_HYSTERESYS_USEC);
 	flexrm_pwr_status_set(SPU_PWR_STATUS_OFF);
+	INIT_WORK(&flexrm_g->power_ctrl.shutdown_work, flexrm_pwr_shutdown_work_fn);
+
+	if(set_rings_irqs())
+		goto fail_free_debugfs_root;
+
 	dev_info(dev, "loaded successfully!");
 	return 0;
 
@@ -2235,6 +2322,10 @@ static int flexrm_remove(struct platform_device *pdev)
 	if (flexrm_g->root)
 		debugfs_remove_recursive(flexrm_g->root);
 	flexrm_spu_and_rings_shutdown();
+	/* cancel hysteresis */
+	atomic_set(&flexrm_g->power_ctrl.pwr_down_hyst_usec, 0);
+	flush_work(&flexrm_g->power_ctrl.shutdown_work);
+	unset_rings_irqs();
 
 	return 0;
 }

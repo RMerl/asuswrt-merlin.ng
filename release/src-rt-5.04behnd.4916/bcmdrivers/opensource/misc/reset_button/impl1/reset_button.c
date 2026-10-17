@@ -4,24 +4,38 @@
 #include <board.h>
 #include <button.h>
 
+typedef enum
+{
+    BTN_ACT_RESTORE, /* restoredefault */
+    BTN_ACT_RESET
+} BtnAction_t;
+
+void board_util_restoredefault(BtnAction_t act) {
+    char *envp[]= {"HOME=/", "PWD=/bin", NULL};
+    char *argv[]= {"/bin/bcm_restoredefault", "", "-s \"reset button\"", NULL};
+
+    if (act == BTN_ACT_RESTORE)
+        argv[1] = "-A";
+    else if(act == BTN_ACT_RESET)
+        argv[1] = "-r";
+    else
+        return;
+
+    call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
+}
+
 void btn_hook_rst_to_dflt(unsigned long timeInMs, void* param) 
 {
 #if !defined(CONFIG_BRCM_IKOS)
-    char buf[256] = {};
-    
     printk(" *** Restore to Factory Default Setting ***\n\n");
-#if defined(WIRELESS)
-    board_util_wl_godefault();
+    board_util_restoredefault(BTN_ACT_RESTORE);
 #endif
-    kerSysPersistentSet( buf, sizeof(buf), 0 );
-#endif
-    kernel_restart(NULL);        
 }
 
 void btn_hook_reset(unsigned long timeInMs, void* param) 
 {
     printk(" *** Restarting System ***\n\n");
-    kernel_restart(NULL);
+    board_util_restoredefault(BTN_ACT_RESET);
 }
 
 static int __init reset_button_init(void)
@@ -42,7 +56,7 @@ static int __init reset_button_init(void)
         return -1;
     }
 
-	return 0;
+    return 0;
 }
 
 module_init(reset_button_init);

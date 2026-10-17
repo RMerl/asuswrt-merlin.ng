@@ -1,0 +1,34 @@
+if ROCKCHIP_RK3036
+
+choice
+	prompt "RK3036 board select"
+
+config TARGET_EVB_RK3036
+	bool "EVB_RK3036"
+	select BOARD_LATE_INIT
+
+config TARGET_KYLIN_RK3036
+	bool "KYLIN_RK3036"
+	select BOARD_LATE_INIT
+
+endchoice
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0x200081c8
+
+config ROCKCHIP_STIMER_BASE
+	default 0x200440a0
+
+config SYS_SOC
+	default "rk3036"
+
+config SYS_MALLOC_F_LEN
+	default 0x400
+
+config SPL_SERIAL
+	default y
+
+source "board/rockchip/evb_rk3036/Kconfig"
+source "board/rockchip/kylin_rk3036/Kconfig"
+
+endif

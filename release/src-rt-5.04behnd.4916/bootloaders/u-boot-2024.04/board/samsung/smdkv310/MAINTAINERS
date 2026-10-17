@@ -1,0 +1,6 @@
+SMDKV310 BOARD
+M:	Jaehoon Chung <jh80.chung@samsung.com>
+S:	Maintained
+F:	board/samsung/smdkv310/
+F:	include/configs/smdkv310.h
+F:	configs/smdkv310_defconfig

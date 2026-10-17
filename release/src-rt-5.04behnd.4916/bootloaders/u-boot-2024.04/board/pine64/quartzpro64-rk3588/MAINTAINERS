@@ -1,0 +1,8 @@
+QUARTZPRO64-RK3588
+M:	Tom Fitzhenry <tom@tom-fitzhenry.me.uk>
+S:	Maintained
+F:	board/pine64/quartzpro64-rk3588
+F:	include/configs/quartzpro64-rk3588.h
+F:	configs/quartzpro64-rk3588_defconfig
+F:	arch/arm/dts/rk3588-quartzpro64.dts
+F:	arch/arm/dts/rk3588-quartzpro64-u-boot.dtsi

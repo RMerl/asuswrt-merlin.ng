@@ -477,7 +477,7 @@ static ssize_t spu_debugfs_read(struct file *file, char __user *ubuf,
 				       "                (ds)...%u\n",
 				       atomic_read(&ipriv->blogged[SPU_STREAM_DS]));
 
-	read_lock(&ipriv->ctxListLock[SPU_STREAM_US]);
+	read_lock_bh(&ipriv->ctxListLock[SPU_STREAM_US]);
 	out_offset += scnprintf(buf + out_offset, out_count - out_offset,
 				"US chan 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
 				ipriv->blog_chan_bitmap[SPU_STREAM_US][0],
@@ -497,9 +497,9 @@ static ssize_t spu_debugfs_read(struct file *file, char __user *ubuf,
 						ctx->spi, atomic_read(&ctx->offload_id));
 		}
 	}
-	read_unlock(&ipriv->ctxListLock[SPU_STREAM_US]);
+	read_unlock_bh(&ipriv->ctxListLock[SPU_STREAM_US]);
 
-	read_lock(&ipriv->ctxListLock[SPU_STREAM_DS]);
+	read_lock_bh(&ipriv->ctxListLock[SPU_STREAM_DS]);
 	out_offset += scnprintf(buf + out_offset, out_count - out_offset,
 				"DS chan 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
 				ipriv->blog_chan_bitmap[SPU_STREAM_DS][0],
@@ -520,7 +520,7 @@ static ssize_t spu_debugfs_read(struct file *file, char __user *ubuf,
 		}
 	}
 
-	read_unlock(&ipriv->ctxListLock[SPU_STREAM_DS]);
+	read_unlock_bh(&ipriv->ctxListLock[SPU_STREAM_DS]);
 #endif
 	if (ipriv->spu.spu_type == SPU_TYPE_SPUM)
 		for (i = 0; i < ipriv->spu.num_spu; i++) {
@@ -984,10 +984,28 @@ static ssize_t spu_debugfs_offload_enable_write (struct file *file,
 	return count;
 }
 
+static ssize_t spu_debugfs_offload_enable_read (struct file *file,
+			    char __user *user_buf, size_t count, loff_t *ppos)
+{
+	char *buf;
+	ssize_t ret, out_offset = 0, out_count = 2048;
+
+	buf = kmalloc(out_count, GFP_KERNEL);
+	if (!buf)
+		return -ENOMEM;
+
+	out_offset += snprintf(buf + out_offset, out_count - out_offset,
+		"%d\n", flow_offload_enable);
+
+	ret = simple_read_from_buffer(user_buf, count, ppos, buf, out_offset);
+	kfree(buf);
+	return ret;
+}
 static const struct file_operations spu_debugfs_offload_enable = { 
 	.owner = THIS_MODULE,
 	.open = simple_open,
 	.write = spu_debugfs_offload_enable_write,
+	.read = spu_debugfs_offload_enable_read,
 };
 
 extern ssize_t spu_offload_debug_info(char *buf, ssize_t buf_size);

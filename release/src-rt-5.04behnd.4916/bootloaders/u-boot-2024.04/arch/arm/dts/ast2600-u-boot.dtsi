@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include <dt-bindings/clock/ast2600-clock.h>
+#include <dt-bindings/reset/ast2600-reset.h>
+
+#include "ast2600.dtsi"
+
+/ {
+	scu: clock-controller@1e6e2000 {
+		compatible = "aspeed,ast2600-scu";
+		reg = <0x1e6e2000 0x1000>;
+		bootph-all;
+		#clock-cells = <1>;
+		#reset-cells = <1>;
+		uart-clk-source = <0x0>; /* uart clock source selection: 0: uxclk 1: huxclk*/
+	};
+
+	rst: reset-controller {
+		bootph-all;
+		compatible = "aspeed,ast2600-reset";
+		aspeed,wdt = <&wdt1>;
+		#reset-cells = <1>;
+	};
+
+	sdrammc: sdrammc@1e6e0000 {
+		bootph-all;
+		compatible = "aspeed,ast2600-sdrammc";
+		reg = <0x1e6e0000 0x100
+			0x1e6e0100 0x300
+			0x1e6e0400 0x200 >;
+		#reset-cells = <1>;
+		clocks = <&scu ASPEED_CLK_MPLL>;
+		resets = <&rst ASPEED_RESET_SDRAM>;
+	};
+
+	ahb {
+		bootph-all;
+
+		apb {
+			bootph-all;
+		};
+
+	};
+};
+

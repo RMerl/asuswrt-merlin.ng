@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * P1020 Silicon/SoC Device Tree Source (post include)
+ *
+ * Copyright 2013 Freescale Semiconductor Inc.
+ * Copyright 2019 NXP
+ */
+
+&soc {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	device_type = "soc";
+	compatible = "fsl,p1020-immr", "simple-bus";
+	bus-frequency = <0x0>;
+
+	usb@22000 {
+		compatible = "fsl-usb2-dr";
+		reg = <0x22000 0x1000>;
+		phy_type = "ulpi";
+	};
+
+	usb@23000 {
+		compatible = "fsl-usb2-dr";
+		reg = <0x23000 0x1000>;
+		phy_type = "ulpi";
+	};
+
+	mpic: pic@40000 {
+		interrupt-controller;
+		#address-cells = <0>;
+		#interrupt-cells = <4>;
+		reg = <0x40000 0x40000>;
+		compatible = "fsl,mpic";
+		device_type = "open-pic";
+		big-endian;
+		single-cpu-affinity;
+		last-interrupt-source = <255>;
+	};
+
+	esdhc: sdhc@2e000 {
+		compatible = "fsl,esdhc";
+		reg = <0x2e000 0x1000>;
+		/* Filled in by U-Boot */
+		clock-frequency = <0>;
+	};
+
+	espi0: spi@7000 {
+		compatible = "fsl,mpc8536-espi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x7000 0x1000>;
+		fsl,espi-num-chipselects = <4>;
+		status = "disabled";
+	};
+
+/include/ "pq3-i2c-0.dtsi"
+/include/ "pq3-i2c-1.dtsi"
+
+/include/ "pq3-etsec2-0.dtsi"
+	enet0: enet0_grp2: ethernet@b0000 {
+	};
+
+/include/ "pq3-etsec2-1.dtsi"
+	enet1: enet1_grp2: ethernet@b1000 {
+	};
+
+/include/ "pq3-etsec2-2.dtsi"
+	enet2: enet2_grp2: ethernet@b2000 {
+	};
+};
+
+/include/ "pq3-etsec2-grp2-0.dtsi"
+/include/ "pq3-etsec2-grp2-1.dtsi"
+/include/ "pq3-etsec2-grp2-2.dtsi"
+
+/* PCIe controller base address 0x9000 */
+&pci1 {
+	compatible = "fsl,pcie-p1_p2", "fsl,pcie-fsl-qoriq";
+	law_trgt_if = <1>;
+	#address-cells = <3>;
+	#size-cells = <2>;
+	device_type = "pci";
+	bus-range = <0x0 0xff>;
+};
+
+/* PCIe controller base address 0xa000 */
+&pci0 {
+	compatible = "fsl,pcie-p1_p2", "fsl,pcie-fsl-qoriq";
+	law_trgt_if = <2>;
+	#address-cells = <3>;
+	#size-cells = <2>;
+	device_type = "pci";
+	bus-range = <0x0 0xff>;
+};

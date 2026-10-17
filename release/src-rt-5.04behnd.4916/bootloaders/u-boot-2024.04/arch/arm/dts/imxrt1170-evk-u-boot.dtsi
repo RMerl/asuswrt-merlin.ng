@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) 2022
+ * Author(s): Jesse Taube <Mr.Bossman075@gmail.com>
+ * Giulio Benetti <giulio.benetti@benettiengineering.com>
+ */
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+
+	chosen {
+		bootph-pre-ram;
+	};
+
+	clocks {
+		bootph-pre-ram;
+	};
+
+	soc {
+		bootph-pre-ram;
+	};
+};
+
+&osc {
+	bootph-pre-ram;
+};
+
+&rcosc16M {
+	bootph-pre-ram;
+};
+
+&osc32k {
+	bootph-pre-ram;
+};
+
+&clks {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&gpt1 {
+	bootph-pre-ram;
+};
+
+&lpuart1 { /* console */
+	bootph-pre-ram;
+};
+
+&semc {
+	bootph-pre-ram;
+
+	bank1: bank@0 {
+		bootph-pre-ram;
+	};
+};
+
+&iomuxc {
+	bootph-pre-ram;
+
+	imxrt1170-evk {
+		bootph-pre-ram;
+		pinctrl_lpuart1: lpuart1grp {
+			bootph-pre-ram;
+		};
+
+		pinctrl_usdhc0: usdhc0grp {
+			bootph-pre-ram;
+		};
+		pinctrl_semc: semcgrp {
+			bootph-pre-ram;
+		};
+	};
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+};

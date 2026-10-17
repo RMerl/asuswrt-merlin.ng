@@ -34,6 +34,7 @@ written consent.
 #include <linux/cdev.h>
 #include "opticaldet.h"
 #include "trxbus.h"
+#include "wan_drv.h"
 
 void *opticaldet_trx_register(int bus);
 
@@ -64,9 +65,12 @@ static long _file_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         case OPTDETECT_IOCTL_GET_TRX_INFO:
             {
                 TRX_INFOMATION trx_info;
+                int bus;
 
                 memset(&trx_info, 0, sizeof(trx_info));
-                if (trx_get_full_info(wan_i2c_bus_get(), &trx_info))
+                bus = wan_i2c_bus_get();
+                // coverity[tainted_data] - false alarm, bus validated in bus2sfp comment already added
+                if ((bus < 0) || trx_get_full_info(bus, &trx_info))
                 {
                     return -1;
                 }

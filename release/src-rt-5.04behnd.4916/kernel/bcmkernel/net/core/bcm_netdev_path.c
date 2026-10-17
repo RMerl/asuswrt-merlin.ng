@@ -2,27 +2,48 @@
 #include <linux/netdevice.h>
 #include <linux/rtnetlink.h>
 
+/* Get the lower device of dev.
+   Return NULL if dev is NULL, or there is no lower device for dev.
+*/
 struct net_device *netdev_path_next_dev(struct net_device *dev)
 {
-    struct net_device *next_dev;
-    struct list_head *iter;
+	struct net_device *next_dev;
+	struct list_head *iter;
 
-    if (!dev) 
-        return NULL;
-    netdev_for_each_lower_dev(dev, next_dev, iter) {
-        return next_dev;
-    }
-    
-    return NULL;
+	if (!dev) 
+		return NULL;
+
+	rcu_read_lock();
+	iter = &dev->adj_list.lower;
+	next_dev = netdev_next_lower_dev_rcu(dev, &iter);
+	rcu_read_unlock();
+	return next_dev;
 }
 EXPORT_SYMBOL(netdev_path_next_dev);
 
+/* Get the root device of dev.
+   Return NULL if dev is NULL.
+   Return dev if dev has no lower device.
+*/
 struct net_device *netdev_path_get_root(struct net_device *dev)
 {
-    for (; dev && !netdev_path_is_root(dev); dev = netdev_path_next_dev(dev));
-    return dev;
-}
+	int i, nest_lvl;
 
+	if (!dev) 
+		return NULL;
+
+	rcu_read_lock();
+	nest_lvl = dev->lower_level;
+	for (i = 0; i < nest_lvl; i++) {
+		struct list_head *lower = &dev->adj_list.lower;
+		if (list_empty(lower))
+			break;
+		
+		dev = netdev_next_lower_dev_rcu(dev, &lower);
+	}
+	rcu_read_unlock();
+	return dev;
+}
 EXPORT_SYMBOL(netdev_path_get_root);
 
 int netdev_path_set_hw_subport_mcast_idx(struct net_device *dev,
@@ -43,24 +64,24 @@ int netdev_path_set_hw_subport_mcast_idx(struct net_device *dev,
 
 EXPORT_SYMBOL(netdev_path_set_hw_subport_mcast_idx);
 
-/* Adds a NON-ROOT device to a path. A Root device is indirectly
-   added to a path once another device points to it */
+/* Adds a NON-ROOT device to a path.
+   A Root device is indirectly added to a path once another device points to it.
+   This function must be called under rtnl lock.
+*/
 int netdev_path_add(struct net_device *new_dev, struct net_device *next_dev)
 {
-    int err;
-    int need_lock = !rtnl_is_locked();
+	int err = 0;
 
 	/* new device already in a path, fail */
-	if (netdev_path_is_linked(new_dev))
-		return -EBUSY;
-
-    if (need_lock) rtnl_lock();
+	if (netdev_path_is_linked(new_dev)) {
+		err = -EBUSY;
+		goto exit;
+	}
 	err = netdev_upper_dev_link(next_dev, new_dev, NULL);
-    if (err) {
-        printk(KERN_ERR "%s : netdev_upper_dev_link(%s, %s) error (%d)\n", 
-                __func__, next_dev->name, new_dev->name, err);
-        if (need_lock) rtnl_unlock();
-        return err;
+	if (err) {
+		printk(KERN_ERR "%s : netdev_upper_dev_link(%s, %s) error (%d)\n", 
+			__func__, next_dev->name, new_dev->name, err);
+		goto exit;
     }
 
 	next_dev->bcm_nd_ext.path.refcount++;
@@ -75,33 +96,31 @@ int netdev_path_add(struct net_device *new_dev, struct net_device *next_dev)
 	}
 #endif
 
-    if (need_lock) rtnl_unlock();
-	return 0;
+exit:
+	return err;
 }
 EXPORT_SYMBOL(netdev_path_add);
 
-/* Removes a device from a path */
+/* Removes a device from a path.
+   This function must be called under rtnl lock.
+*/
 int netdev_path_remove(struct net_device *dev)
 {
-    struct net_device *next_dev;
-    int need_lock = !rtnl_is_locked();
+	struct net_device *next_dev;
 
 	/* device referenced by one or more interfaces, fail */
 	if (!netdev_path_is_leaf(dev))
 		return -EBUSY;
 
-	/* device is the first in the list */
-	/* Nothing to do */
-	if (netdev_path_is_root(dev))
-		return 0;
+	next_dev = netdev_path_next_dev(dev);
+	/* device has no lower device, nothing to do */
+	if (!next_dev)
+		goto exit;
 
-    if (need_lock) rtnl_lock();
-    next_dev = netdev_path_next_dev(dev);
 	next_dev->bcm_nd_ext.path.refcount--;
+	netdev_upper_dev_unlink(next_dev, dev);
 
-    netdev_upper_dev_unlink(next_dev, dev);
-
-    if (need_lock) rtnl_unlock();
+exit:
 	return 0;
 }
 EXPORT_SYMBOL(netdev_path_remove);
@@ -110,18 +129,13 @@ EXPORT_SYMBOL(netdev_path_remove);
 void netdev_path_dump(struct net_device *dev)
 {
 	printk("netdev path : ");
-
 	while (1) {
 		pr_cont("%s", dev->name);
-
-		if (netdev_path_is_root(dev))
-			break;
-
-		pr_cont(" -> ");
-
 		dev = netdev_path_next_dev(dev);
+		if (!dev)
+			break;
+		pr_cont(" -> ");
 	}
-
 	pr_cont("\n");
 }
 EXPORT_SYMBOL(netdev_path_dump);

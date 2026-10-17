@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * PQ3 eTSEC2 Group 2 device tree stub [ @ offsets 0xb4000 ]
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ * Copyright 2020 NXP
+ */
+
+&enet0_grp2 {
+	queue-group@b4000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0xb4000 0x1000>;
+		interrupts = <17 2 0 0 18 2 0 0 24 2 0 0>;
+	};
+};

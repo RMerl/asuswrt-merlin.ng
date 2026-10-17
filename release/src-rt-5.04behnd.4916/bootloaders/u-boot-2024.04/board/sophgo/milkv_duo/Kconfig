@@ -1,0 +1,28 @@
+if TARGET_MILKV_DUO
+
+config SYS_BOARD
+	default "milkv_duo"
+
+config SYS_VENDOR
+	default "sophgo"
+
+config SYS_CPU
+	default "generic"
+
+config SYS_CONFIG_NAME
+	default "milkv_duo"
+
+config TEXT_BASE
+	default 0x80200000
+
+config ENV_SIZE
+	default 0x20000
+
+config ENV_SECT_SIZE
+	default 0x40000
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select GENERIC_RISCV
+
+endif

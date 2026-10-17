@@ -1,0 +1,24 @@
+Not all board variants are represented with a specific defconfig in
+mainline U-Boot. Here a small documentation on how to generate U-Boot
+images for all other board variants, available via different dts
+files and defconfigs.
+
+Use a different dts than in the defconfig:
+
+make DEVICE_TREE=cn9131-db-B
+
+Use a different boot device (e.g. MMC or NAND instead of SPI NOR):
+
+For MMC, please make the following changes to the defconfig via
+e.g. "make menuconfig":
+Remove CONFIG_MVEBU_SPI_BOOT
+Select CONFIG_MVEBU_MMC_BOOT
+Remove CONFIG_ENV_IS_IN_SPI_FLASH
+Select CONFIG_ENV_IS_IN_MMC
+
+For NAND, please make the following changes to the defconfig via
+e.g. "make menuconfig":
+Remove CONFIG_MVEBU_SPI_BOOT
+Select CONFIG_MVEBU_NAND_BOOT
+Remove CONFIG_ENV_IS_IN_SPI_FLASH
+Select CONFIG_ENV_IS_IN_NAND

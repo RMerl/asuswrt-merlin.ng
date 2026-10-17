@@ -138,6 +138,9 @@
 &uart2 {
     pinctrl-names = "default";
     pinctrl-0 = <&a_rg_uart1_sin_pin_20 &a_rg_uart1_sout_pin_21>;
+#if defined(CONFIG_BCM_VOICE_SUPPORT)
+    status = "disabled";
+#endif
     status = "okay";
 };
 

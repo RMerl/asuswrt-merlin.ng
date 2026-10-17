@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "omap5-u-boot.dtsi"
+
+&cpsw_emac0 {
+	phy-handle = <&dp83867_0>;
+};
+
+&cpsw_emac1 {
+	phy-handle = <&dp83867_1>;
+};
+
+&mmc2_pins_default {
+	bootph-pre-ram;
+};
+
+&mmc2_pins_hs200 {
+	bootph-pre-ram;
+};
+
+&mmc2_iodelay_hs200_conf {
+	bootph-pre-ram;
+};
+
+&omap_dwc3_1 {
+	bootph-pre-ram;
+};
+
+&usb1 {
+	bootph-pre-ram;
+	dr_mode = "peripheral";
+};
+
+&usb2_phy1 {
+	bootph-pre-ram;
+};
+
+&usb3_phy1 {
+	bootph-pre-ram;
+};

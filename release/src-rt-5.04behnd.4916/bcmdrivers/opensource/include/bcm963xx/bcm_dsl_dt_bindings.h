@@ -75,6 +75,8 @@
 #define DSL_AFE_FE_REV_6307_REV_12_7_60      (1 << 8)
 #define DSL_AFE_FE_REV_6307_REV_12_7_60_1    (1 << 8)
 #define DSL_AFE_FE_REV_6307_REV_12_7_60_2    (2 << 8)
+#define DSL_AFE_FE_REV_6307_REV_12_7_61_1    (3 << 8)
+#define DSL_AFE_FE_REV_6307_REV_12_7_61_2    (4 << 8)
 #define DSL_AFE_FE_REV_6307_REV_12_7_63_1    (5 << 8)
 #define DSL_AFE_FE_REV_6307_REV_12_7_63_2    (6 << 8)
 

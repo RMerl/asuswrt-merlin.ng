@@ -82,8 +82,11 @@ extern int dhd_wfd_unregisterdevice(int wfd_idx, struct net_device *dev);
 
 #endif /* BCM_WFD */
 
-#if (defined(DSLCPE) && defined(BCM_DHD_RUNNER)) || defined(BCM_NBUFF_WLMCAST)
+#if defined(BCM_DHD_RUNNER) || defined(BCM_NBUFF_WLMCAST)
 extern int g_multicast_priority;
-#endif /* (DSLCPE && BCM_DHD_RUNNER) || BCM_NBUFF_WLMCAST */
+#endif /* BCM_DHD_RUNNER || BCM_NBUFF_WLMCAST */
+
+extern int (*send_nbuff_to_wfd)(pNBuff_t pNBuff, struct net_device * dev);
+extern int (*send_packet_to_upper_layer)(struct sk_buff * skb);
 
 #endif /* __DHD_WFD_H__ */

@@ -1,0 +1,15 @@
+if TARGET_EA_LPC3250DEVKITV2
+
+config SYS_BOARD
+	default "ea-lpc3250devkitv2"
+
+config SYS_VENDOR
+	default "ea"
+
+config SYS_SOC
+	default "lpc32xx"
+
+config SYS_CONFIG_NAME
+	default "ea-lpc3250devkitv2"
+
+endif

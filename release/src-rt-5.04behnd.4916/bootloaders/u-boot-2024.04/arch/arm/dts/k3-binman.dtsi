@@ -1,0 +1,492 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "k3-security.h"
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+	custMpk {
+		filename = "custMpk.pem";
+		custmpk_pem: blob-ext {
+			filename = "arch/arm/mach-k3/keys/custMpk.pem";
+		};
+	};
+
+	ti-degenerate-key {
+		filename = "ti-degenerate-key.pem";
+		dkey_pem: blob-ext {
+			filename = "arch/arm/mach-k3/keys/ti-degenerate-key.pem";
+		};
+	};
+};
+
+#ifndef CONFIG_ARM64
+
+&binman {
+	board-cfg {
+		filename = "board-cfg.bin";
+		bcfg_yaml: ti-board-config {
+			config = "board-cfg.yaml";
+			schema = "arch/arm/mach-k3/schema.yaml";
+		};
+	};
+	pm-cfg {
+		filename = "pm-cfg.bin";
+		pcfg_yaml: ti-board-config {
+			config = "pm-cfg.yaml";
+			schema = "arch/arm/mach-k3/schema.yaml";
+		};
+	};
+	rm-cfg {
+		filename = "rm-cfg.bin";
+		rcfg_yaml: ti-board-config {
+			config = "rm-cfg.yaml";
+			schema = "arch/arm/mach-k3/schema.yaml";
+		};
+	};
+	sec-cfg {
+		filename = "sec-cfg.bin";
+		scfg_yaml: ti-board-config {
+			config = "sec-cfg.yaml";
+			schema = "arch/arm/mach-k3/schema.yaml";
+		};
+	};
+	combined-tifs-cfg {
+		filename = "combined-tifs-cfg.bin";
+		ti-board-config {
+			bcfg_yaml_tifs: board-cfg {
+				config = "board-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+			scfg_yaml_tifs: sec-cfg {
+				config = "sec-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+			pcfg_yaml_tifs: pm-cfg {
+				config = "pm-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+			rcfg_yaml_tifs: rm-cfg {
+				config = "rm-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+		};
+	};
+	combined-dm-cfg {
+		filename = "combined-dm-cfg.bin";
+		ti-board-config {
+			pcfg_yaml_dm: pm-cfg {
+				config = "pm-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+			rcfg_yaml_dm: rm-cfg {
+				config = "rm-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+		};
+	};
+	combined-sysfw-cfg {
+		filename = "combined-sysfw-cfg.bin";
+		ti-board-config {
+			bcfg_yaml_sysfw: board-cfg {
+				config = "board-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+			scfg_yaml_sysfw: sec-cfg {
+				config = "sec-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+			pcfg_yaml_sysfw: pm-cfg {
+				config = "pm-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+			rcfg_yaml_sysfw: rm-cfg {
+				config = "rm-cfg.yaml";
+				schema = "arch/arm/mach-k3/schema.yaml";
+			};
+		};
+	};
+};
+
+&binman {
+	itb_template: template-5 {
+		fit {
+			description = "SYSFW and Config fragments";
+			#address-cells = <1>;
+			images {
+				sysfw.bin {
+					description = "sysfw";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					blob-ext {
+					    filename = "sysfw.bin";
+					};
+				};
+				board-cfg.bin {
+					description = "board-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&board_cfg>;
+						keyfile = "custMpk.pem";
+					};
+					board_cfg: board-cfg {
+						filename = "board-cfg.bin";
+						type = "blob-ext";
+					};
+
+				};
+				pm-cfg.bin {
+					description = "pm-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&pm_cfg>;
+						keyfile = "custMpk.pem";
+					};
+					pm_cfg: pm-cfg {
+						filename = "pm-cfg.bin";
+						type = "blob-ext";
+					};
+				};
+				rm-cfg.bin {
+					description = "rm-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&rm_cfg>;
+						keyfile = "custMpk.pem";
+					};
+					rm_cfg: rm-cfg {
+						filename = "rm-cfg.bin";
+						type = "blob-ext";
+					};
+				};
+				sec-cfg.bin {
+					description = "sec-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					ti-secure {
+						content = <&sec_cfg>;
+						keyfile = "custMpk.pem";
+					};
+					sec_cfg: sec-cfg {
+						filename = "sec-cfg.bin";
+						type = "blob-ext";
+					};
+				};
+			};
+		};
+	};
+
+	itb_unsigned_template: template-6 {
+		fit {
+			description = "SYSFW and Config fragments";
+			#address-cells = <1>;
+			images {
+				sysfw.bin {
+					description = "sysfw";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					blob-ext {
+					    filename = "sysfw.bin_fs";
+					};
+				};
+				board-cfg.bin {
+					description = "board-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					board-cfg {
+						filename = "board-cfg.bin";
+						type = "blob-ext";
+					};
+
+				};
+				pm-cfg.bin {
+					description = "pm-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					pm-cfg {
+						filename = "pm-cfg.bin";
+						type = "blob-ext";
+					};
+				};
+				rm-cfg.bin {
+					description = "rm-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					rm-cfg {
+						filename = "rm-cfg.bin";
+						type = "blob-ext";
+					};
+				};
+				sec-cfg.bin {
+					description = "sec-cfg";
+					type = "firmware";
+					arch = "arm";
+					compression = "none";
+					sec-cfg {
+						filename = "sec-cfg.bin";
+						type = "blob-ext";
+					};
+				};
+			};
+		};
+	};
+};
+
+#else
+
+&binman {
+	ti_spl_template: template-1 {
+		filename = "tispl.bin";
+		pad-byte = <0xff>;
+
+		fit {
+			description = "Configuration to load ATF and SPL";
+			#address-cells = <1>;
+
+			images {
+
+				atf {
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					os = "arm-trusted-firmware";
+					load = <CONFIG_K3_ATF_LOAD_ADDR>;
+					entry = <CONFIG_K3_ATF_LOAD_ADDR>;
+					ti-secure {
+						content = <&atf>;
+						keyfile = "custMpk.pem";
+					};
+					atf: atf-bl31 {
+					};
+				};
+
+				tee {
+					description = "OP-TEE";
+					type = "tee";
+					arch = "arm64";
+					compression = "none";
+					os = "tee";
+					load = <0x9e800000>;
+					entry = <0x9e800000>;
+					ti-secure {
+						content = <&tee>;
+						keyfile = "custMpk.pem";
+					};
+					tee: tee-os {
+					};
+				};
+
+				dm {
+					description = "DM binary";
+					type = "firmware";
+					arch = "arm32";
+					compression = "none";
+					os = "DM";
+					load = <0x89000000>;
+					entry = <0x89000000>;
+				};
+
+				spl {
+					description = "SPL (64-bit)";
+					type = "standalone";
+					os = "U-Boot";
+					arch = "arm64";
+					compression = "none";
+					load = <CONFIG_SPL_TEXT_BASE>;
+					entry = <CONFIG_SPL_TEXT_BASE>;
+					ti-secure {
+						content = <&u_boot_spl_nodtb>;
+						keyfile = "custMpk.pem";
+
+					};
+					u_boot_spl_nodtb: blob-ext {
+						filename = "spl/u-boot-spl-nodtb.bin";
+					};
+				};
+
+			};
+		};
+	};
+	ti_spl_unsigned_template: template-2 {
+		filename = "tispl.bin_unsigned";
+		pad-byte = <0xff>;
+
+		fit {
+			description = "Configuration to load ATF and SPL";
+			#address-cells = <1>;
+
+			images {
+
+				atf {
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					arch = "arm64";
+					compression = "none";
+					os = "arm-trusted-firmware";
+					load = <CONFIG_K3_ATF_LOAD_ADDR>;
+					entry = <CONFIG_K3_ATF_LOAD_ADDR>;
+					atf-bl31 {
+						filename = "bl31.bin";
+					};
+				};
+
+				tee {
+					description = "OP-TEE";
+					type = "tee";
+					arch = "arm64";
+					compression = "none";
+					os = "tee";
+					load = <0x9e800000>;
+					entry = <0x9e800000>;
+					tee-os {
+						filename = "tee-raw.bin";
+					};
+				};
+
+				dm {
+					description = "DM binary";
+					type = "firmware";
+					arch = "arm32";
+					compression = "none";
+					os = "DM";
+					load = <0x89000000>;
+					entry = <0x89000000>;
+				};
+
+				spl {
+					description = "SPL (64-bit)";
+					type = "standalone";
+					os = "U-Boot";
+					arch = "arm64";
+					compression = "none";
+					load = <CONFIG_SPL_TEXT_BASE>;
+					entry = <CONFIG_SPL_TEXT_BASE>;
+					blob-ext {
+						filename = "spl/u-boot-spl-nodtb.bin";
+					};
+				};
+			};
+		};
+	};
+	u_boot_template: template-3 {
+		filename = "u-boot.img";
+		pad-byte = <0xff>;
+
+		fit {
+			description = "FIT image with multiple configurations";
+
+			images {
+				uboot {
+					type = "firmware";
+					os = "u-boot";
+					arch = "arm";
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+					ti-secure {
+						content = <&u_boot_nodtb>;
+						keyfile = "custMpk.pem";
+					};
+					u_boot_nodtb: u-boot-nodtb {
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+			};
+		};
+	};
+	u_boot_unsigned_template: template-4 {
+		filename = "u-boot.img_unsigned";
+		pad-byte = <0xff>;
+
+		fit {
+			description = "FIT image with multiple configurations";
+
+			images {
+				uboot {
+					type = "firmware";
+					os = "u-boot";
+					arch = "arm";
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+					blob {
+						filename = "u-boot-nodtb.bin";
+					};
+					hash {
+						algo = "crc32";
+					};
+				};
+			};
+		};
+	};
+	firewall_bg_1: template-5 {
+		control = <(FWCTRL_EN | FWCTRL_LOCK |
+					FWCTRL_BG | FWCTRL_CACHE)>;
+		permissions = <((FWPRIVID_ALL << FWPRIVID_SHIFT) |
+						FWPERM_SECURE_PRIV_RWCD |
+						FWPERM_SECURE_USER_RWCD |
+						FWPERM_NON_SECURE_PRIV_RWCD |
+						FWPERM_NON_SECURE_USER_RWCD)>;
+		start_address = <0x0 0x0>;
+		end_address = <0xff 0xffffffff>;
+	};
+	firewall_bg_3: template-6 {
+		insert-template = <&firewall_bg_1>;
+		permissions = <((FWPRIVID_ALL << FWPRIVID_SHIFT) |
+						FWPERM_SECURE_PRIV_RWCD |
+						FWPERM_SECURE_USER_RWCD |
+						FWPERM_NON_SECURE_PRIV_RWCD |
+						FWPERM_NON_SECURE_USER_RWCD)>,
+					  <((FWPRIVID_ALL << FWPRIVID_SHIFT) |
+						FWPERM_SECURE_PRIV_RWCD |
+						FWPERM_SECURE_USER_RWCD |
+						FWPERM_NON_SECURE_PRIV_RWCD |
+						FWPERM_NON_SECURE_USER_RWCD)>,
+					  <((FWPRIVID_ALL << FWPRIVID_SHIFT) |
+						FWPERM_SECURE_PRIV_RWCD |
+						FWPERM_SECURE_USER_RWCD |
+						FWPERM_NON_SECURE_PRIV_RWCD |
+						FWPERM_NON_SECURE_USER_RWCD)>;
+	};
+	firewall_armv8_atf_fg: template-7 {
+		control = <(FWCTRL_EN | FWCTRL_LOCK |
+					FWCTRL_CACHE)>;
+		permissions = <((FWPRIVID_ARMV8 << FWPRIVID_SHIFT) |
+						FWPERM_SECURE_PRIV_RWCD |
+						FWPERM_SECURE_USER_RWCD)>;
+		start_address = <0x0 0x70000000>;
+		end_address = <0x0 0x7001ffff>;
+	};
+	firewall_armv8_optee_fg: template-8 {
+		control = <(FWCTRL_EN | FWCTRL_LOCK |
+					FWCTRL_CACHE)>;
+		permissions = <((FWPRIVID_ARMV8 << FWPRIVID_SHIFT) |
+						FWPERM_SECURE_PRIV_RWCD |
+						FWPERM_SECURE_USER_RWCD)>;
+		start_address = <0x0 0x9e800000>;
+		end_address = <0x0 0x9fffffff>;
+	};
+
+};
+
+#endif

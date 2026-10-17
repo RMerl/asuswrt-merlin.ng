@@ -1,0 +1,6 @@
+i.MX8MP Beacon EmbeddedWorks Devkit
+M:	Adam Ford <aford173@gmail.com>
+S:	Maintained
+F:	board/beacon/imx8mp/
+F:	include/configs/imx8mp_beacon.h
+F:	configs/imx8mp_beacon_defconfig

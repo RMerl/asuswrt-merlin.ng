@@ -74,5 +74,6 @@ int is_pcs_locked(void);
 int is_pcs_state(void);
 void mpcs_rx_reset(void);
 void mpcs_wantop_force_lbe(void);
+int mpcs_power_set(int enable);
 
 #endif

@@ -1,0 +1,243 @@
+#
+# Boot count configuration
+#
+
+menuconfig BOOTCOUNT_LIMIT
+	bool "Enable support for checking boot count limit"
+	help
+	  Enable checking for exceeding the boot count limit.
+	  More information: http://www.denx.de/wiki/DULG/UBootBootCountLimit
+
+if BOOTCOUNT_LIMIT
+
+choice
+	prompt "Boot count device"
+	default BOOTCOUNT_AM33XX if AM33XX || SOC_DA8XX
+	default BOOTCOUNT_AT91 if AT91SAM9XE
+	default BOOTCOUNT_GENERIC
+
+config BOOTCOUNT_GENERIC
+	bool "Generic default boot counter"
+	help
+	  Generic bootcount stored at SYS_BOOTCOUNT_ADDR.
+
+	  SYS_BOOTCOUNT_ADDR:
+	    Set to the address where the bootcount and bootcount magic
+	    will be stored.
+
+config BOOTCOUNT_EXT
+	bool "Boot counter on EXT filesystem"
+	depends on FS_EXT4
+	select EXT4_WRITE
+	help
+	  Add support for maintaining boot count in a file on an EXT
+	  filesystem.
+
+config BOOTCOUNT_AM33XX
+	bool "Boot counter in AM33XX RTC IP block"
+	depends on AM33XX || SOC_DA8XX
+	select SPL_AM33XX_ENABLE_RTC32K_OSC if AM33XX
+	help
+	  A bootcount driver for the RTC IP block found on many TI platforms.
+	  This requires the RTC clocks, etc, to be enabled prior to use and
+	  not all boards with this IP block on it will have the RTC in use.
+
+config BOOTCOUNT_AM33XX_NVMEM
+	bool "Boot counter in AM33XX RTC IP block with upgrade_available flag"
+	depends on AM33XX
+        select SPL_AM33XX_ENABLE_RTC32K_OSC if AM33XX
+	help
+	  Add support for maintaining bootcount,upgrade_available,
+	  version and BOOTMAGIC in a AM33xx RTC IP block
+	  scratch register2.
+
+	  A bootcount driver for the RTC IP block found on many TI platforms.
+	  This requires the RTC clocks, etc, to be enabled prior to use and
+	  not all boards with this IP block on it will have the RTC in use.
+
+	  If there is upgrade in software then "upgrade_available" is 1,
+	  "bootcount" is incremented otherwise "upgrade_available" and
+	  "bootcount" is  always 0. So the Userspace Application must set
+	  the "upgrade_available" and "bootcount" variable to 0, if a boot
+	  was successfully.
+
+config BOOTCOUNT_ENV
+	bool "Boot counter in environment"
+	help
+	  If no softreset save registers are found on the hardware
+	  "bootcount" is stored in the environment. To prevent a
+	  saveenv on all reboots, the environment variable
+	  "upgrade_available" is used. If "upgrade_available" is
+	  0, "bootcount" is always 0. If "upgrade_available" is 1,
+          "bootcount" is incremented in the environment.
+	  So the Userspace Application must set the "upgrade_available"
+	  and "bootcount" variables to 0, if the system booted successfully.
+
+config BOOTCOUNT_RAM
+	bool "Boot counter in RAM"
+	help
+	  Store the bootcount in DRAM protected against bit errors
+	  due to short power loss or holding a system in RESET.
+
+config BOOTCOUNT_AT91
+	bool "Boot counter for Atmel AT91SAM9XE"
+	depends on AT91SAM9XE
+
+config DM_BOOTCOUNT
+        bool "Boot counter in a device-model device"
+	help
+	  Enables reading/writing the bootcount in a device-model based
+	  backing store.  If an entry in /chosen/u-boot,bootcount-device
+	  exists, this will be the preferred bootcount device; otherwise
+	  the first available bootcount device will be used.
+
+endchoice
+
+if DM_BOOTCOUNT
+
+menu "Backing stores for device-model backed bootcount"
+config DM_BOOTCOUNT_RTC
+	bool "Support RTC devices as a backing store for bootcount"
+	depends on DM_RTC
+	help
+	  Enabled reading/writing the bootcount in a DM RTC device.
+	  The wrapper device is to be specified with the compatible string
+	  'u-boot,bootcount-rtc' and the 'rtc'-property (a phandle pointing
+	  to the underlying RTC device) and an optional 'offset' property
+	  are supported.
+
+	  Accesses to the backing store are performed using the write16
+	  and read16 ops of DM RTC devices.
+
+config DM_BOOTCOUNT_I2C
+	bool "Driver Model boot counter on I2C device"
+	depends on DM_I2C
+	help
+	  Enable support for the bootcounter on a generic i2c device, like a RTC
+	  or PMIC. The bootcounter is configured in the device tree using the
+	  "u-boot,bootcount-i2c" compatible string. It requires a phandle
+	  'i2cbcdev' for the i2c device and an 'offset' property used within the
+	  device.
+
+config DM_BOOTCOUNT_I2C_EEPROM
+	bool "Support i2c eeprom devices as a backing store for bootcount"
+	depends on I2C_EEPROM
+	help
+	  Enabled reading/writing the bootcount in a DM i2c eeprom device.
+	  The wrapper device is to be specified with the compatible string
+	  'u-boot,bootcount-i2c-eeprom' and the 'i2c-eeprom'-property (a phandle
+	  pointing to the underlying i2c eeprom device) and an optional 'offset'
+	  property are supported.
+
+config DM_BOOTCOUNT_PMIC_PFUZE100
+	bool "Enable Bootcount driver for PMIC PFUZE100"
+	depends on DM_PMIC_PFUZE100
+	help
+	  Enable support for the bootcounter using PMIC PFUZE100 registers.
+	  This works only, if the PMIC is not connected to a battery.
+
+config DM_BOOTCOUNT_SPI_FLASH
+	bool "Support SPI flash devices as a backing store for bootcount"
+	depends on DM_SPI_FLASH
+	help
+	  Enabled reading/writing the bootcount in a DM SPI flash device.
+	  The wrapper device is to be specified with the compatible string
+	  'u-boot,bootcount-spi-flash' and the 'spi-flash'-property (a phandle
+	  pointing to the underlying SPI flash device) and an optional 'offset'
+	  property are supported.
+
+config BOOTCOUNT_MEM
+	bool "Support memory based bootcounter"
+	help
+	  Enabling Memory based bootcount, typically in a SoC register which
+	  is not cleared on softreset.
+	  compatible = "u-boot,bootcount";
+
+config DM_BOOTCOUNT_SYSCON
+	bool "Support SYSCON devices as a backing store for bootcount"
+	select REGMAP
+	select SYSCON
+	help
+	  Enable reading/writing the bootcount value in a DM SYSCON device.
+	  The driver supports a fixed 32 bits size register using the native
+	  endianness. However, this can be controlled from the SYSCON DT node
+	  configuration.
+
+	  Accessing the backend is done using the regmap interface.
+
+endmenu
+
+endif
+
+config BOOTCOUNT_BOOTLIMIT
+	int "Maximum number of reboot cycles allowed"
+	default 0
+	help
+	  Set the Maximum number of reboot cycles allowed without the boot
+	  counter being cleared.
+	  If set to 0, do not set a boot limit in the environment.
+
+config SYS_BOOTCOUNT_SINGLEWORD
+	bool "Use single word to pack boot count and magic value"
+	depends on BOOTCOUNT_GENERIC
+	help
+	  This option enables packing boot count magic value and boot count
+	  into single word (32 bits).
+
+config SYS_BOOTCOUNT_EXT_INTERFACE
+	string "Interface on which to find boot counter EXT filesystem"
+	default "mmc"
+	depends on BOOTCOUNT_EXT
+	help
+	  Set the interface to use when locating the filesystem to use for the
+	  boot counter.
+
+config SYS_BOOTCOUNT_EXT_DEVPART
+	string "Partition of the boot counter EXT filesystem"
+	default "0:1"
+	depends on BOOTCOUNT_EXT
+	help
+	  Set the partition to use when locating the filesystem to use for the
+	  boot counter.
+
+config SYS_BOOTCOUNT_EXT_NAME
+	string "Path and filename of the EXT filesystem based boot counter"
+	default "/boot/failures"
+	depends on BOOTCOUNT_EXT
+	help
+	  Set the filename and path of the file used to store the boot counter.
+
+config SYS_BOOTCOUNT_ADDR
+	hex "RAM address used for reading and writing the boot counter"
+	default 0x44E3E000 if BOOTCOUNT_AM33XX || BOOTCOUNT_AM33XX_NVMEM
+	default 0xE0115FF8 if ARCH_LS1043A || ARCH_LS1021A
+	depends on BOOTCOUNT_AM33XX || BOOTCOUNT_GENERIC || BOOTCOUNT_EXT || \
+		   BOOTCOUNT_AM33XX_NVMEM
+	help
+	  Set the address used for reading and writing the boot counter.
+
+config SYS_BOOTCOUNT_MAGIC
+	hex "Magic value for the boot counter"
+	default 0xB001C041 if BOOTCOUNT_GENERIC || BOOTCOUNT_EXT || \
+			      BOOTCOUNT_AM33XX || BOOTCOUNT_ENV || \
+			      BOOTCOUNT_RAM || BOOTCOUNT_AT91 || DM_BOOTCOUNT
+	default 0xB0 if BOOTCOUNT_AM33XX_NVMEM
+	depends on BOOTCOUNT_GENERIC || BOOTCOUNT_EXT || \
+		   BOOTCOUNT_AM33XX || BOOTCOUNT_ENV || \
+		   BOOTCOUNT_RAM || BOOTCOUNT_AT91 || DM_BOOTCOUNT || \
+		   BOOTCOUNT_AM33XX_NVMEM
+	help
+	  Set the magic value used for the boot counter.
+
+choice
+	prompt "Endianness of bootcount accessors"
+	default SYS_BOOTCOUNT_LE
+
+config SYS_BOOTCOUNT_LE
+	bool "Little endian accessors"
+
+config SYS_BOOTCOUNT_BE
+	bool "Big endian accessors"
+
+endchoice
+endif

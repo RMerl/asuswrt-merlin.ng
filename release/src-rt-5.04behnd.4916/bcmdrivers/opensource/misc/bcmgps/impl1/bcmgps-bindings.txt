@@ -1,23 +1,33 @@
 bcmgps: Broadcom BCM477x GPS driver
 ===============================================================================
 
-Broadcom BCM477x GPS driver uses SPIDEV driver for spi-bus and 2 control gpios
+Broadcom BCM477x GPS driver uses SPIDEV or HS UART driver for (spi-bus/uart) and 2 control gpios
 
 The device node name : "bcmgps" 
 
+    /* for SPI BUS */
     bcmgps: bcmgps {
         compatible = "brcm, bcmgps";
         ext_irq = <&bca_extintr 19 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
         reset-gpio = <&gpioc 10 GPIO_ACTIVE_HIGH>;
-        spi-bus = <&bcmgps_spi>;
+        spi-bus = <&bcmgps_spi>;    /* for SPI BUS */
+        status = "okay";
+    };
+
+    /* for HS UART PORT */
+    bcmgps: bcmgps {
+        compatible = "brcm, bcmgps";
+        reset-gpio = <&gpioc 10 GPIO_ACTIVE_HIGH>;
+        uart-port = <&hs_uart0>;    /* for UART PORT */
         status = "okay";
     };
 
 - properties:
     comaptible: "brcm, bcmgps"
-    ext_irq: HOST REQ GPIO pin (interrupt service - rising edge)
+    ext_irq: HOST REQ GPIO pin (interrupt service - rising edge) (this pin is for SPI BUS only)
     reset-gpio: NSTANDBY GPIO pin (output and active high level)
     spi-bus: <&bcmgps_spi> - SPIDEV SPI bus controller (mapped to /dev/spidevX.X)
+    uart-port: <&hs_uart0> - UART PORT (mapped to /dev/ttyHX)
 
 - spi-bus:
     bcmgps_spi: bcmgps_spi {
@@ -27,5 +37,12 @@ The device node name : "bcmgps"
         compatible = "rohm,dh2228fv";           /* spidev compatible        */
         reg = <2>;                              /* chip select              */
         spi-max-frequency = <25000000>;         /* max clock speed          */
+    };
+
+- uart-port:
+    &hs_uart0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_hs_uart_cts_n_pin_44 &a_hs_uart_rts_n_pin_43 &a_hs_uart_sdin_pin_51 &a_hs_uart_sdout_pin_42 >;
+        status = "okay";
     };
 

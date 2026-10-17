@@ -1,0 +1,7 @@
+ARM i.MX93 VARISCITE VAR-SOM-MX93 MODULE
+M:	Mathieu Othacehe <m.othacehe@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx93-var-som*
+F:	board/variscite/imx93_var_som/
+F:	configs/imx93_var_som_defconfig
+F:	include/configs/imx93_var_som.h

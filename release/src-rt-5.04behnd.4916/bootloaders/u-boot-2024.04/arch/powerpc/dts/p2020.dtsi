@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * P2020 Silicon/SoC Device Tree Source (pre include)
+ *
+ * Copyright 2013 Freescale Semiconductor Inc.
+ * Copyright 2019 NXP
+ */
+
+/dts-v1/;
+
+/include/ "e500v2_power_isa.dtsi"
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: PowerPC,P2020@0 {
+			device_type = "cpu";
+			reg = <0>;
+			next-level-cache = <&L2>;
+		};
+		cpu1: PowerPC,P2020@1 {
+			device_type = "cpu";
+			reg = <1>;
+			next-level-cache = <&L2>;
+		};
+	};
+};

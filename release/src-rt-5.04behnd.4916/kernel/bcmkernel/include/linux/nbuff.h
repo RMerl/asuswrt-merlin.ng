@@ -48,7 +48,7 @@ written consent.
  * Implementation Note:
  *
  * One may view NBuff as a base class from which other buff types are derived.
- * Examples of derived network buffer types are sk_buff, fkbuff, fpbuff, tgbuff
+ * Examples of derived network buffer types are sk_buff, fkbuff, wkbuff, tgbuff
  *
  * A pointer to a buffer is converted to a pointer to a special (derived) 
  * network buffer type by encoding the type into the least significant 2 bits
@@ -158,7 +158,7 @@ extern int nbuff_dbg;
  * Removing CC_NBUFF_FLUSH_OPTIMIZATION will require additional test and code
  * changes.
  */
-#if !defined(CONFIG_BCM_GLB_COHERENCY) || defined(CONFIG_CPU_RX_FROM_XPM)
+#if !defined(CONFIG_BCM_GLB_COHERENCY)
 #define CC_NBUFF_FLUSH_OPTIMIZATION
 #endif
 
@@ -595,13 +595,13 @@ struct blog_t;
 struct net_device;
 typedef int (*HardStartXmitFuncP) (struct sk_buff *skb,
                                    struct net_device *dev);
-
 struct fkbuff;
 typedef struct fkbuff FkBuff_t;
 
 #define FKB_NULL                    ((FkBuff_t *)NULL)
 
 #include <linux/nbuff_types.h>
+#include <linux/wkbuff.h>
 
 /*
  *------------------------------------------------------------------------------
@@ -630,6 +630,7 @@ typedef struct fkbuff FkBuff_t;
 
 #define SKBUFF_2_PNBUFF(skb)        ((pNBuff_t)(skb)) /* see MUST_BE_ZERO */
 #define FKBUFF_2_PNBUFF(fkb)        PBUF_2_PNBUFF(fkb,FKBUFF_PTR)
+#define WKBUFF_2_PNBUFF(wkb)        PBUF_2_PNBUFF(wkb,WKBUFF_PTR)
 
 /*
  *------------------------------------------------------------------------------
@@ -646,7 +647,7 @@ typedef struct fkbuff FkBuff_t;
  *  skb_p = CAST_VIRT_TO_REAL_PNBUFF(pNBuff2Skb, struct sk_buff *);
  *  fkb_p = CAST_VIRT_TO_REAL_PNBUFF(pNBuff2Fkb, struct fkbuff  *);
  * or,
- *  fkb_p = PNBUFF_2_FKBUFF(pNBuff2Fkb);  
+ *  fkb_p = PNBUFF_2_FKBUFF(pNBuff2Fkb);
  *------------------------------------------------------------------------------
  */
 
@@ -656,9 +657,27 @@ typedef struct fkbuff FkBuff_t;
 #define CAST_VIRT_TO_REAL_PNBUFF(pVirtNBuff,realType) \
             ( (realType) PNBUFF_2_PBUF(pVirtNBuff) )
 
-#define PNBUFF_2_FKBUFF(pNBuff) CAST_VIRT_TO_REAL_PNBUFF((pNBuff), struct fkbuff*)
+#define PNBUFF_2_FKBUFF(pNBuff)     \
+            CAST_VIRT_TO_REAL_PNBUFF((pNBuff), struct fkbuff *)
 
+#if defined(CONFIG_BCM_WKB)
+/* XXX: BCM_WKB_TEST: For debug only. Remove it once WKB is stabilized */
+static inline void
+wkbuff_ptr_sanity(pNBuff_t pNBuff) {
+     WKB_ASSERT((pNBuff == NULL) || IS_WKBUFF_PTR(pNBuff));
+}
+#define PNBUFF_2_WKBUFF(pNBuff)		\
+({ \
+        wkbuff_ptr_sanity(pNBuff);	\
+        CAST_VIRT_TO_REAL_PNBUFF((pNBuff), struct wkbuff *); \
+})
+void dev_kfree_wkb_thread(wkbuff_t * wkb);
+void dev_kfree_wkb_thread_bulk(wkbuff_t *head, wkbuff_t *tail, uint32_t len);
+#else /* ! CONFIG_BCM_WKB */
 
+#define PNBUFF_2_WKBUFF(pNBuff)     \
+            CAST_VIRT_TO_REAL_PNBUFF((pNBuff), struct wkbuff *)
+#endif /* ! CONFIG_BCM_WKB */
 
 /*
  *------------------------------------------------------------------------------
@@ -714,12 +733,14 @@ struct fkbuff
                 uint32_t  data_hw_recycle_done:1;
                 uint32_t  svc_q_en:1; 
                 uint32_t  svc_q_id:5;   /* WAR for DHD when mark is overwitten with queue */
-                uint32_t  reserved:2;
+                uint32_t  iq_prio:1;
+                uint32_t  reserved:1;
                 uint32_t  len:20;              /* Packet length               */
             )
             LE_DECL(
                 uint32_t  len:20;
-                uint32_t  reserved:2;
+                uint32_t  reserved:1;
+                uint32_t  iq_prio:1;
                 uint32_t  svc_q_id:5;   /* WAR for DHD when mark is overwitten with queue */
                 uint32_t  svc_q_en:1;
                 uint32_t  data_hw_recycle_done:1;
@@ -756,6 +777,7 @@ struct fkbuff
 
 #define FKB_CLEAR_LEN_WORD_FLAGS(len_word) (len_word &= 0x000FFFFF)
 
+static_assert (sizeof(FkBuff_t) == BCM_PKT_FKB_BYTES);
 
 /*
  *------------------------------------------------------------------------------
@@ -1013,23 +1035,28 @@ static inline FkBuff_t * _get_fkb_master_ptr_(FkBuff_t * fkb_p)
  *------------------------------------------------------------------------------
  * Placement of a FKB object in the Rx DMA buffer:
  *
- * RX DMA Buffer:   |----- FKB ----|--- reserve headroom ---|---...... 
+ * RX DMA Buffer:   |----- FKB ----|--- reserve headroom ---|---......
  *                  ^              ^                        ^
  *                pFkb           pHead                    pData
- *                pBuf
+ *                                                        pBuf
+ *
+ * XXX: TODO:
+ * Get rid of these duplicate definitions and use MACROs from bcm_pkt_lengths.h
  *------------------------------------------------------------------------------
  */
-#define PFKBUFF_PHEAD_OFFSET        sizeof(FkBuff_t)
-#define PFKBUFF_TO_PHEAD(pFkb)      ((uint8_t*)((FkBuff_t*)(pFkb) + 1))
-#define PHEAD_TO_PFKBUFF(pHead)    \
-            (FkBuff_t *)((uint8_t*)(pHead)-PFKBUFF_PHEAD_OFFSET)
+#define PFKBUFF_PHEAD_OFFSET                \
+            (uint16_t)(uintptr_t)BCM_PFKBUFF_TO_PHEAD(NULL)
 
-#define PDATA_TO_PFKBUFF(pData,headroom)    \
-            (FkBuff_t *)((uint8_t*)(pData)-(headroom)-PFKBUFF_PHEAD_OFFSET)
-#define PFKBUFF_TO_PDATA(pFkb,headroom)     \
-            (uint8_t*)((uint8_t*)(pFkb) + PFKBUFF_PHEAD_OFFSET + (headroom))
+#define PFKBUFF_TO_PHEAD(pFkb)              BCM_PFKBUFF_TO_PHEAD(pFkb)
+#define PHEAD_TO_PFKBUFF(pHead)             BCM_PHEAD_TO_PFKBUFF(pHead)
 
-#define NBUFF_ALIGN_MASK_8   0x07
+#define PDATA_TO_PFKBUFF(pData, headroom)   \
+            (BCM_PHEAD_TO_PFKBUFF((uint8_t *)(pData) - (headroom)))
+#define PFKBUFF_TO_PDATA(pFkb, headroom)    \
+            (BCM_PFKBUFF_TO_PHEAD(pFkb) + (headroom))
+
+#define NBUFF_ALIGN_MASK_8          0x07
+
 pNBuff_t nbuff_align_data(pNBuff_t pNBuff, uint8_t **data_pp,
                           uint32_t len, unsigned long alignMask);
 
@@ -1198,7 +1225,7 @@ FKB_FN( fkb_release_blog,
  */
 static inline int _fkb_headroom(const FkBuff_t *fkb_p)
 {
-    return (int)( (uintptr_t)(fkb_p->data) - (uintptr_t)(fkb_p+1) );
+    return (int)( (uintptr_t)(fkb_p->data) - (uintptr_t)BCM_PFKBUFF_TO_PHEAD(fkb_p) );
 }
 FKB_FN( fkb_headroom,
         int fkb_headroom(const FkBuff_t *fkb_p),
@@ -1339,7 +1366,7 @@ static inline void nbuff_set_##MEMBER(pNBuff_t pNBuff, TYPE MEMBER) \
     void * pBuf = PNBUFF_2_PBUF(pNBuff);                                       \
     if ( IS_SKBUFF_PTR(pNBuff) )                                               \
         ((struct sk_buff *)pBuf)->MEMBER = MEMBER;                             \
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */                         \
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */                         \
     else                                                                       \
         ((FkBuff_t *)pBuf)->MEMBER = MEMBER;                                   \
 }
@@ -1351,7 +1378,7 @@ static inline TYPE nbuff_get_##MEMBER(pNBuff_t pNBuff)                         \
     void * pBuf = PNBUFF_2_PBUF(pNBuff);                                       \
     if ( IS_SKBUFF_PTR(pNBuff) )                                               \
         return (TYPE)(((struct sk_buff *)pBuf)->MEMBER);                       \
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */                         \
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */                         \
     else                                                                       \
         return (TYPE)(((FkBuff_t *)pBuf)->MEMBER);                             \
 }
@@ -1485,7 +1512,7 @@ static inline uint8_t * nbuff_push(pNBuff_t pNBuff, uint32_t len)
     void * pBuf = PNBUFF_2_PBUF(pNBuff);
     if ( IS_SKBUFF_PTR(pNBuff) )
         data = skb_push(((struct sk_buff *)pBuf), len);
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
         data = fkb_push((FkBuff_t*)pBuf, len);
     fkb_dbg(1, "pNBuff<%px> pBuf<%px> data<%px> len<%u>",
@@ -1503,7 +1530,7 @@ static inline uint8_t * nbuff_pull(pNBuff_t pNBuff, uint32_t len)
     void * pBuf = PNBUFF_2_PBUF(pNBuff);
     if ( IS_SKBUFF_PTR(pNBuff) )
         data = skb_pull(((struct sk_buff *)pBuf), len);
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
         data = fkb_pull((FkBuff_t *)pBuf, len);
     fkb_dbg(1, "pNBuff<%px> pBuf<%px> data<%px> len<%u>",
@@ -1522,7 +1549,7 @@ static inline uint8_t * nbuff_put(pNBuff_t pNBuff, uint32_t len)
     void * pBuf = PNBUFF_2_PBUF(pNBuff);
     if ( IS_SKBUFF_PTR(pNBuff) )
         tail = skb_put(((struct sk_buff *)pBuf), len);
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
         tail = fkb_put((FkBuff_t *)pBuf, len);
     fkb_dbg(1, "pNBuff<%px> pBuf<%px> tail<%px> len<%u>",
@@ -1533,13 +1560,10 @@ static inline uint8_t * nbuff_put(pNBuff_t pNBuff, uint32_t len)
 extern void nbuff_free_ex(pNBuff_t pNBuff, int in_thread);
 static inline void nbuff_free(pNBuff_t pNBuff)
 {
-#if defined(CONFIG_BCM_PON)
-    nbuff_free_ex(pNBuff, 0);
-#else
     nbuff_free_ex(pNBuff, 1);
-#endif
 }
 
+extern void nbuff_free_pktlist(pNBuff_t head, pNBuff_t tail, uint32_t len);
 
 /*
  * Function   : nbuff_unshare
@@ -1682,8 +1706,8 @@ static inline void nbuff_invalidate_headroom(pNBuff_t pNBuff, uint8_t * data)
         if ( _is_fkb_cloned_pool_(fkb_p) )
             fkb_p = fkb_p->master_p;
 
-        inv_len =  data - PFKBUFF_TO_PHEAD(fkb_p) - L1_CACHE_BYTES;
-        fkb_flush(fkb_p, PFKBUFF_TO_PHEAD(fkb_p), inv_len, FKB_CACHE_INV); 
+        inv_len =  data - BCM_PFKBUFF_TO_PHEAD(fkb_p) - L1_CACHE_BYTES;
+        fkb_flush(fkb_p, BCM_PFKBUFF_TO_PHEAD(fkb_p), inv_len, FKB_CACHE_INV);
     }
     fkb_dbg(1, " len<%d>", inv_len);
     fkb_dbg(2, "<<");
@@ -1714,7 +1738,7 @@ static inline struct sk_buff * nbuff_xlate( pNBuff_t pNBuff )
 
     if ( IS_SKBUFF_PTR(pNBuff) )
         return (struct sk_buff *)pBuf;
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
         return fkb_xlate( (FkBuff_t *)pBuf );
 }

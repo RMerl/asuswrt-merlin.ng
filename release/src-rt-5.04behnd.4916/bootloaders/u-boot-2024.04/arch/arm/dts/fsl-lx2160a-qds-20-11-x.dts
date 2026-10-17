@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LX2160AQDS device tree source for SERDES protocol 20.11.x
+ *
+ * Copyright 2020 NXP
+ *
+ */
+
+/dts-v1/;
+
+#include "fsl-lx2160a-qds-sd1-20.dtsi"
+
+#include "fsl-lx2160a-qds-sd2-11.dtsi"
+
+/ {
+	model = "NXP Layerscape LX2160AQDS Board (DTS 20.11.x)";
+	compatible = "fsl,lx2160aqds", "fsl,lx2160a";
+
+};

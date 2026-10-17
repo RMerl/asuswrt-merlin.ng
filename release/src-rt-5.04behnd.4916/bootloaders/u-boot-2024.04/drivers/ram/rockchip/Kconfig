@@ -1,0 +1,50 @@
+config RAM_ROCKCHIP
+	bool "Ram drivers support for Rockchip SoCs"
+	depends on RAM && ARCH_ROCKCHIP
+	default y
+	help
+	  This enables support for ram drivers Rockchip SoCs.
+
+config ROCKCHIP_SDRAM_COMMON
+	bool "Enable rockchip sdram common driver"
+	depends on TPL_RAM || SPL_RAM
+	help
+	  This enable sdram common driver
+
+if RAM_ROCKCHIP
+
+config RAM_ROCKCHIP_DEBUG
+	bool "Rockchip ram drivers debugging"
+	default y
+	help
+	  This enables debugging ram driver API's for the platforms
+	  based on Rockchip SoCs.
+
+	  This is an option for developers to understand the ram drivers
+	  initialization, configurations and etc.
+
+config RAM_ROCKCHIP_DDR4
+	bool "DDR4 support for Rockchip SoCs"
+	help
+	  This enables DDR4 sdram support instead of the default DDR3 support
+	  on Rockchip SoCs.
+
+config RAM_ROCKCHIP_LPDDR2
+	bool "LPDDR2 support for Rockchip SoCs"
+	help
+	  This enables LPDDR2 sdram support instead of the default DDR3 support
+	  on Rockchip SoCs.
+
+config RAM_ROCKCHIP_LPDDR3
+	bool "LPDDR3 support for Rockchip SoCs"
+	help
+	  This enables LPDDR3 sdram support instead of the default DDR3 support
+	  on Rockchip SoCs.
+
+config RAM_ROCKCHIP_LPDDR4
+	bool "LPDDR4 support for Rockchip SoCs"
+	help
+	  This enables LPDDR4 sdram code support for the platforms based
+	  on Rockchip SoCs.
+
+endif # RAM_ROCKCHIP

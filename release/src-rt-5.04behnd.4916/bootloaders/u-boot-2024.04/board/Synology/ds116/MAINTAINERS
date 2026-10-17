@@ -1,0 +1,8 @@
+DS116 BOARD
+M:	Tony Dinh <mibodhi@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/armada-385-synology-ds116.dts
+F:	board/Synology/ds116/
+F:	board/Synology/common
+F:	include/configs/ds116.h
+F:	configs/ds116_defconfig

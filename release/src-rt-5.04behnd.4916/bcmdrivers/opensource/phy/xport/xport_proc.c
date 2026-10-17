@@ -53,7 +53,7 @@ static struct proc_dir_entry *cmd_proc_file;
 
 static int xport_port_validate(int argc, char *argv[], int port_pos, int min, int max)
 {
-    int port;
+    int port = -1;
 
     if (argc < port_pos+1)
         goto error;
@@ -78,11 +78,11 @@ static int xport_proc_cmd_status(int argc, char *argv[])
 {
     int port;
     xport_port_status_s port_status = {0};
-#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
+#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM968375)
     char *xport_status_usage = "Usage: status <port id (0-7)>";
 
     if ((port = xport_port_validate(argc, argv, 1, 0, 7)) == -1)
-#elif defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#elif defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     char *xport_status_usage = "Usage: status <port id (0-11)>";
 
     if ((port = xport_port_validate(argc, argv, 1, 0, 11)) == -1)

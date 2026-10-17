@@ -1,0 +1,214 @@
+menu "mpc83xx CPU"
+	depends on MPC83xx
+
+config DEFAULT_IMMR
+	hex
+	default 0xFF400000
+
+config E300
+	def_bool y
+
+config SYS_CPU
+	default "mpc83xx"
+
+config SYS_83XX_DDR_USES_CS0
+	bool
+	help
+	  DDR should be configured using CS0 and CS1 instead of CS2 and CS3.
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_CMPCPRO
+	bool "Support CMPCPRO board from CSSI"
+	select ARCH_MPC832X
+
+config TARGET_MPC837XERDB
+	bool "Support MPC837XERDB"
+	select ARCH_MPC837X
+	select BOARD_EARLY_INIT_F
+	select SYS_83XX_DDR_USES_CS0
+
+config TARGET_KMETER1
+	bool "Support kmeter1"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_KMCOGE5NE
+	bool "Support kmcoge5ne"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_KMTEGR1
+	bool "Support kmtegr1"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_TUXX1
+	bool "Support tuxx1"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_KMSUPX5
+	bool "Support kmsupx5"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_TUGE1
+	bool "Support tuge1"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_KMOPTI2
+	bool "Support kmopti2"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_KMTEPR2
+	bool "Support kmtepr2"
+	select VENDOR_KM
+	select KM_ENABLE_FULL_DM_DTS_SUPPORT
+
+config TARGET_GAZERBEAM
+	bool "Support gazerbeam"
+	select ARCH_MPC8308
+	select SYS_FSL_ERRATUM_ESDHC111
+	imply ENV_IS_IN_FLASH
+	help
+	  The "Gazerbeam" is a modular system by Guntermann & Drunck GmbH
+	  Systementwicklung based on the NXP MPC8308 SoC for usage in KVM
+	  appliances.
+
+	  Features include:
+	  * Two gigabit ethernet ports
+	  * Multiple USB ports (depending on variant)
+	  * Several gigabit ethernet or optical fiber ports (depending on
+	    variant)
+	  * Several display port inputs and outputs, and supporting redrivers
+	    (depending on variant)
+	  * Several FPGAs with custom logic (depending on variant)
+
+endchoice
+
+config MPC83XX_QUICC_ENGINE
+	bool
+
+# TODO: Imply MPC83xx PCI driver
+config MPC83XX_PCI_SUPPORT
+	bool
+
+# TODO: Imply TSEC driver
+config MPC83XX_TSEC1_SUPPORT
+	bool
+
+config MPC83XX_TSEC2_SUPPORT
+	bool
+
+config MPC83XX_PCIE1_SUPPORT
+	bool
+
+config MPC83XX_PCIE2_SUPPORT
+	bool
+
+config MPC83XX_SDHC_SUPPORT
+	bool
+
+config MPC83XX_SATA
+	bool
+
+config MPC83XX_SECOND_I2C
+	bool
+
+config MPC83XX_LDP_PIN
+	bool
+
+config ARCH_MPC830X
+	bool
+	select MPC83XX_SDHC_SUPPORT
+	select SYS_CACHE_SHIFT_5
+
+config ARCH_MPC8308
+	bool
+	select ARCH_MPC830X
+	select MPC83XX_TSEC1_SUPPORT
+	select MPC83XX_TSEC2_SUPPORT
+	select MPC83XX_PCIE1_SUPPORT
+	select MPC83XX_SECOND_I2C
+
+config ARCH_MPC831X
+	bool
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_TSEC1_SUPPORT
+	select MPC83XX_TSEC2_SUPPORT
+	select SYS_CACHE_SHIFT_5
+
+config ARCH_MPC8313
+	bool
+	select ARCH_MPC831X
+	select MPC83XX_SECOND_I2C
+	select FSL_ELBC
+
+config ARCH_MPC832X
+	bool
+	select MPC83XX_QUICC_ENGINE
+	select MPC83XX_PCI_SUPPORT
+	select SYS_CACHE_SHIFT_5
+
+config ARCH_MPC834X
+	bool
+	select SYS_CACHE_SHIFT_5
+
+config ARCH_MPC8360
+	bool
+	select MPC83XX_QUICC_ENGINE
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_LDP_PIN
+	select MPC83XX_SECOND_I2C
+	select SYS_CACHE_SHIFT_5
+
+config ARCH_MPC837X
+	bool
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_TSEC1_SUPPORT
+	select MPC83XX_TSEC2_SUPPORT
+	select MPC83XX_PCIE1_SUPPORT
+	select MPC83XX_PCIE2_SUPPORT
+	select MPC83XX_SDHC_SUPPORT
+	select MPC83XX_SATA
+	select MPC83XX_LDP_PIN
+	select MPC83XX_SECOND_I2C
+	select SYS_CACHE_SHIFT_5
+	select FSL_ELBC
+
+source "arch/powerpc/cpu/mpc83xx/hrcw/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/bats/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/lblaw/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/elbc/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/hid/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/sysio/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/arbiter/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/initreg/Kconfig"
+
+config 83XX_PCICLK
+	hex "PCI clock frequency"
+	default 0xDEADBEEF
+	help
+	  If required, the PCI clock frequency to use when configuring
+	  the host bridge.
+
+config FSL_ELBC
+	bool
+
+config FSL_SERDES
+	bool "SerDes initialization"
+	depends on !MPC83XX_SERDES
+
+config NEVER_ASSERT_ODT_TO_CPU
+	bool "Never assert ODT to internal IOs"
+
+source "board/freescale/mpc837xerdb/Kconfig"
+source "board/gdsys/mpc8308/Kconfig"
+source "board/cssi/cmpcpro/Kconfig"
+
+endmenu

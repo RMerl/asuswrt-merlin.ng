@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2023 Linus Walleij <linusw@kernel.org>
+ *
+ * This is a diet version of the device tree from Linux,
+ * suitable for U-Boot.
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm6328.dtsi"
+
+/ {
+	model = "Inteno XG6846";
+	compatible = "inteno,xg6846", "brcm,bcm6328";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&leds {
+	status = "okay";
+
+	led@18 {
+		reg = <18>;
+		active-low;
+		label = "red:pwr";
+	};
+
+	led@20 {
+		reg = <20>;
+		active-low;
+		label = "green:pwr";
+	};
+};
+
+&spi {
+	status = "okay";
+
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <33333334>;
+	};
+};
+
+&uart0 {
+	bootph-all;
+	status = "okay";
+};

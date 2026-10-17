@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS2080aQDS device tree source for SERDES block #1 - protocol 42 (0x2a)
+ *
+ * Copyright 2020 NXP
+ */
+
+#include "fsl-ls2080a-qds.dtsi"
+
+&dpmac1 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac2 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac3 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac4 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac5 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac6 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac7 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac8 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};

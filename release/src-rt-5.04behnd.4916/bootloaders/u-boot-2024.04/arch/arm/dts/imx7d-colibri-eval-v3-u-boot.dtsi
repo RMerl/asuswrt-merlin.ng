@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright 2020-2022 Toradex
+ */
+
+#include "imx7s-u-boot.dtsi"
+
+/ {
+	aliases {
+		/* SDHCI instance order: eMMC, SD/MMC */
+		mmc0 = &usdhc3;
+		mmc1 = &usdhc1;
+	};
+
+	sysinfo {
+		compatible = "toradex,sysinfo";
+	};
+};
+
+&lcdif {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lcdif_dat
+		     &pinctrl_lcdif_ctrl>;
+	display = <&display0>;
+	bootph-all;
+
+	display0: display0 {
+		bits-per-pixel = <18>;
+		bus-width = <18>;
+		status = "okay";
+
+		display-timings {
+			native-mode = <&timing_vga>;
+			timing_vga: 640x480 {
+				clock-frequency = <25175000>;
+				hactive = <640>;
+				vactive = <480>;
+				hback-porch = <40>;
+				hfront-porch = <24>;
+				vback-porch = <32>;
+				vfront-porch = <11>;
+				hsync-len = <96>;
+				vsync-len = <2>;
+
+				de-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				pixelclk-active = <0>;
+			};
+		};
+	};
+};

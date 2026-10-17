@@ -1,0 +1,524 @@
+config ARCH_MAP_SYSMEM
+	depends on SANDBOX
+	def_bool y
+
+config CREATE_ARCH_SYMLINK
+	bool
+
+config HAVE_ARCH_IOREMAP
+	bool
+
+config SYS_CACHE_SHIFT_4
+	bool
+
+config SYS_CACHE_SHIFT_5
+	bool
+
+config SYS_CACHE_SHIFT_6
+	bool
+
+config SYS_CACHE_SHIFT_7
+	bool
+
+config SYS_CACHELINE_SIZE
+	int
+	default 128 if SYS_CACHE_SHIFT_7
+	default 64 if SYS_CACHE_SHIFT_6
+	default 32 if SYS_CACHE_SHIFT_5
+	default 16 if SYS_CACHE_SHIFT_4
+	# Fall-back for MIPS
+	default 32 if MIPS
+
+config LINKER_LIST_ALIGN
+	int
+	default 32 if SANDBOX
+	default 8 if ARM64 || X86
+	default 4
+	help
+	  Force the each linker list to be aligned to this boundary. This
+	  is required if ll_entry_get() is used, since otherwise the linker
+	  may add padding into the table, thus breaking it.
+	  See linker_lists.rst for full details.
+
+choice
+	prompt "Architecture select"
+	default SANDBOX
+
+config ARC
+	bool "ARC architecture"
+	select ARC_TIMER
+	select CLK
+	select DM
+	select HAVE_PRIVATE_LIBGCC
+	select SUPPORT_OF_CONTROL
+	select SYS_CACHE_SHIFT_7
+	select TIMER
+	select SYS_BIG_ENDIAN if CPU_BIG_ENDIAN
+	select SYS_LITTLE_ENDIAN if !CPU_BIG_ENDIAN
+
+config ARM
+	bool "ARM architecture"
+	select ARCH_SUPPORTS_LTO
+	select CREATE_ARCH_SYMLINK
+	select HAVE_PRIVATE_LIBGCC if !ARM64
+	select SUPPORT_ACPI
+	select SUPPORT_OF_CONTROL
+
+config M68K
+	bool "M68000 architecture"
+	select HAVE_PRIVATE_LIBGCC
+	select USE_PRIVATE_LIBGCC
+	select SYS_BOOT_GET_CMDLINE
+	select SYS_BOOT_GET_KBD
+	select SYS_CACHE_SHIFT_4
+	select SUPPORT_OF_CONTROL
+
+config MICROBLAZE
+	bool "MicroBlaze architecture"
+	select SUPPORT_OF_CONTROL
+	imply CMD_TIMER
+	imply SPL_REGMAP if SPL
+	imply SPL_TIMER if SPL
+	imply TIMER
+	imply XILINX_TIMER
+
+config MIPS
+	bool "MIPS architecture"
+	select HAVE_ARCH_IOREMAP
+	select HAVE_PRIVATE_LIBGCC
+	select SUPPORT_OF_CONTROL
+	select SPL_SEPARATE_BSS if SPL
+
+config NIOS2
+	bool "Nios II architecture"
+	select CPU
+	select DM
+	select DM_EVENT
+	select OF_CONTROL
+	select SUPPORT_OF_CONTROL
+	imply CMD_DM
+
+config PPC
+	bool "PowerPC architecture"
+	select HAVE_PRIVATE_LIBGCC
+	select SUPPORT_OF_CONTROL
+	select SYS_BOOT_GET_CMDLINE
+	select SYS_BOOT_GET_KBD
+
+config RISCV
+	bool "RISC-V architecture"
+	select CREATE_ARCH_SYMLINK
+	select SUPPORT_ACPI
+	select SUPPORT_OF_CONTROL
+	select OF_CONTROL
+	select DM
+	select DM_EVENT
+	imply SPL_SEPARATE_BSS if SPL
+	imply DM_SERIAL
+	imply DM_MMC
+	imply DM_SPI
+	imply DM_SPI_FLASH
+	imply BLK
+	imply CLK
+	imply MTD
+	imply TIMER
+	imply CMD_DM
+	imply SPL_DM
+	imply SPL_OF_CONTROL
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_SERIAL
+	imply SPL_TIMER
+
+config SANDBOX
+	bool "Sandbox"
+	select ARCH_SUPPORTS_LTO
+	select BOARD_LATE_INIT
+	select BZIP2
+	select CMD_POWEROFF if CMDLINE
+	select DM
+	select DM_EVENT
+	select DM_FUZZING_ENGINE
+	select DM_GPIO
+	select DM_I2C
+	select DM_KEYBOARD
+	select DM_MMC
+	select DM_SERIAL
+	select DM_SPI
+	select DM_SPI_FLASH
+	select GZIP_COMPRESSED
+	select IO_TRACE
+	select LZO
+	select MTD
+	select OF_BOARD_SETUP
+	select PCI_ENDPOINT
+	select SPI
+	select SUPPORT_OF_CONTROL
+	select SYSRESET_CMD_POWEROFF if CMD_POWEROFF
+	select SYS_CACHE_SHIFT_4
+	select IRQ
+	select SUPPORT_EXTENSION_SCAN if CMDLINE
+	select SUPPORT_ACPI
+	imply BITREVERSE
+	select BLOBLIST
+	imply LTO
+	imply CMD_DM
+	imply CMD_EXCEPTION
+	imply CMD_GETTIME
+	imply CMD_HASH
+	imply CMD_IO
+	imply CMD_IOTRACE
+	imply CMD_LZMADEC
+	imply CMD_SF
+	imply CMD_SF_TEST
+	imply CRC32_VERIFY
+	imply FAT_WRITE
+	imply FIRMWARE
+	imply FUZZING_ENGINE_SANDBOX
+	imply HASH_VERIFY
+	imply LZMA
+	imply TEE
+	imply AVB_VERIFY
+	imply LIBAVB
+	imply CMD_AVB
+	imply PARTITION_TYPE_GUID
+	imply SCP03
+	imply CMD_SCP03
+	imply UDP_FUNCTION_FASTBOOT
+	imply VIRTIO_MMIO
+	imply VIRTIO_PCI
+	imply VIRTIO_SANDBOX
+	imply VIRTIO_BLK
+	imply VIRTIO_NET
+	imply DM_SOUND
+	imply PCI_SANDBOX_EP
+	imply PCH
+	imply PHYLIB
+	imply DM_MDIO
+	imply DM_MDIO_MUX
+	imply ACPI
+	imply ACPI_PMC
+	imply ACPI_PMC_SANDBOX
+	imply CMD_PMC
+	imply CMD_CLONE
+	imply SILENT_CONSOLE
+	imply BOOTARGS_SUBST
+	imply PHY_FIXED
+	imply DM_DSA
+	imply CMD_EXTENSION
+	imply KEYBOARD
+	imply PHYSMEM
+	imply GENERATE_ACPI_TABLE
+	imply BINMAN
+	imply CMD_MBR
+	imply CMD_MMC
+	imply BOOTSTD_DEFAULTS if BOOTSTD_FULL && CMDLINE
+	imply BOOTMETH_DISTRO if BOOTSTD_FULL && CMDLINE
+	imply CMD_SYSBOOT if BOOTSTD_FULL
+
+config SH
+	bool "SuperH architecture"
+	select HAVE_PRIVATE_LIBGCC
+	select SUPPORT_OF_CONTROL
+
+config X86
+	bool "x86 architecture"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select CREATE_ARCH_SYMLINK
+	select DM
+	select HAVE_ARCH_IOMAP
+	select HAVE_PRIVATE_LIBGCC
+	select OF_CONTROL
+	select PCI
+	select SUPPORT_ACPI
+	select SUPPORT_OF_CONTROL
+	select SYS_CACHE_SHIFT_6
+	select TIMER
+	select USE_PRIVATE_LIBGCC
+	select X86_TSC_TIMER
+	select IRQ
+	imply HAS_ROM if X86_RESET_VECTOR
+	imply BLK
+	imply CMD_DM
+	imply CMD_FPGA_LOADMK
+	imply CMD_GETTIME
+	imply CMD_IO
+	imply CMD_IRQ
+	imply CMD_PCI
+	imply CMD_SF
+	imply CMD_SF_TEST
+	imply CMD_ZBOOT
+	imply DM_GPIO
+	imply DM_KEYBOARD
+	imply DM_MMC
+	imply DM_RTC
+	imply SCSI
+	imply DM_SERIAL
+	imply MTD
+	imply DM_SPI
+	imply DM_SPI_FLASH
+	imply DM_USB
+	imply LAST_STAGE_INIT
+	imply VIDEO
+	imply SYSRESET
+	imply SPL_SYSRESET
+	imply SYSRESET_X86
+	imply USB_ETHER_ASIX
+	imply USB_ETHER_SMSC95XX
+	imply USB_HOST_ETHER
+	imply PCH
+	imply PHYSMEM
+	imply RTC_MC146818
+	imply ACPI
+	imply ACPIGEN if !QEMU && !EFI_APP
+	imply SYSINFO if GENERATE_SMBIOS_TABLE
+	imply SYSINFO_SMBIOS if GENERATE_SMBIOS_TABLE
+	imply TIMESTAMP
+
+	# Thing to enable for when SPL/TPL are enabled: SPL
+	imply SPL_DM
+	imply SPL_OF_LIBFDT
+	imply SPL_DRIVERS_MISC
+	imply SPL_GPIO
+	imply SPL_PINCTRL
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_SERIAL
+	imply SPL_SPI_FLASH_SUPPORT
+	imply SPL_SPI
+	imply SPL_OF_CONTROL
+	imply SPL_TIMER
+	imply SPL_REGMAP
+	imply SPL_SYSCON
+	# TPL
+	imply TPL_DM
+	imply TPL_DRIVERS_MISC
+	imply TPL_GPIO
+	imply TPL_PINCTRL
+	imply TPL_LIBCOMMON_SUPPORT
+	imply TPL_LIBGENERIC_SUPPORT
+	imply TPL_SERIAL
+	imply TPL_OF_CONTROL
+	imply TPL_TIMER
+	imply TPL_REGMAP
+	imply TPL_SYSCON
+
+config XTENSA
+	bool "Xtensa architecture"
+	select CREATE_ARCH_SYMLINK
+	select SUPPORT_OF_CONTROL
+
+endchoice
+
+config SYS_ARCH
+	string
+	help
+	  This option should contain the architecture name to build the
+	  appropriate arch/<CONFIG_SYS_ARCH> directory.
+	  All the architectures should specify this option correctly.
+
+config SYS_CPU
+	string
+	help
+	  This option should contain the CPU name to build the correct
+	  arch/<CONFIG_SYS_ARCH>/cpu/<CONFIG_SYS_CPU> directory.
+
+	  This is optional.  For those targets without the CPU directory,
+	  leave this option empty.
+
+config SYS_SOC
+	string
+	help
+	  This option should contain the SoC name to build the directory
+	  arch/<CONFIG_SYS_ARCH>/cpu/<CONFIG_SYS_CPU>/<CONFIG_SYS_SOC>.
+
+	  This is optional.  For those targets without the SoC directory,
+	  leave this option empty.
+
+config SYS_VENDOR
+	string
+	help
+	  This option should contain the vendor name of the target board.
+	  If it is set and
+	  board/<CONFIG_SYS_VENDOR>/common/Makefile exists, the vendor common
+	  directory is compiled.
+	  If CONFIG_SYS_BOARD is also set, the sources under
+	  board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD> directory are compiled.
+
+	  This is optional.  For those targets without the vendor directory,
+	  leave this option empty.
+
+config SYS_BOARD
+	string
+	help
+	  This option should contain the name of the target board.
+	  If it is set, either board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD>
+	  or board/<CONFIG_SYS_BOARD> directory is compiled depending on
+	  whether CONFIG_SYS_VENDOR is set or not.
+
+	  This is optional.  For those targets without the board directory,
+	  leave this option empty.
+
+config SYS_CONFIG_NAME
+	string
+	help
+	  This option should contain the base name of board header file.
+	  The header file include/configs/<CONFIG_SYS_CONFIG_NAME>.h
+	  should be included from include/config.h.
+
+config SYS_DISABLE_DCACHE_OPS
+	bool
+	help
+	 This option disables dcache flush and dcache invalidation
+	 operations. For example, on coherent systems where cache
+	 operatios are not required, enable this option to avoid them.
+	 Note that, its up to the individual architectures to implement
+	 this functionality.
+
+config SYS_IMMR
+	hex "Address for the Internal Memory-Mapped Registers (IMMR) window"
+	depends on PPC || FSL_LSCH2 || FSL_LSCH3 || ARCH_LS1021A
+	default 0xFF000000 if MPC8xx
+	default 0xF0000000 if ARCH_MPC8313
+	default 0xE0000000 if MPC83xx && !ARCH_MPC8313
+	default 0x01000000 if ARCH_LS1021A || FSL_LSCH2 || FSL_LSCH3
+	default 0xFFE00000 if ARCH_P1010 || ARCH_P1011 || ARCH_P1020 || \
+			      ARCH_P1021 || ARCH_P1024 || ARCH_P1025 || \
+			      ARCH_P2020
+	default SYS_CCSRBAR_DEFAULT
+	help
+	  Address for the Internal Memory-Mapped Registers (IMMR) window used
+	  to configure the features of many Freescale / NXP SoCs.
+
+config MONITOR_IS_IN_RAM
+	bool "U-Boot is loaded in to RAM by a pre-loader"
+	depends on M68K || NIOS2
+
+menu "Skipping low level initialization functions"
+	depends on ARM || MIPS || RISCV
+
+config SKIP_LOWLEVEL_INIT
+	bool "Skip calls to certain low level initialization functions"
+	help
+	  If enabled, then certain low level initializations (like setting up
+	  the memory controller) are omitted and/or U-Boot does not relocate
+	  itself into RAM.
+	  Normally this variable MUST NOT be defined. The only exception is
+	  when U-Boot is loaded (to RAM) by some other boot loader or by a
+	  debugger which performs these initializations itself.
+
+config SPL_SKIP_LOWLEVEL_INIT
+	bool "Skip calls to certain low level initialization functions in SPL"
+	depends on SPL
+	help
+	  If enabled, then certain low level initializations (like setting up
+	  the memory controller) are omitted and/or U-Boot does not relocate
+	  itself into RAM.
+	  Normally this variable MUST NOT be defined. The only exception is
+	  when U-Boot is loaded (to RAM) by some other boot loader or by a
+	  debugger which performs these initializations itself.
+
+config TPL_SKIP_LOWLEVEL_INIT
+	bool "Skip calls to certain low level initialization functions in TPL"
+	depends on SPL && ARM
+	help
+	  If enabled, then certain low level initializations (like setting up
+	  the memory controller) are omitted and/or U-Boot does not relocate
+	  itself into RAM.
+	  Normally this variable MUST NOT be defined. The only exception is
+	  when U-Boot is loaded (to RAM) by some other boot loader or by a
+	  debugger which performs these initializations itself.
+
+config SKIP_LOWLEVEL_INIT_ONLY
+	bool "Skip call to lowlevel_init during early boot ONLY"
+	depends on ARM
+	help
+	  This allows just the call to lowlevel_init() to be skipped. The
+	  normal CP15 init (such as enabling the instruction cache) is still
+	  performed.
+
+config SPL_SKIP_LOWLEVEL_INIT_ONLY
+	bool "Skip call to lowlevel_init during early SPL boot ONLY"
+	depends on SPL && ARM
+	help
+	  This allows just the call to lowlevel_init() to be skipped. The
+	  normal CP15 init (such as enabling the instruction cache) is still
+	  performed.
+
+config TPL_SKIP_LOWLEVEL_INIT_ONLY
+	bool "Skip call to lowlevel_init during early TPL boot ONLY"
+	depends on TPL && ARM
+	help
+	  This allows just the call to lowlevel_init() to be skipped. The
+	  normal CP15 init (such as enabling the instruction cache) is still
+	  performed.
+
+endmenu
+
+config SYS_HAS_NONCACHED_MEMORY
+	bool "Enable reserving a non-cached memory area for drivers"
+	depends on (ARM || MIPS) && (RTL8169 || MEDIATEK_ETH)
+	help
+	  This is useful for drivers that would otherwise require a lot of
+	  explicit cache maintenance. For some drivers it's also impossible to
+	  properly maintain the cache. For example if the regions that need to
+	  be flushed are not a multiple of the cache-line size, *and* padding
+	  cannot be allocated between the regions to align them (i.e.  if the
+	  HW requires a contiguous array of regions, and the size of each
+	  region is not cache-aligned), then a flush of one region may result
+	  in overwriting data that hardware has written to another region in
+	  the same cache-line. This can happen for example in network drivers
+	  where descriptors for buffers are typically smaller than the CPU
+	  cache-line (e.g.  16 bytes vs. 32 or 64 bytes).
+
+config SYS_NONCACHED_MEMORY
+	hex "Size in bytes of the non-cached memory area"
+	depends on SYS_HAS_NONCACHED_MEMORY
+	default 0x100000
+	help
+	  Size of non-cached memory area. This area of memory will be typically
+	  located right below the malloc() area and mapped uncached in the MMU.
+
+source "arch/arc/Kconfig"
+source "arch/arm/Kconfig"
+source "arch/m68k/Kconfig"
+source "arch/microblaze/Kconfig"
+source "arch/mips/Kconfig"
+source "arch/nios2/Kconfig"
+source "arch/powerpc/Kconfig"
+source "arch/sandbox/Kconfig"
+source "arch/sh/Kconfig"
+source "arch/x86/Kconfig"
+source "arch/xtensa/Kconfig"
+source "arch/riscv/Kconfig"
+
+if ARM || M68K || PPC
+
+source "arch/Kconfig.nxp"
+
+endif
+
+source "board/keymile/Kconfig"
+
+if MIPS || MICROBLAZE
+
+choice
+	prompt "Endianness selection"
+	help
+	  Some MIPS boards can be configured for either little or big endian
+	  byte order. These modes require different U-Boot images. In general there
+	  is one preferred byteorder for a particular system but some systems are
+	  just as commonly used in the one or the other endianness.
+
+config SYS_BIG_ENDIAN
+	bool "Big endian"
+	depends on (SUPPORTS_BIG_ENDIAN && MIPS) || MICROBLAZE
+
+config SYS_LITTLE_ENDIAN
+	bool "Little endian"
+	depends on (SUPPORTS_LITTLE_ENDIAN && MIPS) || MICROBLAZE
+
+endchoice
+
+endif

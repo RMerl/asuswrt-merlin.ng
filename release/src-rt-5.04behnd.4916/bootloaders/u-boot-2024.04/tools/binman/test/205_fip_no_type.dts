@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		atf-fip {
+			fip-hdr-flags = /bits/ 64 <0x123>;
+			u-boot {
+			};
+		};
+	};
+};

@@ -1,0 +1,6 @@
+i.MX8MM PHG BOARD
+M:	Fabio Estevam <festevam@denx.de>
+S:	Maintained
+F:	board/cloos/imx8mm_phg/
+F:	include/configs/imx8mm_phg.h
+F:	configs/imx8mm_phg_defconfig

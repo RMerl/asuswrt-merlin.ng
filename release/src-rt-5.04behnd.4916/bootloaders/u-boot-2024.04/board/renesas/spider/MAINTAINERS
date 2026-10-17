@@ -1,0 +1,7 @@
+SPIDER BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a779f0*
+F:	board/renesas/spider/
+F:	configs/r8a779f0_spider_defconfig
+F:	include/configs/spider.h

@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Rockchip Electronics Co., Ltd
+ */
+
+#include "rk3288-u-boot.dtsi"
+
+&dmc {
+	bootph-all;
+	rockchip,pctl-timing = <0x215 0xc8 0x0 0x35 0x26 0x2 0x70 0x2000d
+		0x6 0x0 0x8 0x4 0x17 0x24 0xd 0x6
+		0x4 0x8 0x4 0x76 0x4 0x0 0x30 0x0
+		0x1 0x2 0x2 0x4 0x0 0x0 0xc0 0x4
+		0x8 0x1f4>;
+	rockchip,phy-timing = <0x48d7dd93 0x187008d8 0x121076
+		0x0 0xc3 0x6 0x2>;
+	rockchip,sdram-params = <0x20d266a4 0x5b6 2 533000000 6 9 0>;
+};
+
+&i2c2 {
+	m24c08@50 {
+		compatible = "at,24c08", "i2c-eeprom";
+		reg = <0x50>;
+	};
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&uart2 {
+	bootph-all;
+};
+
+&uart2_xfer {
+	bootph-all;
+};
+
+&sdmmc {
+	bootph-pre-ram;
+};
+
+&gpio7 {
+	bootph-pre-ram;
+};
+
+&vcc_sd {
+	bootph-pre-ram;
+};
+
+&pcfg_pull_none_drv_8ma {
+	bootph-pre-ram;
+};
+
+&pcfg_pull_up_drv_8ma {
+	bootph-pre-ram;
+};
+
+&pcfg_pull_none {
+	bootph-pre-ram;
+};
+
+&pcfg_pull_up {
+	bootph-pre-ram;
+};
+
+&sdmmc_bus4 {
+	bootph-pre-ram;
+};
+
+&sdmmc_cd {
+	bootph-pre-ram;
+};
+
+&sdmmc_clk {
+	bootph-pre-ram;
+};
+
+&sdmmc_cmd {
+	bootph-pre-ram;
+};
+
+&sdmmc_pwr {
+	bootph-pre-ram;
+};

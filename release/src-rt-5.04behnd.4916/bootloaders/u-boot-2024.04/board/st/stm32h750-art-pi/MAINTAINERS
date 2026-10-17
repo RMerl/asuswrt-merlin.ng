@@ -1,0 +1,8 @@
+STM32H750 ART PI BOARD
+M:	Dillon Min <dillon.minfei@gmail.com>
+S:	Maintained
+F:	doc/board/st/
+F:	board/st/stm32h750-art-pi
+F:	include/configs/stm32h750-art-pi.h
+F:	configs/stm32h750-art-pi_defconfig
+F:	arch/arm/dts/stm32h7*

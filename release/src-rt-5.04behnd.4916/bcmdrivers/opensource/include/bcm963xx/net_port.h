@@ -42,6 +42,7 @@ typedef struct net_port_t
     int is_wan;
     int speed;
     char ifname[32];
+    int port_group;
 } net_port_t;
 
 #define _FOREACH_NET_PORT_TYPE(TYPE, TYPE0) \

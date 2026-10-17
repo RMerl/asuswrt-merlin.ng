@@ -15,19 +15,19 @@
      */
     phy_cascade2 {
         reg = <24>;
-    };
+	};
 
-    phy_cascade2_1 {
+	phy_cascade2_1 {
         reg = <25>;
-    };
+	};
 
-    phy_cascade2_2 {
+	phy_cascade2_2 {
         reg = <26>;
-    };
+	};
 
-    phy_cascade2_3 {
+	phy_cascade2_3 {
         reg = <27>;
-    };
+	};
 };
 
 

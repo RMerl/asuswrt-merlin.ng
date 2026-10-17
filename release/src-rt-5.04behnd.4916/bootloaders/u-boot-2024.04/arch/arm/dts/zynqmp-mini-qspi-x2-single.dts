@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Xilinx CSE QSPI x2 Single DTS
+ *
+ * Copyright (C) 2015 - 2017 Xilinx, Inc.
+ */
+
+#include "zynqmp-mini-qspi.dts"
+
+/ {
+	model = "ZynqMP MINI QSPI X2 SINGLE";
+};
+
+&flash0 {
+	spi-tx-bus-width = <2>;
+	spi-rx-bus-width = <2>;
+};

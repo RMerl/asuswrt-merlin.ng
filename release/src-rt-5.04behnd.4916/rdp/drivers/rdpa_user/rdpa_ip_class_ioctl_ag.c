@@ -68,7 +68,7 @@ static int rdpa_user_ip_class_nflows_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_nflows_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -88,7 +88,7 @@ static int rdpa_user_ip_class_flow_stat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_flow_stat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_stat_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_stat_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -103,7 +103,7 @@ static int rdpa_user_ip_class_flow_stat_get_next(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside ip_class_user_flow_stat_get_next\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(bdmf_index )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(bdmf_index )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -114,7 +114,7 @@ static int rdpa_user_ip_class_flow_stat_get_next(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_flow_stat_get_next failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ai_ptr, (void *)&ai, sizeof(bdmf_index )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ai_ptr, (void *)&ai, sizeof(bdmf_index )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -128,7 +128,7 @@ static int rdpa_user_ip_class_flush_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside ip_class_user_flush_set\n");
 
-	if ((pa->ret = rdpa_ip_class_flush_set(pa->mo, (bdmf_boolean)(long)pa->parm)))
+	if ((pa->ret = rdpa_ip_class_flush_set(pa->mo, (bdmf_boolean)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_ip_class_flush_set failed, ret:%d\n", pa->ret);
 	}
@@ -147,7 +147,7 @@ static int rdpa_user_ip_class_l4_filter_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_l4_filter_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_l4_filter_cfg_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_l4_filter_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -162,7 +162,7 @@ static int rdpa_user_ip_class_l4_filter_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside ip_class_user_l4_filter_set\n");
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_l4_filter_cfg_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_l4_filter_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -187,7 +187,7 @@ static int rdpa_user_ip_class_l4_filter_stat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_l4_filter_stat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(uint32_t)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(uint32_t)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -207,7 +207,7 @@ static int rdpa_user_ip_class_key_type_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_key_type_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_key_type)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_key_type)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -221,7 +221,7 @@ static int rdpa_user_ip_class_key_type_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside ip_class_user_key_type_set\n");
 
-	if ((pa->ret = rdpa_ip_class_key_type_set(pa->mo, (rdpa_key_type)(long)pa->parm)))
+	if ((pa->ret = rdpa_ip_class_key_type_set(pa->mo, (rdpa_key_type)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_ip_class_key_type_set failed, ret:%d\n", pa->ret);
 	}
@@ -240,7 +240,7 @@ static int rdpa_user_ip_class_pathstat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_pathstat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_stat_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_stat_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -260,7 +260,7 @@ static int rdpa_user_ip_class_tcp_ack_prio_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_tcp_ack_prio_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -274,7 +274,7 @@ static int rdpa_user_ip_class_tcp_ack_prio_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside ip_class_user_tcp_ack_prio_set\n");
 
-	if ((pa->ret = rdpa_ip_class_tcp_ack_prio_set(pa->mo, (bdmf_boolean)(long)pa->parm)))
+	if ((pa->ret = rdpa_ip_class_tcp_ack_prio_set(pa->mo, (bdmf_boolean)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_ip_class_tcp_ack_prio_set failed, ret:%d\n", pa->ret);
 	}
@@ -293,7 +293,7 @@ static int rdpa_user_ip_class_tos_mflows_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_tos_mflows_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -307,7 +307,7 @@ static int rdpa_user_ip_class_tos_mflows_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside ip_class_user_tos_mflows_set\n");
 
-	if ((pa->ret = rdpa_ip_class_tos_mflows_set(pa->mo, (bdmf_boolean)(long)pa->parm)))
+	if ((pa->ret = rdpa_ip_class_tos_mflows_set(pa->mo, (bdmf_boolean)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_ip_class_tos_mflows_set failed, ret:%d\n", pa->ret);
 	}
@@ -326,7 +326,7 @@ static int rdpa_user_ip_class_pbit_key_mode_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_ip_class_pbit_key_mode_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -340,7 +340,7 @@ static int rdpa_user_ip_class_pbit_key_mode_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside ip_class_user_pbit_key_mode_set\n");
 
-	if ((pa->ret = rdpa_ip_class_pbit_key_mode_set(pa->mo, (bdmf_boolean)(long)pa->parm)))
+	if ((pa->ret = rdpa_ip_class_pbit_key_mode_set(pa->mo, (bdmf_boolean)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_ip_class_pbit_key_mode_set failed, ret:%d\n", pa->ret);
 	}
@@ -348,7 +348,7 @@ static int rdpa_user_ip_class_pbit_key_mode_set(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
-long rdpa_ip_class_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
+bdmf_long_t rdpa_ip_class_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
 

@@ -1,0 +1,182 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright 2023 Toradex
+ */
+
+#include "k3-am625-verdin-wifi-dev-binman.dtsi"
+
+/ {
+	aliases {
+		eeprom0 = &eeprom_module;
+		eeprom1 = &eeprom_carrier_board;
+		eeprom2 = &eeprom_display_adapter;
+	};
+
+	chosen {
+		tick-timer = &main_timer0;
+	};
+
+	memory@80000000 {
+		bootph-all;
+	};
+
+	sysinfo {
+		compatible = "toradex,sysinfo";
+	};
+};
+
+&main_timer0 {
+	clock-frequency = <25000000>;
+};
+
+&main_bcdma {
+	reg = <0x00 0x485c0100 0x00 0x100>,
+	      <0x00 0x4c000000 0x00 0x20000>,
+	      <0x00 0x4a820000 0x00 0x20000>,
+	      <0x00 0x4aa40000 0x00 0x20000>,
+	      <0x00 0x4bc00000 0x00 0x100000>,
+	      <0x00 0x48600000 0x00 0x8000>,
+	      <0x00 0x484a4000 0x00 0x2000>,
+	      <0x00 0x484c2000 0x00 0x2000>;
+	reg-names = "gcfg", "bchanrt", "rchanrt", "tchanrt",
+		    "ringrt" , "cfg", "tchan", "rchan";
+	bootph-all;
+};
+
+&main_pktdma {
+	reg = <0x00 0x485c0000 0x00 0x100>,
+	      <0x00 0x4a800000 0x00 0x20000>,
+	      <0x00 0x4aa00000 0x00 0x20000>,
+	      <0x00 0x4b800000 0x00 0x200000>,
+	      <0x00 0x485e0000 0x00 0x10000>,
+	      <0x00 0x484a0000 0x00 0x2000>,
+	      <0x00 0x484c0000 0x00 0x2000>,
+	      <0x00 0x48430000 0x00 0x1000>;
+	reg-names = "gcfg", "rchanrt", "tchanrt", "ringrt",
+		    "cfg", "tchan", "rchan", "rflow";
+	bootph-all;
+};
+
+&cpsw3g {
+	bootph-all;
+};
+
+&cpsw3g_phy0 {
+	bootph-all;
+};
+
+&cpsw3g_phy1 {
+	bootph-all;
+};
+
+&cpsw_port1 {
+	bootph-all;
+};
+
+&cpsw_port2 {
+	bootph-all;
+};
+
+/* MDIO, shared by Verdin ETH_1 (On-module PHY) and Verdin ETH_2_RGMII */
+&cpsw3g_mdio {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+	bootph-all;
+};
+
+&dmsc {
+	k3_sysreset: sysreset-controller {
+		compatible = "ti,sci-sysreset";
+		bootph-all;
+	};
+};
+
+&fss {
+	bootph-all;
+};
+
+&main_gpio0 {
+	bootph-all;
+};
+
+/* On-module I2C - PMIC_I2C */
+&main_i2c0 {
+	eeprom_module: eeprom@50 {
+		compatible = "i2c-eeprom";
+		pagesize = <16>;
+		reg = <0x50>;
+	};
+};
+
+/* Verdin I2C_1 */
+&main_i2c1 {
+	/* EEPROM on display adapter (MIPI DSI Display Adapter) */
+	eeprom_display_adapter: eeprom@50 {
+		compatible = "i2c-eeprom";
+		reg = <0x50>;
+		pagesize = <16>;
+	};
+
+	/* EEPROM on carrier board */
+	eeprom_carrier_board: eeprom@57 {
+		compatible = "i2c-eeprom";
+		reg = <0x57>;
+		pagesize = <16>;
+	};
+};
+
+/* Verdin UART_3, used as the Linux console */
+&main_uart0 {
+	bootph-all;
+};
+
+/* Verdin UART_1 */
+&main_uart1 {
+	bootph-all;
+};
+
+&pinctrl_ctrl_sleep_moci {
+	bootph-all;
+};
+
+&pinctrl_i2c0 {
+	bootph-all;
+};
+
+&pinctrl_i2c1 {
+	bootph-all;
+};
+
+&pinctrl_sdhci0 {
+	bootph-all;
+};
+
+&pinctrl_uart0 {
+	bootph-all;
+};
+
+&pinctrl_uart1 {
+	bootph-all;
+};
+
+&pinctrl_wkup_uart0 {
+	bootph-all;
+};
+
+&sdhci0 {
+	bootph-all;
+};
+
+&sdhci2 {
+	status = "disabled";
+};
+
+&verdin_ctrl_sleep_moci {
+	bootph-all;
+};
+
+/* Verdin UART_2 */
+&wkup_uart0 {
+	bootph-all;
+};

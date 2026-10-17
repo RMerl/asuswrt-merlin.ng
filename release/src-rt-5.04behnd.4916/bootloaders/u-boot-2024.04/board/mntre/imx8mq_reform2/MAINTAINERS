@@ -1,0 +1,7 @@
+REFORM2 IMX8MQ BOARD
+M:	Lukas F. Hartmann <lukas@mntre.com>
+M:	Patrick Wildt <patrick@blueri.se>
+S:	Maintained
+F:	board/mntre/imx8mq_reform2/
+F:	include/configs/imx8mq_reform2.h
+F:	configs/imx8mq_reform2_defconfig

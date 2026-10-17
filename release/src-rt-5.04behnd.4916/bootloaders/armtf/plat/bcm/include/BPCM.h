@@ -29,27 +29,22 @@ written consent.
 #ifndef BPCM_H
 #define BPCM_H
 
-#if IS_BCMCHIP(6765)
+#if defined(_BCM96765_)
 #include <BPCM_6765.h>
-#elif IS_BCMCHIP(6766)
+#elif defined(_BCM96766_)
 #include <BPCM_6766.h>
-#elif IS_BCMCHIP(6764)
+#elif defined(_BCM96764_)
 #include <BPCM_6764.h>
 #else
-#if !IS_BCMCHIP(6888)
+#if !defined(_BCM96888_)
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-#ifndef IS_BCMCHIP
-#define IS_BCMCHIP(num) (defined(_BCM9##num##_)||defined(CONFIG_BCM9##num)||\
-				defined(CONFIG_BCM##num))
-#endif
-
 typedef union {
 	struct {
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856) || IS_BCMCHIP(63178) || IS_BCMCHIP(6878) || IS_BCMCHIP(63146)\
-	|| IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6855)
+#if defined(_BCM6856_) || defined(_BCM963178_) || defined(_BCM963146_)\
+	|| defined(_BCM94912_) || defined(_BCM96813_) || defined(_BCM96855_)
 		uint32_t pmbAddr:12;	// [11:00]
 		uint32_t map_rev:4;	// [15:12] always non-zero for AVS3 devices (see CLASSIC_BPCM_ID_REG below)
 		uint32_t island:4;	// [19:16]
@@ -70,7 +65,7 @@ typedef union {
 	uint32_t Reg32;
 } BPCM_ID_REG;
 
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856)
+#if defined(_BCM96856_)
 
 typedef union {
 	struct {
@@ -83,7 +78,7 @@ typedef union {
 } CLASSIC_BPCM_ID_REG;
 #endif
 
-#if !IS_BCMCHIP(6878) && !IS_BCMCHIP(6855)
+#if !defined(_BCM96855_)
 // types of PMB devices
 enum {
 	kPMB_BPCM = 0,
@@ -111,7 +106,7 @@ enum {
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
-#if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) 
+#if defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_) 
 		uint32_t num_zones:6;
 		uint32_t reserved0:2;
 #else
@@ -124,7 +119,7 @@ typedef union {
 		uint32_t reserved1:12;
 		uint32_t devType:4;	// see enum above
 		uint32_t num_sr_bits:8;
-#if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) 
+#if defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_) 
 		uint32_t reserved0:2;
 		uint32_t num_zones:6;
 #else
@@ -257,7 +252,7 @@ typedef union {
 		uint32_t sr:8;
 #endif
 	} Bits;
-#if IS_BCMCHIP(6858)
+#if defined(_BCM96858_)
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
 		uint32_t wan_main_rst_n:1;
@@ -300,7 +295,7 @@ typedef union {
 #endif
 	} Bits_Wantop;
 #endif
-#if IS_BCMCHIP(63158)
+#if defined(_BCM963158_)
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
 		uint32_t wan_main_rst_n:1;
@@ -367,7 +362,7 @@ typedef union {
 #endif
 	} Bits_Wantop;
 #endif
-#if IS_BCMCHIP(63158) || IS_BCMCHIP(63178)
+#if defined(_BCM963158_) || defined(_BCM963178_)
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
 		uint32_t vdsl_bpcm_early_reset:1;
@@ -431,7 +426,7 @@ typedef union{
 	} Bits_vdsl;
 } BPCM_VDSL_ARM_RST_CTL;
 
-#if IS_BCMCHIP(63138) || IS_BCMCHIP(4908) || IS_BCMCHIP(63158)
+#if defined(_BCM963158_)
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
@@ -491,10 +486,10 @@ typedef union {
 	uint32_t Reg32;
 } BPCM_GLOBAL_CNTL;
 
-#elif IS_BCMCHIP(6858) || IS_BCMCHIP(6846) || IS_BCMCHIP(6856) || \
-	IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || IS_BCMCHIP(6878) || \
-	IS_BCMCHIP(63146) || IS_BCMCHIP(6855)  || IS_BCMCHIP(4912) || \
-	IS_BCMCHIP(6756) || IS_BCMCHIP(6813) 
+#elif defined(_BCM96858_) || defined(_BCM96856_) || \
+	defined(_BCM963178_) || defined(_BCM947622_) || \
+	defined(_BCM963146_) || defined(_BCM96855_)  || defined(_BCM94912_) || \
+	defined(_BCM96756_) || defined(_BCM96813_) 
 
 typedef union {
 	struct {
@@ -559,7 +554,7 @@ typedef union {
 } BPCM_GLOBAL_CNTL;
 #endif
 
-#if IS_BCMCHIP(63158)
+#if defined(_BCM963158_)
 typedef union {
 	struct {
 
@@ -881,48 +876,10 @@ typedef union {
 
 typedef union {
 	struct {
-#if IS_BCMCHIP(63138)
-#ifdef PMC_LITTLE_ENDIAN
-		uint32_t core_pwr_ctrl:2;	// 01:00    R/W
-		uint32_t reserved2:6;	// 07:02    R/W
-		uint32_t pll_pwr_on:1;	// 08:08    R/W
-		uint32_t pll_ldo_pwr_on:1;	// 09:09    R/W
-		uint32_t pll_clamp_on:1;	// 10:10    R/W
-		uint32_t reserved1:2;	// 12:11    R/O
-		uint32_t cpu0_reset_n:1;	// 13:13    R/W
-		uint32_t cpu1_reset_n:1;	// 14:14    R/W
-		uint32_t neon_reset_n:1;	// 15:15    R/W
-		uint32_t reserved0:12;	// 27:16    R/O
-		uint32_t pwr_ctrl_sts:2;	// 29:28    R/O
-		uint32_t power_down:2;	// 31:30    R/O
-#else
-		uint32_t power_down:2;	// 31:30    R/O
-		uint32_t pwr_ctrl_sts:2;	// 29:28    R/O
-		uint32_t reserved0:12;	// 27:16    R/O
-		uint32_t neon_reset_n:1;	// 15:15    R/W
-		uint32_t cpu1_reset_n:1;	// 14:14    R/W
-		uint32_t cpu0_reset_n:1;	// 13:13    R/W
-		uint32_t reserved1:2;	// 12:11    R/O
-		uint32_t pll_clamp_on:1;	// 10:10    R/W
-		uint32_t pll_ldo_pwr_on:1;	// 09:09    R/W
-		uint32_t pll_pwr_on:1;	// 08:08    R/W
-		uint32_t reserved2:6;	// 07:02    R/W
-		uint32_t core_pwr_ctrl:2;	// 01:00    R/W
-#endif
-#elif IS_BCMCHIP(63148)
-#ifdef PMC_LITTLE_ENDIAN
-		uint32_t cpu0_reset_n:1;	// 00:00    R/W
-		uint32_t power_down:1;	// 01:01    R/W
-		uint32_t reserved:30;	// 31:02    R/O
-#else
-		uint32_t reserved:30;	// 31:02    R/O
-		uint32_t power_down:1;	// 01:01    R/W
-		uint32_t cpu0_reset_n:1;	// 00:00    R/W
-#endif
-#elif IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6846) || \
-	IS_BCMCHIP(6856) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
-	IS_BCMCHIP(6878) || IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || \
-	IS_BCMCHIP(6855) || IS_BCMCHIP(6756) || IS_BCMCHIP(6813) 
+#if defined(_BCM96858_) || defined(_BCM963158_) || \
+    defined(_BCM96856_) || defined(_BCM963178_) || defined(_BCM947622_) || \
+    defined(_BCM963146_) || defined(_BCM94912_) ||			  \
+    defined(_BCM96855_) || defined(_BCM96756_) || defined(_BCM96813_) 
 #ifdef PMC_LITTLE_ENDIAN
 		uint32_t cpu_reset_n:8;	// 07:00    R/W
 		uint32_t c0l2_reset:1;	// 08:08    R/W
@@ -1046,7 +1003,7 @@ typedef union {
 	uint32_t Reg32;
 } PLL_PHASE_REG;
 
-#if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) 
+#if defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_) 
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
@@ -1363,9 +1320,9 @@ typedef union {
 	uint32_t Reg32;
 } PLL_STAT_REG;
 
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(63158) || IS_BCMCHIP(6846) || \
-	IS_BCMCHIP(6856) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
-	IS_BCMCHIP(6878) || IS_BCMCHIP(6855) || IS_BCMCHIP(6756)
+#if defined(_BCM96858_) || defined(_BCM963158_) || \
+	defined(_BCM96856_) || defined(_BCM963178_) || defined(_BCM947622_) || \
+	defined(_BCM96855_) || defined(_BCM96756_)
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
@@ -1414,7 +1371,7 @@ typedef union {
 	} Bits;
 	uint32_t Reg32;
 } PLL_DECCH25_REG;
-#elif IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) 
+#elif defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_) 
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
@@ -1600,8 +1557,8 @@ typedef struct {
 	BPCM_PWR_ZONE_N_CONTROL control;
 	BPCM_PWR_ZONE_N_CONFIG1 config1;
 	BPCM_PWR_ZONE_N_CONFIG2 config2;
-#if IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || IS_BCMCHIP(6878) || IS_BCMCHIP(63146)\
-   || IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6855) || IS_BCMCHIP(6756)
+#if defined(_BCM963178_) || defined(_BCM947622_) || defined(_BCM963146_)\
+   || defined(_BCM94912_) || defined(_BCM96813_) || defined(_BCM96855_) || defined(_BCM96756_)
 	uint32_t reserved0;
 	uint32_t timer_control;
 	uint32_t timer_status;
@@ -1609,7 +1566,7 @@ typedef struct {
 #else
 	BPCM_ZONE_N_FREQ_SCALAR_CONTROL freq_scalar_control;
 #endif
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856)
+#if defined(_BCM96856_)
 	uint32_t reserved[4];
 #endif
 } BPCM_ZONE;
@@ -1699,7 +1656,7 @@ typedef union {
 	uint64_t Reg64;
 } BPCM_UBUS_CFG_REG;
 
-#if IS_BCMCHIP(63178) 
+#if defined(_BCM963178_) 
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
@@ -1717,7 +1674,7 @@ typedef union {
 	uint32_t Reg32;
 } BPCM_CLKRST_VREG_CONTROL;
 #endif
-#if IS_BCMCHIP(63146)
+#if defined(_BCM963146_)
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
@@ -1746,7 +1703,7 @@ typedef union {
 #endif
 
 
-#if IS_BCMCHIP(47622) || IS_BCMCHIP(6756)
+#if defined(_BCM947622_) || defined(_BCM96756_)
 typedef union {
 	struct {
 #ifdef PMC_LITTLE_ENDIAN
@@ -1785,9 +1742,9 @@ typedef union {
 // will be divided by 4 and used as the lower 12-bits of the actual target address, while the
 // device address will serve as the upper 8-bits of the actual address.
 typedef struct {
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856) || IS_BCMCHIP(63178) || \
-	IS_BCMCHIP(47622) || IS_BCMCHIP(6878) || IS_BCMCHIP(63146) || \
-	IS_BCMCHIP(4912) || IS_BCMCHIP(6813) || IS_BCMCHIP(6855) || IS_BCMCHIP(6756)
+#if defined(_BCM96856_) || defined(_BCM963178_) || \
+	defined(_BCM947622_) || defined(_BCM963146_) || \
+	defined(_BCM94912_) || defined(_BCM96813_) || defined(_BCM96855_) || defined(_BCM96756_)
 	// PMB-slave:
 	BPCM_ID_REG id_reg;	// offset 0x00, PMB reg index 0
 	BPCM_CAPABILITES_REG capabilities;	// offset 0x04, PMB reg index 1
@@ -1813,7 +1770,7 @@ typedef struct {
 	BPCM_PWD_ACCUM_CONTROL pwd_accum_control;	// offset = 0x24, actual offset = 9
 	BPCM_SR_CONTROL sr_control;	// offset = 0x28, actual offset = 10
 
-#if IS_BCMCHIP(63158)
+#if defined(_BCM963158_)
 	uint32_t reserved;	// offset = 0x2c, actual offset = 11
 	BPCM_GLOBAL_CNTL_0 global_control;	// offset = 0x30, actual offset = 12
 	BPCM_GLOBAL_CNTL_1 global_control_1;	// offset = 0x34, actual offset = 13
@@ -1832,9 +1789,9 @@ typedef struct {
 
 #define BPCM_OFFSET(reg) (offsetof(BPCM_REGS,reg)>>2)
 
-#if !IS_BCMCHIP(6878) && !IS_BCMCHIP(6846) && !IS_BCMCHIP(6856) && !IS_BCMCHIP(6855)
+#if !defined(_BCM96856_) && !defined(_BCM96855_)
 typedef struct {
-#if !IS_BCMCHIP(63178) && !IS_BCMCHIP(63146)
+#if !defined(_BCM963178_) && !defined(_BCM963146_)
 	BPCM_ID_REG id_reg;	// offset = 0x00, actual offset = 0
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04, actual offset = 1
 	uint32_t control;	// offset = 0x08, actual offset = 2
@@ -1857,7 +1814,7 @@ typedef struct {
 	uint32_t reserved0[2];	// offset = 0x08, actual offset = 2
 	uint32_t cfg_control;	// offset = 0x10, actual offset = 4
 	BPCM_SR_CONTROL sr_control;	// offset = 0x14, actual offset = 5
-#if IS_BCMCHIP(63146)
+#if defined(_BCM963146_)
 	uint32_t reserved1[2];	// offset = 0x18, actual offset = 6
 	uint32_t vdsl_arm_sr;	// offset = 0x20, actual offset = 8
 	BPCM_VDSL_ARM_RST_CTL vdsl_arm_rst_control;	// offset = 0x24, actual offset = 9
@@ -1884,9 +1841,7 @@ typedef struct {
 #define BPCMOffset(reg)		offsetof(BPCM_REGS,reg)
 #define BPCMRegOffset(reg)	(BPCMOffset(reg) >> 2)
 
-#if IS_BCMCHIP(63138) || IS_BCMCHIP(63148) || IS_BCMCHIP(6858) || \
-	IS_BCMCHIP(63158)
-// ARM BPCM addresses as used by 63138/63148 and possibly others (28nm)
+#if defined(_BCM96858_) || defined(_BCM963158_)
 typedef struct {
 	BPCM_ID_REG id_reg;	// offset = 0x00, actual offset = 0
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04, actual offset = 1
@@ -1901,13 +1856,7 @@ typedef struct {
 	BPCM_SR_CONTROL sr_control;	// offset = 0x28, actual offset = 10
 	uint32_t reserved;	// offset = 0x2c, actual offset = 11
 	ARM_CONTROL_REG arm_control;	// offset = 0x30, actual offset = 12
-#if IS_BCMCHIP(63138)
-	ARM_CPUx_PWR_CTRL_REG arm_pwr_ctrl_0;	// offset = 0x34, actual offset = 13
-	ARM_CPUx_PWR_CTRL_REG arm_pwr_ctrl_1;	// offset = 0x38, actual offset = 14
-	ARM_CPUx_PWR_CTRL_REG arm_neon_l2;	// offset = 0x3c, actua; offset = 15
-#elif IS_BCMCHIP(63148)
-	uint32_t reserved1[3];	// offset = 0x34, actual offset = 13..15
-#elif IS_BCMCHIP(6858)
+#if defined(_BCM96858_)
 	uint32_t biu_clk_control0;	// offset = 0x34, actual offset = 13
 	uint32_t reserved1[2];	// offset = 0x38, actual offset = 13..14
 #endif
@@ -1916,7 +1865,7 @@ typedef struct {
 #define ARMBPCMOffset(reg)  offsetof(ARM_BPCM_REGS,reg)
 #define ARMBPCMRegOffset(reg)   (ARMBPCMOffset(reg) >> 2)
 
-#elif IS_BCMCHIP(6846) || IS_BCMCHIP(6856)
+#elif defined(_BCM96856_)
 typedef struct {
 	CLASSIC_BPCM_ID_REG id_reg;	// offset = 0x00, actual offset = 0
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04, actual offset = 1
@@ -1937,7 +1886,7 @@ typedef struct {
 #define ARMBPCMOffset(reg)  offsetof(ARM_BPCM_REGS,reg)
 #define ARMBPCMRegOffset(reg)   (ARMBPCMOffset(reg) >> 2)
 
-#elif IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || IS_BCMCHIP(6878) || IS_BCMCHIP(6855) || IS_BCMCHIP(6756)
+#elif defined(_BCM963178_) || defined(_BCM947622_) || defined(_BCM96855_) || defined(_BCM96756_)
 typedef struct {
 	BPCM_ID_REG id_reg;	// offset = 0x00, actual offset = 0
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04, actual offset = 1
@@ -1953,7 +1902,7 @@ typedef struct {
 #define ARMBPCMOffset(reg)  offsetof(ARM_BPCM_REGS,reg)
 #define ARMBPCMRegOffset(reg)   (ARMBPCMOffset(reg) >> 2)
 
-#elif IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813)
+#elif defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_)
 typedef struct {
 	BPCM_ID_REG id_reg;	// offset = 0x00, actual offset = 0
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04, actual offset = 1
@@ -1969,7 +1918,7 @@ typedef struct {
 
 #endif
 
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856)
+#if defined(_BCM96856_)
 typedef struct {
 	BPCM_ID_REG id_reg;	// offset = 0x00, actual offset = 0
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04, actual offset = 1
@@ -1994,37 +1943,10 @@ typedef struct {
 
 #define PLLCLASSICBPCMOffset(reg)  offsetof(PLL_CLASSIC_BPCM_REGS,reg)
 #define PLLCLASSICBPCMRegOffset(reg)   (PLLCLASSICBPCMOffset(reg) >> 2)
-
-#elif IS_BCMCHIP(6878)
-typedef struct {
-	BPCM_ID_REG id_reg;	// offset = 0x00
-	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04
-	uint32_t reserved0[6];	// offset = 0x08
-	PLL_CTRL_REG resets;	// offset = 0x20
-	PLL_CFG0_REG cfg0;	// offset = 0x24
-	PLL_CFG1_REG cfg1;	// offset = 0x28
-	PLL_NDIV_REG ndiv;	// offset = 0x2c
-	PLL_PDIV_REG pdiv;	// offset = 0x30
-	PLL_LOOP0_REG loop0;	// offset = 0x34
-	uint32_t reserved1;	// offset = 0x38
-	PLL_LOOP1_REG loop1;	// offset = 0x3c
-	PLL_CHCFG_REG ch01_cfg;	// offset = 0x40
-	PLL_CHCFG_REG ch23_cfg;	// offset = 0x44
-	PLL_CHCFG_REG ch45_cfg;	// offset = 0x48
-	PLL_STAT_REG stat;	// offset = 0x4c
-	uint32_t strap;		// offset = 0x50
-	PLL_DECNDIV_REG decndiv;	// offset = 0x54
-	PLL_DECPDIV_REG decpdiv;	// offset = 0x58
-	PLL_DECCH25_REG decch25;	// offset = 0x5c
-} PLL_CLASSIC_BPCM_REGS;
-
-#define PLLCLASSICBPCMOffset(reg)  offsetof(PLL_CLASSIC_BPCM_REGS,reg)
-#define PLLCLASSICBPCMRegOffset(reg)   (PLLCLASSICBPCMOffset(reg) >> 2)
-
 #endif
 
 typedef struct {
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856)
+#if defined(_BCM96856_)
 	BPCM_ID_REG id_reg;	// offset = 0x00
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04
 	uint32_t reserved0[6];	// offset = 0x08
@@ -2044,7 +1966,7 @@ typedef struct {
 	PLL_DECNDIV_REG decndiv;	// offset = 0x54
 	PLL_DECPDIV_REG decpdiv;	// offset = 0x58
 	PLL_DECCH25_REG decch25;	// offset = 0x5c
-#elif IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813)
+#elif defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_)
 	/* BIU PLL BCPM definition */  
 	BPCM_ID_REG id_reg;	// offset = 0x00 
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04
@@ -2081,8 +2003,8 @@ typedef struct {
 	PLL_OCTRL_REG octrl;	// offset = 0x38, actual offset = e
 	PLL_STAT_REG stat;	// offset = 0x3c, actual offset = f
 	uint32_t strap;		// offset = 0x40, actual offset = 0x10
-#if IS_BCMCHIP(6858) || IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || \
-	IS_BCMCHIP(6878) || IS_BCMCHIP(6855) || IS_BCMCHIP(6756)
+#if defined(_BCM96858_) || defined(_BCM963178_) || defined(_BCM947622_) || \
+	defined(_BCM96855_) || defined(_BCM96756_)
 	PLL_DECNDIV_REG decndiv;	// offset = 0x44, actual offset = 0x11
 	PLL_DECPDIV_REG decpdiv;	// offset = 0x48, actual offset = 0x12
 	PLL_DECCH25_REG decch25;	// offset = 0x4c, actual offset = 0x13
@@ -2097,7 +2019,7 @@ typedef struct {
 #define PLLBPCMOffset(reg)	offsetof(PLL_BPCM_REGS,reg)
 #define PLLBPCMRegOffset(reg)	(PLLBPCMOffset(reg) >> 2)
 
-#if IS_BCMCHIP(63146)
+#if defined(_BCM963146_)
 typedef struct {
 	BPCM_ID_REG id_reg;	// offset = 0x00, actual offset = 0
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04, actual offset = 1
@@ -2122,7 +2044,7 @@ typedef struct {
 #define AFEPLLBPCMRegOffset(reg)	(AFEPLLBPCMOffset(reg) >> 2)
 #endif
 
-#if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813)
+#if defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_)
 typedef struct {
 	BPCM_ID_REG id_reg;	// offset = 0x00
 	BPCM_CAPABILITES_REG capabilities;	// offset = 0x04
@@ -2146,7 +2068,7 @@ typedef struct {
 
 #endif
 
-#if IS_BCMCHIP(6878) || IS_BCMCHIP(6855)
+#if defined(_BCM96855_)
 typedef union {
 	struct {
 		uint32_t dac_data:10;	// [09:00]
@@ -2347,22 +2269,22 @@ typedef struct {
 #define UBUSBPCMOffset(reg)	offsetof(BPCM_UBUS_REG,reg)
 #define UBUSBPCMRegOffset(reg)	(UBUSBPCMOffset(reg) >> 2)
 
-#if IS_BCMCHIP(63178) || IS_BCMCHIP(47622) || IS_BCMCHIP(6756)
+#if defined(_BCM963178_) || defined(_BCM947622_) || defined(_BCM96756_)
 typedef struct {
 	// PMB-slave:
 	BPCM_ID_REG id_reg;	// offset 0x00, PMB reg index 0
 	BPCM_CAPABILITES_REG capabilities;	// offset 0x04, PMB reg index 1
 	uint32_t reserved0[7];	// offset 0x08-0x20, PMB reg index 2-8
 	uint32_t control;	// offset 0x24, PMB reg index 9
-#if IS_BCMCHIP(47622) || IS_BCMCHIP(6756)
+#if defined(_BCM947622_) || defined(_BCM96756_)
 	uint32_t observe_cntrl;	// offset 0x28, PMB reg index 10
 	uint32_t observe_div;	// offset 0x2c, PMB reg index 11
 	uint32_t observe_enable;	// offset 0x30, PMB reg index 12
 	BPCM_CLKRST_CONTROL clkrst_control;	// offset 0x34, PMB reg index 13
-#elif IS_BCMCHIP(63146)
+#elif defined(_BCM963146_)
 	uint32_t unused[3];	// offset 0x28, PMB reg index 10
 	BPCM_CLKRST_VREG_CONTROL vreg_control;	// offset 0x34, PMB reg index ??
-#elif IS_BCMCHIP(63178)
+#elif defined(_BCM963178_)
 	uint32_t unused[10];	// offset 0x28, PMB reg index 10
 	BPCM_CLKRST_VREG_CONTROL vreg_control;	// offset 0x50, PMB reg index 19
 #endif
@@ -2378,51 +2300,24 @@ typedef struct {
 	BPCM_AVS_ROSC_THRESHOLD rosc_thresh_s;	// offset = 0x18, actual offset = 6
 	BPCM_AVS_ROSC_COUNT rosc_count;	// offset = 0x1c, actual offset = 7
 	BPCM_AVS_PWD_CONTROL pwd_control;	// offset = 0x20, actual offset = 8
-#if IS_BCMCHIP(6878)
-	uint32_t bpcm_ctrl;	// offset = 0x24, actual offset = 9
-	uint32_t clkrst_control;	// offset = 0x28, actual offset = 10
-	uint32_t ext_observe_ctrl;	// offset = 0x2c, actual offset = 11
-	uint32_t reserved0[2];	// offset = 0x30-0x34, actual offset 12-13
-	uint32_t xtal_control;	// offset = 0x38, actual offset = 14
-	uint32_t clkrst_stat;	// offset = 0x3c, actual offset = 15
-	uint32_t reserved1;	// offset = 0x40, actual offset = 16
-	uint32_t clkrst_ena_clk_31_0;	// offset = 0x44, actual offset = 17
-	uint32_t clkrst_ena_clk_63_32;	// offset = 0x48, actual offset = 18
-	uint32_t clkrst_ena_clk_95_64;	// offset = 0x4c, actual offset = 19
-	uint32_t reserved2[11];	// offset = 0x50-0x78, actual offset = 20-30
-	uint32_t clkrst_ena_reset_31_0;	// offset = 0x7c, actual offset = 31
-	uint32_t clkrst_ena_reset_63_32;	// offset = 0x80, actual offset = 32
-	uint32_t clkrst_pll_observe_clk;	// offset = 0x84, actual offset = 33
-	uint32_t clkrst_ref_cnt_thresh;	// offset = 0x88, actual offset = 34
-	uint32_t clkrst_pll_clk_low_th;	// offset = 0x8c, actual offset = 35
-	uint32_t clkrst_pll_clk_hi_th;	// offset = 0x90, actual offset = 36
-	uint32_t clkrst_pll_clk_stat;	// offset = 0x94, actual offset = 37
-	uint32_t clkrst_sticky_bit_stat;	// offset = 0x98, actual offset = 38
-	uint32_t clkrst_clk250_src_sel;	// offset = 0x9c, actual offset = 39
-	uint32_t clkrst_ena_force;	// offset = 0xa0, actual offset = 40
-	uint32_t reserved3;	// offset = 0xa4, actual offset = 41
-	uint32_t pmd_xtal_cntl;	// offset = 0xa8, actual offset = 42
-	uint32_t pmd_xtal_cntl2;	// offset = 0xac, actual offset = 43
-#else
 	uint32_t reserved0;	// offset = 0x24, actual offset = 9
 	BPCM_SR_CONTROL sr_control;	// offset = 0x28, actual offset = 10
 	uint32_t reserved1;	// offset = 0x2c, actual offset = 11
 	uint32_t clkrst_cfg;	// offset = 0x30, actual offset = 12
-#if IS_BCMCHIP(63146)
+#if defined(_BCM963146_)
 	BPCM_CLKRST_VREG_CONTROL vreg_control;	// offset 0x50, PMB reg index 19
 #else
 	uint32_t clkrst_control;	// offset = 0x34, actual offset = 13
 #endif
 	uint32_t xtal_control;	// offset = 0x38, actual offset = 14
 	uint32_t clkrst_stat;	// offset = 0x3c, actual offset = 15
-#endif
 } BPCM_CLKRST_REGS;
 #endif
 
 #define CLKRSTBPCMOffset(reg)  offsetof(BPCM_CLKRST_REGS, reg)
 #define CLKRSTBPCMRegOffset(reg)   (CLKRSTBPCMOffset(reg) >> 2)
 
-#if IS_BCMCHIP(47622) || IS_BCMCHIP(6756)
+#if defined(_BCM947622_) || defined(_BCM96756_)
 typedef struct {
 	BPCM_ID_REG id_reg;	// offset 0x00, PMB reg index 0
 	BPCM_CAPABILITES_REG capabilities;	// offset 0x04, PMB reg index 1
@@ -2445,7 +2340,7 @@ typedef struct {
 
 #endif
 
-#if IS_BCMCHIP(63146) || IS_BCMCHIP(4912) || IS_BCMCHIP(6813)
+#if defined(_BCM963146_) || defined(_BCM94912_) || defined(_BCM96813_)
 typedef struct {
     // ETH_PMB
 	BPCM_ID_REG id_reg;	    // offset 0x00, PMB reg index 0
@@ -2456,7 +2351,7 @@ typedef struct {
 	uint32_t soft_rst;;	    // offset 0x14, PMB reg index 5
 	uint32_t reserved18[2];	// offset 0x18, PMB reg index 6/7
     // ETH_CORE
-#if IS_BCMCHIP(63146)
+#if defined(_BCM963146_)
 	uint32_t qphy_cntrl;	// offset 0x20
 	uint32_t qphy_status;	// offset 0x24
 	uint32_t sphy_cntrl;	// offset 0x28
@@ -2476,7 +2371,7 @@ typedef struct {
 	uint32_t serdes0_pwr_cntrl;// offset 0x6c
 	uint32_t serdes1_pwr_cntrl;// offset 0x70
 #endif
-#if IS_BCMCHIP(4912) || IS_BCMCHIP(6813)
+#if defined(_BCM94912_) || defined(_BCM96813_)
 	uint32_t qphy_cntrl;	// offset 0x20
 	uint32_t qphy_status;	// offset 0x24
 	uint32_t reserved28[2];

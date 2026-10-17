@@ -117,8 +117,7 @@ CNPL_PERIODIC_UPDATE_QUANTA_NS is 16,384 (16K) */
 
 /* SBPM */
 #define SBPM_BASE_ADDRESS                   0
-#define SBPM_MAX_BUFFER_NUMBER              0xFFF
-#define SBPM_INIT_OFFSET                    SBPM_MAX_BUFFER_NUMBER
+#define SBPM_INIT_OFFSET                    PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER
 #define SBPM_UG0_BN_THRESHOLD               0x3FF
 #define SBPM_UG0_EXCL_LOW_THRESHOLD         0x380
 #define SBPM_UG0_EXCL_LOW_HIST              0xa
@@ -137,7 +136,7 @@ CNPL_PERIODIC_UPDATE_QUANTA_NS is 16,384 (16K) */
 #define SBPM_UG1_EXCL_HIGH_HIST             0xa
 
 #define SBPM_GLOBAL_HIST                    0xA
-#define SBPM_MAX_NUM_OF_BNS                 (SBPM_MAX_BUFFER_NUMBER + 1)
+#define SBPM_MAX_NUM_OF_BNS                 (PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER + 1)
 
 /* BBH_RX */
 #define DRV_BBH_RX_MAXIMAL_PACKET_HEADER_OFFSET 63
@@ -332,6 +331,7 @@ typedef enum bbh_id_e
 } bbh_id_e;
 
 #define BB_ID_RX_BBH_AE BB_ID_RX_BBH_6
+#define TM_IDENTITY_HAS_MULTI_ETH_ENUMS 1
 
 typedef enum tm_identifier_e
 {
@@ -346,6 +346,7 @@ typedef enum tm_identifier_e
     TM_MAX = 4,
     TM_MAX_GROUP = TM_ETH_END - TM_ETH_START + 1,
     TM_ERROR = 5,
+    TM_STILL_NOT_DEFINED = 6,
     TM_NUM_OF_IDENTITY = 5
 } tm_identifier_e;
 
@@ -405,6 +406,10 @@ typedef enum rnr_quad_id_e
 #define DISP_REOR_VIQ_BBH_PON_RX_EXCL DISP_REOR_VIQ_BBH_RX11_EXCL
 #define DISP_REOR_VIQ_BBH_PON_RX_NORMAL DISP_REOR_VIQ_BBH_RX11_NORMAL
 #define DISP_REOR_VIQ_BBH_RX_MAX_NUM DISP_REOR_VIQ_BBH_RX11_NORMAL
+
+#define UBUS_PORT_ID_MEMC        1
+#define UBUS_PORT_ID_BIU         2
+#define UBUS_PORT_ID_PSRAM       16
 
 typedef enum bac_if_id_e
 {

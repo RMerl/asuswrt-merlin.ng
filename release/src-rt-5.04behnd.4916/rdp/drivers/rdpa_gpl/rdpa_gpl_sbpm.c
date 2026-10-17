@@ -75,7 +75,7 @@ static bdmf_error_t drv_sbpm_copy_buf_to_bn(uint16_t bn, uint32_t headroom, uint
     psram_mem_memory_data _data = {};
 
     memcpy((uint8_t *)(&_data) + headroom, data, MIN(size, SBPM_BUF_SIZE - headroom));
-#if defined(BCM6837)
+#if defined(BCM6837) || defined(BCM68375)
     return ag_drv_psram_mem_memory_data_set(1, bn, &_data);
 #else    
     return ag_drv_psram_mem_memory_data_set(bn, &_data);
@@ -152,7 +152,9 @@ bdmf_error_t drv_sbpm_alloc_list(uint32_t size, uint32_t headroom, uint8_t *data
         rc = drv_sbpm_connect_single(curr_bn, new_bn);
         if (rc)
         {
+#if (CHIP_VER < RDP_GEN_100) /* CRDP-TODO */
             drv_sbpm_free_list(new_bn);
+#endif
             goto error;
         }
         _bns_num++;
@@ -169,8 +171,10 @@ exit:
     return 0;
 
 error:
+#if (CHIP_VER < RDP_GEN_100) /* CRDP-TODO */
     if (head_bn != SBPM_INVALID_BUFFER_NUMBER)
         drv_sbpm_free_list(head_bn);
+#endif
 
     if (bn0)
         *bn0 = SBPM_INVALID_BUFFER_NUMBER;

@@ -1,0 +1,60 @@
+############################## uboot environment variables ##############################
+
+autostart
+  text variable to allow launch of a bootm loaded image
+
+bootcmd
+  command to run at uboot boot, typically printenv;run once;sdk boot_img
+
+bootdelay
+  delay in seconds to boot Linux, typically 5
+
+bootstopkeysha256
+  a password hash compared to user input that when matched drops into uboot cli
+
+ethaddr
+  MAC address, typically 02:10:18:00:00:01
+
+ethact
+  typically systemport@0x80400000
+
+fileaddr
+
+ipaddr
+  IP address of board, typically 192.168.1.1
+
+mtddevname
+  typically loader
+
+mtddevnum
+  typically 0
+
+mtdids
+  typically nand0=brcmnand.0
+
+mtdparts
+  description of mtd partitions, similar to brcmnand.0:2097152(loader),114294784@2097152(image) leaving space for BBT
+
+netmask
+  network mask, typically 255.255.255.0
+
+overridden
+  Not in use
+
+partition
+  current partition, typically nand0,0
+
+serverip
+  ip address of file server connected to board network, typically 192.168.1.5
+
+stderr
+  terminal error device, typically serial0
+
+stdin
+  terminal input device, typically serial0
+
+stdout
+  terminal output device, typically serial0
+
+
+

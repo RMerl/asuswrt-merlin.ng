@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Copyright (C) 2020 - 2022, Xilinx, Inc.
+# Copyright (C) 2022, Advanced Micro Devices, Inc.
+#
+
+if ARCH_VERSAL_NET
+
+config CMD_VERSAL_NET
+	bool "Enable Versal NET specific commands"
+	default y
+	depends on ZYNQMP_FIRMWARE
+	help
+	  Select this to enable Versal NET specific commands.
+	  Commands like versalnet loadpdi are enabled by this.
+
+endif

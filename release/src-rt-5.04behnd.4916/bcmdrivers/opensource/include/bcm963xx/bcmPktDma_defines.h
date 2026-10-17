@@ -26,7 +26,7 @@
  *
  * -----------------------------------------------------------------------------
  */
-#if (defined(CONFIG_BCM_INGQOS) || defined(CONFIG_BCM_INGQOS_MODULE) || defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
+#if (defined(CONFIG_BCM_INGRESS_QOS) || defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
 /* Channel-0 is default */
 /* % of number of buffers assigned to RXBDs */
 #define ENET_DEF_RXBDS_BUF_PRCNT        40
@@ -59,7 +59,7 @@
 
 
 
-#else // (defined(CONFIG_BCM_INGQOS) || defined(CONFIG_BCM_INGQOS_MODULE) || defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
+#else // (defined(CONFIG_BCM_INGRESS_QOS) || defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
 
 
 /* Channel-0 is default */
@@ -81,6 +81,6 @@
 #define HOST_XTM_NR_TXBDS               HOST_ENET_NR_RXBDS
 
 
-#endif // (defined(CONFIG_BCM_INGQOS) || defined(CONFIG_BCM_INGQOS_MODULE) || defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
+#endif // (defined(CONFIG_BCM_INGRESS_QOS) || defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
 
 #endif /* __PKTDMA_DEFINES_H_INCLUDED__ */

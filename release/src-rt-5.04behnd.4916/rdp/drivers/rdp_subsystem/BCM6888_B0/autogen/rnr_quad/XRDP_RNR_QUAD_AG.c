@@ -10231,6 +10231,9 @@ static const ru_reg_rec *RNR_QUAD_REGS[] =
 const ru_block_rec RNR_QUAD_BLOCK =
 {
     "RNR_QUAD",
+#if RU_INCLUDE_SIZE
+    { 0x00000B80 },
+#endif
     RNR_QUAD_ADDRS,
     1,
     113,

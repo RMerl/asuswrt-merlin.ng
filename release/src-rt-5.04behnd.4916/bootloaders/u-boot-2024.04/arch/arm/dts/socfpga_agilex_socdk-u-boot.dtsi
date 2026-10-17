@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright (C) 2019-2022 Intel Corporation <www.intel.com>
+ */
+
+#include "socfpga_agilex-u-boot.dtsi"
+
+/{
+	aliases {
+		spi0 = &qspi;
+		i2c0 = &i2c1;
+		freeze_br0 = &freeze_controller;
+	};
+
+	soc {
+		freeze_controller: freeze_controller@f9000450 {
+			compatible = "altr,freeze-bridge-controller";
+			reg = <0xf9000450 0x00000010>;
+			status = "disabled";
+		};
+	};
+
+	memory {
+		/* 8GB */
+		reg = <0 0x00000000 0 0x80000000>,
+		      <2 0x80000000 1 0x80000000>;
+	};
+};
+
+&flash0 {
+	compatible = "jedec,spi-nor";
+	spi-tx-bus-width = <4>;
+	spi-rx-bus-width = <4>;
+	bootph-all;
+};
+
+&i2c1 {
+	status = "okay";
+};
+
+&mmc {
+	drvsel = <3>;
+	smplsel = <0>;
+	bootph-all;
+};
+
+&qspi {
+	status = "okay";
+};
+
+&watchdog0 {
+	bootph-all;
+};

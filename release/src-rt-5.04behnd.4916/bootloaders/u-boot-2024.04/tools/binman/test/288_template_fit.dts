@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	binman: binman {
+		multiple-images;
+
+		my_template: template {
+			fit@0 {
+				images {
+					kernel-1 {
+					};
+					kernel-2 {
+					};
+				};
+			};
+		};
+
+		image {
+			filename = "image.bin";
+			insert-template = <&my_template>;
+
+			fit@0 {
+				description = "desc";
+				configurations {
+				};
+				images {
+					kernel-3 {
+					};
+					kernel-4 {
+					};
+				};
+			};
+		};
+	};
+};

@@ -1,6 +1,0 @@
-OVERO BOARD
-M:	Steve Sakoman <sakoman@gmail.com>
-S:	Maintained
-F:	board/overo/
-F:	include/configs/omap3_overo.h
-F:	configs/omap3_overo_defconfig

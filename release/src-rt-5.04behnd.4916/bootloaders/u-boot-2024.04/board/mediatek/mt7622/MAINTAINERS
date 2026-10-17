@@ -1,0 +1,6 @@
+MT7622
+M:	Sam Shih <sam.shih@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7622
+F:	include/configs/mt7622.h
+F:	configs/mt7622_rfb_defconfig

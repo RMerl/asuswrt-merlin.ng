@@ -1,0 +1,18 @@
+if TARGET_M53MENLO
+
+config SYS_BOARD
+	default "m53menlo"
+
+config SYS_VENDOR
+	default "menlo"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "m53menlo"
+
+config IMX_CONFIG
+	default "board/menlo/m53menlo/imximage.cfg"
+
+endif

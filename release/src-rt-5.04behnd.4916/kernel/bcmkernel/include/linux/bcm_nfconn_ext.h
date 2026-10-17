@@ -33,13 +33,47 @@ written consent.
 #include <linux/dpi.h>
 #include <linux/ndi.h>
 #include <linux/sgs.h>
+#include <linux/kqoe.h>
+
+#if IS_ENABLED(CONFIG_BCM_NFT_SCORE)
+#define MAX_SCORE_DCP_INFO_ENTRIES  8
+#define MAX_BINIDX                  (1<<3)
+#define MAX_APP_GROUP_ID            (1<<5)
+typedef  union {
+    struct {
+        uint32_t   orig_binidx     : 3;    // bin idx for orig direction
+        uint32_t   reply_binidx    : 3;    // bin indx for reply direction
+        uint32_t   app_group_id    : 5;
+        uint32_t   reserved        : 5;
+    };
+    uint32_t    val16;
+} ct_score_entry_t;
+
+#define SCORE_DCP_ENTRY_SET(info, ndx)  (info)->dcp_bmap |= (1<<(ndx))
+#define SCORE_DCP_ENTRY_CLR(info, ndx)  (info)->dcp_bmap &= ~(1<<(ndx))
+
+typedef struct {
+    uint8_t             dcp_bmap;
+    ct_score_entry_t    entries[MAX_SCORE_DCP_INFO_ENTRIES];
+} ct_score_info_t;
+#endif
 
 struct bcm_nf_conn_ext {
 #if defined(CONFIG_BLOG)
 	unsigned int blog_key[2];	/* Associating 2=IP_CT_DIR_MAX blogged flows */
 	unsigned long extra_jiffies;	/* connection timeout value */
 	uint8_t blog_learned; /* indicates CT has completed blog/fc learning atleast once */
-	uint8_t blog_unused[3];
+	union {
+		struct {
+			uint8_t orig_tcp_ts_en:1; /* has tcp timestamp in orig */
+			uint8_t reply_tcp_ts_en:1; /* has tcp timestamp in reply*/
+			uint8_t rsvd:6;
+		};
+		uint8_t flags;
+	};
+	uint16_t bnl_idx;
+	uint16_t score_stream_id;
+	uint16_t score_dcp_bitmask;	/* score data collection profile bitmask*/
 #endif
 
 #if defined(CONFIG_BCM_KF_NF_REGARDLESS_DROP)
@@ -55,7 +89,7 @@ struct bcm_nf_conn_ext {
 	unsigned int derived_timeout;		/* if non-zero override linux timeout */
 #endif
 
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
 	uint8_t iq_prio;			/* Ingress QoS Prio */
 	uint8_t unused0;
 	uint16_t unused1;
@@ -98,6 +132,14 @@ struct bcm_nf_conn_ext {
 
 #if IS_ENABLED(CONFIG_BCM_SGS)
 	struct sgs_ct_info sgs;
+#endif
+
+#if IS_ENABLED(CONFIG_BCM_KQOE)
+	struct kqoe_ct_info qos;
+#endif
+
+#if IS_ENABLED(CONFIG_BCM_NFT_SCORE)
+    ct_score_info_t *score;
 #endif
 };
 

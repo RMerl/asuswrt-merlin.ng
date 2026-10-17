@@ -1,0 +1,61 @@
+if TARGET_SL28
+
+config SYS_BOARD
+	default "sl28"
+
+config SYS_VENDOR
+	default "kontron"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "kontron_sl28"
+
+config TEXT_BASE
+	default 0x96000000
+
+config SL28_SPL_LOADS_ATF_BL31
+	bool "SPL loads BL31 of the ARM Trusted Firmware"
+	select SPL_ATF
+	select SPL_ATF_LOAD_IMAGE_V2
+	select ARMV8_SEC_FIRMWARE_SUPPORT
+	select SEC_FIRMWARE_ARMV8_PSCI
+	help
+	  Enable this to load a BL31 image by the SPL. You have to
+	  provde a bl31.bin in u-boot's root directory.
+
+if SL28_SPL_LOADS_ATF_BL31
+
+config SL28_BL31_ENTRY_ADDR
+	hex "Entry point of the BL31 image"
+	default 0xfbe00000
+
+endif
+
+config SL28_SPL_LOADS_OPTEE_BL32
+	bool "SPL loads OP-TEE Trusted OS as BL32"
+	depends on SL28_SPL_LOADS_ATF_BL31
+	help
+	  Enable this to load a BL32 image by the SPL. You have to
+	  provde a tee.bin in u-boot's root directory.
+
+if SL28_SPL_LOADS_OPTEE_BL32
+
+config SL28_BL32_ENTRY_ADDR
+	hex "Entry point of the BL32 image"
+	default 0xfc000000
+
+endif
+
+config SL28_ENABLE_SER0_CONSOLE
+	bool "Enable console output on SER0"
+	select DM_SERIAL
+	select SPL_DM_SERIAL
+	select FSL_LPUART
+	help
+	  By default the console output of this board is on the second serial
+	  line (SER1). Sometimes it is desirable to enable output on the first
+	  serial line (SER0). For example, if you have a carrier which only
+	  supports the first serial port.
+endif

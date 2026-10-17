@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#include "rk356x-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &sdmmc1, &sdmmc0;
+	};
+
+	rng: rng@fe388000 {
+		compatible = "rockchip,cryptov2-rng";
+		reg = <0x0 0xfe388000 0x0 0x2000>;
+		status = "okay";
+	};
+};
+
+&cru {
+	assigned-clocks =
+			<&pmucru CLK_RTC_32K>,
+			<&pmucru PLL_PPLL>,
+			<&pmucru PCLK_PMU>, <&cru PLL_CPLL>,
+			<&cru PLL_GPLL>,
+			<&cru ACLK_BUS>, <&cru PCLK_BUS>,
+			<&cru ACLK_TOP_HIGH>, <&cru ACLK_TOP_LOW>,
+			<&cru HCLK_TOP>, <&cru PCLK_TOP>,
+			<&cru ACLK_PERIMID>, <&cru HCLK_PERIMID>,
+			<&cru CPLL_500M>, <&cru CPLL_333M>,
+			<&cru CPLL_250M>, <&cru CPLL_125M>,
+			<&cru CPLL_100M>, <&cru CPLL_62P5M>,
+			<&cru CPLL_50M>, <&cru CPLL_25M>;
+		assigned-clock-rates =
+			<32768>,
+			<200000000>,
+			<100000000>, <1000000000>,
+			<1188000000>,
+			<150000000>, <100000000>,
+			<500000000>, <400000000>,
+			<150000000>, <100000000>,
+			<300000000>, <150000000>,
+			<500000000>, <333333333>,
+			<250000000>, <125000000>,
+			<100000000>, <62500000>,
+			<50000000>, <25000000>;
+		assigned-clock-parents =
+			<&pmucru CLK_RTC32K_FRAC>;
+};
+
+&dsi_dphy0 {
+	status = "okay";
+};
+
+&dsi0 {
+	status = "okay";
+};
+
+&i2c2 {
+	pinctrl-0 = <&i2c2m1_xfer>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&pmucru {
+	assigned-clocks = <&pmucru SCLK_32K_IOE>;
+	assigned-clock-parents = <&pmucru CLK_RTC_32K>;
+};
+
+/*
+ * We don't need the clocks, but if they are present they may cause
+ * probing to fail so we remove them for U-Boot.
+ */
+&rk817 {
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ clocks;
+	/delete-property/ clock-names;
+};
+
+&sdhci {
+	pinctrl-0 = <&emmc_bus8>, <&emmc_clk>, <&emmc_cmd>,
+		    <&emmc_datastrobe>, <&emmc_rstnout>;
+	pinctrl-names = "default";
+	bus-width = <8>;
+	max-frequency = <200000000>;
+	mmc-hs200-1_8v;
+	non-removable;
+	vmmc-supply = <&vcc_3v3>;
+	vqmmc-supply = <&vcc_1v8>;
+	status = "okay";
+};

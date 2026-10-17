@@ -1,0 +1,48 @@
+.. SPDX-License-Identifier: GPL-2.0
+
+mt7621_rfb/mt7621_nand_rfb
+==========================
+
+U-Boot for the MediaTek MT7621 boards
+
+Quick Start
+-----------
+
+- Get the DDR initialization binary blob
+- Configure CPU and DDR parameters
+- Build U-Boot
+
+Get the DDR initialization binary blob
+--------------------------------------
+
+Download one from:
+ - https://raw.githubusercontent.com/mtk-openwrt/mt7621-lowlevel-preloader/master/mt7621_stage_sram.bin
+ - https://raw.githubusercontent.com/mtk-openwrt/mt7621-lowlevel-preloader/master/mt7621_stage_sram_noprint.bin
+
+mt7621_stage_sram_noprint.bin has removed all output logs. To use this one,
+download and rename it to mt7621_stage_sram.bin
+
+Put the binary blob to the u-boot build directory.
+
+Configure CPU and DDR parameters
+--------------------------------
+
+menuconfig > MIPS architecture > MediaTek MIPS platforms > CPU & DDR configuration
+
+Select the correct DDR timing parameters for your board. The size shown here
+must match the DDR size of you board.
+
+The frequency of CPU and DDR can also be adjusted.
+
+Build U-Boot
+------------
+
+.. code-block:: bash
+
+   $ export CROSS_COMPILE=mipsel-linux-
+   $ make O=build mt7621_rfb_defconfig # or mt7621_nand_rfb_defconfig
+   $ cp mt7621_stage_sram.bin ./build/mt7621_stage_sram.bin
+   $ # or cp mt7621_stage_sram_noprint.bin ./build/mt7621_stage_sram.bin
+   $ make O=build
+
+Burn the u-boot-mt7621.bin to the SPI-NOR or NAND flash.

@@ -1,0 +1,21 @@
+config FS_CBFS
+	bool "Enable CBFS (Coreboot Filesystem)"
+	help
+	  Define this to enable support for reading from a Coreboot
+	  filesystem. This is a ROM-based filesystem used for accessing files
+	  on systems that use coreboot as the first boot-loader and then load
+	  U-Boot to actually boot the Operating System. You can also enable
+	  CMD_CBFS to get command-line access.
+
+config SPL_FS_CBFS
+	bool "Enable CBFS (Coreboot Filesystem) in SPL"
+	depends on SPL
+	help
+	  Define this to enable support for reading from a Coreboot
+	  filesystem. This is a ROM-based filesystem used for accessing files
+	  on systems that use coreboot as the first boot-loader and then load
+	  U-Boot to actually boot the Operating System.
+
+	  Note that most functions in the CBFS API do not work with SPL. Only
+	  those which accept a cbfs_priv * can be used, since BSS is not
+	  available.

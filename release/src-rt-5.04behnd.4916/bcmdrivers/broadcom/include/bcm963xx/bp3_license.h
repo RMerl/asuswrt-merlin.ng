@@ -46,7 +46,7 @@ struct bp3_feature {
     const char *description;
 };
 
-/* BP3 Features Names and Descriptions*/
+/* BP3 Features Names and Descriptions */
 static const struct bp3_feature feature_lookup_table[] = {
 	/* Group 0:7 */
 	{"BP3_FEATURE_SPEED_SERVICE", "Speed Service"},
@@ -75,11 +75,11 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_LAG_ACCEL", "LAG Acceleration"},
 	{"BP3_FEATURE_LAG_LOAD_BAL", "LAG Load Balancing"},
 	{"BP3_FEATURE_DPI", "DPI"},
-	{"BP3_FEATURE_RESERVED", "Reserved"},
-	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_BNL", "Broadcom Network Latency"},
+	{"BP3_FEATURE_SCORE", "Statistics Collection Offload Rings Engine"},
 
 	/* Group 24:31 */
-	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_QSTAT", "Statistics of wired and wlan transmit queues, including queues latency"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -95,8 +95,8 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_SPU_CRYPTO2", "SPU/Crypto2"},
 	{"BP3_FEATURE_SHA512", "SHA512"},
-	{"BP3_FEATURE_RESERVED", "Reserved"},
-	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_PQC", "Post Quantum cryptography"},
+	{"BP3_FEATURE_TPM2", "Trusted Platform Module"},
 
 	/* Group 40:47 */
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -108,6 +108,7 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_SYNCE", "SyncE"},
 
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
 	/* Group 48:55 */
 	{"BP3_FEATURE_PCIE0", "PCIe0"},
 	{"BP3_FEATURE_PCIE1", "PCIe1"},
@@ -117,6 +118,17 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_EGPHY1", "EGPHY1"},
 	{"BP3_FEATURE_EGPHY2", "EGPHY2"},
 	{"BP3_FEATURE_EGPHY3", "EGPHY3"},
+#else
+	/* Group 48:55 */
+	{"BP3_FEATURE_PCIE0", "PCIe0"},
+	{"BP3_FEATURE_PCIE1", "PCIe1"},
+	{"BP3_FEATURE_PCIE2", "PCIe2"},
+	{"BP3_FEATURE_PCIE3", "PCIe3"},
+	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_RESERVED", "Reserved"},
+#endif
 
 	/* Group 56:63 */
 	{"BP3_FEATURE_ENABLE_ML", "Enable ML"},
@@ -156,8 +168,9 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
-	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_WAN_MUX", "WAN Mux"},
 
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
 	/* Group 88:95 */
 	{"BP3_FEATURE_SLAN_2_5", "SLAN 2.5G"},
 	{"BP3_FEATURE_SLAN_5", "SLAN 5G"},
@@ -169,9 +182,9 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 96:103 */
-	{"BP3_FEATURE_QLAN0_2_5", "Reserved"},
-	{"BP3_FEATURE_QLAN0_5", "Reserved"},
-	{"BP3_FEATURE_QLAN0_10", "Reserved"},
+	{"BP3_FEATURE_QLAN0_2_5", "QLAN Port 0 2.5G"},
+	{"BP3_FEATURE_QLAN0_5", "QLAN Port 0 5G"},
+	{"BP3_FEATURE_QLAN0_10", "QLAN Port 0 10G"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -179,9 +192,9 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 104:111 */
-	{"BP3_FEATURE_QLAN1_2_5", "Reserved"},
-	{"BP3_FEATURE_QLAN1_5", "Reserved"},
-	{"BP3_FEATURE_QLAN1_10", "Reserved"},
+	{"BP3_FEATURE_QLAN1_2_5", "QLAN Port 1 2.5G"},
+	{"BP3_FEATURE_QLAN1_5", "QLAN Port 1 5G"},
+	{"BP3_FEATURE_QLAN1_10", "QLAN Port 1 10G"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -189,9 +202,9 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 112:119 */
-	{"BP3_FEATURE_QLAN2_2_5", "Reserved"},
-	{"BP3_FEATURE_QLAN2_5", "Reserved"},
-	{"BP3_FEATURE_QLAN2_10", "Reserved"},
+	{"BP3_FEATURE_QLAN2_2_5", "QLAN Port 2 2.5G"},
+	{"BP3_FEATURE_QLAN2_5", "QLAN Port 2 5G"},
+	{"BP3_FEATURE_QLAN2_10", "QLAN Port 2 10G"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -199,9 +212,9 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 120:127 */
-	{"BP3_FEATURE_QLAN3_2_5", "Reserved"},
-	{"BP3_FEATURE_QLAN3_5", "Reserved"},
-	{"BP3_FEATURE_QLAN3_10", "Reserved"},
+	{"BP3_FEATURE_QLAN3_2_5", "QLAN Port 3 2.5G"},
+	{"BP3_FEATURE_QLAN3_5", "QLAN Port 3 5G"},
+	{"BP3_FEATURE_QLAN3_10", "QLAN Port 3 10G"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -209,12 +222,12 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 128:135 */
-	{"BP3_FEATURE_XGPHY0_2_5", "Reserved"},
-	{"BP3_FEATURE_XGPHY0_2_5_MACSEC", "Reserved"},
-	{"BP3_FEATURE_XGPHY0_5", "Reserved"},
-	{"BP3_FEATURE_XGPHY0_5_MACSEC", "Reserved"},
-	{"BP3_FEATURE_XGPHY0_10", "Reserved"},
-	{"BP3_FEATURE_XGPHY0_10_MACSEC", "Reserved"},
+	{"BP3_FEATURE_XGPHY0_2_5", "XGPHY Port 0 2.5G"},
+	{"BP3_FEATURE_XGPHY0_2_5_MACSEC", "XGPHY Port 0 MACSEC 2.5G"},
+	{"BP3_FEATURE_XGPHY0_5", "XGPHY Port 0 5G"},
+	{"BP3_FEATURE_XGPHY0_5_MACSEC", "XGPHY Port 0 MACSEC 5G"},
+	{"BP3_FEATURE_XGPHY0_10", "XGPHY Port 0 10G"},
+	{"BP3_FEATURE_XGPHY0_10_MACSEC", "XGPHY Port 0 MACSEC 10G"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
@@ -229,12 +242,12 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 144:151 */
-	{"BP3_FEATURE_XGPHY1_2_5", "Reserved"},
-	{"BP3_FEATURE_XGPHY1_2_5_MACSEC", "Reserved"},
-	{"BP3_FEATURE_XGPHY1_5", "Reserved"},
-	{"BP3_FEATURE_XGPHY1_5_MACSEC", "Reserved"},
-	{"BP3_FEATURE_XGPHY1_10", "Reserved"},
-	{"BP3_FEATURE_XGPHY1_10_MACSEC", "Reserved"},
+	{"BP3_FEATURE_XGPHY1_2_5", "XGPHY Port 1 2.5G"},
+	{"BP3_FEATURE_XGPHY1_2_5_MACSEC", "XGPHY Port 1 MACSEC 2.5G"},
+	{"BP3_FEATURE_XGPHY1_5", "XGPHY Port 1 5G"},
+	{"BP3_FEATURE_XGPHY1_5_MACSEC", "XGPHY Port 1 MACSEC 5G"},
+	{"BP3_FEATURE_XGPHY1_10", "XGPHY Port 1 10G"},
+	{"BP3_FEATURE_XGPHY1_10_MACSEC", "XGPHY Port 1 MACSEC 10G"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
@@ -247,14 +260,105 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
+#else /* defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) */
+	/* Group 88:95 */
+	{"BP3_FEATURE_MACSEC_PORT0", "MACSEC Port 0"},
+	{"BP3_FEATURE_MACSEC_PORT1", "MACSEC Port 1"},
+	{"BP3_FEATURE_MACSEC_PORT2", "MACSEC Port 2"},
+	{"BP3_FEATURE_MACSEC_PORT3", "MACSEC Port 3"},
+	{"BP3_FEATURE_MACSEC_PORT4", "MACSEC Port 4"},
+	{"BP3_FEATURE_MACSEC_PORT5", "MACSEC Port 5"},
+	{"BP3_FEATURE_MACSEC_PORT6", "MACSEC Port 6"},
+	{"BP3_FEATURE_MACSEC_PORT7", "MACSEC Port 7"},
+
+	/* Group 96:103 */
+	{"BP3_FEATURE_PORT0_1" , "Port 0 1G"},
+	{"BP3_FEATURE_PORT0_2_5", "Port 0 2.5G"},
+	{"BP3_FEATURE_PORT0_5", "Port 0 5G"},
+	{"BP3_FEATURE_PORT0_10", "Port 0 10G"},
+	{"BP3_FEATURE_PORT0_25", "Port 0 25G"},
+	{"BP3_FEATURE_PORT0_50", "Port 0 50G"},
+	{"BP3_FEATURE_RESERVED", "Reserved"},
+	{"BP3_FEATURE_RESERVED", "Reserved"},
+
+	/* Group 104:111 */
+	{"BP3_FEATURE_PORT1_1",   "Port 1 1G"},
+	{"BP3_FEATURE_PORT1_2_5", "Port 1 2.5G"},
+	{"BP3_FEATURE_PORT1_5",   "Port 1 5G"},
+	{"BP3_FEATURE_PORT1_10",  "Port 1 10G"},
+	{"BP3_FEATURE_PORT1_25",  "Port 1 25G"},
+	{"BP3_FEATURE_PORT1_50",  "Port 1 50G"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+
+	/* Group 112:119 */
+	{"BP3_FEATURE_PORT2_1",   "Port 2 1G"},
+	{"BP3_FEATURE_PORT2_2_5", "Port 2 2.5G"},
+	{"BP3_FEATURE_PORT2_5",   "Port 2 5G"},
+	{"BP3_FEATURE_PORT2_10",  "Port 2 10G"},
+	{"BP3_FEATURE_PORT2_25",  "Port 2 25G"},
+	{"BP3_FEATURE_PORT2_50",  "Port 2 50G"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+
+	/* Group 120:127 */
+	{"BP3_FEATURE_PORT3_1",   "Port 3 1G"},
+	{"BP3_FEATURE_PORT3_2_5", "Port 3 2.5G"},
+	{"BP3_FEATURE_PORT3_5",   "Port 3 5G"},
+	{"BP3_FEATURE_PORT3_10",  "Port 3 10G"},
+	{"BP3_FEATURE_PORT3_25",  "Port 3 25G"},
+	{"BP3_FEATURE_PORT3_50",  "Port 3 50G"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+
+	/* Group 128:135 */
+	{"BP3_FEATURE_PORT4_1",   "Port 4 1G"},
+	{"BP3_FEATURE_PORT4_2_5", "Port 4 2.5G"},
+	{"BP3_FEATURE_PORT4_5",   "Port 4 5G"},
+	{"BP3_FEATURE_PORT4_10",  "Port 4 10G"},
+	{"BP3_FEATURE_PORT4_25",  "Port 4 25G"},
+	{"BP3_FEATURE_PORT4_50",  "Port 4 50G"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+
+	/* Group 136:143 */
+	{"BP3_FEATURE_PORT5_1",   "Port 5 1G"},
+	{"BP3_FEATURE_PORT5_2_5", "Port 5 2.5G"},
+	{"BP3_FEATURE_PORT5_5",   "Port 5 5G"},
+	{"BP3_FEATURE_PORT5_10",  "Port 5 10G"},
+	{"BP3_FEATURE_PORT5_25",  "Port 5 25G"},
+	{"BP3_FEATURE_PORT5_50",  "Port 5 50G"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+
+	/* Group 144:151 */
+	{"BP3_FEATURE_PORT6_1",   "Port 6 1G"},
+	{"BP3_FEATURE_PORT6_2_5", "Port 6 2.5G"},
+	{"BP3_FEATURE_PORT6_5",   "Port 6 5G"},
+	{"BP3_FEATURE_PORT6_10",  "Port 6 10G"},
+	{"BP3_FEATURE_PORT6_25",  "Port 6 25G"},
+	{"BP3_FEATURE_PORT6_50",  "Port 6 50G"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+
+	/* Group 152:159 */
+	{"BP3_FEATURE_PORT7_1",   "Port 7 1G"},
+	{"BP3_FEATURE_PORT7_2_5", "Port 7 2.5G"},
+	{"BP3_FEATURE_PORT7_5",   "Port 7 5G"},
+	{"BP3_FEATURE_PORT7_10",  "Port 7 10G"},
+	{"BP3_FEATURE_PORT7_25",  "Port 7 25G"},
+	{"BP3_FEATURE_PORT7_50",  "Port 7 50G"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+	{"BP3_FEATURE_RESERVED",  "Reserved"},
+#endif /* defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) */
 
 	/* Group 160:167 */
-	{"BP3_FEATURE_ACTIVE_ETH_2_5", "Reserved"},
-	{"BP3_FEATURE_ACTIVE_ETH_2_5_MACSEC", "Reserved"},
-	{"BP3_FEATURE_ACTIVE_ETH_5", "Reserved"},
-	{"BP3_FEATURE_ACTIVE_ETH_5_MACSEC", "Reserved"},
-	{"BP3_FEATURE_ACTIVE_ETH_10", "Reserved"},
-	{"BP3_FEATURE_ACTIVE_ETH_10_MACSEC", "Reserved"},
+	{"BP3_FEATURE_ACTIVE_ETH_2_5", "Active Ethernet 2.5G"},
+	{"BP3_FEATURE_ACTIVE_ETH_2_5_MACSEC", "Active Ethernet MACSEC 2.5G"},
+	{"BP3_FEATURE_ACTIVE_ETH_5", "Active Ethernet 5G"},
+	{"BP3_FEATURE_ACTIVE_ETH_5_MACSEC", "Active Ethernet MACSEC 5G"},
+	{"BP3_FEATURE_ACTIVE_ETH_10", "Active Ethernet 10G"},
+	{"BP3_FEATURE_ACTIVE_ETH_10_MACSEC", "Active Ethernet MACSEC 10G"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
@@ -269,7 +373,7 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 176:183 */
-	{"BP3_FEATURE_MAX_NUM_CPU", "Reserved"},
+	{"BP3_FEATURE_MAX_NUM_CPU", "Max Number of CPUs"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -279,7 +383,7 @@ static const struct bp3_feature feature_lookup_table[] = {
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 
 	/* Group 184:191 */
-	{"BP3_FEATURE_MAX_CPU_FREQ", "Reserved"},
+	{"BP3_FEATURE_MAX_CPU_FREQ", "Max CPU Frequency"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
 	{"BP3_FEATURE_RESERVED", "Reserved"},
@@ -381,7 +485,7 @@ typedef enum {
     BP3_FEATURE_SINGLE_LINE_XDSL,
     BP3_FEATURE_BONDED_XDSL,
     BP3_FEATURE_GFAST_106,
-    BP3_FEATURE_GFAST_106_212, 
+    BP3_FEATURE_GFAST_106_212,
     BP3_FEATURE_ACL,
     BP3_FEATURE_GDX_3RDPARTY = 11,
     BP3_FEATURE_VOICE_2_CHANNELS,
@@ -394,6 +498,9 @@ typedef enum {
     BP3_FEATURE_LAG_ACCEL,
     BP3_FEATURE_LAG_LOAD_BAL,
     BP3_FEATURE_DPI,
+    BP3_FEATURE_BNL,
+    BP3_FEATURE_SCORE,
+    BP3_FEATURE_QSTAT,
 
     //Security features
     BP3_FEATURE_ENABLE_RSA_4K = 32,
@@ -401,6 +508,8 @@ typedef enum {
     BP3_FEATURE_ENABLE_ECC,
     BP3_FEATURE_SPU_CRYPTO2 = 36,
     BP3_FEATURE_SHA_512,
+    BP3_FEATURE_PQC,
+    BP3_FEATURE_TPM2,
 
     //HW
     BP3_FEATURE_SYNCE = 47,
@@ -428,34 +537,91 @@ typedef enum {
     BP3_FEATURE_10G_EPON,
     BP3_FEATURE_DPOE,
     BP3_FEATURE_GINT,
-    BP3_FEATURE_SLAN_2_5 = 88,
+    BP3_FEATURE_WANMUX       = 87,
+    BP3_FEATURE_SLAN_2_5     = 88,
+    BP3_FEATURE_MACSEC_PORT0 = 88,
     BP3_FEATURE_SLAN_5,
+    BP3_FEATURE_MACSEC_PORT1 = 89,
     BP3_FEATURE_SLAN_10,
+    BP3_FEATURE_MACSEC_PORT2 = 90,
     BP3_FEATURE_SLAN_4_2_5,
+    BP3_FEATURE_MACSEC_PORT3 = 91,
+    BP3_FEATURE_MACSEC_PORT4,
+    BP3_FEATURE_MACSEC_PORT5,
+    BP3_FEATURE_MACSEC_PORT6,
+    BP3_FEATURE_MACSEC_PORT7,
     BP3_FEATURE_QLAN0_2_5 = 96,
+    BP3_FEATURE_PORT0_1   = 96,
     BP3_FEATURE_QLAN0_5,
+    BP3_FEATURE_PORT0_2_5 = 97,
     BP3_FEATURE_QLAN0_10,
+    BP3_FEATURE_PORT0_5   = 98,
+    BP3_FEATURE_PORT0_10,
+    BP3_FEATURE_PORT0_25,
+    BP3_FEATURE_PORT0_50,
     BP3_FEATURE_QLAN1_2_5 = 104,
+    BP3_FEATURE_PORT1_1   = 104,
     BP3_FEATURE_QLAN1_5,
+    BP3_FEATURE_PORT1_2_5 = 105,
     BP3_FEATURE_QLAN1_10,
+    BP3_FEATURE_PORT1_5   = 106,
+    BP3_FEATURE_PORT1_10,
+    BP3_FEATURE_PORT1_25,
+    BP3_FEATURE_PORT1_50,
     BP3_FEATURE_QLAN2_2_5 = 112,
+    BP3_FEATURE_PORT2_1   = 112,
     BP3_FEATURE_QLAN2_5,
+    BP3_FEATURE_PORT2_2_5 = 113,
     BP3_FEATURE_QLAN2_10,
+    BP3_FEATURE_PORT2_5   = 114,
+    BP3_FEATURE_PORT2_10,
+    BP3_FEATURE_PORT2_25,
+    BP3_FEATURE_PORT2_50,
     BP3_FEATURE_QLAN3_2_5 = 120,
+    BP3_FEATURE_PORT3_1   = 120,
     BP3_FEATURE_QLAN3_5,
+    BP3_FEATURE_PORT3_2_5 = 121,
     BP3_FEATURE_QLAN3_10,
+    BP3_FEATURE_PORT3_5   = 122,
+    BP3_FEATURE_PORT3_10,
+    BP3_FEATURE_PORT3_25,
+    BP3_FEATURE_PORT3_50,
     BP3_FEATURE_XGPHY0_2_5 = 128,
+    BP3_FEATURE_PORT4_1    = 128,
     BP3_FEATURE_XGPHY0_2_5_MACSEC,
+    BP3_FEATURE_PORT4_2_5  = 129,
     BP3_FEATURE_XGPHY0_5,
+    BP3_FEATURE_PORT4_5    = 130,
     BP3_FEATURE_XGPHY0_5_MACSEC,
+    BP3_FEATURE_PORT4_10   = 131,
     BP3_FEATURE_XGPHY0_10,
+    BP3_FEATURE_PORT4_25   = 132,
     BP3_FEATURE_XGPHY0_10_MACSEC,
+    BP3_FEATURE_PORT4_50   = 133,
+    BP3_FEATURE_PORT5_1    = 136,
+    BP3_FEATURE_PORT5_2_5,
+    BP3_FEATURE_PORT5_5,
+    BP3_FEATURE_PORT5_10,
+    BP3_FEATURE_PORT5_25,
+    BP3_FEATURE_PORT5_50,
     BP3_FEATURE_XGPHY1_2_5 = 144,
+    BP3_FEATURE_PORT6_1    = 144,
     BP3_FEATURE_XGPHY1_2_5_MACSEC,
+    BP3_FEATURE_PORT6_2_5  = 145,
     BP3_FEATURE_XGPHY1_5,
+    BP3_FEATURE_PORT6_5    = 146,
     BP3_FEATURE_XGPHY1_5_MACSEC,
+    BP3_FEATURE_PORT6_10   = 147,
     BP3_FEATURE_XGPHY1_10,
+    BP3_FEATURE_PORT6_25   = 148,
     BP3_FEATURE_XGPHY1_10_MACSEC,
+    BP3_FEATURE_PORT6_50   = 149,
+    BP3_FEATURE_PORT7_1    = 152,
+    BP3_FEATURE_PORT7_2_5,
+    BP3_FEATURE_PORT7_5,
+    BP3_FEATURE_PORT7_10,
+    BP3_FEATURE_PORT7_25,
+    BP3_FEATURE_PORT7_50,
     BP3_FEATURE_ACTIVE_ETH_2_5 = 160,
     BP3_FEATURE_ACTIVE_ETH_2_5_MACSEC,
     BP3_FEATURE_ACTIVE_ETH_5,
@@ -493,7 +659,7 @@ static const char* bp3_get_feature_description(bp3_license_feature_t bp3_feature
 static inline int bcm_license_check(bp3_license_feature_t bp3_feature)
 {
     bcmFun_t *cb = bcmFun_get(BCM_FUN_ID_LICENSE_CHECK);
-    return cb ? cb(&bp3_feature) : -1;
+    return cb ? cb(&bp3_feature) : 0;
 }
 
 static inline int bcm_license_check_msg(bp3_license_feature_t bp3_feature)

@@ -1,6 +1,0 @@
-MX35PDK BOARD
-M:	Stefano Babic <sbabic@denx.de>
-S:	Maintained
-F:	board/freescale/mx35pdk/
-F:	include/configs/mx35pdk.h
-F:	configs/mx35pdk_defconfig

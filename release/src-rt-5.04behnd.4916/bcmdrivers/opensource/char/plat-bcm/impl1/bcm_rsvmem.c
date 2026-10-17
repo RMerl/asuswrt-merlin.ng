@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.
 #else
 #include <linux/dma-mapping.h>
 #endif
-#include "bcm_hwdefs.h"
 #include "bcm_rsvmem.h"
 
 static char* dt_scan_mem_str[] = {
@@ -41,21 +40,19 @@ static char* dt_scan_mem_str[] = {
 	ADSL_BASE_ADDR_STR,
 #endif
 #if IS_ENABLED(CONFIG_BCM_RDPA)
-#ifdef CONFIG_RDPA_NEW_RSVMEM
 	BUFMEM_BASE_ADDR_STR,
 	RNRMEM_BASE_ADDR_STR,
 #if (defined(CONFIG_BCM_HW_FIREWALL) || defined(CONFIG_BCM_HW_FIREWALL_MODULE))
 	DDOSMEM_BASE_ADDR_STR,
-#endif
-#else
-	PARAM1_BASE_ADDR_STR,
-	PARAM2_BASE_ADDR_STR,
 #endif
 #elif IS_ENABLED(CONFIG_BCM_MPM)
 	BUFMEM_BASE_ADDR_STR,
 #endif
 #if defined(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)
 	RNRMEM_BASE_ADDR_STR,
+#endif
+#if IS_ENABLED(CONFIG_BCM_WLAN)
+	WLAN_CMA_BASE_ADDR_STR,
 #endif
 #if IS_ENABLED(CONFIG_BCM_DHD_RUNNER) || IS_ENABLED(CONFIG_BCM_DHD_ARCHER)
 	DHD_BASE_ADDR_STR,
@@ -147,7 +144,7 @@ static int bcm_rsvmem_addmem(char* rsv_name, void* virt_addr, phys_addr_t phys_a
 	if (!bcm_rsvmem_entry_exist(rsv_name, &index)) {
 		i =  bcm_rsvmem_next_entry();
 		if (i >= 0 && i < TOTAL_RESERVE_MEM_NUM) {
-			strncpy(reserve_mem[i].name, rsv_name, MAX_RESREVE_MEM_NAME_SIZE);
+			strncpy(reserve_mem[i].name, rsv_name, MAX_RESREVE_MEM_NAME_SIZE-1);
 			reserve_mem[i].virt_addr = virt_addr;
 			reserve_mem[i].phys_addr = phys_addr;
 			reserve_mem[i].size = rsv_size;

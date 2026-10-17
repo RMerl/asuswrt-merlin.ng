@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright (C) 2020-2021 Intel Corporation <www.intel.com>
+ */
+
+#include "socfpga_n5x-u-boot.dtsi"
+
+/{
+	aliases {
+		spi0 = &qspi;
+		i2c0 = &i2c1;
+	};
+
+	memory {
+		/*
+		 * Memory type: DDR4 (non-interleaving mode)
+		 * 16GB
+		 *     <0 0x00000000 0 0x80000000>,
+		 *     <4 0x80000000 3 0x80000000>;
+		 *
+		 * 8GB
+		 *     <0 0x00000000 0 0x80000000>,
+		 *     <2 0x80000000 1 0x80000000>;
+		 *
+		 * 4GB
+		 *     <0 0x00000000 0 0x80000000>,
+		 *     <1 0x80000000 0 0x80000000>;
+		 *
+		 * Memory type: LPDDR4 (non-interleaving mode)
+		 * Total memory size 3GB, usable = 2.5GB, 0.5GB trade off for secure
+		 * region.
+		 */
+		reg = <0 0x00000000 0 0x60000000>,
+			  <0x10 0x00100000 0 0x40000000>;
+	};
+};
+
+&flash0 {
+	compatible = "jedec,spi-nor";
+	spi-tx-bus-width = <4>;
+	spi-rx-bus-width = <4>;
+	bootph-all;
+};
+
+&i2c1 {
+	status = "okay";
+};
+
+&mmc {
+	drvsel = <3>;
+	smplsel = <0>;
+	bootph-all;
+};
+
+&qspi {
+	status = "okay";
+};
+
+&watchdog0 {
+	bootph-all;
+};

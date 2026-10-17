@@ -41,7 +41,9 @@
 
 #include <wlc_pub.h>
 #include <wl_linux.h>
-#include <wl_pktc.h>
+#if defined(BCM_PKTFWD)
+#include <wl_pktfwd.h>
+#endif /* BCM_PKTFWD */
 
 #include <wl_blog.h>
 #include "wl_br_d3lut.h"
@@ -66,19 +68,11 @@ struct sk_buff *wl_xlate_to_skb(struct wl_info *wl, struct sk_buff *s)
 #endif
 #if defined(BCM_PKTFWD)
 		wl_pktfwd_stats_gp->txf_fkb_pkts++;
-#elif defined(PKTC_TBL)
-		if (wl->pub->pktc_tbl && WLPKTCTBL(wl->pub->pktc_tbl)->g_stats)
-			WLCNTINCR(WLPKTCTBL(wl->pub->pktc_tbl)->g_stats->
-				  tx_slowpath_skb);
 #endif
 		return s;
 	}
 #if defined(BCM_PKTFWD)
 	wl_pktfwd_stats_gp->txf_fkb_pkts++;
-#elif defined(PKTC_TBL)
-	if (wl->pub->pktc_tbl && WLPKTCTBL(wl->pub->pktc_tbl)->g_stats)
-		WLCNTINCR(WLPKTCTBL(wl->pub->pktc_tbl)->g_stats->
-			  tx_slowpath_fkb);
 #endif
 	orig_s = s;
 	xlated_s = nbuff_xlate((pNBuff_t) s);
@@ -89,21 +83,50 @@ struct sk_buff *wl_xlate_to_skb(struct wl_info *wl, struct sk_buff *s)
 	return xlated_s;
 }
 
-int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *skb,
+int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, void *pkt,
 	struct net_device *dev)
 {
-#ifdef BCM_WLAN_PER_CLIENT_FLOW_LEARNING
-	if (!PKTISBLOG_TOHANDLE(skb))
-		return 0;
-#endif
+
+	struct sk_buff *skb;
+	int	prio = 0;
+	int	ret = BCME_OK;
+#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING)
+	bool	iswmf_handled = FALSE;
+#endif /* BCM_WLAN_PER_CLIENT_FLOW_LEARNING */
+
+#if defined(BCM_WKB)
+	ASSERT(IS_WKBUFF_PTR(pkt));
+	skb = nbuff_wkb_get_pkt_ref(wl->osh, pkt);
+	if (skb == NULL) {
+		return BCME_OK;
+	}
+
+	prio = PKTPRIO(pkt);
+#else /* ! BCM_WKB */
+	ASSERT(IS_SKBUFF_PTR(pkt));
+	skb = PNBUFF_2_SKBUFF(pkt);
+	prio = PKTPRIO(skb);
+#endif /* ! BCM_WKB */
+
+#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING)
+	if (!PKTISBLOG_TOHANDLE(skb)) {
+		ret = BCME_OK;
+		goto done;
+	}
+
+	iswmf_handled = PKTISWMF_HANDLED(skb);
+#endif /* BCM_WLAN_PER_CLIENT_FLOW_LEARNING */
+
+	/* XXX: ================ WKB: Don't use PKTxxx MACROs beyond this point ================ */
 
 	if (skb->dev == NULL)
 		skb->dev = dev ? dev : wlif->dev;
 
 #ifndef WL_QOSMGMT
 	/* Fix the priority if WME is enabled */
-	if (WME_ENAB(wl->pub) && (PKTPRIO(skb) == 0))
+	if (WME_ENAB(wl->pub) && (prio == 0)) {
 		pktsetprio(skb, FALSE);
+	}
 #endif /* WL_QOSMGMT */
 
 	if (wl->pub->fcache && (skb->blog_p != NULL)) {
@@ -111,8 +134,7 @@ int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *
 		uint32_t hw_port;
 
 #if defined(BCM_WFD) || (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
-		struct ether_header *eh =
-		    (struct ether_header *)PKTDATA(wl->osh, skb);
+		struct ether_header *eh = (struct ether_header *)skb->data;
 #endif
 
 		ENCODE_WLAN_PRIORITY_MARK(prio4bit, skb->mark);
@@ -126,7 +148,10 @@ int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *
 #endif
 
 #if defined(BCM_WFD)
-		if (ETHER_ISMULTI(eh->ether_dhost)) {
+		if (!WLAN_WFD_ENABLED(wl->wfd_idx)) {
+			skb->blog_p->wfd.mcast.is_tx_hw_acc_en = 0;
+			skb->blog_p->wfd.mcast.is_wfd = 0;
+		} else if (ETHER_ISMULTI(eh->ether_dhost)) {
 			skb->blog_p->wfd.mcast.is_tx_hw_acc_en = 1;
 			skb->blog_p->wfd.mcast.is_wfd = 1;
 			skb->blog_p->wfd.mcast.is_chain = 0;
@@ -140,7 +165,7 @@ int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *
 			skb->blog_p->wfd.nic_ucast.llcsnap_flag = WLHDR_SUPPORT(wl) ? 1 : 0;
 #endif /* BCM_WLHDR && BCM_PKTFWD_LLC_SNAP */
 #if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING) && defined(WMF)
-			if (wlif->wlcif->type != WLC_IFTYPE_WDS && PKTISWMF_HANDLED(skb)) {
+			if (wlif->wlcif->type != WLC_IFTYPE_WDS && iswmf_handled) {
 				struct scb *scb = wlc_scbfind_from_wlcif(wl->wlc, wlif->wlcif,
 						eh->ether_dhost);
 				wlc_bsscfg_t *bsscfg = wl_bsscfg_find(wlif);
@@ -160,22 +185,38 @@ int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *
 #endif /* BCM_WFD */
 
 		hw_port = netdev_path_get_hw_port((struct net_device *)(skb->dev));
+
 #ifdef BCM_WLAN_PER_CLIENT_FLOW_LEARNING
 		if (blog_emit(skb, skb->dev, TYPE_ETH, hw_port, BLOG_WLANPHY) ==
 		    PKT_DROP) {
-			return BCME_ERROR;
+			ret = BCME_ERROR;
+			goto done;
 		}
-#else
+#else /* ! BCM_WLAN_PER_CLIENT_FLOW_LEARNING */
 		blog_emit(skb, skb->dev, TYPE_ETH, hw_port, BLOG_WLANPHY);
-#endif
+#endif /* ! BCM_WLAN_PER_CLIENT_FLOW_LEARNING */
 	}
 
-	return BCME_OK;
+done:
+
+#if defined(BCM_WKB)
+	nbuff_wkb_data_fixup(wl->osh, pkt);
+#endif /* BCM_WKB */
+
+	return ret;
 }
 
+/* NOTE: Works only with SKB. Don't use PKTxxx MACROs when WKB is enabled */
 int wl_handle_blog_sinit(struct wl_info *wl, struct sk_buff *skb)
 {
-	/* If Linux TCP/IP stack is bypassed by injecting this packet directly to fastlath,
+
+#if defined(BCM_WKB)
+	ASSERT(IS_SKBUFF_PTR(skb));
+#endif /* BCM_WKB */
+
+	/* XXX: ================ WKB: Don't use PKTxxx MACROs beyond this point ================ */
+
+	/* If Linux TCP/IP stack is bypassed by injecting this packet directly to fastpath,
 	 * then avoid software FC - it will probably be slower than fastpath.
 	 */
 	if (wl->pub->fcache && !skb->blog_p) {
@@ -190,17 +231,21 @@ int wl_handle_blog_sinit(struct wl_info *wl, struct sk_buff *skb)
 			/* Doesnot need go to IP stack */
 			return 0;
 		} else if (PKT_BLOG == blog_ret) {
+			skb->blog_p->rnr.is_rx_hw_acc_en = 0;
 #if defined(BCM_AWL)
-			/* Archer platforms support acceleration through Archer driver */
-			skb->blog_p->wl_hw_support.is_rx_hw_acc_en = 1;
+			/*
+			 * Archer platforms support RX acceleration through Archer driver
+			 * for all radios that support WFD
+			 */
+			if (WLAN_WFD_ENABLED(wl->wfd_idx)) {
+				skb->blog_p->wl_hw_support.is_rx_hw_acc_en = 1;
+			}
 #elif defined(BCM_WLAN_NIC_RX_RNR_ACCEL)
 			/* inject_to_fastpath == 1 supports WLAN_RX_ACCELERATION
 			 * through loopback model
 			 */
 			/* skb->blog_p->rnr.is_rx_hw_acc_en = (inject_to_fastpath) ? 1 : 0; */
 			skb->blog_p->rnr.is_rx_hw_acc_en = 1;
-#else
-			skb->blog_p->rnr.is_rx_hw_acc_en = 0;
 #endif
 		} else if (PKT_DROP == blog_ret) {
 			PKTFREE(wl->osh, skb, TRUE);
@@ -247,6 +292,20 @@ void wl_handle_blog_event(wl_info_t * wl, wlc_event_t * e)
 	case WLC_E_DEAUTH_IND:
 	case WLC_E_DISASSOC:
 	case WLC_E_DISASSOC_IND:
+		/* mark as STA disassoc */
+		WL_ASSOC(("%s: mark as DIS-associated. addr=%02x:%02x:%02x:%02x:%02x:%02x\n",
+			__FUNCTION__, e->event.addr.octet[0], e->event.addr.octet[1],
+			e->event.addr.octet[2], e->event.addr.octet[3],
+			e->event.addr.octet[4], e->event.addr.octet[5]));
+
+#if defined(BCM_PKTFWD)
+		wl_pktfwd_request(wl_pktfwd_req_assoc_sta_e, (unsigned long)e->event.addr.octet, 0,
+			e->event.event_type);
+
+		if (wl_pktfwd_del_hook != NULL)
+			wl_pktfwd_del_hook((unsigned long)e->event.addr.octet, dev);
+#endif /* BCM_PKTFWD */
+
 		WL_ASSOC(("wl%d: notify system/blog disconnection event.\n", wl->pub->unit));
 		/* also destroy the fcache flow */
 		params.flush_dstmac = 1;
@@ -254,35 +313,11 @@ void wl_handle_blog_event(wl_info_t * wl, wlc_event_t * e)
 		memcpy(&params.mac[0], &e->event.addr.octet[0],
 		       sizeof(e->event.addr.octet));
 		blog_notify_async_wait(FLUSH, dev, (unsigned long)&params, 0);
-
-#if defined(PKTC_TBL)
-		/* mark as STA disassoc */
-		WL_ASSOC(("%s: mark as DIS-associated. addr=%02x:%02x:%02x:%02x:%02x:%02x\n",
-			__FUNCTION__, e->event.addr.octet[0], e->event.addr.octet[1],
-			e->event.addr.octet[2], e->event.addr.octet[3],
-			e->event.addr.octet[4], e->event.addr.octet[5]));
-
-		wl_pktc_req(PKTC_TBL_SET_STA_ASSOC, (unsigned long)e->event.addr.octet, 0,
-			e->event.event_type);
-
-		if (wl_pktc_del_hook != NULL)
-			wl_pktc_del_hook((unsigned long)e->event.addr.octet, dev);
-#endif /* PKTC_TBL */
 		break;
 
 	case WLC_E_ASSOC:
 	case WLC_E_ASSOC_IND:
 	case WLC_E_REASSOC_IND:
-		WL_ASSOC(("wl%d: notify system/blog association event.\n", wl->pub->unit));
-		/* BCM_PKTFWD: flowid and incarn will be updated for this STA
-		 * Destroy stale entries in fcache
-		 */
-		params.flush_dstmac = 1;
-		params.flush_srcmac = 1;
-		memcpy(&params.mac[0], &e->event.addr.octet[0],
-		       sizeof(e->event.addr.octet));
-		blog_notify_async_wait(FLUSH, dev, (unsigned long)&params, 0);
-#if defined(PKTC_TBL)
 		/* mark as STA assoc */
 		WL_ASSOC(("%s: mark as associated. addr=%02x:%02x:%02x:%02x:%02x:%02x\n",
 			__FUNCTION__, e->event.addr.octet[0], e->event.addr.octet[1],
@@ -298,13 +333,21 @@ void wl_handle_blog_event(wl_info_t * wl, wlc_event_t * e)
 				netdev_wlan_set_dwds_client(wlif->d3fwd_wlif);
 			}
 		}
-#endif /* BCM_PKTFWD */
-		wl_pktc_req(PKTC_TBL_SET_STA_ASSOC, (unsigned long)e->event.addr.octet, 1,
+		wl_pktfwd_request(wl_pktfwd_req_assoc_sta_e, (unsigned long)e->event.addr.octet, 1,
 			e->event.event_type);
-		wl_pktc_req(PKTC_TBL_UPDATE, (unsigned long)e->event.addr.octet,
+		wl_pktfwd_request(wl_pktfwd_req_ins_symbol_e, (unsigned long)e->event.addr.octet,
 			(unsigned long)dev, 0);
+#endif /* BCM_PKTFWD */
 
-#endif /* PKTC_TBL */
+		WL_ASSOC(("wl%d: notify system/blog association event.\n", wl->pub->unit));
+		/* BCM_PKTFWD: flowid and incarn will be updated for this STA
+		 * Destroy stale entries in fcache
+		 */
+		params.flush_dstmac = 1;
+		params.flush_srcmac = 1;
+		memcpy(&params.mac[0], &e->event.addr.octet[0],
+		       sizeof(e->event.addr.octet));
+		blog_notify_async_wait(FLUSH, dev, (unsigned long)&params, 0);
 		break;
 
 	default:
@@ -332,8 +375,25 @@ void wl_handle_blog_event(wl_info_t * wl, wlc_event_t * e)
  */
 INLINE BCMFASTPATH int
 wl_handle_blog_emit_drop(struct wl_info *wl, struct wl_if *wlif,
-	struct sk_buff *skb, struct net_device *dev)
+	void *pkt, struct net_device *dev)
 {
+	struct sk_buff *skb;
+
+#if defined(BCM_WKB)
+	ASSERT(IS_WKBUFF_PTR(pkt));
+	/* Data and len are not required so need to fix up SKB */
+	skb = wkb_pkt_ref(PNBUFF_2_WKBUFF(pkt));
+	/* See if there is any back pointer */
+	if (skb == NULL) {
+		return 1;
+	}
+#else /* ! BCM_WKB */
+	ASSERT(IS_SKBUFF_PTR(pkt));
+	skb = PNBUFF_2_SKBUFF(pkt);
+#endif /* ! BCM_WKB */
+
+	/* XXX: ================ WKB: Don't use PKTxxx MACROs beyond this point ================ */
+
 	if (wl->pub->fcache && (skb->blog_p != NULL)) {
 		uint32_t hw_port;
 

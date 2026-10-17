@@ -1,0 +1,6 @@
+MEERKAT96 BOARD
+M:	Shawn Guo <shawnguo@kernel.org>
+S:	Maintained
+F:	board/novtech/meerkat96
+F:	include/configs/meerkat96.h
+F:	configs/meerkat96_defconfig

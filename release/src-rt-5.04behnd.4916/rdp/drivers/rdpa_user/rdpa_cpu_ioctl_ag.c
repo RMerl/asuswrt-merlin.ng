@@ -49,7 +49,7 @@ static int rdpa_user_cpu_get(rdpa_ioctl_cmd_t *pa)
 {
 	BDMF_TRACE_DBG("inside rdpa_user_cpu_drv\n");
 
-	if ((pa->ret = rdpa_cpu_get((rdpa_cpu_port)(long)pa->parm, &pa->mo)))
+	if ((pa->ret = rdpa_cpu_get((rdpa_cpu_port)(bdmf_long_t)pa->parm, &pa->mo)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_get failed ret: %d\n", pa->ret);
 	}
@@ -68,7 +68,7 @@ static int rdpa_user_cpu_index_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_index_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_port)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_port)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -82,7 +82,7 @@ static int rdpa_user_cpu_index_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_index_set\n");
 
-	if ((pa->ret = rdpa_cpu_index_set(pa->mo, (rdpa_cpu_port)(long)pa->parm)))
+	if ((pa->ret = rdpa_cpu_index_set(pa->mo, (rdpa_cpu_port)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_index_set failed, ret:%d\n", pa->ret);
 	}
@@ -101,7 +101,7 @@ static int rdpa_user_cpu_num_queues_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_num_queues_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -115,7 +115,7 @@ static int rdpa_user_cpu_num_queues_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_num_queues_set\n");
 
-	if ((pa->ret = rdpa_cpu_num_queues_set(pa->mo, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_cpu_num_queues_set(pa->mo, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_num_queues_set failed, ret:%d\n", pa->ret);
 	}
@@ -128,7 +128,7 @@ static int rdpa_user_cpu_rxq_flush_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_rxq_flush_set\n");
 
-	if ((pa->ret = rdpa_cpu_rxq_flush_set(pa->mo, pa->ai, (bdmf_boolean)(long)pa->parm)))
+	if ((pa->ret = rdpa_cpu_rxq_flush_set(pa->mo, pa->ai, (bdmf_boolean)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_rxq_flush_set failed, ret:%d\n", pa->ret);
 	}
@@ -147,7 +147,7 @@ static int rdpa_user_cpu_rxq_stat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_rxq_stat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_rx_stat_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_rx_stat_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -162,7 +162,7 @@ static int rdpa_user_cpu_rxq_stat_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_rxq_stat_set\n");
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_cpu_rx_stat_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_cpu_rx_stat_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -187,7 +187,7 @@ static int rdpa_user_cpu_meter_cfg_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_meter_cfg_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_meter_cfg_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_meter_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -202,7 +202,7 @@ static int rdpa_user_cpu_meter_cfg_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_meter_cfg_set\n");
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_cpu_meter_cfg_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_cpu_meter_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -227,7 +227,7 @@ static int rdpa_user_cpu_meter_stat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_meter_stat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -241,7 +241,7 @@ static int rdpa_user_cpu_meter_stat_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_meter_stat_set\n");
 
-	if ((pa->ret = rdpa_cpu_meter_stat_set(pa->mo, pa->ai, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_cpu_meter_stat_set(pa->mo, pa->ai, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_meter_stat_set failed, ret:%d\n", pa->ret);
 	}
@@ -256,7 +256,7 @@ static int rdpa_user_cpu_reason_cfg_get(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_reason_cfg_get\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -267,7 +267,7 @@ static int rdpa_user_cpu_reason_cfg_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_reason_cfg_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_reason_cfg_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_cpu_reason_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -283,13 +283,13 @@ static int rdpa_user_cpu_reason_cfg_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_reason_cfg_set\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
 	}
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_cpu_reason_cfg_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_cpu_reason_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -309,7 +309,7 @@ static int rdpa_user_cpu_reason_cfg_get_next(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_reason_cfg_get_next\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -320,7 +320,7 @@ static int rdpa_user_cpu_reason_cfg_get_next(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_reason_cfg_get_next failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ai_ptr, (void *)&ai, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ai_ptr, (void *)&ai, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -336,7 +336,7 @@ static int rdpa_user_cpu_reason_stat_get(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_reason_stat_get\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -347,7 +347,7 @@ static int rdpa_user_cpu_reason_stat_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_reason_stat_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -362,13 +362,13 @@ static int rdpa_user_cpu_reason_stat_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_reason_stat_set\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
 	}
 
-	if ((pa->ret = rdpa_cpu_reason_stat_set(pa->mo, &ai, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_cpu_reason_stat_set(pa->mo, &ai, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_reason_stat_set failed, ret:%d\n", pa->ret);
 	}
@@ -382,7 +382,7 @@ static int rdpa_user_cpu_reason_stat_get_next(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_reason_stat_get_next\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -393,7 +393,7 @@ static int rdpa_user_cpu_reason_stat_get_next(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_reason_stat_get_next failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ai_ptr, (void *)&ai, sizeof(rdpa_cpu_reason_index_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ai_ptr, (void *)&ai, sizeof(rdpa_cpu_reason_index_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -407,7 +407,7 @@ static int rdpa_user_cpu_int_connect_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_int_connect_set\n");
 
-	if ((pa->ret = rdpa_cpu_int_connect_set(pa->mo, (bdmf_boolean)(long)pa->parm)))
+	if ((pa->ret = rdpa_cpu_int_connect_set(pa->mo, (bdmf_boolean)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_int_connect_set failed, ret:%d\n", pa->ret);
 	}
@@ -426,7 +426,7 @@ static int rdpa_user_cpu_tc_to_rxq_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_cpu_tc_to_rxq_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -440,7 +440,7 @@ static int rdpa_user_cpu_tc_to_rxq_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside cpu_user_tc_to_rxq_set\n");
 
-	if ((pa->ret = rdpa_cpu_tc_to_rxq_set(pa->mo, pa->ai, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_cpu_tc_to_rxq_set(pa->mo, pa->ai, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_cpu_tc_to_rxq_set failed, ret:%d\n", pa->ret);
 	}
@@ -448,7 +448,7 @@ static int rdpa_user_cpu_tc_to_rxq_set(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
-long rdpa_cpu_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
+bdmf_long_t rdpa_cpu_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
 

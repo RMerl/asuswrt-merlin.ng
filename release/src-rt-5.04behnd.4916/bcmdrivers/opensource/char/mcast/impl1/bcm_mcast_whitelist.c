@@ -385,8 +385,8 @@ int bcm_mcast_whitelist_nodes_add(struct net_device *from_dev,
     int ret = 0;
 
     /*
-     * If grpVid is not valid and this is bcmvlan device, merge the vlanctl rules to find out the vlan;
-     * else take use of grpVid which is from management.
+     * is_netdev_vlan() always return false, TODO remove it
+     * take use of grpVid which is from management.
      */
     if ((BCM_MCAST_INVALID_VID == grpVid) && (is_netdev_vlan(from_dev)))
     {

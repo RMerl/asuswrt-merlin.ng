@@ -1,0 +1,15 @@
+if TARGET_PCM051 || TARGET_PHYCORE_AM335X_R2
+
+config SYS_BOARD
+	default "phycore_am335x_r2"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "phycore_am335x_r2"
+
+endif

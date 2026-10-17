@@ -1,0 +1,216 @@
+#include "inc/68375.dtsi"
+
+/ {
+    model = "968375REF1";
+
+    memory_controller {
+        memcfg = <(BP1_DDR_MCBSEL_FORMAT_VER1   | \
+        BP1_DDR_TYPE_LPDDR4         | \
+        BP1_DDR_SPEED_2133_36_39_39 | \
+        BP1_DDR_WIDTH_32BIT         | \
+        BP1_DDR_TOTAL_SIZE_16Gb      | \
+        BP1_DDR_SSC_CONFIG_1 )>;
+    };
+
+    pon_sfp: pon_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&wan0_lbe_pin_30>;
+        pinctrl-1 = <&wan0_lbe_pin_30 &rogue_onu_in0_pin_27>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0>;
+        los-gpio = <&gpioc 3 GPIO_ACTIVE_HIGH>;
+        mod-def0-gpio = <&gpioc 4 GPIO_ACTIVE_LOW>;
+        tx-power-gpio = <&gpioc 53 GPIO_ACTIVE_HIGH>;
+        tx-power-down-gpio = <&gpioc 52 GPIO_ACTIVE_HIGH>;
+        rx-power-gpio = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+		status = "nokay";
+    };
+
+    ae_sfp: ae_sfp {
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&wan1_lbe_pin_5>;
+        pinctrl-1 = <&wan1_lbe_pin_5 &rogue_onu_in1_pin_26>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c1>;
+        los-gpio = <&gpioc 49 GPIO_ACTIVE_HIGH>;
+        mod-def0-gpio = <&gpioc 50 GPIO_ACTIVE_LOW>;
+        tx-power-gpio = <&gpioc 24 GPIO_ACTIVE_HIGH>;
+        tx-power-down-gpio = <&gpioc 23 GPIO_ACTIVE_HIGH>;
+        rx-power-gpio = <&gpioc 25 GPIO_ACTIVE_HIGH>;
+		status = "nokay";
+    };
+
+    wan_serdes {
+        status = "nokay";
+        reg = <0>;
+//        pon-led = <&led1>;
+//        alarm-led = <&led0>;
+        trx = <&pon_sfp>;
+    };
+
+    wan_serdes1 {
+        compatible = "brcm,pon-drv";
+        reg = <1>;
+        trx = <&ae_sfp>;
+    };
+};
+
+&wdt {
+    status = "okay";
+};
+
+&uart0 {
+    status = "okay";
+};
+
+&i2c0 {
+    pinctrl-0 = <&bsc_m0_scl_pin_28 &bsc_m0_sda_pin_29>;
+    pinctrl-names = "default";
+    status = "okay";
+
+    gpiocext_boardid: gpio@1e {
+        compatible = "nxp,pca9557";
+        reg = <0x1e>;
+        #gpio-cells = <2>;
+        gpio-controller;
+        polarity = <0x00>;
+    };
+
+    gpiocext_wlan: gpio@27 {
+        compatible = "nxp,pca9555";
+        reg = <0x27>;
+        #gpio-cells = <2>;
+        gpio-controller;
+        polarity = <0x00>;
+    };
+};
+
+&i2c1 {
+    pinctrl-0 = <&b_bsc_m1_sda_pin_58 &b_bsc_m1_scl_pin_48>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+    xhci-enable;
+    status = "okay";
+};
+
+&usb0_xhci {
+    status = "okay";
+
+    usb_port1: port1 {
+        reg = <1>;
+        #trigger-source-cells = <0>;
+    };
+
+    usb_port2: port2 {
+        reg = <2>;
+        #trigger-source-cells = <0>;
+    };
+};
+
+&hsspi {
+    status = "okay";
+};
+
+&xport {
+    status = "okay";
+};
+
+&ethphytop {
+    xphy0-enabled;
+    xphy1-enabled;
+    xphy2-enabled;
+    xphy3-enabled;
+    xphy4-enabled;
+    status = "okay";
+};
+
+&serdes {
+    status = "okay";
+};
+
+&mdio {
+    status = "okay";
+};
+
+&mdio_bus {
+    xphy0 {
+        status = "okay";
+    };
+    xphy1 {
+        status = "okay";
+    };
+    xphy2 {
+        status = "okay";
+    };
+    xphy3 {
+        status = "okay";
+    };
+    xphy4 {
+        status = "okay";
+    };
+    serdes0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_signal_detect0_pin_3 &a_mod_abs0_pin_4>;
+        rx-power = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        tx-power = <&gpioc 53 GPIO_ACTIVE_HIGH>;
+        tx-disable = <&gpioc 30 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "nokay";
+    };
+    serdes1 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_signal_detect1_pin_49 &a_mod_abs1_pin_50>;
+        rx-power = <&gpioc 25 GPIO_ACTIVE_HIGH>;
+        tx-power = <&gpioc 24 GPIO_ACTIVE_HIGH>;
+        tx-disable = <&gpioc 5 GPIO_ACTIVE_HIGH>;
+        10000-Base-R;
+        5000-Base-R;
+        2500-Base-X;
+        1000-Base-X;
+        status = "okay";
+    };
+};
+
+&phy_wan_serdes {
+    status = "nokay";
+};
+
+&switch0 {
+    ports {
+        port_xgphy0 {
+            status = "okay";
+        };
+        port_xgphy1 {
+            status = "okay";
+        };
+        port_xgphy2 {
+            status = "okay";
+        };
+        port_xgphy3 {
+            status = "okay";
+        };
+        port_xgphy4 {
+            status = "okay";
+        };
+        port_slan1@slan_sd {
+            status = "okay";
+        };
+        port_slan0@xpon_ae {
+            status = "nokay";
+        };
+        port_wan@xpon_ae {
+            status = "nokay";
+        };
+        port_wan@slan_sd {
+            status = "nokay";
+        };
+    };
+};

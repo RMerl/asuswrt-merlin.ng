@@ -1,0 +1,15 @@
+if TARGET_RK3588_NEU6
+
+config SYS_BOARD
+	default "neural-compute-module-6"
+
+config SYS_VENDOR
+	default "edgeble"
+
+config SYS_CONFIG_NAME
+	default "neural-compute-module-6"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

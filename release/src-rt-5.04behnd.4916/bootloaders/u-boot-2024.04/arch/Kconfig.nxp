@@ -1,0 +1,298 @@
+menu "Functionality shared between NXP SoCs"
+
+config FSL_TRUST_ARCH_v1
+	bool
+
+config NXP_ESBC
+	bool "NXP ESBC (secure boot) functionality"
+	select FSL_TRUST_ARCH_v1 if ARCH_P3041 || ARCH_P4080 || \
+		ARCH_P5040 || ARCH_P2041
+	help
+	  Enable Freescale Secure Boot feature. Normally selected by defconfig.
+	  If unsure, do not change.
+
+menu "Chain of trust / secure boot options"
+	depends on !FIT_SIGNATURE && NXP_ESBC
+
+config CHAIN_OF_TRUST
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select FSL_ISBC_KEY_EXT if (ARM || FSL_CORENET) && !SYS_RAMBOOT
+	select FSL_SEC_MON
+	select SPL_BOARD_INIT if (ARM && SPL)
+	select SPL_HASH if (ARM && SPL)
+	select SHA_HW_ACCEL
+	select SHA_PROG_HW_ACCEL
+	select ENV_IS_NOWHERE
+	select SYS_CPC_REINIT_F if MPC85xx && !SYS_RAMBOOT
+	select CMD_EXT4 if ARM
+	select CMD_EXT4_WRITE if ARM
+	imply CMD_BLOB
+	imply CMD_HASH if ARM
+	def_bool y
+
+config CMD_ESBC_VALIDATE
+	bool "Enable the 'esbc_validate' and 'esbc_halt' commands"
+	default y
+	help
+	  This option enables two commands used for secure booting:
+
+	    esbc_validate - validate signature using RSA verification
+	    esbc_halt - put the core in spin loop (Secure Boot Only)
+
+config ESBC_HDR_LS
+	bool
+
+config ESBC_ADDR_64BIT
+	def_bool y
+	depends on FSL_LAYERSCAPE
+	help
+	  For Layerscape based platforms, ESBC image Address in Header is 64bit.
+
+config FSL_ISBC_KEY_EXT
+	bool
+	help
+	  The key used for verification of next level images is picked up from
+	  an Extension Table which has been verified by the ISBC (Internal
+	  Secure boot Code) in boot ROM of the SoC.  The feature is only
+	  applicable in case of NOR boot and is not applicable in case of
+	  RAMBOOT (NAND, SD, SPI).  For Layerscape, this feature is available
+	  for all device if IE Table is copied to XIP memory Also, for
+	  Layerscape, ISBC doesn't verify this table.
+
+config SYS_FSL_SFP_BE
+	def_bool y
+	depends on PPC || FSL_LSCH2 || ARCH_LS1021A
+
+config SYS_FSL_SFP_LE
+	def_bool y
+	depends on !SYS_FSL_SFP_BE
+
+choice
+	prompt "SFP IP revision"
+	default SYS_FSL_SFP_VER_3_0 if PPC
+	default SYS_FSL_SFP_VER_3_4
+
+config SYS_FSL_SFP_VER_3_0
+	bool "SFP version 3.0"
+
+config SYS_FSL_SFP_VER_3_2
+	bool "SFP version 3.2"
+
+config SYS_FSL_SFP_VER_3_4
+	bool "SFP version 3.4"
+
+endchoice
+
+config SPL_UBOOT_KEY_HASH
+	string "Non-SRK key hash for U-Boot public/private key pair"
+	depends on SPL
+	default ""
+	help
+	  Set the key hash for U-Boot here if public/private key pair used to
+	  sign U-Boot are different from the SRK hash put in the fuse.  Example
+	  of a key hash is
+	  41066b564c6ffcef40ccbc1e0a5d0d519604000c785d97bbefd25e4d288d1c8b.
+	  Otherwise leave this empty.
+
+if PPC
+
+config BOOTSCRIPT_COPY_RAM
+	bool "Secure boot copies boot script to RAM"
+	help
+	  On systems that support chain of trust booting, a number of addresses
+	  are required to set variables that are used in the copying and then
+	  verification of different parts of the system.  If enabled, the subsequent
+	  options are for what location to use in each step.
+
+config BS_ADDR_DEVICE
+	hex "Address in RAM for bs_device"
+	depends on BOOTSCRIPT_COPY_RAM
+
+config BS_SIZE
+	hex "The size of bs_size which is the amount read from bs_device"
+	depends on BOOTSCRIPT_COPY_RAM
+
+config BS_ADDR_RAM
+	hex "Address in RAM for bs_ram"
+	depends on BOOTSCRIPT_COPY_RAM
+
+config BS_HDR_ADDR_DEVICE
+	hex "Address in RAM for bs_hdr_device"
+	depends on BOOTSCRIPT_COPY_RAM
+
+config BS_HDR_SIZE
+	hex "The size of bs_hdr_size which is the amount read from bs_hdr_device"
+	depends on BOOTSCRIPT_COPY_RAM
+
+config BS_HDR_ADDR_RAM
+	hex "Address in RAM for bs_hdr_ram"
+	depends on BOOTSCRIPT_COPY_RAM
+
+config BOOTSCRIPT_HDR_ADDR
+	hex "CONFIG_BOOTSCRIPT_HDR_ADDR"
+	default BS_ADDR_RAM if BOOTSCRIPT_COPY_RAM
+
+endif
+
+config SYS_FSL_SRK_LE
+	def_bool y
+	depends on ARM
+
+config KEY_REVOCATION
+	def_bool y
+
+endmenu
+
+config DEEP_SLEEP
+	bool "Enable SoC deep sleep feature"
+	depends on ARCH_T1024 || ARCH_T1040 || ARCH_T1042 || ARCH_LS1021A
+	default y
+	help
+	  Indicates this SoC supports deep sleep feature. If deep sleep is
+	  supported, core will start to execute uboot when wakes up.
+
+config LAYERSCAPE_NS_ACCESS
+	bool "Layerscape non-secure access support"
+	depends on ARCH_LS1021A || FSL_LSCH2
+
+config PCIE1
+	bool "PCIe controller #1"
+	depends on LAYERSCAPE_NS_ACCESS || PPC
+
+config PCIE2
+	bool "PCIe controller #2"
+	depends on LAYERSCAPE_NS_ACCESS || PPC
+
+config PCIE3
+	bool "PCIe controller #3"
+	depends on LAYERSCAPE_NS_ACCESS || PPC
+
+config PCIE4
+	bool "PCIe controller #4"
+	depends on LAYERSCAPE_NS_ACCESS || PPC
+
+config FSL_USE_PCA9547_MUX
+	bool "Enable PCA9547 I2C Mux on Freescale boards"
+	depends on PPC || ARCH_LS1021A || FSL_LSCH2 || FSL_LSCH3
+	help
+	 This option enables the PCA9547 I2C mux on Freescale boards.
+
+config VID
+	bool "Enable Freescale VID"
+	depends on (PPC || ARCH_LS1021A || FSL_LSCH2 || FSL_LSCH3) && (I2C || DM_I2C)
+	help
+	 This option enables setting core voltage based on individual
+	 values saved in SoC fuses.
+
+config SPL_VID
+	bool "Enable Freescale VID in SPL"
+	depends on (PPC || ARCH_LS1021A || FSL_LSCH2 || FSL_LSCH3) && (SPL_I2C || DM_SPL_I2C)
+	help
+	 This option enables setting core voltage based on individual
+	 values saved in SoC fuses, in SPL.
+
+if VID || SPL_VID
+
+config VID_FLS_ENV
+	string "Environment variable for overriding VDD"
+	help
+	  This option allows for specifying the environment variable
+	  to check to override VDD information.
+
+config VOL_MONITOR_INA220
+	bool "Enable the INA220 voltage monitor read"
+	help
+	  This option enables INA220 voltage monitor read
+	  functionality. It is used by the common VID driver.
+
+config VOL_MONITOR_IR36021_READ
+	bool "Enable the IR36021 voltage monitor read"
+	help
+	 This option enables IR36021 voltage monitor read
+	 functionality. It is used by the common VID driver.
+
+config VOL_MONITOR_IR36021_SET
+	bool "Enable the IR36021 voltage monitor set"
+	help
+	 This option enables IR36021 voltage monitor set
+	 functionality. It is used by the common VID driver.
+
+config VOL_MONITOR_LTC3882_READ
+	bool "Enable the LTC3882 voltage monitor read"
+	help
+	 This option enables LTC3882 voltage monitor read
+	 functionality. It is used by the common VID driver.
+
+config VOL_MONITOR_LTC3882_SET
+	bool "Enable the LTC3882 voltage monitor set"
+	help
+	 This option enables LTC3882 voltage monitor set
+	 functionality. It is used by the common VID driver.
+
+config VOL_MONITOR_ISL68233_READ
+	bool "Enable the ISL68233 voltage monitor read"
+	help
+	 This option enables ISL68233 voltage monitor read
+	 functionality. It is used by the common VID driver.
+
+config VOL_MONITOR_ISL68233_SET
+	bool "Enable the ISL68233 voltage monitor set"
+	help
+	 This option enables ISL68233 voltage monitor set
+	 functionality. It is used by the common VID driver.
+
+endif
+
+config SYS_FSL_NUM_CC_PLLS
+	int "Number of clock control PLLs"
+	depends on MPC85xx || FSL_LSCH2 || FSL_LSCH3 || ARCH_LS1021A || ARCH_LS1028A
+	default 2 if ARCH_LS1021A || ARCH_LS1028A || FSL_LSCH2
+	default 6 if FSL_LSCH3 || MPC85xx
+
+config SYS_FSL_ESDHC_BE
+	bool
+
+config SYS_FSL_IFC_BE
+	bool
+
+config SYS_FSL_IFC_BANK_COUNT
+	int "Maximum banks of Integrated flash controller"
+	depends on ARCH_LS1043A || ARCH_LS1046A || ARCH_LS2080A || \
+		ARCH_LS1088A || ARCH_LS1021A || ARCH_B4860 || ARCH_B4420 || \
+		ARCH_T4240 || ARCH_T1040 || ARCH_T1042 || ARCH_T1024 || \
+		ARCH_T2080 || ARCH_C29X || ARCH_P1010 || ARCH_BSC9131 || \
+		ARCH_BSC9132
+	default 3 if ARCH_BSC9131 || ARCH_BSC9132
+	default 4 if ARCH_LS1043A || ARCH_LS1046A || ARCH_B4860 || \
+			ARCH_B4420 || ARCH_P1010
+	default 8 if ARCH_LS2080A || ARCH_LS1088A || ARCH_LS1021A || \
+			ARCH_T4240 || ARCH_T1040 || ARCH_T1042 || \
+			ARCH_T1024 || ARCH_T2080 || ARCH_C29X
+
+config FSL_QIXIS
+	bool "Enable QIXIS support"
+	depends on PPC || ARCH_LS1021A || FSL_LSCH2 || FSL_LSCH3
+
+config QIXIS_I2C_ACCESS
+	bool "Access to QIXIS is over i2c"
+	depends on FSL_QIXIS
+	default y
+
+config HAS_FSL_DR_USB
+	def_bool y
+	depends on USB_EHCI_HCD && PPC
+
+config SYS_DPAA_FMAN
+	bool
+
+config SYS_FSL_SRDS_1
+	bool
+
+config SYS_FSL_SRDS_2
+	bool
+
+config SYS_HAS_SERDES
+	bool
+
+endmenu

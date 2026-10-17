@@ -1,0 +1,57 @@
+if STM32MP13X
+
+choice
+	prompt "STM32MP13x board select"
+	optional
+
+config TARGET_ST_STM32MP13X
+	bool "STMicroelectronics STM32MP13x boards"
+	imply BOOTSTAGE
+	imply CMD_BOOTSTAGE
+	imply CMD_CLS if CMD_BMP
+	imply DISABLE_CONSOLE
+	imply PRE_CONSOLE_BUFFER
+	imply SILENT_CONSOLE
+	help
+		target the STMicroelectronics board with SOC STM32MP13x
+		managed by board/st/stm32mp1.
+		The difference between board are managed with devicetree
+
+endchoice
+
+config TEXT_BASE
+	default 0xC0000000
+
+config PRE_CON_BUF_ADDR
+	default 0xC0800000
+
+config PRE_CON_BUF_SZ
+	default 4096
+
+config BOOTSTAGE_STASH_ADDR
+	default 0xC3000000
+
+if BOOTCOUNT_GENERIC
+config SYS_BOOTCOUNT_SINGLEWORD
+	default y
+
+# TAMP_BOOTCOUNT = TAMP_BACKUP_REGISTER(31)
+config SYS_BOOTCOUNT_ADDR
+	default 0x5C00A17C
+endif
+
+if DEBUG_UART
+
+# debug on UART4 by default
+config DEBUG_UART_BASE
+	default 0x40010000
+
+# clock source is HSI on reset
+config DEBUG_UART_CLOCK
+	default 48000000 if STM32_FPGA
+	default 64000000
+endif
+
+source "board/st/stm32mp1/Kconfig"
+
+endif

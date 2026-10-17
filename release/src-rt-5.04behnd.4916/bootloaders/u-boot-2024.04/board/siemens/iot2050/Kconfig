@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (c) Siemens AG, 2018-2023
+#
+# Authors:
+#   Le Jin <le.jin@siemens.com>
+#   Jan Kiszka <jan.kiszka@siemens.com>
+
+if TARGET_IOT2050_A53
+
+config SYS_BOARD
+	default "iot2050"
+
+config SYS_VENDOR
+	default "siemens"
+
+config SYS_CONFIG_NAME
+	default "iot2050"
+
+config IOT2050_BOOT_SWITCH
+	bool "Disable eMMC boot via USER button (Advanced version only)"
+	default y
+
+config IOT2050_EMBED_OTPCMD
+	bool "Embed OTP programming data"
+	help
+	  Embed signed OTP programming data 'otpcmd.bin' into the firmware
+	  image. This data will be evaluated and executed on first boot of the
+	  device.
+
+endif

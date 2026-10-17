@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -65,14 +65,14 @@ typedef enum
 	reporting_runner_image = image_5_runner_image,
 	direct_flow_runner_image = image_5_runner_image,
 	cpu_tx_mcore_runner_image = image_5_runner_image,
+	image_6_runner_image = 6,
+	us_tm_runner_image = image_6_runner_image,
+	data_trace_runner_image = image_6_runner_image,
 	image_7_runner_image = 7,
 	processing7_runner_image = image_7_runner_image,
 	flow_control_runner_image = image_7_runner_image,
 	ds_tm_runner_image = image_7_runner_image,
 	spdsvc_wlan_gen_runner_image = image_7_runner_image,
-	image_6_runner_image = 6,
-	processing6_runner_image = image_6_runner_image,
-	us_tm_runner_image = image_6_runner_image,
 	runner_image_last = 7,
 } rdp_runner_image_e;
 

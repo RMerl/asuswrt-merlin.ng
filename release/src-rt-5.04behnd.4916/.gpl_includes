@@ -6,3 +6,8 @@ release/src/router/libhostapi/switch_hostapi/src/*.h
 release/src/router/libhostapi/switch_hostapi/include/gpy/*.h
 release/src/router/libhostapi/switch_hostapi/include/gswip/*.h
 release/src/router/libhostapi/Makefile
+release/src-rt-5.04behnd.4916/router-sysdep/bcm_flashutil/bcm_flashutil.h
+release/src-rt-5.04behnd.4916/router-sysdep/bcm_flashutil/bcm_imgif.h
+release/src-rt-5.04behnd.4916/router-sysdep/bcm_flashutil/bcm_imgutil.h
+release/src-rt-5.04behnd.4916/router-sysdep/bcm_flashutil/bcm_imgutil_api.h
+release/src-rt-5.04behnd.4916/router-sysdep/bcm_flashutil/bcm_imgutil_def.h

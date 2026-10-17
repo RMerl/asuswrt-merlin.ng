@@ -1,0 +1,8 @@
+MX7DSABRESD BOARD
+M:	Adrian Alonso <adrian.alonso@nxp.com>
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/freescale/mx7dsabresd
+F:	include/configs/mx7dsabresd.h
+F:	configs/mx7dsabresd_defconfig
+F:	configs/mx7dsabresd_qspi_defconfig

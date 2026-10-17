@@ -65,7 +65,7 @@ static inline const char *dev_name_or_null(struct net_device *d) {
 
 #elif defined(RDP_ARCH_BOARD) || defined (RDP_ARCH_QEMU_SIM)
 
-#if !(defined(CONFIG_BRCM_QEMU) && (defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM96888)))
+#if !(defined(CONFIG_BRCM_QEMU) && (defined(CONFIG_BCM96855) || defined(CONFIG_BCM96888)))
 
 static inline int __isEnetWanPort(Blog_t *blog_p, int is_rx)
 {
@@ -92,19 +92,15 @@ static inline int __isEnetWanPort(Blog_t *blog_p, int is_rx)
 /* Returns TRUE if LAN/SF2-Port is bonded with Runner WAN port */
 static inline int __isEnetBondedLanWanPort(uint32_t logicalPort)
 {
-   int ret_val = FALSE;
+   return FALSE;
 
-#if defined(CONFIG_BCM_DSL_RDP)
-  /* Only 63138/148/4908 support LAN/SF2-Port bonded to WAN */
-  bcmFun_t *enetFunc = bcmFun_get(BCM_FUN_ID_ENET_IS_BONDED_LAN_WAN_PORT);
+  /* Retain this logic in case of archer/63158 need to support LAN/SF2-Port bonded to WAN */
+  /* bcmFun_t *enetFunc = bcmFun_get(BCM_FUN_ID_ENET_IS_BONDED_LAN_WAN_PORT);
 
   if (enetFunc == NULL)
       return FALSE;
 
-  ret_val = enetFunc(&logicalPort);
-#endif
-
-   return (ret_val);
+  ret_val = enetFunc(&logicalPort); */
 }
 
 static inline int __isWanPort(Blog_t *blog_p, int is_rx)
@@ -151,7 +147,8 @@ static inline int __isWanPort(Blog_t *blog_p, int is_rx)
     {
         return __isEnetWanPort(blog_p, is_rx);
     }
-    if (phyHdrType == BLOG_SPU_DS || phyHdrType == BLOG_SPDTST)
+    if (phyHdrType == BLOG_SPU_DS || phyHdrType == BLOG_SPU_US ||
+        phyHdrType == BLOG_SPDTST)
     {
         /* SPU / SPDTST offloading flows */
         return 0;

@@ -81,6 +81,8 @@ static long vfbio_lvm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 
     case VFBIO_LVM_IOCTL_OP_RENAME:
         {
+            
+            /* coverity[tainted_data:SUPPRESS] */
             params.rc = vfbio_lun_rename(params.rename.num_luns, params.rename.id_name_pairs);
         }
         break;
@@ -105,6 +107,7 @@ static long vfbio_lvm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 
     case VFBIO_LVM_IOCTL_OP_GET_ID:
         {
+            /* coverity[unterminated string:SUPPRESS] */
             params.rc = vfbio_lun_get_id(params.get_id.lun_name, &params.get_id.lun_id);
         }
         break;
@@ -123,15 +126,15 @@ static long vfbio_lvm_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 
     case MMC_IOC_CMD:
         {
-            struct mmc_ioc_cmd  *ic_ptr;
+            /* struct mmc_ioc_cmd  *ic_ptr; */
             
             /* Current the USER space application supported only multi cmd */
             return -ENOTTY;
 
-            ic_ptr = (struct mmc_ioc_cmd *)arg;
+            /* ic_ptr = (struct mmc_ioc_cmd *)arg;
             rc = vfbio_rpmb_ioctl_cmd(ic_ptr);
             if (rc < 0)
-                return rc;
+                return rc; */
         }   
         break;
 

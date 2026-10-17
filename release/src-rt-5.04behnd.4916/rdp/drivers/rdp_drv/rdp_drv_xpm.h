@@ -56,11 +56,40 @@ extern "C"
 #if defined(__KERNEL__)
 #define ATOMIC_LEVEL_ADD(a,b) atomic_add(a,b)
 #define ATOMIC_LEVEL64_ADD(a,b) atomic64_add(a,b)
+#define ATOMIC_LEVEL64_READ(a) ((uint64_t)atomic64_read(a));
+#define ATOMIC_LEVEL64_SET(a,b)  atomic64_set(a, b);
 #else
 #define ATOMIC_LEVEL_ADD(a,b) (*(b) = *(b) + (a))
 #define ATOMIC_LEVEL64_ADD(a,b) (*(b) = *(b) + (a))
+#define ATOMIC_LEVEL64_READ(a) ((uint64_t)(*a));
+#define ATOMIC_LEVEL64_SET(a,b)  (*(a) = b);
 #endif
 extern atomic64_t *bufmng_free_req_cnt;
+
+#if defined(CONFIG_CPU_RX_FROM_XPM)
+extern atomic64_t num_of_xpm_buffers_to_free;
+extern bdmf_timer_t bufmng_release_timer;
+
+#define XPM_NUM_RESET_LVL 64
+#define XPM_TIMER_SET_VAL_MS 100
+static inline void rdp_set_xpm_buffer_coalesing_timer(void)
+{
+    ATOMIC_LEVEL64_ADD(1, &num_of_xpm_buffers_to_free);
+    bdmf_timer_start(&bufmng_release_timer, bdmf_ms_to_ticks(XPM_NUM_RESET_LVL));
+}
+
+static inline uint32_t rdp_if_wakeup_xpm_release_task(void)
+{
+    uint64_t result = ATOMIC_LEVEL64_READ(&num_of_xpm_buffers_to_free);
+
+    return (result > XPM_NUM_RESET_LVL);
+}
+
+static inline void rdp_reset_xpm_buffer_coalesing_num(void)
+{
+    ATOMIC_LEVEL64_SET(&num_of_xpm_buffers_to_free, 0);
+}
+#endif
 /* common definitions between FPM and MPM, keep them in FPM naming */
 /* token size definitions */
 #define FPM_BUF_SIZE_256                    256
@@ -86,7 +115,7 @@ extern atomic64_t *bufmng_free_req_cnt;
                                                                            Can be changed for CHIP_VER >= RDP_GEN_62 only. */
 #if CHIP_VER >= RDP_GEN_62
 /*
-GEN 62 chips (6888, 6837) with TOTAL_FPM_TOKENS==CONST_INT_256K, support the followin FPM pool settings:
+GEN 62 chips (6888, 6837, 68375) with TOTAL_FPM_TOKENS==CONST_INT_256K, support the followin FPM pool settings:
  # Pool 3: x1
  # Pool 2: x2
  # Pool 1: X4 or X5 or X6 or X8
@@ -145,6 +174,7 @@ extern xpm_common_cfg_t xpm_common_cfg;
 extern uint32_t configured_total_fpm_tokens;
 extern ddr_token_info_t *ddr_token_info;
 extern bdmf_phys_addr_t ddr_token_info_phy_addr;
+extern void rdp_runner_cpu_task_wakeup(uint32_t runner_id, uint32_t task_id);
 
 #if CHIP_VER >= RDP_GEN_60
 /* XOFF threshold calculation is based on the sum of the following 4 reservations:
@@ -170,7 +200,7 @@ static inline uint16_t drv_xpm_xon_thld(int token_size)
     return (xoff_thld + (xoff_thld >> 3));
 }
 #endif
-static inline int32_t drv_xmp_is_valid(void *virt_ptr)
+static inline int32_t drv_xpm_is_valid(void *virt_ptr)
 {
     return ((uintptr_t)virt_ptr >= (uintptr_t)xpm_common_cfg.virt_base) && ((uintptr_t)virt_ptr <= (uintptr_t)xpm_common_cfg.virt_end);
 }
@@ -180,21 +210,23 @@ static inline int32_t drv_xmp_is_valid(void *virt_ptr)
 void drv_xpm_common_init(void *virt_base, uintptr_t phys_base, unsigned int xpm_buf_size, unsigned int num_of_token);
 void drv_xpm_common_exit(void);
 int drv_xpm_common_update_pool_size(int *pool_size_array);
+int drv_xpm_get_xpm_buf_size(uint32_t pool_id);
 
 void update_rdp_fpm_resources(uint32_t pool_memory_size, uint32_t buf_size, uint32_t hw_supported_total_tokens, uint32_t configured_total_tokens, int *pool_size);
 
 /* common external APIs */
 void drv_xpm_copy_from_host_buffer(void *data, uint32_t xpm_bn, uint32_t packet_len, uint16_t offset);
-bdmf_error_t drv_xpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num, uint8_t *pool_num);
+bdmf_error_t drv_xpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num, uint8_t *pool_num, uint8_t no_lock);
 
 /* buffer_id <-> virt/phys address translation APIs */
 void *drv_xpm_buffer_id_to_virt(uint32_t xpm_bn);
 uintptr_t drv_xpm_buffer_id_to_phys(uint32_t xpm_bn);
 int32_t drv_xpm_buffer_phys_to_id(uintptr_t phys_addr);
 
-
+/* token info APIs */
 int drv_xpm_ddr_token_info_set(uint32_t token_idx, ddr_token_info_t *info);
-extern ddr_token_info_t *ddr_token_info;
+int drv_xpm_ddr_token_info_clear(uint32_t token_idx);
+
 /* return the token info in case of error returns NULL */
 static inline ddr_token_info_t *drv_xpm_ddr_token_info_get(uint32_t token_id)
 {
@@ -202,8 +234,6 @@ static inline ddr_token_info_t *drv_xpm_ddr_token_info_get(uint32_t token_id)
         return NULL;
     return &ddr_token_info[token_id];
 }
-int drv_xpm_ddr_token_info_clear(uint32_t token_idx);
-
 
 /* threshold / buffer usage APIs */
 int drv_xpm_check_threshold(uint32_t packet_len, int prio);
@@ -217,7 +247,7 @@ static inline int32_t drv_xpm_buffer_virt_to_id(void *virt_ptr)
 {
     int32_t buffer_id;
 
-    if ((!drv_xmp_is_valid(virt_ptr)))
+    if ((!drv_xpm_is_valid(virt_ptr)))
         return -1;
 
     buffer_id = ((uintptr_t)virt_ptr - (uintptr_t)xpm_common_cfg.virt_base);
@@ -251,10 +281,26 @@ static inline int drv_xpm_buffer_update_cpu_free_cnt(uint32_t token_idx, int32_t
      
     bdmf_dcache_flush((unsigned long)&bufmng_free_req_cnt[bufmng_cnt_id], sizeof(bufmng_free_req_cnt[bufmng_cnt_id]));
     /* TODO: check if needed dma_wmb(); */
+
+    if (rdp_if_wakeup_xpm_release_task())
+    {
+        rdp_reset_xpm_buffer_coalesing_num();
+        rdp_runner_cpu_task_wakeup(get_runner_idx(CPU_RINGS_FPM_REFILL_CORE_NUMBER), CPU_FPM_BUFMNG_RELEASE_TASK);
+    }
+    else
+    {
+         rdp_set_xpm_buffer_coalesing_timer();
+    }
+    /* otherwise remaind buffer number will be updated in the recycle task */
+
     return 0;
 }
 #endif
 uint32_t drv_xrdp_get_num_of_tokens(void);
+#if defined(CONFIG_CPU_RX_FROM_XPM)
+void drv_xpm_print_packet_from_token_idx(bdmf_session_handle session, uint32_t token_idx, uint32_t offset);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

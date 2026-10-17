@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2016 Rockchip Electronics Co., Ltd
+ */
+
+/dts-v1/;
+#include "rk3288-tinker.dtsi"
+
+/ {
+	model = "Tinker-RK3288";
+	compatible = "rockchip,rk3288-tinker", "rockchip,rk3288";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&pinctrl {
+	usb {
+		host_vbus_drv: host-vbus-drv {
+			rockchip,pins = <0 14 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};
+
+&pwm1 {
+	status = "okay";
+};
+
+&usb_host1 {
+	vbus-supply = <&vcc5v0_host>;
+	status = "okay";
+};

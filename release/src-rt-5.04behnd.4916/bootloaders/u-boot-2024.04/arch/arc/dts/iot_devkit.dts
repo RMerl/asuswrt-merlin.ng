@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Synopsys, Inc. All rights reserved.
+ */
+/dts-v1/;
+
+#include "skeleton.dtsi"
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		console = &uart0;
+	};
+
+	cpu_card {
+		core_clk: core_clk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <144000000>;
+			bootph-all;
+		};
+	};
+
+	uart0: serial0@80014000 {
+		compatible = "snps,dw-apb-uart";
+		clock-frequency = <16000000>;
+		reg = <0x80014000 0x1000>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+	};
+
+	usb: usb@f0040000 {
+		compatible = "snps,dwc2";
+		reg = <0xf0040000 0x10000>;
+		phys = <&usbphy>;
+		phy-names = "usb2-phy";
+	};
+
+	usbphy: phy {
+		compatible = "usb-nop-xceiv";
+		#phy-cells = <0>;
+	};
+
+	mmcclk_biu: mmcclk-biu {
+		compatible = "fixed-clock";
+		clock-frequency = <50000000>;
+		#clock-cells = <0>;
+	};
+
+	mmcclk_ciu: mmcclk-ciu {
+		compatible = "fixed-clock";
+		clock-frequency = <50000000>;
+		#clock-cells = <0>;
+	};
+
+	mmc: mmc0@f000b000 {
+		compatible = "snps,dw-mshc";
+		reg = <0xf000b000 0x400>;
+		bus-width = <4>;
+		fifo-depth = <128>;
+		clocks = <&mmcclk_biu>, <&mmcclk_ciu>;
+		clock-names = "biu", "ciu";
+		max-frequency = <25000000>;
+	};
+};

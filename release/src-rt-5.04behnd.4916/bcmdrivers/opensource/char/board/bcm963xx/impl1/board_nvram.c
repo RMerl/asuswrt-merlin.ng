@@ -43,11 +43,18 @@ written consent.
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
+#include <linux/module.h>
 #include <linux/fs.h>
 #include <bcmtypes.h>
 #include <board.h>
 
 #include "board_nvram.h"
+
+static bool debug __read_mostly=0;
+#define PRINTK(a...) if (debug) printk(a)
+
+module_param(debug, bool, 0644);
+
 
 static char *uboot_env=NULL;
 static int uboot_env_length=UBOOT_MAX_ENV_LEN;
@@ -59,8 +66,9 @@ static struct proc_dir_entry *raw_proc_entry=NULL;
 static ssize_t proc_get_raw(struct file * file, char * buff, size_t len, loff_t *offset)
 {
 
-	if (uboot_env == NULL && *offset < uboot_env_max_length+UBOOT_HEADER_LEN)
+	if (uboot_env == NULL || offset == NULL || *offset > uboot_env_max_length+UBOOT_HEADER_LEN)
 		return 0;
+
 
 	len=len < (uboot_env_max_length+UBOOT_HEADER_LEN-*offset)?len:(uboot_env_max_length+UBOOT_HEADER_LEN-*offset);
 	if(copy_to_user(buff, uboot_env+*offset, len))
@@ -92,7 +100,7 @@ unsigned char *get_uboot_env_area(int current_size)
 	if(uboot_env == NULL)
 	{
 		uboot_env_length=uboot_env_max_length=current_size;
-	        uboot_env = kmalloc(current_size+UBOOT_HEADER_LEN, GFP_ATOMIC);
+	        uboot_env = kzalloc(current_size+UBOOT_HEADER_LEN, GFP_ATOMIC);
 	}
 
 	return uboot_env;
@@ -183,7 +191,7 @@ tree_node *n=NULL;
 			n=NULL;
 		}
 	}
-	//printk("new node [%s] %d [%s], %d\n", var, var_len, val, val_len);
+	PRINTK("new node [%s] %d [%s], %d\n", var, var_len, val, val_len);
 	return n;
 }
 
@@ -210,7 +218,7 @@ static tree_node* insert(tree_node **head, char *var, int var_len, char *val, in
 		{
 			n=head[0]=new_node(var, var_len, val, val_len);
 			proc_directory = proc_mkdir("environment", NULL);
-			if(n != NULL && proc_directory != NULL) 
+			if(n != NULL && proc_directory != NULL)
 				n->proc_entry=proc_create_data(n->var, S_IRUSR, proc_directory, &env_proc, n);
 		}
 		else
@@ -259,10 +267,10 @@ return n;
 
 static void print_tree(tree_node *head)
 {
-	printk("-------------------\n");
+	PRINTK("-------------------\n");
 	if(head != NULL)
 	{
-		printk("head %px [%s] = > [%s] \n", head, head->var, head->val);
+		PRINTK("head %px [%s] = > [%s] \n", head, head->var, head->val);
 		if(head->left != NULL)
 		{
 			print_tree(head->left);
@@ -272,12 +280,12 @@ static void print_tree(tree_node *head)
 			print_tree(head->right);
 		}
 	}
-	printk("-------------------\n");
+	PRINTK("-------------------\n");
 }
 
-#if 0 
+#if 0
 /*
-non-recursive function to free the entire tree holding uboot env 
+non-recursive function to free the entire tree holding uboot env
 */
 static void free_tree(tree_node *head)
 {
@@ -319,7 +327,7 @@ static void free_tree(tree_node *head)
 			pool=pool->next;
 			head->next=NULL;
 		}
-	} 
+
 }
 #endif
 
@@ -378,7 +386,7 @@ static int get_next_var_val(char *input, char *last, int modify_in_place, char *
 					input[current_index]='\0';
 				*val=input+current_index+1;
 				*val_len=strlen(input+current_index+1);
-				//printk("found %s [%s] %d\n", *var, *val, *val_len);
+				PRINTK("found %s [%s] %d\n", *var, *val, *val_len);
 				rc=0;
 				break;
 			}
@@ -400,7 +408,7 @@ void uboot_env_init(char *input, int max_len, int force)
 	if(init_me == 0 || force == 1)
 	{
 
-		//printk("uboot header %x\n", *(unsigned int*)uboot_env);
+		PRINTK("uboot header %x\n", *(unsigned int*)uboot_env);
 		uboot_env_length=get_actual_uboot_env_length(uboot_env+UBOOT_HEADER_LEN, max_len);
 		uboot_env_length+=UBOOT_HEADER_LEN;
 		if(max_len > uboot_env_length)
@@ -432,7 +440,7 @@ void uboot_env_init(char *input, int max_len, int force)
 int eNvramGet(char *param, char *value, int len)
 {
 char *ptr=NULL;
-int total_used=0;
+int total_used=0, ret=0;
 
 	uboot_env_init(uboot_env, uboot_env_length, 0); //skip 12 bytes header
 	if(strncmp(param, "debug", 5) == 0)
@@ -440,15 +448,26 @@ int total_used=0;
 	ptr=find_var(head, param, strlen(param), NULL);
 	if (ptr != NULL)
 	{
-		total_used=strlen(ptr)+1;
-		total_used = total_used >  len ? len : total_used;
+		ret=total_used=strlen(ptr)+1;
+		if (total_used > len)
+		{
+			pr_warn("eNvramGet: input buffer is smaller than u-boot env %s:%s truncating it to %d\n", param, ptr, len);
+			total_used=len;
+			ret=-1;
+		}
 		strncpy(value, ptr, total_used);
 		
 	}
 		
-return total_used;
+return ret;
 }
 EXPORT_SYMBOL(eNvramGet);
+
+int eNvramGetLocked(char *param, char *value, int len)
+{
+	return envram_get_locked(param, value, len);
+}
+EXPORT_SYMBOL(eNvramGetLocked);
 
 int eNvramSet(char *param, char *value)
 {
@@ -458,8 +477,8 @@ char *old_value=NULL, *var_in_env=NULL;
 
 	//print_tree(head);
 	old_value=find_var(head,param, strlen(param), &var_in_env);
-	//printk("after search %s old value %s %s var_in_env %s\n", param, old_value, param, var_in_env);
-	// we have start of u-boot env, 
+	PRINTK("after search %s old value %s %s var_in_env %s\n", param, old_value, param, var_in_env);
+	// we have start of u-boot env,
 	// we know the place of the parameter in the uboot_env
 	// we know the total lenth of the uboot env
 	if(var_in_env != NULL && old_value != NULL)
@@ -468,17 +487,22 @@ char *old_value=NULL, *var_in_env=NULL;
 		old_param_length = strlen(param) + strlen(old_value) + 1 + 1; //= + '\0'
 		if((var_in_env - uboot_env) + old_param_length != uboot_env_length)
 		{
-			//printk("old param length %d\n", old_param_length);
-			//printk("---- next var is [%s] [%p]\n", var_in_env+old_param_length , var_in_env+old_param_length);
-			//printk(" uboot_env_bin %p var_in_env %p \n\n uboot_env %p len %d\n" , uboot_env, var_in_env, uboot_env, uboot_env_length - (var_in_env - uboot_env) - old_param_length);
-			//printk(" uboot_env_len %d \n" , uboot_env_length);
+			PRINTK("old param length %d\n", old_param_length);
+			PRINTK("---- next var is [%s] [%p]\n", var_in_env+old_param_length , var_in_env+old_param_length);
+			PRINTK(" uboot_env_bin %p var_in_env %p \n\n uboot_env %p len %ld\n" , uboot_env, var_in_env, uboot_env, (long int) (uboot_env_length - (var_in_env - uboot_env) - old_param_length));
+			PRINTK(" uboot_env_len %d \n" , uboot_env_length);
 			
-			memcpy(var_in_env, var_in_env+old_param_length, uboot_env_length - (var_in_env - uboot_env) - old_param_length);
-			var_in_env += (uboot_env_length - (var_in_env - uboot_env) - old_param_length);
-			//printk("end of the var before add %p [%s] [%s]\n", var_in_env, param, value); 
+			// if there is nothing move after the modified variable,
+			// the modified variable must be last in the list 
+			if( (uboot_env_length - (var_in_env - uboot_env) - old_param_length) > 0 )
+			{
+				memcpy(var_in_env, var_in_env+old_param_length, uboot_env_length - (var_in_env - uboot_env) - old_param_length);
+				var_in_env += (uboot_env_length - (var_in_env - uboot_env) - old_param_length);
+				PRINTK("end of the var before add %p [%s] [%s]\n", var_in_env, param, value);
 			
-			memset(var_in_env, '\0', old_param_length);
-			var_in_env +=1; //nedd to skip previous '\0';  
+				memset(var_in_env, '\0', old_param_length);
+				var_in_env +=1; //nedd to skip previous '\0';
+			}
 		}
 		snprintf(var_in_env, strlen(param)+strlen(value)+2, "%s=%s", param, value);
 		uboot_env_length=var_in_env - uboot_env + strlen(param) + 1 + strlen(value)+ 1;
@@ -503,27 +527,27 @@ char *temp_ptr=NULL, *old_value=NULL, *var_in_env=NULL;
 		old_value=find_var(head,param_value, strlen(param_value), &var_in_env);
 		temp_ptr[0]= '=';
 		if(old_value == NULL)
-		{ 
-			//printk("var %s not found\n", param_value);
+		{
+			PRINTK("var %s not found\n", param_value);
 			if(uboot_env_max_length-uboot_env_length-2 > strlen(param_value)+2)
 			{
-				//printk("Adding new var %d\n", uboot_env_length);
+				PRINTK("Adding new var %d\n", uboot_env_length);
 				//we have to skip 1 '\0'
 				snprintf(uboot_env+uboot_env_length+1, strlen(param_value)+2, "%s", param_value);
-				uboot_env_length = uboot_env_length+strlen(param_value) + 1;
+				uboot_env_length += strlen(param_value) + 1;
 				uboot_env[uboot_env_length]='\0';
 				uboot_env[uboot_env_length+1]='\0';
 				memset(uboot_env+uboot_env_length+2, 0xff, uboot_env_max_length-uboot_env_length-2);
 				uboot_env_init(uboot_env, uboot_env_length, 1);
-				//printk("----------------------\n");
+				PRINTK("----------------------\n");
 				//print_tree(head);
-				//printk("----------------------\n");
+				PRINTK("----------------------\n");
 				rc=UBOOT_ENV_ADD_SUCCESS;
 			}
 			else
 			{
 				rc=UBOOT_ENV_NO_SPACE_LEFT;
-				printk("uboot_env_add: Not enough space left in u-boot environment current[%d] max[%d] needed [%d] \n", uboot_env_length, uboot_env_max_length, (int32_t)strlen(param_value)+2);
+				PRINTK("uboot_env_add: Not enough space left in u-boot environment current[%d] max[%d] needed [%d] \n", uboot_env_length, uboot_env_max_length, (int32_t)strlen(param_value)+2);
 			}
 		}
 		else
@@ -537,7 +561,7 @@ char *temp_ptr=NULL, *old_value=NULL, *var_in_env=NULL;
 	else
 	{
 		rc=UBOOT_ENV_ADD_IVALID_FORMAT;
-		printk("Uboot env invalid format [%s]\n", param_value);
+		PRINTK("Uboot env invalid format [%s]\n", param_value);
 	}
 	
 return rc;

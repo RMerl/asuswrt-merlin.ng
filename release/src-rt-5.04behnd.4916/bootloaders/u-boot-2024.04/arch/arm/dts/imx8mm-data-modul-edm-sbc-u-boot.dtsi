@@ -1,0 +1,165 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2022 Marek Vasut <marex@denx.de>
+ */
+
+#include "imx8mm-u-boot.dtsi"
+
+/ {
+	aliases {
+		eeprom0 = &eeprom;
+		mmc0 = &usdhc3;	/* eMMC */
+		mmc1 = &usdhc2;	/* MicroSD */
+	};
+
+	config {
+		dmo,ram-coding-gpios = <&gpio2 8 0>, <&gpio2 1 0>, <&gpio2 0 0>;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&buck4_reg {
+	bootph-pre-ram;
+};
+
+&buck5_reg {
+	bootph-pre-ram;
+};
+
+&i2c1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_hog_sbc {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c1_gpio {
+	bootph-pre-ram;
+};
+
+&pinctrl_pmic {
+	bootph-pre-ram;
+};
+
+&pinctrl_uart3 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc3 {
+	bootph-pre-ram;
+};
+
+&pmic {
+	bootph-pre-ram;
+
+	regulators {
+		bootph-pre-ram;
+	};
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+
+	dsi-reset-hog {
+		bootph-pre-ram;
+		gpio-hog;
+		output-high;
+		gpios = <2 GPIO_ACTIVE_LOW>;
+		line-name = "DSI_RESET_1V8#";
+	};
+
+
+	dsi-irq-hog {
+		bootph-pre-ram;
+		gpio-hog;
+		input;
+		gpios = <3 GPIO_ACTIVE_LOW>;
+		line-name = "DSI_IRQ_1V8#";
+	};
+
+	graphics-prsnt-hog {
+		bootph-pre-ram;
+		gpio-hog;
+		input;
+		gpios = <7 GPIO_ACTIVE_LOW>;
+		line-name = "GRAPHICS_PRSNT_1V8#";
+	};
+};
+
+&gpio3 {
+	bootph-pre-ram;
+
+	bl-enable-hog {
+		bootph-pre-ram;
+		gpio-hog;
+		output-low;
+		gpios = <0 GPIO_ACTIVE_HIGH>;
+		line-name = "BL_ENABLE_1V8";
+	};
+
+	tft-enable-hog {
+		bootph-pre-ram;
+		gpio-hog;
+		output-low;
+		gpios = <6 GPIO_ACTIVE_HIGH>;
+		line-name = "TFT_ENABLE_1V8";
+	};
+
+	graphics-gpio0-hog {
+		bootph-pre-ram;
+		gpio-hog;
+		input;
+		gpios = <7 GPIO_ACTIVE_HIGH>;
+		line-name = "GRAPHICS_GPIO0_1V8";
+	};
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&uart3 {
+	bootph-pre-ram;
+};
+
+&usbotg1 {
+	dr_mode = "peripheral";
+};
+
+&usdhc2 {
+	bootph-pre-ram;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+};
+
+&usdhc3 {
+	bootph-pre-ram;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

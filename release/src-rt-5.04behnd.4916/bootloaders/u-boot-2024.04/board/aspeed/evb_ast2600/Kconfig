@@ -1,0 +1,12 @@
+if TARGET_EVB_AST2600
+
+config SYS_BOARD
+	default "evb_ast2600"
+
+config SYS_VENDOR
+	default "aspeed"
+
+config SYS_CONFIG_NAME
+	default "evb_ast2600"
+
+endif

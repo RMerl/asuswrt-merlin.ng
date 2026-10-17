@@ -1,0 +1,16 @@
+if TARGET_E850_96
+
+config EXYNOS850
+	bool "Exynos850 SoC support"
+	default y
+
+config SYS_BOARD
+	default "e850-96"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "e850-96"
+
+endif

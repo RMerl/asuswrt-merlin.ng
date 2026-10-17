@@ -1,0 +1,40 @@
+Texas Instruments' K3 Secure Proxy
+===================================
+
+The Texas Instruments' K3 Secure Proxy is a mailbox controller that has
+configurable threads maintained by System power processor. Each thread
+has different address space that can be used to send or receive messages.
+
+Secure Proxy Device Node:
+===========================
+Required properties:
+--------------------
+- compatible:		Shall be: "ti,am654-secure-proxy"
+- reg-names		data - Map the data region
+			scfg - Map the secure configuration region
+			rt - Map the Realtime region.
+- reg:			Contains the register map per reg-names.
+- #mbox-cells		Shall be 1. Contains the thread ID.
+
+Example:
+--------
+
+secproxy: secproxy@285b0000 {
+	compatible = "ti,am654-secure-proxy";
+	reg = <0x2a380000 0x80000>,
+		<0x2a400000 0x80000>,
+		<0x2a480000 0x80000>;
+	reg-names = "rt", "scfg", "data";
+	#mbox-cells = <1>;
+};
+
+client:
+
+systemcontroller: systemcontroller {
+	[...]
+	# RX thread ID is 4.
+	# TX thread ID is 5.
+	mboxes= <&secproxy 4>,
+		<&secproxy 5>;
+	[...]
+};

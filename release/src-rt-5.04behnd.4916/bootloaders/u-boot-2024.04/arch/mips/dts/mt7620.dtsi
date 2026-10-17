@@ -1,0 +1,296 @@
+// SPDX-License-Identifier: GPL-2.0
+#include <dt-bindings/clock/mt7620-clk.h>
+#include <dt-bindings/reset/mt7620-reset.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "mediatek,mt7620-soc";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			compatible = "mti,mips24KEc";
+			device_type = "cpu";
+			reg = <0>;
+		};
+	};
+
+	clk48m: clk48m@0 {
+		compatible = "fixed-clock";
+
+		clock-frequency = <48000000>;
+
+		#clock-cells = <0>;
+	};
+
+	sysc: sysc@10000000 {
+		compatible = "mediatek,mt7620-sysc";
+		reg = <0x10000000 0x100>;
+	};
+
+	clkctrl: clkctrl@10000030 {
+		compatible = "mediatek,mt7620-clk";
+		mediatek,sysc = <&sysc>;
+
+		#clock-cells = <1>;
+	};
+
+	rstctrl: rstctrl@10000034 {
+		compatible = "mediatek,mtmips-reset";
+		reg = <0x10000034 0x4>;
+		#reset-cells = <1>;
+	};
+
+	reboot: resetctl-reboot {
+		compatible = "resetctl-reboot";
+
+		resets = <&rstctrl SYS_RST>;
+		reset-names = "sysreset";
+	};
+
+	uartfull: uartfull@10000500 {
+		compatible = "mediatek,mt7620-uart";
+		reg = <10000500 0x100>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&uartf_gpio_pins>;
+
+		clocks = <&clkctrl CLK_UARTF>;
+
+		resets = <&rstctrl UARTF_RST>;
+		reset-names = "uartf";
+
+		clock-frequency = <40000000>;
+
+		status = "disabled";
+	};
+
+	uartlite: uartlite@10000c00 {
+		compatible = "mediatek,mt7620-uart";
+		reg = <0x10000c00 0x100>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&uartl_pins>;
+
+		clocks = <&clkctrl CLK_UARTL>;
+
+		resets = <&rstctrl UARTL_RST>;
+		reset-names = "uartl";
+
+		clock-frequency = <40000000>;
+	};
+
+	pinctrl: pinctrl@10000060 {
+		compatible = "mediatek,mt7620-pinctrl";
+		reg = <0x10000060 0x4>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&state_default>;
+
+		state_default: pin_state {
+			sutif_pins {
+				groups = "sutif";
+				function = "none";
+			};
+		};
+
+		nand_pins: nand_pins {
+			groups = "nand";
+			function = "nand";
+		};
+
+		sd_pins: sd_pins {
+			groups = "nand";
+			function = "sd";
+		};
+
+		spi_single_pins: spi_single_pins {
+			groups = "spi";
+			function = "spi";
+		};
+
+		spi_dual_pins: spi_dual_pins {
+			spi_master_pins {
+				groups = "spi";
+				function = "spi";
+			};
+
+			spi_cs1_pin {
+				groups = "spi cs1";
+				function = "spi cs1";
+			};
+		};
+
+		uartl_pins: uartl_pins {
+			groups = "uartl";
+			function = "uartl";
+		};
+
+		uartf_pins: uartf_pins {
+			groups = "uartf";
+			function = "uartf";
+		};
+
+		uartf_pcm_pins: uartf_pcm_pins {
+			groups = "uartf";
+			function = "uartf pcm";
+		};
+
+		uartf_i2s_pins: uartf_i2s_pins {
+			groups = "uartf";
+			function = "i2s uartf";
+		};
+
+		uartf_gpio_pins: uartf_gpio_pins {
+			groups = "uartf";
+			function = "uartf gpio";
+		};
+	};
+
+	watchdog: watchdog@10000120 {
+		compatible = "mediatek,mt7620-wdt";
+		reg = <0x10000120 0x10>;
+
+		resets = <&rstctrl TIMER_RST>;
+		reset-names = "wdt";
+	};
+
+	gpio0: gpio0@10000600 {
+		compatible = "mediatek,mt7620-gpio";
+		reg = <0x10000600 0x34>;
+
+		resets = <&rstctrl PIO_RST>;
+		reset-names = "pio";
+
+		mediatek,bank-name = "PIOA";
+		mediatek,gpio-num = <24>;
+		mediatek,register-map = <0x20 0x24 0x2c 0x30>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio1: gpio1@10000638 {
+		compatible = "mediatek,mt7620-gpio";
+		reg = <0x10000638 0x24>;
+
+		resets = <&rstctrl PIO_RST>;
+		reset-names = "pio";
+
+		mediatek,bank-name = "PIOB";
+		mediatek,gpio-num = <16>;
+		mediatek,register-map = <0x10 0x14 0x1c 0x20>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio2: gpio2@10000660 {
+		compatible = "mediatek,mt7620-gpio";
+		reg = <0x10000660 0x24>;
+
+		resets = <&rstctrl PIO_RST>;
+		reset-names = "pio";
+
+		mediatek,bank-name = "PIOC";
+		mediatek,gpio-num = <32>;
+		mediatek,register-map = <0x10 0x14 0x1c 0x20>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio3: gpio3@10000688 {
+		compatible = "mediatek,mt7620-gpio";
+		reg = <0x10000688 0x24>;
+
+		resets = <&rstctrl PIO_RST>;
+		reset-names = "pio";
+
+		mediatek,bank-name = "PIOD";
+		mediatek,gpio-num = <1>;
+		mediatek,register-map = <0x10 0x14 0x1c 0x20>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	spi0: spi@10000b00 {
+		compatible = "mediatek,mt7620-spi";
+		reg = <0x10000b00 0x100>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi_single_pins>;
+
+		resets = <&rstctrl SPI_RST>;
+		reset-names = "spi";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		clocks = <&clkctrl CLK_SPI>;
+	};
+
+	eth: eth@10100000 {
+		compatible = "mediatek,mt7620-eth";
+		reg = <0x10100000 0x10000
+		       0x10110000 0x8000>;
+		reg-names = "fe", "esw";
+
+		mediatek,sysc = <&sysc>;
+
+		resets = <&rstctrl EPHY_RST>,
+			 <&rstctrl ESW_RST>,
+			 <&rstctrl FE_RST>;
+		reset-names = "ephy", "esw", "fe";
+
+		clocks = <&clkctrl CLK_EPHY>,
+			 <&clkctrl CLK_ESW>,
+			 <&clkctrl CLK_FE>;
+		clock-names = "ephy", "esw", "fe";
+
+		status = "disabled";
+	};
+
+	usb_phy: mt7620-usb-phy {
+		compatible = "mediatek,mt7620-usbphy";
+
+		#phy-cells = <0>;
+
+		mediatek,sysc = <&sysc>;
+
+		clocks = <&clkctrl CLK_UPHY_48M>, <&clkctrl CLK_UPHY_12M>;
+		clock-names = "uphy48m", "uphy12m";
+
+		resets = <&rstctrl UHST_RST>, <&rstctrl UDEV_RST>;
+		reset-names = "uhst", "udev";
+	};
+
+	ehci@101c0000 {
+		compatible = "generic-ehci";
+		reg = <0x101c0000 0x1000>;
+
+		phys = <&usb_phy>;
+		phy-names = "usb";
+	};
+
+	mmc: mmc@10130000 {
+		compatible = "mediatek,mt7620-mmc";
+		reg = <0x10130000 0x4000>;
+		builtin-cd = <1>;
+		r_smpl = <1>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&sd_pins>;
+
+		clocks = <&clk48m>, <&clkctrl CLK_SDHC>;
+		clock-names = "source", "hclk";
+
+		resets = <&rstctrl SDHC_RST>;
+
+		status = "disabled";
+	};
+};

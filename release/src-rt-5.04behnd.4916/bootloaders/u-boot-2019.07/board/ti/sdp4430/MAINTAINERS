@@ -1,6 +1,0 @@
-SDP4430 BOARD
-M:	Lokesh Vutla <lokeshvutla@ti.com>
-S:	Maintained
-F:	board/ti/sdp4430/
-F:	include/configs/omap4_sdp4430.h
-F:	configs/omap4_sdp4430_defconfig

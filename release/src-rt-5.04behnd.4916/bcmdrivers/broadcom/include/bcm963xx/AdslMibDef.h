@@ -223,6 +223,10 @@ extern "C" {
 #define  SUPPORT_BAS_DSL
 #endif
 
+#if defined(SUPPORT_BAS_DSL) || defined(SUPPORT_PHY_BIN_FROM_TMP)
+#define PHY_BIN_FROM_TMP "/tmp/adsl_phy.bin"
+#endif
+
 #if defined(GFAST_TESTMODE_TEST) || defined(PHY_CO)
 #define GFAST_START_RTX_TESTMODE 0x1
 #define GFAST_STOP_RTX_TESTMODE  0x2
@@ -580,7 +584,15 @@ typedef struct _adslVersionInfo {
 #define kOidAdslPrivate                     255
 #define kOidAdslPrivatePartial              254
 #define kOidAdslPrivateSysCtl               253
-#define kOidAdslPrivateSysMediaCfg    0
+#define kOidAdslPrivateSysMediaCfg          0
+#if defined(SUPPORT_BAS_DSL)
+#define kOidAdslPrivateSysLoadPhyFromTmp    1
+// constants for kOidAdslPrivateSysLoadPhyFromTmp data
+#define BAS_LOAD_PHY_FROM_TMP_EN            (1<<0)
+#define BAS_LOAD_PHY_FROM_TMP_EN_KEEP       (1<<1)
+#define BAS_LOAD_PHY_FROM_TMP_MASK          (BAS_LOAD_PHY_FROM_TMP_EN|BAS_LOAD_PHY_FROM_TMP_EN_KEEP)
+#endif // #if defined(SUPPORT_BAS_DSL)
+
 #define kOidAdslPrivateOAMThreshold         252
 #define kOidAdslPrivateEvtLogCtl            251
 #define kOidAdslPrivateEvtLogStart    0
@@ -672,6 +684,7 @@ typedef struct _adslVersionInfo {
 #define kOidAdslPrivGetG994RcvCLMsg         77
 #define kOidAdslPrivGetSocMsgRtaUpdate      78
 #define kOidAdslPrivGetTrainedAgc           79
+#define kOidAdslPrivGetChanDiscPsdInfo      80
 
 
 #define kOidAdslExtraPLNInfo						11
@@ -1603,6 +1616,11 @@ typedef struct _adslConnectionStat {
 #endif
 } adslConnectionStat;
 
+typedef struct _xdslConnectionDataStat {
+    adslConnectionDataStat  rcvStat;
+    adslConnectionDataStat  xmtStat;
+} xdslConnectionDataStat;
+
 typedef struct _atmConnectionDataStat {
     unsigned int           cntHEC;
     unsigned int           cntOCD;
@@ -1913,12 +1931,21 @@ typedef struct _StatHistHrCounters {
     unsigned int       adslLOSS;   /* Count of LOS seconds */
     unsigned int       adslFECs;   /* Count of FEC seconds  */
     unsigned int       adslLCDS;   /* Count of LCD Errored Seconds */
+    unsigned int       xdslLORS;   /* Count of LOR Seconds */
 } StatHistHrCounters;
 
 typedef struct _StatHist24HrCounters {
-    int                         curHourIndex;
-    unsigned int         cur1HourTimeElapsed;
+    int                 curHourIndex;
+    unsigned int        cur1HourTimeElapsed;
     StatHistHrCounters  statHistHrCounters[24];
+
+    StatHistHrCounters  cur15MinStatCounters;
+    StatHistHrCounters  prev15MinStatCounters;
+    StatHistHrCounters  cur1DayStatCounters;
+    StatHistHrCounters  prev1DayStatCounters;
+    StatHistHrCounters  sinceShowtimeStatCounters;
+    StatHistHrCounters  lastShowtimeStatCounters;
+    StatHistHrCounters  totalStatCounters;
 } StatHist24HrCounters;
 #endif
 
@@ -2133,7 +2160,16 @@ struct LogicalFrameCfg
 #define   EVENT_MONITORED_MARGIN_TRIGGER    (EVENT_LINK_DEFECT_NE+6)
 #define   EVENT_PHY_DROP_REASON             (EVENT_LINK_DEFECT_NE+7)
 
-#define   EVENT_NUM_MAX                     (EVENT_PHY_DROP_REASON+1)
+#define   EVENT_RFI                         (EVENT_PHY_DROP_REASON+1)
+ /* param0 */
+ #define RFI_CHANGE           0
+ /* param1 - new num of rfi bands */
+
+ /* param0 */
+ #define RFI_WITH_LINK_DEFECT 1
+ /* param1 - none*/
+
+#define   EVENT_NUM_MAX                     (EVENT_RFI+1)
 
 typedef struct {
   unsigned int  code;
@@ -2345,6 +2381,16 @@ typedef struct _adslMibInfo {
 #endif
 	ginpCounters		ginpCur15MinCntrs[2];	/* NE - 0, FE - 1 */
 	CmalbTclResults		tclResults;
+	adslPerfCounters	xdslRxPerfLastShowTime;
+	adslPerfCounters	xdslTxPerfLastShowTime;
+	union {
+		xdslConnectionDataStat	lastXdslStat[MAX_LP_NUM];
+		xdslConnectionDataStat	lastAdslStat;
+	};
+	union {
+		atmConnectionStat	lastAtmStat2lp[MAX_LP_NUM];
+		atmConnectionStat	lastAtmStat;
+	};
 } adslMibInfo;
 
 #if defined(__cplusplus)

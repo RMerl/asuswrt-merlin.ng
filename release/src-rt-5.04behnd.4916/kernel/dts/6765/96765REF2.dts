@@ -14,7 +14,13 @@
 	buttons {
 		compatible = "brcm,buttons";
 		reset_button {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 			ext_irq = <&bca_extintr 33 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+#else
+			ext_irq-gpio = <&gpioc 33 GPIO_ACTIVE_LOW>;
+			interrupt-parent = <&gpioc>;
+			interrupts = <33 IRQ_TYPE_EDGE_FALLING>;
+#endif
 			press {
 				print = "Button Press -- Hold for 5s to do restore to default";
 			};
@@ -26,7 +32,13 @@
 			};  
 		};
 		ses_button {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 			ext_irq = <&bca_extintr 23 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+#else
+			ext_irq-gpio = <&gpioc 23 GPIO_ACTIVE_LOW>;
+			interrupt-parent = <&gpioc>;
+			interrupts = <23 IRQ_TYPE_EDGE_FALLING>;
+#endif
 			release {
 				ses_short_period = <0>;
 				ses_long_period = <3>;
@@ -34,8 +46,14 @@
 		};
 	};
 	bcmgps: bcmgps {
-		compatible = "brcm, bcmgps"; 
-		ext_irq = <&bca_extintr 36 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;   /* host_req */
+		compatible = "brcm, bcmgps";
+#if defined(CONFIG_BCM_BCA_EXTINTR)
+		ext_irq = <&bca_extintr 36 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+#else
+		ext_irq-gpio = <&gpioc 36 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&gpioc>;
+		interrupts = <36 IRQ_TYPE_EDGE_RISING>;
+#endif
 		reset-gpio = <&gpioc 37 GPIO_ACTIVE_HIGH>;  /* nStandby */
 		status = "okay";
 	};

@@ -1,7 +1,0 @@
-MPC8315ERDB BOARD
-#M:	Dave Liu <daveliu@freescale.com>
-S:	Orphan (since 2018-05)
-F:	board/freescale/mpc8315erdb/
-F:	include/configs/MPC8315ERDB.h
-F:	configs/MPC8315ERDB_defconfig
-F:	configs/MPC8315ERDB_NANDSPL_defconfig

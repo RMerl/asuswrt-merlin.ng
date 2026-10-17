@@ -7,6 +7,7 @@ PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/		\
 				-Iplat/bcm/include			\
 				-Iplat/bcm/include/bcm963xx		\
 				-Iplat/bcm/drivers			\
+				-Iplat/bcm/drivers/include		\
 				-Iinclude/drivers/			\
 				-Iinclude/drivers/arm/			\
 				-Iinclude/common/			\
@@ -16,38 +17,30 @@ PLAT_INCLUDES		:=	-Iinclude/plat/arm/common/		\
 				-Iinclude/bl31/
 
 ifeq ($(strip $(KERNEL_ARCH)),arm)
-PLAT_BL_A9_SOURCE :=		plat/bcm/aarch32/pl310_a32.S	\
-				plat/bcm/aarch32/cortexa9_mmu.S
-
-PLAT_BL_COMMON_SOURCES	:=	${GICV2_SOURCES} \
+PLAT_BL_COMMON_SOURCES	:=	${GICV2_SOURCES}				\
 				drivers/arm/pl011/aarch32/pl011_console.S	\
-				drivers/delay_timer/delay_timer.c	\
-				drivers/delay_timer/generic_delay_timer.c \
+				drivers/delay_timer/delay_timer.c		\
+				drivers/delay_timer/generic_delay_timer.c 	\
 				lib/xlat_tables/xlat_tables_common.c		\
 				lib/xlat_tables/aarch32/xlat_tables.c		\
-				plat/common/plat_psci_common.c	\
+				plat/common/plat_gicv2.c                        \
+				plat/common/plat_psci_common.c			\
 				plat/common/aarch32/platform_mp_stack.S		\
-				plat/bcm/aarch32/plat_helpers.S	\
+				plat/bcm/aarch32/plat_helpers.S			\
 				plat/arm/common/aarch32/arm_helpers.S		\
-				plat/arm/common/arm_common.c	\
-				plat/bcm/brcm_bl32_setup.c		\
-				plat/bcm/brcm_pm.c	\
-				plat/bcm/topology.c			\
-				plat/bcm/drivers/pmc_drv.c	\
-				plat/bcm/drivers/pmc_cpu_core.c	\
-				plat/bcm/sp_min/src/opteed_main.c	\
+				plat/arm/common/arm_common.c			\
+				plat/bcm/brcm_bl32_setup.c			\
+				plat/bcm/brcm_pm.c				\
+				plat/bcm/topology.c				\
+				plat/bcm/drivers/pmc_drv.c			\
+				plat/bcm/drivers/pmc_cpu_core.c			\
+				plat/bcm/sp_min/src/opteed_main.c		\
 				plat/bcm/aarch32/opteed_helper.S
-
-ifeq ($(strip $(BRCM_CHIP)),63138)
-PLAT_BL_COMMON_SOURCES += $(PLAT_BL_A9_SOURCE)
-# following is needed to compile out code that A9 does not support
-PL011_GENERIC_UART := 1
-endif
 
 else
 PLAT_BL_COMMON_SOURCES	= plat/bcm/brcm_pm.c
 
-ifeq ($(strip $(BRCM_CHIP)), $(filter $(strip $(BRCM_CHIP)),68880 6837))
+ifeq ($(strip $(BRCM_CHIP)), $(filter $(strip $(BRCM_CHIP)),68880 6837 68375))
 PLAT_BL_COMMON_SOURCES  +=	plat/bcm/drivers/console_8250.c
 HW_ASSISTED_COHERENCY	:= 1
 ERRATA_A55_1530923	:= 1
@@ -82,6 +75,7 @@ BL31_SOURCES		+=	lib/cpus/aarch64/cortex_a53.S		\
 endif
 
 BL31_SOURCES		+=	${GICV2_SOURCES} \
+				plat/common/plat_gicv2.c                \
 				plat/common/plat_psci_common.c		\
 				plat/bcm/topology.c			\
 				plat/bcm/aarch64/plat_helpers.S		\
@@ -92,11 +86,19 @@ BL31_SOURCES		+=	${GICV2_SOURCES} \
 				drivers/delay_timer/generic_delay_timer.c
 endif
 
+TRNG_SUPPORT := $(RNG_HW)
+ifeq ($(strip $(RNG_HW)),1)
+$(eval $(call add_define,HW_RNG_SUPPORT))
+PLAT_BL_COMMON_SOURCES  += plat/bcm/brcm_rng_setup.c
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6766_6765_6764_4912_63146_6813_),)
+PLAT_BL_COMMON_SOURCES  += plat/bcm/drivers/rng/trng.c
+else
+PLAT_BL_COMMON_SOURCES  += plat/bcm/drivers/rng/rng.c
+endif
+endif
+
 override WARMBOOT_ENABLE_DCACHE_EARLY	:=	1
 override PROGRAMMABLE_RESET_ADDRESS	:=	1
-
-# Disable the PSCI platform compatibility layer
-ENABLE_PLAT_COMPAT	:= 	0
 
 BL32_RAM_LOCATION	:=	tdram
 ifeq (${BL32_RAM_LOCATION}, tsram)
@@ -115,10 +117,12 @@ ifeq ($(strip $(KERNEL_ARCH)),arm)
 $(eval $(call add_define,AARCH32))
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68880_6837_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_68880_6837_68375_),)
 $(eval $(call add_define,CONFIG_BRCM_SMC_BASED))
 endif
 
 ifeq ($(strip $(BCM_OPTEE)),y)
 $(eval $(call add_define,SPD_OPTEE))
 endif
+
+TF_LDFLAGS		+=	-z noexecstack

@@ -1,0 +1,55 @@
+#
+# Cache controllers
+#
+
+menu "Cache Controller drivers"
+
+config CACHE
+	bool "Enable Driver Model for Cache controllers"
+	depends on DM
+	help
+	  Enable driver model for cache controllers that are found on
+	  most CPU's. Cache is memory that the CPU can access directly and
+	  is usually located on the same chip. This uclass can be used for
+	  configuring settings that be found from a device tree file.
+
+config L2X0_CACHE
+	tristate "PL310 cache driver"
+	select CACHE
+	depends on ARM
+	help
+	  This driver is for the PL310 cache controller commonly found on
+	  ARMv7(32-bit) devices. The driver configures the cache settings
+	  found in the device tree.
+
+config V5L2_CACHE
+	bool "Andes V5L2 cache driver"
+	select CACHE
+	help
+	  Support Andes V5L2 cache controller in AE350 platform.
+	  It will configure tag and data ram timing control from the
+	  device tree and enable L2 cache.
+
+config NCORE_CACHE
+	bool "Arteris Ncore cache coherent unit driver"
+	select CACHE
+	help
+	  This driver is for the Arteris Ncore cache coherent unit (CCU)
+	  controller. The driver initializes cache directories and coherent
+	  agent interfaces.
+
+config SIFIVE_CCACHE
+	bool "SiFive composable cache"
+	select CACHE
+	help
+	  This driver is for SiFive Composable L2/L3 cache. It enables cache
+	  ways of composable cache.
+
+config SIFIVE_PL2
+	bool "SiFive private L2 cache"
+	select CACHE
+	help
+	  This driver is for SiFive Private L2 cache. It configures registers
+	  to enable the clock gating feature.
+
+endmenu

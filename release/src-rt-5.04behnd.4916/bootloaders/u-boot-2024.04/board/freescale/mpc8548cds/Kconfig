@@ -1,0 +1,24 @@
+if TARGET_MPC8548CDS
+
+config PCI1
+	def_bool y
+
+config FSL_CADMUS
+	def_bool y
+
+config INTERRUPTS
+	def_bool y
+
+config SYS_BOARD
+	default "mpc8548cds"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "MPC8548CDS"
+
+config TARGET_MPC8548CDS_LEGACY
+	bool "Legacy platform support"
+
+endif

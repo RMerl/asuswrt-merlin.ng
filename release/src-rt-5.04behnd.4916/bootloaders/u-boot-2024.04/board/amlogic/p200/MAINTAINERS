@@ -1,0 +1,18 @@
+P200
+M:	Beniamino Galvani <b.galvani@gmail.com>
+M:	Neil Armstrong <neil.armstrong@linaro.org>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/p200/
+F:	configs/nanopi-k2_defconfig
+F:	configs/odroid-c2_defconfig
+F:	configs/p200_defconfig
+F:	configs/wetek-hub_defconfig
+F:	configs/wetek-play2_defconfig
+F:	configs/videostrong-kii-pro_defconfig
+F:	doc/board/amlogic/p200.rst
+F:	doc/board/amlogic/nanopi-k2.rst
+F:	doc/board/amlogic/odroid-c2.rst
+F:      doc/board/amlogic/videostrong-kii-pro.rst
+F:      doc/board/amlogic/wetek-hub.rst
+F:      doc/board/amlogic/wetek-play2.rst

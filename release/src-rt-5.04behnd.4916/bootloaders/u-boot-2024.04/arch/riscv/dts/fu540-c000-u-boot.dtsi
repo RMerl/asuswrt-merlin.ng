@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * (C) Copyright 2019 SiFive, Inc
+ */
+
+#include <dt-bindings/reset/sifive-fu540-prci.h>
+
+/ {
+	cpus {
+		assigned-clocks = <&prci PRCI_CLK_COREPLL>;
+		assigned-clock-rates = <1000000000>;
+		bootph-pre-ram;
+		cpu0: cpu@0 {
+			clocks = <&prci PRCI_CLK_COREPLL>;
+			bootph-pre-ram;
+			status = "okay";
+			cpu0_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+		cpu1: cpu@1 {
+			clocks = <&prci PRCI_CLK_COREPLL>;
+			bootph-pre-ram;
+			cpu1_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+		cpu2: cpu@2 {
+			clocks = <&prci PRCI_CLK_COREPLL>;
+			bootph-pre-ram;
+			cpu2_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+		cpu3: cpu@3 {
+			clocks = <&prci PRCI_CLK_COREPLL>;
+			bootph-pre-ram;
+			cpu3_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+		cpu4: cpu@4 {
+			clocks = <&prci PRCI_CLK_COREPLL>;
+			bootph-pre-ram;
+			cpu4_intc: interrupt-controller {
+				bootph-pre-ram;
+			};
+		};
+	};
+
+	soc {
+		bootph-pre-ram;
+		otp: otp@10070000 {
+			compatible = "sifive,fu540-c000-otp";
+			reg = <0x0 0x10070000 0x0 0x1000>;
+			fuse-count = <0x1000>;
+		};
+		clint: clint@2000000 {
+			compatible = "riscv,clint0";
+			interrupts-extended = <&cpu0_intc 3 &cpu0_intc 7
+					       &cpu1_intc 3 &cpu1_intc 7
+					       &cpu2_intc 3 &cpu2_intc 7
+					       &cpu3_intc 3 &cpu3_intc 7
+					       &cpu4_intc 3 &cpu4_intc 7>;
+			reg = <0x0 0x2000000 0x0 0x10000>;
+			bootph-pre-ram;
+		};
+		prci: clock-controller@10000000 {
+			#reset-cells = <1>;
+			resets = <&prci PRCI_RST_DDR_CTRL_N>,
+				 <&prci PRCI_RST_DDR_AXI_N>,
+				 <&prci PRCI_RST_DDR_AHB_N>,
+				 <&prci PRCI_RST_DDR_PHY_N>,
+				 <&prci PRCI_RST_GEMGXL_N>;
+			reset-names = "ddr_ctrl", "ddr_axi", "ddr_ahb",
+					"ddr_phy", "gemgxl_reset";
+		};
+		dmc: dmc@100b0000 {
+			compatible = "sifive,fu540-c000-ddr";
+			reg = <0x0 0x100b0000 0x0 0x0800
+			       0x0 0x100b2000 0x0 0x2000
+			       0x0 0x100b8000 0x0 0x1000>;
+			clocks = <&prci PRCI_CLK_DDRPLL>;
+			clock-frequency = <933333324>;
+			bootph-pre-ram;
+		};
+	};
+};
+
+&prci {
+	bootph-pre-ram;
+};
+
+&uart0 {
+	bootph-pre-ram;
+};
+
+&qspi2 {
+	bootph-pre-ram;
+};
+
+&eth0 {
+	assigned-clocks = <&prci PRCI_CLK_GEMGXLPLL>;
+	assigned-clock-rates = <125000000>;
+};
+
+&l2cache {
+	status = "okay";
+};

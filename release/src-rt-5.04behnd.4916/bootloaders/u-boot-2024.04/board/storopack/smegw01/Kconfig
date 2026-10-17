@@ -1,0 +1,22 @@
+if TARGET_SMEGW01
+
+config SYS_BOARD
+	default "smegw01"
+
+config SYS_VENDOR
+	default "storopack"
+
+config SYS_CONFIG_NAME
+	default "smegw01"
+
+config IMX_CONFIG
+	default "board/storopack/smegw01/imximage.cfg"
+
+config SYS_BOOT_LOCKED
+	bool "Lock boot process to EMMC"
+	default y
+	help
+	  Say N here if you want to boot from eMMC and SD.
+	  Say Y to boot from eMMC.
+
+endif

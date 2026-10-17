@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		sort-by-offset;
+		end-at-4gb;
+		size = <0x800000>;
+		u-boot {
+			offset = <0xffff0000>;
+		};
+		intel-descriptor {
+			filename = "descriptor.bin";
+		};
+	};
+};

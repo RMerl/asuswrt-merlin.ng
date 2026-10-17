@@ -31,19 +31,6 @@
 			};
 		};
 	};
-
-	periph {
-		i2s: bcm63xx-i2s {
-			pinctrl-0 = <&e_i2s_sclk_pin_29 &e_i2s_lrck_pin_30 &e_i2s_rx_sdata_pin_31 &e_i2s_tx_sdata_pin_32 &e_i2s_mclk_pin_33>;
-			pinctrl-names = "default";
-			compatible = "brcm,bcm63xx-i2s";
-			reg = <0x2080 0x21>;
-			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&i2sclk>, <&osc>;
-			clock-names = "i2sclk","i2sosc"; 
-		};
-	};
-
 };
 
 &mdio_sf2 {

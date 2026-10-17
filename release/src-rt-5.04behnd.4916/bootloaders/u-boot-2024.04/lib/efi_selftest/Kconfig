@@ -1,0 +1,12 @@
+config CMD_BOOTEFI_SELFTEST
+	bool "UEFI unit tests"
+	depends on CMD_BOOTEFI
+	imply PARTITIONS
+	imply DOS_PARTITION
+	imply FAT
+	imply FAT_WRITE
+	imply CMD_POWEROFF if PSCI_RESET || SYSRESET_PSCI
+	help
+	  This adds a UEFI test application to U-Boot that can be executed
+	  via the 'bootefi selftest' command. It provides extended tests of
+	  the UEFI API implementation.

@@ -1,0 +1,150 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2019 Toradex AG
+ */
+
+/ {
+	sysinfo {
+		compatible = "toradex,sysinfo";
+	};
+};
+
+&{/imx8qx-pm} {
+
+	bootph-some-ram;
+};
+
+&mu {
+	bootph-some-ram;
+};
+
+&clk {
+	bootph-some-ram;
+};
+
+&iomuxc {
+	bootph-some-ram;
+};
+
+&pd_lsio {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio0 {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio1 {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio2 {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio3 {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio4 {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio5 {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio6 {
+	bootph-some-ram;
+};
+
+&pd_lsio_gpio7 {
+	bootph-some-ram;
+};
+
+&pd_dma {
+	bootph-some-ram;
+};
+
+&pd_dma_lpuart0 {
+	bootph-some-ram;
+};
+
+&pd_dma_lpuart3 {
+	bootph-some-ram;
+};
+
+&pd_conn {
+	bootph-some-ram;
+};
+
+&pd_conn_sdch0 {
+	bootph-some-ram;
+};
+
+&pd_conn_sdch1 {
+	bootph-some-ram;
+};
+
+&pd_conn_sdch2 {
+	bootph-some-ram;
+};
+
+&gpio_expander_43 {
+	usb-bypass-n-hog {
+		gpio-hog;
+		gpios = <5 GPIO_ACTIVE_LOW>;
+		line-name = "usb-bypass-n";
+		output-high;
+	};
+	usb-reset-n-hog {
+		gpio-hog;
+		gpios = <4 GPIO_ACTIVE_LOW>;
+		line-name = "usb-reset-n";
+		output-low;
+	};
+};
+
+&gpio0 {
+	bootph-some-ram;
+};
+
+&gpio1 {
+	bootph-some-ram;
+};
+
+&gpio2 {
+	bootph-some-ram;
+};
+
+&gpio3 {
+	bootph-some-ram;
+};
+
+&gpio4 {
+	bootph-some-ram;
+};
+
+&gpio5 {
+	bootph-some-ram;
+};
+
+&gpio6 {
+	bootph-some-ram;
+};
+
+&gpio7 {
+	bootph-some-ram;
+};
+
+&lpuart3 {
+	bootph-some-ram;
+};
+
+&usdhc1 {
+	bootph-some-ram;
+};
+
+&usdhc2 {
+	bootph-some-ram;
+};

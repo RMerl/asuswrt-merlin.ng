@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "dra74x.dtsi"
+
+/ {
+	compatible = "ti,dra762", "ti,dra7";
+
+};
+
+/* MCAN interrupts are hard-wired to irqs 67, 68 */
+&crossbar_mpu {
+	ti,irqs-skip = <10 67 68 133 139 140>;
+};

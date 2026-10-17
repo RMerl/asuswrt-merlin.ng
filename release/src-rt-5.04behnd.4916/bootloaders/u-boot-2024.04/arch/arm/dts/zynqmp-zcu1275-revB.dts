@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx ZynqMP ZCU1275 RevB
+ *
+ * (C) Copyright 2018 - 2021, Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ * Siva Durga Prasad Paladugu <siva.durga.prasad.paladugu@amd.com>
+ */
+
+/dts-v1/;
+
+#include "zynqmp.dtsi"
+#include "zynqmp-clk-ccf.dtsi"
+
+/ {
+	model = "ZynqMP ZCU1275 RevB";
+	compatible = "xlnx,zynqmp-zcu1275-revB", "xlnx,zynqmp-zcu1275",
+		     "xlnx,zynqmp";
+
+	aliases {
+		serial0 = &uart0;
+		serial1 = &dcc;
+		spi0 = &qspi;
+		mmc0 = &sdhci1;
+		ethernet0 = &gem1;
+	};
+
+	chosen {
+		bootargs = "earlycon";
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+};
+
+&dcc {
+	status = "okay";
+};
+
+&gem1 {
+	status = "okay";
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		phy1: ethernet-phy@1 {
+			reg = <1>; /* KSZ9031RNXIC on AES-FMC-NETW1-G */
+			rxc-skew-ps = <1800>; /* Skew control of RX_CLK pad output */
+			txc-skew-ps = <1800>; /* Skew control of GTX_CLK pad input */
+			txen-skew-ps = <900>; /* Skew control of TX_CTL pad input */
+			rxdv-skew-ps = <0>; /* Skew control of RX_CTL pad output */
+			rxd0-skew-ps = <0>; /* Skew control of RXD0 pad output */
+			rxd1-skew-ps = <0>; /* Skew control of RXD1 pad output */
+			rxd2-skew-ps = <0>; /* Skew control of RXD2 pad output */
+			rxd3-skew-ps = <0>; /* Skew control of RXD3 pad output */
+			txd0-skew-ps = <900>; /* Skew control of TXD0 pad input */
+			txd1-skew-ps = <900>; /* Skew control of TXD1 pad input */
+			txd2-skew-ps = <900>; /* Skew control of TXD2 pad input */
+			txd3-skew-ps = <900>; /* Skew control of TXD3 pad input */
+		};
+	};
+};
+
+&gpio {
+	status = "okay";
+};
+
+&qspi {
+	status = "okay";
+	flash@0 {
+		compatible = "m25p80", "jedec,spi-nor"; /* 32MB */
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+		spi-max-frequency = <108000000>; /* Based on DC1 spec */
+		partition@0 { /* for testing purpose */
+			label = "qspi-fsbl-uboot";
+			reg = <0x0 0x100000>;
+		};
+		partition@100000 { /* for testing purpose */
+			label = "qspi-linux";
+			reg = <0x100000 0x500000>;
+		};
+		partition@600000 { /* for testing purpose */
+			label = "qspi-device-tree";
+			reg = <0x600000 0x20000>;
+		};
+		partition@620000 { /* for testing purpose */
+			label = "qspi-rootfs";
+			reg = <0x620000 0x5E0000>;
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&sdhci1 {
+	status = "okay";
+	/*
+	 * 1.0 revision has level shifter and this property should be
+	 * removed for supporting UHS mode
+	 */
+	no-1-8-v;
+	xlnx,mio-bank = <1>;
+};

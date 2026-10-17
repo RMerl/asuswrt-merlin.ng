@@ -1,6 +1,0 @@
-* Renesas SCI serial interface
-
-Required properties:
-- compatible: must be "renesas,scif", "renesas,scifa" or "renesas,sci"
-- reg: exactly one register range with length
-- clock: input clock frequency for the SCI unit

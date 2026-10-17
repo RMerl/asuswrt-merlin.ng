@@ -4204,6 +4204,9 @@ static const ru_reg_rec *HASH_REGS[] =
 const ru_block_rec HASH_BLOCK =
 {
     "HASH",
+#if RU_INCLUDE_SIZE
+    { 0x00018004 },
+#endif
     HASH_ADDRS,
     1,
     71,

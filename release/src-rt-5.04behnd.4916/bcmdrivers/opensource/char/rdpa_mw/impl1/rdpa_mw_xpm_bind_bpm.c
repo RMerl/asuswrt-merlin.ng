@@ -94,10 +94,13 @@ static int rdpa_xpm_bind_bpm_hw_pool_init(void)
     memset((void *)&rdpa_xpm_bind_bpm_drv, 0x00, sizeof(rdpa_xpm_bind_bpm_drv));
 
     // HW BPM Operations Callbacks
-    rdpa_xpm_bind_bpm_drv.ops.is_hw_buffer        =  f_rdpa_buffer_is_hw_buffer;
-    rdpa_xpm_bind_bpm_drv.ops.free_buf		= rdpa_buffer_bpm_free_buf;
-    rdpa_xpm_bind_bpm_drv.ops.free_mult_buf	= rdpa_buffer_bpm_free_mult_buf;
-    rdpa_xpm_bind_bpm_drv.ops.free_skb_data_list	= rdpa_buffer_bpm_free_skb_data_list;
+    rdpa_xpm_bind_bpm_drv.ops.is_hw_buffer        = f_rdpa_buffer_is_hw_buffer;
+    rdpa_xpm_bind_bpm_drv.ops.free_fkb            = rdpa_buffer_bpm_free_buf;
+    rdpa_xpm_bind_bpm_drv.ops.free_buf            = rdpa_buffer_bpm_free_buf;
+    rdpa_xpm_bind_bpm_drv.ops.free_mult_buf       = rdpa_buffer_bpm_free_mult_buf;
+    rdpa_xpm_bind_bpm_drv.ops.free_skb_hdr        = rdpa_buffer_bpm_free_buf;
+    rdpa_xpm_bind_bpm_drv.ops.free_mult_skb_hdr   = rdpa_buffer_bpm_free_mult_buf;
+    rdpa_xpm_bind_bpm_drv.ops.free_skb_data_list  = rdpa_buffer_bpm_free_skb_data_list;
 
     // Register RDPA Buffer HW BPM with GBPM
     ret = gbpm_register_hw_pool_api((void *)&(rdpa_xpm_bind_bpm_drv.ops), (void *)&(rdpa_xpm_bind_bpm_drv.map));

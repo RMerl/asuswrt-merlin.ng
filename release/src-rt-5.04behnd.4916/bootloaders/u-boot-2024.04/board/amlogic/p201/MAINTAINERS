@@ -1,0 +1,7 @@
+P201
+M:	Neil Armstrong <neil.armstrong@linaro.org>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/p201/
+F:	configs/p201_defconfig
+F:	doc/board/amlogic/p201.rst

@@ -1,0 +1,139 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Hitachi Power Grids SUPC5 Device Tree Source
+ *
+ * Copyright (C) 2020 Heiko Schocher <hs@denx.de>
+ *
+ */
+
+/dts-v1/;
+
+#include "km8321.dtsi"
+
+/ {
+	model = "SUPC5";
+	compatible = "hitachi,kmpbec8321";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	aliases {
+		ethernet0 = &enet_piggy2;
+		serial0 = &serial0;
+	};
+};
+
+&i2c0 {
+	mux@70 {
+		compatible = "nxp,pca9547";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c@1 {
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Inventory EEPROM of the unit itself */
+			ivm@50 {
+				label = "MAIN_CTRL";
+				compatible = "dummy";
+				reg = <0x50>;
+			};
+		};
+
+		i2c@2 {
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Temperature sensors */
+			temp@49 {
+				label = "board";
+				compatible = "national,lm75";
+				reg = <0x49>;
+			};
+		};
+	};
+};
+
+&par_io {
+	/* UCC5 as HDLC controller for ICN */
+	pio_ucc5: ucc_pin@04 {
+		pio-map = <
+			/* port pin dir open_drain assignment has_irq */
+			2   0  1  0  2  0	/* TxD0 */
+			2   8  2  0  2  0	/* RxD0 */
+			2  29  2  0  2  0	/* CTS */
+			3  30  2  0  1  0	/* ICN CLK */
+			>;
+	};
+
+	/* UCC4 Piggy Ethernet */
+	pio_ucc4: ucc_pin@03 {
+		pio-map = <
+			/* port pin dir open_drain assignment has_irq */
+			3   4  3  0  2  0	/* MDIO */
+			3   5  1  0  2  0	/* MDC  */
+
+			1 18  1  0  1  0	/* TxD0 */
+			1 19  1  0  1  0	/* TxD1 */
+			1 22  2  0  1  0	/* RxD0 */
+			1 23  2  0  1  0	/* RxD1 */
+			1 26  2  0  1  0	/* RX_ER */
+			1 28  2  0  1  0	/* RX_DV */
+			1 30  1  0  1  0	/* TX_EN */
+			1 31  2  0  1  0	/* CRS */
+			/* UCC4_RMII_CLK (CLK17) */
+			3 10  2  0  3  0
+		>;
+	};
+
+	pio_spi: spi_pin@01 {
+		pio-map = <
+			/*
+			 * port  pin  dir  open_drain  assignment  has_irq
+			 * SPI_MOSI (PD0, bi, f3)
+			 */
+			3  0  3  0  1  0
+			/* SPI_MISO (PD1, bi, f3) */
+			3  1  3  0  1  0
+			/* SPI_CLK  (PD2, bi, f3) */
+			3  2  3  0  1  0
+		>;
+	};
+};
+
+&spi0 {
+	pio-handle = <&pio_spi>;
+};
+
+&localbus {
+	ranges = <0 0 0xf0000000 0x04000000     /* LB 0 Flash (boot) */
+		  1 0 0xe8000000 0x01000000     /* LB 1 PRIO1 and Piggy */
+		  2 0 0xa0000000 0x10000000>;   /* LB 2 LPXF */
+
+	flash@0,0 {
+		compatible = "cfi-flash";
+		reg = <0 0x00000000 0x04000000>;
+		bank-width = <2>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 { /* 768KB */
+			label = "u-boot";
+			reg = <0 0xC0000>;
+		};
+		partition@c0000 { /* 128KB */
+			label = "env";
+			reg = <0xc0000 0x20000>;
+		};
+		partition@e0000 { /* 128KB */
+			label = "envred";
+			reg = <0xe0000 0x20000>;
+		};
+		partition@100000 { /* 64512KB */
+			label = "ubi0";
+			reg = <0x100000 0x3F00000>;
+		};
+	};
+};

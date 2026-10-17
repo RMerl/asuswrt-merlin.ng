@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		allow-repack;
+
+		fill {
+			size = <0x1000>;
+			fill-byte = [77];
+		};
+
+		fit {
+			description = "test-desc";
+			#address-cells = <1>;
+
+			images {
+				kernel {
+					description = "test u-boot";
+					type = "kernel";
+					arch = "arm64";
+					os = "linux";
+					compression = "none";
+					load = <00000000>;
+					entry = <00000000>;
+
+					u-boot {
+					};
+				};
+
+				fdt-1 {
+					description = "test u-boot-nodtb";
+					type = "flat_dt";
+					arch = "arm64";
+					compression = "none";
+
+					u-boot-nodtb {
+					};
+				};
+
+				scr-1 {
+					description = "test blob";
+					type = "script";
+					arch = "arm64";
+					compression = "none";
+
+					blob {
+						filename = "compress";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-1";
+
+				conf-1 {
+					description = "Kernel with FDT blob";
+					kernel = "kernel";
+					fdt = "fdt-1";
+				};
+			};
+		};
+
+		u-boot-dtb {
+		};
+
+		fdtmap {
+		};
+	};
+};

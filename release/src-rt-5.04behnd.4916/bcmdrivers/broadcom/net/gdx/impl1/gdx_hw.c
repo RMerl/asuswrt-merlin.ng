@@ -368,6 +368,7 @@ static inline void gdx_set_nbuff_dev(pNBuff_t nbuff, void *dev)
 
 static inline int gdx_exception_packet_handle(struct sk_buff *skb, gdx_hwacc_rx_info_t *info)
 {
+    skbuff_bcm_ext_iq_prio_set(skb, info->iq_prio); 
     skb->bcm_ext.gdx_loopbk = 1;
 #if defined(CONFIG_BCM_CSO)        
     skb->ip_summed |= info->rx_csum_verified;
@@ -428,7 +429,7 @@ static inline void gdx_initialize_skb(struct sk_buff *skb, gdx_hwacc_rx_info_t *
     {
 
         skb_headerinit(BCM_PKT_HEADROOM + info->data_offset + prepend_size,
-#if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
+#if defined(CC_NBUFF_FLUSH_OPTIMIZATION) || defined(CONFIG_CPU_RX_FROM_XPM)
             SKB_DATA_ALIGN(info->size - prepend_size + BCM_SKB_TAILROOM + info->data_offset),
 #else
             BCM_MAX_PKT_LEN - info->data_offset,
@@ -763,7 +764,7 @@ int gdx_delete_dev_group(int group_idx)
     for (dev_idx = 0; dev_idx < GDX_GENDEV_MAX_NUM_DEV; dev_idx++)
     {
         gendev_info_p = gdx_gendev_info_pp[dev_idx];
-        if (gendev_info_p->gdx_group_id == group_idx)
+        if ((gendev_info_p != NULL) && (gendev_info_p->gdx_group_id == group_idx))
         {
             GDX_PRINT_ERROR("one or more valid devices exist @dev_idx %d", dev_idx);
             return GDX_FAILURE;
@@ -1164,6 +1165,11 @@ static const struct file_operations gdx_dbg_mask_proc_fops = {
 /**                                                                        **/
 /**                                                                        **/
 /****************************************************************************/
+
+
+
+extern int gdx_fro_stats_file_show_proc(struct seq_file *m, void *v);
+
 static int gdx_proc_init(void)
 {
     if (!(proc_gdx_dir = proc_mkdir("gdx", NULL))) 
@@ -1175,6 +1181,9 @@ static int gdx_proc_init(void)
         goto fail;
              
     if (!proc_create_single("stats", 0644, proc_gdx_dir, gdx_stats_file_show_proc))
+        goto fail;
+
+    if (!proc_create_single("fro_stats", 0644, proc_gdx_dir, gdx_fro_stats_file_show_proc))
         goto fail;
         
     if (gdx_hwacc_proc_init()) /* platform specific procs */
@@ -1193,11 +1202,15 @@ static inline void gdx_proc_uninit(void)
     remove_proc_entry("dbg", proc_gdx_dir);
     remove_proc_entry("stats", proc_gdx_dir);
     remove_proc_entry("dev", proc_gdx_dir);
+    remove_proc_entry("fro_stats", proc_gdx_dir);
     gdx_hwacc_proc_uninit(proc_gdx_dir); /* remove platform-specific procs */
     remove_proc_entry("gdx", NULL);
 }
 
 extern int (*gdx_hw_accel_loopbk_fn)(struct sk_buff *skb, bool l3_packet);
+#if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
+extern int (*gdx_hw_accel_spdtest_tx_start_fn)(struct sk_buff *skb);
+#endif
 extern int (*bcm_netdev_gen_hwaccel_notfier_cb)(struct net_device *dev,
        int event, int group);
 extern int (*gdx_get_blog_info_fn)(struct sk_buff *skb);
@@ -1224,6 +1237,11 @@ extern int (*gdx_get_blog_info_fn)(struct sk_buff *skb);
 /****************************************************************************/
 static void gdx_bind(void)
 {
+#if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE))
+#if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
+    gdx_hw_accel_spdtest_tx_start_fn = gdx_hwacc_spdtest_tx_start;
+#endif
+#endif
     gdx_hw_accel_loopbk_fn = gdx_hwacc_tx;
     bcm_netdev_gen_hwaccel_notfier_cb = gdx_gendev_notifier;
     gdx_get_blog_info_fn = gdx_gendev_get_blog_info;
@@ -1253,6 +1271,9 @@ static void gdx_bind(void)
 /****************************************************************************/
 static void gdx_unbind(void)
 {
+#if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
+    gdx_hw_accel_spdtest_tx_start_fn = NULL;
+#endif
     gdx_hw_accel_loopbk_fn = NULL;
     bcm_netdev_gen_hwaccel_notfier_cb = NULL;
     gdx_get_blog_info_fn = NULL;

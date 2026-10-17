@@ -1,0 +1,190 @@
+if ARCH_KIRKWOOD
+
+config FEROCEON_88FR131
+	bool
+
+config KW88F6192
+	bool
+	select ARCH_VERY_EARLY_INIT
+
+config KW88F6281
+	bool
+	select ARCH_VERY_EARLY_INIT
+
+config SHEEVA_88SV131
+	bool
+
+config KIRKWOOD_COMMON
+	bool
+	select DM_SERIAL
+	select SYS_NS16550
+
+config HAS_CUSTOM_SYS_INIT_SP_ADDR
+        bool "Use a custom location for the initial stack pointer address"
+        default y
+
+config CUSTOM_SYS_INIT_SP_ADDR
+        hex "Static location for the initial stack pointer"
+        depends on HAS_CUSTOM_SYS_INIT_SP_ADDR
+        default 0x5ff000
+
+choice
+	prompt "Marvell Kirkwood board select"
+	optional
+
+config TARGET_OPENRD
+	bool "Marvell OpenRD Board"
+	select KW88F6281
+	select SHEEVA_88SV131
+
+config TARGET_DREAMPLUG
+	bool "DreamPlug Board"
+	select KW88F6281
+	select SHEEVA_88SV131
+	select KIRKWOOD_COMMON
+
+config TARGET_DS109
+	bool "Synology DS109"
+	select KW88F6281
+	select SHEEVA_88SV131
+
+config TARGET_GURUPLUG
+	bool "GuruPlug Board"
+	select KW88F6281
+	select SHEEVA_88SV131
+
+config TARGET_SHEEVAPLUG
+	bool "SheevaPlug Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select KIRKWOOD_COMMON
+
+config TARGET_LSXL
+	bool "lsxl Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select BOARD_EARLY_INIT_R
+	select MISC_INIT_R
+	select KIRKWOOD_COMMON
+
+config TARGET_POGO_E02
+	bool "pogo_e02 Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select KIRKWOOD_COMMON
+
+config TARGET_POGO_V4
+	bool "Pogoplug V4 Board"
+	select FEROCEON_88FR131
+	select KW88F6192
+	select KIRKWOOD_COMMON
+
+config TARGET_DNS325
+	bool "dns325 Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+
+config TARGET_ICONNECT
+	bool "iconnect Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select KIRKWOOD_COMMON
+
+config TARGET_KM_KIRKWOOD
+	bool "KM Kirkwood Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select VENDOR_KM
+
+config TARGET_NET2BIG_V2
+	bool "LaCie 2Big Network v2 NAS Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+
+config TARGET_NETSPACE_V2
+	bool "LaCie netspace_v2 Board"
+	select FEROCEON_88FR131
+
+config TARGET_IB62X0
+	bool "ib62x0 Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+
+config TARGET_DOCKSTAR
+	bool "Dockstar Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select KIRKWOOD_COMMON
+
+config TARGET_GOFLEXHOME
+	bool "GoFlex Home Board"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select KIRKWOOD_COMMON
+
+config TARGET_NAS220
+	bool "BlackArmor NAS220"
+	select FEROCEON_88FR131
+	select KW88F6192
+
+config TARGET_NSA310S
+	bool "Zyxel NSA310S"
+	select FEROCEON_88FR131
+	select KW88F6192
+	select KIRKWOOD_COMMON
+
+config TARGET_NSA325
+	bool "ZyXEL NSA325"
+	select FEROCEON_88FR131
+	select KW88F6281
+	select KIRKWOOD_COMMON
+
+config TARGET_SBx81LIFKW
+	bool "Allied Telesis SBx81GS24/SBx81GT40/SBx81XS6/SBx81XS16"
+	select FEROCEON_88FR131
+	select KW88F6281
+
+config TARGET_SBx81LIFXCAT
+	bool "Allied Telesis SBx81GP24/SBx81GT24"
+	select FEROCEON_88FR131
+	select KW88F6281
+
+endchoice
+
+config SYS_SOC
+	default "kirkwood"
+
+config KIRKWOOD_RGMII_PAD_1V8
+	bool "Configures the I/O voltage of the pads connected gigabit interface to 1.8V"
+	default y
+
+config KIRKWOOD_EGIGA_INIT
+	bool "Enable GbePort0/1 for kernel"
+	default y
+
+config KIRKWOOD_PCIE_INIT
+	bool "Enable PCIe Port0 for kernel"
+	default y
+
+source "board/Marvell/openrd/Kconfig"
+source "board/Marvell/dreamplug/Kconfig"
+source "board/Synology/ds109/Kconfig"
+source "board/Marvell/guruplug/Kconfig"
+source "board/Marvell/sheevaplug/Kconfig"
+source "board/buffalo/lsxl/Kconfig"
+source "board/cloudengines/pogo_e02/Kconfig"
+source "board/cloudengines/pogo_v4/Kconfig"
+source "board/d-link/dns325/Kconfig"
+source "board/iomega/iconnect/Kconfig"
+source "board/LaCie/net2big_v2/Kconfig"
+source "board/LaCie/netspace_v2/Kconfig"
+source "board/raidsonic/ib62x0/Kconfig"
+source "board/Seagate/dockstar/Kconfig"
+source "board/Seagate/goflexhome/Kconfig"
+source "board/Seagate/nas220/Kconfig"
+source "board/zyxel/nsa310s/Kconfig"
+source "board/zyxel/nsa325/Kconfig"
+source "board/alliedtelesis/SBx81LIFKW/Kconfig"
+source "board/alliedtelesis/SBx81LIFXCAT/Kconfig"
+
+endif

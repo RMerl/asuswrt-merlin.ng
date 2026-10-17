@@ -66,6 +66,8 @@ int send_message_to_pon_drv_task(pon_drv_msg_type t, ...)
     pon_drv_msg pon_drv_message;
     char *str;
 
+    memset(&pon_drv_message, 0, sizeof(pon_drv_msg));
+
     /* Init the va database */
     va_start(parameters, t);
     pon_drv_message.type = t;
@@ -147,6 +149,9 @@ EXPORT_SYMBOL(send_message_to_pon_drv_task);
 struct task_struct *pon_drv_thread = NULL;
 int  pon_drv_thread_arg = 0;
 
+extern struct mutex config_lock;
+extern serdes_wan_type_t wan_serdes_type;
+
 static int driver_thread(void *arg)
 {
     uint32_t length;
@@ -171,6 +176,14 @@ static int driver_thread(void *arg)
         if (bdmf_error != BDMF_ERR_OK)
         {
             __logError("Error receving message %d\n", bdmf_error);
+            continue;
+        }
+
+        mutex_lock(&config_lock);
+        if (wan_serdes_type == SERDES_WAN_TYPE_NONE)
+        {
+            __logError("foobar\n");
+            mutex_unlock(&config_lock);
             continue;
         }
 
@@ -270,6 +283,7 @@ static int driver_thread(void *arg)
                 dump_stack();
                 break;
         }
+        mutex_unlock(&config_lock);
     }
 
     msleep(100);

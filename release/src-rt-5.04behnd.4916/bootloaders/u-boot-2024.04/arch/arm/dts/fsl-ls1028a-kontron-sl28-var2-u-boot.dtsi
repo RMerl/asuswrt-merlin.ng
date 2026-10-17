@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include "fsl-ls1028a-kontron-sl28-u-boot.dtsi"
+
+/ {
+	aliases {
+		ethernet0 = &mscc_felix_port0;
+		ethernet1 = &mscc_felix_port1;
+	};
+};
+
+&mscc_felix_port0 {
+	label = "gbe0";
+};
+
+&mscc_felix_port1 {
+	label = "gbe1";
+};

@@ -37,6 +37,7 @@
 
 #include "rdpa_types.h"
 #include "rdpa_spdtest_common.h"
+#include "rdpa_cpu_basic.h"
 
 /** Global configuration for UDP Speed Test mode.\n
  */
@@ -76,6 +77,8 @@ typedef struct
     rdpa_udpspdtest_basic_stat_t basic; /**< Basic statistics, common to all tests */
     rdpa_udpspdtest_iperf3_ext_stat_t iperf3_ext; /**< Iperf3 extention statistics */
 } rdpa_udpspdtest_stat_t;
+
+int rdpa_udpspdtest_tx_start(const rdpa_cpu_tx_info_t *info, int to_wan, bdmf_sysb sysb);
 
 /** @} end of udpspdtest Doxygen group. */
 

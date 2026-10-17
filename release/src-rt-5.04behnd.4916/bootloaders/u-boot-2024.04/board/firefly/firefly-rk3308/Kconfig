@@ -1,0 +1,15 @@
+if TARGET_ROC_RK3308_CC
+
+config SYS_BOARD
+	default "firefly-rk3308"
+
+config SYS_VENDOR
+	default "firefly"
+
+config SYS_CONFIG_NAME
+	default "firefly_rk3308"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

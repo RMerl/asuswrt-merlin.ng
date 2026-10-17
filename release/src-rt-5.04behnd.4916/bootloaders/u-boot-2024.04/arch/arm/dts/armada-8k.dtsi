@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018 - 2021 Marvell International Ltd.
+ */
+/* Common definitions used by Armada 8K DTs */
+
+/* This defines used to calculate the base address of each CP */
+#define CP110_BASE_OFFSET			(0xf2000000)
+#define CP110_SPACE_SIZE			(0x02000000)
+#define CP110_BASE				(CP110_BASE_OFFSET + \
+	((CP110_NUM % 2) * CP110_SPACE_SIZE))
+
+#define CP110_PCIE_MEM_SIZE(iface)	(0xf00000)
+#define CP110_PCIEx_CPU_MEM_BASE(iface)		\
+	(0xf6000000 + (CP110_NUM % 2) * 0x4000000 + (iface) *  0x1000000)
+#define CP110_PCIEx_BUS_MEM_BASE(iface)		\
+		(CP110_PCIEx_CPU_MEM_BASE(iface))
+#define CP110_PCIE_BUS_MEM_CFG			(0x82000000)

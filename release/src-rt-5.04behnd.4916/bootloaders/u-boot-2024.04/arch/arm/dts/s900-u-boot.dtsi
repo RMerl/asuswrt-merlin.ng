@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ */
+
+/{
+	soc {
+		bootph-all;
+	};
+};
+
+&uart5 {
+	bootph-all;
+};
+
+&cmu {
+	bootph-all;
+};

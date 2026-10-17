@@ -1,0 +1,30 @@
+config SYS_BOARD
+	default "dfi-bt700"
+
+config SYS_VENDOR
+	default "dfi"
+
+config SYS_SOC
+	default "baytrail"
+
+config SYS_CONFIG_NAME
+	default "dfi-bt700" if TARGET_Q7X_151_DFI_BT700
+	default "theadorable-x86-dfi-bt700" if TARGET_THEADORABLE_X86_DFI_BT700
+
+config TEXT_BASE
+	default 0xfff00000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select INTEL_BAYTRAIL
+	select BOARD_ROMSIZE_KB_8192
+	select BOARD_EARLY_INIT_F
+	select BOARD_LATE_INIT
+	select SPI_FLASH_STMICRO
+	imply SPI_FLASH_SPANSION
+	imply SPI_FLASH_WINBOND
+	select SERIAL_RX_BUFFER
+
+config PCIE_ECAM_BASE
+	default 0xe0000000

@@ -41,7 +41,6 @@
 #include <board.h>
 
 #include <shared_utils.h>
-#include <bcm_pinmux.h>
 #include <bcm_otp.h>
 #include <bcm_dgasp.h>
 #include "bcm_dgasphw.h"

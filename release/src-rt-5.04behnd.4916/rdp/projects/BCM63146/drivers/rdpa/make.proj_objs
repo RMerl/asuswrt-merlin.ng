@@ -3,3 +3,7 @@
 -include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.xtm_objs
 
 RDPA_OBJS += rdpa_ct.o
+RDPA_OBJS += rdpa_score.o
+
+# uncomment below for CPU_RX_FROM_XPM support
+# RDPA_OBJS += rdpa_buffer.o

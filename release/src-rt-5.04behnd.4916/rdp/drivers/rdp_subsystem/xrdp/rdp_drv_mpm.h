@@ -38,9 +38,11 @@ extern "C"
 
 void drv_mpm_init(void *virt_base, uintptr_t phys_base, unsigned int buf_size, uint32_t pool_memory_size, uint32_t num_of_token);
 
-bdmf_error_t drv_mpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num);
+bdmf_error_t drv_mpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num, uint8_t no_lock);
 bdmf_error_t drv_mpm_free_buffer(uint32_t packet_len, uint32_t buff_num, void *info);
 bdmf_error_t drv_mpm_check_xoff(uint32_t num_of_token);
+
+int drv_fpm_data_path_mpm_init(dpi_params_t *p_dpi_cfg);
 
 #ifdef __cplusplus
 }

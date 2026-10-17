@@ -1,0 +1,98 @@
+Marvell U-Boot Build Instructions
+=================================
+
+This document describes how to compile the U-Boot and how to change U-Boot configuration
+
+Build Procedure
+----------------
+1. Install required packages:
+
+		# sudo apt-get install libssl-dev
+		# sudo apt-get install device-tree-compiler
+		# sudo apt-get install swig libpython-dev
+
+2. Set the cross compiler:
+
+		# sudo apt-get install gcc-aarch64-linux-gnu
+		# export CROSS_COMPILE=aarch64-linux-gnu-
+
+3. Clean-up old residuals:
+
+		# make mrproper
+
+4. Configure the U-Boot:
+
+		# make <defconfig_file>
+
+	- For the Armada-70x0/80x0 DB board use "mvebu_db_armada8k_defconfig"
+	- For the Armada-80x0 MacchiatoBin use "make mvebu_mcbin-88f8040_defconfig"
+	- For the Armada-3700 DB board use "make mvebu_db-88f3720_defconfig"
+	- For the Armada-3700 EspressoBin use "make mvebu_espressobin-88f3720_defconfig"
+
+5. Configure the device-tree and build the U-Boot image:
+
+	For the Armada-70x0/80x0 DB board compile u-boot and set the required device-tree using:
+
+		# make DEVICE_TREE=<name>
+
+	NOTE:
+	Compilation with "mvebu_db_armada8k_defconfig" requires explicitly exporting DEVICE_TREE
+	for the requested board.
+	By default, u-boot is compiled with armada-8040-db device-tree.
+        Using A80x0 device-tree on A70x0 might break the device.
+        In order to prevent this, the required device-tree MUST be set during compilation.
+        All device-tree files are located in ./arch/arm/dts/ folder.
+
+	For other DB boards (MacchiatoBin, EspressoBin and 3700 DB board) compile u-boot with
+	just default device-tree from defconfig using:
+
+		# make
+
+	NOTE:
+	The u-boot.bin should not be used as a stand-alone image.
+	The ARM Trusted Firmware (ATF) build process uses this image to generate the
+	flash image. See TF-A Build Instructions for Marvell Platforms for more details at:
+	https://trustedfirmware-a.readthedocs.io/en/latest/plat/marvell/armada/build.html
+
+Configuration update
+---------------------
+	To update the U-Boot configuration, please refer to doc/README.kconfig
+
+
+Permanent ethernet MAC address
+-------------------------------
+	Prior flashing new U-Boot version (as part of ATF image) it is suggested to backup
+	permanent ethernet MAC addresses as they are stored only in U-Boot env storage (SPI or eMMC).
+	Some boards like EspressoBin have MAC addresses printed on sticker. Some boards got assigned
+	only one address other may also more than one. To print current MAC addresses run:
+
+		# echo $ethaddr
+		# echo $eth1addr
+		# echo $eth2addr
+		# echo $eth3addr
+		# ...
+
+	MAC addresses 00:51:82:11:22:00, 00:51:82:11:22:01, 00:51:82:11:22:02, 00:51:82:11:22:03
+	and F0:AD:4E:03:64:7F are default hardcoded values found in Marvell's and Armbian U-Boot
+	forks and therefore *not* unique. Usage of static hardcoded MAC addresses should be avoided.
+	When original address is lost (e.g. erased by Armbian boot scripts for EspressoBin) it is
+	suggested to generate new random one.
+
+	After flashing new U-Boot version it is suggested to reset U-Boot env variables to default
+	and then set correct permanent ethernet MAC addresses.
+
+		# env default -a
+		# setenv ethaddr XX:XX:XX:XX:XX:XX
+		# setenv eth1addr XX:XX:XX:XX:XX:XX
+		# setenv eth2addr YY:YY:YY:YY:YY:YY
+		# setenv eth3addr ZZ:ZZ:ZZ:ZZ:ZZ:ZZ
+		# ...
+		# saveenv
+
+	Where value for ethaddr is required permanent ethernet MAC address and values for ethNaddr
+	are optional per-port MAC addresses. When optional ethNaddr variables are not defined then
+	they are inherited from required ethaddr variable. eth1addr contains MAC address for the
+	wan port, other for particular lan ports.
+
+	Recent Linux kernel versions use correct permanent ethernet MAC address from U-Boot env as
+	U-Boot will inject it into kernel's device-tree.

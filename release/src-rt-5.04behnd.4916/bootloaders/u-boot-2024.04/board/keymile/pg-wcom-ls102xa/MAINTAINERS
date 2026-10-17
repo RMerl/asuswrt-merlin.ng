@@ -1,0 +1,16 @@
+Hitachi Power Grids LS102XA BOARD
+M:	Aleksandar Gerasimovski <aleksandar.gerasimovski@hitachienergy.com>
+M:	Rainer Boschung <rainer.boschung@hitachienergy.com>
+S:	Maintained
+F:	board/keymile/pg-wcom-ls102xa/
+F:	board/keymile/common/
+F:	board/keymile/scripts/
+F:	include/configs/km/pg-wcom-ls102xa.h
+F:	include/configs/pg-wcom-seli8.h
+F:	include/configs/pg-wcom-expu1.h
+F:	configs/pg_wcom_seli8_defconfig
+F:	configs/pg_wcom_seli8_update_defconfig
+F:	configs/pg_wcom_expu1_defconfig
+F:	configs/pg_wcom_expu1_update_defconfig
+F:	arch/arm/dts/ls1021a-pg-wcom-seli8.dts
+F:	arch/arm/dts/ls1021a-pg-wcom-expu1.dts

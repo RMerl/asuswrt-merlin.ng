@@ -1,0 +1,27 @@
+menu "i.MX9 DDR controllers"
+	depends on ARCH_IMX9
+
+config IMX9_DRAM
+	bool "imx9 dram"
+	select IMX_SNPS_DDR_PHY
+
+config IMX9_LPDDR4X
+	bool "imx9 lpddr4 and lpddr4x"
+	select IMX9_DRAM
+	help
+	  Select the i.MX9 LPDDR4/4X driver support on i.MX9 SOC.
+
+config IMX9_DRAM_PM_COUNTER
+	bool "imx9 DDRC performance monitor counter"
+	default y
+	help
+	  Enable DDR controller performance monitor counter for reference events.
+
+config SAVED_DRAM_TIMING_BASE
+	hex "Define the base address for saved dram timing"
+	help
+	  after DRAM is trained, need to save the dram related timming
+	  info into memory for low power use.
+	default 0x2051C000
+
+endmenu

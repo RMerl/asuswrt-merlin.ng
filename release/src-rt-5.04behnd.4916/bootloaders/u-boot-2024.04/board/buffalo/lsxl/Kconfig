@@ -1,0 +1,23 @@
+if TARGET_LSXL
+
+config SYS_BOARD
+	default "lsxl"
+
+config SYS_VENDOR
+	default "buffalo"
+
+config SYS_CONFIG_NAME
+	default "lsxl"
+
+choice
+	prompt "Board model"
+
+config LSCHLV2
+	bool "LSCHLV2 support"
+
+config LSXHL
+	bool "LSXHL support"
+
+endchoice
+
+endif

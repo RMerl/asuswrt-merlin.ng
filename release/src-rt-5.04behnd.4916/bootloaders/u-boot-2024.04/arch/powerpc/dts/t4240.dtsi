@@ -1,0 +1,189 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * T4240 Silicon/SoC Device Tree Source (pre include)
+ *
+ * Copyright 2013 Freescale Semiconductor Inc.
+ * Copyright 2019-2020 NXP
+ */
+
+/dts-v1/;
+
+/include/ "e6500_power_isa.dtsi"
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: PowerPC,e6500@0 {
+			device_type = "cpu";
+			reg = <0 1>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu1: PowerPC,e6500@2 {
+			device_type = "cpu";
+			reg = <2 3>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu2: PowerPC,e6500@4 {
+			device_type = "cpu";
+			reg = <4 5>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu3: PowerPC,e6500@6 {
+			device_type = "cpu";
+			reg = <6 7>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu4: PowerPC,e6500@8 {
+			device_type = "cpu";
+			reg = <8 9>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu5: PowerPC,e6500@10 {
+			device_type = "cpu";
+			reg = <10 11>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu6: PowerPC,e6500@12 {
+			device_type = "cpu";
+			reg = <12 13>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu7: PowerPC,e6500@14 {
+			device_type = "cpu";
+			reg = <14 15>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu8: PowerPC,e6500@16 {
+			device_type = "cpu";
+			reg = <16 17>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu9: PowerPC,e6500@18 {
+			device_type = "cpu";
+			reg = <18 19>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu10: PowerPC,e6500@20 {
+			device_type = "cpu";
+			reg = <20 21>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+		cpu11: PowerPC,e6500@22 {
+			device_type = "cpu";
+			reg = <22 23>;
+			fsl,portid-mapping = <0x80000000>;
+		};
+	};
+
+	soc: soc@ffe000000 {
+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
+		reg = <0xf 0xfe000000 0 0x00001000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "soc";
+		compatible = "simple-bus";
+
+		mpic: pic@40000 {
+			interrupt-controller;
+			#address-cells = <0>;
+			#interrupt-cells = <4>;
+			reg = <0x40000 0x40000>;
+			compatible = "fsl,mpic";
+			device_type = "open-pic";
+			clock-frequency = <0x0>;
+		};
+
+		espi0: spi@110000 {
+			compatible = "fsl,mpc8536-espi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x110000 0x1000>;
+			fsl,espi-num-chipselects = <4>;
+			status = "disabled";
+		};
+
+		usb@210000 {
+			compatible = "fsl-usb2-mph";
+			reg = <0x210000 0x1000>;
+			phy_type = "utmi";
+		};
+
+		usb@211000 {
+			compatible = "fsl-usb2-dr";
+			reg = <0x211000 0x1000>;
+			phy_type = "utmi";
+		};
+
+		sata: sata@220000 {
+			compatible = "fsl,pq-sata-v2";
+			reg = <0x220000 0x1000>;
+			interrupts = <68 0x2 0 0>;
+			sata-offset = <0x1000>;
+			sata-number = <2>;
+			sata-fpdma = <0>;
+		};
+
+		esdhc: esdhc@114000 {
+			compatible = "fsl,esdhc";
+			reg = <0x114000 0x1000>;
+			clock-frequency = <0>;
+		};
+
+		/include/ "qoriq-i2c-0.dtsi"
+		/include/ "qoriq-i2c-1.dtsi"
+	};
+
+	pcie@ffe240000 {
+		compatible = "fsl,pcie-t4240", "fsl,pcie-fsl-qoriq";
+		reg = <0xf 0xfe240000 0x0 0x4000>;   /* registers */
+		law_trgt_if = <0>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		bus-range = <0x0 0xff>;
+		ranges = <0x01000000 0x0 0x00000000 0xf 0xf8000000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+
+	pcie@ffe250000 {
+		compatible = "fsl,pcie-t4240", "fsl,pcie-fsl-qoriq";
+		reg = <0xf 0xfe250000 0x0 0x4000>;   /* registers */
+		law_trgt_if = <1>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		bus-range = <0x0 0xff>;
+		ranges = <0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+
+	pcie@ffe260000 {
+		compatible = "fsl,pcie-t4240", "fsl,pcie-fsl-qoriq";
+		reg = <0xf 0xfe260000 0x0 0x4000>;   /* registers */
+		law_trgt_if = <2>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		bus-range = <0x0 0xff>;
+		ranges = <0x01000000 0x0 0x00000000 0xf 0xf8020000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0xe0000000 0xc 0x40000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+
+	pcie@ffe270000 {
+		compatible = "fsl,pcie-t4240", "fsl,pcie-fsl-qoriq";
+		reg = <0xf 0xfe270000 0x0 0x4000>;   /* registers */
+		law_trgt_if = <3>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+		bus-range = <0x0 0xff>;
+		ranges = <0x01000000 0x0 0x00000000 0xf 0xf8030000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0xe0000000 0xc 0x60000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+};

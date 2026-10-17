@@ -1,0 +1,15 @@
+if TARGET_IMX8QM_ROM7720_A1
+
+config SYS_BOARD
+	default "imx8qm_rom7720_a1"
+
+config SYS_VENDOR
+	default "advantech"
+
+config SYS_CONFIG_NAME
+	default "imx8qm_rom7720"
+
+config IMX_CONFIG
+	default "board/advantech/imx8qm_rom7720_a1/imximage.cfg"
+
+endif

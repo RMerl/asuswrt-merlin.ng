@@ -1,0 +1,178 @@
+#include "inc/968880DV_common.dtsi"
+
+/ {
+        model = "968880DV_QLAN";
+
+        xfp_sfp: xfp_sfp {
+                status = "okay";
+        };
+
+        wan_serdes {
+                trx = <&xfp_sfp>;
+        };
+
+        i2cmux {
+                status = "okay";
+
+                i2c0mux1: i2c@1 {
+                    status = "okay";
+                };
+
+                i2c0mux2: i2c@2 {
+                    status = "okay";
+                };
+        };
+};
+
+&led_ctrl {
+    led2: serial-port_slan0-led_1 {
+        active_low;
+        crossbar-output = <1>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led3: serial-port_slan0-led_0 {
+        active_low;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led4: serial-port_qlan0-led_1 {
+        active_low;
+        crossbar-output = <14>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led5: serial-port_qlan0-led_0 {
+        active_low;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led6: serial-port_qlan1-led_1 {
+        active_low;
+        crossbar-output = <12>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led7: serial-port_qlan1-led_0 {
+        active_low;
+        crossbar-output = <13>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led8: serial-port_qlan2-led_1 {
+        active_low;
+        crossbar-output = <11>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led9: serial-port_qlan2-led_0 {
+        active_low;
+        crossbar-output = <15>;
+        link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        status = "okay";
+    };
+
+    led10: sw_serial_led_19 {
+        active_low;
+        crossbar-output = <9>;
+        status = "okay";
+    };
+
+    led11: sw_serial_led_18 {
+        active_low;
+        crossbar-output = <10>;
+        status = "okay";
+    };
+};
+
+&phy_wan_serdes {
+    status = "okay";
+};
+
+&ethphytop {
+    status = "okay";
+    xphy0-enabled;
+    xphy1-enabled;
+};
+
+&mdio {
+    egphy0 {
+        status = "okay";
+    };
+    serdes00_xphy {
+        reg = <0x1c>;
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes00 {
+        status = "okay";
+        phy-handle = <&serdes00_xphy>;
+    };
+    serdes10_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes10 {
+        status = "okay";
+        phy-handle = <&serdes10_xphy>;
+    };
+    serdes11_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes11 {
+        status = "okay";
+        phy-handle = <&serdes11_xphy>;
+    };
+    serdes12_xphy {
+        enet-phy-lane-swap;
+        USXGMII-S;
+        status = "okay";
+    };
+    serdes12 {
+        phy-handle = <&serdes12_xphy>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-0 = <&a_eth_mdc_pin_59 &a_eth_mdio_pin_60>;
+
+    ports {
+        port_gphy0 {
+            status = "okay";
+            network-leds = <&led0 &led1>;
+        };
+        port_slan0 {
+            status = "okay";
+            network-leds = <&led2 &led3>;
+        };
+        port_qlan0 {
+            status = "okay";
+            network-leds = <&led4 &led5>;
+        };
+        port_qlan1 {
+            status = "okay";
+            network-leds = <&led6 &led7>;
+        };
+        port_qlan2 {
+            status = "okay";
+            network-leds = <&led8 &led9>;
+        };
+        port_wan@fiber {
+            status = "okay";
+        };
+    };
+};

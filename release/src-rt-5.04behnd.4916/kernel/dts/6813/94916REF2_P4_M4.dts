@@ -84,3 +84,8 @@
 		};
 	};
 };
+
+&sdhci {
+	brcm,sdhci-pll-baseclk-mhz = <5200>;
+	status = "okay";
+};

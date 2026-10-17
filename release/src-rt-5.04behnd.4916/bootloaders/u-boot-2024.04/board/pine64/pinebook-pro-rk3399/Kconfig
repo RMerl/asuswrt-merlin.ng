@@ -1,0 +1,15 @@
+if TARGET_PINEBOOK_PRO_RK3399
+
+config SYS_BOARD
+	default "pinebook-pro-rk3399"
+
+config SYS_VENDOR
+	default "pine64"
+
+config SYS_CONFIG_NAME
+	default "pinebook-pro-rk3399"
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+
+endif

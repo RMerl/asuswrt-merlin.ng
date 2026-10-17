@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2019 BayLibre, SAS.
+ * Author: Maxime Jourdan <mjourdan@baylibre.com>
+ */
+
+/ {
+	/* Keep HW order from U-Boot */
+	aliases {
+		/delete-property/ mmc0;
+		/delete-property/ mmc1;
+		/delete-property/ mmc2;
+	};
+
+	soc {
+		bootph-all;
+	};
+};
+
+&vpu {
+	reg = <0x0 0xd0100000 0x0 0x100000>,
+	      <0x0 0xc883c000 0x0 0x1000>,
+	      <0x0 0xc8838000 0x0 0x1000>;
+	reg-names = "vpu", "hhi", "dmc";
+	bootph-all;
+};
+
+&hdmi_tx {
+	reg = <0x0 0xc883a000 0x0 0x1c>,
+	      <0x0 0xc883c000 0x0 0x1000>;
+	reg-names = "hdmitx", "hhi";
+};

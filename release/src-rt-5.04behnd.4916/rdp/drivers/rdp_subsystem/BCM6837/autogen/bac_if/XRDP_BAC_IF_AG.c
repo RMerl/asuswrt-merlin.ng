@@ -1551,6 +1551,9 @@ static const ru_reg_rec *BAC_IF_REGS[] =
 const ru_block_rec BAC_IF_BLOCK =
 {
     "BAC_IF",
+#if RU_INCLUDE_SIZE
+    { 0x00000E14 },
+#endif
     BAC_IF_ADDRS,
     8,
     22,

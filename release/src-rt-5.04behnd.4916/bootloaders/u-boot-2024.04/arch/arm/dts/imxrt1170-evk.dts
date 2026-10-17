@@ -1,0 +1,250 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) 2022
+ * Author(s): Jesse Taube <Mr.Bossman075@gmail.com>
+ * Giulio Benetti <giulio.benetti@benettiengineering.com>
+ */
+
+/dts-v1/;
+#include "imxrt1170.dtsi"
+#include "imxrt1170-evk-u-boot.dtsi"
+#include "imxrt1170-pinfunc.h"
+
+/ {
+	model = "NXP imxrt1170-evk board";
+	compatible = "fsl,imxrt1170-evk", "fsl,imxrt1170";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		tick-timer = &gpt1;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x20240000 0xf0000 0x80000000 0x4000000>;
+
+		ocram: ocram@20240000 {
+			device_type = "memory";
+			reg = <0x20240000 0xf0000>;
+		};
+
+		sdram: sdram@80000000 {
+			device_type = "memory";
+			reg = <0x80000000 0x4000000>;
+		};
+	};
+};
+
+&lpuart1 { /* console */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpuart1>;
+	status = "okay";
+};
+
+&semc {
+	/*
+	 * Memory configuration from sdram datasheet IS42S16160J-6BLI
+	 */
+	fsl,sdram-mux = /bits/ 8 <MUX_A8_SDRAM_A8
+				0
+				0
+				0
+				0
+				0>;
+	fsl,sdram-control = /bits/ 8 <MEM_WIDTH_32BITS
+					BL_8
+					COL_9BITS
+					CL_3>;
+	fsl,sdram-timing = /bits/ 8 <0x2
+				     0x2
+				     0xd
+				     0x0
+				     0x8
+				     0x7
+
+				     0x0d
+				     0x0b
+				     0x00
+				     0x00
+
+				     0x00
+				     0x0A
+				     0x08
+				     0x09>;
+
+	bank1: bank@0 {
+		fsl,base-address = <0x80000000>;
+		fsl,memory-size = <MEM_SIZE_64M>;
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpuart1>;
+
+	imxrt1170-evk {
+		pinctrl_lpuart1: lpuart1grp {
+			fsl,pins = <
+				IOMUXC_GPIO_AD_24_LPUART1_TXD 0xf1
+				IOMUXC_GPIO_AD_25_LPUART1_RXD 0xf1
+			>;
+		};
+
+		pinctrl_usdhc0: usdhc0grp {
+			fsl,pins = <
+				IOMUXC_GPIO_AD_32_USDHC1_CD_B
+					0x1B000
+				IOMUXC_GPIO_AD_34_USDHC1_VSELECT
+					0xB069
+				IOMUXC_GPIO_SD_B1_00_USDHC1_CMD
+					0x17061
+				IOMUXC_GPIO_SD_B1_01_USDHC1_CLK
+					0x17061
+				IOMUXC_GPIO_SD_B1_05_USDHC1_DATA3
+					0x17061
+				IOMUXC_GPIO_SD_B1_04_USDHC1_DATA2
+					0x17061
+				IOMUXC_GPIO_SD_B1_03_USDHC1_DATA1
+					0x17061
+				IOMUXC_GPIO_SD_B1_02_USDHC1_DATA0
+					0x17061
+			>;
+		};
+		pinctrl_semc: semcgrp {
+			fsl,pins = <
+				IOMUXC_GPIO_EMC_B1_00_SEMC_DATA00
+					8	/* SEMC_D0 */
+				IOMUXC_GPIO_EMC_B1_01_SEMC_DATA01
+					8	/* SEMC_D1 */
+				IOMUXC_GPIO_EMC_B1_02_SEMC_DATA02
+					8	/* SEMC_D2 */
+				IOMUXC_GPIO_EMC_B1_03_SEMC_DATA03
+					8	/* SEMC_D3 */
+				IOMUXC_GPIO_EMC_B1_04_SEMC_DATA04
+					8	/* SEMC_D4 */
+				IOMUXC_GPIO_EMC_B1_05_SEMC_DATA05
+					8	/* SEMC_D5 */
+				IOMUXC_GPIO_EMC_B1_06_SEMC_DATA06
+					8	/* SEMC_D6 */
+				IOMUXC_GPIO_EMC_B1_07_SEMC_DATA07
+					8	/* SEMC_D7 */
+				IOMUXC_GPIO_EMC_B1_08_SEMC_DM00
+					8	/* SEMC_DM0 */
+				IOMUXC_GPIO_EMC_B1_09_SEMC_ADDR00
+					8	/* SEMC_A0 */
+				IOMUXC_GPIO_EMC_B1_10_SEMC_ADDR01
+					8	/* SEMC_A1 */
+				IOMUXC_GPIO_EMC_B1_11_SEMC_ADDR02
+					8	/* SEMC_A2 */
+				IOMUXC_GPIO_EMC_B1_12_SEMC_ADDR03
+					8	/* SEMC_A3 */
+				IOMUXC_GPIO_EMC_B1_13_SEMC_ADDR04
+					8	/* SEMC_A4 */
+				IOMUXC_GPIO_EMC_B1_14_SEMC_ADDR05
+					8	/* SEMC_A5 */
+				IOMUXC_GPIO_EMC_B1_15_SEMC_ADDR06
+					8	/* SEMC_A6 */
+				IOMUXC_GPIO_EMC_B1_16_SEMC_ADDR07
+					8	/* SEMC_A7 */
+				IOMUXC_GPIO_EMC_B1_17_SEMC_ADDR08
+					8	/* SEMC_A8 */
+				IOMUXC_GPIO_EMC_B1_18_SEMC_ADDR09
+					8	/* SEMC_A9 */
+				IOMUXC_GPIO_EMC_B1_19_SEMC_ADDR11
+					8	/* SEMC_A11 */
+				IOMUXC_GPIO_EMC_B1_20_SEMC_ADDR12
+					8	/* SEMC_A12 */
+				IOMUXC_GPIO_EMC_B1_21_SEMC_BA0
+					8	/* SEMC_BA0 */
+				IOMUXC_GPIO_EMC_B1_22_SEMC_BA1
+					8	/* SEMC_BA1 */
+				IOMUXC_GPIO_EMC_B1_23_SEMC_ADDR10
+					8	/* SEMC_A10 */
+				IOMUXC_GPIO_EMC_B1_24_SEMC_CAS
+					8	/* SEMC_CAS */
+				IOMUXC_GPIO_EMC_B1_25_SEMC_RAS
+					8	/* SEMC_RAS */
+				IOMUXC_GPIO_EMC_B1_26_SEMC_CLK
+					8	/* SEMC_CLK */
+				IOMUXC_GPIO_EMC_B1_27_SEMC_CKE
+					8	/* SEMC_CKE */
+				IOMUXC_GPIO_EMC_B1_28_SEMC_WE
+					8	/* SEMC_WE */
+				IOMUXC_GPIO_EMC_B1_29_SEMC_CS0
+					8	/* SEMC_CS0 */
+				IOMUXC_GPIO_EMC_B1_30_SEMC_DATA08
+					8	/* SEMC_D8 */
+				IOMUXC_GPIO_EMC_B1_31_SEMC_DATA09
+					8	/* SEMC_D9 */
+				IOMUXC_GPIO_EMC_B1_32_SEMC_DATA10
+					8	/* SEMC_D10 */
+				IOMUXC_GPIO_EMC_B1_33_SEMC_DATA11
+					8	/* SEMC_D11 */
+				IOMUXC_GPIO_EMC_B1_34_SEMC_DATA12
+					8	/* SEMC_D12 */
+				IOMUXC_GPIO_EMC_B1_35_SEMC_DATA13
+					8	/* SEMC_D13 */
+				IOMUXC_GPIO_EMC_B1_36_SEMC_DATA14
+					8	/* SEMC_D14 */
+				IOMUXC_GPIO_EMC_B1_37_SEMC_DATA15
+					8	/* SEMC_D15 */
+				IOMUXC_GPIO_EMC_B1_08_SEMC_DM00
+					8	/* SEMC_DM00 */
+				IOMUXC_GPIO_EMC_B1_38_SEMC_DM01
+					8	/* SEMC_DM01 */
+				IOMUXC_GPIO_EMC_B2_08_SEMC_DM02
+					4	/* SEMC_DM02 */
+				IOMUXC_GPIO_EMC_B2_17_SEMC_DM03
+					8	/* SEMC_DM03 */
+				IOMUXC_GPIO_EMC_B2_00_SEMC_DATA16
+					8	/* SEMC_D16 */
+				IOMUXC_GPIO_EMC_B2_01_SEMC_DATA17
+					8	/* SEMC_D17 */
+				IOMUXC_GPIO_EMC_B2_02_SEMC_DATA18
+					8	/* SEMC_D18 */
+				IOMUXC_GPIO_EMC_B2_03_SEMC_DATA19
+					8	/* SEMC_D19 */
+				IOMUXC_GPIO_EMC_B2_04_SEMC_DATA20
+					8	/* SEMC_D20 */
+				IOMUXC_GPIO_EMC_B2_05_SEMC_DATA21
+					8	/* SEMC_D21 */
+				IOMUXC_GPIO_EMC_B2_06_SEMC_DATA22
+					8	/* SEMC_D22 */
+				IOMUXC_GPIO_EMC_B2_07_SEMC_DATA23
+					8	/* SEMC_D23 */
+				IOMUXC_GPIO_EMC_B2_09_SEMC_DATA24
+					8	/* SEMC_D24 */
+				IOMUXC_GPIO_EMC_B2_10_SEMC_DATA25
+					8	/* SEMC_D25 */
+				IOMUXC_GPIO_EMC_B2_11_SEMC_DATA26
+					4	/* SEMC_D26 */
+				IOMUXC_GPIO_EMC_B2_12_SEMC_DATA27
+					8	/* SEMC_D27 */
+				IOMUXC_GPIO_EMC_B2_13_SEMC_DATA28
+					8	/* SEMC_D28 */
+				IOMUXC_GPIO_EMC_B2_14_SEMC_DATA29
+					8	/* SEMC_D29 */
+				IOMUXC_GPIO_EMC_B2_15_SEMC_DATA30
+					8	/* SEMC_D30 */
+				IOMUXC_GPIO_EMC_B2_16_SEMC_DATA31
+					8	/* SEMC_D31 */
+				IOMUXC_GPIO_EMC_B1_39_SEMC_DQS
+					(IMX_PAD_SION | 8)	/* SEMC_DQS */
+			>;
+		};
+	};
+};
+
+&gpt1 {
+	status = "okay";
+};
+
+&usdhc1 {
+	pinctrl-names = "default", "state_100mhz", "state_200mhz", "sleep";
+	pinctrl-0 = <&pinctrl_usdhc0>;
+	pinctrl-1 = <&pinctrl_usdhc0>;
+	pinctrl-2 = <&pinctrl_usdhc0>;
+	pinctrl-3 = <&pinctrl_usdhc0>;
+	status = "okay";
+	broken-cd;
+};

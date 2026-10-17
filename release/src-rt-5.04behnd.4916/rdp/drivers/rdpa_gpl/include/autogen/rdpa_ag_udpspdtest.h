@@ -49,12 +49,13 @@ typedef enum {
     rdpa_udpspdtest_attr_cfg = 0, /* cfg : RWF : aggregate[] udpspdtest_cfg(rdpa_udpspdtest_cfg_t) : UDP Speed Test configuration */
     rdpa_udpspdtest_attr_stream_stat = 1, /* stream_stat : RF : aggregate[] udpspdtest_stat(rdpa_udpspdtest_stat_t) : UDP Speed Test stream statistics */
     rdpa_udpspdtest_attr_rx_params = 2, /* rx_params : RWF : aggregate[] udpspdtest_rx_params(rdpa_udpspdtest_rx_params_t) : Stream RX parameters */
-    rdpa_udpspdtest_attr_rx_start = 3, /* rx_start : W : number : Start packets receive on a stream */
-    rdpa_udpspdtest_attr_rx_stop = 4, /* rx_stop : W : number : Stop packets receive on a steam */
-    rdpa_udpspdtest_attr_ref_pkt = 5, /* ref_pkt : RWF : aggregate[] spdtest_ref_pkt(rdpa_spdtest_ref_pkt_t) : UDP Speed Test TX reference packet */
-    rdpa_udpspdtest_attr_tx_params = 6, /* tx_params : RWF : aggregate[] udpspdtest_tx_params(rdpa_udpspdtest_tx_params_t) : Stream TX parametes */
-    rdpa_udpspdtest_attr_tx_start = 7, /* tx_start : W : number : Start packets transmission on a stream based on SO_MARK */
-    rdpa_udpspdtest_attr_tx_stop = 8, /* tx_stop : W : number : Stop packets transmission on a steam */
+    rdpa_udpspdtest_attr_rx_info = 3, /* rx_info : RWF : aggregate[] udpspdtest_rx_info(rdpa_udpspdtest_rx_info_t) : Stream RX info */
+    rdpa_udpspdtest_attr_rx_start = 4, /* rx_start : W : number : Start packets receive on a stream */
+    rdpa_udpspdtest_attr_rx_stop = 5, /* rx_stop : W : number : Stop packets receive on a steam */
+    rdpa_udpspdtest_attr_ref_pkt = 6, /* ref_pkt : RWF : aggregate[] spdtest_ref_pkt(rdpa_spdtest_ref_pkt_t) : UDP Speed Test TX reference packet */
+    rdpa_udpspdtest_attr_tx_params = 7, /* tx_params : RWF : aggregate[] udpspdtest_tx_params(rdpa_udpspdtest_tx_params_t) : Stream TX parametes */
+    rdpa_udpspdtest_attr_tx_start = 8, /* tx_start : W : number : Start packets transmission on a stream based on SO_MARK */
+    rdpa_udpspdtest_attr_tx_stop = 9, /* tx_stop : W : number : Stop packets transmission on a steam */
 } rdpa_udpspdtest_attr_types;
 
 extern int (*f_rdpa_udpspdtest_get)(bdmf_object_handle *pmo);
@@ -139,6 +140,36 @@ static inline int rdpa_udpspdtest_rx_params_get(bdmf_object_handle mo_, bdmf_ind
 static inline int rdpa_udpspdtest_rx_params_set(bdmf_object_handle mo_, bdmf_index ai_, const rdpa_udpspdtest_rx_params_t * rx_params_)
 {
     return bdmf_attrelem_set_as_buf(mo_, rdpa_udpspdtest_attr_rx_params, (bdmf_index)ai_, rx_params_, sizeof(*rx_params_));
+}
+
+
+/** Get udpspdtest/rx_info attribute entry.
+ *
+ * Get Stream RX info.
+ * \param[in]   mo_ udpspdtest object handle or mattr transaction handle
+ * \param[in]   ai_ Attribute array index
+ * \param[out]  rx_info_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_udpspdtest_rx_info_get(bdmf_object_handle mo_, bdmf_index ai_, rdpa_udpspdtest_rx_info_t * rx_info_)
+{
+    return bdmf_attrelem_get_as_buf(mo_, rdpa_udpspdtest_attr_rx_info, (bdmf_index)ai_, rx_info_, sizeof(*rx_info_));
+}
+
+
+/** Set udpspdtest/rx_info attribute entry.
+ *
+ * Set Stream RX info.
+ * \param[in]   mo_ udpspdtest object handle or mattr transaction handle
+ * \param[in]   ai_ Attribute array index
+ * \param[in]   rx_info_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_udpspdtest_rx_info_set(bdmf_object_handle mo_, bdmf_index ai_, const rdpa_udpspdtest_rx_info_t * rx_info_)
+{
+    return bdmf_attrelem_set_as_buf(mo_, rdpa_udpspdtest_attr_rx_info, (bdmf_index)ai_, rx_info_, sizeof(*rx_info_));
 }
 
 

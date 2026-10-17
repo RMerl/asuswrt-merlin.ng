@@ -1,0 +1,7 @@
+Kontron pITX-imx8m Board
+M:	Heiko Thiery <heiko.thiery@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx8mq-kontron-pitx-imx8m*
+F:	board/kontron/pitx_imx8m/*
+F:	include/configs/kontron_pitx_imx8m.h
+F:	configs/kontron_pitx_imx8m_defconfig

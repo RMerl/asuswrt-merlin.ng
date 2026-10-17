@@ -181,7 +181,7 @@ dump_cfp_entry() { # dump_cfp_entry <index>
 
 sf2_cfp() { #sf2_cfp <unit>
     local unit=$1
-    read_chip $unit
+    read_chip $unit $2
     if [ $sf2_cfp == 0 ]
     then echo "device has no (connected) sf2-cfp switch!!"; return;
     fi

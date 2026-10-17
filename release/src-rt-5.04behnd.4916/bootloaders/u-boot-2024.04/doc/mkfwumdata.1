@@ -1,0 +1,89 @@
+.\" SPDX-License-Identifier: GPL-2.0-or-later
+.\" Copyright (C) 2023 Jassi Brar <jaswinder.singh@linaro.org>
+.TH MKFWUMDATA 1 2023-04-10 U-Boot
+.SH NAME
+mkfwumdata \- create FWU metadata image
+.
+.SH SYNOPSIS
+.SY mkfwumdata
+.OP \-a activeidx
+.OP \-p previousidx
+.OP \-g
+.BI \-i\~ imagecount
+.BI \-b\~ bankcount
+.I UUIDs
+.I outputimage
+.YS
+.SY mkfwumdata
+.B \-h
+.YS
+.
+.SH DESCRIPTION
+.B mkfwumdata
+creates metadata info to be used with FWU.
+.
+.SH OPTIONS
+.TP
+.B \-h
+Print usage information and exit.
+.
+.TP
+.B \-a
+Set 
+.IR activeidx
+as the currently active Bank. Default is 0.
+.
+.TP
+.B \-p
+Set 
+.IR previousidx
+as the previous active Bank. Default is
+.IR activeidx "-1"
+or
+.IR bankcount "-1,"
+whichever is non-negative.
+.
+.TP
+.B \-g
+Convert the
+.IR UUIDs
+as GUIDs before use.
+.
+.TP
+.B \-i
+Specify there are
+.IR imagecount
+images in each bank.
+.
+.TP
+.B \-b
+Specify there are a total of
+.IR bankcount
+banks.
+.
+.TP
+.IR UUIDs
+Comma-separated list of UUIDs required to create the metadata :-
+location_uuid,image_type_uuid,<images per bank uuid list of all banks>
+.
+.TP
+.IR outputimage
+Specify the name of the metadata image file to be created.
+.
+.SH BUGS
+Please report bugs to the
+.UR https://\:source\:.denx\:.de/\:u-boot/\:u-boot/\:issues
+U-Boot bug tracker
+.UE .
+.SH EXAMPLES
+Create a metadata image with 2 banks and 1 image/bank, BankAct=0, BankPrev=1:
+.PP
+.EX
+.in +4
+$ \c
+.B mkfwumdata \-a 0 \-p 1 \-b 2 \-i 1 \\\\\&
+.in +6
+.B 17e86d77-41f9-4fd7-87ec-a55df9842de5,\\\\\&
+.B 10c36d7d-ca52-b843-b7b9-f9d6c501d108,\\\\\&
+.B 5a66a702-99fd-4fef-a392-c26e261a2828,a8f868a1-6e5c-4757-878d-ce63375ef2c0 \\\\\&
+.B fwu-mdata.img

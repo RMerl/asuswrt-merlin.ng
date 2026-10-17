@@ -1,0 +1,59 @@
+
+if SOC_MT7628
+
+choice
+	prompt "Board select"
+
+config BOARD_GARDENA_SMART_GATEWAY_MT7688
+	bool "GARDENA smart Gateway"
+	select BOARD_LATE_INIT
+	help
+	  GARDENA smart Gateway boards have a MT7688 SoC with 128 MiB of RAM
+	  and 8 MiB of flash (SPI NOR) and additional SPI NAND storage.
+
+config BOARD_LINKIT_SMART_7688
+	bool "LinkIt Smart 7688"
+	help
+	  Seeed LinkIt Smart 7688 boards have a MT7688 SoC with 128 MiB of RAM
+	  and 32 MiB of flash (SPI).
+	  Between its different peripherals there's an integrated switch with 4
+	  ethernet ports, 1 USB port, 1 UART, GPIO buttons and LEDs, and
+	  a MT7688 (PCIe).
+
+config BOARD_MT7628_RFB
+	bool "MediaTek MT7628 RFB"
+	help
+	  The reference design of MT7628. The board has 128 MiB DDR2, 8 MiB
+	  SPI-NOR flash, 1 built-in switch with 5 ports, 1 UART, 1 USB host,
+	  1 SDXC, 1 PCIe socket and JTAG pins.
+
+config BOARD_VOCORE2
+	bool "VoCore2"
+	select SPL_SERIAL
+	select SPL_UART2_SPIS_PINMUX
+	help
+	  VoCore VoCore2 board has a MT7628 SoC with 128 MiB of RAM
+	  and 16 MiB of flash (SPI).
+
+endchoice
+
+config SPL_UART2_SPIS_PINMUX
+	bool "Use alternative pinmux for UART2 in SPL stage"
+	depends on SPL_SERIAL
+	help
+	  Select this if the UART2 of your board is connected to GPIO 16/17
+	  (shared with SPIS) rather than the usual GPIO 20/21.
+
+config SYS_BOARD
+	string "Board name"
+	default "mt7628" if BOARD_MT7628_RFB
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "mt7628" if BOARD_MT7628_RFB
+
+source "board/gardena/smart-gateway-mt7688/Kconfig"
+source "board/seeed/linkit-smart-7688/Kconfig"
+source "board/vocore/vocore2/Kconfig"
+
+endif

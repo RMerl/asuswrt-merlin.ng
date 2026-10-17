@@ -84,7 +84,7 @@
 int rdpa_iq_cpu_get_status(void *iq_param)
 {
 #if (defined(CONFIG_BCM_INGQOS) || defined(CONFIG_BCM_INGQOS_MODULE))
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM_PON)
+#if defined(CONFIG_BCM_PON)
     bdmf_object_handle cpu = NULL;
 #if !defined(CONFIG_BCM_PON_XRDP)
     bdmf_object_handle wlan0 = NULL;

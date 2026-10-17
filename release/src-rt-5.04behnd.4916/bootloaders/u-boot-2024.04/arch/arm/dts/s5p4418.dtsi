@@ -1,0 +1,210 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2020 Stefan Bosch <stefan_b@posteo.net>
+ *
+ * (C) Copyright 2016 Nexell
+ * Youngbok, Park <park@nexell.co.kr>
+ *
+ */
+
+#include "skeleton.dtsi"
+
+/ {
+	#include "s5p4418-pinctrl.dtsi"
+
+	aliases {
+		mmc0 = &mmc0;
+		mmc1 = &mmc1;
+		mmc2 = &mmc2;
+		gmac = "/ethernet@c0060000";
+	};
+
+	mmc2:mmc@c0069000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,nexell-dwmmc";
+		reg = <0xc0069000 0x1000>;
+		bus-width = <4>;
+		index = <2>;
+		max-frequency = <50000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mmc2_clk>, <&mmc2_cmd>, <&mmc2_bus4>;
+		status = "disabled";
+	};
+
+	mmc1:mmc@c0068000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,nexell-dwmmc";
+		reg = <0xc0068000 0x1000>;
+		bus-width = <4>;
+		index = <1>;
+		max-frequency = <50000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mmc1_clk>, <&mmc1_cmd>, <&mmc1_bus4>;
+		status = "disabled";
+	};
+
+	mmc0:mmc@c0062000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,nexell-dwmmc";
+		reg = <0xc0062000 0x1000>;
+		bus-width = <4>;
+		index = <0>;
+		max-frequency = <50000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mmc0_clk>, <&mmc0_cmd>, <&mmc0_bus4>;
+		status = "disabled";
+	};
+
+	i2c0:i2c@c00a4000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,s5pxx18-i2c";
+		reg = <0xc00a4000 0x100>;
+		clock-frequency = <100000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2c0_sda>, <&i2c0_scl>;
+		status ="disabled";
+	};
+
+	i2c1:i2c@c00a5000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,s5pxx18-i2c";
+		reg = <0xc00a5000 0x100>;
+		clock-frequency = <100000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2c1_sda>, <&i2c1_scl>;
+		status ="disabled";
+	};
+
+	i2c2:i2c@c00a6000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,s5pxx18-i2c";
+		reg = <0xc00a6000 0x100>;
+		clock-frequency = <100000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2c2_sda>, <&i2c2_scl>;
+		status ="disabled";
+	};
+
+	dp0:dp@c0102800 {
+		compatible = "nexell,nexell-display";
+		reg = <0xc0102800 0x100>;
+		index = <0>;
+		bootph-all;
+		status = "disabled";
+	};
+
+	dp1:dp@c0102c00 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nexell,nexell-display";
+		reg = <0xc0102c00 0x100>;
+		index = <1>;
+		status = "disabled";
+	};
+
+	gpio_a:gpio@c001a000 {
+		compatible = "nexell,nexell-gpio";
+		reg = <0xc001a000 0x00000010>;
+		altr,gpio-bank-width = <32>;
+		gpio-bank-name = "gpio_a";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio_b:gpio@c001b000 {
+		compatible = "nexell,nexell-gpio";
+		reg = <0xc001b000 0x00000010>;
+		altr,gpio-bank-width = <32>;
+		gpio-bank-name = "gpio_b";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio_c:gpio@c001c000 {
+		compatible = "nexell,nexell-gpio";
+		reg = <0xc001c000 0x00000010>;
+		nexell,gpio-bank-width = <32>;
+		gpio-bank-name = "gpio_c";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio_d:gpio@c001d000 {
+		compatible = "nexell,nexell-gpio";
+		reg = <0xc001d000 0x00000010>;
+		nexell,gpio-bank-width = <32>;
+		gpio-bank-name = "gpio_d";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio_e:gpio@c001e000 {
+		compatible = "nexell,nexell-gpio";
+		reg = <0xc001e000 0x00000010>;
+		nexell,gpio-bank-width = <32>;
+		gpio-bank-name = "gpio_e";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	gpio_alv:gpio@c0010800 {
+		compatible = "nexell,nexell-gpio";
+		reg = <0xc0010800 0x00000010>;
+		nexell,gpio-bank-width = <32>;
+		gpio-bank-name = "gpio_alv";
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+	pinctrl@C0010000 {
+		compatible = "nexell,s5pxx18-pinctrl";
+		reg = <0xc0010000 0xf000>;
+		bootph-all;
+	};
+
+	uart0:uart@c00a1000 {
+		compatible = "nexell,s5p4418-pl011", "arm,primecell";
+		reg = <0xc00a1000 0x1000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart0_rx>, <&uart0_tx>;
+		status = "disabled";
+	};
+
+	uart1:uart@c00a0000 {
+		compatible = "nexell,s5p4418-pl011", "arm,primecell";
+		reg = <0xc00a0000 0x1000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart1_rx>, <&uart1_tx>;
+		status = "disabled";
+	};
+
+	uart2:uart@c00a2000 {
+		compatible = "nexell,s5p4418-pl011", "arm,primecell";
+		reg = <0xc00a2000 0x1000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart2_rx>, <&uart2_tx>;
+		status = "disabled";
+	};
+
+	uart3:uart@c00a3000 {
+		compatible = "nexell,s5p4418-pl011", "arm,primecell";
+		reg = <0xc00a3000 0x1000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart3_rx>, <&uart3_tx>;
+		status = "disabled";
+	};
+
+	uart4:uart@c006d000 {
+		compatible = "nexell,s5p4418-pl011", "arm,primecell";
+		reg = <0xc006d000 0x1000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart4_rx>, <&uart4_tx>;
+		status = "disabled";
+	};
+};

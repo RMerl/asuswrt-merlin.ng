@@ -1,0 +1,6 @@
+HC2910 2AGHD05 BOARD
+M: Yang Xiwen <firbidden405@outlook.com>
+S: Maintained
+F: board/skyworth/hc2910-2aghd05
+F: include/configs/hc2910-2aghd05.h
+F: configs/hc2910_2aghd05_defconfig

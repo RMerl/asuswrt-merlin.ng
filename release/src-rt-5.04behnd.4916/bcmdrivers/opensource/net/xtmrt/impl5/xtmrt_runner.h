@@ -36,11 +36,7 @@ extern bcmFun_t *xtmrt_tcpspdtest_connect;
 #endif
 #include "bcmxtmrt.h"
 
-#if defined(CONFIG_BCM_XRDP)
 #define RDPA_XTM_CPU_RX_QUEUE_SIZE  1024
-#else
-#define RDPA_XTM_CPU_RX_QUEUE_SIZE  256
-#endif
 
 #define bcmxapi_XtmCreateDevice(_devId, _encapType, _headerLen, _trailerLen)
 #define bcmxapi_XtmLinkUp(_devId, _matchId)
@@ -166,7 +162,7 @@ static inline FkBuff_t *bcmxapi_fkb_qinit(UINT8 *pBuf, UINT8 *pData,
    /* Unused parameters: len, rxdma */
    /* Fkb already initialized in rdpa_get_pkt_from_ring(). Just update
       pData, len and the recycle fields */
-   FkBuff_t *pFkb = PDATA_TO_PFKBUFF(pBuf, BCM_PKT_HEADROOM); 
+   FkBuff_t *pFkb = BCM_PDATA_TO_PFKBUFF(pBuf); 
       
    pFkb->data = pData;
    pFkb->len = len;

@@ -4,3 +4,4 @@
 -include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.spu_offload_objs
 
 RDPA_OBJS += rdpa_fpi.o
+RDPA_OBJS += rdpa_buffer.o

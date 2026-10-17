@@ -1,0 +1,56 @@
+/** @file
+ * Copyright (c) 2017, Linaro Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-2-Clause-Patent
+ */
+
+/dts-v1/;
+
+#include "synquacer-sc2a11.dtsi"
+
+#define KEY_POWER     116
+
+/ {
+    model = "Socionext Developer Box";
+    compatible = "socionext,developer-box", "socionext,synquacer";
+
+    gpio-keys {
+        compatible = "gpio-keys";
+        interrupt-parent = <&exiu>;
+
+        power-button {
+            label = "Power Button";
+            linux,code = <KEY_POWER>;
+            interrupts = <GIC_SPI 120 IRQ_TYPE_EDGE_FALLING>;
+            wakeup-source;
+        };
+    };
+};
+
+#ifdef TPM2_ENABLE
+&tpm {
+    status = "okay";
+};
+#endif
+
+&gpio {
+    gpio-line-names = "DSW3-PIN1",  "DSW3-PIN2",  "DSW3-PIN3",    "DSW3-PIN4",
+                      "DSW3-PIN5",  "DSW3-PIN6",  "DSW3-PIN7",    "DSW3-PIN8",
+                      "PSIN#",      "PWROFF#",    "GPIO-A",       "GPIO-B",
+                      "GPIO-C",     "GPIO-D",     "PCIE1EXTINT",  "PCIE0EXTINT",
+                      "PHY2-INT#",  "PHY1-INT#",  "GPIO-E",       "GPIO-F",
+                      "GPIO-G",     "GPIO-H",     "GPIO-I",       "GPIO-J",
+                      "GPIO-K",     "GPIO-L",     "PEC-PD26",     "PEC-PD27",
+                      "PEC-PD28",   "PEC-PD29",   "PEC-PD30",     "PEC-PD31";
+};
+
+&netsec {
+    phy-mode = "rgmii-id";
+};
+
+&mdio_netsec {
+    phy_netsec: ethernet-phy@7 {
+        compatible = "ethernet-phy-ieee802.3-c22";
+        reg = <7>;
+    };
+};

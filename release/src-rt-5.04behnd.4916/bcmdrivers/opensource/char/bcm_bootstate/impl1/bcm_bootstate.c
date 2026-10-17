@@ -72,6 +72,7 @@ typedef struct boot_state_data
 	set_sel_img_id_p set_sel_img_id;
 	get_sel_img_id_p get_sel_img_id;
 	clear_sel_img_id_p clear_sel_img_id;
+	int reset_reason_written;
 }boot_state_data;
 
 static boot_state_data b_state_data;
@@ -219,6 +220,7 @@ void bcmbca_set_boot_reason(uint32_t value)
 	if(CHECK_NULL(b_state_data.set_boot_reason))
 	{
 		b_state_data.set_boot_reason(value);
+		b_state_data.reset_reason_written=1;
 	}
 }
 
@@ -424,7 +426,8 @@ static uint32_t bcmbca_get_boot_reason_v2(void)
 #if defined(CONFIG_BRCM_SMC_BOOT)
 		rc=*b_state_data.reset_reason & BCM_RESET_REASON_FULL_MASK;
 #else
-		rc=(*b_state_data.reset_status & SW_RESET_STATUS) != 0 ? *b_state_data.reset_reason & BCM_RESET_REASON_FULL_MASK:-1;
+		rc=(((*b_state_data.reset_status & SW_RESET_STATUS) != 0) || b_state_data.reset_reason_written == 1) ? *b_state_data.reset_reason & BCM_RESET_REASON_FULL_MASK:-1;
+
 #endif
 	}
 	return rc;
@@ -869,6 +872,7 @@ int bcm_bootstate_probe(struct platform_device *pdev)
 	}
 
 	memset(&b_state_data, '\0', sizeof(b_state_data));
+	b_state_data.reset_reason_written=0;
 
 
 	compat=(char*)of_get_property(pdev->dev.of_node, "compatible", NULL);

@@ -1,0 +1,33 @@
+CRS3XX-98DX3236 BOARD
+M:	Luka Kovacic <luka.kovacic@sartura.hr>
+M:	Luka Perkov <luka.perkov@sartura.hr>
+S:	Maintained
+F:	board/mikrotik/crs3xx-98dx3236/
+F:	include/configs/crs3xx-98dx3236.h
+
+CRS305-1G-4S BOARD
+M:	Luka Kovacic <luka.kovacic@sartura.hr>
+M:	Luka Perkov <luka.perkov@sartura.hr>
+S:	Maintained
+F:	configs/crs305-1g-4s_defconfig
+F:	configs/crs305-1g-4s-bit_defconfig
+F:	arch/arm/dts/armada-xp-crs305-1g-4s.dts
+F:	arch/arm/dts/armada-xp-crs305-1g-4s-bit.dts
+
+CRS326-24G-2S BOARD
+M:	Luka Kovacic <luka.kovacic@sartura.hr>
+M:	Luka Perkov <luka.perkov@sartura.hr>
+S:	Maintained
+F:	configs/crs326-24g-2s_defconfig
+F:	configs/crs326-24g-2s-bit_defconfig
+F:	arch/arm/dts/armada-xp-crs326-24g-2s.dts
+F:	arch/arm/dts/armada-xp-crs326-24g-2s-bit.dts
+
+CRS328-4C-20S-4S BOARD
+M:	Luka Kovacic <luka.kovacic@sartura.hr>
+M:	Luka Perkov <luka.perkov@sartura.hr>
+S:	Maintained
+F:	configs/crs328-4c-20s-4s_defconfig
+F:	configs/crs328-4c-20s-4s-bit_defconfig
+F:	arch/arm/dts/armada-xp-crs328-4c-20s-4s.dts
+F:	arch/arm/dts/armada-xp-crs328-4c-20s-4s-bit.dts

@@ -8,7 +8,7 @@
 # Parameters:
 # $1 - new  save locations
 # $2 - last save locations
-# $3 - MINI:minicoredumper, or DEFAULT:Linux coredump
+# $3 - BREAKPAD:minidump, MINI:minicoredumper, or DEFAULT:Linux coredump
 # $4 - %E{%e} (app pathname{threadname}. e.g. !bin!bas_tr143{BAS_IPC})
 # $5 - %P (Process ID)
 # $6 - %u (User ID)
@@ -19,18 +19,25 @@
 
 CORE_DIR_NEW=$1
 CORE_DIR_LAST=$2
-# Obtain app and thread name
-APP_NAME=`echo $4 | awk -F '!' '{print $NF}'`
+APP_NAME=$4
 # If change prefix, please ensure backward compatibility
 CORE_NAME_PREFIX=core_
-CORE_NAME=${CORE_NAME_PREFIX}${APP_NAME}.gz
+CORE_NAME=${CORE_NAME_PREFIX}${APP_NAME}
+CORE_NAME_FINAL=${CORE_NAME}.gz
 
 # Max total size(KB) limit. 4096KB = 4MB
 MAX_TOTAL_SIZE=4096
 # Max individual core size(KB) after compressed. 3072KB = 3MB
 MAX_CORE_SIZE=3072
 
-if [ $3 == "MINI" ]; then
+if [ $3 == "BREAKPAD" ]; then
+    cat |/bin/core_handler $5 /tmp/${CORE_NAME}
+    # now, only BAS uses breakpad, and BAS requires original file without compression.
+    #/bin/gzip -f /tmp/${CORE_NAME}
+    #CORE_FILE_TMP=/tmp/${CORE_NAME_FINAL}
+    CORE_FILE_TMP=/tmp/${CORE_NAME}
+    CORE_NAME_FINAL=${CORE_NAME}
+elif [ $3 == "MINI" ]; then
     CORE_BASE_DIR=/var/crash/minicoredumper
     CORE_FILE_TMP_DIR=$CORE_BASE_DIR/${APP_NAME}.$(date -d @$9 +"%Y%m%d.%H%M%S%z").$5
     CORE_FILE_TMP=$CORE_FILE_TMP_DIR/core.gz
@@ -40,12 +47,12 @@ if [ $3 == "MINI" ]; then
     # para order: |/bin/minicoredumper %P %u %g %s %t %h %e
     cat |/bin/minicoredumper $5 $6 $7 $8 $9 ${10} ${APP_NAME}
 else
-    CORE_FILE_TMP=/tmp/$CORE_NAME.$9
+    CORE_FILE_TMP=/tmp/$CORE_NAME_FINAL.$9
     /bin/gzip -f - | dd bs=1k count=$MAX_CORE_SIZE of=$CORE_FILE_TMP
 fi
 
 # Delete existing coredump file for the same app+thread
-rm -f $CORE_DIR_NEW/$CORE_NAME
+rm -f $CORE_DIR_NEW/$CORE_NAME_FINAL
 
 size_used_new=$(du -d 0 -k $CORE_DIR_NEW | awk -F " " '{print $1}')
 size_used_last=$(du -d 0 -k $CORE_DIR_LAST | awk -F " " '{print $1}')
@@ -76,7 +83,7 @@ size_used_new=$(du -d 0 -k $CORE_DIR_NEW | awk -F " " '{print $1}')
 
 size_total=$(($size_used_new + $size_used_last + $size_write))
 if [ $size_total -lt $MAX_TOTAL_SIZE ]; then
-    mv $CORE_FILE_TMP $CORE_DIR_NEW/$CORE_NAME
+    mv $CORE_FILE_TMP $CORE_DIR_NEW/$CORE_NAME_FINAL
 fi
 
 rm -f $CORE_FILE_TMP

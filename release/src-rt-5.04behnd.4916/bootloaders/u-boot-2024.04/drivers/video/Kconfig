@@ -1,0 +1,1254 @@
+#
+# Video configuration
+#
+
+menu "Graphics support"
+
+config VIDEO
+	bool "Enable driver model support for LCD/video"
+	depends on DM
+	help
+	  This enables driver model for LCD and video devices. These support
+	  a bitmap display of various sizes and depths which can be drawn on
+	  to display a command-line console or splash screen. Enabling this
+	  option compiles in the video uclass and routes all LCD/video access
+	  through this.
+
+if VIDEO
+
+config VIDEO_FONT_4X6
+	bool "4 x 6 font size"
+	help
+	  Font for video console driver, 4 x 6 pixels.
+	  Provides character bitmap data in header file.
+	  When selecting multiple fonts, you may want to enable CMD_SELECT_FONT too.
+
+config VIDEO_FONT_8X16
+	bool "8 x 16 font size"
+	default y
+	help
+	  Font for video console driver, 8 x 16 pixels
+	  Provides character bitmap data in header file.
+	  When selecting multiple fonts, you may want to enable CMD_SELECT_FONT too.
+
+config VIDEO_FONT_SUN12X22
+	bool "12 x 22 font size"
+	help
+	  Font for video console driver, 12 x 22 pixels
+	  Provides character bitmap data in header file.
+	  When selecting multiple fonts, you may want to enable CMD_SELECT_FONT too.
+
+config VIDEO_FONT_16X32
+	bool "16 x 32 font size"
+	help
+	  Font for video console driver, 16 x 32 pixels
+	  Provides character bitmap data in header file.
+	  When selecting multiple fonts, you may want to enable CMD_SELECT_FONT too.
+
+config VIDEO_LOGO
+	bool "Show the U-Boot logo on the display"
+	default y if !SPLASH_SCREEN
+	select VIDEO_BMP_RLE8
+	help
+	  This enables showing the U-Boot logo on the display when a video
+	  device is probed. It appears at the top right. The logo itself is at
+	  tools/logos/u-boot_logo.bmp and looks best when the display has a
+	  black background.
+
+config BACKLIGHT
+	bool "Enable panel backlight uclass support"
+	default y
+	help
+	  This provides backlight uclass driver that enables basic panel
+	  backlight support.
+
+config VIDEO_PCI_DEFAULT_FB_SIZE
+	hex "Default framebuffer size to use if no drivers request it"
+	default 0x1000000 if X86
+	default 0x800000 if !X86 && VIDEO_BOCHS
+	default 0x0 if !X86 && !VIDEO_BOCHS
+	help
+	  Generally, video drivers request the amount of memory they need for
+	  the frame buffer when they are bound, by setting the size field in
+	  struct video_uc_plat. That memory is then reserved for use after
+	  relocation. But PCI drivers cannot be bound before relocation unless
+	  they are mentioned in the devicetree.
+
+	  With this value set appropriately, it is possible for PCI video
+	  devices to have a framebuffer allocated by U-Boot.
+
+	  Note: the framebuffer needs to be large enough to store all pixels at
+	  maximum resolution. For example, at 2560 x 1600 with 32 bits per
+	  pixel, 2560 * 1600 * 32 / 8 = 0xfa0000 bytes are needed.
+
+config VIDEO_COPY
+	bool "Enable copying the frame buffer to a hardware copy"
+	help
+	  On some machines (e.g. x86), reading from the frame buffer is very
+	  slow because it is uncached. To improve performance, this feature
+	  allows the frame buffer to be kept in cached memory (allocated by
+	  U-Boot) and then copied to the hardware frame-buffer as needed.
+
+	  To use this, your video driver must set @copy_base in
+	  struct video_uc_plat.
+
+config BACKLIGHT_PWM
+	bool "Generic PWM based Backlight Driver"
+	depends on BACKLIGHT && DM_PWM
+	default y
+	help
+	  If you have a LCD backlight adjustable by PWM, say Y to enable
+	  this driver.
+	  This driver can be use with "simple-panel" and
+	  it understands the standard device tree
+	  (leds/backlight/pwm-backlight.txt)
+
+config BACKLIGHT_GPIO
+	bool "Generic GPIO based Backlight Driver"
+	depends on BACKLIGHT
+	help
+	  If you have a LCD backlight adjustable by GPIO, say Y to enable
+	  this driver.
+	  This driver can be used with "simple-panel" and
+	  it understands the standard device tree
+	  (leds/backlight/gpio-backlight.txt)
+
+config VIDEO_BPP8
+	bool "Support 8-bit-per-pixel displays"
+	default y
+	help
+	  Support drawing text and bitmaps onto a 8-bit-per-pixel display.
+	  Enabling this will include code to support this display. Without
+	  this option, such displays will not be supported and console output
+	  will be empty.
+
+config VIDEO_BPP16
+	bool "Support 16-bit-per-pixel displays"
+	default y
+	help
+	  Support drawing text and bitmaps onto a 16-bit-per-pixel display.
+	  Enabling this will include code to support this display. Without
+	  this option, such displays will not be supported and console output
+	  will be empty.
+
+config VIDEO_BPP32
+	bool "Support 32-bit-per-pixel displays"
+	default y
+	help
+	  Support drawing text and bitmaps onto a 32-bit-per-pixel display.
+	  Enabling this will include code to support this display. Without
+	  this option, such displays will not be supported and console output
+	  will be empty.
+
+config VIDEO_ANSI
+	bool "Support ANSI escape sequences in video console"
+	default y if EFI_LOADER
+	help
+	  Enable ANSI escape sequence decoding for a more fully functional
+	  console. Functionality includes changing the text colour and moving
+	  the cursor. These date from the 1970s and are still widely used today
+	  to control a text terminal. U-Boot implements these by decoding the
+	  sequences and performing the appropriate operation.
+
+config VIDEO_MIPI_DSI
+	bool "Support MIPI DSI interface"
+	help
+	  Support MIPI DSI interface for driving a MIPI compatible device.
+	  The MIPI Display Serial Interface (MIPI DSI) defines a high-speed
+	  serial interface between a host processor and a display module.
+
+config CONSOLE_NORMAL
+	bool "Support a simple text console"
+	default y
+	help
+	  Support drawing text on the frame buffer console so that it can be
+	  used as a console. Rotation is not supported by this driver (see
+	  CONFIG_CONSOLE_ROTATION for that). A built-in 8x16 font is used
+	  for the display.
+
+config CONSOLE_ROTATION
+	bool "Support rotated displays"
+	help
+	  Sometimes, for example if the display is mounted in portrait
+	  mode or even if it's mounted landscape but rotated by 180degree,
+	  we need to rotate our content of the display relative to the
+	  framebuffer, so that user can read the messages which are
+	  printed out. Enable this option to include a text driver which can
+	  support this. The rotation is set by the 'rot' parameter in
+	  struct video_priv: 0=unrotated, 1=90 degrees clockwise, 2=180
+	  degrees, 3=270 degrees.
+
+config CONSOLE_TRUETYPE
+	bool "Support a console that uses TrueType fonts"
+	help
+	  TrueTrype fonts can provide outline-drawing capability rather than
+	  needing to provide a bitmap for each font and size that is needed.
+	  With this option you can adjust the text size and use a variety of
+	  fonts. Note that this is noticeably slower than with normal console.
+
+config CONSOLE_TRUETYPE_SIZE
+	int "TrueType font size"
+	depends on CONSOLE_TRUETYPE
+	default 18
+	help
+	  This sets the font size for the console. The size is measured in
+	  pixels and is the nominal height of a character. Note that fonts
+	  are commonly measured in 'points', being 1/72 inch (about 3.52mm).
+	  However that measurement depends on the size of your display and
+	  there is no standard display density. At present there is not a
+	  method to select the display's physical size, which would allow
+	  U-Boot to calculate the correct font size.
+
+config CONSOLE_TRUETYPE_MAX_METRICS
+	int "TrueType maximum number of font / size combinations"
+	depends on CONSOLE_TRUETYPE
+	default 10 if EXPO
+	default 1
+	help
+	  This sets the number of font / size combinations which can be used by
+	  the console. For simple console use a single font is enough. When
+	  boot menus are in use, this may need to be increased.
+
+	  Note that a separate entry is needed for each font size, even if the
+	  font itself is the same. This is because the entry caches various
+	  font metrics which are expensive to regenerate each time the font
+	  size changes.
+
+config SYS_WHITE_ON_BLACK
+	bool "Display console as white on a black background"
+	default y if ARCH_AT91 || ARCH_EXYNOS || ARCH_ROCKCHIP || ARCH_TEGRA || X86 || ARCH_SUNXI
+	help
+	 Normally the display is black on a white background, Enable this
+	 option to invert this, i.e. white on a black background. This can be
+	 better in low-light situations or to reduce eye strain in some
+	 cases.
+
+config NO_FB_CLEAR
+	bool "Skip framebuffer clear"
+	help
+	  If firmware (whatever loads u-boot) has already put a splash image
+	  on screen, you might want to preserve it until whatever u-boot
+	  loads takes over the screen.  This, for example, can be used to
+	  keep splash image on screen until grub graphical boot menu starts.
+
+config PANEL
+	bool "Enable panel uclass support"
+	default y
+	help
+	  This provides panel uclass driver that enables basic panel support.
+
+config SIMPLE_PANEL
+	bool "Enable simple panel support"
+	depends on PANEL && BACKLIGHT && DM_GPIO
+	default y
+	help
+	  This turns on a simple panel driver that enables a compatible
+	  video panel.
+
+config PANEL_HX8238D
+	bool "Enable Himax HX-8238D LCD driver"
+	depends on PANEL
+	help
+	  Support for HX-8238D LCD Panel
+	  The  HX8238-D is a single chip controller and driver LSI that
+	  integrates the power circuit.
+	  It can drive a maximum 960x240 dot graphics on a-TFT panel
+	  displays in 16M colors with dithering.
+
+source "drivers/video/fonts/Kconfig"
+
+config VIDCONSOLE_AS_LCD
+	bool "Use 'vidconsole' when CONFIG_VIDCONSOLE_AS_NAME string is seen in stdout"
+	help
+	  This is a work-around for boards which have 'lcd' or 'vga' in their
+	  stdout environment variable, but have moved to use driver model for
+	  video. In this case the console will no-longer work. While it is
+	  possible to update the environment, the breakage may be confusing for
+	  users. This option will be removed around the end of 2020.
+
+config VIDCONSOLE_AS_NAME
+	string "Use 'vidconsole' when string defined here is seen in stdout"
+	depends on VIDCONSOLE_AS_LCD
+	default "lcd" if LCD || TEGRA_COMMON
+	default "vga" if !LCD
+	help
+	  This is a work-around for boards which have 'lcd' or 'vga' in their
+	  stdout environment variable, but have moved to use driver model for
+	  video. In this case the console will no-longer work. While it is
+	  possible to update the environment, the breakage may be confusing for
+	  users. This option will be removed around the end of 2020.
+
+config VIDEO_BOCHS
+	bool "Enable Bochs video emulation for QEMU"
+	help
+	  Enable this to use the Bochs video support provided in the QEMU
+	  emulator. This appears as a PCI device which U-Boot can set up to
+	  provide a frame buffer.
+
+if VIDEO_BOCHS
+
+config VIDEO_BOCHS_SIZE_X
+	int "Width of display (X resolution)"
+	default 1280
+	help
+	  Sets the width of the display.
+
+	  These two options control the size of the display set up by QEMU.
+	  Typical sizes are 1024 x 768 or 1280 x 1024.
+
+config VIDEO_BOCHS_SIZE_Y
+	int "High of display (Y resolution)"
+	default 1024
+	help
+	  Sets the height of the display.
+
+	  These two options control the size of the display set up by QEMU.
+	  Typical sizes are 1024 x 768 or 1280 x 1024.
+
+endif
+
+config VIDEO_COREBOOT
+	bool "Enable coreboot framebuffer driver support"
+	depends on X86
+	help
+	  Turn on this option to enable a framebuffer driver when U-Boot is
+	  loaded by coreboot where the graphics device is configured by
+	  coreboot already. This can in principle be used with any platform
+	  that coreboot supports.
+
+config VIDEO_EFI
+	bool "Enable EFI framebuffer driver support"
+	depends on EFI_STUB || EFI_APP
+	help
+	  Turn on this option to enable a framebuffeer driver when U-Boot is
+	  loaded as a payload (see README.u-boot_on_efi) by an EFI BIOS where
+	  the graphics device is configured by the EFI BIOS already. This can
+	  in principle be used with any platform that has an EFI BIOS.
+
+config VIDEO_VESA
+	bool "Enable VESA video driver support"
+	help
+	  Turn on this option to enable a very simple driver which uses vesa
+	  to discover the video mode and then provides a frame buffer for use
+	  by U-Boot. This can in principle be used with any platform that
+	  supports PCI and video cards that support VESA BIOS Extension (VBE).
+
+config FRAMEBUFFER_SET_VESA_MODE
+	bool "Set framebuffer graphics resolution"
+	depends on VIDEO_VESA || VIDEO_BROADWELL_IGD
+	help
+	  Set VESA/native framebuffer mode (needed for bootsplash and graphical
+	  framebuffer console)
+
+choice
+	prompt "framebuffer graphics resolution"
+	default FRAMEBUFFER_VESA_MODE_118
+	depends on FRAMEBUFFER_SET_VESA_MODE
+	help
+	  This option sets the resolution used for the U-Boot framebuffer (and
+	  bootsplash screen).
+
+config FRAMEBUFFER_VESA_MODE_100
+	bool "640x400 256-color"
+
+config FRAMEBUFFER_VESA_MODE_101
+	bool "640x480 256-color"
+
+config FRAMEBUFFER_VESA_MODE_102
+	bool "800x600 16-color"
+
+config FRAMEBUFFER_VESA_MODE_103
+	bool "800x600 256-color"
+
+config FRAMEBUFFER_VESA_MODE_104
+	bool "1024x768 16-color"
+
+config FRAMEBUFFER_VESA_MODE_105
+	bool "1024x768 256-color"
+
+config FRAMEBUFFER_VESA_MODE_106
+	bool "1280x1024 16-color"
+
+config FRAMEBUFFER_VESA_MODE_107
+	bool "1280x1024 256-color"
+
+config FRAMEBUFFER_VESA_MODE_108
+	bool "80x60 text"
+
+config FRAMEBUFFER_VESA_MODE_109
+	bool "132x25 text"
+
+config FRAMEBUFFER_VESA_MODE_10A
+	bool "132x43 text"
+
+config FRAMEBUFFER_VESA_MODE_10B
+	bool "132x50 text"
+
+config FRAMEBUFFER_VESA_MODE_10C
+	bool "132x60 text"
+
+config FRAMEBUFFER_VESA_MODE_10D
+	bool "320x200 32k-color (1:5:5:5)"
+
+config FRAMEBUFFER_VESA_MODE_10E
+	bool "320x200 64k-color (5:6:5)"
+
+config FRAMEBUFFER_VESA_MODE_10F
+	bool "320x200 16.8M-color (8:8:8)"
+
+config FRAMEBUFFER_VESA_MODE_110
+	bool "640x480 32k-color (1:5:5:5)"
+
+config FRAMEBUFFER_VESA_MODE_111
+	bool "640x480 64k-color (5:6:5)"
+
+config FRAMEBUFFER_VESA_MODE_112
+	bool "640x480 16.8M-color (8:8:8)"
+
+config FRAMEBUFFER_VESA_MODE_113
+	bool "800x600 32k-color (1:5:5:5)"
+
+config FRAMEBUFFER_VESA_MODE_114
+	bool "800x600 64k-color (5:6:5)"
+
+config FRAMEBUFFER_VESA_MODE_115
+	bool "800x600 16.8M-color (8:8:8)"
+
+config FRAMEBUFFER_VESA_MODE_116
+	bool "1024x768 32k-color (1:5:5:5)"
+
+config FRAMEBUFFER_VESA_MODE_117
+	bool "1024x768 64k-color (5:6:5)"
+
+config FRAMEBUFFER_VESA_MODE_118
+	bool "1024x768 16.8M-color (8:8:8)"
+
+config FRAMEBUFFER_VESA_MODE_119
+	bool "1280x1024 32k-color (1:5:5:5)"
+
+config FRAMEBUFFER_VESA_MODE_11A
+	bool "1280x1024 64k-color (5:6:5)"
+
+config FRAMEBUFFER_VESA_MODE_11B
+	bool "1280x1024 16.8M-color (8:8:8)"
+
+config FRAMEBUFFER_VESA_MODE_USER
+	bool "Manually select VESA mode"
+
+endchoice
+
+# Map the config names to an integer (KB).
+config FRAMEBUFFER_VESA_MODE
+	prompt "VESA mode" if FRAMEBUFFER_VESA_MODE_USER
+	hex
+	default 0x100 if FRAMEBUFFER_VESA_MODE_100
+	default 0x101 if FRAMEBUFFER_VESA_MODE_101
+	default 0x102 if FRAMEBUFFER_VESA_MODE_102
+	default 0x103 if FRAMEBUFFER_VESA_MODE_103
+	default 0x104 if FRAMEBUFFER_VESA_MODE_104
+	default 0x105 if FRAMEBUFFER_VESA_MODE_105
+	default 0x106 if FRAMEBUFFER_VESA_MODE_106
+	default 0x107 if FRAMEBUFFER_VESA_MODE_107
+	default 0x108 if FRAMEBUFFER_VESA_MODE_108
+	default 0x109 if FRAMEBUFFER_VESA_MODE_109
+	default 0x10A if FRAMEBUFFER_VESA_MODE_10A
+	default 0x10B if FRAMEBUFFER_VESA_MODE_10B
+	default 0x10C if FRAMEBUFFER_VESA_MODE_10C
+	default 0x10D if FRAMEBUFFER_VESA_MODE_10D
+	default 0x10E if FRAMEBUFFER_VESA_MODE_10E
+	default 0x10F if FRAMEBUFFER_VESA_MODE_10F
+	default 0x110 if FRAMEBUFFER_VESA_MODE_110
+	default 0x111 if FRAMEBUFFER_VESA_MODE_111
+	default 0x112 if FRAMEBUFFER_VESA_MODE_112
+	default 0x113 if FRAMEBUFFER_VESA_MODE_113
+	default 0x114 if FRAMEBUFFER_VESA_MODE_114
+	default 0x115 if FRAMEBUFFER_VESA_MODE_115
+	default 0x116 if FRAMEBUFFER_VESA_MODE_116
+	default 0x117 if FRAMEBUFFER_VESA_MODE_117
+	default 0x118 if FRAMEBUFFER_VESA_MODE_118
+	default 0x119 if FRAMEBUFFER_VESA_MODE_119
+	default 0x11A if FRAMEBUFFER_VESA_MODE_11A
+	default 0x11B if FRAMEBUFFER_VESA_MODE_11B
+	default 0x117 if FRAMEBUFFER_VESA_MODE_USER
+
+config VIDEO_LCD_ANX9804
+	bool "ANX9804 bridge chip"
+	---help---
+	Support for the ANX9804 bridge chip, which can take pixel data coming
+	from a parallel LCD interface and translate it on the fy into a DP
+	interface for driving eDP TFT displays. It uses I2C for configuration.
+
+config ATMEL_LCD
+	bool "Atmel LCD panel support"
+	depends on ARCH_AT91
+
+config ATMEL_LCD_BGR555
+	bool "Display in BGR555 mode"
+	help
+	  Use the BGR555 output mode.  Otherwise RGB565 is used.
+
+config VIDEO_BCM2835
+	bool "Display support for BCM2835"
+	help
+	  The graphics processor already sets up the display so this driver
+	  simply checks the resolution and then sets up the frame buffer with
+	  that same resolution (or as near as possible) and 32bpp depth, so
+	  that U-Boot can access it with full colour depth.
+
+config VIDEO_LCD_ENDEAVORU
+	tristate "Endeavoru 720x1280 DSI video mode panel"
+	depends on PANEL && BACKLIGHT
+	select VIDEO_MIPI_DSI
+	help
+	  Say Y here if you want to enable support for the IPS-LCD panel
+	  module for HTC One X. Driver supports a family of panels,
+	  made at least by 3 vendors (Sharp, Sony and AUO), but set up
+	  using the same DSI command sequence. The panel has a 720x1280
+	  resolution and uses 24 bit RGB per pixel.
+
+config VIDEO_LCD_HIMAX_HX8394
+	bool "Himax HX8394 DSI LCD panel support"
+	depends on PANEL && BACKLIGHT
+	select VIDEO_MIPI_DSI
+	help
+	Say Y here if you want to enable support for Himax HX8394
+	dsi 4dl panel.
+
+config VIDEO_LCD_ORISETECH_OTM8009A
+	bool "OTM8009A DSI LCD panel support"
+	select VIDEO_MIPI_DSI
+	help
+	Say Y here if you want to enable support for Orise Technology
+	otm8009a 480x800 dsi 2dl panel.
+
+config VIDEO_LCD_RAYDIUM_RM68200
+	bool "RM68200 DSI LCD panel support"
+	select VIDEO_MIPI_DSI
+	help
+	Say Y here if you want to enable support for Raydium RM68200
+	720x1280 DSI video mode panel.
+
+config VIDEO_LCD_RENESAS_R61307
+	tristate "Renesas R61307 DSI video mode panel"
+	depends on PANEL && BACKLIGHT
+	select VIDEO_MIPI_DSI
+	help
+	  Say Y here if you want to enable support for KOE tx13d100vm0eaa
+	  IPS-LCD module with Renesas R69328 IC. The panel has a 1024x768
+	  resolution and uses 24 bit RGB per pixel.
+
+config VIDEO_LCD_RENESAS_R69328
+	tristate "Renesas R69328 720x1280 DSI video mode panel"
+	depends on PANEL && BACKLIGHT
+	select VIDEO_MIPI_DSI
+	help
+	  Say Y here if you want to enable support for JDI dx12d100vm0eaa
+	  IPS-LCD module with Renesas R69328 IC. The panel has a 720x1280
+	  resolution and uses 24 bit RGB per pixel.
+
+config VIDEO_LCD_SSD2828
+	bool "SSD2828 bridge chip"
+	---help---
+	Support for the SSD2828 bridge chip, which can take pixel data coming
+	from a parallel LCD interface and translate it on the fly into MIPI DSI
+	interface for driving a MIPI compatible LCD panel. It uses SPI for
+	configuration.
+
+config VIDEO_LCD_SSD2828_TX_CLK
+	int "SSD2828 TX_CLK frequency (in MHz)"
+	depends on VIDEO_LCD_SSD2828
+	default 0
+	---help---
+	The frequency of the crystal, which is clocking SSD2828. It may be
+	anything in the 8MHz-30MHz range and the exact value should be
+	retrieved from the board schematics. Or in the case of Allwinner
+	hardware, it can be usually found as 'lcd_xtal_freq' variable in
+	FEX files. It can be also set to 0 for selecting PCLK from the
+	parallel LCD interface instead of TX_CLK as the PLL clock source.
+
+config VIDEO_LCD_SSD2828_RESET
+	string "RESET pin of SSD2828"
+	depends on VIDEO_LCD_SSD2828
+	default ""
+	---help---
+	The reset pin of SSD2828 chip. This takes a string in the format
+	understood by 'sunxi_name_to_gpio' function, e.g. PH1 for pin 1 of port H.
+
+config VIDEO_LCD_TDO_TL070WSH30
+	bool "TDO TL070WSH30 DSI LCD panel support"
+	select VIDEO_MIPI_DSI
+	help
+	Say Y here if you want to enable support for TDO TL070WSH30
+	1024x600 DSI video mode panel.
+
+config VIDEO_LCD_HITACHI_TX18D42VM
+	bool "Hitachi tx18d42vm LVDS LCD panel support"
+	---help---
+	Support for Hitachi tx18d42vm LVDS LCD panels, these panels have a
+	lcd controller which needs to be initialized over SPI, once that is
+	done they work like a regular LVDS panel.
+
+config VIDEO_LCD_SPI_CS
+	string "SPI CS pin for LCD related config job"
+	depends on VIDEO_LCD_SSD2828 || VIDEO_LCD_HITACHI_TX18D42VM
+	default ""
+	---help---
+	This is one of the SPI communication pins, involved in setting up a
+	working LCD configuration. The exact role of SPI may differ for
+	different hardware setups. The option takes a string in the format
+	understood by 'sunxi_name_to_gpio' function, e.g. PH1 for pin 1 of port H.
+
+config VIDEO_LCD_SPI_SCLK
+	string "SPI SCLK pin for LCD related config job"
+	depends on VIDEO_LCD_SSD2828 || VIDEO_LCD_HITACHI_TX18D42VM
+	default ""
+	---help---
+	This is one of the SPI communication pins, involved in setting up a
+	working LCD configuration. The exact role of SPI may differ for
+	different hardware setups. The option takes a string in the format
+	understood by 'sunxi_name_to_gpio' function, e.g. PH1 for pin 1 of port H.
+
+config VIDEO_LCD_SPI_MOSI
+	string "SPI MOSI pin for LCD related config job"
+	depends on VIDEO_LCD_SSD2828 || VIDEO_LCD_HITACHI_TX18D42VM
+	default ""
+	---help---
+	This is one of the SPI communication pins, involved in setting up a
+	working LCD configuration. The exact role of SPI may differ for
+	different hardware setups. The option takes a string in the format
+	understood by 'sunxi_name_to_gpio' function, e.g. PH1 for pin 1 of port H.
+
+config VIDEO_LCD_SPI_MISO
+	string "SPI MISO pin for LCD related config job (optional)"
+	depends on VIDEO_LCD_SSD2828
+	default ""
+	---help---
+	This is one of the SPI communication pins, involved in setting up a
+	working LCD configuration. The exact role of SPI may differ for
+	different hardware setups. If wired up, this pin may provide additional
+	useful functionality. Such as bi-directional communication with the
+	hardware and LCD panel id retrieval (if the panel can report it). The
+	option takes a string in the format understood by 'sunxi_name_to_gpio'
+	function, e.g. PH1 for pin 1 of port H.
+
+source "drivers/video/meson/Kconfig"
+
+config VIDEO_MVEBU
+	bool "Armada XP LCD controller"
+	---help---
+	Support for the LCD controller integrated in the Marvell
+	Armada XP SoC.
+
+config VIDEO_OMAP3
+	bool "Enable OMAP3+ DSS Support"
+	depends on ARCH_OMAP2PLUS
+	help
+	  This enables the Display subsystem (DSS) on OMAP3+ boards.
+
+config I2C_EDID
+	bool "Enable EDID library"
+	help
+	   This enables library for accessing EDID data from an LCD panel.
+
+config DISPLAY
+	bool "Enable Display support"
+	depends on DM
+	select I2C_EDID
+	help
+	   This supports drivers that provide a display, such as eDP (Embedded
+	   DisplayPort) and HDMI (High Definition Multimedia Interface).
+	   The devices provide a simple interface to start up the display,
+	   read display information and enable it.
+
+config NXP_TDA19988
+	bool "Enable NXP TDA19988 support"
+	depends on DISPLAY
+	help
+	  This enables support for the NXP TDA19988 HDMI encoder. This encoder
+	  will convert RGB data streams into HDMI-encoded signals.
+
+config ATMEL_HLCD
+	bool "Enable ATMEL video support using HLCDC"
+	help
+	   HLCDC supports video output to an attached LCD panel.
+
+config BACKLIGHT_LM3533
+	bool "Backlight Driver for LM3533"
+	depends on BACKLIGHT
+	select DM_I2C
+	help
+	  Say Y to enable the backlight driver for National Semiconductor / TI
+	  LM3533 Lighting Power chip. Only Bank A is supported as for now.
+	  Supported backlight level range is from 2 to 255 with step of 1.
+
+source "drivers/video/ti/Kconfig"
+
+source "drivers/video/exynos/Kconfig"
+
+config LOGICORE_DP_TX
+	bool "Enable Logicore DP TX driver"
+	depends on DISPLAY
+	help
+	  Enable the driver for the transmitter part of the Xilinx LogiCORE
+	  DisplayPort, a IP core for Xilinx FPGAs that implements a DisplayPort
+	  video interface as defined by VESA DisplayPort v1.2.
+
+	  Note that this is a pure transmitter device, and has no display
+	  capabilities by itself.
+
+config VIDEO_BROADWELL_IGD
+	bool "Enable Intel Broadwell integrated graphics device"
+	depends on X86
+	help
+	  This enables support for integrated graphics on Intel broadwell
+	  devices. Initialisation is mostly performed by a VGA boot ROM, with
+	  some setup handled by U-Boot itself. The graphics adaptor works as
+	  a VESA device and supports LCD panels, eDP and LVDS outputs.
+	  Configuration of most aspects of device operation is performed using
+	  a special tool which configures the VGA ROM, but the graphics
+	  resolution can be selected in U-Boot.
+
+config VIDEO_IVYBRIDGE_IGD
+	bool "Enable Intel Ivybridge integration graphics support"
+	depends on X86
+	help
+	  This enables support for integrated graphics on Intel ivybridge
+	  devices. Initialisation is mostly performed by a VGA boot ROM, with
+	  some setup handled by U-Boot itself. The graphics adaptor works as
+	  a VESA device and supports LCD panels, eDP and LVDS outputs.
+	  Configuration of most aspects of device operation is performed using
+	  a special tool which configures the VGA ROM, but the graphics
+	  resolution can be selected in U-Boot.
+
+source "drivers/video/rockchip/Kconfig"
+
+config VIDEO_ARM_MALIDP
+	bool "Enable Arm Mali Display Processor support"
+	depends on OF_CONTROL
+	select VEXPRESS_CLK
+	help
+	  This enables support for Arm Ltd Mali Display Processors from
+	  the DP500, DP550 and DP650 family.
+
+config VIDEO_SANDBOX_SDL
+	bool "Enable sandbox video console using SDL"
+	depends on SANDBOX_SDL
+	help
+	  When using sandbox you can enable an emulated LCD display which
+	  appears as an SDL (Simple DirectMedia Layer) window. This is a
+	  console device and can display stdout output. Within U-Boot is is
+	  a normal bitmap display and can display images as well as text.
+
+source "drivers/video/stm32/Kconfig"
+
+source "drivers/video/tidss/Kconfig"
+
+config VIDEO_TEGRA124
+	bool "Enable video support on Tegra124"
+	help
+	   Tegra124 supports many video output options including eDP and
+	   HDMI. At present only eDP is supported by U-Boot. This option
+	   enables this support which can be used on devices which
+	   have an eDP display connected.
+
+source "drivers/video/bridge/Kconfig"
+
+source "drivers/video/tegra20/Kconfig"
+
+source "drivers/video/imx/Kconfig"
+
+config VIDEO_MXS
+	bool "Enable video support on i.MX28/i.MX6UL/i.MX7 SoCs"
+	help
+	  Enable framebuffer driver for i.MX28/i.MX6UL/i.MX7 processors
+
+config VIDEO_NX
+	bool "Enable video support on Nexell SoC"
+	depends on ARCH_S5P6818 || ARCH_S5P4418
+	help
+	   Nexell SoC supports many video output options including eDP and
+	   HDMI. This option enables this support which can be used on devices
+	   which have an eDP display connected.
+
+config VIDEO_SEPS525
+	bool "Enable video support for Seps525"
+	depends on DM_GPIO
+	help
+	  Enable support for the Syncoam PM-OLED display driver (RGB 160x128).
+	  Currently driver is supporting only SPI interface.
+
+source "drivers/video/zynqmp/Kconfig"
+source "drivers/video/nexell/Kconfig"
+
+config CONSOLE_SCROLL_LINES
+	int "Number of lines to scroll the console by"
+	default 1
+	help
+	  When the console need to be scrolled, this is the number of
+	  lines to scroll by. It defaults to 1. Increasing this makes the
+	  console jump but can help speed up operation when scrolling
+	  is slow.
+
+config VIDEO_DW_HDMI
+	bool
+	help
+	  Enables the common driver code for the Designware HDMI TX
+	  block found in SoCs from various vendors.
+	  As this does not provide any functionality by itself (but
+	  rather requires a SoC-specific glue driver to call it), it
+	  can not be enabled from the configuration menu.
+
+config VIDEO_DSI_HOST_SANDBOX
+	bool "Enable sandbox for dsi host"
+	depends on SANDBOX
+	select VIDEO_MIPI_DSI
+	help
+	  Enable support for sandbox dsi host device used for testing
+	  purposes.
+	  Display Serial Interface (DSI) defines a serial bus and
+	  a communication protocol between the host and the device
+	  (panel, bridge).
+
+config VIDEO_DW_MIPI_DSI
+	bool
+	select VIDEO_MIPI_DSI
+	help
+	  Enables the common driver code for the Synopsis Designware
+	  MIPI DSI block found in SoCs from various vendors.
+	  As this does not provide any functionality by itself (but
+	  rather requires a SoC-specific glue driver to call it), it
+	  can not be enabled from the configuration menu.
+
+config VIDEO_SIMPLE
+	bool "Simple display driver for preconfigured display"
+	help
+	  Enables a simple generic display driver which utilizes the
+	  simple-framebuffer devicetree bindings.
+
+	  This driver assumes that the display hardware has been initialized
+	  before u-boot starts, and u-boot will simply render to the pre-
+	  allocated frame buffer surface.
+
+config VIDEO_DT_SIMPLEFB
+	bool "Enable SimpleFB support for passing framebuffer to OS"
+	help
+	  Enables the code to pass the framebuffer to the kernel as a
+	  simple framebuffer in the device tree.
+	  The video output is initialized by U-Boot, and kept by the
+	  kernel.
+
+config VIDEO_MCDE_SIMPLE
+	bool "Simple driver for ST-Ericsson MCDE with preconfigured display"
+	help
+	  Enables a simple display driver for ST-Ericsson MCDE
+	  (Multichannel Display Engine), which reads the configuration from
+	  the MCDE registers.
+
+	  This driver assumes that the display hardware has been initialized
+	  before u-boot starts, and u-boot will simply render to the pre-
+	  allocated frame buffer surface.
+
+config OSD
+	bool "Enable OSD support"
+	depends on DM
+	help
+	   This supports drivers that provide a OSD (on-screen display), which
+	   is a (usually text-oriented) graphics buffer to show information on
+	   a display.
+
+config SANDBOX_OSD
+	bool "Enable sandbox OSD"
+	depends on OSD
+	help
+	  Enable support for sandbox OSD device used for testing purposes.
+
+config IHS_VIDEO_OUT
+	bool "Enable IHS video out driver"
+	depends on OSD
+	help
+	  Enable support for the gdsys Integrated Hardware Systems (IHS) video
+	  out On-screen Display (OSD) used on gdsys FPGAs to control dynamic
+	  textual overlays of the display outputs.
+
+config VIDEO_REMOVE
+	bool "Remove video driver"
+	help
+	  Use this option to specify if user wants to call remove method of
+	  video driver in u-boot proper stage.
+
+config SPLASH_SCREEN
+	bool "Show a splash-screen image"
+	help
+	  If this option is set, the environment is checked for a variable
+	  "splashimage". If found, the usual display of logo, copyright and
+	  system information on the LCD is suppressed and the BMP image at the
+	  address specified in "splashimage" is loaded instead. The console is
+	  redirected to the "nulldev", too. This allows for a "silent" boot
+	  where a splash screen is loaded very quickly after power-on.
+
+	  The splash_screen_prepare() function is a weak function defined in
+	  common/splash.c. It is called as part of the splash screen display
+	  sequence. It gives the board an opportunity to prepare the splash
+	  image data before it is processed and sent to the frame buffer by
+	  U-Boot. Define your own version to use this feature.
+
+if SPLASH_SCREEN
+
+config SPLASH_SCREEN_ALIGN
+	bool "Allow positioning the splash image anywhere on the display"
+	help
+	  If this option is set the splash image can be freely positioned
+	  on the screen. Environment variable "splashpos" specifies the
+	  position as "x,y". If a positive number is given it is used as
+	  number of pixel from left/top. If a negative number is given it
+	  is used as number of pixel from right/bottom. You can also
+	  specify 'm' for centering the image.
+
+	  Example:
+	  setenv splashpos m,m
+	  	=> image at center of screen
+
+	  setenv splashpos 30,20
+	  	=> image at x = 30 and y = 20
+
+	  setenv splashpos -10,m
+	  	=> vertically centered image
+	  	   at x = dspWidth - bmpWidth - 9
+
+config HIDE_LOGO_VERSION
+	bool "Hide the version information on the splash screen"
+	help
+	  Normally the U-Boot version string is shown on the display when the
+	  splash screen is enabled. This information is not otherwise visible
+	  since video starts up after U-Boot has displayed the initial banner.
+
+	  Enable this option to hide this information.
+
+config SPLASH_SOURCE
+	bool "Control the source of the splash image"
+	help
+	  Use the splash_source.c library. This library provides facilities to
+	  declare board specific splash image locations, routines for loading
+	  splash image from supported locations, and a way of controlling the
+	  selected splash location using the "splashsource" environment
+	  variable.
+
+	  This CONFIG works as follows:
+
+	  - If splashsource is set to a supported location name as defined by
+	    board code, use that splash location.
+	  - If splashsource is undefined, use the first splash location as
+	    default.
+	  - If splashsource is set to an unsupported value, do not load a splash
+	    screen.
+
+	  A splash source location can describe either storage with raw data, a
+	  storage formatted with a file system or a FIT image. In case of a
+	  filesystem, the splash screen data is loaded as a file. The name of
+	  the splash screen file can be controlled with the environment variable
+	  "splashfile".
+
+	  To enable loading the splash image from a FIT image, CONFIG_FIT must
+	  be enabled. The FIT image has to start at the 'offset' field address
+	  in the selected splash location. The name of splash image within the
+	  FIT shall be specified by the environment variable "splashfile".
+
+	  In case the environment variable "splashfile" is not defined the
+	  default name 'splash.bmp' will be used.
+
+endif # SPLASH_SCREEN
+
+config BMP
+	bool "Enable bmp image display"
+	help
+	  Enable bmp functions to display bmp image and get bmp info.
+
+	  BMP is a simple graphics-image file format designed to store bitmap
+	  images. It is primarily used on Windows devices.
+
+config VIDEO_BMP_GZIP
+	bool "Gzip compressed BMP image support"
+	depends on BMP || SPLASH_SCREEN
+	help
+	  If this option is set, additionally to standard BMP
+	  images, gzipped BMP images can be displayed via the
+	  splashscreen support or the bmp command.
+
+config VIDEO_LOGO_MAX_SIZE
+	hex "Maximum size of the bitmap logo in bytes"
+	default 0x100000
+	help
+	  Sets the maximum uncompressed size of the logo. This is needed when
+	  decompressing a BMP file using the gzip algorithm, since it cannot
+	  read the size from the bitmap header.
+
+config VIDEO_BMP_RLE8
+	bool "Run length encoded BMP image (RLE8) support"
+	help
+	  If this option is set, the 8-bit RLE compressed BMP images
+	  is supported.
+
+config BMP_16BPP
+	bool "16-bit-per-pixel BMP image support"
+	help
+	  Support display of bitmaps file with 16-bit-per-pixel
+
+config BMP_24BPP
+	bool "24-bit-per-pixel BMP image support"
+	help
+	  Support display of bitmaps file with 24-bit-per-pixel.
+
+config BMP_32BPP
+	bool "32-bit-per-pixel BMP image support"
+	help
+	  Support display of bitmaps file with 32-bit-per-pixel.
+
+endif # VIDEO
+
+config SPL_VIDEO
+	bool "Enable driver model support for LCD/video in SPL"
+	depends on SPL_DM
+	help
+	  The video subsystem adds a small amount of overhead to the image.
+	  If this is acceptable and you have a need to use video drivers in
+	  SPL, enable this option. It might provide a cleaner interface to
+	  setting up video within SPL, and allows the same drivers to be
+	  used as U-Boot proper.
+
+if SPL_VIDEO
+source "drivers/video/tidss/Kconfig"
+
+config SPL_VIDEO_HANDOFF
+	bool "Pass the video frame-buffer through to U-Boot proper"
+	depends on SPL_BLOBLIST
+	default y if !X86
+	help
+	  Enable this to set up video-handoff information in SPL which can be
+	  picked up in U-Boot proper. This includes the frame buffer and
+	  various other pieces of information. With this enabled, SPL can set
+	  up video and avoid re-initing it later.
+
+config SPL_VIDEO_LOGO
+	bool "Show the U-Boot logo on the display at SPL"
+	default y if !SPL_SPLASH_SCREEN
+	select SPL_VIDEO_BMP_RLE8
+	help
+	  This enables showing the U-Boot logo on the display when a video
+	  device is probed. It appears at the top right. The logo itself is at
+	  tools/logos/u-boot_logo.bmp and looks best when the display has a
+	  black background.
+
+config SPL_SPLASH_SCREEN
+	bool "Show a splash-screen image at SPL"
+	help
+	  If this option is set, the environment is checked for a variable
+	  "splashimage" at spl stage.
+
+config SPL_SYS_WHITE_ON_BLACK
+	bool "Display console as white on a black background at SPL"
+	help
+	 Normally the display is black on a white background, Enable this
+	 option to invert this, i.e. white on a black background at spl stage.
+	 This can be better in low-light situations or to reduce eye strain in
+	 some cases.
+
+config SPL_VIDEO_PCI_DEFAULT_FB_SIZE
+	hex "Default framebuffer size to use if no drivers request it at SPL"
+	default 0x1000000 if X86
+	default 0x800000 if !X86 && VIDEO_BOCHS
+	default 0x0 if !X86 && !VIDEO_BOCHS
+	help
+	  Generally, video drivers request the amount of memory they need for
+	  the frame buffer when they are bound, by setting the size field in
+	  struct video_uc_plat. That memory is then reserved for use after
+	  relocation. But PCI drivers cannot be bound before relocation unless
+	  they are mentioned in the devicetree.
+
+	  With this value set appropriately, it is possible for PCI video
+	  devices to have a framebuffer allocated by U-Boot.
+
+	  Note: the framebuffer needs to be large enough to store all pixels at
+	  maximum resolution. For example, at 2560 x 1600 with 32 bits per
+	  pixel, 2560 * 1600 * 32 / 8 = 0xfa0000 bytes are needed.
+
+config SPL_CONSOLE_SCROLL_LINES
+	int "Number of lines to scroll the console by at SPL"
+	default 1
+	help
+	  When the console need to be scrolled, this is the number of
+	  lines to scroll by. It defaults to 1. Increasing this makes the
+	  console jump but can help speed up operation when scrolling
+	  is slow.
+
+config SPL_CONSOLE_NORMAL
+	bool "Support a simple text console at SPL"
+	default y
+	help
+	  Support drawing text on the frame buffer console so that it can be
+	  used as a console. Rotation is not supported by this driver (see
+	  CONFIG_CONSOLE_ROTATION for that). A built-in 8x16 font is used
+	  for the display.
+
+config SPL_BACKLIGHT
+	bool "Enable panel backlight uclass support at SPL"
+	default y
+	help
+	  This provides backlight uclass driver that enables basic panel
+	  backlight support.
+
+config SPL_PANEL
+	bool "Enable panel uclass support at SPL"
+	default y
+	help
+	  This provides panel uclass driver that enables basic panel support.
+
+config SPL_SIMPLE_PANEL
+	bool "Enable simple panel support at SPL"
+	depends on SPL_PANEL && SPL_BACKLIGHT && SPL_DM_GPIO
+	default y
+	help
+	  This turns on a simple panel driver that enables a compatible
+	  video panel.
+
+config SPL_SYS_WHITE_ON_BLACK
+	bool "Display console as white on a black background at SPL"
+	help
+	 Normally the display is black on a white background, Enable this
+	 option to invert this, i.e. white on a black background at spl stage.
+	 This can be better in low-light situations or to reduce eye strain in
+	 some cases.
+
+config SPL_VIDEO_REMOVE
+	bool "Remove video driver after SPL stage"
+	help
+	  if this  option is enabled video driver will be removed at the end of
+	  SPL stage, before loading the next stage.
+
+if SPL_SPLASH_SCREEN
+
+config SPL_SPLASH_SCREEN_ALIGN
+	bool "Allow positioning the splash image anywhere on the display at SPL"
+	help
+	  If this option is set the splash image can be freely positioned
+	  on the screen only at SPL. Environment variable "splashpos" specifies
+	  the position as "x,y". If a positive number is given it is used as
+	  number of pixel from left/top. If a negative number is given it
+	  is used as number of pixel from right/bottom.
+
+config SPL_SPLASH_SOURCE
+	bool "Control the source of the splash image at SPL"
+	help
+	  Use the splash_source.c library. This library provides facilities to
+	  declare board specific splash image locations, routines for loading
+	  splash image from supported locations, and a way of controlling the
+	  selected splash location using the "splashsource" environment
+	  variable.
+
+	  This CONFIG works as follows:
+
+	  - If splashsource is set to a supported location name as defined by
+	    board code, use that splash location.
+	  - If splashsource is undefined, use the first splash location as
+	    default.
+	  - If splashsource is set to an unsupported value, do not load a splash
+	    screen.
+
+	  A splash source location can describe either storage with raw data, a
+	  storage formatted with a file system or a FIT image. In case of a
+	  filesystem, the splash screen data is loaded as a file. The name of
+	  the splash screen file can be controlled with the environment variable
+	  "splashfile".
+
+	  To enable loading the splash image from a FIT image, CONFIG_FIT must
+	  be enabled. The FIT image has to start at the 'offset' field address
+	  in the selected splash location. The name of splash image within the
+	  FIT shall be specified by the environment variable "splashfile".
+
+	  In case the environment variable "splashfile" is not defined the
+	  default name 'splash.bmp' will be used.
+
+endif # SPL_SPLASH_SCREEN
+
+config SPL_BMP
+	bool "Enable bmp image display at SPL"
+	help
+	  Enable bmp functions to display bmp image and get bmp info in SPL.
+
+	  BMP is a simple graphics-image file format designed to store bitmap
+	  images. It is primarily used on Windows devices.
+
+config SPL_VIDEO_BMP_GZIP
+	bool "Gzip compressed BMP image support at SPL"
+	depends on SPL_SPLASH_SCREEN || SPL_BMP
+	help
+	  If this option is set, additionally to standard BMP
+	  images, gzipped BMP images can be displayed via the
+	  splashscreen supportat SPL stage.
+
+config SPL_VIDEO_LOGO_MAX_SIZE
+	hex "Maximum size of the bitmap logo in bytes at SPL"
+	default 0x100000
+	help
+	  Sets the maximum uncompressed size of the logo. This is needed when
+	  decompressing a BMP file using the gzip algorithm, since it cannot
+	  read the size from the bitmap header.
+
+config SPL_VIDEO_BMP_RLE8
+	bool "Run length encoded BMP image (RLE8) support at SPL"
+	help
+	  If this option is set, the 8-bit RLE compressed BMP images
+	  is supported.
+
+config SPL_BMP_16BPP
+	bool "16-bit-per-pixel BMP image support at SPL"
+	help
+	  Support display of bitmaps file with 16-bit-per-pixel
+
+config SPL_BMP_24BPP
+	bool "24-bit-per-pixel BMP image support at SPL"
+	help
+	  Support display of bitmaps file with 24-bit-per-pixel.
+
+config SPL_BMP_32BPP
+	bool "32-bit-per-pixel BMP image support at SPL"
+	help
+	  Support display of bitmaps file with 32-bit-per-pixel.
+
+config SPL_VIDEO_BPP8
+	bool "Support 8-bit-per-pixel displays at SPL"
+	default y
+	help
+	  Support drawing text and bitmaps onto a 8-bit-per-pixel display.
+	  Enabling this will include code to support this display. Without
+	  this option, such displays will not be supported and console output
+	  will be empty.
+
+config SPL_VIDEO_BPP16
+	bool "Support 16-bit-per-pixel displays at SPL"
+	default y
+	help
+	  Support drawing text and bitmaps onto a 16-bit-per-pixel display.
+	  Enabling this will include code to support this display. Without
+	  this option, such displays will not be supported and console output
+	  will be empty.
+
+config SPL_VIDEO_BPP32
+	bool "Support 32-bit-per-pixel displays at SPL"
+	default y
+	help
+	  Support drawing text and bitmaps onto a 32-bit-per-pixel display.
+	  Enabling this will include code to support this display. Without
+	  this option, such displays will not be supported and console output
+	  will be empty.
+
+config SPL_HIDE_LOGO_VERSION
+    bool "Hide the version information on the splash screen at SPL"
+    help
+      Normally the U-Boot version string is shown on the display when the
+      splash screen is enabled. This information is not otherwise visible
+      since video starts up after U-Boot has displayed the initial banner.
+
+      Enable this option to hide this information.
+endif
+
+endmenu

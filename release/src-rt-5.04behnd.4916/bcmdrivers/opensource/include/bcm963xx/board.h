@@ -36,8 +36,6 @@
 #ifndef _BOARD_H
 #define _BOARD_H
 
-#include "bcm_hwdefs.h"
-#include "bcmTag.h"
 #include "bcm_memc.h"
 #include "bcm_dgasp.h" /* To be removed after WLAN src is updated to include proper hdr */
 
@@ -45,11 +43,12 @@
 extern "C" {
 #endif
 
+#define BOOTED_IMAGE_ID_NAME        "boot_image"
 
 /* BOARD_H_API_VER increases when other modules (such as PHY) depend on */
 /* a new function in the board driver or in board_defs.h                */
 
-#define BOARD_H_API_VER 24
+#define BOARD_H_API_VER 26
 
 /*****************************************************************************/
 /*          board ioctl calls for flash, led and some other utilities        */
@@ -102,13 +101,11 @@ extern "C" {
 #define BOARD_IOCTL_SPI_SLAVE_SET_BITS          _IOWR(BOARD_IOCTL_MAGIC, 47, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_SPI_SLAVE_CLEAR_BITS        _IOWR(BOARD_IOCTL_MAGIC, 48, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_SPI_SLAVE_WRITE_BUF         _IOWR(BOARD_IOCTL_MAGIC, 49, BOARD_IOCTL_PARMS)
-#define BOARD_IOCTL_GET_GPIOVERLAYS             _IOWR(BOARD_IOCTL_MAGIC, 50, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_GET_BATTERY_ENABLE          _IOWR(BOARD_IOCTL_MAGIC, 51, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_MEM_ACCESS                  _IOWR(BOARD_IOCTL_MAGIC, 53, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_SET_DYING_GASP_INTERRUPT    _IOWR(BOARD_IOCTL_MAGIC, 54, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_GET_BTRM_BOOT               _IOWR(BOARD_IOCTL_MAGIC, 55, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_GET_BOOT_SECURE             _IOWR(BOARD_IOCTL_MAGIC, 56, BOARD_IOCTL_PARMS)
-#define BOARD_IOCTL_SATA_TEST                   _IOWR(BOARD_IOCTL_MAGIC, 57, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_BT_GPIO                     _IOWR(BOARD_IOCTL_MAGIC, 58, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_GET_BOOT_MFG_SECURE         _IOWR(BOARD_IOCTL_MAGIC, 59, BOARD_IOCTL_PARMS)
 #define BOARD_IOCTL_GET_FLASH_TYPE              _IOWR(BOARD_IOCTL_MAGIC, 60, BOARD_IOCTL_PARMS)
@@ -246,6 +243,7 @@ typedef struct cs_config_pars_tag
 #define IF_NAME_EPON   "epon"
 #define IF_NAME_VEIP   "veip"
 
+
 #define MAC_ADDRESS_ANY         (unsigned long) -1
 
 /* A unique mac id is required for a WAN interface to request for a MAC address.
@@ -265,6 +263,8 @@ typedef struct cs_config_pars_tag
 #define MAC_ADDRESS_ATM         0xE0000000
 #define MAC_ADDRESS_PTM         0xF0000000
 
+#define NVRAM_WLAN_PARAMS_LEN      	256
+#define NVRAM_MAC_ADDRESS_LEN		6
 
 /* board event definition */
 /* wps button events */
@@ -278,6 +278,8 @@ typedef struct cs_config_pars_tag
 
 
 #define UNUSED_PARAM(a)        (a = a)
+
+#define		DYING_GASP_API
 
 /*****************************************************************************/
 /*          Function Prototypes                                              */
@@ -293,22 +295,15 @@ extern void kerSysFlashInit( void );
 extern void kerSysFlashAddrInfoGet(PFLASH_ADDR_INFO pflash_addr_info);
 extern int kerSysCfeVersionGet(char *string, int stringLength);
 
-extern int kerSysNvRamSet(const char *string, int strLen, int offset);
-extern void kerSysNvRamGet(char *string, int strLen, int offset);
-extern void kerSysNvRamLoad(void * mtd_ptr);
-extern void kerSysNvRamGetBootline(char *bootline);
-extern void kerSysNvRamGetBootlineLocked(char *bootline);
-extern void kerSysNvRamGetBoardId(char *boardId);
-extern void kerSysNvRamGetBoardIdLocked(char *boardId);
-extern void kerSysNvRamGetBaseMacAddr(unsigned char *baseMacAddr);
-extern unsigned long kerSysNvRamGetVersion(void);
+extern void kerSysNvRamGetBoardId(char *boardId, int len);
 
 extern int kerSysIsRootfsSet(void);
 extern int kerSysIsIkosBootSet(void);
-extern PFILE_TAG kerSysImageTagGet(void);
-extern PFILE_TAG kerSysUpdateTagSequenceNumber(int imageNumber);
 
 extern void kerSysSendtoMonitorTask(int msgType, char *msgData, int msgDataLen);
+
+extern void kerSysRegisterPanicNotifier(void *notifier);
+extern void kerSysUnregisterPanicNotifier(void *notifier);
 
 #ifdef CONFIG_BCM_BMU
 extern int bcm_bmu_is_battery_enabled(void);
@@ -332,11 +327,6 @@ extern int kerSysScratchPadList(char *tokBuf, int tokLen);
 extern int kerSysScratchPadGet(char *tokName, char *tokBuf, int tokLen);
 extern int kerSysScratchPadSet(char *tokName, char *tokBuf, int tokLen);
 extern int kerSysScratchPadClearAll(void);
-extern int kerSysBcmImageSet( int flash_start_addr, char *string, int size,
-    int should_yield);
-extern int kerSysGetSequenceNumber(int imageNumber);
-extern int kerSysSetBootImageState( int state );
-extern int kerSysGetBootImageState( void );
 extern int kerSysSetOpticalPowerValues(unsigned short rxReading, unsigned short rxOffset, 
     unsigned short txReading);
 extern int kerSysGetOpticalPowerValues(unsigned short *prxReading, unsigned short *prxOffset, 
@@ -393,16 +383,6 @@ void kerSysWifiLed(unsigned int led, unsigned int on);
  */
 //#include <linux/spinlock.h>
 //extern spinlock_t bcm_gpio_spinlock;
-extern void kerSysSetGpioState(unsigned short bpGpio, GPIO_STATE_t state);
-extern void kerSysSetGpioStateLocked(unsigned short bpGpio, GPIO_STATE_t state);
-extern void kerSysSetGpioDir(unsigned short bpGpio);
-extern void kerSysSetGpioDirLocked(unsigned short bpGpio);
-extern int kerSysSetGpioDirInput(unsigned short bpGpio);
-extern int kerSysGetGpioValue(unsigned short bpGpio);
-
-
-// for the voice code, which has too many kernSysSetGpio to change
-#define kerSysSetGpio kerSysSetGpioState
 
 extern int kerSysGetAfeId( unsigned int *afeId );
 #define __kerSysGetAfeId  kerSysGetAfeId
@@ -418,6 +398,7 @@ unsigned int  bcm_get_blparms_size(void);
 #define RDPA_WAN_TYPE_PSP_KEY           "RdpaWanType"
 #define RDPA_EPON_SPEED_PSP_KEY         "EponSpeed"
 #define RDPA_WAN_RATE_PSP_KEY           "WanRate"
+#define RDPA_WAN_PORT_GROUP_PSP_KEY     "WanPortGroup"
 #define BDMF_HISTORY_BUFF_SIZE_PSP_KEY  "BdmfHistSize"
 //BPM Dynamic Buffer Grow/Shrink variables
 #define BPM_MAX_PRCNT_BUFFER_PSP_KEY      "BpmMaxPrcntBuff"
@@ -428,6 +409,15 @@ unsigned int  bcm_get_blparms_size(void);
 #define BPM_BUF_EXPAND_STEP_PSP_KEY     "BufExpandStep"
 #define BPM_BUF_SHRINK_STEP_PSP_KEY     "BufShrinkStep"
 #define BPM_BUF_EXP_POOL_FAST_SHRINK_TH_PSP_KEY "BufFastShrinkTh"
+/* BPM HW Buffer cache dynamic config variables */
+#define BPM_HWBUF_MAX_PRCNT_BUFFER_PSP_KEY      "BpmHwMaxPrcnt"
+#define BPM_HWBUF_INITIAL_PRCNT_BUFFER_PSP_KEY  "BpmHwInitPrcnt"
+#define BPM_HWBUF_MAX_NUM_BUFFER_PSP_KEY      "BpmHwMaxNum"
+#define BPM_HWBUF_INITIAL_NUM_BUFFER_PSP_KEY  "BpmHwInitNum"
+#define BPM_HWBUF_AVAIL_LOWER_THRESHOLD_PSP_KEY "HwAvailLowTh"
+#define BPM_HWBUF_EXPAND_STEP_PSP_KEY     "HwExpandStep"
+#define BPM_HWBUF_SHRINK_STEP_PSP_KEY     "HwShrinkStep"
+
 #define BPM_SOAK_TIMER_DURATION_PSP_KEY "BpmSoakTimer"
 #define PSP_BUFLEN_16                   16
 
@@ -454,6 +444,11 @@ unsigned int  bcm_get_blparms_size(void);
 #define RDPA_WAN_RATE_1G			"01"
 
 extern int rdp_post_init(void);
+
+/* 6765 only: enabling crossbow SPU */
+#define CROSSBOW_CSPU_ENABLE        "CrossbowSpu"
+
+
 
 #endif
 

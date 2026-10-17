@@ -1,9 +1,0 @@
-menu "API"
-
-config API
-	bool "Enable U-Boot API"
-	default n
-	help
-	  This option enables the U-Boot API. See api/README for more information.
-
-endmenu

@@ -35,12 +35,11 @@
 #include "mac_drv.h"
 #include "mac_drv_sf2.h"
 #include <board.h>
-#include "bcm_misc_hw_init.h"
+
 
 /* Only necessary for ether_gphy_reset */
 #include <linux/delay.h>
 #include <linux/slab.h>
-#include "bcm_gpio.h"
 
 #include <bcm/bcmswapitypes.h>
 
@@ -287,9 +286,6 @@ EXPORT_SYMBOL(sf2_sw_wreg);
 
 /********** MAC API **********/
 
-static int port_sf2mac_stats_clear(mac_dev_t *mac_dev);
-
-
 static int port_sf2mac_init(mac_dev_t *mac_dev)
 {
     sf2_mac_dev_priv_data_t *p_priv = (sf2_mac_dev_priv_data_t *)mac_dev->priv;
@@ -312,9 +308,6 @@ static int port_sf2mac_enable(mac_dev_t *mac_dev)
 {
     // based on impl5\bcmsw.c:bcmsw_mac_rxtx_op()
     uint8_t v8;
-    
-    /* Clear MIB counters */
-    port_sf2mac_stats_clear(mac_dev);
 
     spin_lock_bh(&extsw_reg_config);
     sf2_rreg(PAGE_CONTROL, REG_PORT_CTRL + mac_dev->mac_id, &v8, 1);
@@ -764,14 +757,56 @@ static int port_sf2mac_stats_clear(mac_dev_t *mac_dev)
     return 0;
 }
 
+#if defined(CONFIG_BCM_JUMBO_FRAME) && defined(ARCHER_DEVICE)
+ // record current port mtu, and find max mtu in the switch
+static int _sw_max_mtu(mac_dev_t *mac_dev, int mtu)
+{
+    int ndx;
+#if defined(MAC_SF2_DUAL)
+    sf2_mac_dev_priv_data_t *p_priv = (sf2_mac_dev_priv_data_t *)mac_dev->priv;
+    static int sw2_mtu[2][IMP_PORT_ID+1];
+    uint32_t max = 0;
+    uint32_t max1 = 0;
+
+    sw2_mtu[(p_priv->priv_flags & SF2MAC_DRV_PRIV_FLAG_SW_EXT)?1:0][mac_dev->mac_id] = mtu;
+
+    for (ndx=0; ndx <= IMP_PORT_ID; ndx++) {
+        if (max < sw2_mtu[0][ndx]) max = sw2_mtu[0][ndx];
+        if (max1 < sw2_mtu[1][ndx]) max1 = sw2_mtu[1][ndx];
+    }
+    if (max1) {  // if external sw exists
+        if (max < max1) max = max1;
+        sf2_sw_wreg(1, PAGE_JUMBO, REG_JUMBO_FRAME_SIZE, (uint8_t *)&max, 4);
+    }
+    sf2_sw_wreg(0, PAGE_JUMBO, REG_JUMBO_FRAME_SIZE, (uint8_t *)&max, 4);
+
+#else
+    static int sw_mtu[IMP_PORT_ID+1];
+    uint32_t max = 0;
+
+    sw_mtu[mac_dev->mac_id] = mtu;
+
+    for (ndx=0; ndx <= IMP_PORT_ID; ndx++) {
+        if (max < sw_mtu[ndx]) max = sw_mtu[ndx];
+    }
+    sf2_wreg(PAGE_JUMBO, REG_JUMBO_FRAME_SIZE, (uint8_t *)&max, 4);
+#endif    
+    return max;
+}
+#endif
+
 static int port_sf2mac_mtu_set(mac_dev_t *mac_dev, int mtu)
 {
+    sf2_mac_dev_priv_data_t *p_priv = (sf2_mac_dev_priv_data_t *)mac_dev->priv;
     uint32_t mask, max;
+
+    if (p_priv->priv_flags & (SF2MAC_DRV_PRIV_FLAG_MGMT | SF2MAC_DRV_PRIV_FLAG_EXTSW_CONNECTED))
+        return 0;
     
 #if defined(CONFIG_BCM_JUMBO_FRAME)
 #if defined(ARCHER_DEVICE)
     /* Archer based devices need switch to enforce dropping of oversize packets */
-    max = mtu;
+    max = _sw_max_mtu(mac_dev, mtu);
 #else
     /* 
        Set MIB values for jumbo frames to reflect our maximum frame size.
@@ -779,8 +814,8 @@ static int port_sf2mac_mtu_set(mac_dev_t *mac_dev, int mtu)
        frame counters in hardware will be inconsistent
      */
     max = MAX_HW_JUMBO_FRAME_SIZE;
-#endif
     sf2_wreg(PAGE_JUMBO, REG_JUMBO_FRAME_SIZE, (uint8_t *)&max, 4);
+#endif
 #else
     sf2_rreg(PAGE_JUMBO, REG_JUMBO_FRAME_SIZE, (uint8_t *)&max, 4);
     max &= 0x3fff;
@@ -795,6 +830,28 @@ static int port_sf2mac_mtu_set(mac_dev_t *mac_dev, int mtu)
     
     sf2_wreg(PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8_t *)&mask, 4);
     spin_unlock_bh(&extsw_reg_config);
+    return 0;
+}
+
+static int port_sf2mac_eee_get(mac_dev_t *mac_dev, int *enable, int *sleep_timer, int *wakeup_timer)
+{
+    uint16 v16;
+    uint32_t port_id =  mac_dev->mac_id;
+    uint32_t v32;
+
+    spin_lock_bh(&extsw_reg_config);
+
+    sf2_rreg (PAGE_EEE, REG_EEE_EN_CTRL, (uint8_t *)&v16, 2);
+    *enable = (v16 & (1 << port_id)) > 0;
+
+    sf2_rreg (PAGE_EEE, REG_EEE_SLEEP_TIMER_G + (port_id * 4), (uint8_t *)&v32, 4);
+    *sleep_timer = v32;
+
+    sf2_rreg (PAGE_EEE, REG_EEE_WAKE_TIMER_G + (port_id * 2), (uint8_t *)&v16, 2);
+    *wakeup_timer = v16;
+
+    spin_unlock_bh(&extsw_reg_config);
+   
     return 0;
 }
 
@@ -841,6 +898,10 @@ static int port_sf2mac_loopback_set(mac_dev_t *mac_dev, mac_loopback_t loopback_
             sf2_wreg(PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL(mac_dev->mac_id),(uint8_t*)&v16, 2);
 
             p_priv->priv_flags |= SF2MAC_DRV_PRIV_FLAG_RMT_LPBK_EN;
+            
+            printk("Note: sf2 mac does not support loopback.\n"
+                   "      This debug command modifies sf2 switch config to allow\n"
+                   "      ingress broadcast packet to remote loopback for testing!!\n");
         }
     } else if (loopback_set == MAC_LOOPBACK_NONE) {
         if ((p_priv->priv_flags & SF2MAC_DRV_PRIV_FLAG_RMT_LPBK_EN)) {
@@ -956,6 +1017,7 @@ mac_drv_t mac_drv_sf2 =
     .stats_clear = port_sf2mac_stats_clear,
     .mtu_set = port_sf2mac_mtu_set,
     .eee_set = port_sf2mac_eee_set,
+    .eee_get = port_sf2mac_eee_get,
     .dev_add = port_sf2mac_dev_add,
     .dev_del = port_sf2mac_dev_del,
     .loopback_set = port_sf2mac_loopback_set,

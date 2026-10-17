@@ -1,0 +1,64 @@
+if ARCH_NEXELL
+
+config ARCH_S5P4418
+	bool "Nexell S5P4418 SoC"
+	select CPU_V7A
+	select OF_CONTROL
+	select OF_SEPARATE
+	select NX_GPIO
+	select DM_SERIAL
+	select PL01X_SERIAL
+	help
+	  Enable support for Nexell S5P4418 SoC.
+
+config ARCH_S5P6818
+	bool "Nexell S5P6818 SoC"
+	select ARM64
+	select ARMV8_MULTIENTRY
+	help
+	  Enable support for Nexell S5P6818 SoC.
+
+menu "Nexell S5P4418/S5P6818"
+	depends on ARCH_NEXELL
+
+choice
+	prompt "Nexell S5P4418/S5P6818 board select"
+	optional
+
+config TARGET_NANOPI2
+	bool "FriendlyARM NanoPi2 / NanoPC-T2 Board"
+	select ARCH_S5P4418
+	help
+	  Enable support for FriendlyARM NanoPi2 and NanoPC-T2 Boards.
+
+endchoice
+
+config SYS_PLLFIN
+	int
+
+config TIMER_SYS_TICK_CH
+	int
+
+config SYS_BOARD
+	default "nanopi2"
+
+config SYS_VENDOR
+	default "friendlyarm"
+
+config SYS_SOC
+	default "nexell"
+
+config SYS_CONFIG_NAME
+	default "s5p4418_nanopi2"
+
+config SYS_PLLFIN
+	default 24000000
+
+config TIMER_SYS_TICK_CH
+	default 0
+
+endmenu
+
+source "board/friendlyarm/Kconfig"
+
+endif

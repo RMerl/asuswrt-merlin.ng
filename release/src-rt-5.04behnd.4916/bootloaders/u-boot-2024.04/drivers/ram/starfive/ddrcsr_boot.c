@@ -1,0 +1,339 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2022 StarFive Technology Co., Ltd.
+ * Author: Yanhong Wang<yanhong.wang@starfivetech.com>
+ */
+
+#include <common.h>
+#include <asm/io.h>
+#include <asm/arch/regs.h>
+#include <linux/delay.h>
+#include <wait_bit.h>
+
+#include "starfive_ddr.h"
+
+#define REGOFFSET(offset)	((offset) / 4)
+
+static const struct ddr_reg_cfg ddr_csr_cfg[] = {
+	{0x0,		0x0,	0x00000001,	REGSETALL},
+	{0xf00,		0x0,	0x40001030,	(OFFSET_SEL | F_SET | REG4G | REG8G)},
+	{0xf00,		0x0,	0x40001030,	(OFFSET_SEL | F_SET | REG2G)},
+	{0xf04,		0x0,	0x00000001,	(OFFSET_SEL | F_SET | REG4G | REG8G)},
+	{0xf04,		0x0,	0x00800001,	(OFFSET_SEL | F_SET | REG2G)},
+	{0xf10,		0x0,	0x00400000,	(OFFSET_SEL | REGSETALL)},
+	{0xf14,		0x0,	0x043fffff,	(OFFSET_SEL | REGSETALL)},
+	{0xf18,		0x0,	0x00000000,	(OFFSET_SEL | REGSETALL)},
+	{0xf30,		0x0,	0x1f000041,	(OFFSET_SEL | REGSETALL)},
+	{0xf34,		0x0,	0x1f000041,	(OFFSET_SEL | F_SET | REG4G | REG8G)},
+	{0x110,		0x0,	0xc0000001,	(OFFSET_SEL | REGSETALL)},
+	{0x114,		0x0,	0xffffffff,	(OFFSET_SEL | REGSETALL)},
+	{0x10c,		0x0,	0x00000505,	REGSETALL},
+	{0x11c,		0x0,	0x00000000,	REGSETALL},
+	{0x500,		0x0,	0x00000201,	REGSETALL},
+	{0x514,		0x0,	0x00000100,	REGSETALL},
+	{0x6a8,		0x0,	0x00040000,	REGSETALL},
+	{0xea8,		0x0,	0x00040000,	REGSETALL},
+	{0x504,		0x0,	0x40000000,	REGSETALL}
+};
+
+static const struct ddr_reg_cfg ddr_csr_cfg1[] = {
+	{0x310,		0x0,	0x00020000,	REGSETALL},
+	{0x310,		0x0,	0x00020001,	REGSETALL},
+	{0x600,		0x0,	0x002e0176,	REGSETALL},
+	{0x604,		0x0,	0x002e0176,	REGSETALL},
+	{0x608,		0x0,	0x001700bb,	REGSETALL},
+	{0x60c,		0x0,	0x000b005d,	REGSETALL},
+	{0x610,		0x0,	0x0005002e,	REGSETALL},
+	{0x614,		0x0,	0x00020017,	REGSETALL},
+	{0x618,		0x0,	0x00020017,	REGSETALL},
+	{0x61c,		0x0,	0x00020017,	REGSETALL},
+	{0x678,		0x0,	0x00000019,	REGSETALL},
+	{0x100,		0x0,	0x000000f8,	REGSETALL},
+	{0x620,		0x0,	0x03030404,	REGSETALL},
+	{0x624,		0x0,	0x04030505,	REGSETALL},
+	{0x628,		0x0,	0x07030884,	REGSETALL},
+	{0x62c,		0x0,	0x13150401,	REGSETALL},
+	{0x630,		0x0,	0x17150604,	REGSETALL},
+	{0x634,		0x0,	0x00110000,	REGSETALL},
+	{0x638,		0x0,	0x200a0a08,	REGSETALL},
+	{0x63c,		0x0,	0x1730f803,	REGSETALL},
+	{0x640,		0x0,	0x000a0c00,	REGSETALL},
+	{0x644,		0x0,	0xa005000a,	REGSETALL},
+	{0x648,		0x0,	0x00000000,	REGSETALL},
+	{0x64c,		0x0,	0x00081306,	REGSETALL},
+	{0x650,		0x0,	0x04070304,	REGSETALL},
+	{0x654,		0x0,	0x00000404,	REGSETALL},
+	{0x658,		0x0,	0x00000060,	REGSETALL},
+	{0x65c,		0x0,	0x00030008,	REGSETALL},
+	{0x660,		0x0,	0x00000000,	REGSETALL},
+	{0x680,		0x0,	0x00000603,	REGSETALL},
+	{0x684,		0x0,	0x01000202,	REGSETALL},
+	{0x688,		0x0,	0x0413040d,	REGSETALL},
+	{0x68c,		0x0,	0x20002420,	REGSETALL},
+	{0x690,		0x0,	0x00140000,	REGSETALL},
+	{0x69c,		0x0,	0x01240074,	REGSETALL},
+	{0x6a0,		0x0,	0x00000000,	REGSETALL},
+	{0x6a4,		0x0,	0x20240c00,	REGSETALL},
+	{0x6a8,		0x0,	0x00040000,	REGSETALL},
+	{0x4,		0x0,	0x30010006,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10010006,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x30020000,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10020000,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x30030031,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10030031,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x300b0033,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x100b0033,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x30160016,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10160016,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x10,		0x0,	0x00000010,	REGSETALL},
+	{0x14,		0x0,	0x00000001,	REGSETALL},
+};
+
+static const struct ddr_reg_cfg ddr_csr_cfg2[] = {
+	{0xb8,		0xf0ffffff,		0x3000000,	REGCLRSETALL},
+	{0x84,		0xFEFFFFFF,		0x0,		REGCLRSETALL},
+	{0xb0,		0xFFFEFFFF,		0x0,		REGCLRSETALL},
+	{0xb0,		0xFEFFFFFF,		0x0,		REGCLRSETALL},
+	{0xb4,		0xffffffff,		0x1,		REGCLRSETALL},
+	{0x248,		0xffffffff,		0x3000000,	REGCLRSETALL},
+	{0x24c,		0xffffffff,		0x300,		REGCLRSETALL},
+	{0x24c,		0xffffffff,		0x3000000,	REGCLRSETALL},
+	{0xb0,		0xffffffff,		0x100,		REGCLRSETALL},
+	{0xb8,		0xFFF0FFFF,		0x30000,	REGCLRSETALL},
+	{0x84,		0xFFFEFFFF,		0x0,		REGCLRSETALL},
+	{0xac,		0xFFFEFFFF,		0x0,		REGCLRSETALL},
+	{0xac,		0xFEFFFFFF,		0x0,		REGCLRSETALL},
+	{0xb0,		0xffffffff,		0x1,		REGCLRSETALL},
+	{0x248,		0xffffffff,		0x30000,	REGCLRSETALL},
+	{0x24c,		0xffffffff,		0x3,		REGCLRSETALL},
+	{0x24c,		0xffffffff,		0x30000,	REGCLRSETALL},
+	{0x250,		0xffffffff,		0x3000000,	REGCLRSETALL},
+	{0x254,		0xffffffff,		0x3000000,	REGCLRSETALL},
+	{0x258,		0xffffffff,		0x3000000,	REGCLRSETALL},
+	{0xac,		0xffffffff,		0x100,		REGCLRSETALL},
+	{0x10c,		0xFFFFF0FF,		0x300,		REGCLRSETALL},
+	{0x110,		0xFFFFFEFF,		0x0,		REGCLRSETALL},
+	{0x11c,		0xFFFEFFFF,		0x0,		REGCLRSETALL},
+	{0x11c,		0xFEFFFFFF,		0x0,		REGCLRSETALL},
+	{0x120,		0xffffffff,		0x100,		REGCLRSETALL},
+	{0x2d0,		0xffffffff,		0x300,		REGCLRSETALL},
+	{0x2dc,		0xffffffff,		0x300,		REGCLRSETALL},
+	{0x2e8,		0xffffffff,		0x300,		REGCLRSETALL},
+};
+
+static const struct ddr_reg_cfg ddr_csr_cfg3[] = {
+	{0x100,		0x0,	0x000000e0,	REGSETALL},
+	{0x620,		0x0,	0x04041417,	REGSETALL},
+	{0x624,		0x0,	0x09110609,	REGSETALL},
+	{0x628,		0x0,	0x442d0994,	REGSETALL},
+	{0x62c,		0x0,	0x271e102b,	REGSETALL},
+	{0x630,		0x0,	0x291b140a,	REGSETALL},
+	{0x634,		0x0,	0x001c0000,	REGSETALL},
+	{0x638,		0x0,	0x200f0f08,	REGSETALL},
+	{0x63c,		0x0,	0x29420a06,	REGSETALL},
+	{0x640,		0x0,	0x019e1fc1,	REGSETALL},
+	{0x644,		0x0,	0x10cb0196,	REGSETALL},
+	{0x648,		0x0,	0x00000000,	REGSETALL},
+	{0x64c,		0x0,	0x00082714,	REGSETALL},
+	{0x650,		0x0,	0x16442f0d,	REGSETALL},
+	{0x654,		0x0,	0x00001916,	REGSETALL},
+	{0x658,		0x0,	0x00000060,	REGSETALL},
+	{0x65c,		0x0,	0x00600020,	REGSETALL},
+	{0x660,		0x0,	0x00000000,	REGSETALL},
+	{0x680,		0x0,	0x0c00040f,	REGSETALL},
+	{0x684,		0x0,	0x03000604,	REGSETALL},
+	{0x688,		0x0,	0x0515040d,	REGSETALL},
+	{0x68c,		0x0,	0x20002c20,	REGSETALL},
+	{0x690,		0x0,	0x00140000,	REGSETALL},
+	{0x69c,		0x0,	0x01240074,	REGSETALL},
+	{0x6a0,		0x0,	0x00000000,	REGSETALL},
+	{0x6a4,		0x0,	0x202c0c00,	REGSETALL},
+	{0x6a8,		0x0,	0x00040000,	REGSETALL},
+	{0x4,		0x0,	0x30010036,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10010036,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x3002001b,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10010036,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x30030031,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10030031,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x300b0066,	(F_SET | REG4G)},
+	{0x4,		0x0,	0x300b0036,	(F_SET | REG8G)},
+	{0x4,		0x0,	0x100b0066,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x4,		0x0,	0x30160016,	(F_SET | REG4G | REG8G)},
+	{0x4,		0x0,	0x10160016,	(F_SET | REG2G)},
+	{0xc,		0x0,	0x00000002,	REGSETALL},
+	{0x410,		0x0,	0x00101010,	REGSETALL},
+	{0x420,		0x0,	0x0c181006,	REGSETALL},
+	{0x424,		0x0,	0x20200820,	REGSETALL},
+	{0x428,		0x0,	0x80000020,	REGSETALL},
+	{0x0,		0x0,	0x00000001,	REGSETALL},
+	{0x108,		0x0,	0x00003000,	REGSETALL},
+	{0x704,		0x0,	0x00000007,	REGSETALL | OFFSET_SEL},
+	{0x330,		0x0,	0x09313fff,	(F_SET | REG4G | REG8G)},
+	{0x330,		0x0,	0x09311fff,	(F_SET | REG2G)},
+	{0x508,		0x0,	0x00000033,	(F_SET | REG4G | REG8G)},
+	{0x508,		0x0,	0x00000013,	(F_SET | REG2G)},
+	{0x324,		0x0,	0x00002000,	REGSETALL},
+	{0x104,		0x0,	0x90000000,	REGSETALL},
+	{0x510,		0x0,	0x00000100,	REGSETALL},
+	{0x514,		0x0,	0x00000000,	REGSETALL},
+	{0x700,		0x0,	0x00000003,	REGSETALL | OFFSET_SEL},
+	{0x514,		0x0,	0x00000600,	REGSETALL},
+	{0x20,		0x0,	0x00000001,	REGSETALL},
+};
+
+static void ddr_csr_set(u32 *csrreg, u32 *secreg, const struct ddr_reg_cfg *data,
+			u32 len, u32 mask)
+{
+	u32 *addr;
+	u32 i;
+
+	for (i = 0; i < len; i++) {
+		if (!(data[i].flag & mask))
+			continue;
+
+		if (data[i].flag & OFFSET_SEL)
+			addr = secreg + REGOFFSET(data[i].offset);
+		else
+			addr = csrreg + REGOFFSET(data[i].offset);
+
+		if (data[i].flag & F_CLRSET)
+			DDR_REG_TRIGGER(addr, data[i].mask, data[i].val);
+		else
+			out_le32(addr, data[i].val);
+	}
+}
+
+void ddrcsr_boot(u32 *csrreg, u32 *secreg, u32 *phyreg, enum ddr_size_t size)
+{
+	u32 len;
+	u32 val;
+	u32 mask;
+	int ret;
+
+	switch (size) {
+	case DDR_SIZE_2G:
+		mask = REG2G;
+		break;
+
+	case DDR_SIZE_4G:
+		mask = REG4G;
+		break;
+
+	case DDR_SIZE_8G:
+		mask = REG8G;
+		break;
+
+	case DDR_SIZE_16G:
+	default:
+		return;
+	};
+
+	len = ARRAY_SIZE(ddr_csr_cfg);
+	ddr_csr_set(csrreg, secreg, ddr_csr_cfg, len, mask);
+
+	ret = wait_for_bit_le32(csrreg + REGOFFSET(0x504), BIT(31),
+				true, 1000, false);
+	if (ret)
+		return;
+
+	out_le32(csrreg + REGOFFSET(0x504), 0x0);
+	out_le32(csrreg + REGOFFSET(0x50c), 0x0);
+	udelay(300);
+	out_le32(csrreg + REGOFFSET(0x50c), 0x1);
+	mdelay(3);
+
+	switch (size) {
+	case DDR_SIZE_2G:
+		out_le32(csrreg + REGOFFSET(0x10), 0x1c);
+		break;
+
+	case DDR_SIZE_8G:
+	case DDR_SIZE_4G:
+		out_le32(csrreg + REGOFFSET(0x10), 0x3c);
+		break;
+
+	case DDR_SIZE_16G:
+	default:
+		break;
+	};
+
+	out_le32(csrreg + REGOFFSET(0x14), 0x1);
+	udelay(4);
+
+	len = ARRAY_SIZE(ddr_csr_cfg1);
+	ddr_csr_set(csrreg, secreg, ddr_csr_cfg1, len, mask);
+
+	udelay(4);
+	out_le32(csrreg + REGOFFSET(0x10), 0x11);
+	out_le32(csrreg + REGOFFSET(0x14), 0x1);
+
+	switch (size) {
+	case DDR_SIZE_4G:
+	case DDR_SIZE_8G:
+		out_le32(csrreg + REGOFFSET(0x10), 0x20);
+		out_le32(csrreg + REGOFFSET(0x14), 0x1);
+		udelay(4);
+		out_le32(csrreg + REGOFFSET(0x10), 0x21);
+		out_le32(csrreg + REGOFFSET(0x14), 0x1);
+		break;
+
+	case DDR_SIZE_2G:
+	case DDR_SIZE_16G:
+	default:
+		break;
+	};
+
+	out_le32(csrreg + REGOFFSET(0x514), 0x0);
+	ret = wait_for_bit_le32(csrreg + REGOFFSET(0x518), BIT(1),
+				true, 1000, false);
+	if (ret)
+		return;
+
+	val = in_le32(csrreg + REGOFFSET(0x518));
+	while ((val & 0x2) != 0x0) {
+		val = in_le32(phyreg + 1);
+
+		if ((val & 0x20) == 0x20) {
+			switch (val & 0x1f) {
+			case 0: /* ddrc_clock=12M */
+				DDR_REG_SET(BUS, DDR_BUS_OSC_DIV2);
+				break;
+			case 1: /* ddrc_clock=200M */
+				DDR_REG_SET(BUS, DDR_BUS_PLL1_DIV8);
+				break;
+			case 2: /* ddrc_clock=800M */
+				DDR_REG_SET(BUS, DDR_BUS_PLL1_DIV2);
+				break;
+			default:
+				break;
+			};
+
+			out_le32(phyreg + 2, 0x1);
+			ret = wait_for_bit_le32(phyreg + 2, BIT(0), false, 1000, false);
+			if (ret)
+				return;
+		}
+
+		udelay(1);
+		val = in_le32(csrreg + REGOFFSET(0x518));
+	};
+
+	val = in_le32(phyreg + 2048 + 83);
+	val = in_le32(phyreg + 2048 + 84);
+	out_le32(phyreg + 2048 + 84, val & 0xF8000000);
+
+	len = ARRAY_SIZE(ddr_csr_cfg2);
+	ddr_csr_set(phyreg + PHY_BASE_ADDR, secreg, ddr_csr_cfg2, len, mask);
+
+	len = ARRAY_SIZE(ddr_csr_cfg3);
+	ddr_csr_set(csrreg, secreg, ddr_csr_cfg3, len, mask);
+}

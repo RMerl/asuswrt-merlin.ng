@@ -1,9 +1,9 @@
 #ifndef _dll_t_
 #define _dll_t_
 /*
-<:copyright-BRCM:2014:DUAL/GPL:standard 
+<:copyright-BRCM:2014:DUAL/GPL:standard
 
-   Copyright (c) 2014 Broadcom 
+   Copyright (c) 2014 Broadcom
    All Rights Reserved
 
 Unless you and Broadcom execute a separate written software license
@@ -39,13 +39,11 @@ written consent.
 #endif /* _envelope_of */
 
 
-typedef struct dll_t dll_t; /* common to wlan bcmutils.h, pktHdr.h */
-typedef struct dll_t {
+typedef struct dll dll_t; /* common to wlan bcmutils.h, pktHdr.h */
+typedef struct dll {
 	dll_t * next_p;
 	dll_t * prev_p;
 } Dll_t, * PDll_t;
-
-#define dll dll_t
 
 #define DLL_STRUCT_INITIALIZER(struct_name, dll_name) \
 	{ .next_p = &(struct_name).dll_name, .prev_p = &(struct_name).dll_name }

@@ -105,7 +105,7 @@ typedef struct wlep_dev {
  *  Local inline functions
  * +-----------------------------------------------------
  */
-/* read 32bit pcie register space */
+/* read 32bit PCIe register space */
 static inline u32 debug_wlep_readl(struct wlep_dev *dev, unsigned offset)
 {
 	u8 *base = (u8*)(dev->bar0_virt);
@@ -117,7 +117,7 @@ static inline u32 debug_wlep_readl(struct wlep_dev *dev, unsigned offset)
 	return data;
 }
 
-/* write 32bit pcie register space */
+/* write 32bit PCIe register space */
 static inline void debug_wlep_writel(u32 data, struct wlep_dev *dev,
 	unsigned offset)
 {
@@ -194,10 +194,11 @@ u16 wlep_mdio_read(struct wlep_dev *dev, u16 phyad, u16 regad)
 	}
 
 	if (timeout == 0) {
-	    HCD_ERROR("%s: <0x%04x> <0x%04x> timeout\n", __FUNCTION__, regad, retval);
+	    HCD_ERROR("%s: <0x%04x> <0x%04x> timeout\n", __FUNCTION__, regad,
+	        retval);
 	} else {
 	    /* Bits 30:0 is read data */
-	    retval = (data&0xffff);
+	    retval = (data & 0xffff);
 	    HCD_LOG_MDIO("%s: <0x%04x> <0x%04x>\n", __FUNCTION__, regad, retval);
 	}
 
@@ -323,7 +324,8 @@ int wlep_set_power_state(struct wlep_dev *dev, pci_power_t state)
 	/* Confirm link in required state */
 	{
 	    u32 reg_val;
-	    pci_bus_read_config_dword(bus->parent, devfn, MISC_PCIE_STATUS_OFFSET, &reg_val);
+	    pci_bus_read_config_dword(bus->parent, devfn, MISC_PCIE_STATUS_REG,
+	        &reg_val);
 	    if (!(reg_val & status_mask)) {
 	        HCD_ERROR("Failed to put PCIe Link in %d state\n", state);
 	        HCD_FN_ENT();
@@ -591,9 +593,9 @@ void wlep_free_dev(struct wlep_dev *dev)
 	    }
 
 	    /* Free the device memory */
+	    HCD_INFO("Freeing wlep device 0x%px\n", dev);
 	    kfree(dev);
 
-	    HCD_INFO("Freed wlep device 0x%px\n", dev);
 	}
 
 	HCD_FN_EXT();

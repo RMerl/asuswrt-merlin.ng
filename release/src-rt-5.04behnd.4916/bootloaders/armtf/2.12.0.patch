@@ -1,0 +1,146 @@
+diff --git a/Makefile b/Makefile
+index e4a1f3112..3d749b9de 100644
+--- a/Makefile
++++ b/Makefile
+@@ -284,7 +284,7 @@ ASFLAGS			+=	$(CPPFLAGS)                 			\
+ TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
+ 				-ffunction-sections -fdata-sections		\
+ 				-ffreestanding -fno-builtin -fno-common		\
+-				-Os -std=gnu99
++				-O0 -std=gnu99
+ 
+ ifeq (${SANITIZE_UB},on)
+ 	TF_CFLAGS	+=	-fsanitize=undefined -fno-sanitize-recover
+@@ -309,7 +309,7 @@ ifeq ($($(ARCH)-ld-id),arm-link)
+ else ifeq ($($(ARCH)-ld-id),gnu-gcc)
+ 	# Pass ld options with Wl or Xlinker switches
+ 	TF_LDFLAGS		+=	$(call ld_option,-Xlinker --no-warn-rwx-segments)
+-	TF_LDFLAGS		+=	-Wl,--fatal-warnings -O1
++	TF_LDFLAGS		+=	-Wl,-O1
+ 	TF_LDFLAGS		+=	-Wl,--gc-sections
+ 
+ 	TF_LDFLAGS		+=	-Wl,-z,common-page-size=4096 #Configure page size constants
+@@ -431,7 +431,7 @@ INCLUDE_TBBR_MK		:=	1
+ 
+ ifneq (${SPD},none)
+ 	ifeq (${ARCH},aarch32)
+-                $(error "Error: SPD is incompatible with AArch32.")
++                #$(error "Error: SPD is incompatible with AArch32.")
+ 	endif
+ 
+ 	ifdef EL3_PAYLOAD_BASE
+diff --git a/bl31/aarch64/bl31_entrypoint.S b/bl31/aarch64/bl31_entrypoint.S
+index dfb14e924..409d67d96 100644
+--- a/bl31/aarch64/bl31_entrypoint.S
++++ b/bl31/aarch64/bl31_entrypoint.S
+@@ -121,7 +121,8 @@ endfunc bl31_entrypoint
+ 	 * suspend or has simply been turned on. In both cases, call the BL31
+ 	 * warmboot entrypoint
+ 	 * --------------------------------------------------------------------
+-	 */
++	*/
++.align 8
+ func bl31_warm_entrypoint
+ #if ENABLE_RUNTIME_INSTRUMENTATION
+ 
+diff --git a/bl32/sp_min/aarch32/entrypoint.S b/bl32/sp_min/aarch32/entrypoint.S
+index ba9d90d42..5e4364e35 100644
+--- a/bl32/sp_min/aarch32/entrypoint.S
++++ b/bl32/sp_min/aarch32/entrypoint.S
+@@ -324,6 +324,10 @@ func sp_min_warm_entrypoint
+ 	route_fiq_to_sp_min r0
+ #endif
+ 
++#if defined(SPD_opteed)
++	bl	opteed_setup
++#endif
++
+ 	bl	sp_min_warm_boot
+ 	bl	smc_get_next_ctx
+ 	/* r0 points to `smc_ctx_t` */
+diff --git a/include/lib/cpus/aarch64/cortex_a53.h b/include/lib/cpus/aarch64/cortex_a53.h
+index 18796eea3..f2294219c 100644
+--- a/include/lib/cpus/aarch64/cortex_a53.h
++++ b/include/lib/cpus/aarch64/cortex_a53.h
+@@ -11,6 +11,7 @@
+ 
+ /* Cortex-A53 midr for revision 0 */
+ #define CORTEX_A53_MIDR			U(0x410FD030)
++#define CORTEX_B53_MIDR			U(0x420F1000)
+ 
+ /* Retention timer tick definitions */
+ #define RETENTION_ENTRY_TICKS_2		U(0x1)
+diff --git a/lib/cpus/aarch64/cortex_a53.S b/lib/cpus/aarch64/cortex_a53.S
+index 4a5b31814..87cb44476 100644
+--- a/lib/cpus/aarch64/cortex_a53.S
++++ b/lib/cpus/aarch64/cortex_a53.S
+@@ -222,7 +222,7 @@ func cortex_a53_cpu_reg_dump
+ 	ret
+ endfunc cortex_a53_cpu_reg_dump
+ 
+-declare_cpu_ops cortex_a53, CORTEX_A53_MIDR, \
++declare_cpu_ops cortex_a53, CORTEX_B53_MIDR, \
+ 	cortex_a53_reset_func, \
+ 	cortex_a53_core_pwr_dwn, \
+ 	cortex_a53_cluster_pwr_dwn
+diff --git a/lib/el3_runtime/aarch64/context.S b/lib/el3_runtime/aarch64/context.S
+index a353a87d2..0a4f82189 100644
+--- a/lib/el3_runtime/aarch64/context.S
++++ b/lib/el3_runtime/aarch64/context.S
+@@ -300,7 +300,7 @@ endfunc sve_context_restore
+ 	 */
+ 	.macro enable_serror_at_el3
+ 	mrs	x8, scr_el3
+-	orr	x8, x8, #SCR_EA_BIT
++	//orr	x8, x8, #SCR_EA_BIT
+ 	msr	scr_el3, x8
+ 	.endm
+ 
+diff --git a/lib/psci/psci_main.c b/lib/psci/psci_main.c
+index a01553128..225f6f631 100644
+--- a/lib/psci/psci_main.c
++++ b/lib/psci/psci_main.c
+@@ -442,6 +442,10 @@ u_register_t psci_smc_handler(uint32_t smc_fid,
+ 	if (is_caller_secure(flags))
+ 		return (u_register_t)SMC_UNK;
+ 
++	if (smc_fid == PSCI_BRCM_SYSTEM_CONTROL)
++		return psci_brcm_system_control(x1, x2, x3, x4);
++
++
+ 	/* Check the fid against the capabilities */
+ 	if ((psci_caps & define_psci_cap(smc_fid)) == 0U)
+ 		return (u_register_t)SMC_UNK;
+diff --git a/lib/psci/psci_private.h b/lib/psci/psci_private.h
+index 2eb4a9b70..a6010b84c 100644
+--- a/lib/psci/psci_private.h
++++ b/lib/psci/psci_private.h
+@@ -373,4 +373,6 @@ u_register_t psci_stat_count(u_register_t target_cpu,
+ u_register_t psci_mem_protect(unsigned int enable);
+ u_register_t psci_mem_chk_range(uintptr_t base, u_register_t length);
+ 
++#define PSCI_BRCM_SYSTEM_CONTROL 0x8400001F
++unsigned long psci_brcm_system_control (unsigned long x1, unsigned long x2, unsigned long x3, unsigned long x4);
+ #endif /* PSCI_PRIVATE_H */
+diff --git a/make_helpers/build_macros.mk b/make_helpers/build_macros.mk
+index d454efd90..8409a6327 100644
+--- a/make_helpers/build_macros.mk
++++ b/make_helpers/build_macros.mk
+@@ -314,7 +314,7 @@ $(eval DEP := $(patsubst %.o,%.d,$(OBJ)))
+ 
+ $(OBJ): $(2) $(filter-out %.d,$(MAKEFILE_LIST)) | $$$$(@D)/
+ 	$$(s)echo "  AS      $$<"
+-	$$(q)$($(ARCH)-as) -x assembler-with-cpp $$(TF_CFLAGS_$(ARCH)) $$(ASFLAGS) $(MAKE_DEP) -c $$< -o $$@
++	$$(q)$($(ARCH)-cc) -x assembler-with-cpp $$(TF_CFLAGS_$(ARCH)) $$(ASFLAGS) $(MAKE_DEP) -c $$< -o $$@
+ 
+ -include $(DEP)
+ 
+@@ -362,7 +362,7 @@ $(eval BL_ASFLAGS := $($(4)_ASFLAGS) $(PLAT_BL_COMMON_ASFLAGS))
+ 
+ $(OBJ): $(2) $(filter-out %.d,$(MAKEFILE_LIST)) | $$$$(@D)/
+ 	$$(s)echo "  AS      $$<"
+-	$$(q)$($(ARCH)-as) -x assembler-with-cpp $$(TF_CFLAGS_$(ARCH)) $$(ASFLAGS) $(BL_CPPFLAGS) $(BL_ASFLAGS) $(MAKE_DEP) -c $$< -o $$@
++	$$(q)$($(ARCH)-cc) -x assembler-with-cpp $$(TF_CFLAGS_$(ARCH)) $$(ASFLAGS) $(BL_CPPFLAGS) $(BL_ASFLAGS) $(MAKE_DEP) -c $$< -o $$@
+ 
+ -include $(DEP)
+ 

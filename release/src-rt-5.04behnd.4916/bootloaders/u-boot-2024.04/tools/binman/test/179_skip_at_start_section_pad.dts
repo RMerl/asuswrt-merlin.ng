@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		section {
+			skip-at-start = <16>;
+			pad-before = <8>;
+			pad-after = <4>;
+
+			u-boot {
+			};
+		};
+	};
+};

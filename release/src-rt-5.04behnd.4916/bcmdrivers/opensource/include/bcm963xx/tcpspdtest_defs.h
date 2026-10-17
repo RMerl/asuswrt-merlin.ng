@@ -50,7 +50,7 @@ written consent.
 #define TCPSPDTEST_GENL_MAX_URL_LEN        128
 
 #define TCPSPDTEST_GENL_FAMILY_NAME        "TCPSPDTEST" /* Max Family name length is 16 chars including \0 */
-#define TCPSPDTEST_GENL_MAX_MSG_LEN        768
+#define TCPSPDTEST_GENL_MAX_MSG_LEN        1000
 #define TCPSPDTEST_DEF_STREAM_ID           0 /* Used when multi-stream mode is not in use */
 
 /******************************************** Types **********************************************/
@@ -61,6 +61,8 @@ typedef enum
 {
     /* Request + Response commands */
     TCPSPDTEST_GENL_CMD_CONNECT,
+    TCPSPDTEST_GENL_CMD_LISTEN,
+    TCPSPDTEST_GENL_CMD_ACCEPT,
     TCPSPDTEST_GENL_CMD_DISCONNECT,
     TCPSPDTEST_GENL_CMD_RELEASE,
     TCPSPDTEST_GENL_CMD_PING,
@@ -68,7 +70,8 @@ typedef enum
     TCPSPDTEST_GENL_CMD_UPLOAD,
     TCPSPDTEST_GENL_CMD_STATS,
     TCPSPDTEST_GENL_CMD_SPEED_REPORT,
-    TCPSPDTEST_GENL_CMD_OOB_SEND,
+    TCPSPDTEST_GENL_CMD_MSG_SEND,
+    TCPSPDTEST_GENL_CMD_MSG_RECV,
     TCPSPDTEST_GENL_CMD_STREAM_IDX,
     TCPSPDTEST_GENL_CMD_PROTOCOL,
     TCPSPDTEST_GENL_CMD_STREAM_PARAMS,
@@ -85,7 +88,9 @@ typedef enum
     TCPSPDTEST_GENL_CMD_PARAM_GET,
     TCPSPDTEST_GENL_CMD_PARAM_ALLOC,
     TCPSPDTEST_GENL_CMD_PARAM_FREE,
-    TCPSPDTEST_GENL_CMD_PARAM_BLOCKING_END_OF_TEST
+    TCPSPDTEST_GENL_CMD_PARAM_BLOCKING_END_OF_TEST,
+    TCPSPDTEST_GENL_CMD_PARAM_OOB_SEND,
+    TCPSPDTEST_GENL_CMD_PARAM_RAW_SEND
 } tcpspdtest_genl_cmd_param_t;
 
 typedef spdtest_genl_cmd_t tcpspdtest_genl_cmd_t;
@@ -139,6 +144,8 @@ typedef struct
         spdt_stream_params_t     stream_params;
     } msg;
     tcpspdtest_genl_cmd_status_t status;
+    uint64_t                     dn_up_size;
+    char                         file_name[TCPSPDTEST_GENL_MAX_FILE_NAME_LEN];
 }  __attribute__ ((packed)) tcpspdtest_genl_resp_msg_t;
 
 #endif /* __TCPSPDTEST_DEFS_INCLUDED_H__ */

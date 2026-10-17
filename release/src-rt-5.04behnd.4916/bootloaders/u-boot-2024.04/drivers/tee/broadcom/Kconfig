@@ -1,0 +1,7 @@
+config CHIMP_OPTEE
+	bool "Enable secure ChiMP firmware loading"
+	depends on OPTEE
+	default y
+	help
+	  This driver is used to load bnxt firmware binary using OpTEE.
+	  bnxt is Broadcom NetXtreme controller Ethernet card.

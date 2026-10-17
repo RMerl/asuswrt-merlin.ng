@@ -9604,6 +9604,9 @@ static const ru_reg_rec *BBH_TX_REGS[] =
 const ru_block_rec BBH_TX_BLOCK =
 {
     "BBH_TX",
+#if RU_INCLUDE_SIZE
+    { 0x00000C18 },
+#endif
     BBH_TX_ADDRS,
     5,
     111,

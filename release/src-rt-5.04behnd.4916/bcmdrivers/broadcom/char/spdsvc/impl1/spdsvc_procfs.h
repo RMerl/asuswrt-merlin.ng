@@ -61,6 +61,15 @@ void tr471_update_burst_gen_set_time(int first_burst, uint32_t burst_size, uint6
 #endif
 
 typedef struct {
+    uint32_t pending;
+    uint32_t total;
+    uint32_t writes;
+    uint32_t reads;
+    uint32_t discards;
+} spdsvc_procfs_tr471_rx_queue_stats_t;
+
+
+typedef struct {
     uint32_t reset_cnt;                 /* Times TR471 reset state m/c called */
     uint32_t pkt_store_cnt;             /* Times reference packet stored */
     uint32_t pkt_free_cnt;              /* Times reference packet freed */
@@ -70,6 +79,7 @@ typedef struct {
     uint32_t netdev_rx_cnt;             /* Times netdev_receive on spdsvc device called */
     uint32_t soft_gen_cnt;              /* Times software based generator started */
     uint32_t tx_via_fc_cnt;             /* Times packet got transmitted via FC flow without starting generator */
+    uint32_t blogged;                   /* Times packet got blogged and in wait state for FC to learn the flow */
     uint32_t hw_gen_cnt;                /* Times hardware based generator started */
     uint32_t hw_gen_cmpl_cnt;           /* Times hardware generator completed */
     uint32_t hw_gen_chk_status;         /* Times hardware generator status checked for completion */
@@ -98,6 +108,44 @@ typedef struct {
     uint32_t rx_wait_for_completion;    /* No of times the disable waits for work thread to complete */
 } spdsvc_tr471_procfs_data_t;
 
+/* Duplicating IP address definitions to avoid including a bunch of header files */
+typedef union {
+    uint8_t  u8[4];
+    uint16_t u16[2];
+    uint32_t u32;
+} spdsvc_procfs_ipv4_addr_t;
+
+typedef union {
+    uint8_t  u8[16];
+    uint16_t u16[8];
+    uint32_t u32[4];
+} spdsvc_procfs_ipv6_addr_t;
+
+typedef struct {
+    int is_v6;
+    union {
+        spdsvc_procfs_ipv4_addr_t ipv4;
+        spdsvc_procfs_ipv6_addr_t ipv6;
+    };
+} spdsvc_procfs_ip_addr_t;
+
+/* Socket structure keeps the info in HOST byte order */
+typedef struct {
+    spdsvc_procfs_ip_addr_t local_ip_addr;  /**< Local Ip address */
+    uint16_t  local_port_nbr;               /**< Local port number */
+    spdsvc_procfs_ip_addr_t remote_ip_addr; /**< Remote Ip address */
+    uint16_t  remote_port_nbr;              /**< Remote port number */
+} spdsvc_procfs_socket_t;
+
+typedef struct {
+    uint16_t randPayload;
+    uint16_t firstBurst;
+    uint16_t totalburst;
+    uint16_t burstsize;
+    uint16_t payload;
+    uint16_t addon;
+} spdsvc_procfs_burst_t;
+
 typedef struct {
     uint32_t spdsvc_state;              /* Current SPDSVC State */
     uint32_t ioctl_enable_cnt;          /* Times Enable IOCTL received */
@@ -106,7 +154,10 @@ typedef struct {
     uint32_t ioctl_ovrhd_cnt;           /* Times Overhead IOCTL received */
     uint32_t buf_alloc;                 /* Buffer Alloc count*/
     uint32_t buf_free;                  /* Buffer Free count */
+    uint32_t conn_rx_max_pktlen;        /* tx/rx max L2 payload len */
     spdsvc_tr471_procfs_data_t tr471_cnts;
+    spdsvc_procfs_socket_t conn_tuple;
+    spdsvc_procfs_burst_t last_burst;
 } spdsvc_procfs_data_t;
 
 #if defined(CONFIG_BCM_TR471_MFLOW)
@@ -119,8 +170,24 @@ extern spdsvc_procfs_data_t spdsvc_procfs_data_g[SPDSVC_MAX_CONN+1];
 
 #define SPDSVC_PROCFS_INC(index,f)    spdsvc_procfs_data_g[index].f++
 #define TR471_PROCFS_INC(index,f)     spdsvc_procfs_data_g[index].tr471_cnts.f++
+#define TR471_PROCFS_ADD(index,f, v)     spdsvc_procfs_data_g[index].tr471_cnts.f += v
 
 void spdsvc_procfs_handle_enable(int connindex);
+
+static inline spdsvc_procfs_socket_t * spdsvc_procfs_conn_tuple(int connindex)
+{
+    return &spdsvc_procfs_data_g[connindex].conn_tuple;
+}
+static inline void spdsvc_procfs_set_conn_rx_max_pktlen(int connindex, uint32_t len)
+{
+    spdsvc_procfs_data_g[connindex].conn_rx_max_pktlen = len;
+}
+static inline spdsvc_procfs_burst_t * spdsvc_procfs_last_burst(int connindex)
+{
+    return &spdsvc_procfs_data_g[connindex].last_burst;
+}
 int spdsvc_procfs_construct(void);
+
+extern spdsvc_procfs_tr471_rx_queue_stats_t spdsvc_procfs_tr471_rx_queue_stats_g;
 
 #endif // __SPDSVC_PROCFS_H_INCLUDED__

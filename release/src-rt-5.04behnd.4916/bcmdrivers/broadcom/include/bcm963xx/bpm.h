@@ -76,21 +76,9 @@ written consent.
 
 /*
  *------------------------------------------------------------------------------
- * Layout of a BPM buffer
+ * Layout of a BPM buffer: Refer bcm_pkt_lengths.h
  *
- * FkBuff_t|BCM_PKT_HEADROOM|BCM_MAX_PKT_LEN|BCM_SKB_TAILROOM|BCM_SKB_SHAREDINFO
- *
- * ^       ^                ^               ^                ^
- * |       |                |               |                |
- * pFkb    |                pData           |                |
- *         |                |               |                |
- *         |                |               |                |
- *      skb:head         skb:data        skb:tail         skb:end
- *                          |
- *                          |
- *                        "pBuf"
- *
- * CAUTION: BPM buf_pool[] maintains pBuf pointers (and not FkBuff_t pointers).
+ * CAUTION: BPM buf_pool[] maintains pBuf pointers (and not start pointers).
  *
  * Note: The data pointer may travel, between head and end.
  *
@@ -106,13 +94,6 @@ written consent.
  * Actual tailroom in a DMAed received packet is runtime defined.
  *------------------------------------------------------------------------------
  */
-
-
-#define BPM_PFKBUFF_TO_BUF(pFkb)   ( PFKBUFF_TO_PDATA(pFkb, BCM_PKT_HEADROOM) )
-#define BPM_BUF_TO_PFKBUFF(buf)    ( PDATA_TO_PFKBUFF((buf), BCM_PKT_HEADROOM) )
-
-#define BPM_BUF_TO_PHEAD(buf)      ( ((uint8_t*)(buf)) - BCM_PKT_HEADROOM )
-#define BPM_PHEAD_TO_BUF(head)     ( ((uint8_t*)(head)) + BCM_PKT_HEADROOM )
 
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
 
@@ -134,9 +115,7 @@ written consent.
 
 #endif /* ! NET_SKBUFF_DATA_USES_OFFSET */
 
-#define BPM_BUF_TO_PSHINFO(buf) \
-    (struct skb_shared_info *)( (uint8_t*)(buf) + BPM_BUF_TO_END_OFFSET)
-
+#define BPM_BUF_TO_PSHINFO(buf)     BCM_PDATA_TO_PSHINFO(buf)
 
 /*
  * An interface can request additional buffers from global BPM, when a 
@@ -286,6 +265,14 @@ struct bpm_hw_pool_ops {
 	 * pool will fail
 	 */
 	bool (*is_hw_buffer)(void *buf_p);
+	uint32_t (*get_avail_cnt)(void);
+	void (*get_ebuf_info)(int *token_sz, int *total_token);
+	uint32_t (*get_buf_idx)(void *buf_p);
+	void *(*alloc_fkb)(unsigned long ring_index);
+	int (*alloc_mult_fkb)(unsigned long ring_index, uint32_t num,
+			void **fkb_p);
+	void (*free_fkb)(unsigned long ring_index, void *fkb_p);
+	void (*free_mult_fkb)(unsigned long ring_index, uint32_t num, void **fkb_p);
 
 	void *(*alloc_buf)(unsigned long ring_index);
 	int (*alloc_mult_buf)(unsigned long ring_index, uint32_t num,
@@ -297,6 +284,7 @@ struct bpm_hw_pool_ops {
 	void *(*alloc_skb_hdr_list)(unsigned long ring_index, uint32_t num);
 	void *(*alloc_skb_data)(unsigned long ring_index, uint32_t datalen);
 	void (*free_skb_hdr)(unsigned long ring_index, void *skbp);
+	void (*free_mult_skb_hdr)(unsigned long ring_index, uint32_t num, void **skb_p);
 	void (*free_skb_hdr_list)(unsigned long ring_index, void *skbp);
 	void (*free_skb_data_list)(unsigned long ring_index, void *head, void *tail,
 				   uint32_t num);

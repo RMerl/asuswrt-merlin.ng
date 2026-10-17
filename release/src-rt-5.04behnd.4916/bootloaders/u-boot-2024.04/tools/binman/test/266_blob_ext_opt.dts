@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		ok {
+			type = "blob-ext";
+			filename = "refcode.bin";
+		};
+
+		missing {
+			type = "blob-ext";
+			filename = "missing.bin";
+			optional;
+		};
+	};
+};

@@ -1,3 +1,0 @@
-obj-$(CONFIG_SUNXI_DRAM_DDR3_1333)	+= ddr3_1333.o
-obj-$(CONFIG_SUNXI_DRAM_LPDDR3_STOCK)	+= lpddr3_stock.o
-obj-$(CONFIG_SUNXI_DRAM_DDR2_V3S)	+= ddr2_v3s.o

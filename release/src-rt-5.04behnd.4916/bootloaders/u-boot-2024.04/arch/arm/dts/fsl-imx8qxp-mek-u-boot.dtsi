@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018, 2021 NXP
+ */
+
+#include "imx8qxp-u-boot.dtsi"
+
+&{/imx8qx-pm} {
+
+	bootph-pre-ram;
+};
+
+&mu {
+	bootph-pre-ram;
+};
+
+&clk {
+	bootph-pre-ram;
+};
+
+&iomuxc {
+	bootph-pre-ram;
+};
+
+&pd_lsio {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio0 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio1 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio2 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio3 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio4 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio5 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio6 {
+	bootph-pre-ram;
+};
+
+&pd_lsio_gpio7 {
+	bootph-pre-ram;
+};
+
+&pd_conn {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch0 {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch1 {
+	bootph-pre-ram;
+};
+
+&pd_conn_sdch2 {
+	bootph-pre-ram;
+};
+
+&pd_dma {
+	bootph-pre-ram;
+};
+
+&pd_dma_lpuart0 {
+	bootph-pre-ram;
+};
+
+&pd_caam {
+	bootph-pre-ram;
+};
+
+&pd_caam_jr1 {
+	bootph-pre-ram;
+};
+
+&pd_caam_jr2 {
+	bootph-pre-ram;
+};
+
+&pd_caam_jr3 {
+	bootph-pre-ram;
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&gpio6 {
+	bootph-pre-ram;
+};
+
+&gpio7 {
+	bootph-pre-ram;
+};
+
+&lpuart0 {
+	bootph-pre-ram;
+};
+
+&usdhc1 {
+	bootph-pre-ram;
+	mmc-hs400-1_8v;
+};
+
+&usdhc2 {
+	bootph-pre-ram;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+};
+
+&crypto {
+	bootph-pre-ram;
+};
+
+&sec_jr1 {
+	bootph-pre-ram;
+};
+
+&sec_jr2 {
+	bootph-pre-ram;
+};
+
+&sec_jr3 {
+	bootph-pre-ram;
+};

@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Device Tree file for Freescale Layerscape-1028AQDS family SoC.
+ *
+ * Copyright 2020 NXP
+ */
+
+/dts-v1/;
+#include "fsl-ls1028a-qds.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &lpuart0;
+	};
+};

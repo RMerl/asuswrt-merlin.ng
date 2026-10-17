@@ -1,0 +1,125 @@
+menu "DFU support"
+
+config DFU
+	bool
+	imply DFU_OVER_USB if USB_GADGET
+
+config DFU_OVER_USB
+	bool
+	select HASH
+	depends on USB_GADGET
+
+config DFU_OVER_TFTP
+	bool
+	depends on NET
+
+if DFU
+config DFU_WRITE_ALT
+	bool
+
+config DFU_TFTP
+	bool "DFU via TFTP"
+	depends on NETDEVICES
+	select UPDATE_COMMON
+	select DFU_OVER_TFTP
+	help
+	  This option allows performing update of DFU-managed medium with data
+	  sent via TFTP boot.
+
+	  Detailed description of this feature can be found at ./doc/README.dfutftp
+
+config DFU_TIMEOUT
+	bool "Timeout waiting for DFU"
+	help
+	  This option adds an optional timeout parameter for DFU which, if set,
+	  will cause DFU to only wait for that many seconds before exiting.
+
+config DFU_MMC
+	bool "MMC back end for DFU"
+	depends on MMC
+	help
+	  This option enables using DFU to read and write to MMC based storage.
+
+config DFU_MTD
+	bool "MTD back end for DFU"
+	depends on DM_MTD
+	help
+	  This option enables using DFU to read and write to on any MTD device.
+
+config DFU_NAND
+	bool "NAND back end for DFU"
+	depends on CMD_MTDPARTS
+	depends on MTD_RAW_NAND
+	help
+	  This option enables using DFU to read and write to NAND based
+	  storage.
+
+config DFU_NAND_TRIMFFS
+	bool "Skip empty pages when flashing UBI images to NAND"
+	depends on DFU_NAND
+	help
+	  When flashing UBI images to NAND, enable the DROP_FFS flag to drop
+	  trailing all-0xff pages.
+
+config DFU_RAM
+	bool "RAM back end for DFU"
+	help
+	  This option enables using DFU to read and write RAM on the target.
+
+config DFU_SF
+	bool "SPI flash back end for DFU"
+	help
+	  This option enables using DFU to read and write to SPI flash based
+	  storage.
+
+config DFU_SF_PART
+	bool "MTD partition support for SPI flash back end"
+	depends on DFU_SF && CMD_MTDPARTS
+	default y
+	help
+	  This option enables the support of "part" and "partubi" target in
+	  SPI flash DFU back end.
+
+config DFU_VIRT
+	bool "VIRTUAL flash back end for DFU"
+	help
+	  This option enables using DFU to read and write to VIRTUAL device
+	  used at board level to manage specific behavior
+	  (OTP update for example).
+
+config SET_DFU_ALT_INFO
+	bool "Dynamic set of DFU alternate information"
+	help
+	  This option allows to call the function set_dfu_alt_info to
+	  dynamically build dfu_alt_info in board.
+
+config SYS_DFU_DATA_BUF_SIZE
+	hex "Size of buffer to be allocated for transfer to raw storage device"
+	default 0x800000
+	help
+	  DFU transfer uses a buffer before writing data to the
+	  raw storage device. This value can be used for setting the
+	  size of this buffer. The size of the buffer is also configurable
+	  through the "dfu_bufsiz" environment variable. If both are
+	  given the size of the buffer is set to "dfu_bufsize".
+
+config SYS_DFU_MAX_FILE_SIZE
+	hex "Size of the buffer to be allocated for transferring files"
+	default SYS_DFU_DATA_BUF_SIZE
+	help
+	  When updating files rather than the raw storage device,
+	  we use a static buffer to copy the file into and then write
+	  the buffer once we've been given the whole file.  Define
+	  this to the maximum filesize (in bytes) for the buffer.
+	  If undefined it defaults to the CONFIG_SYS_DFU_DATA_BUF_SIZE.
+
+config DFU_NAME_MAX_SIZE
+	int "Size of the name to be added in dfu entity"
+	default 32
+	depends on DFU
+	help
+	  This value is used to maximum size. If name is longer than default size,
+	  we need to change the proper maximum size.
+
+endif
+endmenu

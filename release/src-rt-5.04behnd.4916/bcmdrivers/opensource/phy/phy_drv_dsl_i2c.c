@@ -52,32 +52,17 @@ static int phy_i2c_power_get(phy_dev_t *phy_dev, int *enable)
 static char *i2c_get_phy_name(phy_dev_t *phy_dev)
 {
     static char buf[64];
-    phy_serdes_t *phy_serdes = cascade_phy_get_prev(phy_dev)->priv;
+    phy_serdes_t *phy_serdes = phy_dev->priv;
     char *sfp_type;
 
-    switch (phy_serdes->sfp_module_type)
-    {
-        case SFP_NO_MODULE:
-            sfp_type = "NoSFP";
-            break;
-        case SFP_GPON_MODULE:
-            sfp_type = "GPON";
-            break;
-        case SFP_AE_OPTICAL_MODULE:
-            sfp_type = "OpiticalSFP";
-            break;
-        case SFP_AE_COPPER_MODULE:
-            if (phy_dev->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE)
-                sfp_type = "SgmiiSFP";
-            else
-                sfp_type = "CopperSFP";
-            break;
-        case SFP_DAC_CABLE:
-            sfp_type = "DacCable";
-            break;
-        default:
-            sfp_type = "SFP Module";
-    }
+    if (phy_serdes->sfp_module_type == SFP_GPON_MODULE)
+        sfp_type = "GPON Module";
+    else if (phy_dev->flag & PHY_FLAG_COPPER_CONFIGURABLE_SFP_TYPE)
+        sfp_type = "SGMII SFP";
+    else if (phy_dev->flag & (PHY_FLAG_COPPER_SFP_TYPE))
+        sfp_type = "CopperSFP";
+    else
+        sfp_type = "SFP Module";
     sprintf(buf, "%s#%d", sfp_type, phy_dev->addr);
     return buf;
 }
@@ -128,7 +113,7 @@ static int phy_i2c_module_detect_cb(int bus, void *opticaldet_desc)
 //    {
 //        printk(KERN_DEBUG "\n ****** %s:%d phy_i2c IS NULL ****** \n", __FUNCTION__, __LINE__);
 //    }
-	
+
     return rc;
 }
 
@@ -142,8 +127,8 @@ static int phy_i2c_module_remove_cb(int bus)
         phy_i2c_priv = phy_i2c->priv;
         mutex_lock(&i2c_mutex);
         phy_i2c_priv->sfp_mod_in = 0;
-        mutex_unlock(&i2c_mutex);
 //        printk(KERN_DEBUG "\n ****** %s:%d phy_i2c[%p] sfp_mod_in[%d] ****** \n", __FUNCTION__, __LINE__, phy_i2c, phy_i2c_priv->sfp_mod_in);
+        mutex_unlock(&i2c_mutex);
         rc = 1;
     }
 //    else
@@ -209,7 +194,7 @@ int phy_drv_dsl_i2c_create_lock(phy_dev_t *phy_dev)
 #else
     phy_dev->cascade_next = i2c_phy;
 #endif
-    i2c_phy->cascade_prev = phy_dev;
+	i2c_phy->cascade_prev = phy_dev;
     i2c_phy->flag = PHY_FLAG_NOT_PRESENTED|PHY_FLAG_DYNAMIC;
     i2c_phy->bus_drv = bus_drv_get(BUS_TYPE_DSL_I2C);
 
@@ -353,9 +338,8 @@ int phy_i2c_module_detect(phy_dev_t *phy_dev)
 #else
     phy_dev_t *phy_i2c = phy_dev->cascade_next;
 #endif
-    phy_i2c_priv_t *phy_i2c_priv;
+	phy_i2c_priv_t *phy_i2c_priv;
     int rc = 0;
-
 
 #ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
     if(PhyIsCombo(phy_dev))
@@ -382,7 +366,9 @@ void phy_i2c_module_type_detect(phy_dev_t *phy_dev)
 #else
     phy_dev_t *phy_i2c = phy_dev->cascade_next;
 #endif
-    phy_i2c_priv_t *phy_i2c_priv;
+	phy_i2c_priv_t *phy_i2c_priv;
+    phy_serdes_t *phy_serdes = phy_dev->priv;
+    int org_laser_enable = phy_serdes->laser_enable;
 
 #ifdef CONFIG_BCM_PHY_COMBO /* combo PHY support */
     if(PhyIsCombo(phy_dev))
@@ -391,7 +377,9 @@ void phy_i2c_module_type_detect(phy_dev_t *phy_dev)
         phy_i2c = phy_dev->cascade_next;
 #endif
 
-    if (phy_i2c == NULL) return;
+	if (phy_i2c == NULL)
+        return;
+
     phy_i2c_priv = phy_i2c->priv;
 
     if (!(phy_i2c->flag & PHY_FLAG_NOT_PRESENTED)) /* I2C detected. Skip rescan if SFP module detected already */
@@ -404,10 +392,10 @@ void phy_i2c_module_type_detect(phy_dev_t *phy_dev)
     }
 
     /* 
-        We have to turn on LBE here or SGMII SFP module using TX_DISABLE as
+        We have to turn on laser here or SGMII SFP module using TX_DISABLE as
         PHY address access enabling signal will not respond to the 0xAC scanning 
     */
-    dsl_serdes_sfp_lbe_op(phy_dev, LASER_ON); 
+    dsl_serdes_sfp_laser_op(phy_dev, 1); 
     msleep(I2C_LASER_ON_WAIT);
   
     /* If I2C read operation succeeds, I2C module is connected
@@ -439,7 +427,7 @@ void phy_i2c_module_type_detect(phy_dev_t *phy_dev)
             phy_i2c->inter_phy_types |= INTER_PHY_TYPE_2P5GBASE_R_M|INTER_PHY_TYPE_2P5GBASE_X_M|INTER_PHY_TYPE_2500BASE_X_M;
 
         if (phy_i2c_priv->speed_caps & PHY_CAP_1000_FULL)
-            phy_i2c->inter_phy_types |= INTER_PHY_TYPE_1000BASE_X_M;
+            phy_i2c->inter_phy_types |= INTER_PHY_TYPE_1000BASE_X_M|INTER_PHY_TYPE_1GBASE_X_M|INTER_PHY_TYPE_1GBASE_R;
 
         if (phy_i2c_priv->speed_caps & PHY_CAP_100_FULL)
             phy_i2c->inter_phy_types |= INTER_PHY_TYPE_100BASE_FX_M;
@@ -447,11 +435,11 @@ void phy_i2c_module_type_detect(phy_dev_t *phy_dev)
         if (phy_i2c->inter_phy_types == 0)
             phy_i2c->inter_phy_types = INTER_PHY_TYPE_FULLTYPES_M;
 
-        phy_i2c->inter_phy_types |= INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M;
+        phy_i2c->inter_phy_types |= INTER_PHY_TYPE_MULTI_SPEED_AN_M;
     }
 
-    if (!(phy_i2c->flag & PHY_FLAG_COPPER_SFP_TYPE) && dsl_serdes_silent_start_light_detected(phy_dev))
-        dsl_serdes_sfp_lbe_op(phy_dev, LASER_OFF);
+    if (!org_laser_enable)
+        dsl_serdes_sfp_laser_op(phy_dev, 0);
 
     mutex_unlock(&i2c_mutex);
 }

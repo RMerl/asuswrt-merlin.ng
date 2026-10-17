@@ -1,0 +1,8 @@
+STOUT BOARD
+M:	Cogent Embedded, Inc. <source@cogentembedded.com>
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a7790-stout*
+F:	board/renesas/stout/
+F:	configs/stout_defconfig
+F:	include/configs/stout.h

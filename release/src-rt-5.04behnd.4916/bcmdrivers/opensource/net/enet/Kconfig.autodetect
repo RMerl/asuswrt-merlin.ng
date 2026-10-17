@@ -9,6 +9,9 @@ config BCM_ENET_TC_OFFLOAD
 	bool "Hardware offload traffic control rules"
 	depends on BCM_ENET
 
+config BCM_ENET_EGRESS_TC
+	bool "Hardware offload traffic control egress rules"
+	depends on BCM_ENET
 
 config BCM_XDP
     bool "Allow XDP execution from enet driver"

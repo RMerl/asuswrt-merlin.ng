@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung Exynos78x0 SoC device tree source
+ *
+ * Copyright (c) 2020 Dzmitry Sankouski (dsankouski@gmail.com)
+ */
+
+/dts-v1/;
+#include "exynos78x0.dtsi"
+/ {
+	compatible = "samsung,exynos78x0", "samsung,exynos7880", "samsung,exynos7870";
+
+	aliases {
+		console = &uart2;
+	};
+
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&gpioi2c0 {
+	status = "okay";
+};
+
+&fin_pll {
+	clock-frequency = <26000000>;
+};
+

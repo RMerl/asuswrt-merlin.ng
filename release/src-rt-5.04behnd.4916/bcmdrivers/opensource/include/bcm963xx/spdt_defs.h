@@ -34,7 +34,9 @@ written consent.
 #include <linux/types.h>
 
 /********* Definitons and Data Structures **************/
+#ifndef IFNAMSIZ
 #define	IFNAMSIZ                      16
+#endif
 #define SPDT_NUM_OF_STREAMS           4
 #define SPDT_OTHER_STAT_MAX_LEN       256
 
@@ -58,8 +60,13 @@ typedef struct
 {
     struct sockaddr_storage server_addr;
     struct sockaddr_storage local_addr;
+    struct sockaddr_storage outer_server_addr;
+    struct sockaddr_storage outer_local_addr;
+    int is_tunnel;
     uint8_t tos;
     uint8_t force_swoffl_mode;
+    uint8_t priority;
+    uint64_t rate; /* bits/sec */
     char if_name[IFNAMSIZ];
 } __attribute__ ((packed)) spdt_conn_params_t;
 
@@ -181,11 +188,22 @@ typedef struct
     } proto_ext;
 } __attribute__ ((packed)) spdt_stat_t;
 
+typedef enum
+{
+    SPDT_DIR_NONE,
+    SPDT_DIR_TX,
+    SPDT_DIR_RX
+} spdt_stream_dir_t;
+
 typedef struct
 {
     uint32_t has_sock_fd:1;
+    uint32_t has_srv_sock_fd:1;
     uint32_t reserved:31;
     int sock_fd;
+    spdt_stream_dir_t dir;
+    spdt_proto_t protocol;
+    spdt_conn_params_t conn_params;
 } __attribute__ ((packed)) udp_spdt_stream_options_t;
 
 typedef struct
@@ -196,15 +214,17 @@ typedef struct
     } proto;
 } __attribute__ ((packed)) spdt_stream_options_t;
 
-typedef enum
-{
-    SPDT_DIR_NONE,
-    SPDT_DIR_TX,
-    SPDT_DIR_RX
-} spdt_stream_dir_t;
-
 typedef struct
 {
+    union
+    {
+        uint32_t flags;
+        struct
+        {
+            uint32_t is_server_fd : 1;
+            uint32_t reserved : 31;
+        };
+    };
     spdt_proto_t protocol;
     spdt_conn_params_t conn_params;
     int sock_fd;

@@ -1,0 +1,18 @@
+if TARGET_PRESIDIO_ASIC
+config BIT64
+       bool
+       default y
+
+select SOC_CA7774
+
+config SYS_BOARD
+	default "presidio-asic"
+
+config SYS_VENDOR
+	default "cortina"
+
+config SYS_CONFIG_NAME
+	default "presidio_asic"
+
+source "board/cortina/common/Kconfig"
+endif

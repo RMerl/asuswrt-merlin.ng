@@ -76,7 +76,7 @@
 #endif
 
 #if defined(BCM_PKTFWD) && defined(BCM_PKTQUEUE)
-#include "wl_pktc.h" /* for PKTC_CHAIN_IDX_MASK */
+#include "wl_pktfwd.h" /* for PKTFWD_CHAIN_IDX_MASK */
 #endif
 
 #include <linux/bcm_skb_defines.h>
@@ -90,13 +90,8 @@ static const char *version = "Wifi Forwarding Driver";
 #define WIFI_IF_NAME_STR_LEN  ( IFNAMSIZ )
 #define WLAN_CHAINID_OFFSET 8
 
-#if defined(CONFIG_BCM94908)
-#define WFD_INTERRUPT_COALESCING_TIMEOUT_US 1000
-#define WFD_INTERRUPT_COALESCING_MAX_PKT_CNT 63
-#else
 #define WFD_INTERRUPT_COALESCING_TIMEOUT_US 500
 #define WFD_INTERRUPT_COALESCING_MAX_PKT_CNT 32
-#endif
 
 #if defined(BCM_PKTFWD)
 #define WFD_FLCTL /* BPM PktPool Availability based WFD Ingress throttle */
@@ -291,14 +286,12 @@ struct wfd_object
     void               *wfd_acc_info_p;
     struct net_device  *wl_if_dev[WIFI_MW_MAX_NUM_IF];
 #if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE))
-#if defined(XRDP)
     spinlock_t          wfd_dev_lock[WIFI_MW_MAX_NUM_IF];
-#endif
 #endif
     int                 isValid;
     enumWFD_WlFwdHookType eFwdHookType; 
     bool isTxChainingReqd;
-#if defined(XRDP) && !defined(BCM_PKTFWD)
+#if !defined(BCM_PKTFWD)
     /* defined here due to stack size limitation, 
      * used inside wfd_bulk_skb_get, wfd_bulk_fkb_get */
     void                *mcast_packets[NUM_PACKETS_TO_READ_MAX];
@@ -341,11 +334,8 @@ static void wfd_dump(void);
 /******************* Other software units include files *********************/
 /****************************************************************************/
 #if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE))
-#if defined(XRDP)
 #include "xrdp_wfd_inline.h"
-#else
-#include "runner_wfd_inline.h"
-#endif
+
 void (*wfd_dump_fn)(void) = 0;
 #elif defined(CONFIG_BCM_ARCHER) || defined(CONFIG_BCM_ARCHER_MODULE)
 #include "archer_wfd_inline.h"
@@ -418,15 +408,17 @@ void wfd_set_rx_wait_queue(int wfd_idx, wait_queue_head_t *wqh) {
 EXPORT_SYMBOL(wfd_set_rx_wait_queue);
 
 bool wfd_has_rx_work(int wfd_idx) {
-    return wfd_objects[wfd_idx].wfd_rx_work_avail;
+    if ((wfd_idx >= 0) && (wfd_idx < WFD_MAX_OBJECTS))
+        return wfd_objects[wfd_idx].wfd_rx_work_avail;
+    else
+        return false;
 }
 EXPORT_SYMBOL(wfd_has_rx_work);
 
 void wfd_do_rx_work(int wfd_idx) {
-    if (wfd_objects[wfd_idx].wfd_bulk_get)
+    if ((wfd_idx >= 0) && (wfd_idx < WFD_MAX_OBJECTS))
         wfd_process_rx_work(&wfd_objects[wfd_idx]);
 }
-
 EXPORT_SYMBOL(wfd_do_rx_work);
 #endif
 
@@ -508,15 +500,21 @@ static ssize_t wfd_stats_file_read_proc(struct file *filep, char __user *page, s
     unsigned int count_rx_queue_packets_total=0 ;
     unsigned int count_tx_bridge_packets_total=0 ;
     int len = 0 ;
+    char *outbuf;
+    int sz = 4096;
 
-	if( *data != 0)
-		return 0; //indicate EOF
+    if (*data != 0)
+        return 0; //indicate EOF
 
-    for(wifi_index=0;wifi_index < WIFI_MW_MAX_NUM_IF;wifi_index++)
+    outbuf = kmalloc(sz, GFP_KERNEL);
+    if(outbuf == NULL)
+        return -EFAULT;
+
+    for (wifi_index=0;wifi_index < WIFI_MW_MAX_NUM_IF;wifi_index++)
     {
         if( wifi_net_devices[wifi_index] != NULL )
         {
-            len += sprintf((page+len),"WFD Registered Interface %d:%s\n",
+            len += snprintf((outbuf+len), (sz-len), "WFD Registered Interface %d:%s\n",
                             wifi_index,wifi_net_devices[wifi_index]->name);
         }
     }
@@ -530,11 +528,11 @@ static ssize_t wfd_stats_file_read_proc(struct file *filep, char __user *page, s
             count_rx_queue_packets_total += gs_count_rx_bridged_packets[wifi_index];
             if (head == 0)
             {
-                len += sprintf((page+len), "RX Bridged traffic from WiFi queues:\n");
+                len += snprintf((outbuf+len), (sz-len), "RX Bridged traffic from WiFi queues:\n");
                 head = 1;
             }
 
-            len += sprintf((page +len), "                            [WiFi %d] briged = %d\n", 
+            len += snprintf((outbuf +len), (sz-len), "                          [WiFi %d] briged = %d\n", 
                 wifi_index, gs_count_rx_bridged_packets[wifi_index]) ;
         }
     }
@@ -543,15 +541,15 @@ static ssize_t wfd_stats_file_read_proc(struct file *filep, char __user *page, s
     for (wifi_index=0; wifi_index<WIFI_MW_MAX_NUM_IF; wifi_index++)
     {
         int head = 0;
-        if ( gs_count_tx_packets[wifi_index]!=0)
+        if (gs_count_tx_packets[wifi_index]!=0)
         {
             count_tx_bridge_packets_total += gs_count_tx_packets[wifi_index] ;
             if (head == 0)
             {
-                len += sprintf((page+len), "TX to bridge:\n");
+                len += snprintf((outbuf+len), (sz-len), "TX to bridge:\n");
                 head = 1;
             }
-            len += sprintf((page+len ), "                            [WiFi %d] = %d\n",      
+            len += snprintf((outbuf+len ), (sz-len), "                          [WiFi %d] = %d\n",
                 wifi_index, gs_count_tx_packets[wifi_index]) ;
         }
     }
@@ -560,41 +558,35 @@ static ssize_t wfd_stats_file_read_proc(struct file *filep, char __user *page, s
     {
         if (wfd_objects[wifi_index].wfd_bulk_get)
         {
-            len += sprintf((page+len),"\nWFD Object %d",wifi_index);
-            len += sprintf((page+len), "\nwl_unicast_counters       =%d", wfd_objects[wifi_index].wl_chained_packets) ;
-            len += sprintf((page+len), "\nwl_mcast_counters         =%d", wfd_objects[wifi_index].wl_mcast_packets) ;
-            len += sprintf((page+len), "\ncount_rx_queue_packets    =%d", wfd_objects[wifi_index].count_rx_queue_packets) ;
+            len += snprintf((outbuf+len), (sz-len), "\nWFD Object %d",wifi_index);
+            len += snprintf((outbuf+len), (sz-len), "\nwl_unicast_counters       =%d", wfd_objects[wifi_index].wl_chained_packets) ;
+            len += snprintf((outbuf+len), (sz-len), "\nwl_mcast_counters         =%d", wfd_objects[wifi_index].wl_mcast_packets) ;
+            len += snprintf((outbuf+len), (sz-len), "\ncount_rx_queue_packets    =%d", wfd_objects[wifi_index].count_rx_queue_packets) ;
 
-           {/* per queue status */          
+            {/* per queue status */          
                 unsigned int queue_mask = 0x00;
                 unsigned int qidx = 0, qid = 0;
 
                 queue_mask = wfd_objects[wifi_index].wfd_queue_mask;
                 qidx = __fls(queue_mask);
-                while (queue_mask)
+                while (queue_mask && (qidx < WFD_NUM_QUEUE_SUPPORTED))
                 {
                     qid = wfd_get_qid(qidx);
-                    len += sprintf((page+len), "\nQueue[%d]:",qid);
-                    len += sprintf((page+len), "\ncount_rx_pkt              =%d", gs_count_rx_pkt[qidx]) ;
-                    len += sprintf((page+len), "\nmax_rx_pkt                =%d", gs_max_rx_pkt[qidx]) ;
+                    len += snprintf((outbuf+len), (sz-len), "\nQueue[%d]:",qid);
+                    len += snprintf((outbuf+len), (sz-len), "\ncount_rx_pkt              =%d", gs_count_rx_pkt[qidx]) ;
+                    len += snprintf((outbuf+len), (sz-len), "\nmax_rx_pkt                =%d", gs_max_rx_pkt[qidx]) ;
                     count_rx_queue_packets_total += gs_count_rx_pkt[qidx];
 #if defined(WFD_FLCTL)
-                    len += sprintf((page+len), "\nflctl_pkts                =%d", gs_count_flctl_pkts[qidx]) ;
+                    len += snprintf((outbuf+len), (sz-len), "\nflctl_pkts                =%d", gs_count_flctl_pkts[qidx]) ;
                     gs_count_flctl_pkts[qidx] = 0;
 #endif
-                    len += sprintf((page+len), "\nno_bpm_buffers_error      =%d", gs_count_no_buffers[qidx]) ;
-                    len += sprintf((page+len), "\nno_skb_error              =%d", gs_count_no_skbs[qidx]) ;
-                    len += sprintf((page+len), "\nInvalid SSID vector       =%d",
-                        gs_count_rx_invalid_ssid_vector[qidx]);
-                    len += sprintf((page+len), "\nNo WIFI interface         =%d", gs_count_rx_no_wifi_interface[qidx]);
-                    len += sprintf((page+len), "\nRx Packet Error           =%d", gs_count_rx_error[qidx]);
+                    len += snprintf((outbuf+len), (sz-len), "\nno_bpm_buffers_error      =%d", gs_count_no_buffers[qidx]) ;
+                    len += snprintf((outbuf+len), (sz-len), "\nno_skb_error              =%d", gs_count_no_skbs[qidx]) ;
+                    len += snprintf((outbuf+len), (sz-len), "\nInvalid SSID vector       =%d", gs_count_rx_invalid_ssid_vector[qidx]);
+                    len += snprintf((outbuf+len), (sz-len), "\nNo WIFI interface         =%d", gs_count_rx_no_wifi_interface[qidx]);
+                    len += snprintf((outbuf+len), (sz-len), "\nRx Packet Error           =%d", gs_count_rx_error[qidx]);
 #if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE))
-                    len += sprintf((page+len), "\nRing Information:\n");
-#if !defined(XRDP)
-                    len += sprintf((page+len), "\tRing Base address = 0x%pK\n",wfd_rings[qidx].base );
-                    len += sprintf((page+len), "\tRing Head address = 0x%pK\n",wfd_rings[qidx].head );
-                    len += sprintf((page+len), "\tRing Head position = %ld\n",(long)(wfd_rings[qidx].head - wfd_rings[qidx].base));
-#endif
+                    len += snprintf((outbuf+len), (sz-len), "\nRing Information:\n");
 #endif
                     queue_mask &= ~(1<<qidx);
                     qidx--;
@@ -610,13 +602,13 @@ static ssize_t wfd_stats_file_read_proc(struct file *filep, char __user *page, s
                 wfd_swqueue_t * wfd_swqueue = wfd_objects[wifi_index].wfd_swqueue;
 
                 /* Dump wfd_swqueue stats */
-                len += sprintf((page+len), "\nSW Queue Statistics:");
-                len += sprintf((page+len), "\nDomain        = %d", wfd_swqueue->domain);
-                len += sprintf((page+len), "\nDispatch      = %d", wfd_swqueue->dispatches);
-                len += sprintf((page+len), "\npkts_count    = %d", wfd_swqueue->pkts_count);
-                len += sprintf((page+len), "\npkts_dropped  = %d", wfd_swqueue->pkts_dropped);
-                len += sprintf((page+len), "\nschedule_cnt  = %d", wfd_swqueue->schedule_cnt);
-                len += sprintf((page+len), "\ncomplete_cnt  = %d", wfd_swqueue->complete_cnt);
+                len += snprintf((outbuf+len), (sz-len), "\nSW Queue Statistics:");
+                len += snprintf((outbuf+len), (sz-len), "\nDomain        = %d", wfd_swqueue->domain);
+                len += snprintf((outbuf+len), (sz-len), "\nDispatch      = %d", wfd_swqueue->dispatches);
+                len += snprintf((outbuf+len), (sz-len), "\npkts_count    = %d", wfd_swqueue->pkts_count);
+                len += snprintf((outbuf+len), (sz-len), "\npkts_dropped  = %d", wfd_swqueue->pkts_dropped);
+                len += snprintf((outbuf+len), (sz-len), "\nschedule_cnt  = %d", wfd_swqueue->schedule_cnt);
+                len += snprintf((outbuf+len), (sz-len), "\ncomplete_cnt  = %d", wfd_swqueue->complete_cnt);
 
                 wfd_swqueue->dispatches     = 0;
                 wfd_swqueue->pkts_count     = 0;
@@ -639,13 +631,13 @@ static ssize_t wfd_stats_file_read_proc(struct file *filep, char __user *page, s
             }
 #endif /* BCM_PKTFWD */
 
-            len += sprintf((page+len), "\n===========\n");
+            len += snprintf((outbuf+len), (sz-len), "\n===========\n");
 
         }
     }
 
-    len += sprintf((page+len), "\nRX from WiFi queues      [SUM] = %d\n", count_rx_queue_packets_total) ;
-    len += sprintf((page+len),   "TX to bridge             [SUM] = %d\n", count_tx_bridge_packets_total) ;
+    len += snprintf((outbuf+len), (sz-len), "\nRX from WiFi queues      [SUM] = %d\n", count_rx_queue_packets_total) ;
+    len += snprintf((outbuf+len), (sz-len), "TX to bridge             [SUM] = %d\n", count_tx_bridge_packets_total) ;
 
     memset(gs_count_rx_bridged_packets, 0, sizeof(gs_count_rx_bridged_packets));
     memset(gs_count_tx_packets, 0, sizeof(gs_count_tx_packets));
@@ -657,7 +649,11 @@ static ssize_t wfd_stats_file_read_proc(struct file *filep, char __user *page, s
     memset(gs_count_rx_no_wifi_interface, 0, sizeof(gs_count_rx_no_wifi_interface));
     memset(gs_count_rx_error, 0, sizeof(gs_count_rx_error));
 
-    *data = len; 
+    *data = len;
+    if (copy_to_user(page, outbuf, len))
+        len = -EFAULT;
+
+    kfree(outbuf);
     return len;
 }
 
@@ -677,12 +673,14 @@ static ssize_t wfd_flctl_file_read_proc(struct file *file, char *buff, size_t le
 {
     uint32_t radio_id;
     char *header, *format;
+    char outbuf[256];
+    int sz = sizeof(outbuf);
 
     if (*offset)
         return 0;
 
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
-    *offset += sprintf(buff + *offset,
+    *offset += snprintf(outbuf + *offset, sz - *offset,
         "BPM system total<%u> avail<%u>\n", gbpm_total_skb(), gbpm_avail_skb());
     header = "WFD ExhaustionLO ExhaustionHI PktPrioFavor\n";
     format = "%2u. %12u %12u %12u\n";
@@ -690,16 +688,19 @@ static ssize_t wfd_flctl_file_read_proc(struct file *file, char *buff, size_t le
     header = "WFD PktPrioFavor\n";
     format = "%2u. %12u\n";
 #endif
-    *offset += sprintf(buff + *offset, header);
+    *offset += snprintf(outbuf + *offset, sz - *offset, header);
     for (radio_id = 0; radio_id < WFD_MAX_OBJECTS; radio_id++)
     {
-       *offset += sprintf(buff + *offset, format, radio_id,
+       *offset += snprintf(outbuf + *offset, sz - *offset, format, radio_id,
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
            wfd_objects[radio_id].skb_exhaustion_lo,
            wfd_objects[radio_id].skb_exhaustion_hi,
 #endif
            wfd_objects[radio_id].pkt_prio_favor);
     }
+
+    if (copy_to_user(buff, outbuf, *offset))
+        return -EFAULT;
 
     return *offset;
 }
@@ -901,10 +902,6 @@ fail:
 /****************************************************************************/
 static int release_wfd_os_resources(void)
 {
-#if (defined(CONFIG_BCM_RDPA) || defined(CONFIG_BCM_RDPA_MODULE)) && !defined(XRDP)
-    bdmf_destroy(rdpa_cpu_obj);
-#endif
-
     return (0) ;
 }
 
@@ -997,11 +994,9 @@ static int wfd_dev_init(void)
     for (idx = 0; idx < WFD_MAX_OBJECTS; idx++)
     {
 #if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE))
-#if defined(XRDP)
         int dev_if_idx;
         for (dev_if_idx = 0; dev_if_idx < WIFI_MW_MAX_NUM_IF; dev_if_idx++)
             spin_lock_init(&(wfd_objects[idx].wfd_dev_lock[dev_if_idx]));
-#endif
 #endif
 
         spin_lock_init(&wfd_irq_lock[idx]);
@@ -1444,23 +1439,29 @@ void wfd_unbind(int wfdIdx, enumWFD_WlFwdHookType hook_type)
         maxQIdx = wfd_get_maxQIdx(wfdIdx);
     }
 
+    /* disable the interrupt(s) */
+    for (qidx = minQIdx; qidx <= maxQIdx; qidx++) 
+    {
+        /* Deconfigure PCI RX queue(s) */
+        qid = wfd_get_qid(qidx);
+        wfd_int_disable(wfd_objects[wfdIdx].wl_radio_idx, qid, qidx);
+    }
 
-    /* free the pci rx queue(s); disable the interrupt(s) */
+    if (wfd_objects[wfdIdx].wfd_rx_thread)
+            kthread_stop(wfd_objects[wfdIdx].wfd_rx_thread);
+
+    /* free the pci rx queue(s) */
     for (qidx = minQIdx; qidx <= maxQIdx; qidx++) 
     {
         /* Deconfigure PCI RX queue(s) */
         qid = wfd_get_qid(qidx);
         wfd_config_rx_queue(wfdIdx, qid, 0, hook_type);
         wfd_objects[wfdIdx].wfd_queue_mask &= ~(1 << qidx);
-        wfd_int_disable(wfd_objects[wfdIdx].wl_radio_idx, qid, qidx);
     }
 
 #if defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE)
-   wfd_rdpa_uninit(wfd_objects[wfdIdx].wl_radio_idx);
+    wfd_rdpa_uninit(wfd_objects[wfdIdx].wl_radio_idx);
 #endif
-
-   if (wfd_objects[wfdIdx].wfd_rx_thread)
-            kthread_stop(wfd_objects[wfdIdx].wfd_rx_thread);
 
 #if defined(BCM_PKTFWD)
     if (wfd_objects[wfdIdx].pktlist_context_p)
@@ -1556,18 +1557,14 @@ int wfd_unregisterdevice(uint32_t wfd_idx, int ifidx)
     bcm_mcast_if_handle_dev_up_or_down(wfd_objects[wfd_idx].wl_if_dev[ifidx], false);
 #endif
 #if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE))
-#if defined(XRDP)
     spin_lock_bh(&(wfd_objects[wfd_idx].wfd_dev_lock[ifidx]));
-#endif
 #endif
     /* Uninitialize the bcm_netdevice callback function */
     bcm_netdev_ext_field_set(wfd_objects[wfd_idx].wl_if_dev[ifidx], bcm_netdev_cb_fn, NULL);
 
     wfd_objects[wfd_idx].wl_if_dev[ifidx] = NULL;
 #if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE))
-#if defined(XRDP)
     spin_unlock_bh(&(wfd_objects[wfd_idx].wfd_dev_lock[ifidx]));
-#endif
 #endif	
     printk("%s Successfully unregistered ifidx %d wfd_idx %d\n", 
         __FUNCTION__, ifidx, wfd_idx);
@@ -1835,7 +1832,7 @@ wfd_swqueue_xfer_pkts(
             WFD_ASSERT(skb->recycle_flags & SKB_DATA_RECYCLE);
 
             /* Convert to fkb */
-            fkb = fkb_init(BPM_PHEAD_TO_BUF(skb->head), BCM_PKT_HEADROOM,
+            fkb = fkb_init(BCM_PHEAD_TO_PDATA(skb->head), BCM_PKT_HEADROOM,
                            skb->data, skb->len);
 
             fkb->recycle_hook       = gbpm_recycle_pNBuff;
@@ -1983,7 +1980,7 @@ wfd_swqueue_skb_xmit(wfd_object_t * wfd_p, uint32_t budget)
 
             if (likely(skb->wl.pktfwd.is_ucast))
             {
-                pktfwd_key = skb->wl.pktfwd.pktfwd_key & PKTC_CHAIN_IDX_MASK;
+                pktfwd_key = skb->wl.pktfwd.pktfwd_key & PKTFWD_CHAIN_IDX_MASK;
                 pktlist_dest = PKTLIST_DEST(pktfwd_key);
 
                 /* Reset pktfwd FlowInf and set wl FlowInf */

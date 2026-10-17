@@ -47,17 +47,25 @@ typedef struct {
 	int (*get_mode)(fpi_mode_t *mode_p);
 	int (*set_default_priority)(uint8_t prio);
 	int (*get_default_priority)(uint8_t *prio_p);
+	int (*get_system_stat)(fpi_global_stat_t *stat_p);
 
 	int (*add_flow)(Blog_t *blog_p, int *handle_p);
 	int (*delete_flow)(int handle);	/* must */
 	int (*delete_flow_by_blog)(Blog_t *blog_p);
+	int (*get_flow_stat)(int handle, uint32_t *pkt_cnt_p, uint64_t *byte_cnt_p);
+	int (*alloc_ipid_cntr)(uint8_t *ipid_cntr_p);
+	void (*free_ipid_cntr)(uint8_t ipid_cntr);
 
-	int (*get_stat)(int handle, uint32_t *pkt_cnt_p, uint64_t *byte_cnt_p);
 	int (*add_ap_mac)(uint8_t *mac_addr_p);
 	int (*delete_ap_mac)(uint8_t *mac_addr_p);
 	int (*set_gre_mode)(fpi_gre_mode_t mode);
 	int (*set_l2lkp_on_etype)(bool enable, uint16_t etype);
 	int (*set_lkp_enable)(bool enable);
+	int (*set_ip_frag_enable)(bool enable);
+	int (*set_ip_reasm_enable)(bool enable);
+	int (*add_ipsec_tunnel)(struct xfrm_state *x, uint32_t tun_id, uint8_t is_us);
+	int (*remap_ipsec_tunnel)(uint32_t tun_id1, uint32_t esp_spi1, uint32_t tun_id2, uint32_t esp_spi2); 
+	int (*del_ipsec_tunnel)(uint32_t tun_id, uint8_t is_us, uint32_t esp_spi);
 #if 0
 	/* TODO! see if we need to support getting flow from HW */
 	int (*get_flow(int handle, Blog_t *blog_p);

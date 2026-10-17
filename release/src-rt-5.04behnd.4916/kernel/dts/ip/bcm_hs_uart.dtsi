@@ -8,7 +8,7 @@ reg = <UART_OFFSET UART_SIZE>;
 #endif
 interrupts = <GIC_SPI UART_SPI IRQ_TYPE_LEVEL_HIGH>;
 clocks = <&periph_osc>;
-u-boot,dm-pre-reloc;
+
 status = "disabled";
 
 #undef UART_OFFSET

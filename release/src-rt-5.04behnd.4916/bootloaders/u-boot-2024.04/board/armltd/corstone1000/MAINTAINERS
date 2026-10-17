@@ -1,0 +1,7 @@
+CORSTONE1000 BOARD
+M:	Abdellatif El Khlifi <abdellatif.elkhlifi@arm.com>
+M:	Xueliang Zhong <xueliang.zhong@arm.com>
+S:	Maintained
+F:	board/armltd/corstone1000/
+F:	include/configs/corstone1000.h
+F:	configs/corstone1000_defconfig

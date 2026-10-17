@@ -1,0 +1,18 @@
+ARISTAINETOS BOARD
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	board/aristainetos/
+F:	include/configs/aristainetos2.h
+F:	configs/aristainetos2c_defconfig
+F:	configs/aristainetos2ccslb_defconfig
+F:	arch/arm/dts/imx6dl-aristainetos2c_7.dts
+F:	arch/arm/dts/imx6dl-aristainetos2c_7-u-boot.dtsi
+F:	arch/arm/dts/imx6dl-aristainetos2c_cslb_7.dts
+F:	arch/arm/dts/imx6dl-aristainetos2c_cslb_7-u-boot.dtsi
+F:	arch/arm/dts/imx6dl-aristainetos2_7.dtsi
+F:	arch/arm/dts/imx6qdl-aristainetos2-common.dtsi
+F:	arch/arm/dts/imx6qdl-aristainetos2-u-boot.dtsi
+F:	arch/arm/dts/imx6qdl-aristainetos2c.dtsi
+F:	arch/arm/dts/imx6qdl-aristainetos2c-u-boot.dtsi
+F:	arch/arm/dts/imx6qdl-aristainetos2c_cslb.dtsi
+F:	arch/arm/dts/imx6qdl-aristainetos2c_cslb-u-boot.dtsi

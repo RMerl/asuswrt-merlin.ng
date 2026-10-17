@@ -58,7 +58,7 @@
 	chosen: chosen {
 		stdout-path = "serial0:115200n8";
 		/* increase coherent_pool size */
-		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe console=ttyAMA0,115200 earlyprintk  rootwait rng_core.default_quality=1024";
+		bootargs = "coherent_pool=4M pci=pcie_bus_safe console=ttyAMA0,115200 earlycon rootwait rng_core.default_quality=1024";
 	};
 
 	misc_io {
@@ -446,7 +446,7 @@
 		};
 
 	   	/* EMMC */
-		sdhci: sdhci {
+		sdhci: mmc {
 			pinctrl-0 = <&emmc_ctrl_pins>;
 			pinctrl-names="default";	
 #if (CONFIG_BRCM_CHIP_REV!=0x63158A0)
@@ -576,11 +576,18 @@
 			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
 		};		
 
+		/* RNG */
+#if defined (CONFIG_BCM_RNG_SHIM)
+		rng_shim: rngshim {
+			#include "../ip/bcm_rng_shim.dtsi"
+		};
+#else
 		rng: rng {
 			#define RNG200_OFFSET			0x0 0x00000b80
 			#define RNG200_SIZE			0x0 0x28
 			#include "../ip/bcm_rng200.dtsi"
 		};
+#endif
 
 		i2c0: i2c@0 {
 			#define I2C_OFFSET			0x0 0x2100
@@ -593,6 +600,17 @@
 			#define I2C_OFFSET			0x0 0x5a800
 			#define I2C_SIZE			0x0 0x60
 			#include "../ip/bcm_i2c_bus.dtsi"
+		};
+
+		i2s: bcm63xx-i2s {
+			pinctrl-0 = <&i2s_rx_sdata_pin_14 &i2s_mclk_pin_28 &i2s_lrck_pin_29 &i2s_sclk_pin_30 &i2s_tx_sdata_pin_31>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x7f>;
+			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2sclk>, <&osc>;
+			clock-names = "i2sclk","i2sosc";
+			status = "disabled";
 		};
 
 		/* periph timers */
@@ -611,6 +629,7 @@
 			#define WATCHDOG_OFFSET			0x0 0x480
 			#define WATCHDOG_SIZE			0x0 0x10
 			#define WATCHDOG_TIMEOUT		80
+			#define WATCHDOG_CLK_LABEL		refclk50mhz
 			#include "../ip/bcm_wdt.dtsi"
 			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
 		};
@@ -653,6 +672,19 @@
 			#define GPIO_DATA_OFFSET     0x0 0x520
 			#define GPIO_DATA_SIZE       0x0 0x20
 			#define NUM_OF_GPIOS         126
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			#define EXTINTR_OFFSET       0x0 0x4
+			#define EXTINTR_SIZE         0x0 0x48
+			#define MAX_EXT_INTR         8
+			interrupts = <GIC_SPI 176 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 177 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 179 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 180 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 181 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 182 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 183 IRQ_TYPE_LEVEL_HIGH>;
+#endif
 			#include "../ip/bcm_bca_gpio.dtsi"
 		};
 
@@ -663,6 +695,9 @@
 			#define MAX_EXT_INTR         8
 			#include "../ip/bcm_bca_extintr.dtsi"
 			external_interrupts = <176 177 178 179 180 181 182 183>;
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			status = "disabled";
+#endif
 		};
 
 		/* Led Controller */
@@ -1252,9 +1287,11 @@
     (defined(CONFIG_BCM_SPU) || defined(CONFIG_BCM_SPU_MODULE))
 &spu_pdc {
 	status = "okay";
+	dma-coherent;
 };
 &spu_crypto {
 	status = "okay";
+	dma-coherent;
 };
 &sar {
    status = "okay";

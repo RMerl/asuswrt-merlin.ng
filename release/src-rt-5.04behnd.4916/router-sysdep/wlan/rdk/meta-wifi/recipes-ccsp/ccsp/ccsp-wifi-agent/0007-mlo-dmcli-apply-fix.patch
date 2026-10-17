@@ -1,0 +1,13 @@
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.c b/source/TR-181/sbapi/cosa_wifi_apis.c
+index 148437e..f92eb40 100644
+--- a/source/TR-181/sbapi/cosa_wifi_apis.c
++++ b/source/TR-181/sbapi/cosa_wifi_apis.c
+@@ -27243,7 +27243,7 @@ ANSC_STATUS rdkWifiConfigInit()
+         }
+ 
+         //Note : If one Vap changed, apply changes to all the vaps present in that radio
+-        if (isVapChanged == TRUE)
++        //if (isVapChanged == TRUE)
+         {
+             ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wifi_createVAP for radioIndex:%d \n", __FUNCTION__, radioIndex);
+             memcpy(&(vapMap->vap_array), &gRadioCfg[radioIndex].vaps.vap_array, (sizeof(wifi_vap_info_t)*MAX_NUM_VAP_PER_RADIO));

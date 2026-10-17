@@ -4,3 +4,6 @@
 -include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.spu_offload_objs
 
 RDPA_OBJS += rdpa_ct.o
+RDPA_OBJS += rdpa_buffer.o
+RDPA_OBJS += rdpa_score.o
+

@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal NET Mini OSPI Configuration
+ *
+ * (C) Copyright 2023, Advanced Micro Devices, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ * Ashok Reddy Soma <ashok.reddy.soma@amd.com>
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "xlnx,versal-net-mini";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	model = "Xilinx Versal NET MINI OSPI";
+
+	aliases {
+		serial0 = &dcc;
+		spi0 = &ospi;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200";
+	};
+
+	memory@bbf00000 {
+		device_type = "memory";
+		reg = <0 0xBBF00000 0 0x100000>;
+	};
+
+	clk125: clk125 {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <125000000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "okay";
+		bootph-all;
+	};
+
+	amba: amba {
+		bootph-all;
+		compatible = "simple-bus";
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		ranges;
+
+		ospi: spi@f1010000 {
+			compatible = "cadence,qspi", "cdns,qspi-nor";
+			status = "okay";
+			reg = <0 0xf1010000 0 0x10000>, <0 0xc0000000 0 0x20000000>;
+			clock-names = "ref_clk", "pclk";
+			clocks = <&clk125>, <&clk125>;
+			bus-num = <2>;
+			num-cs = <1>;
+			cdns,fifo-depth = <256>;
+			cdns,fifo-width = <4>;
+			cdns,is-dma = <1>;
+			cdns,is-stig-pgm = <1>;
+			cdns,trigger-address = <0xc0000000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			flash0: flash@0 {
+				compatible = "mt35xu02g", "micron,m25p80",
+					     "jedec,spi-nor";
+				reg = <0>;
+				spi-tx-bus-width = <8>;
+				spi-rx-bus-width = <8>;
+				spi-max-frequency = <20000000>;
+				no-wp;
+			};
+		};
+	};
+};

@@ -1,5 +1,0 @@
-DE1-SoC BOARD
-M:	Anatolij Gustschin <agust@denx.de>
-S:	Maintained
-F:	include/configs/socfpga_de1_soc.h
-F:	configs/socfpga_de1_soc_defconfig

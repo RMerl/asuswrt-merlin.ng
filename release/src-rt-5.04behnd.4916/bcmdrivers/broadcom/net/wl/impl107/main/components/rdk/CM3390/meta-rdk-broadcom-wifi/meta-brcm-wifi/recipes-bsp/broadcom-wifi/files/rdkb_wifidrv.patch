@@ -1,0 +1,50 @@
+--- a/cmwifi/Makefile	2024-12-11 01:25:12.000000000 -0800
++++ b/cmwifi/Makefile	2024-12-11 10:51:36.739658464 -0800
+@@ -49,7 +49,7 @@
+ #
+ #***********************************************************************
+ 
+-ifeq ($(CM_BUILDROOT),)
++ifneq ($(CM_BUILDROOT),)
+ CURR_DIR := $(CURDIR)
+ CURR_NAME := $(notdir $(CURDIR))
+ PARENT_DIR := $(word 1, $(subst /$(CURR_NAME), /$(CURR_NAME),$(CURR_DIR)))
+@@ -68,7 +68,7 @@
+ export KBUILD_VERBOSE := 1
+ SUBMAKE_SETTINGS = SRCBASE=$(SRCBASE) BASEDIR=$(BASEDIR)
+ 
+-include $(BUILD_DIR)/make.common
++-include $(BUILD_DIR)/make.common
+ 
+ include $(CURR_DIR)/cmwifi.mk
+ 
+--- a/main/components/router/www/broadcom/Makefile	2024-12-11 02:19:57.000000000 -0800
++++ b/main/components/router/www/broadcom/Makefile	2024-12-11 10:53:13.857226555 -0800
+@@ -189,22 +189,22 @@
+ 
+ ifneq ($(CONFIG_AIRIQ),)
+ ifneq ($(wildcard $(AIRIQWWW)),)
+-	install -m 644 $(AIRIQPAGES) .
++	# install -m 644 $(AIRIQPAGES) .
+ endif
+ endif # CONFIG_AIRIQ
+ 
+ ifeq ($(CONFIG_WBD),y)
+ ifneq ($(wildcard $(WBDWWW)),)
+-	install -m 644 $(WBDPAGES) .
++	# install -m 644 $(WBDPAGES) .
+ endif
+ endif
+ 
+ ifeq ($(CONFIG_HSPOT),y)
+ 	install -m 644 $(PASSPOINT_PAGES) .
+ endif
+-	install -m 644 $(CPULOADPAGES) .
+-	install -m 644 $(CHARTSPAGES) .
+-	install -C -m 644 $(sort $(PAGES)) $(INSTALLDIR)/www
++	# install -m 644 $(CPULOADPAGES) .
++	# install -m 644 $(CHARTSPAGES) .
++	# install -C -m 644 $(sort $(PAGES)) $(INSTALLDIR)/www
+ 
+ clean:
+ 	rm -f pages.mk

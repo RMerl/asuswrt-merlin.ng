@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS1088AQDS device tree source for SERDES block #1 - protocol 21 (0x15)
+ *
+ * Copyright 2020 NXP
+ */
+
+#include "fsl-ls1088a-qds.dtsi"
+
+&dpmac1 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac2 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac4 {
+	status = "okay";
+	phy-handle = <&rgmii_phy1>;
+	phy-connection-type = "rgmii-id";
+};
+
+&dpmac5 {
+	status = "okay";
+	phy-handle = <&rgmii_phy2>;
+	phy-connection-type = "rgmii-id";
+};

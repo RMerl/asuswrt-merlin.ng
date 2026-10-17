@@ -44,7 +44,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <limits.h>
-    typedef long bdmf_index;
+    typedef long bdmf_long_t;
     typedef unsigned long bdmf_ptr;
     /** Managed object type handle */
     typedef struct bdmf_type *bdmf_type_handle;
@@ -61,7 +61,7 @@
 #if defined LINUX_KERNEL || defined(__KERNEL__)
 /*kernel module defines and includes */
 #include <linux/types.h>
-    typedef long bdmf_index;
+    typedef long bdmf_long_t;
     typedef unsigned long bdmf_ptr;
     /** Managed object type handle */
     typedef struct bdmf_type *bdmf_type_handle;
@@ -81,14 +81,14 @@
 #include <stdint.h>
 #endif
 #if defined KERNEL_64
-    typedef uint64_t bdmf_index;
+    typedef uint64_t bdmf_long_t;
     typedef uint64_t bdmf_ptr;
     typedef uint64_t bdmf_type_handle;
     typedef uint64_t bdmf_object_handle;
     typedef uint64_t bdmf_link_handle;
     typedef uint64_t bdmf_handle;
 #else
-    typedef long bdmf_index;
+    typedef long bdmf_long_t;
     typedef uint32_t bdmf_ptr;
     typedef uint32_t bdmf_type_handle;
     typedef uint32_t bdmf_object_handle;
@@ -103,6 +103,7 @@
 /** Signed integer
  */
 typedef int64_t bdmf_number;
+typedef bdmf_long_t bdmf_index;
 
 /** System buffer */
 typedef void *bdmf_sysb;
@@ -194,7 +195,7 @@ static inline int bdmf_ip_cmp(const bdmf_ip_t *ip, const bdmf_ip_t *ip2)
         ipv6_as_int[2] == ipv6_as_int2[2] && ipv6_as_int[3] == ipv6_as_int2[3]);
 }
 
-#if (defined(PHYS_ADDR_64BIT) || defined(CONFIG_PHYS_ADDR_T_64BIT)) && !defined(WL4908)
+#if (defined(PHYS_ADDR_64BIT) || defined(CONFIG_PHYS_ADDR_T_64BIT))
 typedef uint64_t bdmf_phys_addr_t;
 #else
 typedef uint32_t bdmf_phys_addr_t;

@@ -48,6 +48,8 @@ enum {
     PWR_SVC_GET_DOMAIN_NAME,
     PWR_SVC_GET_DOMAIN_STATE,
     PWR_SVC_SET_DOMAIN_STATE,
+    PWR_SVC_EN_DDR_AUTO_SELF_REFRESH,
+    PWR_SVC_DIS_DDR_AUTO_SELF_REFRESH,
     MAX_FUNC,
 };
 
@@ -62,7 +64,13 @@ struct pwr_msg {
         };
         uint8_t rc;
     };
-    char name[8];
+    union {
+        char name[8];
+        struct {
+            uint32_t ddr_thre;
+            uint32_t _rsvd;
+        };
+    };
 };
 
 /* pwr_svc rpc message manipulation helpers */
@@ -86,7 +94,7 @@ static int pwr_get_domain_id(char *name, uint8_t name_size, uint8_t *id)
 
     rpc_msg_init(msg, RPC_SERVICE_PWR, PWR_SVC_GET_DOMAIN_ID, RPC_SERVICE_VER_PWR_DOMAIN_ID, 0, 0, 0);
 
-    memcpy(pwr_msg.name, name, name_size);
+    strncpy(pwr_msg.name, name, name_size);
     ret = pmc_svc_request(msg, power_msg_get_retcode);   
     if (ret)
     {
@@ -205,4 +213,43 @@ int bcm_rpc_pwr_set_domain_state(char *name, uint8_t name_size, pwr_dom_state st
     return ret;
 }
 
+
+int bcm_rpc_pwr_en_ddr_auto_self_refresh(uint32_t ddr_thre)
+{
+    struct pwr_msg pwr_msg;
+    rpc_msg *msg = (rpc_msg *)&pwr_msg;
+    int ret = 0;
+
+    rpc_msg_init(msg, RPC_SERVICE_PWR, PWR_SVC_EN_DDR_AUTO_SELF_REFRESH, 0, 0, 0, 0);
+
+    pwr_msg.ddr_thre = ddr_thre;
+
+    ret = pmc_svc_request(msg, power_msg_get_retcode); 
+    if (ret)
+    {
+        printk("%s:%d : ERROR: power_svc: rpc_send_request failure (%d)\n",__FUNCTION__, __LINE__, ret);
+        return -1;
+    }
+
+    return ret;
+}
+
+int bcm_rpc_pwr_dis_ddr_auto_self_refresh(void)
+{
+    struct pwr_msg pwr_msg;
+    rpc_msg *msg = (rpc_msg *)&pwr_msg;
+    int ret = 0;
+
+    rpc_msg_init(msg, RPC_SERVICE_PWR, PWR_SVC_DIS_DDR_AUTO_SELF_REFRESH, 0, 0, 0, 0);
+
+
+    ret = pmc_svc_request(msg, power_msg_get_retcode); 
+    if (ret)
+    {
+        printk("%s:%d : ERROR: power_svc: rpc_send_request failure (%d)\n",__FUNCTION__, __LINE__, ret);
+        return -1;
+    }
+
+    return ret;
+}
 

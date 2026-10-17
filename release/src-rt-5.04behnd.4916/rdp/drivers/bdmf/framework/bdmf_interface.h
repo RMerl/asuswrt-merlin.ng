@@ -1076,6 +1076,25 @@ void bdmf_trace(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 #endif
 
 
+/** Print error trace conditional on global trace level with rate limit
+ *  \param[in]   fmt         printf-like format
+ *  \param[in]   args        0 or more parameters
+ */
+#if defined(__KERNEL__)
+    #define BDMF_TRACE_ERR_RATELIMITED(fmt, args...)                            \
+        do {\
+            if (bdmf_global_trace_level >= bdmf_trace_level_error)      \
+                printk_ratelimited("\nERR: %s#%d: " fmt, __FUNCTION__, __LINE__, ## args);\
+        } while(0)
+#else
+    #define BDMF_TRACE_ERR_RATELIMITED(fmt, args...)                            \
+        do {\
+            if (bdmf_global_trace_level >= bdmf_trace_level_error)      \
+                bdmf_trace("\nERR: %s#%d: " fmt, __FUNCTION__, __LINE__, ## args);\
+        } while(0)
+#endif
+
+
 /** Print info trace conditional on global trace level
  * \param[in]   fmt         printf-like format
  * \param[in]   args        0 or more parameters
@@ -1107,6 +1126,21 @@ void bdmf_trace(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
         else \
             BDMF_TRACE_INFO("success " fmt, ## args);\
         return (rc);\
+    } while(0)
+
+/** in case of error (condition is not 0) Print error using global trace level and return 
+ * \param[in]   condition   condition for error
+ * \param[in]   rc          return code. 0=info trace, !=0-error trace
+ * \param[in]   fmt         printf-like format
+ * \param[in]   args        0 or more parameters
+ */
+#define BDMF_TRACE_RET_IF_COND(condition, rc, fmt, args...)                   \
+    do {                                                            \
+        if (condition)\
+        {\
+            BDMF_TRACE_ERR("ERR:%s " fmt, bdmf_strerror(rc), ## args);\
+            return (rc);\
+        }\
     } while(0)
 
 
@@ -1142,6 +1176,7 @@ void bdmf_trace(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 #define BDMF_TRACE_RET(rc, fmt, args...) do { return rc; } while (0)
 #define BDMF_TRACE_INFO(fmt, args...)
 #define BDMF_TRACE_ERR(fmt, args...)
+#define BDMF_TRACE_ERR_RATELIMITED(fmt, args...)
 #define BDMF_TRACE_DBG(fmt, args...)
 #define bdmf_trace printf
 #endif

@@ -48,10 +48,10 @@ typedef struct {
 } port_info_t;
 
 static const port_info_t pmc_pcie_port_info[]= {
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96855)
 	{ PMB_ADDR_PCIE0, FALSE },
 	{ PMB_ADDR_PCIE1, FALSE }
-#elif defined(CONFIG_BCM94908) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963146)
+#elif defined(CONFIG_BCM96856) || defined(CONFIG_BCM963146)
 	{ PMB_ADDR_PCIE0, FALSE },
 	{ PMB_ADDR_PCIE1, FALSE },
 	{ PMB_ADDR_PCIE2, FALSE }
@@ -82,7 +82,7 @@ static const port_info_t pmc_pcie_port_info[]= {
 #elif defined(CONFIG_BCM96765) || defined(CONFIG_BCM96766)
 	{ PMB_ADDR_PCIE0, TRUE },    /* GEN3, PLL */
 	{ PMB_ADDR_PCIE1, TRUE }     /* GEN3, PLL */
-#else /* CONFIG_BCM963178, CONFIG_BCM947622, CONFIG_BCM96878,CONFIG_BCM96756,CONFIG_BCM96764 */
+#else /* CONFIG_BCM963178, CONFIG_BCM947622 ,CONFIG_BCM96756, CONFIG_BCM96764 */
 	{ PMB_ADDR_PCIE0, FALSE }
 #endif
 };
@@ -114,9 +114,6 @@ static const ubus_node_info_t pmc_pcie_ubus_node[] = {
 	{PCIE_BIFURCATED_PORT, UCB_NODE_ID_SLV_PCIE0, UCB_NODE_ID_MST_PCIE0},
 	{PCIE_BIFURCATED_PORT, UCB_NODE_ID_SLV_PCIE0, UCB_NODE_ID_MST_PCIE0},
 	{PCIE_INVALID_PORT, -1, -1},
-#elif defined(CONFIG_BCM96846)
-	{PCIE_BIFURCATED_PORT, UCB_NODE_ID_SLV_PCIE0, UCB_NODE_ID_MST_PCIE0},
-	{PCIE_BIFURCATED_PORT, UCB_NODE_ID_SLV_PCIE0, UCB_NODE_ID_MST_PCIE0}
 #else
 	/* SoC that does not require UBUS registration */
 	{PCIE_INVALID_PORT, -1, -1},
@@ -176,18 +173,13 @@ static void pmc_pcie_ubus_init(int unit)
     /* These credits of PCIe to Runner quads are requiered to Wakeup runner
      * in case of DHD Offload RxComplete */
     apply_ubus_credit_each_master(unit2mst_node_tbl[unit]);
-
-#elif defined(CONFIG_BCM96846)
-    /*In 6846 both PCIe shares the same UBUS Master*/
-    int unit2mst_node_tbl[] = {UBUS_PORT_ID_PCIE0, UBUS_PORT_ID_PCIE0};
-    ubus_master_set_token_credits(unit2mst_node_tbl[unit], 9, 1);
 #elif defined(CONFIG_BCM963158)
     /*In 63158 PCIe#0,1 are bifurcated ports and shares the same UBUS Master */
     int unit2mst_node_tbl[] = {UBUS_PORT_ID_PCIE0, UBUS_PORT_ID_PCIE0, UBUS_PORT_ID_PCIE2, UBUS_PORT_ID_PCIE3};
     apply_ubus_credit_each_master(unit2mst_node_tbl[unit]);
 #elif defined(CONFIG_BCM96856)
     int unit2mst_node_tbl[] = {UBUS_PORT_ID_PCIE0, UBUS_PORT_ID_PCIE0, UBUS_PORT_ID_PCIE2};
-#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96855)
     int unit2mst_node_tbl[] = {UBUS_PORT_ID_PCIE0};
 #elif defined(CONFIG_BCM963146)
     __attribute__((unused)) int unit2mst_node_tbl[] = {UBUS_PORT_ID_PCIE0, UBUS_PORT_ID_PCIE1, UBUS_PORT_ID_PCIE2};
@@ -207,7 +199,7 @@ static void pmc_pcie_ubus_init(int unit)
     ubus_master_remap_port(unit2mst_node_tbl[unit]);
 #endif
 
-#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
 /* These credits of PCIe to Runner VPB are requiered to wakeup Runner in case of DHD Offload RxComplete */    
     ubus_master_set_token_credits(unit2mst_node_tbl[unit], UBUS_PORT_ID_VPB, 1);
 #endif
@@ -237,7 +229,7 @@ int pmc_pcie_power_up(int unit, int is_dual_lane)
 
 	pmc_pcie_register_ubus(unit);
 
-	if (dual_lane) {
+	if ((unit == 0) && (dual_lane)) {
 #if defined(CONFIG_BCM963158)
 	    int bifur_addr;
 
@@ -289,7 +281,7 @@ int pmc_pcie_power_down(int unit, int is_dual_lane)
 
 	addr = pmc_pcie_port_info[unit].pmb_addr;
 
-#if	 defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96846)
+#if	 defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
 	/*On Bifurcation mode we must not shut down and de-register the ubus port of
 	 * bifurcated port (0) since we don't know the future status of core 1 */
 	if (pmc_pcie_ubus_node[unit].port_type == PCIE_BIFURCATED_PORT)
@@ -306,7 +298,7 @@ int pmc_pcie_power_down(int unit, int is_dual_lane)
 		int dual_lane = is_dual_lane;
 		int bifur_addr;
 
-		if (dual_lane) {
+		if ((unit == 0) && (dual_lane)) {
 			/* Identify other bifurcated port address */
 			bifur_addr = pmc_pcie_port_info[unit+1].pmb_addr;
 			if (WriteBPCMRegister(bifur_addr, BPCMRegOffset(sr_control), sr_ctrl))

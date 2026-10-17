@@ -1,0 +1,36 @@
+* MAX7320 I/O expanders
+
+The original maxim 7320 i/o expander offers 8 bit push/pull outputs.
+There exists some clones which offers 16 bit.
+
+Required Properties:
+
+  - compatible: should be one of the following.
+    - "maxim,max7320"
+
+  - reg: I2C slave address.
+
+  - gpio-controller: Marks the device node as a gpio controller.
+  - #gpio-cells: Should be 2. The first cell is the GPIO number and the second
+    cell specifies GPIO flags, as defined in <dt-bindings/gpio/gpio.h>. Only the
+    GPIO_ACTIVE_HIGH and GPIO_ACTIVE_LOW flags are supported.
+
+Optional Properties:
+
+   - ngpios: tell the driver how many gpios the device offers.
+     if the property is omitted, 8bit (original maxim) is assumed.
+
+Please refer to gpio.txt in this directory for details of the common GPIO
+bindings used by client devices.
+
+Example: MAX7320 I/O expander node
+
+	ledgpio: max7320@5d {
+		status = "okay";
+		compatible = "maxim,max7320";
+		reg = <0x5d>;
+		#gpio-cells = <2>;
+		gpio-controller;
+		ngpios = <16>;
+	};
+

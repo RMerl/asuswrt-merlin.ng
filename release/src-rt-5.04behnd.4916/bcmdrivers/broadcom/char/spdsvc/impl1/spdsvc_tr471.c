@@ -44,10 +44,6 @@ written consent.
 #include <linux/module.h>
 #include <linux/jiffies.h>
 #include <linux/delay.h>
-#if defined(CONFIG_BCM94908)
-#include <linux/mm.h>
-#include <linux/sizes.h>
-#endif
 #include <linux/skbuff.h>
 #include <linux/nbuff.h>
 #include <linux/bcm_log.h>
@@ -77,9 +73,22 @@ typedef struct {
     wait_queue_head_t threadWqh;
     int workAvail;
     _tr471_thread_mode_t thread_mode;
+    int rx_recycle_thread_data;
 } _spdsvc_tr471_gen_and_recycle_thread_t;
 
 static _spdsvc_tr471_gen_and_recycle_thread_t _spdsvc_tr471_gen_and_recycle_thread_g;
+
+/***************************************************************************
+ * TR-471 Tx/Rx Checksum Support functions
+ **************************************************************************/
+
+static inline uint16_t spdsvc_tr471_loadhdr_checksum_no_mangle (struct loadHdr *lhdr)
+{
+    uint16_t csum16_calc = 0;
+
+    _compute_icsum_buffer((uint16_t*)lhdr, sizeof(struct loadHdr), &csum16_calc);
+    return (csum16_calc);
+}
 
 /*******************************************************************************
  *
@@ -99,8 +108,9 @@ static int spdsvc_tr471_rx_recycle_queue_construct(void)
     {
         __logError("\n\tSPDSVC Rx Recycle Queue Init Failed Q Size- %d\n", SPDSVC_TR471_RX_RECYCLE_QUEUE_SIZE);
     }
-    else
-        __logDebug("\n\tSPDSVC Rx Recycle Queue Initialized Q Size- %d\n", SPDSVC_TR471_RX_RECYCLE_QUEUE_SIZE);
+    else {
+        SPDSVCLOG_DEBUG("\n\tSPDSVC Rx Recycle Queue Initialized Q Size- %d\n", SPDSVC_TR471_RX_RECYCLE_QUEUE_SIZE);
+    }
 
     return ret;
 }
@@ -154,10 +164,52 @@ static void spdsvc_tr471_rx_recycle_queue_destruct(void)
 /***************************************************************************
  * Utility functions
  **************************************************************************/
-int spdsvc_tr471_store_ref_pkt_info(int connindex, void *skb, spdsvc_tr471_ref_pkt_info_t *ref_info_p)
+/* Function to calaculate the UDP checksum for bytes upto TR471-load-header,
+   assuming remaining bytes are zeros */
+static __sum16 spdsvc_tr471_calc_csum(uint8_t *data_p, int l4_len, int l3_offset, 
+                                      int l4_offset, int is_v6)
 {
-    struct sk_buff *skb2 = skb;
+    struct udphdr *uh;
+    __sum16 save_csum;
+    __sum16 calc_csum;
+
+    uh = (struct udphdr *)(data_p + l4_offset);
+
+    /* Ideally, we could use below function but it will be unnecessary
+       to do checksum of zeros in payload */
+    /* skb_checksum_help(skb); */
+
+    save_csum = uh->check;
+    uh->check = 0;
+
+    if (!is_v6)
+    {
+        struct iphdr *ipv4 = (struct iphdr *)(data_p + l3_offset);
+        calc_csum = csum_tcpudp_magic(ipv4->saddr, ipv4->daddr, 
+                                      l4_len, IPPROTO_UDP, 
+                                      csum_partial(uh, sizeof(BlogUdpHdr_t) + sizeof(struct loadHdr), 0));
+    }
+    else
+    {
+        struct ipv6hdr *ipv6 = (struct ipv6hdr *)(data_p + l3_offset);
+        calc_csum = csum_ipv6_magic(&ipv6->saddr, &ipv6->daddr, 
+                                    l4_len, IPPROTO_UDP, 
+                                    csum_partial(uh, sizeof(BlogUdpHdr_t) + sizeof(struct loadHdr), 0));
+    }
+
+    uh->check = save_csum;
+
+    if (!calc_csum)
+        calc_csum = CSUM_MANGLED_0;
+
+    return calc_csum;
+}
+
+int spdsvc_tr471_store_ref_pkt_info(int connindex, void *skb_, spdsvc_tr471_ref_pkt_info_t *ref_info_p)
+{
+    struct sk_buff *skb = skb_;
     FkBuff_t *fkb_p;
+
     if (ref_info_p->fkb_p)
     {
         __logError("TR471Err: ref_pkt not NULL, possible memory/SKB leak, freeing fkb ... conn %d", connindex);
@@ -165,6 +217,34 @@ int spdsvc_tr471_store_ref_pkt_info(int connindex, void *skb, spdsvc_tr471_ref_p
         ref_info_p->fkb_p = NULL;
         TR471_PROCFS_INC(connindex, error_cnt);
     }
+
+    if (unlikely(skb_is_gso(skb) || skb_shinfo(skb)->nr_frags || skb_cloned(skb)))
+    {
+        __logError("ERROR - GSO/Frags/cloned not supported ... conn %d", connindex);
+        /* Error count incremented by caller */
+        return -1;
+    }
+
+    if (unlikely(skb_is_nonlinear(skb)))
+    {
+        if (__skb_linearize(skb))
+        {
+            __logError("ERROR - failed to linearize ... conn %d", connindex);
+            /* Error count incremented by caller */
+            return -1;
+        }
+    }
+
+    if (skb->ip_summed == CHECKSUM_PARTIAL)
+    {
+        struct udphdr *uh;
+        uh = (struct udphdr *)(skb->data + skb_transport_offset(skb));
+        uh->check = spdsvc_tr471_calc_csum(skb->data, skb->len - skb_transport_offset(skb), 
+                                             skb_network_offset(skb), 
+                                             skb_transport_offset(skb),
+                                             _spdsvc_tr471_state_g.is_v6);
+    }
+
     fkb_p = spdsvc_buff_alloc(connindex);
     if (fkb_p)
     {
@@ -172,11 +252,11 @@ int spdsvc_tr471_store_ref_pkt_info(int connindex, void *skb, spdsvc_tr471_ref_p
         ref_info_p->fkb_p = fkb_p;
         ref_info_p->data = fkb_p->data;
         /* Assumption : SKB is linear */
-        memcpy(ref_info_p->data, skb2->data, skb2->len);
-        memset(ref_info_p->data + skb2->len, 0, BCM_MAX_PKT_LEN - skb2->len);
-        ref_info_p->len = skb2->len;
-        ref_info_p->l3_offset = skb_network_offset(skb2);
-        ref_info_p->l4_offset = skb_transport_offset(skb2);
+        memcpy(ref_info_p->data, skb->data, skb->len);
+        memset(ref_info_p->data + skb->len, 0, BCM_MAX_PKT_LEN - skb->len);
+        ref_info_p->len = skb->len;
+        ref_info_p->l3_offset = skb_network_offset(skb);
+        ref_info_p->l4_offset = skb_transport_offset(skb);
         ref_info_p->lHdr_offset = ref_info_p->l4_offset + sizeof(BlogUdpHdr_t);
         TR471_PROCFS_INC(connindex, pkt_store_cnt);
         return 0;
@@ -205,7 +285,7 @@ char* spdsvc_tr471_get_state(int connindex)
  * Speed Service TR471 helper function
  * Used to transfer the load header to TR471 application.
  **************************************************************************/
-static inline void _spdsvc_tr471_fwd_loadHdr_RecycleBuff(int connindex, pNBuff_t pNBuf, int recycle_action)
+static inline void _spdsvc_tr471_fwd_loadHdr_RecycleBuff(int connindex, pNBuff_t pNBuf, int recycle_action, int isFkb)
 {
     unsigned char *data_p;
     BlogIpv4Hdr_t *ipv4_p;
@@ -214,28 +294,36 @@ static inline void _spdsvc_tr471_fwd_loadHdr_RecycleBuff(int connindex, pNBuff_t
     spdsvc_tr471_rx_recycle_queue_entry_t tr471_rx_recycle_q_entry;
     int          local_rel = 0;
     unsigned long irq_flags;
+    int cksum_verified;
 
-    if (IS_SKBUFF_PTR(pNBuf))
+    if (likely(isFkb)) /* Optimize the condition for FKB path, which is the most occurring case */
     {
-        data_p = PNBUFF_2_SKBUFF(pNBuf)->data;
+        FkBuff_t *fkb = PNBUFF_2_FKBUFF(pNBuf);
+        data_p = fkb->data;
+        cksum_verified = fkb->rx_csum_verified;
     }
-    else /* fkp */
+    else /* skb */
     {
-        data_p = PNBUFF_2_FKBUFF(pNBuf)->data;
+        struct sk_buff *skb = PNBUFF_2_SKBUFF(pNBuf);
+        data_p = skb->data;
+        cksum_verified = skb->ip_summed ? 1 : 0;
     }
 
     ipv4_p = (BlogIpv4Hdr_t *)data_p;
     ipv6_p = (BlogIpv6Hdr_t *)data_p;
+
     /*
      * We could check the IP version field or just use the TR471 state info 
      */
     if (!_spdsvc_tr471_state_g.is_v6)
-    {
+    { /* IPV4  - Optimize the check for IPV4 which will mostly be true since we are in IPV4 world */
+
         int ihl = ipv4_p->ihl << 2;
         udp_p = (BlogUdpHdr_t *)((uint8_t *)(ipv4_p)+ihl);
     }
     else
-    {
+    { /* IPV6 */
+
         /* TODO: We should find the UDP header by skipping other headers
          * We may want to use xmit args to get the L3/L4 offsets
          * Another way would be to store the L4 offset during learning */
@@ -254,12 +342,35 @@ static inline void _spdsvc_tr471_fwd_loadHdr_RecycleBuff(int connindex, pNBuff_t
                 udp_p = (BlogUdpHdr_t *)(ipv6_ext_hdr_p + 1);
             }
         }
-    }
+    } /* IpV6 */
 
     if (udp_p != NULL)
     {
+        /* Verify LoadHdr checksum for integrity, as required on the received network PDU. */
+        struct loadHdr *lHdr_p = (struct loadHdr *)(udp_p + 1);
 
-        tr471_rx_recycle_q_entry.lhdr_p = (struct loadHdr *)(udp_p + 1);
+#if defined(CONFIG_BCM_TR471_MFLOW)
+        {
+            uint16_t csum16_calc;
+
+            if (lHdr_p->checkSumOrRsvd !=0) { /* This check is forward/backward compatible */
+                if (!cksum_verified)
+                {
+                    /* Re-verify if bad or not verified */
+                    csum16_calc = spdsvc_tr471_loadhdr_checksum_no_mangle(lHdr_p);
+                    if (csum16_calc) {
+                        __logNotice("TR471Err: Loadheader checksum error. Conn-%d, CalcCsum 0x%x, PacketCsum 0x%x \n",
+                           connindex, csum16_calc, lHdr_p->checkSumOrRsvd);
+                        TR471_PROCFS_INC(connindex, error_pkt_cnt);
+                        local_rel = 1;
+                        goto _End;
+                    }
+                }
+            } /* if LoadHdr checksum, required. */
+        }
+#endif
+
+        tr471_rx_recycle_q_entry.lhdr_p = lHdr_p;
         tr471_rx_recycle_q_entry.pRxNBuf = pNBuf;
         tr471_rx_recycle_q_entry.action = recycle_action;
         tr471_rx_recycle_q_entry.connindex = connindex;
@@ -272,9 +383,10 @@ static inline void _spdsvc_tr471_fwd_loadHdr_RecycleBuff(int connindex, pNBuff_t
         spin_lock_irqsave(&_spdsvc_tr471_state_g.spdsvc_lock, irq_flags);
         if (spdsvc_tr471_rx_recycle_queue_write(&tr471_rx_recycle_q_entry))
         {
-            if ((++_spdsvc_tr471_state_g.rx_recycle_budget >= SPDSVC_RX_MAX_RECYCLE_BUDGET) && (!_spdsvc_tr471_gen_and_recycle_thread_g.workAvail))
+            if ((++_spdsvc_tr471_state_g.rx_recycle_budget >= _spdsvc_tr471_state_g.rx_conf_recycle_budget) && (!_spdsvc_tr471_gen_and_recycle_thread_g.workAvail))
             {
                 _spdsvc_tr471_gen_and_recycle_thread_g.thread_mode = TR471_THREAD_MODE_FWD_N_RECYCLE_RX_BUFF;
+                _spdsvc_tr471_gen_and_recycle_thread_g.rx_recycle_thread_data = SPDSVC_EVENT_SIGNAL_BATCH_MODE;
                 _spdsvc_tr471_gen_and_recycle_thread_g.workAvail = 1;
                 wake_up_interruptible(&(_spdsvc_tr471_gen_and_recycle_thread_g.threadWqh));
                 _spdsvc_tr471_state_g.rx_recycle_budget = 0;
@@ -285,18 +397,30 @@ static inline void _spdsvc_tr471_fwd_loadHdr_RecycleBuff(int connindex, pNBuff_t
             /* if we cannot forward, we drop the data (data loss) */
             local_rel = 1;
         }
+
         spin_unlock_irqrestore(&_spdsvc_tr471_state_g.spdsvc_lock, irq_flags);
-    }
+
+        if (_spdsvc_tr471_state_g.rx_conf_recycle_budget == SPDSVC_RX_MIN_RECYCLE_BUDGET) {
+
+            bcm_async_queue_t *queue_p = &_spdsvc_tr471_state_g.spdsvc_tr471_rx_recycle_queue;
+
+            if (bcm_async_queue_avail_entries(queue_p) > SPDSVC_RX_MIN_RECYCLE_BUDGET) {
+                _spdsvc_tr471_state_g.rx_conf_recycle_budget = SPDSVC_RX_MAX_RECYCLE_BUDGET;
+            }
+        }
+    } /* udp not null */
     else
     {
-        __logInfo("TR471Err: UDP null conn %d\n", connindex);
+        SPDSVCLOG_INFO("TR471Err: UDP null conn %d\n", connindex);
         TR471_PROCFS_INC(connindex, error_pkt_cnt);
         local_rel = 1;
     }
 
+#if defined(CONFIG_BCM_TR471_MFLOW)
+_End:
+#endif
     if (local_rel) /* error condition, unexpected */
     {
-
         TR471_PROCFS_INC(connindex, rx_buf_local_recycle);
         if (recycle_action != SPDSVC_RELEASE)
             nbuff_invalidatefree(pNBuf);
@@ -314,6 +438,7 @@ static int _spdsvc_tr471_netdev_recv(pNBuff_t pNBuf, BlogFcArgs_t *fc_args)
 {
     int connindex;
     spdsvc_conn_t *conn_p;
+    int isFkb = 1; /* optimized for fkb path */
 
     if (IS_FKBUFF_PTR(pNBuf))
     {
@@ -324,11 +449,12 @@ static int _spdsvc_tr471_netdev_recv(pNBuff_t pNBuf, BlogFcArgs_t *fc_args)
     {
         struct sk_buff *skb = PNBUFF_2_SKBUFF(pNBuf);
         connindex = skb->mark;
+        isFkb = 0 ;
     }
 
     if ((connindex < SPDSVC_DEF_STD_CONN) || (connindex >= SPDSVC_MAX_CONN))
     {
-        __logError("TR471Err: Invalid Conn(%d) recvd pkt\n");
+        SPDSVCLOG_INFO("TR471Err: Invalid Conn(%d) recvd pkt\n");
         nbuff_free(pNBuf);
         TR471_PROCFS_INC(SPDSVC_DEF_STD_CONN, error_cnt); /* ToDo. Make it global */
         return 0;
@@ -339,13 +465,13 @@ static int _spdsvc_tr471_netdev_recv(pNBuff_t pNBuf, BlogFcArgs_t *fc_args)
     TR471_PROCFS_INC(connindex, netdev_rx_cnt);
     if (conn_p->state != SPDSVC_STATE_ANALYZER)
     {
-        __logInfo("Conn(%d)state(%d) recvd pkt\n", connindex, conn_p->state);
+        SPDSVCLOG_INFO("Conn(%d)state(%d) recvd pkt\n", connindex, conn_p->state);
         nbuff_free(pNBuf);
         TR471_PROCFS_INC(connindex, error_cnt);
         return 0;
     }
 
-    _spdsvc_tr471_fwd_loadHdr_RecycleBuff(connindex, pNBuf, SPDSVC_RELEASE_INVALIDATE);
+    _spdsvc_tr471_fwd_loadHdr_RecycleBuff(connindex, pNBuf, SPDSVC_RELEASE_INVALIDATE, isFkb);
 
     return 0;
 }
@@ -373,6 +499,22 @@ static void _spdsvc_tr471_netdev_setup(struct net_device *dev)
     dev->type = ARPHRD_RAWIP;
 }
 
+/* Delay in ms */
+static void spdsvc_tr471_delay(UINT32 ulTimeout)
+{
+    wait_queue_head_t wait;
+
+    /* Convert ms to jiffies.  If the timeout is less than the granularity of
+     * the system clock, wait one jiffy.
+     */
+
+    if ((ulTimeout = (ulTimeout * HZ) / 1000) == 0)
+        ulTimeout = 1;
+
+    init_waitqueue_head(&wait);
+    wait_event_interruptible_timeout(wait, FALSE, ulTimeout);  //A condition that always evaluated to FALSE so it sleeps until the timeout is elapsed.
+}
+
 /***************************************************************************
  * TR-471 TX Generator and Recycle Thread
  **************************************************************************/
@@ -380,6 +522,16 @@ static void _spdsvc_tr471_netdev_setup(struct net_device *dev)
 void spdsvc_tr471_gen_start(int connindex)
 {
     spdsvc_conn_t *conn_p = (spdsvc_conn_t *)&spdsvc_g.connctx[connindex];
+
+    /* Software generation can only be started in following states:
+    SPDSVC_STATE_GENERATOR_FCWAIT = First burst, when waiting for flow to be learnt
+    SPDSVC_STATE_GENERATOR_DONE = Subsequent burst, when last burst was done i.e. completed (successfully/failure)*/
+    if (!(conn_p->state == SPDSVC_STATE_GENERATOR_DONE || conn_p->state == SPDSVC_STATE_GENERATOR_FCWAIT))
+    {
+        TR471_PROCFS_INC(connindex, error_cnt);
+        __logError("TR471 software generator (connindex = %d) called in invalid state = %d \n", connindex, conn_p->state);
+        return;
+    }
 
     /* Record start of sw burst gen */
     spdsvc_record_time(tr471_burst_gen_start_time_ns);
@@ -392,24 +544,25 @@ void spdsvc_tr471_gen_start(int connindex)
 
 void spdsvc_hw_tr471_tx_complete_cb(int connindex)
 {
-    spdsvc_conn_t *conn_p ;
+    spdsvc_conn_t *conn_p = (spdsvc_conn_t *)&spdsvc_g.connctx[connindex];
 
     /* Record cmpl of hw burst gen */
     spdsvc_record_time(tr471_burst_gen_cmpl_time_ns);
     /* Record time taken by hw to generate burst */
     tr471_record_pktgen_time(tr471_burst_gen_start_time_ns, tr471_burst_gen_cmpl_time_ns);
 
-    conn_p = (spdsvc_conn_t *) &spdsvc_g.connctx[connindex];
-    if ((connindex == spdsvc_g.active_us_connidx) && conn_p->state == (SPDSVC_STATE_GENERATOR_RUNNING_HW)) {
-        conn_p->state = SPDSVC_STATE_GENERATOR_DONE;
-        TR471_PROCFS_INC(connindex,hw_gen_cmpl_cnt);
+    if ((connindex == spdsvc_g.active_us_connidx) && conn_p->state == (SPDSVC_STATE_GENERATOR_RUNNING_HW))
+    {
+        TR471_PROCFS_INC(connindex, hw_gen_cmpl_cnt);
         _spdsvc_tr471_gen_and_recycle_thread_g.thread_mode = TR471_THREAD_MODE_HW_DONE;
         _spdsvc_tr471_gen_and_recycle_thread_g.workAvail = 1;
         wake_up_interruptible(&(_spdsvc_tr471_gen_and_recycle_thread_g.threadWqh));
     }
-    else {
-        TR471_PROCFS_INC(connindex,hw_gen_cmpl_cnt_dupl);
-        __logInfo("TR471-Invalid/duplicate hw_gen_cmpl event. conn %d, active_us_conn %d \n", connindex, spdsvc_g.active_us_connidx);
+    else
+    {
+        TR471_PROCFS_INC(connindex, hw_gen_cmpl_cnt_dupl);
+        SPDSVCLOG_INFO("TR471-Invalid/duplicate hw_gen_cmpl event. conn %d, state %d, active_us_conn %d \n", connindex,
+                  conn_p->state, spdsvc_g.active_us_connidx);
     }
 }
 
@@ -418,6 +571,7 @@ static int _spdsvc_tr471_gen_and_recycle_thread(void *data)
     volatile int connindex;
     spdsvc_t *spdsvc_p = (spdsvc_t *)data;
     spdsvc_conn_t *conn_p;
+    int ret = 0, fwd_data = 0;
 
     while (1)
     {
@@ -426,7 +580,7 @@ static int _spdsvc_tr471_gen_and_recycle_thread(void *data)
 
         if (kthread_should_stop())
         {
-            __logInfo("kthread_should_stop detected on _spdsvc_tr471_gen_and_recycle_thread\n");
+            SPDSVCLOG_INFO("kthread_should_stop detected on _spdsvc_tr471_gen_and_recycle_thread\n");
             break;
         }
 
@@ -439,7 +593,6 @@ static int _spdsvc_tr471_gen_and_recycle_thread(void *data)
 
             while ((rx_recycle_p = spdsvc_tr471_rx_recycle_queue_read()))
             {
-
                 struct loadHdr *lHdr = rx_recycle_p->lhdr_p;
                 spdsvc_tr471_rx_queue_if_entry_t tr471_rx_q_if_entry;
 
@@ -452,12 +605,15 @@ static int _spdsvc_tr471_gen_and_recycle_thread(void *data)
                     tr471_rx_q_if_entry.connindex   = spdsvc_g.connctx[rx_recycle_p->connindex].u_connindex;
                     tr471_rx_q_if_entry.rxq_loadHdr_p = lHdr;
 
-                    spdsvc_tr471_rx_queue_write(&tr471_rx_q_if_entry);
-                    TR471_PROCFS_INC(rx_recycle_p->connindex, fwd_lhdr);
+                    if (spdsvc_tr471_rx_queue_write(&tr471_rx_q_if_entry,
+                                _spdsvc_tr471_gen_and_recycle_thread_g.rx_recycle_thread_data)) {
+                        TR471_PROCFS_INC(rx_recycle_p->connindex, fwd_lhdr);
+                        fwd_data = 1;
+                    }
                 }
                 else
                 {
-                    __logInfo("TR471Err: LoadId mismatch conn %d\n", connindex);
+                    SPDSVCLOG_INFO("TR471Err: LoadId mismatch conn %d\n", connindex);
                     TR471_PROCFS_INC(rx_recycle_p->connindex, error_pkt_cnt);
                 }
 
@@ -476,16 +632,19 @@ static int _spdsvc_tr471_gen_and_recycle_thread(void *data)
                 TR471_PROCFS_INC(rx_recycle_p->connindex, rx_buf_thr_recycle);
                 spdsvc_tr471_rx_recycle_queue_post();
             } /* while (rx_recycle_p) */
+            
+            if (!fwd_data)
+                spdsvc_tr471_rx_queue_write_event(); /* Post the pending data event for previously queued pending packets in rx_queue. */
+            else
+                fwd_data = 0;
         }
         else if (_spdsvc_tr471_gen_and_recycle_thread_g.thread_mode == TR471_THREAD_MODE_SW_GEN)
         {
             connindex = spdsvc_p->active_us_connidx;
-            conn_p = (spdsvc_conn_t *) &spdsvc_g.connctx[connindex];
             /* Record task wkup time for sw-gen */
             tr471_record_tsk_wkup_time(tr471_burst_gen_start_time_ns, tr471_task_wkup_time_ns);
             TR471_PROCFS_INC(connindex, soft_gen_cnt);
-            tr471_send_tx_pkts(connindex, spdsvc_p);
-            conn_p->state = SPDSVC_STATE_GENERATOR_DONE;
+            ret = tr471_send_tx_pkts(connindex, spdsvc_p);
             /* Record time taken for sw-gen */
             spdsvc_record_time(tr471_burst_gen_cmpl_time_ns);
             tr471_record_pktgen_time(tr471_task_wkup_time_ns, tr471_burst_gen_cmpl_time_ns);
@@ -506,9 +665,12 @@ static int _spdsvc_tr471_gen_and_recycle_thread(void *data)
 
         if (_spdsvc_tr471_gen_and_recycle_thread_g.thread_mode != TR471_THREAD_MODE_FWD_N_RECYCLE_RX_BUFF)
         {
-            __logInfo("471 BC-%d\n", connindex);
+            SPDSVCLOG_INFO("471 BC-%d\n", connindex);
+            conn_p = (spdsvc_conn_t *)&spdsvc_g.connctx[connindex];
             _spdsvc_tr471_gen_and_recycle_thread_g.thread_mode = TR471_THREAD_MODE_INVALID;
             _spdsvc_tr471_gen_and_recycle_thread_g.workAvail = 0;
+            if ((!ret) && (!conn_p->is_wait_and_disable_active) && (conn_p->state != SPDSVC_STATE_OFF))
+                conn_p->state = SPDSVC_STATE_GENERATOR_DONE;
             spdsvc_tr471_generator_burst_cmpl(connindex);
         }
         else
@@ -586,7 +748,7 @@ static inline unsigned int _spdsvc_tr471_nf_hook_out_udp(int connindex, struct s
         nbuff_free(SKBUFF_2_PNBUFF(skb));
         return NF_STOLEN;
     }
-    return NF_STOLEN;  /* ret == TR471_NF_PKT_FWDED */
+    return NF_STOLEN;  /* if return value == TR471_NF_PKT_FWDED */
 }
 
 /* Netfilter IPv4 In/Out hooks for UDP */
@@ -606,14 +768,14 @@ static struct nf_hook_ops nf_hks_tr471_out[] = {
         .hook = _spdsvc_tr471_nf_hook_out4_udp,
         .hooknum = NF_INET_LOCAL_OUT,
         .pf = NFPROTO_IPV4,
-        .priority = NF_IP_PRI_LAST,
+        .priority = NF_IP_PRI_FIRST,
         .priv = (void *)NULL
     }, /* net filter OUT hook options */
     {
         .hook = _spdsvc_tr471_nf_hook_out6_udp,
         .hooknum = NF_INET_LOCAL_OUT,
         .pf = NFPROTO_IPV6,
-        .priority = NF_IP6_PRI_LAST,
+        .priority = NF_IP6_PRI_FIRST,
         .priv = (void *)NULL
     }, /* net filter OUT hook options */
 };
@@ -674,7 +836,8 @@ static inline unsigned int _spdsvc_tr471_nf_hook_in_udp(struct sk_buff *skb, con
     }
     /* Not checking socket for local-in because hook is bound to pre-routing */
 
-    ret = spdsvc_tr471_process_in_udp(connindex, skb, skb->data, (void **)&skb->dev, &skb->blog_p, is_v6, lkup_result, conn_p->frag_id);
+    ret = spdsvc_tr471_process_in_udp(connindex, skb, skb->data, (void **)&skb->dev,
+                                      &skb->blog_p, is_v6, lkup_result, conn_p->frag_id);
 
     if (ret == TR471_NF_PKT_PASS)
     {
@@ -687,7 +850,7 @@ static inline unsigned int _spdsvc_tr471_nf_hook_in_udp(struct sk_buff *skb, con
     }
     else if (ret == TR471_NF_PKT_LHDR)
     {
-        _spdsvc_tr471_fwd_loadHdr_RecycleBuff(connindex, SKBUFF_2_PNBUFF(skb), SPDSVC_RELEASE);
+        _spdsvc_tr471_fwd_loadHdr_RecycleBuff(connindex, SKBUFF_2_PNBUFF(skb), SPDSVC_RELEASE, 0); /* No Fkb. */
         return NF_STOLEN;
     }
     return NF_STOLEN;  /* ret == TR471_NF_PKT_FWDED */
@@ -708,16 +871,16 @@ static unsigned int _spdsvc_tr471_nf_hook_in6_udp(void *priv, struct sk_buff *sk
 static struct nf_hook_ops nf_hks_tr471_in[] = {
     {
         .hook = _spdsvc_tr471_nf_hook_in4_udp,
-        .hooknum = NF_INET_PRE_ROUTING,
+        .hooknum = NF_INET_LOCAL_IN,
         .pf = NFPROTO_IPV4,
-        .priority = NF_IP_PRI_FIRST,
+        .priority = NF_IP_PRI_LAST,
         .priv = (void *)NULL
     }, /* net filter IN hook options */
     {
         .hook = _spdsvc_tr471_nf_hook_in6_udp,
-        .hooknum = NF_INET_PRE_ROUTING,
+        .hooknum = NF_INET_LOCAL_IN,
         .pf = NFPROTO_IPV6,
-        .priority = NF_IP6_PRI_FIRST,
+        .priority = NF_IP6_PRI_LAST,
         .priv = (void *)NULL
     }, /* net filter OUT hook options */
 };
@@ -768,12 +931,21 @@ static int _spdsvc_tr471_blog_flowevent(struct notifier_block *nb, unsigned long
         }
         if (connindex >= 0 && connindex < SPDSVC_MAX_CONN)
         {
-           TR471_PROCFS_INC(connindex, blog_event_cnt);
-           spdsvc_fc_blog_flowevent(connindex, event, einfo->flow_event_type);
+            TR471_PROCFS_INC(connindex, blog_event_cnt);
+            if (event == FLOW_EVENT_ACTIVATE && einfo->flow_event_type == FLOW_EVENT_TYPE_HW 
+                && spdsvc_g.dir == SPDSVC_DIRECTION_DS)
+            {
+                spdsvc_conn_t *conn_p = (spdsvc_conn_t *)&spdsvc_g.connctx[connindex];
+                if (spdsvc_hw_tr471_is_hw_support(connindex))
+                    spdsvc_hw_tr471_analyzer_enable(&conn_p->rx_tuple, connindex);
+            }
+
+            spdsvc_fc_blog_flowevent(connindex, event, einfo->flow_event_type, einfo->rx_max_pktlen);
         }
         else
         {
             /* Use default connindex to notify error */
+            __logError("TR471Err: Invalid conn %d in blog flowevent", connindex);
             TR471_PROCFS_INC(0, error_cnt);
         }
     }
@@ -786,11 +958,13 @@ static struct notifier_block _spdsvc_tr471_blog_notifier = {
 
 void spdsvc_tr471_generator_burst_cmpl(int connindex)
 {
+    spdsvc_conn_t *conn_p = (spdsvc_conn_t *)&spdsvc_g.connctx[connindex];
+
     /* Notify application about burst completion */
     spdsvc_record_time(tr471_burst_cmpl_time_ns);
     tr471_record_total_burst_time(tr471_burst_enable_time_ns, tr471_burst_cmpl_time_ns);
 
-    spdsvc_tr471_burst_cmpl_event();
+    spdsvc_tr471_burst_cmpl_event(conn_p->rx_max_pktlen);
     _spdsvc_tr471_state_g.flowinfo[connindex].tx_count = 0;
 }
 
@@ -838,17 +1012,17 @@ void spdsvc_tr471_reset_state_machine(int connindex)
     flowinfo_p->tx_count = 0;
 }
 
-static inline int _spdsvc_tr471_generator_is_new_test(spdsvc_tuple_t *old_tuple_p, spdsvc_tuple_t *new_tuple_p)
+static inline int _spdsvc_tr471_generator_is_new_test(spdsvc_tuple_t *curr_tuple_p, spdsvc_tuple_t *new_tuple_p)
 {
-    if ((old_tuple_p->ports == new_tuple_p->ports) &&
-        (old_tuple_p->family == new_tuple_p->family))
+    if ((curr_tuple_p->ports == new_tuple_p->ports) &&
+        (curr_tuple_p->family == new_tuple_p->family))
     {
-        switch (old_tuple_p->family)
+        switch (curr_tuple_p->family)
         {
             case SPDSVC_FAMILY_IPV4:
             {
-                if ((old_tuple_p->dest_ip_addr.ipv4.u32 != new_tuple_p->dest_ip_addr.ipv4.u32) ||
-                    (old_tuple_p->source_ip_addr.ipv4.u32 != new_tuple_p->source_ip_addr.ipv4.u32))
+                if ((curr_tuple_p->dest_ip_addr.ipv4.u32 != new_tuple_p->dest_ip_addr.ipv4.u32) ||
+                    (curr_tuple_p->source_ip_addr.ipv4.u32 != new_tuple_p->source_ip_addr.ipv4.u32))
                 {
                     return 1; /* New test */
                 }
@@ -860,8 +1034,8 @@ static inline int _spdsvc_tr471_generator_is_new_test(spdsvc_tuple_t *old_tuple_
                 int i;
                 for (i = 0; i < 4; i++)
                 {
-                    if ((old_tuple_p->dest_ip_addr.ipv6.u32[i] != new_tuple_p->dest_ip_addr.ipv6.u32[i]) ||
-                        (old_tuple_p->source_ip_addr.ipv6.u32[i] != new_tuple_p->source_ip_addr.ipv6.u32[i]))
+                    if ((curr_tuple_p->dest_ip_addr.ipv6.u32[i] != new_tuple_p->dest_ip_addr.ipv6.u32[i]) ||
+                        (curr_tuple_p->source_ip_addr.ipv6.u32[i] != new_tuple_p->source_ip_addr.ipv6.u32[i]))
                     {
                         return 1; /* New test */
                     }
@@ -952,8 +1126,8 @@ int spdsvc_tr471_analyzer_enable(int connindex, spdsvc_socket_t *socket_p, spdsv
         /* Flush flows from previous tests */
         _spdsvc_tr471_flush_flows();
 
-        if (spdsvc_hw_tr471_is_hw_support(connindex))
-            spdsvc_hw_tr471_analyzer_enable(socket_p, tr471_p);
+        /* Note: Not enabling the hardware analyzer just yet;
+           Enable hardware once downstream flow is pushed to hardware */
 
         _spdsvc_tr471_netfilter_hook_in_init(connindex);
 
@@ -961,22 +1135,6 @@ int spdsvc_tr471_analyzer_enable(int connindex, spdsvc_socket_t *socket_p, spdsv
     }
     __logError("SPDSVC already in progress (%d)", conn_p->state);
     return SPDSVC_RET_BUSY;
-}
-
-/* Delay in ms */
-static void spdsvc_tr471_delay(UINT32 ulTimeout)
-{
-    wait_queue_head_t wait;
-
-    /* Convert ms to jiffies.  If the timeout is less than the granularity of
-     * the system clock, wait one jiffy.
-     */
-
-    if ((ulTimeout = (ulTimeout * HZ) / 1000) == 0)
-        ulTimeout = 1;
-
-    init_waitqueue_head(&wait);
-    wait_event_interruptible_timeout(wait, FALSE, ulTimeout);  //A condition that always evaluated to FALSE so it sleeps until the timeout is elapsed.
 }
 
 int spdsvc_tr471_analyzer_disable(int connindex)
@@ -994,7 +1152,19 @@ int spdsvc_tr471_analyzer_disable(int connindex)
 
         if (spdsvc_g.active_conns == SPDSVC_ONLY_CONN)
         {
+           spdsvc_tr471_delay(10);
+ 
+           /* Make sure receive data thread is idle, before scheduling it for single event processing (as opposed to normal mode of batch processing of events
+            * to the application Q.
+            */
+            while (_spdsvc_tr471_gen_and_recycle_thread_g.workAvail)
+            {
+                spdsvc_tr471_delay(5);
+                TR471_PROCFS_INC(connindex, rx_wait_for_completion);
+            }
+
             _spdsvc_tr471_gen_and_recycle_thread_g.thread_mode = TR471_THREAD_MODE_FWD_N_RECYCLE_RX_BUFF;
+            _spdsvc_tr471_gen_and_recycle_thread_g.rx_recycle_thread_data = SPDSVC_EVENT_SIGNAL_NORMAL_MODE;
             _spdsvc_tr471_gen_and_recycle_thread_g.workAvail = 1;
             wake_up_interruptible(&(_spdsvc_tr471_gen_and_recycle_thread_g.threadWqh));
 
@@ -1005,9 +1175,16 @@ int spdsvc_tr471_analyzer_disable(int connindex)
             }
 
             _spdsvc_tr471_state_g.rx_recycle_budget = 0;
+            _spdsvc_tr471_state_g.rx_conf_recycle_budget = SPDSVC_RX_MIN_RECYCLE_BUDGET;
+            spdsvc_tr471_rx_queue_stats(&spdsvc_procfs_tr471_rx_queue_stats_g.pending,
+                                        &spdsvc_procfs_tr471_rx_queue_stats_g.total,
+                                        &spdsvc_procfs_tr471_rx_queue_stats_g.writes,
+                                        &spdsvc_procfs_tr471_rx_queue_stats_g.reads,
+                                        &spdsvc_procfs_tr471_rx_queue_stats_g.discards);
             spdsvc_tr471_rx_queue_init();
         }
-    }
+    } /* If connection state is ANALYZER */
+
     return 0;
 }
 
@@ -1042,6 +1219,7 @@ int __init spdsvc_tr471_construct(void)
 
     memset(&gdx_accel, 0, sizeof(gdx_accel));
     memset(&_spdsvc_tr471_state_g, 0, sizeof(_spdsvc_tr471_state_g));
+    _spdsvc_tr471_state_g.rx_conf_recycle_budget = SPDSVC_RX_MIN_RECYCLE_BUDGET;
 
     /* SpdSvc TR471 Netdevice - setup */
     _spdsvc_tr471_netdev = alloc_netdev(0, "spdsvc_tr471", NET_NAME_UNKNOWN, _spdsvc_tr471_netdev_setup);

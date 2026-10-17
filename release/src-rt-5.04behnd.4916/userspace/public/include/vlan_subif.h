@@ -35,9 +35,8 @@
 #include <stdint.h>
 
 /*
- * This header file defines an API that is implemented by 2 libraries:
+ * This header file defines an API that is implemented by library:
  * userspace/public/libs/vlan_subif-linux_std
- * userspace/private/libs/vlan_subif-vlanctl
  */
 typedef enum {
     VLANSUBIF_TYPE_NORMAL = 0,
@@ -45,20 +44,26 @@ typedef enum {
     VLANSUBIF_TYPE_MAX
 } vlansubif_if_type_t;
 
+typedef enum {
+    VLANSUBIF_LAN_BRIDGE = 0,
+    VLANSUBIF_WAN_BRIDGE = 1,
+    VLANSUBIF_WAN_ROUTE  = 2,
+    VLANSUBIF_SERVICE_MAX = 3
+} vlansubif_service_type_t;
+
 typedef struct vlansubif_options
 {
     const char *name;               /* If != NULL, this name is used instead of the default name lowerDevName.vlanId */
     uint8_t pbit;                   /* pbit */
     uint16_t tpid;                  /* TPID. Only 802.1q(8100) and 80.1ad(88a8) are supported */
-    int is_routed;                  /* 1 for routed interface, 0 for bridged interface.
-                                       This option is currently ignored in the linux-std implementation. */
+    vlansubif_service_type_t service_type; /* Service type, LAN bridge, WAN bridge, WAN route. */
     int is_multicast_disabled;      /* 1 if multicast traffic is not allowed */
     int is_ok_if_exists;            /* 1 if interface might exist when created. In this case it is reset.
                                        0 if interface must not exist when created */
     int is_phyif_other_owned;       /* 1 if the physical interface is owned by a non-Gateway
                                        domain protocol (such as OMCI). */
     vlansubif_if_type_t subif_type; /* This option is only for the linux-std implementation. */
-    /* Optional etype filters are applied only to untagged interfaces */
+
 #define VLANSUBIF_MAX_ETYPE_FILTERS 8
     int num_etype_filters;
     uint16_t etype_filter[VLANSUBIF_MAX_ETYPE_FILTERS];

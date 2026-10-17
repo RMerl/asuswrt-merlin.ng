@@ -1,0 +1,39 @@
+menu "Button Support"
+
+config BUTTON
+	bool "Enable button support"
+	depends on DM
+	help
+	  Many boards have buttons which can be used to change behaviour (reset, ...).
+	  U-Boot provides a uclass API to implement this feature. Button drivers
+	  can provide access to board-specific buttons. Use of the device tree
+	  for configuration is encouraged.
+
+config BUTTON_ADC
+	bool "Button adc"
+	depends on BUTTON
+	help
+	  Enable support for buttons which are connected to Analog to Digital
+	  Converter device. The ADC driver must use driver model. Buttons are
+	  configured using the device tree.
+
+config BUTTON_GPIO
+	bool "Button gpio"
+	depends on BUTTON
+	depends on DM_GPIO
+	help
+	  Enable support for buttons which are connected to GPIO lines. These
+	  GPIOs may be on the SoC or some other device which provides GPIOs.
+	  The GPIO driver must used driver model. Buttons are configured using
+	  the device tree.
+
+config BUTTON_QCOM_PMIC
+	bool "Qualcomm power button"
+	depends on BUTTON
+	depends on PMIC_QCOM
+	help
+	  Enable support for the power and "resin" (usually volume down) buttons
+	  on Qualcomm SoCs. These will be configured as the Enter and Down keys
+	  respectively, allowing navigation of bootmenu with buttons on device.
+
+endmenu

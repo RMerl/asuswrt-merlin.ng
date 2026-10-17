@@ -1,0 +1,36 @@
+config ACPI_PMC
+	bool "Power Manager (x86 PMC) support"
+	help
+	  Enable support for an x86-style power-management controller which
+	  provides features including checking whether the system started from
+	  resume, powering off the system and enabling/disabling the reset
+	  mechanism.
+
+config SPL_ACPI_PMC
+	bool "Power Manager (x86 PMC) support in SPL"
+	depends on SPL
+	default y if ACPI_PMC
+	help
+	  Enable support for an x86-style power-management controller which
+	  provides features including checking whether the system started from
+	  resume, powering off the system and enabling/disabling the reset
+	  mechanism.
+
+config TPL_ACPI_PMC
+	bool "Power Manager (x86 PMC) support in TPL"
+	depends on TPL
+	default y if ACPI_PMC
+	help
+	  Enable support for an x86-style power-management controller which
+	  provides features including checking whether the system started from
+	  resume, powering off the system and enabling/disabling the reset
+	  mechanism.
+
+config ACPI_PMC_SANDBOX
+	bool "Test power manager (PMC) for sandbox"
+	depends on ACPI_PMC && SANDBOX
+	help
+	  This driver emulates a PMC (Power-Management Controller) so that
+	  the uclass logic can be tested. You can use the 'pmc' command to
+	  access information from the driver. It uses I/O access to read
+	  from the PMC.

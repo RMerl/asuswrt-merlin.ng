@@ -1,0 +1,20 @@
+if RZN1
+
+choice
+	prompt "Renesas RZ/N1 Board select"
+	default TARGET_SCHNEIDER_RZN1
+
+config TARGET_SCHNEIDER_RZN1
+	bool "Schneider RZN1 board"
+	help
+	  Support the Schneider RZN1D and RZN1S boards, which are based
+	  on the Renesas RZ/N1 SoC.
+
+endchoice
+
+config SYS_SOC
+	default "rzn1"
+
+source "board/schneider/rzn1-snarc/Kconfig"
+
+endif

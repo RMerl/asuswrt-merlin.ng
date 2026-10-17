@@ -1,7 +1,0 @@
-Apalis TK1
-M:	Marcel Ziswiler <marcel.ziswiler@toradex.com>
-S:	Maintained
-F:	board/toradex/apalis-tk1/
-F:	include/configs/apalis-tk1.h
-F:	configs/apalis-tk1_defconfig
-F:	arch/arm/dts/tegra124-apalis.dtb

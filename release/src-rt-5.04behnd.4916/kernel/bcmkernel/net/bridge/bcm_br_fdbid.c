@@ -83,11 +83,11 @@ static void put_fdbidx(uint32_t *idx_p)
 
 static inline void free_fdbid_entry(bcm_fdbid_map_ent_t *map_ent_p, uint32_t idx)
 {
-    spin_lock(&fdbid_tbl_p->lock);
+    spin_lock_bh(&fdbid_tbl_p->lock);
     put_fdbidx(&idx);
     map_ent_p->fdb->fdbid = BCM_FDBID_NULL_ID; // unbind
     map_ent_p->fdb = NULL;
-    spin_unlock(&fdbid_tbl_p->lock);
+    spin_unlock_bh(&fdbid_tbl_p->lock);
 }
 
 /*
@@ -101,11 +101,10 @@ static int alloc_fdbid(struct net_bridge_fdb_entry *fdb, uint16_t *fdbid)
     int status = 0;
     bcm_fdbid_map_ent_t *map_ent_p;
 
-    spin_lock(&fdbid_tbl_p->lock);
+    *fdbid = BCM_FDBID_NULL_ID;
+    spin_lock_bh(&fdbid_tbl_p->lock);
     if (get_fdbidx(&idx)) {
         status = -1;
-        printk(KERN_ERR "[%s: %d]: invalid idx for fdb to fdbid mapping [%04x]\n",
-            __FUNCTION__, __LINE__, idx);
         goto alloc_fdbid_exit;
     }
 
@@ -115,16 +114,25 @@ static int alloc_fdbid(struct net_bridge_fdb_entry *fdb, uint16_t *fdbid)
         atomic_inc(&map_ent_p->user_count);
         *fdbid = map_ent_p->fdbid.fdbid;
     } else {
-        status = -1;
-        printk(KERN_ERR "[%s: %d] user count is not zero something is wrong\n",
-            __FUNCTION__, __LINE__);
+        status = -2;
         goto alloc_fdbid_exit;
     }
-//    printk(KERN_INFO "Assigning fdb idx[%04x]: fdbid[%04x] for %pM\n",
-//        map_ent_p->fdbid.bmp.idx, map_ent_p->fdbid.fdbid, &fdb->key.addr.addr);
+    //printk(KERN_INFO "Assigning fdb idx[%04x]: fdbid[%04x] for %pM\n",
+    //    map_ent_p->fdbid.bmp.idx, map_ent_p->fdbid.fdbid, &fdb->key.addr.addr);
 
 alloc_fdbid_exit:
-    spin_unlock(&fdbid_tbl_p->lock);
+    spin_unlock_bh(&fdbid_tbl_p->lock);
+
+    /* print when something abnormal happens */
+    if (status && printk_ratelimit()) {
+        if (status == -1)
+            printk(KERN_ERR "[%s: %d] invalid idx for fdb to fdbid mapping [%04x]\n",
+                __FUNCTION__, __LINE__, idx);
+        else if (status == -2)
+            printk(KERN_ERR "[%s: %d] user count is not zero something is wrong\n",
+                __FUNCTION__, __LINE__);
+    }
+
     return status;
 }
 
@@ -139,23 +147,19 @@ static int free_fdbid(uint16_t fdbid)
 
     if (unlikely((idx == 0) || (idx >= BCM_FDBID_MAX_ENTRIES))) {
         status = -1;
-        printk(KERN_ERR "[%s: %d] invalid idx for fdb to fdbid<%04x> mapping\n",
-            __FUNCTION__, __LINE__, idx);
         goto free_fdbid_exit;
     }
 
     map_ent_p = &fdbid_tbl_p->map_ent[idx];
     if (unlikely(fdbid != map_ent_p->fdbid.fdbid)) {
-        status = -1;
-        printk(KERN_ERR "[%s: %d] fdbid<%04x> doesn't match with fdbid in table[%04x]\n",
-            __FUNCTION__, __LINE__, fdbid, map_ent_p->fdbid.fdbid);
+        status = -2;
         goto free_fdbid_exit;
     }
 
     if (atomic_read(&map_ent_p->user_count) > 0) {
         if (atomic_dec_and_test(&map_ent_p->user_count)) {
-//            printk(KERN_INFO "Freeing fdb<%pM> fdbid<%04x>\n",
-//                &map_ent_p->fdb->key.addr.addr, map_ent_p->fdbid.fdbid);
+            //printk(KERN_INFO "Freeing fdb<%pM> fdbid<%04x>\n",
+            //    &map_ent_p->fdb->key.addr.addr, map_ent_p->fdbid.fdbid);
 
             map_ent_p->fdbid.bmp.incarn++;
             if (map_ent_p->fdbid.bmp.incarn == 0)
@@ -169,6 +173,16 @@ static int free_fdbid(uint16_t fdbid)
     }
 
 free_fdbid_exit:
+    /* print when something abnormal happens */
+    if (status && printk_ratelimit()) {
+        if (status == -1)
+            printk(KERN_ERR "[%s: %d] invalid idx for fdb to fdbid mapping [%04x]\n",
+                __FUNCTION__, __LINE__, idx);
+        else if (status == -2)
+            printk(KERN_ERR "[%s: %d] fdbid<%04x> doesn't match with fdbid in table[%04x]\n",
+                __FUNCTION__, __LINE__, fdbid, map_ent_p->fdbid.fdbid);
+    }
+
     return status;
 }
 
@@ -247,28 +261,19 @@ int bcm_fdbid_event(uint32_t event, struct net_bridge_fdb_entry *fdb)
         /* if the fdbid already exists, free it first. */
         if (bcm_fdbid_is_fdbid_valid(fdb->fdbid)) {
             if (free_fdbid(fdb->fdbid)) {
-                printk(KERN_ERR "[%s: %d] BCM_FDBID_EVT_CREATE: Failed to "
-                        "create fdb<%pM> fdbid<%04x> mapping\n",
-                    __FUNCTION__, __LINE__, &fdb->key.addr.addr, fdb->fdbid);
                 ret = -1;
                 goto bcm_fdbid_event_exit;
             }
         }
 
         if (alloc_fdbid(fdb, &fdb->fdbid)) {
-            printk(KERN_ERR "[%s: %d] BCM_FDBID_EVT_CREATE: Failed to "
-                    "create fdb<%pM> fdbid mapping\n",
-                __FUNCTION__, __LINE__, &fdb->key.addr.addr);
-            ret = -1;
+            ret = -2;
             goto bcm_fdbid_event_exit;
         }
         break;
 
     case BCM_FDBID_EVT_DELETE:
         if (free_fdbid(fdb->fdbid)) {
-            printk(KERN_ERR "[%s: %d] BCM_FDBID_EVT_DELETE: Failed to delete "
-                    "fdb<%pM> fdbid<%04x> mapping\n",
-                __FUNCTION__, __LINE__, &fdb->key.addr.addr, fdb->fdbid);
             ret = -1;
             goto bcm_fdbid_event_exit;
         }
@@ -286,6 +291,13 @@ int bcm_fdbid_event(uint32_t event, struct net_bridge_fdb_entry *fdb)
 #endif
 
 bcm_fdbid_event_exit:
+    if ((ret) && printk_ratelimit()) {
+        printk(KERN_ERR "[%s:%d] failed (ret %d) to process event %s fdb<%pM> fdbid<%04x> mapping\n",
+            __FUNCTION__, __LINE__, ret,
+            (event == BCM_FDBID_EVT_CREATE)?"BCM_FDBID_EVT_CREATE":"BCM_FDBID_EVT_DELETE",
+            &fdb->key.addr.addr, fdb->fdbid);
+    }
+
     return ret;
 }
 EXPORT_SYMBOL(bcm_fdbid_event);

@@ -95,7 +95,6 @@
 #include <dhd_pktfwd.h>
 #include <ethernet.h>
 #include <bcmevent.h>
-#include <wl_pktc.h>
 
 #include <dhd.h>
 #include <dhd_linux.h>
@@ -113,9 +112,15 @@
 #if defined(CONFIG_BCM_SW_GSO) && defined(BCM_CPE_DHD_GSO)
 #include <dhd_sw_gso.h>
 #endif /* CONFIG_BCM_SW_GSO && BCM_CPE_DHD_GSO */
-#if defined(BCM_DHD_RUNNER)
+
+#if defined(BCM_DHD_OFFLOAD)
+#include <dhd_offload.h>
+#elif defined(BCM_DHD_RUNNER)
 #include <dhd_runner.h>
-#endif /* BCM_DHD_RUNNER */
+typedef dhd_helper_status_t            dhd_offload_status_t;
+#define DHD_OFFLOAD_IOV_STATUS         DHD_RNR_IOVAR_STATUS
+#define dhd_offload_do_iov             dhd_runner_do_iovar
+#endif /* !BCM_DHD_OFFLOAD */
 
 /**
  * =============================================================================
@@ -132,11 +137,6 @@
  */
 //#define DHD_AWL_DEBUG
 
-/*
- * Enable this flag for checking skb link pointers
- * default disabled
- */
-#define DHD_AWL_SKB_AUDIT
 
 #define DHD_AWL_SYS_CB()             (&dhd_awl_sys_g)
 #define DHD_AWL_CB(dhdp)		(&dhd_awl_cb_g[(dhdp)->unit])
@@ -195,37 +195,9 @@
 #define DHD_AWL_TX_MODE_DPC	2 /* DHD in DPC with fast path in dhd CPU context */
 #define DHD_AWL_TX_MODE_LAST	3
 
-#if defined(DHD_AWL_SKB_AUDIT)
-/* Check for non-null skb->prev, log and set to null */
-#define DHD_AWL_SKB_PREV_AUDIT(skb)	\
-	do {				\
-		if (skb->prev)		\
-			printk("%s: 0x%px <- 0x%px ->  0x%px\n", __FUNCTION__, \
-				skb->prev, skb, skb->next); \
-		skb->prev = NULL;	\
-	} while (0)
-
-	/* Check for non-null skb->next, log and set to null */
-#define DHD_AWL_SKB_NEXT_AUDIT(skb)	\
-	do {				\
-		if (skb->next)		\
-		printk("%s: 0x%px <- 0x%px ->  0x%px\n", __FUNCTION__, skb->prev, skb, skb->next); \
-		skb->next = NULL;	\
-	} while (0)
-#else /* !DHD_AWL_SKB_AUDIT */
-#define DHD_AWL_SKB_PREV_AUDIT(skb)   do { } while (0)
-#define DHD_AWL_SKB_NEXT_AUDIT(skb)   do { } while (0)
-#endif /* !DHD_AWL_SKB_AUDIT */
-
-#if defined(ARCHER_WLAN_MISS_PKTLIST)
-#define dhd_awl_rx_flow_miss_handler_dhd_dpc dhd_awl_rx_flow_miss_handler_dhd_dpc_sll
-#define dhd_awl_rx_flow_miss_handler_archer  dhd_awl_rx_flow_miss_handler_archer_sll
+#define dhd_awl_rx_flow_miss_handler_dhd_dpc 	dhd_awl_rx_flow_miss_handler_dhd_dpc_sll
+#define dhd_awl_rx_flow_miss_handler_archer  	dhd_awl_rx_flow_miss_handler_archer_sll
 #define dhd_awl_rx_flow_miss_handler_archer_dhd dhd_awl_rx_flow_miss_handler_archer_dhd_sll
-#else /* !ARCHER_WLAN_MISS_PKTLIST */
-#define dhd_awl_rx_flow_miss_handler_dhd_dpc dhd_awl_rx_flow_miss_handler_dhd_dpc_skb
-#define dhd_awl_rx_flow_miss_handler_archer  dhd_awl_rx_flow_miss_handler_archer_skb
-#define dhd_awl_rx_flow_miss_handler_archer_dhd dhd_awl_rx_flow_miss_handler_archer_dhd_skb
-#endif /* !ARCHER_WLAN_MISS_PKTLIST */
 
 /**
  * -----------------------------------------------------------------------------
@@ -351,10 +323,9 @@ char dhd_awl_tx_mode_str_g[][8] = {
  * =============================================================================
  */
 
-static inline struct net_device *dhd_awl_skb_intf_dev(dhd_awl_t *awl,
-	struct sk_buff *skb)
+static inline struct net_device *dhd_awl_pkt_intf_dev(dhd_awl_t *awl, void *pkt)
 {
-	uint8 ifidx = ARCHER_WLAN_INTF_IDX(skb);
+	uint8 ifidx = ARCHER_WLAN_INTF_IDX(((struct sk_buff *)pkt)->wl);
 
 	return (ifidx < DHD_MAX_IFS) ? awl->ifs[ifidx] : NULL;
 }
@@ -504,7 +475,7 @@ dhd_awl_proc_init(dhd_awl_t *awl, uint unit)
  * -----------------------------------------------------------------------------
  * WLAN Receive Path Forwarding
  *
- * Function : Forward sk_buff (sll) to the Archer Wireless
+ * Function : Forward pkt (sll) to the Archer Wireless
  * -----------------------------------------------------------------------------
  */
 static bcmFun_t *dhd_awl_rx_send_hook_g = NULL;
@@ -520,7 +491,7 @@ dhd_awl_upstream(dhd_awl_t *awl, pktlist_t *pktlist)
 		archer_wlan_rx_send(pktlist, dhd_awl_rx_send_hook_g);
 #else /* ! CONFIG_BCM_CROSSBOW_FULL_OFFLOAD */
 		archer_wlan_rx_send(pktlist->head, dhd_awl_rx_send_hook_g);
-#endif /* ! CONFIG_BCM_CROSSBOW_FULL_OFFLOAD */
+#endif /* ! ONFIG_BCM_CROSSBOW_FULL_OFFLOAD */
 
 		awl->rx.w2a_chn_packets = pktlist->len;
 		if (awl->rx.w2a_chn_packets > awl->rx.w2a_max_chn)
@@ -535,26 +506,26 @@ dhd_awl_upstream(dhd_awl_t *awl, pktlist_t *pktlist)
 
 /**
  * -----------------------------------------------------------------------------
- * Function : Add skb to Archer SLL
+ * Function : Add pkt to Archer SLL
  *
  * -----------------------------------------------------------------------------
  */
 void
-dhd_awl_pktlist_add(pktlist_t *pktlist, struct sk_buff *skb)
+dhd_awl_pktlist_add(pktlist_t *pktlist, void *pkt)
 {
 	if (likely(pktlist->len != 0)) {
 		/* pend to tail */
-		PKTLIST_PKT_SET_SLL(pktlist->tail, skb, SKBUFF_PTR);
-		pktlist->tail = skb;
+		PKTLIST_PKT_SET_SLL(pktlist->tail, pkt, SKBUFF_PTR);
+		pktlist->tail = pkt;
 	} else {
-		pktlist->head = pktlist->tail = skb;
+		pktlist->head = pktlist->tail = pkt;
 	}
 	++pktlist->len;
 }
 
 /**
  * -----------------------------------------------------------------------------
- * Function : free skb's from SLL by the given net_device
+ * Function : free pkt's from SLL by the given net_device
  *            unlink and free the packets
  *
  * -----------------------------------------------------------------------------
@@ -563,27 +534,28 @@ int
 dhd_awl_pktlist_flush(pktlist_t *pktlist, struct net_device *dev)
 {
 	dhd_pub_t *dhdp = dhd_dev_get_dhdpub(dev);
-	struct sk_buff *skb;
+	void *pkt;
 	int pkts;
 	int dropped_pkts = 0;
 
 	pkts = pktlist->len;
 	if (pkts != 0) {
-	    skb = (struct sk_buff*)pktlist->head;
+	    pkt = pktlist->head;
 	    PKTLIST_RESET(pktlist);
 
 	    while (pkts--) {
-	        struct sk_buff* nskb = skb->prev;
+		void *npkt = PKTLINK(pkt);
 
-	        skb->next = skb->prev = NULL;
+		PKTSETNEXT(dhdp->osh, pkt, NULL);
+		PKTSETLINK(pkt, NULL);
 
-	        if (skb->dev == dev) {
-	            PKTFREE(dhdp->osh, skb, FALSE);
+	        if (PKTDEV(pkt) == dev) {
+	            PKTFREE(dhdp->osh, pkt, FALSE);
 	            dropped_pkts++;
 	        } else {
-	            dhd_awl_pktlist_add(pktlist, skb);
+	            dhd_awl_pktlist_add(pktlist, pkt);
 	        }
-	        skb = nskb;
+	        pkt = npkt;
 	    }
 	}
 
@@ -605,7 +577,7 @@ dhd_awl_rx_flow_miss_handler_archer_sll(void *ctxt, pktlist_t *misspktl)
 	unsigned int len;
 	BlogAction_t blog_action;
 	dhd_awl_t *awl;
-	struct sk_buff *skb;
+	void *pkt;
 	int npkts;
 
 	/* Get the DHD public control block */
@@ -617,7 +589,7 @@ dhd_awl_rx_flow_miss_handler_archer_sll(void *ctxt, pktlist_t *misspktl)
 
 	awl = DHD_AWL_CB(dhdp);
 
-	skb = misspktl->head;
+	pkt = misspktl->head;
 	npkts = misspktl->len;
 	PKTLIST_RESET(misspktl);
 
@@ -626,11 +598,13 @@ dhd_awl_rx_flow_miss_handler_archer_sll(void *ctxt, pktlist_t *misspktl)
 		awl->rx.a2w_max_chn = awl->rx.a2w_chn_packets;
 
 	while (npkts--) {
-		struct sk_buff* nskb = skb->prev;
+		void *npkt = PKTLINK(pkt);
+		struct sk_buff *skb;
 		uint32_t hw_port;
 		BlogFcArgs_t fc_args = {};
 
-		skb->next = skb->prev = NULL;
+		PKTSETNEXT(dhdp->osh, pkt, NULL);
+		PKTSETLINK(pkt, NULL);
 
 		awl->rx.a2w_rx_packets++;
 
@@ -639,6 +613,7 @@ dhd_awl_rx_flow_miss_handler_archer_sll(void *ctxt, pktlist_t *misspktl)
 		 * To move this to DHD, need to put this in a queue and wakeup DHD thread
 		 * and let DHD thread process it
 		 */
+		skb = (struct sk_buff *)pkt;
 		hw_port = netdev_path_get_hw_port((struct net_device *)(skb->dev));
 		blog_action = blog_sinit(skb, skb->dev, TYPE_ETH, hw_port, BLOG_WLANPHY, &fc_args);
 
@@ -662,28 +637,10 @@ dhd_awl_rx_flow_miss_handler_archer_sll(void *ctxt, pktlist_t *misspktl)
 		awl->rx.a2w_fwd_packets++;
 		awl->rx.a2w_fwd_calls++;
 
-		skb = nskb;
+		pkt = npkt;
 	}
 
 	return;
-}
-
-void
-dhd_awl_rx_flow_miss_handler_archer_skb(void *ctxt, struct sk_buff *skb)
-{
-	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
-	pktlist_t misspktl;
-
-	if ((dhdp == NULL) || (skb == NULL)) {
-		DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
-			__FUNCTION__, dhdp, skb);
-		return;
-	}
-
-	PKTLIST_RESET(&misspktl);
-	dhd_awl_pktlist_add(&misspktl, skb);
-
-	return dhd_awl_rx_flow_miss_handler_archer_sll(ctxt, &misspktl);
 }
 
 /**
@@ -700,7 +657,7 @@ dhd_awl_rx_flow_miss_handler_archer_dhd_sll(void *ctxt, pktlist_t *misspktl)
 {
 	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
 	dhd_awl_t *awl;
-	struct sk_buff *skb;
+	void *pkt;
 	int npkts;
 
 	/* Get the DHD public control block */
@@ -713,7 +670,7 @@ dhd_awl_rx_flow_miss_handler_archer_dhd_sll(void *ctxt, pktlist_t *misspktl)
 	awl = DHD_AWL_CB(dhdp);
 
 	/* De-link packets from the SLL */
-	skb = misspktl->head;
+	pkt = misspktl->head;
 	npkts = misspktl->len;
 	PKTLIST_RESET(misspktl);
 
@@ -724,20 +681,22 @@ dhd_awl_rx_flow_miss_handler_archer_dhd_sll(void *ctxt, pktlist_t *misspktl)
 
 	/* Process each packet */
 	while (npkts--) {
-		struct sk_buff* nskb = skb->prev;
+		void *npkt = PKTLINK(pkt);
 		struct net_device *net;
 		int rc = PKT_DROP;
 
-		skb->next = skb->prev = NULL;
+		PKTSETNEXT(dhdp->osh, pkt, NULL);
+		PKTSETLINK(pkt, NULL);
 
 		awl->rx.a2w_rx_packets++;
 
 		/* Call DHD Rx handler */
 		DHD_LOCK(dhdp);
 
-		net = dhd_awl_skb_intf_dev(awl, skb);
-		if (net && (net == skb->dev)) {
-			dhd_bus_rx_frame(dhdp->bus, skb, ARCHER_WLAN_INTF_IDX(skb), 1);
+		net = dhd_awl_pkt_intf_dev(awl, pkt);
+		if (net && (net == PKTDEV(pkt))) {
+			dhd_bus_rx_frame(dhdp->bus, pkt,
+				ARCHER_WLAN_INTF_IDX(((struct sk_buff *)pkt)->wl), 1);
 			rc = PKT_DONE;
 		}
 
@@ -750,32 +709,14 @@ dhd_awl_rx_flow_miss_handler_archer_dhd_sll(void *ctxt, pktlist_t *misspktl)
 			awl->rx.a2w_fwd_packets++;
 			awl->rx.a2w_fwd_calls++;
 		} else {
-			PKTFREE(dhdp->osh, skb, FALSE);
+			PKTFREE(dhdp->osh, pkt, FALSE);
 			awl->rx.a2w_flt_packets++;
 		}
 
-		skb = nskb;
+		pkt = npkt;
 	}
 
 	return;
-}
-
-void
-dhd_awl_rx_flow_miss_handler_archer_dhd_skb(void *ctxt, struct sk_buff *skb)
-{
-	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
-	pktlist_t misspktl;
-
-	if ((dhdp == NULL) || (skb == NULL)) {
-		DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
-			__FUNCTION__, dhdp, skb);
-		return;
-	}
-
-	PKTLIST_RESET(&misspktl);
-	dhd_awl_pktlist_add(&misspktl, skb);
-
-	return dhd_awl_rx_flow_miss_handler_archer_dhd_sll(ctxt, &misspktl);
 }
 
 /**
@@ -831,7 +772,7 @@ dhd_awl_rx_flow_miss_handler_dhd_dpc_sll(void *ctxt, pktlist_t *misspktl)
 
 	DHD_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
 
-	/* Question: SLL with skb->next i.o skb->prev ? as dhd_linux uses skb->next ? */
+	/* Question: SLL with PKTNEXT i.o PKTLINK ? as dhd_linux uses PKTNEXT ? */
 	if (likely(pktlist->len == 0)) {
 		pktlist->head = misspktl->head;
 	} else {
@@ -854,25 +795,6 @@ dhd_awl_rx_flow_miss_handler_dhd_dpc_sll(void *ctxt, pktlist_t *misspktl)
 	dhd_sched_dpc(dhdp);
 
 	return;
-}
-
-void
-dhd_awl_rx_flow_miss_handler_dhd_dpc_skb(void *ctxt, struct sk_buff *skb)
-{
-	dhd_pub_t *dhdp = (dhd_pub_t*)ctxt;
-	pktlist_t misspktl;
-
-	/* Get the WL public control block */
-	if ((dhdp == NULL) || (skb == NULL)) {
-		DHD_AWL_ERROR("%s (0x%px, 0x%px) with NULL parameters\n",
-			__FUNCTION__, dhdp, skb);
-		return;
-	}
-
-	PKTLIST_RESET(&misspktl);
-	dhd_awl_pktlist_add(&misspktl, skb);
-
-	return dhd_awl_rx_flow_miss_handler_dhd_dpc_sll(ctxt, &misspktl);
 }
 
 /**
@@ -901,8 +823,8 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 	bool more = FALSE;
 	dhd_awl_t *awl;
 	pktlist_t *pktlist;
+	void *pkt = NULL;
 	int npkts, ppkts = 0;
-	struct sk_buff *skb = NULL;
 
 	awl = DHD_AWL_CB(dhdp);
 
@@ -922,17 +844,17 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 		return more;
 	}
 
-	skb = (struct sk_buff*)pktlist->head;
+	pkt = pktlist->head;
 	if (npkts > rxbound) {
-		struct sk_buff* nskb = skb;
+		void *npkt = pkt;
 		ppkts = npkts = rxbound;
 
 		/* Unlink first npkts from the SLL */
 		do {
-			nskb = nskb->prev;
+			npkt = PKTLINK(npkt);
 		} while (--ppkts);
 
-		pktlist->head = nskb;
+		pktlist->head = npkt;
 		pktlist->len -= npkts;
 	} else {
 		PKTLIST_RESET(pktlist);
@@ -944,15 +866,18 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 	DHD_LOCK(dhdp);
 
 	do {
-		struct sk_buff* nskb = skb->prev;
+		void *npkt = PKTLINK(pkt);
 		struct net_device *net;
 		int rc = PKT_DROP;
 
-		skb->next = skb->prev = NULL;
-		net = dhd_awl_skb_intf_dev(awl, skb);
-		if (net && (net == skb->dev)) {
-			PKTFRMNATIVE(dhdp->osh, skb);
-			dhd_bus_rx_frame(dhdp->bus, skb, ARCHER_WLAN_INTF_IDX(skb), 1);
+		PKTSETNEXT(dhdp->osh, pkt, NULL);
+		PKTSETLINK(pkt, NULL);
+
+		net = dhd_awl_pkt_intf_dev(awl, pkt);
+		if (net && (net == PKTDEV(pkt))) {
+			PKTFRMNATIVE(dhdp->osh, pkt);
+			dhd_bus_rx_frame(dhdp->bus, pkt,
+				ARCHER_WLAN_INTF_IDX(((struct sk_buff *)pkt)->wl), 1);
 			rc = PKT_DONE;
 		}
 
@@ -960,10 +885,10 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 			awl->rx.a2w_fwd_packets++;
 			awl->rx.a2w_fwd_calls++;
 		} else {
-			PKTFREE(dhdp->osh, skb, FALSE);
+			PKTFREE(dhdp->osh, pkt, FALSE);
 			awl->rx.a2w_flt_packets++;
 		}
-		skb = nskb;
+		pkt = npkt;
 	} while (--npkts);
 
 	DHD_UNLOCK(dhdp);
@@ -997,7 +922,7 @@ dhd_awl_upstream_send(dhd_pub_t *dhdp)
  * -----------------------------------------------------------------------------
  * Function : Function to add Rx packet to dhd_awl SLL
  *
- *  Called from from protocol layer for single skb.
+ *  Called from from protocol layer for single pkt.
  *  Caller must call dhd_awl_upstream_send() to finally push the list Archer
  * -----------------------------------------------------------------------------
  */
@@ -1006,9 +931,8 @@ dhd_awl_upstream_add(dhd_pub_t *dhdp, void *pkt, uint ifidx)
 {
 	dhd_awl_t *awl = DHD_AWL_CB(dhdp);
 	pktlist_t *pktlist = DHD_AWL_RX_W2A_PKTL(awl);
-	struct sk_buff * skb;
 
-	DHD_AWL_PTRACE("dhd%d_awl skb 0x%px\n", dhdp->unit, pkt);
+	DHD_AWL_PTRACE("dhd%d_awl pkt 0x%px\n", dhdp->unit, pkt);
 
 	awl->rx.w2a_rx_packets++;
 
@@ -1054,24 +978,24 @@ dhd_awl_upstream_add(dhd_pub_t *dhdp, void *pkt, uint ifidx)
 #endif
 #endif /* CONFIG_BCM_SW_GSO && BCM_CPE_DHD_GSO */
 
-	/* Prepare SKB for forwarding to Archer */
-	skb = PKTTONATIVE(dhdp->osh, pkt);
-	skb->dev = dhd_idx2net(dhdp, ifidx);
+	/* Prepare PKT for forwarding to Archer */
+	pkt = PKTTONATIVE(dhdp->osh, pkt);
+	PKTSETDEV(pkt, dhd_idx2net(dhdp, ifidx));
 
-	if (skb->prev) {
-		printk("0x%px <- 0x%px ->  0x%px\n", skb->prev, skb, skb->next);
-		skb->prev = NULL;
+	if (PKTLINK(pkt)) {
+		printk("0x%px <- 0x%px ->  0x%px\n", PKTLINK(pkt), pkt, PKTNEXT(dhdp->osh, pkt));
+		PKTSETLINK(pkt, NULL);
 	}
 
-	ARCHER_WLAN_RADIO_IDX(skb) = dhdp->unit;
-	ARCHER_WLAN_INTF_IDX(skb) = ifidx;
+	ARCHER_WLAN_RADIO_IDX(((struct sk_buff *)pkt)->wl) = dhdp->unit;
+	ARCHER_WLAN_INTF_IDX(((struct sk_buff *)pkt)->wl) = ifidx;
 
 	if (likely(pktlist->len != 0)) {
 		/* pend to tail */
-		PKTLIST_PKT_SET_SLL(pktlist->tail, skb, SKBUFF_PTR);
-		pktlist->tail = skb;
+		PKTLIST_PKT_SET_SLL(pktlist->tail, pkt, SKBUFF_PTR);
+		pktlist->tail = pkt;
 	} else {
-		pktlist->head = pktlist->tail = skb;
+		pktlist->head = pktlist->tail = pkt;
 	}
 	++pktlist->len;
 
@@ -1127,13 +1051,14 @@ dhd_awl_process_fastpath_txpkts(dhd_pub_t *dhdp, int txbound)
 	int		  prio;
 	bool		   more = false;
 	pktlist_context_t *awl_pktlist_context = awl->tx.awl_pktlist_context;
-	pktlist_context_t *dhd_pktlist_context = awl_pktlist_context->peer;
+	pktlist_context_t *dhd_pktlist_context = NULL;
 	int		  work_items = 0;
 
 	if (awl_pktlist_context == PKTLIST_CONTEXT_NULL) {
 		/* Not supported */
 		return more;
 	}
+	dhd_pktlist_context = awl_pktlist_context->peer;
 
 	/* Grab the awl pktlist_context, maybe a different thread/cpu */
 	PKTLIST_LOCK(awl_pktlist_context);
@@ -1321,20 +1246,20 @@ dhd_awl_attach(dhd_pub_t *dhdp, uint unit)
 
 		rxmode = DHD_AWL_RX_MODE_FULL;
 
-#if defined(BCM_DHD_RUNNER)
+#if defined(BCM_DHD_OFFLOAD) || defined(BCM_DHD_RUNNER)
 		/* When Archer Offload is enabled, force AWL RX to pass through */
 		{
-			dhd_helper_status_t dol_status;
+			dhd_offload_status_t dol_status;
 
-			/* Get current tx and rx offload status from dhd_runner */
-			if (dhd_runner_do_iovar(dhdp->runner_hlp, DHD_RNR_IOVAR_STATUS,
+			/* Get current tx and rx offload status */
+			if (dhd_offload_do_iov(dhdp->runner_hlp, DHD_OFFLOAD_IOV_STATUS,
 				FALSE, (char*)&dol_status, sizeof(dol_status)) == BCME_OK) {
 				if (dol_status.en_features.rxoffl) {
 					rxmode = DHD_AWL_RX_MODE_PT;
 				}
 			}
 		}
-#endif /* BCM_DHD_RUNNER */
+#endif /* BCM_DHD_OFFLOAD || BCM_DHD_RUNNER */
 
 		snprintf(varname, sizeof(varname), "wl%d_awl_rxmode", dhd_get_instance(dhdp));
 		var = getvar(NULL, varname);

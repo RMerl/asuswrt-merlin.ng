@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.
 #include "spu_blog.h"
 #include "linux/bcm_log.h"
 #include <linux/gbpm.h>
+#include "pktHdr.h"
 
 #define SPU_OVERFLOW_BIT  0
 #define SPU_SOFT_LIMIT_BIT  1
@@ -34,7 +35,6 @@ Boston, MA 02111-1307, USA.
 
 struct spu_cspu_session_info {
 	atomic_t set;
-	uint8_t ipv6;
 };
 
 struct spu_offload_info
@@ -44,7 +44,8 @@ struct spu_offload_info
 };
 
 static struct spu_offload_info spu_offload_inst;
-
+static int crossbow_max_crypto_size = 0;
+static struct spu_offload_debug_info debug_info;
 
 int spu_platform_offload_ds_session(int session_id, struct xfrm_state *xfrm,
 				 	struct bcmspu_offload_parm *parm)
@@ -91,6 +92,20 @@ int spu_platform_offload_ds_session(int session_id, struct xfrm_state *xfrm,
 void spu_platform_offload_us_session(int session_id, struct xfrm_state *xfrm,
 						struct bcmspu_offload_parm *parm)
 {
+	uint32_t us_id = parm->session_id & (MAX_SPU_OFFLOAD_SESSIONS/2 - 1);
+	bcmFun_t *flow_set = bcmFun_get(BCM_FUN_ID_ARCHER_CRYPTO_PROGRAM_PARM);
+	struct spu_offload_parm_args args;
+	uint8_t *data_p;
+
+	if (flow_set == NULL) {
+		pr_err("offload function not supported\n");
+		return;
+	}
+
+	if (atomic_read(&spu_offload_inst.us_info[us_id].set) != 0)
+		pr_err("session already offloaded %d\n", parm->session_id);
+
+	atomic_set(&spu_offload_inst.us_info[us_id].set, 1);
 	spin_lock_bh(&xfrm->lock);
 	parm->pkts = xfrm->curlft.packets;
 	parm->bytes = xfrm->curlft.bytes;
@@ -102,54 +117,43 @@ void spu_platform_offload_us_session(int session_id, struct xfrm_state *xfrm,
 		parm->limits[2] = xfrm->lft.hard_packet_limit;
 		parm->limits[3] = xfrm->lft.hard_byte_limit;
 	}
-	if (atomic_read(&spu_offload_inst.us_info[parm->session_id].set) != 0)
-		pr_err("session already offloaded %d\n", parm->session_id);
-}
-
-int spu_platform_offload_us_parm_set(struct bcmspu_offload_parm *parm)
-{
-	uint8_t *data_p;
-	struct spu_offload_parm_args args;
-	bcmFun_t *flow_set = bcmFun_get(BCM_FUN_ID_ARCHER_CRYPTO_PROGRAM_PARM);
-	uint32_t us_id = parm->session_id & (MAX_SPU_OFFLOAD_SESSIONS/2 - 1);
-
-	if (flow_set == NULL)
-		return -1;
-
-	if (atomic_read(&spu_offload_inst.us_info[us_id].set) != 0){
-		return 0;
-	}
-	atomic_set(&spu_offload_inst.us_info[us_id].set, 1);
-	spu_offload_inst.us_info[us_id].ipv6 = parm->ipv6;
-
-	/* on crossbow, key_size refers to the entire SPU header with keys */
 	parm->key_size += FMD_SIZE;
-
-	data_p = &parm->spu_header[parm->key_size];
 
 	/* put seq_hi after the keys for ESN case */
 	if (parm->is_esn && parm->is_gcm == 0) {
+		data_p = &parm->spu_header[parm->key_size];
 		parm->key_size += BLOG_ESP_SEQNUM_HI_LEN;
 		memcpy(data_p, &parm->seq_hi, BLOG_ESP_SEQNUM_HI_LEN);
-		data_p += BLOG_ESP_SEQNUM_HI_LEN;
 	}
-	/* for GCM, store the IV after the keys */
-	if (parm->is_gcm) {
-		memcpy(data_p, parm->gcm_iv_aad2, parm->iv_size);
-		data_p += parm->iv_size; 
-	}
-
-	memcpy(data_p, parm->outer_header, parm->outer_hdr_size);
-
 	args.session_id = parm->session_id;
 	args.parm = parm;
-	return flow_set(&args);
+	if (flow_set(&args) != 0) {	
+		pr_err("offload failing\n");
+	}
+	return;
 }
 
-void spu_platform_offload_us_prepend(struct bcmspu_offload_parm *parm, struct spu_offload_prephdr_args *a)
+void spu_platform_offload_us_prepend(struct spu_offload_prephdr_args *a, uint8_t *datap, uint8_t ipv6)
 {
-	spu_platform_offload_us_parm_set(parm);
-	return;
+	uint32_t word32 = 0;
+
+	if(ipv6) {
+		/* extract tos from outer header */
+		if (datap)
+			word32 = ((BlogIpv6Hdr_t *)datap)->u32[0];
+		/* extract tos from blog */
+		else if (a->blog_p)
+			word32 = a->blog_p->esp6tx_tuple_p->word0;
+	} else {
+		/* extract tos from outer header */
+		if (datap)
+			word32 = ((BlogIpv4Hdr_t *)datap)->tos;
+		/* extract tos from blog */
+		else if (a->blog_p)
+			word32 = a->blog_p->esptx_tuple_p->tos;
+	}
+	a->prepend_word = word32;
+	a->prepend_size = sizeof(uint32_t);
 }
 
 void spu_platform_offload_free_session(uint32_t session_id)
@@ -195,7 +199,7 @@ static int spu_cspu_rx_handler(pNBuff_t pNBuff, int session_id, int enc, int exc
 
 	if (spu_offload_get_rx_info((session_id | (enc << 5)), &info)) {
 		/* session is likely freed already */
-		flow_log("invalid session information for %d enc %d\n", session_id, enc);
+		debug_info.invalid_rx++;
 		return -1;
 	}
 
@@ -206,10 +210,14 @@ static int spu_cspu_rx_handler(pNBuff_t pNBuff, int session_id, int enc, int exc
 		fcArgs.esp_over_udp = info.esp_over_udp;
 		devp = iproc_priv.spu_dev_us;
 		phyHdr = BLOG_SPU_US;
+		debug_info.slowpath_us++;
 	} else {
 		fcArgs.esp_inner_pkt = 1;
+		fcArgs.esp_ivsize = info.iv_size;
+		fcArgs.esp_icvsize = info.digestsize;
 		devp = iproc_priv.spu_dev_ds;
 		phyHdr = BLOG_SPU_DS;
+		debug_info.slowpath_ds++;
 	}
 	if (IS_SKBUFF_PTR(pNBuff)) {
 		skb = PNBUFF_2_SKBUFF(pNBuff);
@@ -221,7 +229,7 @@ static int spu_cspu_rx_handler(pNBuff_t pNBuff, int session_id, int enc, int exc
 		fkb = PNBUFF_2_FKBUFF(pNBuff);
 		data_p = fkb->data;
 		len = fkb->len;
-		offset = (int)(fkb->data - PFKBUFF_TO_PHEAD(fkb));
+		offset = (int)(fkb->data - BCM_PFKBUFF_TO_PHEAD(fkb));
 		skb = NULL;
 		recycle_hook = fkb->recycle_hook;
 		blogAction = blog_finit(fkb, devp, TYPE_IP, info.blog_chan_id, phyHdr, &fcArgs);
@@ -238,41 +246,40 @@ static int spu_cspu_rx_handler(pNBuff_t pNBuff, int session_id, int enc, int exc
 				fkb->recycle_context = 0;
 			}
 			skb = nbuff_xlate(pNBuff);
-			if (enc) {
-				skb_dst_set(skb, dst_clone(info.dst_p));
-			} else {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
-				skb->sp = secpath_get((struct sec_path *)info.sp);
-#else
-				{
-					struct sec_path *sp = secpath_set(skb);
-					if (!sp) {
-						pr_err("%s:%d - failed to set secpath for skb %p\n",
-							__func__, __LINE__, skb);
-						if (skb->recycle_hook)
-							(*skb->recycle_hook(SKBUFF_2_PNBUFF(skb), skb->recycle_context, skb->recycle_flags);
-						goto release_ptrs;
-					}
-					xfrm_state_hold(info.ptr);
-					flow_log("%s:%d held xfrm=%p refcnt=%d\n",
-						__func__, __LINE__, info.ptr,
-						refcount_read(&((struct xfrm_state *)info.ptr)->refcnt));
-   
-					sp->xvec[sp->len++] = info.ptr;
-				}
-#endif
-			}
 		}
 		if (enc) {
+			skb_dst_set(skb, dst_clone(info.dst_p));
 			skb_reset_network_header(skb);
 			skb->dev = iproc_priv.spu_dev_us;
 			xfrm_output_resume(skb, 0);
 		} else {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
+			skb->sp = secpath_get((struct sec_path *)info.sp);
+#else
+			{
+				struct sec_path *sp = secpath_set(skb);
+				if (!sp) {
+					pr_err("%s:%d - failed to set secpath for skb %p\n",
+						__func__, __LINE__, skb);
+					if (skb->recycle_hook)
+						(*skb->recycle_hook)(SKBUFF_2_PNBUFF(skb), skb->recycle_context, skb->recycle_flags);
+					goto release_ptrs;
+				}
+				xfrm_state_hold(info.ptr);
+				flow_log("%s:%d held xfrm=%p refcnt=%d\n",
+					__func__, __LINE__, info.ptr,
+					refcount_read(&((struct xfrm_state *)info.ptr)->refcnt));
+
+				sp->xvec[sp->len++] = info.ptr;
+			}
+#endif
 			skb->dev = iproc_priv.spu_dev_ds;
-			if (info.ipv6)
+			if ((*data_p & 0xF0) == 0x40)
+				skb->protocol = htons(ETH_P_IP);
+			else if ((*data_p & 0xF0) == 0x60)
 				skb->protocol = htons(ETH_P_IPV6);
 			else
-				skb->protocol = htons(ETH_P_IP);
+				pr_info("unknown pkt type 0x%x\n", *data_p);
 			skb_shinfo(skb)->dirty_p = data_p + len;
 			gro_cells_receive(&spu_offload_inst.gro_cells, skb);
 		}
@@ -294,10 +301,10 @@ release_ptrs:
 int spu_offload_insert_us_pkt(pNBuff_t pNBuff, int session_id, uint32_t digestsize, uint32_t *payloadlen)
 {
 	uint8_t *pdata;
-	uint32_t buf_len, padlen, hdr_offset;
+	uint32_t buf_len, padlen, hdr_offset, fpi_tun_id;
 	struct spu_offload_prephdr_args prep = {};
-	uint32_t us_id = session_id & (MAX_SPU_OFFLOAD_SESSIONS/2 - 1);
 	int ret = -1, i;
+	uint8_t nexthdr;
 	bcmFun_t *pkt_send = bcmFun_get(BCM_FUN_ID_ARCHER_CRYPTO_US_SEND);
 
 	if(pkt_send) {
@@ -306,14 +313,24 @@ int spu_offload_insert_us_pkt(pNBuff_t pNBuff, int session_id, uint32_t digestsi
 			struct sk_buff *skb = (struct sk_buff *)PNBUFF_2_PBUF(pNBuff);
 			pdata = skb->data;
                         buf_len = skb->len;
+			if (skb_is_nonlinear(skb)) {
+				if(skb_linearize(skb)) {
+					debug_info.invalid_insert++;
+					return -1;
+				}
+			}
 		} else {
 			FkBuff_t *fkb = (FkBuff_t *)PNBUFF_2_PBUF(pNBuff);
 			pdata = fkb->data;
 			buf_len = fkb->len;
 		}
 		padlen = pdata[buf_len - digestsize - 2];
+		nexthdr = pdata[buf_len - digestsize - 1];
 
-		spu_offload_prep_us_ingress(session_id, pdata, &prep, &hdr_offset);
+		/* extract packet tos from outer header */
+		spu_platform_offload_us_prepend(&prep, pdata, (nexthdr == BLOG_IPPROTO_IPV6));
+
+		spu_offload_us_hdr_offset(session_id, &hdr_offset, &fpi_tun_id);
                 pdata += (hdr_offset - BLOG_ETH_HDR_LEN);
 		buf_len -= (hdr_offset + padlen + BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN + digestsize - BLOG_ETH_HDR_LEN);
 
@@ -322,14 +339,41 @@ int spu_offload_insert_us_pkt(pNBuff_t pNBuff, int session_id, uint32_t digestsi
 		/* fake an L2 header to meet crossbow requirement */
 		/* pass in session id in second byte of the packet */
 		pdata[0] = 0;
+#if IS_ENABLED(CONFIG_BCM_FPI)
+		pdata[1] = fpi_tun_id & (MAX_SPU_OFFLOAD_US_SESSIONS - 1);
+#else
 		pdata[1] = session_id & (MAX_SPU_OFFLOAD_US_SESSIONS - 1);
+#endif
+		if (*payloadlen > crossbow_max_crypto_size) {
+			debug_info.invalid_insert++;
+			return -1;
+		}
 		for (i=2; i < (2*BLOG_ETH_ADDR_LEN); i++) {
 			pdata[i] = i;
 		}
-		if (spu_offload_inst.us_info[us_id].ipv6 == 0)
+		if (nexthdr == IPPROTO_IPIP) {
+			BlogIpv4Hdr_t *ipv4_p = (BlogIpv4Hdr_t *)&pdata[BLOG_ETH_HDR_LEN];
+			uint16_t csum16 = ipv4_p->chkSum;
+			uint16_t old16 = ipv4_p->u16[4];
+
 			*(uint16_t *)(&pdata[2*BLOG_ETH_ADDR_LEN]) = htons(BLOG_ETH_P_IPV4);
-		else
+			ipv4_p->ttl++; /* revert ttl decrement done by Linux */
+
+			ipv4_p->chkSum = _compute_icsum16(csum16, old16, ipv4_p->u16[4]);
+
+		} else if (nexthdr == BLOG_IPPROTO_IPV6) {
+			BlogIpv6Hdr_t *ipv6_p = (BlogIpv6Hdr_t *)&pdata[BLOG_ETH_HDR_LEN];
+
 			*(uint16_t *)(&pdata[2*BLOG_ETH_ADDR_LEN]) = htons(BLOG_ETH_P_IPV6);
+			ipv6_p->hopLmt++; /* revert hopLmt decrement done by Linux */
+		} else {
+			debug_info.invalid_insert++;
+			return ret;
+		}
+
+		/* put prepend info for the outer IP header at the end of the packet */
+		memcpy(&pdata[buf_len], &prep.prepend_word, prep.prepend_size);
+		buf_len += prep.prepend_size;
 
 		if (IS_SKBUFF_PTR(pNBuff)) {
 			struct sk_buff *skb = (struct sk_buff *)PNBUFF_2_PBUF(pNBuff);
@@ -361,29 +405,68 @@ void spu_platform_offload_stats(uint32_t session_id, struct spu_offload_tracker 
 	a.stats = curr;
         a.bitmap = bitmap;
 
-	get_stats(&a);
+	if(get_stats(&a) != 0)
+		pr_err("offload stats for %d invalid\n", session_id);
 }
 
-void spu_platform_offloaded(uint32_t *req, uint32_t *cmpl)
+void spu_platform_offloaded(struct spu_offload_debug_info *info_p)
 {
 	struct spu_offload_stats_args a = {};
 	bcmFun_t *get_stats = bcmFun_get(BCM_FUN_ID_ARCHER_CRYPTO_STATS);
 
-	if (get_stats == NULL)
+	if (get_stats == NULL) {
+		pr_info("offload stats not available\n");
 		return;
-
+	}
 	a.session_id = -1;
 	get_stats(&a);
-	*req = a.num_request;
-	*cmpl = a.num_response;
+	debug_info.requests = a.num_request;
+	debug_info.complete = a.num_response;
+	debug_info.icv_err = a.icv_err;
+	debug_info.seqno_err = a.seqno_err;
+
+	memcpy(info_p, &debug_info, sizeof(struct spu_offload_debug_info));
+}
+
+void spu_platform_offload_tun_map(uint32_t tun_id, int32_t session_id)
+{
+	bcmFun_t *tun_map = bcmFun_get(BCM_FUN_ID_ARCHER_CRYPTO_TUNNEL_MAP);
+	struct spu_fpi_tun_map a;
+
+	if (tun_map) {
+		a.tun_id = tun_id;
+		a.session_id = session_id;
+		tun_map(&a);
+	}
+}
+
+void spu_platform_offload_copy_fwd(uint32_t session_id2, uint32_t session_id1)
+{
+	bcmFun_t *sync_fwd = bcmFun_get(BCM_FUN_ID_ARCHER_CRYPTO_SYNC_FORWARD);
+	struct spu_fpi_tun_map a;
+
+	if (sync_fwd) {
+		a.session_id1 = session_id1;
+		a.session_id2 = session_id2;
+		sync_fwd(&a);
+	}
 }
 
 void spu_platform_offload_register(void)
 {
 	bcmFun_t *cspu_bind = bcmFun_get(BCM_FUN_ID_ARCHER_CRYPTO_OFFLOAD_BIND);
+        int ret;
 
-	if (cspu_bind)
-		cspu_bind(spu_cspu_rx_handler);
+        flow_offload_enable = 0;
+	if (cspu_bind) {
+                ret = cspu_bind(spu_cspu_rx_handler);
+		if (ret > 0) {
+			crossbow_max_crypto_size = ret;
+			pr_info("Crossbow SPU offload, max crypto len is %d\n", crossbow_max_crypto_size);
+			/* crossbow cspu offload is enabled */
+			flow_offload_enable = 3;
+		}
+	}
 }
 
 void spu_platform_offload_deregister(void)

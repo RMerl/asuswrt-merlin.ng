@@ -138,6 +138,7 @@ int dpi_register_notifier(struct notifier_block *nb);
 int dpi_unregister_notifier(struct notifier_block *nb);
 int dpi_notify(long event, void *data);
 
+extern int (*dpi_tdts_shell_dpi_l2_eth)(void *p);
 extern int (*dpi_tdts_shell_dpi_l3_skb)(struct sk_buff *skb, void *p);
 extern int (*dpi_tdts_shell_system_setting_tcp_conn_max_get)(unsigned *p);
 extern int (*dpi_tdts_shell_system_setting_tcp_conn_timeout_get)(unsigned *p);

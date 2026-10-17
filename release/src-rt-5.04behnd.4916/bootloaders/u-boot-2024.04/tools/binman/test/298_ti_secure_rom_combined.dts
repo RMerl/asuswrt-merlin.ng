@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		ti-secure-rom {
+			content = <&unsecure_binary>;
+			content-sbl = <&unsecure_binary>;
+			content-sysfw = <&unsecure_binary>;
+			content-sysfw-data = <&unsecure_binary>;
+			content-sysfw-inner-cert = <&unsecure_binary>;
+			content-dm-data = <&unsecure_binary>;
+			combined;
+			sysfw-inner-cert;
+			dm-data;
+		};
+		unsecure_binary: blob-ext {
+			filename = "ti_unsecure.bin";
+		};
+	};
+};

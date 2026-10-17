@@ -7,7 +7,6 @@ smtc-objs += bcm_smtc.o A2_Table_80.o A2_Table_81.o A0_Lower.o A0_Upper.o A2_Low
 
 EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD)
-EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS +=  -Werror -Wall -I$(src)
 
 -include $(TOPDIR)/Rules.make

@@ -1,0 +1,408 @@
+#!/bin/bash
+DSPS_INFO_FILE=/tmp/wldsps_info;
+PCIE_MODULE=bcm_pcie_hcd;
+WIFI_SH=/etc/init.d/wifi.sh
+IS_RDK_BUILD=RDK_BUILD_HOLDER
+readonly MODE_OFF=0;
+readonly MODE_DSPS=4;
+readonly DEF_PERSIST=1;
+wldsps_mode=$MODE_OFF;
+wldsps_persist=$DEF_PERSIST;
+IFNAME_LIST=
+
+#check if wifi_agent is ready
+rdkb_agent_ready()
+{
+	status=$(systemctl status ccspwifiagent.service|grep Active|awk '{print $2}')
+	if [[ $status == "active" ]] || [[ -z $IS_RDK_BUILD ]]; then echo "1"; else echo "0"; fi
+}
+
+# rdkb control interface up/down
+# input: ifname true/false
+rdkb_radio_control()
+{
+    local ifname=$1
+    if [[ ! -z $IS_RDK_BUILD ]];  then
+        touch /tmp/dpd_in_progress
+        dm_ifindex=$(echo $ifname | cut -d 'l' -f2)
+        if [[ $(rdkb_agent_ready) -eq 0 ]]; then
+            echo "[wifi.sh] rdkb_radio_control returns without action: ccspwifiagent.service is not ready yet"
+            return 0
+        fi
+        doapply=0
+        dm_ifindex=$(($dm_ifindex+1))
+        if [[ $2 == "up" ]]; then
+            dm_radio_enabled=$(dmcli eRT getv Device.WiFi.Radio.${dm_ifindex}.Enable|grep "value: true")
+            if [[ -z $dm_radio_enabled ]]; then
+                nvram set ${ifname}_edpd_radio=1
+                dmcli eRT setv Device.WiFi.Radio.${dm_ifindex}.Enable bool true
+                doapply=1
+            fi
+        else
+            dm_radio_enabled=$(dmcli eRT getv Device.WiFi.Radio.${dm_ifindex}.Enable|grep "value: true")
+            if [[ -n $dm_radio_enabled ]] ; then
+                nvram set ${ifname}_edpd_radio=1
+                dmcli eRT setv Device.WiFi.Radio.${dm_ifindex}.Enable bool false
+                doapply=1
+            fi
+        fi
+        [[ $doapply -eq 1 ]] && dmcli eRT setv Device.WiFi.Radio.${dm_ifindex}.X_CISCO_COM_ApplySetting bool true
+        rm -rf /tmp/dpd_in_progress
+        nvram unset ${ifname}_edpd_radio
+        return 0
+    fi
+    return 0
+}
+
+#
+# Clear Persistent settings
+#
+function wldsps_clear_settings()
+{
+	for ifname in $IFNAME_LIST; do
+		nvram kunset ${ifname}_dpd;
+	done
+	nvram kcommit;
+}
+
+#
+# Init global variables
+#
+function wldsps_init_globals()
+{
+	if [ -e ${DSPS_INFO_FILE} ]; then
+		IFNAME_LIST=$(cat ${DSPS_INFO_FILE} |grep wl);
+		wldsps_mode=$MODE_DSPS;
+
+		# Check persistence setting and clear previous persistence settings
+		if [ -f /proc/environment/wl_dsps_persist ]; then
+			wldsps_persist=$(cat /proc/environment/wl_dsps_persist);
+		else
+			wldsps_persist=$(nvram kget wl_dsps_persist);
+		fi
+
+		if [ -z $wldsps_persist ]; then
+			wldsps_persist=$DEF_PERSIST;
+		fi
+	fi
+}
+
+#
+# init wldsps
+#
+function wldsps_init()
+{
+	if [ ! -e ${DSPS_INFO_FILE} ]; then
+		IFNAME_LIST=$(ifconfig -a |grep ^wl |grep -v "\." | awk '{print $1}' | tr '\n' ' ');
+		printf "%s" "${IFNAME_LIST}" > ${DSPS_INFO_FILE};
+		wldsps_init_globals;
+		printf "WLDSPS : On with Persistence %d\n" $wldsps_persist;
+
+		if [ $wldsps_persist == 0 ]; then
+			wldsps_clear_settings;
+		fi
+	fi
+}
+
+#
+# deinit wldsps
+#
+# $1:  >0, Clear nvram settings
+#
+function wldsps_deinit()
+{
+	local dpd;
+	local clear=$1;
+
+	if [ -z $1 ]; then
+		clear=0;
+	fi
+
+	if [ $clear != 0 ]; then
+		nv_list=$(nvram kshow |grep dpd | cut -d '=' -f1 | tr '\n' ' ');
+		for dpd in $nv_list; do
+			nvram kunset $dpd;
+			nvram kcommit;
+		done
+	fi
+
+	rm -f ${DSPS_INFO_FILE};
+
+	printf "WLDSPS : Off\n";
+}
+
+#
+# Get operating mode
+#
+function wldsps_modestr()
+{
+	local modestr;
+
+	case $wldsps_mode in
+
+		$MODE_OFF)
+			modestr="OFF "
+			;;
+
+		$MODE_DSPS)
+			modestr="DSPS"
+			;;
+
+		*)
+			modestr="INV "
+			;;
+	esac
+
+	echo "$modestr"
+}
+
+#
+# Power Down WiFi interface
+#
+# $1: interface name
+#     'all' to specify all available interfaces
+#
+# $2: Preserve
+#     0: don't save the setting
+#     1: Save setting to nvram (default)
+#
+function wldsps_power_down()
+{
+	local ifname;
+	local preserve=$2;
+
+	if [ $1 = "all" ]; then
+		# Use reverse order for powering down
+		ifname_list=$(echo "${IFNAME_LIST}" | awk '{ for (i=NF; i>1; i--) printf("%s ",$i); print $1; }');
+	elif [ ! -z "$(echo ${IFNAME_LIST} | grep $1)" ]; then
+		ifname_list=$1;
+	fi
+
+	# Default is preserve the settings with nvram/uboot override
+	if [ -z $preserve ]; then
+		preserve=$wldsps_persist;
+	fi
+
+	for ifname in ${ifname_list}; do
+		if [ $preserve != 0 ]; then
+			nvram kset ${ifname}_dpd=1;
+			nvram kcommit;
+			printf "WLDSPS : Preserve setting\n";
+		fi
+		printf "WLDSPS : Calling DSPS (wlconf $ifname power_down)\n";
+		wlconf $ifname power_down;
+	done
+}
+
+#
+# Power Up WiFi interface
+#
+# $1: interface name
+#     'all' to specify all available interfaces
+#
+# $2: Preserve
+#     0: don't save the setting
+#     1: Save setting to nvram (default)
+#
+function wldsps_power_up()
+{
+	local ifname;
+	local preserve=$2;
+
+	if [ $1 = "all" ]; then
+		ifname_list=${IFNAME_LIST};
+	elif [ ! -z "$(echo ${IFNAME_LIST} | grep $1)" ]; then
+		ifname_list=$1;
+	fi
+
+	# Default is preserve the settings with nvram/uboot override
+	if [ -z $preserve ]; then
+		preserve=$wldsps_persist;
+	fi
+
+	for ifname in ${ifname_list}; do
+		if [ $preserve != 0 ]; then
+			nvram kset ${ifname}_dpd=0;
+			nvram kcommit;
+			printf "WLDSPS : Preserve setting\n";
+		fi
+		printf "WLDSPS : Calling DSPS (wlconf $ifname power_up)\n";
+		wlconf $ifname power_up;
+	done
+}
+
+function wldsps_up_status()
+{
+	local ifname=$1;
+	local up=0;
+
+	dev_paths="/sys/devices/platform/*pcie/pci*/*/*/net /sys/devices/platform/*pcie/pci*/*/net /sys/devices/platform/ubus-bus/*pcie/pci*/*/*/net /sys/devices/platform/ubus-bus/*pcie/pci*/*/net"
+
+	for path in $dev_paths; do
+		if [ -d ${path} ]; then
+	  		cnt=$(ls -d ${path}/wl* | awk -F '/' '{print $NF}' |grep $ifname | tr '\n' ' ' | awk '{print NF}');
+			if [ -z $cnt ]; then
+				cnt=0;
+			fi
+			up=$(( up + cnt ));
+		fi
+	done
+
+	echo $up;
+}
+
+function wldsps_interface_status()
+{
+	local ifname=$1;
+	local cfg;
+	local up;
+	local status;
+
+	cfg=$(nvram kget ${ifname}_dpd);
+	if [ -z $cfg ]; then
+		cfg=0;
+	fi
+
+	up=$(wldsps_up_status $ifname);
+
+	if [ -z $up ] || [ $up -eq 0 ]; then
+		status=1;
+	else
+		status=0;
+	fi
+
+	printf "|  %3s   |  %*d  |   %*d   |\n" ${ifname} 1 ${cfg} 1 ${status};
+}
+
+#
+# Display interface power status
+#
+# $2: >0 (dump nvram settings)
+#
+function wldsps_status()
+{
+	local nvdump=$1;
+
+	if [ -z $1 ]; then
+		nvdump=0;
+	fi
+
+	printf "************************\n"
+	printf "| Mode   | %4s        |\n" $(wldsps_modestr);
+	if [ $wldsps_mode -ne $MODE_OFF ]; then
+		printf "************************\n"
+		printf "| ifname | cfg | pwrdn |\n";
+		printf "************************\n"
+		for ifname in ${IFNAME_LIST}; do
+			wldsps_interface_status $ifname;
+		done
+	fi
+	printf "************************\n"
+
+	if [ $nvdump != 0 ]; then
+		nvram kshow |grep _dpd
+	fi
+}
+
+#
+# config system by dspd configuration
+#
+function wldsps_sync_cfg()
+{
+	for ifname in $IFNAME_LIST; do
+		ifcfg="$(wldsps_interface_status $ifname)"
+		if [[ -n "$ifcfg" ]]; then
+			ifcfg=${ifcfg//|/ }
+			cfg=$(echo $ifcfg|awk '{print $2}')
+			pwrdn=$(echo $ifcfg|awk '{print $3}')
+			if [[ ${cfg} -eq 1 ]] && [[ ${pwrdn} -eq 0 ]]; then
+				echo "wldsps_power_down $ifname "
+				wldsps_power_down $ifname
+			elif [[ ${cfg} -eq 0 ]] && [[ ${pwrdn} -eq 1 ]]; then
+				echo " wldsps_power_up $ifname "
+				wldsps_power_up $ifname
+			fi
+		fi
+	done
+}
+
+# Print usage
+function wldsps_usage()
+{
+    printf "\nUsage:\n";
+    printf " wldsps    <cmd>      <cmd args>\n";
+    printf "           status\n";
+    printf "           power_up   <ifname>\n";
+    printf "           power_down <ifname>\n";
+	printf "\n";
+}
+
+wldsps_init_globals;
+
+if [ ! -z $1 ]; then
+	cmd=$1;
+fi
+if [ ! -z $2 ]; then
+	ifname=$2;
+fi
+if [ ! -z $3 ]; then
+	preserve=$3;
+fi
+
+case $cmd in
+
+	init)
+		# internal use command
+		wldsps_init;
+		;;
+
+	deinit)
+		# internal use command
+		wldsps_deinit $2;
+		;;
+
+	status)
+		if [ ! -z $ifname ] && [[ "$ifname" = wl* ]]; then
+			if  [[ "$IFNAME_LIST" == *"$ifname"* ]]; then
+				wldsps_interface_status $ifname;
+			fi
+		else
+			wldsps_status $ifname;
+		fi
+		;;
+
+	interfaces)
+		# internal use command
+		ifcnt=$(echo "$IFNAME_LIST" | awk '{print NF}');
+		printf "%d : %s\n" $ifcnt "$IFNAME_LIST";
+		;;
+
+	mode)
+		# internal use command
+		printf "%*d | %4s\n" 1 ${wldsps_mode} $(wldsps_modestr);
+		;;
+
+	power_up)
+		wldsps_power_up $ifname $preserve;
+		rdkb_radio_control $ifname "up"
+		;;
+
+	power_down)
+		rdkb_radio_control $ifname "down"
+		wldsps_power_down $ifname $preserve;
+		;;
+
+	sync_cfg)
+		# internal use command
+		wldsps_sync_cfg
+		;;
+
+	clear_settings)
+		# internal use command
+		wldsps_clear_settings;
+		;;
+
+	*)
+		wldsps_usage;
+		;;
+esac

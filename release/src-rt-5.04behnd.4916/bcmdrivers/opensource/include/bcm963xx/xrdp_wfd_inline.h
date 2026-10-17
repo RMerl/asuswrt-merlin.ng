@@ -32,7 +32,6 @@ Author: kosta.sopov@broadcom.com
 */
 
 #include "rdpa_api.h"
-#include "rdp_cpu_ring_defs.h"
 #include "rdp_mm.h"
 #include "bcm_prefetch.h"
 #include "rdp_cpu_ring.h"
@@ -92,6 +91,11 @@ typedef union {
 
 static struct proc_dir_entry *proc_wfd_rx_fastpath;   /* /proc/wfd/wlan_rx_fastpath */
 
+#if defined(WFD_TC_INGRESS_CONFIG)
+const rdpa_filter default_lan_ingress_filters[] = {
+        RDPA_FILTER_HDR_ERR,
+};
+#else
 const rdpa_filter default_lan_ingress_filters[] = {
         RDPA_FILTER_DHCP,
         RDPA_FILTER_IGMP,
@@ -103,6 +107,7 @@ const rdpa_filter default_lan_ingress_filters[] = {
         RDPA_FILTER_MCAST,
         RDPA_FILTER_IP_MCAST_CONTROL,
 };
+#endif
 
 #define WFD_PLATFORM_PROC
 #define WFD_PATH_DELAY_MEASURE
@@ -227,6 +232,7 @@ static inline int wfd_config_rx_queue(int wfd_idx, int qid, uint32_t qsize,
     bdmf_object_handle rdpa_cpu_obj;
     uint32_t *ring_base = NULL;
     int rc = 0;
+    wfd_rx_isr_context_t *isr_ctx = NULL;
 
     if (rdpa_cpu_get(rdpa_cpu_wlan0 + wfd_objects[wfd_idx].wl_radio_idx, &rdpa_cpu_obj))
         return -1;
@@ -248,7 +254,7 @@ static inline int wfd_config_rx_queue(int wfd_idx, int qid, uint32_t qsize,
     }
     else
     {
-        kfree((wfd_rx_isr_context_t *)rxq_cfg.isr_priv);
+        isr_ctx = (wfd_rx_isr_context_t *)rxq_cfg.isr_priv;
         rxq_cfg.isr_priv = 0;
     }
 
@@ -270,6 +276,8 @@ static inline int wfd_config_rx_queue(int wfd_idx, int qid, uint32_t qsize,
 
     if (qsize)
         wfd_config_tc_to_queue(wfd_idx, qid);
+    else
+        kfree(isr_ctx);
 
 unlock_exit:
     bdmf_put(rdpa_cpu_obj);
@@ -367,7 +375,7 @@ static struct sk_buff *__skb_alloc(rdpa_cpu_rx_info_t *info)
     skb = skb_header_alloc();
     if (likely(skb)) {
         skb_headerinit(BCM_PKT_HEADROOM + info->data_offset,
-#if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
+#if defined(CC_NBUFF_FLUSH_OPTIMIZATION) || defined(CONFIG_CPU_RX_FROM_XPM)
             SKB_DATA_ALIGN(info->size + BCM_SKB_TAILROOM + info->data_offset),
 #else
             BCM_MAX_PKT_LEN - info->data_offset,
@@ -446,7 +454,7 @@ static struct sk_buff *skb_alloc(rdpa_cpu_rx_info_t *info, wfd_object_t *wfd_p)
 static inline int exception_packet_handle(struct sk_buff *skb, rdpa_cpu_rx_info_t *info, wfd_object_t *wfd_p)
 {
 #if defined(CONFIG_BCM_NIC_WLAN_TID_SUPPORT)
-    uint8 prio;
+    uint8_t prio;
 #endif
 #if defined(CONFIG_BLOG)
     BlogAction_t blog_action;
@@ -463,6 +471,7 @@ static inline int exception_packet_handle(struct sk_buff *skb, rdpa_cpu_rx_info_
 
     SKB_BPM_TAINTED(skb);
 
+    skbuff_bcm_ext_iq_prio_set(skb, info->iq_prio);
     skb->dev = ndev = wfd_p->wl_if_dev[info->dest_ssid];
     dev_hold(ndev);
     spin_unlock(&(wfd_p->wfd_dev_lock[info->dest_ssid]));
@@ -498,9 +507,9 @@ static inline int exception_packet_handle(struct sk_buff *skb, rdpa_cpu_rx_info_
 #endif
 
     skb->protocol = eth_type_trans(skb, skb->dev);
-	/* leave dirty_p as NULL for packets to Linux stack,
-	** so that _rdpa_cpu_sysb_flush can perform full flush.
-	*/
+    /* leave dirty_p as NULL for packets to Linux stack,
+    ** so that _rdpa_cpu_sysb_flush can perform full flush.
+    */
     skb_shinfo(skb)->dirty_p = NULL;
 
 #if defined(CONFIG_BCM_NIC_WLAN_TID_SUPPORT)
@@ -508,6 +517,8 @@ static inline int exception_packet_handle(struct sk_buff *skb, rdpa_cpu_rx_info_
     prio = (info->wl_metadata >> RDPA_CPU_RX_INFO_WL_METADATA_TID_SHIFT);
     prio &= RDPA_CPU_RX_INFO_WL_METADATA_TID_MASK;
     skb->wl.ucast.nic.wl_prio = prio;
+    skb->mark &= ~(0x7 << PRIO_LOC_NFMARK);
+    skb->mark |=  ((prio) & 0x7) << PRIO_LOC_NFMARK;
 #endif
 
     local_bh_disable();
@@ -599,8 +610,17 @@ _wfd_bulk_fkb_get(uint32_t qid, uint32_t budget, wfd_object_t *wfd_p, void **uca
                 continue;
             }
 #ifdef CONFIG_BCM_WFD_RATE_LIMITER
-            ssid = wfd_pktfwd_key_2_ssid(pktfwd_key);
-            if ((ssid != -1) && rl_should_drop(wfd_p->wfd_idx, ssid, RL_DIR_TX, info.size))
+            if (wfd_rl_enabled)
+            {
+                ssid = wfd_pktfwd_key_2_ssid(pktfwd_key);
+                if ((ssid != -1) && rl_should_drop(wfd_p->wfd_idx, ssid, RL_DIR_TX, info.size))
+                {
+                    PKTLIST_PKT_FREE(FKBUFF_2_PNBUFF(fkb));
+                    return BDMF_ERR_TOO_MANY;
+                }
+            }
+            
+            if (wfd_sta_rl_enabled && rl_sta_tx_should_drop(wfd_p->wfd_idx, pktfwd_key, info.size)) 
             {
                 PKTLIST_PKT_FREE(FKBUFF_2_PNBUFF(fkb));
                 return BDMF_ERR_TOO_MANY;
@@ -755,10 +775,19 @@ static inline struct sk_buff *single_packet_read_and_handle(wfd_ctx_t *wfd_ctx, 
 
     wl_nic.word = info.wl_metadata;
 #ifdef CONFIG_BCM_WFD_RATE_LIMITER
-    if (wfd_rl_enabled && !info.is_exception && info.is_ucast)
+    if (!info.is_exception && info.is_ucast)
     {
-        int ssid = wfd_pktfwd_key_2_ssid(wl_nic.chain_id);
-        if ((ssid != -1) && rl_should_drop(wfd_ctx->wfd_p->wfd_idx, ssid, RL_DIR_TX, info.size))
+        if (wfd_rl_enabled)
+        {    
+            int ssid = wfd_pktfwd_key_2_ssid(wl_nic.chain_id);
+            if ((ssid != -1) && rl_should_drop(wfd_ctx->wfd_p->wfd_idx, ssid, RL_DIR_TX, info.size))
+            {
+                *rc = BDMF_ERR_TOO_MANY;
+                goto err;
+            }
+        }
+
+        if (wfd_sta_rl_enabled && rl_sta_tx_should_drop(wfd_ctx->wfd_p->wfd_idx, wl_nic.chain_id, info.size)) 
         {
             *rc = BDMF_ERR_TOO_MANY;
             goto err;
@@ -816,6 +845,9 @@ static inline struct sk_buff *single_packet_read_and_handle(wfd_ctx_t *wfd_ctx, 
         encode_val = wl_nic.word >> WFD_NIC_WLAN_PRIORITY_START_IN_WORD;
         DECODE_WLAN_PRIORITY_MARK(encode_val, skb->mark);
         wfd_ctx->ucast_count++;
+
+        if (info.wlan_pkt_tlm)
+            skb_data_set_qstat_telemetry(skb);
     }
     else
     {
@@ -1258,17 +1290,27 @@ static inline void *wfd_acc_info_get(int wl_radio_idx)
     return rdpa_cpu_data_get(rdpa_cpu_wlan0 + wl_radio_idx);
 }
 
+static int inject_bypass_ifidx = -1;
+
 static int wfd_runner_nbuff_tx(pNBuff_t pNBuff, struct net_device * dev)
 {
     rdpa_cpu_tx_info_t info = {};
     uint32_t hw_port, radio;
+
+    if (unlikely(dev->ifindex == inject_bypass_ifidx))
+    {
+        return BDMF_ERR_NOT_SUPPORTED;
+    }
 
     hw_port = netdev_path_get_hw_port(dev);
     radio = WLAN_RADIO_GET(hw_port);
     info.ssid = WLAN_SSID_GET(hw_port);
 
 #ifdef CONFIG_BCM_WFD_RATE_LIMITER
-    if (rl_chain_check_and_drop(wfd_objects[radio].wfd_idx, info.ssid, RL_DIR_RX, pNBuff))
+    if (wfd_rl_enabled && rl_chain_check_and_drop(wfd_objects[radio].wfd_idx, info.ssid, RL_DIR_RX, pNBuff))
+        return 0;
+
+    if (wfd_sta_rl_enabled && rl_sta_rx_should_drop(wfd_objects[radio].wfd_idx, pNBuff))
         return 0;
 #endif
 
@@ -1277,7 +1319,10 @@ static int wfd_runner_nbuff_tx(pNBuff_t pNBuff, struct net_device * dev)
     info.method = rdpa_cpu_tx_ingress;
 
     gs_count_tx_packets[radio]++;
-    return rdpa_cpu_send_sysb(pNBuff, &info);
+    rdpa_cpu_send_sysb(pNBuff, &info);
+    /* Above API takes care of freeing the buffer even in error case so
+     * returning success here */
+    return 0;
 }
 
 static int wfd_runner_tx(struct sk_buff *skb)
@@ -1286,6 +1331,7 @@ static int wfd_runner_tx(struct sk_buff *skb)
 }
 
 #ifdef WFD_PATH_DELAY_MEASURE
+#if defined(BCM_PKTFWD)
 void wfd_path_delay_dump(wfd_path_delay_stats_t *stat)
 {
     uint32_t i = 0, delay_avg_time = 0;
@@ -1309,16 +1355,19 @@ void wfd_path_delay_dump(wfd_path_delay_stats_t *stat)
     } 
     printk("extra %d(%d\%%)\n", stat->extra_hist, (stat->extra_hist*100)/stat->count);
 }
+#endif /* BCM_PKTFWD */
 
 static ssize_t wfd_path_delay_read_proc(struct file *file, char *buff, size_t len, loff_t *offset)
 {
     if (*offset)
         return 0;
 
+#if defined(BCM_PKTFWD)
     printk("\nWFD->PKTWFD path delay summary (packet based)\n");
     wfd_path_delay_dump(&wfd_delay_stats.wfd_pktfwd);
     printk("\nPKTWFD->WLAN path delay summary (batch based)\n");
     wfd_path_delay_dump(&wfd_delay_stats.pktfwd_wlan);
+#endif /* BCM_PKTFWD */
 
     return *offset;
 }
@@ -1343,6 +1392,7 @@ static ssize_t wfd_path_delay_write_proc(struct file *file, const char *buff, si
             wfd_path_delay_calc = NULL;
             printk("Path delay stats disabled\n");
             break;
+#if defined(BCM_PKTFWD)
         case 1:
             wfd_path_delay_calc = xrdp_wfd_path_delay_calc;
             printk("Path delay stats enabled\n");
@@ -1351,6 +1401,7 @@ static ssize_t wfd_path_delay_write_proc(struct file *file, const char *buff, si
             memset(&wfd_delay_stats, 0, sizeof(wfd_delay_stats));
             printk("Path delay stats cleared\n");
             break;
+#endif /* BCM_PKTFWD */
         default:
             break;
     }
@@ -1375,24 +1426,43 @@ static const struct proc_ops path_delay_fops = {
 
 static ssize_t wfd_rx_fastpath_read_proc(struct file *file, char *buff, size_t len, loff_t *offset)
 {
+    char outbuf[64];
+    int sz = sizeof(outbuf);
+
     if (*offset)
         return 0;
 
-    *offset += sprintf(buff + *offset, "%u\n", inject_to_fastpath);
+    *offset = snprintf(outbuf, sz, "%u\n", inject_to_fastpath);
+    if (copy_to_user(buff, outbuf, *offset))
+        return -EFAULT;
 
     return *offset;
 }
 
 static ssize_t wfd_rx_fastpath_write_proc(struct file *file, const char *buff, size_t len, loff_t *offset)
 {
-    char input[2];
+    char input[64];
     uint32_t allow;
+    char ifname[32];
+    struct net_device * dev;
+    int rc = 0;
 
     if (copy_from_user(input, buff, sizeof(input)) != 0)
         return -EFAULT;
 
-    if (sscanf(input, "%u", &allow) < 1)
-        return EFAULT;
+    if ((rc = sscanf(input, "%u %s", &allow, ifname)) < 1)
+        return -EFAULT;
+    
+    inject_bypass_ifidx = -1;
+    if (rc == 2)
+    {
+        dev = dev_get_by_name(&init_net, ifname);
+        if (dev)
+        {
+            inject_bypass_ifidx = dev->ifindex;
+            dev_put(dev);
+        }
+    }
 
     inject_to_fastpath_set(allow);
 
@@ -1429,8 +1499,9 @@ static int wfd_plat_proc_init(void)
 static void wfd_plat_proc_uninit(struct proc_dir_entry *dir)
 {
     remove_proc_entry("wlan_rx_fastpath", dir);
+
 #ifdef WFD_PATH_DELAY_MEASURE
     remove_proc_entry("path_delay_stats", dir);
-#endif
+#endif  
 }
 #endif /* __XRDP_WFD_INLINE_H_INCLUDED__ */

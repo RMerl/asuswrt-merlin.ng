@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2019 Heiko Schocher <hs@denx.de>
+ */
+
+#include "am33xx-u-boot.dtsi"
+
+/ {
+	ocp {
+		bootph-all;
+	};
+};
+
+&l4_wkup {
+	bootph-all;
+};
+
+&scm {
+	bootph-all;
+};
+
+&am33xx_pinmux {
+	bootph-all;
+};
+
+&uart0_pins {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&mmc1 {
+	bootph-all;
+	cd-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+};
+
+&emmc_pins {
+	bootph-all;
+};
+
+&mmc2 {
+	bootph-all;
+};
+
+&mmc1_pins {
+	bootph-all;
+};
+
+&mmc3 {
+	status = "disabled";
+};

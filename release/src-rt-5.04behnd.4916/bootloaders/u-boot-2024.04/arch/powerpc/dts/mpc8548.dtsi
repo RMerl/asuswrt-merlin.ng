@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * MPC8548CDS Silicon/SoC Device Tree Source (pre include)
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ * Copyright 2019 NXP
+ */
+
+/dts-v1/;
+
+/include/ "e500v2_power_isa.dtsi"
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		PowerPC,8548@0 {
+			device_type = "cpu";
+			reg = <0>;
+		};
+	};
+};

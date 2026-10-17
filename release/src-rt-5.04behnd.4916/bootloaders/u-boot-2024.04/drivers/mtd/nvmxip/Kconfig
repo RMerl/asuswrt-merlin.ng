@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright 2023 Arm Limited and/or its affiliates <open-source-office@arm.com>
+# Authors:
+#   Abdellatif El Khlifi <abdellatif.elkhlifi@arm.com>
+
+config NVMXIP
+	bool "NVM XIP devices support"
+	select BLK
+	help
+	  This option allows the emulation of a block storage device
+	  on top of a direct access non volatile memory XIP flash devices.
+	  This support provides the read operation.
+
+config NVMXIP_QSPI
+	bool "QSPI XIP  support"
+	select NVMXIP
+	help
+	  This option allows the emulation of a block storage device on top of a QSPI XIP flash

@@ -1,0 +1,16 @@
+if TARGET_PHYCORE_IMX8MP
+
+config SYS_BOARD
+	default "phycore_imx8mp"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "phycore_imx8mp"
+
+config IMX_CONFIG
+	default "board/phytec/phycore_imx8mp/imximage-8mp-sd.cfg"
+
+source "board/phytec/common/Kconfig"
+endif

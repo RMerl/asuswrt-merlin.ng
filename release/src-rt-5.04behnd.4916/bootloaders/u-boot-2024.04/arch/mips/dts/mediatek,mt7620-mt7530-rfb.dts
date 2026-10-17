@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 MediaTek Inc.
+ *
+ * Author: Weijie Gao <weijie.gao@mediatek.com>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include "mt7620.dtsi"
+
+/ {
+	compatible = "mediatek,mt7620-mt7530-rfb", "mediatek,mt7620-soc";
+	model = "MediaTek MT7620-MT7530 RFB (MTKC712)";
+
+	aliases {
+		serial0 = &uartlite;
+		spi0 = &spi0;
+	};
+
+	chosen {
+		stdout-path = &uartlite;
+	};
+};
+
+&uartlite {
+	status = "okay";
+};
+
+&pinctrl {
+	state_default: pin_state {
+		pleds {
+			groups = "ephy led", "wled";
+			function = "led";
+		};
+
+		gpios {
+			groups = "pa", "uartf";
+			function = "gpio";
+		};
+	};
+
+	gsw_pins: gsw_pins {
+		mdio {
+			groups = "mdio";
+			function = "mdio";
+		};
+
+		rgmii1 {
+			groups = "rgmii1";
+			function = "rgmii1";
+		};
+	};
+};
+
+&spi0 {
+	status = "okay";
+	num-cs = <2>;
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <25000000>;
+		reg = <0>;
+	};
+};
+
+&gpio0 {
+	pa0_pull_low {
+		gpio-hog;
+		output-low;
+		gpios = <20 GPIO_ACTIVE_HIGH>;
+	};
+
+	pa1_pull_low {
+		gpio-hog;
+		output-low;
+		gpios = <21 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&eth {
+	status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&gsw_pins>;
+
+	port5 {
+		phy-mode = "rgmii";
+		phy-addr = <5>;
+		fixed-link {
+			full-duplex;
+			speed = <1000>;
+			mediatek,mt7530;
+			mediatek,mt7530-reset = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+		};
+	};
+};

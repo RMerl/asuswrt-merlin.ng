@@ -4,15 +4,33 @@
 #define HI32
 #endif
 
+#if !defined(CPU_ADDR_OFFSET)
+#define CPU_ADDR_OFFSET 0
+#endif
+
+#define CPU_REG_ADDR          (WIFI_ADDR - CPU_ADDR_OFFSET)
+
 compatible = "brcm,bcm963xx-vpcie";
 device_type = "vpci";
 #if defined(WIFI_MLO_ADDR)
-reg = <HI32 WIFI_ADDR HI32 WIFI_SIZE>,
-      <HI32 WIFI_MLO_ADDR HI32 WIFI_MLO_SIZE>;
+#define CPU_MLO_ADDR          (WIFI_MLO_ADDR - CPU_ADDR_OFFSET)
+reg-names = "core-base", "mlo-base";
+reg = <HI32 CPU_REG_ADDR HI32 WIFI_SIZE>,
+      <HI32 CPU_MLO_ADDR HI32 WIFI_MLO_SIZE>;
 #else
-reg = <HI32 WIFI_ADDR HI32 WIFI_SIZE>;
+reg-names = "core-base";
+reg = <HI32 CPU_REG_ADDR HI32 WIFI_SIZE>;
 #endif
 
+#address-cells = <3>;
+#size-cells = <2>;
+/*       <flags(32b)> <pci_addr(64b)>   <cpu_addr(64b)  > <size(64)>      */
+#if defined(WIFI_MLO_ADDR)
+ranges = <0x02000000  0 WIFI_ADDR     HI32 CPU_REG_ADDR 0 WIFI_SIZE>,
+		 <0x02000000  0 WIFI_MLO_ADDR HI32 CPU_MLO_ADDR 0 WIFI_MLO_SIZE>;
+#else
+ranges = <0x02000000  0 WIFI_ADDR     HI32 CPU_REG_ADDR 0 WIFI_SIZE>;
+#endif
 brcm,coreid = <WIFI_COREID>;                              /* VPCIe core ID */
 brcm,devid = <WIFI_DEVID>;                                /* VPCIe Device Id */
 #if defined(PCIE_DOMAIN_ID)
@@ -20,6 +38,7 @@ linux,pci-domain = <PCIE_DOMAIN_ID>;
 #else
 linux,pci-domain = <WIFI_COREID>;
 #endif
+bus-range = <1 1>;
 
 /*
  * Order:
@@ -66,4 +85,6 @@ status = "okay";
 #undef WIFI_THERM_LO_SPI
 #undef WIFI_THERM_SD_SPI
 #undef PCIE_DOMAIN_ID
+#undef CPU_REG_ADDR
+#undef CPU_MLO_ADDR
 #undef HI32

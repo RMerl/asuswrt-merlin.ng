@@ -61,6 +61,8 @@
 #define ENET_DELAYED_INIT
 #endif
 
+struct tc_mqprio_qopt_offload;
+
 typedef enum
 {
     PORT_CLASS_SW = 0x1,
@@ -204,8 +206,10 @@ typedef struct port_info_t
     uint32_t is_wanconf_mux_ae  :1;
     uint32_t is_wanconf_mux_pon :1;
     uint32_t swtag_use_pvid     :1;
-    uint32_t reserved           :20;
+    uint32_t wan_use_8txq       :1;  // Archer based only
+    uint32_t reserved           :19;
     int is_macsec;
+    int port_group;
 } port_info_t;
 
 #define EXT_SW_VLAN_TAG_PREFIX  1000
@@ -250,6 +254,7 @@ typedef struct enetx_port_t
             /* Phy port object to perform operations such as read status and eee enable */
             phy_dev_t *phy;
             phy_dev_t *delayed_phy;
+            bool delayed_init; /* whether under delayed init context */
             /* 1/100 of a second from system uptime, updated at PHY link status change */
             uint32_t phy_last_change;
             /* Defaults to 1; when set, enet will handle phy link changes */
@@ -302,6 +307,29 @@ typedef struct enetx_port_t
             struct gpio_desc *reset_gpiod;
         } s;
     };
+
+#if defined(CONFIG_BCM_ENET_EGRESS_TC)
+    struct egress_tm_node *root_node;
+    DECLARE_HASHTABLE(nodes_hash_table, 8);
+
+    /* Setup Egress TM configurations */
+    int (*tc_setup_egress_tm)(struct enetx_port_t *self, bool init);
+    void (*tc_remove_egress_tm)(struct enetx_port_t *self, struct egress_tm_node *node);
+
+    /* Update statistics */
+    void (*tc_ets_update_stat)(struct enetx_port_t *self, struct egress_tm_node *ets);
+
+    /* Get port capability */
+    void (*tc_get_egress_tm_caps)(struct enetx_port_t *self, void *caps);
+
+    /* Setup mqprio configurations */
+    int (*tc_setup_mqprio)(struct enetx_port_t *self, struct tc_mqprio_qopt_offload *mqprio);
+
+    struct list_head policer_list;
+    int (*tc_setup_policer)(struct flow_action_entry *act);
+    int (*tc_remove_policer)(int index);
+#endif
+
     struct
     {
         /* When active, RX/TX will set channel to/from skb mark */

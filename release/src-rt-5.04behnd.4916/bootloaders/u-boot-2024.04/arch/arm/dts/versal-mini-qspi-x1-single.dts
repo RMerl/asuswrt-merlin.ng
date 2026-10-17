@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Xilinx Versal QSPI x1 Single DTS
+ *
+ * Copyright (C) 2018-2019 Xilinx, Inc.
+ */
+
+#include "versal-mini-qspi.dtsi"
+
+/ {
+	model = "Xilinx Versal MINI QSPI X1 SINGLE";
+};
+
+&flash0 {
+	spi-tx-bus-width = <1>;
+	spi-rx-bus-width = <1>;
+};

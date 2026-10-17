@@ -1,0 +1,9 @@
+WANDBOARD BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx6qdl-wandboard.dtsi
+F:	arch/arm/dts/imx6qdl-wandboard-revb1.dtsi
+F:	arch/arm/dts/imx6dl-wandboard-revb1.dts
+F:	board/wandboard/
+F:	include/configs/wandboard.h
+F:	configs/wandboard_defconfig

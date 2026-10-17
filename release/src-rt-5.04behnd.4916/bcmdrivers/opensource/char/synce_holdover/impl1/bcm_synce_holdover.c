@@ -154,13 +154,17 @@ static void synce_or_reg(uint32_t offset, uint32_t position, uint32_t nbits, uin
     SYNCE_WRITE_32(offset, reg);
 }
 
-static int merlin_enable_synce(phy_dev_t *lan_phy_dev)
+static int merlin_enable_synce(phy_dev_t *phy_dev)
 {
     int rc = 0;
+    phy_dev_t base_phy = *phy_dev;
 
-    rc = rc ?: phy_dev_c45_write_mask(lan_phy_dev, 1, 0xD075, (~0xEFFF) & 0xffff, 0, 0x0000);
-    rc = rc ?: phy_dev_c45_write_mask(lan_phy_dev, 1, 0xD075, (~0xEFFF) & 0xffff, 0, 0x1000);
-    rc = rc ?: phy_dev_c45_write_mask(lan_phy_dev, 1, 0xD072, (~0xEFFF) & 0xffff, 0, 0x1000);
+    base_phy.lane_index = 0;
+    base_phy.addr = phy_dev->addr - phy_dev->lane_index;
+
+    rc = rc ?: phy_dev_c45_write_mask(&base_phy, 1, 0xD075, (~0xEFFF) & 0xffff, 0, 0x0000);
+    rc = rc ?: phy_dev_c45_write_mask(&base_phy, 1, 0xD075, (~0xEFFF) & 0xffff, 0, 0x1000);
+    rc = rc ?: phy_dev_c45_write_mask(&base_phy, 1, 0xD072, (~0xEFFF) & 0xffff, 0, 0x1000);
     return rc;
 }
 
@@ -806,25 +810,29 @@ EXPORT_SYMBOL(synce_holdover_wan_linkdown_atomic_handler);
 
 static void synce_holdover_set_eth_mode(phy_dev_t *lan_phy_dev, const int merlin_linkup, int speed)
 {
-    switch (speed)
+    static int merlin_links;
+
+    if (merlin_linkup)
+        merlin_links++;
+    else
+        merlin_links--;
+
+    if (merlin_links == 1 && merlin_linkup == 1)
     {
-        case PHY_SPEED_10000:
-        case PHY_SPEED_2500:  /* since 2.5Gbps is also using 10.3GHz VCO */
-            data.eth_mode = 0;
-            break;
-        case PHY_SPEED_5000:
-            data.eth_mode = 1;
-            break;
-        default:
-            data.eth_mode = -1; /* link_down or (link_up < 2.5GbE) */
-            if (merlin_linkup)
-            {
-                DBG_PRINTK("SyncE doesn't support PHY_SPEED=%d", speed);
-            }
+        data.merlin_up = 1;
+        data.lan_phy_dev = lan_phy_dev;
+        data.eth_mode = 0;
+        send_message_to_pon_drv_task(msg_call_synce_eth_up_handler);
     }
-    data.lan_phy_dev = merlin_linkup ? lan_phy_dev : NULL;
-    DBG_PRINTK("merlin link %s, eth_mode==%d", merlin_linkup ? "up" : "down", data.eth_mode);
-    send_message_to_pon_drv_task(merlin_linkup ? msg_call_synce_eth_up_handler : msg_call_synce_eth_down_handler);
+    if (merlin_links == 0 && merlin_linkup == 0)
+    {
+        data.merlin_up = 0;
+        data.lan_phy_dev = NULL;
+        data.eth_mode = -1;
+        send_message_to_pon_drv_task(msg_call_synce_eth_down_handler);
+    }
+
+    DBG_PRINTK("merlin link %s, eth_mode %d total links %d", merlin_linkup ? "up" : "down", data.eth_mode, merlin_links);
 }
 
 static void synce_holdover_eth_link_change_cb(phy_dev_t *phy_dev)
@@ -834,12 +842,12 @@ static void synce_holdover_eth_link_change_cb(phy_dev_t *phy_dev)
 
     if (!data.initialized)
         return;
+
     phy_dev_caps_get(first, CAPS_TYPE_SUPPORTED, &caps);
     if (caps & PHY_CAP_SYNCE)
     {
-        data.merlin_up = phy_dev->link;
         DBG_PRINTK("Merlin LAN link %s\n", phy_dev->link ? "up" : "down");
-        synce_holdover_set_eth_mode(phy_dev->cascade_prev ? phy_dev->cascade_prev : phy_dev, phy_dev->link, phy_dev->speed);
+        synce_holdover_set_eth_mode(first, phy_dev->link, phy_dev->speed);
     }
 
     if (first->phy_drv->phy_type == PHY_TYPE_WAN_AE)
@@ -862,13 +870,14 @@ static struct synce_holdover_data *synce_holdover_data_init(struct device *dev)
     struct synce_holdover_data *psynce_holdover = &data;
 
     *psynce_holdover = (struct synce_holdover_data) { 0 };
-    bcmFun_reg(BCM_FUN_ID_SYNCE_ETH_LINK_CHANGE, (bcmFun_t *)synce_holdover_eth_link_change_cb);
-    DBG_PRINTK("%s.%d registered cb synce_holdover_eth_link_change_cb()\n", __FUNCTION__, __LINE__);
 
 #if defined(CONFIG_BRCM_SMC_BOOT)
     if (bcm_license_check_msg(BP3_FEATURE_SYNCE) <= 0)
         return psynce_holdover;
 #endif
+
+    bcmFun_reg(BCM_FUN_ID_SYNCE_ETH_LINK_CHANGE, (bcmFun_t *)synce_holdover_eth_link_change_cb);
+    DBG_PRINTK("%s.%d registered cb synce_holdover_eth_link_change_cb()\n", __FUNCTION__, __LINE__);
 
     psynce_holdover->dev = dev;
     psynce_holdover->eth_clk_good = FALSE;
@@ -897,6 +906,8 @@ static void synce_holdover_data_uninit(struct device *dev)
 {
     if (!data.initialized)
         return;
+
+    bcmFun_dereg(BCM_FUN_ID_SYNCE_ETH_LINK_CHANGE);
 
     send_message_to_pon_drv_task(msg_synce_register_handlers, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL);

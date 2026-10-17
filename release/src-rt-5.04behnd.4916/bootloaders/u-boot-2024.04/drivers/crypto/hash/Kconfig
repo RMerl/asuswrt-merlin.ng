@@ -1,0 +1,25 @@
+config DM_HASH
+	bool "Enable Driver Model for Hash"
+	depends on DM
+	help
+	  If you want to use driver model for Hash, say Y.
+
+config HASH_SOFTWARE
+	bool "Enable driver for Hash in software"
+	depends on DM_HASH
+	depends on MD5
+	depends on SHA1
+	depends on SHA256
+	depends on SHA384
+	depends on SHA512
+	help
+	  Enable driver for hashing operations in software. Currently
+	  it support multiple hash algorithm including CRC/MD5/SHA.
+
+config HASH_ASPEED
+	bool "Enable Hash with ASPEED hash accelerator"
+	depends on DM_HASH
+	select ASPEED_HACE
+	help
+	  Enable this to support HW-assisted hashing operations using ASPEED Hash
+	  and Crypto engine - HACE

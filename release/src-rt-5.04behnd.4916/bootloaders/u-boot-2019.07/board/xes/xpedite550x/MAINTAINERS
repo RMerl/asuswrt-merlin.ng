@@ -1,6 +1,0 @@
-XPEDITE550X BOARD
-M:	Peter Tyser <ptyser@xes-inc.com>
-S:	Maintained
-F:	board/xes/xpedite550x/
-F:	include/configs/xpedite550x.h
-F:	configs/xpedite550x_defconfig

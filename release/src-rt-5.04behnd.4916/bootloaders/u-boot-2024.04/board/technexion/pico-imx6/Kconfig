@@ -1,0 +1,15 @@
+if TARGET_PICO_IMX6
+
+config SYS_BOARD
+	default "pico-imx6"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "pico-imx6"
+
+endif

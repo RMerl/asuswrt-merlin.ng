@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+
+<!-- Copyright (c) 2018, Heinrich Schuchardt <xypron.glpk@gmx.de> -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="186"
+   height="186"
+   viewBox="0 0 186 186"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="u-boot_logo.svg"
+   inkscape:export-filename="tools/logos/u-boot_logo.png"
+   inkscape:export-xdpi="41.290001"
+   inkscape:export-ydpi="41.290001">
+  <title
+     id="title30">U-Boot Logo</title>
+  <metadata
+     id="metadata31">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>U-Boot Logo</dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/4.0/" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Heinrich Schuchardt &lt;xypron.glpk@gmx.de&gt;</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:date>May 21st, 2018</dc:date>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-sa/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs29" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1440"
+     inkscape:window-height="871"
+     id="namedview27"
+     showgrid="false"
+     inkscape:zoom="3"
+     inkscape:cx="93"
+     inkscape:cy="93"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,0)">
+    <circle
+       style="fill:#004466;fill-opacity:1;stroke-width:0;stroke:none"
+       id="path835"
+       cx="93"
+       cy="93"
+       r="93" />
+    <path
+       inkscape:connector-curvature="0"
+       style="fill:#ffcc88;fill-opacity:1;stroke:none;stroke-width:0;stroke:none"
+       d="m 116,76 a 20,20 0 0 1 -20,-20 20,20 0 0 1 20,-20 v 11 a 9,9 0 0 0 -9,9 9,9 0 0 0 9,9 z"
+       id="path4136-6-6-1-6-3-5" />
+    <path
+       inkscape:connector-curvature="0"
+       style="fill:#ffcc88;fill-opacity:1;stroke:none;stroke-width:0"
+       d="m 116,66 a 10,10 0 0 1 -10,-10 10,10 0 0 1 10,-10 v 1 a 9,9 0 0 0 -9,9 9,9 0 0 0 9,9 z"
+       id="path4136-6-6-1-6-3-5-1-9" />
+    <ellipse
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4136-6-6-1-6-3-5-1-2"
+       cx="116"
+       cy="41.5"
+       rx="4"
+       ry="5.5" />
+    <circle
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4352"
+       cx="86"
+       cy="66"
+       r="10" />
+    <circle
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4352-1"
+       cx="126"
+       cy="66"
+       r="10" />
+    <rect
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="rect4399"
+       width="39"
+       height="20"
+       x="86.5"
+       y="56" />
+    <rect
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="rect4660"
+       width="60"
+       height="9.5"
+       x="76"
+       y="66.5" />
+    <circle
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4549-5"
+       cx="36"
+       cy="81"
+       r="15" />
+    <circle
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4549-5-5"
+       cx="36"
+       cy="121"
+       r="15" />
+    <ellipse
+       style="fill:#ffcc88;fill-opacity:1;stroke:#000000;stroke-width:0"
+       id="path4136-6-6"
+       cx="15"
+       cy="91"
+       rx="4"
+       ry="10" />
+    <ellipse
+       style="fill:#ffcc88;fill-opacity:1;stroke:#000000;stroke-width:0"
+       id="path4136-6-6-1"
+       cx="15"
+       cy="111"
+       rx="4"
+       ry="10" />
+    <rect
+       style="fill:#dd9955;fill-opacity:1;stroke:#000000;stroke-width:0"
+       id="rect4213"
+       width="65"
+       height="4"
+       x="11"
+       y="99" />
+    <ellipse
+       style="fill:#ffcc88;fill-opacity:1;stroke:#000000;stroke-width:0"
+       id="path4136"
+       cx="100.5"
+       cy="100.5"
+       rx="74.5"
+       ry="34.5" />
+    <ellipse
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416"
+       cx="70"
+       cy="95.5"
+       rx="15"
+       ry="12.5" />
+    <ellipse
+       style="fill:#ffcc88;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-9"
+       cx="70"
+       cy="95.5"
+       rx="14"
+       ry="11.5" />
+    <ellipse
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-0"
+       cx="70"
+       cy="95.5"
+       rx="11"
+       ry="8.5" />
+    <ellipse
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-94"
+       cx="110"
+       cy="95.5"
+       rx="15"
+       ry="12.5" />
+    <ellipse
+       style="fill:#ffcc88;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-9-1"
+       cx="110"
+       cy="95.5"
+       rx="14"
+       ry="11.5" />
+    <ellipse
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-0-1"
+       cx="110"
+       cy="95.5"
+       rx="11"
+       ry="8.5" />
+    <ellipse
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-94-2"
+       cx="150"
+       cy="95.5"
+       rx="15"
+       ry="12.5" />
+    <ellipse
+       style="fill:#ffcc88;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-9-1-2"
+       cx="150"
+       cy="95.5"
+       rx="14"
+       ry="11.5" />
+    <ellipse
+       style="fill:#dd9955;fill-opacity:1;stroke:none;stroke-width:0"
+       id="path4416-0-1-9"
+       cx="150"
+       cy="95.5"
+       rx="11"
+       ry="8.5" />
+  </g>
+</svg>

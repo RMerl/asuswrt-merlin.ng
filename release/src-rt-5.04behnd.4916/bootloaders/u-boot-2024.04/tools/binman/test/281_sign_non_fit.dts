@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		size = <0x100000>;
+		allow-repack;
+
+		u-boot {
+		};
+		fit {
+			description = "U-Boot";
+			offset = <0x10000>;
+			images {
+				u-boot-1 {
+					description = "U-Boot";
+					type = "standalone";
+					arch = "arm64";
+					os = "u-boot";
+					compression = "none";
+					hash-1 {
+						algo = "sha256";
+					};
+					u-boot {
+					};
+				};
+
+				fdt-1 {
+					description = "test.dtb";
+					type = "flat_dt";
+					arch = "arm64";
+					compression = "none";
+					hash-1 {
+						algo = "sha256";
+					};
+					u-boot-spl-dtb {
+					};
+				};
+
+			};
+
+			configurations {
+				default = "conf-1";
+				conf-1 {
+					description = "u-boot with fdt";
+					firmware = "u-boot-1";
+					fdt = "fdt-1";
+					signature-1 {
+						algo = "sha256,rsa4096";
+						key-name-hint = "test_key";
+						sign-images = "firmware", "fdt";
+					};
+
+				};
+			};
+		};
+
+		fdtmap {
+		};
+	};
+};

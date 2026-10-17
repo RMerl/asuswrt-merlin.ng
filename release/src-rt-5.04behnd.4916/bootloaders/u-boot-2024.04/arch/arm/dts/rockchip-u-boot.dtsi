@@ -1,0 +1,209 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Jagan Teki <jagan@amarulasolutions.com>
+ */
+
+#include <config.h>
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+#ifdef CONFIG_SPL
+&binman {
+	simple-bin {
+		filename = "u-boot-rockchip.bin";
+		pad-byte = <0xff>;
+
+		mkimage {
+			filename = "idbloader.img";
+			args = "-n", CONFIG_SYS_SOC, "-T", "rksd";
+			multiple-data-files;
+
+#ifdef CONFIG_ROCKCHIP_EXTERNAL_TPL
+			rockchip-tpl {
+			};
+#elif defined(CONFIG_TPL)
+			u-boot-tpl {
+			};
+#endif
+			u-boot-spl {
+			};
+		};
+
+#if defined(CONFIG_SPL_FIT) && (defined(CONFIG_ARM64) || defined(CONFIG_SPL_OPTEE_IMAGE))
+		fit: fit {
+#ifdef CONFIG_ARM64
+			description = "FIT image for U-Boot with bl31 (TF-A)";
+#else
+			description = "FIT image with OP-TEE";
+#endif
+			#address-cells = <1>;
+			fit,fdt-list = "of-list";
+			filename = "u-boot.itb";
+			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+			fit,align = <512>;
+			offset = <CONFIG_SPL_PAD_TO>;
+			images {
+				u-boot {
+					description = "U-Boot";
+					type = "standalone";
+					os = "U-Boot";
+#ifdef CONFIG_ARM64
+					arch = "arm64";
+#else
+					arch = "arm";
+#endif
+#if defined(CONFIG_SPL_GZIP)
+					compression = "gzip";
+#elif defined(CONFIG_SPL_LZMA)
+					compression = "lzma";
+#else
+					compression = "none";
+#endif
+					load = <CONFIG_TEXT_BASE>;
+					entry = <CONFIG_TEXT_BASE>;
+					u-boot-nodtb {
+#if defined(CONFIG_SPL_GZIP)
+					compress = "gzip";
+#elif defined(CONFIG_SPL_LZMA)
+					compress = "lzma";
+#endif
+					};
+#ifdef CONFIG_SPL_FIT_SIGNATURE
+					hash {
+						algo = "sha256";
+					};
+#endif
+				};
+
+#ifdef CONFIG_ARM64
+				@atf-SEQ {
+					fit,operation = "split-elf";
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					arch = "arm64";
+					os = "arm-trusted-firmware";
+					compression = "none";
+					fit,load;
+					fit,entry;
+					fit,data;
+
+					atf-bl31 {
+					};
+#ifdef CONFIG_SPL_FIT_SIGNATURE
+					hash {
+						algo = "sha256";
+					};
+#endif
+				};
+				@tee-SEQ {
+					fit,operation = "split-elf";
+					description = "TEE";
+					type = "tee";
+					arch = "arm64";
+					os = "tee";
+					compression = "none";
+					fit,load;
+					fit,entry;
+					fit,data;
+
+					tee-os {
+						optional;
+					};
+#ifdef CONFIG_SPL_FIT_SIGNATURE
+					hash {
+						algo = "sha256";
+					};
+#endif
+				};
+#else
+				op-tee {
+					description = "OP-TEE";
+					type = "tee";
+					arch = "arm";
+					os = "tee";
+					compression = "none";
+					load = <(CFG_SYS_SDRAM_BASE + 0x8400000)>;
+					entry = <(CFG_SYS_SDRAM_BASE + 0x8400000)>;
+
+					tee-os {
+					};
+#ifdef CONFIG_SPL_FIT_SIGNATURE
+					hash {
+						algo = "sha256";
+					};
+#endif
+				};
+#endif
+
+				@fdt-SEQ {
+					description = "fdt-NAME";
+					compression = "none";
+					type = "flat_dt";
+#ifdef CONFIG_SPL_FIT_SIGNATURE
+					hash {
+						algo = "sha256";
+					};
+#endif
+				};
+			};
+
+			configurations {
+				default = "@config-DEFAULT-SEQ";
+				@config-SEQ {
+					description = "NAME.dtb";
+					fdt = "fdt-SEQ";
+#ifdef CONFIG_ARM64
+					fit,firmware = "atf-1", "u-boot";
+#else
+					fit,firmware = "op-tee", "u-boot";
+#endif
+					fit,loadables;
+				};
+			};
+		};
+#else
+		u-boot-img {
+			offset = <CONFIG_SPL_PAD_TO>;
+		};
+#endif
+	};
+
+#ifdef CONFIG_ROCKCHIP_SPI_IMAGE
+	simple-bin-spi {
+		filename = "u-boot-rockchip-spi.bin";
+		pad-byte = <0xff>;
+
+		mkimage {
+			filename = "idbloader-spi.img";
+			args = "-n", CONFIG_SYS_SOC, "-T", "rkspi";
+			multiple-data-files;
+
+#ifdef CONFIG_ROCKCHIP_EXTERNAL_TPL
+			rockchip-tpl {
+			};
+#elif defined(CONFIG_TPL)
+			u-boot-tpl {
+			};
+#endif
+			u-boot-spl {
+			};
+		};
+
+#if defined(CONFIG_ARM64) || defined(CONFIG_SPL_OPTEE_IMAGE)
+		fit {
+			type = "blob";
+			filename = "u-boot.itb";
+#else
+		u-boot-img {
+#endif
+			/* Sync with u-boot,spl-payload-offset if present */
+			offset = <CONFIG_SYS_SPI_U_BOOT_OFFS>;
+		};
+	};
+#endif /* CONFIG_ROCKCHIP_SPI_IMAGE */
+};
+#endif /* CONFIG_SPL */

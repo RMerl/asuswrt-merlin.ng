@@ -1,0 +1,47 @@
+# Whitelist in place for this component / branch / twig
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+
+JIRA:BCAWLAN-268015 RootAP Channel Bandwidth is downgrading if Repeater is operating in Lower Bandwidth
+JIRA:BCAWLAN-273957 WBD2: EasyMesh R6: CERT: MAUT is not getting restarted after configuring the BSS in a fresh setup
+JIRA:BCAWLAN-273872 SmartMesh/IDLS: :RootAP[TRi-link] & RPT[Dual-link[6G&2G]] : Observed additional BH & FH BSS are being created for 6G in RPT 
+JIRA:BCAWLAN-274029 Single link mlo client steering on strong sta detection wbd side changes
+JIRA:BCAWLAN-273957 WBD2: EasyMesh R6: MAUT is not getting restarted after configuring the BSS in a fresh setup
+JIRA:BCAWLAN-272344 SmartMesh-Interop: Channel synchronization failing for 6G Bss
+JIRA:BCAWLAN-273911 SmartMesh-Interop: Other BSSs info is missing when wbd_master finding the Target BSS for the BH STA
+JIRA:BCAWLAN-274020 RootAP's Channel Bandwidth is downgrading if Rpt2 is operating in Lower Bandwidth with daisy
+JIRA:BCAWLAN-274596 Pre-Cert:WiFi-EasyMesh-R6: MAUT is sending bSTA MLD configuration response message without deleting STA link.
+JIRA:BCAWLAN-274630 WBD2: Fixing an issue where the DPP OnBoarding is failing if FrontHaul is created only on Aux 5G with DFS Channel
+JIRA:BCAWLAN-274438 [wbd2]: agent fails to add bss to hostapd due to wrong config settings
+JIRA:BCAWLAN-274618 [wbd2]:use valid assoc sta vndr data for assoc sta link metrics
+JIRA:BCAWLAN-274721 Remove hard coded bridge names-br0, br1 etc.
+JIRA:BCAWLAN-274824 DPP onboarding is not happening if the fronthaul is created only on 5G AUX due to DPP relay mode set failure
+JIRA:BCAWLAN-274186 SmartMesh-Interop: 11AX(RootAP) + 11BE(RPT): Observed RPT 2G BH STA associated to RootAP 2G BH instead of 6G
+JIRA:BCAWLAN-271991 BH_Sta fails to select stronger BSS while trying to steer back to higher bss
+JIRA:BCAWLAN-275204 5GHz Wi-Fi channel bandwidth is being downgraded to 80MHz
+JIRA:BCAWLAN-274014 [FG4278B/vodafone]:Wbd_slave still record the client info even if this client already disconnected
+JIRA:BCAWLAN-273867 Problems when importing Associated STA Link Metrics TLV and Associated STA Extended Link Metrics TLV
+JIRA:BCAWLAN-274714 EasyMesh R6: CERT: MAUT is restarting continuously when the teardown comes to 5G if the 5G is MAIN
+JIRA:BCAWLAN-274888 [wbd]: Add some wait between hotstapd exit and hostapd relaunch
+JIRA:BCAWLAN-273899 BackHaul optimization failure because of incorrect RSSI estimation leading to incorrect tbss calculation.
+JIRA:BCAWLAN-275442 SmartHaul: RootAP[Tri-link] & RPT[Dual-Link: 2.4G&6G]: Observed Wireless STA is failed to associate with RPT's FH 5G(Pseudo-MLO)
+JIRA:BCAWLAN-275492 Fixed that the agent does not reject the channel selection request for MLO aux link bSTA
+JIRA:BCAWLAN-275829 SmartMesh: Onboarding is failing when reapplying FH SSID nvrams on the RootAP
+JIRA:BCAWLAN-276060 RootAP (4916+3x6726:25.1) and Repeater (6756+6715:21.2.1): RPT's BH STA failed to Steer to available best TBSS(6G BSS) during the BH optimization
+JIRA:BCAWLAN-276588 33941_OpenBFC_6726MCH2_6726MCH5_67263MCH6(ROOTAP)/6766REF1-2G-5G-A1_BCM967263MCH6-B1(RPT): Onboarding failing with 6766 Repeater
+JIRA:BCAWLAN-276718 SmartMesh: 6766REF1(A1)-2G-5G_BCM967263MCH6(B1)-6G: WiFi Repeater channel are not in sync with RootAP
+JIRA:BCAWLAN-275059 Observed that DPP PTK is not updated at Repeaters in Daisy Chain Topology (HAPD: Failed to send command MAP_ADD_DEV
+JIRA:BCAWLAN-276592 SVT:AP:Feature:Smartmesh-OTA: 33941_OpenBFC_6726MCH2_6726MCH5_67263MCH6: Observed "TRAP type 0x2 @ epc 0x9a214a" on RootAP
+JIRA:BCAWLAN-273900 [SmartMesh] Update BH SSID in FW & WPS related Backhaul NVRAMs when Backhaul Creds are changing
+JIRA:BCAWLAN-275908 [SmartMesh] Agent's New Backhaul SSID is not being updated correctly in Controller
+JIRA:BCAWLAN-275790 Controller consider BH STA Beacon Report Value as RCPI Always, and use RCPI to RSSI Converted Value
+JIRA:BCAWLAN-276357 Repeater is undergoing additional restart and unstable BHSTA association if BH created on 6G only
+JIRA:BCAWLAN-268469 Both the 5G and 2G BSSs are down when the fh_akm is set to psk2 for the 2.4G and 5G radios
+JIRA:BCAWLAN-277440 Pre-Cert:WiFi-EasyMesh-R6:MAUT is not sending Early AP Capability Report message to CTT Controller at step-17.

@@ -41,10 +41,6 @@
 
 #include "bcm63xx-i2s.h"
 
-#if defined(CONFIG_BCM963148) || defined(CONFIG_BCM963138)
-#include "bcm63148clk.h"
-#endif
-
 #define DRV_NAME "brcm-i2s"
 #define BCM63XX_I2S_RATES_BASIC  \
   SNDRV_PCM_RATE_16000 | SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_44100 | \
@@ -52,19 +48,31 @@
 #define BCM63XX_I2S_RATES_EXT  \
   SNDRV_PCM_RATE_8000  | SNDRV_PCM_RATE_11025 | SNDRV_PCM_RATE_22050
 
-#if defined(CONFIG_BCM963158) || \
-    defined(CONFIG_BCM963178) || \
-    defined(CONFIG_BCM947622)
 #define BCM63XX_I2S_RATES  BCM63XX_I2S_RATES_BASIC | BCM63XX_I2S_RATES_EXT
-#else
-#define BCM63XX_I2S_RATES  BCM63XX_I2S_RATES_BASIC 
-#endif
 
 struct regmap        *regmap_i2s;
 static struct clk    *i2s_clk;
 
 int bcm63xx_soc_platform_probe(struct platform_device *pdev);
 int bcm63xx_soc_platform_remove(struct platform_device *pdev);
+void bcm63xx_set_i2s_independent_clk(struct device *dev, int regbit);
+
+void bcm63xx_set_i2s_independent_clk(struct device *dev, int regbit)
+{
+#if defined(CONFIG_BCM968880)
+	if(!regmap_i2s) {
+		dev_err(dev, "%s error. Device not initialized.\n",__func__);
+		return;
+	}
+
+	regbit = regbit>0 ? 1:0;
+	regbit = regbit << I2S_INDEP_TX_RX_CLK_EN_SHIFT;
+	regmap_update_bits(regmap_i2s, I2S_MISC_CFG, 
+					I2S_INDEP_TX_RX_CLK_EN_MASK,
+					regbit);
+#endif
+	return;
+}
 
 static bool brcm_i2s_wr_reg(struct device *dev, unsigned int reg)
 {
@@ -146,6 +154,23 @@ static int bcm63xx_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
      default:
         return -EINVAL;
    }
+   
+   switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK)
+   {
+	case SND_SOC_DAIFMT_I2S:
+#if defined(CONFIG_BCM968880)
+		regmap_update_bits(regmap_i2s, I2S_TX_CFG_2,
+				   I2S_TX_TDM_MODE_MASK,
+				   I2S_TX_I2S_MODE);
+		regmap_update_bits(regmap_i2s, I2S_RX_CFG_2,
+				   I2S_RX_TDM_MODE_MASK,
+				   I2S_RX_I2S_MODE);
+#endif
+		break;
+	default:
+		return -EINVAL;
+   }
+
    return 0;
 }
 
@@ -191,12 +216,7 @@ static int bcm63xx_i2s_probe(struct snd_soc_dai *dai)
 static int bcm63xx_i2s_startup(struct snd_pcm_substream *substream,
                                struct snd_soc_dai *dai)
 {
-   struct snd_soc_pcm_runtime *rtd = substream->private_data;
-   struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-   if (!cpu_dai->active)
-   {
-     // todo
-   }
+   unsigned int slaveMode;
    
    if(substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
    {
@@ -225,7 +245,6 @@ static int bcm63xx_i2s_startup(struct snd_pcm_substream *substream,
                                      I2S_DESC_OFF_INTR_EN,
                                      ~I2S_DESC_INTR_TYPE_SEL |
                                      I2S_DESC_OFF_INTR_EN );
-      unsigned int slaveMode;
       regmap_read(regmap_i2s, I2S_RX_CFG_2,  &slaveMode);
       if( slaveMode & I2S_RX_SLAVE_MODE_MASK )
          regmap_update_bits(regmap_i2s, I2S_TX_CFG_2,
@@ -306,7 +325,6 @@ static int bcm63xx_i2s_startup(struct snd_pcm_substream *substream,
                                      I2S_RX_DESC_INTR_TYPE_SEL_MASK, 
                                      ~I2S_RX_DESC_INTR_TYPE_SEL );
 
-      unsigned int slaveMode;
       regmap_read(regmap_i2s, I2S_TX_CFG_2,  &slaveMode);
       if( slaveMode & I2S_TX_SLAVE_MODE_MASK )
          regmap_update_bits(regmap_i2s, I2S_RX_CFG_2,
@@ -367,7 +385,7 @@ static const struct snd_soc_dai_ops bcm63xx_i2s_dai_ops = {
 };
 
 static struct snd_soc_dai_driver bcm63xx_i2s_dai = {
-   .name     = DRV_NAME,
+   .name     = "whistler-cpu-dai",
    .probe    = bcm63xx_i2s_probe,
    .playback = 
    {
@@ -416,7 +434,7 @@ static int bcm63xx_i2s_dev_probe(struct platform_device *pdev)
       return -EBUSY;
    }
 
-   regs = devm_ioremap_nocache(&pdev->dev,r_mem->start, resource_size(r_mem));
+   regs = devm_ioremap(&pdev->dev,r_mem->start, resource_size(r_mem));
    regmap_i2s = devm_regmap_init_mmio(&pdev->dev,regs,&brcm_i2s_regmap_config);
    if(!regmap_i2s)
    {
@@ -474,4 +492,4 @@ module_platform_driver(bcm63xx_i2s_driver);
 /* Module information */
 MODULE_AUTHOR("Kevin,Li <kevin-ke.li@broadcom.com>");
 MODULE_DESCRIPTION("Broadcom DSL XPON ASOC I2S Interface");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");

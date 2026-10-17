@@ -127,16 +127,24 @@ enum {
 #define CL45_GET_REGADDR(devReg)  ((devReg)&0xffff)
 
 /* Device 7 definitoins */
+#define CL45_REG_LP_AN_STATUS   0x70021
+    #define CL45_REG_LP_10GBASE_T       (1<<11)
+    #define CL45_REG_LP_5GBASE_T        (1<<6)
+    #define CL45_REG_LP_2P5GBASE_T      (1<<5)
+
 #define CL45_REG_1G100M_CTL     0x7ffe0
     #define CL45_REG_INTNL_LOOPBACK     (1<<14)
     #define CL45_REG_SPEED_MASK         ((1<<6)|(1<<13))
-    #define CL45_REG_1000M_SPEED        (1<<6)
-    #define CL45_REG_100M_SPEED         (1<<13)
+    #define CL45_REG_1000M_SPEED        ((1<<6)|(0<<13))
+    #define CL45_REG_100M_SPEED         ((0<<6)|(1<<13))
+    #define CL45_REG_10M_SPEED          ((0<<6)|(0<<13))
     #define CL45_REG_1G100M_AN_ENABLED  (1<<12)
     #define CL45_REG_POWER_DOWN         (1<<11)
     #define CL45_REG_1G100M_AN_RESTART  (1<<9)
     #define CL45_REG_DUPLEX_MODE        (1<<8)
-    #define FORCED_100MFD_CTRL  (CL45_REG_100M_SPEED|CL45_REG_DUPLEX_MODE)
+    #define CL45_REG_FORCED_1000MFD_CTRL         (CL45_REG_1000M_SPEED|CL45_REG_DUPLEX_MODE)
+    #define CL45_REG_FORCED_100MFD_CTRL          (CL45_REG_100M_SPEED|CL45_REG_DUPLEX_MODE)
+    #define CL45_REG_FORCED_10MFD_CTRL           (CL45_REG_10M_SPEED|CL45_REG_DUPLEX_MODE)
     #define REGULAR_CTRL_REG0_VAL    (CL45_REG_1G100M_AN_ENABLED|CL45_REG_1G100M_AN_RESTART|CL45_REG_1000M_SPEED|CL45_REG_DUPLEX_MODE)
 
 #define CL45_REG_1G100M_STATUS     0x7ffe1
@@ -145,13 +153,21 @@ enum {
 
 #define CL45_REG_COP_AN     0x7ffe4
     #define CL45_REG_COP_AN_100M_ADV_MASK   (3<<7)
-    #define CL45_REG_COP_AN_100M_FD_ADV     (2<<7)
     #define CL45_REG_COP_AN_100M_HD_ADV     (1<<7)
+    #define CL45_REG_COP_AN_100M_FD_ADV     (2<<7)
     #define CL45_REG_COP_AN_100M_FHD_ADV    (3<<7)
     #define CL45_REG_COP_PAUSE              (1<<10)
     #define CL45_REG_COP_PAUSE_ASYM         (1<<11)
-    #define CL45_REG_COP_AN_10M_FD_ADV      (1<<6)
+    #define CL45_REG_COP_AN_10M_ADV_MASK    (3<<5)
     #define CL45_REG_COP_AN_10M_HD_ADV      (1<<5)
+    #define CL45_REG_COP_AN_10M_FD_ADV      (2<<5)
+    #define CL45_REG_COP_AN_10M_FHD_ADV     (3<<5)
+
+#define CL45_REG_LP_ABLTY   0x7ffe5
+    #define CL45_REG_LP_ASYM_PAUSE          (1<<11)
+    #define CL45_REG_LP_PAUSE               (1<<10)
+    #define CL45_REG_LP_100BASE_T_FULL      (1<<8)
+    #define CL45_REG_LP_100BASE_T_HALF      (1<<7)
 
 #define CL45_REG_1G_CTL     0x7ffe9
     #define CL45_REG_1G_CTL_1G_ADV_MASK     (3<<8)
@@ -171,17 +187,25 @@ enum {
     #define CL45_AN_STATUS_RX_PAUSE (1<<1)
     #define CL45_AN_STATUS_TX_PAUSE (1<<0)
 
+#define CL45_REG_1000BASE_T_STATUS  0x7ffea
+    #define CL45_REG_LP_1GBASE_T_FULL       (1<<11)
+    #define CL45_REG_LP_1GBASE_T_HALF       (1<<10)
+
 #define CL45_REG_1G_TEST_REG        0x7fffe
     #define CL45_FORCE_LINK_UP      (1<<12)
 
 /* Device 7 10G Register definitions */
 /* 10GBase-T AN Control Register */
-#define CL45REG_10GBASET_AN_CTL 0x70000
+#define CL45_REG_10GBASET_AN_CTL 0x70000
     #define CL45_REG_10G_AN_ENABLE      (1<<12)
     #define CL45_REG_10G_AN_RESTART     (1<<9)
 
+#define CL45_REG_AN_STATUS          0x70001
+    #define CL45_REG_AN_COMPLETE    (1<<5)
+    #define CL45_REG_LP_AN_ABLTY    (1<<0)
+
 /* Device 7 10G AN definitions */
-#define CL45REG_10GBASET_AN_DEF_CTL 0x70020
+#define CL45_REG_10GBASET_AN_DEF_CTL 0x70020
     #define CL45_10GAN_10G_ABL      (1<<12)
     #define CL45_10GAN_5G_ABL       (1<<8)
     #define CL45_10GAN_2P5G_ABL     (1<<7)

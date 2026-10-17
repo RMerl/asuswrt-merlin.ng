@@ -1,0 +1,366 @@
+if ARCH_IMX8M
+
+config IMX8M
+	bool
+	select BINMAN
+	select GICV3 if ARMV8_PSCI
+	select HAS_CAAM
+	select LTO
+	select ROM_UNIFIED_SECTIONS
+	select ARMV8_CRYPTO
+
+config IMX8MQ
+	bool
+	select IMX8M
+	select CLK_IMX8MQ
+
+config IMX8MM
+	bool
+	select IMX8M
+
+config IMX8MN
+	bool
+	select IMX8M
+
+config IMX8MP
+	bool
+	select IMX8M
+
+config SYS_SOC
+	default "imx8m"
+
+config SYS_HAS_ARMV8_SECURE_BASE
+	bool "Enable secure address for PSCI image"
+	depends on ARMV8_PSCI
+	help
+	  PSCI image can be re-located to secure RAM.
+	  If enabled, please also define the value for ARMV8_SECURE_BASE,
+	  for i.MX8M, it could be some address in OCRAM.
+
+choice
+	prompt "NXP i.MX8M board select"
+	optional
+
+config TARGET_IMX8MQ_CM
+	bool "Ronetix iMX8MQ-CM SoM"
+	select IMX8MQ
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MQ_EVK
+	bool "imx8mq_evk"
+	select IMX8MQ
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MQ_PHANBELL
+	bool "imx8mq_phanbell"
+	select IMX8MQ
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MQ_REFORM2
+	bool "imx8mq_reform2"
+	select IMX8MQ
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MM_DATA_MODUL_EDM_SBC
+	bool "Data Modul eDM SBC i.MX8M Mini"
+	select IMX8MM
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+
+config TARGET_IMX8MM_EVK
+	bool "imx8mm LPDDR4 EVK board"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MM_ICORE_MX8MM
+	bool "Engicam i.Core MX8M Mini SOM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	help
+	  i.Core MX8M Mini is an EDIMM SOM based on NXP i.MX8MM.
+
+	  i.Core MX8M Mini EDIMM2.2:
+	  * EDIMM2.2 is a Form Factor Capacitive Evaluation Board.
+	  * i.Core MX8M Mini needs to mount on top of EDIMM2.2 for
+	    creating complete i.Core MX8M Mini EDIMM2.2 Starter Kit.
+
+	  i.Core MX8M Mini C.TOUCH 2.0
+	  * C.TOUCH 2.0 is a general purpose Carrier board.
+	  * i.Core MX8M Mini needs to mount on top of this Carrier board
+	    for creating complete i.Core MX8M Mini C.TOUCH 2.0 board.
+
+config TARGET_IMX8MM_MX8MENLO
+	bool "Support i.MX8M Mini MX8Menlo board based on Toradex Verdin SoM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MM_PHG
+	bool "i.MX8MM PHG board"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MM_VENICE
+	bool "Support Gateworks Venice iMX8M Mini module"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select GATEWORKS_SC
+	select MISC
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_KONTRON_MX8MM
+	bool "Kontron Electronics N80xx"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MN_BSH_SMM_S2
+	bool "imx8mn-bsh-smm-s2"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_DDR3L
+
+config TARGET_IMX8MN_BSH_SMM_S2PRO
+	bool "imx8mn-bsh-smm-s2pro"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_DDR3L
+
+config TARGET_IMX8MN_EVK
+	bool "imx8mn LPDDR4 EVK board"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MN_DDR4_EVK
+	bool "imx8mn DDR4 EVK board"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+	select FSL_CAAM
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MN_VENICE
+	bool "Support Gateworks Venice iMX8M Nano module"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select GATEWORKS_SC
+	select MISC
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MP_DATA_MODUL_EDM_SBC
+	bool "Data Modul eDM SBC i.MX8M Plus"
+	select IMX8MP
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+
+config TARGET_IMX8MP_BEACON
+	bool "imx8mm Beacon Embedded devkit"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MP_DEBIX_MODEL_A
+	bool "Polyhex i.MX8M Plus Debix Model A SBC"
+	select IMX8MP
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+
+config TARGET_IMX8MP_DH_DHCOM_PDK2
+	bool "DH electronics DHCOM Premium Developer Kit (2) i.MX8M Plus"
+	select IMX8MP
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+
+config TARGET_IMX8MP_ICORE_MX8MP
+	bool "Engicam i.Core MX8M Plus SOM"
+	select IMX8MP
+	select IMX8M_LPDDR4
+	select SUPPORT_SPL
+	help
+	  i.Core MX8M Plus is an EDIMM SOM based on NXP i.MX8MP.
+
+	  i.Core MX8M Plus EDIMM2.2:
+	  * EDIMM2.2 is a Form Factor Capacitive Evaluation Board.
+	  * i.Core MX8M Plus needs to mount on top of EDIMM2.2 for
+	    creating complete i.Core MX8M Plus EDIMM2.2 Starter Kit.
+
+config TARGET_IMX8MP_EVK
+	bool "imx8mp LPDDR4 EVK board"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MP_VENICE
+	bool "Support Gateworks Venice iMX8M Plus module"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select GATEWORKS_SC
+	select MISC
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_PICO_IMX8MQ
+	bool "Support Technexion Pico iMX8MQ"
+	select IMX8MQ
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MN_VAR_SOM
+	bool "Variscite imx8mn_var_som"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_DDR4
+	select MISC
+	select I2C_EEPROM
+	select DM_ETH_PHY
+	select NVMEM
+
+config TARGET_KONTRON_PITX_IMX8M
+	bool "Support Kontron pITX-imx8m"
+	select IMX8MQ
+	select IMX8M_LPDDR4
+
+config TARGET_VERDIN_IMX8MM
+	bool "Support Toradex Verdin iMX8M Mini module"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_VERDIN_IMX8MP
+	bool "Support Toradex Verdin iMX8M Plus module"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MM_BEACON
+	bool "imx8mm Beacon Embedded devkit"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_IMX8MN_BEACON
+	bool "imx8mn Beacon Embedded devkit"
+	select IMX8MN
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+	select SPL_CRYPTO if SPL
+
+config TARGET_PHYCORE_IMX8MM
+	bool "PHYTEC PHYCORE i.MX8MM"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_PHYCORE_IMX8MP
+	bool "PHYTEC PHYCORE i.MX8MP"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MM_CL_IOT_GATE
+	bool "CompuLab iot-gate-imx8"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select SUPPORT_EXTENSION_SCAN
+
+config TARGET_IMX8MM_CL_IOT_GATE_OPTEE
+	bool "CompuLab iot-gate-imx8 with optee support"
+	select IMX8MM
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+	select SUPPORT_EXTENSION_SCAN
+
+config TARGET_IMX8MP_RSB3720A1_4G
+	bool "Support i.MX8MP RSB3720A1 4G"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_IMX8MP_RSB3720A1_6G
+	bool "Support i.MX8MP RSB3720A1 6G"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_MSC_SM2S_IMX8MP
+	bool "MSC SMARC2 i.MX8MPLUS"
+	select IMX8MP
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+config TARGET_LIBREM5
+	bool "Purism Librem5 Phone"
+	select IMX8MQ
+	select SUPPORT_SPL
+	select IMX8M_LPDDR4
+
+endchoice
+
+source "board/advantech/imx8mp_rsb3720a1/Kconfig"
+source "board/beacon/imx8mm/Kconfig"
+source "board/beacon/imx8mn/Kconfig"
+source "board/beacon/imx8mp/Kconfig"
+source "board/bsh/imx8mn_smm_s2/Kconfig"
+source "board/cloos/imx8mm_phg/Kconfig"
+source "board/compulab/imx8mm-cl-iot-gate/Kconfig"
+source "board/data_modul/imx8mm_edm_sbc/Kconfig"
+source "board/data_modul/imx8mp_edm_sbc/Kconfig"
+source "board/dhelectronics/dh_imx8mp/Kconfig"
+source "board/engicam/imx8mm/Kconfig"
+source "board/engicam/imx8mp/Kconfig"
+source "board/freescale/imx8mq_evk/Kconfig"
+source "board/freescale/imx8mm_evk/Kconfig"
+source "board/freescale/imx8mn_evk/Kconfig"
+source "board/freescale/imx8mp_evk/Kconfig"
+source "board/gateworks/venice/Kconfig"
+source "board/google/imx8mq_phanbell/Kconfig"
+source "board/kontron/pitx_imx8m/Kconfig"
+source "board/kontron/sl-mx8mm/Kconfig"
+source "board/menlo/mx8menlo/Kconfig"
+source "board/msc/sm2s_imx8mp/Kconfig"
+source "board/mntre/imx8mq_reform2/Kconfig"
+source "board/phytec/phycore_imx8mm/Kconfig"
+source "board/phytec/phycore_imx8mp/Kconfig"
+source "board/polyhex/imx8mp_debix_model_a/Kconfig"
+source "board/purism/librem5/Kconfig"
+source "board/ronetix/imx8mq-cm/Kconfig"
+source "board/technexion/pico-imx8mq/Kconfig"
+source "board/variscite/imx8mn_var_som/Kconfig"
+source "board/toradex/verdin-imx8mm/Kconfig"
+source "board/toradex/verdin-imx8mp/Kconfig"
+
+endif

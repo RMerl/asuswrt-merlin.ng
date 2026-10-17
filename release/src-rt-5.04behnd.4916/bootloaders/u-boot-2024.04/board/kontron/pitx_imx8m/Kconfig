@@ -1,0 +1,15 @@
+if TARGET_KONTRON_PITX_IMX8M
+
+config SYS_BOARD
+	default "pitx_imx8m"
+
+config SYS_VENDOR
+	default "kontron"
+
+config SYS_CONFIG_NAME
+	default "kontron_pitx_imx8m"
+
+config IMX_CONFIG
+	default "arch/arm/mach-imx/imx8m/imximage.cfg"
+
+endif

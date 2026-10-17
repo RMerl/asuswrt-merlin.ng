@@ -22,7 +22,7 @@ RDPA_OBJS += rdpa_udpspdtest.o
 RDPA_OBJS += rdpa_udpspdtest_ex.o
 RDPA_OBJS += rdpa_tr471_spdsvc.o
 else
-PROJ_DEFS += -UCONFIG_BCM_SPDSVC_SUPPORT -UDHD_SPDSVC_SUPPORT
+PROJ_DEFS += -UCONFIG_BCM_SPDSVC_SUPPORT
 endif
 endif
 

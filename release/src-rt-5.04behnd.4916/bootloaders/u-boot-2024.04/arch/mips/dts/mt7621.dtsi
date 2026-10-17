@@ -1,0 +1,349 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2022 MediaTek Inc. All rights reserved.
+ *
+ * Author: Weijie Gao <weijie.gao@mediatek.com>
+ */
+
+#include <dt-bindings/clock/mt7621-clk.h>
+#include <dt-bindings/reset/mt7621-reset.h>
+#include <dt-bindings/phy/phy.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "mediatek,mt7621-soc";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "mips,mips1004Kc";
+			reg = <0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "mips,mips1004Kc";
+			reg = <1>;
+		};
+	};
+
+	clk48m: clk48m {
+		compatible = "fixed-clock";
+
+		clock-frequency = <48000000>;
+
+		#clock-cells = <0>;
+	};
+
+	clk50m: clk50m {
+		compatible = "fixed-clock";
+
+		clock-frequency = <50000000>;
+
+		#clock-cells = <0>;
+	};
+
+	sysc: sysctrl@1e000000 {
+		compatible = "mediatek,mt7621-sysc", "syscon";
+		reg = <0x1e000000 0x100>;
+
+		clkctrl: clock-controller@1e000030 {
+			compatible = "mediatek,mt7621-clk";
+			mediatek,memc = <&memc>;
+
+			#clock-cells = <1>;
+		};
+	};
+
+	rstctrl: reset-controller@1e000034 {
+		compatible = "mediatek,mtmips-reset";
+		reg = <0x1e000034 0x4>;
+		#reset-cells = <1>;
+	};
+
+	reboot: resetctl-reboot {
+		compatible = "resetctl-reboot";
+
+		resets = <&rstctrl RST_SYS>;
+		reset-names = "sysreset";
+	};
+
+	memc: memctrl@1e005000 {
+		compatible = "mediatek,mt7621-memc", "syscon";
+		reg = <0x1e005000 0x1000>;
+	};
+
+	pinctrl: pinctrl@1e000060 {
+		compatible = "mediatek,mt7621-pinctrl";
+		reg = <0x1e000048 0x30>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&state_default>;
+
+		state_default: pin_state {
+		};
+
+		uart1_pins: uart1_pins {
+			groups = "uart1";
+			function = "uart";
+		};
+
+		uart2_pins: uart2_pins {
+			groups = "uart2";
+			function = "uart";
+		};
+
+		uart3_pins: uart3_pins {
+			groups = "uart3";
+			function = "uart";
+		};
+
+		sdxc_pins: sdxc_pins {
+			groups = "sdxc";
+			function = "sdxc";
+		};
+
+		spi_pins: spi_pins {
+			groups = "spi";
+			function = "spi";
+		};
+
+		eth_pins: eth_pins {
+			mdio_pins {
+				groups = "mdio";
+				function = "mdio";
+			};
+
+			rgmii1_pins {
+				groups = "rgmii1";
+				function = "rgmii";
+			};
+
+			esw_pins {
+				groups = "esw int";
+				function = "esw int";
+			};
+
+			mdio_pconf {
+				groups = "mdio";
+				drive-strength = <2>;
+			};
+		};
+	};
+
+	watchdog: watchdog@1e000100 {
+		compatible = "mediatek,mt7621-wdt";
+		reg = <0x1e000100 0x40>;
+
+		resets = <&rstctrl RST_TIMER>;
+		reset-names = "wdt";
+
+		status = "disabled";
+	};
+
+	gpio: gpio@1e000600 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		compatible = "mtk,mt7621-gpio";
+		reg = <0x1e000600 0x100>;
+
+		resets = <&rstctrl RST_PIO>;
+		reset-names = "pio";
+
+		gpio0: bank@0 {
+			reg = <0>;
+			compatible = "mtk,mt7621-gpio-bank";
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpio1: bank@1 {
+			reg = <1>;
+			compatible = "mtk,mt7621-gpio-bank";
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpio2: bank@2 {
+			reg = <2>;
+			compatible = "mtk,mt7621-gpio-bank";
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+	};
+
+	spi: spi@1e000b00 {
+		compatible = "ralink,mt7621-spi";
+		reg = <0x1e000b00 0x40>;
+
+		status = "disabled";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&spi_pins>;
+
+		resets = <&rstctrl RST_SPI>;
+		reset-names = "spi";
+
+		clocks = <&clkctrl MT7621_CLK_SPI>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+
+	uart0: uart1@1e000c00 {
+		compatible = "mediatek,hsuart", "ns16550a";
+		reg = <0x1e000c00 0x100>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart1_pins>;
+
+		clocks = <&clkctrl MT7621_CLK_UART1>;
+
+		resets = <&rstctrl RST_UART1>;
+
+		reg-shift = <2>;
+	};
+
+	uart1: uart2@1e000d00 {
+		compatible = "mediatek,hsuart", "ns16550a";
+		reg = <0x1e000d00 0x100>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart2_pins>;
+
+		clocks = <&clkctrl MT7621_CLK_UART2>;
+
+		resets = <&rstctrl RST_UART2>;
+
+		reg-shift = <2>;
+
+		status = "disabled";
+	};
+
+	uart2: uart3@1e000e00 {
+		compatible = "mediatek,hsuart", "ns16550a";
+		reg = <0x1e000e00 0x100>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart3_pins>;
+
+		clocks = <&clkctrl MT7621_CLK_UART3>;
+
+		resets = <&rstctrl RST_UART3>;
+
+		reg-shift = <2>;
+
+		status = "disabled";
+	};
+
+	eth: eth@1e100000 {
+		compatible = "mediatek,mt7621-eth";
+		reg = <0x1e100000 0x20000>;
+		mediatek,ethsys = <&sysc>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&eth_pins>;
+
+		resets = <&rstctrl RST_FE>, <&rstctrl RST_GMAC>, <&rstctrl RST_MCM>;
+		reset-names = "fe", "gmac", "mcm";
+
+		clocks = <&clkctrl MT7621_CLK_GDMA>,
+			 <&clkctrl MT7621_CLK_ETH>;
+		clock-names = "gmac", "fe";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		mediatek,gmac-id = <0>;
+		phy-mode = "rgmii";
+		mediatek,switch = "mt7530";
+		mediatek,mcm;
+
+		fixed-link {
+			speed = <1000>;
+			full-duplex;
+		};
+	};
+
+	mmc: mmc@1e130000 {
+		compatible = "mediatek,mt7621-mmc";
+		reg = <0x1e130000 0x4000>;
+
+		status = "disabled";
+
+		bus-width = <4>;
+		builtin-cd = <1>;
+		r_smpl = <1>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&sdxc_pins>;
+
+		clocks = <&clk50m>, <&clkctrl MT7621_CLK_SHXC>;
+		clock-names = "source", "hclk";
+
+		resets = <&rstctrl RST_SDXC>;
+	};
+
+	ssusb: usb@1e1c0000 {
+		compatible = "mediatek,mt7621-xhci", "mediatek,mtk-xhci";
+		reg = <0x1e1c0000 0x1000>, <0x1e1d0700 0x100>;
+		reg-names = "mac", "ippc";
+
+		clocks = <&clk48m>, <&clk48m>;
+		clock-names = "sys_ck", "ref_ck";
+
+		phys = <&u2port0 PHY_TYPE_USB2>,
+		       <&u3port0 PHY_TYPE_USB3>,
+		       <&u2port1 PHY_TYPE_USB2>;
+
+		status = "disabled";
+	};
+
+	u3phy: usb-phy@1e1d0000 {
+		compatible = "mediatek,mt7621-u3phy",
+			     "mediatek,generic-tphy-v1";
+		reg = <0x1e1d0000 0x700>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		status = "disabled";
+
+		u2port0: usb-phy@1e1d0800 {
+			reg = <0x1e1d0800 0x0100>;
+			#phy-cells = <1>;
+			clocks = <&clk48m>;
+			clock-names = "ref";
+		};
+
+		u3port0: usb-phy@1e1d0900 {
+			reg = <0x1e1d0900 0x0100>;
+			#phy-cells = <1>;
+		};
+
+		u2port1: usb-phy@1e1d1000 {
+			reg = <0x1e1d1000 0x0100>;
+			#phy-cells = <1>;
+			clocks = <&clk48m>;
+			clock-names = "ref";
+		};
+	};
+
+	i2c: i2c@1e000900 {
+		compatible = "i2c-gpio";
+
+		status = "disabled";
+
+		i2c-gpio,delay-us = <3>;
+
+		gpios = <&gpio0 3 1>, /* PIN3 as SDA */
+			<&gpio0 4 1>; /* PIN4 as CLK */
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};

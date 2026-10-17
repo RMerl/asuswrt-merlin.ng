@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot on RZ/G2 R8A774A1 SoC
+ *
+ * Copyright (C) 2021 Renesas Electronics Corporation
+ */
+
+#include "r8a779x-u-boot.dtsi"
+
+&extalr_clk {
+	bootph-all;
+};
+
+/delete-node/ &audma0;
+/delete-node/ &audma1;
+/delete-node/ &can0;
+/delete-node/ &can1;
+/delete-node/ &canfd;
+/delete-node/ &csi20;
+/delete-node/ &csi40;
+/delete-node/ &du;
+/delete-node/ &fcpf0;
+/delete-node/ &fcpvb0;
+/delete-node/ &fcpvd0;
+/delete-node/ &fcpvd1;
+/delete-node/ &fcpvd2;
+/delete-node/ &fcpvi0;
+/delete-node/ &hdmi0;
+/delete-node/ &lvds0;
+/delete-node/ &rcar_sound;
+/delete-node/ &sound_card;
+/delete-node/ &vin0;
+/delete-node/ &vin1;
+/delete-node/ &vin2;
+/delete-node/ &vin3;
+/delete-node/ &vin4;
+/delete-node/ &vin5;
+/delete-node/ &vin6;
+/delete-node/ &vin7;
+/delete-node/ &vspb;
+/delete-node/ &vspd0;
+/delete-node/ &vspd1;
+/delete-node/ &vspd2;
+/delete-node/ &vspi0;
+
+/ {
+	/delete-node/ hdmi0-out;
+};
+
+/ {
+	soc {
+		/delete-node/ fdp1@fe940000;
+	};
+};

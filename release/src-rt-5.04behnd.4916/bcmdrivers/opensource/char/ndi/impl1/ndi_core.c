@@ -1,7 +1,7 @@
 /*
- * <:copyright-BRCM:2020:DUAL/GPL:standard
+ * <:copyright-BRCM:2024:DUAL/GPL:standard
  *
- *    Copyright (c) 2020 Broadcom
+ *    Copyright (c) 2024 Broadcom
  *    All Rights Reserved
  *
  * Unless you and Broadcom execute a separate written software license
@@ -26,7 +26,6 @@
  *
  * :>
  */
-
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/skbuff.h>
@@ -46,8 +45,10 @@
 #include <net/neighbour.h>
 #include <net/netfilter/nf_conntrack.h>
 #include <net/netfilter/nf_conntrack_acct.h>
+#include <net/netfilter/nf_conntrack_ecache.h>
 #include <net/xfrm.h>
 #include <linux/bcm_netlink.h>
+#include <linux/bcm_nf_conntrack.h>
 #if IS_ENABLED(CONFIG_BCM_DPI)
 #include <linux/dpi.h>
 #endif
@@ -97,13 +98,8 @@ static const int ndi_max_pkt = 3;
 /* ----- local functions ----- */
 static inline int ignore_packet(struct ndi_classify *p)
 {
-	enum ip_conntrack_info ctinfo;
 	struct ethhdr *h;
 
-	if (unlikely(!p->skb))
-		return 1;
-
-	p->ct = nf_ct_get(p->skb, &ctinfo);
 	if (p->ct && test_bit(NDI_FINISHED_BIT, &p->ct->bcm_ext.ndi.flags))
 		return 1;
 
@@ -127,7 +123,6 @@ static inline int ignore_packet(struct ndi_classify *p)
 
 	if (is_netdev_dummy_dev(p->skb->dev))
 		return 1;
-
 
 	h = eth_hdr(p->skb);
 	if (!skb_mac_header_was_set(p->skb) ||
@@ -188,7 +183,7 @@ static void classify_secpath_device(struct ndi_classify *p)
 	dev = dev_find_or_new_for_secpath(p->skb->sp, p->dev);
 	if (dev != p->dev) {
 		p->dev = dev;
-		set_bit(UPDATED_BIT, &p->local_flags);
+		set_bit(DEV_UPDATED_BIT, &p->local_flags);
 	}
 #endif
 }
@@ -196,6 +191,7 @@ static void classify_secpath_device(struct ndi_classify *p)
 static void classify_device(struct ndi_classify *p)
 {
 	struct ndi_ip *ip = NULL;
+	u8 *mac;
 
 	if (p->dev || ignore_device(p))
 		return;
@@ -210,12 +206,12 @@ static void classify_device(struct ndi_classify *p)
 	if (ip) {
 		p->dev	= dev_find_or_new(ip->mac, p->skb);
 	} else if (!is_netdev_wan(p->skb->dev)) {
-		u8 *mac	= eth_hdr(p->skb)->h_source;
+		mac	= eth_hdr(p->skb)->h_source;
 		p->dev	= dev_find_or_new(mac, p->skb);
 	}
 
 	if (p->dev && dev_ip_update(p->dev, p->skb))
-		set_bit(UPDATED_BIT, &p->local_flags);
+		set_bit(DEV_UPDATED_BIT, &p->local_flags);
 }
 
 static void save_classifications(struct ndi_classify *p)
@@ -223,15 +219,18 @@ static void save_classifications(struct ndi_classify *p)
 	if (!p->ct)
 		return;
 	p->ct->bcm_ext.ndi.dev = p->dev;
+	p->ct->bcm_ext.ndi.flags = p->flags;
 }
 
-static void classify_prepare(struct ndi_classify *p, struct sk_buff *skb,
+static void classify_prepare(struct ndi_classify *p,
 			     const struct nf_hook_state *state)
 {
 	enum ip_conntrack_info ctinfo;
 	struct nf_conn *ctm;
+	int bit;
+	u8 dir;
 
-	p->ct	= nf_ct_get(skb, &ctinfo);
+	p->ct	= nf_ct_get(p->skb, &ctinfo);
 	p->hook	= state->hook;
 
 	/* populate classification data based on the conntrack entry */
@@ -241,11 +240,26 @@ static void classify_prepare(struct ndi_classify *p, struct sk_buff *skb,
 	}
 
 	/* if the parent conntrack has classification data and we don't, copy
-	 * the classification data to the child */
+	 * the classification data to the child.
+	 */
 	ctm = p->ct ? p->ct->master : NULL;
 	if (ctm) {
 		p->dev = p->dev ? : ctm->bcm_ext.ndi.dev;
 		p->flags = p->flags ? : ctm->bcm_ext.ndi.flags;
+	}
+
+	if (test_bit(NDI_FINISHED_BIT, &p->flags))
+		return;
+
+	if (is_netdev_wan(p->skb->dev)) {
+		dir = CTINFO2DIR(ctinfo);
+		bit = (dir == IP_CT_DIR_ORIGINAL) ? NDI_ORIG_IS_WAN_BIT :
+		      NDI_REPL_IS_WAN_BIT;
+
+		if (!test_bit(bit, &p->flags)) {
+			set_bit(bit, &p->flags);
+			set_bit(CT_UPDATED_BIT, &p->local_flags);
+		}
 	}
 }
 
@@ -267,18 +281,18 @@ static void classify(struct ndi_classify *p)
 
 static void classify_post(struct ndi_classify *p)
 {
-	if (!p->dev)
-		return;
-
 	save_classifications(p);
 	probe_set_online(p);
 
-	if (test_bit(UPDATED_BIT, &p->local_flags)) {
+	if (test_bit(DEV_UPDATED_BIT, &p->local_flags)) {
 		pr_debug("%s NDI update of classification data\n",
 			 ndi_dev_name(p->dev));
 		stats.netlink_broadcasts++;
 		ndi_dev_nl_event(p->dev, NDINL_NEWDEVICE);
 	}
+
+	if (p->ct && test_bit(CT_UPDATED_BIT, &p->local_flags))
+		bcm_conntrack_event(1 << IPCT_BCM, p->ct, 0, 0);
 }
 
 static int pcap_dump_ndi(struct cap_pkt_state *s)
@@ -320,11 +334,9 @@ ndi_nf_hook(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)
 
 	stats.seen_pkts++;
 
-	if (ignore_packet(&p))
-		goto out;
-
-	classify_prepare(&p, skb, state);
-	classify(&p);
+	classify_prepare(&p, state);
+	if (!ignore_packet(&p))
+		classify(&p);
 	classify_post(&p);
 
 out:
@@ -359,6 +371,7 @@ ndi_dpi_event(struct notifier_block *nb, unsigned long event, void *data)
 
 	return NOTIFY_OK;
 }
+
 static struct notifier_block dpi_nb = {
 	.notifier_call = ndi_dpi_event,
 };
@@ -375,10 +388,8 @@ static int __net_init ndi_pernet_init(struct net *net)
 	int ret = -ENOMEM;
 
 	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
-	if (!entry) {
-		pr_err("cannot allocate socket entry\n");
+	if (!entry)
 		goto err;
-	}
 
 	ret = nf_register_net_hooks(net, hooks, ARRAY_SIZE(hooks));
 	if (ret < 0) {
@@ -466,9 +477,6 @@ void probe_set_online(struct ndi_classify *p)
 	struct net_device *netdev = NULL;
 	struct ndi_dev *dev;
 
-	if (!IS_ENABLED(CONFIG_BCM_SGS))
-		return;
-
 	dev = p->dev;
 	if (!dev)
 		return;
@@ -485,7 +493,7 @@ void probe_set_online(struct ndi_classify *p)
 			dev_put(dev->netdev);
 		dev_hold(netdev);
 		dev->netdev = netdev;
-		set_bit(UPDATED_BIT, &p->local_flags);
+		set_bit(DEV_UPDATED_BIT, &p->local_flags);
 	}
 
 	if (!dev->netdev || dev->state == DEV_ONLINE)
@@ -499,7 +507,7 @@ void probe_set_online(struct ndi_classify *p)
 		pr_debug("%s on %s is now online\n", ndi_dev_name(dev),
 			 dev->netdev->name);
 	}
-	set_bit(UPDATED_BIT, &p->local_flags);
+	set_bit(DEV_UPDATED_BIT, &p->local_flags);
 	dev->state = DEV_ONLINE;
 	clear_bit(NDI_DEV_STALE_BIT, &dev->flags);
 }
@@ -541,7 +549,7 @@ static void probe_single_device(struct ndi_dev *dev)
 	 *                    respond to the arp probe and there was no network
 	 *                    activity detected from the device for an extended
 	 *                    period. The device is considered offline.
-	*/
+	 */
 	switch (dev->state) {
 	case DEV_ONLINE:
 		dev->state = DEV_MONITOR;
@@ -685,15 +693,30 @@ xfrm_notify(struct xfrm_state *x, const struct km_event *c)
 	case XFRM_MSG_NEWAE:
 		break;
 	default:
-		pr_err("xfrm_notify: unknown SA event %d\n", c->event);
+		pr_err("%s: unknown SA event %d\n", __func__, c->event);
 		break;
 	}
 
 	return 0;
 }
 
+static int __maybe_unused
+xfrm_acquire(struct xfrm_state *x, struct xfrm_tmpl *, struct xfrm_policy *xp)
+{
+	return -EINVAL;
+}
+
+static struct xfrm_policy * __maybe_unused
+xfrm_compile_policy(struct sock *sk, int opt, u8 *data, int len, int *dir)
+{
+	*dir = -EOPNOTSUPP;
+	return NULL;
+}
+
 static struct xfrm_mgr ndi_xfrm_mgr __maybe_unused = {
 	.notify		= xfrm_notify,
+	.acquire	= xfrm_acquire,
+	.compile_policy	= xfrm_compile_policy,
 };
 
 static int ndi_stat_seq_show(struct seq_file *s, void *v)
@@ -707,15 +730,17 @@ static int ndi_stat_seq_show(struct seq_file *s, void *v)
 
 	return 0;
 }
+
 static int ndi_stat_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, ndi_stat_seq_show, NULL);
 };
-static const struct file_operations ndi_stats_fops = {
-	.open		= ndi_stat_open,
-	.read		= seq_read,
-	.llseek		= seq_lseek,
-	.release	= single_release
+
+static const struct proc_ops ndi_stats_fops = {
+	.proc_open	= ndi_stat_open,
+	.proc_read	= seq_read,
+	.proc_lseek	= seq_lseek,
+	.proc_release	= single_release
 };
 
 static int __init ndi_init(void)

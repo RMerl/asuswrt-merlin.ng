@@ -1,0 +1,592 @@
+menu "MIPS architecture"
+	depends on MIPS
+
+config SYS_ARCH
+	default "mips"
+
+config SYS_CPU
+	default "mips32" if CPU_MIPS32
+	default "mips64" if CPU_MIPS64
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_MALTA
+	bool "Support malta"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select BOARD_EARLY_INIT_R
+	select DM
+	select DM_SERIAL
+	select PCI
+	select DYNAMIC_IO_PORT_BASE
+	select MIPS_CM
+	select MIPS_INSERT_BOOT_CONFIG
+	select SYS_CACHE_SHIFT_6
+	select MIPS_L2_CACHE
+	select OF_CONTROL
+	select OF_ISA_BUS
+	select PCI_MAP_SYSTEM_MEMORY
+	select ROM_EXCEPTION_VECTORS
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SUPPORTS_CPU_MIPS32_R2
+	select SUPPORTS_CPU_MIPS32_R6
+	select SUPPORTS_CPU_MIPS64_R1
+	select SUPPORTS_CPU_MIPS64_R2
+	select SUPPORTS_CPU_MIPS64_R6
+	select SUPPORTS_LITTLE_ENDIAN
+	select SWAP_IO_SPACE
+	imply CMD_DM
+
+config ARCH_ATH79
+	bool "Support QCA/Atheros ath79"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select DM
+	select OF_CONTROL
+	imply CMD_DM
+
+config ARCH_MSCC
+	bool "Support MSCC VCore-III"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select OF_CONTROL
+	select DM
+
+config ARCH_BMIPS
+	bool "Support BMIPS SoCs"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select CLK
+	select CPU
+	select DM
+	select OF_CONTROL
+	select RAM
+	select SYSRESET
+	imply CMD_DM
+
+config ARCH_MTMIPS
+	bool "Support MediaTek MIPS platforms"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select CLK
+	imply CMD_DM
+	select DISPLAY_CPUINFO
+	select DM
+	imply DM_GPIO
+	select DM_RESET
+	select DM_SERIAL
+	select PINCTRL
+	select PINMUX
+	select PINCONF
+	select RESET_MTMIPS
+	imply MTD
+	imply DM_SPI
+	imply DM_SPI_FLASH
+	select LAST_STAGE_INIT
+	select MIPS_TUNE_24KC
+	select OF_CONTROL
+	select ROM_EXCEPTION_VECTORS
+	select SUPPORTS_CPU_MIPS32_R1
+	select SUPPORTS_CPU_MIPS32_R2
+	select SUPPORTS_LITTLE_ENDIAN
+	select SUPPORT_SPL
+
+config ARCH_JZ47XX
+	bool "Support Ingenic JZ47xx"
+	select SUPPORT_SPL
+	select HAS_FIXED_TIMER_FREQUENCY
+	select OF_CONTROL
+	select DM
+
+config ARCH_OCTEON
+	bool "Support Marvell Octeon CN7xxx platforms"
+	select ARCH_EARLY_INIT_R
+	select CPU_CAVIUM_OCTEON
+	select DISPLAY_CPUINFO
+	select DMA_ADDR_T_64BIT
+	select DM
+	select DM_GPIO
+	select DM_I2C
+	select DM_SERIAL
+	select DM_SPI
+	select MIPS_L2_CACHE
+	select MIPS_MACH_EARLY_INIT
+	select MIPS_TUNE_OCTEON3
+	select MTD
+	select ROM_EXCEPTION_VECTORS
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS64_OCTEON
+	select PHYS_64BIT
+	select OF_CONTROL
+	select OF_LIVE
+	imply CMD_DM
+
+config MACH_PIC32
+	bool "Support Microchip PIC32"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select DM
+	select DM_EVENT
+	select OF_CONTROL
+	imply CMD_DM
+
+config TARGET_BOSTON
+	bool "Support Boston"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select DM
+	select DM_SERIAL
+	select MIPS_CM
+	select SYS_CACHE_SHIFT_6
+	select MIPS_L2_CACHE
+	select OF_BOARD_SETUP
+	select OF_CONTROL
+	select ROM_EXCEPTION_VECTORS
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SUPPORTS_CPU_MIPS32_R2
+	select SUPPORTS_CPU_MIPS32_R6
+	select SUPPORTS_CPU_MIPS64_R1
+	select SUPPORTS_CPU_MIPS64_R2
+	select SUPPORTS_CPU_MIPS64_R6
+	select SUPPORTS_LITTLE_ENDIAN
+	imply CMD_DM
+
+config TARGET_XILFPGA
+	bool "Support Imagination Xilfpga"
+	select HAS_FIXED_TIMER_FREQUENCY
+	select DM
+	select DM_GPIO
+	select DM_SERIAL
+	select SYS_CACHE_SHIFT_4
+	select OF_CONTROL
+	select ROM_EXCEPTION_VECTORS
+	select SUPPORTS_CPU_MIPS32_R1
+	select SUPPORTS_CPU_MIPS32_R2
+	select SUPPORTS_LITTLE_ENDIAN
+	imply CMD_DM
+	help
+	  This supports IMGTEC MIPSfpga platform
+
+endchoice
+
+source "board/imgtec/boston/Kconfig"
+source "board/imgtec/malta/Kconfig"
+source "board/imgtec/xilfpga/Kconfig"
+source "arch/mips/mach-ath79/Kconfig"
+source "arch/mips/mach-mscc/Kconfig"
+source "arch/mips/mach-bmips/Kconfig"
+source "arch/mips/mach-jz47xx/Kconfig"
+source "arch/mips/mach-pic32/Kconfig"
+source "arch/mips/mach-mtmips/Kconfig"
+source "arch/mips/mach-octeon/Kconfig"
+
+if MIPS
+
+choice
+	prompt "CPU selection"
+	default CPU_MIPS32_R2
+
+config CPU_MIPS32_R1
+	bool "MIPS32 Release 1"
+	depends on SUPPORTS_CPU_MIPS32_R1
+	select 32BIT
+	help
+	  Choose this option to build an U-Boot for release 1 through 5 of the
+	  MIPS32 architecture.
+
+config CPU_MIPS32_R2
+	bool "MIPS32 Release 2"
+	depends on SUPPORTS_CPU_MIPS32_R2
+	select 32BIT
+	help
+	  Choose this option to build an U-Boot for release 2 through 5 of the
+	  MIPS32 architecture.
+
+config CPU_MIPS32_R6
+	bool "MIPS32 Release 6"
+	depends on SUPPORTS_CPU_MIPS32_R6
+	select 32BIT
+	help
+	  Choose this option to build an U-Boot for release 6 or later of the
+	  MIPS32 architecture.
+
+config CPU_MIPS64_R1
+	bool "MIPS64 Release 1"
+	depends on SUPPORTS_CPU_MIPS64_R1
+	select 64BIT
+	help
+	  Choose this option to build a kernel for release 1 through 5 of the
+	  MIPS64 architecture.
+
+config CPU_MIPS64_R2
+	bool "MIPS64 Release 2"
+	depends on SUPPORTS_CPU_MIPS64_R2
+	select 64BIT
+	help
+	  Choose this option to build a kernel for release 2 through 5 of the
+	  MIPS64 architecture.
+
+config CPU_MIPS64_R6
+	bool "MIPS64 Release 6"
+	depends on SUPPORTS_CPU_MIPS64_R6
+	select 64BIT
+	help
+	  Choose this option to build a kernel for release 6 or later of the
+	  MIPS64 architecture.
+
+config CPU_MIPS64_OCTEON
+	bool "Marvell Octeon series of CPUs"
+	depends on SUPPORTS_CPU_MIPS64_OCTEON
+	select 64BIT
+	help
+	 Choose this option for Marvell Octeon CPUs.  These CPUs are between
+	 MIPS64 R5 and R6 with other extensions.
+
+endchoice
+
+menu "General setup"
+
+config ROM_EXCEPTION_VECTORS
+	bool "Build U-Boot image with exception vectors"
+	help
+	  Enable this to include exception vectors in the U-Boot image. This is
+	  required if the U-Boot entry point is equal to the address of the
+	  CPU reset exception vector (e.g. U-Boot as ROM loader in Qemu,
+	  U-Boot booted from parallel NOR flash).
+	  Disable this, if the U-Boot image is booted from DRAM (e.g. by SPL).
+	  In that case the image size will be reduced by 0x500 bytes.
+
+config SYS_MIPS_TIMER_FREQ
+	int "Fixed MIPS CPU timer frequency in Hz"
+	depends on HAS_FIXED_TIMER_FREQUENCY
+	help
+	  Configures a fixed CPU timer frequency.
+
+config MIPS_CM_BASE
+	hex "MIPS CM GCR Base Address"
+	depends on MIPS_CM
+	default 0x16100000 if TARGET_BOSTON
+	default 0x1fbf8000
+	help
+	  The physical base address at which to map the MIPS Coherence Manager
+	  Global Configuration Registers (GCRs). This should be set such that
+	  the GCRs occupy a region of the physical address space which is
+	  otherwise unused, or at minimum that software doesn't need to access.
+
+config MIPS_CACHE_INDEX_BASE
+	hex "Index base address for cache initialisation"
+	default 0x80000000 if CPU_MIPS32
+	default 0xffffffff80000000 if CPU_MIPS64
+	help
+	  This is the base address for a memory block, which is used for
+	  initialising the cache lines. This is also the base address of a memory
+	  block which is used for loading and filling cache lines when
+	  SYS_MIPS_CACHE_INIT_RAM_LOAD is selected.
+	  Normally this is CKSEG0. If the MIPS system needs to move this block
+	  to some SRAM or ScratchPad RAM, adapt this option accordingly.
+
+config MIPS_MACH_EARLY_INIT
+	bool "Enable mach specific very early init code"
+	help
+	  Use this to enable the call to mips_mach_early_init() very early
+	  from start.S. This function can be used e.g. to do some very early
+	  CPU / SoC intitialization or image copying. Its called very early
+	  and at this stage the PC might not match the linking address
+	  (CONFIG_TEXT_BASE) - no absolute jump done until this call.
+
+config MIPS_CACHE_SETUP
+	bool "Allow generic start code to initialize and setup caches"
+	default n if SKIP_LOWLEVEL_INIT
+	default y
+	help
+	  This allows the generic start code to invoke the generic initialization
+	  of the CPU caches. Disabling this can be useful for RAM boot scenarios
+	  (EJTAG, SPL payload) or for machines which don't need cache initialization
+	  or which want to provide their own cache implementation.
+
+	  If unsure, say yes.
+
+config MIPS_CACHE_DISABLE
+	bool "Allow generic start code to initially disable caches"
+	default n if SKIP_LOWLEVEL_INIT
+	default y
+	help
+	  This allows the generic start code to initially disable the CPU caches
+	  and run uncached until the caches are initialized and enabled. Disabling
+	  this can be useful on machines which don't need cache initialization or
+	  which want to provide their own cache implementation.
+
+	  If unsure, say yes.
+
+config MIPS_RELOCATION_TABLE_SIZE
+	hex "Relocation table size"
+	range 0x100 0x10000
+	default "0x8000"
+	---help---
+	  A table of relocation data will be appended to the U-Boot binary
+	  and parsed in relocate_code() to fix up all offsets in the relocated
+	  U-Boot.
+
+	  This option allows the amount of space reserved for the table to be
+	  adjusted in a range from 256 up to 64k. The default is 32k and should
+	  be ok in most cases. Reduce this value to shrink the size of U-Boot
+	  binary.
+
+	  The build will fail and a valid size suggested if this is too small.
+
+	  If unsure, leave at the default value.
+
+config RESTORE_EXCEPTION_VECTOR_BASE
+	bool "Restore exception vector base before booting linux kernel"
+	help
+	  In U-Boot the exception vector base will be moved to top of memory,
+	  to be used to display register dump when exception occurs.
+	  But some old linux kernel does not honor the base set in CP0_EBASE.
+	  A modified exception vector base will cause kernel crash.
+
+	  This option will restore the exception vector base to its previous
+	  value.
+
+	  If unsure, say N.
+
+config OVERRIDE_EXCEPTION_VECTOR_BASE
+	bool "Override the exception vector base to be restored"
+	depends on RESTORE_EXCEPTION_VECTOR_BASE
+	help
+	  Enable this option if you want to use a different exception vector
+	  base rather than the previously saved one.
+
+config NEW_EXCEPTION_VECTOR_BASE
+	hex "New exception vector base"
+	depends on OVERRIDE_EXCEPTION_VECTOR_BASE
+	range 0x80000000 0xbffff000
+	default 0x80000000
+	help
+	  The exception vector base to be restored before booting linux kernel
+
+config INIT_STACK_WITHOUT_MALLOC_F
+	bool "Do not reserve malloc space on initial stack"
+	help
+	  Enable this option if you don't want to reserve malloc space on
+	  initial stack. This is useful if the initial stack can't hold large
+	  malloc space. Platform should set the malloc_base later when DRAM is
+	  ready to use.
+
+config SPL_INIT_STACK_WITHOUT_MALLOC_F
+	bool "Do not reserve malloc space on initial stack in SPL"
+	help
+	  Enable this option if you don't want to reserve malloc space on
+	  initial stack. This is useful if the initial stack can't hold large
+	  malloc space. Platform should set the malloc_base later when DRAM is
+	  ready to use.
+
+config SPL_LOADER_SUPPORT
+	bool
+	help
+	  Enable this option if you want to use SPL loaders without DM enabled.
+
+endmenu
+
+menu "OS boot interface"
+
+config MIPS_BOOT_CMDLINE_LEGACY
+	bool "Hand over legacy command line to Linux kernel"
+	default y
+	help
+	  Enable this option if you want U-Boot to hand over the Yamon-style
+	  command line to the kernel. All bootargs will be prepared as argc/argv
+	  compatible list. The argument count (argc) is stored in register $a0.
+	  The address of the argument list (argv) is stored in register $a1.
+
+config MIPS_BOOT_ENV_LEGACY
+	bool "Hand over legacy environment to Linux kernel"
+	default y
+	help
+	  Enable this option if you want U-Boot to hand over the Yamon-style
+	  environment to the kernel. Information like memory size, initrd
+	  address and size will be prepared as zero-terminated key/value list.
+	  The address of the environment is stored in register $a2.
+
+config MIPS_BOOT_FDT
+	bool "Hand over a flattened device tree to Linux kernel"
+	help
+	  Enable this option if you want U-Boot to hand over a flattened
+	  device tree to the kernel. According to UHI register $a0 will be set
+	  to -2 and the FDT address is stored in $a1.
+
+endmenu
+
+config SUPPORTS_BIG_ENDIAN
+	bool
+
+config SUPPORTS_LITTLE_ENDIAN
+	bool
+
+config SUPPORTS_CPU_MIPS32_R1
+	bool
+
+config SUPPORTS_CPU_MIPS32_R2
+	bool
+
+config SUPPORTS_CPU_MIPS32_R6
+	bool
+
+config SUPPORTS_CPU_MIPS64_R1
+	bool
+
+config SUPPORTS_CPU_MIPS64_R2
+	bool
+
+config SUPPORTS_CPU_MIPS64_R6
+	bool
+
+config SUPPORTS_CPU_MIPS64_OCTEON
+	bool
+
+config HAS_FIXED_TIMER_FREQUENCY
+	bool
+
+config CPU_CAVIUM_OCTEON
+	bool
+
+config CPU_MIPS32
+	bool
+	default y if CPU_MIPS32_R1 || CPU_MIPS32_R2 || CPU_MIPS32_R6
+
+config CPU_MIPS64
+	bool
+	default y if CPU_MIPS64_R1 || CPU_MIPS64_R2 || CPU_MIPS64_R6
+	default y if CPU_MIPS64_OCTEON
+
+config MIPS_TUNE_4KC
+	bool
+
+config MIPS_TUNE_14KC
+	bool
+
+config MIPS_TUNE_24KC
+	bool
+
+config MIPS_TUNE_34KC
+	bool
+
+config MIPS_TUNE_74KC
+	bool
+
+config MIPS_TUNE_OCTEON3
+	bool
+
+config 32BIT
+	bool
+
+config 64BIT
+	bool
+
+config SWAP_IO_SPACE
+	bool
+
+config SYS_MIPS_CACHE_INIT_RAM_LOAD
+	bool
+
+config MIPS_INIT_STACK_IN_SRAM
+	bool
+	help
+	  Select this if the initial stack frame could be setup in SRAM.
+	  Normally the initial stack frame is set up in DRAM which is often
+	  only available after lowlevel_init. With this option the initial
+	  stack frame and the early C environment is set up before
+	  lowlevel_init. Thus lowlevel_init does not need to be implemented
+	  in assembler.
+
+config MIPS_SRAM_INIT
+	bool
+	depends on MIPS_INIT_STACK_IN_SRAM
+	help
+	  Select this if the SRAM for initial stack needs to be initialized
+	  before it can be used. If enabled, a function mips_sram_init() will
+	  be called just before setup_stack_gd.
+
+config DMA_ADDR_T_64BIT
+	bool
+	help
+	 Select this to enable 64-bit DMA addressing
+
+config SYS_DCACHE_SIZE
+	int
+	default 0
+	help
+	  The total size of the L1 Dcache, if known at compile time.
+
+config SYS_DCACHE_LINE_SIZE
+	int
+	default 0
+	help
+	  The size of L1 Dcache lines, if known at compile time.
+
+config SYS_ICACHE_SIZE
+	int
+	default 0
+	help
+	  The total size of the L1 ICache, if known at compile time.
+
+config SYS_ICACHE_LINE_SIZE
+	int
+	default 0
+	help
+	  The size of L1 Icache lines, if known at compile time.
+
+config SYS_SCACHE_LINE_SIZE
+	int
+	default 0
+	help
+	  The size of L2 cache lines, if known at compile time.
+
+
+config SYS_CACHE_SIZE_AUTO
+	def_bool y if SYS_DCACHE_SIZE = 0 && SYS_ICACHE_SIZE = 0 && \
+		SYS_DCACHE_LINE_SIZE = 0 && SYS_ICACHE_LINE_SIZE = 0 && \
+		SYS_SCACHE_LINE_SIZE = 0
+	help
+	  Select this (or let it be auto-selected by not defining any cache
+	  sizes) in order to allow U-Boot to automatically detect the sizes
+	  of caches at runtime. This has a small cost in code size & runtime
+	  so if you know the cache configuration for your system at compile
+	  time it would be beneficial to configure it.
+
+config MIPS_L2_CACHE
+	bool
+	help
+	  Select this if your system includes an L2 cache and you want U-Boot
+	  to initialise & maintain it.
+
+config DYNAMIC_IO_PORT_BASE
+	bool
+
+config MIPS_CM
+	bool
+	help
+	  Select this if your system contains a MIPS Coherence Manager and you
+	  wish U-Boot to configure it or make use of it to retrieve system
+	  information such as cache configuration.
+
+config MIPS_INSERT_BOOT_CONFIG
+	bool
+	help
+	  Enable this to insert some board-specific boot configuration in
+	  the U-Boot binary at offset 0x10.
+
+config MIPS_BOOT_CONFIG_WORD0
+	hex
+	depends on MIPS_INSERT_BOOT_CONFIG
+	default 0x420 if TARGET_MALTA
+	default 0x0
+	help
+	  Value which is inserted as boot config word 0.
+
+config MIPS_BOOT_CONFIG_WORD1
+	hex
+	depends on MIPS_INSERT_BOOT_CONFIG
+	default 0x0
+	help
+	  Value which is inserted as boot config word 1.
+
+endif
+
+endmenu

@@ -1,0 +1,21 @@
+if TARGET_MX53LOCO
+
+config DIALOG_POWER
+	def_bool y
+
+config SYS_BOARD
+	default "mx53loco"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "mx53loco"
+
+config IMX_CONFIG
+	default "board/freescale/mx53loco/imximage.cfg"
+
+endif

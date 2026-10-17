@@ -44,7 +44,6 @@ typedef enum {
      TRX_SFF = 0x2,
      TRX_SFP = 0x3,
      TRX_XFP = 0x6,
-     TRX_PMD = 0xff,
 } TRX_FORM_FACTOR; 
 
 typedef enum {

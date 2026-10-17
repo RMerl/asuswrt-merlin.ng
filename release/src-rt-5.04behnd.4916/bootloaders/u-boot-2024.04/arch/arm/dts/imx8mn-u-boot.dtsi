@@ -1,0 +1,278 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2022 Logic PD, Inc dba Beacon EmbeddedWorks
+ */
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+
+#ifdef CONFIG_OPTEE
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+#endif
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&{/soc@0} {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&aips1 {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+&aips2 {
+	bootph-pre-ram;
+};
+
+&aips3 {
+	bootph-pre-ram;
+};
+
+&aips4 {
+	bootph-pre-ram;
+};
+
+&clk {
+	bootph-pre-ram;
+	bootph-all;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+};
+
+#ifdef CONFIG_FSL_CAAM
+&crypto {
+	bootph-pre-ram;
+};
+#endif
+
+&iomuxc {
+	bootph-pre-ram;
+};
+
+&osc_24m {
+	bootph-pre-ram;
+	bootph-all;
+};
+
+#ifdef CONFIG_FSL_CAAM
+&sec_jr0 {
+	bootph-pre-ram;
+};
+
+&sec_jr1 {
+	bootph-pre-ram;
+};
+
+&sec_jr2 {
+	bootph-pre-ram;
+};
+#endif
+
+&spba1 {
+	bootph-pre-ram;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};
+
+&binman {
+	 u-boot-spl-ddr {
+		filename = "u-boot-spl-ddr.bin";
+		pad-byte = <0xff>;
+		align-size = <4>;
+		align = <4>;
+
+		u-boot-spl {
+			align-end = <4>;
+			filename = "u-boot-spl.bin";
+		};
+
+		ddr-1d-imem-fw {
+#ifdef CONFIG_IMX8M_LPDDR4
+			filename = "lpddr4_pmu_train_1d_imem.bin";
+#elif CONFIG_IMX8M_DDR4
+			filename = "ddr4_imem_1d_201810.bin";
+#else
+			filename = "ddr3_imem_1d.bin";
+#endif
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-1d-dmem-fw {
+#ifdef CONFIG_IMX8M_LPDDR4
+			filename = "lpddr4_pmu_train_1d_dmem.bin";
+#elif CONFIG_IMX8M_DDR4
+			filename = "ddr4_dmem_1d_201810.bin";
+#else
+			filename = "ddr3_dmem_1d.bin";
+#endif
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+#if defined(CONFIG_IMX8M_LPDDR4) || defined(CONFIG_IMX8M_DDR4)
+		ddr-2d-imem-fw {
+#ifdef CONFIG_IMX8M_LPDDR4
+			filename = "lpddr4_pmu_train_2d_imem.bin";
+#else
+			filename = "ddr4_imem_2d_201810.bin";
+#endif
+			type = "blob-ext";
+			align-end = <4>;
+		};
+
+		ddr-2d-dmem-fw {
+#ifdef CONFIG_IMX8M_LPDDR4
+			filename = "lpddr4_pmu_train_2d_dmem.bin";
+#else
+			filename = "ddr4_dmem_2d_201810.bin";
+#endif
+			type = "blob-ext";
+			align-end = <4>;
+		};
+#endif
+	};
+
+	spl {
+		filename = "spl.bin";
+
+		mkimage {
+			args = "-n spl/u-boot-spl.cfgout -T imx8mimage -e 0x912000";
+
+			blob {
+				filename = "u-boot-spl-ddr.bin";
+			};
+		};
+	};
+
+	itb {
+		filename = "u-boot.itb";
+
+		fit {
+			description = "Configuration to load ATF before U-Boot";
+#ifndef CONFIG_IMX_HAB
+			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+#endif
+			fit,fdt-list = "of-list";
+			#address-cells = <1>;
+
+			images {
+				uboot {
+					arch = "arm64";
+					compression = "none";
+					description = "U-Boot (64-bit)";
+					load = <CONFIG_TEXT_BASE>;
+					type = "standalone";
+
+					uboot-blob {
+						filename = "u-boot-nodtb.bin";
+						type = "blob-ext";
+					};
+				};
+
+#ifndef CONFIG_ARMV8_PSCI
+				atf {
+					arch = "arm64";
+					compression = "none";
+					description = "ARM Trusted Firmware";
+					entry = <0x960000>;
+					load = <0x960000>;
+					type = "firmware";
+
+					atf-blob {
+						filename = "bl31.bin";
+						type = "atf-bl31";
+					};
+				};
+#endif
+
+				binman_fip: fip {
+					arch = "arm64";
+					compression = "none";
+					description = "Trusted Firmware FIP";
+					load = <0x40310000>;
+					type = "firmware";
+				};
+
+				@fdt-SEQ {
+					compression = "none";
+					description = "NAME";
+					type = "flat_dt";
+
+					uboot-fdt-blob {
+						filename = "u-boot.dtb";
+						type = "blob-ext";
+					};
+				};
+			};
+
+			configurations {
+				default = "@config-DEFAULT-SEQ";
+
+				@config-SEQ {
+					description = "NAME";
+					fdt = "fdt-SEQ";
+					firmware = "uboot";
+#ifndef CONFIG_ARMV8_PSCI
+					loadables = "atf";
+#endif
+				};
+			};
+		};
+	};
+
+	imx-boot {
+		filename = "flash.bin";
+		pad-byte = <0x00>;
+
+#ifdef CONFIG_FSPI_CONF_HEADER
+		fspi_conf_block {
+			filename = CONFIG_FSPI_CONF_FILE;
+			type = "blob-ext";
+			offset = <0x400>;
+		};
+
+		spl {
+			filename = "spl.bin";
+			offset = <0x1000>;
+			type = "blob-ext";
+		};
+
+		binman_uboot: uboot {
+			filename = "u-boot.itb";
+			offset = <0x59000>;
+			type = "blob-ext";
+		};
+#else
+
+		spl {
+			offset = <0x0>;
+			filename = "spl.bin";
+			type = "blob-ext";
+		};
+
+		binman_uboot: uboot {
+			offset = <0x58000>;
+			filename = "u-boot.itb";
+			type = "blob-ext";
+		};
+#endif
+	};
+};

@@ -1,7 +1,0 @@
-SH7763RDP BOARD
-M:	Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-M:	Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-S:	Maintained
-F:	board/renesas/sh7763rdp/
-F:	include/configs/sh7763rdp.h
-F:	configs/sh7763rdp_defconfig

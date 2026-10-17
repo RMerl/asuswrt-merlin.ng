@@ -1,0 +1,26 @@
+# Whitelist in place for this component / branch / twig
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+
+JIRA:BCAWLAN-273473 CLONE - MAUT is not associating to CTTAGT1 after WPS. Send Affiliated_LinkID as 0 for pseudo MLO BSS
+JIRA:BCAWLAN-273622 SmartMesh: RootAP 23.2.1P1 & RPT 25.1 : RPT takes additional restart to complete the onboarding
+JIRA:BCAWLAN-273888 MSG: No beacon frame captured after AP Removal Timer expired - Link 1 (Primary Link)
+JIRA:BCAWLAN-273732 SmartMesh: wbd_master is failed to find the TBSS for the strong clients(2.4G/5G) when it is connected on single link(2.4G/5G)
+JIRA:BCAWLAN-274180 SmartMesh-Interop: 11AX(RootAP) + 11BE(RPT): WiFi onboarding is failed when guest enable
+JIRA:BCAWLAN-274286 IEEE1905: Update bsta_band flag of a device when the device gets topology response with STA flag in media specific information
+JIRA:BCAWLAN-274599 [ieee1905] To add API for deleteing affiliated STA details from bSTA MLD Configuration
+JIRA:BCAWLAN-274294 SmartMesh: DPP OnBoarding is failing if FrontHaul is created on Aux(5G) only with DFS Channel
+JIRA:BCAWLAN-274619 [ieee1905] : send valid assoc sta link metrics for mlo client associated on pseudo mlo bss
+JIRA:BCAWLAN-274015 CSP:CS00012384634 : Mechanism to monitor the firmware assoclist and IEEE1905 datamodel
+JIRA:BCAWLAN-272961 Problems when importing Associated STA Link Metrics TLV and Associated STA Extended Link Metrics
+JIRA:BCAWLAN-274787 kernel doesn't support the ebtable- Failed to find "nft" executable file.
+JIRA:BCAWLAN-273898 RPT fails to onboard to 5g bss during DPP onboarding when bootstrap info is given to the Controller after RPT is power down
+JIRA:BCAWLAN-275548 Flag to indicate the primary interface to be used for starting hostapd.
+JIRA:BCAWLAN-276234 Pre-Cert:WiFi EasyMesh-R6:MAUT:6766REF1-2G-5G(DUAL RADIO:CSP#00012396088): CTT Controller is not sending AP-Autoconfiguration WSC message M2 with Num_AffiliatedAP is set to 2.

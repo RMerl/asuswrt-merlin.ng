@@ -1,5 +1,5 @@
-u-boot,dm-pre-reloc;
-compatible = "brcm,bcm63xx-sdhci";
+
+compatible = "brcm,sdhci-bcm63138";
 reg-names = "sdhci-base", 
             "sdhci-topcfg", 
             "sdhci-boot" 

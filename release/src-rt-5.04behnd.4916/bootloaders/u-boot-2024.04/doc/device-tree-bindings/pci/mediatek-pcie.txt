@@ -1,0 +1,122 @@
+MediaTek Gen2 PCIe controller
+
+Required properties:
+- compatible: Should contain one of the following strings:
+	"mediatek,mt7623-pcie"
+- device_type: Must be "pci"
+- reg: Base addresses and lengths of the PCIe subsys and root ports.
+- reg-names: Names of the above areas to use during resource lookup.
+- #address-cells: Address representation for root ports (must be 3)
+- #size-cells: Size representation for root ports (must be 2)
+- clocks: Must contain an entry for each entry in clock-names.
+- clock-names:
+  Mandatory entries:
+   - sys_ckN :transaction layer and data link layer clock
+  Required entries for MT7623:
+   - free_ck :for reference clock of PCIe subsys
+  where N starting from 0 to one less than the number of root ports.
+- phys: List of PHY specifiers (used by generic PHY framework).
+- phy-names : Must be "pcie-phy0", "pcie-phy1", "pcie-phyN".. based on the
+  number of PHYs as specified in *phys* property.
+- power-domains: A phandle and power domain specifier pair to the power domain
+  which is responsible for collapsing and restoring power to the peripheral.
+- bus-range: Range of bus numbers associated with this controller.
+- ranges: Ranges for the PCI memory and I/O regions.
+
+Required properties for MT7623:
+- #interrupt-cells: Size representation for interrupts (must be 1)
+- interrupt-map-mask and interrupt-map: Standard PCI IRQ mapping properties
+  Please refer to the standard PCI bus binding document for a more detailed
+  explanation.
+- resets: Must contain an entry for each entry in reset-names.
+- reset-names: Must be "pcie-rst0", "pcie-rst1", "pcie-rstN".. based on the
+  number of root ports.
+
+In addition, the device tree node must have sub-nodes describing each
+PCIe port interface, having the following mandatory properties:
+
+Required properties:
+- device_type: Must be "pci"
+- reg: Only the first four bytes are used to refer to the correct bus number
+  and device number.
+- #address-cells: Must be 3
+- #size-cells: Must be 2
+- #interrupt-cells: Must be 1
+- interrupt-map-mask and interrupt-map: Standard PCI IRQ mapping properties
+  Please refer to the standard PCI bus binding document for a more detailed
+  explanation.
+- ranges: Sub-ranges distributed from the PCIe controller node. An empty
+  property is sufficient.
+
+Examples for MT7623:
+
+	hifsys: syscon@1a000000 {
+		compatible = "mediatek,mt7623-hifsys",
+			     "syscon";
+		reg = <0x1a000000 0x1000>;
+		#clock-cells = <1>;
+		#reset-cells = <1>;
+	};
+
+	pcie: pcie@1a140000 {
+		compatible = "mediatek,mt7623-pcie";
+		device_type = "pci";
+		reg = <0x1a140000 0x1000>, /* PCIe shared registers */
+		      <0x1a142000 0x1000>, /* Port0 registers */
+		      <0x1a143000 0x1000>, /* Port1 registers */
+		      <0x1a144000 0x1000>; /* Port2 registers */
+		reg-names = "subsys", "port0", "port1", "port2";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0xf800 0 0 0>;
+		interrupt-map = <0x0000 0 0 0 &sysirq GIC_SPI 193 IRQ_TYPE_LEVEL_LOW>,
+				<0x0800 0 0 0 &sysirq GIC_SPI 194 IRQ_TYPE_LEVEL_LOW>,
+				<0x1000 0 0 0 &sysirq GIC_SPI 195 IRQ_TYPE_LEVEL_LOW>;
+		clocks = <&topckgen CLK_TOP_ETHIF_SEL>,
+			 <&hifsys CLK_HIFSYS_PCIE0>,
+			 <&hifsys CLK_HIFSYS_PCIE1>,
+			 <&hifsys CLK_HIFSYS_PCIE2>;
+		clock-names = "free_ck", "sys_ck0", "sys_ck1", "sys_ck2";
+		resets = <&hifsys HIFSYS_PCIE0_RST>,
+			 <&hifsys HIFSYS_PCIE1_RST>,
+			 <&hifsys HIFSYS_PCIE2_RST>;
+		reset-names = "pcie-rst0", "pcie-rst1", "pcie-rst2";
+		phys = <&pcie0_phy PHY_TYPE_PCIE>, <&pcie1_phy PHY_TYPE_PCIE>,
+		       <&pcie2_phy PHY_TYPE_PCIE>;
+		phy-names = "pcie-phy0", "pcie-phy1", "pcie-phy2";
+		power-domains = <&scpsys MT7623_POWER_DOMAIN_HIF>;
+		bus-range = <0x00 0xff>;
+		ranges = <0x81000000 0 0x1a160000 0x1a160000 0 0x00010000	/* I/O space */
+			  0x83000000 0 0x60000000 0x60000000 0 0x10000000>;	/* memory space */
+
+		pcie@0,0 {
+			reg = <0x0000 0 0 0 0>;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &sysirq GIC_SPI 193 IRQ_TYPE_LEVEL_LOW>;
+			ranges;
+		};
+
+		pcie@1,0 {
+			reg = <0x0800 0 0 0 0>;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &sysirq GIC_SPI 194 IRQ_TYPE_LEVEL_LOW>;
+			ranges;
+		};
+
+		pcie@2,0 {
+			reg = <0x1000 0 0 0 0>;
+			#address-cells = <3>;
+			#size-cells = <2>;
+			#interrupt-cells = <1>;
+			interrupt-map-mask = <0 0 0 0>;
+			interrupt-map = <0 0 0 0 &sysirq GIC_SPI 195 IRQ_TYPE_LEVEL_LOW>;
+			ranges;
+		};
+	};

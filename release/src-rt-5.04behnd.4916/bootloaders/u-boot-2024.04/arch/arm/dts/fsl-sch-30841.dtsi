@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Device tree fragment for RCW SCH-30841 card
+ *
+ * Copyright 2019-2021 NXP
+ */
+
+/*
+ * SCH-30841 is a 4 port add-on card used with various FSL QDS boards.
+ * It integrates a AQR412C quad PHY which supports 4 interfaces either muxed
+ * together on a single lane or mapped 1:1 to serdes lanes.
+ * It supports several protocols - SGMII, 2500base-X, USXGMII, M-USX, 10GBase-R.
+ * PHY addresses are 0x00 - 0x03.
+ * On the card the first port is the bottom port (closest to PEX connector).
+ */
+phy@00 {
+	reg = <0x00>;
+	mdi-reversal = <1>;
+	smb-addr = <0x25>;
+};
+
+phy@01 {
+	reg = <0x01>;
+	mdi-reversal = <1>;
+	smb-addr = <0x26>;
+};
+
+phy@02 {
+	reg = <0x02>;
+	mdi-reversal = <1>;
+	smb-addr = <0x27>;
+};
+
+phy@03 {
+	reg = <0x03>;
+	mdi-reversal = <1>;
+	smb-addr = <0x28>;
+};

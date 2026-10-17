@@ -1,0 +1,43 @@
+if ARCH_MEDIATEK
+
+config PINCTRL_MTK
+	depends on PINCTRL_GENERIC
+	bool
+
+config PINCTRL_MT7622
+	bool "MT7622 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT7623
+	bool "MT7623 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT7629
+	bool "MT7629 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT7981
+	bool "MT7981 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT7986
+	bool "MT7986 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT7988
+	bool "MT7988 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT8512
+	bool "MT8512 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT8516
+	bool "MT8516 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+config PINCTRL_MT8518
+        bool "MT8518 SoC pinctrl driver"
+	select PINCTRL_MTK
+
+endif

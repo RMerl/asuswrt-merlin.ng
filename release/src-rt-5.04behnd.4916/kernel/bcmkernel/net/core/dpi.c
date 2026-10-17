@@ -182,7 +182,7 @@ int dpi_nf_ct_event_report(struct nf_conn *ct, u32 portid)
 	rcu_read_lock();
 	fun = rcu_dereference(dpi_ct_hooks.event_report);
 	if (fun)
-		ret = fun(1 << IPCT_DPI, ct, portid, 0);
+		ret = fun(1 << IPCT_BCM, ct, portid, 0);
 	rcu_read_unlock();
 
 	return ret;
@@ -206,6 +206,9 @@ int dpi_notify(long event, void *data)
 	return atomic_notifier_call_chain(&notify_chain, event, data);
 }
 EXPORT_SYMBOL(dpi_notify);
+
+int (*dpi_tdts_shell_dpi_l2_eth)(void *p);
+EXPORT_SYMBOL(dpi_tdts_shell_dpi_l2_eth);
 
 int (*dpi_tdts_shell_dpi_l3_skb)(struct sk_buff *skb, void *p);
 EXPORT_SYMBOL(dpi_tdts_shell_dpi_l3_skb);

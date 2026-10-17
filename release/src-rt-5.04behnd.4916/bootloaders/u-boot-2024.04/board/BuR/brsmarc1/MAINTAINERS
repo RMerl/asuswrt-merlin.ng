@@ -1,0 +1,7 @@
+BRSMARC1 BOARD
+M:	Wolfgang Wallner <wolfgang.wallner@br-automation.com>
+S:	Maintained
+F:	board/BuR/brsmarc1/
+F:	board/BuR/common/
+F:	include/configs/brsmarc1.h
+F:	configs/brsmarc1_defconfig

@@ -1,0 +1,26 @@
+if TARGET_OPENRD
+
+choice
+	prompt "Board variant"
+
+config BOARD_IS_OPENRD_BASE
+	bool "Base"
+
+config BOARD_IS_OPENRD_CLIENT
+	bool "Client"
+
+config BOARD_IS_OPENRD_ULTIMATE
+	bool "Ultimate"
+
+endchoice
+
+config SYS_BOARD
+	default "openrd"
+
+config SYS_VENDOR
+	default "Marvell"
+
+config SYS_CONFIG_NAME
+	default "openrd"
+
+endif

@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2023 Neil Armstrong <neil.armstrong@linaro.org>
+ */
+
+#include "meson-g12-common-u-boot.dtsi"
+
+/* RK817/818 BOOST regulator aren't supported yet, so remove phandles from PHY nodes */
+
+&usb2_phy1 {
+	/delete-property/ phy-supply;
+};
+
+&usb3_pcie_phy {
+	/delete-property/ phy-supply;
+};
+
+&vcc_2v3 {
+	regulator-init-microvolt = <2400000>;
+};
+
+&vdd_ee {
+	regulator-init-microvolt = <875000>;
+};

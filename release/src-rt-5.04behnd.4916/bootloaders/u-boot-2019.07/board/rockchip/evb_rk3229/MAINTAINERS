@@ -1,6 +1,0 @@
-EVB-RK3229
-M:      Kever Yang <kever.yang@rock-chips.com>
-S:      Maintained
-F:      board/rockchip/evb_rk3229
-F:      include/configs/evb_rk3229.h
-F:      configs/evb-rk3229_defconfig

@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+
+/ {
+	aliases {
+		mmc0 = &usdhc3;
+	};
+};

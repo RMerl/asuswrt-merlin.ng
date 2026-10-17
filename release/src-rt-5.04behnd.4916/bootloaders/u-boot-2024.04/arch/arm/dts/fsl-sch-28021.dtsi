@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Device tree fragment for RCW SCH-28021 card
+ *
+ * Copyright 2019-2021 NXP
+ */
+
+/*
+ * SCH-28021 is a QSGMII add-on card used with various FSL QDS boards.
+ * It integrates a VSC8514 quad PHY which supports 4 interfaces muxed on a
+ * single QSGMII lane.
+ * PHY addresses are 0x08 - 0x0b.
+ * On the card the first port is the top port (farthest from PEX connector).
+ */
+phy@08 {
+	reg = <0x08>;
+};
+
+phy@09 {
+	reg = <0x09>;
+};
+
+phy@0a {
+	reg = <0x0a>;
+};
+
+phy@0b {
+	reg = <0x0b>;
+};

@@ -13,12 +13,45 @@
 		serial0		= &uart0;
 	};
 
-	/* memory reservations */
-	#include "../../bcm_rsvdmem_qemu.dtsi" 
+/* memory reservations */
+#define CELLS_NUM 1
+#define RSVDMEM_CMA_ADDR 0x07800000
+#define RSVDMEM_CMA_SIZE 0x00800000
+
+	reserved-memory {
+        #address-cells = <CELLS_NUM>;
+        #size-cells = <CELLS_NUM>;
+        ranges;
+
+        dt_reserved_cma: dt_reserved_cma {
+            compatible = "shared-dma-pool";
+            reusable;
+            /* Bootloader will fill in the total size and offset */
+            reg = <RSVDMEM_CMA_ADDR RSVDMEM_CMA_SIZE>;
+        };
+    };
+    plat_rsvmem_cached_device {
+        compatible = "brcm,plat-rsvmem";
+        dma-coherent;
+        memory-region = <&dt_reserved_cma>;
+
+        dt_reserved_bufmem: dt_reserved_bufmem {
+            rsvd-size = <0x2000000>;
+        };
+    };
+
+    plat_rsvmem_uncached_device {
+        compatible = "brcm,plat-rsvmem";
+        memory-region = <&dt_reserved_cma>;
+    
+        dt_reserved_rnrmem: dt_reserved_rnrmem {
+            rsvd-size = <0x0c00000>;
+        };
+    };	
 
 	chosen {
 		stdout-path = "serial0:115200n8";
-        bootargs = "console=ttyAMA0,1500000n8 earlyprintk debug lpj=800000 ikosboot mem=128M,1048576 root=/dev/ram0 ro";
+        bootargs = "console=ttyAMA0,1500000n8 earlycon debug lpj=800000 ikosboot mem=128M,1048576 root=/dev/ram0 ro";
         linux,initrd-start = <0x2000000>;
 		linux,initrd-end   = <0x2AFFFFF>;
     };

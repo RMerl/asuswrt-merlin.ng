@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/ {
+	aliases {
+		spi0 = &spi0;
+	};
+};

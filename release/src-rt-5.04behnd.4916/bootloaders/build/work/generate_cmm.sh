@@ -49,7 +49,7 @@ do
 	cp ${objdir}/$i/arch/arm/mach-bcmbca/${ddr_mode}/bcm_ddr.bin  ${cmm_out}/${i}_bcm_ddr.bin
 	#build/work/generate_hashes generates all the jtag*${BRCM_CHIP}*${i}* in the following format
 	#mcb selector (4byts) + padding (4 bytes) + MCB binary associated with the mcb selector
-	for j in `ls ${objdir}/binaries/jtag*${i}* 2> /dev/null`;
+	for j in `ls ${objdir}/binaries/jtag*_${i}* 2> /dev/null`;
 	do
 		mcb_sel=`od -A n -t x -N 4 ${j}|sed -e 's/^ //'`;
 
@@ -100,9 +100,7 @@ do
 			if [ "${BRCM_CHIP}" == "6766" -o "${BRCM_CHIP}" == "6764" ]; then
 				DPFE_CHIP="6765"
 			fi
-
-
-			for file in `ls build/work/dpfe/${DPFE_CHIP}/dpfe_${DPFE_CHIP}_* |grep -i ${i} 2> /dev/null` 
+			for file in `ls build/work/dpfe/${DPFE_CHIP}/dpfe_${DPFE_CHIP}_* |grep -i _${i}_ 2> /dev/null` 
 			do
 				chmod +w ${cmm_out}/${file##*/}	2> /dev/null
 				#copy over the dpfe stage file to cmm folder

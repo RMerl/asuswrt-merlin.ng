@@ -41,14 +41,6 @@
  * @{
  */
 
-#if !defined(XRDP)
-/* Number of AGGR WAN VLANS is derived from number of bridges since we support single
- * wan vid per Aggregatating Bridge 
- */
-#define RDPA_MAX_VLANS                  128     /**< Max number of VIDs */
-#define RDPA_MAX_AGGR_WAN_VLANS         4       /**< Max number of aggregated WAN VIDs */
-#endif
-
 /** Mac lookup configuration for VLAN object.
  * Underlying type for mac_lookup_cfg aggregate
  */

@@ -1,0 +1,138 @@
+config DM_RNG
+	bool "Driver support for Random Number Generator devices"
+	depends on DM
+	help
+	  Enable driver model for random number generator(rng) devices.
+	  This interface is used to initialise the rng device and to
+	  read the random seed from the device.
+
+if DM_RNG
+
+config RNG_SHIM
+	bool "Broadcom RNG shim random number generator"
+	depends on DM_RNG
+	depends on TPL_ATF
+	depends on !SMC_BASED
+	default n
+	help
+	   Enable random number generator with the help of ATF.
+
+config RNG_MESON
+	bool "Amlogic Meson Random Number Generator support"
+	depends on ARCH_MESON
+	default y
+	help
+	  Enable support for hardware random number generator
+	  of Amlogic Meson SoCs.
+
+config RNG_SANDBOX
+	bool "Sandbox random number generator"
+	depends on SANDBOX
+	default y
+	help
+	  Enable random number generator for sandbox. This is an
+	  emulation of a rng device.
+
+config RNG_MSM
+	bool "Qualcomm SoCs Random Number Generator support"
+	depends on DM_RNG
+	help
+	  This driver provides support for the Random Number
+	  Generator hardware found on Qualcomm SoCs.
+
+config RNG_NPCM
+	bool "Nuvoton NPCM SoCs Random Number Generator support"
+	depends on DM_RNG
+	help
+	  Enable random number generator on NPCM SoCs.
+	  This unit can provide 750 to 1000 random bits per second
+
+config RNG_OPTEE
+	bool "OP-TEE based Random Number Generator support"
+	depends on DM_RNG && OPTEE
+	default y if OPTEE_SERVICE_DISCOVERY
+	help
+	  This driver provides support for the OP-TEE based Random Number
+	  Generator on ARM SoCs where hardware entropy sources are not
+	  accessible to normal world but reserved and used by the OP-TEE
+	  to avoid the weakness of a software PRNG.
+
+config RNG_RISCV_ZKR
+	bool "RISC-V Zkr random number generator"
+	depends on RISCV_SMODE
+	help
+	  This driver provides a Random Number Generator based on the
+	  Zkr RISC-V ISA extension which provides an interface to an
+	  NIST SP 800-90B or BSI AIS-31 compliant physical entropy source.
+
+config RNG_STM32
+	bool "Enable random number generator for STM32"
+	depends on ARCH_STM32 || ARCH_STM32MP
+	help
+	  Enable STM32 rng driver.
+
+config RNG_ROCKCHIP
+	bool "Enable random number generator for rockchip crypto rng"
+	depends on ARCH_ROCKCHIP && DM_RNG
+	help
+	  Enable random number generator for rockchip. This driver
+	  supports the rng module of crypto v1, crypto v2, and the
+	  trng module of the rk3588 series.
+
+config RNG_IPROC200
+	bool "Broadcom iProc RNG200 random number generator"
+	depends on DM_RNG
+	help
+	  Enable random number generator for RPI4.
+
+config RNG_SMC
+	bool "Broadcom SMC random number generator"
+	depends on DM_RNG
+	help
+	  The SMC has an inbuilt random number generator
+	  functionality. Enable random number generator on SMC-based SoC.
+
+config RNG_SMCCC_TRNG
+	bool "Arm SMCCC TRNG interface"
+	depends on DM_RNG && ARM_PSCI_FW
+	default y if ARM_SMCCC_FEATURES
+	help
+	  Enable random number generator for platforms that support Arm
+	  SMCCC TRNG interface.
+
+config RNG_ARM_RNDR
+	bool "Generic ARMv8.5 RNDR register"
+	depends on DM_RNG && ARM64
+	help
+	  Use the ARMv8.5 RNDR register to provide random numbers.
+
+config TPM_RNG
+	bool "Enable random number generator on TPM device"
+	depends on TPM
+	default y
+	help
+	  The TPM device has an inbuilt random number generator
+	  functionality. Enable random number generator on TPM
+	  devices.
+
+config RNG_JH7110
+	bool "StarFive JH7110 Random Number Generator support"
+	depends on DM_RNG && STARFIVE_JH7110
+	help
+	  Enable True Random Number Generator in StarFive JH7110 SoCs.
+
+config RNG_TURRIS_RWTM
+	bool "Turris Mox TRNG in Secure Processor"
+	depends on DM_RNG && ARMADA_3700
+	help
+	  Use TRNG in Turris Mox Secure Processor Firmware. Can be used
+	  on other Armada-3700 devices (like EspressoBin) if Secure
+	  Firmware from CZ.NIC is used.
+
+config RNG_BCMBCA_TRNG
+	bool "Broadcom true random number generator"
+	depends on DM_RNG
+	default n
+	help
+	  Enable random number generator for BCM BCA socs
+endif

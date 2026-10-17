@@ -1,0 +1,54 @@
+if TARGET_SIFIVE_UNLEASHED
+
+config SYS_BOARD
+	default "unleashed"
+
+config SYS_VENDOR
+	default "sifive"
+
+config SYS_CPU
+	default "fu540"
+
+config SYS_CONFIG_NAME
+	default "sifive-unleashed"
+
+config TEXT_BASE
+	default 0x80200000 if SPL
+	default 0x80000000 if !RISCV_SMODE
+	default 0x80200000 if RISCV_SMODE
+
+config SPL_TEXT_BASE
+	default 0x08000000
+
+config SPL_OPENSBI_LOAD_ADDR
+	default 0x80000000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select SIFIVE_FU540
+	select ENV_IS_IN_SPI_FLASH
+	select BINMAN
+	select RESET_SIFIVE
+	imply CMD_DHCP
+	imply CMD_EXT2
+	imply CMD_EXT4
+	imply CMD_FAT
+	imply CMD_FS_GENERIC
+	imply CMD_GPT
+	imply PARTITION_TYPE_GUID
+	imply CMD_NET
+	imply CMD_PING
+	imply CMD_SF
+	imply DOS_PARTITION
+	imply EFI_PARTITION
+	imply IP_DYN
+	imply ISO_PARTITION
+	imply PHY_LIB
+	imply PHY_MSCC
+	imply SPI_FLASH
+	imply SPI_FLASH_ISSI
+	imply SYSRESET
+	imply SYSRESET_GPIO
+	imply CMD_I2C
+
+endif

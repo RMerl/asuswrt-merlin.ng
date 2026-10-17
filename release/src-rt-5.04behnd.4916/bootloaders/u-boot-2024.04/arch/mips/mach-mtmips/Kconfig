@@ -1,0 +1,124 @@
+menu "MediaTek MIPS platforms"
+	depends on ARCH_MTMIPS
+
+config SYS_VENDOR
+	default "mediatek" if BOARD_MT7628_RFB || BOARD_MT7620_RFB || BOARD_MT7620_MT7530_RFB
+
+config SYS_MALLOC_F_LEN
+	default 0x1000
+
+config SYS_SOC
+	default "mt7620" if SOC_MT7620
+	default "mt7621" if SOC_MT7621
+	default "mt7628" if SOC_MT7628
+
+config SYS_DCACHE_SIZE
+	default 32768
+
+config SYS_DCACHE_LINE_SIZE
+	default 32
+
+config SYS_ICACHE_SIZE
+	default 65536 if SOC_MT7620 || SOC_MT7628
+	default 32768 if SOC_MT7621
+
+config SYS_ICACHE_LINE_SIZE
+	default 32
+
+config SYS_SCACHE_LINE_SIZE
+	default 32 if SOC_MT7621
+
+config TEXT_BASE
+	default 0x9c000000 if !SPL && !SOC_MT7621
+	default 0x80200000 if SPL || SOC_MT7621
+
+config SPL_TEXT_BASE
+	default 0x9c000000 if !SOC_MT7621
+	default 0x80100000 if SOC_MT7621
+
+config SPL_SIZE_LIMIT
+	default 0x30000 if SOC_MT7621
+
+config TPL_TEXT_BASE
+	default 0xbfc00000 if SOC_MT7621
+
+config TPL_MAX_SIZE
+	default 4096 if SOC_MT7621
+
+config SPL_PAYLOAD
+	default "u-boot-lzma.img" if SPL_LZMA
+
+config BUILD_TARGET
+	default "u-boot-with-spl.bin" if SPL && !SOC_MT7621
+	default "u-boot-lzma.img" if SOC_MT7621
+	default "u-boot.bin"
+
+config MAX_MEM_SIZE
+	int
+	default 256 if SOC_MT7620 || SOC_MT7628
+	default 512 if SOC_MT7621
+
+choice
+	prompt "MediaTek MIPS SoC select"
+
+config SOC_MT7620
+	bool "MT7620"
+	select SYS_CACHE_SHIFT_5
+	select SYS_MIPS_CACHE_INIT_RAM_LOAD
+	select PINCTRL_MT7620
+	select MT7620_SERIAL
+	select MISC
+	select SPL_SEPARATE_BSS if SPL
+	select SPL_LOADER_SUPPORT if SPL
+	select SPL_OF_CONTROL if SPL_DM
+	select SPL_OF_PLATDATA if SPL_DM
+	select SPL_DM_SERIAL if SPL_DM
+	help
+	  This supports MediaTek MT7620.
+
+config SOC_MT7621
+	bool "MT7621"
+	select MIPS_CM
+	select MIPS_L2_CACHE
+	select SYS_CACHE_SHIFT_5
+	select SYS_MIPS_CACHE_INIT_RAM_LOAD
+	select PINCTRL_MT7621
+	select MTK_SERIAL
+	select REGMAP
+	select SYSCON
+	select BINMAN
+	select SUPPORT_TPL
+	select SPL_LOADER_SUPPORT if SPL
+	select SPL_INIT_STACK_WITHOUT_MALLOC_F if SPL
+	help
+	  This supports MediaTek MT7621.
+
+config SOC_MT7628
+	bool "MT7628"
+	select SYS_CACHE_SHIFT_5
+	select MIPS_INIT_STACK_IN_SRAM
+	select MIPS_SRAM_INIT
+	select SYS_MIPS_CACHE_INIT_RAM_LOAD
+	select PINCTRL_MT7628
+	select MTK_SERIAL
+	select SYSRESET
+	select SYSRESET_RESETCTL
+	select SPL_SEPARATE_BSS if SPL
+	select SPL_INIT_STACK_WITHOUT_MALLOC_F if SPL
+	select SPL_LOADER_SUPPORT if SPL
+	select SPL_OF_CONTROL if SPL_DM
+	select SPL_SIMPLE_BUS if SPL_DM
+	select SPL_DM_SERIAL if SPL_DM
+	select SPL_CLK if SPL_DM && SPL_SERIAL
+	select SPL_SYSRESET if SPL_DM
+	select SPL_OF_LIBFDT if SPL_OF_CONTROL
+	help
+	  This supports MediaTek MT7628/MT7688.
+
+endchoice
+
+source "arch/mips/mach-mtmips/mt7620/Kconfig"
+source "arch/mips/mach-mtmips/mt7621/Kconfig"
+source "arch/mips/mach-mtmips/mt7628/Kconfig"
+
+endmenu

@@ -45,8 +45,6 @@ extern hwf_procfs_stat_t hwf_stat_g;
 #define CPU_RX_HW_FIREWALL_QUEUE_ID  0   /* lowest priority queue */
 #define RDPA_INVALID_KEY     (-1)
 #define RDPA_INVALID_KEY_U64 (~0ULL)
-/* 1000 multiplier is  used to match CT_LKP_POLICER_LEN in firmware */
-#define PPS_TO_BPS   (8*1000)
 
 static inline int hwf_hw_policer_add(bcm_hwf_ratelimiter_t *hwf_ratelimiter)
 {
@@ -58,14 +56,15 @@ static inline int hwf_hw_policer_add(bcm_hwf_ratelimiter_t *hwf_ratelimiter)
 	int rc = 0;
 
 	policer_cfg.type = rdpa_tm_policer_single_token_bucket;
-	policer_cfg.commited_rate = hwf_ratelimiter->pps_rate * PPS_TO_BPS; 
-	policer_cfg.committed_burst_size = hwf_ratelimiter->pps_burst_size * PPS_TO_BPS;
+	policer_cfg.commited_rate = hwf_ratelimiter->pps_rate; 
+	policer_cfg.committed_burst_size = hwf_ratelimiter->pps_burst_size;
 	policer_cfg.peak_rate = RDPA_INVALID_KEY_U64;
 	policer_cfg.peak_burst_size = RDPA_INVALID_KEY;
 
 	policer_cfg.dei_mode = RDPA_INVALID_KEY;
 	policer_cfg.color_aware_enabled = RDPA_INVALID_KEY;
 	policer_cfg.rl_overhead = RDPA_INVALID_KEY;
+	policer_cfg.is_pps = 1;
 
 	/* allocate a new policer object from runner */
 	mattr = bdmf_mattr_alloc(rdpa_policer_drv());
@@ -132,14 +131,15 @@ static inline int hwf_hw_policer_modify(bcm_hwf_ratelimiter_t *hwf_ratelimiter)
 	}
 
 	policer_cfg.type = rdpa_tm_policer_single_token_bucket;
-	policer_cfg.commited_rate = hwf_ratelimiter->pps_rate * PPS_TO_BPS; 
-	policer_cfg.committed_burst_size = hwf_ratelimiter->pps_burst_size * PPS_TO_BPS;
+	policer_cfg.commited_rate = hwf_ratelimiter->pps_rate; 
+	policer_cfg.committed_burst_size = hwf_ratelimiter->pps_burst_size;
 	policer_cfg.peak_rate = RDPA_INVALID_KEY_U64;
 	policer_cfg.peak_burst_size = RDPA_INVALID_KEY;
 
 	policer_cfg.dei_mode = RDPA_INVALID_KEY;
 	policer_cfg.color_aware_enabled = RDPA_INVALID_KEY;
 	policer_cfg.rl_overhead = RDPA_INVALID_KEY;
+	policer_cfg.is_pps = 1;
 
 	rc = rdpa_policer_cfg_set(policer, &policer_cfg);
 	if (rc)
@@ -531,7 +531,7 @@ static inline long  hwf_hw_node_add(bcm_hwf_obj_t *hwf_obj, bcm_hwf_ratelimiter_
 	}
 	else if (index < 0)
 	{
-		pr_notice("%s: hash table collision, failed to add entry\n", __func__);
+		/* hash table collision, failed to add entry */
 		hwf_stat_g.cnt_overflow ++;
 		return HWF_INVALID_HW_IDX;
 	}

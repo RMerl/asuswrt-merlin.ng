@@ -1,0 +1,6 @@
+Qualcomm Robotics RB3 Development Platform (dragonboard845c)
+M:	Sumit Garg <sumit.garg@linaro.org>
+S:	Maintained
+F:	board/qualcomm/dragonboard845c/
+F:	include/configs/dragonboard845c.h
+F:	configs/dragonboard845c_defconfig

@@ -301,16 +301,24 @@ int enet_rx_blog_dump(int argc, char *argv[])
 
 int enet_rx_blog_en(int argc, char *argv[])
 {
-    printk("usage: rx_blog_en [enable|disable]\n\n");
+    int cmd_ok = 0;
     
     if (argc >=2)
     {
         if (strcmp(argv[1], "enable") == 0)
+        {
             enet_rx_blog_g.use_rx_thread = 1;
+            cmd_ok = 1;
+        }
         else if (strcmp(argv[1], "disable") == 0)
+        {
             enet_rx_blog_g.use_rx_thread = 0;
+            cmd_ok = 1;
+        }
     }
-    printk(" use_rx_thread=%d\n", enet_rx_blog_g.use_rx_thread);
+    if (!cmd_ok)
+        printk("usage: rx_blog_en [enable|disable]\n");
+    printk("\n use_rx_thread=%d\n", enet_rx_blog_g.use_rx_thread);
         
     return 0;
 }

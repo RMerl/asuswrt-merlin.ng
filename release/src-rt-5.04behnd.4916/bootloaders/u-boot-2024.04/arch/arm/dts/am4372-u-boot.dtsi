@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+/{
+	aliases {
+		usb0 = &usb1;
+		usb1 = &usb2;
+	};
+};
+
+&am43xx_control_usb2phy1 {
+	compatible = "ti,control-phy-usb2-am437", "syscon";
+};
+
+&am43xx_control_usb2phy2 {
+	compatible = "ti,control-phy-usb2-am437", "syscon";
+};
+
+&ocp2scp0 {
+	compatible = "ti,am437x-ocp2scp", "ti,omap-ocp2scp", "simple-bus";
+};
+
+&ocp2scp1 {
+	compatible = "ti,am437x-ocp2scp", "ti,omap-ocp2scp", "simple-bus";
+};
+
+&dwc3_1 {
+	bootph-pre-ram;
+};
+
+&usb1 {
+	bootph-pre-ram;
+};
+
+&usb2_phy1 {
+	bootph-pre-ram;
+};
+
+&am43xx_control_usb2phy1 {
+	bootph-pre-ram;
+};
+
+&ocp2scp0 {
+	bootph-pre-ram;
+};
+
+&dwc3_2 {
+	bootph-pre-ram;
+};
+
+&usb2 {
+	bootph-pre-ram;
+};
+
+&usb2_phy2 {
+	bootph-pre-ram;
+};
+
+&am43xx_control_usb2phy2 {
+	bootph-pre-ram;
+};
+
+&ocp2scp1 {
+	bootph-pre-ram;
+};

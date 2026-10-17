@@ -1,6 +1,0 @@
-PENGWYN BOARD
-M:	Lothar Felten <lothar.felten@gmail.com>
-S:	Maintained
-F:	board/silica/pengwyn/
-F:	include/configs/pengwyn.h
-F:	configs/pengwyn_defconfig

@@ -1,6 +1,0 @@
-TI816X BOARD
-M:	Tom Rini <trini@konsulko.com>
-S:	Maintained
-F:	board/ti/ti816x/
-F:	include/configs/ti816x_evm.h
-F:	configs/ti816x_evm_defconfig

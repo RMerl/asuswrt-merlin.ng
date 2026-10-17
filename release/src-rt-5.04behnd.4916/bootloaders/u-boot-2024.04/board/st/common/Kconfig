@@ -1,0 +1,21 @@
+config CMD_STBOARD
+	bool "stboard - command for OTP board information"
+	depends on ARCH_STM32MP
+	default y if TARGET_ST_STM32MP25X || TARGET_ST_STM32MP15X || TARGET_ST_STM32MP13X
+	help
+	  This compile the stboard command to
+	  read and write the board in the OTP.
+
+config DFU_ALT_RAM0
+	string "dfu for ram0"
+	default "uImage ram 0xc2000000 0x2000000;devicetree.dtb ram 0xc4000000 0x100000;uramdisk.image.gz ram 0xc4400000 0x10000000"
+	depends on ARCH_STM32MP && SET_DFU_ALT_INFO
+	help
+	  This defines the partitions of ram used to build dfu dynamically.
+
+config TYPEC_STUSB160X
+	tristate "STMicroelectronics STUSB160X Type-C controller driver"
+	depends on DM_I2C
+	help
+	  Say Y if your system has STMicroelectronics STUSB160X Type-C port
+	  controller.

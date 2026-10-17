@@ -39,9 +39,6 @@
  *******************************************************************************
  */
 #if (defined(CONFIG_BCM_INGQOS) || defined(CONFIG_BCM_INGQOS_MODULE))
-#if defined(CONFIG_BCM_DSL_RDP)
-#define RDPA_IQ_IH_CONG_THRESHOLD_NUM 4
-#endif
 int rdpa_iq_sys_set_cong_ctrl(void *iq_param);
 int rdpa_iq_sys_get_cong_ctrl(void *iq_param);
 #endif

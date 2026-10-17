@@ -1,0 +1,9 @@
+TURINGRK1-RK3588
+M:	Joshua Riek <jjriek@verizon.net>
+S:	Maintained
+F:	board/turing/turing-rk1-rk3588
+F:	include/configs/turing-rk1-rk3588.h
+F:	configs/turing-rk1-rk3588_defconfig
+F:	arch/arm/dts/rk3588-turing-rk1.dts
+F:	arch/arm/dts/rk3588-turing-rk1.dtsi
+F:	arch/arm/dts/rk3588-turing-rk1-u-boot.dtsi

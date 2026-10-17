@@ -1,0 +1,12 @@
+if TARGET_MYS_6ULX
+
+config SYS_BOARD
+	default "mys_6ulx"
+
+config SYS_VENDOR
+	default "myir"
+
+config SYS_CONFIG_NAME
+	default "mys_6ulx"
+
+endif

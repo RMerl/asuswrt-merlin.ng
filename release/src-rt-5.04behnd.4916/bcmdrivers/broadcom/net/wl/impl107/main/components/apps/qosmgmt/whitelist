@@ -1,0 +1,20 @@
+# Whitelist in place for this component / branch / twig
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+
+JIRA:BCAWLAN-274913 [qosmgmtd] Assert (crash) when doing scs add + change + delete
+JIRA:BCAWLAN-275127 Observing 15 to 20% low tput in TCP-UL mode compared to 25.438.41
+JIRA:BCAWLAN-274778 6766BL442 SoC STR UL TCP 2Gbps run2run variations in MLO RvR peak region
+JIRA:BCAWLAN-274458 SVT:AP: AccessCIT:6766REF1_6726B1: potentially unexpected fatal signal 8 ( qosmgmtd )
+JIRA:BCAWLAN-276423 intermittent ping failure during TCP UL/BI traffic with DWDS mode in smoke production
+JIRA:BCAWLAN-276662 Re-check in the iDLS change reverted earlier
+JIRA:BCAWLAN-276544 WBD state mismatch between root AP and repeater
+JIRA:BCAWLAN-274434 [WLDSPS]  after pwrctl config --wldpd on(all radio power down) there still continuous output "QOSMGMT >>sh_utils_get_mlo_info_v1(692): wl0 mlo info err -1"
+JIRA:BCAWLAN-274938 Need to add WLC_E_LINK to qosmgmt's eapd event listening list

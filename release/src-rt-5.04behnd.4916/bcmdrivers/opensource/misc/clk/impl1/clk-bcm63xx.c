@@ -81,7 +81,8 @@ static unsigned long bcm63xx_cpuclk_recalc_rate(struct clk_hw *hwclk,
 	u32 ratio, base;
 	unsigned long rate;
 
-	ratio = base = 0;
+	ratio = 0;
+	base = 1;
 	get_arm_core_ratio(cpuclk, &ratio, &base, &cpuclk->mdiv);
 	cpuclk->ratio = ratio;
 	cpuclk->ratio_base = base;
@@ -140,14 +141,6 @@ static void __init bcm63xx_cpuclk_init(struct device_node *node)
 		pr_err("%s: could not allocate bcm63xx cpuclk\n", __func__);
 		return;
 	}
-
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-	cpuclk->reg = of_iomap(node, 0);
-	if (IS_ERR_OR_NULL(cpuclk->reg)) {
-		pr_err("%s: Failed to map clk reg in node %pOF!\n", __func__, node);
-		return;
-	}
-#endif
 
 	bcm63xx_cpuclk_init_default(node, cpuclk);
 

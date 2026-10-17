@@ -166,6 +166,7 @@ static int bcm63xx_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 		regmap_update_bits(regmap_i2s, I2S_RX_CFG,
 			           I2S_RX_JUSTIFY_MASK,
 			           I2S_RX_JUSTIFY_RIGHT);
+			break;
 		default:
 			return -EINVAL;
 	}
@@ -218,7 +219,7 @@ static int bcm63xx_i2s_hw_params(struct snd_pcm_substream *substream,
 				 struct snd_soc_dai *dai)
 {
 	int ret = 0;
-	unsigned int channels,slot,sample_depth,mode;
+	unsigned int channels,sample_depth,mode;
 	struct clk *i2s_clk;
 	struct bcm_i2s_priv *i2s_priv = snd_soc_dai_get_drvdata(dai);
 	struct regmap *regmap_i2s = i2s_priv->regmap_i2s;
@@ -279,7 +280,7 @@ static int bcm63xx_i2s_hw_params(struct snd_pcm_substream *substream,
 static int bcm63xx_i2s_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
-	unsigned int slavemode,mode;
+	unsigned int slavemode;
 	struct bcm_i2s_priv *i2s_priv = snd_soc_dai_get_drvdata(dai);
 	struct regmap *regmap_i2s = i2s_priv->regmap_i2s;
 
@@ -353,6 +354,35 @@ static void bcm63xx_i2s_shutdown(struct snd_pcm_substream *substream,
 	struct regmap *regmap_i2s = i2s_priv->regmap_i2s;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+		i = 0;
+
+		/* drain output tx queue */
+		do{ 
+			regmap_read(regmap_i2s, I2S_TX_IRQ_CTL, &level);
+			level = level & I2S_TX_DESC_IFF_LEVEL_MASK;
+			msleep(1);
+			if (i++ > 1000)
+				break;
+		}while( level != 0);
+
+		regmap_read(regmap_i2s, I2S_TX_IRQ_CTL, &level);
+		level = (level & I2S_TX_DESC_OFF_LEVEL_MASK) >>
+			   I2S_TX_DESC_OFF_LEVEL_SHIFT;
+
+		for (i=0; i<level; i++) {
+			   regmap_read(regmap_i2s, I2S_TX_DESC_OFF_ADDR, &val);
+			   regmap_read(regmap_i2s, I2S_TX_DESC_OFF_LEN, &val);
+		}
+
+		/* now the output tx queue is empty, disable interrupt */
+		regmap_write(regmap_i2s,
+			     I2S_TX_IRQ_EN,
+			     0);
+		regmap_update_bits(regmap_i2s,
+				 I2S_TX_CFG,
+				 I2S_TX_ENABLE_MASK,
+				 0);
+
 		regmap_update_bits(regmap_i2s, I2S_TX_CFG,
 				I2S_TX_OUT_R | I2S_TX_DATA_ALIGNMENT |
 				I2S_TX_DATA_ENABLE | I2S_TX_CLOCK_ENABLE, 0);

@@ -1,0 +1,8 @@
+V3MSK BOARD
+M:	Cogent Embedded, Inc. <source@cogentembedded.com>
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a77970-v3msk*
+F:	board/renesas/v3msk/
+F:	configs/r8a77970_v3msk_defconfig
+F:	include/configs/v3msk.h

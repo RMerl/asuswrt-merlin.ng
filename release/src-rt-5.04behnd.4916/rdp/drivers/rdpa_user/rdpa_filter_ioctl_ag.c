@@ -68,7 +68,7 @@ static int rdpa_user_filter_global_cfg_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_filter_global_cfg_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_filter_global_cfg_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_filter_global_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -83,7 +83,7 @@ static int rdpa_user_filter_global_cfg_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside filter_user_global_cfg_set\n");
 
-	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(rdpa_filter_global_cfg_t )))
+	if (copy_from_user((void *)&parm, (void *)(bdmf_long_t)pa->ptr, sizeof(rdpa_filter_global_cfg_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -108,7 +108,7 @@ static int rdpa_user_filter_etype_udef_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_filter_etype_udef_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -122,7 +122,7 @@ static int rdpa_user_filter_etype_udef_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside filter_user_etype_udef_set\n");
 
-	if ((pa->ret = rdpa_filter_etype_udef_set(pa->mo, pa->ai, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_filter_etype_udef_set(pa->mo, pa->ai, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_filter_etype_udef_set failed, ret:%d\n", pa->ret);
 	}
@@ -136,7 +136,7 @@ static int rdpa_user_filter_etype_udef_get_next(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside filter_user_etype_udef_get_next\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(bdmf_index )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(bdmf_index )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -147,7 +147,7 @@ static int rdpa_user_filter_etype_udef_get_next(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_filter_etype_udef_get_next failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ai_ptr, (void *)&ai, sizeof(bdmf_index )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ai_ptr, (void *)&ai, sizeof(bdmf_index )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -163,7 +163,7 @@ static int rdpa_user_filter_stats_get(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside filter_user_stats_get\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_filter_stats_key_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_filter_stats_key_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -174,7 +174,7 @@ static int rdpa_user_filter_stats_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_filter_stats_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -189,13 +189,13 @@ static int rdpa_user_filter_stats_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside filter_user_stats_set\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_filter_stats_key_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_filter_stats_key_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
 	}
 
-	if ((pa->ret = rdpa_filter_stats_set(pa->mo, &ai, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_filter_stats_set(pa->mo, &ai, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_filter_stats_set failed, ret:%d\n", pa->ret);
 	}
@@ -209,7 +209,7 @@ static int rdpa_user_filter_stats_get_next(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside filter_user_stats_get_next\n");
 
-	if (copy_from_user((void *)&ai, (void *)(long)pa->ai_ptr, sizeof(rdpa_filter_stats_key_t )))
+	if (copy_from_user((void *)&ai, (void *)(bdmf_long_t)pa->ai_ptr, sizeof(rdpa_filter_stats_key_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy from user\n");
 		return -1;
@@ -220,7 +220,7 @@ static int rdpa_user_filter_stats_get_next(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_filter_stats_get_next failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ai_ptr, (void *)&ai, sizeof(rdpa_filter_stats_key_t )))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ai_ptr, (void *)&ai, sizeof(rdpa_filter_stats_key_t )))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -229,7 +229,7 @@ static int rdpa_user_filter_stats_get_next(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
-long rdpa_filter_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
+bdmf_long_t rdpa_filter_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
 

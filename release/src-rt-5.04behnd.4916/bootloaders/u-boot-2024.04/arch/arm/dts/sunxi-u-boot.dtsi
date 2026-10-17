@@ -1,0 +1,128 @@
+#include <config.h>
+
+#ifdef CONFIG_ARM64
+#define ARCH "arm64"
+#else
+#define ARCH "arm"
+#endif
+
+/ {
+	aliases {
+		mmc0 = &mmc0;
+#if CONFIG_MMC_SUNXI_SLOT_EXTRA == 2
+		mmc1 = &mmc2;
+#endif
+	};
+
+	binman: binman {
+		multiple-images;
+	};
+};
+
+/* Let U-Boot be the firmware layer that controls the watchdog. */
+#ifdef CONFIG_MACH_SUN8I_R528
+&wdt {
+	status = "okay";
+};
+#endif
+
+&binman {
+	u-boot-sunxi-with-spl {
+		filename = "u-boot-sunxi-with-spl.bin";
+		pad-byte = <0xff>;
+
+		blob {
+			/*
+			 * This value matches SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR
+			 * and SYS_SPI_U_BOOT_OFFS if those are defined.
+			 */
+			min-size = <0x8000>;
+			filename = "spl/sunxi-spl.bin";
+		};
+
+#ifdef CONFIG_SPL_LOAD_FIT
+		fit {
+			description = "Configuration to load U-Boot and firmware";
+			#address-cells = <1>;
+			fit,fdt-list = "of-list";
+
+			images {
+				uboot {
+					description = "U-Boot";
+					type = "standalone";
+					os = "u-boot";
+					arch = ARCH;
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+#if CONFIG_SUNXI_BL31_BASE == 0
+					entry = <CONFIG_TEXT_BASE>;
+#endif
+
+					u-boot-nodtb {
+					};
+				};
+
+#if CONFIG_SUNXI_BL31_BASE
+				atf {
+					description = "ARM Trusted Firmware";
+					type = "firmware";
+					os = "arm-trusted-firmware";
+					arch = ARCH;
+					compression = "none";
+					load = <CONFIG_SUNXI_BL31_BASE>;
+					entry = <CONFIG_SUNXI_BL31_BASE>;
+
+					atf-bl31 {
+						filename = "bl31.bin";
+						missing-msg = "atf-bl31-sunxi";
+					};
+				};
+#endif
+
+#if CONFIG_SUNXI_SCP_BASE
+				scp {
+					description = "SCP firmware";
+					type = "firmware";
+					arch = "or1k";
+					compression = "none";
+					load = <CONFIG_SUNXI_SCP_BASE>;
+
+					scp {
+						filename = "scp.bin";
+						missing-msg = "scp-sunxi";
+					};
+				};
+#endif
+
+				@fdt-SEQ {
+					description = "NAME";
+					type = "flat_dt";
+					compression = "none";
+				};
+			};
+
+			configurations {
+				default = "@config-DEFAULT-SEQ";
+
+				@config-SEQ {
+					description = "NAME";
+#if CONFIG_SUNXI_BL31_BASE
+					firmware = "atf";
+#else
+					firmware = "uboot";
+#endif
+#if CONFIG_SUNXI_SCP_BASE
+					loadables = "scp", "uboot";
+#else
+					loadables = "uboot";
+#endif
+					fdt = "fdt-SEQ";
+				};
+			};
+		};
+#else
+		u-boot-img {
+		};
+#endif
+	};
+};

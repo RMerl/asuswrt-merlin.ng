@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/* Copyright (C) 2022 Denx Software Engineering GmbH
+ * Philip Oberfichtner <pro@denx.de>
+ */
+
+/ {
+	chosen {
+		stdout-path = &uart2;
+	};
+
+	soc {
+		bootph-pre-ram;
+
+		bus@2000000 {
+			bootph-pre-ram;
+
+			spba-bus@2000000 {
+				bootph-pre-ram;
+			};
+		};
+
+		bus@2100000 {
+			bootph-pre-ram;
+		};
+	};
+
+	bootcount {
+		compatible = "u-boot,bootcount-pmic";
+		pmic = <&pmic>;
+	};
+};
+
+&uart1 {
+	bootph-pre-ram;
+};
+
+&uart2 {
+	bootph-pre-ram;
+};
+
+&usdhc2 {
+	bootph-pre-ram;
+};
+
+&usdhc4 {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&gpio6 {
+	bootph-pre-ram;
+};
+
+&gpio7 {
+	bootph-pre-ram;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

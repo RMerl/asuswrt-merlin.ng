@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2023 Gateworks Corporation
+ */
+#include "imx8mp-venice-gw702x-u-boot.dtsi"
+
+&ethphy0 {
+	reset-gpios = <&gpio3 14 GPIO_ACTIVE_LOW>;
+	reset-delay-us = <1000>;
+	reset-post-delay-us = <300000>;
+};
+
+&gpio1 {
+	tpm_rst {
+		gpio-hog;
+		output-high;
+		gpios = <11 GPIO_ACTIVE_HIGH>;
+		line-name = "tpm_rst#";
+	};
+};
+
+&gpio4 {
+	dio_1 {
+		gpio-hog;
+		input;
+		gpios = <8 GPIO_ACTIVE_HIGH>;
+		line-name = "dio1";
+	};
+
+	dio_0 {
+		gpio-hog;
+		input;
+		gpios = <11 GPIO_ACTIVE_HIGH>;
+		line-name = "dio0";
+	};
+
+	pci_usb_sel {
+		gpio-hog;
+		output-low;
+		gpios = <14 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_usb_sel";
+	};
+
+	mipi_gpio4 {
+		gpio-hog;
+		input;
+		gpios = <17 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio4";
+	};
+
+	rs485_en {
+		gpio-hog;
+		output-low;
+		gpios = <22 GPIO_ACTIVE_HIGH>;
+		line-name = "rs485_en";
+	};
+
+	rs485_term {
+		gpio-hog;
+		output-low;
+		gpios = <23 GPIO_ACTIVE_HIGH>;
+		line-name = "rs485_term";
+	};
+
+	mipi_gpio1 {
+		gpio-hog;
+		input;
+		gpios = <24 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio1";
+	};
+
+	mipi_gpio3 {
+		gpio-hog;
+		input;
+		gpios = <25 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio3";
+	};
+
+	mipi_gpio2 {
+		gpio-hog;
+		input;
+		gpios = <26 GPIO_ACTIVE_HIGH>;
+		line-name = "mipi_gpio2";
+	};
+
+	rs485_hd {
+		gpio-hog;
+		output-low;
+		gpios = <27 GPIO_ACTIVE_HIGH>;
+		line-name = "rs485_hd";
+	};
+
+	pci_wdis {
+		gpio-hog;
+		output-high;
+		gpios = <28 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_wdis#";
+	};
+};
+
+/* gpio-usb-con not supported yet in U-Boot so make this a host for now */
+&usb_dwc3_0 {
+	dr_mode = "host";
+};

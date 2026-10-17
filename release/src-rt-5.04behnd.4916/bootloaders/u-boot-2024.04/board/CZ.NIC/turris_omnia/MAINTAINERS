@@ -1,0 +1,9 @@
+TURRIS OMNIA BOARD
+M:	Marek Behún <kabel@kernel.org>
+S:	Maintained
+F:	arch/arm/dts/armada-385-turris-omnia*.dts*
+F:	board/CZ.NIC/turris_atsha_otp.*
+F:	board/CZ.NIC/turris_omnia/
+F:	configs/turris_omnia_defconfig
+F:	drivers/gpio/turris_omnia_mcu.c
+F:	include/configs/turris_omnia.h

@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+/ {
+	binman: binman {
+		multiple-images;
+
+		my_template: template {
+			blob-ext@0 {
+				filename = "my-blob.bin";
+				offset = <0>;
+			};
+			blob-ext@8 {
+				offset = <8>;
+			};
+		};
+
+		image {
+			pad-byte = <0x40>;
+			filename = "my-image.bin";
+			insert-template = <&my_template>;
+			blob-ext@8 {
+				filename = "my-blob2.bin";
+			};
+		};
+	};
+};

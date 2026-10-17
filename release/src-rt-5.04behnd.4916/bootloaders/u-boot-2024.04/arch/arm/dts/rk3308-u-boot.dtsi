@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *(C) Copyright 2019 Rockchip Electronics Co., Ltd
+ */
+
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	aliases {
+		mmc0 = &emmc;
+		mmc1 = &sdmmc;
+	};
+};
+
+&cru {
+	bootph-all;
+};
+
+&dmc {
+	bootph-all;
+};
+
+&emmc {
+	/* mmc to sram can't do dma, prevent aborts transferring TF-A parts */
+	u-boot,spl-fifo-mode;
+	bootph-all;
+};
+
+&sdmmc {
+	bootph-all;
+	u-boot,spl-fifo-mode;
+};
+
+&grf {
+	bootph-all;
+};
+
+&saradc {
+	bootph-all;
+	status = "okay";
+};

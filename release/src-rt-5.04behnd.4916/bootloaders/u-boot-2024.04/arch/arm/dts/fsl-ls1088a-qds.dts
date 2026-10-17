@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls1088a QDS default board device tree source
+ *
+ * Copyright 2020 NXP
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1088a-qds.dtsi"
+
+/ {
+	model = "NXP Layerscape 1088a QDS Board";
+	compatible = "fsl,ls1088a-qds", "fsl,ls1088a";
+};

@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0+
+/**
+ * Devicetree file with the public key EFI Signature List(ESL)
+ * node. This file is used to generate the dtsi file to be
+ * included into the DTB.
+*/
+/ {
+	signature {
+		capsule-key = /incbin/("ESL_BIN_FILE");
+	};
+};

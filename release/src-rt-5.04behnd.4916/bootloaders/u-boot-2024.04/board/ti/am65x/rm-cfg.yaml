@@ -1,0 +1,1809 @@
+# SPDX-License-Identifier: GPL-2.0+
+# Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+#
+# Resource management configuration for AM65x
+#
+
+---
+
+rm-cfg:
+    rm_boardcfg:
+        rev:
+            boardcfg_abi_maj: 0x0
+            boardcfg_abi_min: 0x1
+        host_cfg:
+            subhdr:
+                magic: 0x4C41
+                size: 356
+            host_cfg_entries:
+                -  # 1
+                    host_id: 3
+                    allowed_atype: 0x2A
+                    allowed_qos: 0xAAAA
+                    allowed_orderid: 0xAAAAAAAA
+                    allowed_priority: 0xAAAA
+                    allowed_sched_priority: 0xAA
+                -  # 2
+                    host_id: 5
+                    allowed_atype: 0x2A
+                    allowed_qos: 0xAAAA
+                    allowed_orderid: 0xAAAAAAAA
+                    allowed_priority: 0xAAAA
+                    allowed_sched_priority: 0xAA
+                -  # 3
+                    host_id: 12
+                    allowed_atype: 0x2A
+                    allowed_qos: 0xAAAA
+                    allowed_orderid: 0xAAAAAAAA
+                    allowed_priority: 0xAAAA
+                    allowed_sched_priority: 0xAA
+                -  # 4
+                    host_id: 13
+                    allowed_atype: 0x2A
+                    allowed_qos: 0xAAAA
+                    allowed_orderid: 0xAAAAAAAA
+                    allowed_priority: 0xAAAA
+                    allowed_sched_priority: 0xAA
+                -  # 5
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 6
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 7
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 8
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 9
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 10
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 11
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 12
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 13
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 14
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 15
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 16
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 17
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 18
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 19
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 20
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 21
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 22
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 23
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 24
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 25
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 26
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 27
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 28
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 29
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 30
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 31
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+                -  # 32
+                    host_id: 0
+                    allowed_atype: 0
+                    allowed_qos: 0
+                    allowed_orderid: 0
+                    allowed_priority: 0
+                    allowed_sched_priority: 0
+        resasg:
+            subhdr:
+                magic: 0x7B25
+                size: 8
+            resasg_entries_size: 2080
+            reserved: 0
+    resasg_entries:
+        -
+            start_resource: 0
+            num_resource: 12
+            type: 192
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 12
+            num_resource: 4
+            type: 192
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 8
+            type: 192
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 8
+            type: 192
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 8
+            type: 192
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 32
+            type: 6208
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 32
+            type: 6208
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 32
+            num_resource: 32
+            type: 6208
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 24
+            type: 6272
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 24
+            type: 6272
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 24
+            type: 6272
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 20
+            type: 6400
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 4
+            type: 6400
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 4
+            type: 6400
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 4
+            type: 6400
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 28
+            num_resource: 4
+            type: 6400
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 16
+            type: 9280
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 16
+            type: 9280
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 16
+            type: 9280
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 32
+            num_resource: 8
+            type: 9280
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 4
+            type: 9984
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 4
+            type: 9984
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 4
+            type: 9984
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 4
+            type: 9984
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 12
+            num_resource: 4
+            type: 9984
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 80
+            type: 11466
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 96
+            num_resource: 30
+            type: 11466
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 126
+            num_resource: 50
+            type: 11466
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 126
+            num_resource: 50
+            type: 11466
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 176
+            num_resource: 50
+            type: 11466
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 226
+            num_resource: 30
+            type: 11466
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 1024
+            type: 11469
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 1040
+            num_resource: 512
+            type: 11469
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 1552
+            num_resource: 512
+            type: 11469
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 1552
+            num_resource: 512
+            type: 11469
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 2064
+            num_resource: 512
+            type: 11469
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 2576
+            num_resource: 2032
+            type: 11469
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 64
+            type: 11530
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 20480
+            num_resource: 1024
+            type: 11533
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 64
+            type: 11594
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 22528
+            num_resource: 1024
+            type: 11597
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 64
+            type: 11648
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 80
+            num_resource: 40
+            type: 11648
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 120
+            num_resource: 4
+            type: 11648
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 120
+            num_resource: 4
+            type: 11648
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 124
+            num_resource: 4
+            type: 11648
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 128
+            num_resource: 24
+            type: 11648
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 12
+            type: 11840
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 13
+            num_resource: 4
+            type: 11840
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 17
+            num_resource: 16
+            type: 11840
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 17
+            num_resource: 16
+            type: 11840
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 33
+            num_resource: 16
+            type: 11840
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 49
+            num_resource: 15
+            type: 11840
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 1
+            type: 11968
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 304
+            num_resource: 100
+            type: 11969
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 404
+            num_resource: 50
+            type: 11969
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 454
+            num_resource: 256
+            type: 11969
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 454
+            num_resource: 256
+            type: 11969
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 710
+            num_resource: 32
+            type: 11969
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 742
+            num_resource: 26
+            type: 11969
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 160
+            num_resource: 12
+            type: 11970
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 172
+            num_resource: 4
+            type: 11970
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 172
+            num_resource: 4
+            type: 11970
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 172
+            num_resource: 0
+            type: 11970
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 176
+            num_resource: 2
+            type: 11970
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 178
+            num_resource: 52
+            type: 11970
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 230
+            num_resource: 8
+            type: 11970
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 238
+            num_resource: 32
+            type: 11970
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 238
+            num_resource: 32
+            type: 11970
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 270
+            num_resource: 14
+            type: 11970
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 284
+            num_resource: 18
+            type: 11970
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 12
+            type: 11971
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 4
+            type: 11971
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 4
+            type: 11971
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 0
+            type: 11971
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 2
+            type: 11971
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 38
+            type: 11971
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 64
+            num_resource: 8
+            type: 11971
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 72
+            num_resource: 32
+            type: 11971
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 72
+            num_resource: 32
+            type: 11971
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 104
+            num_resource: 14
+            type: 11971
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 118
+            num_resource: 2
+            type: 11971
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 120
+            num_resource: 4
+            type: 11972
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 124
+            num_resource: 4
+            type: 11972
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 128
+            num_resource: 12
+            type: 11972
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 128
+            num_resource: 12
+            type: 11972
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 140
+            num_resource: 12
+            type: 11972
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 154
+            num_resource: 0
+            type: 11973
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 154
+            num_resource: 0
+            type: 11973
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 154
+            num_resource: 0
+            type: 11973
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 154
+            num_resource: 0
+            type: 11973
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 154
+            num_resource: 2
+            type: 11973
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 156
+            num_resource: 2
+            type: 11973
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 156
+            num_resource: 2
+            type: 11973
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 158
+            num_resource: 2
+            type: 11973
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 11975
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 11975
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 11975
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 11975
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 3
+            type: 11975
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 2
+            type: 11975
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 2
+            type: 11975
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 6
+            num_resource: 2
+            type: 11975
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 1
+            type: 11978
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 3
+            num_resource: 1
+            type: 11978
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 8
+            type: 11979
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 8
+            type: 11979
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 8
+            type: 11979
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 8
+            type: 11979
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 8
+            type: 11979
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 150
+            num_resource: 64
+            type: 12032
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 214
+            num_resource: 8
+            type: 12032
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 222
+            num_resource: 64
+            type: 12032
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 222
+            num_resource: 64
+            type: 12032
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 286
+            num_resource: 8
+            type: 12032
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 294
+            num_resource: 6
+            type: 12032
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 1
+            type: 12033
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 49152
+            num_resource: 1024
+            type: 12034
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 1
+            type: 12035
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 12
+            type: 12042
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 4
+            type: 12042
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 4
+            type: 12042
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 0
+            type: 12042
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 2
+            type: 12042
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 52
+            type: 12042
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 78
+            num_resource: 8
+            type: 12042
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 86
+            num_resource: 32
+            type: 12042
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 86
+            num_resource: 32
+            type: 12042
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 118
+            num_resource: 14
+            type: 12042
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 132
+            num_resource: 18
+            type: 12042
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 0
+            type: 12043
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 0
+            type: 12043
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 0
+            type: 12043
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 0
+            type: 12043
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 2
+            type: 12043
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 2
+            type: 12043
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 2
+            type: 12043
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 6
+            num_resource: 2
+            type: 12043
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 12
+            type: 12045
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 4
+            type: 12045
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 4
+            type: 12045
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 20
+            num_resource: 0
+            type: 12045
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 2
+            type: 12045
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 38
+            type: 12045
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 64
+            num_resource: 8
+            type: 12045
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 72
+            num_resource: 32
+            type: 12045
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 72
+            num_resource: 32
+            type: 12045
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 104
+            num_resource: 14
+            type: 12045
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 118
+            num_resource: 2
+            type: 12045
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 120
+            num_resource: 4
+            type: 12046
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 124
+            num_resource: 4
+            type: 12046
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 128
+            num_resource: 12
+            type: 12046
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 128
+            num_resource: 12
+            type: 12046
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 140
+            num_resource: 12
+            type: 12046
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 12047
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 12047
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 12047
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 0
+            type: 12047
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 1
+            num_resource: 3
+            type: 12047
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 2
+            type: 12047
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 2
+            type: 12047
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 6
+            num_resource: 2
+            type: 12047
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 80
+            type: 12106
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 88
+            num_resource: 30
+            type: 12106
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 118
+            num_resource: 50
+            type: 12106
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 118
+            num_resource: 50
+            type: 12106
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 168
+            num_resource: 50
+            type: 12106
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 218
+            num_resource: 38
+            type: 12106
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 16392
+            num_resource: 512
+            type: 12109
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 16904
+            num_resource: 128
+            type: 12109
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 17032
+            num_resource: 256
+            type: 12109
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 17032
+            num_resource: 256
+            type: 12109
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 17288
+            num_resource: 256
+            type: 12109
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 17544
+            num_resource: 376
+            type: 12109
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 28
+            type: 12160
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 28
+            type: 12160
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 36
+            num_resource: 28
+            type: 12160
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 12
+            type: 12224
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 12
+            num_resource: 4
+            type: 12224
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 24
+            type: 12224
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 24
+            type: 12224
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 40
+            num_resource: 24
+            type: 12224
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 48
+            num_resource: 16
+            type: 12416
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 64
+            num_resource: 4
+            type: 12416
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 68
+            num_resource: 16
+            type: 12416
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 68
+            num_resource: 16
+            type: 12416
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 84
+            num_resource: 8
+            type: 12416
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 92
+            num_resource: 4
+            type: 12416
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 1
+            type: 12417
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 56320
+            num_resource: 256
+            type: 12418
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 1
+            type: 12419
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 2
+            type: 12426
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 4
+            type: 12426
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 4
+            type: 12426
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 0
+            type: 12426
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 2
+            type: 12426
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 10
+            num_resource: 12
+            type: 12426
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 22
+            num_resource: 4
+            type: 12426
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 10
+            type: 12426
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 10
+            type: 12426
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 36
+            num_resource: 12
+            type: 12426
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 0
+            type: 12427
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 2
+            type: 12427
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 0
+            type: 12427
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 2
+            type: 12427
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 2
+            type: 12429
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 4
+            type: 12429
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 4
+            type: 12429
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 0
+            type: 12429
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 2
+            type: 12429
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 10
+            num_resource: 12
+            type: 12429
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 22
+            num_resource: 4
+            type: 12429
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 10
+            type: 12429
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 10
+            type: 12429
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 36
+            num_resource: 12
+            type: 12429
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 0
+            type: 12431
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 2
+            type: 12431
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 0
+            type: 12431
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 2
+            type: 12431
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 1
+            type: 12480
+            host_id: 128
+            reserved: 0
+        -
+            start_resource: 96
+            num_resource: 32
+            type: 12481
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 128
+            num_resource: 8
+            type: 12481
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 136
+            num_resource: 60
+            type: 12481
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 136
+            num_resource: 60
+            type: 12481
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 196
+            num_resource: 60
+            type: 12481
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 50
+            num_resource: 2
+            type: 12482
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 52
+            num_resource: 4
+            type: 12482
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 52
+            num_resource: 4
+            type: 12482
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 52
+            num_resource: 0
+            type: 12482
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 56
+            num_resource: 2
+            type: 12482
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 58
+            num_resource: 12
+            type: 12482
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 70
+            num_resource: 4
+            type: 12482
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 74
+            num_resource: 10
+            type: 12482
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 74
+            num_resource: 10
+            type: 12482
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 84
+            num_resource: 12
+            type: 12482
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 2
+            type: 12483
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 4
+            type: 12483
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 4
+            type: 12483
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 4
+            num_resource: 0
+            type: 12483
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 2
+            type: 12483
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 10
+            num_resource: 12
+            type: 12483
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 22
+            num_resource: 4
+            type: 12483
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 10
+            type: 12483
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 26
+            num_resource: 10
+            type: 12483
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 36
+            num_resource: 12
+            type: 12483
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 48
+            num_resource: 0
+            type: 12485
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 48
+            num_resource: 2
+            type: 12485
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 48
+            num_resource: 0
+            type: 12485
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 48
+            num_resource: 2
+            type: 12485
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 0
+            type: 12487
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 2
+            type: 12487
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 0
+            type: 12487
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 2
+            type: 12487
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 2
+            num_resource: 1
+            type: 12490
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 3
+            num_resource: 1
+            type: 12490
+            host_id: 13
+            reserved: 0
+        -
+            start_resource: 0
+            num_resource: 8
+            type: 12491
+            host_id: 12
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 8
+            type: 12491
+            host_id: 3
+            reserved: 0
+        -
+            start_resource: 8
+            num_resource: 8
+            type: 12491
+            host_id: 4
+            reserved: 0
+        -
+            start_resource: 16
+            num_resource: 8
+            type: 12491
+            host_id: 5
+            reserved: 0
+        -
+            start_resource: 24
+            num_resource: 8
+            type: 12491
+            host_id: 128
+            reserved: 0

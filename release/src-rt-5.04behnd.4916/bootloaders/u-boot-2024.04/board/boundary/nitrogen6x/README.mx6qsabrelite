@@ -1,0 +1,118 @@
+U-Boot for the Freescale i.MX6q SabreLite board
+===============================================
+
+This file contains information for the port of U-Boot to the Freescale
+i.MX6q SabreLite board.
+
+
+1. Build
+--------
+
+To build U-Boot for the SabreLite board:
+
+ make mx6qsabrelite_config
+ make
+
+
+2. Boot from SD card
+--------------------
+
+The SabreLite boards boot from the SPI NOR flash. These boards need their SPI
+to be reflashed with a small SD card loader to support boot from SD card. The
+board will still boot from SPI NOR, but the loader will in turn request the
+BootROM to load the U-Boot from SD card.
+
+The SD card loader is available from
+
+https://wiki.linaro.org/Boards/MX6QSabreLite
+
+This is provided under a open-source 3-clause BSD license.
+
+To following procedure can be used to update the SPI-NOR on the SabreLite
+board:
+
+1. Write this SD card loader onto a large SD card using:
+
+      sudo dd if=iMX6DQ_SPI_to_uSDHC3.bin of=/dev/sXx
+
+   Note: Replace sXx with the device representing the SD card in your system.
+
+   Note: This writes SD card loader at address 0
+
+2. Put this SD card into the slot for the large SD card (SD3 on the bottom of
+   the board). Make sure SW1 switch is at position "00", so that it can boot
+   from the fuses.
+
+3. Power-up the SabreLite, press 'space' to enter command mode in the U-Boot
+   (the default one the board is shipped with, starting from the SPI NOR) and
+   enter the following commands:
+
+      MX6Q SABRELITE U-Boot > mmc dev 0
+      MX6Q SABRELITE U-Boot > mmc read 0x10800000 0 200
+      MX6Q SABRELITE U-Boot > sf probe
+      MX6Q SABRELITE U-Boot > sf erase 0 0x40000
+      MX6Q SABRELITE U-Boot > sf write 0x10800000 0 0x40000
+
+4. Write the u-boot.imx produced during the U-Boot build to the SD card:
+
+      sudo dd if=u-boot.imx of=/dev/sXx bs=512 seek=2 && sudo sync
+
+   Note: Replace sXx with the device representing the SD card in your system.
+
+5. Re-insert the SD card back in the slot for the large SD card and power-cycle
+   the board.
+
+Note: The board now boots from full size SD3 on the bottom of the board. NOT
+      the micro SD4/BOOT slot on the top of the board. I.e. you have to use
+      full size SD cards.
+
+This information originally taken from:
+
+   https://wiki.linaro.org/Boards/MX6QSabreLite
+
+
+3. Boot from SPI NOR
+--------------------
+
+The SabreLite board can also boot U-Boot directly from the SPI NOR flash:
+
+1. Power-up the SabreLite, press 'space' to enter command mode in the U-Boot
+   and enter the following commands:
+
+      => mmc dev 0
+      => mmc read 0x10800000 0x400 0x80000
+      => sf probe 0
+      => sf erase 0 0xc0000
+      => sf write 0x10800000 0x400 0x80000
+
+Note: This procedure assumes you have booted using the desired U-Boot from an
+      SD card as prepared in the previous section. Alternative mechanisms, such
+      as using tftpboot to copy an alternative U-Boot image into memory can
+      also be used.
+
+
+4. Recovering SPI-NOR
+---------------------
+
+In case you somehow do not succeed with this procedure you can upload U-Boot
+via USB:
+
+1. Download and install the imx_loader following the instructions provided:
+
+      https://github.com/boundarydevices/imx_usb_loader
+
+2. Connect the board to USB via the USB OTG port.
+
+3. Make sure SW1 switch is at position "01", so that it can boot from USB OTG.
+
+4. Power-up the SabreLite and run the imx_loader to upload the U-Boot image:
+
+      sudo imx_usb u-boot.imx
+
+Note: This will upload and run the U-Boot image in memory, the SPI will not be
+      reprogrammed and this procedure will need to be repeated if the board is
+      reset.
+
+5. Use one of previous descriptions to re-flash the SPI-NOR as required.
+
+6. Ensure SW1 is returned to "00" to boot from the fuses once done.

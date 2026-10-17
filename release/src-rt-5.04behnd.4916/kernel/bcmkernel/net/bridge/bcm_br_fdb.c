@@ -111,13 +111,21 @@ int bcm_br_fdb_notify(struct net_bridge *br,
 
 int bcm_br_fdb_init(struct net_bridge *br, struct net_bridge_fdb_entry *fdb)
 {
-#if defined(CONFIG_BLOG)
-        blog_lock();
-        fdb->blog_fdb_key = BLOG_FDB_KEY_INVALID;
-		blog_notify_async(CREATE_BRIDGEFDB, (void*)fdb, (unsigned long)fdb->key.addr.addr, (unsigned long)br, NULL, NULL);
-        blog_unlock();
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+	const struct net_bridge_port *dst = READ_ONCE(fdb->dst);
+
+	if (unlikely(dst && (dst->flags & BR_TO_BE_DELETED)))
+		return -1;
 #endif
-		return 0;
+
+#if defined(CONFIG_BLOG)
+	blog_lock();
+	fdb->fdbid = BCM_FDBID_NULL_ID;
+	fdb->blog_fdb_key = BLOG_FDB_KEY_INVALID;
+	blog_notify_async(CREATE_BRIDGEFDB, (void*)fdb, (unsigned long)fdb->key.addr.addr, (unsigned long)br, NULL, NULL);
+	blog_unlock();
+#endif
+	return 0;
 }
 
 int bcm_br_fdb_fill_info(const struct net_bridge_fdb_entry *fdb)
@@ -134,7 +142,12 @@ int bcm_br_fdb_fill_info(const struct net_bridge_fdb_entry *fdb)
 
 int bcm_br_fdb_update(struct net_bridge_fdb_entry *fdb,struct net_bridge_port *source)
 {
-	if (unlikely(source != fdb->dst)) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+	if (unlikely(source && (source->flags & BR_TO_BE_DELETED)))
+		return -1;
+#endif
+
+	if (unlikely(source != READ_ONCE(fdb->dst))) {
 		/*flush existing entries in accelerator */
 
 #if defined(CONFIG_BCM_WLAN_MODULE)
@@ -144,9 +157,9 @@ int bcm_br_fdb_update(struct net_bridge_fdb_entry *fdb,struct net_bridge_port *s
 			bcm_wl_update_bridgefdb((void *)fdb);
 }
 #endif
-	}
 
-	bcm_mac_limit_learning_update(fdb, source);
+		bcm_mac_limit_learning_update(fdb, source);
+	}
 
 	return 0;
 }
@@ -171,8 +184,11 @@ int bcm_br_fdb_cleanup(struct net_bridge_fdb_entry *fdb,
 #endif
 
 #if (defined(CONFIG_BCM_RDPA) || defined(CONFIG_BCM_RDPA_MODULE)) && (defined(CONFIG_BCM_RDPA_BRIDGE) || defined(CONFIG_BCM_RDPA_BRIDGE_MODULE))	
-        if (fdb->dst)
-            br_fp_hook(fdb->dst->br->dev, BR_FP_FDB_CHECK_AGE, fdb, &flag);
+        {
+        const struct net_bridge_port *dst = READ_ONCE(fdb->dst);
+        if (dst)
+            br_fp_hook(dst->br->dev, BR_FP_FDB_CHECK_AGE, fdb, &flag);
+        }
 #endif /* CONFIG_BCM_RDPA && CONFIG_BCM_RDPA_BRIDGE && CONFIG_BCM_RDPA_BRIDGE_MODULE */
 
 #if defined(CONFIG_BCM_WLAN_MODULE)

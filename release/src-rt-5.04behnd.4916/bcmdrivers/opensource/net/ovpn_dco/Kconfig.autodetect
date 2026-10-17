@@ -1,0 +1,12 @@
+config BCM_OPENVPN_DCO
+	tristate "Support for OpenVPN Data Channel Offload"
+	select OVPN_DCO_V2
+	default n
+
+config BCM_OPENVPN_DCO_IMPL
+	int "Implementation index for BCM_OPENVPN_DCO"
+	depends on BCM_OPENVPN_DCO
+	default 1
+
+source "../../bcmdrivers/opensource/net/ovpn_dco/impl1/ovpn-dco-0.2.20240712/drivers/net/Kconfig"
+

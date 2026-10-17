@@ -1,0 +1,32 @@
+Bindings for Texas Instruments System Control Interface (TI-SCI) Message
+Protocol for Device Manager(DM) to TI Foundational Security(TIFS)
+Firmware communication
+
+Required properties:
+--------------------
+- compatible: should be "ti,j721e-dm-sci"
+- mbox-names:
+	"rx" - Mailbox corresponding to receive path
+	"tx" - Mailbox corresponding to transmit path
+
+- mboxes: Mailboxes corresponding to the mbox-names. Each value of the mboxes
+	  property should contain a phandle to the mailbox controller device
+	  node and an args specifier that will be the phandle to the intended
+	  sub-mailbox child node to be used for communication.
+
+- ti,host-id: Host ID to use for communication.
+
+Optional Properties:
+--------------------
+- ti,secure-host: If the host is defined as secure.
+
+Example:
+--------
+	dm_tifs: dm-tifs {
+		compatible = "ti,j721e-dm-sci";
+		ti,host-id = <3>;
+		ti,secure-host;
+		mbox-names = "rx", "tx";
+		mboxes= <&mcu_secproxy 21>,
+			<&mcu_secproxy 23>;
+	};

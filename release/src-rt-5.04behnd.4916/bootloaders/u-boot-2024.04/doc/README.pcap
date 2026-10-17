@@ -1,0 +1,61 @@
+PCAP:
+
+U-Boot supports live Ethernet packet capture in PCAP(2.4) format.
+This is enabled by CONFIG_CMD_PCAP.
+
+The capture is stored on physical memory, and should be copied to
+a machine capable of parsing and displaying PCAP files (IE. wireshark)
+If networking works properly one can copy the capture file from physical memory
+using tftpput, or save it to local storage with (sf write, mmc write, fatwrite, etc)
+
+the pcap capturing requires maximum buffer size.
+when the buffer is full an error message will be displayed and then packets
+will silently drop.
+the actual capture file size is populate in the environment variable "pcapsize".
+
+Usage example:
+
+# Initialize pcap capture to physical address (0x100000) with maximum size of
+# 100000 bytes.
+
+# Start capture
+pcap start
+
+# Initialize network activity
+env set ipaddr 10.0.2.15; env set serverip 10.0.2.2; tftp uImage64
+
+# Stop capture
+pcap stop
+
+# pcap init 0x100000 100000
+PCAP capture initialized: addr: 0xffffffff80100000 max length: 100000
+
+# pcap start
+# env set ipaddr 10.0.2.15; env set serverip 10.0.2.2; tftp uImage64
+eth0@10000000: PHY present at 0
+eth0@10000000: link up, 1000Mbps full-duplex (lpa: 0x7c00)
+Using eth0@10000000 device
+TFTP from server 10.0.2.2; our IP address is 10.0.2.15
+Filename 'uImage64'.
+Load address: 0xffffffff88000000
+Loading: #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+!!! Buffer is full, consider increasing buffer size !!!
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #
+         18.2 MiB/s
+done
+Bytes transferred = 8359376 (7f8dd0 hex)
+PCAP status:
+        Initialized addr: 0xffffffff80100000    max length: 100000
+        Status: Active.  file size: 99991
+        Incoming packets: 66 Outgoing packets: 67
+
+# pcap stop
+# tftpput 0xffffffff80100000 $pcapsize 10.0.2.2:capture.pcap

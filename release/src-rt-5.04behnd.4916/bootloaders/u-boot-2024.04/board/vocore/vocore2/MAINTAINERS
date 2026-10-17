@@ -1,0 +1,7 @@
+VOCORE_VOCORE2 BOARD
+M:	Mauro Condarelli <mc5686@mclink.it>
+S:	Maintained
+F: board/vocore/vocore2
+F: include/configs/vocore2.h
+F: configs/vocore2_defconfig
+F: arch/mips/dts/vocore_vocore2.dts

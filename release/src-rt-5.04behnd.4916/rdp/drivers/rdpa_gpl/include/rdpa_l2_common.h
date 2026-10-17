@@ -32,6 +32,8 @@
 
 #include <bdmf_interface.h>
 
+#define RDPA_FLOW_CACHE_L2_HEADER_BYTE_SIZE 30
+
 /** \addtogroup l2_class
  * @{
  */
@@ -49,18 +51,22 @@ typedef struct {
     uint8_t tos;         /**< ToS */
     rdpa_traffic_dir dir;/**< Traffic direction */
     bdmf_object_handle port_ingress_obj;  /**< RDPA ingress Interface */
-#if defined(BCM_DSL_RDP)
-    uint8_t ingress_radio_idx;
-#endif
                         /* rdpa fw support up to 256 flows */
     uint8_t wan_flow;   /**< WAN Flow, used if ingress port is wan (e.g. gem_flow), ignored otherwise \XRDP_LIMITED */
     uint8_t client_idx;  /**< Client index used for  L2 flooding, Zeroed otherwise \XRDP_LIMITED */
     uint8_t tcp_pure_ack;/**< TCP pure ack flow */
     uint8_t is_llc_snap; /**< LLC_SNAP flag */
     uint8_t is_ctx_ext;
+    uint8_t  is_inner_flow;
+    uint32_t tunnel_key;
+    uint32_t tunnel_key_mask;
+    uint32_t tunnel_flowid;
 #if defined(CONFIG_RUNNER_FPI)
     rdpa_fpi_mode_t fpi_mode;
+#else
+    rdpa_dummy_enum_t reserved;
 #endif
+    uint8_t reserved_is_flood_mcast; /**< For inner use flooding/mcast flag */
 } rdpa_l2_flow_key_t;
 
 typedef enum

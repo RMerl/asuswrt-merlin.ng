@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot addition to:
+ *  1) use platform data for the console
+ *
+ */
+
+#include <dt-bindings/reset/ti-syscon.h>
+
+/* The driver in U-Boot does not support "snps,dw-mshc" compatible. */
+&sd0 {
+	compatible = "hisilicon,hi3798mv200-dw-mshc";
+};
+
+&sd1 {
+	compatible = "hisilicon,hi3798mv200-dw-mshc";
+};
+
+/* The clock driver is missing */
+&uart0 {
+	clock = <75000000>;
+};

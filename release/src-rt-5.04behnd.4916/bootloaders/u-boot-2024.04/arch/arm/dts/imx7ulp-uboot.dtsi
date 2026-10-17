@@ -1,0 +1,43 @@
+/*
+ * Copyright 2015-2016 Freescale Semiconductor, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+&soc {
+	bootph-all;
+};
+
+&ahbbridge0 {
+	bootph-all;
+};
+
+&ahbbridge1 {
+	bootph-all;
+};
+
+&iomuxc {
+	bootph-all;
+};
+
+&iomuxc1 {
+	bootph-all;
+};
+
+&lpuart4 {
+	bootph-all;
+};
+
+&lpuart5 {
+	bootph-all;
+};
+
+&lpuart6 {
+	bootph-all;
+};
+
+&lpuart7 {
+	bootph-all;
+};

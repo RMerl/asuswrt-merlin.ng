@@ -10,9 +10,10 @@ my $quiet=0;
 my $reqVersion = "";
 my $version = "";
 my $showVersion;
+my $exclude;
 
 my $usage = q{
-Usage:  checkver --executable=s [--flag=f] [--quiet] [--requiredVersion=s]
+Usage:  checkver --executable=s [--flag=f] [--quiet] [--requiredVersion=s] [-x list]
         checkver --setversion=s [--quiet] [--requiredVersion=s]
         checkver --help
         checkver --version
@@ -22,6 +23,7 @@ options:
   -f       the flag to pass the executable to get the verions (default is --version)
   -v       pass in a version (may not be used with -e)
   -r       the required version
+  -x       comma separated exclude list
 
 If checkver is called with a required version, it will return 0 if the found version
 is greater than or equal to the required version and non-zero otherwise.
@@ -36,7 +38,8 @@ GetOptions (
                 'version'           => \$showVersion,
                 'setversion=s'      => \$version,
                 'flag=s'            => \$vf,
-                'help'              => sub {print $usage;} ) or die $usage;
+                'help'              => sub {print $usage;},
+                'x=s'               => \$exclude ) or die $usage;
 
 if ($showVersion) {
     print "checkver 0.2\n";
@@ -112,6 +115,21 @@ if ($reqVersion) {
         }
         elsif ($c > 0) {
             last;
+        }
+    }
+}
+if ($exclude) {
+    my @excludes=split(",", $exclude);
+    while (scalar(@excludes)) {
+        if (shift(@excludes) eq $version) {
+            if (!$quiet) {
+                print STDERR "****************************************************\n"
+                           . " Error: version check failed";
+                print STDERR " on $executable" if $executable;
+                print STDERR "\n version $version in the exclude list $exclude\n"
+                           . "****************************************************\n";
+            }
+            exit 2;
         }
     }
 }

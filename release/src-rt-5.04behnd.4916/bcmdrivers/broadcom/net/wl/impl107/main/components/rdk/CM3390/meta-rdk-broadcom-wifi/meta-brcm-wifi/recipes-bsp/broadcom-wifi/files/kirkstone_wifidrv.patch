@@ -1,0 +1,55 @@
+--- a/cmwifi/cmwifi.mk
++++ b/cmwifi/cmwifi.mk
+@@ -251,6 +251,8 @@
+ LINUX_OPTS =
+ endif #CM_BUILDROOT
+ 
++USR_CFLAGS += -I$(LINUX_HDR_DIR)
++
+ # The USR_CFLAGS and USR_LDFLAGS will be exported by the top makefile.
+ USR_CFLAGS += -I$(BUILD_DIR)/shared/opensource/include/$(BRCM_BOARD)
+ 
+--- a/main/components/apps/escand/Makefile
++++ b/main/components/apps/escand/Makefile
+@@ -53,7 +53,7 @@
+ export SRCBASE := $(WLAN_SrcBaseA)
+ export BASEDIR := $(WLAN_TreeBaseA)
+ export TOP = ../../router
+-CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall -Werror
++CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall
+ CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include $(SRCBASE)/../components/math/include)))
+ #CFLAGS	+= -g -DDEBUG
+ CFLAGS	+= -s -O2
+--- a/main/components/apps/wldm/Makefile
++++ b/main/components/apps/wldm/Makefile
+@@ -92,7 +92,7 @@
+ 
+ all: $(WLDM_LIB) $(PROGS)
+ 
+-CFLAGS		+= -DSHELLPATH=\"$(run_prefix)/bin/sh\" -Wextra -Wall -Os -fPIC -Werror
++CFLAGS		+= -DSHELLPATH=\"$(run_prefix)/bin/sh\" -Wextra -Wall -Os -fPIC
+ CFLAGS		+= -I$(ALLSRCBASE)/main/src/include
+ CFLAGS		+= -I$(ALLSRCBASE)/main/src/shared/bcmwifi/include
+ CFLAGS          += -I$(ALLSRCBASE)/main/components/bcmhal/include
+--- a/sys/src/dhd/exe/GNUmakefile
++++ b/sys/src/dhd/exe/GNUmakefile
+@@ -93,6 +93,8 @@
+   CFLAGS += -DNL80211
+ endif
+ 
++CFLAGS += -I$(LINUX_HDR_DIR)
++
+ #ifdef BCMWPA2
+ CFLAGS += -DBCMWPA2
+ #endif
+--- a/sys/src/wl/exe/GNUmakefile
++++ b/sys/src/wl/exe/GNUmakefile
+@@ -327,6 +327,8 @@
+ # Needed to find generated headers such as epivers.h.
+ CFLAGS += -I$(OBJDIR)
+ 
++CFLAGS += -I$(LINUX_HDR_DIR)
++
+ # Add any EXTRA_CFLAGS that were specified on the make command line.
+ CFLAGS += $(EXTRA_CFLAGS)
+ 

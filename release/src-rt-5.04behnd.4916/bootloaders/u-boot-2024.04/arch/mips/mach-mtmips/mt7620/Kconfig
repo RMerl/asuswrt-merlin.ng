@@ -1,0 +1,77 @@
+
+if SOC_MT7620
+
+config DEBUG_UART_BOARD_INIT
+	default y
+
+choice
+	prompt "Board select"
+
+config BOARD_MT7620_RFB
+	bool "MediaTek MT7620 RFB"
+	help
+	  The reference design of MT7620A (WS2120). The board has 64 MiB DDR2,
+	  8 MiB SPI-NOR flash, 1 built-in 6 port switch (two GE PHYs and five
+	  FE PHYs,one port can be configured to use either FE PHY or GE PHY),
+	  1 UART, 1 USB host, 1 SDXC, 1 PCIe socket and JTAG pins.
+
+config BOARD_MT7620_MT7530_RFB
+	bool "MediaTek MT7620-MT7530 RFB"
+	help
+	  The reference design of MT7620DA (MTKC712). The board has 64 MiB
+	  intergrated DDR2 KGD, 16 MiB SPI-NOR flash, an external 5-port giga
+	  switch MT7530 and 1 UART.
+
+endchoice
+
+choice
+	prompt "CPU frequency select"
+	default CPU_FREQ_580MHZ
+
+config CPU_FREQ_480MHZ
+	bool "480MHz"
+
+config CPU_FREQ_500MHZ
+	bool "500MHz"
+
+config CPU_FREQ_520MHZ
+	bool "520MHz"
+
+config CPU_FREQ_540MHZ
+	bool "540MHz"
+
+config CPU_FREQ_560MHZ
+	bool "560MHz"
+
+config CPU_FREQ_580MHZ
+	bool "580MHz"
+
+config CPU_FREQ_600MHZ
+	bool "600MHz"
+
+config CPU_FREQ_620MHZ
+	bool "620MHz"
+
+endchoice
+
+config CPU_FREQ_MULTI
+	int
+	range 0 7
+	default 0 if CPU_FREQ_480MHZ
+	default 1 if CPU_FREQ_500MHZ
+	default 2 if CPU_FREQ_520MHZ
+	default 3 if CPU_FREQ_540MHZ
+	default 4 if CPU_FREQ_560MHZ
+	default 5 if CPU_FREQ_580MHZ
+	default 6 if CPU_FREQ_600MHZ
+	default 7 if CPU_FREQ_620MHZ
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "mt7620" if  BOARD_MT7620_RFB || BOARD_MT7620_MT7530_RFB
+
+config SYS_BOARD
+	string "Board name"
+	default "mt7620" if  BOARD_MT7620_RFB || BOARD_MT7620_MT7530_RFB
+
+endif

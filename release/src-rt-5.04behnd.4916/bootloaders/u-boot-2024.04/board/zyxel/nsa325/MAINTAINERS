@@ -1,0 +1,9 @@
+NSA325 BOARD
+M:	Tony Dinh <mibodhi@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/kirkwood-6282.dtsi
+F:	arch/arm/dts/kirkwood-nsa325.dts
+F:	arch/arm/dts/kirkwood-nsa3x0-common.dtsi
+F:	board/zyxel/nsa325/
+F:	include/configs/nsa325.h
+F:	configs/nsa325_defconfig

@@ -36,7 +36,6 @@
 #include <rdpa_api.h>
 #include <rdpa_cpu_helper.h>
 #include <rdp_mm.h>
-#include <rdp_cpu_ring_defs.h>
 #include "enet.h"
 #include "enet_dbg.h"
 
@@ -77,27 +76,32 @@ inline void *_databuf_alloc(enet_ring_t *p_ring)
     /* no cache invalidation of buffers is needed for buffers coming from BPM */
 
     /* buff_cache[i] points to data buffer,
-     * space for "FkBuff_t + BCM_PKT_HEADROOM preceeds" this data buffer
+     * space for "pStart to pData preceeds" this data buffer
      */
     p_ring->buff_cache_cnt = ENET_RING_MAX_BUFF_IN_CACHE;
 #else
-    /* allocate from kernel directly */
-    data_p = kmalloc(BCM_PKTBUF_SIZE, GFP_ATOMIC);
-    if (!data_p)
-        return NULL;
+    {
+        void *pStart;
 
-    /* reserve space for headroom & FKB */
-    p_ring->buff_cache[0] = (void *)PFKBUFF_TO_PDATA((void *)data_p, BCM_PKT_HEADROOM);
+        /* allocate from kernel directly */
+        pStart = kmalloc(BCM_PKTBUF_SIZE, GFP_ATOMIC);
+        if (!pStart)
+            return NULL;
 
-    /* buffer allocate from kmalloc always requires cache invalidate */
-    cache_invalidate_len(data_p, BCM_MAX_PKT_LEN);
+        /* reserve space for headroom & FKB */
+        data_p = BCM_PSTART_TO_PDATA(pStart);
+        p_ring->buff_cache[0] = data_p;
 
-    /* NOTE: p_ring->buff_cache[0] is offset into kmalloc data_p.
-     * Hence, may not kfree(p_ring->buff_cache[0]) !
-     */
+        /* buffer allocate from kmalloc always requires cache invalidate */
+        cache_invalidate_len(data_p, BCM_MAX_PKT_LEN);
 
-    /* always return only one buffer when BPM is not enabled */
-    p_ring->buff_cache_cnt = 1;
+        /* NOTE: p_ring->buff_cache[0] is offset into kmalloc data_p.
+         * Hence, may not kfree(p_ring->buff_cache[0]) !
+         */
+
+        /* always return only one buffer when BPM is not enabled */
+        p_ring->buff_cache_cnt = 1;
+    }
 #endif
 
 alloc_buff_cache_ready:
@@ -166,7 +170,7 @@ static void _rdp_databuff_free(void *databuff)
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
     gbpm_free_buf((void *)databuff);
 #else
-    kfree((void*)(PDATA_TO_PFKBUFF(databuff, BCM_PKT_HEADROOM)));
+    kfree((void*)BCM_PDATA_TO_PSTART(databuff));
 #endif
 }
 
@@ -187,7 +191,7 @@ static int delete_ring(uint32_t ring_id)
     for (p_desc = (volatile CPU_RX_DESCRIPTOR *)p_ring->base, entry = 0; entry < p_ring->ring_size; p_desc++, entry++)
     {
         /* TODO: FIX CRASH WHEN FREEING */
-        //_rdp_databuff_free((void *)phys_to_virt((phys_addr_t)rdpa_cpu_ring_get_data_ptr(p_desc)));
+        //_rdp_databuff_free((void *)phys_to_virt((phys_addr_t)XXXX(p_desc)));
 
     }
 

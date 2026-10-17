@@ -1,0 +1,9 @@
+ENTRY(CONFIG_PLATFORM_ELFENTRY)
+SECTIONS
+{
+	. = CONFIG_PLATFORM_ELFENTRY;
+
+	.data : {
+		*(.data*)
+	}
+}

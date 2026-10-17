@@ -65,6 +65,9 @@ int rdpa_dhd_helper_dhd_complete_ring_destroy(uint32_t radio_idx, uint32_t ring_
 /** Return DHD Complete ring entry */
 int rdpa_dhd_helper_dhd_complete_message_get(rdpa_dhd_complete_data_t *dhd_complete_info);
 
+/** Return PCAP packet Tx/Rx ring entry */
+int rdpa_dhd_helper_dhd_pcap_packet_get(rdpa_dhd_pcap_data_t *dhd_pcap_info);
+
 /** @} end of dhd_heler Doxygen group */
 
 #endif /* _RDPA_DHD_HELPER_H_ */

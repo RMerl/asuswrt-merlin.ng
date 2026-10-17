@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the Draak board
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a77995-draak.dts"
+#include "r8a77995-u-boot.dtsi"
+
+/ {
+	sysinfo {
+		compatible = "renesas,rcar-sysinfo";
+		i2c-eeprom = <&sysinfo_eeprom>;
+		bootph-all;
+	};
+};
+
+&i2c0 {
+	bootph-all;
+
+	sysinfo_eeprom: eeprom@50 {
+		compatible = "rohm,br24t01", "atmel,24c01";
+		reg = <0x50>;
+		pagesize = <8>;
+		bootph-all;
+	};
+};
+
+&rpc {
+	reg = <0 0xee200000 0 0x100>, <0 0x08000000 0 0x04000000>;
+	status = "disabled";
+};

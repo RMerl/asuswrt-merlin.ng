@@ -1,0 +1,2 @@
+
+compatible = "brcm,rng-shim";

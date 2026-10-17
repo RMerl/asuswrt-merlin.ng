@@ -161,10 +161,9 @@ static int pkt_decision(struct nfq_data * payload)
 	char *data;
 	char *match, *folder, *url;
 	PURL current;
-	int payload_offset, data_len, match_len;
+	int payload_offset, data_len;
 	struct iphdr *iph;
 	uint8_t isIPv4;
-	char match_buf[BUFSIZE];
 	match = folder = url = NULL;
 
 	data_len = nfq_get_payload(payload, &data);
@@ -179,32 +178,17 @@ static int pkt_decision(struct nfq_data * payload)
 	printf("data_len=%d ", data_len);
 #endif
 
-	if (data_len < (int)sizeof(struct iphdr))
-	{
-		/* not enough captured data to safely parse even a minimal IP header */
-		return PKT_ACCEPT;
-	}
-
 	iph = (struct iphdr *)data;
 	isIPv4 = (iph->version == 4)?1:0;
 	payload_offset = updateOffset(isIPv4, data);
 
-	if (payload_offset < 0 || payload_offset >= data_len)
+	if (payload_offset < 0)
 	{
-		/* always accept the packet if error happens, or if the header fields
-		 * claim a payload offset beyond what was actually captured */
+		/* always accept the packet if error happens */
 		return PKT_ACCEPT;
 	}
 
-	/* Copy the remaining captured bytes into a bounded, NUL-terminated
-	 * buffer before running any string search on it -- nfq_get_payload's
-	 * buffer is not guaranteed to be NUL-terminated. */
-	match_len = data_len - payload_offset;
-	if (match_len >= (int)sizeof(match_buf))
-		match_len = sizeof(match_buf) - 1;
-	memcpy(match_buf, data + payload_offset, match_len);
-	match_buf[match_len] = '\0';
-	match = match_buf;
+	match = (char *)(data + payload_offset);
 
 	if(strstr(match, "GET ") == NULL && strstr(match, "POST ") == NULL && strstr(match, "HEAD ") == NULL)
 	{

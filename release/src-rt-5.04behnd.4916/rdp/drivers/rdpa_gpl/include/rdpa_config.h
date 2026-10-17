@@ -30,6 +30,8 @@
 #ifndef RDPA_CONFIG_H_
 #define RDPA_CONFIG_H_
 
+#include "rdd_fw_defs.h"
+
 /*****************************************************************************/
 /** MTU                                                                     **/
 /*****************************************************************************/
@@ -45,12 +47,25 @@
 /*****************************************************************************/
 
 #ifndef RDPA_DS_LITE_HEADROOM_SIZE
-#if defined(BCM_DSL_RDP)
-/* add 8 byte extra headroom for IPv6 dest_opt hdr */
-#define RDPA_DS_LITE_HEADROOM_SIZE 48
-#else
 #define RDPA_DS_LITE_HEADROOM_SIZE 40
 #endif
+
+
+/*****************************************************************************/
+/* Extension header used for perpend header                                  */
+/*****************************************************************************/
+#if (CHIP_VER < RDP_GEN_100)
+#define RDPA_EXTENSION_HEADER_BYTE_SIZE 4
+#define RDPA_EXTENSION_HEADER_FLOW_OFFSET 3
+#define RDPA_EXTENSION_HEADER_IP_HDR_OFFSET_OFFSET 2
+#define RDPA_EXTENSION_HEADER_IP_VER_OFFSET 2
+#define RDPA_EXTENSION_HEADER_IP_VER_F_OFFSET_MOD8 6
+#else
+#define RDPA_EXTENSION_HEADER_BYTE_SIZE 8
+#define RDPA_EXTENSION_HEADER_FLOW_OFFSET 4
+#define RDPA_EXTENSION_HEADER_IP_HDR_OFFSET_OFFSET 3
+#define RDPA_EXTENSION_HEADER_IP_VER_OFFSET 4
+#define RDPA_EXTENSION_HEADER_IP_VER_F_OFFSET_MOD8 5
 #endif
 
 /*---------------------------------------------------------------------------*/

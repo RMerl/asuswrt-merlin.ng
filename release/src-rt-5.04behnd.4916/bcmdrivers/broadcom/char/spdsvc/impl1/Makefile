@@ -26,7 +26,6 @@ EXTRA_CFLAGS += -I$(obj)
 EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD)
-EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD)
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/char/spdsvc/impl1
 EXTRA_CFLAGS += $(EXTRA_INCLUDES)
@@ -41,6 +40,7 @@ clean:
 # the "%.o : %.c" rule (defined earlier by kbuild), to take precedence
 
 %.o : %.o_tmp
+	$(Q)touch $(@D)/.$(@F).cmd
 	$(Q)mv $< $@
 
 %.o_tmp : %.$(CONFIG_BCM_CHIP_NUMBER).o_saved

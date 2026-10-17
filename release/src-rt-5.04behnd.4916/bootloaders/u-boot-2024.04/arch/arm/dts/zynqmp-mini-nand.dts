@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * dts file for Xilinx ZynqMP Mini Configuration
+ *
+ * (C) Copyright 2018, Xilinx, Inc.
+ *
+ * Siva Durga Prasad Paladugu <siva.durga.prasad.paladugu@amd.com>
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+/dts-v1/;
+
+/ {
+	model = "ZynqMP MINI NAND";
+	compatible = "xlnx,zynqmp";
+	#address-cells = <2>;
+	#size-cells = <1>;
+
+	aliases {
+		serial0 = &dcc;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x40000000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "disabled";
+		bootph-all;
+	};
+
+	amba: amba {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <1>;
+		ranges;
+
+		nand0: nand@ff100000 {
+			compatible = "arasan,nfc-v3p10";
+			status = "okay";
+			reg = <0x0 0xff100000 0x1000>;
+			clock-names = "clk_sys", "clk_flash";
+			#address-cells = <2>;
+			#size-cells = <1>;
+			arasan,has-mdma;
+			num-cs = <2>;
+		};
+	};
+};
+
+&dcc {
+	status = "okay";
+};

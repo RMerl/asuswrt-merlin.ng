@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: u-boot
+OSS_REFERENCE_Version: v2019.07
+OSS_REFERENCE_License: GPLv2
+OSS_REFERENCE_DownloadURL: ftp://ftp.denx.de/pub/u-boot/u-boot-2019.07.tar.bz2
+OSS_REFERENCE_BroadcomURL:
+OSS_Broadcom_RelativePath: ./

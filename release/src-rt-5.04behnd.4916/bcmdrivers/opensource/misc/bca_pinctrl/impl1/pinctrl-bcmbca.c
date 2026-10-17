@@ -61,6 +61,8 @@ struct pinconf_params {
 /* Array of pinconfs that we support */
 static const struct pinconf_params dt_config_params[] = {
 	{ "drive-strength", PIN_CONFIG_DRIVE_STRENGTH, 2 },
+	{ "bias-pull-down", PIN_CONFIG_BIAS_PULL_DOWN, 1 },
+	{ "bias-pull-up", PIN_CONFIG_BIAS_PULL_UP, 1 },
 };
 
 struct bcmbca_pinctrl_pin_name {
@@ -89,6 +91,7 @@ struct bcmbca_pinctrl {
 	struct bcmbca_pinctrl_function_name *functions_names;
 	struct pinctrl_pin_desc *pins_descriptors;
 	unsigned int gpio_mux;
+	spinlock_t lock;
 };
 
 
@@ -226,15 +229,16 @@ int bcmbca_pctl_parse_dt_config(struct device_node *np,
 			} else {
 				/* Single config is defined for all pins */
 				ret = of_property_read_u32(np, par->property, &config_val);
-
 			}
 			/* property not found */
 			if (ret == -EINVAL)
 				continue;
 
 			/* use default value, when no value is specified */
-			if (ret)
+			if (ret) {
 				config_val = par->default_value;
+				ret = 0;
+			}
 
 			/* Pack and store config */
 			cfg[ncfg] = pinconf_to_config_packed(par->param, config_val);
@@ -305,7 +309,8 @@ static int bcmbca_pctl_dt_node_to_map(struct pinctrl_dev *pctldev, struct device
 	err = bcmbca_pctl_parse_dt_config(np, num_pins, pctldev, all_configs,
 					      &num_configs_per_pin);
 	if (err < 0) {
-		dev_err(pc->dev, "%s: could not parse pinconfigs property\n", of_node_full_name(np));
+		dev_err(pc->dev, "%s: could not parse pinconfigs property ret %d\n",
+				of_node_full_name(np), err);
 		goto out;
 	}
 	/* If we found pinconfigs, we have to allocate maps for them */
@@ -428,13 +433,16 @@ static int bcmbca_pmx_set(struct pinctrl_dev *pctldev, unsigned func_selector, u
 	volatile u32 __iomem *test_port_block_data_lsb = test_port_block_data_msb + 1;
 	volatile u32 __iomem *test_port_cmd            = test_port_block_data_lsb + 1;
 	u32 tp_blk_data_lsb;
-
+	unsigned long flags;
 
 	tp_blk_data_lsb = group_selector;
-    tp_blk_data_lsb |= (func_selector << PINMUX_DATA_SHIFT);
-    *test_port_block_data_msb = 0;
-    *test_port_block_data_lsb = tp_blk_data_lsb;
-    *test_port_cmd = LOAD_MUX_REG_CMD;
+	tp_blk_data_lsb |= (func_selector << PINMUX_DATA_SHIFT);
+
+	spin_lock_irqsave(&pc->lock, flags);
+	*test_port_block_data_msb = 0;
+	*test_port_block_data_lsb = tp_blk_data_lsb;
+	*test_port_cmd = LOAD_MUX_REG_CMD;
+	spin_unlock_irqrestore(&pc->lock, flags);
 
 	return 0;
 }
@@ -443,7 +451,7 @@ static int bcmbca_gpio_request(struct pinctrl_dev *pctldev, struct pinctrl_gpio_
 {
 	struct bcmbca_pinctrl *pc = pinctrl_dev_get_drvdata(pctldev);
 
-    return bcmbca_pmx_set(pctldev, pc->gpio_mux, offset);
+	return bcmbca_pmx_set(pctldev, pc->gpio_mux, offset);
 }
 
 static const struct pinmux_ops bcmbca_pmx_ops = {
@@ -451,7 +459,7 @@ static const struct pinmux_ops bcmbca_pmx_ops = {
 	.get_function_name = bcmbca_pmx_get_function_name,
 	.get_function_groups = bcmbca_pmx_get_function_groups,
 	.set_mux = bcmbca_pmx_set,
-    .gpio_request_enable = bcmbca_gpio_request,
+	.gpio_request_enable = bcmbca_gpio_request,
 };
 
 static int bcmbca_pin_sel_config_get(struct pinctrl_dev *pctldev,
@@ -459,20 +467,23 @@ static int bcmbca_pin_sel_config_get(struct pinctrl_dev *pctldev,
 					   u32 *sel_config)
 {
 #define READ_SEL_REG_CMD	0x23
-#define SEL_DATA_R_SHIFT	16 
-#define SEL_MASK		0x3F	
+#define SEL_DATA_R_SHIFT	16
+#define SEL_MASK		0x3F
 	struct bcmbca_pinctrl *pc = pinctrl_dev_get_drvdata(pctldev);
 	volatile u32 __iomem *test_port_block_data_msb = pc->base;
 	volatile u32 __iomem *test_port_block_data_lsb = test_port_block_data_msb + 1;
 	volatile u32 __iomem *test_port_cmd            = test_port_block_data_lsb + 1;
 	volatile u32 __iomem *test_port_read_back      = test_port_cmd + 1;
 	u32 tp_blk_data_lsb;
+	unsigned long flags;
 
 	/* Get sel settings for pin */
 	tp_blk_data_lsb = pin;
+	spin_lock_irqsave(&pc->lock, flags);
 	*test_port_block_data_msb = 0;
 	*test_port_block_data_lsb = tp_blk_data_lsb;
 	*test_port_cmd = READ_SEL_REG_CMD;
+	spin_unlock_irqrestore(&pc->lock, flags);
 	msleep(10);
 
 	/* mask off and return sel values */
@@ -492,13 +503,47 @@ static int bcmbca_pin_sel_config_set(struct pinctrl_dev *pctldev,
 	volatile u32 __iomem *test_port_block_data_lsb = test_port_block_data_msb + 1;
 	volatile u32 __iomem *test_port_cmd            = test_port_block_data_lsb + 1;
 	u32 tp_blk_data_lsb;
+	unsigned long flags;
 
 	/* Get sel settings for pin */
 	tp_blk_data_lsb = pin;
+	spin_lock_irqsave(&pc->lock, flags);
 	*test_port_block_data_msb = 0;
 	*test_port_block_data_lsb = (sel_config << SEL_DATA_W_SHIFT) |tp_blk_data_lsb;
 	*test_port_cmd = LOAD_SEL_REG_CMD;
+	spin_unlock_irqrestore(&pc->lock, flags);
 	msleep(10);
+
+	return 0;
+}
+
+static int bcmbca_pin_pull_config_set(struct pinctrl_dev *pctldev,
+					   unsigned pin, enum pin_config_param param)
+{
+#define LOAD_PULL_REG_CMD	0x24
+#define PULL_REG_CMD_SHIFT	12
+#define PULL_DOWN		1<<0
+#define PULL_UP			1<<1
+#define PULL_REG_EN		1<<2
+	u32 tp_blk_data_lsb,pull_config;
+	struct bcmbca_pinctrl *pc = pinctrl_dev_get_drvdata(pctldev);
+	volatile u32 __iomem *test_port_block_data_msb = pc->base;
+	volatile u32 __iomem *test_port_block_data_lsb = test_port_block_data_msb + 1;
+	volatile u32 __iomem *test_port_cmd            = test_port_block_data_lsb + 1;
+	unsigned long flags;
+
+	if (param == PIN_CONFIG_BIAS_PULL_UP)
+		pull_config = PULL_UP;
+	else
+		pull_config = PULL_DOWN;
+	pull_config |= PULL_REG_EN;
+	tp_blk_data_lsb = pin;
+
+	spin_lock_irqsave(&pc->lock, flags);
+	*test_port_block_data_msb = 0;
+	*test_port_block_data_lsb = (pull_config << PULL_REG_CMD_SHIFT) | tp_blk_data_lsb;
+	*test_port_cmd = LOAD_PULL_REG_CMD;
+	spin_unlock_irqrestore(&pc->lock, flags);
 
 	return 0;
 }
@@ -516,11 +561,15 @@ static int bcmbca_group_config_set(struct pinctrl_dev *pctldev,
 					   unsigned num_configs)
 {
 #define SEL_DRV_STR_MASK	0x7
+	enum pin_config_param param;
 	u32 drive_strength, sel_config;
 	int i;
 
- 	for(i=0; i<num_configs; i++) {
-		switch(pinconf_to_config_param(configs[i])) {
+	struct bcmbca_pinctrl *pc = pinctrl_dev_get_drvdata(pctldev);
+
+	for(i=0; i<num_configs; i++) {
+		param = pinconf_to_config_param(configs[i]);
+		switch(param) {
 			case PIN_CONFIG_DRIVE_STRENGTH:
 				/* retrieve and map drive strength */
 				drive_strength = pinconf_to_config_argument(configs[i]);
@@ -532,15 +581,25 @@ static int bcmbca_group_config_set(struct pinctrl_dev *pctldev,
 				/* commit new drive strength setting */
 				sel_config &= ~SEL_DRV_STR_MASK;
 				sel_config |= drive_strength;
-				
+
 				/* set pin config */
 				bcmbca_pin_sel_config_set(pctldev, group, sel_config);
+				dev_info(pc->dev, "GPIO_%d is set drive strength to %d\n",
+					group, pinconf_to_config_argument(configs[i]));
 			break;
-
+			case PIN_CONFIG_BIAS_PULL_DOWN:
+			case PIN_CONFIG_BIAS_PULL_UP:
+				/* if the pull up/down value is zero, it is a no op */
+				if (pinconf_to_config_argument(configs[i])) {
+					bcmbca_pin_pull_config_set(pctldev, group, param);
+					dev_info(pc->dev, "GPIO_%d is set to pull %s\n",
+						group, param == PIN_CONFIG_BIAS_PULL_UP ? "up" : "down");
+				}
+			break;
 			default:
 			break;
 		}
-	}	
+	}
 
 	return 0;
 }
@@ -548,6 +607,12 @@ static int bcmbca_group_config_set(struct pinctrl_dev *pctldev,
 static const struct pinconf_ops bcmbca_conf_ops = {
 	.pin_config_group_get = bcmbca_group_config_get,
 	.pin_config_group_set = bcmbca_group_config_set,
+	/* 
+	 * individual pin config is same as group config because we
+	 * map each group only to one pin.
+	 */
+	.pin_config_get = bcmbca_group_config_get,
+	.pin_config_set = bcmbca_group_config_set,
 };
 
 static struct pinctrl_desc bcmbca_pinctrl_desc = {
@@ -593,13 +658,13 @@ static int bcmbca_pinctrl_probe(struct platform_device *pdev)
 	DEVTREE_GET_U32("pinctrl-npins", &pc->desc->npins);
 	DEVTREE_GET_U32("pinctrl-nfuncs", &pc->nfuncs);
 	DEVTREE_GET_U32("gpio-mux", &pc->gpio_mux);
-	
-	/* 
+
+	/*
 	 * In our implementation we only support single pin groups i.e Number of groups
 	 * and number of pins are equal. This means one group per pin and thus we have
-	 * to use 'group' based accessors and map group<->pin internally. 
+	 * to use 'group' based accessors and map group<->pin internally.
 	 */
-	pc->ngroups = pc->desc->npins; 
+	pc->ngroups = pc->desc->npins;
 
 	err = bcmbca_create_pinctrl_tables(pc);
 	if (0 > err) {
@@ -624,6 +689,8 @@ static int bcmbca_pinctrl_probe(struct platform_device *pdev)
 		err = -EINVAL;
 		goto out;
 	}
+
+	spin_lock_init(&pc->lock);
 
 	return 0;
 

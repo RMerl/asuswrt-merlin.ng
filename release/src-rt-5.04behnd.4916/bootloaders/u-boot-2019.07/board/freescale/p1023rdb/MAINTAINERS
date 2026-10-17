@@ -1,6 +1,0 @@
-P1023RDB BOARD
-#M:	-
-S:	Maintained
-F:	board/freescale/p1023rdb/
-F:	include/configs/P1023RDB.h
-F:	configs/P1023RDB_defconfig

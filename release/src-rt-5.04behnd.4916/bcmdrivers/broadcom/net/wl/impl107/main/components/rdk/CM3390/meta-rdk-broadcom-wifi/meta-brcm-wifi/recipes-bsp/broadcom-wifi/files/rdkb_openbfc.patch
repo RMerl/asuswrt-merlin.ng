@@ -1,0 +1,11 @@
+--- a/erouter/openbfc/package/modules/broadcom/runner/src/mod/drivers/rdpa_gpl/include/rdpa_system.h
++++ b/erouter/openbfc/package/modules/broadcom/runner/src/mod/drivers/rdpa_gpl/include/rdpa_system.h
+@@ -33,7 +33,7 @@
+ 
+ #include "bdmf_dev.h"
+ #include "rdpa_types.h"
+-#include "rdp_version.h"
++#include "../../rdpa/rdp_version.h"
+ 
+ /** \defgroup system System-level Configuration
+  * The System object is a root object of RDPA object hierarchy.

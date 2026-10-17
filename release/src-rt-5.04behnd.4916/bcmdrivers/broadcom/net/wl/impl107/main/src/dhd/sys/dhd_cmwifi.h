@@ -1,0 +1,81 @@
+/*
+ * Broadcom Dongle Host Driver (DHD) - CM WiFI header file
+ *
+ * Copyright (C) 2025, Broadcom. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: dhd_cmwifi.h 839827 2024-05-06 03:40:23Z $
+ */
+#ifndef __DHD_CMWIFI_H__
+#define __DHD_CMWIFI_H__
+
+/* DHD CM utility wrappers */
+#define DHD_CM_CTX(dhdp)               dhd_cm_get_ctx(dhdp)
+#define DHD_CM_SET_CTX(dhdp, cm_ctx)   dhd_cm_set_ctx(dhdp, cm_ctx)
+#define DHD_IFP(dhdp, idx)             dhd_cm_get_ifp(dhdp, idx)
+#define DHD_IFP_AP_ISOLATE(dhdp, idx)  dhd_if_ap_isolate(dhdp, idx)
+#define DHD_IF_BSS_UP(dhdp, idx)       dhd_if_bss_up(dhdp, idx)
+#define DHD_IF_WMF_ENABLE(dhdp, idx)   dhd_if_bss_wmf_enabled(dhdp, idx)
+#define DHD_CM_CTX_LOCK(cm_ctx, f)	spin_lock_irqsave(&cm_ctx->lock, f)
+#define DHD_CM_CTX_UNLOCK(cm_ctx, f)	spin_unlock_irqrestore(&cm_ctx->lock, f)
+
+typedef struct dhd_cm_ctx {
+	dhd_pub_t *pub;	/* common DHD handle */
+	spinlock_t lock;
+	int cm_dor_ver;
+	int cm_dor_state;
+	struct sk_buff_head dor_txq[DHD_MAX_IFS]; /* DHD Offload cached pkts per BSS */
+	unsigned long pkt_cnt;
+
+	void *cm_cbs;	/* registered callback & callin config ctx */
+} dhd_cm_ctx_t;
+
+/* DHD Offload CMWIFI related APIs */
+void dhd_cm_dor_init(dhd_pub_t *dhdp);
+void dhd_cm_dor_dump(dhd_pub_t *dhdp);
+void dhd_cm_dor_deinit(dhd_pub_t *dhdp);
+
+/* DoR CM V1 APIs */
+int dhd_offload_map_flowring(void *ctx, u8 *buf, int buf_len, unsigned char priority,
+	int if_idx, int *radio, int *flowring);
+void * dhd_find_intrabss_sta(void *ctx, int ifidx, void *ea);
+
+/* DoR CM V2 APIs */
+/* CM Runner team's new APIs replacing dhd_offload_map_flowring(),
+ * and dhd_find_intrabss_sta()
+ */
+int dhd_tx_skb_nethook(void *ctx, int ifidx, void *p, struct sk_buff_head *txq);
+int dhd_rx_skb_nethook(void *ctx, int ifidx, void *p);
+
+int BCMFASTPATH dhd_offload_sendpkt(dhd_pub_t *dhdp, int ifidx, void *pktbuf);
+
+/* DHD CM utility functions */
+dhd_cm_ctx_t *dhd_cm_get_ctx(dhd_pub_t *dhdp);
+void dhd_cm_set_ctx(dhd_pub_t *dhdp, dhd_cm_ctx_t *cm_ctx);
+void *dhd_cm_get_ifp(dhd_pub_t *dhdp, int ifidx);
+bool dhd_if_ap_isolate(dhd_pub_t *dhdp, int ifidx);
+bool dhd_if_bss_wmf_enabled(dhd_pub_t *dhdp, int ifidx);
+
+/* flowmgr flushwifi API Wrapper */
+int dhd_flowmgr_flushwifi(dhd_pub_t *dhdp,  flow_ring_node_t *flow_ring_node);
+
+struct dhd_erouter_cb *dhd_cm_dor_register_cb(dhd_pub_t *dhdp, int ifidx);
+struct dhd_erouter_cb *dhd_cm_dor_get_cb(dhd_pub_t *dhdp, int ifidx);
+
+int dhd_cm_dor_tx_flush(dhd_pub_t *dhdp, struct net_device *net, int ifidx);
+
+#endif /* __DHD_CMWIFI_H__ */

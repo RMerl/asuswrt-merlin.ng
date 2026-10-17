@@ -1,0 +1,10 @@
+KMCENT2 BOARD
+M:	Niel Fourie <lusus@denx.de>
+S:	Maintained
+F:	board/keymile/kmcent2/
+F:	board/keymile/common/
+F:	board/keymile/scripts/
+F:	include/configs/kmcent2.h
+F:	configs/kmcent2_defconfig
+F:	arch/powerpc/dts/kmcent2.dts
+F:	arch/powerpc/dts/kmcent2-u-boot.dtsi

@@ -43,13 +43,15 @@ struct wl_if;
 struct wlc_event;
 
 extern struct sk_buff *wl_xlate_to_skb(struct wl_info *wl, struct sk_buff *s);
-extern int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *skb,
+
+extern int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, void *pkt,
 	struct net_device *dev);
+
 extern int wl_handle_blog_sinit(struct wl_info *wl, struct sk_buff *skb);
 
 extern void wl_handle_blog_event(struct wl_info *wl, struct wlc_event *e);
 #if defined(BCM_BLOG_UNKNOWN_UCAST)
 extern int wl_handle_blog_emit_drop(struct wl_info *wl, struct wl_if *wlif,
-	struct sk_buff *skb, struct net_device *dev);
+	void *pkt, struct net_device *dev);
 #endif /* BCM_BLOG_UNKNOWN_UCAST */
 #endif /* _wl_blog_h_ */

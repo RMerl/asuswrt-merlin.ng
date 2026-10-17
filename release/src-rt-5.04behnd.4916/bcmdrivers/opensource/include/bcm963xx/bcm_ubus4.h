@@ -73,7 +73,7 @@
 int ubus_master_set_rte_addr(int master_port_id, int port, int val);
 #endif
 
-#if IS_BCMCHIP(6846) || IS_BCMCHIP(6856) || IS_BCMCHIP(6855) || IS_BCMCHIP(6888)
+#if IS_BCMCHIP(6856) || IS_BCMCHIP(6855) || IS_BCMCHIP(6888)
 extern unsigned int g_board_size_power_of_2;
 #endif
 
@@ -95,7 +95,4 @@ void ubus_master_rte_cfg(void);
 void configure_ubus_sar_reg_decode(void);
 #endif
 void ubus_master_cpu_enable_axi_write_cache(int enable);
-#if IS_BCMCHIP(6878)
-void configure_ubus_biu_fpm_decode(void);
-#endif
 #endif

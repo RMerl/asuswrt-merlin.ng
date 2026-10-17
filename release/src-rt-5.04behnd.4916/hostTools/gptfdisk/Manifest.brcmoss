@@ -1,0 +1,8 @@
+OSS_REFERENCE_Name: gptfisk 
+OSS_REFERENCE_Version: 1.0.9
+OSS_REFERENCE_License: GPL 2.0
+OSS_REFERENCE_DownloadURL: https://sourceforge.net/projects/gptfdisk/files/gptfdisk/1.0.9/gptfdisk-1.0.9.tar.gz/download
+OSS_REFERENCE_BroadcomURL:
+OSS_Broadcom_RelativePath: 
+OSS_Broadcom_comment: needed by for flash image creation
+

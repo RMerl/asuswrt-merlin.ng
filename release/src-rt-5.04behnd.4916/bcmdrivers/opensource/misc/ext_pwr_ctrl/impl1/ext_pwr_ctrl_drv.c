@@ -46,30 +46,47 @@ MODULE_DEVICE_TABLE(of, ext_pwr_ctrl_of_match);
 
 static int ext_pwr_ctrl_probe(struct platform_device *pdev)
 {
+    int j = 0;
     int i = 0;
     struct gpio_descs *gpios = NULL;
     struct gpio_desc *gpiod = NULL;
+    const char* names[] = {"pwr-ctrl-0","pwr-ctrl-1", "pwr-ctrl-2", NULL};
 
-    gpios = devm_gpiod_get_array_optional(&pdev->dev, "pwr-ctrl", GPIOD_OUT_HIGH);
-    if (IS_ERR_OR_NULL(gpios))
-        goto exit;
-
-    for (i = 0; i < gpios->ndescs; i++)
+    gpiod = devm_gpiod_get_optional(&pdev->dev, "pwr-wakeup", GPIOD_OUT_LOW);
+    if (!IS_ERR_OR_NULL(gpiod))
     {
-        int hw_gpio;
-        int polarity;
+        int hw_gpio = desc_to_gpio(gpiod);
+        int polarity = gpiod_is_active_low(gpiod) ? 0:1;
 
-        gpiod = gpios->desc[i]; 
-        hw_gpio = desc_to_gpio(gpiod);
-        polarity = gpiod_is_active_low(gpiod) ? 0:1;
+        printk("Setting up PWR WAKEUP PIN %d polarity %s\n", hw_gpio, polarity ? "ACTIVE_HIGH" : "ACTIVE_LOW");
 
-        printk("Setting up EXT PWR PIN %d polarity %s\n", hw_gpio, polarity ? "ACTIVE_HIGH" : "ACTIVE_LOW");
-
-        if (bcm_rpc_ba_setup_pwr_pin(hw_gpio, polarity) != 0)
-            goto exit;
+        bcm_rpc_ba_setup_pwr_pin(hw_gpio, polarity, 1);        
     }
 
-exit:
+    while (names[j] != NULL)
+    {
+        gpios = devm_gpiod_get_array_optional(&pdev->dev, names[j], GPIOD_OUT_HIGH);
+        j++;
+
+        if (IS_ERR_OR_NULL(gpios))
+            continue;
+
+        for (i = 0; i < gpios->ndescs; i++)
+        {
+            int hw_gpio;
+            int polarity;
+
+            gpiod = gpios->desc[i]; 
+            hw_gpio = desc_to_gpio(gpiod);
+            polarity = gpiod_is_active_low(gpiod) ? 0:1;
+
+            printk("Setting up EXT PWR %d PIN %d polarity %s\n", j-1, hw_gpio, polarity ? "ACTIVE_HIGH" : "ACTIVE_LOW");
+
+            if (bcm_rpc_ba_setup_pwr_pin(hw_gpio, polarity, 0) != 0)
+                break;
+        }
+    }
+
     return 0;
 }
 

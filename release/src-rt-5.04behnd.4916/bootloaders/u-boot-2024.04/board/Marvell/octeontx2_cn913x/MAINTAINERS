@@ -1,0 +1,6 @@
+OCTEONTX2_CN913x BOARD
+M:	Kostya Porotchkin <kostap@marvell.com>
+S:	Maintained
+F:	board/Marvell/octeontx2_cn913x/
+F:	configs/mvebu_crb_cn9130_defconfig
+F:	configs/mvebu_db_cn9130_defconfig

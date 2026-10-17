@@ -40,10 +40,6 @@
 #include "rdpa_spu_offload.h"
 #endif
 
-#if defined(XRDP)
-#define DRV_PARSER_DA_FILTER_NUM                    9
-#endif
-
 #define RDPA_UCAST_IP_ADDRESSES_TABLE_SIZE           4
 #define RDPA_UCAST_IP_ADDRESSES_TABLE_INDEX_INVALID  RDPA_UCAST_IP_ADDRESSES_TABLE_SIZE
 
@@ -63,9 +59,6 @@
 #endif
 #endif
 
-#if ((defined(LEGACY_RDP)) && ((RDPA_L3_UCAST_MAX_FLOWS) > (16*1024)))
-#error " Number of runner flows for RDP platforms cann't exceed 16K !"
-#endif
 
 
 /** 5-tuple based IP flow classifaction result.\n
@@ -81,10 +74,8 @@ typedef struct {
     uint8_t is_routed;                                     /**< 1: Routed Flow; 0: Bridged Flow */
     uint8_t is_l2_accel;                                   /**< 1: L2 acceleratd Flow; 0: L3 accelerated Flow */
     uint8_t is_tcpspdtest;                                 /**< 1: TCPSPD_test; 0: No TCPSPD_test */
-#if defined(XRDP)
     uint8_t spdtest_stream_id;                          /**< 1: TCPSPD_test; 0: No TCPSPD_test */    
     uint8_t tcpspdtest_is_upload;                          /**< 1: TCPSPD_test; 0: No TCPSPD_test */
-#endif
     uint8_t is_hit_trap;                                   /**< 1: Trap to cpu; 0: forwarding */
     uint8_t tc;                                            /**< 6-bit traffic class value */
     uint8_t is_wred_high_prio;                             /**< 1: WRED High Priority class, 0: WRED Low Priority class */
@@ -94,15 +85,8 @@ typedef struct {
     bdmf_object_handle policer_obj;                        /**< Policer Object used if ::rdpa_fc_action_policer is set (supported for downstream traffic only).*/
     uint8_t drop;                                          /**< 1: Drop packets; 0: Forward packets */
     uint8_t ip_addresses_table_index;                      /**< IP Addresses Table index assigned to flow */
-#ifdef XRDP
     uint16_t max_pkt_len;                                  /**< Max packet size according to Egress Port MTU */
-#else
-    uint16_t mtu;                                          /**< Egress Port MTU */
-#endif
     uint8_t tos;                                           /**< Learned RX ToS value */
-#if defined(CONFIG_MULTI_IMP_SF2_LAG_PORT_SUPPORT)
-    uint8_t lag_port;                                      /**< Runner Egress LAG Port */
-#endif
     union {
         uint32_t wl_metadata;                              /**< WL metadata */
         rdpa_wfd_t wfd;
@@ -110,6 +94,11 @@ typedef struct {
     };
     uint8_t cpu_reason;                                    /**< CPU_rx trap reason */    
     uint8_t pathstat_idx;                                  /**< Pathstat counter index */
+    /* for SCORE_SUPPORT */
+    uint8_t score_stream_incarn;                           /**< SCORE stream incarnation */
+    uint8_t score_stream_dir;                              /**< SCORE stream direction */
+    uint16_t score_stream_id;                              /**< Score stream index */
+    uint16_t score_dcp_bitmask;                            /**< SCORE Data Collection profiles bitmask */
     uint8_t spdsvc;                                        /**< flow dedicated for speed service */    
     uint8_t cntxt_ext;                                     /**< 1: Context extended to another flow */    
     uint8_t cmd_list_data_length;                          /**< (XPE) length of data in the command list */    
@@ -119,32 +108,45 @@ typedef struct {
     int is_group_master; /**< Indicates whether flow is master or not field */
     uint32_t clients_vector[RDPA_MASTER_MC_FLOW_CACHE_CONTEXT_ENTRY_CLIENT_IDX_VECTOR_NUMBER]; /**< Indicates which client is set in Multicast flow one per bit read-only field */
     uint8_t fwd_and_trap;                                  /**< 1: Fwd and Trap to cpu; 0: Fwd only */
-#ifdef RDP_UFC_TUNNEL    
-    uint8_t tunnel_type;
-    uint8_t tunnel_inner_packet_offset;
+    uint8_t tunnel_inner_pkt_offset;
     uint8_t tunnel_key_offset;
-    uint32_t tunnel_key[4];
+    uint8_t is_inner_hdr_l3;
+    uint32_t tunnel_key;
     uint32_t tunnel_key_mask;
-    uint8_t tunnel_index_ref;
-#endif
+    uint32_t tunnel_flowid;                                /**< only valid for tunnel inner flow */
     uint8_t esp_o_udp;
-#if defined(CONFIG_RUNNER_SPU_OFFLOAD)
     uint8_t spu;
     uint8_t crypto_session_id;
-#endif
-#if defined(CONFIG_RUNNER_GDX_SUPPORT) /* TX */
-    uint8_t is_gdx_tx;
-    uint8_t gdx_prio;
-    uint16_t gdx_ctx_data;
-#endif
+    /* for GDX_SUPPORT */
+    struct
+    {
+        uint8_t is_gdx_tx;
+        uint8_t gdx_prio;
+        uint16_t gdx_ctx_data;
+     };
+
     uint8_t is_flood;   /**< in case of l2 flow indicate flooding flow */
-#if defined(CONFIG_RUNNER_FWD_FLOW_CSO)
     uint8_t is_hw_cso;  /**< forwarded packet with HW CSO */
-#endif
-#if defined(CONFIG_RUNNER_FPI)
-    uint8_t vtag_check;
-    uint16_t vtag_value;
-#endif
+    /* for FPI */
+    struct
+    {
+        uint8_t vtag_check;
+        uint16_t vtag_value;
+        uint8_t ethmac_validate;
+        bdmf_mac_t src_mac_valid;  /**< Source MAC address */
+        bdmf_mac_t dst_mac_valid;  /**< Destination MAC address */
+        uint8_t ignore_df;
+        uint8_t is_ip_frag_eligible;
+        uint16_t ip_frag_max_ip_payload_size;
+        uint16_t ip_frag_fixed_hdr_size;
+        uint16_t ip_frag_fragment_ip_hdr_offset;
+        uint8_t ip_frag_llcsnap_length_offset;
+        uint8_t insert_ipv4_ipid;
+        uint16_t ipid_cntr_id;
+    };
+    uint8_t lag_port;              /**< Runner Egress LAG Port */
+    uint8_t is_lag;
+    uint8_t lag_hash_idx;
 } rdpa_ip_flow_result_t;
 
 /** 5-tuple based IP flow classifaction info (key + result).\n

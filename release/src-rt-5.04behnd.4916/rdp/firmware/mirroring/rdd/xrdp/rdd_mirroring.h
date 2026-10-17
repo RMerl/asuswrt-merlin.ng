@@ -31,8 +31,8 @@ written consent.
 #ifndef _RDD_MIRRORING_H
 #define _RDD_MIRRORING_H
 
+/* coverity[include_recursion:SUPPRESS] */
 #include "rdd.h"
-#include "rdd_common.h"
 #include "rdpa_types.h"
 #include "rdp_platform.h"
 
@@ -48,7 +48,7 @@ written consent.
 typedef enum tx_mirror_type_e
 {
     MIRROR_OF_LAN = 0,  /* true if port being mirrored is emac port */
-    MIRROR_OF_WAN = 1,  /* WAN including AE in 6888\6837 */
+    MIRROR_OF_WAN = 1,  /* WAN including AE in 6888\6837\68375 */
     MIRROR_OF_WLAN = 2, /* WLAN handle in processing */
 } tx_mirror_type_e;
 

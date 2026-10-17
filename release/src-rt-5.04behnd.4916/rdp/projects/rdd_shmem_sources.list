@@ -1,0 +1,10 @@
+firmware/../../tools/src/Sim/Tm/system/lib/SharedMem.cpp
+firmware/../../tools/src/Sim/Tm/system/lib/SharedLock.cpp
+firmware/../../tools/src/Sim/Tm/system/lib/SharedMemFile.cpp
+firmware/../../tools/src/Sim/Tm/system/lib/Trace.cpp
+firmware/../../tools/src/Sim/Tm/system/ConfigurableShmemRegion.h
+firmware/../../tools/src/Sim/Tm/system/SharedLock.h
+firmware/../../tools/src/Sim/Tm/system/SharedMemFile.h
+firmware/../../tools/src/Sim/Tm/system/SharedMem.h
+firmware/../../tools/src/Sim/Tm/system/SharedMemStructs.h
+firmware/../../tools/src/Sim/Tm/system/Trace.h

@@ -1,0 +1,85 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Mauro Condarelli <mc5686@mclink.it>
+ */
+
+/dts-v1/;
+
+#include "mt7628a.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "vocore,vocore2", "ralink,mt7628a-soc";
+	model = "VoCore2";
+
+	aliases {
+		serial0 = &uart2;
+		spi0 = &spi0;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x08000000>;
+	};
+	leds {
+		compatible = "gpio-leds";
+
+		power {
+			label = "vocore:power";
+			gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+	};
+
+	chosen {
+		bootargs = "console=ttyS2,115200";
+		stdout-path = &uart2;
+	};
+};
+
+&pinctrl {
+	state_default: pin_state {
+		p0led {
+			groups = "p0led_a";
+			function = "led";
+		};
+	};
+};
+
+&uart2 {
+	status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart2_pwm_pins>;
+};
+
+&spi0 {
+	status = "okay";
+	nor0: spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <40000000>;
+		reg = <0>;
+	};
+};
+
+&eth {
+	status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&ephy_iot_mode>;
+	mediatek,poll-link-phy = <0>;
+};
+
+&mmc {
+	status = "okay";
+
+	bus-width = <4>;
+	max-frequency = <48000000>;
+	cap-sd-highspeed;
+	cap-mmc-highspeed;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&sd_iot_mode>;
+};

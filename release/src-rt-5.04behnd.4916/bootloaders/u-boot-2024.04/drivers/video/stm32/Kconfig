@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) STMicroelectronics SA 2017
+#
+# Authors: Philippe Cornu <philippe.cornu@st.com>
+#          Yannick Fertre <yannick.fertre@st.com>
+
+menuconfig VIDEO_STM32
+	bool "Enable STM32 video support"
+	depends on VIDEO
+	help
+	  STM32 supports many video output options including RGB and
+	  DSI. This option enables these supports which can be used on
+	  devices which have RGB TFT or DSI display connected.
+
+config VIDEO_STM32_DSI
+	bool "Enable STM32 DSI video support"
+	depends on VIDEO_STM32
+	select VIDEO_BRIDGE
+	select VIDEO_DW_MIPI_DSI
+	help
+	  This option enables support DSI internal bridge which can be used on
+	  devices which have DSI devices connected.
+
+config VIDEO_STM32_MAX_XRES
+	int "Maximum horizontal resolution (for memory allocation purposes)"
+	depends on VIDEO_STM32
+	default 640
+	help
+	  The maximum horizontal resolution to support for the framebuffer.
+	  This configuration is used for reserving/allocating memory for the
+	  framebuffer during device-model binding/probing.
+
+config VIDEO_STM32_MAX_YRES
+	int "Maximum vertical resolution (for memory allocation purposes)"
+	depends on VIDEO_STM32
+	default 480
+	help
+	  The maximum vertical resolution to support for the framebuffer.
+	  This configuration is used for reserving/allocating memory for the
+	  framebuffer during device-model binding/probing.
+
+config VIDEO_STM32_MAX_BPP
+	int "Maximum bits per pixel (for memory allocation purposes)"
+	depends on VIDEO_STM32
+	default 16
+	help
+	  The maximum bits per pixel to support for the framebuffer.
+	  This configuration is used for reserving/allocating memory for the
+	  framebuffer during device-model binding/probing.
+

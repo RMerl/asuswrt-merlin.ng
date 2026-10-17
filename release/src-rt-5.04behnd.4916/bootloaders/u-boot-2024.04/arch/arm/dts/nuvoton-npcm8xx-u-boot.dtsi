@@ -1,0 +1,1060 @@
+// SPDX-License-Identifier: GPL-2.0
+
+#include <dt-bindings/reset/nuvoton,npcm8xx-reset.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&gic>;
+
+	/* external reference clock */
+	clk_refclk: clk-refclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <25000000>;
+		clock-output-names = "refclk";
+	};
+
+	ahb {
+		rstc: reset-controller@f0801000 {
+			compatible = "nuvoton,npcm845-reset", "syscon",
+				"simple-mfd";
+			reg = <0x0 0xf0801000 0x0 0xC4>;
+			#reset-cells = <2>;
+		};
+
+		clk: clock-controller@f0801000 {
+			compatible = "nuvoton,npcm845-clk", "syscon";
+			#clock-cells = <1>;
+			clock-controller;
+			reg = <0x0 0xf0801000 0x0 0x1000>;
+			clock-names = "refclk";
+			clocks = <&clk_refclk>;
+		};
+
+		gmac0: eth@f0802000 {
+			device_type = "network";
+			compatible = "nuvoton,npcm-dwmac", "st,stm32-dwmac";
+			reg = <0x0 0xf0802000 0x0 0x2000>,
+				<0x0 0xf0780000 0x0 0x200>;
+			interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			clocks	= <&clk NPCM8XX_CLK_AHB>;
+			clock-names = "stmmaceth";
+			pinctrl-names = "default";
+			pinctrl-0 = <&rg1mdio_pins>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST2 NPCM8XX_RESET_GMAC1>;
+			status = "disabled";
+		};
+
+		gmac1: eth@f0804000 {
+			device_type = "network";
+			compatible = "nuvoton,npcm-dwmac", "st,stm32-dwmac";
+			reg = <0x0 0xf0804000 0x0 0x2000>;
+			interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			clocks	= <&clk NPCM8XX_CLK_AHB>;
+			clock-names = "stmmaceth";
+			pinctrl-names = "default";
+			pinctrl-0 = <&rg2_pins
+					&rg2mdio_pins>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST2 NPCM8XX_RESET_GMAC2>;
+			status = "disabled";
+		};
+
+		gmac2: eth@f0806000 {
+			device_type = "network";
+			compatible = "nuvoton,npcm-dwmac", "st,stm32-dwmac";
+			reg = <0x0 0xf0806000 0x0 0x2000>;
+			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			clocks	= <&clk NPCM8XX_CLK_AHB>;
+			clock-names = "stmmaceth";
+			pinctrl-names = "default";
+			pinctrl-0 = <&r1_pins
+					&r1err_pins
+					&r1md_pins>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_GMAC3>;
+			status = "disabled";
+		};
+
+		gmac3: eth@f0808000 {
+			device_type = "network";
+			compatible = "nuvoton,npcm-dwmac", "st,stm32-dwmac";
+			reg = <0x0 0xf0808000 0x0 0x2000>;
+			interrupts = <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			clocks	= <&clk NPCM8XX_CLK_AHB>;
+			clock-names = "stmmaceth";
+			pinctrl-names = "default";
+			pinctrl-0 = <&r2_pins
+					&r2err_pins
+					&r2md_pins>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_GMAC4>;
+			status = "disabled";
+		};
+
+		ehci1: usb@f0828100 {
+			compatible = "nuvoton,npcm845-ehci";
+			reg = <0x0 0xf0828100 0x0 0x1000>;
+			interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST2 NPCM8XX_RESET_USBH1>;
+			status = "disabled";
+		};
+
+		ehci2: usb@f082a100 {
+			compatible = "nuvoton,npcm845-ehci";
+			reg = <0x0 0xf082a100 0x0 0x1000>;
+			interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST4 NPCM8XX_RESET_USBH2>;
+			status = "disabled";
+		};
+
+		ohci1: usb@f0829000 {
+			compatible = "nuvoton,npcm845-ohci";
+			reg = <0x0 0xF0829000 0x0 0x1000>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST2 NPCM8XX_RESET_USBH1>;
+			status = "disabled";
+		};
+
+		ohci2: usb@f082b000 {
+			compatible = "nuvoton,npcm845-ohci";
+			reg = <0x0 0xF082B000 0x0 0x1000>;
+			resets = <&rstc NPCM8XX_RESET_IPSRST4 NPCM8XX_RESET_USBH2>;
+			status = "disabled";
+		};
+
+		usbphy {
+			compatible = "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			syscon = <&gcr>;
+			usbphy1: usbphy@1 {
+				compatible = "nuvoton,npcm845-usb-phy";
+				#phy-cells = <1>;
+				reg = <1>;
+				resets = <&rstc NPCM8XX_RESET_IPSRST3 NPCM8XX_RESET_USBPHY1>;
+				status = "disabled";
+			};
+			usbphy2: usbphy@2 {
+				compatible = "nuvoton,npcm845-usb-phy";
+				#phy-cells = <1>;
+				reg = <2>;
+				resets = <&rstc NPCM8XX_RESET_IPSRST3 NPCM8XX_RESET_USBPHY2>;
+				status = "disabled";
+			};
+			usbphy3: usbphy@3 {
+				compatible = "nuvoton,npcm845-usb-phy";
+				#phy-cells = <1>;
+				reg = <3>;
+				resets = <&rstc NPCM8XX_RESET_IPSRST4 NPCM8XX_RESET_USBPHY3>;
+				status = "disabled";
+			};
+		};
+
+		udc0:udc@f0830100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0830100 0x0 0x100
+			       0x0 0xfffb0000 0x0 0x800>;
+			interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST3 NPCM8XX_RESET_UDC0>;
+			status = "disable";
+		};
+
+		udc1:udc@f0831100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0831100 0x0 0x100
+			       0x0 0xfffb0800 0x0 0x800>;
+			interrupts = <GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_UDC1>;
+			status = "disable";
+		};
+
+		udc2:udc@f0832100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0832100 0x0 0x100
+			       0x0 0xfffb1000 0x0 0x800>;
+			interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_UDC2>;
+			status = "disable";
+		};
+
+		udc3:udc@f0833100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0833100 0x0 0x100
+			       0x0 0xfffb1800 0x0 0x800>;
+			interrupts = <GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_UDC3>;
+			status = "disable";
+		};
+
+		udc4:udc@f0834100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0834100 0x0 0x100
+			       0x0 0xfffb2000 0x0 0x800>;
+			interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_UDC4>;
+			status = "disable";
+		};
+
+		udc5:udc@f0835100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0835100 0x0 0x100
+			       0x0 0xfffb2800 0x0 0x800>;
+			interrupts = <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_UDC5>;
+			status = "disable";
+		};
+
+		udc6:udc@f0836100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0836100 0x0 0x100
+			       0x0 0xfffb3000 0x0 0x800>;
+			interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST1 NPCM8XX_RESET_UDC6>;
+			status = "disable";
+		};
+
+		udc7:udc@f0837100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0837100 0x0 0x100
+			       0x0 0xfffb3800 0x0 0x800>;
+			interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST3 NPCM8XX_RESET_UDC7>;
+			status = "disable";
+		};
+
+		udc8:udc@f0838100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0838100 0x0 0x100
+			       0x0 0xfffb4000 0x0 0x800>;
+			interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST3 NPCM8XX_RESET_UDC8>;
+			status = "disable";
+		};
+
+		udc9:udc@f0839100 {
+			compatible = "nuvoton,npcm845-udc";
+			reg = <0x0 0xf0839100 0x0 0x100
+			       0x0 0xfffb4800 0x0 0x800>;
+			interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM8XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+			resets = <&rstc NPCM8XX_RESET_IPSRST3 NPCM8XX_RESET_UDC9>;
+			status = "disable";
+		};
+
+		aes: aes@f0858000 {
+			compatible = "nuvoton,npcm845-aes";
+			reg = <0x0 0xf0858000 0x0 0x1000>,
+			      <0x0 0xf0851000 0x0 0x1000>;
+			status = "disabled";
+			clocks = <&clk NPCM8XX_CLK_AHB>;
+			clock-names = "clk_ahb";
+		};
+
+		sha:sha@f085a000 {
+			compatible = "nuvoton,npcm845-sha";
+			reg = <0x0 0xf085a000 0x0 0x1000>;
+			status = "disabled";
+			clocks = <&clk NPCM8XX_CLK_AHB>;
+			clock-names = "clk_ahb";
+		};
+
+		apb {
+			serial0: serial@0 {
+				compatible = "nuvoton,npcm845-uart";
+				reg = <0x0 0x1000>;
+				clocks = <&clk NPCM8XX_CLK_UART>, <&clk NPCM8XX_CLK_PLL2DIV2>;
+				clock-frequency = <24000000>;
+				status = "disabled";
+			};
+
+			serial1: serial@1000 {
+				compatible = "nuvoton,npcm845-uart";
+				reg = <0x1000 0x1000>;
+				clocks = <&clk NPCM8XX_CLK_UART>, <&clk NPCM8XX_CLK_PLL2DIV2>;
+				status = "disabled";
+			};
+
+			serial2: serial@2000 {
+				compatible = "nuvoton,npcm845-uart";
+				reg = <0x2000 0x1000>;
+				clocks = <&clk NPCM8XX_CLK_UART>, <&clk NPCM8XX_CLK_PLL2DIV2>;
+				status = "disabled";
+			};
+
+			serial3: serial@3000 {
+				compatible = "nuvoton,npcm845-uart";
+				reg = <0x3000 0x1000>;
+				clocks = <&clk NPCM8XX_CLK_UART>, <&clk NPCM8XX_CLK_PLL2DIV2>;
+				status = "disabled";
+			};
+
+			serial4: serial@4000 {
+				compatible = "nuvoton,npcm845-uart";
+				reg = <0x4000 0x1000>;
+				clocks = <&clk NPCM8XX_CLK_UART2>, <&clk NPCM8XX_CLK_PLL2DIV2>;
+				status = "disabled";
+			};
+
+			serial5: serial@5000 {
+				compatible = "nuvoton,npcm845-uart";
+				reg = <0x5000 0x1000>;
+				clocks = <&clk NPCM8XX_CLK_UART2>, <&clk NPCM8XX_CLK_PLL2DIV2>;
+				status = "disabled";
+			};
+
+			serial6: serial@6000 {
+				compatible = "nuvoton,npcm845-uart";
+				reg = <0x6000 0x1000>;
+				clocks = <&clk NPCM8XX_CLK_UART2>, <&clk NPCM8XX_CLK_PLL2DIV2>;
+				interrupts = <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>;
+				status = "disabled";
+			};
+
+			gpio0: gpio0@10000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x10000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio0";
+			};
+
+			gpio1: gpio1@11000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x11000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio1";
+			};
+
+			gpio2: gpio2@12000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x12000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio2";
+			};
+
+			gpio3: gpio3@13000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x13000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio3";
+			};
+
+			gpio4: gpio4@14000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x14000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio4";
+			};
+
+			gpio5: gpio5@15000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x15000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio5";
+			};
+
+			gpio6: gpio6@16000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x16000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio6";
+			};
+
+			gpio7: gpio7@17000 {
+				compatible = "nuvoton,npcm-gpio", "nuvoton,npcm845-gpio";
+				reg = <0x17000 0xB0>;
+				#gpio-cells = <2>;
+				gpio-controller;
+				gpio-bank-name = "gpio7";
+			};
+
+			rng: rng@b000 {
+				compatible = "nuvoton,npcm845-rng";
+				reg = <0xb000 0x8>;
+				status = "disabled";
+			};
+
+			otp: otp@189000 {
+				compatible = "nuvoton,npcm845-otp";
+				reg = <0x189000 0x1000>;
+				status = "disabled";
+			};
+
+		};
+	};
+	pinctrl: pinctrl@f0800000 {
+		compatible = "nuvoton,npcm845-pinctrl", "syscon", "simple-mfd";
+		reg = <0x0 0xf0010000 0x0 0x8000>;
+		syscon-gcr = <&gcr>;
+		syscon-rst = <&rstc>;
+		status = "okay";
+
+		iox1_pins: iox1-pins {
+			groups = "iox1";
+			function = "iox1";
+		};
+		iox2_pins: iox2-pins {
+			groups = "iox2";
+			function = "iox2";
+		};
+		smb1d_pins: smb1d-pins {
+			groups = "smb1d";
+			function = "smb1d";
+		};
+		smb2d_pins: smb2d-pins {
+			groups = "smb2d";
+			function = "smb2d";
+		};
+		lkgpo1_pins: lkgpo1-pins {
+			groups = "lkgpo1";
+			function = "lkgpo1";
+		};
+		lkgpo2_pins: lkgpo2-pins {
+			groups = "lkgpo2";
+			function = "lkgpo2";
+		};
+		ioxh_pins: ioxh-pins {
+			groups = "ioxh";
+			function = "ioxh";
+		};
+		gspi_pins: gspi-pins {
+			groups = "gspi";
+			function = "gspi";
+		};
+		smb5b_pins: smb5b-pins {
+			groups = "smb5b";
+			function = "smb5b";
+		};
+		smb5c_pins: smb5c-pins {
+			groups = "smb5c";
+			function = "smb5c";
+		};
+		lkgpo0_pins: lkgpo0-pins {
+			groups = "lkgpo0";
+			function = "lkgpo0";
+		};
+		pspi_pins: pspi-pins {
+			groups = "pspi";
+			function = "pspi";
+		};
+		vgadig_pins: vgadig-pins {
+			groups = "vgadig";
+			function = "vgadig";
+		};
+		jm1_pins: jm1-pins {
+			groups = "jm1";
+			function = "jm1";
+		};
+		jm2_pins: jm2-pins {
+			groups = "jm2";
+			function = "jm2";
+		};
+		smb4b_pins: smb4b-pins {
+			groups = "smb4b";
+			function = "smb4b";
+		};
+		smb4c_pins: smb4c-pins {
+			groups = "smb4c";
+			function = "smb4c";
+		};
+		smb15_pins: smb15-pins {
+			groups = "smb15";
+			function = "smb15";
+		};
+		smb16_pins: smb16-pins {
+			groups = "smb16";
+			function = "smb16";
+		};
+		smb17_pins: smb17-pins {
+			groups = "smb17";
+			function = "smb17";
+		};
+		smb18_pins: smb18-pins {
+			groups = "smb18";
+			function = "smb18";
+		};
+		smb19_pins: smb19-pins {
+			groups = "smb19";
+			function = "smb19";
+		};
+		smb20_pins: smb20-pins {
+			groups = "smb20";
+			function = "smb20";
+		};
+		smb21_pins: smb21-pins {
+			groups = "smb21";
+			function = "smb21";
+		};
+		smb22_pins: smb22-pins {
+			groups = "smb22";
+			function = "smb22";
+		};
+		smb23_pins: smb23-pins {
+			groups = "smb23";
+			function = "smb23";
+		};
+		smb4d_pins: smb4d-pins {
+			groups = "smb4d";
+			function = "smb4d";
+		};
+		smb14_pins: smb14-pins {
+			groups = "smb14";
+			function = "smb14";
+		};
+		smb5_pins: smb5-pins {
+			groups = "smb5";
+			function = "smb5";
+		};
+		smb4_pins: smb4-pins {
+			groups = "smb4";
+			function = "smb4";
+		};
+		smb3_pins: smb3-pins {
+			groups = "smb3";
+			function = "smb3";
+		};
+		spi0cs1_pins: spi0cs1-pins {
+			groups = "spi0cs1";
+			function = "spi0cs1";
+		};
+		spi0cs2_pins: spi0cs2-pins {
+			groups = "spi0cs2";
+			function = "spi0cs2";
+		};
+		spi0cs3_pins: spi0cs3-pins {
+			groups = "spi0cs3";
+			function = "spi0cs3";
+		};
+		smb3c_pins: smb3c-pins {
+			groups = "smb3c";
+			function = "smb3c";
+		};
+		smb3b_pins: smb3b-pins {
+			groups = "smb3b";
+			function = "smb3b";
+		};
+		hsi1a_pins: hsi1a-pins {
+			groups = "hsi1a";
+			function = "hsi1a";
+		};
+		hsi1b_pins: hsi1b-pins {
+			groups = "hsi1b";
+			function = "hsi1b";
+		};
+		hsi1c_pins: hsi1c-pins {
+			groups = "hsi1c";
+			function = "hsi1c";
+		};
+		hsi2a_pins: hsi2a-pins {
+			groups = "hsi2a";
+			function = "hsi2a";
+		};
+		hsi2b_pins: hsi2b-pins {
+			groups = "hsi2b";
+			function = "hsi2b";
+		};
+		hsi2c_pins: hsi2c-pins {
+			groups = "hsi2c";
+			function = "hsi2c";
+		};
+		bmcuart0a_pins: bmcuart0a-pins {
+			groups = "bmcuart0a";
+			function = "bmcuart0a";
+		};
+		bmcuart0b_pins: bmcuart0b-pins {
+			groups = "bmcuart0b";
+			function = "bmcuart0b";
+		};
+		bmcuart1_pins: bmcuart1-pins {
+			groups = "bmcuart1";
+			function = "bmcuart1";
+		};
+		bu4_pins: bu4-pins {
+			groups = "bu4";
+			function = "bu4";
+		};
+		bu5_pins: bu5-pins {
+			groups = "bu5";
+			function = "bu5";
+		};
+		bu6_pins: bu6-pins {
+			groups = "bu6";
+			function = "bu6";
+		};
+		r1err_pins: r1err-pins {
+			groups = "r1err";
+			function = "r1err";
+		};
+		r1md_pins: r1md-pins {
+			groups = "r1md";
+			function = "r1md";
+		};
+		r1oen_pins: r1oen-pins {
+			groups = "r1oen";
+			function = "r1oen";
+		};
+		r1en_pins: r1en-pins {
+			groups = "r1en";
+			function = "r1en";
+		};
+		r2oen_pins: r2oen-pins {
+			groups = "r2oen";
+			function = "r2oen";
+		};
+		r2en_pins: r2en-pins {
+			groups = "r2en";
+			function = "r2en";
+		};
+		rmii3_pins: rmii3_pins {
+			groups = "rmii3";
+			function = "rmii3";
+		};
+		r3oen_pins: r3oen-pins {
+			groups = "r3oen";
+			function = "r3oen";
+		};
+		r3en_pins: r3en-pins {
+			groups = "r3en";
+			function = "r3en";
+		};
+		smb3d_pins: smb3d-pins {
+			groups = "smb3d";
+			function = "smb3d";
+		};
+		fanin0_pins: fanin0-pins {
+			groups = "fanin0";
+			function = "fanin0";
+		};
+		fanin1_pins: fanin1-pins {
+			groups = "fanin1";
+			function = "fanin1";
+		};
+		fanin2_pins: fanin2-pins {
+			groups = "fanin2";
+			function = "fanin2";
+		};
+		fanin3_pins: fanin3-pins {
+			groups = "fanin3";
+			function = "fanin3";
+		};
+		fanin4_pins: fanin4-pins {
+			groups = "fanin4";
+			function = "fanin4";
+		};
+		fanin5_pins: fanin5-pins {
+			groups = "fanin5";
+			function = "fanin5";
+		};
+		fanin6_pins: fanin6-pins {
+			groups = "fanin6";
+			function = "fanin6";
+		};
+		fanin7_pins: fanin7-pins {
+			groups = "fanin7";
+			function = "fanin7";
+		};
+		fanin8_pins: fanin8-pins {
+			groups = "fanin8";
+			function = "fanin8";
+		};
+		fanin9_pins: fanin9-pins {
+			groups = "fanin9";
+			function = "fanin9";
+		};
+		fanin10_pins: fanin10-pins {
+			groups = "fanin10";
+			function = "fanin10";
+		};
+		fanin11_pins: fanin11-pins {
+			groups = "fanin11";
+			function = "fanin11";
+		};
+		fanin12_pins: fanin12-pins {
+			groups = "fanin12";
+			function = "fanin12";
+		};
+		fanin13_pins: fanin13-pins {
+			groups = "fanin13";
+			function = "fanin13";
+		};
+		fanin14_pins: fanin14-pins {
+			groups = "fanin14";
+			function = "fanin14";
+		};
+		fanin15_pins: fanin15-pins {
+			groups = "fanin15";
+			function = "fanin15";
+		};
+		pwm0_pins: pwm0-pins {
+			groups = "pwm0";
+			function = "pwm0";
+		};
+		pwm1_pins: pwm1-pins {
+			groups = "pwm1";
+			function = "pwm1";
+		};
+		pwm2_pins: pwm2-pins {
+			groups = "pwm2";
+			function = "pwm2";
+		};
+		pwm3_pins: pwm3-pins {
+			groups = "pwm3";
+			function = "pwm3";
+		};
+		r2_pins: r2-pins {
+			groups = "r2";
+			function = "r2";
+		};
+		r2err_pins: r2err-pins {
+			groups = "r2err";
+			function = "r2err";
+		};
+		r2md_pins: r2md-pins {
+			groups = "r2md";
+			function = "r2md";
+		};
+		r3rxer_pins: r3rxer_pins {
+			groups = "r3rxer";
+			function = "r3rxer";
+		};
+		ga20kbc_pins: ga20kbc-pins {
+			groups = "ga20kbc";
+			function = "ga20kbc";
+		};
+		smb5d_pins: smb5d-pins {
+			groups = "smb5d";
+			function = "smb5d";
+		};
+		lpc_pins: lpc-pins {
+			groups = "lpc";
+			function = "lpc";
+		};
+		espi_pins: espi-pins {
+			groups = "espi";
+			function = "espi";
+		};
+		rg1_pins: rg1-pins {
+			groups = "rg1";
+			function = "rg1";
+		};
+		rg1mdio_pins: rg1mdio-pins {
+			groups = "rg1mdio";
+			function = "rg1mdio";
+		};
+		rg2_pins: rg2-pins {
+			groups = "rg2";
+			function = "rg2";
+		};
+		ddr_pins: ddr-pins {
+			groups = "ddr";
+			function = "ddr";
+		};
+		i3c0_pins: i3c0-pins {
+			groups = "i3c0";
+			function = "i3c0";
+		};
+		i3c1_pins: i3c1-pins {
+			groups = "i3c1";
+			function = "i3c1";
+		};
+		i3c2_pins: i3c2-pins {
+			groups = "i3c2";
+			function = "i3c2";
+		};
+		i3c3_pins: i3c3-pins {
+			groups = "i3c3";
+			function = "i3c3";
+		};
+		i3c4_pins: i3c4-pins {
+			groups = "i3c4";
+			function = "i3c4";
+		};
+		i3c5_pins: i3c5-pins {
+			groups = "i3c5";
+			function = "i3c5";
+		};
+		smb0_pins: smb0-pins {
+			groups = "smb0";
+			function = "smb0";
+		};
+		smb1_pins: smb1-pins {
+			groups = "smb1";
+			function = "smb1";
+		};
+		smb2_pins: smb2-pins {
+			groups = "smb2";
+			function = "smb2";
+		};
+		smb2c_pins: smb2c-pins {
+			groups = "smb2c";
+			function = "smb2c";
+		};
+		smb2b_pins: smb2b-pins {
+			groups = "smb2b";
+			function = "smb2b";
+		};
+		smb1c_pins: smb1c-pins {
+			groups = "smb1c";
+			function = "smb1c";
+		};
+		smb1b_pins: smb1b-pins {
+			groups = "smb1b";
+			function = "smb1b";
+		};
+		smb8_pins: smb8-pins {
+			groups = "smb8";
+			function = "smb8";
+		};
+		smb9_pins: smb9-pins {
+			groups = "smb9";
+			function = "smb9";
+		};
+		smb10_pins: smb10-pins {
+			groups = "smb10";
+			function = "smb10";
+		};
+		smb11_pins: smb11-pins {
+			groups = "smb11";
+			function = "smb11";
+		};
+		sd1_pins: sd1-pins {
+			groups = "sd1";
+			function = "sd1";
+		};
+		sd1pwr_pins: sd1pwr-pins {
+			groups = "sd1pwr";
+			function = "sd1pwr";
+		};
+		pwm4_pins: pwm4-pins {
+			groups = "pwm4";
+			function = "pwm4";
+		};
+		pwm5_pins: pwm5-pins {
+			groups = "pwm5";
+			function = "pwm5";
+		};
+		pwm6_pins: pwm6-pins {
+			groups = "pwm6";
+			function = "pwm6";
+		};
+		pwm7_pins: pwm7-pins {
+			groups = "pwm7";
+			function = "pwm7";
+		};
+		pwm8_pins: pwm8-pins {
+			groups = "pwm8";
+			function = "pwm8";
+		};
+		pwm9_pins: pwm9-pins {
+			groups = "pwm9";
+			function = "pwm9";
+		};
+		pwm10_pins: pwm10-pins {
+			groups = "pwm10";
+			function = "pwm10";
+		};
+		pwm11_pins: pwm11-pins {
+			groups = "pwm11";
+			function = "pwm11";
+		};
+		mmc8_pins: mmc8-pins {
+			groups = "mmc8";
+			function = "mmc8";
+		};
+		mmc_pins: mmc-pins {
+			groups = "mmc";
+			function = "mmc";
+		};
+		mmcwp_pins: mmcwp-pins {
+			groups = "mmcwp";
+			function = "mmcwp";
+		};
+		mmccd_pins: mmccd-pins {
+			groups = "mmccd";
+			function = "mmccd";
+		};
+		mmcrst_pins: mmcrst-pins {
+			groups = "mmcrst";
+			function = "mmcrst";
+		};
+		clkout_pins: clkout-pins {
+			groups = "clkout";
+			function = "clkout";
+		};
+		serirq_pins: serirq-pins {
+			groups = "serirq";
+			function = "serirq";
+		};
+		scipme_pins: scipme-pins {
+			groups = "scipme";
+			function = "scipme";
+		};
+		sci_pins: sci-pins {
+			groups = "sci";
+			function = "sci";
+		};
+		smb6_pins: smb6-pins {
+			groups = "smb6";
+			function = "smb6";
+		};
+		smb7_pins: smb7-pins {
+			groups = "smb7";
+			function = "smb7";
+		};
+		spi1_pins: spi1-pins {
+			groups = "spi1";
+			function = "spi1";
+		};
+		spi1d23_pins: spi1d23-pins {
+			groups = "spi1d23";
+			function = "spi1d23";
+		};
+		faninx_pins: faninx-pins {
+			groups = "faninx";
+			function = "faninx";
+		};
+		r1_pins: r1-pins {
+			groups = "r1";
+			function = "r1";
+		};
+		spi3_pins: spi3-pins {
+			groups = "spi3";
+			function = "spi3";
+		};
+		spi3cs1_pins: spi3cs1-pins {
+			groups = "spi3cs1";
+			function = "spi3cs1";
+		};
+		spi3quad_pins: spi3quad-pins {
+			groups = "spi3quad";
+			function = "spi3quad";
+		};
+		spi3cs2_pins: spi3cs2-pins {
+			groups = "spi3cs2";
+			function = "spi3cs2";
+		};
+		spi3cs3_pins: spi3cs3-pins {
+			groups = "spi3cs3";
+			function = "spi3cs3";
+		};
+		nprd_smi_pins: nprd-smi-pins {
+			groups = "nprd_smi";
+			function = "nprd_smi";
+		};
+		smb0b_pins: smb0b-pins {
+			groups = "smb0b";
+			function = "smb0b";
+		};
+		smb0c_pins: smb0c-pins {
+			groups = "smb0c";
+			function = "smb0c";
+		};
+		smb0den_pins: smb0den-pins {
+			groups = "smb0den";
+			function = "smb0den";
+		};
+		smb0d_pins: smb0d-pins {
+			groups = "smb0d";
+			function = "smb0d";
+		};
+		rg2mdio_pins: rg2mdio-pins {
+			groups = "rg2mdio";
+			function = "rg2mdio";
+		};
+		rg2refck_pins: rg2refck-pins {
+			groups = "rg2refck";
+			function = "rg2refck";
+		};
+		wdog1_pins: wdog1-pins {
+			groups = "wdog1";
+			function = "wdog1";
+		};
+		wdog2_pins: wdog2-pins {
+			groups = "wdog2";
+			function = "wdog2";
+		};
+		smb12_pins: smb12-pins {
+			groups = "smb12";
+			function = "smb12";
+		};
+		smb13_pins: smb13-pins {
+			groups = "smb13";
+			function = "smb13";
+		};
+		spix_pins: spix-pins {
+			groups = "spix";
+			function = "spix";
+		};
+		spixcs1_pins: spixcs1-pins {
+			groups = "spixcs1";
+			function = "spixcs1";
+		};
+		clkreq_pins: clkreq-pins {
+			groups = "clkreq";
+			function = "clkreq";
+		};
+		hgpio0_pins: hgpio0-pins {
+			groups = "hgpio0";
+			function = "hgpio0";
+		};
+		hgpio1_pins: hgpio1-pins {
+			groups = "hgpio1";
+			function = "hgpio1";
+		};
+		hgpio2_pins: hgpio2-pins {
+			groups = "hgpio2";
+			function = "hgpio2";
+		};
+		hgpio3_pins: hgpio3-pins {
+			groups = "hgpio3";
+			function = "hgpio3";
+		};
+		hgpio4_pins: hgpio4-pins {
+			groups = "hgpio4";
+			function = "hgpio4";
+		};
+		hgpio5_pins: hgpio5-pins {
+			groups = "hgpio5";
+			function = "hgpio5";
+		};
+		hgpio6_pins: hgpio6-pins {
+			groups = "hgpio6";
+			function = "hgpio6";
+		};
+		hgpio7_pins: hgpio7-pins {
+			groups = "hgpio7";
+			function = "hgpio7";
+		};
+		jtag2_pins: jtag2-pins {
+			groups = "jtag2";
+			function = "jtag2";
+		};
+	};
+};

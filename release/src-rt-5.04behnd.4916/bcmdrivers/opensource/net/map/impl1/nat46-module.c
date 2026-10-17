@@ -26,6 +26,8 @@
 #include <linux/inetdevice.h>
 #include <linux/types.h>
 #include <linux/netfilter_ipv4.h>
+#include <linux/nsproxy.h>
+#include <linux/sched.h>
 
 
 #include <linux/fs.h>           // for basic filesystem
@@ -40,6 +42,7 @@
 #include <net/ip6_route.h>
 
 #include <net/ipv6.h>
+#include <net/netns/generic.h>
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)
 #include <net/netfilter/ipv4/nf_defrag_ipv4.h>
@@ -79,20 +82,41 @@ MODULE_PARM_DESC(frag_id_rewrite, "rewrite fragment id to a value inside allocat
 
 static DEFINE_MUTEX(add_del_lock);
 
-static struct proc_dir_entry *nat46_proc_entry;
-static struct proc_dir_entry *nat46_proc_parent;
+struct nat46_nsdata {
+	struct proc_dir_entry *proc_entry;
+	struct proc_dir_entry *proc_parent;
+};
 
+static unsigned int nat46_netid;
+
+
+static struct net *nat46_get_net(void)
+{
+	struct task_struct *task = current;
+	if (!task || !task->nsproxy || !task->nsproxy->net_ns)
+		return NULL;
+
+	return task->nsproxy->net_ns;
+}
 
 static int nat46_proc_show(struct seq_file *m, void *v)
 {
-	nat64_show_all_configs(m);
+	struct net *net;
+
+	net = (struct net *)m->private;
+	nat64_show_all_configs(net, m);
 	return 0;
 }
 
-
 static int nat46_proc_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, nat46_proc_show, NULL);
+	struct net *net;
+
+	net = nat46_get_net();
+	if (!net)
+		return -EFAULT;
+
+	return single_open(file, nat46_proc_show, net);
 }
 
 static char *get_devname(char **ptail)
@@ -110,10 +134,15 @@ static char *get_devname(char **ptail)
 static ssize_t nat46_proc_write(struct file *file, const char __user *buffer,
                               size_t count, loff_t *ppos)
 {
+	struct net *net;
 	char *buf = NULL;
 	char *tail = NULL;
 	char *devname = NULL;
 	char *arg_name = NULL;
+
+	net = nat46_get_net();
+	if (!net)
+		return -EFAULT;
 
 	buf = kmalloc(sizeof(char) * (count + 1), GFP_KERNEL);
 	if (!buf)
@@ -134,31 +163,31 @@ static ssize_t nat46_proc_write(struct file *file, const char __user *buffer,
 			devname = get_devname(&tail);
 			printk(KERN_INFO "nat46: adding device (%s)\n", devname);
 			mutex_lock(&add_del_lock);
-			nat46_create(devname);
+			nat46_create(net, devname);
 			mutex_unlock(&add_del_lock);
 		} else if (0 == strcmp(arg_name, "del")) {
 			devname = get_devname(&tail);
 			printk(KERN_INFO "nat46: deleting device (%s)\n", devname);
 			mutex_lock(&add_del_lock);
-			nat46_destroy(devname);
+			nat46_destroy(net, devname);
 			mutex_unlock(&add_del_lock);
 		} else if (0 == strcmp(arg_name, "config")) {
 			devname = get_devname(&tail);
 			printk(KERN_INFO "nat46: configure device (%s) with '%s'\n", devname, tail);
 			mutex_lock(&add_del_lock);
-			nat46_configure(devname, tail);
+			nat46_configure(net, devname, tail);
 			mutex_unlock(&add_del_lock);
 		} else if (0 == strcmp(arg_name, "insert")) {
 			devname = get_devname(&tail);
 			printk(KERN_INFO "nat46: insert new rule into device (%s) with '%s'\n", devname, tail);
 			mutex_lock(&add_del_lock);
-			nat46_insert(devname, tail);
+			nat46_insert(net, devname, tail);
 			mutex_unlock(&add_del_lock);
 		} else if (0 == strcmp(arg_name, "remove")) {
 			devname = get_devname(&tail);
 			printk(KERN_INFO "nat46: remove a rule from the device (%s) with '%s'\n", devname, tail);
 			mutex_lock(&add_del_lock);
-			nat46_remove(devname, tail);
+			nat46_remove(net, devname, tail);
 			mutex_unlock(&add_del_lock);
 		}
 	}
@@ -187,11 +216,17 @@ static const struct proc_ops nat46_proc_fops = {
 #endif
 
 
-int create_nat46_proc_entry(void) {
-	nat46_proc_parent = proc_mkdir(NAT46_PROC_NAME, init_net.proc_net);
-	if (nat46_proc_parent) {
-		nat46_proc_entry = proc_create(NAT46_CONTROL_PROC_NAME, 0644, nat46_proc_parent, &nat46_proc_fops );
-		if(!nat46_proc_entry) {
+static int __net_init nat46_ns_init(struct net *net)
+{
+	struct nat46_nsdata *nsdata;
+
+	nsdata = net_generic(net, nat46_netid);
+	nsdata->proc_parent = proc_mkdir(NAT46_PROC_NAME, net->proc_net);
+	if (nsdata->proc_parent) {
+		nsdata->proc_entry = proc_create(NAT46_CONTROL_PROC_NAME, 0644, nsdata->proc_parent, &nat46_proc_fops);
+		if(!nsdata->proc_entry) {
+			remove_proc_entry(NAT46_PROC_NAME, net->proc_net);
+			nsdata->proc_parent = NULL;
 			printk(KERN_INFO "Error creating proc entry");
 			return -ENOMEM;
 		}
@@ -199,22 +234,51 @@ int create_nat46_proc_entry(void) {
 	return 0;
 }
 
+static void __net_exit nat46_ns_exit(struct net *net)
+{
+	struct nat46_nsdata *nsdata;
+
+	nat46_destroy_all(net);
+
+	nsdata = net_generic(net, nat46_netid);
+	if (nsdata->proc_parent) {
+		if (nsdata->proc_entry) {
+			remove_proc_entry(NAT46_CONTROL_PROC_NAME, nsdata->proc_parent);
+		}
+		remove_proc_entry(NAT46_PROC_NAME, net->proc_net);
+	}
+}
+
+static struct pernet_operations nat46_net_ops = {
+  .init = nat46_ns_init,
+  .exit = nat46_ns_exit,
+  .id = &nat46_netid,
+  .size = sizeof(struct nat46_nsdata),
+};
 
 static int __init nat46_init(void)
 {
 	int ret = 0;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)
+	struct net *net;
+
+	net = nat46_get_net();
+	if (!net) {
+		return -EFAULT;
+	}
+#endif
 
 	printk("nat46: module (version %s) loaded.\n", NAT46_VERSION);
-	ret = create_nat46_proc_entry();
+	ret = register_pernet_subsys(&nat46_net_ops);
 	if(ret) {
 		goto error;
 	}
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)
-	ret = nf_defrag_ipv4_enable(&init_net);
+	ret = nf_defrag_ipv4_enable(net);
 	if(ret) {
 		goto error;
 	}
-	ret = nf_defrag_ipv6_enable(&init_net);
+	ret = nf_defrag_ipv6_enable(net);
 	if(ret) {
 		goto error;
 	}
@@ -228,18 +292,19 @@ error:
 
 static void __exit nat46_exit(void)
 {
-	free_frag_list();
-	nat46_destroy_all();
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,13,0)
-	nf_defrag_ipv6_disable(&init_net);
-	nf_defrag_ipv4_disable(&init_net);
+	struct net *net;
 #endif
-	if (nat46_proc_parent) {
-		if (nat46_proc_entry) {
-			remove_proc_entry(NAT46_CONTROL_PROC_NAME, nat46_proc_parent);
-		}
-		remove_proc_entry(NAT46_PROC_NAME, init_net.proc_net);
+
+	free_frag_list();
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,13,0)
+	net = nat46_get_net();
+	if (net) {
+		nf_defrag_ipv6_disable(net);
+		nf_defrag_ipv4_disable(net);
 	}
+#endif
+	unregister_pernet_subsys(&nat46_net_ops);
 	printk("nat46: module unloaded.\n");
 }
 

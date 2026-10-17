@@ -77,16 +77,9 @@ Boston, MA 02111-1307, USA.
 
 #ifdef CONFIG_DEBUG_MUTEXES
 #include <linux/mutex.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0)
-#error "no implementation for HAS_MUTEX_COND for this new kernel!"
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) && LINUX_VERSION_CODE < KERNEL_VERSION(4,20,0)
 /* __owner_task function is not public. copy the implementation here */
 #define     HAS_MUTEX_COND(m)     ((struct task_struct *)(atomic_long_read(&m->owner) & ~0x7) == current)
 #define NOT_HAS_MUTEX_COND(m)     ((struct task_struct *)(atomic_long_read(&m->owner) & ~0x7) != current)
-#else
-#define     HAS_MUTEX_COND(m)     (m->owner == current)
-#define NOT_HAS_MUTEX_COND(m)     (m->owner != current)
-#endif
 #else
 #define     HAS_MUTEX_COND(m)     (1)
 #define NOT_HAS_MUTEX_COND(m)     (1)

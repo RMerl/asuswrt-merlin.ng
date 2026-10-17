@@ -9,12 +9,13 @@ use warnings;
 
 my $bdir = $ENV{PWD};
 my $kernelarch;
+my $profilearch;
 my @multiarchdirs;
 my $mini;
 
 # mini is an optional boolean for creating a minimal autogen to detect cyclic
 # dependencies.  See userspace/Makefile.
-GetOptions( "kernelarch=s", \$kernelarch, "mini", \$mini ) or die("usage");
+GetOptions( "kernelarch=s", \$kernelarch,"profilearch=s", \$profilearch, "mini", \$mini ) or die("usage");
 my $fin  = shift;
 my $fout = shift;
 
@@ -68,21 +69,28 @@ foreach my $d ( split( /\s+/, $dlist ) ) {
     }
 
     # multi-arch build support (needed by 64bit kernel systems):
-    # compile 64bit userspace app/lib (by default userspace apps/libs are 32bit)
+    # compile 64bit userspace app/lib (by default userspace apps/libs are 32bit if not apply 64B.arch)
     # kernel-aarch64: aarch64
-    # compile both 64bit and 32bit userspace app/lib
+    # compile both 64bit and 32bit userspace app/lib (only build 64bit userspace if applied 64B.arch)
     # kernel-aarch64: aarch64 arm
     my $archs;
     if ( $ad =~ /^kernel-$kernelarch:\s*(\S.*\S)\s*$/m ) {
         $archs = $1;
     }
 
+    my $skip_march = '';
     if (!$mini)
     {
         if ($archs) {
-            push @multiarchdirs, $d;
-            foreach my $a ( split( /\s+/, $archs ) ) {
-                print FOUT "\t\$(MAKE) -C $d $makefile_opt $makeflags CURRENT_ARCH=$a\n";
+            if ( ($kernelarch eq $profilearch) && ($profilearch eq "aarch64") ) {
+                print FOUT "\t\$(MAKE) -C $d $makefile_opt $makeflags\n";
+                $skip_march = "yes"
+            }
+            else{
+                push @multiarchdirs, $d;
+                foreach my $a ( split( /\s+/, $archs ) ) {
+                    print FOUT "\t\$(MAKE) -C $d $makefile_opt $makeflags CURRENT_ARCH=$a\n";
+                }
             }
         }
         else {
@@ -99,11 +107,13 @@ foreach my $d ( split( /\s+/, $dlist ) ) {
 
     # special clean target for multi-arch
     if ($archs && !$mini) {
-        print FOUT "$d/multiarchclean: \n";
-        foreach my $a ( split( /\s+/, $archs ) ) {
-            print FOUT "\t\$(MAKE) -C $d $makefile_opt $makeflags CURRENT_ARCH=$a clean\n";
+        if ( $skip_march ne "yes") {
+            print FOUT "$d/multiarchclean: \n";
+            foreach my $a ( split( /\s+/, $archs ) ) {
+                print FOUT "\t\$(MAKE) -C $d $makefile_opt $makeflags CURRENT_ARCH=$a clean\n";
+            }
+            print FOUT "\n.PHONY : $d/multiarchclean\n\n";
         }
-        print FOUT "\n.PHONY : $d/multiarchclean\n\n";
     }
 }
 print FOUT "\n";

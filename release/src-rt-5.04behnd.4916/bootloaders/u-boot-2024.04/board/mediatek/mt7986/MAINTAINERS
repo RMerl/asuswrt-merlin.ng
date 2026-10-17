@@ -1,0 +1,12 @@
+MT7986
+M:	Sam Shih <sam.shih@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7986
+F:	include/configs/mt7986.h
+F:	configs/mt7986_rfb_defconfig
+F:	configs/mt7986a_bpir3_emmc_defconfig
+F:	configs/mt7986a_bpir3_sd_defconfig
+F:	configs/mt7986a_emmc_rfb_defconfig
+F:	configs/mt7986a_sd_rfb_defconfig
+F:	configs/mt7986b_emmc_rfb_defconfig
+F:	configs/mt7986b_sd_rfb_defconfig

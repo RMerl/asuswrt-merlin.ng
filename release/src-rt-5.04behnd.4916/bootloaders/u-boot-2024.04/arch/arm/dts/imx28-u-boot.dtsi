@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019
+ * Lukasz Majewski, DENX Software Engineering, lukma@denx.de
+ *
+ * SPDX-License-Identifier:     GPL-2.0+ or X11
+ */
+
+&gpio0 {
+	gpio-ranges = <&pinctrl 0 0 29>;
+};
+
+&gpio1 {
+	gpio-ranges = <&pinctrl 0 29 32>;
+};
+
+&gpio2 {
+	gpio-ranges = <&pinctrl 0 61 28>;
+};
+
+&gpio3 {
+	gpio-ranges = <&pinctrl 0 89 31>;
+};
+
+&gpio4 {
+	gpio-ranges = <&pinctrl 0 120 21>;
+};

@@ -1,0 +1,11 @@
+U-Boot for the Ronetix i.MX7-CM board
+
+Build U-Boot
+============
+$ make imx7_cm_defconfig
+$ make
+
+Burn the images to a SD card
+============================
+$ sudo dd if=SPL of=/dev/sdX bs=1k seek=1; sync
+$ sudo dd if=u-boot-dtb.img  of=/dev/sdX bs=1k seek=69; sync

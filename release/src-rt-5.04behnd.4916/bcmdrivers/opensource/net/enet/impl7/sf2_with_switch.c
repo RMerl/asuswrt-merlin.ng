@@ -46,20 +46,8 @@
 // =========== sf2 port ops =============================
 static int _port_sf2_port_init(enetx_port_t *self)
 {
-#ifdef CONFIG_BLOG
-    if (self->has_interface) {
-        int blog_chnlX = root_sw->n.blog_chnl++;
-        blog_chnl_set(BLOG_ENETPHY, blog_chnlX, blog_chnlX, self);
-
-        if (mux_set_rx_index(self->p.parent_sw, self->n.blog_chnl, self))
-            return -1;
-
-        /* also register demux at root for receive processing if port not on root sw */
-        if (!PORT_ON_ROOT_SW(self))
-            if (mux_set_rx_index(root_sw, self->n.blog_chnl, self))
-                return -1;
-    }
-#endif
+    if (port_sf2_port_init(self))
+        return -1;
 
     if (self->p.child_sw) {
         int unit = PORT_ON_ROOT_SW(self)?0:1;
@@ -99,6 +87,15 @@ static int _port_sf2_port_init(enetx_port_t *self)
         self->p.phy = NULL;
     }
     return 0;
+}
+
+static int dispatch_dg_pkt_sf2_lan(dispatch_info_t *dispatch_info)
+{
+    int rc;
+    /* TODO : hardcode the dispatch is through LAN interface for now */
+    rc = cpu_queues_tx_send_dg (LAN_CPU_TX, dispatch_info);
+
+    return rc;
 }
 
 // based on impl5\bcmenet_runner_inline.h:bcmeapi_pkt_xmt_dispatch()
@@ -149,6 +146,14 @@ int ext_sw_imp_port = IMP_PORT_ID;
 // =========== sf2 switch ops ===========================
 int _port_sf2_sw_init(enetx_port_t *self)
 {
+    if (sf2_sw_ext && self != sf2_sw_ext) {
+        // workaournd: clear 53134 SW_FWDG_EN when init root_sw
+        uint8_t val8;
+        extsw_rreg_wrap(1,PAGE_CONTROL, REG_SWITCH_MODE, &val8, sizeof(val8));
+        val8 &=~REG_SWITCH_MODE_SW_FWDG_EN;
+        extsw_wreg_wrap(1,PAGE_CONTROL, REG_SWITCH_MODE, &val8, sizeof(val8));
+    }
+
     // if ext_sw (53134) has p5 and P8_SGMII_SEL==0, IMP port is p5
     if (self == sf2_sw_ext && unit_port_array[1][5]) {
         uint32_t val32;
@@ -192,6 +197,7 @@ port_ops_t port_sf2_port =
 {
     .init = _port_sf2_port_init,
     .dispatch_pkt = dispatch_pkt_sf2_lan,
+    .dispatch_dg_pkt = dispatch_dg_pkt_sf2_lan,
     .stats_clear = port_generic_stats_clear,
 #ifdef EMBEDDED_BRCMTAG_TX_INSERT
     .tx_pkt_mod = port_sf2_tx_pkt_mod,  /* insert brcm tag for port on external switch */
@@ -248,11 +254,11 @@ static int _tx_pkt_swtag_mod(enetx_port_t *port, pNBuff_t pNBuff)
 #if defined(SW53134_USE_VLAN_TAG)
     if (!port->port_info.swtag_use_pvid) return 0;
 #endif
-    if (IS_SKBUFF_PTR(pNBuff))
+    if (IS_SKBUFF_PTR(pNBuff) && !(PNBUFF_2_SKBUFF(pNBuff)->bcm_ext.skb_fc_accel))
     {
         struct sk_buff *skb = PNBUFF_2_SKBUFF(pNBuff);
         uint32_t mark = nbuff_get_mark(pNBuff);
-        uint16_t vlan_id = EXT_SW_VLAN_TAG_PREFIX | port->n.blog_chnl_rx | ((SKBMARK_GET_Q_PRIO(mark)) << VLAN_PRIO_SHIFT);
+        uint16_t vlan_id = EXT_SW_VLAN_TAG_PREFIX | port->n.blog_chnl | ((SKBMARK_GET_Q_PRIO(mark)) << VLAN_PRIO_SHIFT);
         int ret;
         ret = __vlan_insert_inner_tag(skb, htons(ETH_P_8021Q), vlan_id, ETH_HLEN);
     }
@@ -285,6 +291,7 @@ int enetxapi_post_config(void)
 
             if (!port || !port->dev) continue;
 
+            netdev_hw_switch_unset(port->dev);
             port->port_info.swtag_use_pvid = 1;
             port->p.ops->rx_pkt_swtag_mod = _rx_pkt_swtag_mod;
             port->p.ops->tx_pkt_swtag_mod = _tx_pkt_swtag_mod;
@@ -321,11 +328,11 @@ int enetxapi_post_config(void)
             SF2SW_WREG(1, PAGE_CONTROL, REG_MCST_LOOKUP_FAIL, &val16, sizeof(val16));
             SF2SW_WREG(1, PAGE_CONTROL, REG_IPMC_LOOKUP_FAIL, &val16, sizeof(val16));
         }
-        // * disable learning on p8
+        // * disable learning on imp port
         {
             uint16_t val16;
             SF2SW_RREG(1, PAGE_CONTROL, REG_DISABLE_LEARNING, &val16, sizeof(val16));
-            val16 |= 0x100;
+            val16 |= (1<<ext_sw_imp_port);
             SF2SW_WREG(1, PAGE_CONTROL, REG_DISABLE_LEARNING, &val16, sizeof(val16));
         }
         // * EN_MAN2WAN = 1
@@ -436,7 +443,7 @@ int port_nonbrcm_port_role_set(enetx_port_t *self, port_netdev_role_t role)
         port_role.sysport = 0;
         port_role.switch_id = 1;
         port_role.port = self->port_info.port;
-        port_role.is_wan = (role == PORT_NETDEV_ROLE_WAN);
+        port_role.is_wan = 0;       // for non-brcm switch tag always treat as lan
 
         enet_port_role_notify(&port_role);
     }
@@ -449,7 +456,11 @@ port_ops_t port_nonbrcm_port =
     .init = port_nonbrcm_port_init,
     .open = port_nonbrcm_port_open,
     .dispatch_pkt = dispatch_pkt_sf2_lan,
+#if defined(PHY_RTK_EXT) || defined(PHY_MXL_EXT)
+    .stats_get = port_generic_sw_stats_get,
+#else
     .stats_get = port_generic_stats_get,
+#endif
     .stats_clear = port_generic_stats_clear,
     .pause_get = port_generic_pause_get,
     .pause_set = port_generic_pause_set,

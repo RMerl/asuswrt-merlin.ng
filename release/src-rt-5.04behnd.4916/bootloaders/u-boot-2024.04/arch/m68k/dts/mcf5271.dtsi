@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/ {
+	compatible = "fsl,mcf5271";
+
+	aliases {
+		serial0 = &uart0;
+		fec0 = &fec0;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		ipsbar: ipsbar@4000000 {
+			compatible = "simple-bus";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges = <0x00000000 0x40000000 0x40000000>;
+			reg = <0x40000000 0x40000000>;
+
+			wdog0: watchdog@140000 {
+				compatible = "fsl,mcf5208-wdt";
+				reg = <0x140000 0x10>;
+				status = "disabled";
+			};
+
+			uart0: uart@200 {
+				compatible = "fsl,mcf-uart";
+				reg = <0x200 0x40>;
+				status = "disabled";
+			};
+
+			uart1: uart@240 {
+				compatible = "fsl,mcf-uart";
+				reg = <0x240 0x40>;
+				status = "disabled";
+			};
+
+			uart2: uart@280 {
+				compatible = "fsl,mcf-uart";
+				reg = <0x280 0x40>;
+				status = "disabled";
+			};
+
+			fec0: ethernet@1000 {
+				compatible = "fsl,mcf-fec";
+				reg = <0x1000 0x400>;
+				mii-base = <0>;
+				max-speed = <100>;
+				timeout-loop = <50000>;
+				status = "disabled";
+			};
+
+			i2c0: i2c@300 {
+				compatible = "fsl-i2c";
+				#address-cells=<1>;
+				#size-cells=<0>;
+				cell-index = <0>;
+				reg = <0x300 0x14>;
+				clock-frequency = <100000>;
+				status = "disabled";
+			};
+		};
+	};
+};

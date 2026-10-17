@@ -1,0 +1,11 @@
+config PHY_CADENCE_SIERRA
+	tristate "Cadence Sierra PHY Driver"
+	depends on DM_RESET
+	help
+	  Enable this to support the Cadence Sierra PHY driver
+
+config PHY_CADENCE_TORRENT
+	tristate "Cadence Torrent PHY Driver"
+	depends on DM_RESET
+	help
+	  Enable this to support the Cadence Torrent PHY driver

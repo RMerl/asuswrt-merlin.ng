@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2020 Microchip Technology Inc.
+ * Padmarao Begari <padmarao.begari@microchip.com>
+ */
+
+/ {
+	aliases {
+		cpu1 = &cpu1;
+		cpu2 = &cpu2;
+		cpu3 = &cpu3;
+		cpu4 = &cpu4;
+	};
+};

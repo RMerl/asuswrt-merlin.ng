@@ -1,0 +1,16 @@
+if TARGET_RV1126_SONOFF_IHOST
+
+config SYS_BOARD
+	default "sonoff-ihost"
+
+config SYS_VENDOR
+	default "itead"
+
+config SYS_CONFIG_NAME
+	default "sonoff-ihost"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select RAM_ROCKCHIP_DDR4
+
+endif

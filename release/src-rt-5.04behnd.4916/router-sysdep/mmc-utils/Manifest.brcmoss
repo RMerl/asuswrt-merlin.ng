@@ -1,0 +1,7 @@
+OSS_REFERENCE_Name: mmc-utils
+OSS_REFERENCE_Version: git commit: "mmc-utils: Add General command CMD56 read support" <b7e4d5a6ae9942d26a11de9b05ae7d52c0802802>
+OSS_REFERENCE_License: GPLv2
+OSS_REFERENCE_DownloadURL: https://github.com/mhei/mmc-utils/archive/b7e4d5a6ae9942d26a11de9b05ae7d52c0802802.zip
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./
+

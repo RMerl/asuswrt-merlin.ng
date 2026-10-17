@@ -1,0 +1,7 @@
+DRA7XX BOARD
+M:	Tom Rini <trini@konsulko.com>
+S:	Maintained
+F:	board/ti/dra7xx/
+F:	include/configs/dra7xx_evm.h
+F:	configs/dra7xx_evm_defconfig
+F:	configs/dra7xx_hs_evm_defconfig

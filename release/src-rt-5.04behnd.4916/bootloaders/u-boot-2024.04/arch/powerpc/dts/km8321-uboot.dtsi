@@ -1,0 +1,67 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Hitachi Power Grids 8321 U-Boot specific Device Tree Source parts
+ *
+ * Copyright (C) 2020 Heiko Schocher <hs@denx.de>
+ *
+ */
+
+/ {
+	cpus {
+		bootph-all;
+		PowerPC,8321@0 {
+			bootph-all;
+		};
+	};
+
+	chosen {
+		stdout-path = &serial0;
+	};
+};
+
+&enet_piggy2 {
+	status = "okay";
+};
+
+&qe {
+	compatible = "fsl,qe", "simple-bus";
+};
+
+&serial0 {
+	clock-frequency = <132000000>;
+	bootph-all;
+};
+
+&soc {
+	bootph-all;
+
+	par_io@1400 {
+		compatible = "fsl,mpc8360-par_io";
+		bootph-all;
+
+		serial_pin@0 {
+			bootph-all;
+		};
+		ucc_pin@0 {
+			bootph-all;
+		};
+		ucc_pin@1 {
+			bootph-all;
+		};
+		ucc_pin@3 {
+			bootph-all;
+		};
+		ucc_pin@4 {
+			bootph-all;
+		};
+		ucc_pin@5 {
+			bootph-all;
+		};
+		ucc_pin@6 {
+			bootph-all;
+		};
+		ucc_pin@7 {
+			bootph-all;
+		};
+	};
+};

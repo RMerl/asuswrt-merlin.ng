@@ -187,7 +187,21 @@ typedef char *     DECIMAL;
  *  If the data model has a greater actual depth than what is defined here,
  *  cmsMdm_init() will fail.
  */
-#define MAX_MDM_INSTANCE_DEPTH    6
+#define MAX_MDM_INSTANCE_DEPTH    8
+
+/** Maximum length of a parameter name in the Data Model that we can support.
+ *  If the data model has a greater actual param name length than what is defined here,
+ *  cmsMdm_init() will fail.
+ */
+#define MAX_MDM_PARAM_NAME_LENGTH   55
+
+
+/** A number to identify a MdmObject (but not the specific instance of
+ *  the object).
+ *
+ * MdmObjectId's are defined in mdm_oid.h.
+ */
+typedef UINT16 MdmObjectId;
 
 
 /** A structure to keep track of MDM fullpath instance information.
@@ -202,12 +216,48 @@ typedef struct
 } InstanceIdStack;
 
 
-/** A number to identify a MdmObject (but not the specific instance of
- *  the object).
+/** A compact representation of a fullpath that is easier for the MDM to handle.
  *
- * MdmObjectId's are defined in mdm_oid.h.
+ * This structure can be used to represent a specific instance of an
+ * object or parameter.
  */
-typedef UINT16 MdmObjectId;
+typedef struct
+{
+   MdmObjectId       oid;        /**< Object Identifier.
+                                  * Just a number used to represent a generic
+                                  * object.
+                                  */
+   InstanceIdStack   iidStack;   /**< Instance Id Stack.
+                                  * A stack of instance IDs used together with
+                                  * the oid to specify a specific instance of
+                                  * an object.
+                                  */
+   char paramName[MAX_MDM_PARAM_NAME_LENGTH + 1]; /**< Parameter name.
+                                  * If paramName is an empty string, then this
+                                  * MdmPathDescriptor structure specifies an object.
+                                  * Otherwise, this structure specifies a
+                                  * full path to a specific parameter.
+                                  */
+} MdmPathDescriptor;
+
+
+/** Test whether there is a paramName in MdmPathDescriptor */
+#define IS_PARAM_NAME_PRESENT(p) ((p)->paramName[0] != 0)
+
+/** Macro to zeroize/initialize the paramname field of MdmPathDescriptor */
+#define INIT_MDM_PARAM_NAME(p) (memset((void *)(p), 0, MAX_MDM_PARAM_NAME_LENGTH+1))
+
+
+/** Macro to zeroize/initialize a MdmPathDescriptor */
+#define INIT_PATH_DESCRIPTOR(p) (memset((void *)(p), 0, sizeof(MdmPathDescriptor)))
+
+
+/** definition of empty MdmPathDescriptor; this can be used to set a
+ *  MdmPathDescriptor variable declared on the stack to the empty state.
+ */
+#define EMPTY_PATH_DESCRIPTOR {0, {0, {0, 0, 0, 0}}, {0}}
+
+
 
 
 /**

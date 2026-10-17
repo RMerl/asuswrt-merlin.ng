@@ -1,0 +1,15 @@
+if TARGET_HIHOPE_RZG2
+
+config SYS_SOC
+	default "renesas"
+
+config SYS_BOARD
+	default "hihope-rzg2"
+
+config SYS_VENDOR
+	default "hoperun"
+
+config SYS_CONFIG_NAME
+	default "hihope-rzg2"
+
+endif

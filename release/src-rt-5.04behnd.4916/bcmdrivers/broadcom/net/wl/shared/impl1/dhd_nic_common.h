@@ -153,24 +153,11 @@ extern int inject_to_fastpath;
 #endif
 
 #if defined(BCM_WLAN_MCAST_BLOG_SHARED_INFO) && defined(BCM_BLOG)
-#define wl_mcast_blog_client_handler(sdu) \
-	do { \
-		if (IS_SKBUFF_PTR(sdu) && PKTISBLOG_CLONED(sdu)) { \
-			blog_inc_wlan_mcast_client_count(sdu); \
-			PKTCLRBLOG_CLONED(sdu); \
-		} \
-	} while (0)
-
-#define wl_mcast_blog_clone_handler(sdu, sdu2) \
-	do {\
-		if (IS_SKBUFF_PTR(sdu) && \
-			!blog_clone_wlan((struct sk_buff *)sdu, (struct sk_buff *)sdu2)) { \
-			PKTSETBLOG_CLONED(sdu2); \
-		} \
-	} while (0)
-#else
+extern void wl_mcast_blog_client_handler(void *sdu);
+extern void wl_mcast_blog_clone_handler(void *sdu, void *sdu2);
+#else /* ! (BCM_WLAN_MCAST_BLOG_SHARED_INFO && BCM_BLOG) */
 #define wl_mcast_blog_client_handler(sdu) do {} while (0)
 #define wl_mcast_blog_clone_handler(sdu) do {} while (0)
-#endif /* BCM_WLAN_MCAST_BLOG_SHARED_INFO && BCM_BLOG */
+#endif /* ! (BCM_WLAN_MCAST_BLOG_SHARED_INFO && BCM_BLOG) */
 
 #endif /* __DHD_NIC_COMMON_H__ */

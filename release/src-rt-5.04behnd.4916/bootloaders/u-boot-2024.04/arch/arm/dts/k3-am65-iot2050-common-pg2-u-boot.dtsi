@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) Siemens AG, 2018-2021
+ *
+ * Authors:
+ *   Chao Zeng <chao.zeng@siemens.com>
+ *
+ * U-Boot bits of the IOT2050 Advanced PG2 variants
+ * (downgrade of usb0 to USB 2.0 mode)
+ */
+
+&serdes0 {
+	status = "disabled";
+};
+
+&dwc3_0 {
+	assigned-clock-parents = <&k3_clks 151 4>,	/* set REF_CLK to 20MHz i.e. PER0_PLL/48 */
+				 <&k3_clks 151 9>;	/* set PIPE3_TXB_CLK to CLK_12M_RC/256 (for HS only) */
+	/delete-property/ phys;
+	/delete-property/ phy-names;
+};
+
+&usb0 {
+	maximum-speed = "high-speed";
+	/delete-property/ snps,dis-u1-entry-quirk;
+	/delete-property/ snps,dis-u2-entry-quirk;
+};

@@ -1,0 +1,75 @@
+Devices
+=======
+
+Device bindings are described by their own individual binding files.
+
+U-Boot provides for some optional properties which are documented here. See
+also hid-over-i2c.txt which describes HID devices. See also
+Documentation/firmware-guide/acpi/enumeration.rst in the Linux kernel for
+the acpi,compatible property.
+
+ - acpi,has-power-resource : (boolean) true if this device has a power resource.
+    This causes an ACPI PowerResource to be written containing the properties
+    provided by this binding, to describe how to handle powering the device up
+    and down using GPIOs
+ - acpi,compatible : compatible string to report
+ - acpi,ddn : Contains the string to use as the _DDN (DOS (Disk Operating
+    System) Device Name)
+ - acpi,hid : Contains the string to use as the HID (Hardware ID)
+    identifier _HID
+ - acpi,path : Specifies the full ACPI path for a device. This overrides the
+    normal path built from the driver-model hierarchy
+ - acpi,name : Provides the ACPI name for a device, which is a string consisting
+   of four alphanumeric character (upper case)
+ - acpi,uid : _UID value for device
+ - acpi,wake : Provides the GPE used to detect a request from a device to wake
+   from sleep
+ - linux,probed : Tells U-Boot to add 'linux,probed' to the ACPI tables so that
+    Linux will only load the driver if the device can be detected (e.g. on I2C
+    bus). Note that this is an out-of-tree Linux feature.
+
+
+Example
+-------
+
+elan_touchscreen: elan-touchscreen@10 {
+	compatible = "i2c-chip";
+	reg = <0x10>;
+	acpi,hid = "ELAN0001";
+	acpi,ddn = "ELAN Touchscreen";
+	interrupts-extended = <&acpi_gpe GPIO_21_IRQ IRQ_TYPE_EDGE_FALLING>;
+	linux,probed;
+};
+
+pcie-a0@14,0 {
+	reg = <0x0000a000 0 0 0 0>;
+	acpi,name = "RP01";
+	wifi: wifi {
+		compatible = "intel,generic-wifi";
+		acpi,ddn = "Intel WiFi";
+		acpi,name = "WF00";
+		acpi,wake = <GPE0_DW3_00>;
+		interrupts-extended = <&acpi_gpe 0x3c 0>;
+	};
+};
+
+p2sb: p2sb@d,0 {
+	bootph-all;
+	reg = <0x02006810 0 0 0 0>;
+	compatible = "intel,apl-p2sb";
+	early-regs = <IOMAP_P2SB_BAR 0x100000>;
+	pci,no-autoconfig;
+
+	n {
+		compatible = "intel,apl-pinctrl";
+		bootph-all;
+		intel,p2sb-port-id = <PID_GPIO_N>;
+		acpi,path = "\\_SB.GPO0";
+		gpio_n: gpio-n {
+			compatible = "intel,gpio";
+			bootph-all;
+			gpio-controller;
+			#gpio-cells = <2>;
+			linux-name = "INT3452:00";
+		};
+	};

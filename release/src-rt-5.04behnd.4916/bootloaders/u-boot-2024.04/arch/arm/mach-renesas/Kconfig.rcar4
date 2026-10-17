@@ -1,0 +1,66 @@
+if RCAR_GEN4
+
+menu "Select Target SoC"
+
+config R8A779A0
+	bool "Renesas SoC R8A779A0"
+	select GICV3
+	imply CLK_R8A779A0
+	imply PINCTRL_PFC_R8A779A0
+
+config R8A779F0
+	bool "Renesas SoC R8A779F0"
+	select GICV3
+	imply CLK_R8A779F0
+	imply PINCTRL_PFC_R8A779F0
+
+config R8A779G0
+	bool "Renesas SoC R8A779G0"
+	select GICV3
+	imply CLK_R8A779G0
+	imply PINCTRL_PFC_R8A779G0
+
+config R8A779H0
+	bool "Renesas SoC R8A779H0"
+	select GICV3
+	imply CLK_R8A779H0
+	imply PINCTRL_PFC_R8A779H0
+
+endmenu
+
+choice
+	prompt "Renesas ARM64 SoCs board select"
+	optional
+
+config TARGET_FALCON
+	bool "Falcon board"
+	imply R8A779A0
+	help
+          Support for Renesas R-Car Gen3 Falcon platform
+
+config TARGET_SPIDER
+	bool "Spider board"
+	imply R8A779F0
+	help
+	  Support for Renesas R-Car Gen4 Spider platform
+
+config TARGET_WHITEHAWK
+	bool "White Hawk board"
+	imply R8A779G0
+	help
+	  Support for Renesas R-Car Gen4 White Hawk platform
+
+config TARGET_GRAYHAWK
+	bool "Gray Hawk board"
+	imply R8A779H0
+	help
+	  Support for Renesas R-Car Gen4 Gray Hawk platform
+
+endchoice
+
+source "board/renesas/falcon/Kconfig"
+source "board/renesas/spider/Kconfig"
+source "board/renesas/whitehawk/Kconfig"
+source "board/renesas/grayhawk/Kconfig"
+
+endif

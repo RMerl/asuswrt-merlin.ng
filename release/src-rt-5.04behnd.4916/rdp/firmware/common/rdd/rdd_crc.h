@@ -30,11 +30,7 @@
 #ifndef __RDD_CRC_H
 #define __RDD_CRC_H
 
-#ifdef XRDP
 #include "rdp_platform.h"
-#else
-#define HASH_NUM_OF_ENGINES  4
-#endif
 #include "rdd.h"
 
 #define RDD_CRC_TYPE_16 0
@@ -49,13 +45,9 @@ typedef enum {
 } crc16_polynom_t;
 
 uint32_t rdd_crc_init_value_get(uint32_t crc_type);
-#if defined(WL4908) || defined(XRDP)
 uint32_t rdd_crc_bit_by_bit_natc(const uint8_t *p, uint32_t byte_len, uint32_t bit_len);
-#endif
 
-#if defined(XRDP)
 uint32_t rdd_crc_bit_by_bit_hash(uint8_t *p, uint8_t key_bit_len, uint8_t key_byte_len, crc16_polynom_t eng_id);
-#endif
 
 uint32_t rdd_crc_bit_by_bit(const uint8_t *p, uint32_t byte_len, uint32_t bit_len, uint32_t crc_residue, uint32_t crc_type);
 void rdd_crc_init(void);

@@ -1,0 +1,15 @@
+phyCORE-AM62x
+M:	Wadim Egorov <w.egorov@phytec.de>
+W:	https://www.phytec.com/product/phycore-am62x
+S:	Maintained
+F:	arch/arm/dts/k3-am62-phycore-som-ddr4-2gb.dtsi
+F:	arch/arm/dts/k3-am62-phycore-som.dtsi
+F:	arch/arm/dts/k3-am625-phyboard-lyra-rdk-u-boot.dtsi
+F:	arch/arm/dts/k3-am625-phyboard-lyra-rdk.dts
+F:	arch/arm/dts/k3-am625-phycore-som-binman.dtsi
+F:	arch/arm/dts/k3-am625-r5-phycore-som-2gb.dts
+F:	board/phytec/phycore_am62x/
+F:	configs/phycore_am62x_a53_defconfig
+F:	configs/phycore_am62x_r5_defconfig
+F:	include/configs/phycore_am62x.h
+F:	doc/board/phytec/phycore-am62x.rst

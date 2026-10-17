@@ -1,0 +1,6 @@
+<PUBLISH>
+@@ special demark for maketargets.  All + and - lines after this line will modify profile.
+-# BRCM_KERNEL_DEBUG is not set
++BRCM_KERNEL_DEBUG=y
+-# BUILD_GDBSERVER is not set
++BUILD_GDBSERVER=y

@@ -35,11 +35,14 @@
 #include "rdd_platform.h"
 #include "rdd_cpu_rx.h"
 #include "rdp_common.h"
+#define MAX_ARR_SIZE_TO_WRITE 128
 #ifdef EPON
 #include "rdd_ghost_reporting.h"
 #endif
 #include "rdd_cpu_rx.h"
+#if (CHIP_VER < RDP_GEN_100) /* CRDP-TODO */
 #include "rdd_scheduling.h"
+#endif
 #if !defined(BCM_DSL_XRDP)
 #include "rdd_iptv.h"
 #endif
@@ -47,6 +50,9 @@
 #include "rdd_dhd_helper.h"
 #endif
 #include "rdd_debug.h"
+#if defined(DEBUG_DAEMON) && !defined(RDP_SIM)
+#include "rdd_debug_daemon.h"
+#endif
 #ifdef XRDP_CODEL
 void rdd_codel_shell_cmds_init(bdmfmon_handle_t aqm_dir);
 #endif
@@ -62,6 +68,13 @@ void rdd_buffer_cong_mgt_shell_cmds_init(bdmfmon_handle_t rdd_dir);
 #if defined(TM_C_CODE) && !defined(RDP_SIM)
 #include "rdpa_port_int.h"
 #endif
+#ifdef DCL_SUPPORT
+#include "rdp_drv_dcl.h"
+#endif
+#ifdef XRDP_FLUSH_STALE_PACKETS
+void rdd_fw_flush_shell_cmds_init(bdmfmon_handle_t rdd_dir);
+#endif
+
 
 #if defined(CONFIG_RUNNER_CSO)
 bdmfmon_enum_val_t bdmfmon_enum_cso_table[] = {
@@ -73,13 +86,18 @@ bdmfmon_enum_val_t bdmfmon_enum_cso_table[] = {
 };
 #endif
 
+bdmfmon_parm_value_t array_of_fields_to_set[MAX_ARR_SIZE_TO_WRITE];
 static int rdd_print_sram_tables_list(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_print_sram_tables_list_all(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_print_sram_tables_list_img(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_print_sram_table_entries(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+static int rdd_set_entry(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+static int rdd_set_entry_all_cores(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+static int rdd_set_field(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+static int rdd_set_field_all_cores(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_print_sram_table_entries_all(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 
-#ifdef TM_C_CODE
+#if ((defined(TM_C_CODE)) && ((CHIP_VER < RDP_GEN_100)))  
 static int rdd_print_non_empty_fifos(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #ifndef RDP_SIM
 static int rdd_tm_identity_of_port(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
@@ -97,6 +115,10 @@ static int32_t rdd_start_runner_prints(bdmf_session_handle session, const bdmfmo
 static int32_t rdd_stop_runner_prints(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
 #endif
+#if defined(DEBUG_DAEMON) && !defined(RDP_SIM)
+static int32_t rdd_start_runner_debug_daemon(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+static int32_t rdd_stop_runner_debug_daemon(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#endif
 static int rdd_set_recycle_ring_threshold(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_interrupt_coalescing_stat(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #if defined(CONFIG_RUNNER_CSO)
@@ -109,6 +131,10 @@ static int rdd_sg_stat(bdmf_session_handle session, const bdmfmon_cmd_parm_t par
 static int rdd_sync_counter_disp(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_cpu_tx_mcore_enable(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
+#ifdef DCL_SUPPORT
+    static int rdd_dcl_get(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+    static int rdd_dcl_set(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#endif
 #if !defined(BCM_DSL_XRDP)
 static int rdd_print_iptv_ddr_ctx(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 static int rdd_miss_cache_enable(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
@@ -116,15 +142,15 @@ static int rdd_ae_pause_frame_ignore(bdmf_session_handle session, const bdmfmon_
 static int rdd_ae_pause_frame_control(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
 static int _rdd_ingress_qos_drop_miss_ratio_set(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
-#if defined(OPERATION_MODE_PRV) && (defined(BCM6858) || defined(BCM6856))
-static int rdd_multicast_limit_cfg(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
-#endif
 #ifdef G9991_COMMON
 static int rdd_g9991_flow_control_print_debug(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
 
 #ifdef DBG_TASK_ENTRY_POINT
 static int rdd_dbg_power_measure_mode(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
+#endif
+#if defined(CONFIG_RNR_WR_TEST)
+static int32_t rdd_wr_test(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms);
 #endif
 
 extern uintptr_t rdp_runner_core_addr[NUM_OF_RUNNER_CORES];
@@ -191,13 +217,43 @@ int rdd_make_shell_commands(void)
         BDMFMON_MAKE_PARM("start entry index", "Start entry index", BDMFMON_PARM_NUMBER, 0),
         BDMFMON_MAKE_PARM("start entry address", "Start entry address", BDMFMON_PARM_HEX, 0),
         BDMFMON_MAKE_PARM("number", "Number of entries", BDMFMON_PARM_NUMBER, 0));
+
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "ste",   "set table entry", rdd_set_entry,
+        BDMFMON_MAKE_PARM_RANGE("core", "Core ID", BDMFMON_PARM_NUMBER, 0, 0, RNR_LAST),
+        BDMFMON_MAKE_PARM("name", "Full Table name", BDMFMON_PARM_STRING, 0),
+        BDMFMON_MAKE_PARM("start entry index", "start entry index", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("number", "Number of entries", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM_ARRAY("values_to_write", "values to write", BDMFMON_PARM_NUMBER, 0, MAX_ARR_SIZE_TO_WRITE, array_of_fields_to_set));
+
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "stae",   "set table entries on all cores", rdd_set_entry_all_cores,
+        BDMFMON_MAKE_PARM("name", "Full Table name", BDMFMON_PARM_STRING, 0),
+        BDMFMON_MAKE_PARM("start entry index", "start entry index", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("number", "Number of entries", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM_ARRAY("values_to_write", "values to write", BDMFMON_PARM_NUMBER, 0, MAX_ARR_SIZE_TO_WRITE, array_of_fields_to_set));
+
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "stf",   "set table field", rdd_set_field,
+        BDMFMON_MAKE_PARM_RANGE("core", "Core ID", BDMFMON_PARM_NUMBER, 0, 0, RNR_LAST),
+        BDMFMON_MAKE_PARM("name", "Full Table name", BDMFMON_PARM_STRING, 0),
+        BDMFMON_MAKE_PARM("start entry index", "start entry index", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("number", "Number of entries", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("val_index", "value index to set", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("val", "value to set", BDMFMON_PARM_NUMBER, 0));
+
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "staf",   "set table field on all cores", rdd_set_field_all_cores,
+        BDMFMON_MAKE_PARM("name", "Full Table name", BDMFMON_PARM_STRING, 0),
+        BDMFMON_MAKE_PARM("start entry index", "start entry index", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("number", "Number of entries", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("val_index", "value index to set", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("val", "value to set", BDMFMON_PARM_NUMBER, 0));
+
+
     MAKE_BDMF_SHELL_CMD(rdd_directory, "ptae",   "print table entries on all cores", rdd_print_sram_table_entries_all,
         BDMFMON_MAKE_PARM("name", "Full Table name", BDMFMON_PARM_STRING, 0),
         BDMFMON_MAKE_PARM("start entry index", "Start entry index", BDMFMON_PARM_NUMBER, 0),
         BDMFMON_MAKE_PARM("number", "Number of entries", BDMFMON_PARM_NUMBER, 0));
     MAKE_BDMF_SHELL_CMD(rdd_directory, "rtrc",   "Enable/Disable RDD Trace", rdd_trace_enable,
         BDMFMON_MAKE_PARM("enable", "0 - disable, 1 - enable", BDMFMON_PARM_NUMBER, 0));
-#ifdef TM_C_CODE
+#if ((defined(TM_C_CODE)) && (CHIP_VER < RDP_GEN_100))
     MAKE_BDMF_SHELL_CMD(rdd_directory, "pnef",   "print non empty pds and update fifos", rdd_print_non_empty_fifos,
         BDMFMON_MAKE_PARM_ENUM("tm_id", "tm_id", tm_identifier_enum_table, 0),
         BDMFMON_MAKE_PARM("only_valid", "0 - print all, 1 - print only valid", BDMFMON_PARM_NUMBER, 0));
@@ -231,6 +287,29 @@ int rdd_make_shell_commands(void)
     MAKE_BDMF_SHELL_CMD_NOPARM(rdd_directory, "printr_start",   "Start printr thread", rdd_start_runner_prints);
     MAKE_BDMF_SHELL_CMD_NOPARM(rdd_directory, "printr_stop",    "Stop printr thread", rdd_stop_runner_prints);
 #endif
+#endif /* DEBUG_PRINTS */
+#ifdef DCL_SUPPORT
+    MAKE_BDMF_SHELL_CMD_NOPARM(rdd_directory, "rdd_dcl_get",   "Get Dcl state", rdd_dcl_get);
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "rdd_dcl_set",   "Set Dcl state", rdd_dcl_set,
+        BDMFMON_MAKE_PARM("feature_id", "the index of feature", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("wrr_only", "wrr only mode", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("sp_only", "sp only mode", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("aqm", "aqm supported", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("secondary_scheduler", "secondary scheduler supported", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("scheduler_rl_support", "scheduler rl support", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("queue_rl_support", "queue rl support", BDMFMON_PARM_NUMBER, 0),
+        BDMFMON_MAKE_PARM("debug_support", "debug stat, epon and mirror support", BDMFMON_PARM_NUMBER, 0)
+    );
+
+#endif
+#if defined(DEBUG_DAEMON) && !defined(RDP_SIM)
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "rlog_start",   "Start runner logger", rdd_start_runner_debug_daemon,
+        BDMFMON_MAKE_PARM_DEFVAL("set_bitmask", "sets to monitor(-1 - all)", BDMFMON_PARM_NUMBER, 0, -1),
+        BDMFMON_MAKE_PARM_DEFVAL("period(msec)", "periodicity of logger", BDMFMON_PARM_NUMBER, 0, 5000),
+        BDMFMON_MAKE_PARM_DEFVAL("prints_on", "turn on prints", BDMFMON_PARM_NUMBER, 0, 0)
+        );
+
+    MAKE_BDMF_SHELL_CMD_NOPARM(rdd_directory, "rlog_stop",    "Stop debug daemon thread", rdd_stop_runner_debug_daemon);
 #endif
 #if !defined(BCM_DSL_XRDP)
     MAKE_BDMF_SHELL_CMD(rdd_directory, "aepfi",   "AE pause frame ignore", rdd_ae_pause_frame_ignore,
@@ -246,11 +325,6 @@ int rdd_make_shell_commands(void)
     MAKE_BDMF_SHELL_CMD(rdd_directory, "iqdmr",   "Ingress qos drop miss ratio", _rdd_ingress_qos_drop_miss_ratio_set,
         BDMFMON_MAKE_PARM("drop miss ratio", "Drop miss ratio", BDMFMON_PARM_NUMBER, 0));
 
-#if defined(OPERATION_MODE_PRV) && (defined(BCM6858) || defined(BCM6856))
-    MAKE_BDMF_SHELL_CMD(rdd_directory, "mlc",   "multicast limit config", rdd_multicast_limit_cfg,
-        BDMFMON_MAKE_PARM("max", "max number of multicast tasks", BDMFMON_PARM_NUMBER, 0),
-        BDMFMON_MAKE_PARM("min", "min number of multicast tasks", BDMFMON_PARM_NUMBER, 0));
-#endif
 #ifdef G9991_COMMON
     MAKE_BDMF_SHELL_CMD_NOPARM(rdd_directory, "fcs", "flow_control status", rdd_g9991_flow_control_print_debug);
 #endif
@@ -271,10 +345,22 @@ int rdd_make_shell_commands(void)
     rdd_buffer_cong_mgt_shell_cmds_init(rdd_directory);
 #endif
 
+#ifdef XRDP_FLUSH_STALE_PACKETS
+    rdd_fw_flush_shell_cmds_init(rdd_directory);
+#endif
+
 #ifdef DBG_TASK_ENTRY_POINT
     MAKE_BDMF_SHELL_CMD(rdd_directory, "power_measure_mode",   "Enable/Disable power-measurement mode",
         rdd_dbg_power_measure_mode,
         BDMFMON_MAKE_PARM("enable", "0 - disable, 1 - enable", BDMFMON_PARM_NUMBER, 0));
+#endif
+
+#if defined(CONFIG_RNR_WR_TEST)
+    MAKE_BDMF_SHELL_CMD(rdd_directory, "rnr_wr_test",   "Test Write from Runner",
+        rdd_wr_test,
+        BDMFMON_MAKE_PARM("address", "Address to test write to", BDMFMON_PARM_HEX, 0),
+        BDMFMON_MAKE_PARM("value", "Writing value to test (0xdeadbeef if not set)", BDMFMON_PARM_NUMBER,
+        BDMFMON_PARM_FLAG_OPTIONAL));
 #endif
 
     return BDMF_ERR_OK;
@@ -475,6 +561,46 @@ static int32_t _rdd_print_sram_table_entries_single(bdmf_session_handle session,
     return 0;
 }
 
+static int32_t _rdd_write_single_entry(bdmf_session_handle session, uint32_t core_id, char *tbl_name,
+    uint32_t start_entry, uint32_t num_of_entries, uint32_t is_addr, uint8_t *entry_addr, const bdmfmon_parm_value_t parm[], int write_entry)
+{
+    TABLE_STRUCT *tbl;
+    DUMP_RUNNERREG_STRUCT *tbl_ctx;
+    uint32_t i;
+    uint8_t *tbl_addr;
+
+    core_id += CORE_0_INDEX;
+    for (i = 0; i < NUMBER_OF_TABLES; i++)
+    {
+        tbl = &RUNNER_TABLES[i];
+
+        /* Check if table belongs to core */
+        if (core_id != tbl->segment)
+            continue;
+
+        if (!strcmp(tbl->table_name, tbl_name))
+            break;
+    }
+
+    if (i == NUMBER_OF_TABLES) /* Table not found */
+    {
+        bdmf_session_print(session, "Table %s not found\n", tbl_name);
+        return BDMF_ERR_PARM;
+    }
+
+    tbl_addr = table_addr_get(tbl, 0);
+    tbl_ctx = tbl->entries;
+
+    for (i = 0; i < num_of_entries; i++)
+    {   
+        entry_addr = tbl_addr + (start_entry + i) * tbl_ctx->length;
+        tbl_ctx->entries[0].write_callback(session, (unsigned char *)DEVICE_ADDRESS(entry_addr), parm, write_entry);
+    }
+    bdmf_session_print(session, "\n");
+    return 0;
+}
+
+
 static int32_t rdd_print_sram_table_entries(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
     uint16_t n_parms)
 {
@@ -506,6 +632,91 @@ static int32_t rdd_print_sram_table_entries(bdmf_session_handle session, const b
         entry_addr);
 }
 
+static int rdd_set_entry(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    int32_t core_id;
+    char parm_val[256];
+    uint32_t start_entry = 0;
+    uint32_t num_of_entries;
+    uint8_t *entry_addr = NULL;
+
+    core_id = parm[0].value.unumber;
+    strncpy(parm_val, parm[1].value.string, 255);
+    str_toupper(parm_val);
+    start_entry = parm[2].value.unumber;
+    num_of_entries = parm[3].value.unumber;
+    _rdd_write_single_entry(session, core_id, parm_val, start_entry, num_of_entries, 0, entry_addr, parm[4].values, -1);
+    return 0;
+}
+
+static int rdd_set_entry_all_cores(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    int32_t core_id;
+    char parm_val[256];
+    uint32_t start_entry = 0;
+    uint32_t num_of_entries;
+    uint8_t *entry_addr = NULL;
+
+    strncpy(parm_val, parm[0].value.string, 255);
+    str_toupper(parm_val);
+    start_entry = parm[1].value.unumber;
+    num_of_entries = parm[2].value.unumber;
+    
+    for (core_id = 0; core_id < NUM_OF_RUNNER_CORES; core_id++)
+    {
+        bdmf_session_print(session, "Core %d\n-----------\n", core_id);
+        _rdd_write_single_entry(session, core_id, parm_val, start_entry, num_of_entries, 0, entry_addr, parm[3].values, -1);
+    }
+    return 0;
+}
+
+static int rdd_set_field(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    int32_t core_id;
+    char parm_val[256];
+    uint32_t start_entry = 0;
+    uint32_t num_of_entries;
+    uint8_t *entry_addr = NULL;
+    uint32_t val_index;
+    uint32_t val;
+
+    core_id = parm[0].value.unumber;
+    strncpy(parm_val, parm[1].value.string, 255);
+    str_toupper(parm_val);
+    start_entry = parm[2].value.unumber;
+    num_of_entries = parm[3].value.unumber;
+    val_index = parm[4].value.unumber;
+    val = parm[5].value.unumber;
+    array_of_fields_to_set[val_index].number = val;
+    _rdd_write_single_entry(session, core_id, parm_val, start_entry, num_of_entries, 0, entry_addr, array_of_fields_to_set, val_index);
+    return 0;
+}
+
+static int rdd_set_field_all_cores(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    int32_t core_id;
+    char parm_val[256];
+    uint32_t start_entry = 0;
+    uint32_t num_of_entries;
+    uint8_t *entry_addr = NULL;
+    uint32_t val_index;
+    uint32_t val;
+
+    strncpy(parm_val, parm[0].value.string, 255);
+    str_toupper(parm_val);
+    start_entry = parm[1].value.unumber;
+    num_of_entries = parm[2].value.unumber;
+    val_index = parm[3].value.unumber;
+    val = parm[4].value.unumber;
+    array_of_fields_to_set[val_index].number = val;
+    for (core_id = 0; core_id < NUM_OF_RUNNER_CORES; core_id++)
+    {
+        bdmf_session_print(session, "Core %d\n-----------\n", core_id);
+        _rdd_write_single_entry(session, core_id, parm_val, start_entry, num_of_entries, 0, entry_addr, array_of_fields_to_set, val_index);
+    }
+    return 0;
+}
+
 static int32_t rdd_print_sram_table_entries_all(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
     uint16_t n_parms)
 {
@@ -526,7 +737,7 @@ static int32_t rdd_print_sram_table_entries_all(bdmf_session_handle session, con
     return 0;
 }
 
-#ifdef TM_C_CODE
+#if ((defined(TM_C_CODE)) && (CHIP_VER < RDP_GEN_100))
 static int32_t rdd_print_non_empty_fifos(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
     uint16_t n_parms)
 {
@@ -757,6 +968,43 @@ static int32_t rdd_stop_runner_prints(bdmf_session_handle session, const bdmfmon
 #endif
 #endif
 
+#if defined(DEBUG_DAEMON) && !defined(RDP_SIM)
+static int32_t rdd_start_runner_debug_daemon(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    int rc = 0;
+
+    int32_t sets_bitmask;
+    uint32_t period, prints_on;
+
+    sets_bitmask = parm[0].value.number;
+    period = parm[1].value.unumber;
+    prints_on = parm[2].value.unumber;
+
+    if (period < 100 || period > 20000)
+    {
+        bdmf_session_print(session, "Bad argument period  %d (expected 100-20000)\n", period);
+        return BDMF_ERR_PARM;
+    }
+
+    rc = rdd_debug_daemon_init(sets_bitmask, prints_on);
+    rc = rc ? rc : rdd_debug_daemon_start_thread(period);
+
+    if (rc & (rc != BDMF_ERR_ALREADY))
+    {
+        rdd_debug_daemon_deinit();
+    }
+
+    return rc;
+}
+static int32_t rdd_stop_runner_debug_daemon(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    rdd_debug_daemon_stop_thread();
+    rdd_debug_daemon_deinit();
+
+    return 0;
+}
+#endif
+
 static int rdd_set_recycle_ring_threshold(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[],
     uint16_t n_parms)
 {
@@ -939,6 +1187,30 @@ static int32_t rdd_cpu_tx_mcore_enable(bdmf_session_handle session, const bdmfmo
 }
 #endif
 
+#ifdef DCL_SUPPORT
+static int rdd_dcl_get(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    dcl_print_status();
+    return 0;
+}
+
+static int rdd_dcl_set(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    uint32_t image_id = 0;
+    int i;    
+
+    for (i = 0; i < NUM_OF_DCL_PARAMS_IN_SHELL; i++)
+    {
+        image_id |= parm[i+1].value.unumber << i;
+    }
+    
+    dcl_force_image(parm[0].value.unumber, image_id);
+    return 0;
+}
+
+#endif
+
+
 #if !defined(BCM_DSL_XRDP)
 static int rdd_print_iptv_ddr_ctx(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
 {
@@ -1045,19 +1317,6 @@ static int _rdd_ingress_qos_drop_miss_ratio_set(bdmf_session_handle session, con
     return 0;
 }
 
-#if defined(OPERATION_MODE_PRV) && (defined(BCM6858) || defined(BCM6856))
-static int rdd_multicast_limit_cfg(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
-{
-    uint8_t mcast_max = parm[0].value.unumber;
-    uint8_t mcast_min = parm[1].value.unumber;
-
-    rdd_mcast_max_tasks_limit_cfg(mcast_max);
-    rdd_mcast_min_tasks_limit_cfg(mcast_min);
-
-    return 0;
-}
-#endif
-
 #ifdef G9991_COMMON
 static int rdd_g9991_flow_control_print_debug(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
 {
@@ -1148,4 +1407,32 @@ static int rdd_dbg_power_measure_mode(bdmf_session_handle session, const bdmfmon
 }
 #endif
 
+#if defined(CONFIG_RNR_WR_TEST)
+static int32_t rdd_wr_test(bdmf_session_handle session, const bdmfmon_cmd_parm_t parm[], uint16_t n_parms)
+{
+    uint32_t val_to_test = 0xdeadbeef;
+    uint32_t addr_high, addr_low;
+    bdmf_phys_addr_t entry_addr = 0;
+
+#if defined(__LP64__) || defined(_LP64)
+    entry_addr = (bdmf_phys_addr_t)parm[0].value.unumber64;
+#else
+    entry_addr = parm[0].value.unumber;
+#endif
+
+    if (n_parms > 1)
+    {
+        val_to_test = parm[1].value.unumber;
+    }
+
+    GET_ADDR_HIGH_LOW(addr_high, addr_low, entry_addr);
+    rdd_ag_cpu_rx_rnr_wr_test_addr_set(addr_low, addr_high);
+    rdd_ag_cpu_rx_rnr_wr_test_from_set(0);
+    rdd_ag_cpu_rx_rnr_wr_test_to_set(val_to_test);
+    rdd_ag_cpu_rx_rnr_wr_test_start_set(1);
+    /* Wakeup from cpu_tx_0 to trigger the operation */
+    rdp_runner_cpu_task_wakeup(get_runner_idx(cpu_rx_runner_image), CPU_RX_THREAD_NUMBER);
+    return 0;
+}
+#endif
 

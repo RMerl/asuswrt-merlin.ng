@@ -97,7 +97,7 @@ void __dump_sg(struct scatterlist *sg, unsigned int skip, unsigned int len);
 
 #if defined(CONFIG_BCM_SPU2_TEST_VEC)
 struct spu_test_vector_t {
-	char *name;
+	const char *name;
 	uint8_t inbound;
 	uint8_t *enc_key;
 	uint8_t *iv;
@@ -108,6 +108,7 @@ struct spu_test_vector_t {
 	uint32_t enc_key_len;
 	uint32_t iv_len;
 	uint32_t hash_key_len;
+	uint32_t assoc_size;
 	uint32_t src_size;
 	uint32_t digest_size;
 

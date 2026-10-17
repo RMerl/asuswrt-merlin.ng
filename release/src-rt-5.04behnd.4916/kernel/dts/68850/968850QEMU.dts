@@ -1,0 +1,234 @@
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/dts-v1/;
+
+/* #include "inc/linux_autoconf.h" */
+
+#define GIC_DIST_BASE   0x81001000
+#define GIC_CPUI_BASE   0x81002000
+
+#define TIMER_HYP_PPI                  10
+#define TIMER_VIRT_PPI                 11
+#define TIMER_PHYS_SECURE_PPI          13
+#define TIMER_PHYS_NONSECURE_PPI       14
+
+#define UARTA_DBG                      32
+    
+/ {
+    model = "Broadcom BCM968850_QEMU";
+    publish = "BRCM_DO_NOT_PUBLISH";
+    compatible = "brcm,bcm968850";
+    interrupt-parent = <&gic>;
+    #address-cells = <2>;
+    #size-cells = <2>;
+   
+    aliases {
+        serial0 = &uart0;
+    };
+
+    chosen { 
+        stdout-path = "serial0:115200n8";
+        bootargs = "coherent_pool=2M console=ttyAMA0,115200n8 earlycon debug lpj=800000 ikosboot mem=512M root=/dev/ram0 ro";
+        linux,initrd-start = <0x2B00000>;
+        linux,initrd-end   = <0x3D00000>;
+    };
+
+/* memory reservations */
+#define CELLS_NUM 2
+#define RSVDMEM_CMA_ADDR 0x0 0x1A000000 
+#define RSVDMEM_CMA_SIZE 0x0 0x6000000 
+    reserved-memory {
+        #address-cells = <CELLS_NUM>;
+        #size-cells = <CELLS_NUM>;
+        ranges;
+
+        dt_reserved_cma: dt_reserved_cma {
+            compatible = "shared-dma-pool";
+            reusable;
+            /* Bootloader will fill in the total size and offset */
+            reg = <RSVDMEM_CMA_ADDR RSVDMEM_CMA_SIZE>;
+        };
+    };
+
+    plat_rsvmem_cached_device {
+        compatible = "brcm,plat-rsvmem";
+        dma-coherent;
+        memory-region = <&dt_reserved_cma>;
+
+        dt_reserved_bufmem: dt_reserved_bufmem {
+            rsvd-size = <0x4000000>;
+        };
+    };
+
+    plat_rsvmem_uncached_device {
+        compatible = "brcm,plat-rsvmem";
+        memory-region = <&dt_reserved_cma>;
+    
+        dt_reserved_rnrmem: dt_reserved_rnrmem {
+            rsvd-size = <0x2000000>;
+        };
+    };
+
+
+    cpus {
+        #address-cells = <2>;
+        #size-cells = <0>;
+
+        CA55_0: cpu@0 {
+            device_type = "cpu";
+            compatible = "arm,cortex-a55";
+            reg = <0x0 0x0>;
+            enable-method = "spin-table";
+            cpu-release-addr = <0x0 0xfff8>;
+            next-level-cache = <&L2_0>;
+        };
+
+        L2_0: l2-cache0 {
+            compatible = "cache";
+            next-level-cache = <&L3_0>;
+        };
+
+        L2_1: l2-cache1 {
+            compatible = "cache";
+            next-level-cache = <&L3_0>;
+        };
+
+
+        L3_0: l3-cache0 {
+            compatible = "cache";
+        };
+
+    };
+
+    gic: interrupt-controller@81000000 {
+        compatible = "arm,cortex-a15-gic", "arm,cortex-a9-gic";
+        #interrupt-cells = <3>;
+        #address-cells = <0>;
+        interrupt-controller;
+        reg = <0x0 GIC_DIST_BASE 0 0x1000>,
+              <0x0 GIC_CPUI_BASE 0 0x2000>;
+    };
+
+
+    timer {
+        compatible = "arm,armv8-timer";
+        interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI   (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+                    <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+                    <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+                    <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+    };
+
+    brcm-legacy {
+        compatible = "brcm,brcm-legacy";
+    };
+
+    memory@00000000 {
+        device_type = "memory";
+        reg = <0x0 0x00000000 0x0 0x40000000>;                  
+    };
+
+    uartclk: uartclk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <50000000>;
+    };
+
+    /* Legacy UBUS base */
+    ubus@84000000 {
+        compatible = "simple-bus";
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges = <0x0 0x0 0x0 0x84000000 0x0 0x320000>;
+
+        uart0: serial@8421C000 {
+            #address-cells = <1>;
+            #size-cells = <1>;
+            compatible = "arm,pl011", "arm,primecell";
+            reg = <0x0 0x21C000 0x0 0x1000>;
+            interrupts = <GIC_SPI UARTA_DBG IRQ_TYPE_LEVEL_HIGH>;
+            clocks = <&uartclk>, <&uartclk>;
+            clock = <50000000>;
+            clock-names = "uartclk", "apb_pclk";
+        };
+    };
+    
+   /* xrdp,wan_bbh */
+    rdpa_drv {
+        compatible = "brcm,rdpa";
+        reg = <0x0 0x82000000 0x0 0xCAF004>, 
+              <0x0 0x80170000 0x0 0x122a8>;
+    };
+
+    vmif{
+        compatible = "simple-bus";
+        ranges = <0x0 0x0 0x0 0x4c000000 0x0 0x02000000>;
+        #address-cells = <2>;
+        #size-cells = <2>;
+
+
+        virtio-mmio1 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x01003000 0x0 0x200>;
+            interrupts = <0 48 1>;
+        };
+
+        virtio-mmio2 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x1003200 0x0 0x200>;
+            interrupts = <0 49 1>;
+        };
+
+        virtio-mmio3 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x1003400 0x0 0x200>;
+            interrupts = <0 50 1>;
+        };
+
+        virtio-mmio4 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x1003600 0x0 0x200>;
+            interrupts = <0 51 1>;
+        };
+
+        virtio-mmio5 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x1003800 0x0 0x200>;
+            interrupts = <0 52 1>;
+        };
+
+        virtio-mmio6 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x1003a00 0x0 0x200>;
+            interrupts = <0 53 1>;
+        };
+
+        virtio-mmio7 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x1003c00 0x0 0x200>;
+            interrupts = <0 54 1>;
+        };
+
+        virtio-mmio8 {
+            compatible="virtio,mmio";
+            reg = <0x0 0x1003e00 0x0 0x200>;
+            interrupts = <0 55 1>;
+        };
+
+       
+        goldfish-events {
+            interrupts = <0x0 19 0x4>;
+            reg = <0x0 0x230000 0x0 0x1000>;
+            compatible = "generic,goldfish-events-keypad",
+                         "google,goldfish-events-keypad";
+        };
+
+        clk24mhz: clk24mhz {
+            compatible = "fixed-clock";
+            #clock-cells = <0>;
+            clock-frequency = <24000000>;
+            clock-output-names = "v2m:clk24mhz";
+        };
+    };
+};

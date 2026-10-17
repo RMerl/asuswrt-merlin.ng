@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Test schema
+#
+---
+
+definitions:
+    u8:
+        type: integer
+        minimum: 0
+        maximum: 0xff
+    u16:
+        type: integer
+        minimum: 0
+        maximum: 0xffff
+    u32:
+        type: integer
+        minimum: 0
+        maximum: 0xffffffff
+
+type: object
+properties:
+    main-branch:
+        type: object
+        properties:
+            obj:
+                type: object
+                properties:
+                    a:
+                        $ref: "#/definitions/u32"
+                    b:
+                        $ref: "#/definitions/u16"
+            arr:
+                type: array
+                minItems: 4
+                maxItems: 4
+                items:
+                    $ref: "#/definitions/u8"
+            another-arr:
+                type: array
+                minItems: 2
+                maxItems: 2
+                items:
+                    type: object
+                    properties:
+                        c:
+                            $ref: "#/definitions/u8"
+                        d:
+                            $ref: "#/definitions/u8"

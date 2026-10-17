@@ -52,8 +52,7 @@ typedef enum {
     rdpa_ingress_class_attr_nflow = 3, /* nflow : R : number : Number of associated classification flows */
     rdpa_ingress_class_attr_flow = 4, /* flow : RWADF : aggregate[] class_info(rdpa_ic_info_t) : Ingress class flow entry */
     rdpa_ingress_class_attr_flow_stat = 5, /* flow_stat : RF : aggregate[] rdpa_stat(rdpa_stat_t) : Ingress class flow statistics (can be enabled in system object) */
-    rdpa_ingress_class_attr_port_action = 6, /* port_action : RWF : aggregate[(port_action_key)] port_action(rdpa_port_action_t) : Per egress port action */
-    rdpa_ingress_class_attr_flush = 7, /* flush : W : bool : Flush ingress class table (remove all configured flows) */
+    rdpa_ingress_class_attr_flush = 6, /* flush : W : bool : Flush ingress class table (remove all configured flows) */
 } rdpa_ingress_class_attr_types;
 
 /** ingress_class object key. */
@@ -302,50 +301,6 @@ static inline int rdpa_ingress_class_flow_stat_get(bdmf_object_handle mo_, bdmf_
 static inline int rdpa_ingress_class_flow_stat_get_next(bdmf_object_handle mo_, bdmf_index * ai_)
 {
     return bdmf_attrelem_get_next(mo_, rdpa_ingress_class_attr_flow_stat, (bdmf_index *)ai_);
-}
-
-
-/** Get ingress_class/port_action attribute entry.
- *
- * Get Per egress port action.
- * \param[in]   mo_ ingress_class object handle or mattr transaction handle
- * \param[in]   ai_ Attribute array index
- * \param[out]  port_action_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_ingress_class_port_action_get(bdmf_object_handle mo_, rdpa_port_action_key_t * ai_, rdpa_port_action_t * port_action_)
-{
-    return bdmf_attrelem_get_as_buf(mo_, rdpa_ingress_class_attr_port_action, (bdmf_index)ai_, port_action_, sizeof(*port_action_));
-}
-
-
-/** Set ingress_class/port_action attribute entry.
- *
- * Set Per egress port action.
- * \param[in]   mo_ ingress_class object handle or mattr transaction handle
- * \param[in]   ai_ Attribute array index
- * \param[in]   port_action_ Attribute value
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_ingress_class_port_action_set(bdmf_object_handle mo_, rdpa_port_action_key_t * ai_, const rdpa_port_action_t * port_action_)
-{
-    return bdmf_attrelem_set_as_buf(mo_, rdpa_ingress_class_attr_port_action, (bdmf_index)ai_, port_action_, sizeof(*port_action_));
-}
-
-
-/** Get next ingress_class/port_action attribute entry.
- *
- * Get next Per egress port action.
- * \param[in]   mo_ ingress_class object handle or mattr transaction handle
- * \param[in,out]   ai_ Attribute array index
- * \return 0 or error code < 0
- * The function can be called in task context only.
- */
-static inline int rdpa_ingress_class_port_action_get_next(bdmf_object_handle mo_, rdpa_port_action_key_t * ai_)
-{
-    return bdmf_attrelem_get_next(mo_, rdpa_ingress_class_attr_port_action, (bdmf_index *)ai_);
 }
 
 

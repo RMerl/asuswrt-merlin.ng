@@ -1,0 +1,20 @@
+if TARGET_GW_VENTANA
+
+config DM_GPIO
+	default y
+
+config SYS_BOARD
+	default "gw_ventana"
+
+config SYS_VENDOR
+	default "gateworks"
+
+config SYS_CONFIG_NAME
+	default "gw_ventana"
+
+config CMD_EECONFIG
+	bool "Enable the 'econfig' command"
+	help
+	  Provides access to EEPROM configuration on Gateworks Ventana
+
+endif

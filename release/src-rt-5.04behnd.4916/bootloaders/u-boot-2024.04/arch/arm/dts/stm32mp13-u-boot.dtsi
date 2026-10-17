@@ -1,0 +1,113 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+/*
+ * Copyright (C) 2022, STMicroelectronics - All Rights Reserved
+ */
+
+/ {
+	aliases {
+		gpio0 = &gpioa;
+		gpio1 = &gpiob;
+		gpio2 = &gpioc;
+		gpio3 = &gpiod;
+		gpio4 = &gpioe;
+		gpio5 = &gpiof;
+		gpio6 = &gpiog;
+		gpio7 = &gpioh;
+		gpio8 = &gpioi;
+		pinctrl0 = &pinctrl;
+	};
+
+	firmware {
+		optee {
+			bootph-all;
+		};
+	};
+
+	/* need PSCI for sysreset during board_f */
+	psci {
+		bootph-some-ram;
+	};
+
+	soc {
+		bootph-all;
+
+		ddr: ddr@5a003000 {
+			bootph-all;
+
+			compatible = "st,stm32mp13-ddr";
+
+			reg = <0x5A003000 0x550
+			       0x5A004000 0x234>;
+
+			status = "okay";
+		};
+	};
+};
+
+&bsec {
+	bootph-all;
+};
+
+&gpioa {
+	bootph-all;
+};
+
+&gpiob {
+	bootph-all;
+};
+
+&gpioc {
+	bootph-all;
+};
+
+&gpiod {
+	bootph-all;
+};
+
+&gpioe {
+	bootph-all;
+};
+
+&gpiof {
+	bootph-all;
+};
+
+&gpiog {
+	bootph-all;
+};
+
+&gpioh {
+	bootph-all;
+};
+
+&gpioi {
+	bootph-all;
+};
+
+&iwdg2 {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&rcc {
+	bootph-all;
+};
+
+&scmi {
+	bootph-all;
+};
+
+&scmi_clk {
+	bootph-all;
+};
+
+&scmi_reset {
+	bootph-all;
+};
+
+&syscfg {
+	bootph-all;
+};

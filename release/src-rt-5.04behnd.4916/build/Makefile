@@ -21,6 +21,29 @@ KERNELLINKS = $(SUB_BUILD_DIR)/.done_kernellinks
 BCMDRIVERS_AUTOGEN = $(SUB_BUILD_DIR)/.done_bcmdrivers_autogen
 IMAGE_GOAL_COOKIE = $(CURDIR)/.image_goal
 
+#  This section sets HOSTCC to a version of gcc >= 6
+ifeq ($(HOSTCC),)
+HOSTCC=gcc
+hostccversion=$(shell expr `$(HOSTCC) -dumpversion | cut -f1 -d.` \< 6)
+ifneq ($(GCC6),)
+HOSTCC := $(GCC6)
+endif
+bcmitgcc6 := /tools/oss/packages/x86_64-rhel6/gcc/6.3.0/bin/gcc
+ifneq ($(wildcard $(bcmitgcc6)),)
+ifeq ($(strip $(hostccversion)),1)
+HOSTCC := $(subst $\",,$(bcmitgcc6))
+endif
+endif
+CCVERSIONLE6 := $(shell expr `$(HOSTCC) -dumpversion | cut -f1 -d.` \< 6)
+ifeq ($(strip $(CCVERSIONLE6)),1)
+HOSTCC := cc
+$(error Linux compile requires a host compiler version >=6.  If not the default, ser the HOSTCC or GCCVER variable to point at a newer gcc)
+endif # CC < 6
+endif # HOSTCC
+
+export HOSTCC
+
+
 ###########################################
 # This is the first target in the Makefile,
 # so it is also the default target.
@@ -31,7 +54,7 @@ IMAGE_GOAL_COOKIE = $(CURDIR)/.image_goal
 ############################################
 
 all: sanity_check
-	$(MAKE) -f build/Makefile default
+	$(MAKE) -f build/Makefile default;ret=$$?;$(MAKE) -f build/post_kernelbuild.mk all;exit $$ret;
 
 default: mkenv prebuild_checks all_postcheck1 packages
 
@@ -57,23 +80,6 @@ all_postcheck1: profile_saved_check rdp_link\
 
 # Order-only rules
 #----------------------------------------------------------------------------
-# work around ld internal bug when building/linking the same obj concurrently:
-#	  make[3]: Entering directory `/auto/jenkins_workspace_pre/workspace/Preflight_CommEngine_Dev_962118GW/cfe/build/broadcom/build_cferam_emmc'
-#	  make[4]: Entering directory `/auto/jenkins_workspace_pre/workspace/Preflight_CommEngine_Dev_962118GW/hostTools'
-#	  building lzma host tool ...
-#	  make[3]: Entering directory `/auto/jenkins_workspace_pre/workspace/Preflight_CommEngine_Dev_962118GW/cfe/build/broadcom/build_cferam_nand'
-#	  make[4]: Entering directory `/auto/jenkins_workspace_pre/workspace/Preflight_CommEngine_Dev_962118GW/hostTools'
-#	  building lzma host tool ...
-#	  /tools/oss/packages/x86_64-rhel6/binutils/default/bin/ld: BFD (GNU Binutils) 2.22 internal error, aborting at merge.c line 873 in _bfd_merged_section_offset
-#
-#	  /tools/oss/packages/x86_64-rhel6/binutils/default/bin/ld: Please report this bug.
-#
-#	  collect2: ld returned 1 exit status
-#	  make[4]: *** [build_cmplzma] Error 1
-#----------------------------------------------------------------------------
-#build_cfe_nand : | build_cfe_emmc
-#build_cfe_emmc : | build_cfe_sec_nand
-#build_cfe_sec_nand : | build_cfe_sec_emmc
 
 prebuild_checks : mkenv prebuild_atom
 	$(MAKE) -f build/prebuild_checks.mk default
@@ -94,9 +100,7 @@ full_buildimage gen_credits linux_tools : parallel_targets gdbserver
 .PHONY: mkenv all_postcheck1 full_buildimage_prereqs
 
 # These post kernel top level targets can compile concurrently
-parallel_targets: dynamic_cfe uboot hnd_dongle kernelbuild prepare_linux_image modbuild userspace optee atf rtpolicy_gen_metadata hosttools_image
-
-dynamic_cfe: hosttools_bootloader
+parallel_targets: uboot hnd_dongle kernelbuild prepare_linux_image modbuild userspace optee atf rtpolicy_gen_metadata hosttools_image
 
 mkenv:
 ifneq ($(MY_MKENV_FIRST_RECURSION),0)	# run the recipes only once per build
@@ -154,7 +158,7 @@ inside_internal_check:
 # Currently, RDKB uplayer build recipes call these recipes.
 ############################################################################
 recipe_prebuild: hosttools_common headers_install
-recipe_bootloader: dynamic_cfe uboot optee atf
+recipe_bootloader: uboot optee atf
 recipe_kernel: hnd_dongle modbuild dtbs prepare_linux_image
 recipe_userspace: hosttools_image userspace rtpolicy_gen_metadata
 recipe_buildimage: buildimage
@@ -325,7 +329,7 @@ BCM_RELEASE_LEVEL := $(shell echo $(BCM_RELEASE_LEVEL) | sed -e 's/^0*//')
 BCM_PATCH_LEVEL := $(strip $(shell echo $(BRCM_EXTRAVERSION) | cut -c1-2))
 BCM_PATCH_LEVEL := $(shell echo $(BCM_PATCH_LEVEL) | sed -e 's/^0*//')
 
-$(BCM_SWVERSION_FILE): $(BUILD_DIR)/$(VERSION_MAKE_FILE)
+$(BCM_SWVERSION_FILE): $(BUILD_DIR)/$(VERSION_MAKE_FILE) $(PRE_KERNELBUILD)
 ifneq ($(RELEASE_BUILD),)
 	@if egrep -q '^BRCM_(VERSION|RELEASE|EXTRAVERSION)=.*[^a-zA-Z0-9]' $(VERSION_MAKE_FILE) ; then \
 		echo "error ... illegal character detected within version in $(VERSION_MAKE_FILE)" ; \
@@ -379,6 +383,9 @@ ifneq ($(strip $(SKIP_USERSPACE)),)
 userspace:
 	@echo "SKIPPING USERSPACE BUILD!"
 else
+ifneq ($(strip $(BUILD_BCM_BSTORM)),)
+userspace: kernelbuild
+endif
 userspace: prepare_userspace headers_install openwrt prepare_opensync_gw openjdk
 	@echo "USERSPACE STARTED"
 	$(MAKE) -C userspace
@@ -389,11 +396,11 @@ endif
 
 
 
-# TODO begin: building userspace with OVS is special where userspace still depends on kernelspace.
+# TODO begin: building userspace with WLAUX is special where userspace still depends on kernelspace.
 # expect to remove the dependency in future.
-ifeq ($(strip $(BRCM_OVS_SUPPORT)),y)
+ifneq ($(strip $(BUILD_BCM_WLAUX)),)
 userspace: modbuild
-endif # BRCM_OVS_SUPPORT
+endif # BUILD_BCM_WLAUX
 # TODO end
 
 
@@ -411,14 +418,17 @@ endif # BRCM_OVS_SUPPORT
 #
 #
 
-OPENWRT_ROOTFS_UNTAR_ARGS=
+# We have installed certain libraries to /lib manually in altsdk/openwrt/Makefile
+# Exclude those libraries from the openwrt fs tarball.
+OPENWRT_ROOTFS_UNTAR_ARGS=--exclude-from=$(BUILD_DIR)/altsdk/openwrt/exclude_openwrt_libs.txt
 
 ifeq ($(strip $(BUILD_OPENWRT_NATIVE)),)
 ifeq ($(strip $(BUILD_PRPL_FEEDS)),)
 # Non-native (Full Openwrt Carrier Managed) build.  Exclude some native Openwrt files that are in the rootfs tarball.
-OPENWRT_ROOTFS_UNTAR_ARGS=-X $(BUILD_DIR)/altsdk/openwrt/exclude_files.txt
+OPENWRT_ROOTFS_UNTAR_ARGS+=-X $(BUILD_DIR)/altsdk/openwrt/exclude_files.txt
 endif
 endif
+
 
 prepare_openwrt: sanity_check $(CREATE_INSTALL) $(KERNELLINKS)
 
@@ -537,15 +547,18 @@ $(KERNEL_ARM_INCLUDE_LINK): $(PRE_KERNELBUILD)
 	ln -s -f -T $(KERNEL_DIR)/arch/arm/$(INC_DIR) $(KERNEL_ARM_INCLUDE_LINK)
 	@touch $@
 
-.PHONY: clean_bcmdrivers_autogen
+.PHONY: clean_bcmdrivers_autogen prepare_kernel_pkgs clean_kernel_pkgs
 
+prepare_kernel_pkgs clean_kernel_pkgs:
+	@echo processing openvpn data channel offload kernel module
+	$(MAKE) -C $(BRCMDRIVERS_DIR)/opensource/net/ovpn_dco/impl1 $@
 
 BCMD_AG_MAKEFILE:=Makefile.autogen
 BCMD_AG_KCONFIG:=Kconfig.autogen
 BCMD_AG_MAKEFILE_TMP:=$(BCMD_AG_MAKEFILE).tmp
 BCMD_AG_KCONFIG_TMP:=$(BCMD_AG_KCONFIG).tmp
 
-$(BCMDRIVERS_AUTOGEN): kernel/bcmkernel/Kconfig.bcm
+$(BCMDRIVERS_AUTOGEN): kernel/bcmkernel/Kconfig.bcm prepare_kernel_pkgs
 	@cd $(BRCMDRIVERS_DIR); echo -e "\n# Automatically generated file -- do not modify manually\n\n" > $(BCMD_AG_KCONFIG_TMP)
 	@cd $(BRCMDRIVERS_DIR); echo -e "\n# Automatically generated file -- do not modify manually\n\n" > $(BCMD_AG_MAKEFILE_TMP)
 	@cd $(BRCMDRIVERS_DIR); echo -e "\n\$$(info READING AG MAKEFILE)\n\n" >> $(BCMD_AG_MAKEFILE_TMP)
@@ -580,14 +593,14 @@ $(BCMDRIVERS_AUTOGEN): kernel/bcmkernel/Kconfig.bcm
 	@touch $@
 
 
-clean_bcmdrivers_autogen: kernel_clean
+clean_bcmdrivers_autogen: kernel_clean clean_kernel_pkgs
 	rm -f $(BRCMDRIVERS_DIR)/$(BCMD_AG_MAKEFILE_TMP) $(BRCMDRIVERS_DIR)/$(BCMD_AG_KCONFIG_TMP) $(BRCMDRIVERS_DIR)/$(BCMD_AG_MAKEFILE) $(BRCMDRIVERS_DIR)/$(BCMD_AG_KCONFIG)
 	rm -f $(BCMDRIVERS_AUTOGEN)
 
 $(PRE_KERNELBUILD): $(CREATE_INSTALL)
 
 ifdef BCM_KF
-$(PRE_KERNELBUILD): $(BCM_SWVERSION_FILE) $(BCM_KF_KCONFIG_FILE) $(BCMDRIVERS_AUTOGEN)
+$(PRE_KERNELBUILD): $(BCM_KF_KCONFIG_FILE) $(BCMDRIVERS_AUTOGEN)
 else
 $(PRE_KERNELBUILD): $(BCM_KF_KCONFIG_FILE)
 endif
@@ -595,24 +608,31 @@ endif
 	TOOLCHAIN_TOP= $(MAKE) -f build/Bcmkernel.mk prepare_bcm_driver
 	@touch $@
 
+kmbuild: headers_install \
+		$(if $(BCM_KF),rdp_link) \
+		$(if $(BCM_KF),$(if $(BUILD_BRCM_CPEROUTER),version_info))
+	OLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk
+
 kernelbuild: headers_install \
 		$(if $(BCM_KF),rdp_link) \
 		$(if $(BCM_KF),$(if $(BUILD_BRCM_CPEROUTER),version_info))
-	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk
-
-# For old wlan release, kernelbuild and userspace still depends on hnd_dongle
-# This can be removed if no needs to support these releases in future
-ifneq (,$(filter $(BCM_WLIMPL),65 69 83))
-kernelbuild: hnd_dongle
-userspace: hnd_dongle
+	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk vmlinux
+ifeq ($(strip $(KERNEL_ARCH)),aarch64)
+	TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk Image.gz
+else
+	TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk zImage
 endif
 
 
 #
-# Targets related to installing kernel, bcmdriver, and shared headers to an external location.
+# Targets related to installing kernel, bcmdriver headers to an external location.
 # Install kernel headers of both archs (aarch64 and arm)
 #
+ifdef BCM_KF
+kernel_headers_install: $(PRE_KERNELBUILD) $(BCM_SWVERSION_FILE)
+else
 kernel_headers_install: $(PRE_KERNELBUILD)
+endif
 	CURRENT_KARCH=aarch64 TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk headers_install INSTALL_HDR_PATH=$(INC_KERNELAPI_PATH)/aarch64 KERN_TARGET=
 	CURRENT_KARCH=arm TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk headers_install INSTALL_HDR_PATH=$(INC_KERNELAPI_PATH)/arm KERN_TARGET=
 
@@ -623,11 +643,9 @@ bcmkernel_headers_install: kernel_headers_install
 bcm_headers_install: $(PRE_KERNELBUILD)
 	CURRENT_KARCH=$(KERNEL_ARCH) TOOLCHAIN_TOP= $(MAKE) -f build/Bcmkernel.mk bcm_headers_install KERN_TARGET=
 
-shared_headers_install:
-	$(MAKE) -C $(BUILD_DIR)/shared shared_headers_install
 
 ifneq ($(strip $(PREBUILD_DONE)),y)
-headers_install: kernel_headers_install bcmkernel_headers_install bcm_headers_install shared_headers_install $(KERNELLINKS)
+headers_install: kernel_headers_install bcmkernel_headers_install bcm_headers_install $(KERNELLINKS)
 else
 headers_install:
 endif
@@ -695,6 +713,7 @@ DTBS := dtbs
 dtbs_clean:
 	@echo "Clean dts for chip $(BRCM_CHIP)... "
 	TOOLCHAIN_TOP= $(MAKE) -C $(DTS_DIR)/dts/$(BRCM_CHIP) dtbs_clean
+	TOOLCHAIN_TOP= $(MAKE) -C $(DTS_DIR)/dts/overlays/voice dtbs_clean
 DTBS_CLEAN := dtbs_clean
 else
 DTBS :=
@@ -719,7 +738,7 @@ ifneq ($(strip $(BRCM_DRIVER_WIRELESS)),)
 	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl modules_install
 endif
 	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk modules INSTALL_MOD_PATH=$(PROFILE_DIR)/modules
-	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk modules_install INSTALL_MOD_PATH=$(PROFILE_DIR)/modules
+	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk modules_install INSTALL_MOD_PATH=$(PROFILE_DIR)/modules 
 	@echo "******************** DONE modbuild ********************";
 
 adslmodbuild:
@@ -732,17 +751,12 @@ spumodbuild:
 spumodbuildclean:
 	 TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk M=$(INC_SPUDRV_PATH) clean
 
-pwrmngtmodbuild:
-	 TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk M=$(INC_PWRMNGTDRV_PATH) modules
-pwrmngtmodclean:
-	 TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk M=$(INC_PWRMNGTDRV_PATH) clean
-
 enetmodbuild:
 	 TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk M=$(INC_ENETDRV_PATH) modules
 enetmodclean:
 	 TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk M=$(INC_ENETDRV_PATH) clean
 
-.PHONY: modbuild adslmodbuild spumodbuild pwrmngtmodbuild enetmodbuild modules eponmodbuild gponmodbuild adslmodule
+.PHONY: modbuild adslmodbuild spumodbuild enetmodbuild modules eponmodbuild gponmodbuild adslmodule
 
 eponmodbuild:
 	 TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk M=$(INC_EPONDRV_PATH) modules
@@ -761,9 +775,6 @@ adslmoduleclean: adslmodbuildclean
 
 spumodule: spumodbuild
 spumoduleclean: spumodbuildclean
-
-pwrmngtmodule: pwrmngtmodbuild
-pwrmngtmoduleclean: pwrmngtmodclean
 
 CMS2BBF_APP := cms2bbf
 CMS2BBF_DIR := $(HOSTTOOLS_DIR)/$(CMS2BBF_APP)
@@ -830,17 +841,24 @@ export BUILD_4_LEVEL_QOS=y
 endif
 
 ifneq ($(strip $(BUILD_BRCM_CPEROUTER)),)
+ifneq ($(strip $(RDK_BUILD)),)
+hnd_dongle: TDARG=$(if $(DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM_2), \
+  TOOLSDIR=$(DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM_2)/bin,)
+else
+hnd_dongle: TDARG=$(if $(DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM), \
+  TOOLSDIR=$(DEFAULT_TOOLCHAIN_LINUX_5_15_0_ARM)/usr/bin,)
+endif
+
 hnd_dongle: version_info
 ifneq ($(strip $(BUILD_HND_NIC))$(strip $(BUILD_43602NIC)),)
-	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) PROFILE_FILE=$(PROFILE_FILE) version
+	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) $(TDARG) PROFILE_FILE=$(PROFILE_FILE) version
 else
-	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) PROFILE_FILE=$(PROFILE_FILE) pciefd
+	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) $(TDARG) PROFILE_FILE=$(PROFILE_FILE) pciefd
 endif
 else
 hnd_dongle:
 	@true
 endif
-
 
 ifneq ($(strip $(BUILD_DIAGAPP)),)
 diagapp:
@@ -889,12 +907,10 @@ endif
 # Just to keep legacy target. No internal targets depends on hosttools anymore.
 hosttools: $(HOSTTOOLS_SET)
 
-hosttools_nandcfe:
-	$(MAKE) -C $(HOSTTOOLS_DIR) perlmods mkjffs2 build_imageutil build_cmplzma build_secbtutils build_mtdutils
-
-.PHONY: hosttools_common $(HOSTTOOLS_SET) hosttools_nandcfe
+.PHONY: hosttools_common $(HOSTTOOLS_SET) 
 # needed by hostTools/Makefile
 export BUILD_MODSW_EE
+export BUILD_LCM
 
 
 ############################################################################
@@ -925,7 +941,7 @@ gen_credits:
 packages: | all_postcheck1
 ifneq ($(strip $(BUILD_SGS)),)
 	if [ -f $(BUILD_DIR)/userspace/private/apps/sgs/Bcmbuild.mk ]; then \
-		make -C $(BUILD_DIR)/userspace/private/apps/sgs -f Bcmbuild.mk build_package; \
+		$(MAKE) -C $(BUILD_DIR)/userspace/private/apps/sgs -f Bcmbuild.mk build_package; \
 	fi
 endif
 
@@ -952,12 +968,8 @@ full_buildimage: full_buildimage_prereqs
 full_buildimage buildimage:
 	@echo "=>BUILDIMAGE Starting...<="
 
-ifeq ($(BUILD_DISABLE_EXEC_STACK),y)
-ifneq ($(execstack_exec),)
-	@echo no need to build execstack $(execstack_exec)
-else
-	make -C $(HOSTTOOLS_DIR) build_execstack;
-endif
+ifeq ($(BUILD_BREAKPAD),y)
+	$(BUILD_DIR)/userspace/public/apps/breakpad/mdsyms.sh $(PROFILE_DIR)/fs.install $(PROFILE_DIR)/bcm$(PROFILE)_breakpad_symbols.gz;
 endif
 
 ifneq ($(strip $(BUILD_SYSTEMD)),)
@@ -1003,11 +1015,14 @@ endif
 
 
 .PHONY : uboot
-uboot:
+uboot: hosttools_bootloader
 ifneq ($(BUILD_UBOOT),)
 	rm -f bootloaders/obj/binaries/*.pkgtb
 	$(MAKE) $(PARALLEL_BUILD) -f build/make.uboot all INCLUDE_OPTEE=$(BCM_OPTEE) INCLUDE_ATF=$(BCM_ARMTF) IMAGE_GOAL=$(IMAGE_GOAL)
 endif
+
+prepare_uboot: 
+	$(MAKE) -f build/make.uboot prepare_uboot
 
 prepare_linux_image: kernelbuild hosttools_image
 	cd $(TARGETS_DIR); ./buildFS vmlinux
@@ -1038,7 +1053,7 @@ CLEAN_WITH_SANITY_CHECK :=
 # Keep clean1 just for Preflight
 clean1: clean
 
-clean: bcmdrivers_clean data-model_clean dynamic_cfe_clean optee_clean atf_clean\
+clean: bcmdrivers_clean data-model_clean optee_clean atf_clean\
 	rdp_clean $(DTBS_CLEAN) clean_with_sanity_check openwrt_clean opensync_gw_clean openjdk_clean\
 	clean_bcmdrivers_autogen uboot_clean
 	rm -f $(HOSTTOOLS_DIR)/scripts/lxdialog/*.o
@@ -1053,10 +1068,6 @@ clean: bcmdrivers_clean data-model_clean dynamic_cfe_clean optee_clean atf_clean
 uboot_clean:
 	$(MAKE) -f build/make.uboot clean
 
-dynamic_cfe_clean:
-	-rm -rf cfe/build/broadcom/build_cfe*
-	-rm  -f cfe/build/broadcom/bcm63xx_rom/*.S
-	-rm  -f cfe/build/broadcom/bcm63xx_rom/*.cferamlz
 
 cleanall: clean_local_tools clean
 
@@ -1082,9 +1093,10 @@ fssrc_clean:
 CLEAN_WITH_SANITY_CHECK += kernel_clean
 
 kernel_clean: sanity_check hnd_dongle_clean
-	- TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk mrproper clean
+	- TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk mrproper
 	rm -f $(KERNEL_DIR)/arch/arm/defconfig
 	rm -f $(KERNEL_DIR)/arch/arm64/defconfig
+	rm -f $(KERNEL_DIR)/arch/x86/defconfig
 	rm -f $(HOSTTOOLS_DIR)/lzma/decompress/*.o
 	rm -f $(KERNEL_INCLUDE_LINK)
 	rm -f $(KERNEL_ARM_INCLUDE_LINK)
@@ -1162,9 +1174,6 @@ target_clean: sanity_check userspace_clean
 	rm -f $(PROFILE_DIR)/*.gz
 	rm -f $(PROFILE_DIR)/*.srec
 	rm -f $(PROFILE_DIR)/ramdisk
-	rm -f $(PROFILE_DIR)/$(FS_KERNEL_IMAGE_NAME)*
-	rm -f $(PROFILE_DIR)/$(CFE_FS_KERNEL_IMAGE_NAME)*
-	rm -f $(PROFILE_DIR)/$(FLASH_IMAGE_NAME)*
 	rm -fr $(PROFILE_DIR)/modules
 	rm -fr $(PROFILE_DIR)/imagebuild/
 	rm -fr $(PROFILE_DIR)/op
@@ -1174,7 +1183,7 @@ target_clean: sanity_check userspace_clean
 	-find targets -name vmlinux -print -exec rm -f "{}" ";"
 	rm -fr targets/TEMP
 	rm -fr $(TARGET_FS)
-	rm -f release/*credits.txt
+	# rm -f release/*credits.txt
 	rm -f $(CREATE_INSTALL)
 ifeq ($(strip $(BRCM_KERNEL_ROOTFS)),all)
 	rm -fr $(TARGET_BOOTFS)
@@ -1263,7 +1272,6 @@ BRCM_VERSION               \
 BUILD_CMFD                 \
 BUILD_XDSLCTL              \
 BUILD_XTMCTL               \
-BUILD_VLANCTL              \
 BUILD_BRCM_VLAN            \
 BUILD_BRCTL                \
 BUILD_DDNSD                \
@@ -1284,7 +1292,6 @@ BUILD_ACCEL_PPTP           \
 BUILD_WPS_BTN              \
 BUILD_WSC                  \
 BUILD_MKSQUASHFS           \
-BUILD_NAS                  \
 BUILD_PORT_MIRRORING       \
 BUILD_PPPD                 \
 PPP_AUTODISCONN            \
@@ -1329,7 +1336,6 @@ BUILD_PMON                 \
 BUILD_BUZZZ                \
 BUILD_BOUNCE               \
 BUILD_HELLO                \
-BUILD_SPUCTL               \
 RELEASE_BUILD              \
 NO_PRINTK_AND_BUG          \
 FLASH_NAND_BLOCK_128KB     \
@@ -1354,7 +1360,6 @@ BUILD_DPI                   \
 BUILD_MAP                   \
 BUILD_BRCM_CMS              \
 BUILD_WEB_SOCKETS           \
-BUILD_DISABLE_EXEC_STACK    \
 BUILD_DBUS                  \
 BUILD_LXC                   \
 NO_MINIFY                   \
@@ -1364,7 +1369,8 @@ BUILD_VXLAN_TUNNEL          \
 BUILD_MACSEC                \
 BCM_QEMU_SIM                \
 SKIP_RTPOLICY               \
-BRCM_GLIBC
+BRCM_GLIBC                  \
+UBOOT_DIR
 
 unexport BUILD_BRCM_CMS
 ###########################################

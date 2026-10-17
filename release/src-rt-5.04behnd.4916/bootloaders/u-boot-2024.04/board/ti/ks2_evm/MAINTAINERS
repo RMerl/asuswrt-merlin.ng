@@ -1,0 +1,9 @@
+KeyStone II EVM Boards
+M:	Andrew Davis <afd@ti.com>
+S:	Maintained
+F:	arch/arm/mach-keystone/
+F:	board/ti/ks2_evm/
+N:	k2hk
+N:	k2e
+N:	k2l
+N:	k2g

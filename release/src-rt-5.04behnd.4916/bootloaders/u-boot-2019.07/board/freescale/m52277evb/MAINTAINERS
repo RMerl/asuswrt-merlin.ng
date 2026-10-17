@@ -1,7 +1,0 @@
-M52277EVB BOARD
-M:	TsiChung Liew <Tsi-Chung.Liew@nxp.com>
-S:	Maintained
-F:	board/freescale/m52277evb/
-F:	include/configs/M52277EVB.h
-F:	configs/M52277EVB_defconfig
-F:	configs/M52277EVB_stmicro_defconfig

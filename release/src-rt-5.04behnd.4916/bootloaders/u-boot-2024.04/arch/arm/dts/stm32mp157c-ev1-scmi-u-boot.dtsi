@@ -1,0 +1,142 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+/*
+ * Copyright : STMicroelectronics 2022
+ */
+
+#include "stm32mp157c-ed1-scmi-u-boot.dtsi"
+
+/ {
+	aliases {
+		gpio26 = &stmfx_pinctrl;
+		i2c1 = &i2c2;
+		i2c4 = &i2c5;
+		pinctrl2 = &stmfx_pinctrl;
+		spi0 = &qspi;
+		usb0 = &usbotg_hs;
+	};
+
+	fwu-mdata {
+		compatible = "u-boot,fwu-mdata-gpt";
+		fwu-mdata-store = <&sdmmc1>;
+	};
+};
+
+&flash0 {
+	bootph-pre-ram;
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "fsbl1";
+			reg = <0x00000000 0x00040000>;
+		};
+		partition@40000 {
+			label = "fsbl2";
+			reg = <0x00040000 0x00040000>;
+		};
+		partition@80000 {
+			label = "metadata1";
+			reg = <0x00080000 0x00040000>;
+		};
+		partition@c0000 {
+			label = "metadata2";
+			reg = <0x000c0000 0x00040000>;
+		};
+		partition@100000 {
+			label = "fip-a";
+			reg = <0x00100000 0x00400000>;
+		};
+		partition@500000 {
+			label = "fip-b";
+			reg = <0x00500000 0x00400000>;
+		};
+		partition@900000 {
+			label = "u-boot-env";
+			reg = <0x00900000 0x00080000>;
+		};
+		partition@980000 {
+			label = "nor-user";
+			reg = <0x00980000 0x03680000>;
+		};
+	};
+};
+
+&fmc {
+	nand-controller@4,0 {
+		nand@0 {
+			partitions {
+				compatible = "fixed-partitions";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				partition@0 {
+					label = "fsbl1";
+					reg = <0x00000000 0x00080000>;
+				};
+				partition@80000 {
+					label = "fsbl2";
+					reg = <0x00080000 0x00080000>;
+				};
+				partition@100000 {
+					label = "metadata1";
+					reg = <0x00100000 0x00080000>;
+				};
+				partition@180000 {
+					label = "metadata2";
+					reg = <0x00180000 0x00080000>;
+				};
+				partition@200000 {
+					label = "fip-a1";
+					reg = <0x00200000 0x00400000>;
+				};
+				partition@600000 {
+					label = "fip-a2";
+					reg = <0x00600000 0x00400000>;
+				};
+				partition@a00000 {
+					label = "fip-b1";
+					reg = <0x00a00000 0x00400000>;
+				};
+				partition@e00000 {
+					label = "fip-b2";
+					reg = <0x00e00000 0x00400000>;
+				};
+				partition@1200000 {
+					label = "UBI";
+					reg = <0x01200000 0x3ee00000>;
+				};
+			};
+		};
+	};
+};
+
+&qspi {
+	bootph-pre-ram;
+};
+
+&qspi_clk_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_bk1_pins_a {
+	bootph-pre-ram;
+	pins1 {
+		bootph-pre-ram;
+	};
+	pins2 {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_bk2_pins_a {
+	bootph-pre-ram;
+	pins1 {
+		bootph-pre-ram;
+	};
+	pins2 {
+		bootph-pre-ram;
+	};
+};

@@ -1,0 +1,235 @@
+// SPDX-License-Identifier: GPL-2.0+
+// Copyright (C) 2021 Oleh Kravchenko <oleg@kaa.org.ua>
+
+/dts-v1/;
+
+#include <dt-bindings/leds/common.h>
+
+#include "o4-imx6ull-nano.dtsi"
+
+/ {
+	model = "O4-iMX-NANO";
+	compatible = "out4,o4-imx-nano",
+		     "out4,o4-imx6ull-nano",
+		     "fsl,imx6ull";
+
+	aliases {
+		mmc1 = &usdhc1;
+	};
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led0 {
+			color = <LED_COLOR_ID_RED>;
+			gpios = <&pcf8574a 0 GPIO_ACTIVE_LOW>;
+		};
+
+		led1{
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&pcf8574a 1 GPIO_ACTIVE_LOW>;
+		};
+
+		led2 {
+			gpios = <&pcf8574a 2 GPIO_ACTIVE_LOW>;
+			color = <LED_COLOR_ID_BLUE>;
+		};
+
+		led3 {
+			color = <LED_COLOR_ID_RED>;
+			gpios = <&pcf8574a 3 GPIO_ACTIVE_LOW>;
+		};
+
+		led4{
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&pcf8574a 4 GPIO_ACTIVE_LOW>;
+		};
+
+		led5 {
+			color = <LED_COLOR_ID_BLUE>;
+			gpios = <&pcf8574a 5 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	usbotg1_vbus: reg_usbotg1_vbus {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&pcf8574a 6 GPIO_ACTIVE_HIGH>;
+		regulator-max-microvolt = <5000000>;
+		regulator-min-microvolt = <5000000>;
+		regulator-name = "usb0";
+	};
+
+	usbotg2_vbus: reg_usbotg2_vbus {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&pcf8574a 7 GPIO_ACTIVE_HIGH>;
+		regulator-max-microvolt = <5000000>;
+		regulator-min-microvolt = <5000000>;
+		regulator-name = "usb1";
+	};
+};
+
+&iomuxc {
+	pinctrl_uart1: uart1grp {
+		fsl,pins = <
+			MX6UL_PAD_UART1_RX_DATA__UART1_DCE_RX	0x1b0b1
+			MX6UL_PAD_UART1_TX_DATA__UART1_DCE_TX	0x1b0b1
+		>;
+	};
+
+	pinctrl_usdhc1: usdhc1grp {
+		fsl,pins = <
+			MX6UL_PAD_SD1_CLK__USDHC1_CLK		0x10069
+			MX6UL_PAD_SD1_CMD__USDHC1_CMD		0x17059
+			MX6UL_PAD_SD1_DATA0__USDHC1_DATA0	0x17059
+			MX6UL_PAD_SD1_DATA1__USDHC1_DATA1	0x17059
+			MX6UL_PAD_SD1_DATA2__USDHC1_DATA2	0x17059
+			MX6UL_PAD_SD1_DATA3__USDHC1_DATA3	0x17059
+			MX6UL_PAD_UART1_RTS_B__USDHC1_CD_B	0x03029
+		>;
+	};
+
+	pinctrl_mdio: mdiogrp {
+		fsl,pins = <
+			MX6UL_PAD_GPIO1_IO06__ENET2_MDIO	0x1b0b0
+			MX6UL_PAD_GPIO1_IO07__ENET2_MDC		0x1b0b0
+			MX6UL_PAD_SNVS_TAMPER1__GPIO5_IO01	0xb0b0 /* RST */
+		>;
+	};
+
+	pinctrl_i2c2: i2c2grp {
+		fsl,pins = <
+			MX6UL_PAD_CSI_HSYNC__I2C2_SCL	0x4001b8b0
+			MX6UL_PAD_CSI_VSYNC__I2C2_SDA	0x4001b8b0
+		>;
+	};
+
+	pinctrl_i2c2_gpio: i2c2gpiogrp {
+		fsl,pins = <
+			MX6UL_PAD_CSI_HSYNC__GPIO4_IO20	0x1b8b0
+			MX6UL_PAD_CSI_VSYNC__GPIO4_IO19	0x1b8b0
+		>;
+	};
+
+	pinctrl_can1: can1grp {
+		fsl,pins = <
+			MX6UL_PAD_LCD_DATA08__FLEXCAN1_TX	0x1b020
+			MX6UL_PAD_LCD_DATA09__FLEXCAN1_RX	0x1b020
+		>;
+	};
+
+	pinctrl_uart2: uart2grp {
+		fsl,pins = <
+			MX6UL_PAD_UART2_RX_DATA__UART2_DCE_RX	0x1b0b1
+			MX6UL_PAD_UART2_TX_DATA__UART2_DCE_TX	0x1b0b1
+			MX6UL_PAD_UART2_CTS_B__UART2_DCE_CTS	0x1b0b1
+		>;
+	};
+};
+
+&uart1 {
+	pinctrl-0 = <&pinctrl_uart1>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&usdhc1 {
+	bus-width = <4>;
+	no-1-8-v;
+	pinctrl-0 = <&pinctrl_usdhc1>;
+	pinctrl-names = "default";
+	status = "okay";
+	wakeup-source;
+};
+
+&fec1 {
+	phy-handle = <&phy0>;
+	phy-mode = "rmii";
+	pinctrl-0 = <&pinctrl_fec1>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&fec2 {
+	phy-handle = <&phy1>;
+	phy-mode = "rmii";
+	phy-reset-duration = <250>;
+	phy-reset-post-delay = <100>;
+	phy-reset-gpios = <&gpio5 1 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&pinctrl_fec2 &pinctrl_mdio>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy0: ethernet-phy@0 {
+			clocks = <&clks IMX6UL_CLK_ENET_REF>;
+			clock-names = "rmii-ref";
+			interrupt-parent = <&gpio5>;
+			interrupts = <7 IRQ_TYPE_EDGE_FALLING>;
+			pinctrl-0 = <&pinctrl_phy0_irq>;
+			pinctrl-names = "default";
+			reg = <0>;
+		};
+
+		phy1: ethernet-phy@1 {
+			clocks = <&clks IMX6UL_CLK_ENET2_REF>;
+			clock-names = "rmii-ref";
+			interrupt-parent = <&gpio5>;
+			interrupts = <3 IRQ_TYPE_EDGE_FALLING>;
+			pinctrl-0 = <&pinctrl_phy1_irq>;
+			pinctrl-names = "default";
+			reg = <1>;
+		};
+	};
+};
+
+&usbotg1 {
+	dr_mode = "host";
+	status = "okay";
+	vbus-supply = <&usbotg1_vbus>;
+};
+
+&usbotg2 {
+	dr_mode = "host";
+	status = "okay";
+	vbus-supply = <&usbotg2_vbus>;
+};
+
+&i2c2 {
+	clock_frequency = <100000>;
+	pinctrl-0 = <&pinctrl_i2c2>;
+	pinctrl-1 = <&pinctrl_i2c2_gpio>;
+	pinctrl-names = "default", "gpio";
+	scl-gpios = <&gpio4 20 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	sda-gpios = <&gpio4 19 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
+	status = "okay";
+
+	pcf8574a: gpio@38 {
+		compatible = "nxp,pcf8574a";
+		#gpio-cells = <2>;
+		gpio-controller;
+		reg = <0x38>;
+	};
+};
+
+&can1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_can1>;
+	status = "okay";
+};
+
+&uart2 {
+	linux,rs485-enabled-at-boot-time;
+	pinctrl-0 = <&pinctrl_uart2>;
+	pinctrl-names = "default";
+	status = "okay";
+	uart-has-rtscts;
+};

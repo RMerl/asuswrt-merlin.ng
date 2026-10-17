@@ -1,0 +1,628 @@
+menuconfig SPI
+	bool "SPI Support"
+	help
+	  The "Serial Peripheral Interface" is a low level synchronous
+          protocol.  Chips that support SPI can have data transfer rates
+          up to several tens of Mbit/sec.  Chips are addressed with a
+          controller and a chipselect.  Most SPI slaves don't support
+          dynamic device discovery; some are even write-only or read-only.
+
+          SPI is widely used by microcontrollers to talk with sensors,
+          eeprom and flash memory, codecs and various other controller
+          chips, analog to digital (and d-to-a) converters, and more.
+          MMC and SD cards can be accessed using SPI protocol; and for
+          DataFlash cards used in MMC sockets, SPI must always be used.
+
+          SPI is one of a family of similar protocols using a four wire
+          interface (select, clock, data in, data out) including Microwire
+          (half duplex), SSP, SSI, and PSP.  This driver framework should
+          work with most such devices and controllers.
+
+if SPI
+
+config DM_SPI
+	bool "Enable Driver Model for SPI drivers"
+	depends on DM
+	help
+	  Enable driver model for SPI. The SPI slave interface
+	  (spi_setup_slave(), spi_xfer(), etc.) is then implemented by
+	  the SPI uclass. Drivers provide methods to access the SPI
+	  buses that they control. The uclass interface is defined in
+	  include/spi.h. The existing spi_slave structure is attached
+	  as 'parent data' to every slave on each bus. Slaves
+	  typically use driver-private data instead of extending the
+	  spi_slave structure.
+
+config SPI_MEM
+	bool "SPI memory extension"
+	help
+	  Enable this option if you want to enable the SPI memory extension.
+	  This extension is meant to simplify interaction with SPI memories
+	  by providing an high-level interface to send memory-like commands.
+
+config SPI_DIRMAP
+	bool "SPI direct mapping"
+	depends on SPI_MEM
+	help
+	  Enable the SPI direct mapping API. Most modern SPI controllers can
+	  directly map a SPI memory (or a portion of the SPI memory) in the CPU
+	  address space. Most of the time this brings significant performance
+	  improvements as it automates the whole process of sending SPI memory
+	  operations every time a new region is accessed.
+
+if DM_SPI
+
+config ALTERA_SPI
+	bool "Altera SPI driver"
+	help
+	  Enable the Altera SPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this Altera
+	  IP core. Please find details on the "Embedded Peripherals IP
+	  User Guide" of Altera.
+
+config APPLE_SPI
+	bool "Apple SPI driver"
+	default y if ARCH_APPLE
+	help
+	  Enable the Apple SPI driver. This driver can be used to
+	  access the SPI flash and keyboard on machines based on Apple SoCs.
+
+config ATCSPI200_SPI
+	bool "Andestech ATCSPI200 SPI driver"
+	help
+	  Enable the Andestech ATCSPI200 SPI driver. This driver can be
+	  used to access the SPI flash on AE3XX and AE250 platforms embedding
+	  this Andestech IP core.
+
+config ATH79_SPI
+	bool "Atheros SPI driver"
+	depends on ARCH_ATH79
+	help
+	  Enable the Atheros ar7xxx/ar9xxx SoC SPI driver, it was used
+	  to access SPI NOR flash and other SPI peripherals. This driver
+	  uses driver model and requires a device tree binding to operate.
+	  please refer to doc/device-tree-bindings/spi/spi-ath79.txt.
+
+config ATMEL_QSPI
+	bool "Atmel Quad SPI Controller"
+	depends on ARCH_AT91
+	help
+	  Enable the Atmel Quad SPI controller in master mode. This driver
+	  does not support generic SPI. The implementation supports only the
+	  spi-mem interface.
+
+config ATMEL_SPI
+	bool "Atmel SPI driver"
+	default y if ARCH_AT91
+	help
+	  This enables driver for the Atmel SPI Controller, present on
+	  many AT91 (ARM) chips. This driver can be used to access
+	  the SPI Flash, such as AT25DF321.
+
+config BCM63XX_HSSPI
+	bool "BCM63XX HSSPI driver"
+	depends on (ARCH_BMIPS || ARCH_BCMBCA)
+	help
+	  Enable the BCM63XX HSSPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this Broadcom
+	  SPI core.
+
+config BCMBCA_HSSPI
+	bool "BCMBCA HSSPI driver"
+	depends on ARCH_BCMBCA && HAVE_SPI_CS_CTRL
+	help
+	  Enable the BCMBCA HSSPI driver for High Speed SPI controller present on
+	  newer Broadcom BCMBCA SoCs. These SoCs support cs low between SPI
+	  transactions.
+
+config BCMBCA_HSSPI
+	bool "BCMBCA HSSPI driver"
+	depends on ARCH_BCMBCA && HAVE_SPI_CS_CTRL
+	help
+	  This enables support for the High Speed SPI controller present on
+	  newer Broadcom BCMBCA SoCs. These SoCs include an updated SPI controller
+	  that adds the capability to allow the driver to control chip select
+	  explicitly.
+
+config BCM63XX_SPI
+	bool "BCM6348 SPI driver"
+	depends on ARCH_BMIPS
+	help
+	  Enable the BCM6348/BCM6358 SPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding these Broadcom
+	  SPI cores.
+
+config BCMSTB_SPI
+	bool "BCMSTB SPI driver"
+	help
+	  Enable the Broadcom set-top box SPI driver. This driver can
+	  be used to access the SPI flash on platforms embedding this
+	  Broadcom SPI core.
+
+config CORTINA_SFLASH
+	bool "Cortina-Access Serial Flash controller driver"
+	depends on DM_SPI && SPI_MEM
+	help
+	  Enable the Cortina-Access Serial Flash controller driver. This driver
+	  can be used to access the SPI NOR/NAND flash on platforms embedding this
+	  Cortina-Access IP core.
+
+config CADENCE_QSPI
+	bool "Cadence QSPI driver"
+	help
+	  Enable the Cadence Quad-SPI (QSPI) driver. This driver can be
+	  used to access the SPI NOR flash on platforms embedding this
+	  Cadence IP core.
+
+config HAS_CQSPI_REF_CLK
+	bool "Cadence QSPI static reference clock"
+	depends on CADENCE_QSPI
+
+config CQSPI_REF_CLK
+	int "Cadence QSPI reference clock value in Hz"
+	depends on HAS_CQSPI_REF_CLK
+
+config CADENCE_OSPI_VERSAL
+	bool "Configure Versal OSPI"
+	depends on (ARCH_VERSAL || ARCH_VERSAL_NET) && CADENCE_QSPI
+	imply DM_GPIO
+	help
+	  This option is used to enable Versal OSPI DMA operations which
+	  are used for ospi flash read using cadence qspi controller.
+
+config CF_SPI
+        bool "ColdFire SPI driver"
+        help
+          Enable the ColdFire SPI driver. This driver can be used on
+          some m68k SoCs.
+
+config DAVINCI_SPI
+	bool "Davinci & Keystone SPI driver"
+	depends on ARCH_DAVINCI || ARCH_KEYSTONE
+	help
+	  Enable the Davinci SPI driver
+
+config DESIGNWARE_SPI
+	bool "Designware SPI driver"
+	help
+	  Enable the Designware SPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this Designware
+	  IP core.
+
+config EXYNOS_SPI
+	bool "Samsung Exynos SPI driver"
+	help
+	  Enable the Samsung Exynos SPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this Samsung
+	  Exynos IP core.
+
+config FSL_DSPI
+	bool "Freescale DSPI driver"
+	help
+	  Enable the Freescale DSPI driver. This driver can be used to
+	  access the SPI NOR flash and SPI Data flash on platforms embedding
+	  this Freescale DSPI IP core. LS102xA and Colibri VF50/VF61 platforms
+	  use this driver.
+
+config FSL_QSPI
+	bool "Freescale QSPI driver"
+	imply SPI_FLASH_BAR
+	help
+	  Enable the Freescale Quad-SPI (QSPI) driver. This driver can be
+	  used to access the SPI NOR flash on platforms embedding this
+	  Freescale IP core.
+
+config FSL_QSPI_AHB_FULL_MAP
+	bool "Use full AHB memory map space"
+	depends on FSL_QSPI
+	default y if ARCH_MX6 || ARCH_MX7 || ARCH_MX7ULP || ARCH_IMX8M
+	help
+	  Enable the Freescale QSPI driver to use full AHB memory map space for
+	  flash access.
+
+config GXP_SPI
+	bool "SPI driver for GXP"
+	imply SPI_FLASH_BAR
+	help
+	  Enable support for SPI on GXP.
+
+config ICH_SPI
+	bool "Intel ICH SPI driver"
+	help
+	  Enable the Intel ICH SPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this Intel
+	  ICH IP core.
+
+config IPROC_QSPI
+	bool "Broadcom iProc QSPI Flash Controller driver"
+	help
+	  Enable Broadcom iProc QSPI Flash Controller driver.
+	  This driver can be used to access the SPI NOR flash.
+
+config KIRKWOOD_SPI
+	bool "Marvell Kirkwood SPI Driver"
+	help
+	  Enable support for SPI on various Marvell SoCs, such as
+	  Kirkwood and Armada 375.
+
+config MESON_SPIFC
+	bool "Amlogic Meson SPI Flash Controller driver"
+	depends on ARCH_MESON
+	help
+	  Enable the Amlogic Meson SPI Flash Controller SPIFC) driver.
+	  This driver can be used to access the SPI NOR flash chips on
+	  Amlogic Meson SoCs.
+
+config MICROCHIP_COREQSPI
+	bool "Microchip FPGA QSPI Controller driver"
+	help
+	  Enable the QSPI driver for Microchip FPGA QSPI controllers.
+	  This driver can be used on Polarfire SoC.
+
+config MESON_SPIFC_A1
+	bool "Amlogic Meson A1 SPI Flash Controller driver"
+	depends on ARCH_MESON
+	help
+	  Enable the Amlogic A1 SPI Flash Controller (SPIFC) driver.
+	  This driver can be used to access the SPI NOR/NAND flash chips
+	  with STR mode frequency up to 98MHz. Dual and quad modes are
+	  supported by controller.
+
+config MPC8XX_SPI
+	bool "MPC8XX SPI Driver"
+	depends on MPC8xx
+	help
+	  Enable support for SPI on MPC8XX
+
+config MPC8XXX_SPI
+	bool "MPC8XXX SPI Driver"
+	help
+	  Enable support for SPI on the MPC8XXX PowerPC SoCs.
+
+config MSCC_BB_SPI
+	bool "MSCC bitbang SPI driver"
+	depends on SOC_VCOREIII
+	help
+	  Enable MSCC bitbang SPI driver. This driver can be used on
+	  MSCC SOCs.
+
+config MT7620_SPI
+	bool "MediaTek MT7620 SPI driver"
+	depends on SOC_MT7620
+	help
+	  Enable the MT7620 SPI driver. This driver can be used to access
+	  generic SPI devices on MediaTek MT7620 SoC.
+
+config MT7621_SPI
+	bool "MediaTek MT7621 SPI driver"
+	depends on SOC_MT7621 || SOC_MT7628
+	help
+	  Enable the MT7621 SPI driver. This driver can be used to access
+	  the SPI NOR flash on platforms embedding this Ralink / MediaTek
+	  SPI core, like MT7621/7628/7688.
+
+config MTK_SNOR
+	bool "Mediatek SPI-NOR controller driver"
+	depends on SPI_MEM
+	help
+	  Enable the Mediatek SPINOR controller driver. This driver has
+          better read/write performance with NOR.
+
+config MTK_SNFI_SPI
+	bool "Mediatek SPI memory controller driver"
+	depends on SPI_MEM
+	help
+	  Enable the Mediatek SPI memory controller driver. This driver is
+	  originally based on the MediaTek SNFI IP core. It can only be
+	  used to access SPI memory devices like SPI-NOR or SPI-NAND on
+	  platforms embedding this IP core, like MT7622/M7629.
+
+config MTK_SPIM
+	bool "Mediatek SPI-MEM master controller driver"
+	depends on SPI_MEM
+	help
+	  Enable MediaTek SPI-MEM master controller driver. This driver mainly
+	  supports SPI flashes. You can use single, dual or quad mode
+	  transmission on this controller.
+
+config MVEBU_A3700_SPI
+	bool "Marvell Armada 3700 SPI driver"
+	select CLK_ARMADA_3720
+	help
+	  Enable the Marvell Armada 3700 SPI driver. This driver can be
+	  used to access the SPI NOR flash on platforms embedding this
+	  Marvell IP core.
+
+config MXS_SPI
+	bool "MXS SPI Driver"
+	help
+	  Enable the MXS SPI controller driver. This driver can be used
+	  on the i.MX23 and i.MX28 SoCs.
+
+config SPI_MXIC
+	bool "Macronix MX25F0A SPI controller"
+	help
+	  Enable the Macronix MX25F0A SPI controller driver. This driver
+	  can be used to access the SPI flash on platforms embedding
+	  this Macronix IP core.
+
+config NPCM_FIU_SPI
+	bool "FIU driver for Nuvoton NPCM SoC"
+	help
+	  This enables support for the Flash Interface Unit SPI controller
+	  in master mode.
+
+config NPCM_PSPI
+	bool "PSPI driver for Nuvoton NPCM SoC"
+	help
+	  PSPI driver for NPCM SoC
+
+config NXP_FSPI
+	bool "NXP FlexSPI driver"
+	depends on SPI_MEM
+	help
+	  Enable the NXP FlexSPI (FSPI) driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this NXP IP core.
+
+config OCTEON_SPI
+	bool "Octeon SPI driver"
+	depends on ARCH_OCTEON || ARCH_OCTEONTX || ARCH_OCTEONTX2
+	help
+	  Enable the Octeon SPI driver. This driver can be used to
+	  access the SPI NOR flash on Octeon II/III and OcteonTX/TX2
+	  SoC platforms.
+
+config OMAP3_SPI
+	bool "McSPI driver for OMAP"
+	help
+	  SPI master controller for OMAP24XX and later Multichannel SPI
+	  (McSPI). This driver be used to access SPI chips on platforms
+	  embedding this OMAP3 McSPI IP core.
+
+config PIC32_SPI
+	bool "Microchip PIC32 SPI driver"
+	depends on MACH_PIC32
+	help
+	  Enable the Microchip PIC32 SPI driver. This driver can be used
+	  to access the SPI NOR flash, MMC-over-SPI on platforms based on
+	  Microchip PIC32 family devices.
+
+config PL022_SPI
+	bool "ARM AMBA PL022 SSP controller driver"
+	depends on ARM
+	help
+	  This selects the ARM(R) AMBA(R) PrimeCell PL022 SSP
+	  controller. If you have an embedded system with an AMBA(R)
+	  bus and a PL022 controller, say Y or M here.
+
+config SPI_QUP
+	bool "Qualcomm SPI controller with QUP interface"
+	depends on ARCH_IPQ40XX
+	help
+	  Qualcomm Universal Peripheral (QUP) core is an AHB slave that
+	  provides a common data path (an output FIFO and an input FIFO)
+	  for serial peripheral interface (SPI) mini-core. SPI in master
+	  mode supports up to 50MHz, up to four chip selects, programmable
+	  data path from 4 bits to 32 bits and numerous protocol variants.
+
+config RENESAS_RPC_SPI
+	bool "Renesas RPC SPI driver"
+	depends on RCAR_64 || RZA1
+	imply SPI_FLASH_SFDP_SUPPORT
+	help
+	  Enable the Renesas RPC SPI driver, used to access SPI NOR flash
+	  on Renesas RCar Gen3 SoCs. This uses driver model and requires a
+	  device tree binding to operate.
+
+config ROCKCHIP_SFC
+	bool "Rockchip SFC Driver"
+	help
+	  Enable the Rockchip SFC Driver for SPI NOR flash. This device is
+	  a limited purpose SPI controller for driving NOR flash on certain
+	  Rockchip SoCs. This uses driver model and requires a device tree
+	  binding to operate.
+
+config ROCKCHIP_SPI
+	bool "Rockchip SPI driver"
+	help
+	  Enable the Rockchip SPI driver, used to access SPI NOR flash and
+	  other SPI peripherals (such as the Chrome OS EC) on Rockchip SoCs.
+	  This uses driver model and requires a device tree binding to
+	  operate.
+
+config SANDBOX_SPI
+	bool "Sandbox SPI driver"
+	depends on SANDBOX && DM
+	help
+	  Enable SPI support for sandbox. This is an emulation of a real SPI
+	  bus. Devices can be attached to the bus using the device tree
+	  which specifies the driver to use. As an example, see this device
+	  tree fragment from sandbox.dts. It shows that the SPI bus has a
+	  single flash device on chip select 0 which is emulated by the driver
+	  for "sandbox,spi-flash", which is in drivers/mtd/spi/sandbox.c.
+
+	  spi@0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0>;
+		compatible = "sandbox,spi";
+		cs-gpios = <0>, <&gpio_a 0>;
+		flash@0 {
+			reg = <0>;
+			compatible = "spansion,m25p16", "jedec,spi-nor";
+			spi-max-frequency = <40000000>;
+			sandbox,filename = "spi.bin";
+		};
+	  };
+
+config SANDBOX_SPI_MAX_BUS
+	int
+	depends on SANDBOX
+	default 1
+
+config SANDBOX_SPI_MAX_CS
+	int
+	depends on SANDBOX
+	default 10
+
+config SPI_ASPEED_SMC
+	bool "ASPEED SPI flash controller driver"
+	depends on DM_SPI && SPI_MEM
+	help
+	  Enable ASPEED SPI flash controller driver for AST2500
+	  and AST2600 SoCs.
+
+config SPI_SIFIVE
+	bool "SiFive SPI driver"
+	help
+	  This driver supports the SiFive SPI IP. If unsure say N.
+	  Enable the SiFive SPI controller driver.
+
+	  The SiFive SPI controller driver is found on various SiFive SoCs.
+
+config SOFT_SPI
+	bool "Soft SPI driver"
+	help
+	 Enable Soft SPI driver. This driver is to use GPIO simulate
+	 the SPI protocol.
+
+config SPI_SN_F_OSPI
+	tristate "Socionext F_OSPI SPI flash controller"
+	depends on SPI_MEM
+	help
+	  This enables support for the Socionext F_OSPI controller
+	  for connecting an SPI flash memory over up to 8-bit wide bus.
+	  It supports indirect access mode only.
+
+config SPI_SUNXI
+	bool "Allwinner SoC SPI controllers"
+	default ARCH_SUNXI
+	help
+	  Enable the Allwinner SoC SPi controller driver.
+
+	  Same controller driver can reuse in all Allwinner SoC variants.
+
+config STM32_QSPI
+	bool "STM32F7 QSPI driver"
+	depends on STM32F4 || STM32F7 || ARCH_STM32MP
+	help
+	  Enable the STM32F7 Quad-SPI (QSPI) driver. This driver can be
+	  used to access the SPI NOR flash chips on platforms embedding
+	  this ST IP core.
+
+config STM32_SPI
+	bool "STM32 SPI driver"
+	depends on ARCH_STM32MP
+	help
+	  Enable the STM32 Serial Peripheral Interface (SPI) driver for STM32MP
+	  SoCs. This uses driver model and requires a device tree binding to
+	  operate.
+
+config TEGRA114_SPI
+	bool "nVidia Tegra114 SPI driver"
+	help
+	  Enable the nVidia Tegra114 SPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this nVidia Tegra114
+	  IP core.
+
+	  This controller is different than the older SoCs SPI controller and
+	  also register interface get changed with this controller.
+
+config TEGRA20_SFLASH
+	bool "nVidia Tegra20 Serial Flash controller driver"
+	help
+	  Enable the nVidia Tegra20 Serial Flash controller driver. This driver
+	  can be used to access the SPI NOR flash on platforms embedding this
+	  nVidia Tegra20 IP core.
+
+config TEGRA20_SLINK
+	bool "nVidia Tegra20/Tegra30 SLINK driver"
+	help
+	  Enable the nVidia Tegra20/Tegra30 SLINK driver. This driver can
+	  be used to access the SPI NOR flash on platforms embedding this
+	  nVidia Tegra20/Tegra30 IP cores.
+
+config TEGRA210_QSPI
+	bool "nVidia Tegra210 QSPI driver"
+	help
+	  Enable the Tegra Quad-SPI (QSPI) driver for T210. This driver
+	  be used to access SPI chips on platforms embedding this
+	  NVIDIA Tegra210 IP core.
+
+config TI_QSPI
+	bool "TI QSPI driver"
+	imply TI_EDMA3
+	help
+	  Enable the TI Quad-SPI (QSPI) driver for DRA7xx and AM43xx evms.
+	  This driver support spi flash single, quad and memory reads.
+
+config UNIPHIER_SPI
+	bool "Socionext UniPhier SPI driver"
+	depends on ARCH_UNIPHIER
+	help
+	  Enable the Socionext UniPhier SPI driver. This driver can
+	  be used to access SPI chips on platforms embedding this
+	  UniPhier IP core.
+
+config XILINX_SPI
+	bool "Xilinx SPI driver"
+	help
+	  Enable the Xilinx SPI driver from the Xilinx EDK. This SPI
+	  controller support 8 bit SPI transfers only, with or w/o FIFO.
+	  For more info on Xilinx SPI Register Definitions and Overview
+	  see driver file - drivers/spi/xilinx_spi.c
+
+config ZYNQ_SPI
+	bool "Zynq SPI driver"
+	help
+	  Enable the Zynq SPI driver. This driver can be used to
+	  access the SPI NOR flash on platforms embedding this Zynq
+	  SPI IP core.
+
+config ZYNQ_QSPI
+	bool "Zynq QSPI driver"
+	imply SPI_FLASH_BAR
+	help
+	  Enable the Zynq Quad-SPI (QSPI) driver. This driver can be
+	  used to access the SPI NOR flash on platforms embedding this
+	  Zynq QSPI IP core. This IP is used to connect the flash in
+	  4-bit qspi, 8-bit dual stacked and shared 4-bit dual parallel.
+
+config ZYNQMP_GQSPI
+	bool "Configure ZynqMP Generic QSPI"
+	help
+	  This option is used to enable ZynqMP QSPI controller driver which
+	  is used to communicate with qspi flash devices.
+
+endif # if DM_SPI
+
+config FSL_ESPI
+	bool "Freescale eSPI driver"
+	depends on MPC85xx
+	imply SPI_FLASH_BAR
+	help
+	  Enable the Freescale eSPI driver. This driver can be used to
+	  access the SPI interface and SPI NOR flash on platforms embedding
+	  this Freescale eSPI IP core.
+
+config SH_QSPI
+	bool "Renesas Quad SPI driver"
+	help
+	  Enable the Renesas Quad SPI controller driver. This driver can be
+	  used on Renesas SoCs.
+
+config MXC_SPI
+	bool "MXC SPI Driver"
+	help
+	  Enable the MXC SPI controller driver. This driver can be used
+	  on various i.MX SoCs such as i.MX31/35/51/6/7.
+
+config SYNQUACER_SPI
+	bool "Socionext SynQuacer HS-SPI driver"
+	depends on ARCH_SYNQUACER
+	help
+	  Enable the Socionext HS-SPI driver for SynQuacer. This driver can
+	  be used to access the SPI interface and SPI NOR flash on platforms
+	  embedding this HS-SPI IP core.
+
+endif # menu "SPI Support"

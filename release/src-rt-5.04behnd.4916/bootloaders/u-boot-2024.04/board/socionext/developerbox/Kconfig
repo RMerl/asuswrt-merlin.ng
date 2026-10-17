@@ -1,0 +1,35 @@
+if ARCH_SYNQUACER
+
+choice
+	prompt "SC2A11 Cortex-A53 MPCore 24cores"
+	optional
+
+config TARGET_DEVELOPERBOX
+	bool "Socionext DeveloperBox"
+	select PCI
+	select PCIE_ECAM_SYNQUACER
+	select SYS_DISABLE_DCACHE_OPS
+	select OF_BOARD_SETUP
+	help
+	 Choose this option if you build the U-Boot for the DeveloperBox
+	 96boards Enterprise Edition.
+	 This board will booted from SCP firmware and it enables SMMU, thus
+	 the dcache is updated automatically when DMA operation is executed.
+endchoice
+
+config SYS_SOC
+	default "sc2a11"
+
+if TARGET_DEVELOPERBOX
+
+config SYS_BOARD
+	default "developerbox"
+
+config SYS_VENDOR
+	default "socionext"
+
+config SYS_CONFIG_NAME
+	default "synquacer"
+
+endif
+endif

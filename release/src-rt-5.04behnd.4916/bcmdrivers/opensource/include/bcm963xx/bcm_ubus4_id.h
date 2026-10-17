@@ -71,10 +71,6 @@
 #include "ubus/6813_ubus4_id.h"
 #endif
 
-#if IS_BCMCHIP(6846)
-#include "ubus/6846_ubus4_id.h"
-#endif
-
 #if IS_BCMCHIP(6855)
 #include "ubus/6855_ubus4_id.h"
 #endif
@@ -87,20 +83,8 @@
 #include "ubus/6858_ubus4_id.h"
 #endif
 
-#if IS_BCMCHIP(6878)
-#include "ubus/6878_ubus4_id.h"
-#endif
-
 #if IS_BCMCHIP(6888)
 #include "ubus/6888_ubus4_id.h"
-#endif
-
-#if IS_BCMCHIP(68880)
-#include "ubus/68880_ubus4_id.h"
-#endif
-
-#if IS_BCMCHIP(6837)
-#include "ubus/6837_ubus4_id.h"
 #endif
 
 #endif

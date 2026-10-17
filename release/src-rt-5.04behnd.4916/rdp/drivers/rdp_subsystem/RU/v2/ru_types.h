@@ -98,6 +98,9 @@ typedef struct
 typedef struct
 {
     const char *name;                   /*< Name of the block */
+#if RU_INCLUDE_SIZE
+    uint32_t size[RU_CHIP_REV_COUNT];   /*< Full block size in bytes (value can differ between chip revs) */
+#endif
     unsigned long *addr;                /*< Block base addresses */
     uint32_t addr_count;                /*< Number of block instances */
     uint32_t reg_count;                 /*< Number of registers, private */

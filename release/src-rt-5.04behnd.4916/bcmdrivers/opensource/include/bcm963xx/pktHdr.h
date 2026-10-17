@@ -115,6 +115,8 @@ typedef int (* HOOKP3)( void * arg_vp, void * arg_vp2,
 typedef int (* HOOKP32)( void * arg_vp, uint32_t arg32 );   /* int func ptr with one void * and one uint32_t arg */
 typedef int (* HOOK16)( uint16_t arg16 );                   /* int func ptr with uint16_t arg */
 typedef int (* HOOK32)( uint32_t arg32 );                   /* int func ptr with uint32_t arg */
+typedef int (* HOOK2PARMUL)( uint32_t parm1,
+        unsigned long parm2 );                               /* int func ptr with one uint32_t and one unsigned long arg */
 typedef int (* HOOK2PARM)( uint32_t parm1, uint32_t parm2 );/* int func ptr with two parameters */
 typedef int (* HOOK3PARM)( uint32_t parm1, unsigned long parm2, 
         unsigned long parm3);                               /* int func ptr with three parameters */

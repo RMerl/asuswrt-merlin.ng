@@ -1,0 +1,13 @@
+diff --git a/wifi_hal_ap.h b/wifi_hal_ap.h
+index 62203e7..aa92efe 100644
+--- a/wifi_hal_ap.h
++++ b/wifi_hal_ap.h
+@@ -2478,6 +2478,8 @@ typedef enum {
+     wifi_encryption_tkip = 1,
+     wifi_encryption_aes,
+     wifi_encryption_aes_tkip,
++    wifi_encryption_aes_gcmp256,
++    wifi_encryption_gcmp256
+ } wifi_encryption_method_t;
+ 
+ 

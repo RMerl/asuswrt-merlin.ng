@@ -34,7 +34,7 @@ base {
 	log = "file:/var/redsocks.log";
 
 	daemon = on;
-	redirector = iptables;
+	redirector = netfilter;
 
 	redsocks_conn_max = 512;
 }

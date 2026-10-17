@@ -80,9 +80,11 @@ typedef int (*HardStartXmitArgsFuncP) (void *pNBuff,
 #define BCM_IFF_ACCEL_FC_TX_THREAD (1 << 17)
 #define BCM_IFF_DUMMY_DEV   (1 << 18)
 #define BCM_IFF_VFRWD_LOWER (1 << 19)
+#define BCM_IFF_TC_ALL_PORTS (1 << 20)
+#define BCM_IFF_BCM_HOOK_SKIP (1 << 21)
 
-/* ASUS defined */
-#define BCM_IFF_SDN_IGNORE   (1 << 19)
+/* ASUS defined, change to 22 for 6.2.0 */
+#define BCM_IFF_SDN_IGNORE   (1 << 22)
 
 #define BLOG_DEV_STAT_FLAG_INCLUDE_SW_UC    (1<<0) /* Include SW accelerated Unicast stats */
 #define BLOG_DEV_STAT_FLAG_INCLUDE_HW_UC    (1<<1) /* Include HW accelerated Unicast stats */
@@ -149,6 +151,10 @@ struct bcm_netdev_ext {
 #define netdev_vfrwd_lower_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_VFRWD_LOWER
 #define netdev_vfrwd_lower_unset(_dev)      (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_VFRWD_LOWER
 #define is_netdev_vfrwd_lower(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_VFRWD_LOWER)
+
+#define netdev_tc_all_ports_set(_dev)     (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_TC_ALL_PORTS
+#define netdev_tc_all_ports_unset(_dev)   (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_TC_ALL_PORTS
+#define is_netdev_tc_all_ports(_dev)      ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_TC_ALL_PORTS)
 
 #define netdev_vlan_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_VLAN
 #define is_netdev_vlan(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_VLAN)
@@ -223,6 +229,10 @@ extern int (*bcm_netdev_gen_hwaccel_notfier_cb)(struct net_device *dev,
 #define netdev_dummy_dev_unset(_dev)         (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_DUMMY_DEV
 #define is_netdev_dummy_dev(_dev)            ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_DUMMY_DEV)
 
+#define netdev_bcm_hook_skip_set(_dev)       (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_BCM_HOOK_SKIP
+#define netdev_bcm_hook_skip_unset(_dev)     (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_BCM_HOOK_SKIP
+#define is_netdev_bcm_hook_skip(_dev)        ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_BCM_HOOK_SKIP)
+
 /* ASUS defined */
 #define netdev_sdn_ignore_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_SDN_IGNORE
 #define netdev_sdn_ignore_unset(_dev)      (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_SDN_IGNORE
@@ -244,5 +254,6 @@ void bcm_put_netdev_by_id(uint16_t devid);
 char *bcm_get_netdev_name_by_id(uint16_t devid);
 int16_t bcm_get_idx_from_id(uint16_t udevid);
 bool bcm_is_devid_valid(uint16_t udevid);
+bool bcm_is_devtype_vxlan(struct net_device *dev);
 
 #endif /* __BCM_NETDEVICE_H_INCLUDED__ */

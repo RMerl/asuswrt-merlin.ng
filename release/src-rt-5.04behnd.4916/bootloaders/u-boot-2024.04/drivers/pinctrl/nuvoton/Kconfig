@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config PINCTRL_NPCM7XX
+	bool "Pinctrl and GPIO driver for Nuvoton NPCM7XX"
+	depends on DM && PINCTRL_GENERIC && ARCH_NPCM7xx
+	help
+	  Say Y here to enable pin controller and GPIO support
+	  for Nuvoton NPCM750/730/715/705 SoCs.
+
+config PINCTRL_NPCM8XX
+	bool "Pinctrl driver for Nuvoton NPCM8XX"
+	depends on DM && PINCTRL_GENERIC && ARCH_NPCM8XX
+	help
+	  Support pin muxing and pin configuration on
+	  Nuvoton NPCM8XX SoC.
+
+	  The NPCM8XX contains 256 GPIO pins. Most of them are
+	  multiplexed with other system functions. These pins can
+	  be configured as either GPIO pin or alternate function.
+	  It also supports basic configurations such as pull up/down,
+	  drive-strength, and slew rate control for some of the pins.

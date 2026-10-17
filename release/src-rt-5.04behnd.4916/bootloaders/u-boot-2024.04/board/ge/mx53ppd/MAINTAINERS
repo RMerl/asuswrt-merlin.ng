@@ -1,0 +1,8 @@
+GE PPD BOARD
+M:	Ian Ray <ian.ray@gehealthcare.com>
+M:	Martyn Welch <martyn.welch@collabora.com>
+S:	Maintained
+F:	arch/arm/dts/imx53-ppd*
+F:	board/ge/mx53ppd/
+F:	configs/mx53ppd_defconfig
+F:	include/configs/mx53ppd.h

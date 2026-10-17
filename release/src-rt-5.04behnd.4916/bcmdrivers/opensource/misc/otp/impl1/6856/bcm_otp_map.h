@@ -74,4 +74,9 @@ written consent.
 #define OTP_CUST_MFG_MRKTID_SHIFT               0
 #define OTP_CUST_MFG_MRKTID_MASK                (0xffff << OTP_CUST_MFG_MRKTID_SHIFT)
 
+/* row 95 */
+#define OTP_INFO_ROW                95
+#define OTP_INFO_SHIFT              10
+#define OTP_INFO_MASK               (0x1f << OTP_INFO_SHIFT)
+
 #endif

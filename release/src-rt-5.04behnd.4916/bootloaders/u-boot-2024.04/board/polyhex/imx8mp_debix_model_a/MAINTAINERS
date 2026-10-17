@@ -1,0 +1,8 @@
+DEBIX MODEL A BOARD (i.MX8M Plus)
+M:	Gilles Talis <gilles.talis@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/imx8mp-debix-model-a.dts
+F:	arch/arm/dts/imx8mp-debix-model-a-u-boot.dtsi
+F:	board/polyhex/imx8mp_debix_model_a/
+F:	include/configs/imx8mp_debix_model_a.h
+F:	configs/imx8mp_debix_model_a_defconfig

@@ -1,0 +1,171 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright 2022 Toradex
+ */
+
+#include "imx8mp-u-boot.dtsi"
+
+/ {
+	aliases {
+		eeprom0 = &eeprom_module;
+		eeprom1 = &eeprom_carrier_board;
+		eeprom2 = &eeprom_display_adapter;
+	};
+
+	sysinfo {
+		compatible = "toradex,sysinfo";
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		bootph-pre-ram;
+		wdt = <&wdog1>;
+	};
+};
+
+&clk {
+	bootph-all;
+	bootph-pre-ram;
+	/delete-property/ assigned-clocks;
+	/delete-property/ assigned-clock-parents;
+	/delete-property/ assigned-clock-rates;
+
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+
+	regulator-ethphy {
+		gpio-hog;
+		gpios = <20 GPIO_ACTIVE_HIGH>;
+		line-name = "reg_ethphy";
+		output-high;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_reg_eth>;
+	};
+};
+
+&gpio3 {
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+
+	ctrl-sleep-moci-hog {
+		bootph-pre-ram;
+	};
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&i2c1 {
+	bootph-pre-ram;
+
+	eeprom_module: eeprom@50 {
+		compatible = "i2c-eeprom";
+		pagesize = <16>;
+		reg = <0x50>;
+	};
+};
+
+&i2c2 {
+	bootph-pre-ram;
+};
+
+&i2c3 {
+	bootph-pre-ram;
+};
+
+&i2c4 {
+	/* EEPROM on display adapter (MIPI DSI Display Adapter) */
+	eeprom_display_adapter: eeprom@50 {
+		compatible = "i2c-eeprom";
+		pagesize = <16>;
+		reg = <0x50>;
+	};
+
+	/* EEPROM on carrier board */
+	eeprom_carrier_board: eeprom@57 {
+		compatible = "i2c-eeprom";
+		pagesize = <16>;
+		reg = <0x57>;
+	};
+};
+
+&pca9450 {
+	bootph-pre-ram;
+};
+
+&pinctrl_ctrl_sleep_moci {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2_pwr_en {
+	bootph-pre-ram;
+	u-boot,off-on-delay-us = <20000>;
+};
+
+&pinctrl_uart3 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2_cd {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc3 {
+	bootph-pre-ram;
+};
+
+&pinctrl_wdog {
+	bootph-pre-ram;
+};
+
+&reg_usdhc2_vmmc {
+	bootph-pre-ram;
+};
+
+&uart3 {
+	bootph-pre-ram;
+};
+
+&usdhc1 {
+	status = "disabled";
+};
+
+&usdhc2 {
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
+	assigned-clock-rates = <400000000>;
+	assigned-clocks = <&clk IMX8MP_CLK_USDHC2>;
+	sd-uhs-ddr50;
+	sd-uhs-sdr104;
+	bootph-pre-ram;
+};
+
+&usdhc3 {
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL1_400M>;
+	assigned-clock-rates = <400000000>;
+	assigned-clocks = <&clk IMX8MP_CLK_USDHC3>;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+	bootph-pre-ram;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

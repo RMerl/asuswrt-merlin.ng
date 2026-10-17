@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2015, 2020 Intel. All rights reserved.
+ */
+
+#include "socfpga_arria10-u-boot.dtsi"
+
+/ {
+	aliases {
+		bootargs = "console=ttyS0,115200";
+		i2c0 = &i2c1;
+	};
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&watchdog1 {
+	bootph-all;
+};

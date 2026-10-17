@@ -1,0 +1,156 @@
+menu "KM 83xx Options"
+	depends on MPC83xx
+
+config KM_ENABLE_FULL_DM_DTS_SUPPORT
+	bool "enable full DM/DTS support for KM 83xx boards"
+	default y
+	select CMD_DM
+	select DM
+	select DM_MDIO
+	select DM_SERIAL
+	select OF_CONTROL
+	select PINCTRL
+	select PINCTRL_QE
+	select PHYLIB
+endmenu
+
+config SYS_MEMTEST_START
+	default 0x00100000
+
+config SYS_MEMTEST_END
+	default 0x00f00000
+
+if TARGET_KMETER1
+
+config SYS_BOARD
+	default "km83xx"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "kmeter1"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_MPC8360
+	imply CMD_CRAMFS
+	imply CMD_DIAG
+	imply FS_CRAMFS
+
+endif
+
+if TARGET_KMCOGE5NE
+
+config SYS_BOARD
+	default "km83xx"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "kmcoge5ne"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_MPC8360
+	imply CMD_CRAMFS
+	imply CMD_DIAG
+	imply FS_CRAMFS
+
+endif
+
+if TARGET_TUXX1
+
+config SYS_BOARD
+	default "km83xx"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "km832x"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+endif
+
+if TARGET_KMSUPX5
+
+config SYS_BOARD
+	default "km83xx"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "km832x"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+endif
+
+if TARGET_TUGE1
+
+config SYS_BOARD
+	default "km83xx"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "km832x"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+endif
+
+if TARGET_KMOPTI2
+
+config SYS_BOARD
+	default "km83xx"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "km832x"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+endif
+
+if TARGET_KMTEPR2
+
+config SYS_BOARD
+	default "km83xx"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "km832x"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+endif

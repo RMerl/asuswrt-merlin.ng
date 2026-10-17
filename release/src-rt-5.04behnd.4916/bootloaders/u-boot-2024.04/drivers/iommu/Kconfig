@@ -1,0 +1,43 @@
+#
+# IOMMU devices
+#
+
+menu "IOMMU device drivers"
+
+config IOMMU
+	bool "Enable Driver Model for IOMMU drivers"
+	depends on DM
+	help
+	  Enable driver model for IOMMU devices. An IOMMU maps device
+	  virtiual memory addresses to physical addresses. Devices
+	  that sit behind an IOMMU can typically only access physical
+	  memory if the IOMMU has been programmed to allow access to
+	  that memory.
+
+config APPLE_DART
+	bool "Apple DART support"
+	depends on IOMMU && ARCH_APPLE
+	default y
+	help
+	  Enable support for the DART on Apple SoCs.  The DART is Apple's
+	  IOMMU implementation.  The driver performs the necessary
+	  configuration to put the DART into bypass mode such that it can
+	  be used transparently by U-Boot.
+
+config QCOM_HYP_SMMU
+	bool "Qualcomm quirky SMMU support"
+	depends on IOMMU && ARCH_SNAPDRAGON
+	help
+	  Enable support for the Qualcomm variant of the Arm System MMU-500.
+	  Qualcomm boards have a non-standard SMMU where some registers are
+	  emulated by the hypervisor. It is initialised early in the boot
+	  process and can't be turned off.
+
+	  The main caveat with this hardware is that it doesn't support BYPASS
+	  streams, attempting to configure once will instead wind up with a
+	  FAULT stream, and the device will crash when DMA is attempted.
+
+	  Say Y here to enable support for non-boot peripherals like USB by
+	  configuring identity mapped streams for them.
+
+endmenu

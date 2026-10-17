@@ -1,0 +1,21 @@
+U-Boot bootcounter Devicetree Binding
+=====================================
+
+The device tree node describes the U-Boot bootcounter
+memory based device binding.
+
+Required properties :
+
+- compatible : "u-boot,bootcount";
+- single-word : set this, if you have only one word space
+    for storing the bootcounter.
+
+Example
+-------
+
+MPC83xx based board:
+
+bootcount@0x13ff8 {
+	compatible = "u-boot,bootcount";
+	reg = <0x13ff8 0x08>;
+};

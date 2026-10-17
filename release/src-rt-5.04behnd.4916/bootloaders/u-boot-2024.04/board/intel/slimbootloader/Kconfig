@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2019 Intel Corporation <www.intel.com>
+
+if TARGET_SLIMBOOTLOADER
+
+config SYS_BOARD
+	default "slimbootloader"
+
+config SYS_VENDOR
+	default "intel"
+
+config SYS_SOC
+	default "slimbootloader"
+
+config SYS_CONFIG_NAME
+	default "slimbootloader"
+
+config TEXT_BASE
+	default 0x00100000
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select SYS_SLIMBOOTLOADER
+	select USB_STORAGE
+	select USB_KEYBOARD
+
+endif

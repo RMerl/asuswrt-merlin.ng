@@ -1,0 +1,12 @@
+if TARGET_POMELO
+
+config SYS_BOARD
+	default "pomelo"
+
+config SYS_VENDOR
+	default "phytium"
+
+config SYS_CONFIG_NAME
+	default "pomelo"
+
+endif

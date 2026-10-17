@@ -41,7 +41,9 @@
 #include <linux/bcm_log.h>
 #include "rdpa_types.h"
 #include "rdpa_api.h"
+#if defined(CONFIG_RNR_BRIDGE_SUPPORT)
 #include "rdpa_ag_bridge.h"
+#endif
 #include "rdpa_drv.h"
 #include "rdpa_cmd_br.h"
 

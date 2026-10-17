@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright 2019-2022 Toradex
+ */
+
+/ {
+	soc {
+		bootph-all;
+	};
+
+	sysinfo {
+		compatible = "toradex,sysinfo";
+	};
+};
+
+&aips0 {
+	bootph-all;
+};
+
+&dcu0 {
+	bootph-all;
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ddr>;
+
+	pinctrl_ddr: ddrgrp {
+		fsl,pins = <
+			VF610_PAD_DDR_A15__DDR_A_15             0x180
+			VF610_PAD_DDR_A14__DDR_A_14             0x180
+			VF610_PAD_DDR_A13__DDR_A_13             0x180
+			VF610_PAD_DDR_A12__DDR_A_12             0x180
+			VF610_PAD_DDR_A11__DDR_A_11             0x180
+			VF610_PAD_DDR_A10__DDR_A_10             0x180
+			VF610_PAD_DDR_A9__DDR_A_9               0x180
+			VF610_PAD_DDR_A8__DDR_A_8               0x180
+			VF610_PAD_DDR_A7__DDR_A_7               0x180
+			VF610_PAD_DDR_A6__DDR_A_6               0x180
+			VF610_PAD_DDR_A5__DDR_A_5               0x180
+			VF610_PAD_DDR_A4__DDR_A_4               0x180
+			VF610_PAD_DDR_A3__DDR_A_3               0x180
+			VF610_PAD_DDR_A2__DDR_A_2               0x180
+			VF610_PAD_DDR_A1__DDR_A_1               0x180
+			VF610_PAD_DDR_A0__DDR_A_0               0x180
+			VF610_PAD_DDR_BA2__DDR_BA_2             0x180
+			VF610_PAD_DDR_BA1__DDR_BA_1             0x180
+			VF610_PAD_DDR_BA0__DDR_BA_0             0x180
+			VF610_PAD_DDR_CAS__DDR_CAS_B            0x180
+			VF610_PAD_DDR_CKE__DDR_CKE_0            0x180
+			VF610_PAD_DDR_CLK__DDR_CLK_0            0x180
+			VF610_PAD_DDR_CS__DDR_CS_B_0            0x180
+			VF610_PAD_DDR_D15__DDR_D_15             0x10180
+			VF610_PAD_DDR_D14__DDR_D_14             0x10180
+			VF610_PAD_DDR_D13__DDR_D_13             0x10180
+			VF610_PAD_DDR_D12__DDR_D_12             0x10180
+			VF610_PAD_DDR_D11__DDR_D_11             0x10180
+			VF610_PAD_DDR_D10__DDR_D_10             0x10180
+			VF610_PAD_DDR_D9__DDR_D_9               0x10180
+			VF610_PAD_DDR_D8__DDR_D_8               0x10180
+			VF610_PAD_DDR_D7__DDR_D_7               0x10180
+			VF610_PAD_DDR_D6__DDR_D_6               0x10180
+			VF610_PAD_DDR_D5__DDR_D_5               0x10180
+			VF610_PAD_DDR_D4__DDR_D_4               0x10180
+			VF610_PAD_DDR_D3__DDR_D_3               0x10180
+			VF610_PAD_DDR_D2__DDR_D_2               0x10180
+			VF610_PAD_DDR_D1__DDR_D_1               0x10180
+			VF610_PAD_DDR_D0__DDR_D_0               0x10180
+			VF610_PAD_DDR_DQM1__DDR_DQM_1           0x10180
+			VF610_PAD_DDR_DQM0__DDR_DQM_0           0x10180
+			VF610_PAD_DDR_DQS1__DDR_DQS_1           0x10180
+			VF610_PAD_DDR_DQS0__DDR_DQS_0           0x10180
+			VF610_PAD_DDR_RAS__DDR_RAS_B            0x180
+			VF610_PAD_DDR_WE__DDR_WE_B              0x180
+			VF610_PAD_DDR_ODT1__DDR_ODT_0           0x180
+			VF610_PAD_DDR_ODT0__DDR_ODT_1           0x180
+			VF610_PAD_DDR_DDRBYTE1__DDR_DDRBYTE1    0x180
+			VF610_PAD_DDR_DDRBYTE2__DDR_DDRBYTE2    0x180
+			VF610_PAD_DDR_RESETB                    0x180
+		>;
+	};
+};
+
+&pinctrl_ddr {
+	bootph-all;
+};
+
+&pinctrl_uart0 {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};

@@ -1,0 +1,8 @@
+SEI510
+M:	Neil Armstrong <neil.armstrong@linaro.org>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/sei510/
+F:	configs/sei510_defconfig
+F:	include/configs/sei510.h
+F:	doc/board/amlogic/sei510.rst

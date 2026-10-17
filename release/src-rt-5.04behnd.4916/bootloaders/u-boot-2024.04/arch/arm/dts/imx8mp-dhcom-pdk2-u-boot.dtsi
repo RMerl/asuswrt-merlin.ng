@@ -1,0 +1,6 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (C) 2022 Marek Vasut <marex@denx.de>
+ */
+
+#include "imx8mp-dhcom-u-boot.dtsi"

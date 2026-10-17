@@ -1,0 +1,15 @@
+if TARGET_MX6SLLEVK
+
+config SYS_BOARD
+	default "mx6sllevk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "mx6sllevk"
+
+config IMX_CONFIG
+	default "board/freescale/mx6sllevk/imximage.cfg"
+
+endif

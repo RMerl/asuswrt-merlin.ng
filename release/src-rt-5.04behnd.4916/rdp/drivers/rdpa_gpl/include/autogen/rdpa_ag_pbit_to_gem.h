@@ -107,7 +107,7 @@ static inline int rdpa_pbit_to_gem_pbit_map_get(bdmf_object_handle mo_, bdmf_ind
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_pbit_to_gem_attr_pbit_map, (bdmf_index)ai_, &_nn_);
-    *pbit_map_ = (bdmf_object_handle)(long)_nn_;
+    *pbit_map_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -123,7 +123,7 @@ static inline int rdpa_pbit_to_gem_pbit_map_get(bdmf_object_handle mo_, bdmf_ind
  */
 static inline int rdpa_pbit_to_gem_pbit_map_set(bdmf_object_handle mo_, bdmf_index ai_, bdmf_object_handle pbit_map_)
 {
-    return bdmf_attrelem_set_as_num(mo_, rdpa_pbit_to_gem_attr_pbit_map, (bdmf_index)ai_, (long)pbit_map_);
+    return bdmf_attrelem_set_as_num(mo_, rdpa_pbit_to_gem_attr_pbit_map, (bdmf_index)ai_, (bdmf_long_t)pbit_map_);
 }
 
 /** @} end of pbit_to_gem Doxygen group */

@@ -1,0 +1,8 @@
+i.MX 8MQ PHANBELL BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+M:	Marco Franchi <marcofrk@gmail.com>
+M:	Alifer Moraes <alifer.wsdm@gmail.com>
+S:	Maintained
+F:	board/google/imx8mq_phanbell/
+F:	include/configs/imx8mq_phanbell.h
+F:	configs/imx8mq_phanbell_defconfig

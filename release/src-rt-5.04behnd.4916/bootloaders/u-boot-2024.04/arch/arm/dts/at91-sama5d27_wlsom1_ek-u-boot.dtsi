@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * at91-sama5d27_wlsom1_ek-u-boot.dts - Device Tree file for SAMA5D27 WLSOM1 EK
+ *
+ * Copyright (C) 2019 Microchip Technology Inc. and its subsidiaries
+ *
+ * Author: Eugen Hristev <eugen.hristev@microchip.com>
+ */
+
+/ {
+	chosen {
+		bootph-all;
+	};
+};
+
+&hlcdc {
+	bootph-all;
+};
+
+&qspi1 {
+	bootph-all;
+};
+
+&qspi1_flash {
+	bootph-all;
+};
+
+&sdmmc0 {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&sfr {
+	bootph-all;
+};
+
+&pinctrl_sdmmc0_default {
+	bootph-all;
+};
+
+&pinctrl_uart0_default {
+	bootph-all;
+};
+
+&pinctrl_qspi1_default {
+	bootph-all;
+};

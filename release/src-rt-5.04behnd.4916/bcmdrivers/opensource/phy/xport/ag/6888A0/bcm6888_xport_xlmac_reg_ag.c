@@ -43,7 +43,7 @@ int ag_drv_xport_xlmac_reg_dir_acc_data_write_set(uint8_t xlmac_id, uint32_t wri
         return 0;
     }
 #endif
-
+    // coverity[result_independent_of_operands] : field 32bit long result in constant_expression_result
     reg_dir_acc_data_write = RU_FIELD_SET(xlmac_id, XPORT_XLMAC_REG, DIR_ACC_DATA_WRITE, WRITE_DATA, reg_dir_acc_data_write, write_data);
 
     RU_REG_WRITE(xlmac_id, XPORT_XLMAC_REG, DIR_ACC_DATA_WRITE, reg_dir_acc_data_write);
@@ -170,7 +170,7 @@ int ag_drv_xport_xlmac_reg_indir_acc_data_low_0_set(uint8_t xlmac_id, uint32_t d
         return 0;
     }
 #endif
-
+    // coverity[result_independent_of_operands] : field 32bit long result in constant_expression_result
     reg_indir_acc_data_low_0 = RU_FIELD_SET(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_LOW_0, DATA_LOW, reg_indir_acc_data_low_0, data_low);
 
     RU_REG_WRITE(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_LOW_0, reg_indir_acc_data_low_0);
@@ -213,7 +213,7 @@ int ag_drv_xport_xlmac_reg_indir_acc_data_high_0_set(uint8_t xlmac_id, uint32_t 
         return 0;
     }
 #endif
-
+    // coverity[result_independent_of_operands] : field 32bit long result in constant_expression_result
     reg_indir_acc_data_high_0 = RU_FIELD_SET(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_HIGH_0, DATA_HIGH, reg_indir_acc_data_high_0, data_high);
 
     RU_REG_WRITE(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_HIGH_0, reg_indir_acc_data_high_0);
@@ -316,7 +316,7 @@ int ag_drv_xport_xlmac_reg_indir_acc_data_low_1_set(uint8_t xlmac_id, uint32_t d
         return 0;
     }
 #endif
-
+    // coverity[result_independent_of_operands] : field 32bit long result in constant_expression_result
     reg_indir_acc_data_low_1 = RU_FIELD_SET(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_LOW_1, DATA_LOW, reg_indir_acc_data_low_1, data_low);
 
     RU_REG_WRITE(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_LOW_1, reg_indir_acc_data_low_1);
@@ -359,7 +359,7 @@ int ag_drv_xport_xlmac_reg_indir_acc_data_high_1_set(uint8_t xlmac_id, uint32_t 
         return 0;
     }
 #endif
-
+    // coverity[result_independent_of_operands] : field 32bit long result in constant_expression_result
     reg_indir_acc_data_high_1 = RU_FIELD_SET(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_HIGH_1, DATA_HIGH, reg_indir_acc_data_high_1, data_high);
 
     RU_REG_WRITE(xlmac_id, XPORT_XLMAC_REG, INDIR_ACC_DATA_HIGH_1, reg_indir_acc_data_high_1);

@@ -1,0 +1,9 @@
+AM62Ax BOARD
+M:	Vignesh Raghavendra <vigneshr@ti.com>
+M:	Bryan Brattlof <bb@ti.com>
+M:	Tom Rini <trini@konsulko.com>
+S:	Maintained
+F:	board/ti/am62ax/
+F:	include/configs/am62a7_evm.h
+F:	configs/am62ax_evm_r5_defconfig
+F:	configs/am62ax_evm_a53_defconfig

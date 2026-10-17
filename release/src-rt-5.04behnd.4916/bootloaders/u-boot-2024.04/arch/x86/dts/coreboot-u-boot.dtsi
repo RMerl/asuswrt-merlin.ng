@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2020 Google LLC
+ * Written by Simon Glass <sjg@chromium.org>
+ */
+
+#include <config.h>
+
+/ {
+	binman {
+		filename = "u-boot-x86-with-spl.bin";
+		u-boot-spl {
+		};
+		u-boot {
+			offset = <0x10000>;
+		};
+	};
+};

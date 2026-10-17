@@ -1,0 +1,11 @@
+Sipeed Maix BOARD
+M:	Sean Anderson <seanga2@gmail.com>
+S:	Maintained
+F:	arch/riscv/dts/k210.dtsi
+F:	arch/riscv/dts/k210-maix-bit.dts
+F:	board/sipeed/maix/
+F:	configs/sipeed_maix*_defconfig
+F:	doc/board/sipeed/
+F:	include/configs/sipeed-maix.h
+F:	include/dt-bindings/*/k210-sysctl.h
+F:	test/dm/k210_pll.c

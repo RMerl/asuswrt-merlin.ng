@@ -1,0 +1,45 @@
+config BSH_SMM_S2_DDR3L_256
+	bool "BSH SMM S2 DDR3L 256 MiB RAM support"
+
+config BSH_SMM_S2_DDR3L_512
+	bool "BSH SMM S2 DDR3L 512 MiB RAM support"
+
+if TARGET_IMX8MN_BSH_SMM_S2
+
+config SYS_BOARD
+	default "imx8mn_smm_s2"
+
+config SYS_VENDOR
+	default "bsh"
+
+config IMX_CONFIG
+	default "board/bsh/imx8mn_smm_s2/imximage-8mn-ddr3.cfg"
+
+config SYS_CONFIG_NAME
+	default "imx8mn_bsh_smm_s2"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select BSH_SMM_S2_DDR3L_256
+
+endif
+
+if TARGET_IMX8MN_BSH_SMM_S2PRO
+
+config SYS_BOARD
+	default "imx8mn_smm_s2"
+
+config SYS_VENDOR
+	default "bsh"
+
+config IMX_CONFIG
+	default "board/bsh/imx8mn_smm_s2/imximage-8mn-ddr3.cfg"
+
+config SYS_CONFIG_NAME
+	default "imx8mn_bsh_smm_s2pro"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select BSH_SMM_S2_DDR3L_512
+
+endif

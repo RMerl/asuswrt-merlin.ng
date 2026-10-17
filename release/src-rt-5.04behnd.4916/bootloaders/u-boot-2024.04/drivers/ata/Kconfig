@@ -1,0 +1,158 @@
+config AHCI
+	bool "Support SATA controllers with driver model"
+	depends on DM
+	help
+	  This enables a uclass for disk controllers in U-Boot. Various driver
+	  types can use this, such as AHCI/SATA. It does not provide any standard
+	  operations at present. The block device interface has not been converted
+	  to driver model.
+
+config SATA
+	bool "Support SATA controllers"
+	help
+	  This enables support for SATA (Serial Advanced Technology
+	  Attachment), a serial bus standard for connecting to hard drives and
+	  other storage devices.
+
+	  SATA replaces PATA (originally just ATA), which stands for Parallel AT
+	  Attachment, where AT refers to an IBM AT (Advanced Technology)
+	  computer released in 1984.
+
+	  See also CMD_SATA which provides command-line support.
+
+config LIBATA
+	bool
+	help
+	  Select this to build and link the libata helper functions.
+
+config SCSI_AHCI
+	bool "Enable SCSI interface to SATA devices"
+	select LIBATA
+	help
+	  Enable this to allow interfacing SATA devices via the SCSI layer.
+
+menu "SATA/SCSI device support"
+
+config AHCI_PCI
+	bool "Support for PCI-based AHCI controller"
+	depends on PCI
+	depends on SCSI
+	depends on SCSI_AHCI
+	help
+	  Enables support for the PCI-based AHCI controller.
+
+if AHCI
+
+config SPL_AHCI_PCI
+	bool "Support for PCI-based AHCI controller for SPL"
+	depends on SPL
+	depends on SPL_PCI
+	depends on SPL_SATA && SCSI
+
+config DWC_AHCI
+	bool "Enable Synopsys DWC AHCI driver support"
+	select SCSI_AHCI
+	select PHY
+	depends on SCSI
+	help
+	  Enable this driver to support Sata devices through
+	  Synopsys DWC AHCI module.
+
+config DWC_AHSATA
+	bool "Enable DWC AHSATA driver support"
+	select LIBATA
+	depends on BLK
+	help
+	  Enable this driver to support the DWC AHSATA SATA controller found
+	  in i.MX5 and i.MX6 SoCs.
+
+config DWC_AHSATA_AHCI
+	bool "Enable DWC AHSATA AHCI driver support"
+	depends on DWC_AHSATA
+	default y
+	help
+	  Enable this option unless you need your private ahci implementation
+
+config MTK_AHCI
+	bool "Enable Mediatek AHCI driver support"
+	help
+	  Enable this driver to support Sata devices through
+	  Mediatek AHCI controller (e.g. MT7622).
+
+config AHCI_MVEBU
+	bool "Marvell EBU AHCI SATA support"
+	depends on ARCH_MVEBU || ARCH_OCTEON
+	select SCSI_AHCI
+	select SCSI
+	help
+	  This option enables support for the Marvell EBU SoC's
+	  onboard AHCI SATA.
+
+	  If unsure, say N.
+
+config SUNXI_AHCI
+	bool "Enable Allwinner SATA driver support"
+	default y if ARCH_SUNXI
+	help
+	  Enable this driver to support the SATA controllers found in the
+	  Allwinner A10, A20 and R40 SoCs.
+
+endif # AHCI
+
+if SATA
+
+config SATA_CEVA
+	bool "Ceva Sata controller"
+	depends on AHCI
+	depends on SCSI
+	help
+	  This option enables Ceva Sata controller hard IP available on Xilinx
+	  ZynqMP. Support up to 2 external devices. Compliant with SATA 3.1 and
+	  AHCI 1.3 specifications with hot-plug detect feature.
+
+config FSL_SATA
+	bool "Enable Freescale SATA controller driver support"
+	depends on PPC
+	select AHCI
+	select LIBATA
+	imply LBA48
+	help
+	  Enable this driver to support the SATA controller found in
+	  some Freescale PowerPC SoCs.
+
+config FSL_SATA_V2
+	bool "Enable support for V2 of the Freescale SATA controller"
+	depends on FSL_SATA
+	help
+	  Enable support for V2 of this controller, rather than V1.
+
+config SATA_MV
+	bool "Enable Marvell SATA controller driver support"
+	select AHCI
+	select LIBATA
+	help
+	  Enable this driver to support the SATA controller found in
+	  some Marvell SoCs.
+
+config SATA_SIL
+	bool "Enable Silicon Image SIL3131 / SIL3132 / SIL3124 SATA driver support"
+	depends on PCI
+	select AHCI
+	select LIBATA
+	help
+	  Enable this driver to support the SIL3131, SIL3132 and SIL3124
+	  SATA controllers.
+
+config SYS_SATA_MAX_DEVICE
+	int "Maximum number of SATA devices"
+	depends on !AHCI || FSL_SATA || SATA_MV
+	help
+	  Sets the maximum number of SATA devices which can be supported
+	  by U-Boot.
+
+	  This is only partially converted to driver model. See sata_bread()
+	  for example, which shows where the conversion needs to be completed.
+
+endif # SATA
+
+endmenu

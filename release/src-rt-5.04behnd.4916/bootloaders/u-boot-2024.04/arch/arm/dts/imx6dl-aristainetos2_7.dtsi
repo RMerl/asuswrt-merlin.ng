@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: (GPL-2.0)
+/*
+ * support for the imx6 based aristainetos2 board
+ * parts for 7 inch LG display connected to the LVDS port
+ *
+ * Copyright (C) 2019 Heiko Schocher <hs@denx.de>
+ * Copyright (C) 2015 Heiko Schocher <hs@denx.de>
+ *
+ */
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+
+#include "imx6dl.dtsi"
+
+/ {
+	panel0: panel_lg {
+		compatible = "lg,lb070wv8";
+		backlight = <&backlight>;
+		enable-gpios = <&gpio6 15 GPIO_ACTIVE_HIGH>;
+
+		port {
+			panel_in: endpoint {
+				remote-endpoint = <&lvds0_out>;
+			};
+		};
+	};
+};
+
+&ldb {
+	status = "okay";
+
+	lvds-channel@0 {
+		status = "okay";
+
+		port@0 {
+			reg = <0>;
+			lvds0_in: endpoint {
+				remote-endpoint = <&ipu1_di0_lvds0>;
+			};
+		};
+
+		port@4 {
+			reg = <4>;
+			lvds0_out: endpoint {
+				remote-endpoint = <&panel_in>;
+			};
+		};
+	};
+};

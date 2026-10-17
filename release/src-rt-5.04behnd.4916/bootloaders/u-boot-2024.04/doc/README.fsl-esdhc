@@ -1,0 +1,8 @@
+Freescale esdhc-specific options
+
+	- CONFIG_SYS_FSL_ESDHC_LE
+		ESDHC IP is in little-endian mode. Accessing ESDHC registers can be
+		determined by ESDHC IP's endian mode or processor's endian mode.
+	- CONFIG_SYS_FSL_ESDHC_BE
+		ESDHC IP is in big-endian mode. Accessing ESDHC registers can be determined
+		by ESDHC IP's endian mode or processor's endian mode.

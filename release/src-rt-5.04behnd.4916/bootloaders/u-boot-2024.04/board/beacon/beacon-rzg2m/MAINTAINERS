@@ -1,0 +1,16 @@
+BEACON_RZG2M BOARD
+M:	Adam Ford <aford173@gmail.com>
+S:	Maintained
+F:	board/beacon/beacon-rzg2m/
+F:	include/configs/beacon-rzg2m.h
+F:	configs/rzg2_beacon_defconfig
+F:	arch/arm/dts/beacon-renesom-baseboard.dtsi
+F:	arch/arm/dts/beacon-renesom-som.dtsi
+F:	arch/arm/dts/r8a774a1-beacon-rzg2m-kit.dts
+F:	arch/arm/dts/r8a774b1-beacon-rzg2n-kit.dts
+F:	arch/arm/dts/r8a774e1-beacon-rzg2h-kit.dts
+F:	arch/arm/dts/r8a774a1-beacon-rzg2m-kit-u-boot.dtsi
+F:	arch/arm/dts/r8a774b1-beacon-rzg2n-kit-u-boot.dtsi
+F:	arch/arm/dts/r8a774e1-beacon-rzg2h-kit-u-boot.dtsi
+F:	arch/arm/dts/rz-g2-beacon-u-boot.dtsi
+

@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+&eth0 {
+	phy-reset-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
+};
+
+&spi1 {
+	bootph-pre-ram;
+	spi-flash@0 {
+		bootph-pre-ram;
+	};
+};
+
+&w25q32 {
+	bootph-pre-ram;
+};
+
+&gpio0 {
+	bootph-pre-ram;
+};
+
+&ahci0 {
+	bootph-pre-ram;
+};
+
+&ahci1 {
+	bootph-pre-ram;
+};
+
+&sdhci {
+	bootph-pre-ram;
+};
+
+&i2c0 {
+	bootph-pre-ram;
+
+	eeprom@52 {
+		bootph-pre-ram;
+	};
+
+	eeprom@53 {
+		bootph-pre-ram;
+	};
+};
+
+#include "mvebu-u-boot.dtsi"

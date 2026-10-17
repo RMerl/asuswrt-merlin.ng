@@ -1,0 +1,6 @@
+MT8365 EVK
+M:	Julien Masson <jmasson@baylibre.com>
+S:	Maintained
+F:	arch/arm/dts/mt8365-evk.dts
+F:	board/mediatek/mt8365_evk/
+F:	configs/mt8365_evk_defconfig

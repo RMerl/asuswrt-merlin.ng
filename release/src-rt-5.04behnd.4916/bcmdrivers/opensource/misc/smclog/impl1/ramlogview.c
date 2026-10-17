@@ -481,6 +481,7 @@ static ssize_t ramlog_write(struct file *filep, const char *buffer,
             break;
     ramlog_view->text_buffer[length] = '\0';
     source = ramlog_view->text_buffer;
+    /* coverity[tainted_data:SUPPRESS] */
     while (*source && isspace(*source)) {
         ++source;
         --length;
@@ -628,6 +629,7 @@ static void execute_ramlog_command(struct ramlog_file_buffer_t *ramlog_view,
                 if (length >= DEF_RAMLOG_PARAMETER_LENGTH)
                     length = DEF_RAMLOG_PARAMETER_LENGTH
                         - 1;
+                 /* coverity[tainted_data:OVERRUN] */
                 memcpy(ramlog_view->buf_ptr, module, length);
                 ramlog_view->buf_ptr[length] = (uint8_t) 0;
                 set_ramlog_level(ramlog_view->ramlog,
@@ -732,6 +734,9 @@ static const char *get_ramlog_token(char *token, unsigned int max_token_size,
 {
     const char *processing;
     char *target;
+
+    if (token == NULL)
+        return 0;
 
     if (token && max_token_size) {
         token[0] = '\0';

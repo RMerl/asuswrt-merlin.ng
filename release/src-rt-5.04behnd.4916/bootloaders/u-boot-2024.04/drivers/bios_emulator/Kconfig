@@ -1,0 +1,10 @@
+config BIOSEMU
+	bool
+	select X86EMU_RAW_IO
+
+config SPL_BIOSEMU
+	bool
+	select X86EMU_RAW_IO
+
+config X86EMU_RAW_IO
+	bool

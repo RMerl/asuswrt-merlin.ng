@@ -1,0 +1,205 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include <config.h>
+
+/ {
+	aliases {
+		i2c0 = &i2c0;
+		i2c1 = &i2c3;
+		i2c2 = &i2c4;
+		ethernet2 = &enetc_port2;
+		ethernet3 = &enetc_port3;
+	};
+
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+	u_boot_rom: u-boot-rom {
+		filename = "u-boot.rom";
+		pad-byte = <0xff>;
+
+		u-boot-spl {
+		};
+
+		fit {
+			offset = <CONFIG_SPL_PAD_TO>;
+			description = "FIT image with multiple configurations";
+			fit,fdt-list = "of-list";
+
+			images {
+				uboot {
+					description = "U-Boot";
+					type = "firmware";
+					os = "u-boot";
+					arch = "arm";
+					compression = "none";
+					load = <CONFIG_TEXT_BASE>;
+
+					u-boot-nodtb {
+					};
+				};
+
+				@fdt-SEQ {
+					description = "NAME";
+					type = "flat_dt";
+					compression = "none";
+				};
+			};
+
+			configurations {
+				default = "@config-DEFAULT-SEQ";
+
+				@config-SEQ {
+					description = "NAME";
+					firmware = "uboot";
+					fdt = "fdt-SEQ";
+				};
+			};
+		};
+	};
+};
+
+&binman {
+	u-boot-update {
+		filename = "u-boot-update.bin";
+
+		fit {
+			description = "FIT update image";
+
+			images {
+				u-boot-bin {
+					description = "U-Boot";
+					type = "firmware";
+					os = "u-boot";
+					arch = "arm";
+					compression = "none";
+					load = <0>; /* unused */
+
+					blob {
+						filename = "u-boot.rom";
+					};
+				};
+			};
+		};
+	};
+};
+
+#ifdef CONFIG_SL28_ENABLE_SER0_CONSOLE
+/ {
+	chosen {
+		stdout-path = "serial2:115200n8";
+	};
+};
+#endif
+
+#ifdef CONFIG_SL28_SPL_LOADS_ATF_BL31
+&u_boot_rom {
+	fit {
+		images {
+			bl31 {
+				description = "ARM Trusted Firmware (bl31)";
+				type = "firmware";
+				arch = "arm";
+				os = "arm-trusted-firmware";
+				compression = "none";
+				load = <CONFIG_SL28_BL31_ENTRY_ADDR>;
+				entry = <CONFIG_SL28_BL31_ENTRY_ADDR>;
+
+				blob-ext {
+					filename = "bl31.bin";
+				};
+			};
+		};
+
+		configurations {
+			@config-SEQ {
+				firmware = "bl31";
+				loadables = "uboot";
+			};
+		};
+	};
+};
+#endif
+
+#ifdef CONFIG_SL28_SPL_LOADS_OPTEE_BL32
+&u_boot_rom {
+	fit {
+		images {
+			bl32 {
+				description = "OP-TEE Trusted OS (bl32)";
+				type = "firmware";
+				arch = "arm";
+				os = "tee";
+				compression = "none";
+				load = <CONFIG_SL28_BL32_ENTRY_ADDR>;
+				entry = <CONFIG_SL28_BL32_ENTRY_ADDR>;
+
+				blob-ext {
+					filename = "tee.bin";
+				};
+			};
+		};
+
+		configurations {
+			@config-SEQ {
+				loadables = "uboot", "bl32";
+			};
+		};
+	};
+};
+#endif
+
+&fspi {
+	bootph-all;
+	flash@0 {
+		bootph-all;
+	};
+};
+
+&dspi2 {
+	bootph-all;
+};
+
+&esdhc {
+	bootph-all;
+};
+
+&esdhc1 {
+	bootph-all;
+};
+
+&lpuart1 {
+	bootph-all;
+};
+
+&duart0 {
+	bootph-all;
+};
+
+/*
+ * u-boot will enable the device in the linux device tree in place. Because
+ * we are using the linux device tree, we have to enable the PCI controller
+ * ourselves.
+ */
+&pcie1 {
+	status = "okay";
+};
+
+&pcie2 {
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
+};
+
+&soc {
+	bootph-all;
+};
+
+&sysclk {
+	bootph-all;
+};

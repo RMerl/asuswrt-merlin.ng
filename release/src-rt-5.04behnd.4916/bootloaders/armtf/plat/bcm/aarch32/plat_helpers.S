@@ -57,33 +57,18 @@ func cortex_reset_func
 	mcr	p15, 0, r0, c1, c1, 2
 	// Allow non-secure access to ACR
 	ldr	r1,=NSACR_SMP
-#if defined(PLATFORM_FLAVOR_63138)
-	// Cortex A9 specific quirks
-#define PLEAUR_EN   (1 << 0)
-#define NSACR_PLE   (1 << 16)
-	mov	r2, #PLEAUR_EN
-	mcr	p15, 0, r2, c11, c1, 0
-	orr	r1, r1, #NSACR_PLE
-#endif
 	ldcopr	r0, NSACR
 	orr	r0, r0, r1
 	stcopr	r0, NSACR
 
 	mrc	p15, 0, r1, c1, c0, 1
-#if defined(PLATFORM_FLAVOR_63138)
-	/* Enable SMP and FW */
-	orr	r1, r1, #0x41
-#else
+
 	/* Enable SMP */
 	orr	r1, r1, #0x40
-#endif
+
 	mcr	p15, 0, r1, c1, c0, 1
 	isb
-#if defined(PLATFORM_FLAVOR_63148)
-	ldcopr	r1, ACTLR
-	orr	r1, #CORTEX_A15_ACTLR_INV_BTB_BIT
-	stcopr	r1, ACTLR
-#endif
+
 	bx  lr
 endfunc cortex_reset_func
 
@@ -96,20 +81,9 @@ func cortex_cluster_pwr_dwn
 	bx	lr
 endfunc cortex_cluster_pwr_dwn
 
-#if defined(PLATFORM_FLAVOR_63138)
-declare_cpu_ops cortex_a9, 0x4100C090, \
-	cortex_reset_func, \
-	cortex_core_pwr_dwn, \
-	cortex_cluster_pwr_dwn
-#elif defined(PLATFORM_FLAVOR_63148)
-declare_cpu_ops cortex_a15, 0x420000F0, \
-	cortex_reset_func, \
-	cortex_core_pwr_dwn, \
-	cortex_cluster_pwr_dwn
-#else
 declare_cpu_ops cortex_a7, 0x4100C070, \
 	cortex_reset_func, \
 	cortex_core_pwr_dwn, \
 	cortex_cluster_pwr_dwn
-#endif
+
 

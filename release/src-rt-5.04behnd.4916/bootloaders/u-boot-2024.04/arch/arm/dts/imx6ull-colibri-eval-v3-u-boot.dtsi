@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright 2019-2022 Toradex
+ */
+
+/ {
+	aliases {
+		bootph-all;
+		usb0 = &usbotg1; /* required for ums */
+		display0 = &lcdif;
+	};
+
+	sysinfo {
+		compatible = "toradex,sysinfo";
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&pinctrl_uart1 {
+	bootph-all;
+};
+
+&pinctrl_uart1_ctrl1 {
+	bootph-all;
+};
+
+&lcdif {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lcdif_dat
+		     &pinctrl_lcdif_ctrl>;
+	status = "okay";
+	display = <&display0>;
+	bootph-all;
+
+	display0: display0 {
+		bits-per-pixel = <18>;
+		bus-width = <24>;
+		status = "okay";
+
+		display-timings {
+			native-mode = <&timing_vga>;
+			timing_vga: 640x480 {
+				bootph-all;
+				clock-frequency = <25175000>;
+				hactive = <640>;
+				vactive = <480>;
+				hback-porch = <40>;
+				hfront-porch = <24>;
+				vback-porch = <32>;
+				vfront-porch = <11>;
+				hsync-len = <96>;
+				vsync-len = <2>;
+
+				de-active = <1>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				pixelclk-active = <0>;
+			};
+		};
+	};
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

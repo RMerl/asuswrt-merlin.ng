@@ -43,16 +43,11 @@ int pmc_usb_power_up(unsigned int usb_block)
 
     if( usb_block == PMC_USB_HOST_ALL)
     {
-#if defined CONFIG_BCM963138 || defined CONFIG_BCM963148
-        ret = PowerOnDevice(PMB_ADDR_USB30_2X);
-#elif defined CONFIG_BCM94908
-        /*TODO check if this will power on USB device also */
-        ret = PowerOnDevice(PMB_ADDR_USB30_2X);
-#elif defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
         ret = PowerOnDevice(PMB_ADDR_USB30_2X);
         ubus_register_port(UCB_NODE_ID_SLV_USB);
         ubus_register_port(UCB_NODE_ID_MST_USB);
-#elif defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#elif defined(CONFIG_BCM96855)
         ret = PowerOnDevice(PMB_ADDR_USB20_2X);
 #elif defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146)|| defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
         ret = PowerOnDevice(PMB_ADDR_USB30_2X);

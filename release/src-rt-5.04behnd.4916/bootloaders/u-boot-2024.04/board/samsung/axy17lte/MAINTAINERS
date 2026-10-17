@@ -1,0 +1,8 @@
+Samsung A series 2017 phones Board
+M:	Dzmitry Sankouski <dsankouski@gmail.com>
+S:	Maintained
+F:	board/samsung/axy17lte/
+F:	include/configs/exynos78x0-common.h
+F:	configs/a3y17lte_defconfig
+F:	configs/a5y17lte_defconfig
+F:	configs/a7y17lte_defconfig

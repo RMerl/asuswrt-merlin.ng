@@ -163,16 +163,12 @@ endif
 $(eval $(call LN_RULE, $(CONFIG_BCM_EXT_BONDING), broadcom/char/ext_bonding, $(LN_NAME), $(CONFIG_BCM_EXT_BONDING_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_ADSL), broadcom/char/adsl, $(LN_NAME), $(CONFIG_BCM_ADSL_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_PROCFS), broadcom/char/bcmprocfs, $(LN_NAME), $(CONFIG_BCM_PROCFS_IMPL)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_DECT), broadcom/char/dect, $(LN_NAME), $(CONFIG_BCM_DECT_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_TMS), broadcom/char/tms, $(LN_NAME), $(CONFIG_BCM_TMS_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_RDPA_BRIDGE), opensource/net/bridge, $(LN_NAME), $(CONFIG_BCM_RDPA_BRIDGE_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_VFRWD), opensource/net/vfrwd, $(LN_NAME), $(CONFIG_BCM_VFRWD_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_GPON), broadcom/char/gpon, $(LN_NAME), $(CONFIG_BCM_GPON_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_LASER), broadcom/char/laser, $(LN_NAME), $(CONFIG_BCM_LASER_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_LICENSE), broadcom/char/bp3, $(LN_NAME), $(CONFIG_BCM_LICENSE_IMPL)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_PMD), broadcom/char/pmd, $(LN_NAME), $(CONFIG_BCM_PMD_IMPL)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_PMD), opensource/char/pmd, $(LN_NAME), $(CONFIG_BCM_PMD_IMPL)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_VLAN), broadcom/char/vlan, $(LN_NAME), $(CONFIG_BCM_VLAN_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_ISDN), broadcom/char/isdn, $(LN_NAME), $(CONFIG_BCM_ISDN_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_INGQOS), opensource/char/ingqos, $(LN_NAME), $(CONFIG_BCM_INGQOS_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_BPM), broadcom/char/bpm, $(LN_NAME), $(CONFIG_BCM_BPM_IMPL)))
@@ -190,11 +186,8 @@ $(eval $(call LN_RULE, $(CONFIG_BCM_BIQOS), broadcom/char/biqos/build_tdts, $(LN
 $(eval $(call LN_RULE, $(CONFIG_BCM_BIQOS), broadcom/char/biqos/build_tdts_udb, $(LN_NAME), $(CONFIG_BCM_BIQOS_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_BIQOS), broadcom/char/biqos/build_tdts_udbfw, $(LN_NAME), $(CONFIG_BCM_BIQOS_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_HS_UART), opensource/char/hs_uart, $(LN_NAME), $(CONFIG_BCM_HS_UART_IMPL)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_SATA_TEST), broadcom/char/sata_test, $(LN_NAME), $(CONFIG_BCM_SATA_TEST_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_BLUETOOTH_USB), opensource/char/btusb, $(LN_NAME), $(CONFIG_BCM_BLUETOOTH_USB_IMPL)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_LTE), broadcom/net/lte, $(LN_NAME), $(CONFIG_BCM_LTE_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_RDPA_GPL_EXT), opensource/char/rdpa_gpl_ext, $(LN_NAME), $(CONFIG_BCM_RDPA_GPL_EXT_IMPL)))
-$(eval $(call LN_RULE, $(CONFIG_BCM_FPM), opensource/char/fpm, $(LN_NAME), $(CONFIG_BCM_FPM_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_MAP), opensource/net/map, $(LN_NAME), $(CONFIG_BCM_MAP_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_SPU), opensource/char/spudd, $(LN_NAME), $(CONFIG_BCM_SPU_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_PDC), opensource/char/pdc, $(LN_NAME), $(CONFIG_BCM_PDC_IMPL)))
@@ -244,14 +237,29 @@ $(eval $(call LN_RULE_DEP, $(CONFIG_BCM_WLAN), broadcom/net/wl/shared/impl1,,, $
 endif
 endif
 
+# rdk_nlhal
+# ifneq ($(strip $(BUILD_RDK_ONEWIFI)),)
+# always build for RDK
+ifneq ($(strip $(BUILD_RDKWIFI)),)
+ifneq ($(wildcard $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/$(LN_NAME)/main/components/rdk/onewifi/mods),)
+CPECHG = $(shell grep 'BCA_CPEROUTER' $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/$(LN_NAME)/main/components/rdk/onewifi/mods/Makefile)
+ifneq ($(CPECHG),)
+export ALLSRCBASE=$(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)
+export WLSRCBASE=$(ALLSRCBASE)/main/src
+$(eval $(call LN_RULE_DEP, $(CONFIG_BCM_WLAN), broadcom/net/wl/$(LN_NAME)/main/components/rdk/onewifi/mods,,, $(WLLINK)))
+endif
+endif
+endif
+
 endif # CONFIG_BCM_WLAN
 
 
-ifneq ($(CONFIG_BCM_DECT),)
-  CLEAN_DRIVER_DIRS += broadcom/char/dect/impl$(CONFIG_BCM_DECT_IMPL)
-endif
 ifneq ($(CONFIG_BCM_CRYPTODEV),)
   CLEAN_DRIVER_DIRS += opensource/char/cryptodev/impl$(CONFIG_BCM_CRYPTODEV_IMPL)
+endif
+
+ifneq ($(CONFIG_BCM_OPENVPN_DCO),)
+  CLEAN_DRIVER_DIRS += opensource/net/ovpn_dco/impl$(CONFIG_BCM_OPENVPN_DCO_IMPL)
 endif
 
 .PHONY : symlinks clean version_info
@@ -265,7 +273,7 @@ symlinks: $(LN_TARGS)
 
 _CLEAN_LN_TARGS := $(addprefix _clean_,$(wildcard $(LN_TARGS)))
 $(_CLEAN_LN_TARGS) :
-	@[ ! -L $(patsubst _clean_%,%,$@) ] || rm -f $(patsubst _clean_%,%,$@)
+	$(Q)[ ! -L $(patsubst _clean_%,%,$@) ] || rm -f$(if $(Q),,v) $(patsubst _clean_%,%,$@)
 
 cleanlinks: $(_CLEAN_LN_TARGS)
 

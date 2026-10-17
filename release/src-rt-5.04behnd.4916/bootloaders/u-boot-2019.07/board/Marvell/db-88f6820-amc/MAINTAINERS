@@ -1,6 +1,0 @@
-DB_88F6820_AMC BOARD
-M:	Chris Packham <chris.packham@alliedtelesis.co.nz>
-S:	Maintained
-F:	board/Marvell/db-88f6820-amc/
-F:	include/configs/db-88f6820-amc.h
-F:	configs/db-88f6820-amc_defconfig

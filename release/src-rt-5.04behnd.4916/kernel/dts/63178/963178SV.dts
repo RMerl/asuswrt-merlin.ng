@@ -32,36 +32,14 @@
 			};
 		};
 	};
-
-	periph {
-		i2s: bcm63xx-i2s {
-			pinctrl-0 = <&b_i2s_sclk_pin_6 &b_i2s_lrck_pin_7 &b_i2s_rx_sdata_pin_8 &b_i2s_tx_sdata_pin_9 &b_i2s_mclk_pin_10>;
-			pinctrl-names = "default";
-			compatible = "brcm,bcm63xx-i2s";
-			reg = <0x2080 0x21>;
-			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&i2sclk>, <&osc>;
-			clock-names = "i2sclk","i2sosc"; 
-		};
-		i2c@0 {
-			compatible = "i2c-gpio";
-			gpios = <&gpioc 3 0 &gpioc 4 0>;/* sda and scl */
-			i2c-gpio,delay-us   = <50>;     /* ~10 kHz */
-			i2c-gpio,timeout-ms = <100>;    /* 100ms */
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			codec_playback:codec_playback@18{
-				compatible = "ti,tlv320dac3203";
-				reg = <0x18>;
-			};
-			codec_capture:codec_capture@19{
-				compatible = "ti,tlv320adc3101";
-				reg = <0x19>;
-			};
-		};		
-	};
 };
+
+&i2s {
+	pinctrl-0 = <&b_i2s_sclk_pin_6 &b_i2s_lrck_pin_7 &b_i2s_rx_sdata_pin_8 &b_i2s_tx_sdata_pin_9 &b_i2s_mclk_pin_10>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
 &bcm_voice{
 	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
  };

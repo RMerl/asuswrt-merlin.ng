@@ -1,6 +1,0 @@
-MX31PDK BOARD
-M:	Magnus Lilja <lilja.magnus@gmail.com>
-S:	Maintained
-F:	board/freescale/mx31pdk/
-F:	include/configs/mx31pdk.h
-F:	configs/mx31pdk_defconfig

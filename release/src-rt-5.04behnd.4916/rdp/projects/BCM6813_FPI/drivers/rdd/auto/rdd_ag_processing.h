@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -35,10 +35,10 @@
 #ifndef _RDD_AG_PROCESSING_H_
 #define _RDD_AG_PROCESSING_H_
 
-typedef struct rdd_llq_selector_ecn_s
+typedef struct rdd_mirroring_truncate_entry_s
 {
-    uint8_t mask;
-} rdd_llq_selector_ecn_t;
+    uint16_t truncate_offset;
+} rdd_mirroring_truncate_entry_t;
 
 typedef struct rdd_vport_cfg_ex_entry_s
 {
@@ -55,7 +55,6 @@ typedef struct rdd_vport_cfg_entry_s
     bdmf_boolean exception;
     bdmf_boolean congestion_flow_control;
     uint8_t ingress_filter_profile;
-    uint8_t natc_tbl_id;
     bdmf_boolean port_dbg_stat_en;
     bdmf_boolean mcast_whitelist_skip;
     bdmf_boolean is_lan;
@@ -63,10 +62,10 @@ typedef struct rdd_vport_cfg_entry_s
     uint8_t cntr_id;
 } rdd_vport_cfg_entry_t;
 
-int rdd_ag_processing_llq_selector_ecn_get(rdd_llq_selector_ecn_t *llq_selector_ecn);
-int rdd_ag_processing_llq_selector_ecn_set(rdd_llq_selector_ecn_t *llq_selector_ecn);
-int rdd_ag_processing_llq_selector_ecn_get_core(rdd_llq_selector_ecn_t *llq_selector_ecn, int core_id);
-int rdd_ag_processing_llq_selector_ecn_set_core(rdd_llq_selector_ecn_t *llq_selector_ecn, int core_id);
+int rdd_ag_processing_mirroring_truncate_entry_get(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry);
+int rdd_ag_processing_mirroring_truncate_entry_set(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry);
+int rdd_ag_processing_mirroring_truncate_entry_get_core(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry, int core_id);
+int rdd_ag_processing_mirroring_truncate_entry_set_core(uint32_t _entry, rdd_mirroring_truncate_entry_t *mirroring_truncate_entry, int core_id);
 int rdd_ag_processing_vport_cfg_ex_entry_get(uint32_t _entry, rdd_vport_cfg_ex_entry_t *vport_cfg_ex_entry);
 int rdd_ag_processing_vport_cfg_ex_entry_set(uint32_t _entry, rdd_vport_cfg_ex_entry_t *vport_cfg_ex_entry);
 int rdd_ag_processing_vport_cfg_ex_entry_get_core(uint32_t _entry, rdd_vport_cfg_ex_entry_t *vport_cfg_ex_entry, int core_id);
@@ -103,6 +102,18 @@ int rdd_ag_processing_fpi_cfg_table_lkp_enable_set(bdmf_boolean lkp_enable);
 int rdd_ag_processing_fpi_cfg_table_lkp_enable_set_core(bdmf_boolean lkp_enable, int core_id);
 int rdd_ag_processing_fpi_cfg_table_lkp_enable_get(bdmf_boolean *lkp_enable);
 int rdd_ag_processing_fpi_cfg_table_lkp_enable_get_core(bdmf_boolean *lkp_enable, int core_id);
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_set(bdmf_boolean ip_frag_enable);
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_set_core(bdmf_boolean ip_frag_enable, int core_id);
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_get(bdmf_boolean *ip_frag_enable);
+int rdd_ag_processing_fpi_cfg_table_ip_frag_enable_get_core(bdmf_boolean *ip_frag_enable, int core_id);
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_set(bdmf_boolean ip_reasm_enable);
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_set_core(bdmf_boolean ip_reasm_enable, int core_id);
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_get(bdmf_boolean *ip_reasm_enable);
+int rdd_ag_processing_fpi_cfg_table_ip_reasm_enable_get_core(bdmf_boolean *ip_reasm_enable, int core_id);
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_set(bdmf_boolean ipv6_exthdr_force_trap);
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_set_core(bdmf_boolean ipv6_exthdr_force_trap, int core_id);
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_get(bdmf_boolean *ipv6_exthdr_force_trap);
+int rdd_ag_processing_fpi_cfg_table_ipv6_exthdr_force_trap_get_core(bdmf_boolean *ipv6_exthdr_force_trap, int core_id);
 int rdd_ag_processing_fpi_cfg_table_default_priority_set(uint8_t default_priority);
 int rdd_ag_processing_fpi_cfg_table_default_priority_set_core(uint8_t default_priority, int core_id);
 int rdd_ag_processing_fpi_cfg_table_default_priority_get(uint8_t *default_priority);
@@ -123,10 +134,10 @@ int rdd_ag_processing_policer_params_table_color_aware_enabled_set(uint32_t _ent
 int rdd_ag_processing_policer_params_table_color_aware_enabled_set_core(uint32_t _entry, bdmf_boolean color_aware_enabled, int core_id);
 int rdd_ag_processing_policer_params_table_color_aware_enabled_get(uint32_t _entry, bdmf_boolean *color_aware_enabled);
 int rdd_ag_processing_policer_params_table_color_aware_enabled_get_core(uint32_t _entry, bdmf_boolean *color_aware_enabled, int core_id);
-int rdd_ag_processing_spdtest_num_of_rx_flows_set(uint8_t bits);
-int rdd_ag_processing_spdtest_num_of_rx_flows_set_core(uint8_t bits, int core_id);
-int rdd_ag_processing_spdtest_num_of_rx_flows_get(uint8_t *bits);
-int rdd_ag_processing_spdtest_num_of_rx_flows_get_core(uint8_t *bits, int core_id);
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_set(uint32_t _entry, uint16_t truncate_offset);
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_set_core(uint32_t _entry, uint16_t truncate_offset, int core_id);
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_get(uint32_t _entry, uint16_t *truncate_offset);
+int rdd_ag_processing_rx_mirroring_table_truncate_offset_get_core(uint32_t _entry, uint16_t *truncate_offset, int core_id);
 int rdd_ag_processing_tcam_generic_fields_offset_set(uint32_t _entry, uint8_t offset);
 int rdd_ag_processing_tcam_generic_fields_offset_set_core(uint32_t _entry, uint8_t offset, int core_id);
 int rdd_ag_processing_tcam_generic_fields_offset_get(uint32_t _entry, uint8_t *offset);
@@ -135,42 +146,38 @@ int rdd_ag_processing_tcam_generic_fields_layer_set(uint32_t _entry, uint8_t lay
 int rdd_ag_processing_tcam_generic_fields_layer_set_core(uint32_t _entry, uint8_t layer, int core_id);
 int rdd_ag_processing_tcam_generic_fields_layer_get(uint32_t _entry, uint8_t *layer);
 int rdd_ag_processing_tcam_generic_fields_layer_get_core(uint32_t _entry, uint8_t *layer, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_set(bdmf_boolean generic_1);
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_set_core(bdmf_boolean generic_1, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_get(bdmf_boolean *generic_1);
-int rdd_ag_processing_tcam_table_cfg_table_generic_1_get_core(bdmf_boolean *generic_1, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_set(bdmf_boolean generic_2);
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_set_core(bdmf_boolean generic_2, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_get(bdmf_boolean *generic_2);
-int rdd_ag_processing_tcam_table_cfg_table_generic_2_get_core(bdmf_boolean *generic_2, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_set(bdmf_boolean generic_3);
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_set_core(bdmf_boolean generic_3, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_get(bdmf_boolean *generic_3);
-int rdd_ag_processing_tcam_table_cfg_table_generic_3_get_core(bdmf_boolean *generic_3, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_set(bdmf_boolean generic_4);
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_set_core(bdmf_boolean generic_4, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_get(bdmf_boolean *generic_4);
-int rdd_ag_processing_tcam_table_cfg_table_generic_4_get_core(bdmf_boolean *generic_4, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set(bdmf_boolean ingress_port);
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set_core(bdmf_boolean ingress_port, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get(bdmf_boolean *ingress_port);
-int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get_core(bdmf_boolean *ingress_port, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_gem_set(bdmf_boolean gem);
-int rdd_ag_processing_tcam_table_cfg_table_gem_set_core(bdmf_boolean gem, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_gem_get(bdmf_boolean *gem);
-int rdd_ag_processing_tcam_table_cfg_table_gem_get_core(bdmf_boolean *gem, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_set(bdmf_boolean network_layer);
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_set_core(bdmf_boolean network_layer, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_get(bdmf_boolean *network_layer);
-int rdd_ag_processing_tcam_table_cfg_table_network_layer_get_core(bdmf_boolean *network_layer, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_ssid_set(bdmf_boolean ssid);
-int rdd_ag_processing_tcam_table_cfg_table_ssid_set_core(bdmf_boolean ssid, int core_id);
-int rdd_ag_processing_tcam_table_cfg_table_ssid_get(bdmf_boolean *ssid);
-int rdd_ag_processing_tcam_table_cfg_table_ssid_get_core(bdmf_boolean *ssid, int core_id);
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_set(uint32_t _entry, uint32_t src_ipaddr, uint32_t dst_ipaddr, uint16_t src_port, uint16_t dst_port);
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_set_core(uint32_t _entry, uint32_t src_ipaddr, uint32_t dst_ipaddr, uint16_t src_port, uint16_t dst_port, int core_id);
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_get(uint32_t _entry, uint32_t *src_ipaddr, uint32_t *dst_ipaddr, uint16_t *src_port, uint16_t *dst_port);
-int rdd_ag_processing_tr471_spdsvc_rx_pkt_id_table_get_core(uint32_t _entry, uint32_t *src_ipaddr, uint32_t *dst_ipaddr, uint16_t *src_port, uint16_t *dst_port, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_set(uint32_t _entry, bdmf_boolean generic_1);
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_set_core(uint32_t _entry, bdmf_boolean generic_1, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_get(uint32_t _entry, bdmf_boolean *generic_1);
+int rdd_ag_processing_tcam_table_cfg_table_generic_1_get_core(uint32_t _entry, bdmf_boolean *generic_1, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_set(uint32_t _entry, bdmf_boolean generic_2);
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_set_core(uint32_t _entry, bdmf_boolean generic_2, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_get(uint32_t _entry, bdmf_boolean *generic_2);
+int rdd_ag_processing_tcam_table_cfg_table_generic_2_get_core(uint32_t _entry, bdmf_boolean *generic_2, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_set(uint32_t _entry, bdmf_boolean generic_3);
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_set_core(uint32_t _entry, bdmf_boolean generic_3, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_get(uint32_t _entry, bdmf_boolean *generic_3);
+int rdd_ag_processing_tcam_table_cfg_table_generic_3_get_core(uint32_t _entry, bdmf_boolean *generic_3, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_set(uint32_t _entry, bdmf_boolean generic_4);
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_set_core(uint32_t _entry, bdmf_boolean generic_4, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_get(uint32_t _entry, bdmf_boolean *generic_4);
+int rdd_ag_processing_tcam_table_cfg_table_generic_4_get_core(uint32_t _entry, bdmf_boolean *generic_4, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set(uint32_t _entry, bdmf_boolean ingress_port);
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_set_core(uint32_t _entry, bdmf_boolean ingress_port, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get(uint32_t _entry, bdmf_boolean *ingress_port);
+int rdd_ag_processing_tcam_table_cfg_table_ingress_port_get_core(uint32_t _entry, bdmf_boolean *ingress_port, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_gem_set(uint32_t _entry, bdmf_boolean gem);
+int rdd_ag_processing_tcam_table_cfg_table_gem_set_core(uint32_t _entry, bdmf_boolean gem, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_gem_get(uint32_t _entry, bdmf_boolean *gem);
+int rdd_ag_processing_tcam_table_cfg_table_gem_get_core(uint32_t _entry, bdmf_boolean *gem, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_set(uint32_t _entry, bdmf_boolean network_layer);
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_set_core(uint32_t _entry, bdmf_boolean network_layer, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_get(uint32_t _entry, bdmf_boolean *network_layer);
+int rdd_ag_processing_tcam_table_cfg_table_network_layer_get_core(uint32_t _entry, bdmf_boolean *network_layer, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_ssid_set(uint32_t _entry, bdmf_boolean ssid);
+int rdd_ag_processing_tcam_table_cfg_table_ssid_set_core(uint32_t _entry, bdmf_boolean ssid, int core_id);
+int rdd_ag_processing_tcam_table_cfg_table_ssid_get(uint32_t _entry, bdmf_boolean *ssid);
+int rdd_ag_processing_tcam_table_cfg_table_ssid_get_core(uint32_t _entry, bdmf_boolean *ssid, int core_id);
 int rdd_ag_processing_vport_cfg_ex_table_loopback_en_set(uint32_t _entry, bdmf_boolean loopback_en);
 int rdd_ag_processing_vport_cfg_ex_table_loopback_en_set_core(uint32_t _entry, bdmf_boolean loopback_en, int core_id);
 int rdd_ag_processing_vport_cfg_ex_table_loopback_en_get(uint32_t _entry, bdmf_boolean *loopback_en);
@@ -207,10 +214,6 @@ int rdd_ag_processing_vport_cfg_table_ingress_filter_profile_set(uint32_t _entry
 int rdd_ag_processing_vport_cfg_table_ingress_filter_profile_set_core(uint32_t _entry, uint8_t ingress_filter_profile, int core_id);
 int rdd_ag_processing_vport_cfg_table_ingress_filter_profile_get(uint32_t _entry, uint8_t *ingress_filter_profile);
 int rdd_ag_processing_vport_cfg_table_ingress_filter_profile_get_core(uint32_t _entry, uint8_t *ingress_filter_profile, int core_id);
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_set(uint32_t _entry, uint8_t natc_tbl_id);
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_set_core(uint32_t _entry, uint8_t natc_tbl_id, int core_id);
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_get(uint32_t _entry, uint8_t *natc_tbl_id);
-int rdd_ag_processing_vport_cfg_table_natc_tbl_id_get_core(uint32_t _entry, uint8_t *natc_tbl_id, int core_id);
 int rdd_ag_processing_vport_cfg_table_viq_set(uint32_t _entry, uint8_t viq);
 int rdd_ag_processing_vport_cfg_table_viq_set_core(uint32_t _entry, uint8_t viq, int core_id);
 int rdd_ag_processing_vport_cfg_table_viq_get(uint32_t _entry, uint8_t *viq);

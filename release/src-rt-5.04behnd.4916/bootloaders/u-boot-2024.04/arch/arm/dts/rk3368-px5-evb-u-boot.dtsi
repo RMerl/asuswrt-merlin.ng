@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2017 Theobroma Systems Design und Consulting GmbH
+ */
+
+#include "rk3368-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = &emmc;
+	};
+};
+
+&dmc {
+	bootph-all;
+
+	/*
+	 * PX5-evb(2GB) need to use CBRD mode, or else the dram is not correct
+	 * See doc/device-tree-bindings/clock/rockchip,rk3368-dmc.txt for
+	 * details on the 'rockchip,memory-schedule' property and how it
+	 * affects the physical-address to device-address mapping.
+	 */
+	rockchip,memory-schedule = <DMC_MSCH_CBRD>;
+	rockchip,ddr-frequency = <800000000>;
+	rockchip,ddr-speed-bin = <DDR3_1600K>;
+
+	status = "okay";
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&service_msch {
+	bootph-all;
+};
+
+&dmc {
+	bootph-all;
+	status = "okay";
+};
+
+&pmugrf {
+	bootph-all;
+};
+
+&sgrf {
+	bootph-all;
+};
+
+&cru {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};
+
+&uart4 {
+	bootph-all;
+};
+
+&emmc {
+	/* mmc to sram can't do dma, prevent aborts transferring TF-A parts */
+	u-boot,spl-fifo-mode;
+	bootph-all;
+};
+
+&timer0 {
+	bootph-all;
+	clock-frequency = <24000000>;
+	status = "okay";
+};

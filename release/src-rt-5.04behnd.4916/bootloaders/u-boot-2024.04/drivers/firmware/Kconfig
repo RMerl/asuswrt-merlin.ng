@@ -1,0 +1,49 @@
+config FIRMWARE
+	bool "Enable Firmware driver support"
+
+config SPL_FIRMWARE
+	bool "Enable Firmware driver support in SPL"
+	depends on FIRMWARE && SPL
+
+config SPL_ARM_PSCI_FW
+	bool
+	select SPL_FIRMWARE
+
+config ARM_PSCI_FW
+	bool
+	select FIRMWARE
+
+config TI_SCI_PROTOCOL
+	tristate "TI System Control Interface (TISCI) Message Protocol"
+	depends on K3_SEC_PROXY
+	select FIRMWARE
+	select SPL_FIRMWARE if SPL
+	help
+	  TI System Control Interface (TISCI) Message Protocol is used to manage
+	  compute systems such as ARM, DSP etc with the system controller in
+	  complex System on Chip (SoC) such as those found on certain K3
+	  generation SoC from TI.
+
+	  This protocol library is used by client drivers to use the features
+	  provided by the system controller.
+
+config ZYNQMP_FIRMWARE
+	bool "ZynqMP Firmware interface"
+	select FIRMWARE
+	help
+	  Firmware interface driver is used by different
+	  drivers to communicate with the firmware for
+	  various platform management services.
+	  Say yes to enable ZynqMP firmware interface driver.
+	  If in doubt, say N.
+
+config ARM_SMCCC_FEATURES
+	bool "Arm SMCCC features discovery"
+	depends on ARM_PSCI_FW
+	help
+	  Discover Arm SMCCC features for which a U-Boot driver is defined. When enabled,
+	  the PSCI driver is always probed and binds dirvers registered to the Arm SMCCC
+	  services if any and reported as supported by the SMCCC firmware.
+
+source "drivers/firmware/arm-ffa/Kconfig"
+source "drivers/firmware/scmi/Kconfig"

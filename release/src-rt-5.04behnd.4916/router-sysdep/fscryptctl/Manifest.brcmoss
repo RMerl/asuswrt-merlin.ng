@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: fscryptctl
+OSS_REFERENCE_Version: git commit: "fix mkfs.ext4 invocation" <142326810eb19d6794793db6d24d0775a15aa8e5>
+OSS_REFERENCE_License: Apache
+OSS_REFERENCE_DownloadURL: https://github.com/google/fscryptctl/archive/142326810eb19d6794793db6d24d0775a15aa8e5.zip
+OSS_REFERENCE_BroadcomURL: ./
+

@@ -1,0 +1,9 @@
+FIREFLY
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	arch/arm/dts/rk3288-rock2-som.dtsi
+F:	arch/arm/dts/rk3288-rock2-square.dts
+F:	arch/arm/dts/rk3288-rock2-square-u-boot.dtsi
+F:	board/radxa/rock2
+F:	include/configs/rock2.h
+F:	configs/rock2_defconfig

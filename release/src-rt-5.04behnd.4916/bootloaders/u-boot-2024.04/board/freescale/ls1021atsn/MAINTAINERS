@@ -1,0 +1,8 @@
+NXP LS1021A-TSN Board
+M:	Vladimir Oltean <olteanv@gmail.com>
+S:	Maintained
+F:	arch/arm/dts/ls1021a-tsn.dts
+F:	board/freescale/ls1021atsn/
+F:	include/configs/ls1021atsn.h
+F:	configs/ls1021atsn_qspi_defconfig
+F:	configs/ls1021atsn_sdcard_defconfig

@@ -1,0 +1,35 @@
+#include "bcm_voice_dt_bindings.h"
+
+/dts-v1/;
+/plugin/;
+
+&bcm_voice {
+	compatible = "brcm,voice-card";
+	board_id = "SI32260";
+	dev_profile = <VD_PMOS_BUCK_BOOST>;
+	flags = <FLAG_DSP_PCMHAL_ENABLE>;
+
+	dev0: dev@0 {
+		reg = <0x0>;
+		dev_type = <VD_SILABS_32261>;
+		audio_type = <VD_VDTYPE_PCM>;
+		spi_ss_bx = <VD_SPI_SS_B1>;
+		rst_pin = <VD_RESET_FXS1>;
+		chn@0 {
+			reg = <0x0>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <0 1>;
+			ts_rx_cfg = <0 1>;
+		};
+		chn@1 {
+			reg = <0x1>;
+			chan_type = <VD_VCTYPE_SLIC>;
+			sample_comp = <VD_VC_COMP_LINEAR>;
+			sample_rate = <VD_VC_8KHZ>;
+			ts_tx_cfg = <2 3>;
+			ts_rx_cfg = <2 3>;
+		};
+	};
+};

@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		section@0 {
+			u-boot {
+			};
+			hash {
+				algo = "sha256";
+			};
+			signature {
+				algo = "sha256,rsa2048";
+				key-name-hint = "dev";
+			};
+		};
+		section@1 {
+			u-boot {
+			};
+			hash-1 {
+				algo = "sha1";
+			};
+			hash-2 {
+				algo = "sha256";
+			};
+			signature-1 {
+				algo = "sha1,rsa2048";
+				key-name-hint = "dev";
+			};
+			signature-2 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "dev";
+			};
+		};
+	};
+};

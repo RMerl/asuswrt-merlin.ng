@@ -1,0 +1,32 @@
+# Copyright (C) 2023 Renesas Electronics Corporation
+# SPDX-License-Identifier: GPL-2.0+
+
+if RZG2L
+
+config R9A07G044L
+	bool "Renesas R9A07G044L SoC"
+	imply CLK_R9A07G044
+	help
+	  Enable support for the Renesas R9A07G044L (RZ/G2L) SoC.
+
+choice
+	prompt "Renesas RZ/G2L Family Board selection"
+	default TARGET_RZG2L_SMARC_EVK
+
+config TARGET_RZG2L_SMARC_EVK
+	bool "Renesas RZ/G2L SMARC EVK"
+	imply R9A07G044L
+	help
+	  Enable support for the RZ/G2L SMARC evaluation board.
+
+source "board/renesas/rzg2l/Kconfig"
+
+endchoice
+
+config MULTI_DTB_FIT_UNCOMPRESS_SZ
+	default 0x80000 if TARGET_RZG2L_SMARC_EVK
+
+config MULTI_DTB_FIT_USER_DEF_ADDR
+	default 0x49000000 if TARGET_RZG2L_SMARC_EVK
+
+endif

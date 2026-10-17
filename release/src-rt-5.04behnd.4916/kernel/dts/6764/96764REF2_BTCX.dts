@@ -1,0 +1,17 @@
+#include "96764REF2.dts"
+
+/*
+ * For BT Coex
+ */
+&pincontroller
+{
+	pinctrl-names = "default";
+	pinctrl-0 = <&wifi1_gci_gpio_0_pin_22 &wifi1_gci_gpio_2_pin_29 &wifi1_gci_gpio_1_pin_30>; /* 3-Wire */
+};
+
+
+&led0 {
+	status="disabled";
+};
+
+

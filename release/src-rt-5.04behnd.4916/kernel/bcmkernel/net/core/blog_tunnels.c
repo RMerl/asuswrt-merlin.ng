@@ -478,11 +478,6 @@ done:
     return ip_p;
 }
 
-BlogIpv4Hdr_t * blog_parse_l2hdr( struct fkbuff *fkb_p, uint32_t h_proto )
-{
-    return _blog_parse_l2hdr(fkb_p, h_proto);
-}
-
 int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto, uint16_t *gflags_p) 
 {
 	BlogIpv4Hdr_t* ip_p;
@@ -786,26 +781,27 @@ int __bcm_pptp_rcv_check(uint16_t call_id, uint32_t *rcv_pktSeq, uint32_t rcv_pk
     {
         opt=&sock->proto.pptp;
         if (opt->dst_addr.sin_addr.s_addr!=saddr) 
-		{
+        {
             sock=NULL;
-		}
+        }
         else 
         {   
             sock_hold(sk_pppox(sock));
             //printk(KERN_INFO "PPTP: bcm_pptp_rcv_check() current seq_recv is %d \n", opt->seq_recv);
             if (bcm_ppp_rcv_decomp_run(&sock->chan)) {
                 ret = BLOG_PPTP_ENCRYPTED;
-                rcu_read_unlock();
                 return ret;
             } else if (opt->seq_recv && ((*rcv_pktSeq) > opt->seq_recv)) 
             {
                 opt->seq_recv = (*rcv_pktSeq);
                 ret = BLOG_PPTP_RCV_IN_SEQ;
             } else if (opt->seq_recv && ((*rcv_pktSeq) - opt->seq_recv) <= 0) {
-                printk(KERN_INFO "bcm_pptp_rcv_check():[BLOG_PPTP_RCV_OOS_LT] current seq_recv is %d pkt_seq=%d \n", opt->seq_recv, *rcv_pktSeq);
+                if (printk_ratelimit())
+                    printk(KERN_INFO "bcm_pptp_rcv_check():[BLOG_PPTP_RCV_OOS_LT] current seq_recv is %d pkt_seq=%d \n", opt->seq_recv, *rcv_pktSeq);
                 ret = BLOG_PPTP_RCV_OOS_LT;
             } else {
-                printk(KERN_INFO "bcm_pptp_rcv_check():[BLOG_PPTP_RCV_OOS_GT] current seq_recv is %d pkt_seq=%d \n", opt->seq_recv, *rcv_pktSeq);
+                if (printk_ratelimit())
+                    printk(KERN_INFO "bcm_pptp_rcv_check():[BLOG_PPTP_RCV_OOS_GT] current seq_recv is %d pkt_seq=%d \n", opt->seq_recv, *rcv_pktSeq);
                 opt->seq_recv = (*rcv_pktSeq);
                 ret = BLOG_PPTP_RCV_OOS_GT;
             }       

@@ -104,250 +104,8 @@ typedef enum bbh_id_e
 
 
 /**********************************************************************************************************/
-#elif  defined(BCM6846)
 
-#define RNR_FREQ_IN_MHZ 1400
-#define UBUS_SLV_FREQ_IN_MHZ 466
-#define NUM_OF_CORES_IN_QUAD 3
-
-#define IS_WAN_TX_PORT(bbh_id) (bbh_id == BBH_TX_WAN_ID)
-#define IS_WAN_RX_PORT(bbh_id) (bbh_id == BBH_ID_PON)
-#define IS_SDMA(dma_id)  (dma_id > DMA0_ID)
-#define IS_DMA(dma_id)   (dma_id <= DMA0_ID)
-
-
-/* DISP CONGESTION */
-#define DIS_REOR_CONGESTION_THRESHOLD    200
-#define DIS_REOR_LINKED_LIST_BUFFER_NUM  512
-#define NUM_OF_PROCESSING_TASKS          12
-
-/* SBPM */
-
-#define SBPM_MAX_BUFFER_NUMBER              0x5FF
-
-
-/* BBH_RX */
-#define DRV_BBH_RX_MAXIMAL_PACKET_HEADER_OFFSET 63
-#define BBH_FREQUENCY (466770000) /* 466.77 MHz */
-
-/* BBH_TX */
-#define BBH_TX_DS_PD_FIFO_SIZE_0 7
-#define BBH_TX_DS_PD_FIFO_SIZE_1 7
-
-typedef enum bbh_id_e
-{
-    BBH_ID_0 = 0,
-    BBH_ID_1,
-    BBH_ID_2,
-    BBH_ID_3,
-    BBH_ID_4,
-    BBH_ID_PON,
-    BBH_ID_NUM,
-    BBH_ID_FIRST = BBH_ID_0,
-    BBH_ID_LAST = BBH_ID_PON,
-    BBH_ID_NULL = BBH_ID_NUM
-} bbh_id_e;
-
-typedef enum dma_id_e
-{
-    DMA0_ID = 0,
-    SDMA0_ID,
-    DMA_NUM,
-    DMA_ID_FIRST = DMA0_ID,
-} dma_id_e;
-
-/**********************************************************************************************************/
-
-#elif  defined(BCM6878)
-#define RNR_FREQ_IN_MHZ 1000
-#define UBUS_SLV_FREQ_IN_MHZ 466
-#define NUM_OF_CORES_IN_QUAD 3
-
-#define IS_WAN_TX_PORT(bbh_id) (bbh_id == BBH_TX_WAN_ID)
-#define IS_WAN_RX_PORT(bbh_id) (bbh_id == BBH_ID_PON)
-#define IS_SDMA(dma_id)  (dma_id > DMA0_ID)
-#define IS_DMA(dma_id)   (dma_id <= DMA0_ID)
-
-
-/* DISP CONGESTION */
-#define DIS_REOR_CONGESTION_THRESHOLD    100
-#define DIS_REOR_LINKED_LIST_BUFFER_NUM  256
-#define NUM_OF_PROCESSING_TASKS          12
-
-/* BBH_RX */
-#define DRV_BBH_RX_MAXIMAL_PACKET_HEADER_OFFSET 63
-#define BBH_FREQUENCY (466770000) /* 466.77 MHz */
-
-/* BBH_TX */
-#define BBH_TX_DS_PD_FIFO_SIZE_0 7
-#define BBH_TX_DS_PD_FIFO_SIZE_1 7
-
-typedef enum bbh_id_e
-{
-    BBH_ID_0 = 0,
-    BBH_ID_1,
-    BBH_ID_2,
-    BBH_ID_3,
-    BBH_ID_4,
-    BBH_ID_PON,
-    BBH_ID_NUM,
-    BBH_ID_FIRST = BBH_ID_0,
-    BBH_ID_LAST = BBH_ID_PON,
-    BBH_ID_NULL = BBH_ID_NUM
-} bbh_id_e;
-
-typedef enum dma_id_e
-{
-    DMA0_ID = 0,
-    DMA_NUM,
-    DMA_ID_FIRST = DMA0_ID,
-} dma_id_e;
-
-typedef enum bbh_tx_id_e
-{
-    BBH_TX_ID_LAN = 0,
-    BBH_TX_ID_PON,
-    BBH_TX_ID_NUM,
-    BBH_TX_ID_FIRST = BBH_TX_ID_LAN,
-    BBH_TX_ID_LAST = BBH_TX_ID_PON,
-    BBH_TX_ID_NULL = BBH_TX_ID_NUM
-} bbh_tx_id_e;
-
-/* SBPM */
-#define SBPM_MAX_BUFFER_NUMBER              0x3FF
-#elif  defined(BCM6855)
-#define RNR_FREQ_IN_MHZ 1000
-#define UBUS_SLV_FREQ_IN_MHZ 500
-#define NUM_OF_CORES_IN_QUAD 6
-#define DRV_PARSER_MASKED_DA_FILTER_NUM 2
-#define DRV_PARSER_DA_FILTER_NUM 9
-#define NUM_OF_RNR_WITH_PROFILING 3
-
-#define IS_WAN_TX_PORT(bbh_id) (bbh_id == BBH_TX_WAN_ID)
-#define IS_WAN_RX_PORT(bbh_id) (bbh_id == BBH_ID_PON)
-#define IS_SDMA(dma_id)  (dma_id > DMA0_ID)
-#define IS_DMA(dma_id)   (dma_id <= DMA0_ID)
-
-/* DISP CONGESTION */
-#define DIS_REOR_CONGESTION_THRESHOLD    100
-#define DIS_REOR_LINKED_LIST_BUFFER_NUM  256
-#define NUM_OF_PROCESSING_TASKS          12
-
-#define DSPTCHR_CONG_PARAM_INGRESS_NORMAL 1023
-#define DSPTCHR_CONG_PARAM_EGRESS_NORMAL  1023
-#define DSPTCHR_CONG_PARAM_GLOBAL         (DIS_REOR_LINKED_LIST_BUFFER_NUM - DSPTCHR_VIRTUAL_QUEUE_NUM - 2)
-#define DSPTCHR_CONG_PARAM_EGRESS_GLOBAL  300
-#define DSPTCHR_RESERVED_PRIORITY_BUFF_NUM 100
-#define DSPTCHR_CONG_PARAM_HYST           8
-#define DSPTCHR_COMMON_MAX_LIMIT_PER_VIQ             (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1)
-#define DSPTCHR_GUARANTEED_MAX_LIMIT_PER_NORMAL_VIQ  8
-#define DSPTCHR_GUARANTEED_MAX_LIMIT_PER_EXCLUS_VIQ  16
-
-/* SBPM */
-#define SBPM_UG0_BN_THRESHOLD               0x200
-#define SBPM_UG0_EXCL_LOW_THRESHOLD         0x1C0
-
-/* BBH_RX */
-#define DRV_BBH_RX_MAXIMAL_PACKET_HEADER_OFFSET 63
-#define BBH_FREQUENCY (466770000) /* 466.77 MHz */
-
-/* BBH_TX */
-#define BBH_TX_DS_PD_FIFO_SIZE_0 7
-#define BBH_TX_DS_PD_FIFO_SIZE_1 15
-
-typedef enum bbh_id_e
-{
-    BBH_ID_0 = 0,
-    BBH_ID_1,
-    BBH_ID_2,
-    BBH_ID_3,
-    BBH_ID_4,
-    BBH_ID_5,
-    BBH_ID_PON,
-    BBH_ID_NUM,
-    BBH_ID_FIRST = BBH_ID_0,
-    BBH_ID_LAST = BBH_ID_PON,
-    BBH_ID_NULL = BBH_ID_NUM,
-    BBH_TX_ID_LAN = 0,
-    BBH_ID_QM_COPY,
-    BBH_TX_ID_PON,
-
-    BBH_TX_ID_NUM,
-    BBH_TX_ID_FIRST = BBH_TX_ID_LAN,
-    BBH_TX_ID_LAST = BBH_TX_ID_PON,
-    BBH_TX_ID_NULL = BBH_ID_NULL
-} bbh_id_e;
-
-typedef enum dma_id_e
-{
-    DMA0_ID = 0,
-    DMA1_ID,
-    DMA_COPY_ID,
-    DMA_NUM,
-    DMA_ID_FIRST = DMA0_ID,
-} dma_id_e;
-
-typedef enum dma_target_e
-{
-    DMA_TARGET_DMA = 0,
-    DMA_TARGET_SDMA,
-    DMA_TARGET_NUM,
-    DMA_TARGET_FIRST = DMA_TARGET_DMA,
-} dma_target_e;
-
-#define SDMA_U_THRESH_IN_BBH_5G_VALUE           ( 0x03 )
-#define SDMA_U_THRESH_OUT_BBH_5G_VALUE          ( 0x02 )
-
-#define SDMA_U_THRESH_IN_BBH_2P5G_VALUE         ( 0x03 )
-#define SDMA_U_THRESH_OUT_BBH_2P5G_VALUE        ( 0x02 )
-#define SDMA_U_THRESH_IN_BBH_10G_VALUE          ( 0x06 )
-#define SDMA_U_THRESH_OUT_BBH_10G_VALUE         ( 0x04 )
-#define SDMA_RR_WEIGHT_TX_BBH_LAN_1_VALUE       ( 0x00 )
-#define DMA_RR_WEIGHT_TX_BBH_LAN_1_VALUE        ( 0x00 )
-#define SDMA_U_THRESH_IN_BBH_DSL_VALUE          ( 0x06 )
-#define SDMA_U_THRESH_OUT_BBH_DSL_VALUE         ( 0x04 )
-#define SDMA_STRICT_PRI_TX_BBH_LAN_1_VALUE      ( 0x04 )
-#define DMA_STRICT_PRI_TX_BBH_LAN_1_VALUE       ( 0x08 )
-
-#define SDMA_STRICT_PRI_RX_BBH_5G_VALUE         ( 0x04 )
-#define SDMA_STRICT_PRI_RX_BBH_10G_VALUE        ( 0x04 )
-#define SDMA_STRICT_PRI_RX_BBH_2P5G_VALUE       ( 0x04 )
-
-#define SDMA_STRICT_PRI_TX_BBH_LAN_VALUE        ( 0x04 )
-#define SDMA_STRICT_PRI_TX_BBH_PON_VALUE        ( 0x04 )
-#define SDMA_STRICT_PRI_TX_BBH_COPY_VALUE       ( 0x04 )
-#define DMA_STRICT_PRI_TX_BBH_COPY_VALUE        ( 0x08 )
-
-#define SDMA_RR_WEIGHT_RX_BBH_5G_VALUE          ( 0x00 )
-#define SDMA_RR_WEIGHT_RX_BBH_2P5G_VALUE        ( 0x00 )
-#define SDMA_RR_WEIGHT_RX_BBH_DSL_VALUE         ( 0x00 )
-#define SDMA_RR_WEIGHT_RX_BBH_10G_VALUE         ( 0x00 )
-
-#define SDMA_RR_WEIGHT_TX_BBH_COPY_VALUE        ( 0x00 )
-#define DMA_RR_WEIGHT_TX_BBH_COPY_VALUE         ( 0x00 )
-
-/* size of each one of FIFOs 0-7 - value is size + 1*/
-#define BBH_TX_GPON_PD_FIFO_SIZE_0_7 5
-#define BBH_TX_GPON_PD_FIFO_SIZE_8_15 5
-#define BBH_TX_GPON_PD_FIFO_SIZE_16_23 5
-#define BBH_TX_GPON_PD_FIFO_SIZE_24_31 5
-#define BBH_TX_GPON_PD_FIFO_SIZE_32_39 5
-
-/*EPON DEFS*/
-/* size of each one of FIFOs 8-15 */
-/* size of each one of FIFOs 8-15 */
-#define BBH_TX_EPON_PD_FIFO_SIZE_0_7 7
-#define BBH_TX_EPON_PD_FIFO_SIZE_8_15 7
-#define BBH_TX_EPON_PD_FIFO_SIZE_16_23 0
-#define BBH_TX_EPON_PD_FIFO_SIZE_24_31 0
-#define BBH_TX_EPON_PD_FIFO_SIZE_32_39 0
-
-#define FPM_INTERRUPT_MASK_OFF              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-#define FPM_INTERRUPT_TIMER_DELAY           1000  /* msec */
-#define SBPM_MAX_BUFFER_NUMBER              0x7FF
-
-
-#elif  defined(BCM6888) || defined(BCM68880)
+#elif  defined(BCM6888) || defined(BCM68880) 
 
 #define RNR_FREQ_IN_MHZ 1250
 #define UBUS_SLV_FREQ_IN_MHZ 880
@@ -512,7 +270,166 @@ typedef enum dma_target_e
 
 #define SBPM_MAX_BUFFER_NUMBER              0xFFF
 
-#elif  defined(BCM6837)
+#elif  defined(BCM68375) 
+
+#define RNR_FREQ_IN_MHZ 1250
+#define UBUS_SLV_FREQ_IN_MHZ 880
+
+#define IS_WAN_TX_PORT(bbh_id) (bbh_id == BBH_TX_WAN_ID)
+#define IS_WAN_RX_PORT(bbh_id) (bbh_id == BBH_ID_PON)
+#define IS_SDMA(dma_id)  (dma_id > DMA0_ID)
+#define IS_DMA(dma_id)   (dma_id <= DMA0_ID)
+
+/* DISP CONGESTION */
+#define DIS_REOR_CONGESTION_THRESHOLD    100
+#define DIS_REOR_LINKED_LIST_BUFFER_NUM  1024
+#define NUM_OF_PROCESSING_TASKS          12
+
+#define DISP_REOR_VIQ_BBH_RX10_NORMAL       	10
+#define DISP_REOR_VIQ_BBH_RX10_EXCL         	11
+#define DISP_REOR_VIQ_BBH_WAN_EXCL DISP_REOR_VIQ_BBH_RX10_EXCL
+#define DISP_REOR_VIQ_BBH_RX_MAX_NUM 16
+#define DSPTCHR_CONG_PARAM_INGRESS_NORMAL 1023
+#define DSPTCHR_CONG_PARAM_EGRESS_NORMAL  1023
+#define DSPTCHR_CONG_PARAM_GLOBAL         (DIS_REOR_LINKED_LIST_BUFFER_NUM - DSPTCHR_VIRTUAL_QUEUE_NUM - 2)
+#define DSPTCHR_CONG_PARAM_EGRESS_GLOBAL  300
+#define DSPTCHR_RESERVED_PRIORITY_BUFF_NUM 100
+#define DSPTCHR_CONG_PARAM_HYST           8
+#define DSPTCHR_COMMON_MAX_LIMIT_PER_VIQ             (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1)
+#define DSPTCHR_GUARANTEED_MAX_LIMIT_PER_NORMAL_VIQ  8
+#define DSPTCHR_GUARANTEED_MAX_LIMIT_PER_EXCLUS_VIQ  16
+
+/* SBPM */
+#define SBPM_UG0_BN_THRESHOLD               0x3FF
+#define SBPM_UG0_EXCL_LOW_THRESHOLD         0x320
+#define SBPM_UG1_EXCL_LOW_THRESHOLD         0x980
+#define SBPM_UG0_EXCL_LOW_HIST              0x14
+#define SBPM_UG1_BN_THRESHOLD               0xC00
+#define MAX_OMCI_PKT_SIZE 1980
+#define SBPM_UG1_EXCL_LOW_HIST              0x14
+#define SBPM_BASE_ADDRESS                   0
+#define SBPM_MAX_BUFFER_NUMBER              0xFFF
+#define SBPM_UG1_EXCL_HIGH_THRESHOLD        0xb80
+
+
+/* BBH_RX */
+#define DRV_BBH_RX_MAXIMAL_PACKET_HEADER_OFFSET 63
+#define BBH_FREQUENCY (466770000) /* 466.77 MHz */
+
+/* XLIF */
+#define XLIF0_ACTIVE_CHANNELS 3
+#define XLIF1_ACTIVE_CHANNELS 4
+
+
+/* BBH_TX */
+#define BBH_TX_DS_PD_FIFO_SIZE_0 7
+#define BBH_TX_DS_PD_FIFO_SIZE_1 15
+
+
+typedef enum bbh_id_e
+{
+    BBH_ID_0 = 0,
+    BBH_ID_1,
+    BBH_ID_2,
+    BBH_ID_3,
+    BBH_ID_4,
+    BBH_ID_5,
+    BBH_ID_6,
+    BBH_ID_PON,
+    BBH_ID_NUM,
+    BBH_ID_FIRST = BBH_ID_0,
+    BBH_ID_LAST = BBH_ID_PON,
+    BBH_ID_NULL = BBH_ID_NUM,
+    BBH_ID_NUM_LAN = BBH_ID_6,
+    BBH_ID_AE = 1,
+    BBH_ID_QM_COPY = 0,
+    BBH_TX_ID_LAN0,
+    BBH_TX_ID_LAN1,
+    BBH_TX_ID_LAN2,
+    BBH_TX_ID_PON,
+    BBH_TX_ID_NUM,
+    BBH_TX_ID_FIRST = BBH_ID_QM_COPY,
+    BBH_TX_ID_LAST = BBH_TX_ID_PON,
+    BBH_TX_ID_NULL = BBH_ID_NULL
+    
+} bbh_id_e;
+
+typedef enum dma_id_e
+{
+    DMA_COPY_ID = 0,
+    DMA1_ID,
+    DMA2_ID,
+    DMA3_ID,
+    DMA_NUM,
+} dma_id_e;
+
+typedef enum dma_target_e
+{
+    DMA_TARGET_DMA = 0,
+    DMA_TARGET_SDMA,
+    DMA_TARGET_NUM,
+    DMA_TARGET_FIRST = DMA_TARGET_DMA,
+} dma_target_e;
+
+#define SDMA_U_THRESH_IN_BBH_5G_VALUE           ( 0x03 )
+#define SDMA_U_THRESH_OUT_BBH_5G_VALUE          ( 0x02 )
+
+#define SDMA_U_THRESH_IN_BBH_2P5G_VALUE         ( 0x03 )
+#define SDMA_U_THRESH_OUT_BBH_2P5G_VALUE        ( 0x02 )
+#define SDMA_U_THRESH_IN_BBH_10G_VALUE          ( 0x06 )
+#define SDMA_U_THRESH_OUT_BBH_10G_VALUE         ( 0x04 )
+#define SDMA_RR_WEIGHT_TX_BBH_LAN_1_VALUE       ( 0x00 )
+#define DMA_RR_WEIGHT_TX_BBH_LAN_1_VALUE        ( 0x00 )
+#define SDMA_U_THRESH_IN_BBH_DSL_VALUE          ( 0x06 )
+#define SDMA_U_THRESH_OUT_BBH_DSL_VALUE         ( 0x04 )
+#define SDMA_STRICT_PRI_TX_BBH_LAN_1_VALUE      ( 0x04 )
+#define DMA_STRICT_PRI_TX_BBH_LAN_1_VALUE       ( 0x08 )
+#define SDMA_STRICT_PRI_RX_BBH_LAN_VALUE        ( 0x04 )
+#define SDMA_STRICT_PRI_RX_BBH_5G_VALUE         ( 0x04 )
+#define SDMA_STRICT_PRI_RX_BBH_10G_VALUE        ( 0x04 )
+#define SDMA_STRICT_PRI_RX_BBH_2P5G_VALUE       ( 0x04 )
+#define SDMA_STRICT_PRI_RX_BBH_DSL_VALUE        ( 0x04 )
+
+#define SDMA_STRICT_PRI_TX_BBH_LAN_VALUE        ( 0x04 )
+#define DMA_STRICT_PRI_TX_BBH_LAN_VALUE         ( 0x08 )
+#define SDMA_STRICT_PRI_TX_BBH_COPY_VALUE       ( 0x04 )
+#define DMA_STRICT_PRI_TX_BBH_COPY_VALUE        ( 0x08 )
+#define SDMA_STRICT_PRI_TX_BBH_PON_VALUE        ( 0x04 )
+
+
+#define SDMA_RR_WEIGHT_RX_BBH_LAN_VALUE         ( 0x00 )
+#define SDMA_RR_WEIGHT_RX_BBH_5G_VALUE          ( 0x00 )
+#define SDMA_RR_WEIGHT_RX_BBH_2P5G_VALUE        ( 0x00 )
+#define SDMA_RR_WEIGHT_RX_BBH_DSL_VALUE         ( 0x00 )
+#define SDMA_RR_WEIGHT_RX_BBH_10G_VALUE         ( 0x00 )
+
+#define SDMA_RR_WEIGHT_TX_BBH_LAN_VALUE         ( 0x00 )
+#define DMA_RR_WEIGHT_TX_BBH_LAN_VALUE          ( 0x00 )
+#define SDMA_RR_WEIGHT_TX_BBH_COPY_VALUE        ( 0x00 )
+#define DMA_RR_WEIGHT_TX_BBH_COPY_VALUE         ( 0x00 )
+#define SDMA_RR_WEIGHT_TX_BBH_DSL_VALUE         ( 0x00 )
+#define DMA_RR_WEIGHT_TX_BBH_DSL_VALUE          ( 0x00 )
+
+/* size of each one of FIFOs 0-7 - value is size + 1*/
+#define BBH_TX_GPON_PD_FIFO_SIZE_0_7 5
+#define BBH_TX_GPON_PD_FIFO_SIZE_8_15 5
+#define BBH_TX_GPON_PD_FIFO_SIZE_16_23 5
+#define BBH_TX_GPON_PD_FIFO_SIZE_24_31 5
+#define BBH_TX_GPON_PD_FIFO_SIZE_32_39 5
+
+/*EPON DEFS*/
+/* size of each one of FIFOs 8-15 */
+/* size of each one of FIFOs 8-15 */
+#define BBH_TX_EPON_PD_FIFO_SIZE_0_7 7
+#define BBH_TX_EPON_PD_FIFO_SIZE_8_15 7
+#define BBH_TX_EPON_PD_FIFO_SIZE_16_23 0
+#define BBH_TX_EPON_PD_FIFO_SIZE_24_31 0
+#define BBH_TX_EPON_PD_FIFO_SIZE_32_39 0
+
+#define SBPM_MAX_BUFFER_NUMBER              0xFFF
+
+
+#elif  defined(BCM6837) 
 #define RNR_FREQ_IN_MHZ 1250
 #define UBUS_SLV_FREQ_IN_MHZ 750
 
@@ -950,7 +867,7 @@ typedef enum dma_target_e
 
 
 #if !defined(BCM63146) && !defined(BCM4912) && !defined(BCM6888) &&!defined(BCM68880) && \
-    !defined(BCM6813) && !defined(BCM6837)
+    !defined(BCM6813) && !defined(BCM6837) && !defined(BCM68375)
 #define DMA_U_THRESH_IN_BBH_LAN_VALUE     ( 0x3 )
 #define DMA_U_THRESH_OUT_BBH_LAN_VALUE    ( 0x2 )
 #define SDMA_U_THRESH_IN_BBH_LAN_VALUE    ( 0x3 )

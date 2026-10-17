@@ -1,0 +1,15 @@
+addramfs=setenv bootargs "${bootargs} phram.phram=rootfs${boot_bank},${rootfsaddr},${rootfssize}"
+boot_bank=-1
+altbootcmd=run ${subbootcmds}
+bootcmd=run ${subbootcmds}
+subbootcmds=save_and_reset_once tftpfdt tftpkernel setrootfsaddr tftpramfs flashargs add_default addpanic addramfs boot
+save_and_reset_once=setenv save_and_reset_once true && saveenv && reset
+nfsargs=setenv bootargs root=/dev/nfs rw nfsroot=${serverip}:${rootpath}
+configure=run set_uimage; run set_tftppath; km_setboardid && run try_import_rootfssize && saveenv && reset
+setrootfsaddr=setexpr value ${pnvramaddr} - ${rootfssize} && setenv rootfsaddr 0x${value}
+tftpfdt=if run set_fdthigh || test ${arch} != arm; then if tftpboot ${fdt_addr_r} ${tftppath}/fdt_0x${IVM_BoardId}_0x${IVM_HWKey}.dtb; then; else tftpboot ${fdt_addr_r} ${tftppath}/${hostname}.dtb; fi; else true; fi
+tftpkernel=tftpboot ${load_addr_r} ${tftppath}/${uimage}
+tftpramfs=tftpboot ${rootfsaddr} ${tftppath}/rootfsImage
+set_uimage=printenv uimage || setenv uimage uImage
+set_tftppath=if test ${hostname} = kmcoge5un; then setenv tftppath CI5UN; else if test ${hostname} = kmcoge5ne; then setenv tftppath CI5NE; else setenv tftppath ${IVM_Symbol}; fi; fi
+try_import_rootfssize=if tftpboot ${load_addr_r} ${tftppath}/rootfssize.txt; then env import -t ${load_addr_r} ${filesize}; else echo no auto rootfs size; echo you can set rootfssize in /tftpboot/${tftppath}/rootfssize.txt and rerun ramfs; fi

@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2023 Texas Instruments Incorporated - https://www.ti.com/
+# Nikhil M Jain, n-jain1@ti.com
+#
+# based on the linux tidss driver, which is
+#
+# (C) Copyright 2018 Texas Instruments Incorporated - https://www.ti.com/
+# Author: Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+menuconfig VIDEO_TIDSS
+	bool "Enable TIDSS video support"
+	depends on VIDEO
+	help
+	  TIDSS supports  video output options LVDS and
+	  DPI . This option enables these supports which can be used on
+	  devices which have OLDI or HDMI display connected.
+
+config SPL_VIDEO_TIDSS
+	bool "Enable TIDSS video support in SPL Stage"
+	depends on SPL_VIDEO
+	help
+	  This options enables tidss driver in SPL stage. If
+	  you need to use tidss at SPL stage use this config.

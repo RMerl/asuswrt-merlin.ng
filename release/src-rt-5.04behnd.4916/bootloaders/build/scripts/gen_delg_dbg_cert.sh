@@ -1,21 +1,21 @@
 #!/bin/sh
 
-#########################################################################################
-#       Delegate debug certificate generation script                                    #
-#                                                                                       #
-# This script generates a signed debug certificate for key-owner to deploy to their     # 
-# devices. Customers should copy and modify this script to point to their own debug     #
-# certificate source, signing key and signing mechanism                                 #
-#                                                                                       #
-# NOTE: Script must be run from top-level build dir                                     #
-#                                                                                       #
-#./gen_delg_package.sh [-i source .its debug certificate] [-k signing key] <output file>#
-# eg:                                                                                   #
-# ./bootloaders/build/work gen_delg_dbg_cert.sh \                                       #
-#                       -i bootloaders/build/work/delg_debug/debug_cert.its \           #
-#                       -k targets/keys/demo/DELG/Krsa-delg-dbg.pem \                   #
-#                       debug_signed.cert                                               #
-#########################################################################################
+###########################################################################################
+#       Delegate debug certificate generation script                                      #
+#                                                                                         #
+# This script generates a signed debug certificate for key-owner to deploy to their       # 
+# devices. Customers should copy and modify this script to point to their own debug       #
+# certificate source, signing key and signing mechanism                                   #
+#                                                                                         #
+# NOTE: Script must be run from top-level build dir                                       #
+#                                                                                         #
+#./gen_delg_dbg_cert.sh [-i source .its debug certificate] [-k signing key] <output file> #
+# eg:                                                                                     #
+# ./bootloaders/build/work gen_delg_dbg_cert.sh \                                         #
+#                       -i bootloaders/build/work/delg_debug/debug_cert.its \             #
+#                       -k targets/keys/demo/DELG/Krsa-delg-dbg.pem \                     #
+#                       debug_signed.cert                                                 #
+###########################################################################################
 
 ##############################################################################
 # Default certificate and signing key                                        #

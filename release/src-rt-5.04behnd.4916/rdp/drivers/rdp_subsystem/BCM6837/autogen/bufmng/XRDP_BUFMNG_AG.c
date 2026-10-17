@@ -1142,6 +1142,9 @@ static const ru_reg_rec *BUFMNG_REGS[] =
 const ru_block_rec BUFMNG_BLOCK =
 {
     "BUFMNG",
+#if RU_INCLUDE_SIZE
+    { 0x00000300 },
+#endif
     BUFMNG_ADDRS,
     1,
     16,

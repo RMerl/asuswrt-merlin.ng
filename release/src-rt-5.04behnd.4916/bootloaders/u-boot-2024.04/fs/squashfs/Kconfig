@@ -1,0 +1,11 @@
+config FS_SQUASHFS
+	bool "Enable SquashFS filesystem support"
+	select ZLIB_UNCOMPRESS
+	help
+	  This provides support for reading images from SquashFS filesystem.
+	  Squashfs is a compressed read-only filesystem for Linux.
+	  It uses zlib, lz4, lzo, or xz compression to compress files, inodes
+	  and directories. Squashfs is intended for general read-only
+	  filesystem use, for archival use (i.e. in cases where a .tar.gz file
+	  may be used), and in constrained block device/memory systems (e.g.
+	  embedded systems) where low overhead is needed.

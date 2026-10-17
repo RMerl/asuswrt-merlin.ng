@@ -1,0 +1,270 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls1028AQDS device tree source
+ *
+ * Copyright 2019 NXP
+ *
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1028a.dtsi"
+
+/ {
+	model = "NXP Layerscape 1028a QDS Board";
+	compatible = "fsl,ls1028a-qds", "fsl,ls1028a";
+	aliases {
+		spi0 = &fspi;
+		spi1 = &dspi0;
+		spi2 = &dspi1;
+		spi3 = &dspi2;
+	};
+
+};
+
+&dspi0 {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash0: sst25wf040b {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+
+	dflash1: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <1>;
+	};
+	dflash2: n25q128a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <2>;
+	};
+};
+
+&dspi1 {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash3: sst25wf040b {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+
+	dflash4: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <1>;
+	};
+	dflash5: n25q128a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <2>;
+	};
+};
+
+&dspi2 {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash8: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+};
+
+&esdhc {
+	status = "okay";
+};
+
+&esdhc1 {
+	status = "okay";
+
+};
+
+&fspi {
+	status = "okay";
+
+	mt35xu02g0: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+		spi-rx-bus-width = <8>;
+		spi-tx-bus-width = <1>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+
+	fpga@66 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "simple-mfd";
+		reg = <0x66>;
+
+		mux-mdio@54 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mdio-mux-i2creg";
+			reg = <0x54>;
+			#mux-control-cells = <1>;
+			mux-reg-masks = <0x54 0xf0>;
+			mdio-parent-bus = <&enetc_mdio_pf3>;
+
+			/* on-board MDIO with a single RGMII PHY */
+			mdio@00 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x00>;
+
+				qds_phy0: phy@5 {
+					reg = <5>;
+				};
+			};
+			/* slot 1 */
+			slot1: mdio@40 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x40>;
+			};
+			/* slot 2 */
+			slot2: mdio@50 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x50>;
+			};
+			/* slot 3 */
+			slot3: mdio@60 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x60>;
+			};
+			/* slot 4 */
+			slot4: mdio@70 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x70>;
+			};
+		};
+	};
+
+	i2c-mux@77 {
+		compatible = "nxp,pca9547";
+		reg = <0x77>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};
+
+&i2c1 {
+	status = "okay";
+
+	rtc@51 {
+		compatible = "nxp,pcf2129";
+		reg = <0x51>;
+	};
+};
+
+&i2c2 {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+};
+
+&i2c4 {
+	status = "okay";
+};
+
+&i2c5 {
+	status = "okay";
+};
+
+&i2c6 {
+	status = "okay";
+};
+
+&i2c7 {
+	status = "okay";
+};
+
+&lpuart0 {
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
+};
+
+&duart0 {
+	status = "okay";
+};
+
+&duart1 {
+	status = "okay";
+};
+
+&pcie1 {
+	status = "okay";
+};
+
+&pcie2 {
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+};
+
+&usb1 {
+	status = "okay";
+};
+
+&enetc_port1 {
+	status = "okay";
+	phy-mode = "rgmii-id";
+	phy-handle = <&qds_phy0>;
+};
+
+&enetc_mdio_pf3 {
+	status = "okay";
+};
+
+#include "fsl-ls1028a-qds-8xxx-sch-24801.dtsi"
+#include "fsl-ls1028a-qds-x5xx-sch-28021-LBRW.dtsi"

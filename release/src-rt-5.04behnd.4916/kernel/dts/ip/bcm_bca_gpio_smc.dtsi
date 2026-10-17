@@ -1,0 +1,11 @@
+#include <dt-bindings/gpio/gpio.h>
+compatible = "brcm,bca-gpio-smc";
+#gpio-cells = <0x2>;
+gpio-controller;
+interrupt-controller;
+#interrupt-cells = <2>;
+reg = <GPIO_BANKS_BASE GPIO_BANKS_SIZE
+       GPIO_ACCESS_BASE GPIO_ACCESS_SIZE>;
+interrupts = <GIC_SPI GPIO_INTERRUPT IRQ_TYPE_LEVEL_HIGH>;
+gpio-ranges = <&pincontroller 0 0 NUM_OF_GPIOS>;
+

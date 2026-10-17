@@ -1,0 +1,22 @@
+MPC83xx SPISEL_BOOT gpio controller
+
+Provide access to MPC83xx SPISEL_BOOT signal as a gpio to allow it to be
+easily bound as a SPI controller chip select.
+
+The SPISEL_BOOT signal is always an output.
+
+Required properties:
+
+- compatible: must be "fsl,mpc83xx-spisel-boot" or "fsl,mpc8309-spisel-boot".
+- reg: must point to the SPI_CS register in the SoC register map.
+- ngpios: number of gpios provided by driver, normally 1.
+
+Example:
+
+	spisel_boot: spisel_boot@14c {
+		compatible = "fsl,mpc8309-spisel-boot";
+		reg = <0x14c 0x04>;
+		#gpio-cells = <2>;
+		device_type = "gpio";
+		ngpios = <1>;
+	};

@@ -80,7 +80,6 @@ Boston, MA 02111-1307, USA.
 	return find; \
 }
 
-#if IS_ENABLED(CONFIG_BCM_VLAN)
 static bool getvlantag(const struct sk_buff *skb, __u32 expect_tag, __u8 layer, __u32 * vlantag_result)
 {
 	int i;
@@ -108,12 +107,10 @@ static bool getvlantag(const struct sk_buff *skb, __u32 expect_tag, __u8 layer, 
 
 	return false;
 }
-#endif
 
 static bool
 ebt_skbvlan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 {
-#if IS_ENABLED(CONFIG_BCM_VLAN)
 	const struct ebt_skbvlan_m_info *info = par->matchinfo;
 	unsigned short id;    
 	unsigned char  prio;  
@@ -166,9 +163,6 @@ ebt_skbvlan_mt(const struct sk_buff *skb, struct xt_action_param *par)
 		EXIT_ON_MISMATCH_VLANTAG(3, 1);
 
 	return true;
-#else
-   return false;
-#endif
 }
 
 static int ebt_skbvlan_mt_check(const struct xt_mtchk_param *par)

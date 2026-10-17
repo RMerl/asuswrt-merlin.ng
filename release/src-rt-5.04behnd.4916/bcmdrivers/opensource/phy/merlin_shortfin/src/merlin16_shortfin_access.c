@@ -140,9 +140,15 @@ err_code_t merlin16_shortfin_pmd_uc_diag_cmd(srds_access_t *sa__, enum srds_pmd_
 uint16_t merlin16_shortfin_INTERNAL_get_lane_addr(srds_access_t *sa__, uint16_t addr, uint8_t lane) {
     uint16_t lane_var_ram_base=0, lane_var_ram_size=0;
     uint16_t lane_addr_offset = 0;
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    srds_info_t * merlin16_shortfin_info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
 
+    lane_var_ram_base = merlin16_shortfin_info_ptr->lane_var_ram_base & 0xFFFF;
+    lane_var_ram_size = merlin16_shortfin_info_ptr->lane_var_ram_size;
+#else
     lane_var_ram_base = LANE_VAR_RAM_BASE;
     lane_var_ram_size = LANE_VAR_RAM_SIZE;
+#endif
     lane_addr_offset = (uint16_t)(lane_var_ram_base+addr+(lane*lane_var_ram_size));
     return(lane_addr_offset);
 }
@@ -256,8 +262,13 @@ err_code_t merlin16_shortfin_wrwls_uc_var(srds_access_t *sa__, uint16_t addr, in
 static uint16_t _merlin16_shortfin_get_core_address(srds_access_t *sa__, uint16_t addr, uint8_t lane) {
     uint16_t core_var_ram_base=0;
     uint16_t core_addr_offset = 0;
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    srds_info_t * merlin16_shortfin_info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
 
+    core_var_ram_base = merlin16_shortfin_info_ptr->core_var_ram_base & 0xFFFF;
+#else
     core_var_ram_base = CORE_VAR_RAM_BASE;
+#endif
     core_addr_offset = (uint16_t)(core_var_ram_base + addr);
 
     UNUSED(lane);
@@ -401,10 +412,16 @@ err_code_t merlin16_shortfin_wr_long_uc_ram(srds_access_t *sa__, uint16_t offset
 }
 /* Micro RAM Word Write */
 err_code_t merlin16_shortfin_wrw_uc_ram(srds_access_t *sa__, uint16_t addr, uint16_t wr_val) {
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    srds_info_t *info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
+    uint16_t  msw = (info_ptr->core_var_ram_base >> 16) & 0x2000;
+#else
+    uint16_t  msw = 0x2000;
+#endif
 
     EFUN(wrc_micro_autoinc_wraddr_en(0));
     EFUN(wrc_micro_ra_wrdatasize(0x1));                 /* Select 16bit write datasize */
-    EFUN(wrc_micro_ra_wraddr_msw(0x2000));              /* Upper 16bits of RAM address to be written to */
+    EFUN(wrc_micro_ra_wraddr_msw(msw));                 /* Upper 16bits of RAM address to be written to */
     EFUN(wrc_micro_ra_wraddr_lsw(addr));                /* Lower 16bits of RAM address to be written to */
     EFUN(wrc_micro_ra_wrdata_lsw(wr_val));              /* uC RAM lower 16bits write data */
     return (ERR_CODE_NONE);
@@ -412,13 +429,48 @@ err_code_t merlin16_shortfin_wrw_uc_ram(srds_access_t *sa__, uint16_t addr, uint
 
 /* Micro RAM Byte Write */
 err_code_t merlin16_shortfin_wrb_uc_ram(srds_access_t *sa__, uint16_t addr, uint8_t wr_val) {
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    srds_info_t *info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
+    uint16_t  msw = (info_ptr->core_var_ram_base >> 16) & 0x2000;
+#else
+    uint16_t  msw = 0x2000;
+#endif
+
     EFUN(wrc_micro_autoinc_wraddr_en(0));
     EFUN(wrc_micro_ra_wrdatasize(0x0));                 /* Select 8bit write datasize */
-    EFUN(wrc_micro_ra_wraddr_msw(0x2000));              /* Upper 16bits of RAM address to be written to */
+    EFUN(wrc_micro_ra_wraddr_msw(msw));                /* Upper 16bits of RAM address to be written to */
     EFUN(wrc_micro_ra_wraddr_lsw(addr));                /* Lower 16bits of RAM address to be written to */
     EFUN(wrc_micro_ra_wrdata_lsw(wr_val));              /* uC RAM lower 16bits write data */
     return (ERR_CODE_NONE);
 }
+
+/* Micro memory Byte Write */
+err_code_t merlin16_shortfin_wrb_uc_mem(srds_access_t *sa__, uint32_t addr, uint8_t wr_val) {
+    EFUN(wrc_micro_autoinc_wraddr_en(0));
+    EFUN(wrc_micro_ra_wrdatasize(0x0));                 /* Select 8bit write datasize */
+    EFUN(wrc_micro_ra_wraddr_msw(addr >> 16));          /* Upper 16bits of RAM address to be written to */
+    EFUN(wrc_micro_ra_wraddr_lsw(addr & 0xFFFF));       /* Lower 16bits of RAM address to be written to */
+    EFUN(wrc_micro_ra_wrdata_lsw(wr_val));              /* uC RAM lower 16bits write data */
+    return (ERR_CODE_NONE);
+}
+
+/* Micro memory Word Write */
+err_code_t merlin16_shortfin_wrw_uc_mem(srds_access_t *sa__, uint32_t addr, uint16_t wr_val) {
+    EFUN(wrc_micro_autoinc_wraddr_en(0));
+    EFUN(wrc_micro_ra_wrdatasize(0x1));                 /* Select 16bit write datasize */
+    EFUN(wrc_micro_ra_wraddr_msw(addr >> 16));          /* Upper 16bits of RAM address to be written to */
+    EFUN(wrc_micro_ra_wraddr_lsw(addr & 0xFFFF));       /* Lower 16bits of RAM address to be written to */
+    EFUN(wrc_micro_ra_wrdata_lsw(wr_val));              /* uC RAM lower 16bits write data */
+    return (ERR_CODE_NONE);
+}
+
+/* Micro memory Long Write */
+err_code_t merlin16_shortfin_wr_long_uc_mem(srds_access_t *sa__, uint32_t offset, uint32_t value) {
+    EFUN(merlin16_shortfin_wrw_uc_mem(sa__, offset+2, (uint16_t)(value >> 16)));
+    EFUN(merlin16_shortfin_wrw_uc_mem(sa__, offset, value & 0xFFFF));
+    return (ERR_CODE_NONE);
+}
+
 
 /* Micro RAM Long Read */
 uint32_t merlin16_shortfin_rd_long_uc_ram(srds_access_t *sa__, err_code_t *err, uint16_t offset) {
@@ -429,6 +481,12 @@ uint32_t merlin16_shortfin_rd_long_uc_ram(srds_access_t *sa__, err_code_t *err, 
 }
 /* Micro RAM Word Read */
 uint16_t merlin16_shortfin_rdw_uc_ram(srds_access_t *sa__, err_code_t *err_code_p, uint16_t addr) {
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+   srds_info_t *info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
+   uint16_t  msw = (info_ptr->core_var_ram_base >> 16) & 0x2000;
+#else
+    uint16_t  msw = 0x2000;
+#endif
    uint16_t rddata;
    if(!err_code_p) {
         return(0);
@@ -436,7 +494,7 @@ uint16_t merlin16_shortfin_rdw_uc_ram(srds_access_t *sa__, err_code_t *err_code_
    *err_code_p = ERR_CODE_NONE;
    EPFUN(wrc_micro_autoinc_rdaddr_en(0));
    EPFUN(wrc_micro_ra_rddatasize(0x1));                 /* Select 16bit read datasize */
-   EPFUN(wrc_micro_ra_rdaddr_msw(0x2000));              /* Upper 16bits of RAM address to be read */
+   EPFUN(wrc_micro_ra_rdaddr_msw(msw));                 /* Upper 16bits of RAM address to be read */
    EPFUN(wrc_micro_ra_rdaddr_lsw(addr));                /* Lower 16bits of RAM address to be read */
    EPSTM(rddata = rdc_micro_ra_rddata_lsw());           /* 16bit read data */
    return (rddata);
@@ -444,6 +502,12 @@ uint16_t merlin16_shortfin_rdw_uc_ram(srds_access_t *sa__, err_code_t *err_code_
 
 /* Micro RAM Byte Read */
 uint8_t merlin16_shortfin_rdb_uc_ram(srds_access_t *sa__, err_code_t *err_code_p, uint16_t addr) {
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    srds_info_t *info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
+    uint16_t  msw = (info_ptr->core_var_ram_base >> 16) & 0x2000;
+#else
+    uint16_t  msw = 0x2000;
+#endif
     uint8_t rddata;
     if(!err_code_p) {
         return(0);
@@ -451,7 +515,7 @@ uint8_t merlin16_shortfin_rdb_uc_ram(srds_access_t *sa__, err_code_t *err_code_p
     *err_code_p = ERR_CODE_NONE;
     EPFUN(wrc_micro_autoinc_rdaddr_en(0));
     EPFUN(wrc_micro_ra_rddatasize(0x0));                 /* Select 8bit read datasize */
-    EPFUN(wrc_micro_ra_rdaddr_msw(0x2000));              /* Upper 16bits of RAM address to be read */
+    EPFUN(wrc_micro_ra_rdaddr_msw(msw));                 /* Upper 16bits of RAM address to be read */
     EPFUN(wrc_micro_ra_rdaddr_lsw(addr));                /* Lower 16bits of RAM address to be read */
     EPSTM(rddata = (uint8_t) rdc_micro_ra_rddata_lsw()); /* 16bit read data */
     return (rddata);
@@ -479,6 +543,12 @@ int8_t merlin16_shortfin_rdbs_uc_ram(srds_access_t *sa__, err_code_t *err_code_p
 
 /* Micro RAM Block Read */
 err_code_t merlin16_shortfin_rdblk_uc_ram(srds_access_t *sa__, uint8_t *mem, uint16_t addr, uint16_t cnt) {
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    srds_info_t *info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
+    uint32_t  msw = info_ptr->core_var_ram_base & 0x20000000;
+#else
+    uint32_t  msw = 0x20000000;
+#endif
     merlin16_shortfin_INTERNAL_rdblk_callback_arg_t arg;
 
     if(!mem) {
@@ -487,7 +557,7 @@ err_code_t merlin16_shortfin_rdblk_uc_ram(srds_access_t *sa__, uint8_t *mem, uin
 
     arg.mem_ptr = mem;
     arg.sa = sa__;
-    return merlin16_shortfin_INTERNAL_rdblk_uc_generic_ram(sa__, (uint32_t)addr | 0x20000000, cnt, 0, cnt, &arg, merlin16_shortfin_INTERNAL_rdblk_callback);
+    return merlin16_shortfin_INTERNAL_rdblk_uc_generic_ram(sa__, (uint32_t)addr | msw, cnt, 0, cnt, &arg, merlin16_shortfin_INTERNAL_rdblk_callback);
 }
 
 /**************************/

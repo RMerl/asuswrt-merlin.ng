@@ -273,7 +273,8 @@ void extlh_link_change_handler(enetx_port_t *port, int linkstatus, int speed, in
         mac_cfg.flag |= phy_dev_is_xgmii_mode(phy_dev) ? MAC_FLAG_XGMII : 0;
         mac_dev_cfg_set(mac_dev, &mac_cfg);
 
-        if (phy_dev->phy_drv->caps_set)  // only update pause from phy if phy cap can be set
+        if (phy_dev->phy_drv->caps_set &&   // only update pause from phy if phy cap can be set
+            !PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev))
             mac_dev_pause_set(mac_dev, phy_dev->pause_rx, phy_dev->pause_tx, port->dev ? port->dev->dev_addr : eth_internal_pause_addr);
 
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
@@ -423,7 +424,7 @@ static int _port_set_wan_role_link(void *_port, int _role)
     enetx_port_t *port = _port; 
     port_netdev_role_t role = _role;
 
-    wait_enet_ready();
+    wait_enet_ready(false);
     if (role > PORT_NETDEV_ROLE_WAN)
         return 0;
 

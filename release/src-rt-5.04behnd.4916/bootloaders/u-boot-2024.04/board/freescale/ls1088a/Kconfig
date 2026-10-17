@@ -1,0 +1,31 @@
+if TARGET_LS1088AQDS
+
+config SYS_BOARD
+	default "ls1088a"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1088aqds"
+
+endif
+
+if TARGET_LS1088ARDB
+
+config SYS_BOARD
+	default "ls1088a"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1088ardb"
+
+endif

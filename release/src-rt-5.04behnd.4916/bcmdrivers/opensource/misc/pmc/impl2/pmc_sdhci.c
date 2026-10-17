@@ -37,7 +37,7 @@ written consent.
 #include "board.h"
 #include <asm/div64.h>
 
-int pmc_sdhci_set_base_clk( uint64_t freq, struct device_node *node )
+int pmc_sdhci_set_base_clk( uint32_t pll_base_clk, uint32_t sdhci_base_clk )
 {
    return 0;
 }

@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LX2160AQDS default device tree source
+ *
+ * Copyright 2020 NXP
+ *
+ */
+
+/dts-v1/;
+
+#include "fsl-lx2160a-qds.dtsi"
+
+/ {
+	model = "NXP Layerscape LX2160AQDS Board";
+	compatible = "fsl,lx2160aqds", "fsl,lx2160a";
+};

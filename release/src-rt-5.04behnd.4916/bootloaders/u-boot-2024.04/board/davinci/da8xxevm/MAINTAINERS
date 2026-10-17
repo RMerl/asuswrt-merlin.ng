@@ -1,0 +1,14 @@
+DA850_EVM BOARD
+M:	Adam Ford <aford173@gmail.com>
+S:	Maintained
+F:	board/davinci/da8xxevm/
+F:	include/configs/da850evm.h
+F:	configs/da850evm_defconfig
+F:	configs/da850evm_nand_defconfig
+F:	configs/da850evm_direct_nor_defconfig
+
+OMAPL138_LCDK BOARD
+M:	Tom Rini <trini@konsulko.com>
+S:	Maintained
+F:	include/configs/omap1l38_lcdk.h
+F:	configs/omapl138_lcdk_defconfig

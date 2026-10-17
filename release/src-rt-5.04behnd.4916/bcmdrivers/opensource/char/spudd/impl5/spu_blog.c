@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.
 #include <net/xfrm.h>
 #include <net/dst.h>
 #include <linux/bcm_version_compat.h>
-#include <bcmspudrv.h>
 #include <pktHdr.h>
 #include <linux/platform_device.h>
 #include "spu.h"
@@ -70,30 +69,38 @@ static int spu_blog_ds_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
  *------------------------------------------------------------------------------
  */
 void spu_blog_us_tx_dev_adjust(Blog_t *blog_p, struct net_device *dev_p,
-       uint16_t blksize, uint16_t pktlen)
+       BlogFcArgs_t *fcArgs, uint8_t tunl_overhead, uint8_t padlen,  uint16_t pktlen)
 {
-    int16_t len = pktlen;
     int16_t mtu = dev_p->mtu;
 
-    if (len != dev_p->mtu)
+    int16_t len = pktlen;
+    uint16_t blksize = fcArgs->esp_blksize;
+    int8_t adjust=0;
+
+    if (blksize && (len != dev_p->mtu))
     {
         if (len < dev_p->mtu)
         {
             while (len <= dev_p->mtu)
                 len += blksize;
 
-            blog_p->tx_dev_adjust = (len - blksize) - mtu;
+            adjust = (len - blksize) - mtu;
         }
         else
         {
             while (len > dev_p->mtu)
                 len -= blksize;
 
-            blog_p->tx_dev_adjust = len - mtu;
+            adjust = len - mtu;
         }
     }
     else
-        blog_p->tx_dev_adjust = 0;
+        adjust = 0;
+
+    /* reduce HDRs & trailer also */
+    adjust -= (tunl_overhead + fcArgs->esp_icvsize);
+    blog_p->tx_dev_mtu_padlen = padlen; 
+    blog_p->tx_dev_adjust = adjust;
 }
 
 static u8 spu_blog_chan_id_lookup(u32 *bitmap)
@@ -131,14 +138,18 @@ void spu_blog_ctx_add(struct iproc_ctx_s *ctx)
         ctx->cipher.mode == CIPHER_MODE_GCM ||
         ctx->cipher.mode == CIPHER_MODE_NONE)
     {
-        write_lock(&iproc_priv.ctxListLock[ctx->stream]);
-	ctx->blog_chan_id = spu_blog_chan_id_lookup(iproc_priv.blog_chan_bitmap[ctx->stream]);
+        write_lock_bh(&iproc_priv.ctxListLock[ctx->stream]);
+        ctx->blog_chan_id = spu_blog_chan_id_lookup(iproc_priv.blog_chan_bitmap[ctx->stream]);
         atomic_set(&ctx->offload_id, -1);
-        list_add(&ctx->entry, &iproc_priv.ctxList[ctx->stream]);
-        write_unlock(&iproc_priv.ctxListLock[ctx->stream]);
+        if (likely(list_empty_careful(&ctx->entry)))
+            list_add(&ctx->entry, &iproc_priv.ctxList[ctx->stream]);
+        else
+            flow_log("ctx %p had been added into stream %d spi 0x%x(0x%x) chan_id %d iv_size %d blk_size %d\n",
+                ctx, ctx->stream, ctx->spi, ctx->xfrm->id.spi, ctx->blog_chan_id, ctx->iv_size, ctx->blk_size);
+        write_unlock_bh(&iproc_priv.ctxListLock[ctx->stream]);
     }
-    flow_log("%s - ctx added stream %d spi 0x%x(0x%x) chan_id %d\n", __func__,
-           ctx->stream, ctx->spi, ctx->xfrm->id.spi, ctx->blog_chan_id);
+    flow_log("%s - ctx added stream %d spi 0x%x(0x%x) chan_id %d iv_size %d blk_size %d\n", __func__,
+           ctx->stream, ctx->spi, ctx->xfrm->id.spi, ctx->blog_chan_id, ctx->iv_size, ctx->blk_size);
 }
 
 void spu_blog_evict(struct iproc_ctx_s *ctx)
@@ -152,14 +163,16 @@ void spu_blog_evict(struct iproc_ctx_s *ctx)
         dev = iproc_priv.spu_dev_ds;
 
 #if defined (CONFIG_BCM_SPU_HW_OFFLOAD)
+#if IS_ENABLED(CONFIG_BCM_FPI)
+    /* offload session should be cleaned by FPI api calls  */
+#else
     {
         int offload_id = atomic_read(&ctx->offload_id);
 
-        if(offload_id != -1) {
-            atomic_set(&ctx->offload_id, -1);
+        if(offload_id != -1)
             spu_offload_session_free(offload_id);
-        }
     }
+#endif
 #endif
     params.flush_dev = 1;
     params.devid = dev->ifindex;
@@ -178,7 +191,7 @@ void spu_blog_ctx_del(struct iproc_ctx_s *ctx)
 
     flow_log("%s: ctx %p\n", __func__, ctx);
 
-    write_lock(&iproc_priv.ctxListLock[ctx->stream]);
+    write_lock_bh(&iproc_priv.ctxListLock[ctx->stream]);
     /* if a ctx does not get used it won't be in the list */
     list_for_each_entry_safe(sctx, pos, &iproc_priv.ctxList[ctx->stream], entry)
     {
@@ -192,11 +205,11 @@ void spu_blog_ctx_del(struct iproc_ctx_s *ctx)
                 evict_id = ctx->blog_chan_id;
                 iproc_priv.blog_chan_bitmap[ctx->stream][ctx->blog_chan_id >> 5] &= ~(1 << (ctx->blog_chan_id & 0x1F));
             }
-            list_del(&ctx->entry);
+            list_del_init(&ctx->entry);
             break;
         }
     }
-    write_unlock(&iproc_priv.ctxListLock[ctx->stream]);
+    write_unlock_bh(&iproc_priv.ctxListLock[ctx->stream]);
 
     if (evict_id < BLOG_CHAN_IDX_UNDEF)
         spu_blog_evict(ctx);
@@ -209,7 +222,7 @@ static inline struct iproc_ctx_s *spu_blog_lookup_ctx(uint32_t spi, enum spu_str
 
     flow_log("%s\n", __func__);
 
-    read_lock(&iproc_priv.ctxListLock[stream]);
+    read_lock_bh(&iproc_priv.ctxListLock[stream]);
     list_for_each_entry(ctx, &iproc_priv.ctxList[stream], entry)
     {
         if (ctx->spi == spi)
@@ -218,7 +231,7 @@ static inline struct iproc_ctx_s *spu_blog_lookup_ctx(uint32_t spi, enum spu_str
             break;
         }
     }
-    read_unlock(&iproc_priv.ctxListLock[stream]);
+    read_unlock_bh(&iproc_priv.ctxListLock[stream]);
     return rctx;
 }  /* spu_blog_lookup_ctx() */
 
@@ -239,6 +252,8 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     struct aead_request *req;
     struct crypto_aead *aead;
     struct xfrm_state *xfrm;
+    unsigned char      padlen=0;
+    uint8_t            tunl_overhead;
 
     flow_log("%s\n", __func__);
 
@@ -287,11 +302,19 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
             blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
             return 0;
         }
+
+	if(esp_mode == BLOG_ESP_MODE_TRANSPORT)
+        {
+            flow_log("US: esp_over_udp in transport mode not supported\n");
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return 0;
+        }
     }
 
     /* pSkb->data should point to the outer IP header */
     pdata = pSkb->data;
     nexthdr = pdata[pSkb->len - rctx->ctx->digestsize - 1];
+    padlen  = pdata[pSkb->len - rctx->ctx->digestsize- 2];
 
     flow_log("*pdata 0x%x transport_mode %d nexthdr %d blog %px",
         *pdata, esp_mode, nexthdr, blog_ptr(pSkb));
@@ -305,7 +328,8 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     }
     if (pSkb->protocol == htons(ETH_P_IPV6))
     {
-        if (*pdata != 0x60 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != BLOG_IPPROTO_IPV6))
+        if ((*pdata & 0xF0) != 0x60 || (esp_mode == BLOG_ESP_MODE_TRANSPORT) || 
+            (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != BLOG_IPPROTO_IPV6 && nexthdr != IPPROTO_IPIP))
         {
             blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
             return 0;
@@ -350,14 +374,15 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
 
     esph = (struct ip_esp_hdr *)(pdata + esph_offset);
 
-    if (rctx->ctx->cipher.mode == CIPHER_MODE_GCM && xfrm->props.flags & XFRM_STATE_ESN)
+    if (xfrm->props.flags & XFRM_STATE_ESN)
     {
-        seq_hi = _read32_align16((uint16_t *)&esph->spi);
         memcpy(&esph->spi, (uint8_t *)esph - BLOG_ESP_SPI_LEN, BLOG_ESP_SPI_LEN);
         is_esn = 1;
+        if (rctx->ctx->cipher.mode == CIPHER_MODE_GCM)
+            seq_hi = _read32_align16((uint16_t *)&esph->spi);
     }
-    rctx->ctx->esn = is_esn;
 
+    rctx->ctx->esn = is_esn;
     esp_spi = _read32_align16((uint16_t *)&esph->spi);
 
     if (esp_over_udp &&
@@ -382,7 +407,7 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     aead = crypto_aead_reqtfm(req);
 
     /* fill the dst IP address needed by outer checksum and blog_emit_args */
-    if (is_esn)
+    if (rctx->ctx->esn)
         memcpy((uint8_t *)esph - BLOG_ESP_SPI_LEN, ESP_SKB_CB(pSkb)->tmp, BLOG_ESP_SPI_LEN);
 
     if (pSkb->protocol == htons(ETH_P_IP))
@@ -411,6 +436,8 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
         {
             memcpy(&rctx->ctx->v6_saddr, &ipv6h->saddr, sizeof(struct in6_addr) * 2);
             rctx->ctx->ipv6 = 1;
+            if (nexthdr == IPPROTO_IPIP)
+                rctx->ctx->ipv4_in_ipv6 = 1;
             flow_log("upstream ipv6 ips " BLOG_IPV6_ADDR_FMT " ipd " BLOG_IPV6_ADDR_FMT " spi %x seq %x nexthdr %d "
                      "flags %x esp_over_udp %d transport_mode %d",
                      BLOG_IPV6_ADDR(ipv6h->saddr), BLOG_IPV6_ADDR(ipv6h->daddr), ntohl(esph->spi),
@@ -438,15 +465,22 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
         fcArgs.esp_ivsize = rctx->ctx->iv_size;
         fcArgs.esp_icvsize = rctx->ctx->digestsize;
         fcArgs.esp_blksize = rctx->ctx->blk_size;
-        if (esp_over_udp)
-        {
-            fcArgs.esp_over_udp = esp_over_udp;
-            fcArgs.esp_spi = rctx->ctx->spi;
-        }
+        fcArgs.esp_over_udp = esp_over_udp;
+        fcArgs.esp_spi = rctx->ctx->spi;
         blog_p->use_xmit_args = 1;
 
+        /* in tunnel mode include len before ESP header also*/
+        if(esp_mode == BLOG_ESP_MODE_TUNNEL)
+            tunl_overhead = esph_offset;
+        else
+            tunl_overhead = 0;
+
+        tunl_overhead += sizeof(struct ip_esp_hdr) + fcArgs.esp_ivsize
+            + BLOG_ESP_PADLEN_LEN + BLOG_ESP_NEXT_PROTO_LEN;
+
         fcArgs.dev_xmit = (unsigned long)spu_blog_us_dev_xmit_args;
-        spu_blog_us_tx_dev_adjust(blog_p, iproc_priv.spu_dev_us, fcArgs.esp_blksize, pSkb->len);
+        spu_blog_us_tx_dev_adjust(blog_p, iproc_priv.spu_dev_us, &fcArgs,
+                tunl_overhead, padlen, pSkb->len);
         blog_emit_args(rctx->pNBuf, iproc_priv.spu_dev_us, TYPE_IP, rctx->ctx->blog_chan_id, BLOG_SPU_US, &fcArgs);
     }
     pSkb->dev = skb_dev;
@@ -455,21 +489,38 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
     {
         int session_id;
         struct dst_entry *dst_p = NULL;
+        uint8_t ttl_hop;
 
 	if (blog_p)
-		dst_p = blog_p->esptx.dst_p;
+            dst_p = blog_p->esptx.dst_p;
+        else
+            dst_p = dst_clone(skb_dst(pSkb));
+                
+        if (pSkb->protocol == htons(ETH_P_IP))
+            ttl_hop = iph->ttl;
+        else
+            ttl_hop = ipv6h->hop_limit;
 
-        session_id = spu_offload_get_us_session_id(esp_spi, dst_p);
+        session_id = spu_offload_get_us_session_id(esp_spi, dst_p, ttl_hop, 0xFF, 0);
+
+        if(blog_p == NULL)
+            dst_release(dst_p);
 
         if (session_id > 0)
         {
             uint32_t payloadlen;
+            void *tmp = ESP_SKB_CB(pSkb)->tmp;
+
             if (spu_offload_insert_us_pkt(rctx->pNBuf, session_id, rctx->ctx->digestsize, &payloadlen) == 0)
             {
                 /* packet arriving here has memory allocated from ESP framework as CB memory
                  * packet inserted to the offload datapath will not be returned
                  * to the ESP framework, free CB memory now */
-                void *tmp = ESP_SKB_CB(pSkb)->tmp;
+                struct bcmspu_message *mssg = &rctx->mssg;
+
+		if (mssg->src || mssg->dst)
+			pr_err("%s mssg src / dst not NULL\n", __func__);
+
                 if (req->src != req->dst)
                     pr_err("%s src_sg != dst_sg\n", __func__);
                 kfree(tmp);
@@ -478,6 +529,12 @@ int spu_blog_emit_aead_us(struct iproc_reqctx_s *rctx, int is_esn)
                 xfrm->curlft.packets--;
                 spin_unlock_bh(&xfrm->lock);
                 return 1;
+            }
+            else
+            {
+                /* IPsec tunnel is already offloaded, let caller free this request when fail inerting this
+                 * to offload engine to avoid sequence number conflict */
+                return -1;
             }
         }
     }
@@ -520,12 +577,6 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
     pSkb = rctx->parent->data;
     rctx->pNBuf = SKBUFF_2_PNBUFF(pSkb);
 
-    if (pSkb->dev && !is_netdev_wan(pSkb->dev)) { /* ignore LAN side IPSec connections */
-        /* This use case is for IPsec tunnel started by the LAN device and terminated on the GW */
-        blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
-        return;
-    }
-
     if ( pSkb->protocol != htons(ETH_P_IP) &&
          pSkb->protocol != htons(ETH_P_IPV6) )
     {
@@ -558,6 +609,12 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
 
     if ( xfrm->props.mode == XFRM_MODE_TRANSPORT )
     {
+        if (pSkb->protocol == htons(ETH_P_IPV6))
+        {
+            flow_log("DS: IPV6 transport mode\n");
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return;
+        }
         flow_log("transport mode");
         esp_mode = BLOG_ESP_MODE_TRANSPORT;
     }
@@ -574,6 +631,13 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
         if (pSkb->protocol == htons(ETH_P_IPV6))
         {
             flow_log("DS: IPV6 esp_over_udp\n");
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return;
+        }
+
+	if(esp_mode == BLOG_ESP_MODE_TRANSPORT)
+        {
+            flow_log("DS: esp_over_udp in transport mode not supported\n");
             blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
             return;
         }
@@ -607,7 +671,8 @@ void spu_blog_emit_aead_ds(struct iproc_reqctx_s *rctx)
     }
     if (pSkb->protocol == htons(ETH_P_IPV6))
     {
-        if (*pdata != 0x60 || (esp_mode != BLOG_ESP_MODE_TRANSPORT && nexthdr != BLOG_IPPROTO_IPV6))
+        if (*pdata != 0x60 || (esp_mode != BLOG_ESP_MODE_TRANSPORT &&
+                               nexthdr != BLOG_IPPROTO_IPV6 && nexthdr != IPPROTO_IPIP))
         {
             skb_pull(pSkb, esph_offset);
             blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
@@ -827,12 +892,12 @@ static void spu_blog_fc_crypt_done_us(struct bcmspu_message *mssg)
             }
         }
         blogAction = blog_sinit(skb, iproc_priv.spu_dev_us,
-                                TYPE_IP, 0, BLOG_SPU_US, &fcArgs);
+                                TYPE_IP, rctx->ctx->blog_chan_id, BLOG_SPU_US, &fcArgs);
     }
     else
     {
         FkBuff_t *fkb = (FkBuff_t *)PNBUFF_2_FKBUFF(rctx->pNBuf);
-        headroom = (int)(fkb->data - PFKBUFF_TO_PHEAD(fkb));
+        headroom = (int)(fkb->data - BCM_PFKBUFF_TO_PHEAD(fkb));
         pData = fkb->data;
         pktlen = fkb->len;
         skb = NULL;
@@ -1041,7 +1106,7 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
         pData = skb->data;
 
         blogAction = blog_sinit(skb, iproc_priv.spu_dev_ds,
-                                TYPE_IP, 0, BLOG_SPU_DS, &fcArgs);
+                                TYPE_IP, rctx->ctx->blog_chan_id, BLOG_SPU_DS, &fcArgs);
     }
     else
     {
@@ -1069,7 +1134,7 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
                 goto exit;
             }
         }
-        headroom = (int)(fkb->data - PFKBUFF_TO_PHEAD(fkb));
+        headroom = (int)(fkb->data - BCM_PFKBUFF_TO_PHEAD(fkb));
 
         pktlen = fkb->len;
         pData = fkb->data;
@@ -1195,6 +1260,7 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
     struct device *spu_dev = &iproc_priv.pdev->dev;
     int                    esph_offset;
     int                    free_buf = 1;
+    uint8_t                ttl_hop;
 
     flow_log("%s\n", __func__);
 
@@ -1231,6 +1297,7 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
         esph_offset = BLOG_IPV4_HDR_LEN;
         if (iph->protocol == BLOG_IPPROTO_UDP)
             esph_offset += BLOG_UDP_HDR_LEN;
+        ttl_hop = iph->ttl;
     }
     else if (*pdata == 0x60)
     {
@@ -1242,6 +1309,7 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
             ret = -1;
             goto exit;
         }
+        ttl_hop = iph->hop_limit;
     }
     else
     {
@@ -1262,15 +1330,14 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
 
 #if defined (CONFIG_BCM_SPU_HW_OFFLOAD)
     {
-        int session_id = spu_offload_get_us_session_id(spi, NULL);
+        int session_id = spu_offload_get_us_session_id(spi, NULL, ttl_hop, 0xFF, 0);
         if (session_id > 0)
         {
             uint32_t payloadlen;
             /* packet inserted to offload path, exit here */
-            if (spu_offload_insert_us_pkt(pNBuf, session_id, ctx->digestsize, &payloadlen) == 0) {
+            if (spu_offload_insert_us_pkt(pNBuf, session_id, ctx->digestsize, &payloadlen) == 0)
                 free_buf = 0;
-                goto exit;
-            }
+            goto exit;
         }
     }
 #endif
@@ -1294,6 +1361,13 @@ static int spu_blog_us_dev_xmit_args (pNBuff_t pNBuf, struct net_device *dev, Bl
         if (xfrm->genid)
         {
             spu_blog_evict(ctx);
+        }
+
+        if (unlikely(xfrm->km.state != XFRM_STATE_VALID))
+        {
+            XFRM_INC_STATS(net, LINUX_MIB_XFRMOUTSTATEINVALID);
+            ret = -EINVAL;
+            break;
         }
 
         ret = xfrm_state_check_expire(xfrm);

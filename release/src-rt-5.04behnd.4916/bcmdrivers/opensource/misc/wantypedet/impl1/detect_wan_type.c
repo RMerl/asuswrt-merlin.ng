@@ -34,11 +34,9 @@ written consent.
 #include <linux/miscdevice.h>
 #include <linux/slab.h> 
 #include "opticaldet.h"
-#include "pmd.h"
 #include "bcm_ioremap_shared.h"
  
-extern int try_wan_type_sensing(pmd_calibration_parameters *calibration_parameters_from_json,
-    int signal_detect_required,
+extern int try_wan_type_sensing(int signal_detect_required,
     wan_type_auto_detect_result *result);
  
 void *g_gpon_rcvr_base = NULL;
@@ -61,7 +59,6 @@ static long _detect_ioctl(struct file *file, unsigned int cmd, unsigned long arg
 {
     int ret = 0;
     wan_type_auto_detect_info *p_wan_auto_detect = NULL;
-    pmd_calibration_parameters *p_calibration_parameters = NULL;
 
     switch (cmd)
     {
@@ -82,13 +79,7 @@ static long _detect_ioctl(struct file *file, unsigned int cmd, unsigned long arg
                     goto exit;
                 }
 
-                if (p_wan_auto_detect->pmd_settings.is_calibration_file_valid)
-                {
-                    p_calibration_parameters = &(p_wan_auto_detect->pmd_settings.calibration_parameters_from_json);
-                }
-
-                ret = try_wan_type_sensing(p_calibration_parameters, 
-                              p_wan_auto_detect->signal_detect_required,
+                ret = try_wan_type_sensing(p_wan_auto_detect->signal_detect_required,
                               &(p_wan_auto_detect->result));
                 if (ret)
                 {

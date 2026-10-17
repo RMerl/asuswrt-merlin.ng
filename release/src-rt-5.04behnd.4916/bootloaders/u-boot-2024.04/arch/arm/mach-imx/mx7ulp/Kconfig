@@ -1,0 +1,51 @@
+if ARCH_MX7ULP
+
+config SYS_SOC
+	default "mx7ulp"
+
+config LDO_ENABLED_MODE
+	bool "i.MX7ULP LDO Enabled Mode"
+	help
+	  Select this option to enable the PMC1 LDO.
+
+config MX7ULP
+	select ARCH_SUPPORT_PSCI
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+	select HAS_CAAM
+	bool
+
+choice
+	prompt "MX7ULP board select"
+	optional
+
+config TARGET_MX7ULP_COM
+	bool "Support MX7ULP COM board"
+	select MX7ULP
+	select SYS_ARCH_TIMER
+	select SPL_DM if SPL
+	select SPL_GPIO if SPL
+	select SPL_LIBCOMMON_SUPPORT if SPL
+	select SPL_LIBDISK_SUPPORT if SPL
+	select SPL_LIBGENERIC_SUPPORT if SPL
+	select SPL_MMC if SPL
+	select SPL_OF_CONTROL if SPL
+	select SPL_OF_LIBFDT if SPL
+	select SPL_PINCTRL if SPL
+	select SPL_SEPARATE_BSS if SPL
+	select SPL_SERIAL if SPL
+	select SUPPORT_SPL
+
+config TARGET_MX7ULP_EVK
+	bool "Support mx7ulp EVK board"
+	select MX7ULP
+	select SYS_ARCH_TIMER
+	select FSL_CAAM
+	select ARCH_MISC_INIT
+
+endchoice
+
+source "board/ea/mx7ulp_com/Kconfig"
+source "board/freescale/mx7ulp_evk/Kconfig"
+
+endif

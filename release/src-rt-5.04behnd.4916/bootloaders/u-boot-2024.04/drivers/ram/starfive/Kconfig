@@ -1,0 +1,5 @@
+config SPL_STARFIVE_DDR
+	bool "StarFive DDR driver in SPL"
+	depends on SPL_RAM && STARFIVE_JH7110
+	help
+	  This enables DDR support for the platforms based on StarFive JH7110 SoC.

@@ -675,6 +675,9 @@ static const ru_reg_rec *NATC_ENG_REGS[] =
 const ru_block_rec NATC_ENG_BLOCK =
 {
     "NATC_ENG",
+#if RU_INCLUDE_SIZE
+    { 0x000000C8 },
+#endif
     NATC_ENG_ADDRS,
     1,
     6,

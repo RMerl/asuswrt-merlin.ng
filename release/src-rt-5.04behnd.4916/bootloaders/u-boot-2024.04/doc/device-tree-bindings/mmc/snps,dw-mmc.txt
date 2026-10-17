@@ -1,0 +1,32 @@
+Synopsys Designware Mobile Storage Host Controller extensions
+used in Synopsys ARC devboards
+
+Required Properties:
+
+* compatible: should be - "snps,dw-mshc".
+* bus-width: number of data lines connected to the controller.
+* clocks: from common clock binding: handle to biu and ciu clocks for the
+  bus interface unit clock and the card interface unit clock.
+* clock-names: from common clock binding: Shall be "biu" and "ciu".
+
+Optional properties:
+
+* fifo-depth: The maximum size of the tx/rx fifo's. If this property is not
+  specified, the default value of the fifo size is determined from the
+  controller registers.
+* fifo-mode: Don't use DMA.
+* max-frequency: Maximum operating clock frequency, driver uses 'ciu' clock
+  frequency if it is not set.
+
+Example:
+
+mmc0@f000a000 {
+	compatible = "snps,dw-mshc";
+	reg = <0xf000a000 0x400>;
+
+	bus-width = <4>;
+	fifo-depth = <256>;
+	clocks = <&mmcclk_biu>, <&mmcclk_ciu>;
+	clock-names = "biu", "ciu";
+	max-frequency = <25000000>;
+};

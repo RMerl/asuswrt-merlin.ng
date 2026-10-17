@@ -94,9 +94,7 @@ inline void platform_set_imp_speed(enetx_port_t *self)
     // based on impl5/bcmsw.c:sf2_enable_2_5g()
     volatile u32 *sw_ctrl_reg = (void *)(SWITCH_REG_BASE);
     uint32 val32 = *sw_ctrl_reg;
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM94908)
-    val32 |= SF2_IMP_2_5G_EN;
-#elif defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
     val32 &= ~(IMP_SPEED_MASK);
     val32 |= DEFAULT_IMP_SPEEDS;
 #endif
@@ -109,12 +107,7 @@ inline void platform_set_imp_speed(enetx_port_t *self)
 
 inline void platform_enable_p8_rdp_sel(void)
 {
-#if defined(CONFIG_BCM94908)
-    volatile u32 *sw_ctrl_reg = (void *)(SWITCH_REG_BASE);
-    uint32 val32 = *sw_ctrl_reg;
-    val32 |= 1<<16; /* P8_RDP_SEL valid in 4908 */
-    *sw_ctrl_reg = val32;
-#elif defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
     uint32 val32 = *SWITCH_CROSSBAR_REG;
  #if !defined(ARCHER_DEVICE)
     val32 |= 1<<5; /* P8_MUX_SEL 0=SysPort, 1=XRDP */
@@ -130,20 +123,6 @@ inline void platform_set_clock_normal(int unit)
 {
     uint32 reg_val32;
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
-    /* From PLL low power mode to Normal mode */
-    reg_val32 = 0xc0;
-    SF2SW_WREG(unit, PAGE_CONTROL, 0xdc, &reg_val32, 4);   // TODO_DUAL: deep green mode in 6756 internal sf2?
-    reg_val32 = 0x0;
-    SF2SW_WREG(unit, PAGE_CONTROL, 0xdc, &reg_val32, 4);
-
-    /* Bring back system clock and mac clocks */
-    SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
-    reg_val32 &= ~(REG_LOW_POWER_CTR_SLEEP_P8     | REG_LOW_POWER_CTR_SLEEP_P5                 |
-                   REG_LOW_POWER_CTR_SLEEP_P4     | REG_LOW_POWER_CTR_TIMER_DISABLE            |
-                   REG_LOW_POWER_CTR_EN_LOW_POWER | REG_LOW_POWER_CTR_LOW_POWER_DIVIDER_6P25MHZ);
-    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
-#else
     /* change switch clock back to operation mode */
 #if defined(CONFIG_BCM963158)
     pmc_switch_clock_lowpower_mode (0);
@@ -163,25 +142,12 @@ inline void platform_set_clock_normal(int unit)
     SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
     reg_val32 &= ~(REG_LOW_POWER_CTR_TIMER_DISABLE);
     SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
-#endif
 }
 
 inline void platform_set_clock_slow(int unit)
 {
     uint32 reg_val32;
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
-    /* Slow down system clock, stop port5 and port 8 mac clock */
-    SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
-    reg_val32 |= REG_LOW_POWER_CTR_SLEEP_P8     | REG_LOW_POWER_CTR_SLEEP_P5                 |
-                 REG_LOW_POWER_CTR_SLEEP_P4     | REG_LOW_POWER_CTR_TIMER_DISABLE            |
-                 REG_LOW_POWER_CTR_EN_LOW_POWER | REG_LOW_POWER_CTR_LOW_POWER_DIVIDER_6P25MHZ;
-    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
-
-    /* Shut Down Channel 2 PLL */
-    reg_val32 = 0x1f;
-    SF2SW_WREG(unit, PAGE_CONTROL, 0xdc, &reg_val32, 4);
-#else /* defined(CONFIG_BCM963158) || defined(CONFIG_BCM963158) */
     /* Slow down system clock */
     SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
     reg_val32 |= REG_LOW_POWER_CTR_TIMER_DISABLE;
@@ -197,58 +163,9 @@ inline void platform_set_clock_slow(int unit)
         ETHSW_SWITCH_CTRL_SYSPORT_CLK_SEL_MASK |
         ETHSW_SWITCH_CTRL_P8_CLK_SEL_MASK);
 #endif
-#endif
 }
 
-// ============================================================================
-#if   defined(CONFIG_BCM963138)
-    #define DEFAULT_IMP_PBMAP       (PBMAP_MIPS)
-
-// ============================================================================
-#elif defined(CONFIG_BCM963148)
-    #define DEFAULT_IMP_PBMAP       (PBMAP_MIPS)
-
-// ============================================================================
-#elif defined(CONFIG_BCM94908)
-
-#if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
-    #define DEFAULT_IMP_PBMAP       (PBMAP_MIPS|PBMAP_P5_IMP|PBMAP_P4_IMP)
-    const int imp_to_emac[MAX_SWITCH_PORTS+1] = {-1,-1,-1,-1, 2, 1,-1,-1, 0};
-
-    /* Below mapping is used when P7 comes up at 2.5G link speed */
-    int port_imp_map_2_5g[MAX_SWITCH_PORTS+1] = 
-                        {
-                            /* P0 */  P4_PORT_ID,
-                            /* P1 */  P5_PORT_ID,
-                            /* P2 */  P5_PORT_ID,
-                            /* P3 */  P5_PORT_ID, /* 5 /*/
-                            /* P4 */  -1,   /* IMP Port */
-                            /* P5 */  -1,   /* IMP Port */
-                            /* P6 */  -1,   /* Unused/undefined switch port */
-                            /* P7 */  IMP_PORT_ID, /* 8 */
-                            /* P8 */  -1,   /* IMP Port */
-                        };
-    /* Below mapping is used when P7 comes up at below 2.5G link speed */
-    int port_imp_map_non_2_5g[MAX_SWITCH_PORTS+1] = 
-                        {
-                            /* P0 */  P4_PORT_ID,
-                            /* P1 */  P5_PORT_ID,
-                            /* P2 */  P5_PORT_ID,
-                            /* P3 */  IMP_PORT_ID, /* 8 /*/
-                            /* P4 */  -1,   /* IMP Port */
-                            /* P5 */  -1,   /* IMP Port */
-                            /* P6 */  -1,   /* Unused/undefined switch port */
-                            /* P7 */  IMP_PORT_ID, /* 8 */
-                            /* P8 */  -1,   /* IMP Port */
-                        };
-
-uint32_t imp_pbmap[MAX_SWITCHES] = {[0 ... (MAX_SWITCHES-1)] = DEFAULT_IMP_PBMAP};
-static int port_imp_emac_map[MAX_SWITCH_PORTS+1] = {[0 ... MAX_SWITCH_PORTS] = -1}; 
-
-#endif //CONFIG_BCM_ENET_MULTI_IMP_SUPPORT
-
-// ============================================================================
-#elif defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
 
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
     #define DEFAULT_IMP_PBMAP       (PBMAP_MIPS|PBMAP_P7_IMP|PBMAP_P5_IMP)

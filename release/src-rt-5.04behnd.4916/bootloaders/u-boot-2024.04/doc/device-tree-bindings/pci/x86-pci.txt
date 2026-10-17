@@ -1,0 +1,52 @@
+x86 PCI DT details:
+===================
+
+Some options are available to affect how PCI operates on x86.
+
+Optional properties:
+- u-boot,skip-auto-config-until-reloc : Don't set up PCI configuration until
+	after U-Boot has relocated. Normally if PCI is used before relocation,
+	this happens before relocation also. Some platforms set up static
+	configuration in TPL/SPL to reduce code size and boot time, since these
+	phases only know about a small subset of PCI devices.
+
+For PCI devices the following optional property is available:
+
+- pci,no-autoconfig : Don't automatically configure this PCI device at all.
+	This is used when the device is statically configured and must maintain
+	this same config throughout the boot process. An example is a serial
+	UART being used to debug PCI configuration, since reconfiguring it stops
+	the UART from working until the driver is re-probed, and this can cause
+	output to be lost. This should not generally be used in production code,
+	although it is often harmless.
+
+- u-boot,pci-pre-reloc : List of vendor/device IDs to bind before relocation, even
+	if they are not bridges. This is useful if the device is needed (e.g. a
+	UART). The format is 0xvvvvdddd where d is the device ID and v is the
+	vendor ID.
+
+Example:
+
+pci {
+	compatible = "pci-x86";
+	#address-cells = <3>;
+	#size-cells = <2>;
+	bootph-all;
+	ranges = <0x02000000 0x0 0xc0000000 0xc0000000 0 0x10000000
+		0x42000000 0x0 0xb0000000 0xb0000000 0 0x10000000
+		0x01000000 0x0 0x1000 0x1000 0 0xefff>;
+	u-boot,skip-auto-config-until-reloc;
+	u-boot,pci-pre-reloc = <
+		PCI_VENDEV(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_APL_UART2)>;
+
+	serial: serial@18,2 {
+		reg = <0x0200c210 0 0 0 0>;
+		bootph-all;
+		compatible = "intel,apl-ns16550";
+		early-regs = <0xde000000 0x20>;
+		reg-shift = <2>;
+		clock-frequency = <1843200>;
+		current-speed = <115200>;
+		pci,no-autoconfig;
+	};
+};

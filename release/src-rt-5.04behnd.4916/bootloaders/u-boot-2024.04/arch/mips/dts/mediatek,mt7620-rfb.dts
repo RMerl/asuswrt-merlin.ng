@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 MediaTek Inc.
+ *
+ * Author: Weijie Gao <weijie.gao@mediatek.com>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include "mt7620.dtsi"
+
+/ {
+	compatible = "mediatek,mt7620-rfb", "mediatek,mt7620-soc";
+	model = "MediaTek MT7620 RFB (WS2120)";
+
+	aliases {
+		serial0 = &uartlite;
+		spi0 = &spi0;
+	};
+
+	chosen {
+		stdout-path = &uartlite;
+	};
+};
+
+&uartlite {
+	status = "okay";
+};
+
+&pinctrl {
+	state_default: pin_state {
+		pleds {
+			groups = "ephy led", "wled";
+			function = "led";
+		};
+
+		gpios {
+			groups = "uartf";
+			function = "gpio";
+		};
+	};
+
+	gsw_pins: gsw_pins {
+		mdio {
+			groups = "mdio";
+			function = "mdio";
+		};
+
+		rgmii1 {
+			groups = "rgmii1";
+			function = "rgmii1";
+		};
+
+		rgmii2 {
+			groups = "rgmii2";
+			function = "rgmii2";
+		};
+	};
+};
+
+&spi0 {
+	status = "okay";
+	num-cs = <2>;
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <25000000>;
+		reg = <0>;
+	};
+};
+
+&eth {
+	status = "okay";
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&gsw_pins>;
+
+	port4 {
+		phy-mode = "rgmii";
+		phy-addr = <4>;
+	};
+
+	port5 {
+		phy-mode = "rgmii";
+		phy-addr = <5>;
+	};
+};
+
+&mmc {
+	bus-width = <4>;
+	cap-sd-highspeed;
+
+	status = "okay";
+};

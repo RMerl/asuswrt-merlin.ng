@@ -78,7 +78,8 @@ static int dac2563_set_dai_fmt(struct snd_soc_dai *codec_dai,
 {
 	u8 iface_reg_1;
 	struct snd_soc_component *component = codec_dai->component;
-	iface_reg_1 = snd_soc_component_read32(component, TAS2563_TDM_CFG1);
+
+	iface_reg_1 = snd_soc_component_read(component, TAS2563_TDM_CFG1);
 
 	/* set master/slave audio interface */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -132,11 +133,11 @@ static int dac2563_hw_params(struct snd_pcm_substream *substream,
 	return 0;
 }
 
-static int dac2563_mute(struct snd_soc_dai *dai, int mute)
+static int dac2563_mute(struct snd_soc_dai *dai, int mute,int direction)
 {
 	struct snd_soc_component *component = dai->component;
 	u8 dac_reg;
-	dac_reg = snd_soc_component_read32(component, TAS2563_PWR_CTL);
+	dac_reg = snd_soc_component_read(component, TAS2563_PWR_CTL);
 	if (mute)
 		snd_soc_component_write(component, TAS2563_PWR_CTL, dac_reg | 
 						TAS2563_PWR_MODE_MUTE);
@@ -160,7 +161,7 @@ static void dac2563_shutdown(struct snd_pcm_substream *substream,
 
 static const struct snd_soc_dai_ops dac2563_ops = {
 	.hw_params    = dac2563_hw_params,
-	.digital_mute = dac2563_mute,
+	.mute_stream = dac2563_mute,
 	.set_fmt      = dac2563_set_dai_fmt,
 	.shutdown     = dac2563_shutdown,
 };
@@ -175,7 +176,7 @@ static struct snd_soc_dai_driver dac2563_dai = {
 		.formats      = TAS2563_FORMATS,
 	},
 	.ops                  = &dac2563_ops,
-	.symmetric_rates      = 1,
+	.symmetric_rate      = 1,
 };
 
 static int dac2563_probe(struct snd_soc_component *component)

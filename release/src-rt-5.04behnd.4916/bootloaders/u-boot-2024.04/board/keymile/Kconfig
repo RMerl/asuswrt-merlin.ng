@@ -1,0 +1,161 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2019, Pascal Linder <pascal.linder@edu.hefr.ch>
+
+config VENDOR_KM
+	bool
+	help
+	  Selected by any KM board to have additional configurations.
+
+if VENDOR_KM
+
+menu "KM Board Setup"
+
+config SYS_I2C_INIT_BOARD
+	def_bool y if ARM
+
+config HUSH_INIT_VAR
+	def_bool y
+
+config KM_PNVRAM
+	hex "Pseudo RAM"
+	default 0x80000
+	depends on !ARCH_SOCFPGA
+	help
+	  Start address of the pseudo non-volatile RAM for application.
+
+config KM_PHRAM
+	hex "Physical RAM"
+	default 0x17F000 if ARM && !ARCH_LS1021A
+	default 0x100000 if PPC || ARCH_LS1021A
+	depends on !ARCH_SOCFPGA
+	help
+	  Start address of the physical RAM, which is the mounted /var folder.
+
+config KM_RESERVED_PRAM
+	hex "Reserved RAM"
+	default 0x0 if MPC83xx
+	default 0x1000 if MPC85xx || ARCH_LS1021A
+	depends on !ARCH_SOCFPGA
+	help
+	  Reserved physical RAM area at the end of memory for special purposes.
+
+config KM_CRAMFS_ADDR
+	hex "CRAMFS Address"
+	default 0x83000000 if ARCH_LS1021A
+	default 0x3000000
+	depends on !ARCH_SOCFPGA
+	help
+	  Start address of the CRAMFS containing the Linux kernel.
+
+config KM_KERNEL_ADDR
+	hex "Kernel Load Address"
+	default 0x82000000 if ARCH_LS1021A
+	default 0x2000000
+	help
+	  Address where to load Linux kernel in RAM.
+
+config KM_FDT_ADDR
+	hex "FDT Load Address"
+	default 0x82FC0000 if ARCH_LS1021A
+	default 0x2FC0000
+	help
+	  Address where to load flattened device tree in RAM.
+
+config SYS_PAX_BASE
+	hex "PAX IFC Base Address"
+	default 0x78000000
+	depends on ARCH_LS1021A
+	help
+	  IFC Base Address for PAXx FPGA.
+
+config SYS_CLIPS_BASE
+	hex "CLIPS IFC Base Address"
+	default 0x78000000
+	depends on ARCH_LS1021A
+	help
+	  IFC Base Address for CLIPS FPGA.
+
+config KM_COMMON_ETH_INIT
+	bool "Common Ethernet Initialization"
+	default y if MPC83xx
+	default n if MPC85xx || ARCH_SOCFPGA || ARCH_LS1021A
+	help
+	  Use the Ethernet initialization implemented in common code that
+	  detects if a Piggy board is present.
+
+config PIGGY_MAC_ADDRESS_OFFSET
+	int "Piggy Address Offset"
+	default 0
+	help
+	  MAC address offset for the Piggy board.
+
+config KM_MVEXTSW_ADDR
+	hex "Marvell Switch Address"
+	depends on MV88E6352_SWITCH
+	default 0x10
+	help
+	  Address of external Marvell switch.
+
+config KM_IVM_BUS
+	int "IVM I2C Bus"
+	default 0 if ARCH_SOCFPGA
+	default 1 if PPC || ARCH_LS1021A
+	help
+	  Identifier number of I2C bus, where the inventory EEPROM is connected to.
+
+config SYS_IVM_EEPROM_ADR
+	hex "IVM I2C Address"
+	default 0x50
+	help
+	  I2C address of the EEPROM containing the inventory.
+
+config SYS_IVM_EEPROM_MAX_LEN
+	hex "IVM Length"
+	default 0x400
+	help
+	  Maximum length of inventory in EEPROM.
+
+config SYS_IVM_EEPROM_PAGE_LEN
+	hex "IVM Page Size"
+	default 0x100
+	help
+	  Page size of inventory in EEPROM.
+
+config PG_WCOM_UBOOT_UPDATE_SUPPORTED
+	bool "Enable U-Boot Field Fail-Safe Update Functionality"
+	select EVENT
+	help
+	  Indicates that field fail-safe u-boot update is supported.
+	  This functionality works only for designs that are booting
+	  from parallel NOR flash.
+
+config PG_WCOM_UBOOT_BOOTPACKAGE
+	bool "U-Boot Is Part Of Factory Boot-Package Image"
+	help
+	  Indicates that u-boot will be a part of the factory programmed
+	  boot-package image.
+	  Has to be set for original u-boot programmed at factory.
+
+config PG_WCOM_UBOOT_UPDATE_TEXT_BASE
+	hex "Text Base For U-Boot Programmed Outside Factory"
+	default 0xFFFFFFFF
+	help
+	  Text base of an updated u-boot that is not factory programmed but
+	  later when the unit is rolled out on the field.
+	  Has to be set for original u-boot programmed at factory.
+
+config PG_WCOM_UBOOT_UPDATE
+	bool "U-Boot Is Part Of Factory Boot-Package Image"
+	help
+	  Indicates that u-boot will be a part of the embedded software and
+	  programmed at field.
+	  Has to be set for updated u-boot version programmed at field.
+
+source "board/keymile/km83xx/Kconfig"
+source "board/keymile/kmcent2/Kconfig"
+source "board/keymile/pg-wcom-ls102xa/Kconfig"
+
+endmenu
+
+endif

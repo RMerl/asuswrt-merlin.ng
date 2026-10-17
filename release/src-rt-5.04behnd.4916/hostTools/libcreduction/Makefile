@@ -68,6 +68,15 @@ SHLIBS64 := $(shell find -L $(SEARCH_DIRS) -type f | file -f - \
 	     | cut -d'[' -f2 | sed -e 's/]//g' | sort | uniq)
 endif
 
+# workaround for missing 64-bits libraries
+ifeq ($(BCM_AFC),y)
+SHLIBS64_SKIP := libbcm_boardctl.so libbcm_flashutil.so libbcm_util.so libgen_util.so libnvram.so libsys_util.so
+# for those share libraries already in $(INSTALL_DIR)/lib, removed them to avoid request in EXP_TOOLCHAIN_LIBS64 and lead to missing libraries
+SHLIBS64_SKIP := $(shell for j in $(SHLIBS64_SKIP); do if test -n "$$(find -L $(INSTALL_DIR)/lib -name $$j)" \
+                               ; then echo $$j; else echo ""; fi; done;)
+  $(warning libcreduction: SHLIBS64_SKIP: $(SHLIBS64_SKIP))
+endif
+
 ########## Look for restricted libs #########
 RESTRICTED_LIBS32 := $(findstring $(RESTRICTED_LIBS),$(SHLIBS32))
 RESTRICTED_LIBS64 := $(findstring $(RESTRICTED_LIBS),$(SHLIBS64))
@@ -81,6 +90,8 @@ else
 endif
 endif
 
+include $(BUILD_DIR)/make.common
+
 ############ Process 32-bit libs ############
 ifneq ($(SHLIBS32),)
 
@@ -92,7 +103,7 @@ else
 override CURRENT_ARCH := $(BUILD_ARCH)
 endif
 
-include $(BUILD_DIR)/make.common
+include $(BUILD_DIR)/make.toolchain
 
 ifeq ($(BUILD_ARCH),aarch64)
 INSTALL_SUFFIX32 := $(BCM_INSTALL_SUFFIX)
@@ -100,15 +111,20 @@ else
 INSTALL_SUFFIX32 :=
 endif
 
-$(warning "libcreduction 32-bit: build:$(BUILD_ARCH) current:$(CURRENT_ARCH) install_dir:/lib/$(INSTALL_SUFFIX32) $(TOOLCHAIN_TOP)")
+$(warning "libcreduction 32-bit: build:$(BUILD_ARCH) current:$(CURRENT_ARCH) install_dir:/lib/$(INSTALL_SUFFIX32) $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX)")
 
 ifeq ($(LIBC),glibc)
    # Libs which are loaded via dlopen()
-   EXTRALIBS32 := libnss_dns.so.2 libnss_files.so.2
+   EXTRALIBS32 := libnss_dns.so.2 libnss_files.so.2 libatomic.so.1
+endif
+
+ifneq ($(BUILD_SGS),)
+   # Explicitly needed to be copied for SGS
+   EXTRALIBS32 += libpthread.so.0 libdl.so.2 librt.so.1
 endif
 
 # Get dynamic linker
-TOOLCHAIN_LINKER32 := $(shell find -L $(TOOLCHAIN_TOP) -name "$(LINKER_PREFIX)*" -print -quit;)
+TOOLCHAIN_LINKER32 := $(shell find -L $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX) -name "$(LINKER_PREFIX)*" -print -quit;)
 LINKER32 := $(shell basename -z $(TOOLCHAIN_LINKER32))
 
 # Remove dynamic linker from list of libs
@@ -137,10 +153,10 @@ EXP_TOOLCHAIN_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do if test -n 
 endif
 
 # Get full paths for toolchain libs
-TOOLCHAIN_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do find -L $(TOOLCHAIN_TOP) -name $$j -print -quit; done;)
+TOOLCHAIN_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do find -L $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX) -name $$j -print -quit; done;)
 
 # Determine which libs are missing
-MISSING_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do if test -n "$$(find -L $(TOOLCHAIN_TOP) -name $$j)" \
+MISSING_LIBS32 := $(shell for j in $(EXP_TOOLCHAIN_LIBS32); do if test -n "$$(find -L $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX) -name $$j)" \
                            ; then echo ""; else echo $$j; fi; done;)
 
 # If linker was not found, add to list of missing libs
@@ -153,6 +169,7 @@ endif
 
 endif
 
+
 ############ Process 64-bit libs ############
 ifneq ($(SHLIBS64),)
 
@@ -164,7 +181,7 @@ else
 override CURRENT_ARCH := $(BUILD_ARCH)
 endif
 
-include $(BUILD_DIR)/make.common
+include $(BUILD_DIR)/make.toolchain
 
 ifeq ($(BUILD_ARCH),arm)
 INSTALL_SUFFIX64 := $(BCM_INSTALL_SUFFIX)
@@ -172,19 +189,20 @@ else
 INSTALL_SUFFIX64 :=
 endif
 
-$(warning "libcreduction 64-bit: build:$(BUILD_ARCH) current:$(CURRENT_ARCH) install_dir:/lib/$(INSTALL_SUFFIX64) $(TOOLCHAIN_TOP)")
+$(warning "libcreduction 64-bit: build:$(BUILD_ARCH) current:$(CURRENT_ARCH) install_dir:/lib/$(INSTALL_SUFFIX64) $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX)")
 
 ifeq ($(LIBC),glibc)
    # Libs which are loaded via dlopen()
-   EXTRALIBS64 := libnss_dns.so.2 libnss_files.so.2
+   EXTRALIBS64 := libnss_dns.so.2 libnss_files.so.2 libatomic.so.1
 endif
 
 # Get dynamic linker
-TOOLCHAIN_LINKER64 := $(shell find -L $(TOOLCHAIN_TOP) -name "$(LINKER_PREFIX)*" -print -quit;)
+TOOLCHAIN_LINKER64 := $(shell find -L $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX) -name "$(LINKER_PREFIX)*" -print -quit;)
 LINKER64 := $(shell basename -z $(TOOLCHAIN_LINKER64))
 
 # Remove dynamic linker from list of libs
 SHLIBS64 := $(filter-out $(LINKER64),$(SHLIBS64))
+SHLIBS64 := $(filter-out $(SHLIBS64_SKIP),$(SHLIBS64))
 
 # Add extra libs
 SHLIBS64 += $(EXTRALIBS64)
@@ -194,16 +212,20 @@ SHLIBS64 += $(EXTRALIBS64)
                                ; then echo ""; else echo $$j; fi; done;)
 EXP_TOOLCHAIN_LIBS64 := $(shell for j in $(SHLIBS64); do if test -n "$$(find -L $(INSTALL_DIR)/usr/lib -name $$j)" \
                                ; then echo ""; else echo $$j; fi; done;)
+ifneq ($(BUILD_PRPL_FEEDS),)
+EXP_TOOLCHAIN_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do if test -n "$$(find -L $(INSTALL_DIR)/opt/prplos/usr -name $$j)" \
+                               ; then echo ""; else echo $$j; fi; done;)
+endif
 EXP_TOOLCHAIN_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do if test -n "$$(find -L $(INSTALL_DIR)/usr/lib/$(INSTALL_SUFFIX64) -name $$j)" \
                                ; then echo ""; else echo $$j; fi; done;)
 EXP_TOOLCHAIN_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do if test -n "$$(find -L $(INSTALL_DIR)/hns/usr -name $$j)" \
                                ; then echo ""; else echo $$j; fi; done;)
 
 # Get full paths for toolchain libs
-TOOLCHAIN_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do find -L $(TOOLCHAIN_TOP) -name $$j -print -quit; done;)
+TOOLCHAIN_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do find -L $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX) -name $$j -print -quit; done;)
 
 # Determine which libs are missing
-MISSING_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do if test -n "$$(find -L $(TOOLCHAIN_TOP) -name $$j)" \
+MISSING_LIBS64 := $(shell for j in $(EXP_TOOLCHAIN_LIBS64); do if test -n "$$(find -L $(TOOLCHAIN_TOP)/$(TOOLCHAIN_USR_DIR)/$(TOOLCHAIN_PREFIX) -name $$j)" \
                            ; then echo ""; else echo $$j; fi; done;)
 
 # If linker was not found, add to list of missing libs

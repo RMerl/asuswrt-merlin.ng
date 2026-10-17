@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		atf-fip {
+			fip-hdr-flags = /bits/ 64 <0x123>;
+			soc-fw {
+				fip-flags = /bits/ 64 <0x123456789abcdef>;
+				filename = "bl31.bin";
+			};
+
+			u-boot {
+				fip-uuid = [fc 65 13 92 4a 5b 11 ec
+					    94 35 ff 2d 1c fc 79 9c];
+			};
+		};
+
+		fdtmap {
+		};
+	};
+};

@@ -1,0 +1,79 @@
+The device node for Mediatek USB3 DRD controller
+
+Required properties:
+ - compatible : should be "mediatek,<soc-model>-mtu3", "mediatek,mtu3",
+	soc-model is the name of SoC, such as mt8512 etc,
+	when using "mediatek,mtu3" compatible string, you need SoC specific
+	ones in addition, one of:
+	- "mediatek,mt8512-mtu3"
+ - reg : specifies physical base address and size of the registers
+ - reg-names: should be
+	- "ippc" : IP Port Control
+ - power-domains : a phandle to USB power domain node to control USB's MTCMOS
+ - clocks : a list of phandle + clock-specifier pairs, one for each
+	entry in clock-names
+ - clock-names : must contain "sys_ck" for clock of controller,
+	the following clocks are optional:
+	"ref_ck", "mcu_ck", "dma_ck" and "xhci_ck";
+ - phys : list of all the USB PHYs on this HCD
+ - #address-cells, #size-cells : used for sub-nodes with 'reg' property
+ - ranges : allows valid 1:1 translation between child's address space and
+	parent's address space
+
+Optional properties:
+ - vusb33-supply : regulator of USB AVDD3.3v
+ - vbus-supply : regulator of VBUS 5v, needed when supports host mode.
+
+Sub-nodes:
+Required properties:
+ - compatible : should be "mediatek,ssusb"
+ - reg : specifies physical base address and size of the registers
+ - reg-names: should be
+	- "mac" : SSUSB MAC, include xHCI and device
+ - interrupts : interrupt used by xHCI or device
+ - dr_mode : should be one of "host" or "peripheral",
+	see : usb/generic.txt
+
+Optional properties:
+ - pinctrl-names : a pinctrl state named "default" is optional
+ - pinctrl-0 : pin control group
+	See: pinctrl/pinctrl-bindings.txt
+
+ - device mode:
+   - maximum-speed : valid arguments are "full-speed", "high-speed",
+	"super-speed" and "super-speed-plus",
+	see: usb/generic.txt
+   - mediatek,force-vbus : force vbus as valid by SW
+
+ - host mode (dr_mode is "host"):
+   - mediatek,u3p-dis-msk : mask to disable u3ports, bit0 for u3port0,
+	bit1 for u3port1, ... etc;
+
+Example:
+usb3: usb@11213e00 {
+	compatible = "mediatek,mt8512-mtu3", "mediatek,mtu3";
+	reg = <0x11213e00 0x0100>;
+	reg-names = "ippc";
+	phys = <&u2port0 PHY_TYPE_USB2>, <&u2port1 PHY_TYPE_USB2>;
+	power-domains = <&scpsys MT8512_POWER_DOMAIN_USB>;
+	clocks = <&infracfg CLK_INFRA_USB_SYS>,
+		 <&topckgen CLK_TOP_SSUSB_TOP_CK_EN>,
+		 <&infracfg CLK_INFRA_ICUSB>;
+	clock-names = "sys_ck", "ref_ck", "mcu_ck";
+	vusb33-supply = <reg_3p3v>;
+	vbus-supply = <&usb_p0_vbus>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+	ranges;
+	status = "disabled";
+
+	ssusb: usb@11210000 {
+		compatible = "mediatek,ssusb";
+		reg = <0x11210000 0x3e00>;
+		interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_LOW>;
+		reg-names = "mac";
+		dr_mode = "peripheral";
+		maximum-speed = "high-speed";
+		status = "disabled";
+	};
+};

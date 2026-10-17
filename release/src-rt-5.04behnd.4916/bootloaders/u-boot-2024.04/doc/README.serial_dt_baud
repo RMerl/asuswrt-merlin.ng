@@ -1,0 +1,41 @@
+Fetch serial baudrate from DT
+-----------------------------
+
+To support fetching of baudrate from DT, the following is done:-
+
+The baudrate configured in Kconfig symbol CONFIG_BAUDRATE is taken by default by serial.
+If change of baudrate is required then the Kconfig symbol CONFIG_BAUDRATE needs to
+changed and U-Boot recompilation is required or the U-Boot environment needs to be updated.
+
+To avoid this, add support to fetch the baudrate directly from the device tree file and
+update the environment.
+
+The default environment stores the default baudrate value. When default baudrate and dtb
+baudrate are not same glitches are seen on the serial.
+So, the environment also needs to be updated with the dtb baudrate to avoid the glitches on
+the serial which is enabled by OF_SERIAL_BAUD.
+
+The Kconfig SPL_ENV_SUPPORT needs to be enabled to allow patching in SPL.
+
+The Kconfig DEFAULT_ENV_IS_RW which is enabled by OF_SERIAL_BAUD with making the environment
+writable.
+
+The ofnode_read_baud() function parses and fetches the baudrate value from the DT. This value
+is validated and updated to baudrate during serial init. Padding is added at the end of the
+default environment and the dt baudrate is updated with the latest value.
+
+Example:-
+
+The serial port options are of the form "bbbbpnf", where "bbbb" is the baud rate, "p" is parity ("n", "o", or "e"),
+"n" is number of bits, and "f" is flow control ("r" for RTS or omit it). Default is "115200n8".
+
+chosen {
+		bootargs = "earlycon console=ttyPS0,115200 clk_ignore_unused root=/dev/ram0 rw init_fatal_sh=1";
+		stdout-path = "serial0:115200n8";
+	};
+
+From the chosen node, stdout-path property is obtained as string.
+
+	stdout-path = "serial0:115200n8";
+
+The string is parsed to get the baudrate 115200. This string is converted to integer and updated to the environment.

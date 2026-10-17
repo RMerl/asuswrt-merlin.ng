@@ -1,0 +1,117 @@
+/*
+ * Compilation:
+ * mkimage -f fit_copro_kernel_dtb.its fit_copro_kernel_dtb.itb
+ *
+ * M4 firmware to load with remoteproc: rproc-m4-fw.elf
+ *
+ * Files in linux build dir:
+ * - arch/arm/boot/zImage
+ * - arch/arm/boot/dts/stm32mp157c-dk2.dtb
+ * - arch/arm/boot/dts/stm32mp157c-ev1.dtb
+ *
+ * load mmc 0:4 $kernel_addr_r fit_copro_kernel_dtb.itb
+ * bootm $kernel_addr_r
+ * bootm $kernel_addr_r#dk2
+ * bootm $kernel_addr_r#ev1
+ * bootm $kernel_addr_r#dk2-m4
+ * bootm $kernel_addr_r#ev1-m4
+ */
+
+/dts-v1/;
+/ {
+	description = "U-Boot fitImage for stm32mp157";
+	#address-cells = <1>;
+
+	images {
+
+		copro {
+			description = "M4 copro";
+			data = /incbin/("rproc-m4-fw.elf");
+			type = "copro";
+			arch = "arm";
+			compression = "none";
+			load = <0xC0800000>;
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+
+		kernel {
+			description = "Linux kernel";
+			data = /incbin/("zImage");
+			type = "kernel";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load = <0xC4000000>;
+			entry = <0xC4000000>;
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt-dk2 {
+			description = "FDT dk2";
+			data = /incbin/("stm32mp157c-dk2.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+
+		fdt-ev1 {
+			description = "FDT ev1";
+			data = /incbin/("stm32mp157c-ev1.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+	};
+
+	configurations {
+		default = "dk2-m4";
+
+		dk2-m4 {
+			description = "dk2-m4";
+			loadables = "copro";
+			kernel = "kernel";
+			fdt = "fdt-dk2";
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+
+		dk2 {
+			description = "dk2";
+			kernel = "kernel";
+			fdt = "fdt-dk2";
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+
+		ev1-m4 {
+			description = "ev1-m4";
+			loadables = "copro";
+			kernel = "kernel";
+			fdt = "fdt-ev1";
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+
+		ev1 {
+			description = "ev1";
+			kernel = "kernel";
+			fdt = "fdt-ev1";
+			hash-1 {
+				algo = "sha1";
+			};
+		};
+	};
+};

@@ -1,0 +1,151 @@
+Intro
+-----
+The Buffalo Linkstation Pro/Live, codename LS-XHL and LS-CHLv2, is a single
+disk NAS server. The PCBs of the LS-XHL and LS-CHLv2 are almost the same.
+The LS-XHL has a faster CPU and more RAM with a wider data bus, therefore
+the LS-XHL PCB has two SDRAM chips. Both have a Kirkwood CPU (Marvell
+88F6281). The only on-board storage is a 4 Mbit SPI flash which stores the
+bootloader and its environment. The linux kernel and the initial ramdisk
+are loaded from the hard disk.
+
+Important! Changes since v2019.07
+---------------------------------
+In u-boot v2019.07 the driver for the SATA port was changed to a new
+one. This means that the old "ide" command and block interface is not
+supported anymore. More important, the boot commands have changed. You have
+to overwrite the boot commands in your envionment with the new ones:
+
+  env default -f bootcmd_legacy
+  env default -f bootcmd_hdd
+  saveenv
+
+Rescue Mode
+-----------
+These linkstations don't have a populated serial port. There is no way to
+access an (unmodified) board other than using the netconsole. If you want
+to recover from a bad environment setting or an empty environment, you can
+do this only with a working network connection.
+
+Therefore, on entering the resuce mode, a random ethernet address is
+generated if no valid address could be loaded from the environment variable
+'ethaddr' and a DHCP request is sent. After a successful DHCP response is
+received, the network settings are configured and the ncip is unset. Thus
+all netconsole packets are broadcasted and you can use the netconsole to
+access the board from any host within the network segment. To determine the
+IP address assigned to the board, you either have to sniff the traffic or
+check the logs/leases of your DHCP server.
+
+The resuce mode is selected by holding the push button for at least one
+second, while powering-on the device. The status LED turns solid amber if
+the resuce mode is enabled, thus providing a visual feedback.
+
+Pressing the same button for at least 10 seconds on power-up will erase the
+environment and reset the board. In this case the visual indication will
+be:
+- blue, for about one second
+- amber, for about nine seconds
+- red, until you release the button
+
+This ensures, that you still can recover a device with a broken
+environment by first erasing the environment and then entering the rescue
+mode.
+
+Once the rescue mode is started, use the ncb binary from the tools/
+directory to access your board.
+
+The common use case for this is setting a MAC address. Let us assume you
+have an empty environment, the board comes up with the amber LED turned on.
+Then you enter the rescue mode, connect to the board with the ncb tool and
+use the following commands to set your MAC address:
+
+  setenv -f ethaddr 00:00:00:00:00:00
+  saveenv
+  reset
+
+Of course you need to replace the 00:00:00:00:00:00 with your valid MAC
+address, which can be found on a sticker on the bottom of your box.
+
+You cannot store the network console setting in the environment. On reset
+it is automatically restored to serial. Therefore, you have to use the
+push-button to enter resuce mode again.
+
+
+Status LED
+----------
+blue
+  Bootloader is running normally.
+
+amber
+  No ethaddr set. Use the `Rescue Mode` to set one.
+
+red
+  Something bad happend during loading the operating system.
+
+The default behavior of the linux kernel is to turn on the blue LED. So if
+the blinking blue LED changes to solid blue the kernel was loaded
+successfully.
+
+
+Power-on Switch
+---------------
+The power-on switch is a software switch. If it is not in ON position when
+the bootloader starts, the bootloader will disable the HDD and USB power
+and stop the fan. Then it loops until the switch is in ON position again,
+enables the power and fan again and continue booting.
+
+
+Boot sources
+------------
+The environment defines several different boot sources:
+
+legacy
+  This is the default boot source. It loads the kernel and ramdisk from the
+  attached HDD using the original filenames. The load addresses were
+  modified to support loading larger kernels. But it should behave the same
+  as the original bootloader.
+
+hdd
+  Use this for new-style booting. Loads three files /vmlinuz, /initrd.img
+  and /dtb from the boot partition. This should work out of the box if you
+  have debian and the flash-kernel package installed.
+
+usb
+  Same as hdd expect, that the files are loaded from an attached USB mass
+  storage device and the filename for the device tree is kirkwood-lsxhl.dtb
+  (or kirkwood-lschlv2.dtb).
+
+net
+  Same as usb expect, that the file are loaded from the network.
+
+rescue
+  Automatically activated if the push button is pressed for at least one
+  second on power-up. Does a DHCP request and enables the network console.
+  See `Rescue Mode` for more information.
+
+You can change the boot source by setting the 'bootsource' variable to the
+corresponding value. Please note, that the restore_env script will the the
+bootsource back to 'legacy'.
+
+
+Flash map
+---------
+00000 - 5ffff   u-boot
+60000 - 6ffff   reserved, may be used to store dtb
+70000 - 7ffff   u-boot environment
+
+
+Compiling
+---------
+make lsxhl_config (or lschlv2_config)
+make u-boot.kwb
+
+
+Update your board
+-----------------
+Just flash the resulting u-boot.kwb to the beginning of the SPI flash. If
+you already have a bootloader CLI, you can use the following commands:
+
+ sf probe 0
+ bootp ${loadaddr} u-boot.kwb
+ sf erase 0 +${filelen}
+ sf write 0 ${fileaddr} ${filesize}

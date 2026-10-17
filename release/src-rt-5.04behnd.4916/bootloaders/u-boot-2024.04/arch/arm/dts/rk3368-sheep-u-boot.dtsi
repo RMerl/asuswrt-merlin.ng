@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2017 Theobroma Systems Design und Consulting GmbH
+ */
+
+#include "rk3368-u-boot.dtsi"
+
+&pinctrl {
+	bootph-all;
+};
+
+&service_msch {
+	bootph-all;
+};
+
+&dmc {
+	bootph-all;
+	status = "okay";
+};
+
+&pmugrf {
+	bootph-all;
+};
+
+&cru {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};
+
+&uart2 {
+	bootph-all;
+};

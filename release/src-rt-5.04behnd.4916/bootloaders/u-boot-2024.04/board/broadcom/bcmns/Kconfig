@@ -1,0 +1,12 @@
+if TARGET_BCMNS
+
+config SYS_BOARD
+	default "bcmns"
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_CONFIG_NAME
+	default "bcmns"
+
+endif

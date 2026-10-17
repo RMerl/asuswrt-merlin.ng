@@ -38,11 +38,7 @@
  * @{
  */
 
-#if defined(XRDP) && !defined(BCM6846) && !defined(BCM6878)
 #define RDPA_EPON_MLLID_NUM      16
-#else
-#define RDPA_EPON_MLLID_NUM      8
-#endif
 
 /* mllid object private data */
 typedef struct {

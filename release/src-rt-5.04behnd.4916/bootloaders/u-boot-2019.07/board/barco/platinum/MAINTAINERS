@@ -1,7 +1,0 @@
-PLATINUM BOARD
-M:	Stefan Roese <sr@denx.de>
-S:	Maintained
-F:	board/barco/platinum/
-F:	include/configs/platinum.h
-F:	configs/platinum_picon_defconfig
-F:	configs/platinum_titanium_defconfig

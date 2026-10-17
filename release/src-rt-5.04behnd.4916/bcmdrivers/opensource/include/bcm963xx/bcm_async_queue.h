@@ -37,6 +37,10 @@ written consent.
 #ifndef __BCM_ASYNC_QUEUE_H_INCLUDED__
 #define __BCM_ASYNC_QUEUE_H_INCLUDED__
 
+#if defined(__KERNEL__)
+#include <linux/slab.h>  /* Needed by kmalloc, kfree */
+#endif /* __KERNEL__ */
+
 typedef struct {
     uint32_t writes;
     uint64_t write_bytes;
@@ -46,14 +50,14 @@ typedef struct {
 } bcm_async_queue_stats_t;
 
 typedef struct {
-    volatile uint8_t *mmap_alloc_p;
-#if !(defined(__KERNEL__) && defined(CONFIG_64BIT))
-    uint32_t reserved1;
-#endif
-    volatile uint8_t *alloc_p;
-#if !(defined(__KERNEL__) && defined(CONFIG_64BIT))
-    uint32_t reserved2;
-#endif
+    union { // force space for 64bit pointer
+        volatile uint8_t *mmap_alloc_p;
+        uint64_t reserved1;
+    };
+    union { // force space for 64bit pointer
+        volatile uint8_t *alloc_p;
+        uint64_t reserved2;
+    };
     volatile uint16_t write;
     volatile uint16_t read;
     int depth;
@@ -134,22 +138,31 @@ _STATIC_INLINE_ void bcm_async_queue_entry_enqueue(bcm_async_queue_t *queue_p)
 }
 
 #if defined(__KERNEL__)
-_STATIC_INLINE_ int bcm_async_queue_init(bcm_async_queue_t *queue_p, int queue_size, int entry_size)
+_STATIC_INLINE_ void bcm_async_queue_init_from(bcm_async_queue_t *queue_p, uint8_t * mem_p, int queue_size, int entry_size)
 {
     int alloc_size = entry_size * queue_size;
 
     memset((void *)queue_p, 0, sizeof(bcm_async_queue_t));
-    queue_p->alloc_p = (uint8_t *)kmalloc(alloc_size, GFP_KERNEL);
-
-    if (queue_p->alloc_p == NULL)
-    {
-        return -1;
-    }
+    queue_p->alloc_p = mem_p;
 
     memset((void *)queue_p->alloc_p, 0, alloc_size);
 
     queue_p->entry_size = entry_size;
     queue_p->depth = queue_size;
+}
+
+_STATIC_INLINE_ int bcm_async_queue_init(bcm_async_queue_t *queue_p, int queue_size, int entry_size)
+{
+    int alloc_size = entry_size * queue_size;
+
+    uint8_t * mem_p = (uint8_t *)kmalloc(alloc_size, GFP_KERNEL);
+
+    if (mem_p == NULL)
+    {
+        return -1;
+    }
+
+    bcm_async_queue_init_from(queue_p, mem_p, queue_size, entry_size);
 
     return 0;
 }

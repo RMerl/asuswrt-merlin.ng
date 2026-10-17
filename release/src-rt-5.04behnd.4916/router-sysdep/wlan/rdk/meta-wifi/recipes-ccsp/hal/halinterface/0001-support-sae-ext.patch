@@ -1,0 +1,16 @@
+diff --git a/wifi_hal_generic.h b/wifi_hal_generic.h
+index 744e85c..6fdd9ae 100644
+--- a/wifi_hal_generic.h
++++ b/wifi_hal_generic.h
+@@ -273,7 +273,10 @@ typedef enum {
+     wifi_security_mode_wpa3_personal = 0x00000200,
+     wifi_security_mode_wpa3_transition = 0x00000400,
+     wifi_security_mode_wpa3_enterprise = 0x00000800,
+-    wifi_security_mode_enhanced_open = 0x00001000
++    wifi_security_mode_enhanced_open = 0x00001000,
++#if defined(WPA3_PERSONAL_TRANSITION_AKM24_SUPPORTED)
++    wifi_security_mode_wpa3_transition_akm24 = 0x00002000,
++#endif
+ } wifi_security_modes_t;
+ 
+ /**

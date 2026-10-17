@@ -73,18 +73,6 @@ extern "C" {
 #define NAND_COMMAND            9
 #define READ_PAGE               10
 
-/* MTD determintation of filesystem type */
-#define JFFS2_FS   0
-#define SPLIT_FS   1  /* split JFFS2/UBI */
-#define UBIFS_FS   2  /* pureUBI */
-#define SQSPLIT_FS 3  /* squashfs over split JFFS2/UBI */
-#define SQUBI_FS   4  /* squashfs over pureUBI */
-
-/* Partition type */
-#define JFFS2_IMAGE  1 // JFFS2 or split JFFS2/UBI, old image type
-#define UBI_IMAGE    2 // new pureUBI image type
-
-
 /* Public Interface Prototypes. */
 int flash_init(void);
 int flash_sector_erase_int(unsigned short sector);

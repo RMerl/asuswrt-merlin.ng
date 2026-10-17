@@ -13,7 +13,13 @@
 	buttons {
 		compatible = "brcm,buttons";
 		reset_button {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 			ext_irq = <&bca_extintr 0 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+#else
+			ext_irq-gpio = <&gpioc 0 GPIO_ACTIVE_LOW>;
+			interrupt-parent = <&gpioc>;
+			interrupts = <0 IRQ_TYPE_EDGE_FALLING>;
+#endif
 			press {
 				print = "Button Press -- Hold for 5s to do restore to default";
 			};
@@ -22,10 +28,16 @@
 			};
 			release {
 				reset = <0>;
-			};	
+			};
 		};
 		ses_button {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 			ext_irq = <&bca_extintr 1 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+#else
+			ext_irq-gpio = <&gpioc 1 GPIO_ACTIVE_LOW>;
+			interrupt-parent = <&gpioc>;
+			interrupts = <1 IRQ_TYPE_EDGE_FALLING>;
+#endif
 			release {
 				ses_short_period = <0>;
 				ses_long_period = <3>;
@@ -33,35 +45,12 @@
 		};
 	};
 
-	periph {
-		i2s: bcm63xx-i2s {
-			pinctrl-0 = <&d_i2s_sclk_pin_67 &d_i2s_lrck_pin_68 &d_i2s_rx_sdata_pin_69 &d_i2s_tx_sdata_pin_70 &d_i2s_mclk_pin_71>;
-			pinctrl-names = "default";
-			compatible = "brcm,bcm63xx-i2s";
-			reg = <0x2080 0x21>;
-			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&i2sclk>, <&osc>;
-			clock-names = "i2sclk","i2sosc"; 
-		};
-	};
 
-	i2c@0 {
-		compatible = "i2c-gpio";
-		gpios = <&gpioc 72 0 &gpioc 73 0>;/* sda and scl */
-		i2c-gpio,delay-us   = <50>;     /* ~10 kHz */
-		i2c-gpio,timeout-ms = <100>;    /* 100ms */
-		#address-cells = <1>;
-		#size-cells = <0>;
+};
 
-		codec_playback:codec_playback@18{
-			compatible = "ti,tlv320dac3203";
-			reg = <0x18>;
-		};
-		codec_capture:codec_capture@19{
-			compatible = "ti,tlv320adc3101";
-			reg = <0x19>;
-		};
-	};
+&i2c0_gpio {
+	status = "okay";
+	gpios = <&gpioc 72 0 &gpioc 73 0>;/* sda and scl */
 };
 
 &switch0 {

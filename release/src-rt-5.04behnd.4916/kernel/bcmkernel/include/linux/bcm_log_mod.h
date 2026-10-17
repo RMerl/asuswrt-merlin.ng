@@ -42,9 +42,20 @@ typedef enum {
 /* To support a new module, create a new log ID in bcmLogId_t,
    and a new entry in BCM_LOG_MODULE_INFO */
 
-
 typedef enum {
+    /*
+     * Start section
+     * These must be unchanged during patching to avoid binary release issues
+     */
     BCM_LOG_ID_LOG=0,
+    BCM_LOG_ID_BP3=1,
+    BCM_LOG_ID_CMDLIST=2,
+    BCM_LOG_ID_ARCHER=3,
+    /*
+     * End section
+     * These must be unchanged during patching to avoid binary release issues
+     */
+    
     BCM_LOG_ID_VLAN,
     BCM_LOG_ID_GPON,
     BCM_LOG_ID_PLOAM,
@@ -70,10 +81,9 @@ typedef enum {
     BCM_LOG_ID_PMD,
     BCM_LOG_ID_TM,
     BCM_LOG_ID_SPDSVC,
+    BCM_LOG_ID_TC,
     BCM_LOG_ID_MCAST,
     BCM_LOG_ID_DPI,
-    BCM_LOG_ID_CMDLIST,
-    BCM_LOG_ID_ARCHER,
     BCM_LOG_ID_TOD,
     BCM_LOG_ID_PON_PWM,
     BCM_LOG_ID_OPTICALDET,
@@ -81,15 +91,19 @@ typedef enum {
     BCM_LOG_ID_XPORT,
     BCM_LOG_ID_BCMLIBS_BIT_POOL,
     BCM_LOG_ID_MPM,
-    BCM_LOG_ID_BP3,
     BCM_LOG_ID_FPI,
     BCM_LOG_ID_HWF,
+    BCM_LOG_ID_BNL,
+    BCM_LOG_ID_SCORE,
     BCM_LOG_ID_MAX
 } bcmLogId_t;
 
 #define BCM_LOG_MODULE_INFO                             \
     {                                                   \
         {.logId = BCM_LOG_ID_LOG, .name = "bcmlog", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
+        {.logId = BCM_LOG_ID_BP3, .name = "bp3", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
+        {.logId = BCM_LOG_ID_CMDLIST, .name = "cmdlist", .logLevel = BCM_LOG_LEVEL_ERROR}, \
+        {.logId = BCM_LOG_ID_ARCHER, .name = "archer", .logLevel = BCM_LOG_LEVEL_ERROR}, \
         {.logId = BCM_LOG_ID_VLAN, .name = "vlan", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
         {.logId = BCM_LOG_ID_GPON, .name = "gpon", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
         {.logId = BCM_LOG_ID_PLOAM, .name = "ploam", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
@@ -115,10 +129,9 @@ typedef enum {
         {.logId = BCM_LOG_ID_PMD, .name = "pmd", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
         {.logId = BCM_LOG_ID_TM, .name = "tm", .logLevel = BCM_LOG_LEVEL_ERROR}, \
         {.logId = BCM_LOG_ID_SPDSVC, .name = "spdsvc", .logLevel = BCM_LOG_LEVEL_ERROR}, \
+        {.logId = BCM_LOG_ID_TC, .name = "tc", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
         {.logId = BCM_LOG_ID_MCAST, .name = "mcast", .logLevel = BCM_LOG_LEVEL_ERROR}, \
         {.logId = BCM_LOG_ID_DPI, .name = "dpi", .logLevel = BCM_LOG_LEVEL_ERROR}, \
-        {.logId = BCM_LOG_ID_CMDLIST, .name = "cmdlist", .logLevel = BCM_LOG_LEVEL_ERROR}, \
-        {.logId = BCM_LOG_ID_ARCHER, .name = "archer", .logLevel = BCM_LOG_LEVEL_ERROR}, \
         {.logId = BCM_LOG_ID_TOD, .name = "tod", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
         {.logId = BCM_LOG_ID_PON_PWM, .name = "pon_pwm", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
         {.logId = BCM_LOG_ID_OPTICALDET, .name = "opticaldet", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
@@ -126,16 +139,42 @@ typedef enum {
         {.logId = BCM_LOG_ID_XPORT, .name = "xport", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
         {.logId = BCM_LOG_ID_BCMLIBS_BIT_POOL, .name = "bitpool", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
         {.logId = BCM_LOG_ID_MPM, .name = "mpm", .logLevel = BCM_LOG_LEVEL_ERROR}, \
-        {.logId = BCM_LOG_ID_BP3, .name = "bp3", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
         {.logId = BCM_LOG_ID_FPI, .name = "fpi", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
         {.logId = BCM_LOG_ID_HWF, .name = "hwf", .logLevel = BCM_LOG_LEVEL_DEBUG}, \
+        {.logId = BCM_LOG_ID_BNL, .name = "bnl", .logLevel = BCM_LOG_LEVEL_ERROR}, \
+        {.logId = BCM_LOG_ID_SCORE, .name = "score", .logLevel = BCM_LOG_LEVEL_NOTICE}, \
     }
 
 /* To support a new registered function,
  * create a new BCM_FUN_ID */
 
 typedef enum {
-    BCM_FUN_ID_RESET_SWITCH=0,
+    /*
+     * Start section
+     * These must be unchanged during patching to avoid binary release issues
+     */
+    BCM_FUN_ID_LICENSE_CHECK=0,
+    /* GDX hooks to read/write prepend header */
+    BCM_FUN_ID_HWACC_GDX_BIND=1,
+    BCM_FUN_ID_HWACC_GDX_UNBIND=2,
+    BCM_FUN_ID_PREPEND_FILL_BUF=3,
+    BCM_FUN_ID_PREPEND_FILL_INFO_FROM_BUF=4,
+    /* hooks for Crossbow CSPU offload */
+    BCM_FUN_ID_ARCHER_CRYPTO_PROGRAM_PARM=5,
+    BCM_FUN_ID_ARCHER_CRYPTO_STATS=6,
+    BCM_FUN_ID_ARCHER_CRYPTO_US_SEND=7,
+    BCM_FUN_ID_ARCHER_CRYPTO_OFFLOAD_BIND=8,
+    BCM_FUN_ID_ARCHER_CRYPTO_OFFLOAD_UNBIND=9,
+    BCM_FUN_ID_ARCHER_CRYPTO_TUNNEL_MAP=10,
+    BCM_FUN_ID_ARCHER_CRYPTO_SYNC_FORWARD=11,
+    /* Ethernet */
+    BCM_FUN_ID_ENET_PORT_ROLE_NOTIFY=12,
+    /*
+     * End section
+     * These must be unchanged during patching to avoid binary release issues
+     */
+    
+    BCM_FUN_ID_RESET_SWITCH,
     BCM_FUN_ID_ENET_LINK_CHG,
     BCM_FUN_ID_ENET_CHECK_SWITCH_LOCKUP,
     BCM_FUN_ID_ENET_GET_PORT_BUF_USAGE,
@@ -145,7 +184,6 @@ typedef enum {
     BCM_FUN_IN_ENET_CLEAR_ARL_ENTRY,
     BCM_FUN_ID_ENET_IS_WAN_PORT, /* Take Logical port number as argument */
     BCM_FUN_ID_ENET_IS_SWSWITCH_PORT,
-    BCM_FUN_ID_ENET_PORT_ROLE_NOTIFY,
     BCM_FUN_ID_ENET_BOND_RX_PORT_MAP,
     BCM_FUN_ID_ENET_SYSPORT_CONFIG,
     BCM_FUN_ID_ENET_SYSPORT_QUEUE_MAP,
@@ -178,6 +216,7 @@ typedef enum {
     BCM_FUN_ID_ARCHER_WLAN_RX_SEND,
     BCM_FUN_ID_ARCHER_WLAN_BIND,
     BCM_FUN_ID_ARCHER_WLAN_UNBIND,
+    BCM_FUN_ID_ARCHER_WLAN_INT_RADIO_INDEX,
     BCM_FUN_ID_ARCHER_DHD_BDMF_NEW_AND_SET,
     BCM_FUN_ID_ARCHER_DHD_INIT_CFG_SET,
     BCM_FUN_ID_ARCHER_DHD_FLUSH_SET,
@@ -201,13 +240,17 @@ typedef enum {
     BCM_FUN_ID_ARCHER_DHD_CPU_PACKET_GET,
     BCM_FUN_ID_ARCHER_DHD_COMPLETE_MESSAGE_GET,
     BCM_FUN_ID_ARCHER_DHD_COMPLETE_WAKEUP,
+    BCM_FUN_ID_ARCHER_DHD_PCAP_PACKET_GET,
+    BCM_FUN_ID_ARCHER_DHD_PCAP_CFG_SET,
     BCM_FUN_ID_ARCHER_DHD_BDMF_SYSB_RECYCLE,
     BCM_FUN_ID_ARCHER_DHD_BDMF_SYSB_DATABUF_FREE,
+    BCM_FUN_ID_ARCHER_SCORE_QSTAT_DHD_WRITE,
+    BCM_FUN_ID_ARCHER_SCORE_QSTAT_DHD_NOTIFY,
     BCM_FUN_ID_VLAN_LOOKUP_DP,
     /* WLAN Hooks */
     BCM_FUN_ID_WLAN_QUERY_BRIDGEFDB,
     BCM_FUN_ID_WLAN_UPDATE_BRIDGEFDB,
-    BCM_FUN_ID_WLAN_PKTC_DEL_BY_MAC,
+    BCM_FUN_ID_WLAN_PKTFWD_DEL_BY_MAC,
     BCM_FUN_ID_SPDT_RNR_TRANSMIT,
     /* hook for SPU offload session params */
     BCM_FUN_ID_SPUOFFLOAD_SESSION_PARM,
@@ -226,23 +269,21 @@ typedef enum {
     BCM_FUN_ID_NCO_SW_HOLD_VAL_GET,
     /* hook for SPU offload stats update */
     BCM_FUN_ID_SPUOFFLOAD_STATS_UPDATE,
-    BCM_FUN_ID_LICENSE_CHECK,
-    /* GDX hooks to read/write prepend header */
-    BCM_FUN_ID_HWACC_GDX_BIND,
-    BCM_FUN_ID_HWACC_GDX_UNBIND,
-    BCM_FUN_ID_PREPEND_FILL_BUF,
-    BCM_FUN_ID_PREPEND_FILL_INFO_FROM_BUF,
-    /* hooks for Crossbow CSPU offload */
-    BCM_FUN_ID_ARCHER_CRYPTO_PROGRAM_PARM,
-    BCM_FUN_ID_ARCHER_CRYPTO_STATS,
-    BCM_FUN_ID_ARCHER_CRYPTO_US_SEND,
-    BCM_FUN_ID_ARCHER_CRYPTO_OFFLOAD_BIND,
-    BCM_FUN_ID_ARCHER_CRYPTO_OFFLOAD_UNBIND,
     /* hooks for Flow Stats */
     BCM_FUN_ID_FLOW_STAT_NF_UPDATE_SLOW,
+    /* hook for xPON */
+    BCM_FUN_ID_INIT_PON_MODULE,
     /* SPU session cleanup */
     BCM_FUN_ID_SPU_SESSION_DELETE,
     BCM_FUN_ID_SPU_PREPEND_HDR,
+    BCM_FUN_ID_SPU_FPI_TUNNEL_CREATE,
+    BCM_FUN_ID_SPU_FPI_TUNNEL_REMAP,
+    BCM_FUN_ID_SPU_FPI_TUNNEL_DELETE,
+    /* packet telemetry related */
+    BCM_FUN_ID_PKT_TLM_HW_TS_GET,
+    BCM_FUN_ID_PKT_TLM_HW_TS_INFO_GET,
+    BCM_FUN_ID_WAN_SERDES_BUS_GET,
+    
     BCM_FUN_ID_MAX
 } bcmFunId_t;
 
@@ -321,9 +362,11 @@ typedef struct {
         {
             unsigned int extention_header_present : 1;
             unsigned int g9111_header_present : 1;
-            unsigned int reserved : 30;
+            unsigned int reserved       : 22;
+            unsigned int bcm_tag_action : 8;
         };
     };
+    uint32_t bcm_tag;
 } BCM_HwAccelPrepend_t;
 
 typedef struct {
@@ -398,8 +441,8 @@ typedef struct {
 
 typedef struct
 {
-    uint8_t *prepend_data; 
-    void *blog_p; 
+    uint8_t *prepend_data;
+    void *blog_p;
     int max_prep_size;
 }GDX_prepend_fill_args_t;
 
@@ -407,8 +450,14 @@ typedef struct {
     int initialized;
     int (* gdx_acc_send_pkt)(void *arg_p);
     int (* gdx_miss_pkt_handler_cb)(void *arg_p);
+    int (* gdx_fwd_pkt_prep_cb)(void);
     int (* gdx_hit_pkt_handler_cb)(void *arg_p, uint32_t val32);
     int (* gdx_fwd_pkt_done_cb)(void);
 } gdx_acc_bind_arg_t;
+
+typedef int (*bcm_score_qstat_wlan_func_t)(void *);
+extern bcm_score_qstat_wlan_func_t bcm_score_qstat_wlan_nic_func;
+extern bcm_score_qstat_wlan_func_t bcm_score_qstat_wlan_nic_set_egress_ts;
+
 #endif /* _BCM_LOG_MODULES_ */
 

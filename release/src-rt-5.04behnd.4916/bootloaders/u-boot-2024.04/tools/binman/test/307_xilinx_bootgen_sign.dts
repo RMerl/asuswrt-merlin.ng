@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		xilinx-bootgen {
+			auth-params = "ppk_select=0", "spk_id=0x00000000";
+			pmufw-filename = "pmu-firmware.elf";
+			psk-key-name-hint = "psk";
+			ssk-key-name-hint = "ssk";
+
+			u-boot-spl-nodtb {
+			};
+			u-boot-spl-dtb {
+			};
+		};
+	};
+};

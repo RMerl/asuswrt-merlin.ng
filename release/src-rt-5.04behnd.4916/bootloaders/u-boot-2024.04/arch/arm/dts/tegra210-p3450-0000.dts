@@ -1,0 +1,147 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  (C) Copyright 2019-2020 NVIDIA Corporation <www.nvidia.com>
+ */
+/dts-v1/;
+
+#include "tegra210.dtsi"
+
+/ {
+	model = "NVIDIA Jetson Nano Developer Kit";
+	compatible = "nvidia,p3450-0000", "nvidia,tegra210";
+
+	chosen {
+		stdout-path = &uarta;
+	};
+
+	aliases {
+		ethernet = "/pcie@1003000/pci@2,0/ethernet@0,0";
+		i2c0 = "/i2c@7000d000";
+		i2c2 = "/i2c@7000c400";
+		i2c3 = "/i2c@7000c500";
+		i2c4 = "/i2c@7000c700";
+		mmc0 = "/sdhci@700b0600";
+		mmc1 = "/sdhci@700b0000";
+		spi0 = "/spi@70410000";
+		usb0 = "/usb@7d000000";
+	};
+
+	memory {
+		reg = <0x0 0x80000000 0x0 0xc0000000>;
+	};
+
+	pcie@1003000 {
+		status = "okay";
+
+		pci@1,0 {
+			status = "okay";
+		};
+
+		pci@2,0 {
+			status = "okay";
+
+			ethernet@0,0 {
+				reg = <0x000000 0 0 0 0>;
+				local-mac-address = [ 00 00 00 00 00 00 ];
+			};
+		};
+	};
+
+	serial@70006000 {
+		status = "okay";
+	};
+
+	padctl@7009f000 {
+		pinctrl-0 = <&padctl_default>;
+		pinctrl-names = "default";
+
+		padctl_default: pinmux {
+			xusb {
+				nvidia,lanes = "otg-1", "otg-2";
+				nvidia,function = "xusb";
+				nvidia,iddq = <0>;
+			};
+
+			usb3 {
+				nvidia,lanes = "pcie-5", "pcie-6";
+				nvidia,function = "usb3";
+				nvidia,iddq = <0>;
+			};
+
+			pcie-x1 {
+				nvidia,lanes = "pcie-0";
+				nvidia,function = "pcie-x1";
+				nvidia,iddq = <0>;
+			};
+
+			pcie-x4 {
+				nvidia,lanes = "pcie-1", "pcie-2",
+					       "pcie-3", "pcie-4";
+				nvidia,function = "pcie-x4";
+				nvidia,iddq = <0>;
+			};
+
+			sata {
+				nvidia,lanes = "sata-0";
+				nvidia,function = "sata";
+				nvidia,iddq = <0>;
+			};
+		};
+	};
+
+	sdhci@700b0000 {
+		status = "okay";
+		cd-gpios = <&gpio TEGRA_GPIO(Z, 1) GPIO_ACTIVE_LOW>;
+		power-gpios = <&gpio TEGRA_GPIO(Z, 3) GPIO_ACTIVE_HIGH>;
+		bus-width = <4>;
+	};
+
+	sdhci@700b0600 {
+		status = "okay";
+		bus-width = <8>;
+		non-removable;
+	};
+
+	i2c@7000c400 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	i2c@7000c500 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	i2c@7000c700 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	i2c@7000d000 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	spi@70410000 {
+		status = "okay";
+		spi-max-frequency = <80000000>;
+	};
+
+	usb@7d000000 {
+		status = "okay";
+		dr_mode = "peripheral";
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		clk32k_in: clock@0 {
+			compatible = "fixed-clock";
+			reg = <0>;
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+	};
+};

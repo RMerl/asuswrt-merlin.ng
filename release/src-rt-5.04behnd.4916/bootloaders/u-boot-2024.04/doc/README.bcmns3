@@ -1,0 +1,74 @@
+BCMNS3 QSPI memory layout
+=========================
+
+BCMNS3 has total 8MB non-volatile SPI flash memory. It is used to store
+different images like fip.bin, nitro firmware, DDR shmo value and other backup
+images.
+
+Following is the QSPI flash memory layout.
+
+/*         QSPI layout
+ * |---------------------------|->0x000000
+ * |                           |
+ * |                           |
+ * |        fip.bin            |
+ * |         2MB               |
+ * |                           |
+ * ~                           ~
+ * ~                           ~
+ * |                           |
+ * |                           |
+ * |                           |
+ * |---------------------------|->0x200000
+ * |                           |
+ * |                           |
+ * |                           |
+ * |       fip.bin (Mirror)    |
+ * |        2MB                |
+ * ~                           ~
+ * ~                           ~
+ * |                           |
+ * |                           |
+ * |                           |
+ * |---------------------------|->0x400000
+ * |                           |
+ * |      Nitro NS3 Config     |
+ * |          1.5M             |
+ * |                           |
+ * ~                           ~
+ * ~                           ~
+ * |                           |
+ * |---------------------------|->0x580000
+ * |      Nitro NS3 Config     |
+ * |          1.5M             |
+ * |        (Mirror)           |
+ * ~                           ~
+ * ~                           ~
+ * |                           |
+ * |---------------------------|->0x700000
+ * |   Nitro NS3 bspd Config   |
+ * |        64KB               |
+ * ~                           ~
+ * ~                           ~
+ * |                           |
+ * |---------------------------|->0x710000
+ * |   Nitro NS3 bspd Config   |
+ * |        64KB               |
+ * ~       (Mirror)            ~
+ * ~                           ~
+ * |                           |
+ * |---------------------------|->0x720000
+ * |        SHMOO              |
+ * |        64KB               |
+ * |                           |
+ * ~                           ~
+ * ~                           ~
+ * |---------------------------|->0x730000
+ * |        Meta Data          |
+ * |        832KB              |
+ * |                           |
+ * ~                           ~
+ * ~                           ~
+ * |                           |
+ * |---------------------------|
+ */

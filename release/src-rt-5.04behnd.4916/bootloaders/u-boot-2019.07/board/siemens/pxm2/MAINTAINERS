@@ -1,6 +1,0 @@
-PXM2 BOARD
-M:	Roger Meier <r.meier@siemens.com>
-S:	Maintained
-F:	board/siemens/pxm2/
-F:	include/configs/pxm2.h
-F:	configs/pxm2_defconfig

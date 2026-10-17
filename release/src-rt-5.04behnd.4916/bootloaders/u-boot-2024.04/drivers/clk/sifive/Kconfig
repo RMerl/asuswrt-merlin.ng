@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config CLK_SIFIVE
+	bool "SiFive SoC driver support"
+	depends on CLK
+	help
+	  SoC drivers for SiFive Linux-capable SoCs.
+
+config CLK_SIFIVE_PRCI
+	bool "PRCI driver for SiFive SoCs"
+	depends on CLK_SIFIVE
+	select CLK_ANALOGBITS_WRPLL_CLN28HPC
+	help
+	  Supports the Power Reset Clock interface (PRCI) IP block found in
+	  FU540/FU740 SoCs. If this kernel is meant to run on a SiFive FU540/
+	  FU740 SoCs, enable this driver.

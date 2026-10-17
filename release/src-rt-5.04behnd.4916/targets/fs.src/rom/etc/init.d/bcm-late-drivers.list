@@ -1,0 +1,16 @@
+# Syntax
+# line start with '-' will be treated as a conditinal load driver.
+# conditon will be directly followed after '-' and ends with a space, 
+# condition can include configures from profile and is evalauted as bash expression. 
+# for example:
+# -BUILD_FEATURE_A xxx.ko 
+#       will only load xxx.ko when BUILD_FEATURE_A is evaluaed true
+# -!BUILD_FEATURE_B yyy.ko
+#       will only load yyy.ko when BUILD_FEATURE_B is evalued false.
+
+# Score driver + dependencies
+-CONFIG_BCM_SCORE_LOAD kernel/net/ipv4/netfilter/nf_defrag_ipv4.ko
+-CONFIG_BCM_SCORE_LOAD kernel/net/ipv6/netfilter/nf_defrag_ipv6.ko
+-CONFIG_BCM_SCORE_LOAD kernel/net/netfilter/nf_conntrack.ko
+-CONFIG_BCM_SCORE_LOAD extra/bcm_score.ko
+

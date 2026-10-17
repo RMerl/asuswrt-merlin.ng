@@ -1,0 +1,36 @@
+/ {
+	aliases {
+		mmc0 = &usdhc3;
+		usb0 = &usbotg1;
+	};
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&aips3 {
+	bootph-all;
+};
+
+&pinctrl_uart1 {
+	bootph-all;
+};
+
+&soc {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

@@ -1,0 +1,14 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		u-boot {
+		};
+		u-boot-dtb {
+			compress = "lz4";
+		};
+	};
+};

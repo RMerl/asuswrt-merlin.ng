@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+/*
+ * Copyright : STMicroelectronics 2018
+ */
+
+#include "stm32mp157c-ed1-u-boot.dtsi"
+
+/ {
+	aliases {
+		gpio26 = &stmfx_pinctrl;
+		i2c1 = &i2c2;
+		i2c4 = &i2c5;
+		pinctrl2 = &stmfx_pinctrl;
+		spi0 = &qspi;
+		usb0 = &usbotg_hs;
+	};
+
+	fwu-mdata {
+		compatible = "u-boot,fwu-mdata-gpt";
+		fwu-mdata-store = <&sdmmc1>;
+	};
+};
+
+&flash0 {
+	bootph-pre-ram;
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+#if defined(CONFIG_STM32MP15X_STM32IMAGE) || defined(CONFIG_SPL)
+		partition@0 {
+			label = "fsbl1";
+			reg = <0x00000000 0x00040000>;
+		};
+		partition@80000 {
+			label = "fsbl2";
+			reg = <0x00040000 0x00040000>;
+		};
+		partition@100000 {
+			label = "ssbl";
+			reg = <0x00080000 0x00200000>;
+		};
+		partition@280000  {
+			label = "u-boot-env";
+			reg = <0x00280000 0x00080000>;
+		};
+		partition@300000 {
+			label = "nor-user";
+			reg = <0x00300000 0x03d00000>;
+		};
+#else
+		partition@0 {
+			label = "fsbl1";
+			reg = <0x00000000 0x00040000>;
+		};
+		partition@40000 {
+			label = "fsbl2";
+			reg = <0x00040000 0x00040000>;
+		};
+		partition@100000 {
+			label = "fip";
+			reg = <0x00080000 0x00400000>;
+		};
+		partition@480000 {
+			label = "u-boot-env";
+			reg = <0x00480000 0x00080000>;
+		};
+		partition@500000 {
+			label = "nor-user";
+			reg = <0x00500000 0x03b00000>;
+		};
+#endif
+	};
+};
+
+&fmc {
+	nand-controller@4,0 {
+		nand@0 {
+			partitions {
+				compatible = "fixed-partitions";
+				#address-cells = <1>;
+				#size-cells = <1>;
+
+#if defined(CONFIG_STM32MP15X_STM32IMAGE) || defined(CONFIG_SPL)
+				partition@0 {
+					label = "fsbl";
+					reg = <0x00000000 0x00200000>;
+				};
+				partition@200000 {
+					label = "ssbl1";
+					reg = <0x00200000 0x00200000>;
+				};
+				partition@400000 {
+					label = "ssbl2";
+					reg = <0x00400000 0x00200000>;
+				};
+				partition@600000 {
+					label = "UBI";
+					reg = <0x00600000 0x3fa00000>;
+				};
+#else
+				partition@0 {
+					label = "fsbl";
+					reg = <0x00000000 0x00200000>;
+				};
+				partition@200000 {
+					label = "fip1";
+					reg = <0x00200000 0x00400000>;
+				};
+				partition@600000 {
+					label = "fip2";
+					reg = <0x00600000 0x00400000>;
+				};
+				partition@1200000 {
+					label = "UBI";
+					reg = <0x00a00000 0x3f600000>;
+				};
+#endif
+			};
+		};
+	};
+};
+
+&qspi {
+	bootph-pre-ram;
+};
+
+&qspi_clk_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_bk1_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_cs1_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_bk2_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};
+
+&qspi_cs2_pins_a {
+	bootph-pre-ram;
+	pins {
+		bootph-pre-ram;
+	};
+};

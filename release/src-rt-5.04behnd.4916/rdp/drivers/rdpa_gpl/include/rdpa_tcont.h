@@ -35,7 +35,7 @@
  * \ingroup xgpon
  * @{
  */
-#if defined(XRDP) && !defined(BCM63158)
+#if !defined(BCM63158)
 #define RDPA_MAX_TCONT  33      /**< Max number of T-CONTs*/
 #else
 #define RDPA_MAX_TCONT  32      /**< Max number of T-CONTs */

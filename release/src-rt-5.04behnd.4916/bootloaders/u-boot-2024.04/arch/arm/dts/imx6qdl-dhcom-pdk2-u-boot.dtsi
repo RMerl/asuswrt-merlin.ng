@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: (GPL-2.0+)
+/*
+ * Copyright (C) 2020 Harald Seiler <hws@denx.de>
+ */
+
+#include "imx6qdl-dhcom-u-boot.dtsi"
+
+&fec {
+	phy-reset-gpios = <&gpio3 29 GPIO_ACTIVE_LOW>;
+};

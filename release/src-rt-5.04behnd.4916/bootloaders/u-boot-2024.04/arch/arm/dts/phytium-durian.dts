@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019, Phytium Ltd.
+ * shuyiqi  <shuyiqi@phytium.com.cn>
+ */
+
+/dts-v1/;
+
+/ {
+	model = "Phytium Durian";
+	compatible = "phytium,durian";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	pcie-controller@40000000 {
+		compatible = "phytium,pcie-host-1.0";
+		device_type = "pci";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		reg = <0x0 0x40000000 0x0 0x10000000>;
+		bus-range = <0x0 0xff>;
+		ranges = <0x1000000 0x0 0x0 0x0 0x50000000 0x0 0xF00000>,
+		<0x2000000 0x0 0x58000000 0x0 0x58000000 0x0 0x28000000>,
+		<0x43000000 0x10 0x00000000 0x10 0x00000000 0x10  0x00000000>;
+	};
+
+	uart@28001000 {
+		compatible = "arm,pl011";
+		reg = <0x0 0x28001000 0x0 0x1000>;
+		clock = <48000000>;
+	};
+};
+

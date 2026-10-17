@@ -1,0 +1,45 @@
+if TARGET_DA850EVM
+
+config SYS_BOARD
+	default "da8xxevm"
+
+config SYS_VENDOR
+	default "davinci"
+
+config SYS_CONFIG_NAME
+	default "da850evm"
+
+menuconfig DA850_MAC
+	bool "Use MAC Address"
+	default y
+
+if DA850_MAC
+config MAC_ADDR_IN_SPIFLASH
+	bool "MAC address in SPI Flash"
+	default y
+	help
+	  The OMAP-L138 and AM1808 SoM are programmed with
+	  their MAC address in SPI Flash from the factory
+	  Enable this option to read the MAC from SPI Flash
+
+endif
+
+endif
+
+if TARGET_OMAPL138_LCDK
+
+config SYS_BOARD
+	default "da8xxevm"
+
+config SYS_VENDOR
+	default "davinci"
+
+config SYS_CONFIG_NAME
+	default "omapl138_lcdk"
+
+config NAND_6BYTES_OOB_FREE_10BYTES_ECC
+	def_bool y
+
+endif
+
+source "board/ti/common/Kconfig"

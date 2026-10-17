@@ -1,0 +1,9 @@
+AM65x BOARD
+M:	Tom Rini <trini@konsulko.com>
+S:	Maintained
+F:	board/ti/am65x/
+F:	include/configs/am65x_evm.h
+F:	configs/am65x_evm_a53_defconfig
+F:	configs/am65x_evm_r5_defconfig
+F:	configs/am65x_evm_r5_usbdfu_defconfig
+F:	configs/am65x_evm_r5_usbmsc_defconfig

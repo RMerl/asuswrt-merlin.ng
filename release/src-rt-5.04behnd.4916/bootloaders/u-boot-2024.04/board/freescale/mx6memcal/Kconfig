@@ -1,0 +1,230 @@
+if TARGET_MX6MEMCAL
+
+config SYS_BOARD
+	default "mx6memcal"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "mx6memcal"
+
+menu "mx6memcal specifics"
+choice
+	prompt "Serial console"
+	help
+	  Either UART1 or UART2 will be used as the console for
+	  displaying the calibration values or errors.
+
+config SERIAL_CONSOLE_UART1
+	bool "UART1"
+	help
+	  Select this if your board uses UART1 for its' console.
+
+config SERIAL_CONSOLE_UART2
+	bool "UART2"
+	help
+	  Select this if your board uses UART2 for its' console.
+
+endchoice
+
+choice
+	prompt "UART pads"
+	help
+	  Select the RX and TX pads used for your serial console.
+	  The choices below reflect the most commonly used options
+	  for your UART.
+
+	config UART2_EIM_D26_27
+		bool "UART2 on EIM_D26/27 (SabreLite, Nitrogen6x)"
+		depends on SERIAL_CONSOLE_UART2
+		help
+		  Choose this configuration if you're using pads
+		  EIM_D26 and D27 for a console on UART2.
+		  This is typical for designs that are based on the
+		  NXP SABRELite.
+
+	config UART1_CSI0_DAT10_11
+		bool "UART1 on CSI0_DAT10/11 (Wand, SabreSD)"
+		depends on SERIAL_CONSOLE_UART1
+		help
+		  Choose this configuration if you're using pads
+		  CSI0_DAT10 and DAT11 for a console on UART1 as
+		  is done on the i.MX6 Wand board and i.MX6 SabreSD.
+
+	config UART1_UART1
+		bool "UART1 on UART1 (i.MX6SL EVK, WaRP)"
+		depends on SERIAL_CONSOLE_UART1
+		help
+		  Choose this configuration if you're using pads
+		  UART1_TXD/RXD for a console on UART1 as is done
+		  on most i.MX6SL designs.
+
+endchoice
+
+config IMXIMAGE_OUTPUT
+	bool "Include output for imximage .cfg files"
+	default y
+	help
+	  Say "Y" if you want output formatted for use in non-SPL
+	  (DCD-style) configuration files.
+
+config DDRWIDTH
+	int "DDR bus width"
+	default 64
+	help
+	  Select either 32 or 64 to reflect the DDR bus width.
+
+config DDRCS
+	int "DDR chip selects"
+	default 2
+	range 1 2
+	help
+	  Select the number of chip selects used in your board design
+
+choice
+	prompt "Memory type"
+	help
+	  Select the type of DDR (DDR3 or LPDDR2) used on your design
+
+config DDR3
+	bool "DDR3"
+	help
+	  Select this if your board design uses DDR3.
+
+config LPDDR2
+	bool "LPDDR2"
+	help
+	  Select this if your board design uses LPDDR2.
+
+endchoice
+
+choice
+	prompt "Memory device"
+
+config MT41K512M16TNA
+	bool "Micron MT41K512M16TNA 512Mx16 (1GiB/chip)"
+	depends on DDR3
+
+config MT41K128M16JT
+	bool "Micron MT41K128M16JT 128Mx16 (256 MiB/chip)"
+	depends on DDR3
+
+config H5TQ4G63AFR
+	bool "Hynix H5TQ4G63AFR 256Mx16 (512 MiB/chip)"
+	depends on DDR3
+
+config H5TQ2G63DFR
+	bool "Hynix H5TQ2G63DFR 128Mx16 (256 MiB/chip)"
+	depends on DDR3
+
+config MT42L256M32D2LG
+	bool "Micron MT42L256M32D2LG LPDDR2 256Mx32 (1GiB/chip)"
+	depends on LPDDR2
+
+config MT29PZZZ4D4BKESK
+	bool "Micron MT29PZZZ4D4BKESK multi-chip 512MiB LPDDR2/4GiB eMMC"
+	depends on LPDDR2
+
+endchoice
+
+config DDR_ODT
+	int "DDR On-die-termination"
+	default 2
+	range 0 7
+	help
+	  Enter the on-die termination value as an index defined for
+	  IOMUX settings for PAD_DRAM_SDCLK0_P and others.
+	  0 == Disabled
+	  1 == 120 Ohm
+	  2 == 60 Ohm
+	  3 == 40 Ohm
+	  4 == 30 Ohm
+	  5 == 24 Ohm
+	  6 == 20 Ohm
+	  7 == 17 Ohm
+	  Value will be applied to all clock and data lines
+
+
+config DRAM_DRIVE_STRENGTH
+	int "DRAM Drive strength"
+	default 6
+	range 0 7
+	help
+	  Enter drive strength as an index defined for IOMUX settings
+	  for GRP_B1DS and others.
+	  0 == Hi Z
+	  6 == 40 Ohm (default)
+	  7 == 34 Ohm
+	  Value will be applied to all clock and data lines
+
+config RTT_NOM
+	int "RTT_NOM"
+	default 1
+	range 1 2
+	help
+	  Enter the RTT_NOM selector
+	  1 == RZQ/4 (60ohm)
+	  2 == RZQ/2 (120ohm)
+
+config RTT_WR
+	int "RTT_WR"
+	default 1
+	range 0 2
+	help
+	  Enter the RTT_WR selector for MR2
+	  0 == Dynamic ODT disabled
+	  1 == RZQ/4 (60ohm)
+	  2 == RZQ/2 (120ohm)
+
+config RALAT
+	int "Read additional latency"
+	default 5
+	range 0 7
+	help
+	  Enter a latency in number of cycles. This will be added to
+	  CAS and internal delays for which the MMDC will retrieve the
+	  read data from the internal FIFO.
+	  This is used to compensate for board/chip delays.
+
+config WALAT
+	int "Write additional latency"
+	default 0
+	range 0 7
+	help
+	  Enter a latency in number of cycles. This will be added to
+	  CAS and internal delays for which the MMDC will retrieve the
+	  read data from the internal FIFO
+	  This is used to compensate for board/chip delays.
+
+config REFSEL
+	int "Refresh period"
+	range 0 3
+	default 1
+	help
+	  Select the DDR refresh period.
+	  See the description of bitfield REF_SEL in the reference manual
+	  for details.
+	  0 == disabled
+	  1 == 32 kHz
+	  2 == 64 kHz
+	  3 == fast counter
+
+config REFR
+	int "Number of refreshes"
+	range 0 7
+	default 7
+	help
+	   This selects the number of refreshes (-1) during each period.
+	   i.e.:
+	   0 == 1 refresh (tRFC)
+	   7 == 8 refreshes (tRFC*8)
+	   See the description of MDREF[REFR] in the reference manual for
+	   details.
+
+endmenu
+
+config IMX_CONFIG
+	default "arch/arm/mach-imx/spl_sd.cfg"
+
+endif

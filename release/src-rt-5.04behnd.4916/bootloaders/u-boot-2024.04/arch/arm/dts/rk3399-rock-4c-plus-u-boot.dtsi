@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2023 Radxa Limited
+ */
+#include "rk3399-rock-pi-4-u-boot.dtsi"

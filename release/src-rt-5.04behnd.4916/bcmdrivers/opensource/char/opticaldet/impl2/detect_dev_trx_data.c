@@ -55,18 +55,6 @@ static TRX_DESCRIPTOR default_pluggable_trx =
     .tx_sd_polarity        = TRX_ACTIVE_HIGH,
     .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
     .tx_pwr_down_cfg_req   = false
-}, default_pmd_trx =
-{
-    .form_factor           = TRX_PMD,
-    .type                  = TRX_TYPE_XPON,
-    .vendor_name           = "Broadcom",
-    .vendor_pn             = "689xx",
-    .lbe_polarity          = TRX_ACTIVE_HIGH,
-    .tx_sd_polarity        = TRX_ACTIVE_HIGH,
-    .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
-    .tx_pwr_down_cfg_req   = false,
-    .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_GPON | SUPPORTED_WAN_TYPES_BIT_EPON_1_1 | SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1 \
-        | SUPPORTED_WAN_TYPES_BIT_EPON_10_1 | SUPPORTED_WAN_TYPES_BIT_XGPON
 };
 
 static char *trx_module_ff_table[] =
@@ -94,12 +82,7 @@ static char *trx_module_type_table[] =
 static void trx_print_descriptor(int trx_ff, char *v_name, int v_name_len, char *v_pn, int v_pn_len, char *v_rev,
     int v_rev_len, int match, int type)
 {
-    char *str_ff; 
-
-    if (trx_ff == TRX_PMD)
-        str_ff = "PMD";
-    else
-        str_ff = trx_module_ff_table[trx_ff];
+    char *str_ff = trx_module_ff_table[trx_ff];
 
     printk("Opticaldet %s Transceiver\n", match ? "Known" : "Unknown");
     printk("Module Form Factor: %s\n", str_ff);
@@ -139,17 +122,6 @@ static void *detect(int bus)
     unsigned long trx_ff;
     int ret, match = 1, v_name_len, v_pn_len, v_rev_len;
     char *v_name, *v_pn, *v_rev;
-    int is_pmd = trxbus_is_pmd(bus);
-    
-    if (is_pmd)
-    {
-        printk("Opticaldet: PMD found\n");
-        trx = &default_pmd_trx;
-        trx_print_descriptor(TRX_PMD, trx->vendor_name, sizeof(trx->vendor_name),
-            trx->vendor_pn, sizeof(trx->vendor_pn), NULL, 0, 1, trx->type);
-
-        return trx;
-    }
 
     ret = trxbus_mon_read(bus, bcmsfp_mon_id_phys_id, 0, &trx_ff);
     switch (trx_ff)

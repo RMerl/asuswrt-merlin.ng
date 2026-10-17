@@ -9,5 +9,5 @@ config BCM_PON_DRV
 config BCM_PON_DRV_IMPL
 	int "Implementation index for Broadcom Pon Drv features"
 	depends on BCM_PON_DRV
-	default 2 if BCM96888 || BCM96813 || BCM968880 || BCM96837
+	default 2 if BCM96888 || BCM96813 || BCM968880 || BCM96837 || BCM968375
 	default 1

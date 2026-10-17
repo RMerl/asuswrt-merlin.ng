@@ -1,6 +1,10 @@
 archer-objs :=  archer_driver.o archer_host.o archer_ucast.o archer_ucast_l2.o 
 archer-objs +=  archer_mcast.o sysport_rsb.o sysport_driver_config.o
 
+ifneq ($(strip $(CONFIG_BCM_SCORE)),)
+archer-objs +=  archer_score.o
+endif
+
 ifneq ($(strip $(CONFIG_BCM_CROSSBOW)),)
 ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_6764_),)
 archer-objs += crossbow/crossbow_driver.o
@@ -13,20 +17,23 @@ ifneq ($(strip $(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)),)
 ifeq ($(strip $(CONFIG_BCM_FPI)),)
 EXTRA_CFLAGS += -DCC_CROSSBOW_FW_CLASSIFIER
 EXTRA_CFLAGS += -DCC_CROSSBOW_FW_MULTICAST
+else
+EXTRA_CFLAGS += -DCC_CROSSBOW_FW_FPI
 endif
 EXTRA_CFLAGS += -DCC_CROSSBOW_FW_CLASSIFIER_DTCM
 EXTRA_CFLAGS += -DCC_CROSSBOW_FW_MULTICAST_DTCM
 EXTRA_CFLAGS += -DCC_CROSSBOW_FW_PRINT
 # Crossbow Full Offload Mode
 archer-objs += crossbow/crossbow_sq.o crossbow/crossbow_spdsvc.o
-archer-objs += crossbow/crossbow_classifier.o crossbow/crossbow_queue.o
+archer-objs += crossbow/crossbow_classifier.o crossbow/crossbow_queue.o crossbow/crossbow_qmon.o
 archer-objs += crossbow/crossbow_natc.o crossbow/fw/crossbow_print.o
 archer-objs += crossbow/crossbow_socket.o crossbow/crossbow_wlan.o
 archer-objs += crossbow/crossbow_gdx.o crossbow/crossbow_iq.o
+archer-objs += crossbow/crossbow_telemetry.o
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6765_),)
 archer-objs += crossbow/crossbow_fpi.o archer_fpi.o
 archer-objs += crossbow/crossbow_cspu.o
-EXTRA_CFLAGS += -DCC_CROSSBOW_CSPU -DCC_CROSSBOW_FW_CSPU_DTCM
+EXTRA_CFLAGS += -DCC_CROSSBOW_CSPU -DCC_CROSSBOW_FW_CSPU_DTCM -DCC_CROSSBOW_FW_FPI_DTCM
 endif
 ifneq ($(strip $(CONFIG_BCM_DHD_ARCHER)),)
 ifneq ($(strip $(CONFIG_BCM_DHD_CROSSBOW)),)
@@ -66,7 +73,13 @@ EXTRA_CFLAGS += -DCC_AWL_FLCTL
 ifneq ($(strip $(CONFIG_BCM_PKTFWD_FLCTL)),)
     EXTRA_CFLAGS += -DBCM_PKTFWD_FLCTL
 endif
-endif
+ifneq ($(strip $(CONFIG_BCM_WKB)),)
+    EXTRA_CFLAGS += -DBCM_WKB
+endif # CONFIG_BCM_WKB
+ifneq ($(strip $(CONFIG_BCM_PKTFWD_SPC)),)
+    EXTRA_CFLAGS += -DBCM_PKTFWD_SPC
+endif # CONFIG_BCM_PKTFWD_SPC
+endif # CONFIG_BCM_ARCHER_WLAN
 
 EXTRA_CFLAGS += -DCC_ARCHER_PERFORMANCE
 
@@ -103,6 +116,7 @@ clean:
 # the "%.o : %.c" rule (defined earlier by kbuild), to take precidence
 
 %.o : %.o_tmp
+	$(Q)touch $(@D)/.$(@F).cmd
 	$(Q)mv $< $@
 
 ifneq ($(CONFIG_BRCM_CHIP_COMPAT_NAME),"")

@@ -1,6 +1,0 @@
-P1_TWR BOARD
-M:	Xiaobo Xie <xiaobo.xie@nxp.com>
-S:	Maintained
-F:	board/freescale/p1_twr/
-F:	include/configs/p1_twr.h
-F:	configs/TWR-P1025_defconfig

@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		u-boot {
+		};
+		fit {
+			description = "test-desc";
+			#address-cells = <1>;
+			fit,fdt-list = "of-list";
+
+			images {
+				kernel {
+					description = "ATF BL31";
+					type = "kernel";
+					arch = "ppc";
+					os = "linux";
+					compression = "gzip";
+					load = <00000000>;
+					entry = <00000000>;
+					hash-1 {
+						algo = "crc32";
+					};
+					hash-2 {
+						algo = "sha1";
+					};
+					atf-bl31 {
+						filename = "missing";
+					};
+					cros-ec-rw {
+						type = "atf-bl31";
+						missing-msg = "wibble";
+					};
+					another {
+						type = "atf-bl31";
+					};
+				};
+			};
+		};
+		u-boot-nodtb {
+		};
+	};
+};

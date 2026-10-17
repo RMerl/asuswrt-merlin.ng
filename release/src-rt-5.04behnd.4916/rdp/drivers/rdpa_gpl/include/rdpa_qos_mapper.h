@@ -40,17 +40,12 @@
  * - PBIT to DSCP
  * @{
  */
-#if defined(XRDP) || defined(BCM_XRDP)
+
 #define RDPA_PBIT_TO_PRTY_MAX_TABLES        64 /*< Max number of PBIT-to-PRTY mapping tables. */
 #define RDPA_DS_TC_TO_QUEUE_ID_MAX_TABLES   8  /*< Max number of DS TC-to-PRTY mapping tables. */
 #define RDPA_US_TC_TO_QUEUE_ID_MAX_TABLES   8  /*< Max number of US TC-to-PRTY mapping tables. */
 #define RDPA_TC_TO_QUEUE_ID_MAX_TABLES      64 /*< Max number of TC-to-QM_QUEUE mapping tables. */
-#else
-#define RDPA_DSCP_TO_PBIT_MAX_TABLES        8  /*< Max number of DSCP-to-PBIT mapping tables. */
-#define RDPA_PBIT_TO_PRTY_MAX_TABLES        16  /*< Max number of PBIT-to-PRTY mapping tables. */
-#define RDPA_DS_TC_TO_QUEUE_ID_MAX_TABLES   8  /*< Max number of DS TC-to-PRTY mapping tables. */
-#define RDPA_US_TC_TO_QUEUE_ID_MAX_TABLES   8  /*< Max number of US TC-to-PRTY mapping tables. */
-#endif
+
 /** \defgroup dscp_to_pbit DSCP to PBIT Mapper
  * \ingroup pkt_mapper
  */

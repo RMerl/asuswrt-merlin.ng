@@ -1,0 +1,7 @@
+DRAAK BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a77995*
+F:	board/renesas/draak/
+F:	configs/r8a77995_draak_defconfig
+F:	include/configs/draak.h

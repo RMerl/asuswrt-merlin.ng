@@ -1,0 +1,20 @@
+
+menuconfig VIDEO_EXYNOS
+	bool "Enable Exynos video support"
+	depends on VIDEO
+	help
+	  Enable support for various video output options on Exynos SoCs.
+
+if VIDEO_EXYNOS
+
+config EXYNOS_DP
+	bool "Exynos Display Port support"
+
+config EXYNOS_FB
+	bool "Exynos FIMD support"
+
+config EXYNOS_MIPI_DSIM
+	bool "Exynos MIPI DSI support"
+	depends on EXYNOS_FB
+
+endif

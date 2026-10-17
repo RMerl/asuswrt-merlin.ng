@@ -1,0 +1,6 @@
+DE10-STANDARD BOARD
+M:	Humberto Naves <hsnaves@gmail.com>
+S:	Maintained
+F:	board/terasic/de10-standard/
+F:	include/configs/socfpga_de10_standard.h
+F:	configs/socfpga_de10_standard_defconfig

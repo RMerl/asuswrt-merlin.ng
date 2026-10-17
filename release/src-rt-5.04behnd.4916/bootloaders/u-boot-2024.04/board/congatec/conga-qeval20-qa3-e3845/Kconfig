@@ -1,0 +1,30 @@
+config SYS_BOARD
+	default "conga-qeval20-qa3-e3845"
+
+config SYS_VENDOR
+	default "congatec"
+
+config SYS_SOC
+	default "baytrail"
+
+config SYS_CONFIG_NAME
+	default "conga-qeval20-qa3-e3845" if TARGET_CONGA_QEVAL20_QA3_E3845
+	default "theadorable-x86-conga-qa3-e3845" if TARGET_THEADORABLE_X86_CONGA_QA3_E3845
+
+config TEXT_BASE
+	default 0xfff00000
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select X86_RESET_VECTOR
+	select INTEL_BAYTRAIL
+	select BOARD_ROMSIZE_KB_8192
+	select BOARD_EARLY_INIT_F
+	select BOARD_LATE_INIT
+	select SPI_FLASH_STMICRO
+	imply SPI_FLASH_SPANSION
+	imply SPI_FLASH_WINBOND
+	select SERIAL_RX_BUFFER
+
+config PCIE_ECAM_BASE
+	default 0xe0000000

@@ -1,6 +1,0 @@
-GOFLEXHOME BOARD
-M:	Suriyan Ramasami <suriyan.r@gmail.com>
-S:	Maintained
-F:	board/Seagate/goflexhome/
-F:	include/configs/goflexhome.h
-F:	configs/goflexhome_defconfig

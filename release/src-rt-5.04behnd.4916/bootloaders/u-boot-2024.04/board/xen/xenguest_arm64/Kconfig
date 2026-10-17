@@ -1,0 +1,15 @@
+if TARGET_XENGUEST_ARM64
+
+config SYS_BOARD
+	default "xenguest_arm64"
+
+config SYS_VENDOR
+	default "xen"
+
+config SYS_CONFIG_NAME
+	default "xenguest_arm64"
+
+config LNX_KRNL_IMG_TEXT_OFFSET_BASE
+	default SYS_LOAD_ADDR
+
+endif

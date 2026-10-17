@@ -43,10 +43,6 @@
 #include "serdes_access_6858.h"
 #endif
 
-#if defined(CONFIG_BCM96888)
-#include "serdes_access_6888.h"
-#endif
-
 #if defined(CONFIG_BCM96756)
 #include "serdes_access_6756.h"
 #endif
@@ -83,6 +79,10 @@
 #include "serdes_access_6837.h"
 #endif
 
+#if defined(CONFIG_BCM968375)
+#include "serdes_access_68375.h"
+#endif
+
 #define MASK_BIT(a) (1<<(a))
 #define MASK_BITS_TO(x) ((1<<(x))-1)
 #define MASK_BITS_BETWEEN(l, h) (MASK_BITS_TO(((h)+1)) & ~(MASK_BITS_TO(l)))
@@ -97,8 +97,9 @@ int serdes_access_wait_link_status(phy_dev_t *phy_dev);
 int serdes_access_config(phy_dev_t *phy_dev, int enable);
 int serdes_access_get_status(phy_dev_t *phy_dev, uint8_t *link_status, uint8_t *module_detect);
 int serdes_access_get_an_status(phy_dev_t *phy_dev, uint8_t *an_link_status);
+int serdes_access_get_an_pause_resolution(phy_dev_t *phy_dev, int *pause_rx, int *pause_tx);
 int serdes_access_get_speed(phy_dev_t *phy_dev, phy_speed_t *speed);
-int serdes_access_lane_tx_enable(phy_dev_t *phy_dev, int enable);
+int serdes_access_lane_enable(phy_dev_t *phy_dev, int enable);
 
 typedef enum {
     SERDES_MODE_UNKNOWN,
@@ -123,6 +124,7 @@ typedef enum {
     SERDES_MODE_FORCE_2P5G,
     SERDES_MODE_FORCE_1G,
     SERDES_MODE_FORCE_100M,
+    SERDES_MODE_FORCE_10M,
     SERDES_MODE_AN_1G_SGMII,
     SERDES_MODE_AN_SGMII_SLAVE,
     SERDES_MODE_AN_1G_IEEE_CL37,

@@ -27,8 +27,8 @@
    :>
  */
 
-#if defined(CONFIG_BCM_KERNEL_BONDING) && !defined(CONFIG_BCM_ETHTOOL)
-#error "CONFIG_BCM_ETHTOOL/BUILD_ETHTOOL must be defined with CONFIG_BCM_KERNEL_BONDING"
+#if (defined(CONFIG_BCM_KERNEL_BONDING) || defined(CONFIG_BCM_KERNEL_TEAM)) && !defined(CONFIG_BCM_ETHTOOL)
+#error "CONFIG_BCM_ETHTOOL/BUILD_ETHTOOL must be defined with CONFIG_BCM_KERNEL_BONDING or CONFIG_BCM_KERNEL_TEAM"
 #endif
 
 #include <linux/types.h>
@@ -92,6 +92,26 @@ static int tr_bond_err_chk(enetx_port_t *port, void *_ctx)
     }
     return 0;
 }
+
+#if defined(BONDING_DUAL)
+static int tr_set_bond_port_softsw(enetx_port_t *port, void *_ctx)
+{
+    struct tr_bond_chk_data *data = (struct tr_bond_chk_data *)_ctx;
+
+    if ((port->p.bond_grp == data->grp) || (port == data->port))
+    {
+        if (is_netdev_hw_switch(port->dev) && !port->port_info.swtag_use_pvid)
+        {
+            printk(" WARNING : bond across switch units set %s to softswitching!!\n\n", port->dev->name);
+
+            netdev_hw_switch_unset(port->dev);
+            port->p.ops->role_set(port, PORT_NETDEV_ROLE_NONE);
+        }
+    }
+    return 0;
+}
+#endif
+
 /* Function to do error check before making changes to the bonding group */
 static int enet_bonding_error_check(bond_info_t *grp, enetx_port_t *port)
 {
@@ -102,32 +122,24 @@ static int enet_bonding_error_check(bond_info_t *grp, enetx_port_t *port)
     data.port = port;
     port_traverse_ports(root_sw, tr_bond_err_chk, PORT_CLASS_PORT, &data);
 
-#if defined(CONFIG_BCM_DSL_RDP)
-    /* WAN-LAN bonding is supported on 3GEN DSL platforms only */
-    if (data.wan_cnt > 1)
-    {
-        enet_err("Two WAN ports can't be bonded <0x%04x-0x%04x>\n", data.pmap[0], data.pmap[1]);
-        return -1;
-    }
-    if (data.wan_cnt && data.lan_cnt > 1)
-    {
-        enet_err("More than one LAN port can't be bonded with WAN <0x%04x-0x%04x>\n", data.pmap[0], data.pmap[1]);
-        return -1;
-    }
-#else
     if (data.wan_cnt && data.lan_cnt)
     {
         enet_err("LAN port can't be bonded with WAN <0x%04x-0x%04x>\n", data.pmap[0], data.pmap[1]);
         return -1;
     }
-#endif
+
 
     for (ndx=0,cnt=0; ndx < COMPAT_MAX_SWITCHES; ndx++)
         if (data.pmap[ndx]) cnt++;
+
     if (cnt > 1 && !data.wan_cnt)
     {
+#if defined(BONDING_DUAL)
+        port_traverse_ports(root_sw, tr_set_bond_port_softsw, PORT_CLASS_PORT, &data);
+#else
         enet_err("Can't bond across switch units <0x%04x-0x%04x>\n", data.pmap[0], data.pmap[1]);
         return -1;
+#endif
     }
     return 0;
 }
@@ -170,10 +182,6 @@ static void bcmenet_do_wan_bonding_cfg_for_grp(uint16_t grp_no, uint16_t add_mem
     {
         if (add_member ^ bond_grp->is_lan_wan_cfg)
         {
-            /* modify lan port port_cap, so role_set won't fail */
-#if defined(CONFIG_BCM_DSL_RDP)
-            data.lan_port->p.port_cap = add_member? PORT_CAP_LAN_WAN : PORT_CAP_LAN_ONLY;
-#endif
             port_netdev_role_set(data.lan_port, add_member? PORT_NETDEV_ROLE_WAN: PORT_NETDEV_ROLE_LAN);
             /* also clear lan port ARL entries */
             if (add_member && data.lan_port->p.ops->fast_age)
@@ -205,7 +213,8 @@ static int tr_set_port_blog_chnl_rx(enetx_port_t *port, void *_ctx)
     {
         if (bond_grp->blog_chnl_rx == port->n.blog_chnl)
             netdev_path_set_hw_port(bond_grp->bond_dev, port->n.blog_chnl, port->n.blog_phy);
-        port->n.blog_chnl_rx = bond_grp->blog_chnl_rx;
+        if (!port->port_info.swtag_use_pvid)
+            port->n.blog_chnl_rx = bond_grp->blog_chnl_rx;
     }
     return 0;
 }

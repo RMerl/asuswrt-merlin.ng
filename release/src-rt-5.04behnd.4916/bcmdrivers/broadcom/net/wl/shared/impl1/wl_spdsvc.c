@@ -21,6 +21,10 @@
 #if defined(BCM_NBUFF)
 #include <linux/nbuff.h>
 #endif
+#if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE)) && \
+	(defined(CONFIG_BCM_SPDSVC)||defined(CONFIG_BCM_SPDSVC_MODULE))
+#include "rdpa_api.h"
+#endif
 
 #include <bcmutils.h>
 #include "bcm_spdsvc.h"
@@ -69,36 +73,59 @@ static int wl_spdsvc_tx_helper(pNBuff_t pNBuff, uint32_t * tag_p)
 	return -1;
 }
 
-int wl_spdsvc_tx(struct sk_buff *skb, struct net_device *dev)
+int wl_spdsvc_tx(void *pkt, struct net_device *dev)
 {
 	int ret = -1;
 
 	if (wl_spdsvc_transmit != NULL) {
 		spdsvcHook_transmit_t spdsvc_transmit = { };
 
-		spdsvc_transmit.pNBuff = SKBUFF_2_PNBUFF(skb);
+#if defined(BCM_WKB)
+		/* XXX: TODO: Not supported yet */
+		ASSERT(IS_SKBUFF_PTR(pkt));
+#endif /* BCM_WKB */
+
+		spdsvc_transmit.pNBuff = pkt;
 		spdsvc_transmit.dev = dev;
 		spdsvc_transmit.header_type = SPDSVC_HEADER_TYPE_ETH;
 		spdsvc_transmit.phy_overhead = WL_SPDSVC_OVERHEAD;
 		spdsvc_transmit.transmit_helper = wl_spdsvc_tx_helper;
 		spdsvc_transmit.egress_type = SPDSVC_EGRESS_TYPE_WLAN_NIC;
-		spdsvc_transmit.flags = SPDSVC_HOOK_TRANSMIT_SPDT_NO_AUTO_TRIGGER;
 
 		if (wl_spdsvc_transmit(&spdsvc_transmit))
-			ret = 0;
+		{
+#if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE)) && \
+	(defined(CONFIG_BCM_SPDSVC)||defined(CONFIG_BCM_SPDSVC_MODULE))
+			if ((spdsvc_transmit.so_mark  & RDPA_UDPSPDTEST_SO_MARK_PREFIX)
+				== RDPA_UDPSPDTEST_SO_MARK_PREFIX)
+			{
+				rdpa_cpu_tx_info_t spdt_cpu_info;
+
+				spdt_cpu_info.spdt_so_mark = spdsvc_transmit.so_mark;
+				return rdpa_udpspdtest_tx_start(&spdt_cpu_info, 0, pkt);
+			}
+#else
+			return 0;
+#endif
+		}
 	}
 
 	return ret;
 }
 
-int wl_spdsvc_rx(struct sk_buff *skb)
+int wl_spdsvc_rx(void *pkt)
 {
 	int ret = 1;	/* init as positive value, as BCME_OK is 0 and BCME_XXX are all negative */
 
 	if (wl_spdsvc_receive != NULL) {
 		spdsvcHook_receive_t spdsvc_receive;
 
-		spdsvc_receive.pNBuff = SKBUFF_2_PNBUFF(skb);
+#if defined(BCM_WKB)
+		/* XXX: TODO: Not supported yet */
+		ASSERT(IS_SKBUFF_PTR(pkt));
+#endif /* BCM_WKB */
+
+		spdsvc_receive.pNBuff = pkt;
 		spdsvc_receive.header_type = SPDSVC_HEADER_TYPE_ETH;
 		spdsvc_receive.phy_overhead = WL_SPDSVC_OVERHEAD;
 

@@ -1,0 +1,207 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (C) 2022 Marek Vasut <marex@denx.de>
+ */
+
+#include "imx8mp-u-boot.dtsi"
+
+/ {
+	aliases {
+		eeprom0 = &eeprom0;
+		eeprom1 = &eeprom1;
+		mmc0 = &usdhc2;	/* MicroSD */
+		mmc1 = &usdhc3;	/* eMMC */
+		mmc2 = &usdhc1;	/* SDIO */
+	};
+
+	config {
+		dh,ram-coding-gpios = <&gpio3 22 0>, <&gpio3 23 0>, <&gpio3 24 0>;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&buck4 {
+	bootph-pre-ram;
+};
+
+&buck5 {
+	bootph-pre-ram;
+};
+
+&gpio1 {
+	bootph-pre-ram;
+};
+
+&gpio2 {
+	bootph-pre-ram;
+};
+
+&gpio3 {
+	bootph-all;
+	bootph-pre-ram;
+};
+
+&gpio4 {
+	bootph-pre-ram;
+};
+
+&gpio5 {
+	bootph-pre-ram;
+};
+
+&i2c3 {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c3 {
+	bootph-pre-ram;
+};
+
+&pinctrl_i2c3_gpio {
+	bootph-pre-ram;
+};
+
+&pinctrl_pmic {
+	bootph-pre-ram;
+};
+
+&pinctrl_uart1 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2_100mhz {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2_200mhz {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc2_vmmc {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc3 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc3_100mhz {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc3_100mhz {
+	bootph-pre-ram;
+};
+
+&pmic {
+	bootph-pre-ram;
+
+	regulators {
+		bootph-pre-ram;
+	};
+};
+
+&reg_usdhc2_vmmc {
+	bootph-pre-ram;
+};
+
+&uart1 {
+	bootph-pre-ram;
+};
+
+/* SDIO WiFi */
+&usdhc1 {
+	status = "disabled";
+};
+
+&usdhc2 {
+	bootph-pre-ram;
+};
+
+&usdhc3 {
+	bootph-pre-ram;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};
+
+&binman {
+	itb {
+		fit {
+			images {
+				fdt-dto-imx8mp-dhcom-som-overlay-eth1xfast {
+					description = "imx8mp-dhcom-som-overlay-eth1xfast";
+					type = "flat_dt";
+					compression = "none";
+
+					blob-ext {
+						filename = "imx8mp-dhcom-som-overlay-eth1xfast.dtbo";
+					};
+				};
+
+				fdt-dto-imx8mp-dhcom-som-overlay-eth2xfast {
+					description = "imx8mp-dhcom-som-overlay-eth2xfast";
+					type = "flat_dt";
+					compression = "none";
+
+					blob-ext {
+						filename = "imx8mp-dhcom-som-overlay-eth2xfast.dtbo";
+					};
+				};
+
+				fdt-dto-imx8mp-dhcom-pdk-overlay-eth2xfast {
+					description = "imx8mp-dhcom-pdk-overlay-eth2xfast";
+					type = "flat_dt";
+					compression = "none";
+
+					blob-ext {
+						filename = "imx8mp-dhcom-pdk-overlay-eth2xfast.dtbo";
+					};
+				};
+
+				fdt-dto-imx8mp-dhcom-som-overlay-rev100 {
+					description = "imx8mp-dhcom-som-overlay-rev100";
+					type = "flat_dt";
+					compression = "none";
+
+					blob-ext {
+						filename = "imx8mp-dhcom-som-overlay-rev100.dtbo";
+					};
+				};
+
+				fdt-dto-imx8mp-dhcom-pdk3-overlay-rev100 {
+					description = "imx8mp-dhcom-pdk3-overlay-rev100";
+					type = "flat_dt";
+					compression = "none";
+
+					blob-ext {
+						filename = "imx8mp-dhcom-pdk3-overlay-rev100.dtbo";
+					};
+				};
+			};
+
+			configurations {
+				default = "@config-DEFAULT-SEQ";
+
+				@config-SEQ {
+					fdt = "fdt-1",
+					      "fdt-dto-imx8mp-dhcom-som-overlay-eth1xfast",
+					      "fdt-dto-imx8mp-dhcom-som-overlay-eth2xfast",
+					      "fdt-dto-imx8mp-dhcom-pdk-overlay-eth2xfast",
+					      "fdt-dto-imx8mp-dhcom-som-overlay-rev100",
+					      "fdt-dto-imx8mp-dhcom-pdk3-overlay-rev100";
+				};
+			};
+		};
+	};
+};

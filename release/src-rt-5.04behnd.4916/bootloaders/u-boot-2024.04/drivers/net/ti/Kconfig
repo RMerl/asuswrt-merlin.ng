@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2018 Texas Instruments Incorporated - https://www.ti.com/
+
+config DRIVER_TI_CPSW
+	bool "TI Common Platform Ethernet Switch"
+	select PHYLIB
+	help
+	  This driver supports the TI three port switch gigabit ethernet
+	  subsystem found in the TI SoCs.
+
+config DRIVER_TI_EMAC
+	bool "TI Davinci EMAC"
+	help
+	   Support for davinci emac
+
+config DRIVER_TI_EMAC_USE_RMII
+	depends on DRIVER_TI_EMAC
+	bool "Use RMII"
+	help
+	  Configure the TI EMAC driver to use RMII
+
+config DRIVER_TI_KEYSTONE_NET
+	bool "TI Keystone 2 Ethernet"
+	help
+	   This driver supports the TI Keystone 2 Ethernet subsystem
+
+choice
+	prompt "TI Keystone 2 Ethernet NETCP IP revision"
+	depends on DRIVER_TI_KEYSTONE_NET
+	default KSNET_NETCP_V1_5
+
+config KSNET_NETCP_V1_0
+	bool "NETCP version 1.0"
+
+config KSNET_NETCP_V1_5
+	bool "NETCP version 1.5"
+
+endchoice
+
+config TI_AM65_CPSW_NUSS
+	bool "TI K3 AM65x MCU CPSW Nuss Ethernet controller driver"
+	depends on ARCH_K3
+	imply DM_MDIO
+	imply MISC_INIT_R
+	imply MISC
+	imply SYSCON
+	select PHYLIB
+	help
+	  This driver supports TI K3 MCU CPSW Nuss Ethernet controller
+	  in Texas Instruments K3 AM65x SoCs.

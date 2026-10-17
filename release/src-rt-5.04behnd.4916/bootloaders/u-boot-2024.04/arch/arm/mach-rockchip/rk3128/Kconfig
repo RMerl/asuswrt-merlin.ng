@@ -1,0 +1,30 @@
+if ROCKCHIP_RK3128
+
+choice
+	prompt "RK3128 board select"
+
+config TARGET_EVB_RK3128
+	bool "RK3128 evaluation board"
+	select BOARD_LATE_INIT
+	help
+	  RK3128evb is a evaluation board for Rockchip rk3128,
+	  with full function and phisical connectors support like
+	  usb2.0 host ports, LVDS, JTAG, MAC, SDcard, HDMI, USB-2-serial...
+
+endchoice
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0x100a0038
+
+config ROCKCHIP_STIMER_BASE
+	default 0x200440a0
+
+config SYS_SOC
+	default "rk3128"
+
+config SYS_MALLOC_F_LEN
+	default 0x0800
+
+source "board/rockchip/evb_rk3128/Kconfig"
+
+endif

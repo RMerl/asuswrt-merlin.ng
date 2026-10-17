@@ -1,0 +1,19 @@
+if TARGET_MX6Q_ACC
+
+config SYS_VENDOR
+	default "bosch"
+
+config SYS_BOARD
+	default "acc"
+
+config SYS_CONFIG_NAME
+	default "imx6q-bosch-acc"
+
+config SYS_BOOT_EMMC
+	bool "Boot from EMMC"
+	default y
+	help
+	  Say N here if you want to boot from SD card or microUSB.
+	  Say Y to boot from eMMC.
+
+endif

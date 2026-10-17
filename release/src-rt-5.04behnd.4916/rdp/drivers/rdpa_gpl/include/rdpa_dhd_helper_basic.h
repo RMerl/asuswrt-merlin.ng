@@ -42,6 +42,9 @@
 /* send Txcomplete indications to host for all host originated packets */
 #define RDPA_DHD_HELPER_FEATURE_TXCOMPL_SUPPORT                 /* txcmpl2host */
 
+/* support dummy TX completes */
+#define RDPA_DHD_HELPER_FEATURE_DUMMY_TXCOMPL_SUPPORT           /* dummytxcmpl */
+
 /* Insert LLCSNAP header support  */
 #define RDPA_DHD_HELPER_FEATURE_LLCSNAPHDR_SUPPORT              /* dhdhdr */
 
@@ -66,13 +69,12 @@
 /* Configurable number of FRs in idma group support */
 #define RDPA_DHD_HELPER_FEATURE_IDMA_GROUP_CFG_SUPPORT
 
-#if defined(BCM63146) || defined(BCM6855) || defined(BCM6888) || defined(BCM6837) || defined(BCM6813) || defined(BCM4912)
+#if defined(BCM63146) || defined(BCM6855) || defined(BCM6888) || defined(BCM6837) || defined(BCM68375) || defined(BCM6813) || defined(BCM4912)
 
 /* 64 iDMA groups support */
 #define RDPA_DHD_HELPER_FEATURE_IDMA64_SUPPORT                  /* idma64 */
 #endif
 
-#if defined(XRDP)
 /* RxCompletion via headroom support */
 #define RDPA_DHD_HELPER_FEATURE_RCH_SUPPORT                     /* rxcmplrch */
 
@@ -80,7 +82,7 @@
 #define RDPA_DHD_HELPER_FEATURE_BA256_CFG_SUPPORT               /* ba256cfg */
 
 /* WLAN codel support */
-#define RDPA_DHD_HELPER_FEATURE_CODEL_SUPPORT                   /* codel */
+/*#define RDPA_DHD_HELPER_FEATURE_CODEL_SUPPORT */                  /* codel */
 
 /* Common rings (RxPost/Rxcomplete/Txcomplete) size configuration support */
 #define RDPA_DHD_HELPER_FEATURE_COMMON_RING_SIZES_CFG_SUPPORT   /* cmnrngsz */
@@ -91,19 +93,22 @@
 /* dynamic BQ size support via FR update message */
 #define RDPA_DHD_HELPER_FEATURE_FLOWRING_UPDATE_SUPPORT         /* bqupd */
 
+#if defined(BCM6888) || defined(BCM6813)
+/* Insert LLCSNAP header support  */
+#define RDPA_DHD_HELPER_FEATURE_PCAP_SUPPORT                    /* pcap */
+#define RDPA_DHD_HELPER_FEATURE_TXCPL_EWI_SUPPORT               /* extended WI */
+#endif
+
 #define DHD_MAX_SSID_NUM 16
 typedef uint32_t rdpa_dhd_ssid_tx_dropped_t[DHD_MAX_SSID_NUM];
 
-#else
-#define DHD_MAX_SSID_NUM 8
-#endif
 /* Not supported any more
 #define RDPA_DHD_HELPER_FEATURE_NPLUSM
 */
 
 #define RDPA_DHD_DOORBELL_IRQ 2 /* Comply to definition in RDD */
 
-#define RDPA_DHD_HELPER_CPU_QUEUE_SIZE 128
+#define RDPA_DHD_HELPER_CPU_QUEUE_SIZE (1024)
 
 #define RDPA_DHD_HELPER_NUM_OF_FLOW_RINGS (1024)
 
@@ -115,14 +120,6 @@ typedef uint32_t rdpa_dhd_ssid_tx_dropped_t[DHD_MAX_SSID_NUM];
 #define RDPA_MAX_RADIOS 3 /* NIC and dongle */
 #define RDPA_MAX_DHD_OFFL_RADIOS 3 /* defines max allocated resourses */
 #define RDPA_MAX_CONCUR_OFFL_RADIOS 2 /* max number of offloaded radios concurrently */
-#elif defined(BCM6846)
-#define RDPA_MAX_RADIOS 2 /* NIC and dongle */
-#define RDPA_MAX_DHD_OFFL_RADIOS 2 /* defines max allocated resourses */
-#define RDPA_MAX_CONCUR_OFFL_RADIOS 1
-#elif defined(BCM6878)
-#define RDPA_MAX_RADIOS 2 /* NIC and dongle */
-#define RDPA_MAX_DHD_OFFL_RADIOS 1 /* defines max allocated resourses */
-#define RDPA_MAX_CONCUR_OFFL_RADIOS 1
 #else
 #define RDPA_MAX_RADIOS 3 /* NIC and dongle */
 #define RDPA_MAX_DHD_OFFL_RADIOS 3 /* defines max allocated resourses */
@@ -138,6 +135,22 @@ typedef uint32_t rdpa_dhd_ssid_tx_dropped_t[DHD_MAX_SSID_NUM];
 #define RDPA_DHD_TX_POST_BPM_BUFFER_VALUE    2 /* 10: possible value in tx post and tx complete */
 #define RDPA_DHD_TX_POST_FKB_BUFFER_VALUE    3 /* 11: possible value in tx complete only */
 
+
+/* TX Completion/pcap values (3 bits!) */
+#define PCAP_TXCPL_NONE                      0       /* Do not copy */
+#define PCAP_TXCPL_MPDU                      1       /* Single MPDU */
+#define PCAP_TXCPL_AMSDU_FIRST               2       /* AMSDU: First MSDU */
+#define PCAP_TXCPL_AMSDU_INTRM               3       /* AMSDU: Intermediate MSDU */
+#define PCAP_TXCPL_AMSDU_LAST                4       /* AMSDU: Last MSDU *//* TX Completion/pcap values (3 bits!) */
+
+
+#define PCAP_TX_COPY_PKT                     0
+#define PCAP_RX_COPY_PKT                     1
+
+#define RDPA_DHD_FLOWRING_FORMAT_WI64           0
+#define RDPA_DHD_FLOWRING_FORMAT_CWI32          1
+#define RDPA_DHD_FLOWRING_FORMAT_MASK           0xF  /* Mask to get basic FR format */
+#define RDPA_DHD_FLOWRING_FORMAT_EXT            (1 << 4)
 
 /** DHD init configuration */
 typedef struct
@@ -188,6 +201,16 @@ typedef struct
     uint16_t reserved[2];                    /* reserved for next features to keep structure backward compatibility */
 } rdpa_dhd_init_cfg_t;
 
+/** DHD PCAP configuration */
+typedef struct
+{
+    /* FlowRings base addresses */
+    uint8_t  rx_copy_en;                     /* 0 - disable */
+    uint8_t  tx_copy_en;                     /* 0 - disable */
+    uint32_t pcap_max_len;                   /* max capture length */
+    uint16_t reserved[8];                    /* reserved for next features to keep structure backward compatibility */
+} rdpa_dhd_pcap_cfg_t;
+
 /** Extra data that can be passed along with the packet to be posted for transmission */
 typedef struct
 {
@@ -211,6 +234,7 @@ typedef struct
     uint32_t dhd_tx_total_fpm_used; /**< DHD TX FPM used */
     uint32_t dhd_tx_fpm_drop; /**< DHD TX FPM drop */
     uint32_t dhd_tx_high_prio_fpm_drop; /**< DHD TX high priority and mcast FPM drop */
+    uint32_t dhd_tx_rdc_drop; /**< DHD TX RDC(runner DQM control) drop */
     uint32_t dhd_mcast_sbpm_drop;  /**< DHD MCAST SBPM drop \RDP limited */
     uint32_t dhd_tx_fr_ac_bk_full; /**< DHD TX feeder ring AC BK is full*/
     uint32_t dhd_tx_fr_ac_be_full; /**< DHD TX feeder ring AC BE is full*/
@@ -223,6 +247,12 @@ typedef struct
     uint32_t dhd_tx_drop_packets; /**< DHD TX total dropped packets  */
     uint32_t dhd_tx_host_drop_packets; /**< DHD TX host dropped packets */
     uint32_t dhd_bq_tx_drop_packets; /**< DHD BQ dropped packets */
+    uint32_t dhd_fr_drop_packets; /**< DHD FR dropped packets */
+    uint32_t dhd_tx_cmpl_dummy_packets; /**< DHD dummy TX completed packets */
+    uint32_t dhd_tx_pcap_packets; /**< DHD Tx PCAP packets */
+    uint32_t dhd_tx_pcap_drops; /**< DHD Tx PCAP drops */
+    uint32_t dhd_rx_pcap_packets; /**< DHD Rx PCAP packets */
+    uint32_t dhd_rx_pcap_drops; /**< DHD Rx PCAP drops */
 } rdpa_dhd_data_stat_t;
 
 /** Runner wakeup information returned to DHD by RDD */
@@ -251,14 +281,12 @@ typedef struct rdpa_dhd_flring_cache
     uint16_t backup_num_entries;
     uint16_t phy_ring_size;  /* Number of descriptors in physical flow ring */
 #else
-    uint32_t reserved;       /* Maintain the structure for platforms without backup queues feature */
+    uint16_t reserved[4];       /* Maintain the structure for platforms without backup queues feature */
 #endif
-#ifdef RDPA_DHD_HELPER_FEATURE_CODEL_SUPPORT
     uint16_t window_ts;     /* Sliding window endpoint timestamp */
     uint16_t drop_interval; /* Number of consequitive drops */
     uint16_t codel_flags;   /* Codel state flags */
     uint16_t codel_drop_counter;
-#endif
 } rdpa_dhd_flring_cache_t;
 
 
@@ -270,9 +298,24 @@ typedef struct rdpa_dhd_complete_data
     uint32_t request_id;
     uint8_t  buf_type;          /* RDPA_DHD_TX_POST_SKB_BUFFER_VALUE, RDPA_DHD_TX_POST_FKB_BUFFER_VALUE, RDPA_DHD_TX_POST_HOST_BUFFER_VALUE  */
     void     *txp;
-    uint16_t status;
+    uint16_t status;            /* For legacy format - tx_complete status. For CWI format 0 - normal packet, non zero - PCAP Tx copy flags */
     uint16_t flow_ring_id;
 } rdpa_dhd_complete_data_t;
+
+/** Tx PCAP descriptor data for host DHD driver */
+typedef struct rdpa_dhd_pcap_data
+{
+    uint32_t radio_idx;
+    uint8_t  pcap_type;         /* PCAP_TX_COPY_PKT/PCAP_RX_COPY_PKT */
+    uint32_t pkt_id;            /* Original FPM ID received in Tx/Rx Complete, 0 for SKB/FKB */
+    uint16_t pkt_len;           /* packet length, 0 - NA */
+    uint16_t data_buf_len;      /* whole data buffer length */
+    uint16_t pkt_offset;        /* offset from start of data buffer */
+    uint8_t  buf_type;          /* RDPA_DHD_TX_POST_SKB_BUFFER_VALUE, RDPA_DHD_TX_POST_FKB_BUFFER_VALUE, RDPA_DHD_TX_POST_HOST_BUFFER_VALUE  */
+    uint16_t flags;             /* for Tx - flags, for Rx - [2:0] flags, [6:4] rch_sdu_id, [10:8] rch_sdu_cnt */
+    uint16_t seq_num;           /* free running sequence number incremented on every PCAP packet request in NP */
+    void     *txp;              /* data buffer ptr */
+} rdpa_dhd_pcap_data_t;
 
 /** DHD CPU Data resources for exception traffic */
 typedef struct

@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot addition to handle Qualcomm Robotics RB3 Development Platform
+ * (dragonboard845c) pins
+ *
+ * (C) Copyright 2022 Sumit Garg <sumit.garg@linaro.org>
+ */
+
+/
+{
+	soc {
+		bootph-all;
+
+		serial@a84000 {
+			bootph-all;
+		};
+
+		clock-controller@100000 {
+			bootph-all;
+		};
+
+		pinctrl@3400000 {
+			bootph-all;
+		};
+	};
+};

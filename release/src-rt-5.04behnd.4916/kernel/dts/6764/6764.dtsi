@@ -38,7 +38,7 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 		/* increase coherent_pool size */
-		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe isolcpus=3 console=ttyAMA0,115200 earlycon rootwait rng_core.default_quality=1024";
+		bootargs = "coherent_pool=4M pci=pcie_bus_safe isolcpus=3 console=ttyAMA0,115200 earlycon rootwait rng_core.default_quality=1024";
 	};
 
 	ubus-bus {
@@ -52,7 +52,7 @@
 #endif
 
 		/* memc */
-		memory_controller {
+		memory_controller: memory_controller {
 			#define BP_DDR_6764_DEFAULT		BP_DDR_SSC_CONFIG_1
 			#define BP1_DDR_6764_DEFAULT		BP1_DDR_SSC_CONFIG_1
 
@@ -88,6 +88,7 @@
 			misc-periph-chip-id-mask = <0xfffff000>;
 			misc-periph-chip-id-shift = <12>;
 			misc-periph-chip-rev-mask = <0xfff>;
+			misc-periph-sw-nw2 = <0xff80262C 0x4>;
 		};
 
 		/* usb */
@@ -177,6 +178,7 @@
 					"switchacb-base",
 					"switchlfh-base",
 					"switchsib-base",
+					"switchwol-base",
 					"sphy-ctrl";
 
 			reg	= <0x200000 0x72724>,
@@ -186,6 +188,7 @@
 				<0x274800 0x230>,
 				<0x274b00 0x100>,
 				<0x274c00 0x100>,
+				<0x284000 0x18C0>,
 				<0x281024 0x04>;
 			phy_base = <0x8>;
 		};
@@ -371,12 +374,13 @@
 			reg = <0x1061000 0x1000>;  /* CTMR_CTRL */
 		};
 
+		#define CPU_ADDR_OFFSET		    0x80000000
 		/* Internal WiFi Core 0 (virtual pcie with domain#0) */
 		vpcie0: vpcie@0 {
 			#define WIFI_COREID			0
-			#define WIFI_ADDR			0x10000000
+			#define WIFI_ADDR			0x90000000
 			#define WIFI_SIZE			0x08000000
-			#define WIFI_MLO_ADDR		0x000E0000
+			#define WIFI_MLO_ADDR		0x800E0000
 			#define WIFI_MLO_SIZE		0x00000100
 			#define WIFI_DEVID			0x603b
 			#define WIFI_CCM_SPI		96
@@ -395,9 +399,9 @@
 		/* Internal WiFi Core 1 (virtual pcie with domain#1) */
 		vpcie1: vpcie@1 {
 			#define WIFI_COREID			1
-			#define WIFI_ADDR			0x18000000
+			#define WIFI_ADDR			0x98000000
 			#define WIFI_SIZE			0x08000000
-			#define WIFI_MLO_ADDR		0x000F0000
+			#define WIFI_MLO_ADDR		0x800F0000
 			#define WIFI_MLO_SIZE		0x00000100
 			#define WIFI_DEVID			0x6038
 			#define WIFI_CCM_SPI		106	
@@ -418,13 +422,13 @@
 			#define PCIE_ID				0
 			#define PCIE_DOMAIN_ID		2
 			#define PCIE_SPI			74
-			#define PCIE_ADDR			0x00080000
+			#define PCIE_ADDR			0x80080000
 			#define PCIE_SIZE			0x0000B000
-			#define CPU_RANGE_ADDR		0x40000000
 			#define PCIE_RANGE_ADDR		0xC0000000
 			#define PCIE_RANGE_SIZE		0x10000000
 			#include "../ip/bcm_pcie_core.dtsi"
 		};
+		#undef CPU_ADDR_OFFSET
 #endif
 	};
 
@@ -460,7 +464,7 @@
 		};
 
 		/* EMMC */
-		sdhci: sdhci {
+		sdhci: mmc {
 			pinctrl-0 = <&emmc_ctrl_pins>;
 			pinctrl-names="default";
 			#define SDHCI_AHBSS_CTRL_OFFSET		0x10300
@@ -477,8 +481,8 @@
 			#define SDIO_EMMC_SPI			39
 			#include "../ip/bcm_sdhci.dtsi"
 			mmc-ddr-3_3v;
-			sdhci-pll-baseclk-mhz = <5000>;
-			sdhci-pll-valid-op-mhz = <100 125 156 185 200>;
+			brcm,sdhci-pll-baseclk-mhz = <5000>;
+			brcm,sdhci-pll-valid-op-mhz = <100 125 156 185 200>;
 		};
 
 #if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
@@ -490,6 +494,12 @@
 		};
 #endif
 
+		/* RNG */
+#if defined (CONFIG_BCM_RNG_SHIM)
+		rng_shim: rngshim {
+			#include "../ip/bcm_rng_shim.dtsi"
+		};
+#else
 		rng: rng {
 			#define RNG200_OFFSET                   0xb80
 			#define RNG200_SIZE                     0x30
@@ -501,6 +511,7 @@
 			#define TRNG_SIZE                     0x0800
 			#include "../ip/bcm_trng.dtsi"
 		};
+#endif
 
 		strap: strap {
 			#define STRAP_REG_OFFSET            0x2600
@@ -551,6 +562,19 @@
 			#define GPIO_DATA_OFFSET     0x520
 			#define GPIO_DATA_SIZE       0x20
 			#define NUM_OF_GPIOS         98
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			#define EXTINTR_OFFSET       0x4
+			#define EXTINTR_SIZE         0x48
+			#define MAX_EXT_INTR         8
+			interrupts = <GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
+#endif
 			#include "../ip/bcm_bca_gpio.dtsi"
 		};
 
@@ -561,6 +585,9 @@
 			#define MAX_EXT_INTR         8
 			#include "../ip/bcm_bca_extintr.dtsi"
 			external_interrupts = <48 49 50 51 52 53 54 55>;
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			status = "disabled";
+#endif
 		};
 
 		uart0: serial0 {
@@ -675,6 +702,7 @@
 			#define WATCHDOG_OFFSET			0x480
 			#define WATCHDOG_SIZE			0x10
 			#define WATCHDOG_TIMEOUT		80
+			#define WATCHDOG_CLK_LABEL		refclk80mhz
 			#include "../ip/bcm_wdt.dtsi"
 			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
 		};

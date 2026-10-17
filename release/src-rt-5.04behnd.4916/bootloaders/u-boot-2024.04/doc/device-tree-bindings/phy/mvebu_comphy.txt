@@ -1,0 +1,68 @@
+Marvell COMPHY SerDes lane bindings
+=====================================
+
+The COMPHY node includes a description of the COMPHY SerDes lane configuration.
+The COMPHY driver initializes the MUX of the SerDes lanes, and powers up the SerDes
+by dependencies on the FDT blob configurations
+
+Mandatory properties:
+SoC specific:
+	- compatible:
+		The compatible should include "marvell,mvebu-comphy"
+		and the COMPHY per chip compatible:
+		"marvell,comphy-cp110" for CP110 available in Aramda70x0/80x0.
+		The COMPHY per chip used to set which MUX configuration to use, and COMPHY power-up revision.
+	- reg: Base address and size of the COMPHY and hpipe units.
+	- max-lanes: Maximum number of comphy lanes.
+	- mux-bitcount: Number of bits that are allocated for every MUX in the COMPHY-selector register.
+Board specific:
+	- PHY: Entry that include the configuration of the PHY.
+	  Every PHY should have the below parameters:
+	  - phy-type: the mode of the PHY
+	    Possible modes located in include/dt-bindings/comphy/comphy_data.h
+	Optional properties:
+	  - phy-speed: the speed of the PHY
+	    Possible speeds values located in include/dt-bindings/comphy/comphy_data.h
+	  - phy-invert: Polarity invert (COMPHY_POLARITY_TXD_INVERT/COMPHY_POLARITY_RXD_INVERT)
+	    the possible bits under include/dt-bindings/comphy/comphy_data.h
+	  - clk-src: Set the clock source of PCIe, if configured to PCIe clock output
+	    This relevant for SerDes lane 5 only (by default, lane 4 is the clock source)
+	    for Armada-7040 boards.
+	  - endpoint: Optional boolean specifying this SerDes should be configured as PCIe endpoint.
+
+Example:
+	cpm_comphy: comphy@441000 {
+		compatible = "marvell,mvebu-comphy", "marvell,comphy-cp110";
+		reg = <0x441000 0x8>, <0x120000 0x8>;
+		mux-bitcount = <4>;
+		max-lanes = <6>;
+
+		/*
+		 * CP110 Serdes Configuration:
+		 * Lane 0: SGMII1
+		 * Lane 1: SATA 0
+		 * Lane 2: USB HOST 0
+		 * Lane 3: SATA1
+		 * Lane 4: SFI (10G)
+		 * Lane 5: SGMII2
+		 */
+		phy0 {
+			phy-type = <COMPHY_TYPE_SGMII1>;
+			phy-speed = <COMPHY_SPEED_1_25G>;
+		};
+		phy1 {
+			phy-type = <COMPHY_TYPE_SATA0>;
+		};
+		phy2 {
+			phy-type = <COMPHY_TYPE_USB3_HOST0>;
+		};
+		phy3 {
+			phy-type = <COMPHY_TYPE_SATA1>;
+		};
+		phy4 {
+			phy-type = <COMPHY_TYPE_SFI>;
+		};
+		phy5 {
+			phy-type = <COMPHY_TYPE_SGMII2>;
+		};
+	};

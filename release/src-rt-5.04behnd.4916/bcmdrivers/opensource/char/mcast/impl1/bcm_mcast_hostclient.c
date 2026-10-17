@@ -256,7 +256,7 @@ void bcm_mcast_hostclient_entries_dump(void)
     }
     if (hc_cnt == 0)
     {
-        printk("No Host Client Entries found\n");
+        __logDebug("No Host Client Entries found\n");
     }
     spin_unlock_bh(&mcast_ctrl->hostclient_lock);
 }

@@ -1,0 +1,10 @@
+CAPRICORN BOARD
+M:	Anatolij Gustschin <agust@denx.de>
+S:	Maintained
+F:	board/siemens/capricorn/
+F:	include/configs/capricorn-common.h
+F:	include/configs/deneb.h
+F:	include/configs/giedi.h
+F:	include/configs/siemens-env-common.h
+F:	configs/deneb_defconfig
+F:	configs/giedi_defconfig

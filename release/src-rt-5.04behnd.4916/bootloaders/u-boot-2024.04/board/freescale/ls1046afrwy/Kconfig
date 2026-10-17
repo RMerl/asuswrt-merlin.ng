@@ -1,0 +1,16 @@
+
+if TARGET_LS1046AFRWY
+
+config SYS_BOARD
+	default "ls1046afrwy"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1046afrwy"
+
+endif

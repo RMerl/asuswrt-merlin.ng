@@ -1,0 +1,6 @@
+CHAMELEONV3 BOARD
+M:	Paweł Anikiel <pan@semihalf.com>
+S:	Maintained
+F:	board/google/chameleonv3/
+F:	include/configs/socfpga_chameleonv3.h
+F:	configs/socfpga_chameleonv3_defconfig

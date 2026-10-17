@@ -9,4 +9,6 @@ config BCM_OTP_DRV_IMPL
 	depends on BCM_OTP_DRV
 	default 2 if BCM968880
 	default 2 if BCM96837
+    default 2 if BCM968375
+    default 2 if BCM968850
 	default 1 

@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * at91-kstr-sama5d27.dts - Device Tree file for Conclusive KSTR-SAMA5D27 board
+ *
+ *  Copyright (C) 2019-2023 Conclusive Engineering Sp. z o. o.
+ *
+ */
+/dts-v1/;
+
+#include "sama5d2.dtsi"
+#include "sama5d2-pinfunc.h"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/mfd/atmel-flexcom.h>
+
+/ {
+	model = "Conclusive KSTR-SAMA5D27";
+	compatible = "conclusive,kstr-sama5d27", "atmel,sama5d2", "atmel,sama5";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	aliases {
+		i2c2 = &i2c6;
+	};
+};
+
+&main_xtal {
+	clock-frequency = <12000000>;
+};
+
+&sdmmc0 {
+	bus-width = <4>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdmmc0_cmd_dat_default &pinctrl_sdmmc0_ck_cd_default>;
+	status = "okay";
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1_default>;
+	status = "okay";
+};
+
+&macb0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_macb0_rmii &pinctrl_macb0_phy_irq>;
+	phy-mode = "rmii";
+	status = "okay";
+
+	ethernet-phy@0 {
+		reg = <0x0>;
+		reset-gpios = <&pioA 44 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&flx4 {
+	atmel,flexcom-mode = <ATMEL_FLEXCOM_MODE_TWI>;
+	status = "okay";
+};
+
+&i2c6 {
+	clock-frequency = <100000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flx4_i2c>;
+	status = "okay";
+
+	eeprom: eeprom@50 {
+		compatible = "microchip,24c32", "atmel,24c32";
+		reg = <0x50>;
+		read-only;
+		pagesize = <32>;
+		status = "okay";
+	};
+};
+
+&pioA {
+	pinctrl {
+		pinctrl_uart1_default: uart1_default {
+			pinmux = <PIN_PD2__URXD1>,
+				 <PIN_PD3__UTXD1>;
+			bias-disable;
+		};
+
+		pinctrl_macb0_phy_irq: macb0_phy_irq {
+			pinmux = <PIN_PB13__GPIO>;
+			bias-disable;
+		};
+
+		pinctrl_macb0_rmii: macb0_rmii {
+			pinmux = <PIN_PB14__GTXCK>,
+				 <PIN_PB15__GTXEN>,
+				 <PIN_PB16__GRXDV>,
+				 <PIN_PB17__GRXER>,
+				 <PIN_PB18__GRX0>,
+				 <PIN_PB19__GRX1>,
+				 <PIN_PB20__GTX0>,
+				 <PIN_PB21__GTX1>,
+				 <PIN_PB22__GMDC>,
+				 <PIN_PB23__GMDIO>;
+			bias-disable;
+		};
+
+		pinctrl_sdmmc0_cmd_dat_default: sdmmc0_cmd_dat_default {
+			pinmux = <PIN_PA1__SDMMC0_CMD>,
+				 <PIN_PA2__SDMMC0_DAT0>,
+				 <PIN_PA3__SDMMC0_DAT1>,
+				 <PIN_PA4__SDMMC0_DAT2>,
+				 <PIN_PA5__SDMMC0_DAT3>;
+			bias-pull-up;
+		};
+
+		pinctrl_sdmmc0_ck_cd_default: sdmmc0_ck_cd_default {
+			pinmux = <PIN_PA0__SDMMC0_CK>,
+				 <PIN_PA11__SDMMC0_VDDSEL>,
+				 <PIN_PA13__SDMMC0_CD>;
+			bias-disable;
+		};
+
+		pinctrl_flx4_i2c: flx4_i2c {
+			pinmux = <PIN_PC28__FLEXCOM4_IO0>,
+				 <PIN_PC29__FLEXCOM4_IO1>;
+			bias-disable;
+		};
+	};
+};

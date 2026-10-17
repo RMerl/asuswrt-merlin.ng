@@ -34,9 +34,55 @@ written consent.
 #include <linux/bcm_nf_conntrack.h>
 #include <linux/bcm_nf_expect.h>
 
+/* --- variables --- */
+static int __rcu (*bcm_event_report_hook)(int eventmask, struct nf_conn *ct,
+					  u32 portid, int report);
+
+/* --- functions --- */
+void bcm_conntrack_init_end(void)
+{
+	unsigned long f =
+		kallsyms_lookup_name("nf_conntrack_eventmask_report");
+
+	/* coverity[overrun-local] coverity misses union with char & u64 */
+	rcu_assign_pointer(bcm_event_report_hook, (void *)f);
+
+#if IS_ENABLED(CONFIG_BCM_DPI)
+	dpi_conntrack_init();
+#endif
+}
+EXPORT_SYMBOL(bcm_conntrack_init_end);
+
+void bcm_conntrack_cleanup_end(void)
+{
+	rcu_assign_pointer(bcm_event_report_hook, NULL);
+	synchronize_rcu();
+
+#if IS_ENABLED(CONFIG_BCM_DPI)
+	dpi_conntrack_cleanup();
+#endif
+}
+EXPORT_SYMBOL(bcm_conntrack_cleanup_end);
+
+int bcm_conntrack_event(int eventmask, struct nf_conn *ct, u32 portid,
+			int report)
+{
+	typeof(bcm_event_report_hook) fun;
+	int ret = 0;
+
+	rcu_read_lock();
+	fun = rcu_dereference(bcm_event_report_hook);
+	if (fun)
+		ret = fun(eventmask, ct, portid, report);
+	rcu_read_unlock();
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(bcm_conntrack_event);
+
 int ct_show_bcm_ext(struct seq_file *s, const struct nf_conn *ct)
 {
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
 	seq_printf(s, "iqprio=%u ", ct->bcm_ext.iq_prio);
 #endif
 
@@ -52,7 +98,6 @@ EXPORT_SYMBOL(ct_show_bcm_ext);
 #if defined(CONFIG_BLOG)
 bool bcm_nf_blog_ct_is_expired(const struct nf_conn *ct)
 {
-
 	BlogCtTime_t ct_time;
 
 	/*query the timeout status from blog */
@@ -91,9 +136,19 @@ EXPORT_SYMBOL(bcm_derived_conn_lock);
 #endif
 
 #if IS_ENABLED(CONFIG_BCM_HW_FIREWALL)
-bcm_hwf_ct_event_t __rcu bcm_hwf_ct_event_fn = NULL;
+bcm_ct_event_fn __rcu bcm_hwf_ct_event_fn;
 EXPORT_SYMBOL(bcm_hwf_ct_event_fn);
 
-bcm_hwf_expect_event_t __rcu bcm_hwf_expect_event_fn = NULL;
+bcm_hwf_expect_event_t __rcu bcm_hwf_expect_event_fn;
 EXPORT_SYMBOL(bcm_hwf_expect_event_fn);
+#endif
+
+#if IS_ENABLED(CONFIG_BCM_BNL)
+bcm_ct_event_fn __rcu bcm_bnltrace_ct_event_fn;
+EXPORT_SYMBOL(bcm_bnltrace_ct_event_fn);
+#endif
+
+#if IS_ENABLED(CONFIG_BCM_SCORE)
+bcm_ct_event_fn  __rcu bcm_scoretrace_ct_event_fn;
+EXPORT_SYMBOL(bcm_scoretrace_ct_event_fn);
 #endif

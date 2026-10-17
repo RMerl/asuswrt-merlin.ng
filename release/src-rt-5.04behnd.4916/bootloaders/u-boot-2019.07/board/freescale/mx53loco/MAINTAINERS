@@ -1,6 +1,0 @@
-MX53LOCO BOARD
-M:	Jason Liu <jason.hui.liu@nxp.com>
-S:	Maintained
-F:	board/freescale/mx53loco/
-F:	include/configs/mx53loco.h
-F:	configs/mx53loco_defconfig

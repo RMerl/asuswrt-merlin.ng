@@ -46,9 +46,22 @@ struct bcm_spidev
     struct gpio_desc *reset_gpio;
 };
 
+#define SPI_STATUS_OK			(0)
+#define SPI_STATUS_INVALID_LEN		(-1)
+#define SPI_STATUS_ERR			(-2)
+
+/* used to specify ctrlState for the interface BcmSpiReserveSlave2 
+ *    SPI_CONTROLLER_STATE_SET is used to differentiate a value of 0 which results in
+ *       the controller using default values and the case where CPHA_EXT, GATE_CLK_SSOFF,
+ *          CLK_POLARITY, and ASYNC_CLOCK all need to be 0 */
+#define SPI_CONTROLLER_STATE_SET		(1 << 31)
+#define SPI_CONTROLLER_STATE_CPHA_EXT		(1 << 30)
+#define SPI_CONTROLLER_STATE_GATE_CLK_SSOFF	(1 << 29)
+#define SPI_CONTROLLER_STATE_ASYNC_CLOCK	(1 << 28)
+#define SPI_CONTROLLER_STATE_MASK		(0xf0000000)
+
 #define LEGACY
 #ifdef LEGACY
-#include <bcmSpiRes.h>
 
 #define MAX_SLAVES 10
 static struct device *slaves[MAX_SLAVES];
@@ -82,67 +95,6 @@ static void find_slave_dev_remove(struct device *dev)
         if (slaves[i] == dev)
             slaves[i] = NULL;
     }
-}
-
-static struct device *find_slave_dev(int slave_id)
-{
-    return slaves[slave_id];
-}
-
-int compat_kerSysBcmSpiSlaveInit(int dev)
-{
-    struct device *slave_dev = find_slave_dev(dev);
-    struct bcm_spidev *pdata;
-
-    if (!slave_dev)
-        return SPI_STATUS_ERR;
-
-    pdata = dev_get_drvdata(slave_dev);
-    if (pdata->rev->init && pdata->rev->init(slave_dev))
-        return SPI_STATUS_ERR;
-
-    return SPI_STATUS_OK;
-}
-
-int compat_kerSysBcmSpiSlaveRead(int dev, unsigned int addr, unsigned int *data, unsigned int len)
-{
-    struct device *slave_dev = find_slave_dev(dev);
-    struct bcm_spidev *pdata;
-
-    if (!slave_dev)
-        return SPI_STATUS_ERR;
-
-    pdata = dev_get_drvdata(slave_dev);
-    if (pdata->rev->read && pdata->rev->read(slave_dev, addr, data, len))
-    {
-        dev_err(slave_dev, "rev_read failed\n");
-        return SPI_STATUS_ERR;
-    }
-
-    return SPI_STATUS_OK;
-}
-
-int compat_kerSysBcmSpiSlaveWrite(int dev, unsigned int addr, unsigned int data, unsigned int len)
-{
-    return SPI_STATUS_ERR;
-}
-
-int compat_kerSysBcmSpiSlaveWriteBuf(int dev, unsigned int addr, unsigned int *data, unsigned int len, unsigned int unitSize)
-{
-    struct device *slave_dev = find_slave_dev(dev);
-    struct bcm_spidev *pdata;
-
-    if (!slave_dev)
-        return SPI_STATUS_ERR;
-
-    pdata = dev_get_drvdata(slave_dev);
-    if (pdata->rev->write_buf && pdata->rev->write_buf(slave_dev, addr, data, len, unitSize))
-    {
-        dev_err(slave_dev, "rev_write_buf failed\n");
-        return SPI_STATUS_ERR;
-    }
-
-    return SPI_STATUS_OK;
 }
 #endif
 

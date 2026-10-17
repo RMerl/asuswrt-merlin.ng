@@ -74,20 +74,24 @@ typedef struct
 {
     uint32_t srampd;
     uint32_t ddrpd;
-    uint16_t pddrop;
     uint32_t stscnt;
-    uint16_t stsdrop;
     uint32_t msgcnt;
-    uint16_t msgdrop;
     uint16_t getnextnull;
-    uint16_t lenerr;
-    uint16_t aggrlenerr;
     uint32_t srampkt;
     uint32_t ddrpkt;
     uint16_t flshpkts;
     uint32_t ecnpkt;
     uint32_t ecnbytes;
 } bbh_tx_debug_counters;
+
+typedef struct
+{
+    uint16_t pddrop;
+    uint16_t stsdrop;
+    uint16_t msgdrop;
+    uint16_t lenerr;
+    uint16_t aggrlenerr;
+} bbh_tx_debug_counters_err;
 
 typedef struct
 {
@@ -404,22 +408,12 @@ bdmf_error_t ag_drv_bbh_tx_debug_counters_srambyte_get(uint8_t bbh_id, uint32_t 
  *     This counter counts the number of packets which were transmitted from the SRAM.
  * ddrpd: 
  *     This counter counts the number of packets which were transmitted from the DDR.
- * pddrop: 
- *     This counter counts the number of PDs which were dropped due to PD FIFO full.
  * stscnt: 
  *     This counter counts the number of received status messages.
- * stsdrop: 
- *     This counter counts the number of STS which were dropped due to PD FIFO full.
  * msgcnt: 
  *     This counter counts the number of received DBR/ghost messages.
- * msgdrop: 
- *     This counter counts the number of MSG which were dropped due to PD FIFO full.
  * getnextnull: 
  *     This counter counts the number Get next responses with a null BN.
- * lenerr: 
- *     This counter counts the number of times a length error occuered
- * aggrlenerr: 
- *     This counter counts the number of times an aggregation length error occuered
  * srampkt: 
  *     This counter counts the number of packets which were transmitted from the SRAM.
  * ddrpkt: 
@@ -432,6 +426,20 @@ bdmf_error_t ag_drv_bbh_tx_debug_counters_srambyte_get(uint8_t bbh_id, uint32_t 
  *     This counter counts the number of bytes of ecn marked packets.
  **********************************************************************************************************************/
 bdmf_error_t ag_drv_bbh_tx_debug_counters_get(uint8_t bbh_id, bbh_tx_debug_counters *debug_counters);
+
+/**********************************************************************************************************************
+ * pddrop: 
+ *     This counter counts the number of PDs which were dropped due to PD FIFO full.
+ * stsdrop: 
+ *     This counter counts the number of STS which were dropped due to PD FIFO full.
+ * msgdrop: 
+ *     This counter counts the number of MSG which were dropped due to PD FIFO full.
+ * lenerr: 
+ *     This counter counts the number of times a length error occuered
+ * aggrlenerr: 
+ *     This counter counts the number of times an aggregation length error occuered
+ **********************************************************************************************************************/
+bdmf_error_t ag_drv_bbh_tx_debug_counters_err_get(uint8_t bbh_id, bbh_tx_debug_counters_err *debug_counters_err);
 
 /**********************************************************************************************************************
  * freenocntxt: 
@@ -1502,6 +1510,7 @@ enum
     cli_bbh_tx_debug_counters_ddrbyte,
     cli_bbh_tx_debug_counters_srambyte,
     cli_bbh_tx_debug_counters,
+    cli_bbh_tx_debug_counters_err,
     cli_bbh_tx_common_configurations_sbpmcfg,
     cli_bbh_tx_common_configurations_ddrtmbasel,
     cli_bbh_tx_common_configurations_ddrtmbaseh,

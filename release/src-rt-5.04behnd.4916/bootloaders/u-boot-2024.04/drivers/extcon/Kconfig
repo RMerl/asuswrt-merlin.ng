@@ -1,0 +1,31 @@
+menu "Extcon Support"
+
+config EXTCON
+	bool "External Connector Class (extcon) support"
+	depends on DM
+	help
+	  Say Y here to enable external connector class (extcon) support.
+	  This allows monitoring external connectors and supports external
+	  connectors with multiple states; i.e., an extcon that may have
+	  multiple cables attached. For example, an external connector
+	  of a device may be used to connect an HDMI cable and a AC adaptor,
+	  and to host USB ports. Many of 30-pin connectors including PDMI
+	  are also good examples.
+
+config EXTCON_SANDBOX
+	bool "Sandbox extcon"
+	depends on EXTCON
+	help
+	  Enable extcon support for sandbox. This is an emulation of a real
+	  extcon. Currectly all configuration is done in the probe.
+
+config EXTCON_MAX14526
+	bool "Maxim MAX14526 EXTCON Support"
+	depends on DM_I2C
+	depends on EXTCON
+	help
+	  If you say yes here you get support for the MUIC device of
+	  Maxim MAX14526. The MAX14526 MUIC is a USB port accessory
+	  detector and switch.
+
+endmenu

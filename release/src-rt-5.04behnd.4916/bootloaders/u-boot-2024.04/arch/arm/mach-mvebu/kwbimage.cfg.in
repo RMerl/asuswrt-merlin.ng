@@ -1,0 +1,26 @@
+#
+# Copyright (C) 2014 Stefan Roese <sr@denx.de>
+#
+
+# Armada 38x uses version 1 image format
+VERSION		1
+
+# Type of the CPU core
+#@CPU
+
+# Boot Media configurations
+#@BOOT_FROM
+
+# NAND configuration
+#@NAND_PAGE_SIZE
+#@NAND_BLKSZ
+#@NAND_BADBLK_LOCATION
+
+# SATA configuration
+#@SATA_BLKSZ
+
+# Enable BootROM output via DEBUG flag on SoCs which require it
+#@DEBUG
+
+# Include U-Boot SPL with DDR3 training code into Binary Header
+BINARY spl/u-boot-spl.bin #@LOAD_ADDRESS

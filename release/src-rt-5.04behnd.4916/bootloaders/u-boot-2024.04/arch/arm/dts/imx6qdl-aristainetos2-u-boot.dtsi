@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2019 Heiko Schocher <hs@denx.de>
+ */
+
+/ {
+	chosen {
+		bootph-all;
+		stdout-path = &uart2;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+	};
+};
+
+&uart2 {
+	bootph-all;
+};
+
+&pinctrl_gpio {
+	bootph-all;
+};
+
+&pinctrl_uart2 {
+	bootph-all;
+};
+
+&aips2 {
+	bootph-all;
+};
+
+&backlight {
+	pwms = <&pwm1 0 300000>;
+	default-brightness-level = <2>;
+};
+
+/*
+ * allow switching write protect pin by gpio,
+ * because "pinctrl-assert-gpios" from &ecspi1 isn't handled by u-boot
+ */
+&gpio2 {
+	bootph-all;
+
+	wp_spi_nor {
+		gpio-hog;
+		output-high;
+		gpios = <15 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&gpio1 {
+	usdhc_fix {
+		gpio-hog;
+		output-high;
+		gpios = <12 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&gpio3 {
+	bootph-all;
+};
+
+&gpio5 {
+	bootph-all;
+};
+
+&ecspi4 {
+	bootph-all;
+};
+
+&flash {
+	bootph-all;
+};
+
+&pinctrl_ecspi4 {
+	bootph-all;
+};

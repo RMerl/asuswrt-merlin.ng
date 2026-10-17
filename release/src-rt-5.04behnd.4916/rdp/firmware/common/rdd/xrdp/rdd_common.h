@@ -31,11 +31,11 @@
 #define _RDD_COMMON_H
 
 #include "rdd_defs.h"
-#include "rdd.h"
 #include "rdd_runner_reg_dump.h"
 #include "rdd_runner_reg_dump_addrs.h"
-#include "rdp_platform.h"
+#if (CHIP_VER < RDP_GEN_100)
 #include "rdd_mirroring.h"
+#endif
 
 typedef enum
 {
@@ -132,32 +132,20 @@ typedef struct
         [29] = ADDRESS_OF(image, prefix##_30_bytes_4_bytes_align), \
     }
 
-#ifdef G9991_PRV
-#define ANY_VID                          0xFFFF
-#else
-#define ANY_VID                          0xFFF
-#endif
-#define DUMMY_MAX_PKT_LEN                0x3FFF
-#ifdef CONFIG_MCAST_TASK_LIMIT
-#ifdef OPERATION_MODE_PRV
-#define MULTICAST_TASKS_LIMIT_MAX        24
-#else
-#define MULTICAST_TASKS_LIMIT_MAX        28
-#endif
-#define MULTICAST_TASKS_LIMIT_MIN        8
-#endif
+/* VECTOR_COUNT
+ * Input:   LO, HI - lowest and highest queue number in a bitmap.
+ * Output:  the number of aligned 32 bit registers that contain a queue range,  in bytes.
+ * Example: lo = 120, hi = 127. aligned bitmap spans two registers and the result is 2x4=8:
+ *          bitmap = 96:  ff000000
+ *                   128: 000000ff
+ */
+#define VECTOR_COUNT(LO, HI)   (((HI / 32) - (LO / 32) + 1) * 4)
 
-#ifdef OPERATION_MODE_PRV
-typedef struct
-{
-    RULE_BASED_CONTEXT_ENTRY_STRUCT  rule_base_context;
-} rx_def_flow_context_t;
-#endif
+#define ANY_VID                          0xFFF
+#define DUMMY_MAX_PKT_LEN                0x3FFF
 
 /* RX APIs*/
-#if !defined(OPERATION_MODE_PRV)
 void rdd_layer2_header_copy_mapping_init(void);
-#endif
 
 extern TABLE_STACK_STRUCT RUNNER_STACK_TABLES[NUMBER_OF_STACK_TABLES];
 void rdd_init_c_stack(void);
@@ -170,20 +158,18 @@ void rdd_rx_flow_virtual_port_cfg(uint32_t flow_index, uint8_t virtual_port);
 void rdd_rx_flow_del(uint32_t flow_index);
 int rdd_rx_flow_cntr_id_get(uint32_t flow_index, uint32_t *cntr_id);
 uint32_t rdd_rx_flow_entry_get(uint32_t flow_index, RX_FLOW_ENTRY_STRUCT *rx_flow_entry_ptr);
-#ifdef OPERATION_MODE_PRV
-void rdd_rx_default_flow_cfg(uint32_t flow_index, uint16_t ctx_index, rdd_ic_context_t *context);
-void rdd_rx_default_flow_context_get(uint32_t flow_index, RULE_BASED_CONTEXT_ENTRY_STRUCT *entry);
-uint32_t rdd_rx_default_flow_cntr_id_get(uint32_t entry_index);
-#endif
 void rdd_vport_cfg_exception_cfg(rdd_rdd_vport vport, bdmf_boolean port_exception);
+
+#if (CHIP_VER < RDP_GEN_100)
 void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean enable, uint16_t rx_truncate_size);
 void rdd_tx_mirroring_cfg(rdd_mirroring_cfg_t *rdd_mirroring_cfg, rdd_rdd_vport vport, bdmf_boolean enable, uint16_t tx_truncate_size);
 void rdd_rx_mirroring_direct_cfg(bdmf_boolean control);
-#if defined(XRDP) || defined(RDP_UFC)
+#endif
+
 void rdd_lookup_ports_mapping_table_init(void);
 int rdd_lookup_ports_mapping_table_set(rdd_vport_id_t vport, uint8_t lookup_port);
 int rdd_lookup_ports_mapping_table_restore(rdd_vport_id_t vport);
-#endif
+
 void rdd_loopback_cfg(rdd_rdd_vport vport, bdmf_boolean control);
 void rdd_loopback_queue_set(rdd_rdd_vport vport, uint32_t queue_id);
 void rdd_loopback_wan_flow_set(uint32_t flow);
@@ -209,6 +195,7 @@ bdmf_boolean rdd_ecn_remark_enable_get(void);
 /* RX APIs*/
 void rdd_rx_flow_entry_set(uint32_t flow_index,  RX_FLOW_ENTRY_STRUCT *rx_flow_entry_ptr);
 void rdd_mac_type_cfg(rdd_mac_type wan_mac_type);
+void rdd_mac_type_get(rdd_mac_type *wan_mac_type);
 
 /* TX APIs*/
 void rdd_tx_flow_enable(uint16_t port_or_wan_flow, rdpa_traffic_dir dir, bdmf_boolean enable);
@@ -218,17 +205,17 @@ void rdd_qm_queue_to_tx_flow_tbl_cfg(uint16_t qm_queue, rdpa_traffic_dir dir, rd
 
 void rdd_system_congestion_ctrl_enable(bdmf_boolean enable);
 bdmf_boolean rdd_system_congestion_ctrl_get(void);
-#ifdef CONFIG_MCAST_TASK_LIMIT
-void rdd_mcast_max_tasks_limit_cfg(uint16_t mcast_max_tasks_limit);
-void rdd_mcast_min_tasks_limit_cfg(uint16_t mcast_min_tasks_limit);
-#endif
 
 #if defined(TM_C_CODE)
 uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_set(rdpa_port_type type, uint32_t index, uint8_t bbh_queue);
 uint8_t rdd_bbh_queue_to_bbh_queue_desc_mapping_get(rdpa_port_type type, uint32_t channel_id, uint8_t bbh_queue);
-void rdd_bbh_queue_to_bbh_queue_desc_mapping_clr(uint8_t tm_index, uint8_t bbh_queue, rdpa_traffic_dir dir);
+void rdd_bbh_queue_to_bbh_queue_desc_mapping_clr(rdpa_port_type type, uint32_t index, uint8_t bbh_queue);
 #endif
 
 void rdd_dbg_power_measure_mode_set(int enable);
+
+#if defined(XRDP_FLUSH_STALE_PACKETS)
+void rdd_fw_flush_enable(bdmf_boolean enable);
+#endif
 
 #endif /* _RDD_COMMON_H */

@@ -190,7 +190,7 @@ static inline int rdpa_filter_etype_udef_get(bdmf_object_handle mo_, bdmf_index 
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.ptr = (bdmf_ptr)(unsigned long)etype_udef_;
 	pa.cmd = RDPA_FILTER_ETYPE_UDEF_GET;
 
@@ -228,7 +228,7 @@ static inline int rdpa_filter_etype_udef_set(bdmf_object_handle mo_, bdmf_index 
 	int fd, ret;
 
 	pa.mo = mo_;
-	pa.ai = (bdmf_index)(long)ai_;
+	pa.ai = (bdmf_index)(bdmf_long_t)ai_;
 	pa.parm = (uint64_t)(long)etype_udef_;
 	pa.cmd = RDPA_FILTER_ETYPE_UDEF_SET;
 

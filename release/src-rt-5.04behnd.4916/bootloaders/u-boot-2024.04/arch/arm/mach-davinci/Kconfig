@@ -1,0 +1,137 @@
+if ARCH_DAVINCI
+
+choice
+	prompt "DaVinci board select"
+	optional
+
+config TARGET_DA850EVM
+	bool "DA850 EVM board"
+	select MACH_DAVINCI_DA850_EVM
+	select SOC_DA850
+	select SUPPORT_SPL
+
+config TARGET_OMAPL138_LCDK
+	bool "OMAPL138 LCDK"
+	select SOC_DA8XX
+	select SUPPORT_SPL
+	select SPL_BOARD_INIT
+
+config TARGET_LEGOEV3
+	bool "LEGO MINDSTORMS EV3"
+	select MACH_DAVINCI_DA850_EVM
+	select SOC_DA850
+
+endchoice
+
+config SYS_SOC
+	default "davinci"
+
+config DA850_LOWLEVEL
+	bool "Enable Lowlevel DA850 initialization"
+	depends on SOC_DA850
+
+config SYS_DA850_PLL_INIT
+	bool
+
+config SYS_DA850_DDR_INIT
+	bool
+
+config SOC_DA850
+	bool
+	select SOC_DA8XX
+
+config SOC_DA8XX
+	bool
+	select SYS_DA850_DDR_INIT if SUPPORT_SPL || DA850_LOWLEVEL
+	select SYS_DA850_PLL_INIT if SUPPORT_SPL || DA850_LOWLEVEL
+
+config MACH_DAVINCI_DA850_EVM
+	bool
+
+if SYS_DA850_PLL_INIT
+comment "DA850 PLL Initialization Parameters"
+
+config SYS_DV_CLKMODE
+	int "PLLCTL Clock Mode"
+	default 0
+	help
+	  Set PLLCTL Clock Mode bit as External Clock or On Chip oscillator
+
+config SYS_DA850_PLL0_POSTDIV
+	int "PLLC0 PLL Post-Divider"
+	default 1
+	help
+	  Value written to PLLC0 PLL Post-Divider Control Register
+
+config SYS_DA850_PLL0_PLLDIV1
+	hex "PLLC0 Divider 1"
+	default 0x8000
+	help
+	  Value written to PLLC0 Divider 1 register
+
+config SYS_DA850_PLL0_PLLDIV2
+	hex "PLLC0 Divider 2"
+	default 0x8001
+	help
+	  Value written to PLLC0 Divider 2 register
+
+config SYS_DA850_PLL0_PLLDIV3
+	hex "PLLC0 Divider 3"
+	default 0x8002
+	help
+	  Value written to PLLC0 Divider 3 register
+
+config SYS_DA850_PLL0_PLLDIV4
+	hex "PLLC0 Divider 4"
+	default 0x8003
+	help
+	  Value written to PLLC0 Divider 4 register
+
+config SYS_DA850_PLL0_PLLDIV5
+	hex "PLLC0 Divider 5"
+	default 0x8002
+	help
+	  Value written to PLLC0 Divider 5 register
+
+config SYS_DA850_PLL0_PLLDIV6
+	hex "PLLC0 Divider 6"
+	default 0x8000
+	help
+	  Value written to PLLC0 Divider 6 register
+
+config SYS_DA850_PLL0_PLLDIV7
+	hex "PLLC0 Divider 7"
+	default 0x8005
+	help
+	  Value written to PLLC0 Divider 7 register
+
+config SYS_DA850_PLL1_POSTDIV
+	hex "PLLC1 PLL Post-Divider"
+	default 1
+	help
+	  Value written to PLLC1 PLL Post-Divider Control Register
+
+config SYS_DA850_PLL1_PLLDIV1
+	hex "PLLC1 Divider 2"
+	default 0x8000
+	help
+	  Value written to PLLC1 Divider 1 register
+
+config SYS_DA850_PLL1_PLLDIV2
+	hex "PLLC1 Divider 2"
+	default 0x8001
+	help
+	  Value written to PLLC1 Divider 2 register
+
+config SYS_DA850_PLL1_PLLDIV3
+	hex "PLLC1 Divider 3"
+	default 0x8002
+	help
+	  Value written to PLLC1 Divider 3 register
+
+endif
+
+source "board/davinci/da8xxevm/Kconfig"
+source "board/lego/ev3/Kconfig"
+
+endif

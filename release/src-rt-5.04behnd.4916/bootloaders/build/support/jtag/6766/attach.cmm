@@ -1,0 +1,39 @@
+;; BRCM PUBLISH
+
+//**************************************************************//
+// Attach script for BCM96766                                   //
+//**************************************************************//
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+
+; tdi system(2) -> ubus(4) -> cnp(4) -> cpu(4) -> mc2(4) -> wifi1(4) -> wifi1lv(32) -> wifi0(4) -> wifi0lv(32) -> dft_tap(16) -> tdo
+print "Full scan chain"
+SYStem.CONFIG.DAPIRPOST  10.
+SYStem.CONFIG.DAPIRPRE   92.
+SYStem.CONFIG.DAPDRPOST  3.
+SYStem.CONFIG.DAPDRPRE   6.
+
+
+system.config.apbaccessport 0
+system.config.axiaccessport 1
+system.config.debugaccessport 0
+system.config.memoryaccessport 1
+
+SYSTEM.CPU CORTEXA7MPCORE
+SYSTEM.CONFIG.CORENUMBER 1
+SYSTEM.CONFIG.CORE 1
+;CTI and ETM is not available in our A7 core
+SYSTEM.CONFIG.COREBASE 0x81810000
+SYStem.CONFIG.BMC.Base 0x81811000
+
+CORE.ASSIGN 1
+SYStem.option TRST OFF 
+SYStem.option EnReset OFF
+
+SYSTEM.MODE ATTACH
+
+;do ~~/demo/windows_setup.cmm
+ENDDO

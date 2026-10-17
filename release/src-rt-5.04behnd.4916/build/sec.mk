@@ -39,11 +39,7 @@ ifeq ($(SECURE_BOOT_ENCRYPT_BTLDRS),y)
 MFG_ENC:='.mfg.enc'
 OPT:=opt<enc>
 endif
-ifeq ($(strip $(BRCM_CHIP)),4908) 
-MFG_CRED_LIST:='oem<mfgOemData.sig mid.bin Krsa-mfg-pub.bin mid+Kaes-mfg.enc>roe<$(BRCM_CHIP)/mfgRoeData.sig Kroe2-mfg-pub.bin $(BRCM_CHIP)/Kroe2-mfg-priv.enc mid.bin>dir<$(CRED_DIR)>$(OPT)'
-else
 MFG_CRED_LIST:='oem<mfgOemData2.sig mid.bin Krsa-mfg-pub.bin mid+Kaes-mfg.enc>roe<$(BRCM_CHIP)/mfgRoeData.sig Kroe2-mfg-pub.bin $(BRCM_CHIP)/Kroe2-mfg-priv.enc mid.bin>dir<$(CRED_DIR)>$(OPT)'
-endif
 
 # turnkey definitions
 ifeq ($(strip $(SECURE_BOOT_TURNKEY)),y)

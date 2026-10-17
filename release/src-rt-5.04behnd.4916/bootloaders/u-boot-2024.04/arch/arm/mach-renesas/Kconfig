@@ -1,0 +1,100 @@
+if ARCH_RENESAS
+
+# Renesas ARM SoCs R-Car Gen3/Gen4 (64bit)
+config RCAR_64
+	bool
+	select ARM64
+	select CMD_CACHE
+	select OF_BOARD_SETUP
+	select PHY
+	select PINCONF
+	select PINCTRL
+	select POSITION_INDEPENDENT
+	imply CMD_FS_UUID
+	imply CMD_GPT
+	imply CMD_MMC_SWRITE if MMC
+	imply CMD_UUID
+	imply SUPPORT_EMMC_RPMB if MMC
+
+choice
+	prompt "Target Renesas SoC select"
+	default RCAR_32
+
+config RCAR_32
+	bool "Renesas ARM SoCs R-Car Gen1/Gen2 (32bit)"
+	select CPU_V7A
+
+config RCAR_GEN3
+	bool "Renesas ARM SoCs R-Car Gen3 (64bit)"
+	select RCAR_64
+	select SUPPORT_SPL
+	select PINCTRL_PFC
+	imply SPL
+	imply SPL_BOARD_INIT
+	imply SPL_GZIP
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_SERIAL
+	imply SPL_SYS_MALLOC_SIMPLE
+	imply SPL_TINY_MEMSET
+	imply SPL_USE_TINY_PRINTF
+	imply SPL_YMODEM_SUPPORT
+
+config RCAR_GEN4
+	bool "Renesas ARM SoCs R-Car Gen4 (64bit)"
+	select RCAR_64
+	select PINCTRL_PFC
+
+config RZA1
+	prompt "Renesas ARM SoCs RZ/A1 (32bit)"
+	select CPU_V7A
+
+config RZN1
+	prompt "Renesas ARM SoCs RZ/N1 (32bit)"
+	select CPU_V7A
+	select ARMV7_SET_CORTEX_SMPEN if !SPL
+	select SPL_ARMV7_SET_CORTEX_SMPEN if SPL
+	select CLK
+	select CLK_RENESAS
+	select CLK_R9A06G032
+	select DM
+	select DM_ETH
+	select DM_SERIAL
+	select PINCTRL
+	select PINCONF
+	select REGMAP
+	select SYSRESET
+	select SYSRESET_SYSCON
+	imply CMD_DM
+
+config RZG2L
+	prompt "Renesas RZ/G2L Family ARM SoCs"
+	select GICV3
+	select RCAR_64
+	imply CLK_RZG2L
+	imply MULTI_DTB_FIT
+	imply MULTI_DTB_FIT_USER_DEFINED_AREA
+	imply PINCTRL_RZG2L
+	imply RENESAS_SDHI
+	imply RZG2L_GPIO
+	imply SCIF_CONSOLE
+	imply SYS_I2C_RZ_RIIC
+	imply SYS_MALLOC_F
+	help
+	  Enable support for the Renesas RZ/G2L family of SoCs. Currently
+	  support is only included for the RZ/G2L itself (based on the R9A07G044
+	  SoC). Support for additional SoCs in this family (RZ/G2LC, RZ/G2UL,
+	  RZ/V2L & RZ/Five) is not yet available.
+
+endchoice
+
+config SYS_SOC
+	default "renesas" if ARCH_RENESAS
+
+source "arch/arm/mach-renesas/Kconfig.32"
+source "arch/arm/mach-renesas/Kconfig.64"
+source "arch/arm/mach-renesas/Kconfig.rza1"
+source "arch/arm/mach-renesas/Kconfig.rzn1"
+source "arch/arm/mach-renesas/Kconfig.rzg2l"
+
+endif

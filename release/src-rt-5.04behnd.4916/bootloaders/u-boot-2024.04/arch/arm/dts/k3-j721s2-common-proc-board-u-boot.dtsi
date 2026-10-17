@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2021-2023 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+#include "k3-j721s2-binman.dtsi"
+
+&wkup_i2c0 {
+	bootph-all;
+};
+
+&cbass_main {
+	bootph-all;
+};
+
+&main_navss {
+	bootph-all;
+};
+
+&cbass_mcu_wakeup {
+	bootph-all;
+
+	chipid@43000014 {
+		bootph-all;
+	};
+};
+
+&mcu_navss {
+	bootph-all;
+};
+
+&mcu_ringacc {
+	bootph-all;
+};
+
+&mcu_udmap {
+	reg =   <0x0 0x285c0000 0x0 0x100>,
+		<0x0 0x284c0000 0x0 0x4000>,
+		<0x0 0x2a800000 0x0 0x40000>,
+		<0x0 0x284a0000 0x0 0x4000>,
+		<0x0 0x2aa00000 0x0 0x40000>,
+		<0x0 0x28400000 0x0 0x2000>;
+	reg-names = "gcfg", "rchan", "rchanrt", "tchan",
+		    "tchanrt", "rflow";
+	bootph-all;
+};
+
+&secure_proxy_main {
+	bootph-all;
+};
+
+&sms {
+	bootph-all;
+	k3_sysreset: sysreset-controller {
+		compatible = "ti,sci-sysreset";
+		bootph-all;
+	};
+};
+
+&main_pmx0 {
+	bootph-all;
+};
+
+&main_uart8_pins_default {
+	bootph-all;
+};
+
+&main_mmc1_pins_default {
+	bootph-all;
+};
+
+&main_usbss0_pins_default {
+	bootph-all;
+};
+
+&wkup_pmx0 {
+	bootph-all;
+};
+
+&k3_pds {
+	bootph-all;
+};
+
+&k3_clks {
+	bootph-all;
+};
+
+&k3_reset {
+	bootph-all;
+};
+
+&main_uart8 {
+	bootph-all;
+};
+
+&mcu_uart0 {
+	bootph-all;
+};
+
+&wkup_uart0 {
+	bootph-all;
+};
+
+&main_sdhci0 {
+	bootph-all;
+};
+
+&main_sdhci1 {
+	bootph-all;
+};
+
+&ospi0 {
+	status = "disabled";
+};
+
+&ospi1 {
+	status = "disabled";
+};
+
+&usbss0 {
+	bootph-all;
+};
+
+&usb0 {
+	dr_mode = "peripheral";
+	bootph-all;
+};

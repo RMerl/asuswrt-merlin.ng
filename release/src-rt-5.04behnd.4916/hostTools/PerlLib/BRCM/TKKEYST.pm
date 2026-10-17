@@ -69,7 +69,7 @@ my %cmd_arg = map { $_ => undef } (
 sub check_args {
     my $self = shift;
     my $args = $self->{args};
-    for my $_k ( keys $args ) {
+    for my $_k ( keys %$args ) {
 
         #print "args slurped   $_k \n";
         if ( !( exists $cmd_arg{$_k} ) ) {
@@ -209,7 +209,7 @@ sub gen_mode2otp_map {
                    set_attr(\$m->{iv}[1], $o->{SOTP_MAP_FLD_ROE1}, $ord++);
                    set_attr(\$m->{hash}[1], $o->{SOTP_MAP_FLD_HMID}, $ord++);
                } 
-               foreach  (keys $m) {
+               foreach  (keys %$m) {
 	           printf(" packing for %s 0x%08x 0x%08x 0x%08x\n",$_ , $m->{$_}[0], $m->{$_}[1], $m->{$_}[2]);
 			my $dat_l = length($m->{$_}[2]);
                    $map_bin .= pack("(II)${e}a*", $m->{$_}[0], $m->{$_}[1], $m->{$_}[2]);

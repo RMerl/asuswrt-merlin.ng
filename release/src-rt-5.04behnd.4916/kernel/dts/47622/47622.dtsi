@@ -66,7 +66,7 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
-		bootargs = "console=ttyAMA0,115200 earlyprintk irqaffinity=0 pci=pcie_bus_safe isolcpus=3 rootwait rng_core.default_quality=1024";
+		bootargs = "console=ttyAMA0,115200 earlycon irqaffinity=0 pci=pcie_bus_safe isolcpus=3 rootwait rng_core.default_quality=1024";
 	};
 
 	misc_io {
@@ -367,7 +367,7 @@
 		};
 
    		/* EMMC */
-		sdhci: sdhci {
+		sdhci: mmc {
 			pinctrl-0 = <&emmc_ctrl_pins>;
 			pinctrl-names="default";	
 			#define SDHCI_OFFSET			0x10000
@@ -399,11 +399,17 @@
 		};
 
 		/* RNG */
+#if defined (CONFIG_BCM_RNG_SHIM)
+		rng_shim: rngshim {
+			#include "../ip/bcm_rng_shim.dtsi"
+		};
+#else
 		rng: rng {
 			#define RNG200_OFFSET			0x00b80
 			#define RNG200_SIZE				0x30
 			#include "../ip/bcm_rng200.dtsi"
 		};
+#endif
 		strap: strap {
 			#define STRAP_REG_OFFSET            0x2600
 			#define STRAP_REG_SIZE              0x4
@@ -447,24 +453,28 @@
 			#define WATCHDOG_OFFSET			0x480
 			#define WATCHDOG_SIZE			0x10
 			#define WATCHDOG_TIMEOUT		80
+			#define WATCHDOG_CLK_LABEL		refclk50mhz
 			#include "../ip/bcm_wdt.dtsi"
 			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
 
 			#undef WATCHDOG_OFFSET
 			#undef WATCHDOG_SIZE
 			#undef WATCHDOG_TIMEOUT
+			#undef WATCHDOG_CLK_LABEL
 		};
 
 		wdt2: watchdog@ff8004c0 {
 			#define WATCHDOG_OFFSET			0x4c0
 			#define WATCHDOG_SIZE			0x10
 			#define WATCHDOG_TIMEOUT		80
+			#define WATCHDOG_CLK_LABEL		refclk50mhz
 			#include "../ip/bcm_wdt.dtsi"
 			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
 
 			#undef WATCHDOG_OFFSET
 			#undef WATCHDOG_SIZE
 			#undef WATCHDOG_TIMEOUT
+			#undef WATCHDOG_CLK_LABEL
 		};
 
 		/* watchdog reboot */
@@ -497,6 +507,19 @@
 			#define GPIO_DATA_OFFSET     0x520
 			#define GPIO_DATA_SIZE       0x20
 			#define NUM_OF_GPIOS         108
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			#define EXTINTR_OFFSET       0x4
+			#define EXTINTR_SIZE         0x48
+			#define MAX_EXT_INTR         8
+			interrupts = <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>;
+#endif
 			#include "../ip/bcm_bca_gpio.dtsi"
 		};
 
@@ -507,6 +530,9 @@
 			#define MAX_EXT_INTR         8
 			#include "../ip/bcm_bca_extintr.dtsi"
 			external_interrupts = <120 121 122 123 124 125 126 127>;
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			status = "disabled";
+#endif
 		};
 
 		hsspi: spi@1000 {

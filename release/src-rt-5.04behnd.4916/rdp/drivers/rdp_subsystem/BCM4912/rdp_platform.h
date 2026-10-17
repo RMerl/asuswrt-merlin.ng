@@ -67,7 +67,7 @@ extern int drv_qm_get_tm_core_per_image(int image_index);
 
 /* DISP CONGESTION */
 #define DIS_REOR_LINKED_LIST_BUFFER_NUM   1024
-#define NUM_OF_PROCESSING_TASKS           48
+#define NUM_OF_PROCESSING_TASKS           44
 
 #define DSPTCHR_CONG_PARAM_INGRESS_NORMAL 1023
 #define DSPTCHR_CONG_PARAM_EGRESS_NORMAL  1023
@@ -84,8 +84,7 @@ extern int drv_qm_get_tm_core_per_image(int image_index);
 
 /* SBPM */
 #define SBPM_BASE_ADDRESS                   0
-#define SBPM_MAX_BUFFER_NUMBER              0xFFF
-#define SBPM_INIT_OFFSET                    SBPM_MAX_BUFFER_NUMBER
+#define SBPM_INIT_OFFSET                    PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER
 #define SBPM_UG0_BN_THRESHOLD               0x3FF
 #define SBPM_UG0_EXCL_LOW_THRESHOLD         0x380
 #define SBPM_UG0_EXCL_LOW_HIST              0xa
@@ -102,7 +101,7 @@ extern int drv_qm_get_tm_core_per_image(int image_index);
 #define SBPM_UG1_EXCL_LOW_HIST              0xa
 #define SBPM_UG1_EXCL_HIGH_HIST             0xa
 
-#define SBPM_MAX_NUM_OF_BNS                 (SBPM_MAX_BUFFER_NUMBER + 1)
+#define SBPM_MAX_NUM_OF_BNS                 (PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER + 1)
 
 /* BBH_RX */
 #define DRV_BBH_RX_MAXIMAL_PACKET_HEADER_OFFSET 127
@@ -124,7 +123,7 @@ extern int drv_qm_get_tm_core_per_image(int image_index);
 /* Number of TCAM engines */
 
 /* Size of TCAM entry in words.  256 bits = 8 words */
-#define RDP_TCAM_ENTRY_SIZE_WORDS    8    
+#define RDP_TCAM_ENTRY_SIZE_WORDS    8
 
 /* Max number of reported queues supported by QM */
 #define QM_NUM_REPORTED_QUEUES  32 /* TBD4912. Need for BCM4912 */
@@ -242,8 +241,11 @@ typedef enum tm_identifier_e
     TM_MAX = 2,
     TM_MAX_GROUP = TM_ETH_END - TM_ETH_START + 1,
     TM_ERROR = 3,
+    TM_STILL_NOT_DEFINED = 4,
     TM_NUM_OF_IDENTITY = 3
 } tm_identifier_e;
+
+#define TM_ETH_PORTS_1 TM_PON_DSL_AE
 
 static inline int tm_get_core_for_tm(tm_identifier_e tm_identity)
 {
@@ -252,12 +254,12 @@ static inline int tm_get_core_for_tm(tm_identifier_e tm_identity)
     case TM_PON_DSL_AE:
         return drv_qm_get_tm_core_per_image(us_tm_runner_image);
 
-    case TM_ETH_PORTS_0: 
+    case TM_ETH_PORTS_0:
         return drv_qm_get_tm_core_per_image(ds_tm_runner_image);
 
     case TM_ETH_SQ:
         return drv_qm_get_tm_core_per_image(service_queues_runner_image);
-   
+
     default:
         return -1;
     }

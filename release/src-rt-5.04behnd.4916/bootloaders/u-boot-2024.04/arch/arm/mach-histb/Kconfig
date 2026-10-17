@@ -1,0 +1,39 @@
+if ARCH_HISTB
+
+choice
+	prompt "Select a HiSTB SoC"
+
+config ARCH_HI3798MV2X
+	bool "Hi3798M V2XX series SoC"
+	select ARM64
+	help
+	  Support for Hi3798MV2XX series SoCs.
+
+endchoice
+
+if ARCH_HI3798MV2X
+
+choice
+	prompt "Select a Hi3798M V2XX based board"
+
+config TARGET_HC2910_2AGHD05
+	bool "Skyworth HC2910 with board label 2AGHD05"
+	help
+	  Support for Skyworth HC2910 with board label 2AGHD05. This board features:
+	  - Hisilicon Hi3798MV200 SoC (4xCortex-A53, Mali MP-450)
+	  - 2GiB DRAM
+	  - 8GiB eMMC, uSD slot
+	  - Wifi and Bluetooth module
+	  - 1x USB 2.0, 1x USB 3.0 host port
+	  - HDMI
+	  - SCI
+	  - 3 LED - power, Wifi, Lock(?)
+	  - 1x Fast Ethernet Controller, 1x GBe Ethernet Controller
+
+endchoice
+
+endif
+
+source "board/skyworth/hc2910-2aghd05/Kconfig"
+
+endif

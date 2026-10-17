@@ -1,0 +1,13 @@
+DEVELOPER BOX
+M:	Jassi Brar <jaswinder.singh@linaro.org>
+S:	Maintained
+F:	arch/arm/dts/synquacer-*
+F:	board/socionext/developerbox/*
+F:	configs/synquacer_developerbox_defconfig
+F:	drivers/i2c/synquacer_i2c.c
+F:	drivers/mmc/f_sdh30.c
+F:	drivers/net/sni_netsec.c
+F:	drivers/pci/pcie_ecam_synquacer.c
+F:	drivers/spi/spi-synquacer.c
+F:	include/configs/synquacer.h
+F:	doc/board/socionext/developerbox.rst

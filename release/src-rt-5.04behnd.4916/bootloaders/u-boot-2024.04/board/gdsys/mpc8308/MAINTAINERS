@@ -1,0 +1,7 @@
+MPC8308 BOARD
+M:	Mario Six <mario.six@gdsys.cc>
+S:	Maintained
+F:	board/gdsys/mpc8308/
+F:	board/gdsys/common/
+F:	include/configs/gazerbeam.h
+F:	configs/gazerbeam_defconfig

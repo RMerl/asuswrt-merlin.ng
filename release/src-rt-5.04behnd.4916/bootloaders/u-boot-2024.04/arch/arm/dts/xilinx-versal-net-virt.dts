@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Empty device tree for versal-net-virt board
+ *
+ * Copyright (C) 2022, Advanced Micro Devices, Inc.
+ */
+
+/dts-v1/;
+
+/ {
+	options {
+		u-boot {
+			compatible = "u-boot,config";
+			bootscr-address = /bits/ 64 <0x20000000>;
+		};
+	};
+};

@@ -57,6 +57,7 @@
 #include "merlin16_shortfin_prbs.h"
 #include "merlin16_shortfin_select_defns.h"
 
+static uint8_t eyeReportFormat;
 
 /************************************/
 /*  Display Eye Scan                */
@@ -92,7 +93,6 @@ err_code_t merlin16_shortfin_test_uc_timestamp(srds_access_t *sa__) {
 #endif
     return(ERR_CODE_NONE);
 }
-
 
 /* This is best method for terminal ASCII display */
 err_code_t merlin16_shortfin_display_eye_scan(srds_access_t *sa__) {
@@ -277,8 +277,14 @@ err_code_t merlin16_shortfin_display_eye_scan_stripe(srds_access_t *sa__, int8_t
         return(merlin16_shortfin_error(sa__, ERR_CODE_BAD_PTR_OR_INVALID_INPUT));
     }
 
-    EFUN_PRINTF(("%6dmV : ", level));
+#ifdef CONFIG_BCM_PHYDIAG_SERDES_ETH
+    if (EYE_FORMAT_RAW == eyeReportFormat) {
+        merlin16_shortfin_report_raw_eye_scan_stripe(sa__, buffer, 64);
+        return(ERR_CODE_NONE);
+    }
+#endif
 
+    EFUN_PRINTF(("%6dmV : ", level));
     for (x=-31;x<32;x++) {
         for (i=0;i<7;i++) {
             if (buffer[x+31]>=limits[i]) {
@@ -1298,6 +1304,7 @@ static err_code_t _display_ber_scan_data(srds_access_t *sa__, uint8_t ber_scan_m
 err_code_t merlin16_shortfin_display_diag_data(srds_access_t *sa__, uint16_t  diag_level) {
     uint8_t rx_lock, micro_stop, core, lane;
     uint32_t api_version;
+
     EFUN_PRINTF(("\n**** SERDES DISPLAY DIAG DATA ****\n"));
     ESTM_PRINTF(("Rev ID Letter  = %02X\n", rdc_revid_rev_letter()));
     ESTM_PRINTF(("Rev ID Process = %02X\n", rdc_revid_process()));
@@ -1397,8 +1404,15 @@ err_code_t merlin16_shortfin_display_diag_data(srds_access_t *sa__, uint16_t  di
     EFUN_PRINTF(("\n**** SERDES DISPLAY DIAG DATA END ****\n"));
     EFUN_PRINTF(("\n\n"));
     return (ERR_CODE_NONE);
-
 }
+
+err_code_t merlin16_shortfin_display_diag_data_core(srds_access_t *sa__, uint16_t  diag_level, uint16_t lane_select) {
+    eyeReportFormat = (lane_select >> 8);
+
+    /* TBD: add multiple lane support */
+    return merlin16_shortfin_display_diag_data(sa__, diag_level);
+}
+
 
 typedef struct {
     uint16_t addr;

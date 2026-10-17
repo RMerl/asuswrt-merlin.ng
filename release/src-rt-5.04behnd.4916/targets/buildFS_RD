@@ -16,7 +16,7 @@ if [ "$BRCM_IKOS" = "y" ]; then
         if [ "$BCM_DSL_XRDP" = "y" ]; then
             cat $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/qemu_init_dsl.sh |sed -e 's/LINUX_VER_STR/${LINUX_VER_STR}/' >> $TARGET_FS/etc/init.sh
         else
-            cat $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/qemu_init.sh |sed -e 's/4\.1\.52/${LINUX_VER_STR}/' >> $TARGET_FS/etc/init.sh
+            cat $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/qemu_init.sh |sed -e "s/\$LINUX_VER_STR/${LINUX_VER_STR}/" >> $TARGET_FS/etc/init.sh
             cp $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/passwd $TARGET_FS/data/
         fi
    fi
@@ -28,10 +28,12 @@ if [ "$BRCM_IKOS" = "y" ]; then
 # minimze the ikos ramdisk size. it only needs busybox and memaccess for dw/sw cmds
 # and the essential start up scripts
    if [ "$CONFIG_BRCM_IKOS" = "y" ]; then
-      find $TARGET_FS/bin -type f -not \( -name "busybox" -or -name "memaccess" \) -delete
-      find $TARGET_FS/etc -type f -not \( -name "init.sh" -or -name "fstab" -or -name "inittab" \) -delete
+      find $TARGET_FS/bin -type f -not \( -name "busybox" -or -name "memaccess" -or -name "bdmf_shell" -or -name "bs" \) -delete
+      find $TARGET_FS/etc -type f -not \( -name "init.sh" -or -name "rdpa_init.sh" -or -name "make_static_devnodes.sh" -or -name "fstab" -or -name "inittab" \) -delete
       find $TARGET_FS/sbin -type f -delete
-      rm -rf $TARGET_FS/lib/*
+      if [ "$CONFIG_BRCM_QEMU" != "y" ]; then
+          rm -rf $TARGET_FS/lib/*
+      fi    
       rm -rf $TARGET_FS/lib64/*
    fi
 # ikos is too slow for using compressed SquashFS, so we are disabling the compression. Make sure kernel creates large enough ramdisk for the uncompressed fs image

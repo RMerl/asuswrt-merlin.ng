@@ -1,0 +1,14 @@
+i.Core-MX8M-Mini-CTOUCH2.0
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Matteo Lisi <matteo.lisi@engicam.com>
+S:	Maintained
+F:	configs/imx8mm-icore-mx8mm-ctouch2_defconfig
+
+i.Core-MX8M-Mini-EDIMM2.2
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Matteo Lisi <matteo.lisi@engicam.com>
+S:	Maintained
+F:	board/engicam/imx8mm
+F:	board/engicam/common
+F:	include/configs/imx8mm_icore_mx8mm.h
+F:	configs/imx8mm-icore-mx8mm-edimm2.2_defconfig

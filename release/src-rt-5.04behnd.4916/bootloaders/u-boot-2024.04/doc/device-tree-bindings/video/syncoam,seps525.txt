@@ -1,0 +1,24 @@
+spi based seps525 framebuffer display driver
+
+Driver for seps525 display controller (in spi mode), This binding supports selection
+of spi chipselect, spi max frequency, gpio to drive dc and reset pin of seps525
+controller and spi transaction bit length.
+
+Required properties:
+- compatible: "syncoam,seps525"
+- reg: Specifies the chip-select the seps525 is connected to on the spi bus
+- reset-gpios: gpio connected to reset pin of seps525 controller.
+- dc-gpios: gpio connected to dc pin of seps525 controller:
+- buswidth: bitlength of each spi transaction
+
+Example:
+	displayspi@0 {
+		compatible = "syncoam,seps525";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+		spi-cpol;
+		spi-cpha;
+		buswidth = <8>;
+		reset-gpios = <&gpio 0x1c GPIO_ACTIVE_LOW>;
+		dc-gpios = <&gpio 0x1b GPIO_ACTIVE_HIGH>;
+	};

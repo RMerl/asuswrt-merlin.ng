@@ -1,0 +1,21 @@
+# Whitelist in place for this component / branch / twig
+#
+# PLEASE ADD NEW ITEMS AT THE BOTTOM
+#
+# Gain approval from your manager before editing this file.
+#
+# format:
+# JIRA:BCAWLAN-xxxxxx <description>
+# Example: JIRA:BCAWLAN-223535 Adding DTPC capability annoucement into sta_info
+#
+
+JIRA:BCAWLAN-273640 SmartMesh-Interop: RPT failed to join to 5G BSS during DPP onboarding
+JIRA:BCAWLAN-273928 AccessCIT :Observed "potentially unexpected fatal signal 6" during restore defaults
+JIRA:BCAWLAN-273947 Wpa_supplicant is not triggering Aux MLO connection [MLO]
+JIRA:BCAWLAN-273035 DSPS_MLO: After dsps power_down (AAP1/5G) in WET, it is not roaming from 3-link to 2-link (disassociated)
+JIRA:BCAWLAN-274033 Reattempt: SVT:AP:Feature: SmartMesh-Interop: RPT failed to join to 5G BSS during DPP onboarding
+JIRA:BCAWLAN-274163 SmartMesh-Interop: 11AX(RootAP) + 11BE(RPT): WPS is not initiated
+JIRA:BCAWLAN-274247 SVT AP: DSPS_MLO:4916REF2_BCM96711MC2(3X3)_BCM96726MCH5DFW-B1_BCM967263MCH6-B1: After dsps power_down (MAP) in WET, it is not roaming from 3-link to 2-link (disassociated)
+JIRA:BCAWLAN-274869 [wpa_supplicant]:Add supplicant to debug monitor only after it daemonizes
+JIRA:BCAWLAN-275423 SVT:AP:Access Smoke: 4916REF2/67263MCH6+6726MCH5+6711MC2: WET/DWDS:Observing "potentially unexpected fatal signal 11" as "CPU: 2 PID: 20636 Comm: wpa_supplicant Tainted: P5.15.167 #1"
+JIRA:BCAWLAN-275842 [EDERSON][REP] Some of the devices are connected with 5G only despite the RSSI/RSN for 6G seems to be OK

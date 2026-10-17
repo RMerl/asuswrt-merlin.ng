@@ -39,9 +39,7 @@ Boston, MA 02111-1307, USA.
 #include <bcm_rsvmem.h>
 #include <asm/mach/map.h>
 #include <linux/memblock.h>
-#include <bcm_pinmux.h>
 #include "pmc_core_api.h"
-#include "pmc_neon.h"
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
 #include <linux/panic_notifier.h>
@@ -49,12 +47,6 @@ Boston, MA 02111-1307, USA.
 
 #if defined(CONFIG_BCM_BOOTSTATE)
 #include "bcm_bootstate.h"
-#endif
-
-#if defined(CONFIG_BCM96846)
-#include <linux/init.h>
-#include "board.h"
-#include <asm/mach/map.h>
 #endif
 
 #if defined(CONFIG_BCM_GLB_COHERENCY)
@@ -145,7 +137,7 @@ int __init bcm_arch_early_init(void)
 	init_strap_register();
 #endif
 #endif
-#if defined (CONFIG_BCM96878) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96855)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 /*
 There are no users of init_dma_coherent_pool_size() left due to
@@ -183,7 +175,6 @@ e.g. bootargs = "coherent_pool=2M"
 	check_if_ikosboot(boot_command_line);
 #if !defined(CONFIG_BRCM_IKOS)
 	kerSysEarlyFlashInit();
-	kerSysFlashInit();
 #endif
 
 	return 0;
@@ -191,32 +182,3 @@ e.g. bootargs = "coherent_pool=2M"
 
 early_initcall(bcm_arch_early_init);
 
-#if defined (CONFIG_BCM96878) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963138)
-static void __init neon_enable(void *data)
-{
-#ifndef CONFIG_BRCM_QEMU
-	u32 access;
-	(void)data;
-	
-	access = get_copro_access();
-
-	/*
-	 * Enable full access to VFP (cp10 and cp11)
-	 */
-	set_copro_access(access | CPACC_FULL(10) | CPACC_FULL(11));
-
-	/* mov r0, 0x40000000; vmsr fpexc, r0 */
-	asm volatile ("mov r0, #0x40000000; .word 0xeee80a10" : : : "r0" );
-#endif
-}
-
-static int __init bcm_arm_neon_fixup(void)
-{
-#if defined(CONFIG_BCM963138)
-	pmc_neon_power_up();
-#endif
-	smp_call_function_single(0, neon_enable, NULL, 1);
-	return 0;
-}
-late_initcall(bcm_arm_neon_fixup);
-#endif

@@ -1,0 +1,1 @@
+# List of boards which are permitted to use OF_HAS_PRIOR_STAGE without OF_BOARD

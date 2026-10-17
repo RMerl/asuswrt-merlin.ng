@@ -1,0 +1,9 @@
+XEN GUEST FOR ARM64
+M:	Anastasiia Lukianenko <anastasiia_lukianenko@epam.com>
+M:	Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
+S:	Maintained
+F:	board/xen/xenguest_arm64/
+F:	doc/board/xen/
+F:	include/configs/xenguest_arm64.h
+F:	configs/xenguest_arm64_defconfig
+F:	configs/xenguest_arm64_virtio_defconfig

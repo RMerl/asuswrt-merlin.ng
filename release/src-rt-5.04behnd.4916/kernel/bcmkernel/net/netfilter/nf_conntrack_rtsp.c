@@ -25,7 +25,7 @@
 #include <net/netfilter/nf_conntrack_helper.h>
 #include <net/netfilter/nf_conntrack_seqadj.h>
 #include <linux/netfilter/nf_conntrack_rtsp.h>
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
 #include <linux/iqos.h>
 #endif
 
@@ -668,7 +668,7 @@ static int help(struct sk_buff *skb, unsigned int protoff,
 
             /* register the RTP ports with ingress QoS classifier */
             pr_debug("\n RTP Port = %d, RTCP Port = %d\n", rtpport, rtcpport);
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
             iqos_add_L4port(IPPROTO_UDP, rtpport, IQOS_ENT_DYN, IQOS_PRIO_HIGH);
             iqos_add_L4port(IPPROTO_UDP, rtcpport, IQOS_ENT_DYN, IQOS_PRIO_HIGH);
 #endif
@@ -728,7 +728,7 @@ static int help(struct sk_buff *skb, unsigned int protoff,
             
             /* register the RTP ports with ingress QoS classifier */
             pr_debug("\n RTP Port = %d\n", rtpport);
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
             iqos_add_L4port(IPPROTO_UDP, rtpport, IQOS_ENT_DYN, IQOS_PRIO_HIGH);
 #endif
 
@@ -861,7 +861,7 @@ static void nf_conntrack_rtsp_fini(void)
 			nf_conntrack_helper_unregister(&rtsp[i][j]);
 		}
 		
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
         /* unregister the RTSP ports with ingress QoS classifier */
 		iqos_rem_L4port( IPPROTO_TCP, ports[i], IQOS_ENT_STAT );
 #endif
@@ -913,7 +913,7 @@ static int __init nf_conntrack_rtsp_init(void)
 				return ret;
 			}
 		}
-#if IS_ENABLED(CONFIG_BCM_INGQOS)
+#if defined(CONFIG_BCM_INGRESS_QOS)
     /* register the RTSP ports with ingress QoS classifier */
     iqos_add_L4port( IPPROTO_TCP, ports[i], IQOS_ENT_STAT, IQOS_PRIO_HIGH );
 #endif

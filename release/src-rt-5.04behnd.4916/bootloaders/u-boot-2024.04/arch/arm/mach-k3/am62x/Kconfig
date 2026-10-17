@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2023 Texas Instruments Incorporated - https://www.ti.com/
+#	Andrew Davis <afd@ti.com>
+
+if SOC_K3_AM625
+
+choice
+	prompt "K3 AM62x based boards"
+	optional
+
+config TARGET_AM625_A53_EVM
+	bool "TI K3 based AM625 EVM running on A53"
+	select ARM64
+	select BINMAN
+
+config TARGET_AM625_R5_EVM
+	bool "TI K3 based AM625 EVM running on R5"
+	select CPU_V7R
+	select SYS_THUMB_BUILD
+	select K3_LOAD_SYSFW
+	select RAM
+	select SPL_RAM
+	select K3_DDRSS
+	select BINMAN
+	imply SYS_K3_SPL_ATF
+
+config TARGET_PHYCORE_AM62X_A53
+	bool "PHYTEC phyCORE-AM62x running on A53"
+	select ARM64
+	select BINMAN
+
+config TARGET_PHYCORE_AM62X_R5
+	bool "PHYTEC phyCORE-AM62x running on R5"
+	select CPU_V7R
+	select SYS_THUMB_BUILD
+	select K3_LOAD_SYSFW
+	select RAM
+	select SPL_RAM
+	select K3_DDRSS
+	select BINMAN
+	imply SYS_K3_SPL_ATF
+
+config TARGET_VERDIN_AM62_A53
+	bool "Toradex Verdin AM62 running on A53"
+	select ARM64
+	select BINMAN
+
+config TARGET_VERDIN_AM62_R5
+	bool "Toradex Verdin AM62 running on R5"
+	select CPU_V7R
+	select SYS_THUMB_BUILD
+	select K3_LOAD_SYSFW
+	select RAM
+	select SPL_RAM
+	select K3_DDRSS
+	select BINMAN
+	imply SYS_K3_SPL_ATF
+
+endchoice
+
+source "board/beagle/beagleplay/Kconfig"
+source "board/phytec/phycore_am62x/Kconfig"
+source "board/ti/am62x/Kconfig"
+source "board/toradex/verdin-am62/Kconfig"
+
+endif

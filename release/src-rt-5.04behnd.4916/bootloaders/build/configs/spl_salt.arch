@@ -12,7 +12,6 @@ my $salt = qx(dd if=/dev/random bs=1 count=32 2>/dev/null | base64 | head -c 32)
 
 $c->set('CONFIG_BCMBCA_SPL_SALT', q["].$salt.q["]);
 
-$c->set('CONFIG_ENABLE_ARM_SOC_BOOT0_HOOK', 'y');
 
 #####   End of config changes #####
 $c->write();

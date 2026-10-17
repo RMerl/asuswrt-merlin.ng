@@ -47,7 +47,7 @@ typedef void * pNBuff_t;
 typedef enum NBuffPtrType
 {
     SKBUFF_PTR = MUST_BE_ZERO,      /* Default Linux networking socket buffer */
-    FPBUFF_PTR,                     /* Experimental BRCM IuDMA freepool buffer*/
+    WKBUFF_PTR,                     /* Wireless Kernel Buffer */
     TGBUFF_PTR,                     /* LAB Traffic generated network buffer   */
     FKBUFF_PTR,                     /* Lightweight fast kernel network buffer */
     /* Do not add new ptr types */
@@ -60,7 +60,7 @@ typedef enum NBuffPtrType
 
 
 #define IS_SKBUFF_PTR(pNBuff)       ( NBUFF_PTR_TYPE(pNBuff) == SKBUFF_PTR )
-#define IS_FPBUFF_PTR(pNBuff)       ( NBUFF_PTR_TYPE(pNBuff) == FPBUFF_PTR )
+#define IS_WKBUFF_PTR(pNBuff)       ( NBUFF_PTR_TYPE(pNBuff) == WKBUFF_PTR )
 #define IS_TGBUFF_PTR(pNBuff)       ( NBUFF_PTR_TYPE(pNBuff) == TGBUFF_PTR )
 #define IS_FKBUFF_PTR(pNBuff)       ( NBUFF_PTR_TYPE(pNBuff) == FKBUFF_PTR )
 

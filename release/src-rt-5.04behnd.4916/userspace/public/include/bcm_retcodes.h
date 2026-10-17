@@ -154,9 +154,6 @@ typedef enum
    BCMRET_DU_UPDATE_VERSION_EXISTED= 9032,/**< Invalid Deployment Unit Update, version already exists
                                                     * (associated with ChangeDUState:update)
                                                     */
-   BCMRET_DU_MAX_EXCEED = 9033,/**< Fail to install Deployment Unit due to reaching max number
-                                                    * (associated with ChangeDUState:install)
-                                                    */
    
    BCMRET_SUCCESS_REBOOT_REQUIRED = 9800, /**< Config successful, but requires reboot to take effect. */
    BCMRET_SUCCESS_UNRECOGNIZED_DATA_IGNORED = 9801,  /**<Success, but some unrecognized data was ignored. */
@@ -224,6 +221,10 @@ typedef enum
    BCMRET_MANIFEST_NO_PRIVILEGE_INFO = 9877, /**<Manifest without privilege information*/
    BCMRET_UNINSTALL_IN_PROCESS = 9878,    /**<Uninstall operation is still in process. */
    BCMRET_UPGRADE_IN_PROCESS = 9879,    /**<Upgrade operation is still in process. */
+   BCMRET_DU_MAX_EXCEED = 9881,/**< Fail to install Deployment Unit due to reaching max number
+                                                    * (associated with ChangeDUState:install)
+                                                    */
+   BCMRET_SM_UNAVAILABLE_ROLE  = 9882,/**<Unavailable Role fault code */
    BCMRET_UNKNOWN_ERROR = 9899,  /**< Can't figure out the real cause.  Use sparingly. */
 } BcmRet;
 

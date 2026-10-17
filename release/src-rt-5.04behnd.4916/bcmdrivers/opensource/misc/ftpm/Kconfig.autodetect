@@ -1,0 +1,11 @@
+config BCM_FTPM_SMC_DRV
+	bool "Broadcom TPM Driver for SMC based fTPM"
+	depends on BRCM_SMC_BASED
+	default n
+	help
+	  Add support for Broadcom SMC based fTPM device
+
+config BCM_FTPM_SMC_DRV_IMPL
+	int "Implementation index for Broadcom TPM Driver for SMC based fTPM"
+	depends on BCM_FTPM_SMC_DRV
+	default 1 

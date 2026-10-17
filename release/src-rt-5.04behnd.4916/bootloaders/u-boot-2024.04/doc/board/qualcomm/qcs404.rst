@@ -1,0 +1,79 @@
+.. SPDX-License-Identifier: GPL-2.0+
+.. sectionauthor:: Sumit Garg <sumit.garg@linaro.org>
+
+QCS404 EVB
+==========
+
+About this
+----------
+This document describes the information about Qualcomm QCS404 evaluation board
+and it's usage steps.
+
+The current boot flow support loading u-boot as an Android boot image via
+Qualcomm's UEFI-based ABL (Android) Bootloader.
+
+Installation
+------------
+Build
+^^^^^
+Setup ``CROSS_COMPILE`` for aarch64 and build U-Boot for your board::
+
+	$ export CROSS_COMPILE=<aarch64 toolchain prefix>
+	$ make qcs404evb_defconfig
+	$ make
+
+This will build ``u-boot.bin`` in the configured output directory.
+
+Generate FIT image
+^^^^^^^^^^^^^^^^^^
+A ``qcs404.its`` file can be found in ``board/qualcomm/qcs404-evb/`` directory.
+It expects a folder as ``qcs404_imgs/`` in the main directory containing
+pre-built kernel, dts and ramdisk images. See ``qcs404.its`` for full path to
+images.
+
+- Build FIT image::
+
+	mkimage -f qcs404-evb.its qcs404-evb.itb
+
+Pack android boot image
+^^^^^^^^^^^^^^^^^^^^^^^
+We'll assemble android boot image with ``u-boot.bin`` instead of linux kernel,
+and FIT image instead of ``initramfs``. Android bootloader expect gzipped kernel
+with appended dtb, so let's mimic linux to satisfy stock bootloader:
+
+- create dump dtb::
+
+	workdir=/tmp/prepare_payload
+	mkdir -p "$workdir"
+	cd "$workdir"
+	mock_dtb="$workdir"/payload_mock.dtb
+
+	dtc -I dts -O dtb -o "$mock_dtb" << EOF
+	/dts-v1/;
+	/ {
+		model = "Qualcomm Technologies, Inc. QCS404 EVB 4000";
+		compatible = "qcom,qcs404-evb-4000", "qcom,qcs404-evb", "qcom,qcs404";
+
+		#address-cells = <2>;
+		#size-cells = <2>;
+
+		memory@80000000 {
+			device_type = "memory";
+			/* We expect the bootloader to fill in the size */
+			reg = <0 0x80000000 0 0>;
+		};
+
+		chosen { };
+	};
+	EOF
+
+- gzip u-boot ``gzip u-boot.bin``
+- append dtb to gzipped u-boot: ``cat u-boot.bin.gz "$mock_dtb" > u-boot.bin.gz-dtb``
+
+Now we've got everything to build android boot image:::
+
+	mkbootimg --kernel u-boot.bin.gz-dtb \
+	--ramdisk qcs404-evb.itb --pagesize 4096 \
+	--base 0x80000000 --output boot.img
+
+Flash image on qcs404-evb using fastboot method.

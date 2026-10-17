@@ -1,6 +1,0 @@
-SH7752EVB BOARD
-#M:	-
-S:	Maintained
-F:	board/renesas/sh7752evb/
-F:	include/configs/sh7752evb.h
-F:	configs/sh7752evb_defconfig

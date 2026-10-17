@@ -1,0 +1,8 @@
+SILK BOARD
+M:	Cogent Embedded, Inc. <source@cogentembedded.com>
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a7794-silk*
+F:	board/renesas/silk/
+F:	configs/silk_defconfig
+F:	include/configs/silk.h

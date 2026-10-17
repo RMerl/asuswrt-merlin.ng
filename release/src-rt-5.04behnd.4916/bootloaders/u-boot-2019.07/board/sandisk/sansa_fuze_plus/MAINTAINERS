@@ -1,6 +1,0 @@
-SANSA_FUZE_PLUS BOARD
-M:	Marek Vasut <marek.vasut@gmail.com>
-S:	Maintained
-F:	board/sandisk/sansa_fuze_plus/
-F:	include/configs/sansa_fuze_plus.h
-F:	configs/sansa_fuze_plus_defconfig

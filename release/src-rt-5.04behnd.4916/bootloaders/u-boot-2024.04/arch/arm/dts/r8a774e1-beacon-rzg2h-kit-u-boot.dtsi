@@ -1,0 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright 2021 LogicPD dba Beacon EmbeddedWorks
+ */
+
+#include "rz-g2-beacon-u-boot.dtsi"

@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Default SMBIOS information. Include this in your board .dts file if you want
+ * these defaults.
+ *
+ * Copyright 2020 Google LLC
+ */
+
+#include <config.h>
+
+/ {
+	smbios: smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = CONFIG_SYS_VENDOR;
+				product = CONFIG_SYS_BOARD;
+			};
+
+			baseboard {
+				manufacturer = CONFIG_SYS_VENDOR;
+				product = CONFIG_SYS_BOARD;
+			};
+
+			chassis {
+				manufacturer = CONFIG_SYS_VENDOR;
+				/* chassis product is not set by default */
+			};
+		};
+	};
+};

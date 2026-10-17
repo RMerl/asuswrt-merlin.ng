@@ -1,0 +1,85 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/soc/samsung/exynos-pmu.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Samsung Exynos SoC series Power Management Unit (PMU)
+
+maintainers:
+  - Sam Protsenko <semen.protsenko@linaro.org>
+
+description: |+
+  PMU block controls the power and operation states of Exynos SoC. It contains
+  registers for changing the state of next features::
+
+  - Local power control. Exynos SoCs have various power domains, and it's
+    possible to turn them on and off independently, using corresponding
+    registers in PMU block
+  - System-level power control. That allows putting the system into power-down
+    modes (sleep) by turning off the power for most of the domains
+  - Miscellaneous PMU related features
+
+# Custom select to avoid matching all nodes with 'syscon'
+select:
+  properties:
+    compatible:
+      contains:
+        enum:
+          - samsung,exynos850-pmu
+  required:
+    - compatible
+
+properties:
+  compatible:
+    oneOf:
+      - items:
+          - enum:
+              - samsung,exynos850-pmu
+          - const: syscon
+
+  reg:
+    maxItems: 1
+
+  samsung,uart-debug-1:
+    type: boolean
+    description:
+      Enable this property if AP UART lines (Application Processor UART) must be
+      connected to UART_DEBUG_1 path in PMU block. That's usually needed when
+      the serial console is provided by uart1_pins. If this property is not
+      specified, the default behavior will be used (AP UART lines connected to
+      UART_DEBUG_0 path, which usually means uart0_pins are used for the serial
+      console).
+
+  syscon-poweroff:
+    $ref: /schemas/power/reset/syscon-poweroff.yaml#
+    type: object
+    description:
+      Node for power off method
+
+  syscon-reboot:
+    $ref: /schemas/power/reset/syscon-reboot.yaml#
+    type: object
+    description:
+      Node for reboot method
+
+required:
+  - compatible
+  - reg
+
+additionalProperties: false
+
+examples:
+  - |
+    pmu_system_controller: system-controller@11860000 {
+        compatible = "samsung,exynos850-pmu", "syscon";
+        reg = <0x11860000 0x10000>;
+
+        reboot: syscon-reboot {
+            compatible = "syscon-reboot";
+            regmap = <&pmu_system_controller>;
+            offset = <0x3a00>; /* SYSTEM_CONFIGURATION */
+            mask = <0x2>; /* SWRESET_SYSTEM */
+            value = <0x2>; /* reset value */
+        };
+    };

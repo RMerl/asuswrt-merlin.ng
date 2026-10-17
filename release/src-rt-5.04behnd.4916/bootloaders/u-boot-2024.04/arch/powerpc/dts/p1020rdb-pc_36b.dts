@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * P1020RDB-PC (36-bit address map) Device Tree Source
+ *
+ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2019 NXP
+ */
+
+/include/ "p1020.dtsi"
+
+/ {
+	model = "fsl,P1020RDB-PC";
+	compatible = "fsl,P1020RDB-PC";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&mpic>;
+
+	soc: soc@fffe00000 {
+		ranges = <0x0 0xf 0xffe00000 0x100000>;
+	};
+
+	pci1: pcie@fffe09000 {
+		reg = <0xf 0xffe09000 0x0 0x1000>;	/* registers */
+		ranges = <0x01000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0xc0000000 0xc 0x20000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+
+	pci0: pcie@fffe0a000 {
+		reg = <0xf 0xffe0a000 0x0 0x1000>;	/* registers */
+		ranges = <0x01000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x00010000   /* downstream I/O */
+			  0x02000000 0x0 0x80000000 0xc 0x00000000 0x0 0x20000000>; /* non-prefetchable memory */
+	};
+
+	aliases {
+		spi0 = &espi0;
+	};
+};
+
+/include/ "p1020rdb-pc.dtsi"
+/include/ "p1020-post.dtsi"
+
+&espi0 {
+	status = "okay";
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0>;
+		spi-max-frequency = <10000000>; /* input clock */
+	};
+};

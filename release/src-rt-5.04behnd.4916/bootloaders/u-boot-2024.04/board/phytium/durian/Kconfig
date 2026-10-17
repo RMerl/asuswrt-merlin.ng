@@ -1,0 +1,12 @@
+if TARGET_DURIAN
+
+config SYS_BOARD
+	default "durian"
+
+config SYS_VENDOR
+	default "phytium"
+
+config SYS_CONFIG_NAME
+	default "durian"
+
+endif

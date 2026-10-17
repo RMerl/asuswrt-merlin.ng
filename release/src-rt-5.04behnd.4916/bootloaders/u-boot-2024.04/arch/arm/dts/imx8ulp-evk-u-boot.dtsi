@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright 2021 NXP
+ */
+
+/ {
+	mu@27020000 {
+		compatible = "fsl,imx8ulp-mu";
+		reg = <0 0x27020000 0 0x10000>;
+		status = "okay";
+		bootph-pre-ram;
+	};
+};
+
+&soc {
+	bootph-pre-ram;
+};
+
+&per_bridge3 {
+	bootph-pre-ram;
+};
+
+&per_bridge4 {
+	bootph-pre-ram;
+};
+
+&iomuxc1 {
+	bootph-pre-ram;
+	fsl,mux_mask = <0xf00>;
+};
+
+&pinctrl_lpuart5 {
+	bootph-pre-ram;
+};
+
+&lpuart5 {
+	bootph-pre-ram;
+};
+
+&usdhc0 {
+	bootph-pre-ram;
+};
+
+&pinctrl_usdhc0 {
+	bootph-pre-ram;
+};

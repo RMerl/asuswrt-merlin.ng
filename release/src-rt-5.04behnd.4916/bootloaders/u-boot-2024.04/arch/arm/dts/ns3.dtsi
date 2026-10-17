@@ -1,0 +1,34 @@
+// SPDX-License-Identifier:      GPL-2.0+
+/*
+ * Copyright (C) 2020 Broadcom
+ */
+
+#include "skeleton64.dtsi"
+
+/ {
+	compatible = "brcm,ns3";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x0 0x80000000>,
+			<0x8 0x80000000 0x1 0x80000000>;
+	};
+
+	hsls {
+		compatible = "simple-bus";
+		dma-ranges;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x0 0x0 0x68900000 0x17700000>;
+
+		uart1: uart@110000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x00110000 0x1000>;
+			reg-shift = <2>;
+			clock-frequency = <25000000>;
+			status = "disabled";
+		};
+	};
+};

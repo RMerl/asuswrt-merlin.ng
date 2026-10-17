@@ -1,6 +1,0 @@
-XPEDITE520X BOARD
-M:	Peter Tyser <ptyser@xes-inc.com>
-S:	Maintained
-F:	board/xes/xpedite520x/
-F:	include/configs/xpedite520x.h
-F:	configs/xpedite520x_defconfig

@@ -1,0 +1,76 @@
+menu "ClearFog configuration"
+	depends on TARGET_CLEARFOG
+
+config TARGET_CLEARFOG_BASE
+	bool "Use ClearFog Base static configuration"
+	help
+	  Use the ClearFog Base as the static configuration instead of the
+	  default which uses the ClearFog Pro.
+
+	  Runtime board detection is always attempted and used if available. The
+	  static configuration is used as a fallback in cases where runtime
+	  detection is disabled, is not available in hardware, or otherwise fails.
+
+	  Only newer revisions of the ClearFog product line support runtime
+	  detection via additional EEPROM hardware. This option enables selecting
+	  the Base variant for older hardware revisions.
+
+config CLEARFOG_CON3_SATA
+	bool "Use CON3 slot in SATA mode"
+	help
+	  Use the CON3 port with SATA protocol instead of the default PCIe.
+	  The ClearFog port allows usage of either mSATA or miniPCIe
+	  modules, but the desired protocol must be configured at build
+	  time since it affects the SerDes topology layout.
+
+config CLEARFOG_CON2_SATA
+	bool "Use CON2 slot in SATA mode"
+	depends on !TARGET_CLEARFOG_BASE
+	help
+	  Use the CON2 port with SATA protocol instead of the default PCIe.
+	  The ClearFog port allows usage of either mSATA or miniPCIe
+	  modules, but the desired protocol must be configured at build
+	  time since it affects the SerDes topology layout.
+
+config CLEARFOG_SFP_25GB
+	bool "Enable 2.5 Gbps mode for SFP"
+	help
+	  Set the SFP module connection to support 2.5 Gbps transfer speed for the
+	  SGMII connection (requires a supporting SFP). By default, transfer speed
+	  of 1.25 Gbps is used, suitable for a more common 1 Gbps SFP module.
+
+choice CLEARFOG_GTR_SERDES0
+	prompt "Select Clearfog GTR SerDes 0 Function"
+	default CLEARFOG_GTR_SERDES0_PCIE
+	help
+	  Select function for SerDes 0 which is shared between CON3 and CON18
+	  for either pci-e or sata.
+
+config CLEARFOG_GTR_SERDES0_PCIE
+	bool "PCI-E on CON3"
+	help
+	  Configure SerDes 0 for PCI-E to enable CON3 mini-PCI-E connector.
+
+config CLEARFOG_GTR_SERDES0_SATA
+	bool "SATA on CON18"
+	help
+	  Configure SerDes 0 for SATA to enable CON18 SATA connector.
+
+endchoice
+
+config ENV_SIZE
+	hex "Environment Size"
+	default 0x10000
+
+config ENV_OFFSET
+	hex "Environment offset"
+	default 0xF0000
+
+config ENV_SECT_SIZE
+	hex "Environment Sector-Size"
+	# Use SPI flash erase block size of 4 KiB
+	default 0x1000 if MVEBU_SPL_BOOT_DEVICE_SPI || MVEBU_SPL_BOOT_DEVICE_SATA
+	# Use optimistic 64 KiB erase block, will vary between actual media
+	default 0x10000 if MVEBU_SPL_BOOT_DEVICE_MMC || MVEBU_SPL_BOOT_DEVICE_UART
+
+endmenu

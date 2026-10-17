@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "buildman"
+version = "0.0.6"
+authors = [
+  { name="Simon Glass", email="sjg@chromium.org" },
+]
+dependencies = ["u_boot_pylib >= 0.0.6", "patch-manager >= 0.0.6"]
+description = "Buildman build tool for U-Boot"
+readme = "README.rst"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://docs.u-boot.org/en/latest/build/buildman.html"
+"Bug Tracker" = "https://source.denx.de/groups/u-boot/-/issues"
+
+[project.scripts]
+buildman = "buildman.main:run_buildman"
+
+[tool.setuptools.package-data]
+buildman = ["*.rst"]

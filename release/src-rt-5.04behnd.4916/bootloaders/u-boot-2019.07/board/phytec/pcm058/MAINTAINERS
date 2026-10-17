@@ -1,6 +1,0 @@
-PHYTEC PHYBOARD MIRA
-M:	Stefano Babic <sbabic@denx.de>
-S:	Maintained
-F:	board/phytec/pcm058/
-F:	include/configs/pcm058.h
-F:	configs/pcm058_defconfig

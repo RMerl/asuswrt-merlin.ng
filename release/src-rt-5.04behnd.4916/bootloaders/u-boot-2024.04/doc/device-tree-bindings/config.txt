@@ -1,0 +1,107 @@
+The /config node (Configuration Options)
+----------------------------------------
+
+A number of run-time configuration options are provided in the /config node
+of the control device tree. You can access these using ofnode_conf_read_int(),
+ofnode_conf_read_bool() and ofnode_conf_read_str().
+
+These options are designed to affect the operation of U-Boot at runtime.
+Runtime-configuration items can help avoid proliferation of different builds
+with only minor changes, e.g. enabling and disabling console output. Items
+here should be those that can usefully be set by the build system after U-Boot
+is built.
+
+Available options are:
+
+bootcmd (string)
+	Allows overwriting of the boot command used by U-Boot on startup. If
+	present, U-Boot uses this command instead. Note that this feature can
+	work even if loading the environment is disabled, e.g. for security
+	reasons. See also bootsecure.
+
+bootdelay (int)
+	This allows selecting of the U-Boot bootdelay, to control whether U-Boot
+	waits on boot or for how long. This allows this option to be configured
+	by the build system or by a previous-stage binary. For example, if the
+	images is being packed for testing or a user holds down a button, it may
+	allow a delay, but disable it for production.
+
+u-boot,boot-led (string)
+u-boot,error-led (string)
+	This is used to specify the label for an LED to indicate an error and
+	a successful boot, on supported hardware.
+
+bootsecure (int)
+	Indicates that U-Boot should use secure_boot_cmd() to run commands,
+	rather than the normal CLI. This can be used in production images, to
+	restrict the amount of parsing done or the options available, to cut
+	back on the available surface for security attacks.
+
+u-boot,efi-partition-entries-offset (int)
+	If present, this provides an offset (in bytes, from the start of a
+	device) that should be skipped over before the partition entries.
+	This is used by the EFI/GPT partition implementation when a device
+	is formatted.
+
+	This setting will override any values configured via Kconfig.
+
+kernel-offset (int)
+	This allows setting the 'kernaddr' environment variable, used to select
+	the address to load the kernel. It is useful for systems that use U-Boot
+	to flash a device, so the scripts that do this know where to put the
+	kernel to be flashed.
+
+load-environment (int)
+	Allows control over whether U-Boot loads its environment after
+	relocation (0=no, 1 or not present=yes).
+
+u-boot,mmc-env-offset (int)
+u-boot,mmc-env-offset-redundant (int)
+	If present, the values of the 'u-boot,mmc-env-offset' and/or
+	of the u-boot,mmc-env-offset-redundant' properties overrides
+	CONFIG_ENV_OFFSET and CONFIG_ENV_OFFSET_REDUND, respectively,
+	for SD/MMC devices.
+
+	Values are interpreted as the offset from the start of the
+	device, specified in bytes.  It is assumed that the setting
+	will point at the beginning of a LBA and values that are not
+	LBA-aligned will be rounded up to the next LBA address.
+
+u-boot,mmc-env-partition (int)
+	if present, the environment shall be placed at the last
+	CONFIG_ENV_SIZE blocks of the partition on the
+	CONFIG_SYS_MMC_ENV_DEV.
+
+	if u-boot,mmc-env-offset* is present, this setting will take
+	precedence. In that case, only if the partition is not found,
+	mmc-env-offset* will be tried.
+
+	Note that CONFIG_ENV_MMC_PARTITION overrides this device-tree setting.
+
+u-boot,no-apm-finalize (bool)
+	For x86 devices running on coreboot, this tells U-Boot not to lock
+	down the Intel Management Engine (ME) registers. This allows U-Boot to
+	access the hardware more fully for platforms that need it.
+
+u-boot,no-keyboard (bool)
+	Tells U-Boot not to expect an attached keyboard with a VGA console.
+
+rootdisk-offset (int)
+	This allows setting the 'rootdisk' environment variable, used to select
+	the address to load the rootdisk. It is useful for systems that use
+	U-Boot to flash a device, so the scripts that do this know where to put
+	the root disk to be flashed.
+
+silent-console (int)
+	If present and non-zero, the console is silenced by default on boot.
+
+u-boot,spl-payload-offset (int)
+	If present (and SPL is controlled by the device-tree), this allows
+	to override the CONFIG_SYS_SPI_U_BOOT_OFFS setting using a value
+	from the device-tree.
+
+sysreset-gpio (string)
+	If present (and supported by the specific board), indicates a
+	GPIO that can be set to trigger a system reset.  It is assumed
+	that such a system reset will effect a complete platform reset,
+	being roughly equivalent to a power-on reset.

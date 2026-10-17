@@ -31,7 +31,77 @@
 #ifndef _BOARD_UTIL_H_
 #define _BOARD_UTIL_H_
 
-#include <bcm_hwdefs.h>
+#include <gpon_defs.h>
+
+#define NVRAM_MAC_COUNT_MAX         64
+
+#define NVRAM_ULVERSION                  "ulVersion"
+#define NVRAM_SZBOOTLINE                 "szBootline"
+#define NVRAM_SZBOARDID                  "boardid"
+#define NVRAM_ULMAINTPNUM                "ulMainTpNum"
+#define NVRAM_ULPSISIZE                  "ulPsiSize"
+#define NVRAM_ULNUMMACADDRS              "nummacaddrs"
+#define NVRAM_UCABASEMACADDR             "ethaddr"
+#define NVRAM_PAD                        "pad"
+#define NVRAM_BACKUPPSI                  "backupPsi"
+#define NVRAM_ULCHECKSUMV4               "ulCheckSumV4"
+#define NVRAM_GPONSERIALNUMBER           "gponsn"
+#define NVRAM_GPONPASSWORD               "gponpswd"
+#define NVRAM_WPSDEVICEPIN               "wpsDevicePin"
+#define NVRAM_WLANPARAMS                 "wlanParams"
+#define NVRAM_WLFEATURE                  "wlFeature"
+#define NVRAM_ULSYSLOGSIZE               "ulSyslogSize"
+#define NVRAM_ULNANDPARTOFSKB            "ulNandPartOfsKb"
+#define NVRAM_ULNANDPARTSIZEKB           "ulNandPartSizeKb"
+#define NVRAM_SZVOICEBOARDID             "voiceboardid"
+#define NVRAM_AFEID                      "afeId"
+#define NVRAM_OPTICRXPWRREADING          "opticRxPwrReading"
+#define NVRAM_OPTICRXPWROFFSET           "opticRxPwrOffset"
+#define NVRAM_OPTICTXPWRREADING          "opticTxPwrReading"
+#define NVRAM_UCUNUSED2                  "ucUnused2"
+#define NVRAM_UCFLASHBLKSIZE             "ucFlashBlkSize"
+#define NVRAM_UCAUXFSPERCENT             "ucAuxFSPercent"
+#define NVRAM_UCUNUSED3                  "ucUnused3"
+#define NVRAM_ULBOARDSTUFFOPTION         "ulBoardStuffOption"
+#define NVRAM_ALLOCS                     "allocs"
+#define NVRAM_ULMEMORYCONFIG             "ulMemoryConfig"
+#define NVRAM_PART_INFO                  "part_info"
+#define NVRAM_ALLOC_DHD                  "alloc_dhd"
+#define NVRAM_ULFEATURES                 "ulFeatures"
+#define NVRAM_CHUNUSED                   "chUnused"
+#define NVRAM_ULCHECKSUM                 "ulCheckSum"
+
+#define NAND_RFS_OFS_NAME           "NAND_RFS_OFS"
+
+#define  WLAN_FEATURE_DHD_NIC_ENABLE     0x01
+#define  WLAN_FEATURE_DHD_MFG_ENABLE     0x02
+#define  WLAN_FEATURE_LAST_FEATURE       0x80
+
+#define  WLAN_MFG_PARTITION_ISNAND       0x01
+#define  WLAN_MFG_PARTITION_MFGSET       0x02
+#define  WLAN_MFG_PARTITION_HASSIZE      0x04
+#define  WLAN_BOOTMODE_IS_UBOOT          0x08
+#define  WLAN_MFG_PARTITION_NAME         "misc3"
+#define  WLAN_MFG_PARTITION_INDEX         2
+
+
+#define DEFAULT_PSI_SIZE    128
+#define DEFAULT_GPON_SN     "BRCM12345678"
+#define DEFAULT_GPON_PW     "          "
+#define DEFAULT_LOG_SIZE    0
+#define DEFAULT_FLASHBLK_SIZE  64
+#define MAX_FLASHBLK_SIZE      128
+#define DEFAULT_AUXFS_PERCENT 0
+#define MAX_AUXFS_PERCENT   80
+#define MAX_NOR_AUXFS_SIZE  255
+#define NOR_AUFS_SIZE_UNIT (4*ONEK)
+#define DEFAUT_BACKUP_PSI  0
+
+#define DEFAULT_WPS_DEVICE_PIN     "12345670"
+#define DEFAULT_WLAN_DEVICE_FEATURE  0
+
+#define DEFAULT_VOICE_BOARD_ID     "NONE"
+
 
 /* Typedefs. */
 typedef struct
@@ -58,8 +128,6 @@ typedef struct
 {
     unsigned int eventmask;
 } BOARD_IOC, *PBOARD_IOC;
-
-extern int (*bcm_sata_test_ioctl_fn)(void *);
 
 void set_mac_info( void );
 void set_gpon_info( void );

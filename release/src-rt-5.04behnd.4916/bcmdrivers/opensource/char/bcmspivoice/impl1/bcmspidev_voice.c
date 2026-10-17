@@ -32,13 +32,17 @@
 #include <linux/of_gpio.h>
 #include <linux/delay.h>
 #include <bcmspivoice.h>
-#include <boardparms_voice.h>
+#include <bcm_voice_dt_bindings.h>
+#include <bcm_slic_pwrctl.h>
 
 struct bcm_spidev
 {
     struct gpio_desc *reset_gpio;
     uint32_t spi_index;
     uint32_t slaveid;
+    struct pinctrl *pinmux;
+    struct pinctrl_state **pin_states;
+    uint32_t num_pinctrl_names;
 };
 
 #define MAX_BUS 2
@@ -129,7 +133,8 @@ static int spi_voice_probe(struct spi_device *spi)
     struct device_node *np = spi->dev.of_node;
     struct bcm_spidev *pdata;
     int bus = spi->master->bus_num;
-    int ret;
+    int i,ret,num_names;
+    const char *name;
 
     if (!np)
         return -ENODEV;
@@ -154,14 +159,49 @@ static int spi_voice_probe(struct spi_device *spi)
     if (IS_ERR(pdata->reset_gpio))
     {
         dev_err(&spi->dev, "voice reset GPIO request failed: %ld\n", PTR_ERR(pdata->reset_gpio));
-        goto err_free;
+        return PTR_ERR(pdata->reset_gpio);
     }
 
     if (pdata->reset_gpio)
         gpiod_direction_output(pdata->reset_gpio, 0);
 
     get_device(&spi->dev);
-err_free:
+
+    /* slic pin control*/
+    num_names = of_property_count_strings(np, "pinctrl-names");
+    if (num_names < 0) {
+        dev_err(&spi->dev, "Cannot find pinctrl-names.\n");
+        return num_names;
+    }else if (num_names==1) /* default,no pinctrl needed*/
+        return 0;
+
+    pdata->num_pinctrl_names = num_names;
+
+    pdata->pin_states = (struct pinctrl_state **)devm_kzalloc(&spi->dev, num_names*sizeof(*pdata->pin_states), GFP_KERNEL);
+    if (!pdata->pin_states)
+        return -ENOMEM;	
+
+    pdata->pinmux = devm_pinctrl_get(&spi->dev);
+    if (IS_ERR(pdata->pinmux)) {
+        dev_err(&spi->dev, "Cannot find pinctrl!\n");
+        return PTR_ERR(pdata->pinmux);
+    }
+
+    for (i = 0; i < num_names; i++) {
+        ret = of_property_read_string_index(np, "pinctrl-names", i,&name);
+        if (ret < 0) {
+            dev_err(&spi->dev, "Cannot parse pinctrl-names: %d\n", ret);
+            return ret;
+        }
+
+        if (!strcmp(name, "default"))
+            pdata->pin_states[SLIC_POWER_ON] = pinctrl_lookup_state(pdata->pinmux, name);
+        else if (!strcmp(name, "powerdown"))
+            pdata->pin_states[SLIC_POWER_OFF] = pinctrl_lookup_state(pdata->pinmux, name);
+        else
+            dev_info(&spi->dev, "Unknown pin control state.\n");
+    }
+
     return 0;
 }
 
@@ -282,7 +322,7 @@ int bcm_spi_get_slaveid(int index)
     struct bcm_spidev *priv = bcm_spi_get_priv(index);
     if (priv)
         return priv->slaveid;
-    return BP_NOT_DEFINED;
+    return VD_NOT_DEFINED;
 }
 EXPORT_SYMBOL(bcm_spi_get_slaveid);
 
@@ -321,3 +361,39 @@ void bcm_spi_voice_reset_all_dev(int active)
     }
 }
 EXPORT_SYMBOL(bcm_spi_voice_reset_all_dev);
+
+void bcm_voice_slicpwr_pinctrl_select_state(int state)
+{
+    struct device *dev;
+    int bus,slave_id;
+    struct bcm_spidev *pdata;
+
+    if (state < 0)
+        return;
+
+    for (bus = 0; bus < MAX_BUS; bus++) {
+        for (slave_id = 0; slave_id < MAX_SLAVES; slave_id++) {
+            dev = slaves[bus][slave_id];
+            if (!dev) 
+                continue;
+
+            pdata = dev_get_drvdata(dev);
+            if (!pdata || state >= pdata->num_pinctrl_names) {
+                dev_err(dev, "No driver data or unknown pin control states.\n");	
+                return;
+            }
+
+            if (state == SLIC_POWER_OFF && pdata->reset_gpio) {
+                if (gpiod_direction_input(pdata->reset_gpio))
+                    dev_err(dev, "Failed to set slic reset gpio_%d to input.\n", desc_to_gpio(pdata->reset_gpio));
+            }
+
+            if (pdata->pinmux && pdata->pin_states[state]) {
+                if (pinctrl_select_state(pdata->pinmux, pdata->pin_states[state]))
+                    dev_err(dev, "Failed to select slic power control pin state.\n");						
+            }
+
+        }
+    }
+}
+EXPORT_SYMBOL(bcm_voice_slicpwr_pinctrl_select_state);

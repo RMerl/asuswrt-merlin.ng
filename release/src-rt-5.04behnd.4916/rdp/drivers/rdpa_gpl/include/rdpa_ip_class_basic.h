@@ -132,20 +132,21 @@ typedef struct {
     uint16_t dst_port;   /**< Destination port */
     rdpa_traffic_dir dir;/**< Traffic direction */
     uint8_t tcp_pure_ack;/**< TCP pure ack flow */
-#if defined(BCM_DSL_RDP)
-    uint8_t ingress_radio_idx;
-#endif
-#if defined(XRDP_RGEN6)
-    uint8_t vtag_num;
-    uint8_t tos;
-#endif
+    uint8_t vtag_num;    /**< For Gen6, in 5-tuple; For Gen4, not in 5-tuple */
+    uint8_t tos;         /**< For Gen6, in 5-tuple; For Gen4, not in 5-tuple */
     uint8_t pbit;
     uint8_t is_ctx_ext;
     uint8_t client_idx;  /**< Client index used for flooding,  \XRDP_LIMITED */
+    bdmf_object_handle port_ingress_obj;  /**< RDPA ingress Interface */
+    uint8_t  is_inner_flow;
+    uint32_t tunnel_key;
+    uint32_t tunnel_key_mask;
+    uint32_t tunnel_flowid;
 #if defined(CONFIG_RUNNER_FPI)
     rdpa_fpi_mode_t fpi_mode;
+#else
+    rdpa_dummy_enum_t reserved;
 #endif
-    bdmf_object_handle port_ingress_obj;  /**< RDPA ingress Interface */
 } rdpa_ip_flow_key_t;
 
 /** @} end of ip_class Doxygen group. */
@@ -205,7 +206,7 @@ struct rdpa_rnr_u {
        uint32_t reserved0:2;         /* unused */
        uint32_t flowring_idx:16;     /* Tx flowring index */
        uint32_t radio_idx:2;         /* Radio index */
-       uint32_t llcsnap_flag:1;      /* Indicates llcsnap header insertion in processing Used only in XRDP */
+       uint32_t llcsnap_flag:1;      /* Indicates llcsnap header insertion in processing */
        uint32_t priority:3;          /* Tx Priority */
        uint32_t ssid:4;              /* SSID */
        uint32_t flow_prio:2;         /* flow priority - used for packet buffer reservation */

@@ -1,6 +1,0 @@
-SBC8641D BOARD
-M:	Paul Gortmaker <paul.gortmaker@windriver.com>
-S:	Maintained
-F:	board/sbc8641d/
-F:	include/configs/sbc8641d.h
-F:	configs/sbc8641d_defconfig

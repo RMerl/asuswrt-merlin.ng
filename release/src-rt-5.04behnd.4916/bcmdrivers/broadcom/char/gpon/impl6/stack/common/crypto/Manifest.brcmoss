@@ -1,0 +1,7 @@
+OSS_REFERENCE_Name: OpenBSD-crypto
+OSS_REFERENCE_Version: v1.2
+OSS_REFERENCE_License: BSD
+OSS_REFERENCE_DownloadURL: http://fxr.watson.org/fxr/source/crypto/?v=OPENBSD https://github.com/qemu/qemu/tree/master/crypto
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath:  ./
+

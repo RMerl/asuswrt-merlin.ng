@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -43,10 +43,8 @@ typedef enum
 	service_queues_runner_image = image_0_runner_image,
 	image_1_runner_image = 1,
 	processing1_runner_image = image_1_runner_image,
-	pktgen_tx_runner_image = image_1_runner_image,
-	tcpspdtest_engine_runner_image = image_1_runner_image,
-	spdsvc_gen_runner_image = image_1_runner_image,
 	common_reprocessing_runner_image = image_1_runner_image,
+	ip_reassembly_runner_image = image_1_runner_image,
 	image_2_runner_image = 2,
 	processing2_runner_image = image_2_runner_image,
 	cpu_tx_runner_image = image_2_runner_image,
@@ -54,25 +52,22 @@ typedef enum
 	processing3_runner_image = image_3_runner_image,
 	cpu_rx_runner_image = image_3_runner_image,
 	spu_request_runner_image = image_3_runner_image,
-	spdsvc_analyzer_runner_image = image_3_runner_image,
 	image_4_runner_image = 4,
 	processing4_runner_image = image_4_runner_image,
 	dhd_tx_post_runner_image = image_4_runner_image,
-	spdsvc_wlan_txpost_runner_image = image_4_runner_image,
 	spu_response_runner_image = image_4_runner_image,
 	image_5_runner_image = 5,
 	processing5_runner_image = image_5_runner_image,
 	reporting_runner_image = image_5_runner_image,
 	direct_flow_runner_image = image_5_runner_image,
+	ip_fragmentation_runner_image = image_5_runner_image,
 	cpu_tx_mcore_runner_image = image_5_runner_image,
+	image_6_runner_image = 6,
+	us_tm_runner_image = image_6_runner_image,
 	image_7_runner_image = 7,
 	processing7_runner_image = image_7_runner_image,
 	flow_control_runner_image = image_7_runner_image,
 	ds_tm_runner_image = image_7_runner_image,
-	spdsvc_wlan_gen_runner_image = image_7_runner_image,
-	image_6_runner_image = 6,
-	processing6_runner_image = image_6_runner_image,
-	us_tm_runner_image = image_6_runner_image,
 	runner_image_last = 7,
 } rdp_runner_image_e;
 

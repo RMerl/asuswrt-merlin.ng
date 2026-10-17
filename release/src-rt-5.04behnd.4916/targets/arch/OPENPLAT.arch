@@ -13,7 +13,6 @@
 +# BUILD_DSLDIAGD_NONE is not set
 -# BUILD_STORAGESERVICE is not set
 +BUILD_STORAGESERVICE=y
-+# BUILD_NTFS_3G is not set
 +# BUILD_SAMBA is not set
 +BUILD_BEEP_SAMBA=y
 +# BUILD_SAMBA_NONE is not set

@@ -1,0 +1,12 @@
+if TARGET_SAM9X60EK
+
+config SYS_BOARD
+	default "sam9x60ek"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_CONFIG_NAME
+	default "sam9x60ek"
+
+endif

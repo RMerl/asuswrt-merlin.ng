@@ -1,7 +1,0 @@
-XILINX_ZYNQMP_R5 BOARDS
-M:	Michal Simek <michal.simek@xilinx.com>
-S:	Maintained
-F:	arch/arm/dts/zynqmp-r5*
-F:	board/xilinx/zynqmp_r5/
-F:	include/configs/xilinx_zynqmp_r5_*
-F:	configs/xilinx_zynqmp_r5_*

@@ -1,0 +1,5 @@
+ARM Board 2
+M:      Old Mother <hubbard@cupboard.org>
+S:      Maintained
+F:      boards/board2
+F:      configs/board2_defconfig

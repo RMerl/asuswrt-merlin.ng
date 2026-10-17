@@ -1,16 +1,16 @@
 #include "6764.dtsi"
 
-/ {
+&memory_controller {
+	memcfg = <(BP_DDR_TYPE_DDR4       | \
+		BP_DDR_SPEED_1600_22_22_22    | \
+		BP_DDR_TOTAL_SIZE_2048MB      | \
+		BP_DDR_DEVICE_WIDTH_16        | \
+		BP_DDR_TOTAL_WIDTH_16BIT      | \
+		BP_DDR_6764_DEFAULT           | \
+		BP_DDR_CONFIG_DEBUG)>;
+};
 
-	memory_controller {
-		memcfg = <(BP_DDR_TYPE_DDR4       | \
-			BP_DDR_SPEED_1600_22_22_22    | \
-			BP_DDR_TOTAL_SIZE_2048MB      | \
-			BP_DDR_DEVICE_WIDTH_16        | \
-			BP_DDR_TOTAL_WIDTH_16BIT      | \
-			BP_DDR_6764_DEFAULT           | \
-			BP_DDR_CONFIG_DEBUG)>;
-	};
+/ {
 	sfp: sfp {
 		compatible = "brcm,sfp";
 		pinctrl-name = "default";
@@ -164,3 +164,4 @@
 &hsspi {
 	status = "okay";
 };
+

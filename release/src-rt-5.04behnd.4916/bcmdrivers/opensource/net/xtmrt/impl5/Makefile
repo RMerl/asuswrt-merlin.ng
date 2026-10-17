@@ -14,7 +14,7 @@ bcmxtmrtdrv-objs := bcmxtmrt.o bcmxtmrtbond.o xtmrt_cfg.o xtmrt_bpm.o xtmrt_iq.o
 endif
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_63158_63146_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_63146_),)
 bcmxtmrtdrv-objs := bcmxtmrt.o bcmxtmrtbond.o xtmrt_cfg.o xtmrt_runner.o xtmrt_runner_ex.o
 endif
 
@@ -26,17 +26,17 @@ ifeq ($(strip $(BRCM_DRIVER_ADSL)),)
 EXTRA_CFLAGS += -DNO_XDSL_MODULE
 endif
 
-EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD) \
+EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD) \
 -I$(INC_BRCMSHARED_PRIV_PATH)/$(BRCM_BOARD) -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) -DDPERF_MON_BONDING_US -DDPTMBOND_US_PRIO_TRAFFIC_SPLIT
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/net/enet/shared
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/net/xtmrt/impl$(CONFIG_BCM_XTMRT_IMPL)
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_63158_63146_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_63146_),)
 EXTRA_CFLAGS += $(INC_RDP_FLAGS)
 EXTRA_CFLAGS += -I$(INC_RDPA_MW_PATH) 
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_63158_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_),)
 EXTRA_CFLAGS += -DHOST_PATH_ADD_BOND_HDR
 endif
 
@@ -51,6 +51,10 @@ endif
 
 ifneq ($(strip $(BCM_RDPA_TM_C)),)
 CFLAGS += -DTM_C_CODE
+endif
+
+ifneq ($(strip $(BRCM_DRIVER_TC)),)
+EXTRA_CFLAGS += -DXTMRT_TC_INGRESS_CONFIG
 endif
 
 EXTRA_CFLAGS += -DDUMP_DATA -DDFRAGMENT_ALIGNMENT_32BIT_DEBUG

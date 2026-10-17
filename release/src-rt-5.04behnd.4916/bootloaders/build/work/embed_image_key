@@ -7,6 +7,7 @@ use Getopt::Long;
 
 my $delg;
 my $keyfile;
+my $keyfile_size;
 my $name;
 
 GetOptions( "delegated_aes_base=s", \$delg, "key=s", \$keyfile, "name=s",
@@ -20,19 +21,38 @@ close(D);
 open( D, "<${delg}-iv.bin" ) or die("cant open ${delg}-iv.bin");
 my $iv = unpack( 'H*', <D> );
 close(D);
+
+my $aes_ek_len_bits = ( -s "${delg}-ek.bin" ) * 8;
+if ($aes_ek_len_bits == 128 || $aes_ek_len_bits == 192 || $aes_ek_len_bits == 256) {
+    # Check if the length matches 128, 192, or 256 bits
+    print "Encoding keys with AES-CBC-$aes_ek_len_bits!\n";
+} else {
+    # Quit the program if the length doesn't match any of the specified values
+    die "Invalid AES Encryption Key Length: $aes_ek_len_bits bits. Exiting...\n";
+}
+
+open( KR, '>>obj/binaries/image_key.keyring' );
+print KR "ENC_KEY_ALGO:" . "aes-cbc-$aes_ek_len_bits" . "\n";
+close(KR);
+
 foreach my $keys (@ARGV) {
     if ( $keys =~ /^(\S+):(\S+)$/ ) {
-	$name = $1;
-	$keyfile = $2;
-	my $encfile = $keyfile;
-	$encfile =~ s|^.*/|obj/binaries/|;
-	$encfile .= ".enc";
+        $name = $1;
+
+        $keyfile = $2;
+        $keyfile_size = (-s $keyfile);
+        my $encfile = $keyfile;
+        $encfile =~ s|^.*/|obj/binaries/|;
+        $encfile .= ".enc";
         my $cmd =
-"openssl enc -aes-128-cbc -K $ek -iv $iv -in $keyfile -out $encfile";
+            "openssl enc -aes-${aes_ek_len_bits}-cbc -K $ek -iv $iv -in $keyfile -out $encfile";
+
         ( system($cmd) == 0 ) or die("$cmd failed $!");
         open( K, "<$encfile" ) or die($!);
         open( KR, '>>obj/binaries/image_key.keyring' );
-        print KR "$name: " . unpack( 'H*', <K> ) . "\n";
+        print KR "$name:" . unpack( 'H*', <K> ) . "\n";
+        print KR "${name}_SIZE:" . $keyfile_size . "\n";
+        print KR "${name}_FILE:" . $keyfile . "\n";
         close(KR);
     }
     else {

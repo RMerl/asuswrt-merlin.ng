@@ -35,7 +35,9 @@ written consent.
 void rate_limiter_init(void);
 uint32_t rl_should_drop(uint32_t wfd_id, uint32_t if_id, int dir,  uint32_t size);
 uint32_t rl_chain_check_and_drop(uint32_t wfd_id, uint32_t if_id, int dir, pNBuff_t pNBuff);
+uint32_t rl_sta_tx_should_drop(uint8_t wl_unit, uint16_t key, uint32_t size);
+uint32_t rl_sta_rx_should_drop(uint8_t wl_unit, pNBuff_t pNBuff);
 extern bool wfd_rl_enabled;
+extern bool wfd_sta_rl_enabled;
 
 #endif
-

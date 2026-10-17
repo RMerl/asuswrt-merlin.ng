@@ -1,0 +1,79 @@
+if ROCKCHIP_RK3368
+
+choice
+	prompt "RK3368 board"
+
+config TARGET_LION_RK3368
+        bool "Theobroma Systems RK3368-uQ7 (Lion) module"
+	select ARCH_EARLY_INIT_R
+	help
+	  The RK3368-uQ7 is a micro-Qseven form-factor (40mm x 70mm,
+	  MXM-230 connector) system-on-module designed by Theobroma
+	  Systems for industrial applications.
+
+	  It provides the following features:
+	   - 8x Cortex-A53 (in 2 clusters of 4 cores each)
+	   - (on-module) up to 4GB of DDR3 memory
+	   - (on-module) SPI-NOR flash
+	   - (on-module) eMMC
+	   - Gigabit Ethernet (with an on-module KSZ9031 PHY)
+	   - USB
+	   - HDMI
+	   - MIPI-DSI/single-channel LVDS (muxed on the 'LVDS-A' pin-group)
+	   - various 'slow' interfaces (e.g. UART, SPI, I2C, I2S, ...)
+	   - on-module STM32 providing CAN, RTC and fan-control
+	   - (optional on-module) EAL4+-certified security module
+
+config TARGET_SHEEP
+	bool "Sheep board"
+	help
+	  Sheep board is designed by Rockchip as a EVB board
+	  for rk3368.
+
+config TARGET_GEEKBOX
+	bool "GeekBox"
+
+config TARGET_EVB_PX5
+        bool "Evb-PX5"
+	select ARCH_EARLY_INIT_R
+        help
+	 PX5 EVB is designed by Rockchip for automotive field
+         with integrated CVBS (TP2825) / MIPI DSI / CSI / LVDS
+         HDMI video input/output interface, audio codec ES8396,
+         WIFI/BT (on RTL8723BS), Gsensor BMA250E and light&proximity
+         sensor STK3410.
+endchoice
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0xff738200
+
+config ROCKCHIP_STIMER_BASE
+	default 0xff830020
+
+config SYS_SOC
+	default "rk3368"
+
+config SYS_MALLOC_F_LEN
+	default 0x4000
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+source "board/theobroma-systems/lion_rk3368/Kconfig"
+source "board/rockchip/sheep_rk3368/Kconfig"
+source "board/geekbuying/geekbox/Kconfig"
+source "board/rockchip/evb_px5/Kconfig"
+
+config SPL_STACK_R_ADDR
+	default 0x04000000
+
+config TPL_STACK
+        default 0xff8cffff
+
+config TPL_TEXT_BASE
+        default 0xff8c1000
+
+endif

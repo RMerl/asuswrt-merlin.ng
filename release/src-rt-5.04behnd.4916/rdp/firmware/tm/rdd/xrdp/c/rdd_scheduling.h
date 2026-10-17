@@ -49,7 +49,6 @@
 #define RDD_ETH_TM_RATE_LIMITER_VALID_SIZE                        RDD_DS_TM_RATE_LIMITER_VALID_SIZE
 #define RDD_ETH_TM_RATE_LIMITER_BUDGET_VALID_PTR                  RDD_DS_TM_RATE_LIMITER_BUDGET_VALID_PTR
 #define RDD_ETH_TM_RATE_LIMITER_BUDGET_VALID_SIZE                 RDD_DS_TM_RATE_LIMITER_BUDGET_VALID_SIZE
-#define RDD_ETH_TM_RATE_LIMITER_FORCE_WAKEUP_PTR                  RDD_DS_TM_RATE_LIMITER_FORCE_WAKEUP_PTR
 #define RDD_ETH_TM_SCHEDULER_POOL_PTR                             RDD_DS_TM_SCHEDULER_POOL_PTR
 #define RDD_ETH_TM_SCHEDULER_TABLE_PTR                            RDD_DS_TM_SCHEDULER_TABLE_PTR
 #define RDD_ETH_TM_SCHEDULER_TABLE_SIZE                           RDD_DS_TM_SCHEDULER_TABLE_SIZE
@@ -68,7 +67,6 @@
 #define RDD_PON_TM_RATE_LIMITER_VALID_SIZE                        RDD_US_TM_RATE_LIMITER_VALID_SIZE
 #define RDD_PON_TM_RATE_LIMITER_BUDGET_VALID_PTR                  RDD_US_TM_RATE_LIMITER_BUDGET_VALID_PTR
 #define RDD_PON_TM_RATE_LIMITER_BUDGET_VALID_SIZE                 RDD_US_TM_RATE_LIMITER_BUDGET_VALID_SIZE
-#define RDD_PON_TM_RATE_LIMITER_FORCE_WAKEUP_PTR                  RDD_US_TM_RATE_LIMITER_FORCE_WAKEUP_PTR
 #define RDD_PON_TM_SCHEDULER_POOL_PTR                             RDD_US_TM_SCHEDULER_POOL_PTR
 #define RDD_PON_TM_SCHEDULER_TABLE_PTR                            RDD_US_TM_SCHEDULER_TABLE_PTR
 #define RDD_PON_TM_SCHEDULER_TABLE_SIZE                           RDD_US_TM_SCHEDULER_TABLE_SIZE
@@ -146,7 +144,10 @@ typedef struct
     uint32_t bbh_queue_descriptor_table_size;
     uint8_t *bbh_queue_descriptor_table_p;
     uint8_t *probability_calc_desc_table_p;
-    uint8_t *laqm_debug_table_p;
+    uint8_t *flush_table_p;
+    uint8_t *enabled_queues_table_p;
+    uint8_t *pi2_stats_table_p;
+    uint8_t *lq_stats_table_p;
     uint32_t queue_descriptor_table_size;
     uint8_t *queue_descriptor_table_p;
     uint8_t *aqm_queue_descriptor_table_p;
@@ -154,7 +155,7 @@ typedef struct
     uint32_t qm_queue_start;
     uint32_t qm_queue_end;
     uint8_t  bbh_bound;
-    uint8_t *rl_force_wakeup_p;
+    uint8_t *cbcm_p;
 } rdd_tm_entity_info;
 
 /* generic API to get\set any scheduler_descriptor */
@@ -164,6 +165,12 @@ bdmf_error_t rdd_scheduler_descriptor_get(tm_identifier_e tm_identity, uint8_t s
 /* generic API to get\set any bbh queue descriptor */
 bdmf_error_t rdd_bbh_queue_descriptor_get(tm_identifier_e tm_identity, uint8_t bbh_q_index, BBH_QUEUE_DESCRIPTOR_STRUCT *bbh_queue_descriptor);
 bdmf_error_t rdd_bbh_queue_descriptor_set(tm_identifier_e tm_identity, uint8_t bbh_q_index, BBH_QUEUE_DESCRIPTOR_STRUCT *bbh_queue_descriptor);
+
+#if CHIP_VER >= RDP_GEN_62
+/* generic API to reset ingress counters for all bbh queues for tm_identity */
+bdmf_error_t rdd_wan_bbh_queue_init_counters(bdmf_boolean restore_old_values);
+bdmf_error_t rdd_wan_bbh_queue_store_counters(void);
+#endif
 
 /* initlize scheduler - to be called on create, init sched structure and bbh queue descriptor */
 bdmf_error_t rdd_scheduler_init(tm_identifier_e tm_identity, int16_t channel_id, uint8_t scheduler_index, 
@@ -186,10 +193,9 @@ bdmf_error_t rdd_rate_limiter_params_descriptor_get(tm_identifier_e tm_identity,
 /* API to RDPA level */
 void rdd_set_queue_enable(uint32_t qm_queue_index, bdmf_boolean enable);
 void rdd_scheduler_aqm_stats_write(tm_identifier_e tm_identity, uint8_t scheduler_index, rdpa_rdd_sched_type_t scheduler_type, int enable);
+bdmf_error_t rdd_scheduler_queue_qstat_enable_set(tm_identifier_e tm_identity, uint16_t qm_queue_index, uint8_t qstat_enable);
 
-/* Internal RDD init function */
-/* init bbh queues */
-void rdd_bbh_queue_init(void);
+
 
 /* initialize a general timer action */
 void rdd_general_timer_set(uint16_t core_index, uint16_t func_pointer, uint32_t timer_period, uint32_t timer_action);
@@ -234,4 +240,23 @@ int rdd_g9991_vport_to_emac_mapping_cfg(rdd_rdd_vport vport, rdpa_emac emac);
 int rdd_g9991_control_sid_set(rdd_rdd_vport vport, rdpa_emac emac);
 #endif
 
+void *get_schedulers_info_flush_table_p(int tm_identity);
+void *get_schedulers_info_enabled_queues_table_p(int tm_identity);
+void *get_schedulers_info_probability_calc_desc_table_p(int tm_identity);
+void *get_pi2_stats_table_p(int tm_identity);
+void *get_lq_stats_table_p(int tm_identity);
+tm_identifier_e get_tm_identity_from_qm_queue(uint32_t qm_queue);
+void *get_schedulers_info_cbcm_p(int tm_identity);
+uint32_t get_schedulers_info_qm_queue_start(int tm_identity);
+uint32_t get_schedulers_info_qm_queue_end(int tm_identity);
+
+#ifdef TM_C_CODE
+void _set_queue_enable_per_tx_core(uint32_t qm_queue_index, bdmf_boolean enable);
+/* init bbh queues */
+bdmf_error_t rdd_bbh_queue_init(tm_identifier_e tm_identity, uint32_t bb_dest);
+#else
+/* init bbh queues */
+void rdd_bbh_queue_init(void);
 #endif
+
+#endif /* _SCHEDULING_H*/

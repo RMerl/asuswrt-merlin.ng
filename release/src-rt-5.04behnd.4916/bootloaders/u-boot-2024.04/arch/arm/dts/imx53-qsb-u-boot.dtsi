@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/ {
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

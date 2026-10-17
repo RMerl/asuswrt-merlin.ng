@@ -1,0 +1,15 @@
+if TARGET_ANBERNIC_RGXX3_RK3566
+
+config SYS_BOARD
+	default "rgxx3_rk3566"
+
+config SYS_VENDOR
+	default "anbernic"
+
+config SYS_CONFIG_NAME
+	default "anbernic-rgxx3-rk3566"
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+
+endif

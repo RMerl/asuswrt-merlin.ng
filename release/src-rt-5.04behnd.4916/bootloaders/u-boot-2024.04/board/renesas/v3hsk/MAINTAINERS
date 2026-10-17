@@ -1,0 +1,7 @@
+V3HSK BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a77980-v3hsk*
+F:	board/renesas/v3hsk/
+F:	configs/r8a77980_v3hsk_defconfig
+F:	include/configs/v3hsk.h

@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		blob: blob {
+			filename = "blob_syms.bin";
+			elf-filename = "blob_syms";
+			elf-base-sym = "__my_start_sym";
+		};
+
+		inset {
+			type = "null";
+			offset-from-elf = <&blob>, "val3", <0>;
+			size = <4>;
+			overlap;
+		};
+
+		inset2 {
+			type = "null";
+			offset-from-elf = <&blob>, "val3", <4>;
+			size = <4>;
+			overlap;
+		};
+	};
+};

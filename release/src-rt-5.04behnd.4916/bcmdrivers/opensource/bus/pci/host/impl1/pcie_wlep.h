@@ -57,7 +57,7 @@ struct wlep_dev;
 
 /*
  * +-----------------------------------------------------
- *  Function declerations
+ *  Function declarations
  * +-----------------------------------------------------
  */
 /* To HC */
@@ -76,7 +76,7 @@ extern void wlep_free_dev(struct wlep_dev *dev);
 
 /*
  * +-----------------------------------------------------
- *  Variable declerations
+ *  Variable declarations
  * +-----------------------------------------------------
  */
 

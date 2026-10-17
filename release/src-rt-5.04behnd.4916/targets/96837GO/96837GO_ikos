@@ -49,7 +49,7 @@ BRCM_GLIBC=y
 #
 # Root file system selection
 #
-BRCM_ROOTFS_SQUASHFS=y
+BRCM_FLASH_NOR_ROOTFS_SQUASHFS=y
 # BRCM_ROOTFS_ALL is not set
 BRCM_SQUASHFS_FRAGMENT_CACHE_SIZE=1
 BUILD_NOR_KERNEL_LZMA=y
@@ -147,14 +147,12 @@ BRCM_SWITCH_SCHED_SP=y
 # BUILD_BCM_ALLOW_REAL_HW_SWITCHING is not set
 # BUILD_ETHSWCTL is not set
 # BRCM_DRIVER_VLAN is not set
-# BUILD_VLANCTL is not set
 # BUILD_ETHTOOL is not set
 
 #
 # USB, SATA and Storage Options Selection
 #
 # BUILD_SATA is not set
-# BRCM_DRIVER_SATA_TEST is not set
 # LINUX_DRIVER_USB_HOST is not set
 # LINUX_DRIVER_USBNET is not set
 # LINUX_KERNEL_USBMASS is not set
@@ -188,7 +186,6 @@ BCM_WLIMPL=
 # BUILD_DHDCTL is not set
 # BUILD_WLHSPOT is not set
 # BUILD_WLVISUALIZATION is not set
-# BUILD_NAS is not set
 # WLSETUP_WPS is not set
 WLSETUP_none=y
 BUILD_WPS_BTN=
@@ -299,7 +296,6 @@ BUILD_DPROXYWITHPROBE=
 # Other Features
 #
 # BRCM_ETH_PWRSAVE is not set
-# BUILD_WL_IDLE_PWRSAVE is not set
 # BUILD_TMS is not set
 # BUILD_AUTODETECTION is not set
 # BUILD_LEDCTL is not set
@@ -401,7 +397,6 @@ BUILD_DEBUG_TOOLS=y
 # BUILD_SENDPACKETS is not set
 # BUILD_IPERF is not set
 # BUILD_STRACE is not set
-# BUILD_DISABLE_EXEC_STACK is not set
 # BUILD_SPICTL is not set
 
 BUILD_KERNEL_SEC_COT_PREREQS=y

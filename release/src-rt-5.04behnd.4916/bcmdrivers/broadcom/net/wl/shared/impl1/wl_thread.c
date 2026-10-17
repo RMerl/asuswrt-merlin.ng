@@ -37,7 +37,9 @@
 #include <wlc_channel.h>
 #include <wlc_pub.h>
 #include <wl_linux.h>
-#include <wl_pktc.h>
+#if defined(BCM_PKTFWD)
+#include <wl_pktfwd.h>
+#endif /* BCM_PKTFWD */
 #if defined(BCM_AWL)
 #include <wl_awl.h>
 #endif /* BCM_AWL */
@@ -45,9 +47,6 @@
 
 extern void wl_dpc_rxwork(struct wl_task *task);
 extern void wl_start_txqwork(wl_task_t * task);
-#if !defined(BCM_PKTFWD)
-extern void BCMFASTPATH wl_start_txchain_txqwork(pktc_info_t * pktci);
-#endif
 
 #ifdef CONFIG_BCM_WFD_WL_UNION
 static bool wl_pktfwd_has_rx_work(struct wl_info *wl)
@@ -77,9 +76,9 @@ static int wl_worker_thread_func(void *data)
 		wait_event_interruptible(wl->kthread_wqh,
 		    (wl->txq_dispatched || wl->rxq_dispatched ||
 		     wl_pktfwd_has_rx_work(wl) ||
-#if defined(PKTC_TBL)
+#if defined(BCM_PKTFWD)
 			wl->txq_txchain_dispatched ||
-#endif
+#endif /* BCM_PKTFWD */
 #if defined(BCM_AWL) && defined(WL_AWL_RX)
 			wl->awl_sp_rxq_dispatched ||
 #endif /* BCM_AWL && WL_AWL_RX */
@@ -101,22 +100,9 @@ static int wl_worker_thread_func(void *data)
 			wl_awl_process_slowpath_rxpkts(wl);
 #endif /* BCM_AWL && WL_AWL_RX */
 
-#if defined(PKTC_TBL)
 #if defined(BCM_PKTFWD)
 		wl_pktfwd_dnstream(wl);	/* independent of txq_txchain_dispatched */
-#else /* ! BCM_PKTFWD */
-		{
-			struct wl_if *wlif;
-			wlif = wl->if_list;
-			while (wlif != NULL) {
-				if (wlif->pktci && wlif->pktci->_txq_txchain_dispatched) {
-					wl_start_txchain_txqwork(wlif->pktci);
-				}
-				wlif = wlif->next;
-			}
-		}
-#endif /* ! BCM_PKTFWD */
-#endif /* PKTC_TBL */
+#endif /* BCM_PKTFWD */
 
 		/*
 		 * If this thread is running with Real Time priority, be nice

@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2016 Rockchip Electronics Co., Ltd
+ */
+
+/dts-v1/;
+#include "rk3288-evb.dtsi"
+
+/ {
+	model = "Evb-RK3288";
+	compatible = "evb-rk3288,evb-rk3288", "rockchip,rk3288";
+
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&pwm1 {
+	status = "okay";
+};

@@ -1,0 +1,36 @@
+U-Boot standard boot device (bootstd)
+=====================================
+
+This is the controlling device for U-Boot standard boot, providing a way to
+boot operating systems in a way that can be controlled by distros.
+
+Required properties:
+
+compatible: "u-boot,boot-std"
+
+Optional properties:
+
+filename-prefixes:
+   List of strings, each a directory to search for bootflow files
+
+bootdev-order:
+   List of bootdevs to check for bootflows, each a bootdev label (the media
+   uclass followed by the numeric sequence number of the media device)
+
+
+Example:
+
+	bootstd {
+		compatible = "u-boot,boot-std";
+
+		filename-prefixes = "/", "/boot/";
+		bootdev-order = "mmc2", "mmc1";
+
+		extlinux {
+			compatible = "u-boot,extlinux";
+		};
+
+		efi {
+			compatible = "u-boot,distro-efi";
+		};
+	};

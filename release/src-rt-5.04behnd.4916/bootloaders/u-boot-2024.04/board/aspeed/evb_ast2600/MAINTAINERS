@@ -1,0 +1,6 @@
+EVB AST2600 BOARD
+M:	Chia-Wei, Wang <chiawei_wang@aspeedtech.com>
+S:	Maintained
+F:	board/aspeed/evb_ast2600/
+F:	include/configs/evb_ast2600.h
+F:	configs/evb-ast2600_defconfig

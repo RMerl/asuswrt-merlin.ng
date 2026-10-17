@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2021 Linaro
+ */
+
+/dts-v1/;
+/plugin/;
+
+&{/} {
+	vref_adc: regulator-vref-adc {
+		compatible = "regulator-fixed";
+		regulator-name = "vref_adc";
+		regulator-min-microvolt = <2400000>;
+		regulator-max-microvolt = <2400000>;
+		regulator-always-on;
+	};
+};
+
+&ecspi2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	adc0: adc@0 {
+		compatible = "maxim,max11108";
+		reg = <0>;
+		vref-supply = <&vref_adc>;
+		spi-max-frequency = <20000000>;
+		status = "okay";
+	};
+};

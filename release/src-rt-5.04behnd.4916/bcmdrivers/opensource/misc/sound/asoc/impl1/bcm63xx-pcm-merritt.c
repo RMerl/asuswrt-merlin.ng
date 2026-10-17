@@ -40,11 +40,12 @@
 #define SILICON_VERIFICATION 0
 
 static int rx_update_iff = 1;
+static int tx_update_iff = 1;
 
 /* SW loop back is based on 32K sample rate 
   10ms delay, 2 tx channels and 2 or 4  
   rx channels only*/
-#ifdef I2S_SW_LOOPBACK
+#ifdef CONFIG_SND_SOC_MAPLEGROVE_SW_LOOPBACK
 #define RX_CHAN					2
 #define TX_PERIODS_SIZE_BYTES 	2560
 #define RX_PERIODS_SIZE_BYTES 	(2560 + 2560*RX_CHAN/2 )
@@ -81,7 +82,8 @@ static struct snd_pcm_hardware bcm63xx_pcm_hardware = {
 	.channels_max = 8,	/* max channels */
 };
 
-static int bcm63xx_pcm_hw_params(struct snd_pcm_substream *substream,
+static int bcm63xx_pcm_hw_params(struct snd_soc_component *component,
+				 struct snd_pcm_substream *substream,
 				 struct snd_pcm_hw_params *params)
 {
 	struct i2s_dma_desc *dma_desc;
@@ -94,25 +96,23 @@ static int bcm63xx_pcm_hw_params(struct snd_pcm_substream *substream,
 	dma_desc = kzalloc(sizeof(*dma_desc), GFP_NOWAIT);
 	if (!dma_desc)
 		return -ENOMEM;
-
-	snd_soc_dai_set_dma_data(rtd->cpu_dai, substream, dma_desc);
-
+	snd_soc_dai_set_dma_data(asoc_rtd_to_cpu(rtd, 0), substream, dma_desc);
 	return 0;
 }
 
-static int bcm63xx_pcm_hw_free(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_hw_free(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
 	struct i2s_dma_desc	*dma_desc;
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 
-	dma_desc = snd_soc_dai_get_dma_data(rtd->cpu_dai, substream);
+	dma_desc = snd_soc_dai_get_dma_data(asoc_rtd_to_cpu(rtd, 0), substream);
 	kfree(dma_desc);
 	snd_pcm_set_runtime_buffer(substream, NULL);
 
 	return 0;
 }
 
-static int bcm63xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
+static int bcm63xx_pcm_trigger(struct snd_soc_component *component,struct snd_pcm_substream *substream, int cmd)
 {
 	int ret = 0;
 	struct snd_soc_pcm_runtime *rtd;
@@ -120,12 +120,13 @@ static int bcm63xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 	struct regmap   *regmap_i2s;
 
 	rtd = substream->private_data;
-	i2s_priv = dev_get_drvdata(rtd->cpu_dai->dev);
+	i2s_priv = dev_get_drvdata(asoc_rtd_to_cpu(rtd, 0)->dev);
 	regmap_i2s = i2s_priv->regmap_i2s;
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		switch (cmd) {
 		case SNDRV_PCM_TRIGGER_START:
+			tx_update_iff = 1;
 			regmap_update_bits(regmap_i2s,
 					   I2S_TX_IRQ_EN,
 					   I2S_TX_DESC_OFF_INTR_EN,
@@ -138,13 +139,7 @@ static int bcm63xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 		case SNDRV_PCM_TRIGGER_STOP:
 		case SNDRV_PCM_TRIGGER_SUSPEND:
 		case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-			regmap_write(regmap_i2s,
-				     I2S_TX_IRQ_EN,
-				     0);
-			regmap_update_bits(regmap_i2s,
-					   I2S_TX_CFG,
-					   I2S_TX_ENABLE_MASK,
-					   0);
+			tx_update_iff = 0;
 			break;
 		default:
 			ret = -EINVAL;
@@ -174,9 +169,8 @@ static int bcm63xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
 	return ret;
 }
 
-static int bcm63xx_pcm_prepare(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_prepare(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
-	int period_bytes;
 	struct i2s_dma_desc	*dma_desc;
 	struct regmap		*regmap_i2s;
 	struct bcm_i2s_priv	*i2s_priv;
@@ -184,8 +178,7 @@ static int bcm63xx_pcm_prepare(struct snd_pcm_substream *substream)
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	uint32_t regaddr_desclen, regaddr_descaddr;
 	struct bcm63xx_runtime_data *prtd = runtime->private_data;
-
-	dma_desc = snd_soc_dai_get_dma_data(rtd->cpu_dai, substream);
+	dma_desc = snd_soc_dai_get_dma_data(asoc_rtd_to_cpu(rtd, 0), substream);
 	dma_desc->dma_len  = snd_pcm_lib_period_bytes(substream);
 	dma_desc->dma_addr = runtime->dma_addr;
 	prtd->dma_addr_next = runtime->dma_addr +
@@ -199,14 +192,13 @@ static int bcm63xx_pcm_prepare(struct snd_pcm_substream *substream)
 	} else {
 		regaddr_desclen = I2S_RX_DESC_IFF_LEN;
 		regaddr_descaddr = I2S_RX_DESC_IFF_ADDR;
-#if I2S_SW_LOOPBACK
+#ifdef CONFIG_SND_SOC_MAPLEGROVE_SW_LOOPBACK
 		/*clear loop back buf each start*/
 		memset(lpbk_buf, 0, sizeof(lpbk_buf));
 		plpbk_period_area = runtime->dma_area;
 #endif
 	}
-
-	i2s_priv = dev_get_drvdata(rtd->cpu_dai->dev);
+	i2s_priv = dev_get_drvdata(asoc_rtd_to_cpu(rtd, 0)->dev);
 	regmap_i2s = i2s_priv->regmap_i2s;
 
 	regmap_write(regmap_i2s, regaddr_desclen, dma_desc->dma_len);
@@ -216,7 +208,7 @@ static int bcm63xx_pcm_prepare(struct snd_pcm_substream *substream)
 }
 
 static snd_pcm_uframes_t
-bcm63xx_pcm_pointer(struct snd_pcm_substream *substream)
+bcm63xx_pcm_pointer(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
 	snd_pcm_uframes_t x;
 	struct bcm63xx_runtime_data *prtd = substream->runtime->private_data;
@@ -227,24 +219,24 @@ bcm63xx_pcm_pointer(struct snd_pcm_substream *substream)
 	return x == substream->runtime->buffer_size ? 0 : x;
 }
 
-static int bcm63xx_pcm_mmap(struct snd_pcm_substream *substream,
+static int bcm63xx_pcm_mmap(struct snd_soc_component *component,struct snd_pcm_substream *substream,
 			    struct vm_area_struct *vma)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 
-	return dma_mmap_writecombine(substream->pcm->card->dev, vma,
+	return dma_mmap_wc(substream->pcm->card->dev, vma,
 				     runtime->dma_area,
 				     runtime->dma_addr,
 				     runtime->dma_bytes);
 }
 
-static int bcm63xx_pcm_open(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_open(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
 	int ret = 0;
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct bcm63xx_runtime_data *prtd;
 
-#if I2S_SW_LOOPBACK
+#ifdef CONFIG_SND_SOC_MAPLEGROVE_SW_LOOPBACK
 	/* tx and rx have different period size*/
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 		bcm63xx_pcm_hardware.period_bytes_max = TX_PERIODS_SIZE_BYTES;
@@ -285,7 +277,7 @@ out:
 	return ret;
 }
 
-static int bcm63xx_pcm_close(struct snd_pcm_substream *substream)
+static int bcm63xx_pcm_close(struct snd_soc_component *component,struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct bcm63xx_runtime_data *prtd = runtime->private_data;
@@ -293,20 +285,6 @@ static int bcm63xx_pcm_close(struct snd_pcm_substream *substream)
 	kfree(prtd);
 	return 0;
 }
-
-static struct snd_pcm_ops bcm63xx_pcm_ops = {
-	.open = bcm63xx_pcm_open,
-	.close = bcm63xx_pcm_close,
-	.ioctl = snd_pcm_lib_ioctl,
-	.hw_params = bcm63xx_pcm_hw_params,
-	.hw_free = bcm63xx_pcm_hw_free,
-	.prepare = bcm63xx_pcm_prepare,
-	.trigger = bcm63xx_pcm_trigger,
-	.pointer = bcm63xx_pcm_pointer,
-	.mmap  = bcm63xx_pcm_mmap,
-};
-
-
 
 static irqreturn_t i2s_dma_isr(int irq, void *bcm_i2s_priv)
 {
@@ -330,17 +308,16 @@ static irqreturn_t i2s_dma_isr(int irq, void *bcm_i2s_priv)
 		runtime = substream->runtime;
 		rtd = substream->private_data;
 		prtd = runtime->private_data;
-		dma_desc = snd_soc_dai_get_dma_data(rtd->cpu_dai, substream);
-
+		dma_desc = snd_soc_dai_get_dma_data(asoc_rtd_to_cpu(rtd, 0), substream);
 		offlevel = (int_status & I2S_RX_DESC_OFF_LEVEL_MASK) >>
 			   I2S_RX_DESC_OFF_LEVEL_SHIFT;
 		while (offlevel) {
-			regmap_read(regmap_i2s, I2S_RX_DESC_OFF_ADDR, &off_addr);
-			regmap_read(regmap_i2s, I2S_RX_DESC_OFF_LEN, &off_len);
-#if I2S_SW_LOOPBACK
+#ifdef CONFIG_SND_SOC_MAPLEGROVE_SW_LOOPBACK
 			int i,j;
-			unsigned int *p = (unsigned int *)plpbk_period_area;
-			unsigned int *plpbk = (unsigned int *)lpbk_buf;
+			unsigned int *p;
+			unsigned int *plpbk;
+			p = (unsigned int *)plpbk_period_area;
+			plpbk = (unsigned int *)lpbk_buf;
 			if (rx_update_iff) {
 				for (i = 0,j = 0; 
 					i < snd_pcm_lib_period_bytes(substream)/sizeof(*p); 
@@ -353,6 +330,8 @@ static irqreturn_t i2s_dma_isr(int irq, void *bcm_i2s_priv)
 					plpbk_period_area = runtime->dma_area;
 			}
 #endif
+			regmap_read(regmap_i2s, I2S_RX_DESC_OFF_ADDR, &off_addr);
+			regmap_read(regmap_i2s, I2S_RX_DESC_OFF_LEN, &off_len);
 			offlevel--;
 		}
 		prtd->dma_addr_next = off_addr + off_len;
@@ -394,7 +373,7 @@ static irqreturn_t i2s_dma_isr(int irq, void *bcm_i2s_priv)
 		runtime = substream->runtime;
 		rtd = substream->private_data;
 		prtd = runtime->private_data;
-		dma_desc = snd_soc_dai_get_dma_data(rtd->cpu_dai, substream);
+		dma_desc = snd_soc_dai_get_dma_data(asoc_rtd_to_cpu(rtd, 0), substream);
 
 		offlevel = (int_status & I2S_TX_DESC_OFF_LEVEL_MASK) >>
 			   I2S_TX_DESC_OFF_LEVEL_SHIFT;
@@ -409,7 +388,10 @@ static irqreturn_t i2s_dma_isr(int irq, void *bcm_i2s_priv)
 			I2S_TX_DESC_IFF_LEVEL_SHIFT;
 		availdepth = I2S_DESC_FIFO_DEPTH - ifflevel;
 
-		while (availdepth) {
+		while (availdepth && tx_update_iff) {
+#ifdef CONFIG_SND_SOC_MAPLEGROVE_SW_LOOPBACK 
+			unsigned int rx_cfg;
+#endif
 			dma_desc->dma_addr +=
 					snd_pcm_lib_period_bytes(substream);
 			dma_desc->dma_area +=
@@ -423,25 +405,24 @@ static irqreturn_t i2s_dma_isr(int irq, void *bcm_i2s_priv)
 
 			prtd->dma_addr = dma_desc->dma_addr;
 
-#if I2S_SW_LOOPBACK 
-		unsigned int rx_cfg;
-		regmap_read(regmap_i2s, I2S_RX_CFG, &rx_cfg);
-		if( rx_cfg & I2S_RX_ENABLE_MASK ) {
-			/*copy played period data to lookback buf for rx*/
-			memcpy(lpbk_buf,dma_desc->dma_area,TX_PERIODS_SIZE_BYTES);
-		}
+#ifdef CONFIG_SND_SOC_MAPLEGROVE_SW_LOOPBACK 
+			regmap_read(regmap_i2s, I2S_RX_CFG, &rx_cfg);
+			if( rx_cfg & I2S_RX_ENABLE_MASK ) {
+				/*copy played period data to loopback buf for rx*/
+				memcpy(lpbk_buf,dma_desc->dma_area,TX_PERIODS_SIZE_BYTES);
+			}
 #endif
 
 #if SILICON_VERIFICATION
 #define OUTPUT_DATA_LEFT  0xFF00550A
 #define OUTPUT_DATA_RIGHT 0x5500FF0A
-unsigned int *p = (unsigned int *)dma_desc->dma_area;
-int i;
-for (i = 0;
-	i < snd_pcm_lib_period_bytes(substream)/sizeof(unsigned int); i += 2) {
-	*(p + i) = OUTPUT_DATA_LEFT;
-	*(p + i + 1) = OUTPUT_DATA_RIGHT;
-}
+			unsigned int *p = (unsigned int *)dma_desc->dma_area;
+			int i;
+			for (i = 0;
+				i < snd_pcm_lib_period_bytes(substream)/sizeof(unsigned int); i += 2) {
+				*(p + i) = OUTPUT_DATA_LEFT;
+				*(p + i + 1) = OUTPUT_DATA_RIGHT;
+			}
 #endif
 
 			regmap_write(regmap_i2s, I2S_TX_DESC_IFF_LEN,
@@ -470,9 +451,8 @@ static int bcm63xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
 	buf->dev.type = SNDRV_DMA_TYPE_DEV;
 	buf->dev.dev = pcm->card->dev;
 	buf->private_data = NULL;
-	buf->area = dma_alloc_writecombine(pcm->card->dev, size, &buf->addr,
-					   GFP_KERNEL);
-
+	buf->area = dma_alloc_wc(pcm->card->dev, size, &buf->addr,
+				GFP_KERNEL);
 	if (!buf->area)
 		return -ENOMEM;
 
@@ -481,13 +461,13 @@ static int bcm63xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
 	return 0;
 }
 
-static int bcm63xx_soc_pcm_new(struct snd_soc_pcm_runtime *rtd)
+static int bcm63xx_soc_pcm_new(struct snd_soc_component *component,struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_pcm *pcm = rtd->pcm;
 	struct bcm_i2s_priv *i2s_priv;
 	int ret;
 
-	i2s_priv = dev_get_drvdata(rtd->cpu_dai->dev);
+	i2s_priv = dev_get_drvdata(asoc_rtd_to_cpu(rtd, 0)->dev);
 
 	of_dma_configure(pcm->card->dev, pcm->card->dev->of_node, 1);
 
@@ -518,7 +498,7 @@ out:
 	return ret;
 }
 
-void bcm63xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
+void bcm63xx_pcm_free_dma_buffers(struct snd_soc_component *component,struct snd_pcm *pcm)
 {
 	int stream;
 	struct snd_dma_buffer *buf;
@@ -531,16 +511,24 @@ void bcm63xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
 		buf = &substream->dma_buffer;
 		if (!buf->area)
 			continue;
-		dma_free_writecombine(pcm->card->dev, buf->bytes,
+		dma_free_wc(pcm->card->dev, buf->bytes,
 				      buf->area, buf->addr);
 		buf->area = NULL;
 	}
 }
 
 static const struct snd_soc_component_driver bcm63xx_soc_platform = {
-	.ops = &bcm63xx_pcm_ops,
-	.pcm_new = bcm63xx_soc_pcm_new,
-	.pcm_free = bcm63xx_pcm_free_dma_buffers,
+	.open = bcm63xx_pcm_open,
+	.close = bcm63xx_pcm_close,
+	.hw_params = bcm63xx_pcm_hw_params,
+	.hw_free = bcm63xx_pcm_hw_free,
+	.prepare = bcm63xx_pcm_prepare,
+	.trigger = bcm63xx_pcm_trigger,
+	.pointer = bcm63xx_pcm_pointer,
+	.mmap  = bcm63xx_pcm_mmap,
+	.pcm_construct = bcm63xx_soc_pcm_new,
+	.pcm_destruct = bcm63xx_pcm_free_dma_buffers,
+
 };
 
 int bcm63xx_soc_platform_probe(struct platform_device *pdev,

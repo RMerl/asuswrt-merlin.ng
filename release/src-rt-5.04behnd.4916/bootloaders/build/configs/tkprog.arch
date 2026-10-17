@@ -20,10 +20,6 @@ if ( $ver && $ver =~ m/v[2|3]/g) {
     $c->set('CONFIG_SPL_SYS_MALLOC_F_LEN',4000);
 }
 
-if ( $c->get('CONFIG_BCM6878') ) {
-    $c->set('CONFIG_SPL_SIZE_LIMIT',83968);
-}
-
 # Disable options not needed for SPL
 
 $c->set('CONFIG_BCMBCA_HTTPD','n');
@@ -56,6 +52,8 @@ $c->unset('CONFIG_SUPPORT_EMMC_BOOT');
 $c->unset('CONFIG_MMC_SDHCI');
 $c->unset('CONFIG_MMC_SDHCI_BCMBCA');
 $c->unset('CONFIG_SPL_STACKPROTECTOR');
+$c->unset('CONFIG_SPL_SPI');
+
 #####   End of config changes #####
 $c->write();
 

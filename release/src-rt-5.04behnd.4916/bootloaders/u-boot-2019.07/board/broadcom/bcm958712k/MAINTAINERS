@@ -1,6 +1,0 @@
-BCM958712K BOARD
-M:	Jon Mason <jon.mason@broadcom.com>
-S:	Maintained
-F:	board/broadcom/bcmns2/
-F:	include/configs/bcm_northstar2.h
-F:	configs/bcm958712k_defconfig

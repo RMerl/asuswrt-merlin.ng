@@ -21,6 +21,7 @@
 /bdmf/code/gen pbit_to_gem AG_INC_DIR/rdpa_ag_pbit_to_gem.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen spdsvc AG_INC_DIR/rdpa_ag_spdsvc.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen tr471_spdsvc AG_INC_DIR/rdpa_ag_tr471_spdsvc.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen score AG_INC_DIR/rdpa_ag_score.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen gem AG_INC_DIR/rdpa_ag_gem.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen tcont AG_INC_DIR/rdpa_ag_tcont.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen ucast AG_INC_DIR/rdpa_ag_ucast.h rdpa what_generate:1 children:yes action_mask:0x3e
@@ -48,8 +49,6 @@
 /bdmf/code/gen egress_tm AG_GPL_DIR/rdpa_gpl_egress_tm.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen policer AG_GPL_DIR/rdpa_gpl_policer.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen rate_limit AG_GPL_DIR/rdpa_gpl_rate_limit.c rdpa what_generate:2 children:yes action_mask:0x3e
-/bdmf/code/gen vlan_action AG_GPL_DIR/rdpa_gpl_vlan_action.c rdpa what_generate:2 children:yes action_mask:0x3e
-/bdmf/code/gen dscp_to_pbit AG_GPL_DIR/rdpa_gpl_dscp_to_pbit.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen pbit_to_queue AG_GPL_DIR/rdpa_gpl_pbit_to_queue.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen pbit_to_dscp AG_GPL_DIR/rdpa_gpl_pbit_to_dscp.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen tc_to_queue AG_GPL_DIR/rdpa_gpl_tc_to_queue.c rdpa what_generate:2 children:yes action_mask:0x3e
@@ -65,6 +64,7 @@
 /bdmf/code/gen pbit_to_gem AG_GPL_DIR/rdpa_gpl_pbit_to_gem.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen spdsvc AG_GPL_DIR/rdpa_gpl_spdsvc.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen tr471_spdsvc AG_GPL_DIR/rdpa_gpl_tr471_spdsvc.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen score AG_GPL_DIR/rdpa_gpl_score.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen gem AG_GPL_DIR/rdpa_gpl_gem.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen tcont AG_GPL_DIR/rdpa_gpl_tcont.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen ucast AG_GPL_DIR/rdpa_gpl_ucast.c rdpa what_generate:2 children:yes action_mask:0x3e
@@ -91,7 +91,6 @@
 /bdmf/code/gen egress_tm AG_USR_DIR/rdpa_egress_tm_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen iptv AG_USR_DIR/rdpa_iptv_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen vlan AG_USR_DIR/rdpa_vlan_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
-/bdmf/code/gen vlan_action AG_USR_DIR/rdpa_vlan_action_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen tcont AG_USR_DIR/rdpa_tcont_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen tc_to_queue AG_USR_DIR/rdpa_tc_to_queue_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen llid AG_USR_DIR/rdpa_llid_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
@@ -117,6 +116,7 @@
 /bdmf/code/gen xtmchannel AG_USR_DIR/rdpa_xtmchannel_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen xtmflow AG_USR_DIR/rdpa_xtmflow_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen fpi AG_USR_DIR/rdpa_fpi_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen score AG_USR_DIR/rdpa_score_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 
 # Generate Python classes
 /bdmf/code/py UT_PY_DIR rdpa_ debug

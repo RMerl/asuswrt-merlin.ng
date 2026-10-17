@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		fit {
+			description = "test-desc";
+			#address-cells = <1>;
+
+			images {
+				kernel {
+					description = "Offset-Align Test";
+					type = "kernel";
+					arch = "arm64";
+					os = "linux";
+					compression = "none";
+					load = <00000000>;
+					entry = <00000000>;
+					u-boot-spl {
+						offset = <0x20>;
+					};
+					u-boot {
+						align = <0x10>;
+					};
+				};
+				fdt-1 {
+					description = "Pad-Before-After Test";
+					type = "flat_dt";
+					arch = "arm64";
+					compression = "none";
+					u-boot-spl-dtb {
+					};
+					text {
+						text-label = "test-id";
+						pad-before = <20>;
+						pad-after = <30>;
+					};
+					u-boot-dtb {
+					};
+				};
+			};
+
+			configurations {
+				default = "conf-1";
+				conf-1 {
+					description = "Kernel with FDT blob";
+					kernel = "kernel";
+					fdt = "fdt-1";
+				};
+			};
+		};
+	};
+};

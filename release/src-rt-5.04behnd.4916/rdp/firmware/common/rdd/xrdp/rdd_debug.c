@@ -92,7 +92,7 @@ const char *runner15_debug_strings[] = {};
 
 static const char *rdd_debug_all_runners_c_strings[16];
 static size_t rdd_debug_all_runners_c_len[16];
-#define BASE_ADDR 0xf000
+#define BASE_ADDR 0x8000
 
 #ifndef RUNNER0_DEBUG_C_STRING
 const char runner0_debug_c_strings[] = {};
@@ -295,13 +295,13 @@ const char *rdd_debug_get_debug_string(int image_id, int ind, uint32_t params_nu
     uint32_t i;
     if (ind >= rdd_debug_all_runners_n_strings[image_id])
     {
-        strcpy(undef_print, "Undefined PRINT: ");
+        strncpy(undef_print, "Undefined PRINT: ", sizeof(undef_print) - 1);
         for (i = 0; i < params_num; i++)
         {
-            sprintf(tmp, "param%d: 0x%%08X ", i);
-            strcat(undef_print, tmp);
+            snprintf(tmp, sizeof(tmp) - 1, "param%d: 0x%%08X ", i);
+            strncat(undef_print, tmp, sizeof(undef_print) - 1);
         }
-        strcat(undef_print, "\n");
+        strncat(undef_print, "\n", sizeof(undef_print) - 1);
         return undef_print;
     }
     return rdd_debug_all_runners_strings[image_id][ind];
@@ -368,7 +368,7 @@ void rdd_debug_prints_handle()
       }
       image_id = rdp_core_to_image_map[core_id];
 
-      strcpy(runner_debug_string_format, runner_debug_string_pre);
+      strncpy(runner_debug_string_format, runner_debug_string_pre, sizeof(runner_debug_string_format) - 1);
 
       if (mark == C_STRING_PRINT) /* print from C code */
       {

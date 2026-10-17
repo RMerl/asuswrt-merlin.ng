@@ -1,0 +1,15 @@
+if TARGET_IMX7_CM
+
+config SYS_BOARD
+	default "imx7-cm"
+
+config SYS_VENDOR
+	default "ronetix"
+
+config SYS_SOC
+	default "mx7"
+
+config SYS_CONFIG_NAME
+	default "imx7-cm"
+
+endif

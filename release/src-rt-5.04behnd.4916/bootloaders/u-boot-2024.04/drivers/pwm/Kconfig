@@ -1,0 +1,120 @@
+config DM_PWM
+	bool "Enable support for pulse-width modulation devices (PWM)"
+	depends on DM
+	help
+	  A pulse-width modulator emits a pulse of varying width and provides
+	  control over the duty cycle (high and low time) of the signal. This
+	  is often used to control a voltage level. The more time the PWM
+	  spends in the 'high' state, the higher the voltage. The PWM's
+	  frequency/period can be controlled along with the proportion of that
+	  time that the signal is high.
+
+config PWM_ASPEED
+	bool "Enable support for the Aspeed PWM"
+	depends on DM_PWM
+	select SYSCON
+	help
+	  This PWM is found on Ast2600 SoCs. It supports a programmable period
+	  and duty cycle. It provides 16 channels which can be independently
+	  programmed.
+
+config PWM_AT91
+	bool "Enable support for PWM found on AT91 SoC's"
+	depends on DM_PWM && ARCH_AT91
+	help
+	  Support for PWM hardware on AT91 based SoC.
+
+config PWM_CADENCE_TTC
+	bool "Enable support for the Cadence TTC PWM"
+	depends on DM_PWM && !CADENCE_TTC_TIMER
+	help
+	  Cadence TTC can be configured as timer which is done via
+	  CONFIG_CADENCE_TTC_TIMER or as PWM. This is covering only PWM now.
+
+config PWM_CROS_EC
+	bool "Enable support for the Chrome OS EC PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found on several Chrome OS devices and controlled by
+	  the Chrome OS embedded controller. It may be used to control the
+	  screen brightness and/or the keyboard backlight depending on the
+	  device.
+
+config PWM_EXYNOS
+	bool "Enable support for the Exynos PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found on Samsung Exynos 5250 and other Samsung SoCs. It
+	  supports a programmable period and duty cycle. A 32-bit counter is
+	  used. It provides 5 channels which can be independently
+	  programmed. Channel 4 (the last) is normally used as a timer.
+
+config PWM_IMX
+	bool "Enable support for i.MX27 and later PWM"
+	help
+	  This PWM is found i.MX27 and later i.MX SoCs.
+
+config PWM_MESON
+	bool "Enable support for Amlogic Meson SoCs PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found on Amlogic Meson SoCs. It supports a
+	  programmable period and duty cycle for 2 independant channels.
+
+config PWM_MTK
+	bool "Enable support for MediaTek PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found on MT7622, MT7623, and MT7629. It supports a
+	  programmable period and duty cycle.
+
+config PWM_ROCKCHIP
+	bool "Enable support for the Rockchip PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found on RK3288 and other Rockchip SoCs. It supports a
+	  programmable period and duty cycle. A 32-bit counter is used.
+	  Various options provided in the hardware (such as capture mode and
+	  continuous/single-shot) are not supported by the driver.
+
+config PWM_SANDBOX
+	bool "Enable support for the sandbox PWM"
+	help
+	  This is a sandbox PWM used for testing. It provides 3 channels and
+	  records the settings passed into it, but otherwise does nothing
+	  useful. The PWM can be enabled but is not connected to any outputs
+	  so this is not very useful.
+
+config PWM_S5P
+	bool "Enable non-DM support for S5P PWM"
+	depends on (S5P || ARCH_NEXELL)
+	default y
+
+config PWM_SIFIVE
+	bool "Enable support for SiFive PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found SiFive's FU540 and other SoCs.
+
+config PWM_TEGRA
+	bool "Enable support for the Tegra PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found on Tegra 20 and other Nvidia SoCs. It supports
+	  four channels with a programmable period and duty cycle. Only a
+	  32KHz clock is supported by the driver but the duty cycle is
+	  configurable.
+
+config PWM_SUNXI
+	bool "Enable support for the Allwinner Sunxi PWM"
+	depends on DM_PWM
+	help
+	  This PWM is found on H3, A64 and other Allwinner SoCs. It supports a
+	  programmable period and duty cycle. A 16-bit counter is used.
+
+config PWM_TI_EHRPWM
+	bool "Enable support for EHRPWM PWM"
+	depends on DM_PWM && ARCH_OMAP2PLUS
+	default y
+	help
+	  PWM driver support for the EHRPWM controller found on TI SOCs.

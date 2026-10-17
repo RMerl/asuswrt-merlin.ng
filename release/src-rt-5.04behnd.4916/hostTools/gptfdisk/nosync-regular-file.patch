@@ -1,0 +1,96 @@
+--- diskio-unix.cc	2022-04-15 01:17:12.000000000 +0200
++++ diskio-unix.cc	2024-07-07 06:04:29.147776014 +0200
+@@ -258,6 +258,7 @@
+ // looked into how to test for success in the underlying system calls...)
+ int DiskIO::DiskSync(void) {
+    int i, retval = 0, platformFound = 0;
++   struct stat64 st;
+ 
+    // If disk isn't open, try to open it....
+    if (!isOpen) {
+@@ -265,45 +266,55 @@
+    } // if
+ 
+    if (isOpen) {
+-      sync();
++       //regular file doen not need a sync
++       if (fstat64(fd, &st) == 0 && S_ISREG(st.st_mode))
++       {
++           cout << "File is regular, not syncing" << endl;
++           retval = 1;
++       }
++       else
++       {
++           sync();
++
+ #if defined(__APPLE__) || defined(__sun__)
+-      cout << "Warning: The kernel may continue to use old or deleted partitions.\n"
+-           << "You should reboot or remove the drive.\n";
+-               /* don't know if this helps
+-               * it definitely will get things on disk though:
+-               * http://topiks.org/mac-os-x/0321278542/ch12lev1sec8.html */
++           cout << "Warning: The kernel may continue to use old or deleted partitions.\n"
++               << "You should reboot or remove the drive.\n";
++           /* don't know if this helps
++            * it definitely will get things on disk though:
++            * http://topiks.org/mac-os-x/0321278542/ch12lev1sec8.html */
+ #ifdef __sun__
+-      i = ioctl(fd, DKIOCFLUSHWRITECACHE);
++           i = ioctl(fd, DKIOCFLUSHWRITECACHE);
+ #else
+-      i = ioctl(fd, DKIOCSYNCHRONIZECACHE);
++           i = ioctl(fd, DKIOCSYNCHRONIZECACHE);
+ #endif
+-      platformFound++;
++           platformFound++;
+ #endif
+ #if defined (__FreeBSD__) || defined (__FreeBSD_kernel__)
+-      sleep(2);
+-      i = ioctl(fd, DIOCGFLUSH);
+-      cout << "Warning: The kernel may continue to use old or deleted partitions.\n"
+-           << "You should reboot or remove the drive.\n";
+-      platformFound++;
++           sleep(2);
++           i = ioctl(fd, DIOCGFLUSH);
++           cout << "Warning: The kernel may continue to use old or deleted partitions.\n"
++               << "You should reboot or remove the drive.\n";
++           platformFound++;
+ #endif
+ #ifdef __linux__
+-      sleep(1); // Theoretically unnecessary, but ioctl() fails sometimes if omitted....
+-      fsync(fd);
+-      i = ioctl(fd, BLKRRPART);
+-      if (i) {
+-         cout << "Warning: The kernel is still using the old partition table.\n"
+-              << "The new table will be used at the next reboot or after you\n"
+-              << "run partprobe(8) or kpartx(8)\n";
+-      } else {
+-         retval = 1;
+-      } // if/else
+-      platformFound++;
++           sleep(1); // Theoretically unnecessary, but ioctl() fails sometimes if omitted....
++           fsync(fd);
++           i = ioctl(fd, BLKRRPART);
++           if (i) {
++               cout << "Warning: The kernel is still using the old partition table.\n"
++                   << "The new table will be used at the next reboot or after you\n"
++                   << "run partprobe(8) or kpartx(8)\n";
++           } else {
++               retval = 1;
++           } // if/else
++           platformFound++;
+ #endif
+-      if (platformFound == 0)
+-         cerr << "Warning: Platform not recognized!\n";
+-      if (platformFound > 1)
+-         cerr << "\nWarning: We seem to be running on multiple platforms!\n";
+-   } // if (isOpen)
++           if (platformFound == 0)
++               cerr << "Warning: Platform not recognized!\n";
++           if (platformFound > 1)
++               cerr << "\nWarning: We seem to be running on multiple platforms!\n";
++       } // if (isOpen)
++   }
+    return retval;
+ } // DiskIO::DiskSync()
+ 

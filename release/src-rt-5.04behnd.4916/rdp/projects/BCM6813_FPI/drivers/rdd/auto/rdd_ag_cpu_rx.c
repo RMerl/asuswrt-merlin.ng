@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -188,6 +188,122 @@ int rdd_ag_cpu_rx_ipv6_host_address_crc_table_get_core(uint32_t _entry, uint32_t
           return BDMF_ERR_PARM;
 
     RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_IPV6_HOST_ADDRESS_CRC_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_set(uint32_t low, uint32_t high)
+{
+    RDD_DDR_ADDRESS_LOW_WRITE_G(low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+    RDD_DDR_ADDRESS_HIGH_WRITE_G(high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_set_core(uint32_t low, uint32_t high, int core_id)
+{
+    RDD_DDR_ADDRESS_LOW_WRITE_CORE(low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+    RDD_DDR_ADDRESS_HIGH_WRITE_CORE(high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_get(uint32_t *low, uint32_t *high)
+{
+    RDD_DDR_ADDRESS_LOW_READ_G(*low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+    RDD_DDR_ADDRESS_HIGH_READ_G(*high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_get_core(uint32_t *low, uint32_t *high, int core_id)
+{
+    RDD_DDR_ADDRESS_LOW_READ_CORE(*low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+    RDD_DDR_ADDRESS_HIGH_READ_CORE(*high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_set(uint32_t bits)
+{
+    RDD_BYTES_4_BITS_WRITE_G(bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_set_core(uint32_t bits, int core_id)
+{
+    RDD_BYTES_4_BITS_WRITE_CORE(bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_get(uint32_t *bits)
+{
+    RDD_BYTES_4_BITS_READ_G(*bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_get_core(uint32_t *bits, int core_id)
+{
+    RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_set(uint8_t bits)
+{
+    RDD_BYTE_1_BITS_WRITE_G(bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_set_core(uint8_t bits, int core_id)
+{
+    RDD_BYTE_1_BITS_WRITE_CORE(bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_get(uint8_t *bits)
+{
+    RDD_BYTE_1_BITS_READ_G(*bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_get_core(uint8_t *bits, int core_id)
+{
+    RDD_BYTE_1_BITS_READ_CORE(*bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_set(uint32_t bits)
+{
+    RDD_BYTES_4_BITS_WRITE_G(bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_set_core(uint32_t bits, int core_id)
+{
+    RDD_BYTES_4_BITS_WRITE_CORE(bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_get(uint32_t *bits)
+{
+    RDD_BYTES_4_BITS_READ_G(*bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_get_core(uint32_t *bits, int core_id)
+{
+    RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0, core_id);
 
     return BDMF_ERR_OK;
 }

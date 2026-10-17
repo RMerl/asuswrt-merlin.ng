@@ -161,6 +161,9 @@ static const ru_reg_rec *RNR_MEM_REGS[] =
 const ru_block_rec RNR_MEM_BLOCK =
 {
     "RNR_MEM",
+#if RU_INCLUDE_SIZE
+    { 0x00004004 },
+#endif
     RNR_MEM_ADDRS,
     14,
     2,

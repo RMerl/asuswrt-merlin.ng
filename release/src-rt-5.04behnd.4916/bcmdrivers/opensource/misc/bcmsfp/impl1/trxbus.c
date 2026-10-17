@@ -40,7 +40,7 @@ struct bus_to_sfp_t
     struct sfp_data *psfp;
     void *opticaldet_desc;
     int module_present;  
-    int is_pmd;
+    struct device_node *np;
 
     int (*mac_trx_detect_cb)(int bus, void *opticaldet_desc);
     int (*mac_trx_remove_cb)(int bus);
@@ -56,6 +56,16 @@ static struct bus_to_sfp_t bus_to_sfp[MAX_I2C_BUS];
 
 static void *(*opticaldet_detect)(int bus);
 
+
+static struct bus_to_sfp_t *bus2sfp(int bus)
+{
+    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+
+    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
+        return NULL;
+
+    return b;
+}
 
 static int serdes_control(struct bus_to_sfp_t *b)
 {
@@ -106,9 +116,9 @@ static int try_detect_enable(struct bus_to_sfp_t *b)
 void trxbus_register_mac(int bus, int force_tx_enable_before_detect,
     int (*detect_cb)(int bus, void *opticaldet_desc), int (*remove_cb)(int bus))
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return;
 
     b->mac_trx_detect_cb = detect_cb;
@@ -121,24 +131,25 @@ EXPORT_SYMBOL(trxbus_register_mac);
 
 void trxbus_unregister_mac(int bus)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return;
 
     if (b->mac_trx_remove_cb)
         b->mac_trx_remove_cb(bus);
 
     b->mac_trx_detect_cb = NULL;
+    b->mac_trx_remove_cb = NULL;
 }
 EXPORT_SYMBOL(trxbus_unregister_mac);
 
 /* Called from bcmsfp to indicate module has been removed */
 void trxbus_module_removed(int bus)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return;
 
     if (b->opticaldet_desc && b->serdes_control)
@@ -149,16 +160,16 @@ void trxbus_module_removed(int bus)
 
     b->wantop_control = laser_off;
     b->module_present = 0;
-    b->is_pmd = 0;
     b->opticaldet_desc = NULL;
+    b->np = NULL;
 }
 
 /* Called from pmd/bcmsfp to indicate module is present: i2c comm. has been estabilished */
 int trxbus_module_present(int bus)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return -1;
 
     b->module_present = 1;
@@ -170,15 +181,16 @@ EXPORT_SYMBOL(trxbus_module_present);
 /* Called from sfp driver probe. setup the dev pointer as upper driver need certain cage
    property before the SFP module is actually plugged in
  */
-int trxbus_module_init(int bus, struct sfp_data *psfp, struct bcmsfp_ops *ops, int is_pmd)
+int trxbus_module_init(int bus, struct sfp_data *psfp, struct bcmsfp_ops *ops, int is_pmd, struct device_node *np)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return -1;
+
     b->psfp = psfp;
     b->sfpops = ops;
-    b->is_pmd = is_pmd;
+    b->np = np;
     return 0;
 }
 EXPORT_SYMBOL(trxbus_module_init);
@@ -186,10 +198,11 @@ EXPORT_SYMBOL(trxbus_module_init);
 /* Called from bcmsfp to indicate module is being probed */
 int trxbus_module_probe(int bus)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return -1;
+
     if (b->force_tx_enable_before_detect)
         b->sfpops->mon_write(b->psfp, bcmsfp_mon_force_tx_power, 0, 1);
 
@@ -198,10 +211,11 @@ int trxbus_module_probe(int bus)
 
 static void try_detect_enable_all(void)
 {
-    int i;
+    struct bus_to_sfp_t *b;
+    int i = 0;
 
-    for (i = 0; i < ARRAY_SIZE(bus_to_sfp); i++)
-        try_detect_enable(&bus_to_sfp[i]);
+    while ((b = bus2sfp(i++)))
+        try_detect_enable(b);
 }
 
 /* register opticaldet module; will trigger detection of existing trx */
@@ -214,10 +228,11 @@ EXPORT_SYMBOL(trxbus_register_detect);
 
 void trxbus_register_serdes(int bus, int (*serdes_control)(TRX_SIG_ACTIVE_POLARITY lbe, TRX_SIG_ACTIVE_POLARITY tx_sd, int mode))
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return;
+
     b->serdes_control = serdes_control;
 }
 EXPORT_SYMBOL(trxbus_register_serdes);
@@ -225,90 +240,91 @@ EXPORT_SYMBOL(trxbus_register_serdes);
 /*XXX: can remove this function after all opticaldet_desc is passed by callbacks */
 void *trxbus_opticaldet_desc_get(int bus)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
         return NULL;
+
     return b->opticaldet_desc;
 }
 EXPORT_SYMBOL(trxbus_opticaldet_desc_get);
 
 void trxbus_transmitter_control(int bus, int mode)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
+
+    if (!b)
+        return;
 
     b->wantop_control = mode;
     transmitter_control(b);
 }
 EXPORT_SYMBOL(trxbus_transmitter_control);
 
-void trxbus_mac_transmit_ready_set(int bus)
-{
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
-
-    b->wantop_control = mac_control;
-    try_detect_enable(b);
-}
-EXPORT_SYMBOL(trxbus_mac_transmit_ready_set);
-
-int trxbus_is_pmd(int bus)
-{
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
-
-    if (bus >= ARRAY_SIZE(bus_to_sfp))
-        return -1;
-    return b->is_pmd;
-}
-EXPORT_SYMBOL(trxbus_is_pmd);
-
 int trxbus_dt_bus_get(struct device_node *dn)
 {
-    struct device_node *i2c_node, *trx_node = of_parse_phandle(dn, "trx", 0);
-    struct i2c_adapter *i2c_adap;
-    int bus;
+    struct device_node *trx_node = of_parse_phandle(dn, "trx", 0);
+    int i = 0;
+    struct bus_to_sfp_t *b;
 
-    if (!trx_node)
-        return -EINVAL;
+    while (1)
+    {
+        b = bus2sfp(i);
+        if (!b)
+            break;
 
-    i2c_node = of_parse_phandle(trx_node, "i2c-bus", 0);
-    if (!i2c_node)
-        return -EINVAL;
+        if (b->np == trx_node)
+            return i;
 
-    i2c_adap = of_find_i2c_adapter_by_node(i2c_node);
-    if (!i2c_adap)
-        return -ENOMEM;
+        i++;
+    }
 
-    of_node_put(i2c_node);
-    bus = i2c_adap->nr;
-    i2c_put_adapter(i2c_adap);
-
-    return bus;
+    return -1;
 }
 EXPORT_SYMBOL(trxbus_dt_bus_get);
 
-int trxbus_module_read_raw(int bus, int addr, int offset, uint8_t *data, int len)
+int trxbus_module_eeprom(int bus, struct ethtool_eeprom *ee, u8 *data)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
+    struct bus_to_sfp_t *b = bus2sfp(bus);
 
-    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
+    if (!b)
     {
         printk("TRXBUS: bus %d is not valid\n", bus);
         return -1;
     }
-    if (b->sfpops && b->sfpops->mon_read_raw)
-        return b->sfpops->mon_read_raw(b->psfp, addr, offset, data, len);
+
+    if (b->sfpops && b->sfpops->module_eeprom)
+        return b->sfpops->module_eeprom(b->psfp, ee, data);
     return -1;
 }
-EXPORT_SYMBOL(trxbus_module_read_raw);
+EXPORT_SYMBOL(trxbus_module_eeprom);
+
+int trxbus_module_info(int bus, struct ethtool_modinfo *modinfo)
+{
+    struct bus_to_sfp_t *b = bus2sfp(bus);
+
+    if (!b)
+    {
+        printk("TRXBUS: bus %d is not valid\n", bus);
+        return -1;
+    }
+
+    if (b->sfpops && b->sfpops->module_info)
+        return b->sfpops->module_info(b->psfp, modinfo);
+    return -1;
+}
+EXPORT_SYMBOL(trxbus_module_info);
 
 int trxbus_mon_read(int bus, enum bcmsfp_mon_attr attr, int channel, long *value)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
-    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
+    struct bus_to_sfp_t *b = bus2sfp(bus);
+
+    if (!b)
     {
         printk("TRXBUS: bus %d is not valid\n", bus);
         return -1;
     }
+
     if (b->sfpops && b->sfpops->mon_read)
         return b->sfpops->mon_read(b->psfp, attr, channel, value);
     return -1;
@@ -317,12 +333,14 @@ EXPORT_SYMBOL(trxbus_mon_read);
 
 int trxbus_mon_read_buf(int bus, enum bcmsfp_mon_attr attr, int channel, char **buf, int *len)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
-    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
+    struct bus_to_sfp_t *b = bus2sfp(bus);
+
+    if (!b)
     {
         printk("TRXBUS: bus %d is not valid\n", bus);
         return -1;
     }
+
     if (b->sfpops && b->sfpops->mon_read_buf)
         return b->sfpops->mon_read_buf(b->psfp, attr, channel, buf, len);
     return -1;
@@ -331,12 +349,14 @@ EXPORT_SYMBOL(trxbus_mon_read_buf);
 
 int trxbus_mon_write(int bus, enum bcmsfp_mon_attr attr, int channel, long value)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
-    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
+    struct bus_to_sfp_t *b = bus2sfp(bus);
+
+    if (!b)
     {
         printk("TRXBUS: bus %d is not valid\n", bus);
         return -1;
     }
+
     if (b->sfpops && b->sfpops->mon_write)
         return b->sfpops->mon_write(b->psfp, attr, channel, value);
     return -1;
@@ -345,12 +365,14 @@ EXPORT_SYMBOL(trxbus_mon_write);
 
 int trxbus_mon_write_buf(int bus, enum bcmsfp_mon_attr attr, int channel, char *buf, int len)
 {
-    struct bus_to_sfp_t *b = &bus_to_sfp[bus];
-    if (bus < 0 || bus >= ARRAY_SIZE(bus_to_sfp))
+    struct bus_to_sfp_t *b = bus2sfp(bus);
+
+    if (!b)
     {
         printk("TRXBUS: bus %d is not valid\n", bus);
         return -1;
     }
+
     if (b->sfpops && b->sfpops->mon_write_buf)
         return b->sfpops->mon_write_buf(b->psfp, attr, channel, buf, len);
     return -1;

@@ -54,7 +54,8 @@ struct vfrwd_dev_private {
 static netdev_tx_t vfrwd_xmit(struct sk_buff *skb, struct net_device *dev);
 static int vfrwd_open(struct net_device *dev);
 static int vfrwd_close(struct net_device *dev);
-static int vfrwd_ethtool_get_link_settings(struct net_device *dev, struct ethtool_link_ksettings *cmd);
+static int vfrwd_ethtool_get_link_settings(struct net_device *dev, 
+                struct ethtool_link_ksettings *cmd);
 
 static void vfrwd_stats64(struct net_device *dev,
         struct rtnl_link_stats64 *stats)
@@ -114,8 +115,27 @@ static void vfrwd_stats64(struct net_device *dev,
 static int vfrwd_dev_init(struct net_device *dev)
 {
     struct vfrwd_dev_private *dp = netdev_priv(dev);
+    struct net_device *realDev = dp->lowerdev;
+
+    netif_carrier_off(dev);
+
+    /* IFF_BROADCAST|IFF_MULTICAST;  */
+    dev->flags  = realDev->flags & ~(IFF_UP | IFF_PROMISC | IFF_ALLMULTI |
+            IFF_MASTER | IFF_SLAVE);
+    dev->state  = (realDev->state & ((1<<__LINK_STATE_NOCARRIER) |
+            (1<<__LINK_STATE_DORMANT))) |
+            (1<<__LINK_STATE_PRESENT);
+
+    if (is_zero_ether_addr(dev->dev_addr)) {
+        eth_hw_addr_set(dev, realDev->dev_addr);
+        dev->addr_assign_type = NET_ADDR_STOLEN;
+    }
+
+    if (is_zero_ether_addr(dev->broadcast))
+        memcpy(dev->broadcast, realDev->broadcast, dev->addr_len);
 
     dp->dev = dev;
+    dev->hard_header_len = dp->lowerdev->hard_header_len + VLAN_HLEN;
     u64_stats_init(&dp->rsync);
     u64_stats_init(&dp->tsync);
     return 0;
@@ -147,6 +167,53 @@ static int vfrwd_dev_get_iflink(const struct net_device *dev)
 
     return realDev->ifindex;
 }
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
+static u16 vfrwd_dev_select_queue(struct net_device *netdev, 
+                struct sk_buff *skb, struct net_device *sb_dev,
+                select_queue_fallback_t fallback)
+#else
+static u16 vfrwd_dev_select_queue(struct net_device *netdev, 
+                struct sk_buff *skb, struct net_device *sb_dev)
+#endif
+{
+    return skb->from_ingress;
+}
+
+static void vfrwd_dev_set_rx_mode(struct net_device * dev)
+{
+    struct vfrwd_dev_private *dp = netdev_priv(dev);
+    struct net_device *realDev = dp->lowerdev;
+    
+    dev_mc_sync(realDev, dev);
+    dev_uc_sync(realDev, dev);
+}
+
+static int vfrwd_dev_set_mac_address(struct net_device *dev, void *p)
+{
+    struct vfrwd_dev_private *dp = netdev_priv(dev);
+    struct net_device *realDev = dp->lowerdev;
+    struct sockaddr *addr = p;
+    int err;
+
+    if (!is_valid_ether_addr(addr->sa_data))
+        return -EADDRNOTAVAIL;
+
+    if (!(dev->flags & IFF_UP))
+        goto out;
+
+    if (!ether_addr_equal(addr->sa_data, realDev->dev_addr)) {
+        err = dev_uc_add(realDev, addr->sa_data);
+    if (err < 0)
+        return err;
+    }
+
+    if (!ether_addr_equal(dev->dev_addr, realDev->dev_addr))
+    dev_uc_del(realDev, dev->dev_addr);
+
+out:
+    eth_hw_addr_set(dev, addr->sa_data);
+    return 0;
+}
 
 static const struct net_device_ops vfrwd_netdev_ops = {
     .ndo_open   = vfrwd_open,
@@ -154,10 +221,12 @@ static const struct net_device_ops vfrwd_netdev_ops = {
     .ndo_get_stats64 = vfrwd_stats64,
     .ndo_start_xmit     = vfrwd_xmit,
     .ndo_validate_addr = eth_validate_addr,
+    .ndo_set_rx_mode    = vfrwd_dev_set_rx_mode,
     .ndo_change_rx_flags = vfrwd_dev_change_rx_flags,
-    .ndo_set_mac_address = eth_mac_addr,
+    .ndo_set_mac_address = vfrwd_dev_set_mac_address,
     .ndo_init   = vfrwd_dev_init,
     .ndo_get_iflink = vfrwd_dev_get_iflink,
+    .ndo_select_queue = vfrwd_dev_select_queue,
 };
 
 #define VFRWD_FEATURES (NETIF_F_HW_CSUM | NETIF_F_SG  | NETIF_F_FRAGLIST  | \
@@ -188,7 +257,7 @@ static void vfrwd_setup(struct net_device *dev)
 
     dev->flags &= ~IFF_MULTICAST;
     dev->priv_flags &= ~IFF_TX_SKB_SHARING;
-    eth_hw_addr_random(dev);
+    dev->priv_flags |= IFF_NO_QUEUE;
 
     dev->min_mtu = 0;
     dev->max_mtu = 0;
@@ -222,26 +291,35 @@ static netdev_tx_t handle_ingress(struct sk_buff *skb, struct net_device *dev)
     skb->from_ingress = 0;
     /*skb->tc_skip_classify = 1;*/  //should be configurable ?
 
-    u64_stats_update_begin(&dp->rsync);
-    dp->rx_packets++;
-    if (skb_vlan_tag_present(skb))
-        dp->rx_bytes += skb->len + VLAN_HLEN;
-    else
-        dp->rx_bytes += skb->len;
-#if defined(CONFIG_BCM_KF_EXTSTATS)
-    if (unlikely(is_multicast_ether_addr(dest)))
+    if (likely(skb->pkt_type != PACKET_LOOPBACK))
     {
-        dp->multicast++;
+        u64_stats_update_begin(&dp->rsync);
+        dp->rx_packets++;
         if (skb_vlan_tag_present(skb))
-            dp->rx_multicast_bytes += skb->len + VLAN_HLEN;
+            dp->rx_bytes += skb->len + VLAN_HLEN;
         else
-            dp->rx_multicast_bytes += skb->len;
-    }
-    if (unlikely(is_broadcast_ether_addr(dest)))
-        dp->rx_broadcast_packets++;
+            dp->rx_bytes += skb->len;
+#if defined(CONFIG_BCM_KF_EXTSTATS)
+        if (unlikely(is_multicast_ether_addr(dest)))
+        {
+            if (unlikely(is_broadcast_ether_addr(dest)))
+            {
+                dp->rx_broadcast_packets++;
+            }
+            else
+            {   
+                dp->multicast++;
+                if (skb_vlan_tag_present(skb))
+                    dp->rx_multicast_bytes += skb->len + VLAN_HLEN;
+                else
+                    dp->rx_multicast_bytes += skb->len;
+            }
+        }
 #endif
 
-    u64_stats_update_end(&dp->rsync);
+        u64_stats_update_end(&dp->rsync);
+    }
+    
     skb->dev = dev;
     if (skb->pkt_type == PACKET_OTHERHOST) {
         if (ether_addr_equal_64bits(eth_hdr(skb)->h_dest, dev->dev_addr))
@@ -252,7 +330,7 @@ static netdev_tx_t handle_ingress(struct sk_buff *skb, struct net_device *dev)
         skb->protocol = eth_type_trans(skb, dev);
         skb_postpull_rcsum(skb, eth_hdr(skb), ETH_HLEN);
     }
-    return netif_rx(skb);
+    return netif_receive_skb_core(skb);
 }
 
 static netdev_tx_t handle_egress(struct sk_buff *skb, struct net_device *dev)
@@ -292,14 +370,19 @@ static netdev_tx_t handle_egress(struct sk_buff *skb, struct net_device *dev)
 #if defined(CONFIG_BCM_KF_EXTSTATS)
     if (unlikely(is_multicast_ether_addr(dest)))
     {
-        dp->tx_multicast_packets++;
-        if (skb_vlan_tag_present(skb))
-            dp->tx_multicast_bytes += skb->len + VLAN_HLEN;
+        if (unlikely(is_broadcast_ether_addr(dest)))
+        {
+            dp->tx_broadcast_packets++;
+        }
         else
-            dp->tx_multicast_bytes += skb->len;
+        {
+            dp->tx_multicast_packets++;
+            if (skb_vlan_tag_present(skb))
+                dp->tx_multicast_bytes += skb->len + VLAN_HLEN;
+            else
+                dp->tx_multicast_bytes += skb->len;
+        }
     }
-    if (unlikely(is_broadcast_ether_addr(dest)))
-        dp->tx_broadcast_packets++;
 #endif
     u64_stats_update_end(&dp->tsync);
 
@@ -319,14 +402,31 @@ static int vfrwd_close(struct net_device *dev)
     struct vfrwd_dev_private *dp = netdev_priv(dev);
     struct net_device *realDev = dp->lowerdev;
 
+    dev_mc_unsync(realDev, dev);
+    dev_uc_unsync(realDev, dev);
+
     if (dev->flags & IFF_ALLMULTI)
         dev_set_allmulti(realDev, -1);
     if (dev->flags & IFF_PROMISC)
         dev_set_promiscuity(realDev, -1);
 
+    if (!ether_addr_equal(dev->dev_addr, realDev->dev_addr))
+        dev_uc_del(realDev, dev->dev_addr);
+
     netif_tx_stop_all_queues(dev);
     netif_carrier_off(dev);
     return 0;
+}
+
+static bool vfrwd_inherit_address(struct net_device *dev,
+            struct net_device *real_dev)
+{
+    if (dev->addr_assign_type != NET_ADDR_STOLEN)
+        return false;
+    
+    eth_hw_addr_set(dev, real_dev->dev_addr);
+    call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
+    return true;
 }
 
 static int vfrwd_open(struct net_device *dev)
@@ -335,11 +435,22 @@ static int vfrwd_open(struct net_device *dev)
     struct net_device *realDev = dp->lowerdev;
     int err = 0;
 
-    if (dev->flags & IFF_ALLMULTI) {
-        err = dev_set_allmulti(realDev, 1);
+    if (!(realDev->flags & IFF_UP))
+        return -ENETDOWN;
+
+    if (!ether_addr_equal(dev->dev_addr, realDev->dev_addr) &&
+        !vfrwd_inherit_address(dev, realDev)) {
+        err = dev_uc_add(realDev, dev->dev_addr);
         if (err < 0)
             goto exit;
     }
+
+    if (dev->flags & IFF_ALLMULTI) {
+        err = dev_set_allmulti(realDev, 1);
+        if (err < 0)
+            goto del_unicast;
+    }
+    
     if (dev->flags & IFF_PROMISC) {
         err = dev_set_promiscuity(realDev, 1);
         if (err < 0)
@@ -355,12 +466,17 @@ static int vfrwd_open(struct net_device *dev)
 
 clear_allmulti:
     if (dev->flags & IFF_ALLMULTI)
-        dev_set_allmulti(realDev, -1);    
+        dev_set_allmulti(realDev, -1);
+del_unicast:
+    if (!ether_addr_equal(dev->dev_addr, realDev->dev_addr))
+        dev_uc_del(realDev, dev->dev_addr);
 exit:
+    netif_carrier_off(dev);
     return err;
 }
 
-static int vfrwd_ethtool_get_link_settings(struct net_device *dev, struct ethtool_link_ksettings *cmd)
+static int vfrwd_ethtool_get_link_settings(struct net_device *dev, 
+                struct ethtool_link_ksettings *cmd)
 {
 
     int rc = -EOPNOTSUPP; //Assuming failure
@@ -403,9 +519,6 @@ static int vfrwd_newlink(struct net *src_net, struct net_device *dev,
 
     netdev_vfrwd_set(dev);
 
-    if (!tb[IFLA_ADDRESS])
-        eth_hw_addr_random(dev);
-
     dp->lowerdev = lowerdev;
     dev->mtu = lowerdev->mtu;
     err = register_netdevice(dev);
@@ -433,8 +546,8 @@ void vfrwd_dellink(struct net_device *dev, struct list_head *head)
     struct vfrwd_dev_private *dp = netdev_priv(dev);
     list_del_rcu(&dp->list);
     call_netdevice_notifiers(NETDEV_GOING_DOWN, dev);
-    unregister_netdevice_queue(dev, head);
     netdev_upper_dev_unlink(dp->lowerdev, dev);
+    unregister_netdevice_queue(dev, head);
     netdev_vfrwd_lower_unset(dp->lowerdev);    
 }
 
@@ -442,6 +555,11 @@ static struct net *vfrwd_get_link_net(const struct net_device *dev)
 {
     struct vfrwd_dev_private *dp = netdev_priv(dev);
     return dev_net(dp->lowerdev);
+}
+
+static unsigned int vfrwd_get_num_tx_queues(void)
+{
+    return 2;
 }
 
 static struct rtnl_link_ops vfrwd_link_ops __read_mostly = {
@@ -452,7 +570,21 @@ static struct rtnl_link_ops vfrwd_link_ops __read_mostly = {
     .newlink    = vfrwd_newlink,
     .dellink    = vfrwd_dellink,
     .get_link_net       = vfrwd_get_link_net,
+    .get_num_tx_queues = vfrwd_get_num_tx_queues,
 };
+
+static void vfrwd_sync_address(struct net_device *dev,
+            struct net_device *vfrwd)
+{
+    /* May be called without an actual change */
+    if (ether_addr_equal(dev->dev_addr, vfrwd->dev_addr))
+        return;
+
+    /* vlan continues to inherit address of lower device */
+    vfrwd_inherit_address(vfrwd, dev);
+
+    return;
+}
 
 static int vfrwd_device_event(struct notifier_block *unused,
                 unsigned long event, void *ptr)
@@ -530,6 +662,20 @@ static int vfrwd_device_event(struct notifier_block *unused,
                     dp->dev->rtnl_link_ops->dellink(dp->dev, &list_kill);
             }
             unregister_netdevice_many(&list_kill);
+            break;
+
+        case NETDEV_CHANGEADDR:
+            list_for_each_entry(dp, &lower_dev_list, list)
+            {
+                if (dp->lowerdev == dev)
+                {
+                    flgs = dev->flags;
+                    if (!(flgs & IFF_UP))
+                        continue;
+                    
+                    vfrwd_sync_address(dev, dp->dev);
+                }
+            }
             break;
 
         case NETDEV_PRE_TYPE_CHANGE:

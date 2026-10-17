@@ -35,8 +35,6 @@ uint32_t genCrc32(byte *pdata, uint32_t size, uint32_t crc);
 void *retriedKmalloc(size_t size);
 void retriedKfree(void *pBuf);
 
-PNVRAM_DATA readNvramData(void);
-int writeNvramData(PNVRAM_DATA pNvramData);
 void updateInMemNvramData(const unsigned char *data, int len, int offset);
 
 char *getSharedBlks(int start_blk, int num_blks);

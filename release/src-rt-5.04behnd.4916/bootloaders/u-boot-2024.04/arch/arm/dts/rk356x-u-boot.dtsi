@@ -1,0 +1,151 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * (C) Copyright 2021 Rockchip Electronics Co., Ltd
+ */
+
+#include "rockchip-u-boot.dtsi"
+
+/ {
+	aliases {
+		mmc0 = &sdhci;
+		mmc1 = &sdmmc0;
+		spi4 = &sfc;
+	};
+
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &sdmmc0, &sdhci;
+	};
+
+	dmc: dmc {
+		compatible = "rockchip,rk3568-dmc";
+		bootph-all;
+	};
+
+	otp: nvmem@fe38c000 {
+		compatible = "rockchip,rk3568-otp";
+		reg = <0x0 0xfe38c000 0x0 0x4000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		cpu_id: id@a {
+			reg = <0x0a 0x10>;
+		};
+	};
+};
+
+&xin24m {
+	bootph-all;
+};
+
+&cru {
+	bootph-all;
+};
+
+&pmucru {
+	bootph-all;
+};
+
+&grf {
+	bootph-all;
+};
+
+&pmugrf {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&pcfg_pull_none_smt {
+	bootph-all;
+};
+
+&pcfg_pull_none {
+	bootph-all;
+};
+
+&pcfg_pull_up_drv_level_2 {
+	bootph-all;
+};
+
+&pcfg_pull_up {
+	bootph-all;
+};
+
+&emmc_bus8 {
+	bootph-all;
+};
+
+&emmc_clk {
+	bootph-all;
+};
+
+&emmc_cmd {
+	bootph-all;
+};
+
+&emmc_datastrobe {
+	bootph-all;
+};
+
+&emmc_rstnout {
+	bootph-all;
+};
+
+&fspi_pins {
+	bootph-all;
+};
+
+&i2c0_xfer {
+	bootph-all;
+};
+
+&sdmmc0_bus4 {
+	bootph-all;
+};
+
+&sdmmc0_clk {
+	bootph-all;
+};
+
+&sdmmc0_cmd {
+	bootph-all;
+};
+
+&sdmmc0_det {
+	bootph-all;
+};
+
+&sdmmc0_pwren {
+	bootph-all;
+};
+
+&uart2m0_xfer {
+	bootph-all;
+};
+
+&sdhci {
+	bootph-pre-ram;
+	max-frequency = <200000000>;
+};
+
+&sdmmc0 {
+	bootph-pre-ram;
+};
+
+&uart2 {
+	bootph-pre-ram;
+	clock-frequency = <24000000>;
+};
+
+#ifdef CONFIG_ROCKCHIP_SPI_IMAGE
+&binman {
+	simple-bin-spi {
+		mkimage {
+			args = "-n", CONFIG_SYS_SOC, "-T", "rksd";
+			offset = <0x8000>;
+		};
+	};
+};
+#endif

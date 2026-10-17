@@ -1,0 +1,45 @@
+Introduction:
+=============
+
+This documentation entry describes the i.MX8 container format and how
+to use.
+
+A Boot image consists of:
+ - Primary Boot Container Set
+ - Optional Secondary Boot Container Set
+
+The imx8image only support the Primary Boot Container Set.
+
+The Primary Boot Container Set contains two containers. The 1st container
+only contain the SECO firmware image, the 2nd container can contain
+multiple images and typically have:
+ - SCF FW image
+ - M4 FW image
+ - AP FW image
+
+For more details, refer i.MX8 Reference Mannual Chapter 5
+"System Boot and section", "5.9 (Boot image) of the processor's manual"
+
+Configuration file:
+==================
+BOOT_FROM	[sd|emmc_fastboot|fspi|nand_4k|nand_8k|nand_16k] [sector_size]
+ - indicates the boot media
+SOC_TYPE	[IMX8QM|IMX8QX]
+ - indicates the soc
+APPEND		[ahab container image]
+ - indicates the ahah image that will be put in the 1st container
+   When creating container image will be loaded by SPL, this entry
+   should not this included
+CONTAINER
+ - indicates to create the 2nd container
+IMAGE		[SCU|M40|M41|A35|A53|A72] [image file] [load address]
+ - indicates images will be put in the 2nd container
+
+Example:
+=======
+BOOT_FROM SD 0x400
+SOC_TYPE IMX8QM
+APPEND mx8qm-ahab-container.img
+CONTAINER
+IMAGE SCU mx8qm-mek-scfw-tcm.bin
+IMAGE A35 spl/u-boot-spl.bin 0x00100000

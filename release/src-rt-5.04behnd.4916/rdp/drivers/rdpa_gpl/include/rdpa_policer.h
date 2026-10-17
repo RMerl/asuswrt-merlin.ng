@@ -41,17 +41,13 @@
  */
 
 #include "rdd_fw_defs.h"
-#if !defined(XRDP)
-#define RDPA_TM_MAX_US_POLICER 16 /**< Max number of US policers */
-#define RDPA_TM_MAX_DS_POLICER 16 /**< Max number of DS policers */
-#define RDPA_TM_MAX_POLICER    (RDPA_TM_MAX_US_POLICER+RDPA_TM_MAX_DS_POLICER)
-#else
+
 #if CHIP_VER < RDP_GEN_62
 #define RDPA_TM_MAX_POLICER    80 /**< Max number of policers */
 #else
 #define RDPA_TM_MAX_POLICER    255 /**< Max number of policers - cant use 256 as 255 used for non real policer*/
 #endif
-#endif
+
 
 /** Traffic policer type */
 typedef enum {
@@ -75,10 +71,7 @@ typedef struct {
     uint8_t dei_mode;                       /**< DEI remark - Used for dual bucket only, affects outer dei only */
     uint8_t color_aware_enabled;            /**< Color aware enabled - Change policer coloring when DEI is set in received packets */ 
     int8_t rl_overhead;                     /**< Policer overhead to be added for every packet */
-    /* (OPERATION_MODE_PRV) */
-    uint8_t pbit_mode;                      /**< Pbit remark - Used for dual bucket only, affects outer Pbit only */
-    uint8_t pbit_green_val;                 /**< Pbit green value - Used for green packets */
-    uint8_t pbit_yellow_val;                /**< Pbit yellow value - Used for yellow packets */
+    bdmf_boolean is_pps;                    /**< Policer rate is in PPS or BPS (default) */
 } rdpa_tm_policer_cfg_t;
 
 /** Policer statistics.
@@ -93,13 +86,7 @@ typedef struct {
 
 #define RDPA_POLICER_MIN_SR       64000   /**< Min sustain rate */
 
-#if defined BCM6846 || defined(BCM6878)
-#define RDPA_POLICER_MAX_SR       2500000000U /**< Max sustain rate */
-#elif defined(XRDP)
 #define RDPA_POLICER_MAX_SR       10000000000 /**< Max sustain rate */
-#else
-#define RDPA_POLICER_MAX_SR       1000000000 /**< Max sustain rate */
-#endif
 
 /* @} end of policer Doxygen group */
 

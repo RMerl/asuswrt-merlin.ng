@@ -64,58 +64,8 @@ static struct cpufreq_frequency_table bcm63xx_freq_table[] = {
 	{0, 0,  375000},
 	{0, 0,  187500},
 #endif
-#ifdef  CONFIG_BCM94908
-/* support fractions of 1.8GHz */
-/* (assume 2x b53 pll post divisor) */
-	{0, 0, 1800000},
-	{0, 0, 1575000},
-	{0, 0, 1350000},
-	{0, 0, 1125000},
-	{0, 0,  900000},
-	{0, 0,  675000},
-	{0, 0,  619000},
-	{0, 0,  450000},
-	{0, 0,  225000},
-#endif
-#if defined CONFIG_BCM963138
-/* support divisors of 2GHz */
-	{0, 10,  200000},
-	{0, 8,   250000},
-	{0, 6,   333333},
-	{0, 5,   400000},
-	{0, 4,   500000},
-	{0, 3,   666666},
-	{0, 2,  1000000},
-#endif
-#if defined CONFIG_BCM963148
-/* support divisors of 3GHz */
-	{0, 16,  187500},
-	{0, 8,   375000},
-	{0, 4,   750000},
-	{0, 2,  1500000},
-#endif
 	{0,0 , CPUFREQ_TABLE_END},
 };
-
-#if defined CONFIG_BCM963138
-static void truncate_cpu_freq_table(void)
-{
-	int i=0;
-
-	while(bcm63xx_freq_table[i].frequency != CPUFREQ_TABLE_END)
-	{
-		if(bcm63xx_freq_table[i].frequency > 666667)
-		{
-			bcm63xx_freq_table[i].flags=0;
-			bcm63xx_freq_table[i].driver_data=0;
-			bcm63xx_freq_table[i].frequency = CPUFREQ_TABLE_END;
-		}
-		i++;
-	}
-
-	return;
-}
-#endif
 
 static int bcm63xx_cpufreq_target(struct cpufreq_policy *policy,
 		unsigned int index)
@@ -162,19 +112,6 @@ static int bcm63xx_cpufreq_cpu_init(struct cpufreq_policy *policy)
 	// set the transition latency value in nanoseconds
 #ifdef CONFIG_BCM96858
 	transition_latency = 1000000;	// >1ms
-#elif defined CONFIG_BCM94908
-	transition_latency = 10000;	// 10us
-#elif defined CONFIG_BCM963138
-	// down 43..45us, up 82..87us
-	transition_latency = 40000; // ~40-90us
-#elif defined CONFIG_BCM963148
-	// down 25..75us, up 200..210us
-	transition_latency = 40000; // ~40-280us
-#endif
-
-#if defined CONFIG_BCM963138
-	if (num_online_cpus() == 1)
-		truncate_cpu_freq_table();
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))

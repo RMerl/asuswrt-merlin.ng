@@ -1,0 +1,12 @@
+if TARGET_ICORE_STM32MP1 || TARGET_MICROGEA_STM32MP1
+
+config SYS_BOARD
+	default "stm32mp1"
+
+config SYS_VENDOR
+	default "engicam"
+
+config SYS_CONFIG_NAME
+	default "stm32mp15_common"
+
+endif

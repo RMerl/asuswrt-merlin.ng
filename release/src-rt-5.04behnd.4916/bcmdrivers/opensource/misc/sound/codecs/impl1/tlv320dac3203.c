@@ -38,6 +38,7 @@ written consent.
 #include <sound/soc.h>
 #include <sound/soc-dapm.h>
 #include <sound/tlv.h>
+#include <linux/version.h>
 
 #include "tlv320dac3203.h"
 
@@ -194,9 +195,10 @@ static int dac3203_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	struct snd_soc_component *component = codec_dai->component;
 	u8 iface_reg_1,iface_reg_2,iface_reg_3;
 
-	iface_reg_1 = snd_soc_component_read32(component, DAC3203_IFACE1);
+	iface_reg_1 = snd_soc_component_read(component, DAC3203_IFACE1);
+
 	iface_reg_2 = 0;
-	iface_reg_3 = snd_soc_component_read32(component, DAC3203_IFACE3);
+	iface_reg_3 = snd_soc_component_read(component, DAC3203_IFACE3);
 
    /* set master/slave audio interface */
    switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
@@ -273,7 +275,7 @@ static int dac3203_hw_params(struct snd_pcm_substream *substream,
 				dac3203_divs[params_idx].dosr >> 8);
 	snd_soc_component_write(component, 	DAC3203_DOSRLSB, 
 				(u8)(dac3203_divs[params_idx].dosr));
-	data = snd_soc_component_read32(component, DAC3203_IFACE1);
+	data = snd_soc_component_read(component, DAC3203_IFACE1);
    data = data & ~(3 << DAC3203_AUDIO_DATA_LENGTH_SHIFT);
    switch (params_width(params)) {
    case 16:
@@ -308,11 +310,11 @@ static int dac3203_hw_params(struct snd_pcm_substream *substream,
    return 0;
 }
 
-static int dac3203_mute(struct snd_soc_dai *dai, int mute)
+static int dac3203_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
 	struct snd_soc_component *component = dai->component;
 	u8 dac_reg;
-	dac_reg = snd_soc_component_read32(component, DAC3203_DACMUTE) & 
+	dac_reg = snd_soc_component_read(component, DAC3203_DACMUTE) & 
 							~DAC3203_MUTEON;
 	if (mute)
 		snd_soc_component_write(component, DAC3203_DACMUTE, dac_reg | 
@@ -328,7 +330,7 @@ static int dac3203_mute(struct snd_soc_dai *dai, int mute)
 
 static const struct snd_soc_dai_ops dac3203_ops = {
    .hw_params    = dac3203_hw_params,
-   .digital_mute = dac3203_mute,
+   .mute_stream = dac3203_mute,
    .set_fmt      = dac3203_set_dai_fmt,
    .set_sysclk   = dac3203_set_dai_sysclk,
 };
@@ -343,7 +345,7 @@ static struct snd_soc_dai_driver dac3203_dai = {
       .formats      = DAC3203_FORMATS,
    },
   .ops      = &dac3203_ops,
-  .symmetric_rates = 1,
+  .symmetric_rate      = 1,
 };
 
 static int dac3203_probe(struct snd_soc_component *component)

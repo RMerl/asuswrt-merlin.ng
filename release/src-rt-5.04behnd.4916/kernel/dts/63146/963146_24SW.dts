@@ -7,15 +7,14 @@
 			BP_DDR_TOTAL_SIZE_512MB    | \
 			BP_DDR_DEVICE_WIDTH_16     | \
 			BP_DDR_TOTAL_WIDTH_16BIT   | \
-			BP_DDR_63146_DEFAULT          | \
-			BP_DDR_CONFIG_DEBUG)>;	
+			BP_DDR_63146_DEFAULT)>;
 	};
 
 };
 
 &nand {
 	pinctrl-0 = <&data_pins &nand_ctrl_pins &nand_wpb_pin_27>;
-	write-protect = <1>;
+	/delete-property/ brcm,wp-not-connected;
 	status = "okay";
 };
 

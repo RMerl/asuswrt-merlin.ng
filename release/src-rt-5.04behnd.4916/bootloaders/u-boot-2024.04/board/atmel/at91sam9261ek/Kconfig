@@ -1,0 +1,26 @@
+if TARGET_AT91SAM9261EK
+
+config SYS_BOARD
+	default "at91sam9261ek"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_CONFIG_NAME
+	default "at91sam9261ek"
+
+choice
+	prompt "Evaluation board"
+
+config AT91SAM9G10EK
+	bool "Atmel AT91SAM9G10 EK"
+
+config AT91SAM9261EK
+	bool "Atmel AT91SAM9261 EK"
+
+config AT91SAM9G10
+	bool "Atmel AT91SAM9G10 EK"
+
+endchoice
+
+endif

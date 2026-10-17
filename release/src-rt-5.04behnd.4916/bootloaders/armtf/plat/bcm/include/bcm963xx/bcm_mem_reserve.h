@@ -56,12 +56,6 @@ written consent.
 #define PMC_RESERVED_MEM_START  (CFG_ATF_AREA_ADDR + CFG_ATF_AREA_SIZE)
 #define PMC_RESERVED_MEM_SIZE   0x40000                           // Total PMC reserved memory size 256KB
 
-#ifdef CONFIG_BCM963148
-/* Reuse unused PMC reserved memory for DSL */
-#define DSL_RESERVED_MEM_START  PMC_RESERVED_MEM_START
-#define DSL_RESERVED_MEM_SIZE   PMC_RESERVED_MEM_SIZE
-#endif
-
 #define CFG_BOOT_PMC_LOG_SIZE   0x10000                           // Leave 64K reserved memory for PMC log
 #define CFG_BOOT_PMC_ADDR       (PMC_RESERVED_MEM_START)
 #define CFG_BOOT_PMC_SIZE       (PMC_RESERVED_MEM_SIZE  - CFG_BOOT_PMC_LOG_SIZE) // Memory reserved for PMC firmware

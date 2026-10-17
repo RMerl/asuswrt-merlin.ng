@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+#include "226_fit_split_elf.dts"
+
+&config {
+	fit,config = "bad";
+};

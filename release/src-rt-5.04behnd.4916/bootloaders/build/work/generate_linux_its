@@ -5,6 +5,7 @@ use warnings;
 use Getopt::Long;
 use Digest::SHA;
 use File::stat;
+use File::Basename;
 
 my $dir;
 my $arch = "arm64";
@@ -16,11 +17,11 @@ my $kcompression;
 my $ksuffix;
 my $kentry = "0x100000";
 my $simple;
-my $shapath;
 my $pmcfw_code_addr;
 my $pmcfw_data_addr;
 my $securitydefs;
 my $security_policy;
+my $security_policy_sig;
 my @keyrings;
 my %keyring;
 my $mapper;
@@ -29,13 +30,21 @@ my $smc;
 my $sign;
 my $cypher;
 my $ksm;
+my $img_enc_list;
+my $img_pre_enc_cfg_file;
+my %img_pre_enc_data;
+my %img_cipher;
 my $uentry = "0x1000000";
 my $oentry = "0x0100000";
+
+# Place holder for empty hash node
 my $hashnode = q{
 			hash-1 {
 				algo = "sha256";
 			};
 };
+
+# Placeholder for filled hash node, pre-allocates space for hashes, avoids out-of-memory errors during FIT generation
 my $hashnv = q{
 			hash-1 {
 				algo = "sha256";
@@ -46,10 +55,43 @@ my $hashnv = q{
 my $support_fallback="0";
 my $usage = q[
 Usage: generate_linux_its [--simple] --dir=direcotry_with_dtbs --arch=arch [--armtf] [--optee] --chip=chipid
-   [--pmcfw_code_addr=caddr] [--pmcfw_data_addr=daddr] [--sha=rootfs_path] [--support_fallback=<support_fallback>]
-   [--securitydefs=file] [--security_policy=file] [ --keyring=keyring_file ... ]
+   [--pmcfw_code_addr=caddr] [--pmcfw_data_addr=daddr] [--support_fallback=<support_fallback>]
+   [--securitydefs=file] [--security_policy=file] [--security_policy_sig=file] [--keyring=keyring_file ... ]
    [--mapper=file] [--nohash] [--smc] [--sign=<key-name-hint>] [--cypher=<key-name-hint>] [--ksm=file]
+   [--fit_img_enc_list=kernel uboot ... --fit_img_pre_enc_cfg=file]
 ];
+
+# Generate cipher node for binaries needing encryption
+# args: uboot_FILE build/scripts/uboot_key.bin
+sub GenImgCipherNode {
+    my ($img, $filename) = (@_);
+    my @img_enc_array = split(' ', $img_enc_list);
+
+    if ( $img =~ /^(\S+)_FILE$/ ) {
+        my $img_name = $1;
+
+        if ( grep( /^$img_name$/, @img_enc_array ) ) {
+            my $aes_bit = ( ( -s $filename ) - 16 ) * 8; # filesize iv size is fixed 16 bytes
+
+            # remove the leading path and extension
+            $filename =~ s{^.*/}{};
+            $filename =~ s/.bin//;
+
+            # mkimage uses these hints to read actual key files for encryption, so must be based on filenames
+            # TPL uses hints to generate <key-algo-key_hint-iv-_hint> node which contains actual decryption key
+            my $ek = $filename."_ek";
+            my $iv = $filename."_iv";
+            my $cipher = qq[
+			cipher {
+				algo = "aes$aes_bit";
+				key-name-hint = "$ek";
+				iv-name-hint = "$iv";
+			};
+            ];
+            $img_cipher{$img_name} = $cipher;
+        }
+    }
+}
 
 GetOptions(
     "dir=s",                \$dir,
@@ -63,6 +105,7 @@ GetOptions(
     "pmcfw_data_addr=s",    \$pmcfw_data_addr,
     "securitydefs=s",       \$securitydefs,
     "security_policy=s",    \$security_policy,
+    "security_policy_sig=s",\$security_policy_sig,
     "kernel_compression:s", \$kcompression,
     "mapper=s",             \$mapper,
     "nohash",               \$nohash,
@@ -71,7 +114,8 @@ GetOptions(
     "sign=s",               \$sign,
     "cypher=s",             \$cypher,
     "ksm=s",                \$ksm,
-    "sha=s" => \$shapath
+    "fit_img_enc_list=s",   \$img_enc_list,
+    "fit_img_pre_enc_cfg=s",\$img_pre_enc_cfg_file
 ) or die("$usage");
 
 die($usage) unless ( $dir && $chip );
@@ -84,6 +128,46 @@ else {
     $kcompression = "none";
 }
 
+# Generate cipher node for pre-encrypted binaries
+# pre-encrypted binaries are specified via an encryption record. Each line in the encryption 
+# record contains information about an encrypted binary. Each entry is encoded as follows:
+#     fit_image_name:aes_length:unencrypted_size:encrypted_file:encryption_key
+if ( defined $img_pre_enc_cfg_file && $img_pre_enc_cfg_file ne '' ) {
+    open( PREENC, "<$img_pre_enc_cfg_file" ) or die("couldnt open $img_pre_enc_cfg_file");
+
+    # Cfg file path is absolute, preenc file path is relative to cfg file, get prefix
+    my $path_prefix = dirname($img_pre_enc_cfg_file);
+
+    # Process preenc configs
+    while ( my $l = <PREENC> ) {
+        chomp $l;
+
+        # Skip comments
+        next if $l =~ /^\s*#/;
+
+        # Extract tokens and remove whitespace
+        my ($preenc_img_name, $preenc_algo, $preenc_unciph_size, $preenc_file, $preenc_key_name)
+            = map { s/^\s+|\s+$//g; $_ } split(':', $l);
+
+        # Add proper prefix to get absolute path
+        $preenc_file = "" . $path_prefix . "/" . $preenc_file;
+
+        # Construct preencrypted node data
+        my $preenc_data = qq[
+			data = /incbin/("$preenc_file");
+			data-size-unciphered = <$preenc_unciph_size>;
+			cipher {
+				algo = "$preenc_algo";
+				key-name-hint = "${preenc_key_name}_ek";
+				iv-name-hint = "${preenc_key_name}_iv";
+			};
+        ];
+        $img_pre_enc_data{$preenc_img_name} = $preenc_data;
+    }
+    close(PREENC);
+}
+
+# Parse keyring containing encoded keys
 @keyrings = ( split( /,/, join( ',', @keyrings ) ) );
 foreach my $k (@keyrings) {
     open( K, "<$k" ) or die("couldnt open $k");
@@ -96,6 +180,9 @@ foreach my $k (@keyrings) {
             $v = $2;
             if ( $keyring{$n} ) {
                 die("key $n redefined");
+            }
+            if ( defined $img_enc_list && $img_enc_list ne '' ) {
+                GenImgCipherNode($n,$v);
             }
         }
         else {
@@ -118,8 +205,8 @@ if ( $arch eq "aarch64" ) {
     $arch = "arm64";
     if ($smc) {
         $kentry = $optee ? "0x4F00000" : "0x4000000";
-	$oentry = $optee ? "0x4000000" : $oentry;
-	$uentry = "0x6000000";
+        $oentry = $optee ? "0x4000000" : $oentry;
+        $uentry = "0x6000000";
     }
     else {
         $kentry = $optee ? "0x1000000" : "0x200000";
@@ -138,6 +225,8 @@ if ($nohash) {
 }
 
 my @dtbs = glob("$dir/*.dtb");
+# device tree overlays
+my @dtbo = glob("$dir/*.dtbo");
 
 my $fitout = q[
 /*
@@ -156,8 +245,7 @@ my $fitout = q[
 
 
 if ( $support_fallback eq "1" ) {
-
-	$fitout .= "\tsupport_fallback;\n";
+    $fitout .= "\tsupport_fallback;\n";
 }
 
 if ( open( IDENT, "<", "$dir/image_ident" ) ) {
@@ -172,32 +260,39 @@ if ( open( IDENT, "<", "$dir/image_ident" ) ) {
     close(IDENT);
 }
 
+# Generate delegate's trust node and insert encrypted keys 
 if ((!$simple) && $securitydefs) {
     open( E, "<$securitydefs" )
       or die("couldnt open $securitydefs");
     local $/;
     my $e = <E>;
     close(E);
+
+    # Insert leading tabs for alignment
+    $e =~ s/^/\t\t/gm;
+
+    # Swap in encoded keys in place of %placeholder%
     while ( $e =~ /^\s*\w.*%(\w+)%/m ) {
         my $k = $1;
         my $v = $keyring{$k};
         if ($v) {
             if (!($e =~ s/^(\s*\w.*)%$k%/$1$v/m)) {
-		die "fail to swap $k";
+                die "fail to swap $k";
             }
         }
         else {
-	    # Remove data value
+            # Remove data value
             $e =~ s/^(\s*\w.*)%$k%.*$//m;
         }
     }
     $fitout .= qq[
 	trust {
 $e
-     };
+	};
 ];
 }
 
+# Generate rootfs encryption node with device mapper config
 if ($mapper) {
     my $dmdev = '';
     open(M,"<$mapper") or die("couldnt open $mapper");
@@ -218,6 +313,7 @@ if ($mapper) {
        ];
 }
 
+# GEN4 Only
 if ($sign && $cypher) {
     $fitout .= "brcm_sec_fit {\n";
     $fitout .= qq[
@@ -231,6 +327,7 @@ if ($sign && $cypher) {
     $fitout .= "};\n";
 }
 
+# GEN4 Only
 if ($ksm) {
     $fitout .= "brcm_sec_ksm {\n";
     $fitout .= qq[
@@ -243,33 +340,7 @@ if ($ksm) {
     $fitout .= "};\n";
 }
 
-if ($shapath) {
-    $fitout .= "brcm_sec_hashes {\n";
-
-    # insert rootfs sha256 hash
-    my $sha = new Digest::SHA(256);
-    $sha->addfile($shapath) or die("$shapath could not be added to sha256");
-    my $st   = stat($shapath);
-    my $len  = $st->size;
-    my $base = "rootfs";
-    my $hex  = $sha->hexdigest;
-    if ( $ENV{'TEST_FORCE_BAD_ROOTFS_HASH'} ) {
-        substr( $hex, 16, 8 ) = '00000000';
-    }
-    $fitout .= qq[
-		$base {
-			description = "rootfs";
-			size = < $len >;
-			hash-1 {
-				value = [$hex];
-				algo = "sha256";
-			};
-		};
-       \n];
-
-    $fitout .= "};\n";
-}
-
+# Insert signed security node from the key-owner
 if ($security_policy) {
     my $s;
 
@@ -280,19 +351,43 @@ if ($security_policy) {
     close(S);
     my $security_policy_bin= unpack( "H*", $s );
 
-    open( S, "<$security_policy.sig" )
-      or die("couldnt open $security_policy.sig");
+    open( S, "<$security_policy_sig" )
+      or die("couldnt open $security_policy_sig");
     $s = <S>;
     close(S);
-    my $security_policy_sig = unpack( "H*", $s );
+    my $security_policy_sig_bin = unpack( "H*", $s );
 
     $fitout .= qq[
 		security {
 			description = "Security Node";
 			data = [$security_policy_bin];
-			signature = [$security_policy_sig];
+			signature = [$security_policy_sig_bin];
 		};
        \n];
+}
+
+# Default Binary locations
+my %data_loc;
+$data_loc{"uboot"}  = "data = /incbin/(\"../../obj/uboot/u-boot-nodtb.bin\");";
+$data_loc{"kernel"} = "data = /incbin/(\"../../obj/uboot/vmlinux.bin$ksuffix\");";
+$data_loc{"atf"}    = "data = /incbin/(\"../../obj/atf/armtf.bin\");";
+$data_loc{"optee"}  = "data = /incbin/(\"../../obj/optee/tee.bin\");";
+
+# Set Cipher nodes for preencrypted and plain-txt images. Preencrypted DTBs are not supported
+my @supported_preenc_img = ("atf", "optee", "kernel", "uboot");
+my %cipher_node;
+foreach my $imagename (@supported_preenc_img) {
+    if($img_pre_enc_data{"$imagename"}) {
+        # Clear data location as loc of pre-encrypted binary will be passed with cipher node
+        $data_loc{"$imagename"} = "";
+        $cipher_node{"$imagename"} = $img_pre_enc_data{"$imagename"};
+        print STDERR "Generating cipher node for preenc image: $imagename\n";
+    } elsif ($img_cipher{"$imagename"}) {
+        $cipher_node{"$imagename"} = $img_cipher{"$imagename"};
+        print STDERR "Generating cipher node for image: $imagename\n";
+    } else {
+        $cipher_node{"$imagename"} = "";
+    }
 }
 
 $fitout .= q[
@@ -303,13 +398,14 @@ $fitout .= q[
     ? qq[
 		atf {
 			description = "ATF";
-			data = /incbin/("../../obj/atf/armtf.bin");
+			$data_loc{"atf"}
 			type = "firmware";
 			arch = "$arch";
 			os = "arm-trusted-firmware";
 			compression = "none";
 			load = <0x4000>;
 			entry = <0x4000>;
+			$cipher_node{"atf"}
 			$hashnode
 		};
 ]
@@ -320,12 +416,13 @@ $fitout .= q[
     ? qq[
 		optee {
 			description = "OPTEE";
-			data = /incbin/("../../obj/optee/tee.bin");
+			$data_loc{"optee"}
 			os = "tee";
 			arch = "$arch";
 			compression = "none";
 			load = <$oentry>;
 			entry = <$oentry>;
+			$cipher_node{"optee"}
 			$hashnode
 		};
 ]
@@ -334,12 +431,13 @@ $fitout .= q[
   . qq[
 		uboot {
 			description = "U-Boot";
-			data = /incbin/("../../obj/uboot/u-boot-nodtb.bin");
+			$data_loc{"uboot"}
 			os = "U-Boot";
 			arch = "$arch";
 			compression = "none";
 			load = <$uentry>;
 			entry = <$uentry>;
+			$cipher_node{"uboot"}
 			$hashnode
 		};
 		fdt_uboot {
@@ -354,13 +452,14 @@ $fitout .= q[
     ? qq[
 		kernel {
 			description = "Linux kernel";
-			data = /incbin/("../../obj/uboot/vmlinux.bin$ksuffix");
+			$data_loc{"kernel"}
 			type = "kernel";
 			os = "linux";
 			arch = "$arch";
 			compression = "$kcompression";
 			load = <$kentry>;
 			entry = <$kentry>;
+			$cipher_node{"kernel"}
 			$hashnode
 		};
 ]
@@ -401,12 +500,17 @@ $fitout .= q[
 
 # insert more DTBs here
 my %dtbseen;
+my $dtbcipher = "";
+if ($img_cipher{"dtb"}) { 
+    $dtbcipher = $img_cipher{"dtb"};
+}
+
 foreach my $dtb (@dtbs) {
     if ( $dtb =~ /((?:\-|\w)+)\.dtb$/ ) {
         my $fdtname = "fdt_" . $1;
         if ( $dtbseen{ uc($1) }++ ) {
             die(
-                "ERROR: $1 is ambiguous with another dtb differing in case only"
+                "ERROR: $1 is ambiguous with another dtb differing in case only\n"
             );
         }
         $fitout .= qq[
@@ -416,11 +520,36 @@ foreach my $dtb (@dtbs) {
 			arch = "$arch";
 			type = "flat_dt";
 			compression = "none";
+			$dtbcipher
 			$hashnv
 		};
        \n];
     }
 }
+
+# insert DTB overlays
+my %dtboseen;
+foreach my $dtb (@dtbo) {
+    if ( $dtb =~ /((?:\-|\w)+)\.dtbo$/ ) {
+        my $fdtname = "ovl_" . $1;
+        if ( $dtboseen{ uc($1) }++ ) {
+            die(
+                "ERROR: $1 is ambiguous with another dtb differing in case only"
+            );
+        }
+        $fitout .= qq[
+        $fdtname {
+            description = "dtb overlay";
+            data = /incbin/("../../$dtb");
+            arch = "$arch";
+            type = "flat_dt";
+            compression = "none";
+            $hashnv
+        };
+       \n];
+    }
+}
+
 
 $fitout .= qq[
 	};
@@ -467,6 +596,24 @@ foreach my $dtb (@dtbs) {
 			loadables = $loadables;
 		};
         \n];
+    }
+}
+
+# insert overlay CONFIGs here
+foreach my $dtb (@dtbo) {
+    if ( $dtb =~ /((?:\-|\w)+)\.dtbo$/ ) {
+        my $cfgname_ovl = "conf_ovl_" . $1;
+        my $fdtname    = "ovl_" . $1;
+        $fitout .= (
+            ( not $simple )
+            ? qq[
+        $cfgname_ovl {
+            description = "BRCM overlay";
+            fdt = "$fdtname";
+        };
+    ]
+            : ""
+          )
     }
 }
 

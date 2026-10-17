@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LS1028A-QDS device tree fragment for RCW x5xx
+ *
+ * Copyright 2019-2021 NXP
+ */
+
+/*
+ * This setup is using SCH-28021 cards with VSC8514 QSGMII PHY in slot 2.
+ * This is only available on LS1028A QDS boards with lane B rework.
+ */
+&slot2 {
+	#include "fsl-sch-28021.dtsi"
+};
+
+&enetc_port2 {
+	status = "okay";
+};
+
+&mscc_felix {
+	status = "okay";
+};
+
+&mscc_felix_port0 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "qsgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@08}>;
+};
+
+&mscc_felix_port1 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "qsgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@09}>;
+};
+
+&mscc_felix_port2 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "qsgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@0a}>;
+};
+
+&mscc_felix_port3 {
+	status = "okay";
+	managed = "in-band-status";
+	phy-mode = "qsgmii";
+	phy-handle = <&{/soc/i2c@2000000/fpga@66/mux-mdio@54/mdio@50/phy@0b}>;
+};
+
+&mscc_felix_port4 {
+	ethernet = <&enetc_port2>;
+	status = "okay";
+};

@@ -1,0 +1,15 @@
+if TARGET_ROCKPRO64_RK3399
+
+config SYS_BOARD
+	default "rockpro64_rk3399"
+
+config SYS_VENDOR
+	default "pine64"
+
+config SYS_CONFIG_NAME
+	default "rockpro64_rk3399"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

@@ -80,7 +80,8 @@ static phy_serdes_t serdes_6756class[1][2] =
             .cur_power_level = -1,
             .light_detected = dsl_merlin28_light_detected,
             .flag = LANE_STRUCTURE,
-            //.lbe_op = dsl_merlin28_lbe_op,
+            .silent_start_light_detected = dsl_serdes_sfp_silent_start_light_detected,
+            .laser_op = serdes_access_lane_enable,
         },
         {
             .phy_type = PHY_TYPE_6756CLASS_SERDES,
@@ -95,7 +96,8 @@ static phy_serdes_t serdes_6756class[1][2] =
             .light_detected = dsl_merlin28_light_detected,
             .cur_power_level = -1,
             .flag = LANE_STRUCTURE,
-            //.lbe_op = dsl_merlin28_lbe_op,
+            .silent_start_light_detected = dsl_serdes_sfp_silent_start_light_detected,
+            .laser_op = serdes_access_lane_enable,
         },
     },
 };
@@ -371,6 +373,8 @@ phy_drv_t phy_drv_serdes_6756class =
     .configured_inter_phy_speed_type_set = dsl_serdes_cfg_speed_mode_set_lock,
     .xfi_tx_polarity_inverse_set = dsl_merlin28_xfi_tx_polarity_set,
     .xfi_rx_polarity_inverse_set = dsl_merlin28_xfi_rx_polarity_set,
+    .silent_start_get = phy_dev_sltstt_get,
+    .silent_start_set = phy_dev_sltstt_set_lock,
     .name = "5GAE",
 };
 

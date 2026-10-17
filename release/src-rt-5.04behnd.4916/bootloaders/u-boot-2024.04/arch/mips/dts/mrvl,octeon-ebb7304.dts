@@ -1,0 +1,248 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Marvell / Cavium Inc. EVB CN7300
+ */
+
+/dts-v1/;
+
+#include "mrvl,cn73xx.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "cavium,ebb7304";
+	compatible = "cavium,ebb7304";
+
+	aliases {
+		mmc0 = &mmc0;
+		mmc1 = &mmc1;
+		serial0 = &uart0;
+		spi0 = &spi;
+	};
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* Power on GPIO 8, active high */
+		reg_mmc_3v3: regulator@0 {
+			compatible = "regulator-fixed";
+			reg = <0>;
+			regulator-name = "mmc-3v3";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio 8 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+		};
+	};
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+
+&bootbus {
+	/*
+	 * bootbus CS0 for CFI flash is remapped (0x1fc0.0000 -> 1f40.0000)
+	 * as the initial size is too small for the 8MiB flash device
+	 */
+	ranges = <0 0  0       0x1f400000  0xc00000>,
+		 <1 0  0x10000 0x10000000  0>,
+		 <2 0  0x10000 0x20000000  0>,
+		 <3 0  0x10000 0x30000000  0>,
+		 <4 0  0       0x1d020000  0x10000>,
+		 <5 0  0x10000 0x50000000  0>,
+		 <6 0  0x10000 0x60000000  0>,
+		 <7 0  0x10000 0x70000000  0>;
+
+	cavium,cs-config@0 {
+		compatible = "cavium,octeon-3860-bootbus-config";
+		cavium,cs-index = <0>;
+		cavium,t-adr  = <10>;
+		cavium,t-ce   = <50>;
+		cavium,t-oe   = <50>;
+		cavium,t-we   = <35>;
+		cavium,t-rd-hld = <25>;
+		cavium,t-wr-hld = <35>;
+		cavium,t-pause  = <0>;
+		cavium,t-wait   = <50>;
+		cavium,t-page   = <30>;
+		cavium,t-rd-dly = <0>;
+		cavium,page-mode = <1>;
+		cavium,pages     = <8>;
+		cavium,bus-width = <8>;
+	};
+
+	cavium,cs-config@4 {
+		compatible = "cavium,octeon-3860-bootbus-config";
+		cavium,cs-index = <4>;
+		cavium,t-adr  = <10>;
+		cavium,t-ce   = <10>;
+		cavium,t-oe   = <160>;
+		cavium,t-we   = <100>;
+		cavium,t-rd-hld = <10>;
+		cavium,t-wr-hld = <0>;
+		cavium,t-pause  = <50>;
+		cavium,t-wait   = <50>;
+		cavium,t-page   = <10>;
+		cavium,t-rd-dly = <10>;
+		cavium,pages     = <0>;
+		cavium,bus-width = <8>;
+	};
+
+	flash0: nor@0,0 {
+		compatible = "cfi-flash";
+		reg = <0 0 0x800000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "bootloader";
+			reg = <0 0x340000>;
+			read-only;
+		};
+		partition@300000 {
+			label = "storage";
+			reg = <0x340000 0x4be000>;
+		};
+		partition@7fe000 {
+			label = "environment";
+			reg = <0x7fe000 0x2000>;
+			read-only;
+		};
+	};
+};
+
+&i2c0 {
+	bootph-all;	/* Needed early for DDR SPD EEPROM */
+	clock-frequency = <100000>;
+
+	rtc@68 {
+		compatible = "dallas,ds1337";
+		reg = <0x68>;
+	};
+
+	tlv-eeprom@56 {
+		compatible = "atmel,24c256", "microchip,24lc256";
+		reg = <0x56>;
+		pagesize = <64>;
+	};
+};
+
+&i2c1 {
+	bootph-all;	/* Needed early for DDR SPD EEPROM */
+	clock-frequency = <100000>;
+};
+
+&spi {
+	flash@0 {
+		compatible = "micron,n25q128a11", "jedec,spi-nor";
+		spi-max-frequency = <2000000>;
+		reg = <0>;
+	};
+};
+
+/* USB 0 */
+&usb0 {
+	status = "okay";
+	/*
+	 * Power is specified by three parts:
+	 * 1) GPIO handle (must be &gpio)
+	 * 2) GPIO pin number
+	 * 3) Active high (0) or active low (1)
+	 */
+	power = <&gpio 20 0>;
+};
+
+/* USB 1 */
+&usb1 {
+	status = "okay";
+	/*
+	 * Power is specified by three parts:
+	 * 1) GPIO handle (must be &gpio)
+	 * 2) GPIO pin number
+	 * 3) Active high (0) or active low (1)
+	 */
+	power = <&gpio 21 0>;
+};
+
+&mmc {
+	status = "okay";
+
+	/* The board has two MMC slots
+	 * If both are occupied, the speed must be reduced,
+	 * as extra data-line load increases slew time,
+	 * and dat-skew adjustment does not help significantly.
+	 */
+	mmc0: mmc-slot@0 {
+		compatible = "cavium,octeon-6130-mmc-slot", "mmc-slot";
+		reg = <0>;
+		vqmmc-supply = <&reg_mmc_3v3>;
+		voltage-ranges = <3300 3300>;
+		//spi-max-frequency = <52000000>; // just one
+		spi-max-frequency = <37000000>; // both slots
+		/* bus width can be 1, 4 or 8 */
+		bus-width = <8>; /* new std property */
+		cavium,bus-max-width = <8>; /* custom property */
+		wp-gpios = <&gpio 22 0>; /* active high */
+		cd-gpios = <&gpio 23 1>; /* active low */
+	};
+
+	mmc1: mmc-slot@1 {
+		compatible = "cavium,octeon-6130-mmc-slot", "mmc-slot";
+		reg = <1>;
+		vqmmc-supply = <&reg_mmc_3v3>;
+		voltage-ranges = <3300 3300>;
+		//spi-max-frequency = <52000000>; // just one
+		spi-max-frequency = <37000000>; // both slots
+		/* bus width can be 1, 4 or 8 */
+		bus-width = <8>; /* new std property */
+		cavium,bus-max-width = <8>; /* custom property */
+		wp-gpios = <&gpio 24 0>; /* active high */
+		cd-gpios = <&gpio 25 1>; /* active low */
+	};
+};
+
+/* SMI_1 -- Available on rev 2 and later boards */
+&smi1 {
+	/**
+	 * The phy names are broken down as follows:
+	 * (m)phyxxyzzs
+	 * where:
+	 *	xx = 01 for SGMII, 10 for DXAUI, 20 for RXAUI
+	 *	     and 40 for XFI/LXAUI
+	 *	y = QLM/DLM number
+	 *	zz = PHY address (decimal)
+	 *	s = sub-phy number in the case of the Cortina
+	 *	    PHY
+	 * a mphy is a nexus phy that contains one or more
+	 * sub-phys, for example the Cortina CS4223.
+	 */
+
+	/* QLM 2 */
+	phy01208: ethernet-phy@01208 {
+		reg = <8>;
+		compatible = "marvell,88e1240", "ethernet-phy-ieee802.3-c22";
+
+		marvell,reg-init = <3 0x10 0 0x8665>,
+				   <3 0x11 0 0x00aa>,
+				   <3 0x12 0 0x4105>,
+				   <3 0x13 0 0x8a08>;
+
+		interrupt-parent = <&gpio>;
+		interrupts = <12 8>; /* Pin 12, active low */
+	};
+};
+
+/* BGX 0 */
+&bgx0 {
+	status = "okay";
+	phy-handle = <&phy01208>; /* put phy-handle in BGX node and MAC node */
+
+	/* SerDes 0, may differ from PCS Lane/LMAC */
+	eth0: ethernet-mac@D {
+		compatible = "cavium,octeon-7890-bgx-port";
+		reg = <0>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+		phy-handle = <&phy01208>;
+	};
+};

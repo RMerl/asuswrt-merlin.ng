@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# WiFi Service ...
+#
+
+case "$1" in
+  start)
+        printf "S40wifi: Starting, no action required."
+        ;;
+  stop)
+        printf "S40wifi: Stopping: "
+        if [ -e /usr/local/bin/wifi_setup.sh ] || [ -e /usr/local/sbin/wifi_setup.sh ] || [ -e /sbin/wifi_setup.sh ]; then
+                export PATH="/usr/local/sbin:$PATH"
+                export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+                wifi_setup.sh stop
+        fi
+        [ $? = 0 ] && echo "OK" || echo "FAIL"
+        ;;
+  restart|reload)
+        printf "S40wifi: restart|reload, no action required."
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+
+exit $?
+

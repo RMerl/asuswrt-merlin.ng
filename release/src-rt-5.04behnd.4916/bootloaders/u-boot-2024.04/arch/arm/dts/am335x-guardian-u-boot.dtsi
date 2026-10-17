@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 EETS GmbH - https://www.eets.ch/
+ * Copyright (C) 2018 Robert Bosch Power Tools GmbH
+ */
+
+#include "am33xx-u-boot.dtsi"
+
+/ {
+	ocp {
+		bootph-all;
+	};
+};
+
+&l4_wkup {
+	bootph-all;
+};
+
+&l4_per {
+
+	segment@300000 {
+
+		target-module@e000 {
+			bootph-all;
+
+			lcdc: lcdc@0 {
+				bootph-all;
+			};
+		};
+	};
+};
+
+&mmc1 {
+	bootph-all;
+};
+
+&mmc1_pins {
+	bootph-all;
+};
+
+&scm {
+	bootph-all;
+};
+
+&spi0 {
+	lcd0: display@0 {
+		compatible = "himax,hx8238d";
+		pinctrl-names = "default";
+		pinctrl-0 = <&lcd0_pins>;
+		reg = <0>;
+		label = "lcd";
+		spi-max-frequency = <100000>;
+	};
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&uart0_pins {
+	bootph-all;
+};
+
+&usb {
+	bootph-all;
+};
+
+&usb_ctrl_mod {
+	bootph-all;
+};
+
+&usb0 {
+	bootph-all;
+};
+
+&usb0_phy {
+	bootph-all;
+};
+
+&am33xx_pinmux {
+	bootph-all;
+
+	lcd0_pins: pinmux_lcd0_pins {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_MII1_COL, PIN_OUTPUT_PULLUP, MUX_MODE7)
+		>;
+	};
+};

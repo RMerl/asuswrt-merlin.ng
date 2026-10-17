@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * QorIQ FMan 1g port #4 device tree stub [ controller @ offset 0x500000 ]
+ *
+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2020 NXP
+ *
+ */
+
+fman@500000 {
+	fman1_rx_0x0c: port@8c000 {
+		cell-index = <0xc>;
+		compatible = "fsl,fman-v2-port-rx";
+		reg = <0x8c000 0x1000>;
+	};
+
+	fman1_tx_0x2c: port@ac000 {
+		cell-index = <0x2c>;
+		compatible = "fsl,fman-v2-port-tx";
+		reg = <0xac000 0x1000>;
+	};
+
+	ethernet@e8000 {
+		cell-index = <4>;
+		compatible = "fsl,fman-dtsec";
+		reg = <0xe8000 0x1000>;
+		fsl,fman-ports = <&fman1_rx_0x0c &fman1_tx_0x2c>;
+		tbi-handle = <&tbi9>;
+		ptp-timer = <&ptp_timer1>;
+	};
+
+	mdio@e9120 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,fman-mdio";
+		reg = <0xe9120 0xee0>;
+
+		tbi9: tbi-phy@8 {
+			reg = <0x8>;
+			device_type = "tbi-phy";
+		};
+	};
+};

@@ -1,0 +1,27 @@
+if VIDEO_NX
+
+menu "LCD select"
+
+config VIDEO_NX_RGB
+	bool "RGB LCD"
+	help
+	  Support for RGB lcd output.
+
+config VIDEO_NX_LVDS
+	bool "LVDS LCD"
+	help
+	  Support for LVDS lcd output.
+
+config VIDEO_NX_MIPI
+	bool "MiPi"
+	help
+	  Support for MiPi lcd output.
+
+config VIDEO_NX_HDMI
+	bool "HDMI"
+	help
+	  Support for hdmi output.
+
+endmenu
+
+endif

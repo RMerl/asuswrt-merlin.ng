@@ -1,6 +1,0 @@
-PORTER BOARD
-M:	Cogent Embedded, Inc. <source@cogentembedded.com>
-S:	Maintained
-F:	board/renesas/porter/
-F:	include/configs/porter.h
-F:	configs/porter_defconfig

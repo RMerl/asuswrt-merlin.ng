@@ -88,4 +88,23 @@ dqm5: dqm5 {
     interrupt-parent = <&dqmintc0>;
     interrupts = <5>;
 };
-
+dqm16: dqm16 {
+    qname = "RPC TPMLinux-->SMC";
+    id = <16>;
+    words = <4>;
+    depth = <8>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <16>;
+};
+dqm17: dqm17 {
+    qname = "RPC TPMLinux<-SMC";
+    id = <17>;
+    words = <4>;
+    depth = <8>;
+    lwm = <2>;
+    hwm = <1>;
+    interrupt-parent = <&dqmintc0>;
+    interrupts = <17>;
+};

@@ -1,0 +1,102 @@
+Kendryte K210 FPIOA
+
+This binding describes the Fully-Programmable Input/Output Array (FPIOA) found
+in Kendryte K210 SoCs. Any of the 256 functions can be mapped to any of the 48
+pins.
+
+Required properties:
+- compatible: should be "canaan,k210-fpioa"
+- reg: address and length of the FPIOA registers
+- canaan,sysctl: phandle to the "sysctl" register map node
+- canaan,k210-power-offset: offset in the register map of the power bank control
+  register (in bytes)
+
+Configuration nodes
+
+Pin configuration nodes are documented in pinctrl-bindings.txt
+
+Required properties for pin-configuration nodes or sub-nodes are:
+- groups: list of power groups to which the configuration applies. Valid groups
+  are:
+	A0, A1, A2, B3, B4, B5, C6, C7
+  (either this or "pinmux" must be specified)
+- pinmux: integer array representing pin multiplexing configuration. In addition
+  to the 256 standard functions, each pin can also output the direction
+  indicator (DO) of any function. This signal is high whenever the function
+  would normally drive the output. Helper macros to ease assembling the "pinmux"
+  arguments from the pin and function are provided by the FPIOA header file at:
+  <dt-bindings/pinctrl/k210-pinctrl.h>
+  Integer values in the "pinmux" argument list are assembled as:
+  ((PIN << 16) | (DO << 8) | (FUNC))
+  Valid values for PIN are numbers 0 through 47.
+  Valid values for DO are 0 or 1.
+  Valid values for FUNC are numbers 0 through 255. For a complete list of
+  acceptable functions, consult the FPIOA header file.
+  (either this or "groups" must be specified)
+
+Optional properties for "pinmux" nodes are:
+	bias-disable, bias-pull-down, bias-pull-up, drive-strength,
+	drive-strength-ua, input-enable, input-disable, input-schmitt-enable,
+	input-schmitt-disable, output-low, output-high, output-enable,
+	output-disable, slew-rate, output-polarity-invert, input-polarity-invert
+
+Optional properties for "groups" nodes are:
+	power-source
+
+Notes on specific properties include:
+- bias-pull-up, -down, and -pin-default: The pull strength cannot be configured.
+- drive-strength: There are 8 drive strength settings between 11 and 50 mA.
+- input- and output-polarity-invert: Invert the polarity of either the input or
+  the output, respectively.
+- power-source: Controls the output voltage of a bank of pins. Either
+  K210_PC_POWER_1V8 or K210_PC_POWER_3V3 may be specified.
+- slew-rate: Specifying this property reduces the slew rate.
+
+Example:
+fpioa: pinmux@502B0000 {
+	compatible = "canaan,k210-fpioa";
+	reg = <0x502B0000 0x100>;
+	canaan,k210-sysctl = <&sysctl>;
+	canaan,k210-power-offset = <K210_SYSCTL_POWER_SEL>;
+
+	/* JTAG running at 3.3V and driven at 11 mA */
+	fpioa_jtag: jtag {
+		voltage {
+			group = "A0";
+			power-source = <K210_PC_POWER_3V3>;
+		};
+
+		jtag {
+			pinmux = <K210_FPIOA(0, K210_PCF_JTAG_TCK)>,
+				 <K210_FPIOA(1, K210_PCF_JTAG_TDI)>,
+				 <K210_FPIOA(2, K210_PCF_JTAG_TMS)>,
+				 <K210_FPIOA(3, K210_PCF_JTAG_TDO)>;
+			drive-strength = <11>;
+		}
+	};
+
+	/* I2C configured for use with a TCA9800 level shifter */
+	fpioa_i2c: i2c {
+		i2c {
+			pinmux = <K210_FPIOA(6, K210_PCF_I2C0_SCLK)>,
+				 <K210_FPIOA(7, K210_PCF_I2C0_SDA)>;
+		};
+
+		direction {
+			pinmux = <K210_FPIOA_DO(8, K210_PCF_I2C0_SDA)>;
+			output-polarity-invert;
+		};
+	};
+
+	/* UART with an active-high TX status LED */
+	fpioa_uart1: uart1 {
+		uart {
+			pinmux = <K210_FPIOA(9, K210_PCF_UART1_TX)>,
+				 <K210_FPIOA(10, K210_PCF_UART1_RX)>;
+		};
+
+		status {
+			pinmux = <K210_FPIOA_DO(11, K210_PCF_UART1_TX)>;
+		};
+	};
+};

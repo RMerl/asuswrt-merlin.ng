@@ -1,0 +1,18 @@
+Field Fail-Save U-Boot Update
+-----------------------------
+Field Fail-Save u-boot update is a feature that allows save u-boot update
+of FOX and XMC products that are rolled out in the field.
+
+The feature is initially implemented for designs based on LS102x SoC, but in
+theory can be used on all designs that are booting from parallel NOR flash.
+
+The implementation expects redundant (secondary) u-boot image on a predefined
+location in the NOR flash, u-boot execution will be transferred to the redundant 
+(secondary) u-boot and redundant u-boot will be started if 'updateduboot' envvar
+is set to 'yes'.
+Update logic check_for_uboot_update() has to be invoked from the design early
+before relocation just after SoC initialization, e.g from board_early_init_f or
+misc_init_f functions.
+By design it is expected that primary u-boot image is burned in the factory and
+never updated, and in case u-boot update is required it can flashed and started
+from secondary u-boot location.

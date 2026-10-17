@@ -7,15 +7,10 @@ ifneq ($(strip $(CONFIG_BCM_PON)),)
     bcm_thermal-objs += bcm_thermal_drv.o
     bcm_thermal-objs += bcm_thermal_pon.o
 else
-ifeq ($(filter-out 4908,${BRCM_CHIP}),)
-    bcm_thermal-objs += bcm_thermal_drv.o
-    bcm_thermal-objs += bcm_thermal_dsl.o
-else
     bcm_thermal-objs += bcm_thermal_old.o
 endif
-endif
 
-EXTRA_CFLAGS +=  -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)/pmc
+EXTRA_CFLAGS +=  -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)/pmc
 EXTRA_CFLAGS += -Werror -Wfatal-errors
 ifeq ($(CONFIG_BRCM_CHIP_COMPAT_NAME),"6764L")
     EXTRA_CFLAGS += -DCONFIG_BCM96764L

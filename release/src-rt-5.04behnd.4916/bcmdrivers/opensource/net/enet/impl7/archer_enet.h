@@ -100,8 +100,10 @@ typedef struct cpu_queues_t
 extern cpu_queues_t * enet_cpu_queues;
 #if defined(ARCHER_DEVICE)
 extern int cpu_queues_tx_send (int send_q, dispatch_info_t *dispatch_info);
+extern int cpu_queues_tx_send_dg (int send_q, dispatch_info_t *dispatch_info);
 #else
 #define cpu_queues_tx_send(s, d)           0
+#define cpu_queues_tx_send_dg(s, d)           0
 #endif
 
 #endif //_ARCHER_H_

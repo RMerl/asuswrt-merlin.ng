@@ -36,8 +36,8 @@ projects/XRDP_CFE2/drivers/rdd/BCM6858/auto/rdd_runner_tasks_auto.c
 
 
 # RDP Subsystem
-drivers/rdp_subsystem/xrdp/access_macros.h
-drivers/rdp_subsystem/xrdp/access_macros_boot.h
+drivers/rdp_subsystem/common/access_macros.h
+drivers/rdp_subsystem/common/access_macros_boot.h
 projects/XRDP_CFE2/drivers/rdp_subsystem/xrdp/access_logging.h
 projects/XRDP_CFE2/drivers/rdp_subsystem/xrdp/access_logging.c
 drivers/rdp_subsystem/packing.h

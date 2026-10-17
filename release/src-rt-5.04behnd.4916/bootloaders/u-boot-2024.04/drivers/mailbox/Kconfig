@@ -1,0 +1,61 @@
+menu "Mailbox Controller Support"
+
+config DM_MAILBOX
+	bool "Enable mailbox controllers using Driver Model"
+	depends on DM && OF_CONTROL
+	help
+	  Enable support for the mailbox driver class. Mailboxes provide the
+	  ability to transfer small messages and/or notifications from one
+	  CPU to another CPU, or sometimes to dedicated HW modules. They form
+	  the basis of a variety of inter-process/inter-CPU communication
+	  protocols.
+
+config APPLE_MBOX
+	bool "Enable Apple IOP controller support"
+	depends on DM_MAILBOX && ARCH_APPLE
+	default y
+	help
+	  Enable support for the mailboxes that provide a comminucation
+	  channel with Apple IOP controllers integrated on Apple SoCs.
+	  These IOP controllers are used to implement various functions
+	  such as the System Management Controller (SMC) and NVMe and this
+	  driver is required to get that functionality up and running.
+
+config SANDBOX_MBOX
+	bool "Enable the sandbox mailbox test driver"
+	depends on DM_MAILBOX && SANDBOX
+	help
+	  Enable support for a test mailbox implementation, which simply echos
+	  back a modified version of any message that is sent.
+
+config TEGRA_HSP
+	bool "Enable Tegra HSP controller support"
+	depends on DM_MAILBOX && ARCH_TEGRA
+	help
+	  This enables support for the NVIDIA Tegra HSP Hw module, which
+	  implements doorbells, mailboxes, semaphores, and shared interrupts.
+
+config STM32_IPCC
+	bool "Enable STM32 IPCC controller support"
+	depends on DM_MAILBOX && ARCH_STM32MP
+	help
+	  This enables support for the STM32MP IPCC Hw module, which
+	  implements doorbells between 2 processors.
+
+config K3_SEC_PROXY
+	bool "Texas Instruments K3 Secure Proxy Driver"
+	depends on DM_MAILBOX && ARCH_K3
+	help
+	  An implementation of Secure proxy slave driver for K3 SoCs from
+	  Texas Instruments. Secure proxy is a communication entity mainly
+	  used for communication between multiple processors with the SoC.
+	  Select this driver if your platform has support for this hardware
+	  block.
+
+config ZYNQMP_IPI
+	bool "Xilinx ZynqMP IPI controller support"
+	depends on DM_MAILBOX && (ARCH_ZYNQMP || ARCH_VERSAL || ARCH_VERSAL_NET)
+	help
+	  This enables support for the Xilinx ZynqMP Inter Processor Interrupt
+	  communication controller.
+endmenu

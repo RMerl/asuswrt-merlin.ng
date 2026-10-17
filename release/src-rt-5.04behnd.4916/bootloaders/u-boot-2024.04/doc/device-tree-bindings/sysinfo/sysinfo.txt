@@ -1,0 +1,19 @@
+Sysinfo
+=======
+
+This provides capabilities to access information about a board/system, for
+use by drivers.
+
+Required properties:
+
+  - compatible: any suitable string where the driver is in the UCLASS_SYSINFO
+      class
+
+See also smbios.txt
+
+
+Example
+
+sysinfo {
+	compatible = "sandbox,sysinfo-sandbox";
+};

@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung Exynos7880 SoC device tree source
+ *
+ * Copyright (c) 2020 Dzmitry Sankouski (dsankouski@gmail.com)
+ */
+
+/dts-v1/;
+#include "skeleton.dtsi"
+#include "exynos78x0-pinctrl.dtsi"
+#include "exynos78x0-gpio.dtsi"
+/ {
+	compatible = "samsung,exynos7880";
+
+	fin_pll: xxti {
+		compatible = "fixed-clock";
+		clock-output-names = "fin_pll";
+		bootph-all;
+		#clock-cells = <0>;
+	};
+
+	/* Dummy clock for uart */
+	fin_uart: uart_dummy_fin {
+		compatible = "fixed-clock";
+		clock-output-names = "fin_uart";
+		clock-frequency = <132710400>;
+		bootph-all;
+		#clock-cells = <0>;
+	};
+
+	uart2: serial@13820000 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0x13820000 0x100>;
+		bootph-all;
+		clocks = <&fin_uart>, <&fin_uart>; // driver uses 1st clock
+		clock-names = "uart", "clk_uart_baud0";
+		pinctrl-names = "default";
+		pinctrl-0 = <&uart2_bus>;
+	};
+
+	gpioi2c0: i2c-0 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "i2c-gpio";
+		status = "disabled";
+		gpios = <
+			&gpc1 0 0 /* sda */
+			&gpc1 1 0 /* scl */
+		>;
+		i2c-gpio,delay-us = <5>;
+
+		s2mu004@3d {
+			compatible = "samsung,s2mu004mfd";
+		};
+	};
+
+	/* ALIVE */
+	pinctrl_0: pinctrl@139F0000 {
+		compatible = "samsung,exynos78x0-pinctrl";
+		reg = <0x139F0000 0x1000>;
+	};
+
+	/* DISP/AUD */
+	pinctrl_2: pinctrl@148C0000 {
+		compatible = "samsung,exynos78x0-pinctrl";
+		reg = <0x148C0000 0x1000>;
+	};
+
+	/* FSYS0 */
+	pinctrl_4: pinctrl@13750000 {
+		compatible = "samsung,exynos78x0-pinctrl";
+		reg = <0x13750000 0x1000>;
+	};
+
+	/* ALIVE */
+	gpio_0: gpio@139F0000 {
+		compatible = "samsung,exynos78x0-gpio";
+		reg = <0x139F0000 0x1000>;
+	};
+
+	/* DISP/AUD */
+	gpio_2: gpio@148C0000 {
+		compatible = "samsung,exynos78x0-gpio";
+		reg = <0x148C0000 0x1000>;
+	};
+
+	/* FSYS0 */
+	gpio_4: gpio@13750000 {
+		compatible = "samsung,exynos78x0-gpio";
+		reg = <0x13750000 0x1000>;
+	};
+
+	/* TOP */
+	gpio_6: gpio@139B0000 {
+		compatible = "samsung,exynos78x0-gpio";
+		reg = <0x139B0000 0x1000>;
+	};
+};

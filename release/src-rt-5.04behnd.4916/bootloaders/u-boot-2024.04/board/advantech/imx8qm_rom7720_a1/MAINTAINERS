@@ -1,0 +1,7 @@
+i.MX8QM ROM 7720 a1 BOARD
+M:	Oliver Graute <oliver.graute@kococonnector.com>
+S:	Maintained
+F:	board/advantech/imx8qm_rom7720_a1/
+F:	arch/arm/dts/imx8qm-rom7720-a1.dts
+F:	include/configs/imx8qm_rom7720.h
+F:	configs/imx8qm_rom7720_a1_4G_defconfig

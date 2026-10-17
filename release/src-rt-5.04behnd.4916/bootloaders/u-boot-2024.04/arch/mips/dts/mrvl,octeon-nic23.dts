@@ -1,0 +1,400 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Marvell / Cavium Inc. NIC23
+ */
+
+/dts-v1/;
+
+#include "mrvl,cn73xx.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "cavium,nic23";
+	compatible = "cavium,nic23";
+
+	aliases {
+		mmc0 = &mmc0;
+		serial0 = &uart0;
+		spi0 = &spi;
+	};
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* Power on GPIO 8, active high */
+		reg_mmc_3v3: regulator@0 {
+			compatible = "regulator-fixed";
+			reg = <0>;
+			regulator-name = "mmc-3v3";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio 8 GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+		};
+	};
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+
+&bootbus {
+	/*
+	 * bootbus CS0 for CFI flash is remapped (0x1fc0.0000 -> 1f40.0000)
+	 * as the initial size is too small for the 8MiB flash device
+	 */
+	ranges = <0 0  0       0x1f400000  0xc00000>,
+		 <1 0  0x10000 0x10000000  0>,
+		 <2 0  0x10000 0x20000000  0>,
+		 <3 0  0x10000 0x30000000  0>,
+		 <4 0  0       0x1d020000  0x10000>,
+		 <5 0  0x10000 0x50000000  0>,
+		 <6 0  0x10000 0x60000000  0>,
+		 <7 0  0x10000 0x70000000  0>;
+
+	cavium,cs-config@0 {
+		compatible = "cavium,octeon-3860-bootbus-config";
+		cavium,cs-index = <0>;
+		cavium,t-adr  = <10>;
+		cavium,t-ce   = <50>;
+		cavium,t-oe   = <50>;
+		cavium,t-we   = <35>;
+		cavium,t-rd-hld = <25>;
+		cavium,t-wr-hld = <35>;
+		cavium,t-pause  = <0>;
+		cavium,t-wait   = <50>;
+		cavium,t-page   = <30>;
+		cavium,t-rd-dly = <0>;
+		cavium,page-mode = <1>;
+		cavium,pages     = <8>;
+		cavium,bus-width = <8>;
+	};
+
+	cavium,cs-config@4 {
+		compatible = "cavium,octeon-3860-bootbus-config";
+		cavium,cs-index = <4>;
+		cavium,t-adr  = <10>;
+		cavium,t-ce   = <10>;
+		cavium,t-oe   = <160>;
+		cavium,t-we   = <100>;
+		cavium,t-rd-hld = <10>;
+		cavium,t-wr-hld = <0>;
+		cavium,t-pause  = <50>;
+		cavium,t-wait   = <50>;
+		cavium,t-page   = <10>;
+		cavium,t-rd-dly = <10>;
+		cavium,pages     = <0>;
+		cavium,bus-width = <8>;
+	};
+
+	flash0: nor@0,0 {
+		compatible = "cfi-flash";
+		reg = <0 0 0x800000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "bootloader";
+			reg = <0 0x340000>;
+			read-only;
+		};
+		partition@300000 {
+			label = "storage";
+			reg = <0x340000 0x4be000>;
+		};
+		partition@7fe000 {
+			label = "environment";
+			reg = <0x7fe000 0x2000>;
+			read-only;
+		};
+	};
+};
+
+&uart0 {
+	clock-frequency = <800000000>;
+};
+
+&i2c0 {
+	bootph-all;	/* Needed early for DDR SPD EEPROM */
+	clock-frequency = <100000>;
+
+	sfp0eeprom: eeprom@50 {
+		compatible = "atmel,24c01";
+		reg = <0x50>;
+	};
+
+	sfp0alerts: eeprom@51 {
+		compatible = "atmel,24c01";
+		reg = <0x51>;
+	};
+};
+
+&i2c1 {
+	bootph-all;	/* Needed early for DDR SPD EEPROM */
+	clock-frequency = <100000>;
+
+	vitesse@10 {
+		compatible = "vitesse,vsc7224";
+		reg = <0x10>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* Note that reset is active high with this device */
+		reset = <&gpio 7 0>;
+
+		/* LoS pin can be pulled low when there is a loss of signal */
+		los = <&gpio 6 0>;
+
+		vitesse,reg-init =
+			/* Clear all masks */
+			/* Page select FSYNC0 (0x30) */
+			<0x7f 0x0030>,
+			/* Set FSYNC0 for 10.3125Gbps */
+			<0x80 0x2841>,	/* See Table 3. */
+			<0x81 0x0008>,
+			<0x82 0xc000>,
+			<0x83 0x0010>,
+			<0x84 0x1d00>,
+
+			/* All channels Rx settings set equally */
+			<0x7f 0x0050>,
+			/* Shrink EQ_BUFF */
+			<0x82 0x0014>,
+			/* Set EQVGA_ADAP = 1 (enable EQVGA circuitry),
+			 * USE_UNIT_GAIN = 1 (EQVGA is in unity gain),
+			 * USE_LPF = 0 (VGA adapt not using LPF),
+			 * USE_EQVGA = 1
+			<0x89 0x7f13>,
+			/* Select min DFE Delay (DFE_DELAY) */
+			<0x90 0x5785>,
+			/* Set DFE 1-3 limit (DXMAX) = 32dec,
+			 * AP Max limit = 127 decimal
+			 */
+			<0x92 0x207f>,
+			/* Set AP Min limit = 32 decimal */
+			<0x93 0x2000>,
+			/* Set DFE Averaging to the slowest (DFE_AVG) */
+			<0x94 0x0031>,
+			/* Set Inductor Bypass OD_IND_BYP = 0 & fastest Rise/Fall */
+			<0x9c 0x0000>,
+			/* Setting DFE Boost = none. Must set for
+			 * rev C (if DFE in adapt mode)
+			 */
+			<0xaa 0x0888>,
+			/* Setting EQ Min = 8 & Max limit = 72 dec.
+			 * Must set for rev C, otherwise EQ is 0
+			 * (if EQ is in adaptive mode)
+			 */
+			<0xa8 0x2408>,
+			/* Setting EQVGA = 96, when in EQVGA manual mode */
+			<0xa9 0x0060>,
+			/* Setting SW_BFOCM, bits 15:14 to 01 */
+			<0x87 0x4021>,
+			/* Turn off adaptive input equalization
+			 * and VGA adaptive algorithm control.
+			*/
+			<0x89 0x7313>,
+			/* Turn on adaptive input equalization
+			 * and VGA adaptive algorithm control.
+			*/
+			<0x89 0x7f13>;
+
+		vitesse-channel@0 {
+			compatible = "vitesse,vsc7224-channel";
+			reg = <0>;
+			direction-tx;
+			sfp-mac = <&eth0>;
+
+			/* TAP settings.  The format of this is as
+			 * follows:
+			 * - cable length in meters, 0 = active or
+			 *   optical module
+			 * - maintap value
+			 * - pretap value
+			 * - posttap value
+			 *
+			 * For the cable length, the value will apply
+			 * for that cable length and greater until the
+			 * next largest cable length specified.  These
+			 * values must be ordered first by channel mask
+			 * then by cable length.  These are typically
+			 * set for the transmit channels, not the
+			 * receive channels.
+			 */
+			taps = <0 0x0013 0x000f 0x0000>,
+			       <1 0x001f 0x000f 0x0004>,
+			       <3 0x0014 0x000b 0x0004>,
+			       <5 0x0014 0x0009 0x0006>,
+			       <7 0x0014 0x000f 0x0000>,
+			       <10 0x0012 0x000b 0x0013>;
+		};
+
+		vitesse-channel@1 {
+			compatible = "vitesse,vsc7224-channel";
+			reg = <1>;
+			/* Ignore mod_abs and module */
+			direction-rx;
+			sfp-mac = <&eth0>;
+
+			/* Disable pre-tap */
+			pretap-disable;
+
+			/* Disable post-tap */
+			posttap-disable;
+
+			/* Taps has the following fields:
+			 * - cable length (ignored for rx)
+			 * - main tap value
+			 * - pre tap value
+			 * - post tap value
+			 *
+			 * NOTE: if taps are disabled then they
+			 *       are not programmed.
+			 */
+			taps = <0 0x0a 0x0b 0x10>;
+		};
+
+		vitesse-channel@2 {
+			compatible = "vitesse,vsc7224-channel";
+			reg = <2>;
+			direction-tx;
+			sfp-mac = <&eth1>;
+
+			/* TAP settings.  The format of this is as
+			 * follows:
+			 * - cable length in meters, 0 = active or
+			 *   optical module
+			 * - maintap value
+			 * - pretap value
+			 * - posttap value
+			 *
+			 * For the cable length, the value will apply
+			 * for that cable length and greater until the
+			 * next largest cable length specified.  These
+			 * values must be ordered first by channel mask
+			 * then by cable length.  These are typically
+			 * set for the transmit channels, not the
+			 * receive channels.
+			 */
+			taps = <0 0x0013 0x000f 0x0000>,
+			       <1 0x001f 0x000f 0x0004>,
+			       <3 0x0014 0x000b 0x0004>,
+			       <5 0x0014 0x0009 0x0006>,
+			       <7 0x0014 0x000f 0x0000>,
+			       <10 0x0012 0x000b 0x0013>;
+		};
+
+		vitesse-channel@3 {
+			compatible = "vitesse,vsc7224-channel";
+			reg = <3>;
+			/* Ignore mod_abs and module */
+			direction-rx;
+			sfp-mac = <&eth1>;
+
+			/* Disable pre-tap */
+			pretap-disable;
+
+			/* Disable post-tap */
+			posttap-disable;
+
+			/* Taps has the following fields:
+			 * - cable length (ignored for rx)
+			 * - main tap value
+			 * - pre tap value
+			 * - post tap value
+			 *
+			 * NOTE: if taps are disabled then they
+			 *       are not programmed.
+			 */
+			taps = <0 0x0a 0x0b 0x10>;
+		};
+	};
+
+	sfp1eeprom: eeprom@50 {
+		compatible = "atmel,24c01";
+		reg = <0x50>;
+	};
+
+	sfp1alerts: eeprom@51 {
+		compatible = "atmel,24c01";
+		reg = <0x51>;
+	};
+};
+
+&mmc {
+	status = "okay";
+
+	mmc0: mmc-slot@0 {
+		compatible = "cavium,octeon-6130-mmc-slot", "mmc-slot";
+		reg = <0>;
+		vqmmc-supply = <&reg_mmc_3v3>;
+		voltage-ranges = <3300 3300>;
+		spi-max-frequency = <52000000>;
+		/* bus width can be 1, 4 or 8 */
+		bus-width = <8>; /* new std property */
+		cavium,bus-max-width = <8>; /* custom property */
+		non-removable;
+	};
+};
+
+&soc0 {
+	pci-console@0 {
+		compatible = "marvell,pci-console";
+		status = "okay";
+	};
+
+	pci-bootcmd@0 {
+		compatible = "marvell,pci-bootcmd";
+		status = "okay";
+	};
+
+	sfp0: sfp-slot@0 {
+		compatible = "ethernet,sfp-slot";
+		tx_disable = <&gpio 16 0>;
+		mod_abs = <&gpio 17 0>;
+		tx_error = <&gpio 19 0>;
+		rx_los = <&gpio 18 0>;
+		eeprom = <&sfp0eeprom>;
+		diag = <&sfp0alerts>;
+	};
+
+	sfp1: sfp-slot@1 {
+		compatible = "ethernet,sfp-slot";
+		tx_disable = <&gpio 21 0>;
+		mod_abs = <&gpio 22 0>;
+		tx_error = <&gpio 24 0>;
+		rx_los = <&gpio 23 0>;
+		eeprom = <&sfp1eeprom>;
+		diag = <&sfp1alerts>;
+	};
+};
+
+&spi {
+	flash@0 {
+		compatible = "micron,n25q128a11", "jedec,spi-nor";
+		spi-max-frequency = <2000000>;
+		reg = <0>;
+	};
+};
+
+/* BGX 2 */
+&bgx2 {
+	status = "okay";
+
+	/* SerDes 0, may differ from PCS Lane/LMAC */
+	eth0: ethernet-mac@0 {
+		compatible = "cavium,octeon-7890-bgx-port";
+		reg = <0>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+		sfp-slot = <&sfp0>;
+	};
+
+	/* SerDes 1, may differ from PCS Lane/LMAC */
+	eth1: ethernet-mac@1 {
+		compatible = "cavium,octeon-7890-bgx-port";
+		reg = <1>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+		sfp-slot = <&sfp1>;
+	};
+};

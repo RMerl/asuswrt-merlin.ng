@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2024" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Logical." shortObjectName="Dev2LogicalObject" specSource="TR181" profile="Device2_Logical:1" requirements="P" supportLevel="Present" oid="1990" lockZone="0" />
+  <description source="TRx">Logical object. This object models several Logical interface objects, each representing a different stack layer, including: Interface. Interface is a logical interface which can point to other stackable interface layers.&#10;&#10;The intention of the logical interface is to simplify the configuration management of individual [TR-181i2] services. Instead of configuring the individual network services with a physical interface and deal with reconfiguration problems that may arise from switching between WAN interfaces. The intention is that the network services are configured with a logical interface and that this configuration stays unchanged during the switching between WAN interfaces. The software service (For example a WAN mode manger.) responsible for handling the WAN interface changes must then only care about rewriting the LowerLayers parameter of the Logical Interface Objects.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Logical.Interface.{i}." shortObjectName="Dev2LogicalInterfaceObject" specSource="TR181" profile="Device2_Logical:1" requirements="PC" supportLevel="DynamicInstances" lockZone="0" />
+  <description source="TRx">Logical interface table (a stackable interface object as described in [Section 4.2/TR-181i2]). This table models only logical interfaces.&#10;&#10;At most one entry in this table can exist with a given value for Alias, or with a given value for Name. On creation of a new table entry, the Agent MUST (if not supplied by the Controller on creation) choose initial values for Alias and Name such that the new entry does not conflict with any existing entries.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_Logical:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">	Enables or disables the interface. This parameter is based on ifAdminStatus from [RFC2863].</description>
+    <description source="BROADCOM">REPORT_PROFILE: Device2_Logical:1 </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_Logical:1" requirements="R" supportLevel="ReadOnly" defaultValue="Down" validValuesArray="lifOperStatusValues" />
+    <description source="TRx">The current operational state of the interface (see [Section 4.2.2/TR-181i2]). Enumeration of:&#10;&#10;    * Up&#10;    * Down&#10;    * Unknown&#10;    * Dormant&#10;    * NotPresent&#10;    * LowerLayerDown&#10;    * Error (OPTIONAL) &#10;&#10;When Enable is false then Status SHOULD normally be Down (or NotPresent or Error if there is a fault condition on the interface).&#10;&#10;When Enable is changed to true then Status SHOULD change to Up if and only if the interface is able to transmit and receive network traffic; it SHOULD change to Dormant if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to Up if still operable when the expected actions have completed); it SHOULD change to LowerLayerDown if and only if the interface is prevented from entering the Up state because one or more of the interfaces beneath it is down; it SHOULD remain in the Error state if there is an error or other fault condition detected on the interface; it SHOULD remain in the NotPresent state if the interface has missing (typically hardware) components; it SHOULD change to Unknown if the state of the interface can not be determined for some reason.&#10;&#10;This parameter is based on ifOperStatus from [RFC2863].</description>
+    <description source="BROADCOM">REPORT_PROFILE: Device2_Logical:1 </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_Logical:1" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-logicalintf" maxLength="64" autoGenerateAlias="true" notifySskAliasChanged="true" />
+    <description source="TRx">A non-volatile unique key used to reference this instance. Alias provides a mechanism for a Controller to label this instance for future reference.</description>
+    <description source="BROADCOM">REPORT_PROFILE: Device2_Logical:1 </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_Logical:1" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the logical interface as assigned by a static configuration file or dynamically by a controller.</description>
+    <description source="BROADCOM">REPORT_PROFILE: Device2_Logical:1 </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_Logical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the logical interface entered its current operational state.</description>
+    <description source="BROADCOM">REPORT_PROFILE: Device2_Logical:1 </description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_Logical:1" requirements="W" supportLevel="ReadWrite" maxLength="1024" defaultValue=""  notifySskLowerLayersChanged="true" />
+    <description source="TRx">Comma-separated list (maximum number of characters 1024) of strings. Each list item MUST be the Path Name of an interface object that is stacked immediately below this interface object, or an empty string. See [Section 4.2.1/TR-181i2].</description>
+    <description source="BROADCOM">REPORT_PROFILE: Device2_Logical:1 </description>
+
+
+<vsaInfo>
+
+<validstringarray name="lifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Logical:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

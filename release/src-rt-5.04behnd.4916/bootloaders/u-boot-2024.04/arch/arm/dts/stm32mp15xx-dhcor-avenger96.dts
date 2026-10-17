@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: (GPL-2.0 OR BSD-3-Clause)
+/*
+ * Copyright (C) Linaro Ltd 2019 - All Rights Reserved
+ * Author: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+ * Copyright (C) 2020 Marek Vasut <marex@denx.de>
+ */
+
+/dts-v1/;
+
+#include "stm32mp151.dtsi"
+#include "stm32mp15xc.dtsi"
+#include "stm32mp15xx-dhcor-som.dtsi"
+#include "stm32mp15xx-dhcor-avenger96.dtsi"
+
+/ {
+	model = "Arrow Electronics STM32MP15xx Avenger96 board";
+	compatible = "arrow,stm32mp15xx-avenger96", "st,stm32mp15x";
+};

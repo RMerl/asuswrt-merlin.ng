@@ -1,0 +1,37 @@
+RDPA_OBJS += rdpa_types.o
+RDPA_OBJS += rdpa_common.o
+RDPA_OBJS += rdpa_common_ex.o
+RDPA_OBJS += rdpa_rdd_map.o
+RDPA_OBJS += rdpa_cpu.o
+RDPA_OBJS += rdpa_cpu_ex.o
+RDPA_OBJS += rdpa_cpu_feed_ex.o
+RDPA_OBJS += rdpa_natc_common_ex.o
+RDPA_OBJS += rdpa_mcast_basic.o
+RDPA_OBJS += rdpa_egress_tm.o
+RDPA_OBJS += rdpa_egress_tm_ex.o
+RDPA_OBJS += rdpa_port_ex.o
+RDPA_OBJS += rdpa_port.o
+RDPA_OBJS += rdpa_system_ex.o
+RDPA_OBJS += rdpa_system.o
+RDPA_OBJS += rdpa_system_hw_cfg.o
+RDPA_OBJS += rdpa_filter.o
+RDPA_OBJS += rdpa_filter_ex.o
+RDPA_OBJS += rdpa_iptv_ex.o
+RDPA_OBJS += rdpa_ingress_class.o
+RDPA_OBJS += rdpa_ingress_class_ex.o
+RDPA_OBJS += rdpa_rate_limit.o
+
+
+RDPA_OBJS += rdpa_l2_common.o
+RDPA_OBJS += rdpa_l2_ucast.o
+RDPA_OBJS += rdpa_policer.o
+RDPA_OBJS += rdpa_policer_ex.o
+RDPA_OBJS += rdpa_cmd_list.o
+RDPA_OBJS += rdpa_ucast.o
+RDPA_OBJS += rdpa_ucast_ex.o
+RDPA_OBJS += rdpa_mcast.o
+RDPA_OBJS += rdpa_mcast_common.o
+RDPA_OBJS += rdpa_mcast_impl2.o
+RDPA_OBJS += rdpa_mcast_ex.o
+RDPA_OBJS += rdpa_mcast_whitelist.o
+RDPA_OBJS += rdpa_mcast_whitelist_ex.o

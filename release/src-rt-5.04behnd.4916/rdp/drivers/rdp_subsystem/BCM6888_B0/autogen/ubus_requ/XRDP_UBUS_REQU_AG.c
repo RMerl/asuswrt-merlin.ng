@@ -225,6 +225,9 @@ static const ru_reg_rec *UBUS_REQU_REGS[] =
 const ru_block_rec UBUS_REQU_BLOCK =
 {
     "UBUS_REQU",
+#if RU_INCLUDE_SIZE
+    { 0x00000010 },
+#endif
     UBUS_REQU_ADDRS,
     4,
     3,

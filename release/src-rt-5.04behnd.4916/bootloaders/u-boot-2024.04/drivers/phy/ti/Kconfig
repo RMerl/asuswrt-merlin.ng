@@ -1,0 +1,9 @@
+config PHY_J721E_WIZ
+	tristate "TI J721E WIZ (SERDES Wrapper) support"
+	depends on ARCH_K3
+	help
+	  This option enables support for WIZ module present in TI's J721E
+	  SoC. WIZ is a serdes wrapper used to configure some of the input
+	  signals to the SERDES (Sierra/Torrent). This driver configures
+	  three clock selects (pll0, pll1, dig) and resets for each of the
+	  lanes.

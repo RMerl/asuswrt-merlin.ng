@@ -63,7 +63,7 @@
 #include "bcm6813_xport_xlmac_reg_ag.h"
 #include "bcm6813_xport_wol_ard_ag.h"
 #include "bcm6813_xport_wol_mpd_ag.h"
-#elif defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880)
+#elif defined(CONFIG_BCM968880)
 #include "bcm6888_drivers_xport_ag.h"
 #include "bcm6888_xport_intr_ag.h"
 #include "bcm6888_xport_mab_ag.h"
@@ -86,6 +86,18 @@
 #include "bcm6837_xport_xlmac_reg_ag.h"
 #include "bcm6837_xport_wol_ard_ag.h"
 #include "bcm6837_xport_wol_mpd_ag.h"
+#elif defined(CONFIG_BCM968375)
+#include "bcm68375_drivers_xport_ag.h"
+#include "bcm68375_xport_intr_ag.h"
+#include "bcm68375_xport_mab_ag.h"
+#include "bcm68375_xport_mib_core_ag.h"
+#include "bcm68375_xport_mib_reg_ag.h"
+#include "bcm68375_xport_portreset_ag.h"
+#include "bcm68375_xport_top_ag.h"
+#include "bcm68375_xport_xlmac_core_ag.h"
+#include "bcm68375_xport_xlmac_reg_ag.h"
+#include "bcm68375_xport_wol_ard_ag.h"
+#include "bcm68375_xport_wol_mpd_ag.h"
 #else
 #error undefined chip
 #endif

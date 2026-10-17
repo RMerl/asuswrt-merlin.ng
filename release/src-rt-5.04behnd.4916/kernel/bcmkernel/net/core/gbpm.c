@@ -147,6 +147,11 @@ void gbpm_recycle_skb_hw_buf_stub(void *skbp, unsigned long context,
 {
 }
 
+void gbpm_recycle_skb_recycle_fkbdata_stub(void *skbp, unsigned long context,
+			   uint32_t recycle_action)
+{
+}
+
 void gbpm_attach_skb_no_shinfo_reset_stub(void *skbp, void *data, uint32_t datalen)
 {
 }
@@ -236,9 +241,21 @@ void gbpm_recycle_hw_buf_stub(void *buf_p, uint32_t recycle_context)
 {
 }
 
+void gbpm_recycle_hw_skb_stub(void *skb_p, uint32_t recycle_context)
+{
+}
+
 int gbpm_register_hw_pool_api_stub(void *ops_p, void *id_p)
 {
 	return 0;
+}
+
+void gbpm_free_buf_from_spc_skb_stub(const void *skbp, void *bufp)
+{
+}
+
+void gbpm_add_skb_hwbuf_attach_cnt_stub(uint32_t num)
+{
 }
 
 #if defined(CONFIG_BCM_BPM_BUF_TRACKING)

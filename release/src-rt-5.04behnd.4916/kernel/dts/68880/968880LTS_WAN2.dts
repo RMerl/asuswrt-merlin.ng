@@ -37,6 +37,10 @@
     status = "okay";
 };
 
+&macsec {
+    status = "okay";
+};
+
 &mpcs {
     status = "okay";
 };

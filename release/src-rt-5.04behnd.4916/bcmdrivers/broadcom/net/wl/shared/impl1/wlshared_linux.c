@@ -48,21 +48,31 @@
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
 
-#include <wl_pktc.h>
+#if defined(BCM_PKTFWD)
+#include <wl_pktfwd.h>
+#endif /* BCM_PKTFWD */
 
-/* request command hooks to pktc/pktfwd */
-typedef unsigned long (*pktc_req_hook_t)(int req_id, unsigned long param0, unsigned long param1,
+#if defined(BCM_CMA_RSV_MEM)
+/* WLAN Reseve Memory management interface */
+extern void* wlan_rsvmem_init(char *rsvmem_name);
+extern void wlan_rsvmem_fini(void *ctxt);
+#endif /* BCM_CMA_RSV_MEM */
+
+#if defined(BCM_PKTFWD)
+/* request command hooks to pktfwd */
+typedef unsigned long (*pktfwd_req_hook_t)(int req_id, unsigned long param0, unsigned long param1,
 		unsigned long param2);
-pktc_req_hook_t wl_pktc_req_hook = NULL;
-pktc_req_hook_t dhd_pktc_req_hook = NULL;
-EXPORT_SYMBOL(wl_pktc_req_hook);
-EXPORT_SYMBOL(dhd_pktc_req_hook);
+pktfwd_req_hook_t wl_pktfwd_req_hook = NULL;
+pktfwd_req_hook_t dhd_pktfwd_req_hook = NULL;
+EXPORT_SYMBOL(wl_pktfwd_req_hook);
+EXPORT_SYMBOL(dhd_pktfwd_req_hook);
 
-/* pktc/pktfwd delete hooks */
-void (*wl_pktc_del_hook) (unsigned long addr, struct net_device * net_device) = NULL;
-void (*dhd_pktc_del_hook) (unsigned long addr, struct net_device * net_device) = NULL;
-EXPORT_SYMBOL(wl_pktc_del_hook);
-EXPORT_SYMBOL(dhd_pktc_del_hook);
+/* pktfwd delete hooks */
+void (*wl_pktfwd_del_hook) (unsigned long addr, struct net_device * net_device) = NULL;
+void (*dhd_pktfwd_del_hook) (unsigned long addr, struct net_device * net_device) = NULL;
+EXPORT_SYMBOL(wl_pktfwd_del_hook);
+EXPORT_SYMBOL(dhd_pktfwd_del_hook);
+#endif /* BCM_PKTFWD */
 
 /* bridge fdb hooks to check ageing */
 int (*fdb_check_expired_wl_hook) (unsigned char *addr, struct net_device * net_device) = NULL;
@@ -82,28 +92,32 @@ static struct notifier_block dhd_swdev_notifier = {
 
 static int wl_swdev_event(struct notifier_block *unused, unsigned long event, void *ptr)
 {
+#if defined(BCM_PKTFWD)
 	struct net_device *dev = switchdev_notifier_info_to_dev(ptr);
 	struct switchdev_notifier_fdb_info *fdb_info = ptr;
 
 	/* function is for nic device */
 	/* nic or eth devices */
-	if (wl_pktc_req_hook && (is_netdev_wlan_nic(dev) || !is_netdev_wlan(dev)))
-		wl_pktc_req_hook(PKTC_TBL_BRIDGE_EVENT, (unsigned long)(fdb_info->addr),
+	if (wl_pktfwd_req_hook && (is_netdev_wlan_nic(dev) || !is_netdev_wlan(dev)))
+		wl_pktfwd_req_hook(wl_pktfwd_req_bridge_event_e, (unsigned long)(fdb_info->addr),
 			(unsigned long)dev, (unsigned long)event);
+#endif /* BCM_PKTFWD */
 
 	return 0;
 }
 
 static int dhd_swdev_event(struct notifier_block *unused, unsigned long event, void *ptr)
 {
+#if defined(BCM_PKTFWD)
 	struct net_device *dev = switchdev_notifier_info_to_dev(ptr);
 	struct switchdev_notifier_fdb_info *fdb_info = ptr;
 
 	/* function is for dhd device */
 	/* dhd or eth devices */
-	if (dhd_pktc_req_hook && (is_netdev_wlan_dhd(dev) || !is_netdev_wlan(dev)))
-		dhd_pktc_req_hook(PKTC_TBL_BRIDGE_EVENT, (unsigned long)(fdb_info->addr),
+	if (dhd_pktfwd_req_hook && (is_netdev_wlan_dhd(dev) || !is_netdev_wlan(dev)))
+		dhd_pktfwd_req_hook(wl_pktfwd_req_bridge_event_e, (unsigned long)(fdb_info->addr),
 			(unsigned long)dev, (unsigned long)event);
+#endif /* BCM_PKTFWD */
 
 	return 0;
 }
@@ -126,13 +140,13 @@ bcm_br_handle_wl_d3lut(void *priv, struct sk_buff *skb, const struct nf_hook_sta
 	if (is_broadcast_ether_addr(dest) || is_multicast_ether_addr(dest))
 		return NF_ACCEPT;
 
-#if defined(PKTC_TBL) || defined(BCM_PKTFWD)
-	if (wl_pktc_req_hook != NULL)
+#if defined(BCM_PKTFWD)
+	if (wl_pktfwd_req_hook != NULL)
 		wl_handle_br_d3lut(state->in, state->out, skb);
 
-	if (dhd_pktc_req_hook != NULL)
+	if (dhd_pktfwd_req_hook != NULL)
 		dhd_handle_br_d3lut(state->in, state->out, skb);
-#endif
+#endif /* BCM_PKTFWD */
 
 	return NF_ACCEPT;
 }
@@ -142,7 +156,8 @@ static int bcm_br_wl_query_bridgefdb(void *f)
 {
 	int exist_state = 0;
 	struct net_bridge_fdb_entry *fdb = (struct net_bridge_fdb_entry *)f;
-	struct net_device *dev = (fdb->dst == NULL) ? NULL : fdb->dst->dev;
+	const struct net_bridge_port *dst = READ_ONCE(fdb->dst);
+	struct net_device *dev = (dst == NULL) ? NULL : dst->dev;
 
 	if (dev == NULL)
 		return exist_state;
@@ -164,7 +179,8 @@ static int bcm_br_wl_query_bridgefdb(void *f)
 static int bcm_br_wl_update_bridgefdb(void *f)
 {
 	struct net_bridge_fdb_entry *fdb = (struct net_bridge_fdb_entry *)f;
-	struct net_device *dev = (fdb->dst == NULL) ? NULL : fdb->dst->dev;
+	const struct net_bridge_port *dst = READ_ONCE(fdb->dst);
+	struct net_device *dev = (dst == NULL) ? NULL : dst->dev;
 
 	if (dev == NULL)
 		return 0;
@@ -172,34 +188,36 @@ static int bcm_br_wl_update_bridgefdb(void *f)
 	/* get vlan root dev if any */
 	dev = netdev_path_get_root(dev);
 
-	if (wl_pktc_del_hook && !is_netdev_wlan_dhd(dev)) {
+#if defined(BCM_PKTFWD)
+	if (wl_pktfwd_del_hook && !is_netdev_wlan_dhd(dev)) {
 		/* address to be removed from this device */
-		wl_pktc_del_hook((unsigned long)(fdb->key.addr.addr), dev);
+		wl_pktfwd_del_hook((unsigned long)(fdb->key.addr.addr), dev);
 	}
 
-	if (dhd_pktc_del_hook && !is_netdev_wlan_nic(dev)) {
+	if (dhd_pktfwd_del_hook && !is_netdev_wlan_nic(dev)) {
 		/* address to be removed from this device */
-		dhd_pktc_del_hook((unsigned long)(fdb->key.addr.addr), dev);
+		dhd_pktfwd_del_hook((unsigned long)(fdb->key.addr.addr), dev);
 	}
+#endif /* BCM_PKTFWD */
 
 	return 0;
 }
 
 #if defined(CONFIG_BCM_OVS)
 //For OVS bridge that not use linux net_bridge_fdb_entry to mantain FDB
-static int bcm_br_wl_pktc_del_by_mac(void *f)
+static int bcm_br_wl_pktfwd_del_by_mac(void *f)
 {
 	if (f) {
 		unsigned char *mac_addr = NULL;
 		mac_addr = (unsigned char *)f;
-		if (wl_pktc_del_hook) {
+		if (wl_pktfwd_del_hook) {
 			/* address to be removed from this device */
-			wl_pktc_del_hook((unsigned long)(mac_addr), NULL);
+			wl_pktfwd_del_hook((unsigned long)(mac_addr), NULL);
 		}
 
-		if (dhd_pktc_del_hook) {
+		if (dhd_pktfwd_del_hook) {
 			/* address to be removed from this device */
-			dhd_pktc_del_hook((unsigned long)(mac_addr), NULL);
+			dhd_pktfwd_del_hook((unsigned long)(mac_addr), NULL);
 		}
 	}
 	return 0;
@@ -228,12 +246,16 @@ static int __init wlshared_module_init(void)
 	bcmFun_reg(BCM_FUN_ID_WLAN_UPDATE_BRIDGEFDB, bcm_br_wl_update_bridgefdb);
 
 #if defined(CONFIG_BCM_OVS)
-	/* register pktc del handle : For OVS bridge that not use
+	/* register pktfwd del handle : For OVS bridge that not use
 	 * linux net_bridge_fdb_entry to mantain FDB
 	 */
-	bcmFun_reg(BCM_FUN_ID_WLAN_PKTC_DEL_BY_MAC, bcm_br_wl_pktc_del_by_mac);
+	bcmFun_reg(BCM_FUN_ID_WLAN_PKTFWD_DEL_BY_MAC, bcm_br_wl_pktfwd_del_by_mac);
 #endif /* CONFIG_BCM_OVS */
 #endif /* KERNEL >= 4.19 */
+
+#if defined(BCM_CMA_RSV_MEM)
+	wlan_rsvmem_init(NULL);
+#endif /* BCM_CMA_RSV_MEM */
 
 	return (0);
 }
@@ -241,6 +263,10 @@ static int __init wlshared_module_init(void)
 static void __exit wlshared_module_exit(void)
 {
 	printk("Exiting wlshared Module\n");
+
+#if defined(BCM_CMA_RSV_MEM)
+	wlan_rsvmem_fini(NULL);
+#endif /* BCM_CMA_RSV_MEM */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0))
 	/* unregister swdev event */
@@ -259,8 +285,8 @@ static void __exit wlshared_module_exit(void)
 	bcmFun_dereg(BCM_FUN_ID_WLAN_UPDATE_BRIDGEFDB);
 
 #if defined(CONFIG_BCM_OVS)
-	/* deregister pktc del handle */
-	bcmFun_dereg(BCM_FUN_ID_WLAN_PKTC_DEL_BY_MAC);
+	/* deregister pktfwd del handle */
+	bcmFun_dereg(BCM_FUN_ID_WLAN_PKTFWD_DEL_BY_MAC);
 #endif /* CONFIG_BCM_OVS */
 #endif /* KERNEL >= 4.19 */
 

@@ -1,8 +1,0 @@
-ADVANTECH_DMS-BA16 BOARD
-M:	Akshay Bhat <akshaybhat@timesys.com>
-M:	Ken Lin <Ken.Lin@advantech.com.tw>
-S:	Maintained
-F:	board/advantech/dms-ba16/
-F:	include/configs/advantech_dms-ba16.h
-F:	configs/dms-ba16_defconfig
-F:	configs/dms-ba16-1g_defconfig

@@ -1,0 +1,63 @@
+Building SPL/U-Boot for xea board
+=================================
+
+Setup environment, configure and build, e.g. by:
+
+ $ make imx28_xea_defconfig
+ $ make -j4 u-boot.sb u-boot.img
+
+Now you should see u-boot.sb and u-boot.img files in the build directory.
+
+
+Booting
+=======
+
+The boot ROM loads SPL from SPI NOR flash into SRAM.  SPL configures
+DRAM and loads either a Linux kernel (falcon mode) or, if the rescue
+pin is asserted, the main U-Boot.  Both kernel and U-Boot reside in
+eMMC boot partition 0.  For redundancy, a copy of U-Boot is also
+stored in SPI flash.  If a valid kernel image is not found, U-Boot is
+loaded from eMMC or, if this fails, SPI flash.
+
+Boot area layout
+----------------
+
+SPI NOR
+Offset          Function        File
+------------------------------------------
+0x00000000      SPL             u-boot.sb
+0x00010000      U-Boot          u-boot.img
+0x00080000      Environment
+
+eMMC
+Offset          Function        File
+------------------------------------------
+0x00000000      U-Boot          u-boot.img
+0x00080000      Devicetree      imx28-bttc.dtb
+0x00100000      Kernel          uImage
+
+
+Falcon mode
+===========
+
+In falcon mode, the default, SPL loads the kernel and devicetree
+directly.  For this to work, the stored devicetree must include
+correct "memory" and "chosen" nodes as these are not updated by SPL
+before booting the kernel.
+
+
+Updating from U-Boot
+====================
+
+The default U-Boot environment includes command sequences to update
+SPL, U-Boot, and kernel over TFTP.  These are as follows:
+
+- update_spl: writes u-boot.sb to SPI NOR
+- update_uboot: writes u-boot.img to eMMC and SPI NOR
+- update_kernel: writes kernel and devicetree to eMMC
+
+They can be invoked at the U-Boot prompt using the "run" command,
+e.g. "run update_spl" to update the SPL.
+
+These update commands download the above-named files from the
+${hostname} directory on the server provided by DHCP.

@@ -1,0 +1,373 @@
+The trusted boot framework on Marvell Armada 38x
+================================================
+
+Contents:
+
+1. Overview of the trusted boot
+2. Terminology
+3. Boot image layout
+4. The secured header
+5. The secured boot flow
+6. Usage example
+7. Work to be done
+8. Bibliography
+
+1. Overview of the trusted boot
+-------------------------------
+
+The Armada's trusted boot framework enables the SoC to cryptographically verify
+a specially prepared boot image. This can be used to establish a chain of trust
+from the boot firmware all the way to the OS.
+
+To achieve this, the Armada SoC requires a specially prepared boot image, which
+contains the relevant cryptographic data, as well as other information
+pertaining to the boot process. Furthermore, a eFuse structure (a
+one-time-writeable memory) need to be configured in the correct way.
+
+Roughly, the secure boot process works as follows:
+
+* Load the header block of the boot image, extract a special "root" public RSA
+  key from it, and verify its SHA-256 hash against a SHA-256 stored in a eFuse
+  field.
+* Load an array of code signing public RSA keys from the header block, and
+  verify its RSA signature (contained in the header block as well) using the
+  "root" RSA key.
+* Choose a code signing key, and use it to verify the header block (excluding
+  the key array).
+* Verify the binary image's signature (contained in the header block) using the
+  code signing key.
+* If all checks pass successfully, boot the image.
+
+The chain of trust is thus as follows:
+
+* The SHA-256 value in the eFuse field verifies the "root" public key.
+* The "root" public key verifies the code signing key array.
+* The selected code signing key verifies the header block and the binary image.
+
+In the special case of building a boot image containing U-Boot as the binary
+image, which employs this trusted boot framework, the following tasks need to
+be addressed:
+
+1. Creation of the needed cryptographic key material.
+2. Creation of a conforming boot image containing the U-Boot image as binary
+   image.
+3. Burning the necessary eFuse values.
+
+(1) will be addressed later, (2) will be taken care of by U-Boot's build
+system (some user configuration is required, though), and for (3) the necessary
+data (essentially a series of U-Boot commands to be entered at the U-Boot
+command prompt) will be created by the build system as well.
+
+The documentation of the trusted boot mode is contained in part 1, chapter
+7.2.5 in the functional specification [1], and in application note [2].
+
+2. Terminology
+--------------
+
+	           CSK - Code Signing Key(s): An array of RSA key pairs, which
+                         are used to sign and verify the secured header and the
+                         boot loader image.
+	           KAK - Key Authentication Key: A RSA key pair, which is used
+                         to sign and verify the array of CSKs.
+	  Header block - The first part of the boot image, which contains the
+			 image's headers (also known as "headers block", "boot
+			 header", and "image header")
+                 eFuse - A one-time-writeable memory.
+               BootROM - The Armada's built-in boot firmware, which is
+                         responsible for verifying and starting secure images.
+	    Boot image - The complete image the SoC's boot firmware loads
+			 (contains the header block and the binary image)
+	   Main header - The header in the header block containing information
+			 and data pertaining to the boot process (used for both
+			 the regular and secured boot processes)
+	  Binary image - The binary code payload of the boot image; in this
+			 case the U-Boot's code (also known as "source image",
+			 or just "image")
+	Secured header - The specialized header in the header block that
+			 contains information and data pertaining to the
+			 trusted boot (also known as "security header")
+     Secured boot mode - A special boot mode of the Armada SoC in which secured
+                         images are verified (non-secure images won't boot);
+                         the mode is activated by setting a eFuse field.
+    Trusted debug mode - A special mode for the trusted boot that allows
+			 debugging of devices employing the trusted boot
+			 framework in a secure manner (untested in the current
+			 implementation).
+Trusted boot framework - The ARMADA SoC's implementation of a secure verified
+                         boot process.
+
+3. Boot image layout
+--------------------
+
++-- Boot image --------------------------------------------+
+|                                                          |
+| +-- Header block --------------------------------------+ |
+| | Main header                                          | |
+| +------------------------------------------------------+ |
+| | Secured header                                       | |
+| +------------------------------------------------------+ |
+| | BIN header(s)                                        | |
+| +------------------------------------------------------+ |
+| | REG header(s)                                        | |
+| +------------------------------------------------------+ |
+| | Padding                                              | |
+| +------------------------------------------------------+ |
+|                                                          |
+| +------------------------------------------------------+ |
+| | Binary image + checksum                              | |
+| +------------------------------------------------------+ |
++----------------------------------------------------------+
+
+4. The secured header
+---------------------
+
+For the trusted boot framework, a additional header is added to the boot image.
+The following data are relevant for the secure boot:
+
+		   KAK: The KAK is contained in the secured header in the form
+		        of a RSA-2048 public key in DER format with a length of
+			524 bytes.
+Header block signature: The RSA signature of the header block (excluding the
+                        CSK array), created using the selected CSK.
+Binary image signature: The RSA signature of the binary image, created using
+                        the selected CSK.
+             CSK array: The array of the 16 CSKs as RSA-2048 public keys in DER
+	                format with a length of 8384 = 16 * 524 bytes.
+   CSK block signature: The RSA signature of the CSK array, created using the
+                        KAK.
+
+NOTE: The JTAG delay, Box ID, and Flash ID header fields do play a role in the
+trusted boot process to enable and configure secure debugging, but they were
+not tested in the current implementation of the trusted boot in U-Boot.
+
+5. The secured boot flow
+------------------------
+
+The steps in the boot flow that are relevant for the trusted boot framework
+proceed as follows:
+
+1) Check if trusted boot is enabled, and perform regular boot if it is not.
+2) Load the secured header, and verify its checksum.
+3) Select the lowest valid CSK from CSK0 to CSK15.
+4) Verify the SHA-256 hash of the KAK embedded in the secured header.
+5) Verify the RSA signature of the CSK block from the secured header with the
+   KAK.
+6) Verify the header block signature (which excludes the CSK block) from the
+   secured header with the selected CSK.
+7) Load the binary image to the main memory and verify its checksum.
+8) Verify the binary image's RSA signature from the secured header with the
+   selected CSK.
+9) Continue the boot process as in the case of the regular boot.
+
+NOTE: All RSA signatures are verified according to the PKCS #1 v2.1 standard
+described in [3].
+
+NOTE: The Box ID and Flash ID are checked after step 6, and the trusted debug
+mode may be entered there, but since this mode is untested in the current
+implementation, it is not described further.
+
+6. Usage example
+----------------
+
+### Create key material
+
+To employ the trusted boot framework, cryptographic key material needs to be
+created. In the current implementation, two keys are needed to build a valid
+secured boot image: The KAK private key and a CSK private key (both have to be
+2048 bit RSA keys in PEM format). Note that the usage of more than one CSK is
+currently not supported.
+
+NOTE: Since the public key can be generated from the private key, it is
+sufficient to store the private key for each key pair.
+
+OpenSSL can be used to generate the needed files kwb_kak.key and kwb_csk.key
+(the names of these files have to be configured, see the next section on
+kwbimage.cfg settings):
+
+openssl genrsa -out kwb_kak.key 2048
+openssl genrsa -out kwb_csk.key 2048
+
+The generated files have to be placed in the U-Boot root directory.
+
+Alternatively, instead of copying the files, symlinks to the private keys can
+be placed in the U-Boot root directory.
+
+WARNING: Knowledge of the KAK or CSK private key would enable an attacker to
+generate secured boot images containing arbitrary code. Hence, the private keys
+should be carefully guarded.
+
+### Create/Modifiy kwbimage.cfg
+
+The Kirkwook architecture in U-Boot employs a special board-specific
+configuration file (kwbimage.cfg), which controls various boot image settings
+that are interpreted by the BootROM, such as the boot medium. The support the
+trusted boot framework, several new options were added to faciliate
+configuration of the secured boot.
+
+The configuration file's layout has been retained, only the following new
+options were added:
+
+		KAK - The name of the KAK RSA private key file in the U-Boot
+                      root directory, without the trailing extension of ".key".
+		CSK - The name of the (active) CSK RSA private key file in the
+		      U-Boot root directory, without the trailing extension of
+		      ".key".
+	     BOX_ID - The BoxID to be used for trusted debugging (a integer
+	              value).
+	   FLASH_ID - The FlashID to be used for trusted debugging (a integer
+	              value).
+	 JTAG_DELAY - The JTAG delay to be used for trusted debugging (a
+	              integer value).
+          CSK_INDEX - The index of the active CSK (a integer value).
+SEC_SPECIALIZED_IMG - Flag to indicate whether to include the BoxID and FlashID
+		      in the image (that is, whether to use the trusted debug
+		      mode or not); no parameters.
+       SEC_BOOT_DEV - The boot device from which the trusted boot is allowed to
+		      proceed, identified via a numeric ID. The tested values
+		      are 0x34 = NOR flash, 0x31 = SDIO/MMC card; for
+		      additional ID values, consult the documentation in [1].
+      SEC_FUSE_DUMP - Dump the "fuse prog" commands necessary for writing the
+		      correct eFuse values to a text file in the U-Boot root
+		      directory. The parameter is the architecture for which to
+		      dump the commands (currently only "a38x" is supported).
+
+The parameter values may be hardcoded into the file, but it is also possible to
+employ a dynamic approach of creating a Autoconf-like kwbimage.cfg.in, then
+reading configuration values from Kconfig options or from the board config
+file, and generating the actual kwbimage.cfg from this template using Makefile
+mechanisms (see board/gdsys/a38x/Makefile as an example for this approach).
+
+### Set config options
+
+To enable the generation of trusted boot images, the corresponding support
+needs to be activated, and a index for the active CSK needs to be selected as
+well.
+
+Furthermore, eFuse writing support has to be activated in order to burn the
+eFuse structure's values (this option is just needed for programming the eFuse
+structure; production boot images may disable it).
+
+ARM architecture
+ -> [*] Build image for trusted boot
+    (0)   Index of active CSK
+ -> [*] Enable eFuse support
+    [ ]   Fake eFuse access (dry run)
+
+### Build and test boot image
+
+The creation of the boot image is done via the usual invocation of make (with a
+suitably set CROSS_COMPILE environment variable, of course). The resulting boot
+image u-boot-with-spl.kwb can then be tested, if so desired. The hdrparser from [5]
+can be used for this purpose. To build the tool, invoke make in the
+'tools/marvell/doimage_mv' directory of [5], which builds a stand-alone
+hdrparser executable. A test can be conducted by calling hdrparser with the
+produced boot image and the following (mandatory) parameters:
+
+./hdrparser -k 0 -t u-boot-with-spl.kwb
+
+Here we assume that the CSK index is 0 and the boot image file resides in the
+same directory (adapt accordingly if needed). The tool should report that all
+checksums are valid ("GOOD"), that all signature verifications succeed
+("PASSED"), and, finally, that the overall test was successful
+("T E S T   S U C C E E D E D" in the last line of output).
+
+### Burn eFuse structure
+
++----------------------------------------------------------+
+| WARNING: Burning the eFuse structure is a irreversible   |
+| operation! Should wrong or corrupted values be used, the |
+| board won't boot anymore, and recovery is likely         |
+| impossible!                                              |
++----------------------------------------------------------+
+
+After the build process has finished, and the SEC_FUSE_DUMP option was set in
+the kwbimage.cfg was set, a text file kwb_fuses_a38x.txt should be present in
+the U-Boot top-level directory. It contains all the necessary commands to set
+the eFuse structure to the values needed for the used KAK digest, as well as
+the CSK index, Flash ID and Box ID that were selected in kwbimage.cfg.
+
+Sequentially executing the commands in this file at the U-Boot command prompt
+will write these values to the eFuse structure.
+
+If the SEC_FUSE_DUMP option was not set, the commands needed to burn the fuses
+have to be crafted by hand. The needed fuse lines can be looked up in [1]; a
+rough overview of the process is:
+
+* Burn the KAK public key hash. The hash itself can be found in the file
+  pub_kak_hash.txt in the U-Boot top-level directory; be careful to account for
+  the endianness!
+* Burn the CSK selection, BoxID, and FlashID
+* Enable trusted boot by burning the corresponding fuse (WARNING: this must be
+  the last fuse line written!)
+* Lock the unused fuse lines
+
+The command to employ is the "fuse prog" command previously enabled by setting
+the corresponding configuration option.
+
+For the trusted boot, the fuse prog command has a special syntax, since the
+ARMADA SoC demands that whole fuse lines (64 bit values) have to be written as
+a whole. The fuse prog command itself allows lists of 32 bit words to be
+written at a time, but this is translated to a series of single 32 bit write
+operations to the fuse line, where the individual 32 bit words are identified
+by a "word" counter that is increased for each write.
+
+To work around this restriction, we interpret each line to have three "words"
+(0-2): The first and second words are the values to be written to the fuse
+line, and the third is a lock flag, which is supposed to lock the fuse line
+when set to 1. Writes to the first and second words are memoized between
+function calls, and the fuse line is only really written and locked (on writing
+the third word) if both words were previously set, so that "incomplete" writes
+are prevented. An exception to this is a single write to the third word (index
+2) without previously writing neither the first nor the second word, which
+locks the fuse line without setting any value; this is needed to lock the
+unused fuse lines.
+
+As an example, to write the value 0011223344556677 to fuse line 10, we would
+use the following command:
+
+fuse prog -y 10 0 00112233 44556677 1
+
+Here 10 is the fuse line number, 0 is the index of the first word to be
+written, 00112233 and 44556677 are the values to be written to the fuse line
+(first and second word) and the trailing 1 is the value for the third word
+responsible for locking the line.
+
+A "lock-only" command would look like this:
+
+fuse prog -y 11 2 1
+
+Here 11 is the fuse number, 2 is the index of the first word to be written
+(notice that we only write to word 2 here; the third word for fuse line
+locking), and the 1 is the value for the word we are writing to.
+
+WARNING: According to application note [4], the VHV pin of the SoC must be
+connected to a 1.8V source during eFuse programming, but *must* be disconnected
+for normal operation. The AN [4] describes a software-controlled circuit (based
+on a N-channel or P-channel FET and a free GPIO pin of the SoC) to achieve
+this, but a jumper-based circuit should suffice as well. Regardless of the
+chosen circuit, the issue needs to be addressed accordingly!
+
+7. Work to be done
+------------------
+
+* Add the ability to populate more than one CSK
+* Test secure debug
+* Test on Armada XP
+
+8. Bibliography
+---------------
+
+[1] ARMADA(R) 38x Family High-Performance Single/Dual CPU System on Chip
+    Functional Specification; MV-S109094-00, Rev. C; August 2, 2015,
+    Preliminary
+[2] AN-383: ARMADA(R) 38x Families Secure Boot Mode Support; MV-S302501-00
+    Rev.  A; March 11, 2015, Preliminary
+[3] Public-Key Cryptography Standards (PKCS) #1: RSA Cryptography
+    Specifications Version 2.1; February 2003;
+    https://www.ietf.org/rfc/rfc3447.txt
+[4] AN-389: ARMADA(R) VHV Power; MV-S302545-00 Rev. B; January 28, 2016,
+    Released
+[5] Marvell Armada 38x U-Boot support; November 25, 2015;
+    https://github.com/MarvellEmbeddedProcessors/u-boot-marvell
+
+2017-01-05, Mario Six <mario.six@gdsys.cc>

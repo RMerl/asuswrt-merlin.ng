@@ -71,4 +71,9 @@ int pmc_wan_interface_power_control(WAN_INTF interface, int ctrl);
 #if defined (CONFIG_BCM963158)
 int pmc_wan_ae_reset(void);
 #endif
+
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+int pmc_wan_interface_get_power_state(WAN_INTF interface);
+#endif
+
 #endif /* _PMC_WAN_H_ */

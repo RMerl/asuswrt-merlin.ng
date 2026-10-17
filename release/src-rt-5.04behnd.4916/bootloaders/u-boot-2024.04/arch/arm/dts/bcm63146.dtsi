@@ -1,0 +1,337 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Philippe Reynes <philippe.reynes@softathome.com>
+ */
+
+#include "skeleton64.dtsi"
+
+/ {
+	compatible = "brcm,bcm63146";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+		bootph-all;
+
+		cpu0: cpu@0 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x0>;
+			next-level-cache = <&l2>;
+			bootph-all;
+		};
+
+		cpu1: cpu@1 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x1>;
+			next-level-cache = <&l2>;
+			bootph-all;
+		};
+
+		l2: l2-cache0 {
+			compatible = "cache";
+			bootph-all;
+		};
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		bootph-all;
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <200000000>;
+			bootph-all;
+		};
+
+		hsspi_pll: hsspi-pll {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_osc>;
+			clock-mult = <1>;
+			clock-div = <1>;
+			bootph-all;
+		};
+
+		refclk50mhz: refclk50mhz {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+			bootph-all;
+		};
+	};
+
+	pmc {
+		bootph-all;
+		compatible = "brcm,bca-pmc-3-2";
+		reg-names = "pmc", "procmon", "maestro", "itcm", "dtcm"; 
+ 		reg = <0x0 0xffb01018 0x0 0x5080>,
+ 		      <0x0 0xffb20000 0x0 0x240>,
+ 		      <0x0 0xffb00400 0x0 0x5d0>,
+ 		      <0x0 0xffbc0000 0x0 0x4000>,
+ 		      <0x0 0xffb80000 0x0 0x1000>;
+	};
+
+	strap: strap {
+		bootph-all;	
+		compatible = "brcm,strap";
+		reg = <0x0 0xff802600 0x0 0x4>;
+		boot-select-0=<0 1>;
+		boot-select-1=<1 1>;
+		boot-select-2=<2 1>;
+		boot-select-3=<3 1>;
+		boot-select-4=<4 1>;
+		boot-select-5=<5 1>;
+		bootrom-boot=<12 1>;
+	};
+
+	ubus {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		bootph-all;
+
+		uart0: serial@ff812000 {
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0x0 0xff812000 0x0 0x1000>;
+			clock = <50000000>;
+
+			status = "disabled";
+		};
+
+		hsspi: hsspi@ff801000 {
+			pinctrl-0 = <&spim_group_pins>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm6328-hsspi";
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			bootph-all;
+
+			reg = <0x0 0xff801000 0x0 0x1000>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <50000000>;
+			num-cs = <8>;
+			status = "disabled";
+		};
+
+		wdt1: watchdog@ff800480 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x0 0xff800480 0x0 0x14>;
+			clocks = <&refclk50mhz>;
+			bootph-all;
+		};
+
+		wdt2: watchdog@ff8004c0 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x0 0xff8004c0 0x0 0x14>;
+			clocks = <&refclk50mhz>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt1>;
+		};
+
+		nand_controller: nand-controller@ff801800 {
+			pinctrl-0 = <&data_pins &nand_ctrl_pins>;
+			pinctrl-names = "default";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63138", "brcm,brcmnand-v7.1", "brcm,brcmnand";
+			reg = <0x0 0xff801800 0x0 0x600>, <0x0 0xff802000 0x0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "disabled";
+
+			nandcs: nand@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+			};
+		};
+
+		sdhci: sdhci@ff810000 {
+			compatible = "brcm,bcm63xx-sdhci",
+				     "brcm,sdhci-bcmbca";
+			reg-names = "sdhci-base", "sdhci-boot";
+			reg = <0x0 0xff810000 0x0 0x100>,
+			      <0x0 0xff810200 0x0 0x40>;
+			bus-width = <8>;
+			bootph-all;
+		};
+
+#if defined(CONFIG_RNG_SHIM)
+		rng_shim: rngshim {
+			compatible = "brcm,rng-shim";
+			bootph-all;
+		};
+#else
+		rng: rng@ff800b80 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0x0 0xff800b80 0x0 0x28>;
+			bootph-all;
+		};
+
+		trng: trng@ff803800 {
+			compatible = "brcm,bcmbca-trng";
+			reg = <0x0 0xff803800 0x0 0x0800>;
+			bootph-all;
+		};
+#endif
+		pinctrl: pinctrl {
+			compatible = "brcm,bcmbca-pinctrl";
+			reg = <0x0 0xff800554 0x0 0xc>;
+			gpio-mux = <4>;
+		};
+	};
+
+	swblks {
+		compatible = "brcm,swblks";
+		reg-names = "bcast-ctrl",
+					"qphy-ctrl",
+					"sphy-ctrl";
+
+		reg = 	<0 0x837ff000 0 0x4>,
+				<0 0x837ff014 0 0x4>,
+				<0 0x837ff024 0 0x4>;
+		phy_base = <0x1>;
+	};
+
+	unimac {
+		compatible = "brcm,unimac3";
+		reg = <0x0 0x828a8000 0x0 0x8000>,
+		      <0x0 0x828b0000 0x0 0x2000>;
+		conf_offset = <0x1000>;
+		mib_offset = <0x400>;
+		top_offset = <0x400>;
+	};
+
+	egphy {
+		compatible = "brcm,egphy";
+		reg = <0x0 0x837FF00C 0x0 0x20>;
+	};
+
+	mdiosf2 {
+		compatible = "brcm,mdio-sf2";
+		reg = <0x0 0x837FFD00 0x0 0x10>,
+		      <0x0 0xff85a024 0x0 0x4>;
+	};
+
+	xrdp {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x0 0x0 0x82000000 0x0 0xcd0000
+			  0x1 0x0 0x0 0xff800000 0x0 0x62000>;
+
+		mdio: mdio {
+			compatible = "simple-bus";
+			bus-type = "DSL_ETHSW";
+
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			phy_gphy0:phy_gphy0 {
+				compatible = "brcm,bcaphy";
+				phy-type = "EGPHY";
+				reg = <1>;
+				status = "disabled";
+			};
+
+			phy_gphy1:phy_gphy1 {
+				compatible = "brcm,bcaphy";
+				phy-type = "EGPHY";
+				reg = <2>;
+				status = "disabled";
+			};
+
+			phy_gphy2:phy_gphy2 {
+				compatible = "brcm,bcaphy";
+				phy-type = "EGPHY";
+				reg = <3>;
+				status = "disabled";
+			};
+
+			phy_gphy3:phy_gphy3 {
+				compatible = "brcm,bcaphy";
+				phy-type = "EGPHY";
+				reg = <4>;
+				status = "disabled";
+			};
+
+			phy_gphy4:phy_gphy4 {
+				compatible = "brcm,bcaphy";
+				phy-type = "EGPHY";
+				reg = <5>;
+				status = "disabled";
+			};
+		};
+
+		switch0: switch0 {
+		};
+	};
+};
+
+&switch0 {
+	compatible = "brcm,enet";
+	label = "bcmsw";
+	sw-type = "RUNNER_SW";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port_gphy0 {
+			reg = <0>;
+			mac-type = "UNIMAC";
+			phy-handle = <&phy_gphy0>;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "disabled";
+		};
+
+		port_gphy1 {
+			reg = <1>;
+			mac-type = "UNIMAC";
+			phy-handle = <&phy_gphy1>;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "disabled";
+		};
+
+		port_gphy2 {
+			reg = <2>;
+			mac-type = "UNIMAC";
+			phy-handle = <&phy_gphy2>;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "disabled";
+		};
+
+		port_gphy3 {
+			reg = <3>;
+			mac-type = "UNIMAC";
+			phy-handle = <&phy_gphy3>;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "disabled";
+		};
+
+		port_gphy4 {
+			reg = <4>;
+			mac-type = "UNIMAC";
+			phy-handle = <&phy_gphy4>;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "disabled";
+		};
+	};
+};
+
+#include "bcm63146-pinctrl.dtsi"

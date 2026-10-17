@@ -73,6 +73,12 @@ const mmap_region_t plat_arm_mmap[] = {
 #if defined (SMC_BASE)
   MAP_REGION_FLAT(SMC_BASE,     SMC_SIZE,    MT_DEVICE | MT_RW | MT_SECURE),
 #endif
+#if defined (RNG_BASE) && (RNG_BASE != UART0_BASE)
+  MAP_REGION_FLAT(RNG_BASE,     RNG_SIZE,    MT_DEVICE | MT_RW | MT_SECURE),
+#endif
+#if defined (TRNG_BASE)
+  MAP_REGION_FLAT(TRNG_BASE,    TRNG_SIZE,    MT_DEVICE | MT_RW | MT_SECURE),
+#endif
   {0}
 };
 
@@ -312,7 +318,7 @@ void bl31_plat_arch_setup(void)
 {
 	arm_bl31_plat_arch_setup();
 
-#if defined (PLATFORM_FLAVOR_68880) || defined (PLATFORM_FLAVOR_6837)
+#if defined (PLATFORM_FLAVOR_68880) || defined (PLATFORM_FLAVOR_6837) || defined (PLATFORM_FLAVOR_68375)
 	console_8250_register(UART0_BASE, &console);
 #else
 	console_pl011_register(UART0_BASE, UART0_CLOCK, UART0_BAUD, &console);

@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * QorIQ eSPI device tree stub [ controller @ offset 0x110000 ]
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ */
+
+spi@110000 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	compatible = "fsl,mpc8536-espi";
+	reg = <0x110000 0x1000>;
+	interrupts = <53 0x2 0 0>;
+};

@@ -1,0 +1,71 @@
+menu "Octeon platforms"
+	depends on ARCH_OCTEON
+
+config SYS_SOC
+	string
+	default "octeon"
+
+config OCTEON_CN7XXX
+	bool "Octeon CN7XXX SoC"
+
+config OCTEON_CN70XX
+	bool "Octeon CN70XX SoC"
+	select OCTEON_CN7XXX
+
+config OCTEON_CN73XX
+	bool "Octeon CN73XX SoC"
+	select OCTEON_CN7XXX
+
+config OCTEON_CN78XX
+	bool "Octeon CN78XX SoC"
+	select OCTEON_CN7XXX
+
+choice
+	prompt "Octeon MIPS family select"
+
+config SOC_OCTEON3
+	bool "Octeon III family"
+	help
+	 This selects the Octeon III SoC family CN70xx, CN73XX, CN78xx
+	 and CNF75XX.
+
+endchoice
+
+choice
+	prompt "Octeon 3 board select"
+	default TARGET_OCTEON_EBB7304
+
+config TARGET_OCTEON_EBB7304
+	bool "Marvell Octeon EBB7304"
+	select OCTEON_CN73XX
+	help
+	 Choose this for the Octeon EBB7304 board
+
+config TARGET_OCTEON_NIC23
+	bool "Marvell Octeon NIC23"
+	select OCTEON_CN73XX
+	help
+	 Choose this for the Octeon NIC23 board
+
+endchoice
+
+config SYS_DCACHE_SIZE
+	default 32768
+
+config SYS_DCACHE_LINE_SIZE
+	default 128
+
+config SYS_ICACHE_SIZE
+	default	79872
+
+config SYS_ICACHE_LINE_SIZE
+	default 128
+
+config SYS_PCI_64BIT
+	bool
+	default y
+
+source "board/Marvell/octeon_ebb7304/Kconfig"
+source "board/Marvell/octeon_nic23/Kconfig"
+
+endmenu

@@ -1,0 +1,225 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/dts-v1/;
+
+//#include "inc/linux_autoconf.h"
+
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+#define PMU_CORE0_SPI	9
+#define PMU_CORE1_SPI	10
+#define PMU_CORE2_SPI	11
+#define PMU_CORE3_SPI	12
+#define ARM_UART0_SPI           31
+	
+/ {
+    model = "Broadcom BCM96888";
+    compatible = "brcm,bcm96888";
+    interrupt-parent = <&gic>;
+    #address-cells = <2>;
+    #size-cells = <2>;
+   
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen { 
+		stdout-path = "serial0:1562500n8";
+		bootargs = "console=ttyAMA0,1500000n8  lpj=800000 ikosboot mem=64M root=/dev/ram0 ro";
+		linux,initrd-start = <0x1b00000>;
+		linux,initrd-end = <0x1fff000>;
+	};
+
+	pmc: pmc {
+		compatible = "brcm,bca-pmc-3-2";
+
+		reg = <0x0 0xffb01018 0x0 0x5080>,
+		    <0x0 0xffb20000 0x0 0x240>, 
+		    <0x0 0xffb20400 0x0 0x5d0>,
+		    <0x0 0xffbc0000 0x0 0x4000>,
+		    <0x0 0xffb80000 0x0 0x1000>;
+		reg-names = "pmc", "procmon", "maestro", "itcm", "dtcm";
+	};
+	
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		CA53_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x0>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+		CA53_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x1>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+		CA53_2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x2>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+		CA53_3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x3>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+		L2_0: l2-cache0 {
+			compatible = "cache";
+		};
+	};
+
+	gic: interrupt-controller@81000000 {
+    	compatible = "arm,cortex-a15-gic", "arm,cortex-a9-gic";
+    	#interrupt-cells = <3>;
+    	#address-cells = <0>;
+    	interrupt-controller;
+    	reg = <0x0 GIC_DIST_BASE 0 0x1000>,
+    	      <0x0 GIC_CPUI_BASE 0 0x2000>;
+	};
+
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	pmu {
+		compatible = "arm,armv8-pmuv3";
+		interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+			      <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>,
+			      <GIC_SPI PMU_CORE2_SPI IRQ_TYPE_LEVEL_HIGH>,
+			      <GIC_SPI PMU_CORE3_SPI IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&CA53_0>, <&CA53_1>, <&CA53_2>, <&CA53_3>;
+	};
+	
+	brcm-legacy {
+		compatible = "brcm,brcm-legacy";
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x00000000 0x0 0x04000000>;  /* 64MBMB */
+	};
+
+    uartclk: uartclk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <50000000>;
+    };
+
+    unimac {
+        compatible = "brcm,unimac3";
+        reg = <0x0 0x828a8000 0x0 0x4000>,
+              <0x0 0x828b0000 0x0 0x1000>;
+        conf_offset = <0x1000>;
+        mib_offset = <0x400>;
+        top_offset = <0x400>;
+    };
+
+	switch0: switch0 {
+		compatible = "brcm,enet";
+		label = "bcmsw";
+		sw-type = "RUNNER_SW";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port_gphy0 {
+				reg = <0>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+
+			port_gphy1 {
+				reg = <1>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+
+			port_gphy2 {
+				reg = <2>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+
+			port_gphy3 {
+				reg = <3>;
+				mac-type = "UNIMAC";
+				status = "okay";
+			};
+
+		};
+    };
+
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x0 0x0 0xff800000 0x0 0x62000>;
+
+        uart0: serial@ff812000 {
+            #address-cells = <1>;
+            #size-cells = <1>;
+            compatible = "arm,pl011", "arm,primecell";
+            reg = <0x0 0x12000 0x0 0x1000>;
+            interrupts = <GIC_SPI ARM_UART0_SPI IRQ_TYPE_LEVEL_HIGH>;
+            clocks = <&uartclk>, <&uartclk>;
+            clock = <50000000>;
+            clock-names = "uartclk", "apb_pclk";
+        };
+	};
+
+    /* spu */
+    #define SPU_DMA_ADDR            0x00000000 0x83800000
+    #define SPU_DMA_SIZE            0x00000000 0x400000
+    #define SPU_DMA_NUM_CHAN        4
+    #define SPU_DMA_NUM_AE          2
+    #define SPU_CRYPTO_ADDR         0x00000000 0x83800000
+    #define SPU_CRYPTO_SIZE         0x00000000 0x400000
+    #define SPU_GMAC_SPI            67
+
+    spu_flexrm: spu_flexrm {
+    compatible = "brcm,spu-flexrm";
+    reg = <SPU_DMA_ADDR SPU_DMA_SIZE>;
+    interrupts = <GIC_SPI SPU_GMAC_SPI IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI (SPU_GMAC_SPI + 1) IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI (SPU_GMAC_SPI + 2) IRQ_TYPE_LEVEL_HIGH>, <GIC_SPI (SPU_GMAC_SPI + 3) IRQ_TYPE_LEVEL_HIGH>;
+    brcm,num_chan = <SPU_DMA_NUM_CHAN>;
+    brcm,num_ae = <SPU_DMA_NUM_AE>;
+    status = "okay";
+    dma-coherent;
+    };
+
+    spu_crypto: spu_crypto {
+        compatible = "brcm,spu-crypto";
+        reg = <SPU_CRYPTO_ADDR SPU_CRYPTO_SIZE>;
+        brcm,num_spu = <1>;
+        brcm,spu_type = <2>;
+        status = "okay";
+    };
+};

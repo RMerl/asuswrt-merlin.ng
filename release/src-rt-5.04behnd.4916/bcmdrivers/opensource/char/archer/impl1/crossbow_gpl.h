@@ -116,6 +116,7 @@ typedef struct {
     void(* rcq_fkb_free)(FkBuff_t *fkb);
     // STATS
     void (* stats_get)(crossbow_gpl_enet_stats_t *stats_p);
+    void (* cycle_get)(unsigned long sec);
     // Ethernet Driver
     irqreturn_t (* rxq_isr)(int irq, void *param);
     int rxq_isr_cpu_id;
@@ -273,10 +274,19 @@ int crossbow_gpl_timer_bind(crossbow_timer_hooks_t *hooks_p);
 
 #endif /* CC_CROSSBOW_TIMER */
 
+typedef struct {
+    int (*enable_get)(int frag_enable);
+    void (*enable_set)(int frag_enable, int value);
+} crossbow_fpi_frag_reasm_hooks_t;
+
+void crossbow_gpl_fpi_frag_reasm_enable_bind(crossbow_fpi_frag_reasm_hooks_t *hooks_p);
+
 // Miscellaneous
 
 int crossbow_gpl_flow_memory_get(crossbow_gpl_flow_memory_t *table_mem_p);
 
-int crossbow_gpl_construct(void);
+int crossbow_gpl_construct(struct dentry *debugfs_dir);
+
+void crossbow_gpl_destruct(void);
 
 #endif /* __CROSSBOW_GPL_H__ */

@@ -1,0 +1,8 @@
+i.MX8MN BEACON BOARD
+M:	Adam Ford <aford173@gmail.com>
+S:	Maintained
+F:	board/beacon/imx8mn/
+F:	include/configs/imx8mn_beacon.h
+F:	configs/imx8mn_beacon_defconfig
+F:	configs/imx8mn_beacon_2g_defconfig
+F:	configs/imx8mn_beacon_fspi_defconfig

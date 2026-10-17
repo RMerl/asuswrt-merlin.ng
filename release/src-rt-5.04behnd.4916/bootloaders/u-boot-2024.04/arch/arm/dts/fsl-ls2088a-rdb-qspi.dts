@@ -1,0 +1,171 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls2080a RDB board device tree source for QSPI-boot
+ *
+ * Author: Priyanka Jain <priyanka.jain@nxp.com>
+ *
+ * Copyright 2017 NXP
+ */
+
+/dts-v1/;
+
+#include "fsl-ls2080a.dtsi"
+
+/ {
+	model = "Freescale Layerscape 2080a RDB Board";
+	compatible = "fsl,ls2080a-rdb", "fsl,ls2080a";
+
+	aliases {
+		spi0 = &qspi;
+		spi1 = &dspi;
+	};
+};
+
+&dpmac1 {
+	status = "okay";
+	phy-handle = <&mdio1_phy1>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac2 {
+	status = "okay";
+	phy-handle = <&mdio1_phy2>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac3 {
+	status = "okay";
+	phy-handle = <&mdio1_phy3>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac4 {
+	status = "okay";
+	phy-handle = <&mdio1_phy4>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac5 {
+	status = "okay";
+	phy-handle = <&mdio2_phy1>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac6 {
+	status = "okay";
+	phy-handle = <&mdio2_phy2>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac7 {
+	status = "okay";
+	phy-handle = <&mdio2_phy3>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac8 {
+	status = "okay";
+	phy-handle = <&mdio2_phy4>;
+	phy-connection-type = "10gbase-r";
+};
+
+&emdio1 {
+	status = "okay";
+
+	/* CS4340 PHYs */
+	mdio1_phy1: emdio1_phy@1 {
+		reg = <0x10>;
+	};
+	mdio1_phy2: emdio1_phy@2 {
+		reg = <0x11>;
+	};
+	mdio1_phy3: emdio1_phy@3 {
+		reg = <0x12>;
+	};
+	mdio1_phy4: emdio1_phy@4 {
+		reg = <0x13>;
+	};
+};
+
+&emdio2 {
+	status = "okay";
+
+	/* AQR405 PHYs */
+	mdio2_phy1: emdio2_phy@1 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		reg = <0x0>;
+	};
+	mdio2_phy2: emdio2_phy@2 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		reg = <0x1>;
+	};
+	mdio2_phy3: emdio2_phy@3 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		reg = <0x2>;
+	};
+	mdio2_phy4: emdio2_phy@4 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		reg = <0x3>;
+	};
+};
+
+&dspi {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash0: n25q512a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+};
+
+&qspi {
+	status = "okay";
+
+	s25fs512s0: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+	};
+
+	s25fs512s1: flash@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <1>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	bootph-all;
+
+	pca9547@75 {
+		compatible = "nxp,pca9547";
+		reg = <0x75>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		 i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x01>;
+			rtc@68 {
+				compatible = "dallas,ds3232";
+				reg = <0x68>;
+			};
+		};
+	};
+};
+
+&sata {
+	status = "okay";
+};

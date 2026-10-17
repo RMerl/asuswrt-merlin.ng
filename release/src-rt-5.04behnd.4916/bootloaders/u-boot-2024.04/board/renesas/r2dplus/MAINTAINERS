@@ -1,0 +1,11 @@
+R2DPLUS BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+M:	Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+M:	Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+S:	Maintained
+F:	arch/sh/dts/sh7751-r2dplus*
+F:	board/renesas/r2dplus/
+F:	configs/r2dplus_defconfig
+F:	drivers/pci/pci_sh7751.c
+F:	drivers/serial/serial_sh*
+F:	include/configs/r2dplus.h

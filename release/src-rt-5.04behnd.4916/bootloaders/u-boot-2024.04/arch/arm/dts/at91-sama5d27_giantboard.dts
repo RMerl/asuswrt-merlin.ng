@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * at91-sama5d27_giantboard.dts - Device Tree file for Giant Board
+ *
+ * Copyright (C) 2020 Greg Gallagher <greg@embeddedgreg.com>
+ *
+ * Derived from at91-sama5d27_som1_ek.dts
+ *
+ * Copyright (C) 2017 Microchip Corporation
+ *		      Wenyou Yang <wenyou.yang@microchip.com>
+ */
+/dts-v1/;
+#include "sama5d2.dtsi"
+#include "sama5d2-pinfunc.h"
+
+/ {
+	model = "Giant Board";
+	compatible = "atmel,sama5d27-giantboard", "atmel,sama5d2", "atmel,sama5";
+
+	memory {
+		reg = <0x20000000 0x8000000>;
+	};
+
+	chosen {
+		bootph-all;
+		stdout-path = &uart1;
+	};
+
+	ahb {
+		sdmmc1: sdio-host@b0000000 {
+			bus-width = <4>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_sdmmc1_default>;
+			status = "okay";
+			bootph-all;
+		};
+
+		apb {
+
+			uart1: serial@f8020000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_uart1_default>;
+				status = "okay";
+				bootph-all;
+			};
+
+			i2c0: i2c@f8028000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_i2c0_default>;
+				status = "okay";
+			};
+
+			i2c1: i2c@fc028000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_i2c1_default>;
+				status = "okay";
+
+				pmic@5b {
+					compatible = "active-semi,act8945a";
+					reg = <0x5b>;
+					active-semi,vsel-low;
+					status = "okay";
+				};
+			};
+
+			pit: timer@f8048030 {
+				status = "okay";
+				bootph-all;
+			};
+
+			sfr: sfr@f8030000 {
+				status = "okay";
+				bootph-all;
+			};
+
+			pioA: pinctrl@fc038000 {
+				pinctrl_sdmmc1_default: sdmmc1_default {
+					cmd_data {
+						pinmux = <PIN_PA28__SDMMC1_CMD>,
+							 <PIN_PA18__SDMMC1_DAT0>,
+							 <PIN_PA19__SDMMC1_DAT1>,
+							 <PIN_PA20__SDMMC1_DAT2>,
+							 <PIN_PA21__SDMMC1_DAT3>;
+						bias-pull-up;
+						bootph-all;
+					};
+
+					ck_cd {
+						pinmux = <PIN_PA22__SDMMC1_CK>,
+							 <PIN_PA30__SDMMC1_CD>;
+						bias-disable;
+						bootph-all;
+					};
+				};
+
+				pinctrl_uart1_default: uart1_default {
+					pinmux = <PIN_PD2__URXD1>,
+						 <PIN_PD3__UTXD1>;
+					bias-disable;
+					bootph-all;
+				};
+
+				pinctrl_i2c0_default: i2c0_default {
+					pinmux = <PIN_PD21__TWD0>,
+						 <PIN_PD22__TWCK0>;
+					bias-disable;
+				};
+
+				pinctrl_i2c1_default: i2c1_default {
+					pinmux = <PIN_PD4__TWD1>,
+						 <PIN_PD5__TWCK1>;
+					bias-disable;
+				};
+
+				pinctrl_usb_default: usb_default {
+					pinmux = <PIN_PB10__GPIO>;
+					bias-disable;
+				};
+
+				pinctrl_usba_vbus: usba_vbus {
+					pinmux = <PIN_PA31__GPIO>;
+					bias-disable;
+				};
+			};
+		};
+	};
+};

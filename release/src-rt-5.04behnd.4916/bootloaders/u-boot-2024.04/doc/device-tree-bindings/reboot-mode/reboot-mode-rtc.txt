@@ -1,0 +1,22 @@
+RTC Reboot Mode Configuration
+
+Required Properties:
+- compatible: must be "reboot-mode-rtc".
+- rtc: reference to the rtc device used.
+- reg: start register and the number of bytes used. Maximum 4 bytes supported.
+- modes: list of properties that define the modes and associated unique ids.
+
+Optional Properties:
+- u-boot,env-variable: used to save the reboot mode (default: reboot-mode).
+- big-endian: if the magic value is stored in big-endian. (default: false).
+
+Example:
+	reboot-mode-rtc {
+		compatible = "reboot-mode-rtc";
+		rtc = <&rtc_0>;
+		reg = <0x14 4>;
+		u-boot,env-variable = "bootstatus";
+		big-endian;
+		modes-test = <0x21969147>;
+		modes-download = <0x51939147>;
+	};

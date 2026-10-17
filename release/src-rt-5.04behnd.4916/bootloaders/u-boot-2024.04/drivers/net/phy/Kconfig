@@ -1,0 +1,381 @@
+
+config BITBANGMII
+	bool "Bit-banged ethernet MII management channel support"
+
+config BITBANGMII_MULTI
+	bool "Enable the multi bus support"
+	depends on BITBANGMII
+
+config MV88E6352_SWITCH
+	bool "Marvell 88E6352 switch support"
+
+menuconfig PHYLIB
+	bool "Ethernet PHY (physical media interface) support"
+	depends on NET
+	help
+	  Enable Ethernet PHY (physical media interface) support.
+
+if PHYLIB
+
+config PHY_ADDR_ENABLE
+	bool "Limit phy address"
+	default y if ARCH_SUNXI
+	help
+	  Select this if you want to control which phy address is used
+
+if PHY_ADDR_ENABLE
+config PHY_ADDR
+	int "PHY address"
+	default 1 if ARCH_SUNXI
+	default 0
+	help
+	  The address of PHY on MII bus. Usually in range of 0 to 31.
+endif
+
+config B53_SWITCH
+	bool "Broadcom BCM53xx (RoboSwitch) Ethernet switch PHY support."
+	help
+	  Enable support for Broadcom BCM53xx (RoboSwitch) Ethernet switches.
+	  This currently supports BCM53125 and similar models.
+
+if B53_SWITCH
+
+config B53_CPU_PORT
+	int "CPU port"
+	default 8
+
+config B53_PHY_PORTS
+	hex "Bitmask of PHY ports"
+
+endif # B53_SWITCH
+
+config MV88E61XX_SWITCH
+	bool "Marvell MV88E61xx Ethernet switch PHY support."
+
+if MV88E61XX_SWITCH
+
+config MV88E61XX_CPU_PORT
+	int "CPU Port"
+
+config MV88E61XX_PHY_PORTS
+	hex "Bitmask of PHY Ports"
+
+config MV88E61XX_FIXED_PORTS
+	hex "Bitmask of PHYless serdes Ports"
+	default 0x0
+	help
+	  These are ports without PHYs that may be wired directly to other
+	  serdes interfaces
+
+endif # MV88E61XX_SWITCH
+
+config PHYLIB_10G
+	bool "Generic 10G PHY support"
+
+config PHY_ADIN
+	bool "Analog Devices Industrial Ethernet PHYs"
+	help
+		Add support for configuring RGMII on Analog Devices ADIN PHYs.
+
+menuconfig PHY_AQUANTIA
+	bool "Aquantia Ethernet PHYs support"
+	select PHY_GIGE
+	select PHYLIB_10G
+
+config PHY_AQUANTIA_UPLOAD_FW
+	bool "Aquantia firmware loading support"
+	depends on PHY_AQUANTIA
+	help
+		Aquantia PHYs use firmware which can be either loaded automatically
+		from storage directly attached to the phy or loaded by the boot loader
+		via MDIO commands.  The firmware is loaded from a file, specified by
+		the PHY_AQUANTIA_FW_PART and PHY_AQUANTIA_FW_NAME options.
+
+config PHY_AQUANTIA_FW_PART
+	string "Aquantia firmware partition"
+	depends on PHY_AQUANTIA_UPLOAD_FW
+	help
+		Partition containing the firmware file.
+
+config PHY_AQUANTIA_FW_NAME
+	string "Aquantia firmware filename"
+	depends on PHY_AQUANTIA_UPLOAD_FW
+	help
+		Firmware filename.
+
+config PHY_ATHEROS
+	bool "Atheros Ethernet PHYs support"
+
+config SPL_PHY_ATHEROS
+	bool "Atheros Ethernet PHYs support (SPL)"
+
+config PHY_BROADCOM
+	bool "Broadcom Ethernet PHYs support"
+
+config PHY_CORTINA
+	bool "Cortina Ethernet PHYs support"
+
+config SYS_CORTINA_NO_FW_UPLOAD
+	bool "Cortina firmware loading support"
+	depends on PHY_CORTINA
+	help
+		Cortina phy has provision to store phy firmware in attached dedicated
+		EEPROM. And boards designed with such EEPROM does not require firmware
+		upload.
+
+choice
+	prompt "Location of the Cortina firmware"
+	default SYS_CORTINA_FW_IN_NOR
+	depends on PHY_CORTINA
+
+config SYS_CORTINA_FW_IN_MMC
+	bool "Cortina firmware in MMC"
+
+config SYS_CORTINA_FW_IN_NAND
+	bool "Cortina firmware in NAND flash"
+
+config SYS_CORTINA_FW_IN_NOR
+	bool "Cortina firmware in NOR flash"
+
+config SYS_CORTINA_FW_IN_REMOTE
+	bool "Cortina firmware in remote device"
+
+config SYS_CORTINA_FW_IN_SPIFLASH
+	bool "Cortina firmware in SPI flash"
+
+endchoice
+
+config CORTINA_FW_ADDR
+	hex "Cortina Firmware Address"
+	depends on PHY_CORTINA && !SYS_CORTINA_NO_FW_UPLOAD
+	default 0x0
+
+config CORTINA_FW_LENGTH
+	hex "Cortina Firmware Length"
+	depends on PHY_CORTINA && !SYS_CORTINA_NO_FW_UPLOAD
+	default 0x40000
+
+config PHY_CORTINA_ACCESS
+	bool "Cortina Access Ethernet PHYs support"
+	default y
+	depends on CORTINA_NI_ENET
+	help
+		Cortina Access Ethernet PHYs init process
+
+config PHY_DAVICOM
+	bool "Davicom Ethernet PHYs support"
+
+config PHY_ET1011C
+	bool "LSI TruePHY ET1011C support"
+
+config PHY_LXT
+	bool "LXT971 Ethernet PHY support"
+
+config PHY_MARVELL
+	bool "Marvell Ethernet PHYs support"
+
+config PHY_MARVELL_10G
+	bool "Marvell Alaska 10Gbit PHYs"
+	help
+	  Support for the Marvell Alaska MV88X3310 and compatible PHYs.
+
+config PHY_MESON_GXL
+	bool "Amlogic Meson GXL Internal PHY support"
+
+config PHY_MICREL
+	bool "Micrel Ethernet PHYs support"
+	help
+	  Enable support for the GbE PHYs manufactured by Micrel (now
+	  a part of Microchip). This includes drivers for the KSZ804, KSZ8031,
+	  KSZ8051, KSZ8081, KSZ8895, KSZ886x and KSZ8721 (if "Micrel KSZ8xxx
+	  family support" is selected) and the KSZ9021 and KSZ9031 (if "Micrel
+	  KSZ90x1 family support" is selected).
+
+if PHY_MICREL
+
+config PHY_MICREL_KSZ9021
+	bool
+	select PHY_MICREL_KSZ90X1
+
+config PHY_MICREL_KSZ9031
+	bool
+	select PHY_MICREL_KSZ90X1
+
+config PHY_MICREL_KSZ90X1
+	bool "Micrel KSZ90x1 family support"
+	select PHY_GIGE
+	help
+	  Enable support for the Micrel KSZ9021 and KSZ9031 GbE PHYs. If
+	  enabled, the extended register read/write for KSZ90x1 PHYs
+	  is supported through the 'mdio' command and any RGMII signal
+	  delays configured in the device tree will be applied to the
+	  PHY during initialization.
+
+config PHY_MICREL_KSZ8XXX
+	bool "Micrel KSZ8xxx family support"
+	help
+	  Enable support for the 8000 series 10/100 PHYs manufactured by Micrel
+	  (now a part of Microchip). This includes drivers for the KSZ804,
+	  KSZ8031, KSZ8051, KSZ8081, KSZ8895, KSZ886x, and KSZ8721.
+
+endif # PHY_MICREL
+
+config PHY_MOTORCOMM
+	tristate "Motorcomm PHYs"
+	help
+	  Enables support for Motorcomm network PHYs.
+	  Currently supports the YT8511 and YT8531 Gigabit Ethernet PHYs.
+
+config PHY_MSCC
+	bool "Microsemi Corp Ethernet PHYs support"
+
+config PHY_NATSEMI
+	bool "National Semiconductor Ethernet PHYs support"
+
+config PHY_NXP_C45_TJA11XX
+	tristate "NXP C45 TJA11XX PHYs"
+	help
+	  Enable support for NXP C45 TJA11XX PHYs.
+	  Currently supports only the TJA1103 PHY.
+
+config PHY_NXP_TJA11XX
+	bool "NXP TJA11XX Ethernet PHYs support"
+	help
+	  Currently supports the NXP TJA1100 and TJA1101 PHY.
+
+config PHY_REALTEK
+	bool "Realtek Ethernet PHYs support"
+
+config RTL8211X_PHY_FORCE_MASTER
+	bool "Ethernet PHY RTL8211x: force 1000BASE-T master mode"
+	depends on PHY_REALTEK
+	help
+	  Force master mode for 1000BASE-T on RTl8211x PHYs (except for RTL8211F).
+	  This can work around link stability and data corruption issues on gigabit
+	  links which can occur in slave mode on certain PHYs, e.g. on the
+	  RTL8211C(L).
+
+	  Please note that two directly connected devices (i.e. via crossover cable)
+	  will not be able to establish a link between each other if they both force
+	  master mode. Multiple devices forcing master mode when connected by a
+	  network switch do not pose a problem as the switch configures its affected
+	  ports into slave mode.
+
+	  This option only affects gigabit links. If you must establish a direct
+	  connection between two devices which both force master mode, try forcing
+	  the link speed to 100MBit/s.
+
+	  If unsure, say N.
+
+config RTL8211F_PHY_FORCE_EEE_RXC_ON
+	bool "Ethernet PHY RTL8211F: do not stop receiving the xMII clock during LPI"
+	depends on PHY_REALTEK
+	help
+	  The IEEE 802.3az-2010 (EEE) standard provides a protocol to coordinate
+	  transitions to/from a lower power consumption level (Low Power Idle
+	  mode) based on link utilization. When no packets are being
+	  transmitted, the system goes to Low Power Idle mode to save power.
+
+	  Under particular circumstances this setting can cause issues where
+	  the PHY is unable to transmit or receive any packet when in LPI mode.
+	  The problem is caused when the PHY is configured to stop receiving
+	  the xMII clock while it is signaling LPI. For some PHYs the bit
+	  configuring this behavior is set by the Linux kernel, causing the
+	  issue in U-Boot on reboot if the PHY retains the register value.
+
+	  Default n, which means that the PHY state is not changed. To work
+	  around the issues, change this setting to y.
+
+config RTL8201F_PHY_S700_RMII_TIMINGS
+	bool "Ethernet PHY RTL8201F: adjust RMII Tx Interface timings"
+	depends on PHY_REALTEK
+	help
+	  This provides an option to configure specific timing requirements (needed
+	  for proper PHY operations) for the PHY module present on ACTION SEMI S700
+	  based cubieboard7. Exact timing requiremnets seems to be SoC specific
+	  (and it's undocumented) that comes from vendor code itself.
+
+config PHY_SMSC
+	bool  "Microchip(SMSC) Ethernet PHYs support"
+
+config PHY_TERANETICS
+	bool "Teranetics Ethernet PHYs support"
+
+config PHY_TI
+	bool "Texas Instruments Ethernet PHYs support"
+	---help---
+	  Adds PHY registration support for TI PHYs.
+
+config PHY_TI_DP83867
+	select PHY_TI
+	bool "Texas Instruments Ethernet DP83867 PHY support"
+	---help---
+	  Adds support for the TI DP83867 1Gbit PHY.
+
+config PHY_TI_DP83869
+	select PHY_TI
+	bool "Texas Instruments Ethernet DP83869 PHY support"
+	---help---
+	  Adds support for the TI DP83869 1Gbit PHY.
+
+config PHY_TI_GENERIC
+	select PHY_TI
+	bool "Texas Instruments Generic Ethernet PHYs support"
+	---help---
+	  Adds support for Generic TI PHYs that don't need special handling but
+	  the PHY name is associated with a PHY ID.
+
+config PHY_VITESSE
+	bool "Vitesse Ethernet PHYs support"
+
+config PHY_XILINX
+	bool "Xilinx Ethernet PHYs support"
+
+config PHY_XILINX_GMII2RGMII
+	bool "Xilinx GMII to RGMII Ethernet PHYs support"
+	help
+	  This adds support for Xilinx GMII to RGMII IP core. This IP acts
+	  as bridge between MAC connected over GMII and external phy that
+	  is connected over RGMII interface.
+
+config PHY_XWAY
+	bool "Intel XWAY PHY support"
+	help
+	  This adds support for the Intel XWAY (formerly Lantiq) Gbe PHYs.
+
+config PHY_ETHERNET_ID
+	bool "Read ethernet PHY id"
+	depends on DM_GPIO
+	default y if ZYNQ_GEM
+	help
+	  Enable this config to read ethernet phy id from the phy node of DT
+	  and create a phy device using id.
+
+config PHY_FIXED
+	bool "Fixed-Link PHY"
+	help
+	  Fixed PHY is used for having a 'fixed-link' to another MAC with a direct
+	  connection (MII, RGMII, ...).
+	  There is nothing like autoneogation and so
+	  on, the link is always up with fixed speed and fixed duplex-setting.
+	  More information: doc/device-tree-bindings/net/fixed-link.txt
+
+config PHY_NCSI
+	bool "NC-SI based PHY"
+
+endif #PHYLIB
+
+config FSL_MEMAC
+	bool "NXP mEMAC PHY support"
+
+config SYS_MEMAC_LITTLE_ENDIAN
+	bool "mEMAC is access in little endian mode"
+	depends on FSL_MEMAC || FSL_LS_MDIO
+
+config PHY_RESET_DELAY
+	int "Extra delay after reset before MII register access"
+	default 0
+	help
+	  Some PHYs need extra delay after reset before any MII register access
+	  is possible.  For such PHY, set this option to the usec delay
+	  required.

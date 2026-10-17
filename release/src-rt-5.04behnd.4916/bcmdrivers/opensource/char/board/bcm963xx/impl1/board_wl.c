@@ -42,6 +42,7 @@
 #include <board.h>
 #include <shared_utils.h>
 
+#include "board_util.h"
 #include "board_wl.h"
 #include "board_image.h"
 #if defined (WIRELESS)

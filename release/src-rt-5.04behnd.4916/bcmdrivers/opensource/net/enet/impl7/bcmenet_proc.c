@@ -35,7 +35,6 @@
 #include "crossbar_dev.h"
 #include <net_port.h>
 #include <proc_cmd.h>
-#include "bcmenet_tc.h"
 #ifdef BCM_ENET_FLCTL_LITE
 #include <linux/gbpm.h>
 #endif
@@ -82,6 +81,13 @@ extern unsigned int        count_flctl_pktdrops;
 #define QEMU_TEST_PROC_FILE  "qemu_mod"
 static struct proc_dir_entry *qemu_cmd_proc_file;
 #endif
+
+#ifdef WOL_HW_SWITCH
+#define WOL_PROC_FILE   "/wol_status"
+extern int wol_status_show(struct seq_file *m, void *v);
+static struct proc_dir_entry *wol_proc_file;
+#endif
+
 
 #ifdef ENET_DEBUG_RX_CPU_TRAFFIC
 #define DEBUG_MODE_PROC_FILE        "debug_mode"
@@ -217,7 +223,7 @@ static int tr_port_stats(enetx_port_t *p, void *_ctx)
 
 static int port_proc_cmd_stats(int argc, char *argv[])
 {
-    int id;
+    int id = 0;
 
     if (argc < 2)
         goto Error;
@@ -288,6 +294,10 @@ static int tr_port_list(enetx_port_t *p, void *_ctx)
 
         if (p->p.ops && p->p.ops->print_priv)
             pr_cont("| %17s  ", p->p.ops->print_priv(p));
+#ifdef CONFIG_BLOG
+        else if (p->has_interface && p->dev)
+            pr_cont("| blog_ch=%2d/RX%2d    ", p->n.blog_chnl, p->n.blog_chnl_rx);
+#endif
         else
             pr_cont("| %17s  ", "");
     }
@@ -444,27 +454,32 @@ Error:
     return 0;
 }
 
+int axltest = 0;
+static int enet_axltest(int argc, char *argv[])
+{
+    if (argc == 1)
+        printk("axltest = %d\n", axltest);
+       else if (!strcmp(argv[1], "0"))
+        axltest = 0;
+    else if (!strcmp(argv[1], "1"))
+        axltest = 1;
+    else
+        goto Error;
+
+    return 0;
+
+Error:
+    printk("Usage: axltest <0|1> disable/enable ENET packet dump\n");
+    return 0;
+}
+
 int enet_get_next_port(enetx_port_t *port, enetx_port_t **next_port);
 static int crossbar_status_show(struct seq_file *m, void *v)
 {
 #if defined(CONFIG_BCM963158)
     static const char *intPortName[] = {"Switch Port 4", "Switch Port 6", "WAN Port"};
     static const char *extPortName[]= {"AE", "GPHY4", "RGMII1", "RGMII0"};
-#endif
-#if defined(CONFIG_BCM963138)
-    static const char *intPortName[] = {"Switch Port 3", "Switch Port 4", "WAN Port"};
-    static const char *extPortName[]= {"AE", "GPHY4", "RGMII3", "xMII", "GPHY3"};
-#endif
-#if defined(CONFIG_BCM963148)
-    static const char *intPortName[] = {"Switch Port 4", "WAN Port"};
-    static const char *extPortName[]= {"AE", "GPHY4", "RGMII3", "xMII"};
-#endif
-#if defined(CONFIG_BCM94908)
-    static const char *intPortName[] = {"Switch Port 7", "WAN Port"};
-    static const char *extPortName[]= {"AE", "GPHY4", "xMII"};
-#endif
 
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
     phy_dev_t *phy_crossbar;
     int extPort, intPort;
     enetx_port_t *port;
@@ -512,6 +527,25 @@ static int port_proc_cmd_dump(int argc, char *argv[])
     return 0;
 }
 
+static int tr_port_port_propagate(enetx_port_t *p, void *_ctx)
+{
+    /* We might want to change this in the future, making creating ports more
+     * flexible */
+    if (p->port_info.port_group != -1 && p->port_info.is_wanconf_ae)
+        port_activate(p);
+
+    return 0;
+}
+
+static int port_proc_cmd_port_propagate(int argc, char *argv[])
+{
+    rtnl_lock();
+    port_traverse_ports(root_sw, tr_port_port_propagate, PORT_CLASS_PORT_DETECT, NULL);
+    rtnl_unlock();
+
+    return 0;
+}
+
 /* Command usage: echo "<name> <arg>" > /proc/driver/enet/cmd */
 static struct proc_cmd_ops command_entries[] = {
     { .name = "stats",    .do_command = port_proc_cmd_stats},
@@ -519,14 +553,13 @@ static struct proc_cmd_ops command_entries[] = {
     { .name = "oam",      .do_command = port_proc_cmd_list_oam},
     { .name = "net_port", .do_command = port_proc_cmd_net_port},
     { .name = "dump",     .do_command = port_proc_cmd_dump},
+    { .name = "port_propagate",    .do_command = port_proc_cmd_port_propagate},
     { .name = "if_phy_pwr_sync",   .do_command = port_proc_cmd_if_phy_pwr_sync},
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-    { .name = "tc_trigger",   .do_command = bcmenet_tc_trigger },
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
 #if defined(CONFIG_ENET_RX_BLOG_THREAD)
     { .name = "rx_blog",  .do_command = enet_rx_blog_dump},
     { .name = "rx_blog_en",  .do_command = enet_rx_blog_en},
 #endif
+    { .name = "axltest",  .do_command = enet_axltest},
 };
 
 static struct proc_cmd_table port_command_table = {
@@ -550,10 +583,11 @@ static ssize_t flctl_rd_func(struct file *filep, char __user *buf, size_t count,
     *offset += snprintf(tmpbuf + *offset, TMPBUFSZ - *offset,
         "ExhaustionLO ExhaustionHI PktPrioFavor Enabled\n");
 
-   *offset += snprintf(tmpbuf + *offset, TMPBUFSZ - *offset, "%12u %12u %12u %7u\n",
+    *offset += snprintf(tmpbuf + *offset, TMPBUFSZ - *offset, "%12u %12u %12u %7u\n",
         flctl_exhaustion_lo, flctl_exhaustion_hi, flctl_pkt_prio_favor, flctl_enable);
 
-    copy_to_user(buf, &tmpbuf, *offset);
+    if (copy_to_user(buf, tmpbuf, *offset))
+        return -EFAULT;
 
     return *offset;
 
@@ -599,12 +633,6 @@ Exit:
     return len;
 } /* flctl_wr_func */
 
-static const struct file_operations flctl_fops = {
-        .owner = THIS_MODULE,
-        .read  = flctl_rd_func,
-        .write = flctl_wr_func,
-};
-
 static ssize_t stats_rd_func(struct file *filep, char __user *buf, size_t count, loff_t *offset)
 {
     if (*offset != 0)
@@ -616,10 +644,27 @@ static ssize_t stats_rd_func(struct file *filep, char __user *buf, size_t count,
 
 } /* stats_rd_func */
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+static const struct file_operations flctl_fops = {
+        .owner = THIS_MODULE,
+        .read  = flctl_rd_func,
+        .write = flctl_wr_func,
+};
+
 static const struct file_operations stats_fops = {
         .owner = THIS_MODULE,
         .read  = stats_rd_func,
 };
+#else
+static struct proc_ops flctl_fops = {
+       .proc_read = flctl_rd_func,
+       .proc_write = flctl_wr_func,
+};
+
+static struct proc_ops stats_fops = {
+       .proc_read = stats_rd_func,
+};
+#endif
 #endif /* BCM_ENET_FLCTL_LITE */
 
 void enet_proc_exit(void)
@@ -657,6 +702,14 @@ void enet_proc_exit(void)
     }
 #endif
 
+#ifdef WOL_HW_SWITCH
+    if (wol_proc_file)
+    {
+        remove_proc_entry(WOL_PROC_FILE, proc_dir);
+        wol_proc_file = NULL;
+    }
+#endif
+
     if (proc_dir)
     {
         remove_proc_entry(PROC_DIR, NULL);
@@ -681,10 +734,6 @@ int enet_proc_init(void)
         pr_err("Failed to create %s\n", CMD_PROC_FILE);
         goto error;
     }
-
-#ifdef CONFIG_BCM_ENET_TC_OFFLOAD
-    bcmenet_tc_init_procs(proc_dir);
-#endif /* CONFIG_BCM_ENET_TC_OFFLOAD */
 
 #ifdef BCM_ENET_FLCTL_LITE
     flctl_proc_file = proc_create(FLCTL_PROC_FILE, 0666, proc_dir, &flctl_fops);
@@ -724,7 +773,16 @@ int enet_proc_init(void)
         goto error;
     }
 #endif
-    
+
+#ifdef WOL_HW_SWITCH
+    wol_proc_file = proc_create_single(PROC_DIR WOL_PROC_FILE, S_IRUGO, NULL, wol_status_show);
+    if (!wol_proc_file)
+    {
+        pr_err("Failed to create %s\n", WOL_PROC_FILE);
+        goto error;
+    }
+#endif
+
     proc_dir = proc_mkdir(PROC_ETHERNET_DIR, NULL);
     if (!proc_create_single(PROC_CROSSBAR_STATUS, 0, proc_dir, crossbar_status_show))
         goto error;

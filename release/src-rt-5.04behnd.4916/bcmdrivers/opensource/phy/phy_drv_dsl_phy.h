@@ -105,7 +105,6 @@ enum {
     SERDES_OP_WR_PMD,
     SERDES_OP_TMR_SET,
     SERDES_OP_TMR_GET,
-    SERDES_OP_DUMP_EEPROM,
 };
 
 extern int ephy_leds_init(void *leds_info);
@@ -130,10 +129,10 @@ static inline int phy_xfi_speed_cap_adjust(phy_dev_t *phy_dev, int speed_caps)
     phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_UP, &inter_types);
     /* Remove multi speed XFI flags which do not give speed capability indication */
     inter_types &= ~(INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPE_USXGMII_MP_M | 
-        INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN_M );
+        INTER_PHY_TYPE_MULTI_SPEED_AN_M );
     get_inter_phy_supported_speed_caps(inter_types, &supported_speed_caps);
     supported_speed_caps |= PHY_CAP_AUTONEG;
-    speed_caps = speed_caps & (supported_speed_caps | (~(PHY_CAP_PURE_SPEED_CAPS)));
+    speed_caps = speed_caps & (supported_speed_caps | (~(PHY_CAP_PURE_SPEED_AN_CAPS)));
 
     return speed_caps;
 }

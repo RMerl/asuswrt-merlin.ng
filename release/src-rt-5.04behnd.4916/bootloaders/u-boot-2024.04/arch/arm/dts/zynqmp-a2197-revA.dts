@@ -1,0 +1,89 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal a2197 RevA System Controller
+ *
+ * (C) Copyright 2019, Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+/dts-v1/;
+
+#include "zynqmp.dtsi"
+#include "zynqmp-clk-ccf.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "Versal System Controller on a2197 board RevA";
+	compatible = "xlnx,zynqmp-a2197-revA", "xlnx,zynqmp-a2197", "xlnx,zynqmp";
+
+	aliases {
+		i2c0 = &i2c0;
+		nvmem0 = &eeprom1;
+		nvmem1 = &eeprom0;
+		serial0 = &uart0;
+	};
+
+	chosen {
+		bootargs = "earlycon";
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+};
+
+&uart0 { /* uart0 MIO38-39 */
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+	bootph-all;
+	clock-frequency = <400000>;
+	i2c-mux@74 { /* this cover MGT board */
+		compatible = "nxp,pca9548";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x74>;
+		bootph-all;
+		/* FIXME reset connected to SYSCTRL_IIC_MUX0_RESET */
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			/* Use for storing information about SC board */
+			eeprom0: eeprom@50 { /* u96 - 24LC32A - 256B */
+				compatible = "atmel,24c32";
+				bootph-all;
+				reg = <0x50>;
+			};
+		};
+	};
+};
+
+&i2c1 {
+	status = "okay";
+	bootph-all;
+	clock-frequency = <400000>;
+	i2c-mux@74 { /* This cover processor board */
+		compatible = "nxp,pca9548";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x74>;
+		bootph-all;
+		/* FIXME reset connected to SYSCTRL_IIC_MUX0_RESET */
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			/* Use for storing information about SC board */
+			eeprom1: eeprom@50 { /* u96 - 24LC32A - 256B */
+				compatible = "atmel,24c32";
+				bootph-all;
+				reg = <0x50>;
+			};
+		};
+	};
+};

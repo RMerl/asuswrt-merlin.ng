@@ -1,0 +1,287 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&gic>;
+
+	wdt-reboot {
+                compatible = "wdt-reboot";
+                wdt = <&watchdog0>;
+        };
+
+	ahb {
+		udc0:udc@f0830100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0830100 0x200
+			       0xfffd0000 0x800>;
+			interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+			resets = <&rstc NPCM7XX_RESET_IPSRST3 NPCM7XX_RESET_UDC0>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc1:udc@f0831100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0831100 0x200
+			       0xfffd0800 0x800>;
+			interrupts = <GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc2: udc@f0832100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0832100 0x200
+			       0xfffd1000 0x800>;
+			interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc3: udc@f0833100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0833100 0x200
+			       0xfffd1800 0x800>;
+			interrupts = <GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc4: udc@f0834100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0834100 0x200
+			       0xfffd2000 0x800>;
+			interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc5: udc@f0835100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0835100 0x200
+			       0xfffd2800 0x800>;
+			interrupts = <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc6: udc@f0836100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0836100 0x200
+			       0xfffd3000 0x800>;
+			interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc7: udc@f0837100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0837100 0x200
+			       0xfffd3800 0x800>;
+			interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc8: udc@f0838100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0838100 0x200
+			       0xfffd4000 0x800>;
+			interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		udc9: udc@f0839100 {
+			compatible = "nuvoton,npcm750-udc";
+			reg = <0xf0839100 0x200
+			       0xfffd4800 0x800>;
+			interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+			status = "disabled";
+			clocks = <&clk NPCM7XX_CLK_SU>;
+			clock-names = "clk_usb_bridge";
+		};
+
+		emc0: eth@f0825000 {
+			device_type = "network";
+			compatible = "nuvoton,npcm750-emc";
+			reg = <0xf0825000 0x1000>;
+			phy-mode = "rmii";
+			id = <0>;
+			syscon-gcr = <&gcr>;
+			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM7XX_CLK_AHB>;
+			clock-names = "clk_emc";
+			resets = <&rstc NPCM7XX_RESET_IPSRST1 NPCM7XX_RESET_EMC1>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&r1_pins
+					&r1md_pins>;
+			status = "disabled";
+		};
+
+		ohci1: ohci@f0807000 {
+			compatible = "nuvoton,npcm750-ohci";
+			reg = <0xf0807000 0x1000>;
+			interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+			resets = <&rstc NPCM7XX_RESET_IPSRST2 NPCM7XX_RESET_USB_HOST>;
+			status = "disabled";
+		};
+
+		usbphy {
+			compatible = "simple-bus", "nuvoton,npcm750-usb-phy";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			syscon = <&gcr>;
+			usbphy1: usbphy1 {
+				compatible = "nuvoton,npcm750-usb-phy";
+				#phy-cells = <1>;
+				reg = <1>;
+				resets = <&rstc NPCM7XX_RESET_IPSRST3 NPCM7XX_RESET_USB_PHY_1>;
+				status = "disabled";
+			};
+			usbphy2: usbphy2 {
+				compatible = "nuvoton,npcm750-usb-phy";
+				#phy-cells = <1>;
+				reg = <2>;
+				resets =<&rstc NPCM7XX_RESET_IPSRST3 NPCM7XX_RESET_USB_PHY_2>;
+				status = "disabled";
+			};
+		};
+
+		sdhci0: sdhci0@f0842000 {
+			compatible = "nuvoton,npcm750-sdhci";
+			reg = <0xf0842000 0x200>;
+			index = <0x0>;
+			bus-width = <0x8>;
+			cap-mmc-highspeed;
+			interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk NPCM7XX_CLK_SDHC>;
+			clock-frequency = <50000000>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&mmc_pins
+				&mmc8_pins>;
+			status = "disabled";
+		};
+
+		sdhci1: sdhci1@f0840000 {
+			compatible = "nuvoton,npcm750-sdhci";
+			reg = <0xf0840000 0x2000>;
+			index = <0x1>;
+			bus-width = <0x4>;
+			cap-mmc-highspeed;
+			pinctrl-names = "default";
+			pinctrl-0 = <&sd1_pins>;
+			status = "disabled";
+		};
+
+		aes: aes@f0858000 {
+			compatible = "nuvoton,npcm750-aes";
+			reg = <0xf0858000 0x1000>;
+			clocks = <&clk NPCM7XX_CLK_AHB>;
+			clock-names = "clk_ahb";
+			status = "disabled";
+		};
+
+		sha: sha@f085a000 {
+			compatible = "nuvoton,npcm750-sha";
+			reg = <0xf085a000 0x1000>;
+			clocks = <&clk NPCM7XX_CLK_AHB>;
+			clock-names = "clk_ahb";
+			status = "disabled";
+		};
+
+		//ehci1
+		usb@f0806000 {
+			resets = <&rstc NPCM7XX_RESET_IPSRST2 NPCM7XX_RESET_USB_HOST>;
+		};
+
+		apb {
+			otp:otp@189000 {
+				compatible = "nuvoton,npcm750-otp";
+				reg = <0x189000 0x1000
+					   0x18a000 0x1000>;
+				status = "disabled";
+				clocks = <&clk NPCM7XX_CLK_APB4>;
+				clock-names = "clk_apb4";
+			};
+
+			rng@b000 {
+				clocks = <&clk NPCM7XX_CLK_APB1>;
+			};
+			gpio_0: gpio0@10000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x10000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio0";
+                        };
+
+                        gpio_1: gpio1@11000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x11000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio1";
+                        };
+
+                        gpio_2: gpio2@12000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x12000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio2";
+                        };
+			gpio_3: gpio3@13000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x13000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio3";
+                        };
+
+                        gpio_4: gpio4@14000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x14000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio4";
+                        };
+
+                        gpio_5: gpio5@15000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x15000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio5";
+                        };
+
+                        gpio_6: gpio6@16000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x16000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio6";
+                        };
+			gpio_7: gpio7@17000 {
+                                compatible = "nuvoton,npcm-gpio", "nuvoton,npcm750-gpio";
+                                reg = <0x17000 0xB0>;
+                                #gpio-cells = <2>;
+                                gpio-controller;
+                                gpio-bank-name = "gpio7";
+                        };
+
+		};
+	};
+};
+

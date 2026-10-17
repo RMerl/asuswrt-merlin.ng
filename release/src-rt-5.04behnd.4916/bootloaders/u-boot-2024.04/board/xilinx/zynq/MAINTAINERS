@@ -1,0 +1,9 @@
+ZYNQ BOARD
+M:	Michal Simek <monstr@monstr.eu>
+S:	Maintained
+T:	git https://source.denx.de/u-boot/custodians/u-boot-microblaze.git
+F:	arch/arm/dts/zynq-*
+F:	board/xilinx/zynq/
+F:	include/configs/zynq*.h
+F:	configs/zynq_*_defconfig
+F:	configs/xilinx_zynq_*

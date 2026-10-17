@@ -1,0 +1,25 @@
+PHY nodes for Aquantia devices.
+
+This text describes properties that are applicable to Aquantia PHY nodes in
+addition to the bindings in phy.txt.
+
+Aquantia PHYs allow some flexibility in the way they are wired in a system,
+they allow MDI pins to be reversed, LEDs linked up in different weays, have an
+I2C slave interface that can be used for debug.  Normally the configuration
+corresponding to these is driven by the PHY firmware with the downside that
+a custom firmware is needed for each integration of a PHY.
+Several optional bindings are defined that allow these configuration points to
+be driven by the PHY driver and reduce dependency on specific FW versions.
+
+Optional properties:
+mdi-reversal: 0 or 1 indicating that reversal must be disabled/enabled.
+              Firmware default is used if the property is missing.
+smb-addr:     I2C/SMBus address to use, firmware default is used if the property
+              is missing.
+
+Example node:
+phy@00 {
+	reg = <0x00>;
+	mdi-reversal = <1>;
+	smb-addr = <0x25>;
+};

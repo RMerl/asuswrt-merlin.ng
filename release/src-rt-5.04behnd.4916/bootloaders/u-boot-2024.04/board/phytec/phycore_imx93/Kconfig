@@ -1,0 +1,13 @@
+
+if TARGET_PHYCORE_IMX93
+
+config SYS_BOARD
+	default "phycore_imx93"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "phycore_imx93"
+
+endif

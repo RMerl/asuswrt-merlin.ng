@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+/*
+ * Copyright (C) 2020 Marek Vasut <marex@denx.de>
+ */
+/dts-v1/;
+
+#include "stm32mp157.dtsi"
+#include "stm32mp15xc.dtsi"
+#include "stm32mp15xx-dhcom-som.dtsi"
+#include "stm32mp15xx-dhcom-picoitx.dtsi"
+
+/ {
+	model = "DH Electronics STM32MP15xx DHCOM PicoITX";
+	compatible = "dh,stm32mp15xx-dhcom-picoitx", "st,stm32mp1xx";
+};

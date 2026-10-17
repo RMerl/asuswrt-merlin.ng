@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: (GPL-2.0+)
+/*
+ * Copyright (C) 2019 Claudius Heine <ch@denx.de>
+ */
+
+#include "imx6qdl-dhcom-pdk2-u-boot.dtsi"
+
+/ {
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+	};
+};

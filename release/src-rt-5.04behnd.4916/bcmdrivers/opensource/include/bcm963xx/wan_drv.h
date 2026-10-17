@@ -33,6 +33,7 @@
 #if defined(__KERNEL__)
 
 #include <linux/types.h>
+#include <linux/bcm_log.h>
 
 #define wd_log(fmt, ...) printk("SERDES: %s "fmt, __FUNCTION__, ##__VA_ARGS__)
 #if 0
@@ -70,21 +71,10 @@ typedef enum
 
 #if defined(__KERNEL__)
 
-typedef enum
-{
-    DRV_SERDES_NO_ERROR, 
-    DRV_SERDES_AMPLITUDE_IS_OUT_OF_RANGE,
-}
-serdes_error_t;
-
-
-#define PMD_EWAKE_OFF_TIME   0x2f
-#define PMD_EWAKE_SETUP_TIME 0x2f
-#define PMD_EWAKE_HOLD_TIME  0x2f
-
 int wan_serdes_config(serdes_wan_type_t wan_type);
 int wan_serdes_deconfig(void);
 serdes_wan_type_t wan_serdes_type_get(void);
+int wan_serdes_type_try_get(serdes_wan_type_t *wan_type);
 void wan_prbs_gen(uint32_t enable, int enable_host_tracking, int mode, serdes_wan_type_t wan_type, int *valid);
 void wan_prbs_status(int *valid, uint32_t *errors);
 void pll_ppm_adj_FracN_10G(uint8_t mode, int32_t ppm_target, bool pll_adj_en);
@@ -111,8 +101,6 @@ void pll_ppm_adj_FracN_10G(uint8_t mode, int32_t ppm_target, bool pll_adj_en);
 
 void pon_wan_top_reset_gearbox_tx(void);
 
-typedef void (*PMD_DEV_ENABLE_PRBS)(uint16_t enable, uint8_t prbs_mode);
-
 void wan_top_tod_ts48_get(uint16_t *ts48_msb, uint32_t *ts48_lsb);
 
 enum transmitter_control {
@@ -129,6 +117,16 @@ void wantop_resync(int cdr_relock, int tx_fifo_reset, int delay_in_msec);
 void pon_serdes_lof_fixup_irq(int lof);
 void pon_serdes_fixup_on_enable(void);
 void pon_serdes_fixup_on_disable(void);
+
+static inline int wan_i2c_bus_get(void)
+{
+    bcmFun_t *cb = bcmFun_get(BCM_FUN_ID_WAN_SERDES_BUS_GET);
+    return cb ? cb(NULL) : -1;
+}
+
+#if defined (CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
+void wan_serdes_10g_epon_sgb_clk_enable(int enable);
+#endif
 #endif /* __KERNEL__ */
 
 #endif

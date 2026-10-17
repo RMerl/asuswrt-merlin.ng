@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * QorIQ I2C Device Tree stub
+ *
+ * Copyright 2020 NXP
+ */
+i2c2: i2c@119000 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	cell-index = <2>;
+	compatible = "fsl-i2c";
+	bootph-all;
+	reg = <0x119000 0x100>;
+	interrupts = <39 2 0 0>;
+};
+
+i2c3: i2c@119100 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	cell-index = <3>;
+	compatible = "fsl-i2c";
+	bootph-all;
+	reg = <0x119100 0x100>;
+	interrupts = <39 2 0 0>;
+};

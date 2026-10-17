@@ -1,0 +1,321 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx ZynqMP VHK158 revA
+ *
+ * (C) Copyright 2022, Xilinx, Inc.
+ * (C) Copyright 2022 - 2023, Advanced Micro Devices, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+
+/dts-v1/;
+/plugin/;
+
+&{/} {
+	compatible = "xlnx,zynqmp-sc-vhk158-revA", "xlnx,zynqmp-vhk158-revA",
+		     "xlnx,zynqmp-vhk158", "xlnx,zynqmp";
+
+	vc7_xin: vc7-xin {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
+	};
+};
+
+&i2c0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	tca6416_u233: gpio@20 { /* u233 */
+		compatible = "ti,tca6416";
+		reg = <0x20>;
+		gpio-controller; /* interrupt not connected */
+		#gpio-cells = <2>;
+		gpio-line-names = "", "", "QSFPDD1_MODSELL", "QSFPDD2_MODSELL", /* 0 - 3 */
+				"PMBUS2_INA226_ALERT", "", "", "", /* 4 - 7 */
+				"FMCP1_FMC_PRSNT_M2C_B", "", "FMCP1_FMCP_PRSNT_M2C_B", "", /* 10 - 13 */
+				"VCCINT_VRHOT_B", "8A34001_EXP_RST_B", "PMBUS_ALERT", "PMBUS1_INA226_ALERT"; /* 14 - 17 */
+	};
+
+	i2c-mux@74 { /* u33 */
+		compatible = "nxp,pca9548";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x74>;
+		/* reset-gpios = <&gpio SYSCTLR_IIC_MUX0_RESET_B GPIO_ACTIVE_HIGH>; */
+		pmbus_i2c: i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			/* On connector J325 */
+			ir38064_41: regulator@41 { /* IR38064 - u294 */
+				compatible = "infineon,ir38064";
+				reg = <0x41>; /* i2c addr 0x11 */
+			};
+			irps5401_45: pmic5401@45 { /* IRPS5401 - u280 */
+				compatible = "infineon,irps5401";
+				reg = <0x45>; /* i2c addr 0x15 */
+			};
+			ir35221_46: pmic@46 { /* IR35221 - u152 */
+				compatible = "infineon,ir35221";
+				reg = <0x46>; /* i2c addr - 0x16 */
+			};
+			irps5401_47: pmic5401@47 { /* IRPS5401 - u160 */
+				compatible = "infineon,irps5401";
+				reg = <0x47>; /* i2c addr 0x17 */
+			};
+			irps5401_48: regulator@48 { /* IRPS5401 - u279 */
+				compatible = "infineon,irps5401";
+				reg = <0x48>; /* i2c addr 0x18 */
+			};
+			ir38164_49: regulator@49 { /* IR38164 - u295 */
+				compatible = "infineon,ir38164";
+				reg = <0x49>; /* i2c addr 0x19 */
+			};
+			ir38060_4a: regulator@4a { /* IR38060 - u259 */
+				compatible = "infineon,ir38164";
+				reg = <0x4a>; /* i2c addr 0x1a */
+			};
+			irps5401_4c: pmic@4c { /* IRPS5401 - u167 */
+				compatible = "infineon,irps5401";
+				reg = <0x4c>; /* i2c addr 0x1c */
+			};
+			irps5401_4d: pmic@4d { /* IRPS5401 - u175 */
+				compatible = "infineon,irps5401";
+				reg = <0x4d>; /* i2c addr 0x1d */
+			};
+			ir38060_4e: regulator@4e { /* IR38060 - u282 */
+				compatible = "infineon,ir38164";
+				reg = <0x4e>; /* i2c addr 0x1e */
+			};
+		};
+		pmbus1_ina226_i2c: i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+			/* FIXME check alerts coming to SC */
+			vccint: ina226@40 { /* u65 */
+				compatible = "ti,ina226";
+				reg = <0x40>;
+				shunt-resistor = <500>; /* R440 */
+			};
+			vcc_soc: ina226@41 { /* u161 */
+				compatible = "ti,ina226";
+				reg = <0x41>;
+				shunt-resistor = <500>; /* R1702 */
+			};
+			vcc_pmc: ina226@42 { /* u163 */
+				compatible = "ti,ina226";
+				reg = <0x42>;
+				shunt-resistor = <5000>; /* R382 */
+			};
+			vcc_ram: ina226@43 { /* u5 */
+				compatible = "ti,ina226";
+				reg = <0x43>;
+				shunt-resistor = <500>; /* R121 */
+			};
+			vcc_pslp: ina226@44 { /* u165 */
+				compatible = "ti,ina226";
+				reg = <0x44>;
+				shunt-resistor = <5000>; /* R1830 */
+			};
+			vcc_psfp: ina226@45 { /* u260 */
+				compatible = "ti,ina226";
+				reg = <0x45>;
+				shunt-resistor = <5000>; /* R1834 */
+			};
+			vcco_hbm: ina226@46 { /* u164 */
+				compatible = "ti,ina226";
+				reg = <0x46>;
+				shunt-resistor = <500>; /* R2056 */
+			};
+			vcc_hbm: ina226@47 { /* u307 */
+				compatible = "ti,ina226";
+				reg = <0x47>;
+				shunt-resistor = <500>; /* R2068 */
+			};
+			vccaux_hbm: ina226@48 { /* u308 */
+				compatible = "ti,ina226";
+				reg = <0x48>;
+				shunt-resistor = <5000>; /* R2019 */
+			};
+		};
+		i2c@2 { /* NC */ /* FIXME maybe remove */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+		};
+		pmbus2_ina226_i2c: i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+			/* FIXME check alerts coming to SC */
+			vccaux: ina226@40 { /* u166 */
+				compatible = "ti,ina226";
+				reg = <0x40>;
+				shunt-resistor = <5000>; /* R2060 */
+			};
+			vccaux_pmc: ina226@41 { /* u168 */
+				compatible = "ti,ina226";
+				reg = <0x41>;
+				shunt-resistor = <500>; /* R2000 */
+			};
+			mgtavcc: ina226@42 { /* u265 */
+				compatible = "ti,ina226";
+				reg = <0x42>;
+				shunt-resistor = <500>; /* R1829 */
+			};
+			vcc1v5: ina226@43 { /* u264 */
+				compatible = "ti,ina226";
+				reg = <0x43>;
+				shunt-resistor = <500>; /* R1221 */
+			};
+			vcco_mio: ina226@45 { /* u172 */
+				compatible = "ti,ina226";
+				reg = <0x45>;
+				shunt-resistor = <500>; /* R2015 */
+			};
+			mgtavtt: ina226@46 { /* u188 */
+				compatible = "ti,ina226";
+				reg = <0x46>;
+				shunt-resistor = <500>; /* R1384 */
+			};
+			vcco_502: ina226@47 { /* u174 */
+				compatible = "ti,ina226";
+				reg = <0x47>;
+				shunt-resistor = <500>; /* R1994 */
+			};
+			mgtvccaux: ina226@48 { /* u176 */
+				compatible = "ti,ina226";
+				reg = <0x48>;
+				shunt-resistor = <500>; /* R1232 */
+			};
+			vcc1v2_rdimm: ina226@49 { /* u306 */
+				compatible = "ti,ina226";
+				reg = <0x49>;
+				shunt-resistor = <500>; /* R2064 */
+			};
+			vadj_fmc: ina226@4a { /* u281 */
+				compatible = "ti,ina226";
+				reg = <0x4a>;
+				shunt-resistor = <5000>; /* R2031 */
+			};
+			lpdmgtyavcc: ina226@4b { /* u177 */
+				compatible = "ti,ina226";
+				reg = <0x4b>;
+				shunt-resistor = <500>; /* R2004 */
+			};
+			lpdmgtyavtt: ina226@4c { /* u309 */
+				compatible = "ti,ina226";
+				reg = <0x4c>;
+				shunt-resistor = <500>; /* R1229 */
+			};
+			lpdmgtyvccaux: ina226@4d { /* u234 */
+				compatible = "ti,ina226";
+				reg = <0x4d>;
+				shunt-resistor = <500>; /* R1679 */
+			};
+		};
+		i2c@4 { /* NC */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <4>;
+		};
+		rc21008a_gtclk1: i2c@5 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <5>;
+			vc7_1: clock-generator@9 {
+				compatible = "renesas,rc21008a";
+				clock-output-names = "rc21008a-0";
+				reg = <0x9>;
+				#clock-cells = <1>;
+				clocks = <&vc7_xin>;
+				clock-names = "xin";
+			};
+			/* i2c@9 - U299 */
+		};
+		rc21008a_gtclk2: i2c@6 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <6>;
+			vc7_2: clock-generator@9 {
+				compatible = "renesas,rc21008a";
+				clock-output-names = "rc21008a-1";
+				reg = <0x9>;
+				#clock-cells = <1>;
+				clocks = <&vc7_xin>;
+				clock-names = "xin";
+			};
+			/* i2c@9 - U300 */
+		};
+		sync_8a34001: i2c@7 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <7>;
+			/* U219 - i2c address UNKNOWN */
+		};
+	};
+};
+
+&i2c1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	i2c-mux@74 { /* u35 */
+		compatible = "nxp,pca9548";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x74>;
+		/* reset-gpios = <&gpio SYSCTLR_IIC_MUX1_RESET_B GPIO_ACTIVE_HIGH>; */
+		ddr4_dimm0: i2c@0 { /* wired but NC */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+		};
+		fmcp1_i2c: i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+			/* FIXME connection to Samtec J51C */
+			/* expected eeprom 0x50 SE cards */
+		};
+		qsfp1_i2c: i2c@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+			/* J350 connector */
+		};
+		qsfp2_i2c: i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+			/* J351 connector */
+		};
+		qsfp3_i2c: i2c@4 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <4>;
+			/* J352 connector */
+		};
+		qsfp4_i2c: i2c@5 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <5>;
+			/* J353 connector */
+		};
+		qsfpdd_i2c: i2c@6 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <6>;
+			/* J1/J2 connectors */
+		};
+		ddr4_dimm1: i2c@7 { /* wired but NC */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <7>;
+		};
+	};
+};

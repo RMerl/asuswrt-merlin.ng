@@ -1,0 +1,216 @@
+Allwinner 64-bit boards README
+==============================
+
+Newer Allwinner SoCs feature ARMv8 cores (ARM Cortex-A53) with support for
+both the 64-bit AArch64 mode and the ARMv7 compatible 32-bit AArch32 mode.
+Examples are the Allwinner A64 (used for instance on the Pine64 board) or
+the Allwinner H5 SoC (as used on the OrangePi PC 2).
+These SoCs are wired to start in AArch32 mode on reset and execute 32-bit
+code from the Boot ROM (BROM). As this has some implications on U-Boot, this
+file describes how to make full use of the 64-bit capabilities.
+
+Quick Start / Overview
+======================
+- Build the ARM Trusted Firmware binary (see "ARM Trusted Firmware (ATF)" below)
+  $ cd /src/arm-trusted-firmware
+  $ make PLAT=sun50i_a64 DEBUG=1 bl31
+- Build the SCP firmware binary (see "SCP firmware (Crust)" below)
+  $ cd /src/crust
+  $ make pine64_plus_defconfig && make -j5 scp
+- Build U-Boot (see "SPL/U-Boot" below)
+  $ export BL31=/path/to/bl31.bin
+  $ export SCP=/src/crust/build/scp/scp.bin
+  $ make pine64_plus_defconfig && make -j5
+- Transfer to an uSD card (see "microSD card" below)
+  $ dd if=u-boot-sunxi-with-spl.bin of=/dev/sdx bs=8k seek=1
+- Boot and enjoy!
+
+Building the firmware
+=====================
+
+The Allwinner A64/H5/H6 firmware consists of several parts: U-Boot's SPL,
+ARM Trusted Firmware (ATF), optional System Control Processor (SCP) firmware
+(e.g. Crust), and the U-Boot proper.
+
+The SPL will load all of the other firmware binaries into RAM, along with the
+right device tree blob (.dtb), and will pass execution to ATF (in EL3). If SCP
+firmware was loaded, ATF will power on the SCP and wait for it to boot.
+ATF will then drop into U-Boot proper (in EL2).
+
+As the ATF binary and SCP firmware will become part of the U-Boot image file,
+you will need to build them first.
+
+ ARM Trusted Firmware (ATF)
+----------------------------
+Checkout the latest master branch from the official ATF repository [1] and
+build it:
+$ export CROSS_COMPILE=aarch64-linux-gnu-
+$ make PLAT=sun50i_a64 DEBUG=1 bl31
+The resulting binary is build/sun50i_a64/debug/bl31.bin. Either put the
+location of this file into the BL31 environment variable or copy this to
+the root of your U-Boot build directory (or create a symbolic link).
+$ export BL31=/src/arm-trusted-firmware/build/sun50i_a64/debug/bl31.bin
+  (adjust the actual path accordingly)
+The platform target "sun50i_a64" covers all boards with either an Allwinner
+A64 or H5 SoC (since they are very similar). For boards with an Allwinner H6
+SoC use "sun50i_h6".
+
+If you run into size issues with the resulting U-Boot image file, it might
+help to use a release build, by using "DEBUG=0" when building bl31.bin.
+As sometimes the ATF build process is a bit picky about the toolchain used,
+or if you can't be bothered with building ATF, there are known working
+binaries in the firmware repository[3], purely for convenience reasons.
+
+ SCP firmware (Crust)
+----------------------
+SCP firmware is responsible for implementing system suspend/resume, and (on
+boards without a PMIC) soft poweroff/on. ATF contains fallback code for CPU
+power control, so SCP firmware is optional if you don't need either of these
+features. It runs on the AR100, with is an or1k CPU, not ARM, so it needs a
+different cross toolchain.
+
+There is one SCP firmware implementation currently available, Crust:
+$ git clone https://github.com/crust-firmware/crust
+$ cd crust
+$ export CROSS_COMPILE=or1k-linux-musl-
+$ make pine64_plus_defconfig
+$ make scp
+
+The same configuration generally works on any board with the same SoC (A64, H5,
+or H6), so if there is no config for your board, use one for a similar board.
+
+Like for ATF, U-Boot finds the SCP firmware binary via an environment variable:
+$ export SCP=/src/crust/build/scp/scp.bin
+
+If you do not want to use SCP firmware, you can silence the warning from binman
+by pointing it to an empty file:
+$ export SCP=/dev/null
+
+ SPL/U-Boot
+------------
+Both U-Boot proper and the SPL are using the 64-bit mode. As the boot ROM
+enters the SPL still in AArch32 secure SVC mode, there is some shim code to
+enter AArch64 very early. The rest of the SPL runs in AArch64 EL3.
+U-Boot proper runs in EL2 and can load any AArch64 code (using the "go"
+command), EFI applications (with "bootefi") or arm64 Linux kernel images
+(often named "Image"), using the "booti" command.
+
+$ make clean
+$ export CROSS_COMPILE=aarch64-linux-gnu-
+$ make pine64_plus_defconfig
+$ make
+
+This will build the SPL in spl/sunxi-spl.bin and a FIT image called u-boot.itb,
+which contains the rest of the firmware. u-boot-sunxi-with-spl.bin joins those
+two components in one convenient image file.
+
+
+Boot process
+============
+The on-die BROM code will try several methods to load and execute the firmware.
+On a typical board like the Pine64 this will result in the following boot order:
+
+1) Reading 32KB from sector 16 (@8K) of the microSD card to SRAM A1. If the
+BROM finds the magic "eGON" header in the first bytes, it will execute that
+code. If not (no SD card at all or invalid magic), it will:
+2) Try to read 32KB from sector 16 (@8K) of memory connected to the MMC2
+controller, typically an on-board eMMC chip. If there is no eMMC or it does
+not contain a valid boot header, it will:
+3) Initialize the SPI0 controller and try to access a NOR flash connected to
+it (using the CS0 pin). If a flash chip is found, the BROM will load the
+first 32KB (from offset 0) into SRAM A1. Now it checks for the magic eGON
+header and checksum and will execute the code upon finding it. If not, it will:
+4) Initialize the USB OTG controller and will wait for a host to connect to
+it, speaking the Allwinner proprietary (but deciphered) "FEL" USB protocol.
+
+
+To boot the Pine64 board, you can use U-Boot and any of the described methods.
+
+FEL boot (USB OTG)
+------------------
+FEL is the name of the Allwinner defined USB boot protocol built in the
+mask ROM of most Allwinner SoCs. It allows to bootstrap a board solely
+by using the USB-OTG interface and a host port on another computer.
+As the FEL mode is controlled by the boot ROM, it expects to be running in
+AArch32. For now the AArch64 SPL cannot properly return into FEL mode, so the
+feature is disabled in the configuration at the moment.
+The repository in [3] contains FEL capable SPL binaries, built using an
+off-tree branch to generate 32-bit ARM code (along with instructions
+how to re-create them).
+
+microSD card
+------------
+Transfer the SPL and the U-Boot FIT image directly to an uSD card:
+# dd if=spl/sunxi-spl.bin of=/dev/sdx bs=8k seek=1
+# dd if=u-boot.itb of=/dev/sdx bs=8k seek=5
+# sync
+(replace /dev/sdx with you SD card device file name, which could be
+/dev/mmcblk[x] as well).
+
+Alternatively you can use the SPL and the U-Boot FIT image combined into a
+single file and transfer that instead:
+# dd if=u-boot-sunxi-with-spl.bin of=/dev/sdx bs=8k seek=1
+
+You can partition the microSD card, but leave the first MB unallocated (most
+partitioning tools will do this anyway).
+
+NOR flash
+---------
+Some boards (like the SoPine, Pinebook or the OrangePi PC2) come with a
+soldered SPI NOR flash chip. On other boards like the Pine64 such a chip
+can be connected to the SPI0/CS0 pins on the PI-2 headers.
+Create the SPL and FIT image like described above for the SD card.
+Now connect either an "A to A" USB cable to the upper USB port on the Pine64
+or get an adaptor and use a regular A-microB cable connected to it. Other
+boards often have a proper micro-B USB socket connected to the USB OTB port.
+Remove a microSD card from the slot and power on the board.
+On your host computer download and build the sunxi-tools package[2], then
+use "sunxi-fel" to access the board:
+$ ./sunxi-fel ver -v -p
+This should give you an output starting with: AWUSBFEX soc=00001689(A64) ...
+Now use the sunxi-fel tool to write to the NOR flash:
+$ ./sunxi-fel spiflash-write 0 spl/sunxi-spl.bin
+$ ./sunxi-fel spiflash-write 32768 u-boot.itb
+Now boot the board without an SD card inserted and you should see the
+U-Boot prompt on the serial console.
+
+(Legacy) boot0 method
+---------------------
+boot0 is Allwinner's secondary program loader and it can be used as some kind
+of SPL replacement to get U-Boot up and running from an microSD card.
+For some time using boot0 was the only option to get the Pine64 booted.
+With working DRAM init code in U-Boot's SPL this is no longer necessary,
+but this method is described here for the sake of completeness.
+Please note that this method works only with the boot0 files shipped with
+A64 based boards, the H5 uses an incompatible layout which is not supported
+by this method.
+
+The boot0 binary is a 32 KByte blob and contained in the official Pine64 images
+distributed by Pine64 or Allwinner. It can be easily extracted from a micro
+SD card or an image file:
+# dd if=/dev/sd<x> of=boot0.bin bs=8k skip=1 count=4
+where /dev/sd<x> is the device name of the uSD card or the name of the image
+file. Apparently Allwinner allows re-distribution of this proprietary code
+"as-is".
+This boot0 blob takes care of DRAM initialisation and loads the remaining
+firmware parts, then switches the core into AArch64 mode.
+The original boot0 code looks for U-Boot at a certain place on an uSD card
+(at 19096 KB), also it expects a header with magic bytes and a checksum.
+There is a tool called boot0img[3] which takes a boot0.bin image and a compiled
+U-Boot binary (plus other binaries) and will populate that header accordingly.
+To make space for the magic header, the pine64_plus_defconfig will make sure
+there is sufficient space at the beginning of the U-Boot binary.
+boot0img will also take care of putting the different binaries at the right
+places on the uSD card and works around unused, but mandatory parts by using
+trampoline code. See the output of "boot0img -h" for more information.
+boot0img can also patch boot0 to avoid loading U-Boot from 19MB, instead
+fetching it from just behind the boot0 binary (-B option).
+$ ./boot0img -o firmware.img -B boot0.img -u u-boot-dtb.bin -e -s bl31.bin \
+-a 0x44008 -d trampoline64:0x44000
+Then write this image to a microSD card, replacing /dev/sdx with the right
+device file (see above):
+$ dd if=firmware.img of=/dev/sdx bs=8k seek=1
+
+[1] https://github.com/ARM-software/arm-trusted-firmware.git
+[2] git://github.com/linux-sunxi/sunxi-tools.git
+[3] https://github.com/apritzel/pine64/

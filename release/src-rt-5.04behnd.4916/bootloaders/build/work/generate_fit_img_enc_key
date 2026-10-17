@@ -1,0 +1,80 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use bytes;
+use Getopt::Long;
+
+my $enc_algo = "aes128";
+my $count = 16;
+my $enc_key;
+my $keyfile;
+my $name;
+my $found;
+my $ek;
+my $iv;
+my $cmd;
+my $keys;
+my $img_name;
+my $keyname;
+my $usage = q[
+usage:
+generate_fit_img_enc_key --enc-algo=<aes128|aes192|aes256> 
+    --enc-key "<list of required keys in space separated image_name:key_file_path pairs>"
+    <list of fit binary image names to be encypted>
+For example: generate_fit_img_enc_key --enc-algo=aes128
+    --enc-key "IMAGE_KEY:obj/binaries/rootfs_key.bin uboot:obj/binaries/uboot_key.bin kernel:obj/binaries/kernel_key.bin"
+    kernel uboot
+This command generates the aes128 encryption key and initiailzation vector to encrypt
+the kernel and uboot binaries in the fit image.
+];
+
+GetOptions(
+	"enc-algo=s", \$enc_algo,
+	"enc-key=s", \$enc_key
+) or die("$usage");
+
+local $/;
+
+foreach $img_name (@ARGV) {
+	$found = 0;
+
+	foreach $keys (split(' ', $enc_key)) {
+		if ( $keys =~ /^(\S+):(\S+)$/ ) {
+			$name = $1;
+			$keyfile = $2;
+			if ( $name eq $img_name ) {
+				$found = 1;
+				last;
+			}
+		}
+		else {
+			die("bad encoded key $keys, must be name:path\n");
+		}
+	}
+
+	if ( $found == 1 ) {
+		$keyname = $keyfile;
+		$keyname =~ s{\.[^.]+$}{};
+
+		$ek = $keyname."_ek.bin";
+		$iv = $keyname."_iv.bin";
+		if ( $enc_algo eq "aes128" ) {
+			$count = 16;
+		} elsif ( $enc_algo eq "aes192" ) {
+			$count = 24;
+		} elsif ( $enc_algo eq "aes256" ) {
+			$count = 32;
+		} else {
+			die ("invalid enc algo type $enc_algo\n");
+		}
+		$cmd = "dd if=/dev/random of=$ek bs=1 count=$count";
+		system(qq[$cmd]);
+		$cmd = "dd if=/dev/random of=$iv bs=1 count=16";
+		system(qq[$cmd]);
+		$cmd = "cat $ek $iv > $keyfile";
+		system(qq[$cmd]);
+	} else {
+		die("image $img_name not found in the encoded key list\n");
+	}
+}

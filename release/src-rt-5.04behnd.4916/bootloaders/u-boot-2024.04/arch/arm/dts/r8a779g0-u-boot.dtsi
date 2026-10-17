@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot on R-Car R8A779G0 SoC
+ *
+ * Copyright (C) 2021 Renesas Electronics Corp.
+ */
+
+#include "r8a779x-u-boot.dtsi"
+
+&rpc {
+	reg = <0 0xee200000 0 0x200>, <0 0x08000000 0 0x04000000>;
+	bank-width = <2>;
+	num-cs = <1>;
+};
+
+&extalr_clk {
+	bootph-all;
+};

@@ -1,0 +1,15 @@
+if TARGET_LIBREM5
+
+config SYS_BOARD
+	default "librem5"
+
+config SYS_VENDOR
+	default "purism"
+
+config SYS_CONFIG_NAME
+	default "librem5"
+
+config IMX_CONFIG
+	default "board/purism/librem5/imximage-8mq-lpddr4.cfg"
+
+endif

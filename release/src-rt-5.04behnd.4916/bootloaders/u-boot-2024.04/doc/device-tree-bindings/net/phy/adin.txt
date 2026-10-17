@@ -1,0 +1,26 @@
+* Analog Devices ADIN PHY Device Tree binding
+
+Required properties:
+- reg: PHY address
+
+Optional properties:
+- adi,rx-internal-delay-ps: RGMII RX Clock Delay used only when PHY operates
+	in RGMII mode with internal delay (phy-mode is 'rgmii-id' or
+	'rgmii-rxid') in pico-seconds.
+- adi,tx-internal-delay-ps: RGMII TX Clock Delay used only when PHY operates
+	in RGMII mode with internal delay (phy-mode is 'rgmii-id' or
+	'rgmii-txid') in pico-seconds.
+- adi,phy-mode-override: Override phy-mode property for adin. This is useful
+	when a single device tree supports an adin PHY (e.g. ADIN1300)
+	or another PHY (e.g. AR8033) at the same address, but they require
+	different phy-modes.
+
+Example:
+
+	ethernet-phy@0 {
+		reg = <0>;
+
+		adi,rx-internal-delay-ps = <1800>;
+		adi,tx-internal-delay-ps = <2200>;
+		adi,phy-mode-override = "rgmii-id";
+	};

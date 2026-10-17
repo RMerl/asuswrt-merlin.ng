@@ -3,8 +3,6 @@
 -include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.dhd_helper_objs
 -include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.xpon_objs
 
-RDPA_OBJS += rdpa_vlan_action.o
-RDPA_OBJS += rdpa_vlan_action_ex.o
 RDPA_OBJS += rdpa_policer.o
 RDPA_OBJS += rdpa_policer_ex.o
 RDPA_OBJS += rdpa_vlan.o
@@ -18,7 +16,7 @@ RDPA_OBJS += rdpa_l2l3_common_ex.o
 RDPA_OBJS += rdpa_l2_class_ex.o
 RDPA_OBJS += rdpa_l2_class.o
 RDPA_OBJS += rdpa_mcast_common.o
-RDPA_OBJS += rdpa_mcast_pon.o
+RDPA_OBJS += rdpa_mcast_impl1.o
 RDPA_OBJS += rdpa_mcast_whitelist.o
 RDPA_OBJS += rdpa_mcast_whitelist_ex.o
 RDPA_OBJS += rdpa_iptv.o

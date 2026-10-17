@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2022-2023 Texas Instruments Incorporated - https://www.ti.com/
+# Copyright (C) 2022-2023 Jason Kridner, BeagleBoard.org Foundation
+# Copyright (C) 2022-2023 Robert Nelson, BeagleBoard.org Foundation
+#
+
+choice
+	prompt "BeagleBoard.org J721E/TDA4VM based BeagleBone AI-64 board"
+	optional
+
+config TARGET_J721E_A72_BEAGLEBONEAI64
+	bool "BeagleBoard.org J721E BeagleBone AI-64 running on A72"
+	select ARM64
+	select SYS_DISABLE_DCACHE_OPS
+	select BINMAN
+
+config TARGET_J721E_R5_BEAGLEBONEAI64
+	bool "BeagleBoard.org J721E BeagleBone AI-64 running on R5"
+	select CPU_V7R
+	select SYS_THUMB_BUILD
+	select K3_LOAD_SYSFW
+	select RAM
+	select SPL_RAM
+	select K3_DDRSS
+	select BINMAN
+	imply SYS_K3_SPL_ATF
+
+endchoice
+
+if TARGET_J721E_A72_BEAGLEBONEAI64
+
+config SYS_BOARD
+       default "beagleboneai64"
+
+config SYS_VENDOR
+       default "beagle"
+
+config SYS_CONFIG_NAME
+       default "j721e_evm"
+
+source "board/ti/common/Kconfig"
+
+endif
+
+if TARGET_J721E_R5_BEAGLEBONEAI64
+
+config SYS_BOARD
+       default "beagleboneai64"
+
+config SYS_VENDOR
+       default "beagle"
+
+config SYS_CONFIG_NAME
+       default "j721e_evm"
+
+source "board/ti/common/Kconfig"
+
+endif

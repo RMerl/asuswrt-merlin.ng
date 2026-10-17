@@ -1,0 +1,230 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2001
+ * Denis Peter, MPL AG Switzerland
+ */
+
+USB Support
+===========
+
+The USB support is implemented on the base of the UHCI Host
+controller.
+
+Currently supported are USB Hubs, USB Keyboards, USB Floppys, USB
+flash sticks and USB network adaptors.
+Tested with a TEAC Floppy TEAC FD-05PUB and Chicony KU-8933 Keyboard.
+
+How it works:
+-------------
+
+The USB (at least the USB UHCI) needs a frame list (4k), transfer
+descriptor and queue headers which are all located in the main memory.
+The UHCI allocates every millisecond the PCI bus and reads the current
+frame pointer. This may cause to crash the OS during boot. So the USB
+_MUST_ be stopped during OS boot. This is the reason, why the USB is
+NOT automatically started during start-up. If someone needs the USB
+he has to start it and should therefore be aware that he had to stop
+it before booting the OS.
+
+For USB keyboards this can be done by a script which is automatically
+started after the U-Boot is up and running. To boot an OS with a
+USB keyboard another script is necessary, which first disables the
+USB and then executes the boot command. If the boot command fails,
+the script can re-enable the USB keyboard.
+
+Common USB Commands:
+- usb start:
+- usb reset:	    (re)starts the USB. All USB devices will be
+		    initialized and a device tree is build for them.
+- usb tree:	    shows all USB devices in a tree like display
+- usb info [dev]:   shows all USB infos of the device dev, or of all
+		    the devices
+- usb stop [f]:	    stops the USB. If f==1 the USB will also stop if
+		    a USB keyboard is assigned as stdin. The stdin
+		    is then switched to serial input.
+Storage USB Commands:
+- usb scan:	    scans the USB for storage devices. The USB must be
+		    running for this command (usb start)
+- usb device [dev]: show or set current USB storage device
+- usb part [dev]:   print partition table of one or all USB storage
+		    devices
+- usb read addr blk# cnt:
+		    read `cnt' blocks starting at block `blk#'to
+		    memory address `addr'
+- usbboot addr dev:part:
+		    boot from USB device
+
+Config Switches:
+----------------
+CONFIG_CMD_USB	    enables basic USB support and the usb command
+CONFIG_USB_UHCI	    defines the lowlevel part. A lowlevel part must be defined
+		    if using CONFIG_CMD_USB
+CONFIG_USB_KEYBOARD enables the USB Keyboard
+CONFIG_USB_STORAGE  enables the USB storage devices
+CONFIG_USB_HOST_ETHER	enables USB ethernet adapter support
+
+
+USB Host Networking
+===================
+
+If you have a supported USB Ethernet adapter you can use it in U-Boot
+to obtain an IP address and load a kernel from a network server.
+
+Note: USB Host Networking is not the same as making your board act as a USB
+client. In that case your board is pretending to be an Ethernet adapter
+and will appear as a network interface to an attached computer. In that
+case the connection is via a USB cable with the computer acting as the host.
+
+With USB Host Networking, your board is the USB host. It controls the
+Ethernet adapter to which it is directly connected and the connection to
+the outside world is your adapter's Ethernet cable. Your board becomes an
+independent network device, able to connect and perform network operations
+independently of your computer.
+
+
+Device support
+--------------
+
+Currently supported devices are listed in the drivers according to
+their vendor and product IDs. You can check your device by connecting it
+to a Linux machine and typing 'lsusb'. The drivers are in
+drivers/usb/eth.
+
+For example this lsusb output line shows a device with Vendor ID 0x0x95
+and product ID 0x7720:
+
+Bus 002 Device 010: ID 0b95:7720 ASIX Electronics Corp. AX88772
+
+If you look at drivers/usb/eth/asix.c you will see this line within the
+supported device list, so we know this adapter is supported.
+
+	{ 0x0b95, 0x7720 },	/* Trendnet TU2-ET100 V3.0R */
+
+If your adapter is not listed there is a still a chance that it will
+work. Try looking up the manufacturer of the chip inside your adapter.
+or take the adapter apart and look for chip markings. Then add a line
+for your vendor/product ID into the table of the appropriate driver,
+build U-Boot and see if it works. If not then there might be differences
+between the chip in your adapter and the driver. You could try to get a
+datasheet for your device and add support for it to U-Boot. This is not
+particularly difficult - you only need to provide support for four basic
+functions: init, halt, send and recv.
+
+
+Enabling USB Host Networking
+----------------------------
+
+The normal U-Boot commands are used with USB networking, but you must
+start USB first. For example:
+
+usb start
+setenv bootfile /tftpboot/uImage
+bootp
+
+
+To enable USB Host Ethernet in U-Boot, your platform must of course
+support USB with CONFIG_CMD_USB enabled and working. You will need to
+add some settings to your board configuration:
+
+CONFIG_CMD_USB=y		/* the 'usb' interactive command */
+CONFIG_USB_HOST_ETHER=y		/* Enable USB Ethernet adapters */
+
+and one or more of the following for individual adapter hardware:
+
+CONFIG_USB_ETHER_ASIX=y
+CONFIG_USB_ETHER_ASIX88179=y
+CONFIG_USB_ETHER_LAN75XX=y
+CONFIG_USB_ETHER_LAN78XX=y
+CONFIG_USB_ETHER_MCS7830=y
+CONFIG_USB_ETHER_RTL8152=y
+CONFIG_USB_ETHER_SMSC95XX=y
+
+As with built-in networking, you will also want to enable some network
+commands, for example:
+
+CONFIG_CMD_NET=y
+CONFIG_CMD_PING=y
+CONFIG_CMD_DHCP=y
+
+and some bootp options, which tell your board to obtain its subnet,
+gateway IP, host name and boot path from the bootp/dhcp server. These
+settings should start you off:
+
+#define CONFIG_BOOTP_SUBNETMASK
+#define CONFIG_BOOTP_GATEWAY
+#define CONFIG_BOOTP_HOSTNAME
+#define CONFIG_BOOTP_BOOTPATH
+
+You can also set the default IP address of your board and the server
+as well as the default file to load when a 'bootp' command is issued.
+However note that encoding these individual network settings into a
+common executable is discouraged, as it leads to potential conflicts,
+and all the parameters can either get stored in the board's external
+environment, or get obtained from the bootp server if not set.
+
+#define CONFIG_IPADDR		10.0.0.2  (replace with your value)
+#define CONFIG_SERVERIP		10.0.0.1  (replace with your value)
+#define CONFIG_BOOTFILE		"uImage"
+
+The 'usb start' command should identify the adapter something like this:
+
+CrOS> usb start
+(Re)start USB...
+USB EHCI 1.00
+scanning bus for devices... 3 USB Device(s) found
+       scanning bus for storage devices... 0 Storage Device(s) found
+       scanning bus for ethernet devices... 1 Ethernet Device(s) found
+CrOS> print ethact
+ethact=asx0
+
+You can see that it found an ethernet device and we can print out the
+device name (asx0 in this case).
+
+Then 'bootp' or 'dhcp' should use it to obtain an IP address from DHCP,
+perhaps something like this:
+
+CrOS> bootp
+Waiting for Ethernet connection... done.
+BOOTP broadcast 1
+BOOTP broadcast 2
+DHCP client bound to address 172.22.73.81
+Using asx0 device
+TFTP from server 172.22.72.144; our IP address is 172.22.73.81
+Filename '/tftpboot/uImage-sjg-seaboard-261347'.
+Load address: 0x40c000
+Loading: #################################################################
+	 #################################################################
+	 #################################################################
+	 ################################################
+done
+Bytes transferred = 3557464 (364858 hex)
+CrOS>
+
+
+Another way of doing this is to issue a tftp command, which will cause the
+bootp to happen automatically.
+
+
+MAC Addresses
+-------------
+
+Most Ethernet dongles have a built-in MAC address which is unique in the
+world. This is important so that devices on the network can be
+distinguished from each other. MAC address conflicts are evil and
+generally result in strange and erratic behaviour.
+
+Some boards have USB Ethernet chips on-board, and these sometimes do not
+have an assigned MAC address. In this case it is up to you to assign
+one which is unique. You should obtain a valid MAC address from a range
+assigned to you before you ship the product.
+
+Built-in Ethernet adapters support setting the MAC address by means of
+an ethaddr environment variable for each interface (ethaddr, eth1addr,
+eth2addr). There is similar support on the USB network side, using the
+names usbethaddr, usbeth1addr, etc. They are kept separate since we
+don't want a USB device taking the MAC address of a built-in device or
+vice versa.
+
+So if your USB Ethernet chip doesn't have a MAC address available then
+you must set usbethaddr to a suitable MAC address. At the time of
+writing this functionality is only supported by the SMSC driver.

@@ -1,0 +1,42 @@
+I2C generic device
+==================
+
+This is used only to generate ACPI tables for an I2C device.
+
+Required properties :
+
+ - compatible : "i2c-chip";
+ - reg : I2C chip address
+ - acpi,hid : HID name for the device
+
+Optional properies in addition to device.txt:
+
+ - reset-gpios : GPIO used to assert reset to the device
+ - irq-gpios : GPIO used for interrupt (if Interrupt is not used)
+ - stop-gpios : GPIO used to stop the device
+ - interrupts-extended : Interrupt to use for the device
+ - reset-delay-ms : Delay after de-asserting reset, in ms
+ - reset-off-delay-ms : Delay after asserting reset (during power off)
+ - enable-delay-ms : Delay after asserting enable
+ - enable-off-delay-ms : Delay after de-asserting enable (during power off)
+ - stop-delay-ms : Delay after de-aserting stop
+ - stop-off-delay-ms : Delay after asserting stop (during power off)
+ - hid-descr-addr : HID register offset (for Human Interface Devices)
+
+Example
+-------
+
+	elan-touchscreen@10 {
+		compatible = "i2c-chip";
+		reg = <0x10>;
+		acpi,hid = "ELAN0001";
+		acpi,ddn = "ELAN Touchscreen";
+		interrupts-extended = <&acpi_gpe GPIO_21_IRQ
+			IRQ_TYPE_EDGE_FALLING>;
+		linux,probed;
+		reset-gpios = <&gpio_n GPIO_36 GPIO_ACTIVE_HIGH>;
+		reset-delay-ms = <20>;
+		enable-gpios = <&gpio_n GPIO_152 GPIO_ACTIVE_HIGH>;
+		enable-delay-ms = <1>;
+		acpi,has-power-resource;
+	};

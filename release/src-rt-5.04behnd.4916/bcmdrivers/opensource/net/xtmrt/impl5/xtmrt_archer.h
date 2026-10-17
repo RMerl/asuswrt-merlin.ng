@@ -142,7 +142,7 @@ static inline FkBuff_t *bcmxapi_fkb_qinit(UINT8 *pBuf, UINT8 *pData,
    /* Unused parameters: len, rxdma */
    /* Fkb already initialized. Just update
       pData, len and the recycle fields */
-   FkBuff_t *pFkb = PDATA_TO_PFKBUFF(pBuf, BCM_PKT_HEADROOM); 
+   FkBuff_t *pFkb = BCM_PDATA_TO_PFKBUFF(pBuf);
       
    pFkb->data = pData;
    pFkb->len = len;

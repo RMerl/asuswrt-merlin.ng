@@ -1,0 +1,25 @@
+================================================================================
+			Board Information
+================================================================================
+
+The board features the Hi3798M V200 with an integrated quad-core 64-bit ARM
+Cortex A53 processor.
+SOC  Hisilicon Hi3798CV200
+CPU  Quad-core ARM Cortex-A53 64 bit
+DRAM DDR3/3L/4 SDRAM interface, maximum 32-bit data width 2 GB
+USB  1x USB 2.0 ports 1x USB 3.0 ports
+CONSOLE  USB-micro port for console support
+ETHERNET  1 GBe Ethernet, 1 MBe Ethernet
+WIFI  802.11n with Bluebooth
+CONNECTORS  One connector for Smart Card One connector for TSI
+
+
+================================================================================
+			BUILD INSTRUCTIONS
+================================================================================
+
+The U-Boot relies on a modified l-loader and TF-A for Hi3798MV200.
+The source for l-loader can be obtained at: [l-loader](https://github.com/185264646/l-loader)
+The mainline port for TF-A is still under development. For now, you can use the TF-A for poplar directly.
+
+For more information, please refer to <board/hisilicon/poplar/README>.

@@ -1,6 +1,0 @@
-STM32F746 DISCOVERY BOARD
-M:	Vikas Manocha <vikas.manocha@st.com>
-S:	Maintained
-F:	board/st/stm32f746-disco
-F:	include/configs/stm32f746-disco.h
-F:	configs/stm32f746-disco_defconfig

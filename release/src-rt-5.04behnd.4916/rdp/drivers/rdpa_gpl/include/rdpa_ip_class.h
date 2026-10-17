@@ -129,9 +129,13 @@ typedef struct {
     uint8_t drop_eligibility;                  /**< drop precedence bit 0: 0= non drop eligible => high class, 1= drop eligible => low class, bit 1: enabler */ 
     bdmf_object_handle tunnel_obj;             /**< Tunnel Object used if ::rdpa_fc_action_gre_tunnel is set (supported for downstream traffic only).*/
     uint32_t pathstat_idx;                     /**< index path for statistics  */
+    uint8_t score_stream_incarn;               /**< SCORE Stream incarnation */
+    uint8_t score_stream_dir;                  /**< SCORE Stream direction */
+    uint16_t score_stream_id;                  /**< SCORE Stream index */
+    uint16_t score_dcp_bitmask;                /**< SCORE Data Collection profiles bitmask */
     uint16_t max_pkt_len;                      /**< Max packet size according to Egress Port MTU */
     uint8_t is_tcpspdtest;                     /**< is_tcpspdtest */
-    uint8_t spdtest_stream_id;              /**< tcpspdtest stream_id */
+    uint8_t spdtest_stream_id;                 /**< tcpspdtest stream_id */
     bdmf_boolean tcpspdtest_is_upload;         /**< tcpspdtest action Download/Upload */
     uint8_t is_df;                             /**< ipv4 DF flag */
     rdpa_mapt_t mapt_cfg;                      /**< map-t translated IPv4/6 header */
@@ -143,14 +147,14 @@ typedef struct {
     uint8_t is_routed; /**< Indicates whether flow is routed */
     uint8_t is_flood;  /**< 1: flooded Flow; 0: ucast Flow */
     uint8_t fwd_and_trap;  /**< 1: flooded Flow forward or trap */
-#if defined(CONFIG_RUNNER_GDX_SUPPORT) /* TX */
-    uint8_t is_gdx_tx;
-    uint8_t gdx_prio;
-    uint16_t gdx_ctx_data;
-#endif
-#if defined(BCM_PON_XRDP) && !defined(RDP_UFC)
+    /* for GDX SUPPORT */
+    struct
+    {
+        uint8_t is_gdx_tx;
+        uint8_t gdx_prio;
+        uint16_t gdx_ctx_data;
+    };
     bdmf_boolean tunnel_termination;  /**< Enable tunnel termination */
-#endif
 } rdpa_ip_flow_result_t;
 
 /** 5-tuple based IP flow classification info (key + result).\n

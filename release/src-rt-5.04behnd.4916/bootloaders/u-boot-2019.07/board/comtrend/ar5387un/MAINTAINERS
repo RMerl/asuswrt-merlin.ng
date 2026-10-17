@@ -1,6 +1,0 @@
-COMTREND AR-5387UN BOARD
-M:	Álvaro Fernández Rojas <noltari@gmail.com>
-S:	Maintained
-F:	board/comtrend/ar-5387un/
-F:	include/configs/comtrend_ar5387un.h
-F:	configs/comtrend_ar5387un_ram_defconfig

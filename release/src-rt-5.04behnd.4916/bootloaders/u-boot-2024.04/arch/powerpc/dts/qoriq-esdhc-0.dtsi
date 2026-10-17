@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+/*
+ * QorIQ eSDHC device tree stub [ controller @ offset 0x114000 ]
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ */
+
+sdhc: sdhc@114000 {
+	compatible = "fsl,esdhc";
+	reg = <0x114000 0x1000>;
+	interrupts = <48 2 0 0>;
+	clock-frequency = <0>;
+};

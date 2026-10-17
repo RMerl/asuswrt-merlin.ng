@@ -1,0 +1,272 @@
+config BLK
+	bool # "Support block devices"
+	depends on DM
+	default y if MMC || USB || SCSI || NVME || IDE || AHCI || SATA
+	default y if EFI_MEDIA || VIRTIO_BLK || PVBLOCK
+	help
+	  Enable support for block devices, such as SCSI, MMC and USB
+	  flash sticks. These provide a block-level interface which permits
+	  reading, writing and (in some cases) erasing blocks. Block
+	  devices often have a partition table which allows the device to
+	  be partitioned into several areas, called 'partitions' in U-Boot.
+	  A filesystem can be placed in each partition.
+
+config SPL_LEGACY_BLOCK
+	bool # "Enable Legacy Block Device"
+	depends on SPL
+	default y if SPL_MMC || SPL_USB_STORAGE || SCSI || NVME || IDE
+	default y if SPL_AHCI_PCI
+	help
+	  Some devices require block support whether or not DM is enabled. This
+	  is only supported in SPL. With this, the blk uclass is not used, but
+	  instead a legacy implementation of block devices is used, with all
+	  devices consisting of 'struct blk_desc' records.
+
+config SPL_BLK
+	bool "Support block devices in SPL"
+	depends on SPL_DM && BLK
+	default y
+	help
+	  Enable support for block devices, such as SCSI, MMC and USB
+	  flash sticks. These provide a block-level interface which permits
+	  reading, writing and (in some cases) erasing blocks. Block
+	  devices often have a partition table which allows the device to
+	  be partitioned into several areas, called 'partitions' in U-Boot.
+	  A filesystem can be placed in each partition.
+
+config TPL_BLK
+	bool "Support block devices in TPL"
+	depends on TPL_DM && BLK
+	help
+	  Enable support for block devices, such as SCSI, MMC and USB
+	  flash sticks. These provide a block-level interface which permits
+	  reading, writing and (in some cases) erasing blocks. Block
+	  devices often have a partition table which allows the device to
+	  be partitioned into several areas, called 'partitions' in U-Boot.
+	  A filesystem can be placed in each partition.
+
+config VPL_BLK
+	bool "Support block devices in VPL"
+	depends on VPL_DM && BLK
+	default y
+	help
+	  Enable support for block devices, such as SCSI, MMC and USB
+	  flash sticks. These provide a block-level interface which permits
+	  reading, writing and (in some cases) erasing blocks. Block
+	  devices often have a partition table which allows the device to
+	  be partitioned into several areas, called 'partitions' in U-Boot.
+	  A filesystem can be placed in each partition.
+
+config BLOCK_CACHE
+	bool "Use block device cache"
+	depends on BLK
+	default y
+	help
+	  This option enables a disk-block cache for all block devices.
+	  This is most useful when accessing filesystems under U-Boot since
+	  it will prevent repeated reads from directory structures and other
+	  filesystem data structures.
+
+config BLKMAP
+	bool "Composable virtual block devices (blkmap)"
+	depends on BLK
+	help
+ 	  Create virtual block devices that are backed by various sources,
+ 	  e.g. RAM, or parts of an existing block device. Though much more
+ 	  rudimentary, it borrows a lot of ideas from Linux's device mapper
+ 	  subsystem.
+
+	  Example use-cases:
+	  - Treat a region of RAM as a block device, i.e. a RAM disk. This let's
+            you extract files from filesystem images stored in RAM (perhaps as a
+            result of a TFTP transfer).
+	  - Create a virtual partition on an existing device. This let's you
+            access filesystems that aren't stored at an exact partition
+            boundary. A common example is a filesystem image embedded in an FIT
+            image.
+
+config SPL_BLOCK_CACHE
+	bool "Use block device cache in SPL"
+	depends on SPL_BLK
+	help
+	  This option enables the disk-block cache in SPL
+
+config TPL_BLOCK_CACHE
+	bool "Use block device cache in TPL"
+	depends on TPL_BLK
+	help
+	  This option enables the disk-block cache in TPL
+
+config EFI_MEDIA
+	bool "Support EFI media drivers"
+	default y if EFI || SANDBOX
+	help
+	  Enable this to support media devices on top of UEFI. This enables
+	  just the uclass so you also need a specific driver to make this do
+	  anything.
+
+	  For sandbox there is a test driver.
+
+config SPL_BLK_FS
+	bool "Load images from filesystems on block devices"
+	depends on SPL_BLK
+	help
+	  Use generic support to load images from fat/ext filesystems on
+	  different types of block devices such as NVMe.
+
+if EFI_MEDIA
+
+config EFI_MEDIA_SANDBOX
+	bool "Sandbox EFI media driver"
+	depends on SANDBOX
+	default y
+	help
+	  Enables a simple sandbox media driver, used for testing just the
+	  EFI_MEDIA uclass. It does not do anything useful, since sandbox does
+	  not actually support running on top of UEFI.
+
+config EFI_MEDIA_BLK
+	bool "EFI media block driver"
+	depends on EFI_APP
+	default y
+	help
+	  Enables a block driver for providing access to UEFI devices. This
+	  allows use of block devices detected by the underlying UEFI
+	  implementation. With this it is possible to use filesystems on these
+	  devices, for example.
+
+endif  # EFI_MEDIA
+
+config IDE
+	bool "Support IDE controllers"
+	help
+	  Enables support for IDE (Integrated Drive Electronics) hard drives.
+	  This allows access to raw blocks and filesystems on an IDE drive
+	  from U-Boot. See also CMD_IDE which provides an 'ide' command for
+	  performing various IDE operations.
+
+if IDE
+
+config SYS_IDE_MAXBUS
+	hex "Maximumm number of IDE buses"
+	default 2
+	help
+	  This is the number of IDE buses provided by the board. Each one
+	  can have one or two devices. One is designated the master and the
+	  other one the slave. It is not required to have one or both on any
+	  controller.
+
+config SYS_IDE_MAXDEVICE
+	hex "Maximum number of IDE devices"
+	default 2
+	help
+	  This is the number of IDE devices which can be connected to the
+	  board. Normally this is 2 * CONFIG_SYS_IDE_MAXBUS since up to two
+	  devices can be connected to each bus. The number of devices actually
+	  connected is determined by probing.
+
+config SYS_ATA_BASE_ADDR
+	hex "Base address of IDE controller"
+	default 0x0
+	help
+	  This is the address of the IDE controller, from which other addresses
+	  are calculated. Each bus is at a fixed offset from this address,
+	  so it assumed that they are in the same area of the I/O space or
+	  memory.
+
+config SYS_ATA_STRIDE
+	hex "IDE port stride"
+	default 0x1
+	help
+	  This is the distance between each IDE register, in bytes. For an
+	  8-bit controller this is typically 1, meaning that the registers
+	  appear at consecutive bytes. If the value 2 two, that might indicate
+	  a 16-bit register space.
+
+config SYS_ATA_DATA_OFFSET
+	hex "Offset of the data register"
+	default 0x0
+	help
+	  This is the offset of the controller's data register from the base
+	  address of the controller. This is typically 0, but may be something
+	  else if there are some other registers at the start of the
+	  controller space.
+
+config SYS_ATA_REG_OFFSET
+	hex "Offset of the register space"
+	default 0x0
+	help
+	  This is the offset of the controller's 'register' space from the base
+	  address of the controller. The data register (which is typically at
+	  offset 0) has its own CONFIG, to deal with controllers where it is
+	  somewhere else. Register 1 will be at this offset + 1, register 2 at
+	  CONFIG_SYS_ATA_REG_OFFSET + 2, etc.
+
+config SYS_ATA_ALT_OFFSET
+	hex "Offset of the alternative registers"
+	default 0x0
+	help
+	  This is the offset of the controller's 'alternative' space from the
+	  base address of the controller. This allows these registers to be
+	  located separately from the data and register space.
+
+config SYS_ATA_IDE0_OFFSET
+	hex "Offset of bus 0"
+	default 0x1f0
+	help
+	  This is the start offset of bus 0 from the start of the
+	  controller registers. All the other registers are calculated from
+	  this address. using the above options. For x86 hardware this is often
+	  0x1f0.
+
+config SYS_ATA_IDE1_OFFSET
+	hex "Offset of bus 1"
+	default 0x170
+	help
+	  This is the start offset of bus 1 from the start of the
+	  controller registers. All the other registers are calculated from
+	  this address. using the above options. For x86 hardware this is often
+	  0x170.
+
+config ATAPI
+	bool "Enable ATAPI support"
+	help
+	  This enabled Advanced Technology Attachment Packet Interface (ATAPI),
+	  a protocol that allows a greater variety of devices to be connected
+	  to the IDE port than with plain ATA. It allows SCSI commands to be
+	  sent across the bus, e.g. to support optical drives.
+
+config IDE_RESET
+	bool "Support board-specific reset"
+	help
+	  If this is defined, IDE Reset will be performed by calling the
+	  function:
+
+	     ide_set_reset(int reset)
+
+	  where reset is 1 to assert reset and 0 to de-assert it. This function
+	  must be defined in a board-specific file.
+
+endif  # IDE
+
+config LBA48
+	bool "Enable LBA support for disks larger than 137GB"
+	help
+	  Set this to enable support for disks larger than 137GB.
+	  Also look at CONFIG_SYS_64BIT_LBA.  Without both of these, LBA48
+	  support uses 32bit variables and will 'only' support disks up to
+	  2.1TB.
+
+config SYS_64BIT_LBA
+	bool "Enable 64bit number of blocks on a block device"
+	help
+	  Make the block subsystem use 64bit sector addresses, rather than the
+	  default of 32bit.
+
+config RKMTD
+	bool "Rockchip rkmtd virtual block device"
+	select RANDOM_UUID
+	help
+	  Enable "rkmtd" class and driver to create a virtual block device
+	  to transfer Rockchip boot block data to and from NAND with block
+	  orientate tools like "ums" and "rockusb".

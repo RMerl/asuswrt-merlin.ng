@@ -43,6 +43,11 @@
 #include "memory_access.h"
 #include "mpcs.h"
 
+#if defined(CONFIG_BRCM_SMC_BOOT)
+#include <bp3_license.h>
+#include <pmc_wan.h>
+#endif
+
 #define mpcs_err(fmt, ...) printk("ERROR: mpcs:" fmt, ##__VA_ARGS__)
 #ifdef DEBUG
 #define mpcs_dbg(fmt, ...) printk("DBG: mpcs:" fmt, ##__VA_ARGS__)
@@ -132,7 +137,7 @@ typedef struct
 } pmi_lp_3_reg_t;
 #pragma pack(pop)
 
-static DEFINE_SPINLOCK(pmi_access);
+static DEFINE_MUTEX(pmi_access);
 static void __iomem * wantop_base;
 #define WANTOP_BASE (volatile void *)wantop_base
 #define PMI_LP_0_REG          (WANTOP_BASE + 0x5c)
@@ -143,31 +148,50 @@ static void __iomem * wantop_base;
 #define FORCE_LBE_CONTROL_REG (WANTOP_BASE + 0x9c)
 #define WAN_TOP_WAN_TOP_SPARE (WANTOP_BASE + 0xdc)
 
-static void __iomem * epontop_base;
-#define EPONTOP_BASE (volatile void *)epontop_base
-#define EPON_TOP_CONTROL_REG  (EPONTOP_BASE + 0x10)
-
-static void epon_reset(espeed_t cfg_port_speed)
+#if defined(CONFIG_BRCM_SMC_BOOT)
+static int wan_ae_license_check(espeed_t speed)
 {
-    uint32_t reg = 0;
+    bp3_license_feature_t bp3_feature = BP3_FEATURE_MAX;
 
-    if (cfg_port_speed == eSPEED_2_2)
-        reg |= 0x10;
-    else if (cfg_port_speed == eSPEED_1_1)
-        reg |= 0x0;
-    else if (cfg_port_speed == eSPEED_10_10 || cfg_port_speed == eSPEED_5_5)
-        reg |= 0x3; /* 10G cfgTenGigPonUp | cfgTenGigDns */
+    if (speed == eSPEED_10_10)
+        bp3_feature = BP3_FEATURE_ACTIVE_ETH_10;
+    else if (speed == eSPEED_5_5)
+        bp3_feature = BP3_FEATURE_ACTIVE_ETH_5;
+    else
+        bp3_feature = BP3_FEATURE_ACTIVE_ETH_2_5;
 
-    WRITE_32(EPON_TOP_CONTROL_REG, reg);
+    return bcm_license_check_msg(bp3_feature);
 }
 
-static int is_epon_reset_required(void)
+static int mpcs_powered;
+
+int mpcs_power_set(int enable)
 {
-#ifdef CONFIG_BCM96888
-    return UtilGetChipRev() == 0xa0;
+    int ret;
+
+    mutex_lock(&pmi_access);
+    ret = pmc_wan_interface_get_power_state(WAN_INTF_AE);
+
+    if (enable && ret > 0)
+    {
+        mutex_unlock(&pmi_access);
+        return 0;
+    }
+
+    if (!mpcs_powered && !enable)
+    {
+        mutex_unlock(&pmi_access);
+        return 0;
+    }
+
+    ret = pmc_wan_interface_power_control(WAN_INTF_AE, enable);
+    if (!ret)
+        mpcs_powered = enable;
+
+    mutex_unlock(&pmi_access);
+    return ret;
+}
 #endif
-    return 0;
-}
 
 static void spare_set(espeed_t cfg_port_speed)
 {
@@ -260,7 +284,14 @@ static uint32_t pmi_rw(uint32_t cmd_write, uint32_t pcs, uint32_t addr, uint16_t
     lp2.pmi_lp_maskdata = mask;
     lp2.pmi_lp_wrdata = wr_data;
 
-    spin_lock_bh(&pmi_access);
+    mutex_lock(&pmi_access);
+#if defined(CONFIG_BRCM_SMC_BOOT)
+    if (!mpcs_powered)
+    {
+        mpcs_dbg("mpcs registers can't be accessed in powered down state\n");
+        goto exit;
+    }
+#endif
 
     WRITE_32(PMI_LP_1_REG, lp1);
     WRITE_32(PMI_LP_2_REG, lp2);
@@ -294,7 +325,7 @@ static uint32_t pmi_rw(uint32_t cmd_write, uint32_t pcs, uint32_t addr, uint16_t
 
     ret = 0;
 exit:
-    spin_unlock_bh(&pmi_access);
+    mutex_unlock(&pmi_access);
 
     return ret;
 }
@@ -770,20 +801,16 @@ void mpcs_rx_reset(void)
 
 void mpcs_init(struct mpcs_cfg_s *m)
 {
+
+#if defined(CONFIG_BRCM_SMC_BOOT)
+    if (wan_ae_license_check(m->cfg_port_speed) <= 0)
+        return;
+#endif
+
     if (!wantop_base)
     {
         mpcs_err("mpcs not initialized! (wantop_base: %p)\n", wantop_base);
         return;
-    }
-
-    if (is_epon_reset_required())
-    {
-        if (!epontop_base)
-        {
-            mpcs_err("mpcs not initialized! (epontop_base %p)\n", epontop_base);
-            return;
-        }
-        epon_reset(m->cfg_port_speed);
     }
 
     spare_set(m->cfg_port_speed);
@@ -853,18 +880,6 @@ static int mpcs_probe(dt_device_t *pdev)
         wantop_base = NULL;
         dev_err(&pdev->dev, "Missing wantop_base entry\n");
         goto Exit;
-    }
-
-    if (is_epon_reset_required())
-    {
-        epontop_base = dt_dev_remap(pdev, 1);
-        if (IS_ERR(epontop_base))
-        {
-            ret = PTR_ERR(epontop_base);
-            epontop_base = NULL;
-            dev_err(&pdev->dev, "Missing epontop_base entry\n");
-            goto Exit;
-        }
     }
 
     dev_info(&pdev->dev, "registered\n");

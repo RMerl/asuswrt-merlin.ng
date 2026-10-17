@@ -1,0 +1,17 @@
+if TARGET_KMCENT2
+
+config SYS_BOARD
+	default "kmcent2"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "kmcent2"
+
+config BOARD_SPECIFIC_OPTIONS
+	def_bool y
+	select ARCH_T1040
+	select PHYS_64BIT
+
+endif

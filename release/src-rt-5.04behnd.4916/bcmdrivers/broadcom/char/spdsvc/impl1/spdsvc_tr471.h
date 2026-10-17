@@ -51,7 +51,7 @@ typedef struct {
     unsigned int    len;        /* packet length */
     int             l3_offset;  /* L3 header offset from data */
     int             l4_offset;  /* L4 header offset from data */
-    int             lHdr_offset;/* Load Hdr offset from data */
+    int             lHdr_offset; /* Load Hdr offset from data */
 } spdsvc_tr471_ref_pkt_info_t;
 
 typedef struct {
@@ -63,14 +63,15 @@ typedef struct {
     spdsvc_tuple_t tr471_tx_tuple; /* Used only to compare */
 } spdsvc_tr471_flow_info_t;
 
-#define SPDSVC_TR471_RX_RECYCLE_QUEUE_SIZE  1024 // Must be power of 2
-#define SPDSVC_RX_MAX_RECYCLE_BUDGET        8
+#define SPDSVC_TR471_RX_RECYCLE_QUEUE_SIZE  4096 // Must be power of 2
+#define SPDSVC_RX_MAX_RECYCLE_BUDGET         32
+#define SPDSVC_RX_MIN_RECYCLE_BUDGET         4
 
 typedef struct {
-   int        action;
-   int        connindex;
-   pNBuff_t   pRxNBuf;
-   struct loadHdr *lhdr_p;
+    int        action;
+    int        connindex;
+    pNBuff_t   pRxNBuf;
+    struct loadHdr *lhdr_p;
 } spdsvc_tr471_rx_recycle_queue_entry_t;
 
 typedef struct {
@@ -79,6 +80,7 @@ typedef struct {
     int                              is_v6;
     spinlock_t                       spdsvc_lock;
     int                              rx_recycle_budget;
+    int                              rx_conf_recycle_budget;
     spdsvc_tr471_flow_info_t         flowinfo[SPDSVC_MAX_CONN];
     bcm_async_queue_t                spdsvc_tr471_rx_recycle_queue;
 } spdsvc_tr471_t;
@@ -86,13 +88,39 @@ typedef struct {
 enum tr471_NF_pkt_result_t {
     TR471_NF_PKT_PASS, /* NF_ACCEPT */
     TR471_NF_PKT_DROP, /* NF_STOLEN + Free pkt */
-    TR471_NF_PKT_FWDED,/* NF_STOLEN + Pkt Forwarded */
+    TR471_NF_PKT_FWDED, /* NF_STOLEN + Pkt Forwarded */
     TR471_NF_PKT_LHDR  /* NF_STOLEN + Pass lHdr + Free Pkt */
 };
 extern spdsvc_tr471_t _spdsvc_tr471_state_g;
 
+/***************************************************************************
+ * TR-471 Tx/Rx Checksum Support Utility Function
+ **************************************************************************/
+
+static inline void _compute_icsum_buffer(uint16_t *buf16_p, int nword8, uint16_t *csum16_p)
+{
+    int nword16 = (nword8 + 1) >> 1;
+    uint8_t *save_p = &((uint8_t *)(buf16_p))[nword8];
+    uint8_t save_val = *save_p;
+
+    if (nword8 & 1)
+    {
+        *save_p = 0;
+    }
+
+    while (nword16--)
+    {
+        *csum16_p = _compute_icsum16(*csum16_p, 0, ntohs(*buf16_p++));
+    }
+
+    if (nword8 & 1)
+    {
+        *save_p = save_val;
+    }
+}
+
 int tr471_send_tx_pkts(int connindex, spdsvc_t *spdsvc_p);
-void spdsvc_fc_blog_flowevent(int connindex, unsigned long event, uint32_t event_type);
+void spdsvc_fc_blog_flowevent(int connindex, unsigned long event, uint32_t event_type, uint16_t rx_max_pktlen);
 int spdsvc_tr471_store_ref_pkt_info(int connindex, void *skb, spdsvc_tr471_ref_pkt_info_t *ref_info_p);
 void spdsvc_tr471_reset_state_machine(int connindex);
 int  spdsvc_tr471_get_result(int connindex, spdsvc_result_t *result_p);
@@ -107,8 +135,9 @@ int spdsvc_tr471_update_ref_pkt_lHdr(int connindex, struct loadHdr *lHdr_p);
 /* TODO - temporary */
 void spdsvc_tr471_gen_start(int connindex);
 unsigned int spdsvc_tr471_process_out_udp(int connindex, void *skb, void *payload_p, Blog_t **blog_pp, int is_v6);
-unsigned int spdsvc_tr471_process_in_udp(int connindex, void *skb, void *payload_p, void **skb_dev_pp, Blog_t **blog_pp, int is_v6, int lkup_result, int frag_id);
-int spdsvc_conn_lookup (void *ip_payload_p, int is_v6, int *connindex_p);
+unsigned int spdsvc_tr471_process_in_udp(int connindex, void *skb, void *payload_p, void **skb_dev_pp,
+                                         Blog_t **blog_pp, int is_v6, int lkup_result, int frag_id);
+int spdsvc_conn_lookup(void *ip_payload_p, int is_v6, int *connindex_p);
 
 #define tr471_record_pktgen_time(start, cmpl) tr471_update_pktgen_time(spdsvc_g.tr471.firstBurst, spdsvc_g.tr471.burstsize, start, cmpl)
 #define tr471_record_tsk_wkup_time(start, cmpl) tr471_update_task_wkup_time(spdsvc_g.tr471.firstBurst, spdsvc_g.tr471.burstsize, start, cmpl)

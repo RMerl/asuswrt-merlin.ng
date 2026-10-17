@@ -1,0 +1,21 @@
+config FS_EROFS
+	bool "Enable EROFS filesystem support"
+	help
+	  This provides support for reading images from EROFS filesystem.
+	  EROFS (Enhanced Read-Only File System) is a lightweight read-only
+	  file system for scenarios which need high-performance read-only
+	  requirements.
+
+	  It also provides fixed-sized output compression support, which
+	  improves storage density, keeps relatively higher compression
+	  ratios, which is more useful to achieve high performance for
+	  embedded devices with limited memory.
+
+config FS_EROFS_ZIP
+	bool "EROFS Data Compression Support"
+	depends on FS_EROFS
+	select LZ4
+	default y
+	help
+	  Enable fixed-sized output compression for EROFS.
+	  If you don't want to enable compression feature, say N.

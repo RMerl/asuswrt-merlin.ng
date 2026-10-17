@@ -643,7 +643,8 @@ err_code_t merlin16_shortfin_INTERNAL_read_event_log_with_callback(srds_access_t
                                                         uint8_t bypass_micro,
                                                         void *arg,
                                                         err_code_t (*callback)(void *, uint8_t, uint16_t)) {
-    uint16_t rd_idx;
+    uint16_t rd_idx, rd_idx0;
+    int      rd_size;
     uint8_t current_lane;
 
     srds_info_t * merlin16_shortfin_info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr_with_check(sa__);
@@ -656,13 +657,32 @@ err_code_t merlin16_shortfin_INTERNAL_read_event_log_with_callback(srds_access_t
     }
     /* Read Current lane so that it can be restored at the end of function */
     current_lane = merlin16_shortfin_get_lane(sa__);
-    EFUN_PRINTF(("\n\n********************************************\n"));
-    EFUN_PRINTF((    "**** SERDES UC TRACE MEMORY DUMP ***********\n"));
-    EFUN_PRINTF((    "********************************************\n"));
+    if (0 == (bypass_micro & 2)) {
+        EFUN_PRINTF(("\n\n********************************************\n"));
+        EFUN_PRINTF((    "**** SERDES UC TRACE MEMORY DUMP ***********\n"));
+        EFUN_PRINTF((    "********************************************\n"));
+    }
 
-    if (bypass_micro) {
+	rd_size = merlin16_shortfin_info_ptr->trace_mem_ram_size;
+    if (bypass_micro & 1) {
         ESTM(rd_idx = rdcv_trace_mem_wr_idx());
-        if (merlin16_shortfin_info_ptr->trace_memory_descending_writes) {
+        rd_idx0 = rd_idx;
+        if (merlin16_shortfin_info_ptr->trace_memory_concurrent_read) {
+            uint16_t rd_end;
+            ESTM(rd_end = rdcv_trace_mem_rd_idx());
+            if (rd_end < merlin16_shortfin_info_ptr->trace_mem_ram_size) {
+              rd_size = (int) rd_end - (int) rd_idx;
+              if (0 == rd_size)
+                  return(ERR_CODE_NONE);
+              if (rd_size < 0)
+                  rd_size = merlin16_shortfin_info_ptr->trace_mem_ram_size + rd_size;
+            }
+            /* supporting only trace_memory_descending_writes */
+            ++rd_idx;
+            if (rd_idx >= merlin16_shortfin_info_ptr->trace_mem_ram_size)
+                rd_idx = 0;
+        }
+        else if (merlin16_shortfin_info_ptr->trace_memory_descending_writes) {
             ++rd_idx;
             if (rd_idx >= merlin16_shortfin_info_ptr->trace_mem_ram_size) {
                 rd_idx = 0;
@@ -679,9 +699,11 @@ err_code_t merlin16_shortfin_INTERNAL_read_event_log_with_callback(srds_access_t
         ESTM(rd_idx = rdcv_trace_mem_rd_idx());
     }
     
-    EFUN_PRINTF(( "\n  DEBUG INFO: trace memory read index = 0x%04x\n", rd_idx));
+    if (0 == (bypass_micro & 2)) {
+        EFUN_PRINTF(( "\n  DEBUG INFO: trace memory read index = 0x%04x\n", rd_idx));
     
-    EFUN_PRINTF(("  DEBUG INFO: trace memory size = 0x%04x\n\n", merlin16_shortfin_info_ptr->trace_mem_ram_size));
+        EFUN_PRINTF(("  DEBUG INFO: trace memory size = 0x%04x\n\n", merlin16_shortfin_info_ptr->trace_mem_ram_size));
+    }
 
     if (merlin16_shortfin_info_ptr->trace_memory_descending_writes) {
         /* Micro writes trace memory using descending addresses.
@@ -691,7 +713,7 @@ err_code_t merlin16_shortfin_INTERNAL_read_event_log_with_callback(srds_access_t
                                                   merlin16_shortfin_info_ptr->trace_mem_ram_base + (uint32_t)(merlin16_shortfin_info_ptr->grp_ram_size*micro_num),
                                                   (uint16_t)merlin16_shortfin_info_ptr->trace_mem_ram_size,
                                                   rd_idx,
-                                                  (uint16_t)merlin16_shortfin_info_ptr->trace_mem_ram_size,
+                                                  (uint16_t) rd_size,
                                                   arg,
                                                   callback));
     } else {
@@ -707,10 +729,16 @@ err_code_t merlin16_shortfin_INTERNAL_read_event_log_with_callback(srds_access_t
                                                              callback));
     }
 
-    if (!bypass_micro) {
+    if (0 == (bypass_micro & 1)) {
         /* Read Done to resume logging  */
         EFUN(merlin16_shortfin_pmd_uc_cmd(sa__, CMD_EVENT_LOG_READ, CMD_EVENT_LOG_READ_DONE, 50));
     }
+    else if (merlin16_shortfin_info_ptr->trace_memory_concurrent_read) {
+        /* Update read pointer */
+        reg_wr_DSC_A_DSC_SCRATCH(rd_idx0);
+        EFUN(merlin16_shortfin_pmd_uc_cmd(sa__, CMD_EVENT_LOG_READ, CMD_EVENT_LOG_SET_READ_IDX, 50));
+    }
+
     EFUN(merlin16_shortfin_set_lane(sa__,current_lane));
     return(ERR_CODE_NONE);
 }

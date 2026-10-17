@@ -5,6 +5,7 @@
 #include <linux/rtnetlink.h>
 #include <linux/version.h>
 #include <linux/cdev.h>
+#include <linux/ethtool.h>
 #include "bcmnet.h"
 #include <net/gre.h>
 #include <linux/bcm_version_compat.h>
@@ -43,6 +44,8 @@ extern void bcm_mac_limit_enable(uint32_t enable);
 #define bcm_netdev_id_get_idx(x)       (x.bmp.idx)
 #define bcm_netdev_id_get_incarn(x)    (x.bmp.incarn)
 
+#define VETH_DRV_NAME  "veth"  //refer to drivers/net/veth.c
+
 typedef struct {
     union {
        struct {
@@ -75,6 +78,7 @@ static struct class *bcm_netdev_class = NULL;
 static struct device *bcm_netdev_device = NULL;
 static struct cdev bcm_netdev_cdev;
 static int bcm_netdev_major;
+static void inherit_flags(struct net_device *lowerdev, struct net_device *dev);
 
 static inline int get_idx(uint16_t *pdx)
 {
@@ -326,6 +330,18 @@ bool bcm_is_devid_valid(uint16_t udevid)
         return false;
 }
 EXPORT_SYMBOL(bcm_is_devid_valid);
+
+/*
+ *  Given a device checks if it is with type vxlan.
+ */
+bool bcm_is_devtype_vxlan(struct net_device *dev)
+{
+    return ((dev->dev.type) &&
+        (dev->dev.type->name) &&
+        (strcmp(dev->dev.type->name, "vxlan")==0));
+}
+EXPORT_SYMBOL(bcm_is_devtype_vxlan);
+
 /*
  * Function to dump mapping table. 
  */
@@ -450,7 +466,7 @@ static long mac_limit_ioctl(struct net_device *dev, void *arg)
 			struct netdev_nested_priv priv;
 			priv.data=&rsv;
 #endif
-                        spin_lock(&mac_limit_spinlock);
+                        spin_lock_bh(&mac_limit_spinlock);
                         rsv_new = (int)mac_limit.min - (int)MAC_LIMIT(dev).learning_count;
                         if (rsv_new < 0)
                             rsv_new = 0;
@@ -468,7 +484,7 @@ static long mac_limit_ioctl(struct net_device *dev, void *arg)
 #endif
                         }
                         MAC_LIMIT(dev).min = mac_limit.min;
-                        spin_unlock(&mac_limit_spinlock);
+                        spin_unlock_bh(&mac_limit_spinlock);
                     }
                     break;
             }
@@ -496,7 +512,7 @@ static long mac_limit_ioctl(struct net_device *dev, void *arg)
 			priv.data=&rsv;
 			priv_1.data=&learn;
 #endif
-                spin_lock(&mac_limit_spinlock);
+                spin_lock_bh(&mac_limit_spinlock);
                 if (!MAC_LIMIT(dev).enable ^ !val)
                 {
                     learn = (int)MAC_LIMIT(dev).learning_count;
@@ -520,7 +536,7 @@ static long mac_limit_ioctl(struct net_device *dev, void *arg)
                     netdev_walk_all_upper_dev_rcu(dev, mac_limit_learn, &learn);
 #endif
                 }
-                spin_unlock(&mac_limit_spinlock);
+                spin_unlock_bh(&mac_limit_spinlock);
             }
             break;
         }
@@ -656,7 +672,7 @@ static long bcmnet_ioctl(struct file *filep, unsigned int command, unsigned long
 #endif
     
     rtnl_lock();
-    if (arg != 0)
+    if ((arg != 0) && (command != BCMNET_IOCTL_SET_PKT_DROP_MONITOR))
     {
         dev = __dev_get_by_name(&init_net, info.if_name);
         if (!dev) {
@@ -671,16 +687,24 @@ static long bcmnet_ioctl(struct file *filep, unsigned int command, unsigned long
     switch (command)
     {
     case BCMNET_IOCTL_GET_EXT_FLAGS:
-        info.st_get_ext_flags.ret_val.is_wan = (is_netdev_wan(dev) != 0) ? 1 : 0;
-        info.st_get_ext_flags.ret_val.is_vlan = (is_netdev_vlan(dev) != 0) ? 1 : 0;
-        info.st_get_ext_flags.ret_val.is_ppp = (is_netdev_ppp(dev) != 0) ? 1 : 0;
-        info.st_get_ext_flags.ret_val.is_hw_fdb = (is_netdev_hw_fdb(dev) != 0) ? 1 : 0;
-        info.st_get_ext_flags.ret_val.is_hw_switch = (is_netdev_hw_switch(dev) != 0) ? 1 : 0;
-        info.st_get_ext_flags.ret_val.is_wlan = (is_netdev_wlan(dev) != 0) ? 1 : 0;
-        info.st_get_ext_flags.ret_val.is_bcm_dev = (is_netdev_bcm_dev(dev) != 0) ? 1 : 0;
-        info.st_get_ext_flags.ret_val.is_sdn = (is_netdev_sdn_ignore(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_wan = (is_netdev_wan(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_vlan = (is_netdev_vlan(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_ppp = (is_netdev_ppp(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_hw_fdb = (is_netdev_hw_fdb(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_hw_switch = (is_netdev_hw_switch(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_wlan = (is_netdev_wlan(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_bcm_dev = (is_netdev_bcm_dev(dev) != 0) ? 1 : 0;
+        info.st_ext_flags.flag_val.is_sdn = (is_netdev_sdn_ignore(dev) != 0) ? 1 : 0;
         if( copy_to_user((void*) arg, (void*)&info, sizeof(info)))
                 printk(KERN_ERR "%s: failed copy data to user (BCMNET_IOCTL_GET_EXT_FLAGS)!\n", __FUNCTION__);
+        break;
+    case BCMNET_IOCTL_UPDATE_FLAG:
+        {
+            if (info.st_ext_flags.flag_val.is_wan)
+                netdev_wan_set(dev);
+            else
+                netdev_wan_unset(dev);
+        }
         break;
     case BCMNET_IOCTL_GET_LAST_CHANGE:
         info.st_get_last_change.last_change =  dev_trans_start(dev);
@@ -707,6 +731,40 @@ static long bcmnet_ioctl(struct file *filep, unsigned int command, unsigned long
                 netdev_path_dump(dev);
         }
         break;
+    case BCMNET_IOCTL_INHERIT_DEV_FLAGS:
+        {
+            struct net_device *lowerdev;
+            if (dev->flags & IFF_UP) {
+                printk(KERN_ERR "%s: BCMNET_IOCTL_INHERIT_DEV_FLAGS: %s should be down first\n", 
+                       __FUNCTION__, dev->name);
+                goto IOCTL_FAILURE;
+            }
+            
+            lowerdev = dev_get_by_name(&init_net, info.st_inherit_dev_flags.lower_dev_name);
+            if (!lowerdev) {
+                printk(KERN_ERR "%s: BCMNET_IOCTL_INHERIT_DEV_FLAGS: Inavlid Lower Device Name: %s\n", 
+                       __FUNCTION__, info.st_inherit_dev_flags.lower_dev_name);
+                goto IOCTL_FAILURE;
+            }
+
+            inherit_flags(lowerdev, dev);
+            netdev_path_add(dev, lowerdev);
+        }
+        break; 
+    case BCMNET_IOCTL_BCM_HOOK_SKIP:
+        {
+            if (dev->flags & IFF_UP) {
+                printk(KERN_ERR "%s: BCMNET_IOCTL_BCM_HOOK_SKIP: %s should be down first\n", 
+                       __FUNCTION__, dev->name);
+                goto IOCTL_FAILURE;
+            }
+            
+            if (info.bcm_hook_skip)
+                netdev_bcm_hook_skip_set(dev);
+            else
+                netdev_bcm_hook_skip_unset(dev);
+        }
+        break;         
     case BCMNET_IOCTL_MAC_LIMIT:
         if (mac_limit_ioctl(dev, (void*)&info.st_mac_limit))
         {
@@ -771,7 +829,7 @@ static long bcmnet_ioctl(struct file *filep, unsigned int command, unsigned long
       break;
     case BCMNET_IOCTL_SET_SDN_IGNORE:
         {
-            if (info.st_get_ext_flags.ret_val.is_sdn) {
+            if (info.st_ext_flags.flag_val.is_sdn) {
                 printk(KERN_DEBUG "dev(%s) netdev_sdn_ignore_set()\n", info.if_name);
                 netdev_sdn_ignore_set(dev);
             }
@@ -781,6 +839,12 @@ static long bcmnet_ioctl(struct file *filep, unsigned int command, unsigned long
             }
         }
         break;
+
+    case BCMNET_IOCTL_SET_PKT_DROP_MONITOR:
+      /* Set pkt drop monitor */
+      bcm_kfree_skb_monitor_config(info.pktdrop_monitor);
+      break;
+
     case BCMNET_IOCTL_CLR_STATS:  // clear stat is not supported in 4.19
     default:
         printk(KERN_ERR "%s: ioctl failure\n", __FUNCTION__);
@@ -909,7 +973,7 @@ static void bcm_init_blog_stats_flags(struct net_device *dev)
 	}
 
     
-    if((dev->dev.type) && (dev->dev.type->name) && (strcmp(dev->dev.type->name, "vxlan")==0)) 
+    if(bcm_is_devtype_vxlan(dev)) 
     {
         bcm_netdev_ext_field_set(dev, blog_stats_flags, BLOG_DEV_STAT_FLAG_INCLUDE_ALL);
     }
@@ -960,26 +1024,41 @@ static void inherit_flags(struct net_device *lowerdev, struct net_device *dev)
     /* Inherit the realDev flags as long as the real device is not a bridge */
     if(!(lowerdev->priv_flags & IFF_EBRIDGE))
     {
-        /*IFF_BRIDGE_PORT/IFF_MACVLAN_PORT should be set when the real action happens,
+        /*IFF_BRIDGE_PORT/IFF_MACVLAN_PORT/IFF_802_1Q_VLAN should be set when the real action happens,
           not inherited from the lowerdev*/
-        dev->priv_flags |= (lowerdev->priv_flags & ~IFF_BRIDGE_PORT & ~IFF_MACVLAN_PORT);
+        dev->priv_flags |= (lowerdev->priv_flags & ~IFF_BRIDGE_PORT & ~IFF_MACVLAN_PORT & ~IFF_802_1Q_VLAN);
     }
 
     bcm_netdev_ext_inherit(lowerdev, dev);
 
-    /* Clear the bonding flags for the newly created device */
-    dev->priv_flags &= ~(IFF_BONDING);
+    /* Clear the bonding/team flags for the newly created device */
+    dev->priv_flags &= ~(IFF_BONDING | IFF_TEAM_PORT);
     dev->flags &= ~(IFF_MASTER | IFF_SLAVE);
     dev->state  = (lowerdev->state & ((1<<__LINK_STATE_NOCARRIER) |
                         (1<<__LINK_STATE_DORMANT))) | (1<<__LINK_STATE_PRESENT);
 }
 
-
+static void bcm_netdev_path_remove_and_put(struct net_device* dev, struct net_device* lowerdev)
+{
+    if (dev && netdev_path_remove(dev))
+    {
+        printk("NETDEV_UNREGISTER: Failed to remove %s from Interface path\n", dev->name);
+        netdev_path_dump(dev);
+    }
+    if (lowerdev)
+    {
+        dev_put(lowerdev);
+    }
+}
 static int netdev_event(struct notifier_block *this, unsigned long event, void *ptr)
 {
     struct net_device *dev = netdev_notifier_info_to_dev(ptr);
     struct net_device *next_dev;
+    struct list_head *iter;
     int ret = NOTIFY_DONE;
+#ifdef CONFIG_VETH    
+    struct ethtool_drvinfo drvinfo;
+#endif
 
     switch (event)
     {
@@ -995,17 +1074,52 @@ static int netdev_event(struct notifier_block *this, unsigned long event, void *
         break;
 
     case NETDEV_UNREGISTER:
+        /* 
+        BCMNET_IOCTL_ADD_NETDEV_PATH is called when a ppp device is created.
+        If this is a ppp device, or if the device has an upper ppp device, need to
+        clean up the setups.
+        */
         if (dev->type == ARPHRD_PPP)
         {
             next_dev = netdev_path_next_dev(dev);
-            if (netdev_path_remove(dev))
-            {
-                printk("NETDEV_UNREGISTER: Failed to remove %s from Interface path\n", dev->name);
-                netdev_path_dump(dev);
-            }
-            if (next_dev != NULL)
-                dev_put(next_dev);
+            bcm_netdev_path_remove_and_put(dev, next_dev);
         }
+#ifdef CONFIG_VETH
+        /*
+        veth type dev has no parent node When it was created.
+        If veth dev has a lower_dev, or any device has an upper_dev of veth type,
+        then netdev_path_add() must have been called, need to clean up the setups.
+        */
+        if (dev->ethtool_ops &&
+            dev->ethtool_ops->get_drvinfo)
+        {
+            dev->ethtool_ops->get_drvinfo(dev, &drvinfo);  
+            if (strcmp(drvinfo.driver, VETH_DRV_NAME) == 0)
+            {
+                next_dev = netdev_path_next_dev(dev);
+                bcm_netdev_path_remove_and_put(dev, next_dev);
+            }
+        }
+#endif        
+        netdev_for_each_upper_dev_rcu(dev, next_dev, iter)
+        {
+            if (next_dev->type == ARPHRD_PPP)
+            {
+                bcm_netdev_path_remove_and_put(next_dev, dev);
+            }
+#ifdef CONFIG_VETH  
+            if (next_dev->ethtool_ops &&
+                next_dev->ethtool_ops->get_drvinfo)
+            {
+                next_dev->ethtool_ops->get_drvinfo(next_dev, &drvinfo);  
+                if (strcmp(drvinfo.driver, VETH_DRV_NAME) == 0)
+                {
+                    bcm_netdev_path_remove_and_put(next_dev, dev);
+                }
+            }
+#endif            
+        }
+
         if (devid_unregister_netdev(bcm_netdev_ext_field_get(dev,devid)))
         {
             printk(KERN_ERR "Failed to delete netdev devid mapping for %s netdevice\n",dev->name);
@@ -1218,5 +1332,19 @@ void bcm_dev_hold(struct net_device *dev)
     dev_hold(dev);
 }
 EXPORT_SYMBOL(bcm_dev_hold);
+#include <net/tcp.h>
+void bcm_tcp_send_active_reset(struct sock *sk, gfp_t priority)
+{
+    tcp_send_active_reset(sk, priority);
+}
+EXPORT_SYMBOL(bcm_tcp_send_active_reset);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+void bcm_tcp_get_info(struct sock *sk, struct tcp_info *info)
+{
+    tcp_get_info(sk, info);
+}
+EXPORT_SYMBOL(bcm_tcp_get_info);
+#endif
 
 subsys_initcall(bcmnet_ioctl_init);

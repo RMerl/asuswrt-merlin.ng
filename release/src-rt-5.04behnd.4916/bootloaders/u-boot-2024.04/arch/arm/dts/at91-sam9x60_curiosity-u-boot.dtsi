@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * at91-sam9x60_curiosity-u-boot.dtsi - Device Tree Include file for SAM9X60
+ * CURIOSITY.
+ *
+ * Copyright (C) 2022 Microchip Technology Inc. and its subsidiaries
+ *
+ * Author: Durai Manickam KR <durai.manickamkr@microchip.com>
+ */
+
+/ {
+	ahb {
+		bootph-all;
+
+		apb {
+			bootph-all;
+		};
+	};
+
+	chosen {
+		bootph-all;
+	};
+
+	config {
+		u-boot,boot-led = "blue";
+	};
+
+	leds {
+		led-red {
+			default-state = "off";
+		};
+
+		led-green {
+			default-state = "off";
+		};
+
+		led-blue {
+			default-state = "off";
+		};
+	};
+};
+
+&clk32 {
+	bootph-all;
+};
+
+&dbgu {
+	bootph-all;
+};
+
+&main_rc {
+	bootph-all;
+};
+
+&main_xtal {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&pinctrl_dbgu {
+	bootph-all;
+};
+
+&pinctrl_sdhci0 {
+	bootph-all;
+};
+
+&pioA {
+	bootph-all;
+};
+
+&pioB {
+	bootph-all;
+};
+
+&pit64b0 {
+	bootph-all;
+};
+
+&pmc {
+	bootph-all;
+};
+
+&sdhci0 {
+	bootph-all;
+};
+
+&slow_rc_osc {
+	bootph-all;
+};
+
+&slow_xtal {
+	bootph-all;
+};

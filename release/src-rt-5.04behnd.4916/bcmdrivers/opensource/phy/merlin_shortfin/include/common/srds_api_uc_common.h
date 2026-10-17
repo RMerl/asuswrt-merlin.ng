@@ -55,6 +55,11 @@
 #ifndef SRDS_API_UC_COMMON_H
 #define SRDS_API_UC_COMMON_H
 
+#define SRDS_MERLIN16_SHORTFIN_ID     1
+#define SRDS_MERLIN7_PHY1_ID          2
+#define SRDS_MERLIN7_TSC_ID           3
+#define SRDS_MERLIN7_PCIEG3_ID        4
+
 /* Max, min, and abs functions for SERDES code. */
 /* Warning:  These can evaluate a_ or b_ twice. */
 #define SRDS_MAX(a_, b_) (((a_)>(b_)) ? (a_) : (b_))
@@ -147,7 +152,8 @@ enum srds_pmd_uc_diag_cmd_enum {
 enum srds_pmd_event_rd_cmd_enum {
   CMD_EVENT_LOG_READ_START      = 0,
   CMD_EVENT_LOG_READ_NEXT       = 1,
-  CMD_EVENT_LOG_READ_DONE       = 2
+  CMD_EVENT_LOG_READ_DONE       = 2,
+  CMD_EVENT_LOG_SET_READ_IDX    = 3
 };
 
 /** SERDES_UC_DBG_COMMANDS Enum */
@@ -210,6 +216,15 @@ enum srds_diag_ber_mode_enum {
     DIAG_BER_FAST = 1<<6
 
 };
+
+/** DEBUG MAILBOX COMMANDS */
+#define PHY_STUB_CONTINUE 0
+#define PHY_STUB_TRAP     1
+#define PHY_STUB_ACK      2
+#define PHY_STUB_STOP     9
+#define PHY_STUB_NOP      15
+#define DBG_ATTACHED      (1<<8)
+
 
 
 typedef uint8_t float8_t;

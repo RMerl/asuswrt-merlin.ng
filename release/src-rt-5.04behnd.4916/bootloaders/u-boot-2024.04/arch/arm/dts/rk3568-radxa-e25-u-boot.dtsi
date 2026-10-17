@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rk356x-u-boot.dtsi"
+
+&pcie3x1 {
+	pinctrl-0 = <&pcie30x1_reset_h>;
+};
+
+&pinctrl {
+	pcie {
+		pcie30x1_reset_h: pcie30x1-reset-h {
+			rockchip,pins = <0 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};
+
+&sdhci {
+	cap-mmc-highspeed;
+	mmc-hs200-1_8v;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+};
+
+&usb_host0_xhci {
+	dr_mode = "host";
+};

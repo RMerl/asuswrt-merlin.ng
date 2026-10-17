@@ -1,0 +1,6 @@
+P3450-0000 BOARD
+M:	Tom Warren <twarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/p3450-0000/
+F:	include/configs/p3450-0000.h
+F:	configs/p3450-0000_defconfig

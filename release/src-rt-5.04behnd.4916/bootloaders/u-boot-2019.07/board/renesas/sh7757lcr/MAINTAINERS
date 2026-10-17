@@ -1,6 +1,0 @@
-SH7757LCR BOARD
-#M:	-
-S:	Maintained
-F:	board/renesas/sh7757lcr/
-F:	include/configs/sh7757lcr.h
-F:	configs/sh7757lcr_defconfig

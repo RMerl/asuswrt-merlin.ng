@@ -54,7 +54,8 @@ written consent.
 #define VF_LUN_FLAG_VALID        0x00000001
 #define VF_LUN_FLAG_DYNAMIC      0x00000002
 #define VF_LUN_FLAG_READ_ONLY    0x00000010
-#define VF_LUN_FLAG_ENCRYPTED    0x00000040     /* Transparent LUN encryption */
+#define VF_LUN_FLAG_ENCRYPT      0x00000004     /* Transparent LUN encryption request */
+#define VF_LUN_FLAG_ENCRYPTED    0x00000040     /* LUN is encrypted */
 #define VF_LUN_FLAG_HIDDEN       0x00000080     /* LUN is visible only to the SMC */
 
 static const struct option long_options[] = {
@@ -64,6 +65,7 @@ static const struct option long_options[] = {
     { .name = "verbose",        .has_arg = 0, .flag = NULL, .val = 'v' },
     { .name = "help",           .has_arg = 0, .flag = NULL, .val = 'h' },
     { .name = "version",        .has_arg = 0, .flag = NULL, .val = 'V' },
+    { .name = "encrypted",      .has_arg = 0, .flag = NULL, .val = 'e' },
     { NULL, 0, NULL, 0}
 };
 
@@ -74,6 +76,7 @@ struct args {
     int out_fd;
     int verbose;
     int lun_dev_id;
+    int encrypted;
     dictionary *dict;
 };
 
@@ -158,6 +161,7 @@ static int print_help(void)
         "-d, --device=<number>        LUN device index. 1 if not set\n"
         "-s, --start=<number>         Start offset on the device. 0 if not set.\n"
         "                             decimal|0xhex; bytes, KiB, MiB; GiB\n"
+        "-e, --encrypt                all LUNs should be encrypted\n"
         "-v, --verbose                be verbose\n"
         "-h, --help                   print help message\n"
         "-V, --version                print program version\n\n"
@@ -189,6 +193,10 @@ static int parse_opt(int argc, char * const argv[])
 
         case 'v':
             cmd_args.verbose = 1;
+            break;
+
+        case 'e':
+            cmd_args.encrypted = 1;
             break;
 
         case 'h':
@@ -249,6 +257,7 @@ static int read_section(const char *sname)
     char buf[256];
     const char *p;
     uint32_t image_size_in_pages = 0;
+    int encrypted = cmd_args.encrypted;
     int i;
 
     PRINT_VERBOSE("Parsing section \"%s\"\n", sname);
@@ -331,7 +340,7 @@ static int read_section(const char *sname)
     p = iniparser_getstring(cmd_args.dict, buf, NULL);
     if (p != NULL) {
         if (!strcasecmp(p, "yes"))
-            lun.flags |= VF_LUN_FLAG_ENCRYPTED;
+            encrypted = 1;
         else if (strcasecmp(p, "no"))
             return PRINT_ERR("Expected encrypted=yes|no in section \"%s\". %s value is invalid\n", sname, p);
         PRINT_VERBOSE("\tencrypted=%s\n", p);
@@ -357,9 +366,25 @@ static int read_section(const char *sname)
             (long long)lun.num_pages * VFBIO_PAGE_SIZE, lun.image, (long long)lun.image_size);
     }
 
-    /* Finalize the assignment */
     if (!lun.num_pages)
         lun.num_pages = image_size_in_pages;
+
+    /* Reserve an extra page for encrypted LUNs */
+    if (encrypted)
+    {
+        /* If there is an emage, it should be encrypted by SMC upon the 1st access */
+        if (image_size_in_pages)
+        {
+            lun.flags |= VF_LUN_FLAG_ENCRYPT;
+            ++lun.num_pages; /* Extra page for the crypto header */
+        }
+        else
+        {
+            lun.flags |= VF_LUN_FLAG_ENCRYPTED;
+        }
+    }
+
+    /* Finalize the assignment */
     if (image_size_in_pages) {
         struct lun_segment *seg = &lun.segs[lun.num_segs++];
         seg->start_page = start_page;

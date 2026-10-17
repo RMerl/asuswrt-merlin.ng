@@ -50,15 +50,10 @@ inline int enetxapi_queue_need_reschedule(enetx_channel *chan, int q_id)
  * interrupt (they will be dropped without interrupt). In this case, no one
  * will wake up NAPI, ever. */
 
-#ifdef XRDP
-/*The solution is to schedule another NAPI round
- * if the queue is full. */
-    return rdpa_cpu_queue_is_full(rdpa_cpu_host, chan->rx_q[q_id]);
-#else
-/*The solution is to schedule another NAPI round
- * if the queue is not empty due to ring implementation we can't get is ring is full in acceptable way. */
-    return rdpa_cpu_queue_not_empty(rdpa_cpu_host, chan->rx_q[q_id]);
-#endif
+   /*The solution is to schedule another NAPI round
+    * if the queue is full. */
+   return rdpa_cpu_queue_is_full(rdpa_cpu_host, chan->rx_q[q_id]);
+
 }
 
 int runner_ring_create_delete(enetx_channel *chan, int q_id, int size, rdpa_cpu_rxq_cfg_t *rxq_cfg)

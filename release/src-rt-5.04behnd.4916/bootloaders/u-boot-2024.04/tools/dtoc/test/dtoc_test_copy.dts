@@ -1,0 +1,90 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Test device tree file for dtoc
+ *
+ * Copyright 2017 Google, Inc
+ */
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	reference = <&over>;	/* nake sure that the 'over' phandle exists */
+	copy-list = <&another &base>;
+
+	dest {
+		bootph-all;
+		compatible = "sandbox,spl-test";
+		stringarray = "one";
+		longbytearray = [09 0a 0b 0c 0d 0e 0f 10];
+		maybe-empty-int = <1>;
+
+		first@0 {
+			a-prop = <456>;
+			b-prop = <1>;
+		};
+
+		existing {
+		};
+
+		base {
+			second {
+				second3 {
+				};
+
+				second2 {
+					new-prop;
+				};
+
+				second1: second1 {
+					new-prop;
+				};
+
+				second4 {
+					use_second1 = <&second1>;
+				};
+			};
+		};
+	};
+
+	base: base {
+		compatible = "sandbox,i2c";
+		bootph-all;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		over: over {
+			compatible = "sandbox,pmic";
+			bootph-all;
+			reg = <9>;
+			low-power;
+		};
+
+		first@0 {
+			reg = <0>;
+			a-prop = <123>;
+		};
+
+		second: second {
+			second_1_bad: second1 {
+				some-prop;
+			};
+
+			second2 {
+				some-prop;
+				use_second1_bad = <&second_1_bad>;
+			};
+		};
+	};
+
+	another: another {
+		new-prop = "hello";
+		earlier {
+			wibble = <2>;
+		};
+
+		later {
+			fibble = <3>;
+		};
+	};
+};

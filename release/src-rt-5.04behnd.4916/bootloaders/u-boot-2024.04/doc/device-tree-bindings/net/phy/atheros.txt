@@ -1,0 +1,35 @@
+* Qualcomm Atheros PHY Device Tree binding
+
+Required properties:
+- reg: PHY address
+
+Optional properties:
+- qca,clk-out-frequency: Clock frequency of the CLK_25M pin in Hz.
+	Either 25000000, 50000000, 62500000 or 125000000.
+- qca,clk-out-strength: Clock output buffer driver strength.
+    Supported values are defined in dt-bindings/net/qca-ar803x.h
+- qca,keep-pll-enabled: Keep the PLL running if no link is present.
+	Don't go into hibernation mode.
+	Only supported on the AR8031/AR8033.
+- vddio-supply: RGMII I/O voltage regulator
+	Only supported on the AR8031/AR8033.
+
+Optional subnodes:
+- vddio-regulator: Initial data for the VDDIO regulator, as covered
+    doc/device-tree-bindings/regulator/regulator.txt
+
+Example:
+	#include <dt-bindings/net/qca-ar803x.h>
+
+	ethernet-phy@0 {
+		reg = <0>;
+		qca,clk-out-frequency = <125000000>;
+		qca,keep-pll-enabled;
+
+		vddio-supply = <&vddio>;
+
+		vddio: vddio-regulator {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+		};
+	};

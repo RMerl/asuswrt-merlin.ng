@@ -1,0 +1,457 @@
+/dts-v1/;
+
+/* #include "linux_autoconf.h" */
+
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+/ {
+    model = "968880_QEMU_SA";
+
+    interrupt-parent = <0x8001>;
+    #size-cells = <0x2>;
+    #address-cells = <0x2>;
+    compatible = "linux,dummy-virt";
+
+    chosen {
+        stdout-path = "/pl011@9000000";
+        kaslr-seed = <0x46101280 0xb8074db2>;
+        bootargs = "coherent_pool=2M mem=512M root=/dev/ram0 ro rng_core.default_quality=1024";
+    };
+
+    reserved-memory {
+        #address-cells = <0x2>;
+        #size-cells = <0x2>;
+        ranges;
+
+        dt_reserved_cma {
+                compatible = "shared-dma-pool";
+                reusable;
+                reg = <0x0 0x4a000000 0x0 0x6000000>;
+                phandle = <0x2>;
+        };
+    };
+
+    plat_rsvmem_cached_device {
+        compatible = "brcm,plat-rsvmem";
+        dma-coherent;
+        memory-region = <0x2>;
+
+        dt_reserved_rdp1 {
+            rsvd-size = <0x4000000>;
+        };
+    };
+
+    plat_rsvmem_uncached_device {
+        compatible = "brcm,plat-rsvmem";
+        memory-region = <0x2>;
+
+        dt_reserved_rdp2 {
+            rsvd-size = <0x2000000>;
+        };
+    };
+
+    memory@00000000 {
+        reg = <0x0 0x40000000 0x0 0x40000000>;
+        device_type = "memory";
+    };
+
+    platform@c000000 {
+        interrupt-parent = <0x8001>;
+        ranges = <0x0 0x0 0xc000000 0x2000000>;
+        #address-cells = <0x1>;
+        #size-cells = <0x1>;
+        compatible = "qemu,platform", "simple-bus";
+    };
+
+    /* UART */
+    pl011@9000000 {
+        clock-names = "uartclk", "apb_pclk";
+        clocks = <0x8000 0x8000>;
+        interrupts = <0x0 0x1 0x4>;
+        reg = <0x0 0x9000000 0x0 0x1000>;
+        compatible = "arm,pl011", "arm,primecell";
+    };
+
+
+    intc@8000000 {
+        phandle = <0x8001>;
+        reg = <0x0 0x8000000 0x0 0x10000 0x0 0x8010000 0x0 0x10000>;
+        compatible = "arm,cortex-a15-gic";
+        ranges;
+        #size-cells = <0x2>;
+        #address-cells = <0x2>;
+        interrupt-controller;
+        #interrupt-cells = <0x3>;
+
+        v2m@8020000 {
+            phandle = <0x8002>;
+            reg = <0x0 0x8020000 0x0 0x1000>;
+            msi-controller;
+            compatible = "arm,gic-v2m-frame"; /* GICv2m includes a message-based interrupt feature that is necessary to handle Message Signaled Interrupts (MSIs). */
+        };
+    };
+
+    flash@0 {
+        bank-width = <0x4>;
+        reg = <0x0 0x0 0x0 0x4000000 0x0 0x4000000 0x0 0x4000000>;
+        compatible = "cfi-flash";
+    };
+
+    cpus {
+        #size-cells = <0x0>;
+        #address-cells = <0x1>;
+
+        cpu@0 {
+            reg = <0x0>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+
+        cpu@1 {
+            reg = <0x1>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+
+        cpu@2 {
+            reg = <0x2>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+
+        cpu@3 {
+            reg = <0x3>;
+            enable-method = "psci";
+            compatible = "arm,cortex-a53";
+            device_type = "cpu";
+        };
+    };
+
+    timer {
+        interrupts = <0x1 0xd 0x704 0x1 0xe 0x704 0x1 0xb 0x704 0x1 0xa 0x704>;
+        always-on;
+        compatible = "arm,armv8-timer", "arm,armv7-timer";
+    };
+
+    apb-pclk {
+        phandle = <0x8000>;
+        clock-output-names = "clk24mhz";
+        clock-frequency = <0x16e3600>;
+        #clock-cells = <0x0>;
+        compatible = "fixed-clock";
+    };
+
+    mdio: mdio {
+        compatible = "simple-bus";
+        bus-type = "MDIO_V1";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        egphy0:egphy0 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EGPHY";
+            reg = <0x8>;
+            status = "disabled";
+        };
+
+        egphy1:egphy1 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EGPHY";
+            reg = <0x9>;
+            status = "disabled";
+        };
+
+        egphy2:egphy2 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EGPHY";
+            reg = <0xa>;
+            status = "disabled";
+        };
+
+        egphy3:egphy3 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EGPHY";
+            reg = <0xb>;
+            status = "disabled";
+        };
+
+        rgmii_phy:rgmii_phy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT1";
+            reg = <0x1>;
+            status = "disabled";
+        };
+
+        xphy0:xphy0 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x2>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        xphy1:xphy1 {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x3>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes00_xphy:serdes00_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x4>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes01_xphy:serdes01_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x5>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes02_xphy:serdes02_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x6>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes03_xphy:serdes03_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0x7>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes10_xphy:serdes10_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0xc>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes11_xphy:serdes11_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0xd>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes12_xphy:serdes12_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0xe>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes13_xphy:serdes13_xphy {
+            compatible = "brcm,bcaphy";
+            phy-type = "EXT3";
+            reg = <0xf>;
+            caps-no-hdx;
+            status = "disabled";
+        };
+
+        serdes00:serdes00 {
+             compatible = "brcm,bcaphy";
+             phy-type = "SHORTFIN";
+             reg = <0x10>;
+             serdes-core = <0>;
+             serdes-lane = <0>;
+             status = "disabled";
+        };
+
+        serdes01:serdes01 {
+             compatible = "brcm,bcaphy";
+             phy-type = "SHORTFIN";
+             reg = <0x11>;
+             serdes-core = <0>;
+             serdes-lane = <1>;
+             status = "disabled";
+        };
+
+        serdes02:serdes02 {
+             compatible = "brcm,bcaphy";
+             phy-type = "SHORTFIN";
+             reg = <0x12>;
+             serdes-core = <0>;
+             serdes-lane = <2>;
+             status = "disabled";
+        };
+
+        serdes03:serdes03 {
+             compatible = "brcm,bcaphy";
+             phy-type = "SHORTFIN";
+             reg = <0x13>;
+             serdes-core = <0>;
+             serdes-lane = <3>;
+             status = "disabled";
+        };
+
+        serdes10:serdes10 {
+             compatible = "brcm,bcaphy";
+             phy-type = "SHASTA";
+             reg = <0x14>;
+             serdes-core = <1>;
+             serdes-lane = <0>;
+             status = "disabled";
+        };
+
+        serdes11:serdes11 {
+            compatible = "brcm,bcaphy";
+            phy-type = "SHASTA";
+            reg = <0x15>;
+            serdes-core = <1>;
+            serdes-lane = <1>;
+            status = "disabled";
+        };
+
+        serdes12:serdes12 {
+            compatible = "brcm,bcaphy";
+            phy-type = "SHASTA";
+            reg = <0x16>;
+            serdes-core = <1>;
+            serdes-lane = <2>;
+            status = "disabled";
+        };
+
+        serdes13:serdes13 {
+            compatible = "brcm,bcaphy";
+            phy-type = "SHASTA";
+            reg = <0x17>;
+            serdes-core = <1>;
+            serdes-lane = <3>;
+            status = "disabled";
+        };
+
+        wan_xphy:wan_xphy {
+             compatible = "brcm,bcaphy";
+             phy-type = "EXT3";
+             reg = <0x1b>;
+             caps-no-hdx;
+             status = "disabled";
+        };
+
+        wan_ae:wan_ae {
+             compatible = "brcm,bcaphy";
+             phy-type = "AE";
+             reg = <0x20>;
+             status = "disabled";
+        };
+    };
+
+
+    unimac {
+        compatible = "brcm,unimac3";
+        reg = <0x0 0x828a8000 0x0 0x4000>,
+              <0x0 0x828b0000 0x0 0x1000>;
+        conf_offset = <0x1000>;
+        mib_offset = <0x400>;
+        top_offset = <0x400>;
+        mib_step = <0x2>;
+    };
+
+    switch0: switch0 {
+        compatible = "brcm,enet";
+        label = "bcmsw";
+        sw-type = "RUNNER_SW";
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            port_gphy0 {
+                reg = <0>;
+                mac-type = "UNIMAC";
+                status = "okay";
+                phy-handle = <&egphy0>;
+                phy-mode = "gmii";
+            };
+
+            port_gphy1 {
+                reg = <1>;
+                mac-type = "UNIMAC";
+                status = "okay";
+                phy-handle = <&egphy0>;
+                phy-mode = "gmii";
+            };
+
+            port_gphy2 {
+                reg = <2>;
+                mac-type = "UNIMAC";
+                status = "okay";
+                phy-handle = <&egphy0>;
+                phy-mode = "gmii";
+            };
+
+            port_gphy3 {
+                reg = <3>;
+                mac-type = "UNIMAC";
+                status = "okay";
+                phy-handle = <&egphy0>;
+                phy-mode = "gmii";
+            };
+
+        };
+    };  
+
+   rdpa_drv {
+        compatible = "brcm,rdpa";
+        reg = <0x0 0x82000000 0x0 0xCAF004>, 
+              <0x0 0x80170000 0x0 0x122a8>;
+        interrupts = <GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_FPM/INTERRUPT_XRDP_QUEUE_32 */
+                     <GIC_SPI 96  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_0 */
+                     <GIC_SPI 97  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_1 */
+                     <GIC_SPI 98  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_2 */
+                     <GIC_SPI 99  IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_3 */
+                     <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_4 */
+                     <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_5 */
+                     <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_6 */
+                     <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_7 */
+                     <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_8 */
+                     <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_9 */
+                     <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_10 */
+                     <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_11 */
+                     <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_12 */
+                     <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_13 */
+                     <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_14 */
+                     <GIC_SPI 111 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_15 */
+                     <GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_16 */
+                     <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_17 */
+                     <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_18 */
+                     <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_19 */
+                     <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_20 */
+                     <GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_21 */
+                     <GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_22 */
+                     <GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_23 */
+                     <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_24 */
+                     <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_25 */
+                     <GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_26 */
+                     <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_27 */
+                     <GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_28 */
+                     <GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_29 */
+                     <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>, /* INTERRUPT_XRDP_QUEUE_30 */
+                     <GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>; /* INTERRUPT_XRDP_QUEUE_31 */
+        interrupt-names = "fpm", "queue0", "queue1", "queue2", "queue3", "queue4", "queue5",
+                          "queue6", "queue7", "queue8", "queue9", "queue10", "queue11", 
+                          "queue12", "queue13", "queue14", "queue15", "queue16", "queue17",
+                          "queue18", "queue19", "queue20", "queue21", "queue22", "queue23",
+                          "queue24", "queue25", "queue26", "queue27", "queue28", "queue29",
+                          "queue30", "queue31";
+   };
+
+};

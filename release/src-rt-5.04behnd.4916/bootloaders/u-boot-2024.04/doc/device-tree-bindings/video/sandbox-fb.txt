@@ -1,0 +1,17 @@
+Sandbox LCD
+===========
+
+This uses the displaymode.txt binding except that only xres and yres are
+required properties. Also an additional optional property is defined:
+
+log2-depth: Log base 2 of the U-Boot display buffer depth (4=16bpp, 5=32bpp).
+	If not provided, a value of 4 is used.
+
+Example:
+
+	lcd {
+		compatible = "sandbox,lcd-sdl";
+		xres = <800>;
+		yres = <600>;
+		log2-depth = <5>;
+	};

@@ -6,14 +6,32 @@ As part of board deep sleep mode, the customer could require to shut down the ex
 This could be done by dedicated GPIOs routed to an external power supplier's enable pin.
 To specify the dedicated GPIOs, the ext_pwr_ctrl node should be extended at the board-level dts file.
 
+If any power suplier specified the pwr-wakeup-gpio pin must be specified in order to guarantee the correct system
+wakeup.
+
 &ext_pwr_ctrl {
-    pwr-ctrl-gpios = <&gpioc gpio_num GPIO_ACTIVE_HIGH>,
+    pwr-ctrl-0-gpios = <&gpioc gpio_num GPIO_ACTIVE_HIGH>,
                      <&gpioc gpio_num GPIO_ACTIVE_LOW>,
                      ...
                      <&gpioc gpio_num GPIO_ACTIVE_LOW>;
+
+    pwr-ctrl-1-gpios = <&gpioc gpio_num GPIO_ACTIVE_HIGH>,
+                     <&gpioc gpio_num GPIO_ACTIVE_LOW>,
+                     ...
+                     <&gpioc gpio_num GPIO_ACTIVE_LOW>;
+
+    pwr-ctrl-2-gpios = <&gpioc gpio_num GPIO_ACTIVE_HIGH>,
+                     <&gpioc gpio_num GPIO_ACTIVE_LOW>,
+                     ...
+                     <&gpioc gpio_num GPIO_ACTIVE_LOW>;
+
+    pwr-wakeup-gpio = <&gpioc gpio_num GPIO_ACTIVE_HIGH>; 
 };
 
 During the entering into deep sleep mode, the system will set the logical GPIO value to 0 
-to turn off the power suppliers according to appearance sequence.
+to turn off the power suppliers according to the pwr-ctrl group sequence number 0..2, the sequence inside the group is
+not guaranteed.
+
+
 
 

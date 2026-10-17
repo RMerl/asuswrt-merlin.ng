@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * NXP ls1012a 2G5RDB board device tree source
+ *
+ * Copyright 2017 NXP
+ */
+
+/dts-v1/;
+#include "fsl-ls1012a.dtsi"
+
+/ {
+	model = "LS1012A 2G5RDB Board";
+
+	aliases {
+		spi0 = &qspi;
+	};
+
+	chosen {
+		stdout-path = &duart0;
+	};
+};
+
+&qspi {
+	status = "okay";
+
+	s25fs512s0: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&duart0 {
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
+};

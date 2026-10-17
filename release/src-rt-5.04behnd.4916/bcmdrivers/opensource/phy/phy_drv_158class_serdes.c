@@ -33,7 +33,6 @@
  */
 
 #include "phy_drv.h"
-#include "phy_drv_psp.h"
 
 typedef struct WanTopRegs {
 	uint32_t WAN_TOP_SCRATCH;//0x80144000
@@ -616,25 +615,17 @@ static inline int rd_ver_xgae_serdes_reg (uint32_t serdes_inst, uint32_t addr, u
 #define clr_mask_read_data() udelay(1000)
 static int xgae_wan_top_init(phy_dev_t *phy_dev);
 
-void dsl_xgae_lbe_op(phy_dev_t *phy_dev, laser_op_t lbe_op)
+int dsl_xgae_lbe_op(phy_dev_t *phy_dev, int enable)
 {
     int val;
 
-    switch (lbe_op) {
-        case LASER_FLOAT:
-            val = 0;
-            break;
-        case LASER_ON:
-            val = LBE_CFG_FORCE_LBE|LBE_CFG_FORCE_LBE_OE|LBE_CFG_FORCE_LBE_OE_VALUE;
-            break;
-        case LASER_OFF:
-            val = LBE_CFG_FORCE_LBE|LBE_CFG_FORCE_LBE_VALUE|LBE_CFG_FORCE_LBE_OE|LBE_CFG_FORCE_LBE_OE_VALUE;
-            break;
-        default:
-            printk("Unknown lbe_op %d\n", lbe_op);
-            val = 0;
-    }
+    if (enable)
+        val = LBE_CFG_FORCE_LBE|LBE_CFG_FORCE_LBE_OE|LBE_CFG_FORCE_LBE_OE_VALUE;
+    else
+        val = LBE_CFG_FORCE_LBE|LBE_CFG_FORCE_LBE_VALUE|LBE_CFG_FORCE_LBE_OE|LBE_CFG_FORCE_LBE_OE_VALUE;
+
     REG_WRITE_32(&WAN_TOP->WAN_TOP_FORCE_LBE_CONTROL, val);
+    return 0;
 }
 
 static inline void xgae_pll_powerdown_reset(phy_dev_t *phy_dev, int rx_pll, int tx_pll)
@@ -894,6 +885,8 @@ static int serdes_power_op(phy_dev_t *phy_dev, int power_level)
     _serdes_power_op(phy_dev, power_level);
     if (power_level == SERDES_POWER_UP)
         rc =  _dsl_xgae_speed_set(phy_dev, phy_serdes->current_speed, phy_dev->duplex, 1);
+    else
+        phy_serdes->laser_enable = 0;
 
     return rc;
 }
@@ -1172,6 +1165,8 @@ static int silent_start_light_detected(phy_dev_t *phy_dev)
     int val;
     int rc = 0;
 
+    /* Read twice to clear latch */
+    readXgaePcsReg(DEVID_0 | LANE_0 | XGXSBLK4_xgxsStatus1, &val);
     readXgaePcsReg(DEVID_0 | LANE_0 | XGXSBLK4_xgxsStatus1, &val);
     /* Don't set link status yet, but just qualify silent start light here,
         since we have much more complicate filtering to qualify a real link up */
@@ -3242,10 +3237,6 @@ static int xgae_wan_top_init(phy_dev_t *phy_dev)
     return error_cnt;
 }
 
-#if 0
-#define SILENT_START_ENABLED
-#endif
-
 static void dsl_xgae_serdes_link_stats(phy_dev_t *phy_dev);
 static phy_serdes_t serdes_158class[] =
 {
@@ -3263,10 +3254,7 @@ static phy_serdes_t serdes_158class[] =
         .light_detected = dsl_xgae_light_detected,
         .silent_start_light_detected = silent_start_light_detected,
         .power_set = serdes_power_op,
-        .lbe_op = dsl_xgae_lbe_op,
-#if defined(SILENT_START_ENABLED)
-        .silent_start_enabled = 1,
-#endif
+        .laser_op = dsl_xgae_lbe_op,
     }
 };
 
@@ -3285,13 +3273,6 @@ static int phy_drv_serdes_158class_init_lock(phy_dev_t *phy_dev)
     phy_serdes->phy_dev = phy_dev;
     phy_serdes->priv = serdes_status;
     printk("\n\n10G Active Ethernet Initialization Started\n");
-
-#if !defined(SILENT_START_ENABLED)
-    {
-        if (phy_drv_psp_silent_start_enable())
-            phy_serdes->silent_start_enabled = 1;
-    }
-#endif
 
     phy_dsl_serdes_init(phy_dev);
     phy_serdes->inited = 1;
@@ -3328,6 +3309,8 @@ static void dsl_xgae_serdes_link_stats(phy_dev_t *phy_dev)
     if (phy_dev->current_inter_phy_type == INTER_PHY_TYPE_SGMII) {
         if (!phy_dev->an_enabled)
         {
+            /* Read twice to clear latch */
+            readXgaePcsReg(DEVID_0 | LANE_0 | XGXSBLK4_xgxsStatus1, &val);
             readXgaePcsReg(DEVID_0 | LANE_0 | XGXSBLK4_xgxsStatus1, &val);
             phy_dev->link = (val & XgxsStatus1_LinkStat) > 0;
             phy_dev->speed = phy_serdes->current_speed;
@@ -3406,6 +3389,8 @@ static void dsl_xgae_serdes_link_stats(phy_dev_t *phy_dev)
         goto end;
     }
     else {
+        /* Read twice to clear latch */
+        readXgaePcsReg(DEVID_0 | LANE_0 | XGXSBLK4_xgxsStatus1, &val);
         readXgaePcsReg(DEVID_0 | LANE_0 | XGXSBLK4_xgxsStatus1, &val);
         phy_dev->link = (val & XgxsStatus1_LinkStat) > 0;
 
@@ -3467,7 +3452,7 @@ end:
 
 static int dsl_xgae_priv_fun_lock(phy_dev_t *phy_dev, int op_code, va_list ap)
 {
-    int reg = va_arg(ap, int);
+    int reg;
     int val;
     uint32_t *valp;
     int ret = 0;
@@ -3485,26 +3470,32 @@ static int dsl_xgae_priv_fun_lock(phy_dev_t *phy_dev, int op_code, va_list ap)
     switch(op_code)
     {
         case SERDES_OP_RD_PMD:
+            reg = va_arg(ap, int);
             valp = va_arg(ap, uint32_t *);
             ret += readXgaeSerdesReg(reg, valp);
             break;
         case SERDES_OP_WR_PMD:
+            reg = va_arg(ap, int);
             val = va_arg(ap, int);
             ret += writeXgaeSerdesReg(reg, val);
             break;
         case SERDES_OP_RD_PCS:
+            reg = va_arg(ap, int);
             valp = va_arg(ap, uint32_t *);
             ret += readXgaePcsReg(reg, valp);
             break;
         case SERDES_OP_WR_PCS:
+            reg = va_arg(ap, int);
             val = va_arg(ap, int);
             ret += writeXgaePcsReg(reg, val);
             break;
         case PHY_OP_RD_MDIO:
+            reg = va_arg(ap, int);
             valp = va_arg(ap, uint32_t *);
             ret += readIEEESpace(phy_dev, (reg>>16)&0xffff, reg&0xffff, valp);
             break;
         case PHY_OP_WR_MDIO:
+            reg = va_arg(ap, int);
             val = va_arg(ap, int);
             ret += writeIEEESpace(phy_dev, (reg>>16)&0xffff, reg&0xffff, val, 0xffff);
             break;
@@ -3537,7 +3528,7 @@ phy_drv_t phy_drv_serdes_158class =
     .get_phy_name = dsl_serdes_get_phy_name,
     .leds_init = dsl_phy_leds_init,	
     .silent_start_get = phy_dev_sltstt_get,
-    .silent_start_set = phy_dev_sltstt_set,
+    .silent_start_set = phy_dev_sltstt_set_lock,
     .dev_add = phy_dsl_serdes_dev_add_lock,
     .dt_priv = phy_dsl_serdes_dt_priv,
     .configured_inter_phy_speed_type_set = dsl_serdes_cfg_speed_mode_set_lock,

@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Hitachi Power Grids kmcoge5ne U-Boot specific Device Tree Source parts
+ *
+ * Copyright (C) 2020 Heiko Schocher <hs@denx.de>
+ *
+ */
+
+/ {
+	aliases {
+		/delete-property/ ethernet1;
+		/delete-property/ ethernet2;
+	};
+};
+
+&enet_switch {
+	status = "disabled";
+};
+
+&enet_mate {
+	status = "disabled";
+};

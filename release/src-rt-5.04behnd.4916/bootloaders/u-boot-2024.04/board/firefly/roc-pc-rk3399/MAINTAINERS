@@ -1,0 +1,8 @@
+ROC-RK3399-PC
+M:	Levin Du <djw@t-chip.com.cn>
+M:	Suniel Mahesh <sunil@amarulasolutions.com>
+S:	Maintained
+F:	board/firefly/roc-pc-rk3399
+F:	include/configs/roc-pc-rk3399.h
+F:	configs/roc-pc-rk3399_defconfig
+F:	configs/roc-pc-mezzanine-rk3399_defconfig

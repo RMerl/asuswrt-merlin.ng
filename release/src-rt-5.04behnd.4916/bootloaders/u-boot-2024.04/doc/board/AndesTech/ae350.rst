@@ -1,0 +1,524 @@
+.. SPDX-License-Identifier: GPL-2.0+
+
+AE350
+=====
+
+AE350 is the mainline SoC produced by Andes Technology using AndesV5 CPU core
+based on RISC-V architecture.
+
+AE350 has integrated both AHB and APB bus and many periphals for application
+and product development.
+
+AndesV5 is Andes CPU IP family that adopts RISC-V architecture.
+
+AndesV5 family includes 25, 27, 45 series.
+
+25-Series Features
+------------------
+
+CPU Core
+ - 5-stage in-order execution pipeline
+ - Hardware Multiplier
+      - radix-2/radix-4/radix-16/radix-256/fast
+ - Hardware Divider
+ - Optional branch prediction
+ - Machine mode and optional user mode
+ - Optional performance monitoring
+
+ISA
+ - RV64I base integer instructions
+ - RVC for 16-bit compressed instructions
+ - RVM for multiplication and division instructions
+
+Memory subsystem
+ - I & D local memory
+      - Size: 4KB to 16MB
+ - Memory subsyetem soft-error protection
+      - Protection scheme: parity-checking or error-checking-and-correction (ECC)
+      - Automatic hardware error correction
+
+Bus
+ - Interface Protocol
+      - Synchronous AHB (32-bit/64-bit data-width), or
+      - Synchronous AXI4 (64-bit data-width)
+
+Power management
+ - Wait for interrupt (WFI) mode
+
+Debug
+ - Configurable number of breakpoints: 2/4/8
+ - External Debug Module
+      - AHB slave port
+ - External JTAG debug transport module
+
+Platform Level Interrupt Controller (PLIC)
+ - AHB slave port
+ - Configurable number of interrupts: 1-1023
+ - Configurable number of interrupt priorities: 3/7/15/63/127/255
+ - Configurable number of targets:  1-16
+ - Preempted interrupt priority stack
+
+Build and boot steps
+--------------------
+
+Build:
+
+1. Prepare the toolchains and make sure the $PATH to toolchains is correct.
+2. Use `make ae350_rv[32|64]_defconfig` in u-boot root to build the image for
+   32 or 64 bit.
+
+Verification:
+
+1. startup
+2. relocation
+3. timer driver
+4. uart driver
+5. mac driver
+6. mmc driver
+7. spi driver
+
+Steps
+-----
+
+1. Ping a server by mac driver
+2. Scan sd card and copy u-boot image which is booted from flash to ram by sd driver
+3. Burn this u-boot image to spi rom by spi driver
+4. Re-boot u-boot from spi flash with power off and power on
+
+Messages of U-Boot boot on AE350 board
+--------------------------------------
+
+.. code-block:: none
+
+   U-Boot 2018.01-rc2-00033-g824f89a (Dec 21 2017 - 16:51:26 +0800)
+
+   DRAM:  1 GiB
+   MMC:   mmc@f0e00000: 0
+   SF: Detected mx25u1635e with page size 256 Bytes, erase size 4 KiB, total 2 MiB
+   In:    serial@f0300000
+   Out:   serial@f0300000
+   Err:   serial@f0300000
+   Net:
+   Warning: mac@e0100000 (eth0) using random MAC address - be:dd:d7:e4:e8:10
+   eth0: mac@e0100000
+
+   RISC-V # version
+   U-Boot 2018.01-rc2-00033-gb265b91-dirty (Dec 22 2017 - 13:54:21 +0800)
+
+   riscv32-unknown-linux-gnu-gcc (GCC) 7.2.0
+   GNU ld (GNU Binutils) 2.29
+
+   RISC-V # setenv ipaddr 10.0.4.200 ;
+   RISC-V # setenv serverip 10.0.4.97 ;
+   RISC-V # ping 10.0.4.97 ;
+   Using mac@e0100000 device
+   host 10.0.4.97 is alive
+
+   RISC-V # mmc rescan
+   RISC-V # fatls mmc 0:1
+      318907   u-boot-ae350-64.bin
+        1252   hello_world_ae350_32.bin
+      328787   u-boot-ae350-32.bin
+
+   3 file(s), 0 dir(s)
+
+   RISC-V # sf probe 0:0 50000000 0
+   SF: Detected mx25u1635e with page size 256 Bytes, erase size 4 KiB, total 2 MiB
+
+   RISC-V # sf test 0x100000 0x1000
+   SPI flash test:
+   0 erase: 36 ticks, 111 KiB/s 0.888 Mbps
+   1 check: 29 ticks, 137 KiB/s 1.096 Mbps
+   2 write: 40 ticks, 100 KiB/s 0.800 Mbps
+   3 read: 20 ticks, 200 KiB/s 1.600 Mbps
+   Test passed
+   0 erase: 36 ticks, 111 KiB/s 0.888 Mbps
+   1 check: 29 ticks, 137 KiB/s 1.096 Mbps
+   2 write: 40 ticks, 100 KiB/s 0.800 Mbps
+   3 read: 20 ticks, 200 KiB/s 1.600 Mbps
+
+   RISC-V # fatload mmc 0:1 0x600000 u-boot-ae350-32.bin
+   reading u-boot-ae350-32.bin
+   328787 bytes read in 324 ms (990.2 KiB/s)
+
+   RISC-V # sf erase 0x0 0x51000
+   SF: 331776 bytes @ 0x0 Erased: OK
+
+   RISC-V # sf write 0x600000 0x0 0x50453
+   device 0 offset 0x0, size 0x50453
+   SF: 328787 bytes @ 0x0 Written: OK
+
+   RISC-V # crc32 0x600000 0x50453
+   crc32 for 00600000 ... 00650452 ==> 692dc44a
+
+   RISC-V # crc32 0x80000000 0x50453
+   crc32 for 80000000 ... 80050452 ==> 692dc44a
+   RISC-V #
+
+   *** power-off and power-on, this U-Boot is booted from spi flash ***
+
+   U-Boot 2018.01-rc2-00032-gf67dd47-dirty (Dec 21 2017 - 13:56:03 +0800)
+
+   DRAM:  1 GiB
+   MMC:   mmc@f0e00000: 0
+   SF: Detected mx25u1635e with page size 256 Bytes, erase size 4 KiB, total 2 MiB
+   In:    serial@f0300000
+   Out:   serial@f0300000
+   Err:   serial@f0300000
+   Net:
+   Warning: mac@e0100000 (eth0) using random MAC address - ee:4c:58:29:32:f5
+   eth0: mac@e0100000
+   RISC-V #
+
+
+Boot bbl and riscv-linux via U-Boot on QEMU
+-------------------------------------------
+
+1. Build riscv-linux
+2. Build bbl and riscv-linux with --with-payload
+3. Prepare ae350.dtb
+4. Creating OS-kernel images
+
+.. code-block:: none
+
+   ./mkimage -A riscv -O linux -T kernel -C none -a 0x0000 -e 0x0000 -d bbl.bin bootmImage-bbl.bin
+   Image Name:
+   Created:      Tue Mar 13 10:06:42 2018
+   Image Type:   RISC-V Linux Kernel Image (uncompressed)
+   Data Size:    17901204 Bytes = 17481.64 KiB = 17.07 MiB
+   Load Address: 00000000
+   Entry Point:  00000000
+
+5. Copy bootmImage-bbl.bin and ae350.dtb to qemu sd card image
+6. Message of booting riscv-linux from bbl via u-boot on qemu
+
+.. code-block:: none
+
+   U-Boot 2018.03-rc4-00031-g2631273 (Mar 13 2018 - 15:02:55 +0800)
+
+   DRAM:  1 GiB
+   main-loop: WARNING: I/O thread spun for 1000 iterations
+   MMC:   mmc@f0e00000: 0
+   Loading Environment from SPI Flash... *** Warning - spi_flash_probe_bus_cs() failed, using default environment
+
+   Failed (-22)
+   In:    serial@f0300000
+   Out:   serial@f0300000
+   Err:   serial@f0300000
+   Net:
+   Warning: mac@e0100000 (eth0) using random MAC address - 02:00:00:00:00:00
+   eth0: mac@e0100000
+   RISC-V # mmc rescan
+   RISC-V # mmc part
+
+   Partition Map for MMC device 0  --   Partition Type: DOS
+
+   Part    Start Sector    Num Sectors     UUID            Type
+   RISC-V # fatls mmc 0:0
+    17901268   bootmImage-bbl.bin
+        1954   ae2xx.dtb
+
+   2 file(s), 0 dir(s)
+
+   RISC-V # fatload mmc 0:0 0x00600000 bootmImage-bbl.bin
+   17901268 bytes read in 4642 ms (3.7 MiB/s)
+   RISC-V # fatload mmc 0:0 0x2000000 ae350.dtb
+   1954 bytes read in 1 ms (1.9 MiB/s)
+   RISC-V # setenv bootm_size 0x2000000
+   RISC-V # setenv fdt_high 0x1f00000
+   RISC-V # bootm 0x00600000 - 0x2000000
+   ## Booting kernel from Legacy Image at 00600000 ...
+      Image Name:
+      Image Type:   RISC-V Linux Kernel Image (uncompressed)
+      Data Size:    17901204 Bytes = 17.1 MiB
+      Load Address: 00000000
+      Entry Point:  00000000
+      Verifying Checksum ... OK
+   ## Flattened Device Tree blob at 02000000
+      Booting using the fdt blob at 0x2000000
+      Loading Kernel Image ... OK
+      Loading Device Tree to 0000000001efc000, end 0000000001eff7a1 ... OK
+   [    0.000000] OF: fdt: Ignoring memory range 0x0 - 0x200000
+   [    0.000000] Linux version 4.14.0-00046-gf3e439f-dirty (rick@atcsqa06) (gcc version 7.1.1 20170509 (GCC)) #1 Tue Jan 9 16:34:25 CST 2018
+   [    0.000000] bootconsole [early0] enabled
+   [    0.000000] Initial ramdisk at: 0xffffffe000016a98 (12267008 bytes)
+   [    0.000000] Zone ranges:
+   [    0.000000]   DMA      [mem 0x0000000000200000-0x000000007fffffff]
+   [    0.000000]   Normal   empty
+   [    0.000000] Movable zone start for each node
+   [    0.000000] Early memory node ranges
+   [    0.000000]   node   0: [mem 0x0000000000200000-0x000000007fffffff]
+   [    0.000000] Initmem setup node 0 [mem 0x0000000000200000-0x000000007fffffff]
+   [    0.000000] elf_hwcap is 0x112d
+   [    0.000000] random: fast init done
+   [    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 516615
+   [    0.000000] Kernel command line: console=ttyS0,38400n8 earlyprintk=uart8250-32bit,0xf0300000 debug loglevel=7
+   [    0.000000] PID hash table entries: 4096 (order: 3, 32768 bytes)
+   [    0.000000] Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes)
+   [    0.000000] Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes)
+   [    0.000000] Sorting __ex_table...
+   [    0.000000] Memory: 2047832K/2095104K available (1856K kernel code, 204K rwdata, 532K rodata, 12076K init, 756K bss, 47272K reserved, 0K cma-reserved)
+   [    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+   [    0.000000] NR_IRQS: 0, nr_irqs: 0, preallocated irqs: 0
+   [    0.000000] riscv,cpu_intc,0: 64 local interrupts mapped
+   [    0.000000] riscv,plic0,e4000000: mapped 31 interrupts to 1/2 handlers
+   [    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x24e6a1710, max_idle_ns: 440795202120 ns
+   [    0.000000] Calibrating delay loop (skipped), value calculated using timer frequency.. 20.00 BogoMIPS (lpj=40000)
+   [    0.000000] pid_max: default: 32768 minimum: 301
+   [    0.004000] Mount-cache hash table entries: 4096 (order: 3, 32768 bytes)
+   [    0.004000] Mountpoint-cache hash table entries: 4096 (order: 3, 32768 bytes)
+   [    0.056000] devtmpfs: initialized
+   [    0.060000] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+   [    0.064000] futex hash table entries: 256 (order: 0, 6144 bytes)
+   [    0.068000] NET: Registered protocol family 16
+   [    0.080000] vgaarb: loaded
+   [    0.084000] clocksource: Switched to clocksource riscv_clocksource
+   [    0.088000] NET: Registered protocol family 2
+   [    0.092000] TCP established hash table entries: 16384 (order: 5, 131072 bytes)
+   [    0.096000] TCP bind hash table entries: 16384 (order: 5, 131072 bytes)
+   [    0.096000] TCP: Hash tables configured (established 16384 bind 16384)
+   [    0.100000] UDP hash table entries: 1024 (order: 3, 32768 bytes)
+   [    0.100000] UDP-Lite hash table entries: 1024 (order: 3, 32768 bytes)
+   [    0.104000] NET: Registered protocol family 1
+   [    0.616000] Unpacking initramfs...
+   [    1.220000] workingset: timestamp_bits=62 max_order=19 bucket_order=0
+   [    1.244000] io scheduler noop registered
+   [    1.244000] io scheduler cfq registered (default)
+   [    1.244000] io scheduler mq-deadline registered
+   [    1.248000] io scheduler kyber registered
+   [    1.360000] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+   [    1.368000] console [ttyS0] disabled
+   [    1.372000] f0300000.serial: ttyS0 at MMIO 0xf0300020 (irq = 10, base_baud = 1228800) is a 16550A
+   [    1.392000] console [ttyS0] enabled
+   [    1.392000] ftmac100: Loading version 0.2 ...
+   [    1.396000] ftmac100 e0100000.mac eth0: irq 8, mapped at ffffffd002005000
+   [    1.400000] ftmac100 e0100000.mac eth0: generated random MAC address 6e:ac:c3:92:36:c0
+   [    1.404000] IR NEC protocol handler initialized
+   [    1.404000] IR RC5(x/sz) protocol handler initialized
+   [    1.404000] IR RC6 protocol handler initialized
+   [    1.404000] IR JVC protocol handler initialized
+   [    1.408000] IR Sony protocol handler initialized
+   [    1.408000] IR SANYO protocol handler initialized
+   [    1.408000] IR Sharp protocol handler initialized
+   [    1.408000] IR MCE Keyboard/mouse protocol handler initialized
+   [    1.412000] IR XMP protocol handler initialized
+   [    1.456000] ftsdc010 f0e00000.mmc: mmc0 - using hw SDIO IRQ
+   [    1.464000] bootconsole [early0] uses init memory and must be disabled even before the real one is ready
+   [    1.464000] bootconsole [early0] disabled
+   [    1.508000] Freeing unused kernel memory: 12076K
+   [    1.512000] This architecture does not have kernel memory protection.
+   [    1.520000] mmc0: new SD card at address 4567
+   [    1.524000] mmcblk0: mmc0:4567 QEMU! 20.0 MiB
+   [    1.844000]  mmcblk0:
+   Wed Dec  1 10:00:00 CST 2010
+   / #
+
+
+Running U-Boot SPL
+------------------
+The U-Boot SPL will boot in M mode and load the FIT image which include
+OpenSBI and U-Boot proper images. After loading progress, it will jump
+to OpenSBI first and then U-Boot proper which will run in S mode.
+
+
+How to build U-Boot SPL
+-----------------------
+Before building U-Boot SPL, OpenSBI must be build first. OpenSBI can be
+cloned and build for AE350 as below:
+
+.. code-block:: none
+
+        git clone https://github.com/riscv/opensbi.git
+        cd opensbi
+        make PLATFORM=andes/ae350
+
+Copy OpenSBI FW_DYNAMIC image (build/platform/andes/ae350/firmware/fw_dynamic.bin)
+into U-Boot root directory
+
+
+How to build U-Boot SPL booting from RAM
+----------------------------------------
+With ae350_rv[32|64]_spl_defconfigs:
+
+U-Boot SPL will be loaded by gdb or FSBL and runs in RAM in machine mode
+and then load FIT image from RAM device on AE350.
+
+
+How to build U-Boot SPL booting from ROM
+----------------------------------------
+With ae350_rv[32|64]_spl_xip_defconfigs:
+
+U-Boot SPL can be burned into SPI flash and run in flash in machine mode
+and then load FIT image from SPI flash or MMC device on AE350.
+
+
+Messages of U-Boot SPL boots Kernel on AE350 board
+--------------------------------------------------
+
+.. code-block:: none
+
+    U-Boot SPL 2020.01-rc1-00292-g67a3313-dirty (Nov 14 2019 - 11:26:21 +0800)
+    Trying to boot from RAM
+
+    OpenSBI v0.5-1-gdd8ef28 (Nov 14 2019 11:08:39)
+       ____                    _____ ____ _____
+      / __ \                  / ____|  _ \_   _|
+     | |  | |_ __   ___ _ __ | (___ | |_) || |
+     | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+     | |__| | |_) |  __/ | | |____) | |_) || |_
+      \____/| .__/ \___|_| |_|_____/|____/_____|
+            | |
+            |_|
+
+    Platform Name          : Andes AE350
+    Platform HART Features : RV64ACIMSUX
+    Platform Max HARTs     : 4
+    Current Hart           : 0
+    Firmware Base          : 0x0
+    Firmware Size          : 84 KB
+    Runtime SBI Version    : 0.2
+
+    PMP0: 0x0000000000000000-0x000000000001ffff (A)
+    PMP1: 0x0000000000000000-0x00000001ffffffff (A,R,W,X)
+
+
+    U-Boot 2020.01-rc1-00292-g67a3313-dirty (Nov 14 2019 - 11:26:21 +0800)
+
+    DRAM:  1 GiB
+    Flash: 64 MiB
+    MMC:   mmc@f0e00000: 0
+    Loading Environment from SPI Flash... SF: Detected mx25u1635e with page size 256 Bytes, erase size 4 KiB, total 2 MiB
+    OK
+    In:    serial@f0300000
+    Out:   serial@f0300000
+    Err:   serial@f0300000
+    Net:   no alias for ethernet0
+
+    Warning: mac@e0100000 (eth0) using random MAC address - a2:ae:93:7b:cc:8f
+    eth0: mac@e0100000
+    Hit any key to stop autoboot:  0
+    6455 bytes read in 31 ms (203.1 KiB/s)
+    20421684 bytes read in 8647 ms (2.3 MiB/s)
+    ## Booting kernel from Legacy Image at 00600000 ...
+       Image Name:
+       Image Type:   RISC-V Linux Kernel Image (uncompressed)
+       Data Size:    20421620 Bytes = 19.5 MiB
+       Load Address: 00200000
+       Entry Point:  00200000
+       Verifying Checksum ... OK
+    ## Flattened Device Tree blob at 20000000
+       Booting using the fdt blob at 0x20000000
+       Loading Kernel Image
+       Loading Device Tree to 000000001effb000, end 000000001efff936 ... OK
+
+    Starting kernel ...
+
+    OF: fdt: Ignoring memory range 0x0 - 0x200000
+    Linux version 4.17.0-00253-g49136e10bcb2 (sqa@atcsqa07) (gcc version 7.3.0 (2019-04-06_nds64le-linux-glibc-v5_experimental)) #1 SMP PREEMPT Sat Apr 6 23:41:49 CST 2019
+    bootconsole [early0] enabled
+    Initial ramdisk at: 0x        (ptrval) (13665712 bytes)
+    Zone ranges:
+      DMA32    [mem 0x0000000000200000-0x000000003fffffff]
+      Normal   empty
+    Movable zone start for each node
+    Early memory node ranges
+      node   0: [mem 0x0000000000200000-0x000000003fffffff]
+    Initmem setup node 0 [mem 0x0000000000200000-0x000000003fffffff]
+    software IO TLB [mem 0x3b1f8000-0x3f1f8000] (64MB) mapped at [        (ptrval)-        (ptrval)]
+    elf_platform is rv64i2p0m2p0a2p0c2p0xv5-0p0
+    compatible privileged spec version 1.10
+    percpu: Embedded 16 pages/cpu @        (ptrval) s28184 r8192 d29160 u65536
+    Built 1 zonelists, mobility grouping on.  Total pages: 258055
+    Kernel command line: console=ttyS0,38400n8 debug loglevel=7
+    log_buf_len individual max cpu contribution: 4096 bytes
+    log_buf_len total cpu_extra contributions: 12288 bytes
+    log_buf_len min size: 16384 bytes
+    log_buf_len: 32768 bytes
+    early log buf free: 14608(89%)
+    Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes)
+    Inode-cache hash table entries: 65536 (order: 7, 524288 bytes)
+    Sorting __ex_table...
+    Memory: 944428K/1046528K available (3979K kernel code, 246K rwdata, 1490K rodata, 13523K init, 688K bss, 102100K reserved, 0K cma-reserved)
+    SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
+    Preemptible hierarchical RCU implementation.
+            Tasks RCU enabled.
+    NR_IRQS: 72, nr_irqs: 72, preallocated irqs: 0
+    riscv,cpu_intc,0: 64 local interrupts mapped
+    riscv,cpu_intc,1: 64 local interrupts mapped
+    riscv,cpu_intc,2: 64 local interrupts mapped
+    riscv,cpu_intc,3: 64 local interrupts mapped
+    riscv,plic0,e4000000: mapped 71 interrupts to 8/8 handlers
+    clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x1bacf917bf, max_idle_ns: 881590412290 ns
+    sched_clock: 64 bits at 60MHz, resolution 16ns, wraps every 4398046511098ns
+    Console: colour dummy device 40x30
+    Calibrating delay loop (skipped), value calculated using timer frequency.. 120.00 BogoMIPS (lpj=600000)
+    pid_max: default: 32768 minimum: 301
+    Mount-cache hash table entries: 2048 (order: 2, 16384 bytes)
+    Mountpoint-cache hash table entries: 2048 (order: 2, 16384 bytes)
+    Hierarchical SRCU implementation.
+    smp: Bringing up secondary CPUs ...
+    CPU0: online
+    CPU2: online
+    CPU3: online
+    smp: Brought up 1 node, 4 CPUs
+    devtmpfs: initialized
+    random: get_random_u32 called from bucket_table_alloc+0x198/0x1d8 with crng_init=0
+    clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+    futex hash table entries: 1024 (order: 4, 65536 bytes)
+    NET: Registered protocol family 16
+    Advanced Linux Sound Architecture Driver Initialized.
+    clocksource: Switched to clocksource riscv_clocksource
+    NET: Registered protocol family 2
+    tcp_listen_portaddr_hash hash table entries: 512 (order: 1, 8192 bytes)
+    TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+    TCP bind hash table entries: 8192 (order: 5, 131072 bytes)
+    TCP: Hash tables configured (established 8192 bind 8192)
+    UDP hash table entries: 512 (order: 2, 16384 bytes)
+    UDP-Lite hash table entries: 512 (order: 2, 16384 bytes)
+    NET: Registered protocol family 1
+    RPC: Registered named UNIX socket transport module.
+    RPC: Registered udp transport module.
+    RPC: Registered tcp transport module.
+    RPC: Registered tcp NFSv4.1 backchannel transport module.
+    Unpacking initramfs...
+    workingset: timestamp_bits=62 max_order=18 bucket_order=0
+    NFS: Registering the id_resolver key type
+    Key type id_resolver registered
+    Key type id_legacy registered
+    nfs4filelayout_init: NFSv4 File Layout Driver Registering...
+    io scheduler noop registered
+    io scheduler cfq registered (default)
+    io scheduler mq-deadline registered
+    io scheduler kyber registered
+    Console: switching to colour frame buffer device 40x30
+    Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+    console [ttyS0] disabled
+    f0300000.serial: ttyS0 at MMIO 0xf0300020 (irq = 20, base_baud = 1228800) is a 16550A
+    console [ttyS0] enabled
+    console [ttyS0] enabled
+    bootconsole [early0] disabled
+    bootconsole [early0] disabled
+    loop: module loaded
+    tun: Universal TUN/TAP device driver, 1.6
+    ftmac100: Loading version 0.2 ...
+    ftmac100 e0100000.mac eth0: irq 21, mapped at         (ptrval)
+    ftmac100 e0100000.mac eth0: generated random MAC address 4e:fd:bd:f3:04:fc
+    ftsdc010 f0e00000.mmc: mmc0 - using hw SDIO IRQ
+    mmc0: new SDHC card at address d555
+    ftssp010 card registered!
+    mmcblk0: mmc0:d555 SD04G 3.79 GiB
+    NET: Registered protocol family 10
+     mmcblk0: p1
+    Segment Routing with IPv6
+    sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+    NET: Registered protocol family 17
+    NET: Registered protocol family 15
+    ALSA device list:
+      #0: ftssp_ac97 controller
+    Freeing unused kernel memory: 13520K
+    This architecture does not have kernel memory protection.
+    Sysinit starting
+    Sat Apr  6 23:33:53 CST 2019
+    nfs4flexfilelayout_init: NFSv4 Flexfile Layout Driver Registering...
+
+    ~ #

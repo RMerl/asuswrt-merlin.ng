@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * at91-kstr-sama5d27-u-boot.dtsi - Device Tree Include file w/ U-Boot specific
+ * properties for Conclusive KSTR-SAMA5D27 board
+ *
+ *  Copyright (C) 2023 Conclusive Engineering Sp. z o. o.
+ *
+ */
+
+/ {
+	chosen {
+		bootph-all;
+	};
+};
+
+&sdmmc0 {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&pinctrl_uart1_default {
+	bootph-all;
+};
+
+&pinctrl_macb0_phy_irq {
+	bootph-all;
+};
+
+&pinctrl_macb0_rmii {
+	bootph-all;
+};
+
+&pinctrl_sdmmc0_cmd_dat_default {
+	bootph-all;
+};
+
+&pinctrl_sdmmc0_ck_cd_default {
+	bootph-all;
+};

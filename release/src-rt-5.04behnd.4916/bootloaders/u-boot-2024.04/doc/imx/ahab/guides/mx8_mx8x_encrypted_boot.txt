@@ -1,0 +1,293 @@
+         +=========================================================+
+         +      i.MX 8, i.MX 8X Encrypted Boot guide using AHAB    +
+         +=========================================================+
+
+1. AHAB Encrypted Boot process
+-------------------------------
+
+This document describes a step-by-step procedure on how to encrypt and sign a
+bootloader image for i.MX8/8x family devices. It is assumed that the reader
+is familiar with basic AHAB concepts and has already closed the device,
+step-by-step procedure can be found in mx8_mx8x_secure_boot.txt and
+mx8_mx8x_spl_secure_boot.txt guides.
+
+The steps described in this document were based in i.MX8QM device, the same
+concept can be applied to others processors in i.MX8/8X family devices.
+
+1.1 Understanding the encrypted image signature block
+------------------------------------------------------
+
+As described in mx8_mx8x_secure_boot.txt guide a single binary is used to boot
+the device. The imx-mkimage tool combines all the input images in a container
+structure, generating a flash.bin binary.
+
+AHAB is able to decrypt image containers by calling SECO authentication
+functions, the image must be encrypted by CST and the resulting DEK (Data
+Encryption Key) must be encapsulated and included into the container signature
+block:
+
+                +----------------------------+
+                |                            |  ^
+                |                            |  |
+                |      Container header      |  |
+                |                            |  |
+                |                            |  |
+                +---+------------------------+  |
+                | S | Signature block header |  | Signed
+                | i +------------------------+  |
+                | g |                        |  |
+                | n |                        |  |
+                | a |        SRK table       |  |
+                | t |                        |  |
+                | u |                        |  v
+                | r +------------------------+
+                | e |       Signature        |
+                |   +------------------------+
+                | B |                        |
+                | l |        SGK Key         |
+                | o | Certificate (optional) |
+                | c |                        |
+                | k +------------------------+
+                |   |        DEK Blob        |
+                +---+------------------------+
+
+1.1.1 Understanding and generating the DEK blob
+------------------------------------------------
+
+The encrypted boot image requires a DEK blob on each time AHAB is used to
+decrypt an image. The DEK blob is used as a security layer to wrap and store
+the DEK off-chip using the OTPMK which is unique per device.
+
+On i.MX8/8x devices the DEK blob is generated using the SECO API, the following
+funtion is available in U-Boot and can be executed through dek_blob command:
+
+- sc_seco_gen_key_blob(sc_ipc_t ipc, uint32_t id, sc_faddr_t load_addr,
+		       sc_faddr_t export_addr, uint16_t max_size)
+
+Details in API usage can be found in SCFW API guide [1].
+
+1.2 Enabling the encrypted boot support in U-Boot
+--------------------------------------------------
+
+For deploying an encrypted boot image additional U-Boot tools are needed,
+please be sure to have the following features enabled, this can be achieved
+by following one of the methods below:
+
+- Defconfig:
+
+  CONFIG_AHAB_BOOT=y
+  CONFIG_CMD_DEKBLOB=y
+  CONFIG_IMX_SECO_DEK_ENCAP=y
+  CONFIG_FAT_WRITE=y
+
+- Kconfig:
+
+  ARM architecture -> Support i.MX8 AHAB features
+  ARM architecture -> Support the 'dek_blob' command
+  File systems -> Enable FAT filesystem support-> Enable FAT filesystem
+  write support
+
+1.3 Enabling the encrypted boot support in CST
+-----------------------------------------------
+
+The encryption feature is not enabled by default in Code Signing tools (CST).
+The CST backend must be recompiled, execute the following commands to enable
+encryption support in CST:
+
+  $ sudo apt-get install libssl-dev openssl
+  $ cd <CST install directory>/code/back_end/src
+  $ gcc -o cst_encrypted -I ../hdr -L ../../../linux64/lib *.c
+    -lfrontend -lcrypto
+  $ cp cst_encrypted ../../../linux64/bin/
+
+1.4 Preparing the image container
+----------------------------------
+
+The container generation is explained in and mx8_mx8x_secure_boot.txt and
+mx8_mx8x_spl_secure_boot.txt guides. This document is based in imx-mkimage
+flash target (2 containers in flash.bin).
+
+- Assembly flash.bin binary:
+
+  $ make SOC=<SoC Name> flash
+
+The mkimage log is used during the encrypted boot procedure to create the
+Command Sequence File (CSF):
+
+  CST: CONTAINER 0 offset: 0x400
+  CST: CONTAINER 0: Signature Block: offset is at 0x590
+  DONE.
+  Note: Please copy image to offset: IVT_OFFSET + IMAGE_OFFSET
+
+1.6 Creating the CSF description to encrypt the 2nd container
+--------------------------------------------------------------
+
+The csf_enc_boot_image.txt available under ahab/csf_examples/ can be used as
+example for encrypting the flash.bin binary, the main change is the Install
+Secret Key command that must be added after Authenticate Data command.
+
+  [Install Secret Key]
+  Key = "dek.bin"
+  Key Length = 128
+  #Key Identifier = 0x1234CAFE
+  Image Indexes = 0xFFFFFFFE
+
+By default all images are encrypted and image indexes parameter can be used
+to mask the images indexes that must be encrypted, on this example only the
+2nd container will be encrypted.
+
+Optionally users can provide a key identifier that must match the value
+provided during the blob generation, by default its value is zero.
+
+1.7 Encrypting the 2nd container
+---------------------------------
+
+The image is encrypted using the Code Signing Tool. The tool generates the
+encrypted image and a random dek.bin file.
+
+- Encrypt flash.bin binary:
+
+  $ ./cst_encrypted -i csf_enc_boot_image.txt -o enc_flash.bin
+   The DEK BLOB must be inserted at offset 0x7c0 (its expected size is 72 bytes)
+   CSF Processed successfully and signed image available in enc_boot_image.bin
+
+The output log will be used in a later step to insert the DEK blob into the
+signature block.
+
+1.8 Generating the DEK Blob
+----------------------------
+
+The DEK must be encapsulated into a CAAM blob so it can be included into the
+final encrypted binary. The U-Boot provides a tool called dek_blob which is
+calling the SECO blob encapsulation API.
+
+Copy the dek.bin in SDCard FAT partition and run the following commands from
+U-Boot prompt:
+
+  => mmc list
+     FSL_SDHC: 1 (SD)
+     FSL_SDHC: 2
+  => fatload mmc 1:1 0x80280000 dek.bin
+  => dek_blob 0x80280000 0x80280100 128
+  => fatwrite mmc 1:1 0x80280100 dek_blob.bin 0x48
+
+In host PC copy the generated dek_blob.bin to the CST directory.
+
+1.9 Assembling the encrypted image
+-----------------------------------
+
+The DEK blob generated in the step above have to be inserted into the container
+signature block.
+
+The CSF log is used to determine the DEK Blob offset:
+
+  The DEK BLOB must be inserted at offset 0x7c0 (its expected size is 72 bytes)
+  CSF Processed successfully and signed image available in enc_boot_image.bin
+
+- Insert DEK Blob into container signature block:
+
+  $ dd if=dek_blob.bin of=enc_flash.bin bs=1 seek=$((0x7c0)) conv=notrunc
+
+1.10 Flashing the encrypted boot image
+---------------------------------------
+
+The same offset is used for encrypted boot images, in case booting from
+eMMC/SDCard the offset is 32K.
+
+- Flash encrypted image in SDCard:
+
+  $ sudo dd if=enc_flash.bin of=/dev/sd<x> bs=1K seek=32 && sync
+
+2.0 Encrypting a standalone container
+--------------------------------------
+
+CST is also able to encrypt additional images containers, the steps documented
+in this section are based in OS container but can be also applied to SPL
+targets and 3rd containers.
+
+2.1 Creating the OS container
+------------------------------
+
+As explained in mx8_mx8x_secure_boot.txt guide the imx-mkimage tool is used to
+generate an image container for OS images, the mkimage log is used during the
+encrypted boot procedure to create the Command Sequence File (CSF).
+
+- Creating OS container:
+
+  $ make SOC=<SoC Name> flash_kernel
+   ...
+   CST: CONTAINER 0 offset: 0x0
+   CST: CONTAINER 0: Signature Block: offset is at 0x110
+
+2.2 Creating the CSF description file for standalone container
+---------------------------------------------------------------
+
+The Image Indexes parameter is used to mask the images that are encrypted by
+CST, as a single container is used for OS images the Image Indexes command can
+be commented or set to 0xFFFFFFFF.
+
+  [Install Secret Key]
+  Key = "dek_os.bin"
+  Key Length = 128
+  #Key Identifier = 0x1234CAFE
+  Image Indexes = 0xFFFFFFFF
+
+2.3 Encrypting the standalone container
+----------------------------------------
+
+As explained in section 1.7 the CST generates the encrypted image and a random
+dek.bin file.
+
+- Encrypt the standalone container:
+
+  $ ./cst_encrypted -i csf_linux_img.txt -o enc_flash_os.bin
+   The DEK BLOB must be inserted at offset 0x340 (its expected size is 72 bytes)
+   CSF Processed successfully and signed image available in enc_flash_os.bin
+
+The output log will be used in a later step to insert the DEK blob into the
+signature block.
+
+2.4 Generating the DEK Blob for standalone container
+----------------------------------------------------
+
+Similar to section 1.8 the DEK must be encapsulated into a CAAM blob so it can
+be included into the final encrypted binary.
+
+Copy the dek_os.bin in SDCard FAT partition and run the following commands from
+U-Boot prompt:
+
+  => mmc list
+     FSL_SDHC: 1 (SD)
+     FSL_SDHC: 2
+  => fatload mmc 1:1 0x80280000 dek_os.bin
+  => dek_blob 0x80280000 0x80280100 128
+  => fatwrite mmc 1:1 0x80280100 dek_blob_os.bin 0x48
+
+In host PC copy the generated dek_blob_os.bin to the CST directory.
+
+2.5 Assembling the encrypted image
+-----------------------------------
+
+The DEK blob generated in the step above have to be inserted into the container
+signature block.
+
+The CSF log is used to determine the DEK Blob offset:
+
+   The DEK BLOB must be inserted at offset 0x340 (its expected size is 72 bytes)
+   CSF Processed successfully and signed image available in enc_flash_os.bin
+
+- Insert DEK Blob into container signature block:
+
+  $ dd if=dek_blob_os.bin of=enc_flash_os.bin bs=1 seek=$((0x340)) conv=notrunc
+
+2.6 Copy encrypted image to SDCard
+-----------------------------------
+
+The encrypted container can be copied to SDCard FAT partition, please note
+that U-Boot requires signed and encrypted containers to be named as
+os_cntr_signed.bin.
+
+  $ sudo cp enc_flash_os.bin /media/UserID/Boot\ imx8/os_cntr_signed.bin
+
+References:
+[1] SCFW API guide: "System Controller Firmware API Reference Guide - Rev 1.5"

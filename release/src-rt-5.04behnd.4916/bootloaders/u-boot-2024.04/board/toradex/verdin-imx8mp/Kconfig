@@ -1,0 +1,42 @@
+if TARGET_VERDIN_IMX8MP
+
+config IMX_CONFIG
+	default "board/toradex/verdin-imx8mp/imximage.cfg"
+
+config SYS_BOARD
+	default "verdin-imx8mp"
+
+config SYS_CONFIG_NAME
+	default "verdin-imx8mp"
+
+config SYS_VENDOR
+	default "toradex"
+
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_CFG_BLOCK_2ND_ETHADDR
+	default y
+
+config TDX_CFG_BLOCK_DEV
+	default "2"
+
+config TDX_CFG_BLOCK_EXTRA
+	default y
+
+# Toradex config block in eMMC, at the end of 1st "boot sector"
+config TDX_CFG_BLOCK_OFFSET
+	default "-512"
+
+config TDX_CFG_BLOCK_PART
+	default "1"
+
+config TDX_HAVE_EEPROM_EXTRA
+	default y
+
+config TDX_HAVE_MMC
+	default y
+
+source "board/toradex/common/Kconfig"
+
+endif

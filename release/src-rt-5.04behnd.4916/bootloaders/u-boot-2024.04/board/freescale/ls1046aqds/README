@@ -1,0 +1,70 @@
+Overview
+--------
+The LS1046A Development System (QDS) is a high-performance computing,
+evaluation, and development platform that supports the QorIQ LS1046A
+LayerScape Architecture processor. The LS1046AQDS provides SW development
+platform for the Freescale LS1046A processor series, with a complete
+debugging environment.
+
+LS1046A SoC Overview
+--------------------
+Please refer arch/arm/cpu/armv8/fsl-layerscape/doc/README.soc for LS1046A
+SoC overview.
+
+ LS1046AQDS board Overview
+ -----------------------
+ - SERDES Connections, 8 lanes supporting:
+      - PCI Express - 3.0
+      - SGMII, SGMII 2.5
+      - QSGMII
+      - SATA 3.0
+      - 10GBase-R
+ - DDR Controller
+     - 8GB 64bits DDR4 SDRAM. Support rates of up to 2133MT/s
+ -IFC/Local Bus
+    - One in-socket 128 MB NOR flash 16-bit data bus
+    - One 512 MB NAND flash with ECC support
+    - PromJet Port
+    - FPGA connection
+ - USB 3.0
+    - Three high speed USB 3.0 ports
+    - First USB 3.0 port configured as Host with Type-A connector
+    - The other two USB 3.0 ports configured as OTG with micro-AB connector
+ - SDHC port connects directly to an adapter card slot, featuring:
+    - Optional clock feedback paths, and optional high-speed voltage translation assistance
+    - SD slots for SD, SDHC (1x, 4x, 8x), and/or MMC
+    - eMMC memory devices
+ - DSPI: Onboard support for three SPI flash memory devices
+ - 4 I2C controllers
+ - One SATA onboard connectors
+ - UART
+   - Two 4-pin serial ports at up to 115.2 Kbit/s
+   - Two DB9 D-Type connectors supporting one Serial port each
+ - ARM JTAG support
+
+Memory map from core's view
+----------------------------
+Start Address    End Address     Description		Size
+0x00_0000_0000 - 0x00_000F_FFFF  Secure Boot ROM	1MB
+0x00_0100_0000 - 0x00_0FFF_FFFF  CCSRBAR		240MB
+0x00_1000_0000 - 0x00_1000_FFFF  OCRAM0			64KB
+0x00_1001_0000 - 0x00_1001_FFFF  OCRAM1			64KB
+0x00_2000_0000 - 0x00_20FF_FFFF  DCSR			16MB
+0x00_6000_0000 - 0x00_67FF_FFFF  IFC - NOR Flash	128MB
+0x00_7E80_0000 - 0x00_7E80_FFFF  IFC - NAND Flash	64KB
+0x00_7FB0_0000 - 0x00_7FB0_0FFF  IFC - FPGA		4KB
+0x00_8000_0000 - 0x00_FFFF_FFFF  DRAM1			2GB
+0x05_0000_0000 - 0x05_07FF_FFFF  QMAN S/W Portal	128M
+0x05_0800_0000 - 0x05_0FFF_FFFF  BMAN S/W Portal	128M
+0x08_8000_0000 - 0x09_FFFF_FFFF  DRAM2			6GB
+0x40_0000_0000 - 0x47_FFFF_FFFF  PCI Express1		32G
+0x48_0000_0000 - 0x4F_FFFF_FFFF  PCI Express2		32G
+0x50_0000_0000 - 0x57_FFFF_FFFF  PCI Express3		32G
+
+Booting Options
+---------------
+a) Promjet Boot
+b) NOR boot
+c) NAND boot
+d) SD boot
+e) QSPI boot

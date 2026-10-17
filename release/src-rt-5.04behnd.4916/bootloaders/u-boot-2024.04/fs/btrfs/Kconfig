@@ -1,0 +1,13 @@
+config FS_BTRFS
+	bool "Enable BTRFS filesystem support"
+	select CRC32C
+	select LIB_UUID
+	select LZO
+	select ZSTD
+	select RBTREE
+	select SHA256
+	select BLAKE2
+	help
+	  This provides a single-device read-only BTRFS support. BTRFS is a
+	  next-generation Linux file system based on the copy-on-write
+	  principle.

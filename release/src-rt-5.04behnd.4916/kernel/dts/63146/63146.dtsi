@@ -109,7 +109,7 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 		/* increase coherent_pool size */
-		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe console=ttyAMA0,115200  rootwait rng_core.default_quality=1024";
+		bootargs = "coherent_pool=4M pci=pcie_bus_safe console=ttyAMA0,115200  rootwait rng_core.default_quality=1024";
 	};
 
 
@@ -438,7 +438,7 @@
 			#include "../ip/bcm_nand7_1.dtsi"
 		};
 		/* EMMC */
-		sdhci: sdhci {
+		sdhci: mmc {
 			pinctrl-0 = <&emmc_ctrl_pins>;
 			pinctrl-names="default";
 			#define SDHCI_OFFSET			0x00000000 0x10000
@@ -453,8 +453,8 @@
 			#define SDIO_EMMC_SPI			38
 			#include "../ip/bcm_sdhci.dtsi"
 			mmc-ddr-3_3v;
-			sdhci-pll-baseclk-mhz = <5000>;
-			sdhci-pll-valid-op-mhz = <100 125 147 180 185 200>;
+			brcm,sdhci-pll-baseclk-mhz = <5000>;
+			brcm,sdhci-pll-valid-op-mhz = <100 125 147 180 185 200>;
 		};
 
 #if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
@@ -466,6 +466,12 @@
 		};
 #endif
 
+		/* RNG */
+#if defined (CONFIG_BCM_RNG_SHIM)
+		rng_shim: rngshim {
+			#include "../ip/bcm_rng_shim.dtsi"
+		};
+#else
 		rng: rng {
 			#define RNG200_OFFSET                   0x00000000 0xb80
 			#define RNG200_SIZE                     0x00000000 0x30
@@ -478,6 +484,7 @@
 			#include "../ip/bcm_trng.dtsi"
 			status = "disabled";
 		};
+#endif
 
 		strap: strap {
 			#define STRAP_REG_OFFSET            0x0 0x2600
@@ -526,6 +533,19 @@
 			#define GPIO_DATA_OFFSET     0x0 0x520
 			#define GPIO_DATA_SIZE       0x0 0x20
 			#define NUM_OF_GPIOS         88
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			#define EXTINTR_OFFSET       0x0 0x4
+			#define EXTINTR_SIZE         0x0 0x48
+			#define MAX_EXT_INTR         8
+			interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
+#endif
 			#include "../ip/bcm_bca_gpio.dtsi"
 		};
 
@@ -536,6 +556,9 @@
 			#define MAX_EXT_INTR         8
 			#include "../ip/bcm_bca_extintr.dtsi"
 			external_interrupts = <47 48 49 50 51 52 53 54>;
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			status = "disabled";
+#endif
 		};
 
 		/* UART 1*/
@@ -638,6 +661,7 @@
 			#define WATCHDOG_OFFSET			0x0 0x480
 			#define WATCHDOG_SIZE			0x0 0x10
 			#define WATCHDOG_TIMEOUT		80
+			#define WATCHDOG_CLK_LABEL		refclk50mhz
 			#include "../ip/bcm_wdt.dtsi"
 			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
 		};

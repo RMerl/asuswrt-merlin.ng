@@ -30,23 +30,11 @@ written consent.
 #ifndef __BCM_CPU_H
 #define __BCM_CPU_H
 
-#if defined(CONFIG_BCM963138)
-#include <63138_cpu.h>
-#endif
-#if defined(CONFIG_BCM963148)
-#include <63148_cpu.h>
-#endif
-#if defined(CONFIG_BCM94908)
-#include <4908_cpu.h>
-#endif
 #if defined(CONFIG_BCM96858)
 #include <6858_cpu.h>
 #endif
 #if defined(CONFIG_BCM963158)
 #include <63158_cpu.h>
-#endif
-#if defined(CONFIG_BCM96846)
-#include <6846_cpu.h>
 #endif
 #if defined(CONFIG_BCM947622)
 #include <47622_cpu.h>
@@ -56,9 +44,6 @@ written consent.
 #endif
 #if defined(CONFIG_BCM96856)
 #include <6856_cpu.h>
-#endif
-#if defined(CONFIG_BCM96878)
-#include <6878_cpu.h>
 #endif
 #if defined(CONFIG_BCM963146)
 #include <63146_cpu.h>

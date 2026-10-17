@@ -351,9 +351,6 @@ static int otp_fuse_operator_enable(void)
 {
     int ret = 0;
     /* Only for GEN2 devices */
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    ret = bcm_otp_fuse_row(OTP_CUST_OP_INUSE_FUSE_ROW, OTP_CUST_OP_INUSE_MASK);
-#endif   
     return ret;
 }
 
@@ -368,9 +365,6 @@ static int otp_fuse_oid(uint32_t id)
 {
     int ret = 0;
     /* Only for GEN2 devices */
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    ret = bcm_otp_fuse_row(OTP_CUST_OP_MRKTID_FUSE_ROW, ((id << OTP_CUST_OP_MRKTID_SHIFT) & OTP_CUST_OP_MRKTID_MASK));
-#endif   
     return ret;
 }
 
@@ -386,10 +380,6 @@ static int otp_get_operator_enable(uint32_t *pRes)
 {
     int ret = 0;
     /* Only for GEN2 devices */
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    ret = bcm_otp_get_row(OTP_CUST_OP_INUSE_ROW, pRes);
-    *pRes = (*pRes & OTP_CUST_OP_INUSE_MASK) >> OTP_CUST_OP_INUSE_SHIFT;
-#endif
     return ret;
 }
 
@@ -405,10 +395,6 @@ static int otp_get_oid(uint32_t *pRes)
 {
     int ret = 0;
     /* Only for GEN2 devices */
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    ret = bcm_otp_get_row(OTP_CUST_OP_MRKTID_ROW, pRes);
-    *pRes = (*pRes & OTP_CUST_OP_MRKTID_MASK) >> OTP_CUST_OP_MRKTID_SHIFT;
-#endif   
     return ret;
 }
 
@@ -436,7 +422,7 @@ static int otp_ioctl(struct inode *inode, struct file *flip,
     unsigned int command, unsigned long arg)
 {
     int ret = -EINVAL, r=0;
-    OTP_IOCTL_PARMS ctrlParms;
+    OTP_IOCTL_PARMS ctrlParms = {0};
     uint32_t val32 = 0;
     uint64_t val64 = 0;
 

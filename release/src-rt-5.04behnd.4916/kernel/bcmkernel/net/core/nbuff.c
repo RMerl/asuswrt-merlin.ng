@@ -31,6 +31,9 @@
 #include <linux/gbpm.h>
 #endif
 
+#if defined(BCMCOLOR)
+#define CLRN                CLRnl                   /* normal newline */
+#else /* ! BCMCOLOR */
 #ifdef CC_CONFIG_FKB_COLOR
 #define COLOR(clr_code)     clr_code
 #else
@@ -41,6 +44,7 @@
 #define CLRn                COLOR("\e[0m")          /* normal */
 #define CLRerr              COLOR("\e[0;33;41m")    /* yellow on red */
 #define CLRN                CLRn"\n"                /* normal newline */
+#endif /* ! BCMCOLOR */
 
 int nbuff_dbg = 0;
 #if defined(CC_CONFIG_FKB_DEBUG)
@@ -327,9 +331,9 @@ static void release_fkb(FkBuff_t *fkb_p, FkbObject_t object, FkbObjInfo_t *objin
     if ( object == FkbMaster_e )
     {
 #if IS_ENABLED(CONFIG_BCM_BPM)
-        gbpm_free_buf(PFKBUFF_TO_PDATA(fkb_p,BCM_PKT_HEADROOM));
+        gbpm_free_buf(BCM_PFKBUFF_TO_PDATA(fkb_p));
 #else
-        kfree(fkb_p);
+        kfree(BCM_PFKBUFF_TO_PSTART(fkb_p));
 #endif
     }
     else if (object == FkbCloned_e)
@@ -359,15 +363,24 @@ static FkBuff_t *allocate_fkb(FkbObject_t object, FkbObjInfo_t *objinfo_p)
 
     if ( object == FkbMaster_e )
     {
+        register void * buf;
 #if IS_ENABLED(CONFIG_BCM_BPM)
-        fkb_p = gbpm_alloc_buf();
-        if ( fkb_p != NULL )
-            fkb_p = (FkBuff_t *)PDATA_TO_PFKBUFF(fkb_p, BCM_PKT_HEADROOM);
+        /* buf points to pData */
+        buf = gbpm_alloc_buf();
+        if ( buf != NULL )
+            fkb_p = (FkBuff_t *)BCM_PDATA_TO_PFKBUFF(buf);
         else
             printk("failed to allocate buffer from BPM\n");
-#else
-        fkb_p = kmalloc(objinfo_p->object_size, GFP_ATOMIC);
-#endif
+#else /* ! CONFIG_BCM_BPM */
+
+        /* buf points to pStart */
+        buf = kmalloc(objinfo_p->object_size, GFP_ATOMIC);
+        if ( buf != NULL )
+            fkb_p = (FkBuff_t *)BCM_PSTART_TO_PFKBUFF(buf);
+        else
+            printk("failed to allocate buffer from kmem cache\n");
+#endif /* ! CONFIG_BCM_BPM */
+
         if ( fkb_p != NULL )
         {
             fkb_p->recycle_hook = (RecycleFuncP)fkbM_recycle;
@@ -431,9 +444,9 @@ void fkbM_recycle(pNBuff_t pNBuff, unsigned long context, unsigned flags)
     {
         struct sk_buff * skb_p = (struct sk_buff *)PNBUFF_2_SKBUFF(pNBuff);
         fkb_assertv( (flags & SKB_DATA_RECYCLE) );
-        fkbM_p = (FkBuff_t *)((uintptr_t)(skb_p->head) - PFKBUFF_PHEAD_OFFSET); 
+        fkbM_p = BCM_PHEAD_TO_PFKBUFF(skb_p->head);
     }
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
         fkbM_p = PNBUFF_2_FKBUFF(pNBuff);
 
@@ -508,8 +521,17 @@ static uint32_t fkb_extend(uint32_t num, FkbObject_t object)
 
     objinfo_p = &fkb_obj_g[object];
 
-    list_p = (FkBuff_t *) kmalloc( num * objinfo_p->object_size, GFP_ATOMIC);
- 
+    if ( object == FkbCloned_e ) {
+        list_p = (FkBuff_t *) kmalloc( num * objinfo_p->object_size, GFP_ATOMIC);
+    } else {
+        register void * pStart;
+
+        pStart = kmalloc( num * objinfo_p->object_size, GFP_ATOMIC);
+        if ( unlikely(pStart != NULL) ) {
+            list_p = BCM_PSTART_TO_PFKBUFF(pStart);
+        }
+    }
+
     fkb_print( "fkb_extend %u FKB %s objects <%px> .. <%px>",
                num, objinfo_p->name, list_p,
                (FkBuff_t*)((uintptr_t)list_p + ((num-1) * objinfo_p->object_size)));
@@ -531,15 +553,19 @@ static uint32_t fkb_extend(uint32_t num, FkbObject_t object)
     for ( i = 0; i < num; i++ )
     {
         fkb_p = fkbNext_p;
-        fkbNext_p = (FkBuff_t *)( (uintptr_t)fkb_p + objinfo_p->object_size );
  
         if ( object == FkbCloned_e )
         {
+            fkbNext_p = (FkBuff_t *)( (uintptr_t)fkb_p + objinfo_p->object_size );
             fkb_p->recycle_hook = (RecycleFuncP)NULL;
             fkb_p->recycle_context = (unsigned long)&fkb_obj_g[FkbCloned_e];
         }
         else
         {
+            register void * pStart_Next;
+
+            pStart_Next = BCM_PFKBUFF_TO_PSTART(fkb_p) + objinfo_p->object_size;
+            fkbNext_p = BCM_PSTART_TO_PFKBUFF(pStart_Next);
             // fkb_set_ref(fkb_p, 0);   ... see fkb_p->list
             fkb_p->recycle_hook = (RecycleFuncP)fkbM_recycle;
             fkb_p->recycle_context = (unsigned long)&fkb_obj_g[FkbMaster_e];
@@ -694,7 +720,8 @@ void fkb_free(FkBuff_t * fkb_p)
 #if IS_ENABLED(CONFIG_BCM_BPM)
         if(fkbM_p->data_hw_recycle_capable)
         {
-            gbpm_recycle_hw_buf(fkbM_p, fkbM_p->recycle_context);
+            gbpm_recycle_hw_buf(BCM_PFKBUFF_TO_PSTART(fkbM_p),
+                                fkbM_p->recycle_context);
             return;
         }
 #endif
@@ -747,7 +774,8 @@ FkBuff_t * fkb_unshare(FkBuff_t * fkb_p)
                          + ((uintptr_t)fkb_p->data - (uintptr_t)fkb_p->master_p);
             fkbM_p->len_word = fkb_p->len_word;
 #if IS_ENABLED(CONFIG_BCM_BPM)
-            fkbM_p->data_hw_recycle_capable = gbpm_is_buf_hw_recycle_capable(fkbM_p);
+            fkbM_p->data_hw_recycle_capable =
+                gbpm_is_buf_hw_recycle_capable(BCM_PFKBUFF_TO_PSTART(fkbM_p));
 #endif
             fkbM_p->mark = fkb_p->mark;
             fkbM_p->priority = fkb_p->priority;
@@ -811,7 +839,8 @@ FkBuff_t * fkb_unshare(FkBuff_t * fkb_p)
                        + ((uintptr_t)fkb_p->data - (uintptr_t)fkb_p);
         fkbM_p->len_word = fkb_p->len_word;
 #if IS_ENABLED(CONFIG_BCM_BPM)
-        fkbM_p->data_hw_recycle_capable = gbpm_is_buf_hw_recycle_capable(fkbM_p);
+        fkbM_p->data_hw_recycle_capable =
+            gbpm_is_buf_hw_recycle_capable(BCM_PFKBUFF_TO_PSTART(fkbM_p));
 #endif
         fkbM_p->mark = fkb_p->mark;
         fkbM_p->priority = fkb_p->priority;
@@ -874,7 +903,8 @@ void fkb_preinit(uint8_t * pBuf, RecycleFuncP recycle_hook,
     fkb_p->data = NULL;
     fkb_p->len_word = 0;
 #if IS_ENABLED(CONFIG_BCM_BPM)
-    fkb_p->data_hw_recycle_capable = gbpm_is_buf_hw_recycle_capable(fkb_p);
+    fkb_p->data_hw_recycle_capable =
+        gbpm_is_buf_hw_recycle_capable(BCM_PFKBUFF_TO_PSTART(fkb_p));
 #endif
     fkb_p->mark = 0;
     fkb_p->priority = 0;
@@ -890,7 +920,7 @@ void fkb_preinit(uint8_t * pBuf, RecycleFuncP recycle_hook,
  *------------------------------------------------------------------------------
  */
 FkBuff_t * _fkb_init(uint8_t * pBuf, uint32_t headroom,
-                     uint8_t * pData, uint32_t len)
+                     uint8_t * data, uint32_t len)
 {
     FkBuff_t * fkb_p = PDATA_TO_PFKBUFF(pBuf, headroom);
     fkb_dbg( 1, "fkb_p<%px> pBuf<%px> headroom<%u> pData<%px> len<%d>",
@@ -902,10 +932,11 @@ FkBuff_t * _fkb_init(uint8_t * pBuf, uint32_t headroom,
                headroom, BCM_PKT_HEADROOM, __FUNCTION__);
 #endif
 
-    fkb_p->data = pData;
+    fkb_p->data = data;
     fkb_p->len_word = 0;/*clear flags */
 #if IS_ENABLED(CONFIG_BCM_BPM)
-    fkb_p->data_hw_recycle_capable = gbpm_is_buf_hw_recycle_capable(fkb_p);
+    fkb_p->data_hw_recycle_capable =
+        gbpm_is_buf_hw_recycle_capable(BCM_PFKBUFF_TO_PSTART(fkb_p));
 #endif
     fkb_p->len  = len;
     fkb_p->ptr  = (void*)NULL;   /* resets dirty_p, blog_p */
@@ -1015,7 +1046,7 @@ pNBuff_t nbuff_align_data(pNBuff_t pNBuff, uint8_t **data_pp,
         skb_p->data = skb_data_p;
         *data_pp = skb_data_p;
     }
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
     {
         FkBuff_t * fkb_p = (FkBuff_t *)PNBUFF_2_PBUF(pNBuff);
@@ -1122,7 +1153,7 @@ void nbuff_flush(pNBuff_t pNBuff, uint8_t * data, int len)
 void nbuff_free_ex(pNBuff_t pNBuff, int in_thread)
 {
     void * pBuf = PNBUFF_2_PBUF(pNBuff);
-    fkb_dbg(1, "pNBuff<%p> pBuf<%p>", pNBuff, pBuf);
+    fkb_dbg(1, "pNBuff<%px> pBuf<%px>", pNBuff, pBuf);
     if ( IS_SKBUFF_PTR(pNBuff) )
     {
 #ifdef CONFIG_BCM_SKB_FREE_THREAD
@@ -1132,12 +1163,56 @@ void nbuff_free_ex(pNBuff_t pNBuff, int in_thread)
 #endif
             dev_kfree_skb_any((struct sk_buff *)pBuf);
     }
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+#if defined(CONFIG_BCM_WKB)
+    else if ( IS_WKBUFF_PTR(pNBuff) )
+    {
+#ifdef CONFIG_BCM_SKB_FREE_THREAD
+        if(in_thread)
+            dev_kfree_wkb_thread(PNBUFF_2_WKBUFF(pNBuff));
+        else
+#endif
+            wkb_free(PNBUFF_2_WKBUFF(pNBuff));
+    }
+#endif /* CONFIG_BCM_WKB */
+    /* else if IS_TGBUFF_PTR */
     else
         fkb_free(pBuf);
     fkb_dbg(2, "<<");
 }
 
+/*
+ * Function   : nbuff_free_pktlist (pktfwd pktlist_t)
+ * Description: Free/recycle a list of network buffer and associated data
+ *
+ * list is based on sk_buff_t::prev or wkbuff_t::link (PKTLIST_PKT_SLL)
+ */
+void nbuff_free_pktlist(pNBuff_t head, pNBuff_t tail, uint32_t len)
+{
+    if (IS_SKBUFF_PTR(head)) {
+        struct sk_buff *skb;
+
+        while (head) {
+            skb = PNBUFF_2_SKBUFF(head);
+            head = PNBUFF_2_SKBUFF(head)->prev;
+            skb->prev = NULL;
+
+            BUG_ON(skb->next);
+
+#ifdef CONFIG_BCM_SKB_FREE_THREAD
+            dev_kfree_skb_thread(skb);
+#else /* ! CONFIG_BCM_SKB_FREE_THREAD */
+            dev_kfree_skb_any(skb);
+#endif /* ! CONFIG_BCM_SKB_FREE_THREAD */
+        }
+#if defined(CONFIG_BCM_WKB)
+    } else if (IS_WKBUFF_PTR(head)) {
+            dev_kfree_wkb_thread_bulk(PNBUFF_2_WKBUFF(head),
+                    PNBUFF_2_WKBUFF(tail), len);
+#endif /* CONFIG_BCM_WKB */
+    } else {
+        printk("[%s] Bulk Free not supported\n", __FUNCTION__);
+    }
+}
 
 /*
  * Function   : nbuff_flushfree
@@ -1159,7 +1234,7 @@ static inline void nbuff_flushfree_ex(pNBuff_t pNBuff, int in_thread)
 #endif
             dev_kfree_skb_irq((struct sk_buff *)pBuf);
     }
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
     {
         FkBuff_t * fkb_p = (FkBuff_t *)pBuf;
@@ -1192,7 +1267,7 @@ static inline void nbuff_invalidatefree_ex(pNBuff_t pNBuff, int in_thread)
 #endif
             dev_kfree_skb_irq((struct sk_buff *)pBuf);
     }
-    /* else if IS_FPBUFF_PTR, else if IS_TGBUFF_PTR */
+    /* else if IS_WKBUFF_PTR, else if IS_TGBUFF_PTR */
     else
     {
         FkBuff_t * fkb_p = (FkBuff_t *)pBuf;
@@ -1205,20 +1280,12 @@ static inline void nbuff_invalidatefree_ex(pNBuff_t pNBuff, int in_thread)
 
 void nbuff_flushfree(pNBuff_t pNBuff)
 {
-#if defined(CONFIG_BCM_PON)
-    nbuff_flushfree_ex(pNBuff, 0);
-#else
     nbuff_flushfree_ex(pNBuff, 1);
-#endif
 }
 
 void nbuff_invalidatefree(pNBuff_t pNBuff)
 {
-#if defined(CONFIG_BCM_PON)
-    nbuff_invalidatefree_ex(pNBuff, 0);
-#else
     nbuff_invalidatefree_ex(pNBuff, 1);
-#endif
 }
 
 /*
@@ -1247,11 +1314,12 @@ FkBuff_t * _fkb_clone(FkBuff_t *fkb_p)
         }
         fkb_set_ref(fkbM_p, 1);
 
-        fkbM_p->data = PFKBUFF_TO_PDATA(fkbM_p, BCM_PKT_HEADROOM);
+        fkbM_p->data = BCM_PFKBUFF_TO_PDATA(fkbM_p);
 
         fkbM_p->len_word = fkb_p->len_word;
 #if IS_ENABLED(CONFIG_BCM_BPM)
-        fkbM_p->data_hw_recycle_capable = gbpm_is_buf_hw_recycle_capable(fkbM_p);
+        fkbM_p->data_hw_recycle_capable =
+            gbpm_is_buf_hw_recycle_capable(BCM_PFKBUFF_TO_PSTART(fkbM_p));
 #endif
         fkbM_p->mark = fkb_p->mark;
         fkbM_p->priority = fkb_p->priority;
@@ -1297,9 +1365,9 @@ void fkb_flush(FkBuff_t * fkb_p, uint8_t * data_p, int len, int cache_op)
     uint8_t * fkb_data_p;
 
     if ( _is_fkb_cloned_pool_(fkb_p) )
-        fkb_data_p = PFKBUFF_TO_PDATA(fkb_p->master_p, BCM_PKT_HEADROOM);
+        fkb_data_p = BCM_PFKBUFF_TO_PDATA(fkb_p->master_p);
     else
-        fkb_data_p = PFKBUFF_TO_PDATA(fkb_p, BCM_PKT_HEADROOM);
+        fkb_data_p = BCM_PFKBUFF_TO_PDATA(fkb_p);
 
     /* headers may have been popped */
     if ( (uintptr_t)data_p < (uintptr_t)fkb_data_p )
@@ -1363,6 +1431,7 @@ EXPORT_SYMBOL(fkb_xlate);
 EXPORT_SYMBOL(nbuff_align_data);
 EXPORT_SYMBOL(nbuff_flush);
 EXPORT_SYMBOL(nbuff_free_ex);
+EXPORT_SYMBOL(nbuff_free_pktlist);
 EXPORT_SYMBOL(nbuff_flushfree);
 EXPORT_SYMBOL(nbuff_invalidatefree);
 EXPORT_SYMBOL(_fkb_clone);

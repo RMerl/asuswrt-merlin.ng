@@ -1,0 +1,8 @@
+LAGER BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+M:	Nobuhiro Iwamatsu <nobuhiro.iwamatsu.yj@renesas.com>
+S:	Maintained
+F:	arch/arm/dts/r8a7790-lager*
+F:	board/renesas/lager/
+F:	configs/lager_defconfig
+F:	include/configs/lager.h

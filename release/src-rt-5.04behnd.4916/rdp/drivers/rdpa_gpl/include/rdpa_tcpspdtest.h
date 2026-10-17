@@ -35,31 +35,46 @@
  * @{
  */
 
-#include "rdd.h"
 #include "rdpa_types.h"
+#include "rdpa_ingress_class_basic.h"
 #include "rdpa_spdtest_common.h"
 
 /** Minimum transmitted packet size for padding */
 #define RDPA_TCPSPDTEST_MIN_TX_PD_LEN  RDPA_SPDTEST_MIN_TX_PD_LEN
 #define RDD_SPDTEST_ENGINE_REF_PKT_HDR_HDR_NUMBER 120
 
-#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_ELEMENT_SIZE  TCPSPDTEST_RING_RTO_TX_SEQ_ELEMENT_SIZE
-#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_SIZE  ((uint32_t)(TCPSPDTEST_RING_RTO_TX_SEQ_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
-#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_MASK  (TCPSPDTEST_RING_RTO_TX_SEQ_SIZE - 1)
-#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_COALESCING_THR  TCPSPDTEST_RING_RTO_TX_SEQ_COALESCING_THR
-#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_ELEMENT_SIZE  TCPSPDTEST_RING_RTO_RETRANS_ELEMENT_SIZE
-#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_SIZE  ((uint32_t)(TCPSPDTEST_RING_RTO_RETRANS_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
-#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_MASK  (TCPSPDTEST_RING_RTO_RETRANS_SIZE - 1)
-#define RDPA_TCPSPDTEST_RING_SACK_OPT_ELEMENT_SIZE  TCPSPDTEST_RING_SACK_OPT_ELEMENT_SIZE
-#define RDPA_TCPSPDTEST_RING_SACK_OPT_SIZE  ((uint32_t)(TCPSPDTEST_RING_SACK_OPT_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
-#define RDPA_TCPSPDTEST_RING_SACK_OPT_MASK  (TCPSPDTEST_RING_SACK_OPT_SIZE - 1)
-#define RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_ELEMENT_SIZE  TCPSPDTEST_RING_PKT_DROP_RX_SEQ_ELEMENT_SIZE
-#define RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_SIZE  ((uint32_t)(TCPSPDTEST_RING_PKT_DROP_RX_SEQ_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
-#define RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_MASK  TCPSPDTEST_RING_PKT_DROP_RX_SEQ_MASK
-#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_NO_ERR  TCPSPDTEST_RING_PKT_DROP_STATE_NO_ERR
-#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_DRIVER_FIXING  TCPSPDTEST_RING_PKT_DROP_STATE_DRIVER_FIXING
-#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_DRIVER_FIXED  TCPSPDTEST_RING_PKT_DROP_STATE_DRIVER_FIXED  
-#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_STREAM_ENDED  TCPSPDTEST_RING_PKT_DROP_STATE_STREAM_ENDED
+#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_ELEMENT_SIZE  8
+#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_RDD_SIZE  131072
+#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_SIZE  ((uint32_t)(RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_RDD_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
+#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_MASK  (RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_RDD_SIZE - 1)
+#define RDPA_TCPSPDTEST_RING_RTO_TX_SEQ_COALESCING_THR  8
+#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_ELEMENT_SIZE  4
+#if defined(BCM6855)
+#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_RDD_SIZE  65536
+#else
+#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_RDD_SIZE  16384
+#endif
+#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_SIZE  ((uint32_t)(RDPA_TCPSPDTEST_RING_RTO_RETRANS_RDD_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
+#define RDPA_TCPSPDTEST_RING_RTO_RETRANS_MASK  (RDPA_TCPSPDTEST_RING_RTO_RETRANS_RDD_SIZE - 1)
+#define RDPA_TCPSPDTEST_RING_SACK_OPT_ELEMENT_SIZE  8
+#if defined(BCM6855)
+#define RDPA_TCPSPDTEST_RING_SACK_OPT_RDD_SIZE  32768
+#else
+#define RDPA_TCPSPDTEST_RING_SACK_OPT_RDD_SIZE  16384
+#endif
+#define RDPA_TCPSPDTEST_RING_SACK_OPT_SIZE  ((uint32_t)(RDPA_TCPSPDTEST_RING_SACK_OPT_RDD_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
+#define RDPA_TCPSPDTEST_RING_SACK_OPT_MASK  (RDPA_TCPSPDTEST_RING_SACK_OPT_RDD_SIZE - 1)
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_ELEMENT_SIZE  8
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_RDD_SIZE  16384 
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_SIZE  ((uint32_t)(RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_RDD_SIZE + sizeof(uint64_t))) /* Add rd/wr idx space */
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_MASK  (RDPA_TCPSPDTEST_RING_PKT_DROP_RX_SEQ_RDD_SIZE - 1)
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_NO_ERR  0
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_DRIVER_FIXING  1
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_DRIVER_FIXED  2 
+#define RDPA_TCPSPDTEST_RING_PKT_DROP_STATE_STREAM_ENDED  3
+#define RDPA_TCPSPDTEST_CWND_DYN_CONTROL_NONE  0
+#define RDPA_TCPSPDTEST_CWND_DYN_CONTROL_FREEZE  1
+#define RDPA_TCPSPDTEST_CWND_DYN_CONTROL_DECREASE  2
 
 typedef enum {
     RDPA_TCPSPDTEST_FIELD_GLOBAL_INFO_ALL = 0,
@@ -73,6 +88,11 @@ typedef enum {
     RDPA_TCPSPDTEST_FIELD_TCB_EXPECTED_BYTES,
     RDPA_TCPSPDTEST_FIELD_TCB_SACK_BYTES,
     RDPA_TCPSPDTEST_FIELD_TCB_DROP_DRIVER_WAKEUP,
+    RDPA_TCPSPDTEST_FIELD_TCB_RTO_EVENT,
+    RDPA_TCPSPDTEST_FIELD_TCB_CWND,
+    RDPA_TCPSPDTEST_FIELD_TCB_CWND_MAX,
+    RDPA_TCPSPDTEST_FIELD_TCB_CWND_RTT_FACTOR,
+    RDPA_TCPSPDTEST_FIELD_TCB_CWND_CONTROL,
 } rdpa_tcpspdtest_field_tcb_t;
 
 typedef enum {
@@ -123,10 +143,10 @@ typedef struct {
     uint32_t txed_pkts;                 /**< Num of txed packets */
     uint32_t freed_pkts;                /**< Num of freed packets */
     uint32_t ack_seq;                   /**< Calculated ack seq */
-    uint16_t dynack_bytes_thr;          /**< Ack reply bytes threshold */
+    uint8_t  dynack_pkts_thr;           /**< Ack reply bytes threshold */
     uint8_t  dynack_thr_upd_rate;       /**< Ack reply threshold update rate */
     uint32_t tx_seq;                    /**< Last transmitted seq */
-    uint16_t bad_pkts;                  /**< Num of received packets with unexpected seq */
+    uint8_t  bad_pkts;                  /**< Num of received packets with unexpected seq */
     uint16_t no_dispatcher_credits;     /**< Num of dispatcher no credits */
     uint16_t no_pktgen_tx_credits;      /**< Num of pktgen_tx no credits */
     uint16_t src_port;                  /**< Tcp source port */
@@ -138,8 +158,11 @@ typedef struct {
     uint32_t up_cwnd_initial;           /**< Upload tcp initial tx congestion window */
     uint32_t up_cwnd_max;               /**< Upload tcp max tx congestion window */
     uint8_t  up_cwnd_rtt_factor;        /**< Upload tcp congestion window rtt factor */
+    uint8_t  up_cwnd_control;           /**< Upload runner cwnd control by driver */
     uint32_t up_last_ack_seq;           /**< Upload last rx ack sequence */
+    uint32_t up_last_ack_time;          /**< Upload last rx ack time */
     uint32_t up_sack_bytes;             /**< Upload current number of acknowledged sack bytes */
+    uint8_t up_rto_event;               /**< Upload is rto event */
     uint8_t dn_is_pkt_drop_driver_wakeup; /**< Download is pkt drop wakeup */
     uint8_t is_upload;                  /**< Is Upload stream content */
 } rdpa_tcpspdtest_engine_tcb_t;

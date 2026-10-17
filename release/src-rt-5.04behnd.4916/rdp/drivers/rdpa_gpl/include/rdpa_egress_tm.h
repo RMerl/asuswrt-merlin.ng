@@ -54,26 +54,26 @@
 #define RDPA_TM_MAX_DS_SCHED        (RDPA_MAX_DS_TM_QUEUE + RDPA_MAX_SERVICE_QUEUES)
 #define RDPA_TM_MAX_SCHED_ELEMENTS 32   /**< Max number of subsidiary elements in egress-TM group */
 #define RDPA_WEIGHT_UNASSIGNED 0
-#ifdef XRDP
 #define RDPA_MAX_EGRESS_QUEUES 32       /**< Max number of egress queues per egress-TM element */
 #define RDPA_MAX_QUEUE_STATS RDPA_MAX_EGRESS_QUEUES
-#else
-#define RDPA_MAX_EGRESS_QUEUES 8        /**< Max number of egress queues per egress-TM element */
-#define RDPA_MAX_QUEUE_STATS 32
-#endif
 #define RDPA_DFT_NUM_EGRESS_QUEUES 8    /**< Default number of egress queues per egress-TM element */
-#define RDPA_MAX_WEIGHT 63
+#define RDPA_MAX_WEIGHT 100
 #define RDPA_MIN_WEIGHT 1
 #define RDPA_MAX_WRED_PROFILE_PER_DIRECTION 8  /**< Max number of WRED profilers */
 #define RDPA_WRED_MAX_DROP_PROBABILITY     100
-#ifdef XRDP
 #define RDPA_ETH_TX_PRIORITY_QUEUE_THRESHOLD  0xFFFFFFF
-#else
-#define RDPA_ETH_TX_PRIORITY_QUEUE_THRESHOLD  1024
-#endif
 #include "rdpa_egress_tm_basic.h"
 #include "bdmf_interface.h"
 #include "rdpa_rate_limit.h"
+
+#ifdef DCL_SUPPORT
+/* seperate structure for tm DCL data*/
+typedef struct {
+    uint32_t epon_request;                      /* is this image support epon*/
+    uint32_t mirror_request;                    /* is this image support mirror*/
+    uint32_t port_stat_request;                 /* is this image port_stat*/
+} dcl_tm_debug_flag_cfg_t;
+#endif
 
 /** Egress-TM next level type */
 /* The secondary level was created to accomodate L4S or the DPI schedulers. Since it can
@@ -133,7 +133,6 @@ typedef enum {
     rdpa_tm_drop_alg_flow_ctrl,         /**< Queues with this profile work as flow control */
     rdpa_tm_drop_alg_codel,             /**< CoDel */
     rdpa_tm_drop_alg_pi2,               /**< PI2 */
-    rdpa_tm_drop_alg_dualq_pi2,         /**< PI2 in a dual queue arrangement (L4S) */
     rdpa_tm_drop_alg_dualq_laqm,        /**< LAQM in a dual queue arrangement (L4S) */
     rdpa_tm_drop_alg__num_of            /* Number of drop algorithms */
 } rdpa_tm_drop_alg;
@@ -159,7 +158,7 @@ typedef struct {
     uint32_t reserved_packet_buffers; /**< Top priority packet buffer number. 0 - no reservation \XRDP_LIMITED */
     uint32_t priority_mask_0;    /**< \DSLRDP_LIMITED */
     uint32_t priority_mask_1;    /**< \DSLRDP_LIMITED */
-    bdmf_boolean stat_enable;    /**< Enable queue statistics */
+    bdmf_boolean qstat_enable;   /**< Enable queue statistics */
     bdmf_boolean best_effort;    /**< Best effort queue */
     bdmf_object_handle rl_cfg; /**< Rate limit Object for queue_cfg */
     bdmf_boolean exclusive;      /**< high priority queue */
@@ -178,6 +177,13 @@ typedef struct {
     bdmf_object_handle queue_tm; /**< egress_tm object holding the queue */
 } rdpa_tm_queue_location_t;
 
+/** Subsidiary type
+ */
+typedef enum
+{
+    rdpa_subsidiary_generic,     /**< Default, general subsidiary egress_tm */
+    rdpa_subsidiary_l4s,         /**< L4S subsidiary egress_tm */
+} rdpa_subsidiary_type;
 
 #ifdef BDMF_DRIVER
 extern bdmf_attr_enum_table_t orl_prty_enum_table;
@@ -195,12 +201,21 @@ extern epon_link_shaper_cb_t epon_link_shaper_cb;
 /* API to check if the given queue_id exists for the vport */
 int egress_tm_is_empty_on_channel(bdmf_object_handle tm_obj, bdmf_boolean *is_empty);
 
-#ifdef XRDP
-/* Check if egress_tm hierarchy contains queues with drop_alg==codel */
-int egress_tm_if_has_codel_queues(bdmf_object_handle tm_obj);
-#endif
+/* Check if egress_tm hierarchy contains AQM queues */
+int egress_tm_if_has_aqm_queues(bdmf_object_handle tm_obj);
 
 rdpa_tm_rl_cfg_t *egress_tm_rate_limit_get_by_pointer(bdmf_object_handle _obj_, rdpa_tm_rl_cfg_t *cfg);
+
+void rdpa_update_wrr(bdmf_object_handle _obj_);
+int rdpa_egress_tm_lan_port_queue_to_rdd(rdpa_port_type port_type, uint32_t port_index, uint32_t queue_id, uint16_t *qm_queue);
+int rdpa_egress_tm_find_queue_id(bdmf_object_handle egress_tm, uint32_t queue_id, bdmf_object_handle *_egress_tm, uint8_t *_index);
+
+#ifdef DCL_SUPPORT
+void tm_dcl_set_xepon_support(void);
+void tm_dcl_set_epon_support(void);
+void tm_dcl_pkt_size_stat_set(bdmf_boolean enable);
+void tm_dcl_tx_mirror_set(void);
+#endif
 
 /** @} end of sched Doxygen group */
 

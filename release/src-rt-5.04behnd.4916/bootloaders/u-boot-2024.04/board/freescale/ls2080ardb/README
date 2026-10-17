@@ -1,0 +1,134 @@
+Overview
+--------
+The LS2080A Reference Design (RDB) is a high-performance computing,
+evaluation, and development platform that supports the QorIQ LS2080A, LS2088A
+Layerscape Architecture processor.
+
+The LS2081A Reference Design (RDB) is a high-performance computing,
+evaluation, and development platform that supports the QorIQ LS2081A
+Layerscape Architecture processor.More details in below sections
+
+LS2080A, LS2088A, LS2081A SoC Overview
+--------------------------------------
+Please refer arch/arm/cpu/armv8/fsl-layerscape/doc/README.soc for LS2080A,
+LS2081A, LS2088A SoC overview.
+
+ LS2080ARDB board Overview
+ -----------------------
+ - SERDES Connections, 16 lanes supporting:
+      - PCI Express - 3.0
+      - SATA 3.0
+      - 10GBase-R
+ - DDR Controller
+     - Two ports of 72-bits (8-bits ECC) DDR4. Each port supports four
+       chip-selects and two DIMM connectors. Support is up to 2133MT/s.
+     - One port of 40-bits (8-bits ECC) DDR4 which supports four chip-selects
+       and two DIMM connectors. Support is up to 1600MT/s.
+ -IFC/Local Bus
+    - IFC rev. 2.0 implementation supporting Little Endian connection scheme.
+    - 128 MB NOR flash 16-bit data bus
+    - One 2 GB NAND flash with ECC support
+    - CPLD connection
+ - USB 3.0
+    - Two high speed USB 3.0 ports
+    - First USB 3.0 port configured as Host with Type-A connector
+    - Second USB 3.0 port configured as OTG with micro-AB connector
+ - SDHC adapter
+    - SD Card Rev 2.0 and Rev 3.0
+ - DSPI
+    - 128 MB high-speed flash Memory for boot code and storage (up to 108MHz)
+ - 4 I2C controllers
+ - Two SATA onboard connectors
+ - UART
+ - ARM JTAG support
+
+ LS2081ARDB board Overview
+ -------------------------
+ LS2081ARDB board is similar to LS2080ARDB board
+ with few differences like
+  - Hosts LS2081A SoC
+  - Default boot source is QSPI-boot
+  - Does not have IFC interface
+  - RTC and QSPI flash devices are different
+  - Provides QIXIS access via I2C
+
+Memory map from core's view
+----------------------------
+0x00_0000_0000 .. 0x00_000F_FFFF	Boot Rom
+0x00_0100_0000 .. 0x00_0FFF_FFFF	CCSR
+0x00_1800_0000 .. 0x00_181F_FFFF	OCRAM
+0x00_2000_0000 .. 0x00_2FFF_FFFF	QSPI region #1
+0x00_3000_0000 .. 0x00_3FFF_FFFF	IFC region #1
+0x00_8000_0000 .. 0x00_FFFF_FFFF	DDR region #1
+0x05_1000_0000 .. 0x05_FFFF_FFFF	IFC region #2
+0x80_8000_0000 .. 0xFF_FFFF_FFFF	DDR region #2
+
+Other addresses are either reserved, or not used directly by U-Boot.
+This list should be updated when more addresses are used.
+
+IFC region map from core's view
+-------------------------------
+During boot i.e. IFC Region #1:-
+  0x30000000 - 0x37ffffff : 128MB : NOR flash
+  0x3C000000 - 0x40000000 : 64MB  : CPLD
+
+After relocate to DDR i.e. IFC Region #2:-
+  0x5_1000_0000..0x5_1fff_ffff	Memory Hole
+  0x5_2000_0000..0x5_3fff_ffff	IFC CSx (CPLD, NAND and others 512MB)
+  0x5_4000_0000..0x5_7fff_ffff	ASIC or others 1GB
+  0x5_8000_0000..0x5_bfff_ffff	IFC CS0 1GB (NOR/Promjet)
+  0x5_C000_0000..0x5_ffff_ffff	IFC CS1 1GB (NOR/Promjet)
+
+Booting Options
+---------------
+a) NOR boot
+b) NAND boot
+c) QSPI boot
+
+Memory map for NOR boot
+-------------------------
+Image				Flash Offset
+RCW+PBI				0x00000000
+Boot firmware (U-Boot)		0x00100000
+Boot firmware Environment	0x00300000
+PPA firmware			0x00400000
+Secure Headers			0x00600000
+Cortina PHY firmware		0x00980000
+DPAA2 MC			0x00A00000
+DPAA2 DPL			0x00D00000
+DPAA2 DPC			0x00E00000
+Kernel.itb			0x01000000
+
+cfg_rcw_src switches needs to be changed for booting from different option.
+Refer to board documentation for correct switch setting.
+
+QSPI boot details
+===================
+Supported only for
+ LS2088ARDB RevF board with LS2088A SoC.
+
+Images needs to be copied to QSPI flash
+as per memory map given below.
+
+Memory map for QSPI flash
+-------------------------
+Image				Flash Offset
+RCW+PBI				0x00000000
+Boot firmware (U-Boot)		0x00100000
+Boot firmware Environment	0x00300000
+PPA firmware			0x00400000
+Cortina PHY firmware		0x00980000
+DPAA2 MC			0x00A00000
+DPAA2 DPL			0x00D00000
+DPAA2 DPC			0x00E00000
+Kernel.itb			0x01000000
+
+Booting Linux flavors which do not support 48-bit VA (< Linux 3.18)
+-------------------------------------------------------------------
+One needs to use appropriate bootargs to boot Linux flavors which do
+not support 48-bit VA (for e.g. < Linux 3.18) by appending mem=2048M, as shown
+below:
+
+=> setenv bootargs 'console=ttyS1,115200 root=/dev/ram
+   earlycon=uart8250,mmio,0x21c0600,115200 default_hugepagesz=2m hugepagesz=2m
+   hugepages=16 mem=2048M'

@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -51,5 +51,21 @@ int rdd_ag_cpu_rx_ipv6_host_address_crc_table_set(uint32_t _entry, uint32_t bits
 int rdd_ag_cpu_rx_ipv6_host_address_crc_table_set_core(uint32_t _entry, uint32_t bits, int core_id);
 int rdd_ag_cpu_rx_ipv6_host_address_crc_table_get(uint32_t _entry, uint32_t *bits);
 int rdd_ag_cpu_rx_ipv6_host_address_crc_table_get_core(uint32_t _entry, uint32_t *bits, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_addr_set(uint32_t low, uint32_t high);
+int rdd_ag_cpu_rx_rnr_wr_test_addr_set_core(uint32_t low, uint32_t high, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_addr_get(uint32_t *low, uint32_t *high);
+int rdd_ag_cpu_rx_rnr_wr_test_addr_get_core(uint32_t *low, uint32_t *high, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_from_set(uint32_t bits);
+int rdd_ag_cpu_rx_rnr_wr_test_from_set_core(uint32_t bits, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_from_get(uint32_t *bits);
+int rdd_ag_cpu_rx_rnr_wr_test_from_get_core(uint32_t *bits, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_start_set(uint8_t bits);
+int rdd_ag_cpu_rx_rnr_wr_test_start_set_core(uint8_t bits, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_start_get(uint8_t *bits);
+int rdd_ag_cpu_rx_rnr_wr_test_start_get_core(uint8_t *bits, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_to_set(uint32_t bits);
+int rdd_ag_cpu_rx_rnr_wr_test_to_set_core(uint32_t bits, int core_id);
+int rdd_ag_cpu_rx_rnr_wr_test_to_get(uint32_t *bits);
+int rdd_ag_cpu_rx_rnr_wr_test_to_get_core(uint32_t *bits, int core_id);
 
 #endif /* _RDD_AG_CPU_RX_H_ */

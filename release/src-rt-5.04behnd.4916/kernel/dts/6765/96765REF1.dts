@@ -55,6 +55,7 @@
                       ##5- port_sgmii <-> phy_serdes - phy_cascade
          */
 	phy_xphy {
+		wake-on-lan;
 		status = "okay";
 	};
 	phy_cascade {
@@ -62,6 +63,7 @@
 	};
 	phy_serdes {
 		phy-handle = <&phy_cascade>;
+		wake-on-lan;
 		status = "okay";
 	};
 };

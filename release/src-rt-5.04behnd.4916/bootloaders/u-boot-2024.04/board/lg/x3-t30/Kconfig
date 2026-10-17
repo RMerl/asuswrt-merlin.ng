@@ -1,0 +1,12 @@
+if TARGET_X3_T30
+
+config SYS_BOARD
+	default "x3-t30"
+
+config SYS_VENDOR
+	default "lg"
+
+config SYS_CONFIG_NAME
+	default "x3-t30"
+
+endif

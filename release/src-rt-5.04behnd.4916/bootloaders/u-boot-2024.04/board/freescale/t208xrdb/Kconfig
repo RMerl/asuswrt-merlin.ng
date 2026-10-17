@@ -1,0 +1,15 @@
+if TARGET_T2080RDB
+
+config SYS_BOARD
+	default "t208xrdb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "T208xRDB"
+
+config T2080RDB_REV_D
+	bool "Support for T2080RDB revisions D and up"
+
+endif

@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the Hihope RZ/G2N board
+ *
+ * Copyright (C) 2021 Renesas Electronics Corp.
+ */
+
+#include "r8a774b1-hihope-rzg2n-ex.dts"
+#include "r8a774b1-u-boot.dtsi"
+
+&gpio3 {
+	bt_reg_on{
+		gpio-hog;
+		gpios = <13 GPIO_ACTIVE_HIGH>;
+		output-low;
+		line-name = "bt-reg-on";
+	};
+};
+
+&gpio4 {
+	wlan_reg_on{
+		gpio-hog;
+		gpios = <6 GPIO_ACTIVE_HIGH>;
+		output-low;
+		line-name = "wlan-reg-on";
+	};
+};

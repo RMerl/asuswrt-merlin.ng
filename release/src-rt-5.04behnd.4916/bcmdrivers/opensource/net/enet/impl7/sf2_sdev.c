@@ -56,12 +56,12 @@ int sf2_switchdev_port_attr_get(struct net_device *dev,
     case SWITCHDEV_ATTR_ID_PORT_PARENT_ID:
         if (port) {
             attr->u.ppid.id_len = sizeof(port->obj_name) > MAX_PHYS_ITEM_ID_LEN ? MAX_PHYS_ITEM_ID_LEN : sizeof(port->obj_name);
-            // if port is hw fwd enabled, use  real switch name
-            if (is_netdev_hw_switch(port->dev))
-                strncpy(attr->u.ppid.id, port->p.parent_sw->obj_name, attr->u.ppid.id_len-1);
-            // otherwise if port is part of bonding group, use bond master name
-            else if (port->p.bond_grp && port->p.bond_grp->bond_dev)
+            // if port is part of bonding group, use bond master name
+            if (port->p.bond_grp && port->p.bond_grp->bond_dev)
                 strncpy(attr->u.ppid.id, port->p.bond_grp->bond_dev->name, attr->u.ppid.id_len-1);
+            // otherwise if port is hw fwd enabled, use  real switch name
+            else if (is_netdev_hw_switch(port->dev))
+                strncpy(attr->u.ppid.id, port->p.parent_sw->obj_name, attr->u.ppid.id_len-1);
             // otherwise use its own name to differentiate from real switch name
             else
                 strncpy(attr->u.ppid.id, port->obj_name, attr->u.ppid.id_len-1);

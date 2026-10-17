@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		tee-os {
+			filename = "tee-pager.bin";
+		};
+	};
+};

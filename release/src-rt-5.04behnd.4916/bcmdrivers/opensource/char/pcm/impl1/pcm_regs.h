@@ -104,10 +104,11 @@ struct pcm_ctrl_regs
 #define  PCM_RX_IRQ              0x00000008     // IUDMA interrupts
 #define  PCM_TX_IRQ              0x00000010
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM_PON) || defined(CONFIG_BCM94908) || \
-    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
-    defined(CONFIG_BCM96878)  || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96756) || \
-    defined(CONFIG_BCM96855)  || defined(CONFIG_BCM96888)  || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM96765)/* IMPL1 */
+#if defined(CONFIG_BCM_PON) || \
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+    defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96756)  || \
+    defined(CONFIG_BCM96855)  || defined(CONFIG_BCM96888)  || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || \
+    defined(CONFIG_BCM96765)  || defined(CONFIG_BCM96766)
     uint32        reg_pcm_clk_cntl_0;             // (0x210) PCM Clock Control 0 (NCO_FCW_MISC)
     uint32        reg_pcm_clk_cntl_1;             // (0x214) PCM Clock Control 1 (NCO_SCALE)
     uint32        reg_pcm_clk_cntl_2;             // (0x218) PCM Clock Control 2
@@ -120,7 +121,9 @@ struct pcm_ctrl_regs
     uint32        pcm_zds_intf;                    // ZSI Config register ( New in 63138 )
     uint32        pcm_msif_intf;                   // ISI Config register ( New in 63138 )
     uint32        pcm_ntr_div_clk_ctrl;            // NTR feedback clock divider ( New in 63138 )
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM96765)
+#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837) || defined(CONFIG_BCM96765) || \
+    defined(CONFIG_BCM96766)
+
     uint32        pcm_pcm_misc; /* 2c, fix the time slot shift issue */
 #define   PCM_TIME_SLOT_SHIFT_FIX_2_EN          0x00000002 //Reset value is 0x1
 #define   PCM_TIME_SLOT_SHIFT_FIX_1_EN          0x00000001 //Reset value is 0x0
@@ -132,11 +135,12 @@ struct pcm_ctrl_regs
     uint32 ignore[5];
 #endif // !(defined(CONFIG_BCM94912) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96756))
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) \
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) \
     || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) \
-    || defined(CONFIG_BCM96878) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) \
+    || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) \
     || defined(CONFIG_BCM96756) || defined(CONFIG_BCM96855)  || defined(CONFIG_BCM96888) \
-    || defined(CONFIG_BCM968880)|| defined(CONFIG_BCM96837)  || defined(CONFIG_BCM96765)
+    || defined(CONFIG_BCM968880)|| defined(CONFIG_BCM96837)  || defined(CONFIG_BCM96765) \
+    || defined(CONFIG_BCM96766)
   #define PCM_MAX_TIMESLOT_REGS   4
 #else
   #define PCM_MAX_TIMESLOT_REGS   16

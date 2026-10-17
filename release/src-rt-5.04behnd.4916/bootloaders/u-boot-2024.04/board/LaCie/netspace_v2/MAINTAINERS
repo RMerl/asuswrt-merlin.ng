@@ -1,0 +1,22 @@
+NETSPACE_V2 BOARDS
+M:	Simon Guinot <simon.guinot@sequanux.org>
+S:	Maintained
+F:	arch/arm/dts/kirkwood-is2.dts
+F:	arch/arm/dts/kirkwood-is2-u-boot.dtsi
+F:	arch/arm/dts/kirkwood-ns2-common.dtsi
+F:	arch/arm/dts/kirkwood-ns2.dts
+F:	arch/arm/dts/kirkwood-ns2lite.dts
+F:	arch/arm/dts/kirkwood-ns2lite-u-boot.dtsi
+F:	arch/arm/dts/kirkwood-ns2max.dts
+F:	arch/arm/dts/kirkwood-ns2max-u-boot.dtsi
+F:	arch/arm/dts/kirkwood-ns2mini.dts
+F:	arch/arm/dts/kirkwood-ns2mini-u-boot.dtsi
+F:	arch/arm/dts/kirkwood-ns2-u-boot.dtsi
+F:	board/LaCie/common/
+F:	board/LaCie/netspace_v2/
+F:	include/configs/lacie_kw.h
+F:	configs/inetspace_v2_defconfig
+F:	configs/netspace_lite_v2_defconfig
+F:	configs/netspace_max_v2_defconfig
+F:	configs/netspace_mini_v2_defconfig
+F:	configs/netspace_v2_defconfig

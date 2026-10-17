@@ -1,5 +1,5 @@
 
-DTC = dtc-2cd89f862cdb04d91c5d59c5b39647f7d5d5b3b8
+DTC = dtc-1.7.2
 
 all:
 	tar --skip-old-files -xf $(DTC).tar.gz

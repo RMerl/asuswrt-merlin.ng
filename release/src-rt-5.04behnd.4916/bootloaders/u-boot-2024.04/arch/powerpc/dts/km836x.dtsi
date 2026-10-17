@@ -1,0 +1,182 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Hitachi Power Grids km836x common ports Device Tree Source
+ *
+ * Copyright (C) 2020 Heiko Schocher <hs@denx.de>
+ *
+ */
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		PowerPC,8360@0 {
+			device_type = "cpu";
+			reg = <0x0>;
+			d-cache-line-size = <32>;	/* 32 bytes */
+			i-cache-line-size = <32>;	/* 32 bytes */
+			d-cache-size = <32768>;	/* L1, 32K */
+			i-cache-size = <32768>;	/* L1, 32K */
+			timebase-frequency = <0>; /* Filled in by U-Boot */
+			bus-frequency = <0>; /* Filled in by U-Boot */
+			clock-frequency = <0>; /* Filled in by U-Boot */
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0>;		/* Filled in by U-Boot */
+	};
+
+	soc: soc8360@e0000000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "soc";
+		compatible = "fsl,mpc8360-immr", "simple-bus";
+		ranges = <0x0 0xe0000000 0x00200000>;
+		reg = <0xe0000000 0x00000200>;
+		bus-frequency = <0>;/* Filled in by U-Boot */
+
+		/* power management control module*/
+		pmc: power@b00 {
+			compatible = "fsl,mpc8360-pmc", "fsl,mpc8349-pmc";
+			reg = <0xb00 0x100 0xa00 0x100>;
+			interrupts = <80 0x8>;
+			interrupt-parent = <&ipic>;
+		};
+
+		i2c0: i2c@3000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			cell-index = <0>;
+			compatible = "fsl,mpc8313-i2c","fsl-i2c";
+			reg = <0x3000 0x100>;
+			interrupts = <14 0x8>;
+			interrupt-parent = <&ipic>;
+			clock-frequency = <100000>;
+		};
+
+		serial0: serial@4500 {
+			cell-index = <0>;
+			device_type = "serial";
+			compatible = "fsl,ns16550", "ns16550";
+			reg = <0x4500 0x100>;
+			clock-frequency = <264000000>;
+			interrupts = <9 0x8>;
+			interrupt-parent = <&ipic>;
+			status = "disabled";
+		};
+
+		serial1: serial@4600 {
+			cell-index = <1>;
+			device_type = "serial";
+			compatible = "fsl,ns16550", "ns16550";
+			reg = <0x4600 0x100>;
+			clock-frequency = <133333333>;
+			interrupts = <10 0x8>;
+			interrupt-parent = <&ipic>;
+			status = "disabled";
+		};
+
+		ipic: pic@700 {
+			#address-cells = <0>;
+			#interrupt-cells = <2>;
+			compatible = "fsl,pq2pro-pic", "fsl,ipic";
+			interrupt-controller;
+			reg = <0x700 0x100>;
+		};
+
+		par_io: par_io@1400 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0x1400 0x100>;
+			ranges;
+			compatible = "fsl,mpc8360-par_io";
+			device_type = "par_io";
+			num-ports = <7>;
+
+			qe_pio_c: gpio-controller@30 {
+				#gpio-cells = <2>;
+				compatible = "fsl,mpc8360-qe-pario-bank",
+					     "fsl,mpc8323-qe-pario-bank";
+				reg = <0x1430 0x18>;
+				gpio-controller;
+			};
+		};
+
+		qe: qe@100000 {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "fsl,qe";
+			ranges = <0x0 0x100000 0x100000>;
+			reg = <0x100000 0x480>;
+			clock-frequency = <0>;	/* Filled in by U-Boot */
+			brg-frequency = <0>;	/* Filled in by U-Boot */
+			bus-frequency = <0>;	/* Filled in by U-Boot */
+
+			muram@10000 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "fsl,qe-muram", "fsl,cpm-muram";
+				ranges = <0x0 0x00010000 0x0000c000>;
+
+				data-only@0 {
+					compatible = "fsl,qe-muram-data",
+						     "fsl,cpm-muram-data";
+					reg = <0x0 0xc000>;
+				};
+			};
+
+			qeic: interrupt-controller@80 {
+				interrupt-controller;
+				compatible = "fsl,qe-ic";
+				#address-cells = <0>;
+				#interrupt-cells = <1>;
+				reg = <0x80 0x80>;
+				big-endian;
+				interrupts = <
+					32 0x8 /* ucc1 */
+					33 0x8 /* ucc2 */
+					34 0x8 /* ucc3 */
+					35 0x8 /* ucc4 */
+					40 0x8 /* ucc1 */
+				>;
+				interrupt-parent = <&ipic>;
+			};
+
+			spi0: spi@4c0 {
+				cell-index = <0>;
+				compatible = "fsl,spi";
+				reg = <0x4c0 0x40>;
+				interrupts = <2>;
+				interrupt-parent = <&qeic>;
+				mode = "qe";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				pio-handle = <&pio_spi>;
+			};
+
+			bootcount@0x1bff8 {
+				device_type = "bootcount";
+				compatible = "u-boot,bootcount";
+				reg = <0x1bff8 0x08>;
+			};
+		};
+	};
+
+	localbus: localbus@e0005000 {
+		#address-cells = <2>;
+		#size-cells = <1>;
+		compatible = "fsl,mpc8360-localbus", "fsl,pq2pro-localbus",
+			     "simple-bus";
+		reg = <0xe0005000 0xd8>;
+	};
+};
+
+#include "km836x-uboot.dtsi"

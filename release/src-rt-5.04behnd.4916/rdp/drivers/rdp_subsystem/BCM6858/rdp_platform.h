@@ -68,15 +68,14 @@ extern "C"
 
 /* SBPM */
 #define SBPM_BASE_ADDRESS                   0
-#define SBPM_MAX_BUFFER_NUMBER              0xFFF
-#define SBPM_INIT_OFFSET                    (SBPM_MAX_BUFFER_NUMBER - RDPA_MAX_TUNNELS)  /* last buffers used for tunneling */
+#define SBPM_INIT_OFFSET                    (PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER - RDPA_MAX_TUNNELS)  /* last buffers used for tunneling */
 #define SBPM_UG0_BN_THRESHOLD               0x3FD
 #define SBPM_UG0_EXCL_LOW_THRESHOLD         0x320
 #define SBPM_UG0_EXCL_LOW_HIST              0x14
 #define SBPM_UG1_BN_THRESHOLD               0xC00
 #define SBPM_UG1_EXCL_LOW_THRESHOLD         0x800
 #define SBPM_UG1_EXCL_LOW_HIST              0x14
-#define SBPM_MAX_NUM_OF_BNS                 ((SBPM_MAX_BUFFER_NUMBER + 1) - RDPA_MAX_TUNNELS)
+#define SBPM_MAX_NUM_OF_BNS                 ((PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER + 1) - RDPA_MAX_TUNNELS)
 #define TUNNEL_BN_FIRST                     SBPM_MAX_NUM_OF_BNS
 
 /* BBH_RX */
@@ -116,13 +115,8 @@ extern "C"
 #define QM_NUM_REPORTED_QUEUES  160
 
 /* UG max default thresholds */
-#ifndef G9991_PRV
 #define DS_FPM_UG_DEFAULT_PERCENTAGE        (34)
 #define US_FPM_UG_DEFAULT_PERCENTAGE        (66)
-#else
-#define DS_FPM_UG_DEFAULT_PERCENTAGE        (60)
-#define US_FPM_UG_DEFAULT_PERCENTAGE        (40)
-#endif
 #define WLAN_FPM_UG_DEFAULT_PERCENTAGE      (0)
 
 #define DS_FPM_UG_NO_XEPON_PERCENTAGE       (13)

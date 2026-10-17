@@ -1,0 +1,79 @@
+if TARGET_COLIBRI_IMX7
+
+choice
+	prompt "Colibri iMX7S/D variant"
+
+config TARGET_COLIBRI_IMX7_NAND
+	bool "Support Colibri iMX7 Solo 256MB/Dual 512MB (raw NAND) modules"
+	imply NAND_MXS
+	help
+	  Choose this option if you build for a Toradex Colibri iMX7S
+	  256MB or Colibri iMX7D 512MB module which do have raw NAND
+	  on-module.
+
+config TARGET_COLIBRI_IMX7_EMMC
+	bool "Support Colibri iMX7 Dual 1GB (eMMC) modules"
+	help
+	  Choose this option if you build for a Toradex Colibri iMX7D
+	  1GB module which does have eMMC on-module.
+
+endchoice
+
+config SYS_BOARD
+	default "colibri_imx7"
+
+config SYS_VENDOR
+	default "toradex"
+
+config SYS_CONFIG_NAME
+	default "colibri_imx7"
+
+config COLIBRI_IMX7_EXT_PHYCLK
+	bool "External oscillator for Ethernet PHY clock provided"
+	help
+	  Select this if your module provides a external Ethernet PHY
+	  clock source.
+	default y
+
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_CFG_BLOCK_2ND_ETHADDR
+	default y
+
+if TARGET_COLIBRI_IMX7_NAND
+
+config TDX_HAVE_NAND
+	default y
+
+config TDX_CFG_BLOCK_OFFSET
+	default "2048"
+
+config TDX_CFG_BLOCK_OFFSET2
+	default "133120"
+
+endif
+
+if TARGET_COLIBRI_IMX7_EMMC
+
+config TDX_HAVE_MMC
+	default y
+
+config TDX_CFG_BLOCK_DEV
+	default "0"
+
+config TDX_CFG_BLOCK_PART
+	default "1"
+
+# Toradex config block in eMMC, at the end of 1st "boot sector"
+config TDX_CFG_BLOCK_OFFSET
+	default "-512"
+
+endif
+
+config IMX_CONFIG
+	default "board/toradex/colibri_imx7/imximage.cfg"
+
+source "board/toradex/common/Kconfig"
+
+endif

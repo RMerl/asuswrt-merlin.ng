@@ -62,7 +62,6 @@ struct bca_legacy_led legacy_leds[] = {
     {.consumer_name = "voip2-ok-led", .led_name = kLedVoip2, .led_type = kLedOK},
     {.consumer_name = "voip2-fail-led", .led_name = kLedVoip2, .led_type = kLedFail},
     {.consumer_name = "pots-led", .led_name = kLedPots, .led_type = kLedOK},
-    {.consumer_name = "dect-led", .led_name = kLedDect, .led_type = kLedOK},
     {.consumer_name = "wl0-led", .led_name = kLedWL0, .led_type = kLedOK},
     {.consumer_name = "wl1-led", .led_name = kLedWL1, .led_type = kLedOK},
     {.consumer_name = "usb-led", .led_name = kLedUSB, .led_type = kLedOK},

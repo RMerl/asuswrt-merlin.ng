@@ -1,8 +1,8 @@
 /*
-   Copyright (c) 2015 Broadcom
+   Copyright (c) 2025 Broadcom
    All Rights Reserved
 
-    <:label-BRCM:2015:DUAL/GPL:standard
+    <:label-BRCM:2025:DUAL/GPL:standard
 
     Unless you and Broadcom execute a separate written software license
     agreement governing use of this software, this software is licensed
@@ -44,8 +44,8 @@
 #define CORE_4_INDEX	 6
 #if defined BCM63146
 #define NUMBER_OF_SEGMENTS	 7
-#define NUMBER_OF_TABLES	 610
-#define NUMBER_OF_STACK_TABLES	 58
+#define NUMBER_OF_TABLES	 634
+#define NUMBER_OF_STACK_TABLES	 59
 #endif
 
 #endif /* __RDD_RUNNER_REG_DUMP_ADDRS_H__ */

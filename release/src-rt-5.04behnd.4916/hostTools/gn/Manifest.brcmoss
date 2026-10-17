@@ -1,0 +1,8 @@
+OSS_REFERENCE_Name: GN
+OSS_REFERENCE_Version: git commit: "Improve error message for duplicated items" <95b0f8fe31a992a33c040bbe3867901335c12762>
+OSS_REFERENCE_License: BSD-3-Clause
+OSS_REFERENCE_DownloadURL: https://gn.googlesource.com/gn/+archive/95b0f8fe31a992a33c040bbe3867901335c12762.tar.gz
+OSS_REFERENCE_BroadcomURL:
+OSS_Broadcom_RelativePath: ./95b0f8fe31a992a33c040bbe3867901335c12762.tar.xz
+OSS_Broadcom_comment: needed by Matter
+

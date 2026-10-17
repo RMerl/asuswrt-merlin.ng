@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				product = "uDPU";
+			};
+
+			baseboard {
+				product = "uDPU";
+			};
+
+			chassis {
+				product = "uDPU";
+			};
+		};
+	};
+};
+
+&spi0 {
+	bootph-all;
+
+	spi-flash@0 {
+		bootph-all;
+	};
+};
+
+&sdhci0 {
+	bootph-all;
+};
+
+&pinctrl_sb {
+	sfp_pin: sfp-pin {
+		groups = "pcie1_clkreq";
+		function = "gpio";
+	};
+};
+
+&eth0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&sfp_pin>;
+
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&eth1 {
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};

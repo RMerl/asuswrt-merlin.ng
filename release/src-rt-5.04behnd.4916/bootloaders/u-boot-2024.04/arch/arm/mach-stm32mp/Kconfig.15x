@@ -1,0 +1,135 @@
+if STM32MP15X
+
+config STM32MP15X_STM32IMAGE
+	bool "Support STM32 image for generated U-Boot image"
+	depends on TFABOOT
+	help
+		Support of STM32 image generation for SOC STM32MP15x
+		for TF-A boot when FIP container is not used
+
+choice
+	prompt "STM32MP15x board select"
+	optional
+
+config TARGET_ST_STM32MP15X
+	bool "STMicroelectronics STM32MP15x boards"
+	imply BOOTSTAGE
+	imply CMD_BOOTSTAGE
+	imply CMD_CLS if CMD_BMP
+	imply DISABLE_CONSOLE
+	imply PRE_CONSOLE_BUFFER
+	imply SILENT_CONSOLE
+	help
+		target the STMicroelectronics board with SOC STM32MP15x
+		managed by board/st/stm32mp1:
+		Evalulation board (EV1) or Discovery board (DK1 and DK2).
+		The difference between board are managed with devicetree
+
+config TARGET_DH_STM32MP1_PDK2
+	bool "DH STM32MP1 PDK2"
+	help
+		Target the DH PDK2 development kit with STM32MP15x SoM.
+
+config TARGET_MICROGEA_STM32MP1
+	bool "Engicam MicroGEA STM32MP1 SOM"
+	imply BOOTSTAGE
+	imply CMD_BOOTSTAGE
+	imply CMD_CLS if CMD_BMP
+	imply DISABLE_CONSOLE
+	imply PRE_CONSOLE_BUFFER
+	imply SILENT_CONSOLE
+	help
+	  MicroGEA STM32MP1 is a STM32MP157A based Micro SOM.
+
+	  MicroGEA STM32MP1 MicroDev 2.0:
+	  * MicroDev 2.0 is a general purpose miniature carrier board with CAN,
+	    LTE and LVDS panel interfaces.
+	  * MicroGEA STM32MP1 needs to mount on top of this MicroDev 2.0 board
+	    for creating complete MicroGEA STM32MP1 MicroDev 2.0 Carrier board.
+
+	  MicroGEA STM32MP1 MicroDev 2.0 7" OF:
+	  * 7" OF is a capacitive touch 7" Open Frame panel solutions with LVDS
+	    panel and toucscreen.
+	  * MicroGEA STM32MP1 needs to mount on top of MicroDev 2.0 board with
+	    pluged 7" OF for creating complete MicroGEA STM32MP1 MicroDev 2.0 7"
+	    Open Frame Solution board.
+
+config TARGET_ICORE_STM32MP1
+	bool "Engicam i.Core STM32MP1 SOM"
+	imply BOOTSTAGE
+	imply CMD_BOOTSTAGE
+	imply CMD_CLS if CMD_BMP
+	imply DISABLE_CONSOLE
+	imply PRE_CONSOLE_BUFFER
+	imply SILENT_CONSOLE
+	help
+	  i.Core STM32MP1 is an EDIMM SOM based on STM32MP157A.
+
+	  i.Core STM32MP1 EDIMM2.2:
+	  * EDIMM2.2 is a Form Factor Capacitive Evaluation Board.
+	  * i.Core STM32MP1 needs to mount on top of EDIMM2.2 for
+	    creating complete i.Core STM32MP1 EDIMM2.2 Starter Kit.
+
+	  i.Core STM32MP1 C.TOUCH 2.0
+	  * C.TOUCH 2.0 is a general purpose Carrier board.
+	  * i.Core STM32MP1 needs to mount on top of this Carrier board
+	    for creating complete i.Core STM32MP1 C.TOUCH 2.0 board.
+
+endchoice
+
+config STM32MP15_PWR
+	bool "Enable driver for STM32MP15x PWR"
+	depends on DM_REGULATOR && DM_PMIC
+	default y
+	help
+		This config enables implementation of driver-model pmic and
+		regulator uclass features for access to STM32MP15x PWR.
+
+config SPL_STM32MP15_PWR
+	bool "Enable driver for STM32MP15x PWR in SPL"
+	depends on SPL && SPL_DM_REGULATOR && SPL_DM_PMIC
+	default y
+	help
+		This config enables implementation of driver-model pmic and
+		regulator uclass features for access to STM32MP15x PWR in SPL.
+
+config TEXT_BASE
+	default 0xC0100000
+
+config PRE_CON_BUF_ADDR
+	default 0xC02FF000
+
+config PRE_CON_BUF_SZ
+	default 4096
+
+config BOOTSTAGE_STASH_ADDR
+	default 0xC3000000
+
+if BOOTCOUNT_GENERIC
+config SYS_BOOTCOUNT_SINGLEWORD
+	default y
+
+# TAMP_BOOTCOUNT = TAMP_BACKUP_REGISTER(21)
+config SYS_BOOTCOUNT_ADDR
+	default 0x5C00A154
+endif
+
+if DEBUG_UART
+
+config DEBUG_UART_BOARD_INIT
+	default y if SPL
+
+# debug on UART4 by default
+config DEBUG_UART_BASE
+	default 0x40010000
+
+# clock source is HSI on reset
+config DEBUG_UART_CLOCK
+	default 64000000
+endif
+
+source "board/st/stm32mp1/Kconfig"
+source "board/dhelectronics/dh_stm32mp1/Kconfig"
+source "board/engicam/stm32mp1/Kconfig"
+
+endif

@@ -1,0 +1,15 @@
+if TARGET_PICO_IMX8MQ
+
+config SYS_BOARD
+	default "pico-imx8mq"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "pico-imx8mq"
+
+config IMX_CONFIG
+	default "arch/arm/mach-imx/imx8m/imximage.cfg"
+
+endif

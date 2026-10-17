@@ -1,0 +1,82 @@
+menu "MVEBU commands"
+depends on ARCH_MVEBU
+
+config CMD_MVEBU_BUBT
+	bool "bubt"
+	default y
+	select SHA256 if ARMADA_3700
+	select SHA512 if ARMADA_3700
+	select DOS_PARTITION if ARMADA_3700
+	select EFI_PARTITION if ARMADA_3700
+	select PARTITION_TYPE_GUID if ARMADA_3700
+	select MVEBU_EFUSE if ARMADA_38X || ARMADA_3700
+	help
+	  bubt - Burn a u-boot image to flash
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+if CMD_MVEBU_BUBT
+
+choice
+	prompt "Flash for image"
+	default MVEBU_SPI_BOOT if MVEBU_SPL_BOOT_DEVICE_SPI
+	default MVEBU_NAND_BOOT if MVEBU_SPL_BOOT_DEVICE_NAND
+	default MVEBU_MMC_BOOT if MVEBU_SPL_BOOT_DEVICE_MMC
+	default MVEBU_SATA_BOOT if MVEBU_SPL_BOOT_DEVICE_SATA
+	default MVEBU_SPI_BOOT
+
+config MVEBU_NAND_BOOT
+	bool "NAND flash boot"
+	depends on NAND_PXA3XX
+	help
+	  Enable boot from NAND flash.
+	  Allow usage of NAND flash as a target for "bubt" command
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+config MVEBU_SPI_BOOT
+	bool "SPI flash boot"
+	depends on SPI_FLASH
+	help
+	  Enable boot from SPI flash.
+	  Allow usage of SPI flash as a target for "bubt" command
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+config MVEBU_MMC_BOOT
+	bool "eMMC flash boot"
+	depends on MVEBU_MMC || MMC_SDHCI_XENON
+	help
+	  Enable boot from eMMC boot partition
+	  Allow usage of eMMC/SD device as a target for "bubt" command
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+config MVEBU_SATA_BOOT
+	bool "SATA flash boot"
+	depends on SCSI
+	help
+	  Enable boot from SATA disk.
+	  Allow usage of SATA disk as a target for "bubt" command
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+endchoice
+
+config MVEBU_UBOOT_DFLT_NAME
+	string "Default image name for bubt command"
+	default BUILD_TARGET if ARMADA_32BIT && BUILD_TARGET != ""
+	default "flash-image.bin"
+	help
+	  This option should contain a default file name to be used with
+	  MVEBU "bubt" command if the source file name is omitted
+
+endif
+
+config CMD_MVEBU_COMPHY_RX_TRAINING
+	bool "mvebu_comphy_rx_training"
+	depends on ARMADA_8K
+	help
+	  Perform COMPHY RX training sequence
+
+endmenu

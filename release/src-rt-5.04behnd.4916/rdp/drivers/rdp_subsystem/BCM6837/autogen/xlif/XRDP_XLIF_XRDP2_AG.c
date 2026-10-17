@@ -1346,6 +1346,9 @@ static const ru_reg_rec *XLIF_XRDP2_REGS[] =
 const ru_block_rec XLIF_XRDP2_BLOCK =
 {
     "XLIF_XRDP2",
+#if RU_INCLUDE_SIZE
+    { 0x00000084 },
+#endif
     XLIF_XRDP2_ADDRS,
     4,
     19,

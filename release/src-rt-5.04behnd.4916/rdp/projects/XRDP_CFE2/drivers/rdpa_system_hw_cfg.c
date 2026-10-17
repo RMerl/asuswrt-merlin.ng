@@ -33,10 +33,9 @@
 #include "rdd_runner_defs_auto.h"
 #include "rdd_platform.h"
 #include "rdp_drv_fpm.h"
-#include "bcm_hwdefs.h"
 #include "ru_types.h"
 #include "board.h"
-#include "bcm_misc_hw_init.h"
+
 #include "rdp_drv_rnr.h"
 #include "bcm_OS_Deps.h"
 extern const ru_block_rec *RU_ALL_BLOCKS[];
@@ -82,7 +81,7 @@ void remap_ru_block_single_instance(ru_block_rec *ru_block, uintptr_t virt_base,
 
 void remap_ru_blocks(void)
 {
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM968375)
     bbh_id_e bbh_idx;
     uintptr_t wan_bbh_virt_base;
     uintptr_t wan_bbh_phys_base;
@@ -106,7 +105,7 @@ void remap_ru_blocks(void)
     xrdp_virt_base = (uintptr_t)bdmf_ioremap((uint32_t)xrdp_phys_base, xrdp_phys_len);
     bdmf_trace("XRDP virt address : ox%px\n", (void *)xrdp_virt_base);
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM968375)
     if (scan_reg_by_name("brcm,rdpa", &wan_bbh_phys_base, &wan_bbh_len, 1))
     {
         bdmf_trace("%s: Failed to find reg in device tree", __FUNCTION__);
@@ -141,7 +140,7 @@ void remap_ru_blocks(void)
             RU_ALL_BLOCKS[i]->addr == XLIF_Q_OFF_ADDRS)
             continue;
 #endif
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM968375)
         /* Skip the WAN blocks */
         if (RU_ALL_BLOCKS[i]->addr == BBH_TX_ADDRS || 
             RU_ALL_BLOCKS[i]->addr == BBH_RX_ADDRS)
@@ -195,7 +194,7 @@ void remap_ru_blocks(void)
     }
 #endif
 
-# defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880)
+# defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM968375)
     for (bbh_idx = BBH_ID_0; bbh_idx <= BBH_ID_15; bbh_idx++)
     {
         BBH_RX_ADDRS[bbh_idx] += xrdp_virt_base - xrdp_phys_base; 

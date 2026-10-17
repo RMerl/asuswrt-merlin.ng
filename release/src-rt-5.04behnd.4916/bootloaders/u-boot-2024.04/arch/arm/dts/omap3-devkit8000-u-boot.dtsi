@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * (C) Copyright 2017 Derald D. Woods <woods.technical@gmail.com>
+ */
+
+#include "omap3-u-boot.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &uart3;
+	};
+
+	ethernet@2c000000 {
+	        compatible = "davicom,dm9000";
+	        reg = <0x2c000000 2 0x2c000400 2>;
+	        bank-width = <2>;
+	};
+};

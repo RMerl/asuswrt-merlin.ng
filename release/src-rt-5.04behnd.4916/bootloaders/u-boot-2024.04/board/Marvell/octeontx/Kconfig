@@ -1,0 +1,14 @@
+if TARGET_OCTEONTX_81XX || TARGET_OCTEONTX_83XX
+
+config SYS_VENDOR
+	string
+	default	"Marvell"
+
+config SYS_BOARD
+	string
+	default "octeontx"
+
+config SYS_CONFIG_NAME
+	default "octeontx_common"
+
+endif

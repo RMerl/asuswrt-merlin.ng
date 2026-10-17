@@ -57,21 +57,22 @@ enum spu2_proto_sel {
 };
 
 static char *spu2_cipher_type_names[] = { "None", "AES128", "AES192", "AES256",
-	"DES", "3DES"
+	"DES", "3DES", "Reserved", "CHACHA"
 };
 
 static char *spu2_cipher_mode_names[] = { "ECB", "CBC", "CTR", "CFB", "OFB",
-	"XTS", "CCM", "GCM"
+	"XTS", "CCM", "GCM", "NULL", "CHACHA"
 };
 
 static char *spu2_hash_type_names[] = { "None", "AES128", "AES192", "AES256",
 	"Reserved", "Reserved", "MD5", "SHA1", "SHA224", "SHA256", "SHA384",
 	"SHA512", "SHA512/224", "SHA512/256", "SHA3-224", "SHA3-256",
-	"SHA3-384", "SHA3-512"
+	"SHA3-384", "SHA3-512", "CRC-16T", "CRC-32", "CRC-32C", "ADLER32",
+	"CRC-64", "CRC-64E", "POLY1305"
 };
 
 static char *spu2_hash_mode_names[] = { "CMAC", "CBC-MAC", "XCBC-MAC", "HMAC",
-	"Rabin", "CCM", "GCM", "Reserved"
+	"Rabin", "CCM", "GCM", "NULL", "POLY1305"
 };
 
 static char *spu2_ciph_type_name(enum spu2_cipher_type cipher_type)
@@ -134,6 +135,9 @@ static int spu2_cipher_mode_xlate(enum spu_cipher_mode cipher_mode,
 	case CIPHER_MODE_XTS:
 		*spu2_mode = SPU2_CIPHER_MODE_XTS;
 		break;
+	case CIPHER_MODE_CHACHA:
+		*spu2_mode = SPU2_CIPHER_MODE_CHACHA;
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -195,6 +199,9 @@ static int spu2_cipher_xlate(enum spu_cipher_alg cipher_alg,
 			err = -EINVAL;
 		}
 		break;
+	case CIPHER_ALG_CHACHA:
+		*spu2_type = SPU2_CIPHER_TYPE_CHACHA;
+		break;
 	case CIPHER_ALG_LAST:
 	default:
 		err = -EINVAL;
@@ -229,6 +236,9 @@ static int spu2_hash_mode_xlate(enum hash_mode hash_mode,
 		break;
 	case HASH_MODE_GCM:
 		*spu2_mode = SPU2_HASH_MODE_GCM;
+		break;
+	case HASH_MODE_POLY1305:
+		*spu2_mode = SPU2_HASH_MODE_POLY1305;
 		break;
 	default:
 		return -EINVAL;
@@ -309,6 +319,9 @@ spu2_hash_xlate(enum hash_alg hash_alg, enum hash_mode hash_mode,
 		break;
 	case HASH_ALG_SHA3_512:
 		*spu2_type = SPU2_HASH_TYPE_SHA3_512;
+		break;
+	case HASH_ALG_POLY1305:
+		*spu2_type = SPU2_HASH_TYPE_POLY1305;
 		break;
 	case HASH_ALG_LAST:
 	default:
@@ -1035,7 +1048,7 @@ u32 spu2_create_request(u8 *spu_hdr,
 	flow_log("  real_db_size:%u\n", real_db_size);
 	flow_log("  cipher_offset:%u payload_len:%u\n",
 		 cipher_offset, payload_len);
-	flow_log("  aead_iv: %u\n", aead_parms->iv_len);
+	flow_log("  aead_iv_len: %u\n", aead_parms->iv_len);
 
 	/* Convert to spu2 values for cipher alg, hash alg */
 	err = spu2_cipher_xlate(cipher_parms->alg, cipher_parms->mode,

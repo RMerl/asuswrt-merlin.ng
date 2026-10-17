@@ -1,0 +1,8 @@
+OCTEONTX2 BOARD
+M:	Aaron Williams <awilliams@marvell.com>
+S:	Maintained
+F:	board/Marvell/octeontx2/
+F:	include/configs/octeontx2_96xx.h
+F:	include/configs/octeontx2_95xx.h
+F:	configs/octeontx2_96xx_defconfig
+F:	configs/octeontx2_95xx_defconfig

@@ -20,6 +20,7 @@ Optional properties:
 - unit:             Used for ethswctl compatibility, default is 0 if not set (to be depricated).
 - switch-reset:     gpio, if set, used to take switch out of reset before switch initialization
 - extswtag-use-pvid indicate external switch uses vlan tag to identify ports on external switch.
+- wan-use-8txq      For Archer based device, specify port will use 8 TxQs when configured as WAN (only one port is allowed).
 
 
 The ports container has the following properties

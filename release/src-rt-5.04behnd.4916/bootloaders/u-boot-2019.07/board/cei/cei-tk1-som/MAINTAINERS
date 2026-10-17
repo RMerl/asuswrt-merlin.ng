@@ -1,6 +1,0 @@
-TK1-SOM BOARD
-M:	Peter.Chubb@data61.csiro.au
-S:	Maintained
-F:	board/cei/tk1-som/
-F:	include/configs/cei-tk1-som.h
-F:	configs/cei-tk1-som_defconfig

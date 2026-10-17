@@ -49,7 +49,7 @@ static int rdpa_user_xtmchannel_get(rdpa_ioctl_cmd_t *pa)
 {
 	BDMF_TRACE_DBG("inside rdpa_user_xtmchannel_drv\n");
 
-	if ((pa->ret = rdpa_xtmchannel_get((bdmf_number)(long)pa->parm, &pa->mo)))
+	if ((pa->ret = rdpa_xtmchannel_get((bdmf_number)(bdmf_long_t)pa->parm, &pa->mo)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmchannel_get failed ret: %d\n", pa->ret);
 	}
@@ -68,7 +68,7 @@ static int rdpa_user_xtmchannel_index_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmchannel_index_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -82,7 +82,7 @@ static int rdpa_user_xtmchannel_index_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmchannel_user_index_set\n");
 
-	if ((pa->ret = rdpa_xtmchannel_index_set(pa->mo, (bdmf_number)(long)pa->parm)))
+	if ((pa->ret = rdpa_xtmchannel_index_set(pa->mo, (bdmf_number)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmchannel_index_set failed, ret:%d\n", pa->ret);
 	}
@@ -101,7 +101,7 @@ static int rdpa_user_xtmchannel_egress_tm_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmchannel_egress_tm_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_object_handle)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_object_handle)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -134,7 +134,7 @@ static int rdpa_user_xtmchannel_enable_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmchannel_enable_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -148,7 +148,7 @@ static int rdpa_user_xtmchannel_enable_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmchannel_user_enable_set\n");
 
-	if ((pa->ret = rdpa_xtmchannel_enable_set(pa->mo, (bdmf_boolean)(long)pa->parm)))
+	if ((pa->ret = rdpa_xtmchannel_enable_set(pa->mo, (bdmf_boolean)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmchannel_enable_set failed, ret:%d\n", pa->ret);
 	}
@@ -167,7 +167,7 @@ static int rdpa_user_xtmchannel_orl_prty_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtmchannel_orl_prty_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(rdpa_tm_orl_prty)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(rdpa_tm_orl_prty)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -181,7 +181,7 @@ static int rdpa_user_xtmchannel_orl_prty_set(rdpa_ioctl_cmd_t *pa)
 
 	BDMF_TRACE_DBG("inside xtmchannel_user_orl_prty_set\n");
 
-	if ((pa->ret = rdpa_xtmchannel_orl_prty_set(pa->mo, (rdpa_tm_orl_prty)(long)pa->parm)))
+	if ((pa->ret = rdpa_xtmchannel_orl_prty_set(pa->mo, (rdpa_tm_orl_prty)(bdmf_long_t)pa->parm)))
 	{
 		BDMF_TRACE_DBG("rdpa_xtmchannel_orl_prty_set failed, ret:%d\n", pa->ret);
 	}
@@ -189,7 +189,7 @@ static int rdpa_user_xtmchannel_orl_prty_set(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
-long rdpa_xtmchannel_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
+bdmf_long_t rdpa_xtmchannel_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
 

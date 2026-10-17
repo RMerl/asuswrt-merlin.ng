@@ -1,7 +1,0 @@
-Cyrus BOARD
-M:	Andy Fleming <afleming@gmail.com>
-S:	Maintained
-F:	board/varisys/cyrus/
-F:	include/configs/cyrus.h
-F:	configs/Cyrus_P5020_defconfig
-F:	configs/Cyrus_P5040_defconfig

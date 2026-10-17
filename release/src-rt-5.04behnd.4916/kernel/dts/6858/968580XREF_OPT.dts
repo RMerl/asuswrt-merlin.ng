@@ -347,15 +347,6 @@
 		reset-gpio = <&gpioc 20 GPIO_ACTIVE_LOW>;
 		spi-index = <2>;
 	};
-	voice3 {
-		pinctrl-0 = <&spim_ss1_b_pin_106>;
-		pinctrl-names = "default";
-		compatible = "bcm-spi-voice";
-		reg = <1>; /* chip select 1 */
-		spi-max-frequency = <1024000>;
-		reset-gpio = <&gpioc 4 GPIO_ACTIVE_LOW>;
-		spi-index = <3>;
-	};
 };
 
 &pcie0 {
@@ -369,7 +360,7 @@
 };
 
 &bcm_voice{
- 	sliclist = SLICSLAC_LIST_COMMON_NOFXO, "ZL88601x2", "SI32260x2", "LE9661_ZSI", "LE9642_ZSI_BB", "ZL88601x4_8FXS";
+ 	sliclist = SLICSLAC_LIST_COMMON_FXO, "ZL88601x2", "SI32260x2", "LE9661_ZSI", "LE9642_ZSI_BB", "ZL88601x4_8FXS";
 };
 
 &phy_wan_serdes {

@@ -1,0 +1,7 @@
+CONDOR BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a77980-condor*
+F:	board/renesas/condor/
+F:	configs/r8a77980_condor_defconfig
+F:	include/configs/condor.h

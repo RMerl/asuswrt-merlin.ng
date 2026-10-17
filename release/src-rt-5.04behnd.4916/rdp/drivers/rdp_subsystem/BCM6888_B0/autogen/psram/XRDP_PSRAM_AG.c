@@ -3044,6 +3044,9 @@ static const ru_reg_rec *PSRAM_REGS[] =
 const ru_block_rec PSRAM_BLOCK =
 {
     "PSRAM",
+#if RU_INCLUDE_SIZE
+    { 0x008A2BC0 },
+#endif
     PSRAM_ADDRS,
     1,
     40,

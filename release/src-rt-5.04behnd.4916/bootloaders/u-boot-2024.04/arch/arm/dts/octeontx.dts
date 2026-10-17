@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Dummy devicetre file for octeontx2 boards
+ *
+ * This is required to make the board build with CONFIG OF_SEPARATE
+ * I could not find any in-tree documentation at all so this is a dummy file.
+ *
+ * Copyright 2021 Google LLC
+ */
+
+/dts-v1/;
+
+/ {
+};

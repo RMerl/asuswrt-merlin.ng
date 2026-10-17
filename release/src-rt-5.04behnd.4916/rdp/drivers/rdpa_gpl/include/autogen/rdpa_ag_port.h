@@ -78,6 +78,7 @@ typedef enum {
     rdpa_port_attr_options = 31, /* options : RW : number : reserved */
     rdpa_port_attr_pfc_tx_enable = 32, /* pfc_tx_enable : RW : bool : reserved */
     rdpa_port_attr_pfc_tx_timer = 33, /* pfc_tx_timer : RWF : number[] : reserved */
+    rdpa_port_attr_lag_hash_stat = 35, /* lag_hash_stat : RF : number[] : LAG hash tx bytes statistics */
 } rdpa_port_attr_types;
 
 extern int (*f_rdpa_port_get)(const char * name_, bdmf_object_handle *pmo);
@@ -637,7 +638,7 @@ static inline int rdpa_port_cpu_obj_get(bdmf_object_handle mo_, bdmf_object_hand
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_port_attr_cpu_obj, &_nn_);
-    *cpu_obj_ = (bdmf_object_handle)(long)_nn_;
+    *cpu_obj_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -652,7 +653,7 @@ static inline int rdpa_port_cpu_obj_get(bdmf_object_handle mo_, bdmf_object_hand
  */
 static inline int rdpa_port_cpu_obj_set(bdmf_object_handle mo_, bdmf_object_handle cpu_obj_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_port_attr_cpu_obj, (long)cpu_obj_);
+    return bdmf_attr_set_as_num(mo_, rdpa_port_attr_cpu_obj, (bdmf_long_t)cpu_obj_);
 }
 
 
@@ -669,7 +670,7 @@ static inline int rdpa_port_pbit_to_queue_get(bdmf_object_handle mo_, bdmf_objec
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_port_attr_pbit_to_queue, &_nn_);
-    *pbit_to_queue_ = (bdmf_object_handle)(long)_nn_;
+    *pbit_to_queue_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -1041,6 +1042,39 @@ static inline int rdpa_port_pfc_tx_timer_get(bdmf_object_handle mo_, bdmf_index 
 static inline int rdpa_port_pfc_tx_timer_set(bdmf_object_handle mo_, bdmf_index ai_, bdmf_number pfc_tx_timer_)
 {
     return bdmf_attrelem_set_as_num(mo_, rdpa_port_attr_pfc_tx_timer, (bdmf_index)ai_, pfc_tx_timer_);
+}
+
+
+/** Get port/lag_hash_stat attribute entry.
+ *
+ * Get LAG hash tx bytes statistics.
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[in]   ai_ Attribute array index
+ * \param[out]  lag_hash_stat_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_lag_hash_stat_get(bdmf_object_handle mo_, bdmf_index ai_, bdmf_number *lag_hash_stat_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_port_attr_lag_hash_stat, (bdmf_index)ai_, &_nn_);
+    *lag_hash_stat_ = (bdmf_number)_nn_;
+    return _rc_;
+}
+
+
+/** Get next port/lag_hash_stat attribute entry.
+ *
+ * Get next LAG hash tx bytes statistics.
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[in,out]   ai_ Attribute array index
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_lag_hash_stat_get_next(bdmf_object_handle mo_, bdmf_index * ai_)
+{
+    return bdmf_attrelem_get_next(mo_, rdpa_port_attr_lag_hash_stat, (bdmf_index *)ai_);
 }
 
 /** @} end of port Doxygen group */

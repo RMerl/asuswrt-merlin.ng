@@ -1,0 +1,5 @@
+ARM Board 0
+M:      Mary Mary <quite@contrary.org>
+S:      Maintained
+F:      boards/board0
+F:      configs/board0_defconfig

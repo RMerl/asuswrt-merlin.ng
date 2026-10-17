@@ -105,7 +105,7 @@ extern void kerSysFlashPartInfoGet(PFLASH_PARTITION_INFO pflash_partition_info);
  * @param nvRam (IN) nvram info.
  * @param fInfo (OUT) flash addr info that will be filled out by this function.
  */
-void flash_init_info(const NVRAM_DATA *nvRam, FLASH_ADDR_INFO *fInfo);
+void flash_init_info(const void *nvRam, FLASH_ADDR_INFO *fInfo);
 
 
 /** Get the total number of bytes at the bottom of the flash used for PSI, scratch pad, etc.
@@ -122,8 +122,9 @@ void flash_init_info(const NVRAM_DATA *nvRam, FLASH_ADDR_INFO *fInfo);
 unsigned int flash_get_reserved_bytes_at_end(const FLASH_ADDR_INFO *fInfo);
 unsigned int flash_get_reserved_bytes_auxfs(void);
 
-NVRAM_DATA* get_inMemNvramData(void);
+void* get_inMemNvramData(void);
 int eNvramGet(char *param, char *value, int len);
+int eNvramGetLocked(char *param, char *value, int len);
 int eNvramSet(char *param, char *value);
 #define UBOOT_ENV_ADD_SUCCESS 0
 #define UBOOT_ENV_ADD_FAILED -1

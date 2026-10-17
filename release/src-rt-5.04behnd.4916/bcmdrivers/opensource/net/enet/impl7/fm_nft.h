@@ -48,7 +48,6 @@ void nft_uninit(fm_nft_ctx_t *fm_nft_ctx);
 int fm_nft_stats_update(fm_nft_ctx_t *fm_nft_ctx, unsigned long cookie, u64 packets, u64 bytes, u64 drops);
 
 // xdp specific functions
-u32 fm_nft_run_xdp_meta(struct net_device *dev, struct bpf_prog *xdp_prog, struct xdp_buff *xdp, unsigned long *cookie);
 extern struct bpf_prog *(*xdp_nft_get_progs_by_dev)(struct net_device *dev);
 
 

@@ -1,0 +1,16 @@
+phyCORE-i.MX8M Mini
+M:      Teresa Remmet <t.remmet@phytec.de>
+W:      https://www.phytec.eu/product-eu/system-on-modules/phycore-imx-8m-mini-nano/
+S:      Maintained
+F:      arch/arm/dts/imx8mm-phyboard-polis-rdk.dts
+F:      arch/arm/dts/imx8mm-phycore-som.dtsi
+F:      arch/arm/dts/imx8mm-phyboard-polis-rdk-u-boot.dtsi
+F:	arch/arm/dts/imx8mm-phygate-tauri-l.dts
+F:	arch/arm/dts/imx8mm-phygate-tauri-l-u-boot.dtsi
+F:      board/phytec/phycore_imx8mm/
+F:	configs/imx8mm-phygate-tauri-l_defconfig
+F:      configs/phycore-imx8mm_defconfig
+F:	doc/board/phytec/imx8mm-phygate-tauri-l.rst
+F:	doc/board/phytec/index.rst
+F:	doc/board/phytec/phycore_imx8mm.rst
+F:      include/configs/phycore_imx8mm.h

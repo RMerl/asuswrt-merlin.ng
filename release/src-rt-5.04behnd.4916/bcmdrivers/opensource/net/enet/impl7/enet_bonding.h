@@ -30,7 +30,7 @@
 #ifndef _ENET_BONDING_H_
 #define _ENET_BONDING_H_
 
-#if defined(CONFIG_BCM_KERNEL_BONDING)
+#if defined(CONFIG_BCM_KERNEL_BONDING) || defined(CONFIG_BCM_KERNEL_TEAM)
 void bonding_init(void);
 void bonding_uninit(void);
 int bonding_change_event(struct net_device *slave, struct net_device *master, bool linking);

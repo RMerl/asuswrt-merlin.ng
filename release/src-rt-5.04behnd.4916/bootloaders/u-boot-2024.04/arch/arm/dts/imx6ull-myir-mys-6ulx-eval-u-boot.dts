@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 Linumiz
+ * Author: Parthiban Nallathambi <parthiban@linumiz.com>
+ */
+
+/ {
+	smbios {
+		compatible = "u-boot,sysinfo-smbios";
+
+		smbios {
+			system {
+				manufacturer = "MYiR";
+			};
+
+			baseboard {
+				manufacturer = "MYiR";
+			};
+
+			chassis {
+				manufacturer = "MYiR";
+			};
+		};
+	};
+};

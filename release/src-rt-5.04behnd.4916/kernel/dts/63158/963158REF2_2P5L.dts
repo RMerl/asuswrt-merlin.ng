@@ -186,7 +186,11 @@
 };
 
 &sdhci {
+#if defined(CONFIG_BCM_BCA_EXTINTR)
 	card_detect = <&bca_extintr 90 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+#else
+	card_detect-gpio = <&gpioc 90 GPIO_ACTIVE_LOW>;
+#endif
 };
 
 &dsl {

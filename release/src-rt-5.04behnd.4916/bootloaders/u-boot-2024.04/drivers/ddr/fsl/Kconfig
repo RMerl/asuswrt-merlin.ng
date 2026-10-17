@@ -1,0 +1,344 @@
+config SYS_FSL_DDR
+	bool
+	help
+	  Select Freescale General DDR driver, shared between most Freescale
+	  PowerPC- based SoCs (such as mpc83xx, mpc85xx and ARM- based
+	  Layerscape SoCs (such as ls2080a).
+
+config SYS_FSL_MMDC
+	bool
+	help
+	  Select Freescale Multi Mode DDR controller (MMDC).
+
+config SYS_FSL_DDR_EMU
+	bool
+	help
+	  Specify emulator support for DDR. Some DDR features such as deskew
+	  training are not available.
+
+if SYS_FSL_DDR || SYS_FSL_MMDC
+
+config SYS_FSL_DDR_BE
+	bool
+	help
+		Access DDR registers in big-endian
+
+config SYS_FSL_DDR_LE
+	bool
+	help
+		Access DDR registers in little-endian
+
+config FSL_DDR_BIST
+	bool
+
+config FSL_DDR_INTERACTIVE
+	bool
+
+config FSL_DDR_SYNC_REFRESH
+	bool
+
+config FSL_DDR_FIRST_SLOT_QUAD_CAPABLE
+	bool
+
+config SYS_FSL_OTHER_DDR_NUM_CTRLS
+	bool
+
+menu "Freescale DDR controllers"
+	depends on SYS_FSL_DDR
+
+config SYS_NUM_DDR_CTLRS
+	int "Maximum DDR controllers"
+	default 3 if	ARCH_LS2080A	|| \
+			ARCH_T4240
+	default 2 if	ARCH_B4860	|| \
+			ARCH_BSC9132	|| \
+			ARCH_P4080	|| \
+			ARCH_P5040	|| \
+			ARCH_LX2160A	|| \
+			ARCH_LX2162A
+	default 1
+
+config CHIP_SELECTS_PER_CTRL
+	int "Number of chip selects per controller"
+	default 4
+
+config DIMM_SLOTS_PER_CTLR
+	int "Number of DIMM slots per controller"
+	default 1
+
+config SYS_FSL_DDR_MAIN_NUM_CTRLS
+	int "Number of controllers used as main memory"
+	default SYS_NUM_DDR_CTLRS
+
+config SYS_FSL_DDR_VER
+	int
+	default 50 if SYS_FSL_DDR_VER_50
+	default 47 if SYS_FSL_DDR_VER_47
+	default 46 if SYS_FSL_DDR_VER_46
+	default 44 if SYS_FSL_DDR_VER_44
+
+config SYS_FSL_DDR_VER_50
+	bool
+
+config SYS_FSL_DDR_VER_47
+	bool
+
+config SYS_FSL_DDR_VER_46
+	bool
+
+config SYS_FSL_DDR_VER_44
+	bool
+
+config SYS_FSL_DDRC_GEN1
+	bool
+	help
+	  Enable Freescale DDR controller.
+
+config SYS_FSL_DDRC_GEN2
+	bool
+	depends on !MPC86xx
+	help
+	  Enable Freescale DDR2 controller.
+
+config SYS_FSL_DDRC_GEN3
+	bool
+	depends on PPC
+	help
+	  Enable Freescale DDR3 controller for PowerPC SoCs.
+
+config SYS_FSL_DDRC_ARM_GEN3
+	bool
+	depends on ARM
+	help
+	  Enable Freescale DDR3 controller for ARM SoCs.
+
+config SYS_FSL_DDRC_GEN4
+	bool
+	help
+	  Enable Freescale DDR4 controller.
+
+config SYS_FSL_HAS_DDR4
+	bool
+
+config SYS_FSL_HAS_DDR3
+	bool
+
+config SYS_FSL_HAS_DDR2
+	bool
+
+config SYS_FSL_HAS_DDR1
+	bool
+
+choice
+	prompt "DDR technology"
+	default SYS_FSL_DDR4 if SYS_FSL_HAS_DDR4
+	default SYS_FSL_DDR3 if SYS_FSL_HAS_DDR3
+	default SYS_FSL_DDR2 if SYS_FSL_HAS_DDR2
+	default SYS_FSL_DDR1 if SYS_FSL_HAS_DDR1
+
+config SYS_FSL_DDR4
+	bool "Freescale DDR4 controller"
+	depends on SYS_FSL_HAS_DDR4
+	imply DDR_SPD
+	select SYS_FSL_DDRC_GEN4
+
+config SYS_FSL_DDR3
+	bool "Freescale DDR3 controller"
+	depends on SYS_FSL_HAS_DDR3
+	imply DDR_SPD
+	select SYS_FSL_DDRC_GEN3 if PPC
+	select SYS_FSL_DDRC_ARM_GEN3 if ARM
+
+config SYS_FSL_DDR2
+	bool "Freescale DDR2 controller"
+	depends on SYS_FSL_HAS_DDR2
+	imply DDR_SPD
+	select SYS_FSL_DDRC_GEN2 if (!MPC86xx && !SYS_FSL_DDRC_GEN3)
+
+config SYS_FSL_DDR1
+	bool "Freescale DDR1 controller"
+	depends on SYS_FSL_HAS_DDR1
+	imply DDR_SPD
+	select SYS_FSL_DDRC_GEN1
+
+endchoice
+
+endmenu
+
+config FSL_DMA
+	def_bool y if DDR_ECC && MPC85xx && !ECC_INIT_VIA_DDRCONTROLLER
+
+config DDR_ECC
+	bool "ECC DDR memory support"
+
+config DDR_ECC_CMD
+	bool "Access the ECC features of the memory controller"
+	depends on DDR_ECC && MPC83xx
+	default y
+
+config ECC_INIT_VIA_DDRCONTROLLER
+	bool "DDR Memory controller initializes memory."
+	help
+	  Use the DDR controller to auto initialize memory.  If not enabled,
+	  the DMA controller is responsible for doing this.
+
+config SYS_DDR_RAW_TIMING
+	bool "Get DDR timing information from something other than SPD"
+	help
+	  This is common with soldered DDR chips onboard without SPD. DDR raw
+	  timing parameters are extracted from datasheet and hard-coded into
+	  header files or board specific files.
+
+config SYS_FSL_DDR_INTLV_256B
+	bool "Enforce 256-byte interleave"
+	help
+	  DDR controller interleaving on 256-byte. This is a special
+	  interleaving mode, handled by Dickens for Freescale layerscape SoCs
+	  with ARM core.
+
+endif
+
+menu "PowerPC / M68K initial memory controller definitions (FLASH, SDRAM, etc)"
+	depends on MCF52x2 || MPC8xx || MPC83xx || MPC85xx
+
+config SYS_BR0_PRELIM_BOOL
+	bool "Define Bank 0"
+
+config SYS_BR0_PRELIM
+	hex "Preliminary value for BR0"
+	depends on SYS_BR0_PRELIM_BOOL
+
+config SYS_OR0_PRELIM
+	hex "Preliminary value for OR0"
+	depends on SYS_BR0_PRELIM_BOOL
+
+config SYS_BR1_PRELIM_BOOL
+	bool "Define Bank 1"
+
+config SYS_BR1_PRELIM
+	hex "Preliminary value for BR1"
+	depends on SYS_BR1_PRELIM_BOOL
+
+config SYS_OR1_PRELIM
+	hex "Preliminary value for OR1"
+	depends on SYS_BR1_PRELIM_BOOL
+
+config SYS_BR2_PRELIM_BOOL
+	bool "Define Bank 2"
+
+config SYS_BR2_PRELIM
+	hex "Preliminary value for BR2"
+	depends on SYS_BR2_PRELIM_BOOL
+
+config SYS_OR2_PRELIM
+	hex "Preliminary value for OR2"
+	depends on SYS_BR2_PRELIM_BOOL
+
+config SYS_BR3_PRELIM_BOOL
+	bool "Define Bank 3"
+
+config SYS_BR3_PRELIM
+	hex "Preliminary value for BR3"
+	depends on SYS_BR3_PRELIM_BOOL
+
+config SYS_OR3_PRELIM
+	hex "Preliminary value for OR3"
+	depends on SYS_BR3_PRELIM_BOOL
+
+config SYS_BR4_PRELIM_BOOL
+	bool "Define Bank 4"
+
+config SYS_BR4_PRELIM
+	hex "Preliminary value for BR4"
+	depends on SYS_BR4_PRELIM_BOOL
+
+config SYS_OR4_PRELIM
+	hex "Preliminary value for OR4"
+	depends on SYS_BR4_PRELIM_BOOL
+
+config SYS_BR5_PRELIM_BOOL
+	bool "Define Bank 5"
+
+config SYS_BR5_PRELIM
+	hex "Preliminary value for BR5"
+	depends on SYS_BR5_PRELIM_BOOL
+
+config SYS_OR5_PRELIM
+	hex "Preliminary value for OR5"
+	depends on SYS_BR5_PRELIM_BOOL
+
+config SYS_BR6_PRELIM_BOOL
+	bool "Define Bank 6"
+
+config SYS_BR6_PRELIM
+	hex "Preliminary value for BR6"
+	depends on SYS_BR6_PRELIM_BOOL
+
+config SYS_OR6_PRELIM
+	hex "Preliminary value for OR6"
+	depends on SYS_BR6_PRELIM_BOOL
+
+config SYS_BR7_PRELIM_BOOL
+	bool "Define Bank 7"
+
+config SYS_BR7_PRELIM
+	hex "Preliminary value for BR7"
+	depends on SYS_BR7_PRELIM_BOOL
+
+config SYS_OR7_PRELIM
+	hex "Preliminary value for OR7"
+	depends on SYS_BR7_PRELIM_BOOL
+endmenu
+
+if TARGET_P1010RDB_PA || TARGET_P1010RDB_PB || TARGET_P1020RDB_PC || \
+	TARGET_P1020RDB_PD || TARGET_P2020RDB
+
+config COMMON_INIT_DDR
+	bool "Do not have a TLB entry to cover common DDR init with serial presence detect (SPD)"
+
+config SPL_COMMON_INIT_DDR
+	bool "Do not have a TLB entry to cover common DDR init with SPD in SPL"
+
+config TPL_COMMON_INIT_DDR
+	bool "Do not have a TLB entry to cover common DDR init with SPD in TPL"
+
+endif
+
+config SYS_FSL_ERRATUM_A008378
+	bool
+
+config SYS_FSL_ERRATUM_A008109
+	bool
+
+config SYS_FSL_ERRATUM_A008511
+	bool
+
+config SYS_FSL_ERRATUM_A009663
+	bool
+
+config SYS_FSL_ERRATUM_A009801
+	bool
+
+config SYS_FSL_ERRATUM_A009803
+	bool
+
+config SYS_FSL_ERRATUM_A009942
+	bool
+
+config SYS_FSL_ERRATUM_A010165
+	bool
+
+config SYS_FSL_ERRATUM_NMG_DDR120
+	bool
+
+config SYS_FSL_ERRATUM_DDR_115
+	bool
+
+config SYS_FSL_ERRATUM_DDR111_DDR134
+	bool
+
+config SYS_FSL_ERRATUM_DDR_A003
+	bool
+
+config SYS_FSL_ERRATUM_DDR_A003474
+	bool

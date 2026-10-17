@@ -1,0 +1,7 @@
+MX28EVK BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/freescale/mx28evk/
+F:	arch/arm/dts/imx28-evk.dts
+F:	include/configs/mx28evk.h
+F:	configs/mx28evk_defconfig

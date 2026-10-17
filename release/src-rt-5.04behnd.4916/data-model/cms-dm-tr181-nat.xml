@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2024" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.NAT." shortObjectName="Dev2NatObject" specSource="TR181" profile="Device2_NAT:1" requirements="P" supportLevel="Present" multiCompObj="true" oid="1550" />
+  <description source="TRx">Properties for Network Address Translation (NAT). The entire {{object}} object only applies to IPv4.</description>
+
+  <parameter name="InterfaceSettingNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_NAT:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the InterfaceSetting table.</description>
+
+  <parameter name="PortMappingNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_NAT:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" countPersistentForConfigFile="true" />
+    <description source="TRx">The number of entries in the PortMapping table.</description>
+    <description source="BROADCOM">This table contains a mix of statically configured portmappings and dynamically created portmappings from UPnP.  Hence countPersistentForConfigFile. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.NAT.InterfaceSetting.{i}." shortObjectName="Dev2NatIntfSettingObject" specSource="TR181" profile="Device2_NAT:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">NAT settings for an associated IP Interface on which NAT is enabled. For enabled table entries, if {{param|Interface}} is not a valid reference then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}. Note: The {{object}} table includes a unique key parameter that is a strong reference. If a strongly referenced object is deleted, the CPE will set the referencing parameter to {{empty}}. However, doing so under these circumstances might cause the updated {{object}} row to then violate the table's unique key constraint; if this occurs, the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}} and disable the offending {{object}} row.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables the {{object}} entry, indicating if NAT is enabled for the referenced IP Interface instance. On creation, an {{object}} entry is disabled by default.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_NAT:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="NatStatusValues" />
+    <description source="TRx">The status of this entry. {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid. The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-natintfsetting" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. If the CPE supports the Alias-based Addressing feature as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}, the following mandatory constraints MUST be enforced: *Its value MUST NOT be empty. *Its value MUST start with a letter. *If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix. *The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the IP.Interface table. If the referenced object is deleted, the parameter value MUST be set to an empty string. The associated IP interface on which NAT is to be enabled.</description>
+
+  <parameter name="X_BROADCOM_COM_FullconeNATEnabled" type="boolean" specSource="Broadcom" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.NAT.InterfaceSetting.{i}.X_BROADCOM_COM_PortTriggering.{i}." shortObjectName="Dev2NatPortTriggeringObject" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="DynamicInstances" oid="3592" />
+  <description source="BROADCOM">Port Triggering Configuration.</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Enable/Disable this entry of port triggering configuration.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Name of this port triggering configuration.</description>
+
+  <parameter name="TriggerProtocol" type="string" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="TCP" validValuesArray="transportProtocolValues" />
+    <description source="BROADCOM">TCP, UDP or Both.</description>
+
+  <parameter name="OpenProtocol" type="string" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="TCP" validValuesArray="transportProtocolValues" />
+    <description source="BROADCOM">TCP, UDP or Both.</description>
+
+  <parameter name="TriggerPortStart" type="unsignedInt" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Trigger port start.</description>
+
+  <parameter name="TriggerPortEnd" type="unsignedInt" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Trigger port end.</description>
+
+  <parameter name="OpenPortStart" type="unsignedInt" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Open port start.</description>
+
+  <parameter name="OpenPortEnd" type="unsignedInt" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="BROADCOM">Open port end.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.NAT.PortMapping.{i}." shortObjectName="Dev2NatPortMappingObject" specSource="TR181" profile="Device2_NAT:1" requirements="PC" supportLevel="DynamicInstances" multiCompObj="true" />
+  <description source="TRx">Port mapping table. This table MUST contain all NAT port mappings associated with this connection, including static and dynamic port mappings programmatically created via local control protocol, such as UPnP. This table MUST NOT contain dynamic NAT binding entries associated with the normal operation of NAT. If the CPE hosts a firewall, it is assumed that it will appropriately configure the firewall for the port mapping. For enabled table entries, if {{param|InternalClient}} is {{empty}}, or if {{param|Interface}} is not a valid reference and {{param|AllInterfaces}} is {{false}}, then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables the port mapping instance. On creation, an entry is disabled by default.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status4eValues" />
+    <description source="TRx">The status of this entry. {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid. The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-natportmapping" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. If the CPE supports the Alias-based Addressing feature as defined in {{bibref|TR-069a4|3.6.1}} and described in {{bibref|TR-069a4|Appendix II}}, the following mandatory constraints MUST be enforced: *Its value MUST NOT be empty. *Its value MUST start with a letter. *If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix. *The CPE MUST NOT change the parameter value. </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the IP.Interface table. If the referenced object is deleted, the parameter value MUST be set to an empty string. Specifies the IP interface to which this port mapping applies.</description>
+
+  <parameter name="AllInterfaces" type="boolean" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">{{reference}} The associated IP interface on which NAT is to be enabled.</description>
+
+  <parameter name="LeaseDuration" type="unsignedInt" specSource="TR181" profile="Device2_NAT:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" neverWriteToConfigFile="true" />
+    <description source="TRx">Determines the time to live, in seconds, of a port mapping lease, where &quot;time to live&quot; means the number of seconds before the port mapping expires. A value of 0 means the port mapping is static. Support for dynamic (non-static) port mappings is OPTIONAL. That is, the only value for {{param}} that MUST be supported is 0. For a dynamic (non-static) port mapping, when this parameter is read, the value represents the time remaining on the port mapping lease. That is, for a dynamic port mapping, the value counts down toward 0. When a dynamic port mapping lease expires, the CPE MUST automatically terminate that port mapping, and MUST automatically delete the corresponding {{object}} table entry.</description>
+    <description source="BROADCOM">This is a useful param but will be hard to implement.  We do not want to save these dynamic entries across reboots.  But we also do not want to constantly write to the config file with new values of the LeaseDuration.</description>
+
+  <parameter name="RemoteHost" type="string" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">This parameter is the IP address of the source of inbound packets. {{empty}} indicates a &quot;wildcard&quot;, i.e. any IP address (this will be {{empty}} in most cases). CPE are REQUIRED only to support {{empty}}. When {{param}} is {{empty}}, all traffic sent to the {{param|ExternalPort}} on the WAN interface of the gateway is forwarded to the {{object|.IP.Interface}} associated with the {{param|InternalClient}} on the {{param|InternalPort}}. When {{param}} is specified as one external IP address, the NAT will only forward inbound packets from this {{param}} to the {{param|InternalClient}}, all other packets will be dropped. If a CPE supports non-empty values for {{param}}, it MAY additionally support the ability to have more than one port mapping with the same {{param|ExternalPort}} and {{param|Protocol}}, but with differing values of {{param}}. When wildcard values are used for {{param}} and/or {{param|ExternalPort}}, the following precedence order applies (with the highest precedence listed first): # Explicit {{param}}, explicit {{param|ExternalPort}} # Explicit {{param}}, zero {{param|ExternalPort}} # Empty {{param}}, explicit {{param|ExternalPort}} # Empty {{param}}, zero {{param|ExternalPort}} If an incoming packet matches the criteria associated with more than one entry in this table, the CPE MUST apply the port mapping associated with the highest precedence entry.</description>
+
+  <parameter name="ExternalPort" type="unsignedInt" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="TRx">The external port (or the first port of a range of external ports) that the NAT gateway would listen on for connection requests to a corresponding {{param|InternalPort}}. Inbound packets to this external port on the WAN interface SHOULD be forwarded to the {{object|.IP.Interface}} associated with the {{param|InternalClient}} on the {{param|InternalPort}}. A value of zero ({{null}}) represents a &quot;wildcard&quot;, i.e. any port number. If this value is {{null}}, connection requests on all external ports (that are not otherwise mapped) will be forwarded to {{param|InternalClient}}, and the value(s) of {{param|InternalPort}} on {{param|InternalClient}} are ignored. When wildcard values are used for {{param|RemoteHost}} and/or {{param}}, the following precedence order applies (with the highest precedence listed first): # Explicit {{param|RemoteHost}}, explicit {{param}} # Explicit {{param|RemoteHost}}, zero {{param}} # Empty {{param|RemoteHost}}, explicit {{param}} # Empty {{param|RemoteHost}}, zero {{param}} If an incoming packet matches the criteria associated with more than one entry in this table, the CPE MUST apply the port mapping associated with the highest precedence entry.</description>
+
+  <parameter name="ExternalPortEndRange" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="TRx">Indicates the last port of the external port range that starts with {{param|ExternalPort}}. If an external port range is specified, then the behavior described for {{param|ExternalPort}} applies to all ports within the range. A value of zero (0) indicates that no external port range is specified, i.e. that the range consists only of {{param|ExternalPort}}. If {{param|ExternalPort}} is zero (wildcard), the value of this parameter MUST be ignored. If specified, the value of this parameter MUST be greater than or equal to the value of {{param|ExternalPort}}.</description>
+
+  <parameter name="InternalPort" type="unsignedInt" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="65535" />
+    <description source="TRx">The port on {{param|InternalClient}} that the gateway SHOULD forward connection requests to.</description>
+
+  <parameter name="X_BROADCOM_COM_InternalPortEndRange" type="unsignedInt" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+
+  <parameter name="Protocol" type="string" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="TCP" validValuesArray="transportProtocolValues" />
+    <description source="TRx">The protocol of the port mapping. {{enum}}</description>
+
+  <parameter name="InternalClient" type="string" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The IP address or DNS host name of an internal client (on the LAN). Support for an IP address is mandatory. If {{param}} is specified as an IP address and the LAN device's IP address subsequently changes, the port mapping MUST remain associated with the original IP address. Support for DNS host names is OPTIONAL. If {{param}} is specified as a DNS host name and the LAN device's IP address subsequently changes, the port mapping MUST remain associated with this LAN device. In this case, it is the responsibility of the CPE to maintain the name-to-address mapping in the event of IP address changes. This can be accomplished, for example, by assigning the DNS host name via use of DHCP option 12 (Host Name) or option 81 (FQDN). Note that the ACS can learn the host name associated with a given LAN device via the {{object|.Hosts.Host.}} table. Read access to this parameter MUST always return the exact value that was last set by the ACS. For example, if the internal client is set to a DNS host name, it MUST read back as a DNS host name and not as an IP address. It MUST be possible to set the {{param}} to the broadcast IP address 255.255.255.255 for UDP mappings. This is to enable multiple NAT clients to use the same well-known port simultaneously.</description>
+
+  <parameter name="Description" type="string" specSource="TR181" profile="Device2_NAT:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">User-readable description of this port mapping.</description>
+
+  <parameter name="X_BROADCOM_COM_AppName" type="string" specSource="Broadcom" profile="Device2_NAT:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+
+
+<vsaInfo>
+
+<validstringarray name="NatStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Enabled_PortMappingDisabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+<validstringarray name="transportProtocolValues" />
+  <element>TCP</element>
+  <element>UDP</element>
+  <element>TCP or UDP</element>
+
+<validstringarray name="status4eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_NAT:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

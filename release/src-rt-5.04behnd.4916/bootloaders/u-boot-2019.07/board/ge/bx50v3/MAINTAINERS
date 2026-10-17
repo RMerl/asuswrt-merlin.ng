@@ -1,9 +1,0 @@
-GE_BX50V3 BOARD
-M:	Ian Ray <ian.ray@ge.com>
-S:	Maintained
-F:	board/ge/bx50v3/
-F:	include/configs/ge_bx50v3.h
-F:	configs/ge_bx50v3_defconfig
-F:	configs/ge_b450v3_defconfig
-F:	configs/ge_b650v3_defconfig
-F:	configs/ge_b850v3_defconfig

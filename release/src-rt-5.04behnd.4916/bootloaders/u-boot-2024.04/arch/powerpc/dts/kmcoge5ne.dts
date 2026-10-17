@@ -1,0 +1,320 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Hitachi Power Grids KMCOGE5ne Device Tree Source
+ *
+ * Copyright (C) 2020 Heiko Schocher <hs@denx.de>
+ *
+ */
+
+/dts-v1/;
+
+#include "km836x.dtsi"
+
+/ {
+	model = "kmcoge5ne";
+	compatible = "hitachi,kmcoge5ne";
+
+	aliases {
+		ethernet0 = &enet_admin;
+		ethernet1 = &enet_mate;
+		ethernet2 = &enet_switch;
+		serial0 = &serial0;
+	};
+};
+
+&soc {
+	/* brg for hdlc clk */
+	brg@0 {
+		compatible = "fsl,mpc-brg";
+		brg-name = "brg16";
+		brg-frequency = <20000000>; /* 20 MHz */
+		pio-handle =  <&pio_brg>;
+	};
+};
+
+&i2c0 {
+	mux@70 {
+		compatible = "nxp,pca9547";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c@1 {
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Inventory EEPROM of the unit itself */
+			ivm@50 {
+				label = "MAIN_CTRL";
+				compatible = "dummy";
+				reg = <0x50>;
+			};
+		};
+
+		i2c@2 {
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			/* Inventory EEPROM of the fan unit */
+			fanu-ivm@50 {
+				label = "FANUV";
+				compatible = "dummy";
+				reg = <0x50>;
+			};
+
+			/* fan unit (GPIOs and so on) */
+			fanu@20 {
+				label = "FANUV_CTRL";
+				compatible = "dummy";
+				reg = <0x20>;
+			};
+		};
+
+		i2c@3 {
+			reg = <3>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			backplane@50 {
+				label = "BP_CTRL";
+				compatible = "dummy";
+				reg = <0x50>;
+			};
+		};
+	};
+};
+
+&serial0 {
+	status = "okay";
+};
+
+&par_io {
+	pio_ucc1: ucc_pin@0 { /* RGMII mng-switch */
+		pio-map = <
+			/* port pin dir open_drain assignment has_irq */
+			0   1  3  0  2  0	/* MDIO   (PA1,   bi, f2) */
+			0   2  1  0  1  0	/* MDC    (PA2,   in, f1) */
+
+			0   3  1  0  1  0	/* TxD0   (PA3,   in, f1) */
+			0   4  1  0  1  0	/* TxD1   (PA4,   in, f1) */
+			0   5  1  0  1  0	/* TxD2   (PA5,   in, f1) */
+			0   6  1  0  1  0	/* TxD3   (PA6,   in, f1) */
+			0   9  2  0  1  0	/* RxD0   (PA9,  out, f1) */
+			0  10  2  0  1  0	/* RxD1   (PA10, out, f1) */
+			0  11  2  0  1  0	/* RxD2   (PA11, out, f1) */
+			0  12  2  0  1  0	/* RxD3   (PA12, out, f1) */
+			0   7  1  0  1  0	/* TX_EN  (PA7,   in, f1) */
+			0  15  2  0  1  0	/* RX_DV  (PA15, out, f1) */
+			0   0  2  0  1  0	/* RX_CLK (PA0,  out, f1) */
+			2   9  1  0  3  0	/* GTX_CLK        (CLK10) */
+			2   8  2  0  1  0	/* GTX125          (CLK9) */
+		>;
+	};
+
+	pio_ucc4: ucc_pin@3 { /* RMII, admin front port */
+		pio-map = <
+			/* port pin dir open_drain assignment has_irq */
+			0   1  3  0  2  0	/* MDIO   (PA1,   bi, f2) */
+			0   2  1  0  1  0	/* MDC    (PA2,   in, f1) */
+
+			1  14  1  0  1  0	/* TxD0   (PB14, out, f1) */
+			1  15  1  0  1  0	/* TxD1   (PB15, out, f1) */
+			1  20  2  0  1  0	/* RxD0   (PB20, in,  f1) */
+			1  21  2  0  1  0	/* RxD1   (PB21, in,  f1) */
+			1  18  1  0  1  0	/* TX_EN  (PB18, out, f1) */
+			1  26  2  0  1  0	/* RX_DV  (PB26, in,  f1) */
+			1  27  2  0  1  0	/* RX_ER  (PB27, in,  f1) */
+
+			2  16  2  0  1  0	/* UCC4_RMII_CLK  (CLK17) */
+		>;
+	};
+
+	pio_ucc5: ucc_pin@4 { /* RMII, mate backplane port */
+		pio-map = <
+			/* port pin dir open_drain assignment has_irq */
+			0   1  3  0  2  0	/* MDIO  (PA1,   bi, f2) */
+			0   2  1  0  1  0	/* MDC   (PA2,   in, f1) */
+
+			3   0  1  0  1  0	/* TxD0  (PD0,  out, f1) */
+			3   1  1  0  1  0	/* TxD1  (PD1,  out, f1) */
+			3   6  2  0  1  0	/* RxD0  (PD6,   in, f1) */
+			3   7  2  0  1  0	/* RxD1  (PD7,   in, f1) */
+			3   4  1  0  1  0	/* TX_EN (PD4,  out, f1) */
+			3  12  2  0  1  0	/* RX_DV (PD12,  in, f1) */
+			3  13  2  0  1  0	/* RX_ER (PD13,  in, f1) */
+
+			2  15  2  0  1  0	/* UCCx_RMII_CLK  (CLK16) */
+		>;
+	};
+
+	pio_spi: spi_pin@01 {
+		pio-map = <
+			/* port  pin  dir  open_drain  assignment  has_irq  */
+			4  28  3  0  3  0	/* SPI_MOSI (PE28, out, f3) */
+			4  29  3  0  3  0	/* SPI_MISO (PE29, out, f3) */
+			4  30  3  0  3  0	/* SPI_CLK  (PE30, out, f3) */
+		>;
+	};
+
+	pio_brg: brg_pin@0 {
+		pio-map = <
+			/* port  pin  dir  open_drain  assignment  has_irq  */
+			2  25  1  0  1  0	/* BRG	   (PC25, out, f1) */
+		>;
+	};
+
+	pio_tdm: tdm_pin@00 {
+		pio-map = <
+			/* port pin dir open_drain assignment has_irq */
+			/* TDMa */
+			0  8  3  0  2  0	/* RxD0    (PA8,  bi, f2) */
+			0  13 3  0  2  0	/* TxD0    (PA13, bi, f2) */
+			0  14 2  0  2  0	/* RSync0  (PA14, in, f2) */
+			2  7  2  0  1  0	/* RxClk8  (PC7,  in, f1) */
+			/* TDMb */
+			0  27 3  0  2  0	/* RxD1    (PA27, bi, f2) */
+			0  22 3  0  2  0	/* TxD1    (PA22, bi, f2) */
+			0  28 2  0  2  0	/* RSync1  (PA28, in, f2) */
+			2  1  2  0  1  0	/* RxClk2  (PC1,  in, f1) */
+			/* TDMc */
+			1  5  3  0  2  0	/* RxD2    (PB5,  bi, f2) */
+			1  8  3  0  2  0	/* TxD2    (PB8,  bi, f2) */
+			1  2  2  0  3  0	/* RSync2  (PB2,  in, f3) */
+			2  6  2  0  1  0	/* RxClk7  (PC6,  in, f1) */
+			/* TDMd */
+			1  22 3  0  2  0	/* RxD3    (PB22, bi, f2) */
+			1  19 3  0  1  0	/* TxD3    (PB19, bi, f1) */
+			1  16 2  0  2  0	/* RSync3  (PB16, in, f2) */
+			2  13 2  0  1  0	/* RxClk14 (PC13, in, f1) */
+			/* TDMe */
+			3  8  3  0  2  0	/* RxD4    (PD8,  bi, f2) */
+			3  5  3  0  2  0	/* TxD4    (PD5,  bi, f2) */
+			3  2  2  0  2  0	/* RSync4  (PD2 , in, f2) */
+			2  22 2  0  1  0	/* RxClk23 (PC22, in, f1) */
+			/* TDMf */
+			3  19 3  0  2  0	/* RxD5    (PD19, bi, f2) */
+			3  22 3  0  2  0	/* TxD5    (PD22, bi, f2) */
+			3  16 2  0  1  0	/* RSync5  (PD16, in, f1) */
+			2  17 2  0  1  0	/* RxClk18 (PC17, in, f1) */
+			/* TDMg */
+			4  8  3  0  2  0	/* RxD6    (PE8,  bi, f2) */
+			4  5  3  0  2  0	/* TxD6    (PE5,  bi, f2) */
+			4  2  2  0  1  0	/* RSync6  (PE2,  in, f1) */
+			2  19 2  0  1  0	/* RxClk20 (PC19, in, f1) */
+			/* TDMh */
+			4  19 3  0  2  0	/* RxD7    (PE19, bi, f2) */
+			4  22 3  0  3  0	/* TxD7    (PE22, bi, f3) */
+			4  16 2  0  2  0	/* RSync7  (PE16, in, f2) */
+			2  21 2  0  1  0	/* RxClk22 (PC21, in, f1) */
+			/* RxTxClk0/1 */
+			2  0  2  0  1  0	/* Clk1    (PC0,  in, f1) */
+			2  23 2  0  1  0	/* Clk24   (PC23, in, f1) */
+			/* RxTxSync0/1 */
+			2  10 2  0  1  0	/* Clk11   (PC10, in, f1) */
+			2  20 2  0  1  0>;	/* Clk21   (PC20, in, f1) */
+	};
+};
+
+&qe {
+	/* mng-switch port (UCC1, MDIO 0x10, RGMII) */
+	enet_switch: ethernet@2000 {
+		device_type = "network";
+		compatible = "ucc_geth";
+		cell-index = <1>;
+		reg = <0x2000 0x200>;
+		interrupts = <32>;
+		interrupt-parent = <&qeic>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+		rx-clock-name = "none";
+		tx-clock-name = "clk9";
+		/*id=0, full-dup, 1G, no-pause, no-asym_p*/
+		fixed-link = <0 1 1000 0 0>;
+		phy-connection-type = "rgmii-id";
+		pio-handle = <&pio_ucc1>;
+	};
+
+	/* admin and debug port (UCC4, MDIO 0x00, RMII) */
+	enet_admin: ucc@3200 {
+		device_type = "network";
+		compatible = "ucc_geth";
+		cell-index = <4>;
+		reg = <0x3200 0x200>;
+		interrupts = <35>;
+		interrupt-parent = <&qeic>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+		rx-clock-name = "none";
+		tx-clock-name = "clk17";
+		phy-handle = <&phy_admin>;
+		phy-connection-type = "rmii";
+		pio-handle = <&pio_ucc4>;
+	};
+
+	/* mate backplane port (UCC5, MDIO 0x08, RMII) */
+	enet_mate: ucc@2400 {
+		device_type = "network";
+		compatible = "ucc_geth";
+		cell-index = <5>;
+		reg = <0x2400 0x200>;
+		interrupts = <40>;
+		interrupt-parent = <&qeic>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+		rx-clock-name = "none";
+		tx-clock-name = "clk16";
+		phy-handle = <&phy_mate>;
+		phy-connection-type = "rmii";
+		pio-handle = <&pio_ucc5>;
+	};
+
+	mdio@3320 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x3320 0x18>;
+		compatible = "fsl,ucc-mdio";
+
+		/* admin front port (UCC4, MDIO 0x00, RMII) */
+		phy_admin: ethernet-phy@00 {
+			reg = <0x0>;
+		};
+
+		/* mate bp port (UCC5, MDIO 0x08, RMII) */
+		phy_mate: ethernet-phy@08 {
+			reg = <0x08>;
+		};
+	};
+};
+
+&localbus {
+	ranges = <0 0 0xf0000000 0x04000000
+		   1 0 0xe8000000 0x01000000
+		   3 0 0xa0000000 0x10000000
+		   4 0 0xb0000000 0x10000000>;
+
+	flash@0,0 {
+		compatible = "cfi-flash";
+		reg = <0 0 0x04000000>;
+		nornand = "nor";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		bank-width = <2>;
+		partition@0 { /* 768KB */
+			label = "u-boot";
+			reg = <0 0xC0000>;
+		};
+		partition@c0000 { /* 128KB */
+			label = "env";
+			reg = <0xC0000 0x20000>;
+		};
+		partition@e0000 { /* 128KB */
+			label = "envred";
+			reg = <0xE0000 0x20000>;
+		};
+		partition@100000 { /* 64512KB */
+			label = "ubi0";
+			reg = <0x100000 0x3F00000>;
+		};
+	};
+};
+
+#include "kmcoge5ne-uboot.dtsi"

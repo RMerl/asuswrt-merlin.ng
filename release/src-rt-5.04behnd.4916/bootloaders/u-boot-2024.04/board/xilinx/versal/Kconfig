@@ -1,0 +1,14 @@
+# Copyright (c) 2020, Xilinx, Inc.
+#
+# SPDX-License-Identifier: GPL-2.0
+
+if ARCH_VERSAL
+
+config CMD_VERSAL
+	bool "Enable Versal specific commands"
+	default y
+	depends on ZYNQMP_FIRMWARE
+	help
+	  Enable Versal specific commands.
+
+endif

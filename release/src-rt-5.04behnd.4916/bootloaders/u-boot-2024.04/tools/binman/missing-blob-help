@@ -1,0 +1,52 @@
+# This file contains help messages for missing external blobs. Each message has
+# a tag (MUST be just lower-case text, digits and hyphens) starting in column 1,
+# followed by a colon (:) to indicate its start. The message can include any
+# number of lines, including blank lines.
+#
+# When looking for a tag, Binman uses the value of 'missing-msg' for the entry,
+# the entry name or the entry type, in that order
+
+atf-bl31:
+See the documentation for your board. You may need to build ARM Trusted
+Firmware and build with BL31=/path/to/bl31.bin
+
+atf-bl31-sunxi:
+Please read the section on ARM Trusted Firmware (ATF) in
+board/sunxi/README.sunxi64
+
+scp-sunxi:
+SCP firmware is required for system suspend, but is otherwise optional.
+Please read the section on SCP firmware in board/sunxi/README.sunxi64
+
+iot2050-seboot:
+See the documentation for IOT2050 board. Your image is missing SEBoot
+which is mandatory for board startup. Prebuilt SEBoot located at
+meta-iot2050/tree/master/recipes-bsp/u-boot/files/prebuild/seboot_pg*.bin.
+
+iot2050-otpcmd:
+See the documentation for IOT2050 board. Your image is missing OTP command data
+block which is used for provisioning the customer keys to the board.
+Please refer to
+meta-iot2050/tree/master/recipes-bsp/secure-boot-otp-provisioning/files/make-otpcmd.sh
+for how to generate this binary. If you are not using secure boot or do not
+intend to provision the keys, disable CONFIG_IOT2050_EMBED_OTPCMD.
+
+k3-rti-wdt-firmware:
+If CONFIG_WDT_K3_RTI_LOAD_FW is enabled, a firmware image is needed for
+the R5F core(s) to trigger the system reset. One possible source is
+https://github.com/siemens/k3-rti-wdt.
+
+rockchip-tpl:
+An external TPL is required to initialize DRAM. Get the external TPL
+binary and build with ROCKCHIP_TPL=/path/to/ddr.bin. One possible source
+for the external TPL binary is https://github.com/rockchip-linux/rkbin.
+
+tee-os:
+See the documentation for your board. You may need to build Open Portable
+Trusted Execution Environment (OP-TEE) and build with TEE=/path/to/tee.bin
+
+opensbi:
+See the documentation for your board. The OpenSBI git repo is at
+https://github.com/riscv/opensbi.git
+You may need to build fw_dynamic.bin first and re-build u-boot with
+OPENSBI=/path/to/fw_dynamic.bin

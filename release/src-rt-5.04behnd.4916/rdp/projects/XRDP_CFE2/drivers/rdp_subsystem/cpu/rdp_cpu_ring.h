@@ -52,16 +52,13 @@ typedef struct
    uint16_t src_bridge_port;
    uint16_t dst_ssid;
    uint32_t wl_metadata;
-   uint16_t ptp_index;
    uint16_t free_index;
    uint8_t  is_rx_offload;
    uint8_t  is_ipsec_upstream;
    uint8_t  is_ucast;
    uint8_t  is_exception;
    uint8_t  is_csum_verified;
-#ifdef XRDP
    uint8_t  mcast_tx_prio;
-#endif
 #ifdef CONFIG_CPU_REDIRECT_MODE_SUPPORT
    uint8_t  cpu_redirect_egress_queue;
    uint8_t  cpu_redirect_wan_flow;

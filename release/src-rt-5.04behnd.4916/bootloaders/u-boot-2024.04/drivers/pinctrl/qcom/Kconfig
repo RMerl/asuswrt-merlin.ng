@@ -1,0 +1,46 @@
+if ARCH_SNAPDRAGON
+
+config PINCTRL_QCOM
+	depends on PINCTRL_GENERIC
+	def_bool n
+
+menu "Qualcomm pinctrl drivers"
+
+config PINCTRL_QCOM_APQ8016
+	bool "Qualcomm APQ8016 GCC"
+	select PINCTRL_QCOM
+	help
+	  Say Y here to enable support for pinctrl on the MSM8916 / APQ8016
+	  Snapdragon 410 SoC, as well as the associated GPIO driver.
+
+config PINCTRL_QCOM_APQ8096
+	bool "Qualcomm APQ8096 GCC"
+	select PINCTRL_QCOM
+	help
+	  Say Y here to enable support for pinctrl on the MSM8996 / APQ8096
+	  Snapdragon 820 SoC, as well as the associated GPIO driver.
+
+config PINCTRL_QCOM_IPQ4019
+	bool "Qualcomm IPQ4019 GCC"
+	select PINCTRL_QCOM
+	help
+	  Say Y here to enable support for pinctrl on the IPQ4019 SoC,
+	  as well as the associated GPIO driver.
+
+config PINCTRL_QCOM_QCS404
+	bool "Qualcomm QCS404 GCC"
+	select PINCTRL_QCOM
+	help
+	  Say Y here to enable support for pinctrl on the Snapdragon QCS404 SoC,
+	  as well as the associated GPIO driver.
+
+config PINCTRL_QCOM_SDM845
+	bool "Qualcomm SDM845 GCC"
+	select PINCTRL_QCOM
+	help
+	  Say Y here to enable support for pinctrl on the Snapdragon 845 SoC,
+	  as well as the associated GPIO driver.
+
+endmenu
+
+endif

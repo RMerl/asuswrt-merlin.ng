@@ -1,6 +1,0 @@
-EDB93XX BOARD
-M:	Sergey Kostanbaev <sergey.kostanbaev@fairwaves.ru>
-S:	Maintained
-F:	board/cirrus/edb93xx/
-F:	include/configs/edb93xx.h
-F:	configs/edb9315a_defconfig

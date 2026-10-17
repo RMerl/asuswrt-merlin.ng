@@ -58,6 +58,15 @@ static int dispatch_pkt_sf2_lan(dispatch_info_t *dispatch_info)
     return 0;
 }
 
+static int dispatch_dg_pkt_sf2_lan(dispatch_info_t *dispatch_info)
+{
+    int rc;
+    /* TODO : hardcode the dispatch is through LAN interface for now */
+    rc = cpu_queues_tx_send_dg (LAN_CPU_TX, dispatch_info);
+
+    return rc;
+}
+
 // =========== sf2 switch ops ===========================
 static int port_sf2_sw_port_id_on_sw(port_info_t *port_info, int *port_id, port_type_t *port_type)
 {
@@ -92,6 +101,7 @@ port_ops_t port_sf2_port =
 {
     .init = port_sf2_port_init,
     .dispatch_pkt = dispatch_pkt_sf2_lan,
+    .dispatch_dg_pkt = dispatch_dg_pkt_sf2_lan,
     .stats_clear = port_generic_stats_clear,
 #ifdef EMBEDDED_BRCMTAG_TX_INSERT
     .tx_pkt_mod = port_sf2_tx_pkt_mod,  /* insert brcm tag for port on external switch */

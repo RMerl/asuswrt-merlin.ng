@@ -140,7 +140,6 @@ int fl_macsec_mdo_add_secy(struct macsec_context *ctx, void *priv)
     mdev->include_sci = ctx->secy->tx_sc.send_sci;
 
     printk("egres_sci %llu assoc_num %d include_sci %d\n", mdev->egress_sci, mdev->assoc_num, mdev->include_sci);
-    ctx->secy->port_id = port_id;
     /* Set the SCI value and mask. */
     sc.sci = mdev->egress_sci;
     sc.sci_mask = mdev->egress_sci_mask;

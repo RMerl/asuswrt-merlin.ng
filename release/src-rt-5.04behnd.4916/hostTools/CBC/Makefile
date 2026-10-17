@@ -18,13 +18,13 @@ check_cbc:
 	then \
 		echo "CBC Found" ; \
 	else \
-		tar xf Convert-Binary-C-0.77.tar.gz ; \
-		cd Convert-Binary-C-0.77 ; \
+		tar xf Convert-Binary-C-0.84.tar.gz ; \
+		cd Convert-Binary-C-0.84 ; \
 		perl Makefile.PL PREFIX=$(HOSTTOOLS_DIR)/local_install/Perl LIB=$(HOSTTOOLS_DIR)/local_install/Perl ; \
 		make ; \
 		make install ; \
 		cd .. ; \
-		rm -rf Convert-Binary-C-0.77 ; \
+		rm -rf Convert-Binary-C-0.84 ; \
 	fi 
 
 

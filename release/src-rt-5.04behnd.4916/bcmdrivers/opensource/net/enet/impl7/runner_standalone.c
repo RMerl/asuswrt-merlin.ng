@@ -118,7 +118,7 @@ sw_ops_t port_runner_sw =
     .mux_port_rx = mux_get_rx_index,
     .stats_get = port_generic_stats_get,
     .port_id_on_sw = port_runner_sw_port_id_on_sw,
-#if defined(CONFIG_BCM_KERNEL_BONDING)
+#if defined(CONFIG_BCM_KERNEL_BONDING) || defined(CONFIG_BCM_KERNEL_TEAM)
     .config_trunk = port_runner_sw_config_trunk,
 #endif
 #if !defined(DSL_DEVICES)
@@ -132,24 +132,7 @@ int link_pbit_tc_to_q_to_rdpa_lan_port(bdmf_object_handle port_obj)
 {
     bdmf_error_t rc = 0;
     bdmf_object_handle rdpa_pbit_to_queue_obj = NULL;
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV)
-    bdmf_object_handle rdpa_tc_to_queue_obj = NULL;
-    bdmf_number table_index = 0; 
-
-    rc = rdpa_tc_to_queue_get(table_index, &rdpa_tc_to_queue_obj);
-    if (rc != 0)
-    {
-        enet_err("Failed to get tc_to_q object. rc=%d\n", rc);
-        goto Exit;
-    }
-   
-    rc = bdmf_link(rdpa_tc_to_queue_obj, port_obj, NULL);
-    if (rc != 0)
-    {
-        enet_err("Failed to link tc_to_q table to RDPA port rc=%d\n", rc);
-        goto Exit;
-    }
-#endif    
+    
     rc = rdpa_pbit_to_queue_get(0, &rdpa_pbit_to_queue_obj);
     if (rc != 0)
     {
@@ -165,10 +148,7 @@ int link_pbit_tc_to_q_to_rdpa_lan_port(bdmf_object_handle port_obj)
     }
 
 Exit:
-#if defined(CONFIG_BCM_PLATFORM_RDP_PRV)
-    if (rdpa_tc_to_queue_obj)
-        bdmf_put(rdpa_tc_to_queue_obj);
-#endif
+
     if (rdpa_pbit_to_queue_obj)
         bdmf_put(rdpa_pbit_to_queue_obj);
 
@@ -236,7 +216,7 @@ int port_runner_port_init(enetx_port_t *self)
     return rc;
 }
 
-#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+#if defined(CONFIG_BCM_FTTDP_G9991)
 void __dispatch_pkt_skb_check_bcast_mcast(dispatch_info_t *dispatch_info)
 {
     struct sk_buff *skb = (struct sk_buff *)dispatch_info->pNBuff;
@@ -289,7 +269,7 @@ int port_runner_dispatch_pkt_lan(dispatch_info_t *dispatch_info)
         return ptp_1588_cpu_send_sysb((bdmf_sysb)dispatch_info->pNBuff, &info, ptp_offset, dispatch_info->port->p.mac->mac_id);
 #endif
 
-#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+#if defined(CONFIG_BCM_FTTDP_G9991)
     if (IS_SKBUFF_PTR(dispatch_info->pNBuff))
         __dispatch_pkt_skb_check_bcast_mcast(dispatch_info);
 #endif
@@ -305,7 +285,7 @@ static int dispatch_pkt_gbe_wan(dispatch_info_t *dispatch_info)
 
     enet_dbg_tx("rdpa_cpu_send: port %d queue %d\n",  dispatch_info->port->port_info.port, dispatch_info->egress_queue);
 
-#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+#if defined(CONFIG_BCM_FTTDP_G9991)
     if (IS_SKBUFF_PTR(dispatch_info->pNBuff))
         __dispatch_pkt_skb_check_bcast_mcast(dispatch_info);
 #endif

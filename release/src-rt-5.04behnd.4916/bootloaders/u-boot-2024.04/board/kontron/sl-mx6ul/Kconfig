@@ -1,0 +1,15 @@
+if TARGET_KONTRON_MX6UL
+
+config SYS_BOARD
+	string
+	default "sl-mx6ul"
+
+config SYS_VENDOR
+	string
+	default "kontron"
+
+config SYS_CONFIG_NAME
+	string
+	default "kontron-sl-mx6ul"
+
+endif

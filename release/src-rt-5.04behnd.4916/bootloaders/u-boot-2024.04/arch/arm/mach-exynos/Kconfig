@@ -1,0 +1,282 @@
+if ARCH_EXYNOS
+
+config BOARD_COMMON
+	def_bool y
+	depends on !TARGET_SMDKV310 && !TARGET_ARNDALE && !TARGET_E850_96
+
+config SPI_BOOTING
+	bool
+
+config USB_BOOTING
+	bool
+
+choice
+	prompt "EXYNOS architecture type select"
+	optional
+
+config ARCH_EXYNOS4
+	bool "Exynos4 SoC family"
+	select BOARD_EARLY_INIT_F
+	select CPU_V7A
+	select BLK
+	select DM_MMC
+	help
+	  Samsung Exynos4 SoC family are based on ARM Cortex-A9 CPU. There
+	  are multiple SoCs in this family including Exynos4210, Exynos4412,
+	  and Exynos4212.
+
+config ARCH_EXYNOS5
+	bool "Exynos5 SoC family"
+	select BOARD_EARLY_INIT_F
+	select CPU_V7A
+	select SHA_HW_ACCEL
+	select SPI_BOOTING if EXYNOS5_DT
+	select USB_BOOTING
+	imply CMD_HASH
+	imply CRC32_VERIFY
+	imply HASH_VERIFY
+	imply KEYBOARD
+	imply USB_ETHER_ASIX
+	imply USB_ETHER_RTL8152
+	imply USB_ETHER_SMSC95XX
+	select BLK
+	select DM_MMC
+
+	help
+	  Samsung Exynos5 SoC family are based on ARM Cortex-A15 CPU (and
+	  Cortex-A7 CPU in big.LITTLE configuration). There are multiple SoCs
+	  in this family including Exynos5250, Exynos5420 and Exynos5800.
+
+config ARCH_EXYNOS7
+	bool "Exynos7 SoC family"
+	select ARM64
+	select BOARD_EARLY_INIT_F
+	select BLK
+	select DM_MMC
+	help
+	  Samsung Exynos7 SoC family are based on ARM Cortex-A57 CPU or
+	  Cortex-A53 CPU (and some in a big.LITTLE configuration). There are
+	  multiple SoCs in this family including Exynos7420.
+
+config ARCH_EXYNOS9
+	bool "Exynos9 SoC family"
+	select ARM64
+	select BLK
+	select DM_MMC
+	help
+	  Samsung Exynos9 SoC family are based on ARMv8 Cortex CPU. There are
+	  multiple SoCs in this family including Exynos850.
+
+endchoice
+
+if ARCH_EXYNOS4
+
+config EXYNOS4210
+	bool
+
+choice
+	prompt "EXYNOS4 board select"
+
+config TARGET_SMDKV310
+	bool "Exynos4210 SMDKV310 board"
+	select EXYNOS4210
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_TRATS
+	select MISC_COMMON
+	bool "Exynos4210 Trats board"
+
+config TARGET_S5PC210_UNIVERSAL
+	bool "EXYNOS4210 Universal C210 board"
+	select MISC_COMMON
+
+config TARGET_ORIGEN
+	bool "Exynos4412 Origen board"
+	select EXYNOS4210
+	select SUPPORT_SPL
+
+config TARGET_TRATS2
+	bool "Exynos4412 Trat2 board"
+	select MISC_COMMON
+
+config TARGET_ODROID
+	bool "Exynos4412 Odroid board"
+	select MISC_COMMON
+
+endchoice
+endif
+
+if ARCH_EXYNOS5
+
+config EXYNOS5250
+	bool
+
+config EXYNOS5420
+	bool
+
+config EXYNOS5_DT
+	bool
+
+config SPL_GPIO
+	default y
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+choice
+	prompt "EXYNOS5 board select"
+
+config TARGET_ODROID_XU3
+	bool "Exynos5422 Odroid board"
+	select EXYNOS5_DT
+	select EXYNOS5420
+	select MISC_COMMON
+	select OF_CONTROL
+
+config TARGET_ARNDALE
+	bool "Exynos5250 Arndale board"
+	select ARM_ERRATA_773022
+	select ARM_ERRATA_774769
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+	select EXYNOS5250
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SMDK5250
+	bool "SMDK5250 board"
+	select EXYNOS5_DT
+	select EXYNOS5250
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SNOW
+	bool "Snow board"
+	select EXYNOS5_DT
+	select EXYNOS5250
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SPRING
+	bool "Spring board"
+	select EXYNOS5_DT
+	select EXYNOS5250
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_SMDK5420
+	bool "SMDK5420 board"
+	select EXYNOS5_DT
+	select EXYNOS5420
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_PEACH_PI
+	bool "Peach Pi board"
+	select EXYNOS5_DT
+	select EXYNOS5420
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+config TARGET_PEACH_PIT
+	bool "Peach Pit board"
+	select EXYNOS5_DT
+	select EXYNOS5420
+	select OF_CONTROL
+	select SUPPORT_SPL
+
+endchoice
+endif
+
+if ARCH_EXYNOS7
+
+choice
+	prompt "EXYNOS7 board select"
+
+config TARGET_ESPRESSO7420
+	bool "ESPRESSO7420 board"
+	select ARM64
+	select ARMV8_MULTIENTRY
+	select CLK_EXYNOS
+	select OF_CONTROL
+	select PINCTRL
+	select PINCTRL_EXYNOS7420
+	select SUPPORT_SPL
+
+config  TARGET_A5Y17LTE
+	bool "Samsung SM-A520F board"
+	select ARM64
+	select CLK_EXYNOS
+	select OF_CONTROL
+	select PINCTRL
+	select PINCTRL_EXYNOS78x0
+	select SUPPORT_SPL
+
+config  TARGET_A7Y17LTE
+	bool "Samsung SM-A720F board"
+	select ARM64
+	select CLK_EXYNOS
+	select OF_CONTROL
+	select PINCTRL
+	select PINCTRL_EXYNOS78x0
+	select SUPPORT_SPL
+
+config  TARGET_A3Y17LTE
+	bool "Samsung SM-A320F board"
+	select ARM64
+	select CLK_EXYNOS
+	select OF_CONTROL
+	select PINCTRL
+	select PINCTRL_EXYNOS78x0
+	select SUPPORT_SPL
+
+endchoice
+endif
+
+if ARCH_EXYNOS9
+
+choice
+	prompt "EXYNOS9 board select"
+
+config TARGET_E850_96
+	bool "WinLink E850-96 board"
+	select ARM64
+	select CLK_EXYNOS
+	select OF_CONTROL
+	select PINCTRL
+	select PINCTRL_EXYNOS850
+
+endchoice
+endif
+
+config SYS_SOC
+	default "exynos"
+
+config EXYNOS_ACE_SHA
+	bool "Advanced Crypto Engine SHA support"
+	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && (LIB_HW_RAND || SHA_HW_ACCEL)
+	default y if ARCH_EXYNOS5
+
+config EXYNOS_TMU
+	bool "Exynos5 thermal management unit support"
+	depends on ARCH_EXYNOS5
+	default y
+
+source "board/samsung/smdkv310/Kconfig"
+source "board/samsung/trats/Kconfig"
+source "board/samsung/universal_c210/Kconfig"
+source "board/samsung/origen/Kconfig"
+source "board/samsung/trats2/Kconfig"
+source "board/samsung/odroid/Kconfig"
+source "board/samsung/arndale/Kconfig"
+source "board/samsung/smdk5250/Kconfig"
+source "board/samsung/smdk5420/Kconfig"
+source "board/samsung/espresso7420/Kconfig"
+source "board/samsung/axy17lte/Kconfig"
+source "board/samsung/e850-96/Kconfig"
+
+endif

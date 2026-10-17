@@ -1,0 +1,49 @@
+if ROCKCHIP_RK3568
+
+choice
+	prompt "RK3568/RK3566 board select"
+
+config TARGET_EVB_RK3568
+	bool "RK3568 evaluation board"
+	select BOARD_LATE_INIT
+	help
+	  RK3568 EVB is a evaluation board for Rockchp RK3568.
+
+config TARGET_ANBERNIC_RGXX3_RK3566
+	bool "Anbernic RGXX3"
+	help
+	  Anbernic RGXX3 gaming device with Rockchip RK3566. This
+	  config can be used with the RG353M, RG353P, RG353V, RG353VS,
+	  and RG503. The correct device tree name will automatically
+	  be selected by the bootloader.
+
+config TARGET_ODROID_M1_RK3568
+	bool "ODROID-M1"
+	help
+	  Hardkernel ODROID-M1 single board computer with a RK3568B2 SoC.
+
+config TARGET_QUARTZ64_RK3566
+	bool "Pine64 Quartz64"
+	help
+	  Pine64 Quartz64 single board computer with a RK3566 SoC.
+
+endchoice
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0xfdc20200
+
+config ROCKCHIP_STIMER_BASE
+	default 0xfdd1c020
+
+config SYS_SOC
+	default "rk3568"
+
+config SYS_MALLOC_F_LEN
+	default 0x20000
+
+source "board/rockchip/evb_rk3568/Kconfig"
+source "board/anbernic/rgxx3_rk3566/Kconfig"
+source "board/hardkernel/odroid_m1/Kconfig"
+source "board/pine64/quartz64_rk3566/Kconfig"
+
+endif

@@ -1,0 +1,90 @@
+Board information
+-----------------
+
+The SBC produced by Phytec has a SOM based on a i.MX6Q.
+The SOM is sold in two versions, with eMMC or with NAND. Support
+here is for the SOM with NAND.
+The evaluation board "phyBoard-Mira" is thought to be used
+together with the SOM.
+
+More information on the board can be found on manufacturer's
+website:
+
+http://www.phytec.de/produkt/single-board-computer/phyboard-mira/
+http://www.phytec.de/fileadmin/user_upload/images/content/1.Products/SOMs/phyCORE-i.MX6/L-808e_1.pdf
+
+Building U-Boot
+-------------------------------
+
+$ make pcm058_defconfig
+$ make
+
+This generates the artifacts SPL and u-boot.img.
+The SOM can boot from NAND or from SD-Card, having the SPI-NOR
+as second option.
+The dip switch "DIP-1" on the board let choose between
+NAND and SD.
+
+DIP-1 set to off:	Boot first from NAND, then try SPI
+DIP-1 set to on:	Boot first from SD, then try SPI
+
+The bootloader was tested with DIP-1 set to on. If a SD-card
+is present, then the RBL tries to load SPL from the SD Card, if not,
+RBL loads from SPI-NOR. The SPL tries then to load from the same
+device where SPL was loaded (SD or SPI). Booting from NAND is
+not supported.
+
+Flashing U-Boot onto an SD card
+-------------------------------
+
+After a successful build, the generated SPL and U-Boot binaries can be copied
+to an SD card. Adjust the SD card device as necessary:
+
+$ sudo dd if=u-boot-with-spl.imx of=/dev/mmcblk0 bs=1k seek=1
+
+This is equivalent to separately copying the SPL and U-Boot using:
+
+$ sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1
+$ sudo dd if=u-boot-dtb.img of=/dev/mmcblk0 bs=1k seek=197
+
+The default bootscripts expect a kernel fit-image file named "fitImage" in the
+first partition and Linux ext4 rootfs in the second partition.
+
+Flashing U-Boot to the SPI Flash, for booting Linux from NAND
+-------------------------------------------------------------
+
+The SD card created above can also be used to install the SPL and U-Boot into
+the SPI flash. Boot U-Boot from the SD card as above, and stop at the autoboot.
+
+Then, clear the SPI flash:
+
+=> sf probe
+=> sf erase 0x0 0x1000000
+
+Load the equivalent of u-boot-with-spl.imx from the raw MMC into memory and
+copy to the SPI. The SPL is expected at an offset of 0x400, and its size is
+maximum 392*512-byte blocks in size, therefore 0x188 blocks, totaling 0x31000
+bytes. Assume U-Boot should fit into 640KiB, therefore 0x500 512-byte blocks,
+totalling 0xA0000 bytes. Adding these together:
+
+=> mmc read ${loadaddr} 0x2 0x688
+=> sf write ${loadaddr} 0x400 0xD1000
+
+The SPL is located at offset 0x400, and U-Boot at 0x31400 in SPI flash, as to
+match the SD Card layout. This would allow, instead of reading from the SD Card
+above, with networking and TFTP correctly configured, the equivalent of:
+
+=> tftp u-boot-with-spl.imx
+=> sf write ${fileaddr} 0x400 ${filesize}
+
+The default NAND bootscripts expect a single MTD partition named "rootfs",
+which in turn contains the UBI volumes "fit" (which contains the kernel fit-
+image) and "root" (which contains a ubifs root filesystem).
+
+The "bootm_size" variable in the environment
+--------------------------------------------
+
+By default, U-Boot relocates the device tree towards the upper end of the RAM,
+which kernels using CONFIG_HIGHMEM=y may not be able to access during early
+boot. With the bootm_size variable set to 0x30000000, U-Boot relocates the
+device tree to below this address instead.

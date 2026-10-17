@@ -58,6 +58,8 @@
 #define LXC_VERSION_3_1_0 "3.1.0"
 #define LXC_VERSION_5_0_2 "5.0.2"
 #define LXC_VERSION_5_0_3 "5.0.3"
+#define LXC_VERSION_6_0_0 "6.0.0"
+#define LXC_VERSION_6_0_2 "6.0.2"
 
 typedef enum 
 {
@@ -124,6 +126,7 @@ typedef struct
 typedef struct contResource_t
 {
    unsigned long long cpu;
+   unsigned long long period;
    long long realtimeRuntime;
    char cpus[64];
    long long memory;
@@ -248,6 +251,8 @@ int contStartContainer(const char *path, const char *container_name,
                        int needCMS, int isRoot, int needNetwork, int appCont);
 int contDestroyContainer(const char *container_name, const char *path,
                          int limitFlash, int fullFS);
+int contReconfigContainer(const char *path, int disk, int memory, int cpu,
+                          int fullFS, const char *username);
 int contNetworkAddress(const char *container_name, char *addr, int addrLen);
 int contIPv6NetworkAddress(const char *container_name, char *addr, int addrLen);
 int contGetContainerDataDir(const char *path, int limitFlash, int isEE,
@@ -261,6 +266,8 @@ int contGetContainerBinDir(const char *path, int limitFlash,
                            char *dataDir, int dataDirLen);
 int contGetContainerRootfsDir(const char *path, int limitFlash, int isEE,
                               char *rootfs, int rootfsLen, int fullFS);
+int contBackupEeUpperDir(const char *path, int fullFS,
+                         char *upper, int upperLen);
 int contGetStateByName(const char *container_name);
 
 /*****************************************************************************

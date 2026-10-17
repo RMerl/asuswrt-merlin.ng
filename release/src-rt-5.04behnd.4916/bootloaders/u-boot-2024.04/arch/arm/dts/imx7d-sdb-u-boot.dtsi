@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+
+#include "imx7s-u-boot.dtsi"
+
+/ {
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&fec2 {
+	status = "disable";
+};
+
+&usbotg1 {
+	dr_mode = "peripheral";
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

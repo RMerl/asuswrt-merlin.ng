@@ -41,17 +41,19 @@ written consent.
 /** Receive packet info */
 typedef struct
 {
-    void *data;           /* data pointer */
+    uint8_t *data;           /* data pointer */
     uint32_t size;        /* data size */
-    uint32_t data_offset; /* data offset inside pointer */
+    int32_t data_offset;  /* data offset inside pointer */
     uint16_t gdx_pd_data;
     uint8_t is_exception;
     int dev_idx;
     struct net_device *tx_dev; /* tx device */
     struct {
         uint32_t rx_csum_verified:1;
-        uint32_t reserved:31;
+        uint32_t iq_prio:1;
+        uint32_t reserved:30;
     };
 } gdx_hwacc_rx_info_t;
 
+#define GDX_PRINT_FREQ(val) (((val) & ((val) - 1)) == 0)
 #endif /* __GDX_HW__H__ */

@@ -1,0 +1,12 @@
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.proj_6g_basic_set_objs
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.dhd_helper_objs
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.xpon_objs
+-include $(PROJECT_DIR)/$(RDP_TARGET)/rdpa/make.spu_offload_objs
+
+
+RDPA_OBJS += rdpa_buffer.o
+RDPA_OBJS += rdpa_ct.o
+RDPA_OBJS += rdpa_score.o
+ifeq ("$(CONFIG_SYSTEM)", "linux")
+EXTRA_DEFINES += -DRU_SIMULATION=0 -DRU_SIMULATION_ACCESS_PRINT=0
+endif

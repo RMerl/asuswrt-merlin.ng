@@ -1,0 +1,297 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LX2160AQDS common device tree source
+ *
+ * Copyright 2018-2020, 2023 NXP
+ *
+ */
+
+#include "fsl-lx2160a.dtsi"
+
+/ {
+	aliases {
+		spi0 = &fspi;
+		serial0 = &uart0;
+	};
+};
+
+&dpmac17 {
+	status = "okay";
+	phy-handle = <&rgmii_phy1>;
+	phy-connection-type = "rgmii-id";
+};
+
+&dpmac18 {
+	status = "okay";
+	phy-handle = <&rgmii_phy2>;
+	phy-connection-type = "rgmii-id";
+};
+
+&dspi0 {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash0: n25q128a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+	dflash1: sst25wf040b {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <1>;
+	};
+	dflash2: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <2>;
+	};
+};
+
+&dspi1 {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash3: n25q128a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+	dflash4: sst25wf040b {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <1>;
+	};
+	dflash5: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <2>;
+	};
+};
+
+&dspi2 {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash6: n25q128a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+	dflash7: sst25wf040b {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <1>;
+	};
+	dflash8: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <2>;
+	};
+};
+
+&emdio1 {
+	status = "okay";
+};
+
+&emdio2 {
+	status = "okay";
+};
+
+&esdhc0 {
+	status = "okay";
+};
+
+&esdhc1 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+	bootph-all;
+
+	fpga@66 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "simple-mfd";
+		reg = <0x66>;
+
+		mux-mdio@54 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mdio-mux-i2creg";
+			reg = <0x54>;
+			#mux-control-cells = <1>;
+			mux-reg-masks = <0x54 0xf8>; // reg 0x54, bits 7:3
+			mdio-parent-bus = <&emdio1>;
+
+			mdio@00 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x00>;
+
+				rgmii_phy1: ethernet-phy@1 {
+					reg = <0x1>;
+				};
+			};
+			mdio@08 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x40>;
+
+				rgmii_phy2: ethernet-phy@2 {
+					reg = <0x2>;
+				};
+			};
+
+			emdio1_slot1: mdio@c0 { /* I/O Slot #1 */
+				reg = <0xC0>;
+				device-name = "emdio1_slot1";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+
+			emdio1_slot2: mdio@c8 { /* I/O Slot #2 */
+				reg = <0xC8>;
+				device-name = "emdio1_slot2";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+
+			emdio1_slot3: mdio@d0 { /* I/O Slot #3 */
+				reg = <0xD0>;
+				device-name = "emdio1_slot3";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+
+			emdio1_slot4: mdio@d8 { /* I/O Slot #4 */
+				reg = <0xD8>;
+				device-name = "emdio1_slot4";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+
+			emdio1_slot5: mdio@e0 { /* I/O Slot #5 */
+				reg = <0xE0>;
+				device-name = "emdio1_slot5";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+
+			emdio1_slot6: mdio@e8 { /* I/O Slot #6 */
+				reg = <0xE8>;
+				device-name = "emdio1_slot6";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+
+			emdio1_slot7: mdio@f0 { /* I/O Slot #7 */
+				reg = <0xF0>;
+				device-name = "emdio1_slot7";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+
+			emdio1_slot8: mdio@f8 { /* I/O Slot #8 */
+				reg = <0xF8>;
+				device-name = "emdio1_slot8";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+
+	};
+
+	i2c-mux@77 {
+		compatible = "nxp,pca9547";
+		reg = <0x77>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x3>;
+
+			rtc@51 {
+				compatible = "nxp,pcf2129";
+				reg = <0x51>;
+			};
+		};
+	};
+};
+
+&fspi {
+	status = "okay";
+
+	mt35xu512aba0: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+		spi-rx-bus-width = <8>;
+		spi-tx-bus-width = <1>;
+	};
+};
+
+&sata0 {
+	status = "okay";
+};
+
+&sata1 {
+	status = "okay";
+};
+
+&sata2 {
+	status = "okay";
+};
+
+&sata3 {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+	status = "okay";
+};

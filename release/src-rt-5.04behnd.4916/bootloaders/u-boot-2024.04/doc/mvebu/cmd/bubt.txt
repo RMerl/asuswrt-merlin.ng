@@ -1,0 +1,63 @@
+BUBT (Burn ATF) command
+--------------------------
+Bubt command is used to burn a new ATF image to flash device.
+
+The bubt command gets the following parameters: ATF file name, destination device and source device.
+bubt [file-name] [destination [source]]
+	- file-name		Image file name to burn. default = flash-image.bin
+	- destination		Flash to burn to [spi, nand, mmc, sata]. default = active flash
+	- source		Source to load image from [tftp, usb, mmc, sata]. default = tftp
+
+Examples:
+	bubt				- Burn flash-image.bin from tftp to active flash
+	bubt latest-spi.bin nand	- Burn latest-spi.bin from tftp to NAND flash
+
+Notes:
+- For the TFTP interface set serverip and ipaddr.
+- To burn image to SD/eMMC device, the target is defined by HW partition.
+
+Bubt command details (burn image step by-step)
+----------------------------------------------
+This section describes bubt command flow:
+
+1. Fetch the requested ATF image from an available interface (USB/SD/SATA/XDB, etc.)
+   into the DRAM, and place it at <load_address>
+   Example: when using the FAT file system on USB flash device:
+   # usb reset
+   # fatls usb 0 (see files in device)
+   # fatload usb 0 <load_address> <file_name>
+
+2. Erase the target device:
+	- NAND:		# nand erase 0 100000
+	- SPI:		# sf probe 0
+			# sf erase 0 100000
+	- SD/eMMC:	# mmc dev <dev_id> <boot_partition>
+
+Notes:
+- The eMMC has 2 boot partitions (BOOT0 and BOOT1) and a user data partition (DATA).
+  The boot partitions are numbered as partition 1 and 2 in MMC driver.
+  Number 0 is used for user data partition and should not be utilized for storing
+  boot images and U-Boot environment in RAW mode since it will break file system
+  structures usually located here.
+
+  Currently configured boot partition can be printed by command:
+  # mmc partconf 0
+  (search for BOOT_PARTITION_ACCESS output, number 7 is user data)
+
+  Change it to BOOT0:
+  # mmc partconf 0 0 1 1
+
+  Change it to BOOT1:
+  # mmc partconf 0 0 2 2
+
+  Change it to user data:
+  # mmc partconf 0 0 7 0
+
+- The partition number is ignored if the target device is SD card.
+- The boot image offset starts at block 0 for eMMC and block 1 for SD devices.
+  The block 0 on SD devices is left for MBR storage.
+
+3. Write the ATF image:
+	- NAND:		# nand write <load_address> 0 <ATF Size>
+	- SPI:		# sf write <load_address> 0 <ATF Size>
+	- SD/eMMC:	# mmc write <load_address> [0|1] <ATF Size>/<block_size>

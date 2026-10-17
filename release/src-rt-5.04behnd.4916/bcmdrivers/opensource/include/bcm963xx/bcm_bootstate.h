@@ -11,8 +11,8 @@
 #define POR_RESET_STATUS        0x80000000
 #define RESET_STATUS_MASK       0xF0000000
 #else
-#define SW_RESET_STATUS         0x1    // bit in reg reset_ctrl_event_history_1
-#define RESET_STATUS_MASK       0x1F   
+#define SW_RESET_STATUS         0x7F    // bits in reg reset_ctrl_event_history_1
+#define RESET_STATUS_MASK       0x7F   
 #endif
 
 #define BCM_BOOT_REASON_BITS            (0x4)

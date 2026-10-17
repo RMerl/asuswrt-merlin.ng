@@ -93,17 +93,16 @@ CNPL_PERIODIC_UPDATE_QUANTA_NS is 21845 */
 
 /* SBPM */
 #define SBPM_BASE_ADDRESS                   0
-#define SBPM_MAX_BUFFER_NUMBER              0x7FF
-#define SBPM_INIT_OFFSET                    SBPM_MAX_BUFFER_NUMBER
+#define SBPM_INIT_OFFSET                    PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER
 #define SBPM_UG0_BN_THRESHOLD               0x3FF
 #define SBPM_UG0_EXCL_LOW_THRESHOLD         0x320
 #define SBPM_UG0_EXCL_LOW_HIST              0x14
 #define SBPM_UG1_BN_THRESHOLD               0x400
-#define SBPM_UG1_EXCL_LOW_THRESHOLD         0x180
+#define SBPM_UG1_EXCL_LOW_THRESHOLD         0x360
 #define SBPM_UG1_EXCL_HIGH_THRESHOLD        0x380
 
 #define SBPM_UG1_EXCL_LOW_HIST              0x14
-#define SBPM_MAX_NUM_OF_BNS                 (SBPM_MAX_BUFFER_NUMBER + 1)
+#define SBPM_MAX_NUM_OF_BNS                 (PROJ_DEFS_SBPM_MAX_BUFFER_NUMBER + 1)
 
 /* BBH_RX */
 #define DRV_BBH_RX_MAXIMAL_PACKET_HEADER_OFFSET 63
@@ -234,6 +233,10 @@ CNPL_PERIODIC_UPDATE_QUANTA_NS is 21845 */
 #define SDMA_RR_WEIGHT_TX_BBH_DSL_VALUE         ( 0x00 )
 #define DMA_RR_WEIGHT_TX_BBH_DSL_VALUE          ( 0x00 )
 
+#define UBUS_PORT_ID_MEMC        1
+#define UBUS_PORT_ID_BIU         2
+#define UBUS_PORT_ID_PSRAM       16
+
 typedef enum dma_id_e
 {
     DMA_COPY_ID = 0,
@@ -311,8 +314,9 @@ typedef enum tm_identifier_e
     TM_ETH_SQ = 2,
     TM_MAX = 2,
     TM_MAX_GROUP = TM_ETH_END - TM_ETH_START + 1,
-    TM_NUM_OF_IDENTITY = 3,
-    TM_ERROR = 3
+    TM_ERROR = 3,
+    TM_STILL_NOT_DEFINED = 4,
+    TM_NUM_OF_IDENTITY = 3
 } tm_identifier_e;
 
 static inline int tm_get_core_for_tm(tm_identifier_e tm_identity)
@@ -385,6 +389,7 @@ typedef enum bac_if_id_e
 
 #define CSO_BBH_TX_OFFLOAD_CHANNEL (7)
 #define SERVICE_QUEUES_THREAD_NUMBER IMAGE_3_IMAGE_3_SERVICE_QUEUES_THREAD_NUMBER
+#define CPU_RX_CSO_THREAD_NUMBER IMAGE_1_IMAGE_1_CPU_RX_CSO_THREAD_NUMBER
 
 #define RC_MAX_PMC_CORES 4
 #endif

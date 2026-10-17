@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2014-2021 Tony Dinh <mibodhi@gmail.com>
+#
+if TARGET_POGO_V4
+
+config SYS_BOARD
+	default "pogo_v4"
+
+config SYS_VENDOR
+	default "cloudengines"
+
+config SYS_CONFIG_NAME
+	default "pogo_v4"
+
+endif

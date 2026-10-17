@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2019 Jagan Teki <jagan@amarulasolutions.com>
+ */
+
+#include "binman.dtsi"
+#include "fu540-c000-u-boot.dtsi"
+#include "fu540-hifive-unleashed-a00-ddr.dtsi"
+
+/ {
+	aliases {
+		cpu1 = &cpu1;
+		cpu2 = &cpu2;
+		cpu3 = &cpu3;
+		cpu4 = &cpu4;
+		spi0 = &qspi0;
+		spi2 = &qspi2;
+	};
+
+	config {
+		u-boot,spl-payload-offset = <0x105000>; /* loader2 @1044KB */
+	};
+
+	memory@80000000 {
+		bootph-pre-ram;
+	};
+
+	hfclk {
+		bootph-pre-ram;
+	};
+
+	rtcclk {
+		bootph-pre-ram;
+	};
+
+};
+
+&clint {
+	clocks = <&rtcclk>;
+};
+
+&qspi0 {
+	bootph-pre-ram;
+
+	flash@0 {
+		bootph-pre-ram;
+	};
+};
+
+&qspi2 {
+	mmc@0 {
+		bootph-pre-ram;
+	};
+};
+
+&gpio {
+	bootph-pre-ram;
+};

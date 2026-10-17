@@ -1,0 +1,26 @@
+menuconfig CRYPT_PW
+	bool "Add crypt support for password-based unlock"
+	depends on AUTOBOOT_KEYED && AUTOBOOT_ENCRYPTION
+	help
+	  Enable support for crypt-style hashed passphrases.
+	  This will then be used as the mechanism of choice to
+	  verify whether the entered password to unlock the
+	  console is correct or not.
+
+if CRYPT_PW
+
+config CRYPT_PW_SHA256
+	bool "Provide sha256crypt"
+	select SHA256
+	help
+	  Enables support for the sha256crypt password-hashing algorithm.
+	  The prefix is "$5$".
+
+config CRYPT_PW_SHA512
+	bool "Provide sha512crypt"
+	select SHA512
+	help
+	  Enables support for the sha512crypt password-hashing algorithm.
+	  The prefix is "$6$".
+
+endif

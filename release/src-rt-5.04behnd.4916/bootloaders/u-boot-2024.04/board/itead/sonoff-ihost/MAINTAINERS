@@ -1,0 +1,6 @@
+RV1126-SONOFF-IHOST
+M:	Tim Lunn <tim@feathertop.org>
+S:	Maintained
+F:	board/itead/sonoff-ihost
+F:	include/configs/sonoff-ihost.h
+F:	configs/sonoff-ihost-rv1126_defconfig

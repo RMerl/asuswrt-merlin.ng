@@ -1,0 +1,274 @@
+/*
+   Copyright (c) 2025 Broadcom
+   All Rights Reserved
+
+    <:label-BRCM:2025:DUAL/GPL:standard
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
+:>
+*/
+
+
+
+/* This is an automated file. Do not edit its contents. */
+
+
+#include "rdd.h"
+
+#include "rdd_ag_cpu_rx.h"
+
+int rdd_ag_cpu_rx_cpu_reason_to_tc_set(uint32_t _entry, uint8_t bits)
+{
+    if(_entry >= RDD_CPU_REASON_TO_TC_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTE_1_BITS_WRITE_G(bits, RDD_CPU_REASON_TO_TC_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_cpu_reason_to_tc_set_core(uint32_t _entry, uint8_t bits, int core_id)
+{
+    if(_entry >= RDD_CPU_REASON_TO_TC_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTE_1_BITS_WRITE_CORE(bits, RDD_CPU_REASON_TO_TC_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_cpu_reason_to_tc_get(uint32_t _entry, uint8_t *bits)
+{
+    if(_entry >= RDD_CPU_REASON_TO_TC_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTE_1_BITS_READ_G(*bits, RDD_CPU_REASON_TO_TC_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_cpu_reason_to_tc_get_core(uint32_t _entry, uint8_t *bits, int core_id)
+{
+    if(_entry >= RDD_CPU_REASON_TO_TC_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTE_1_BITS_READ_CORE(*bits, RDD_CPU_REASON_TO_TC_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv4_host_address_table_set(uint32_t _entry, uint32_t bits)
+{
+    if(_entry >= RDD_IPV4_HOST_ADDRESS_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_WRITE_G(bits, RDD_IPV4_HOST_ADDRESS_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv4_host_address_table_set_core(uint32_t _entry, uint32_t bits, int core_id)
+{
+    if(_entry >= RDD_IPV4_HOST_ADDRESS_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_WRITE_CORE(bits, RDD_IPV4_HOST_ADDRESS_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv4_host_address_table_get(uint32_t _entry, uint32_t *bits)
+{
+    if(_entry >= RDD_IPV4_HOST_ADDRESS_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_READ_G(*bits, RDD_IPV4_HOST_ADDRESS_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv4_host_address_table_get_core(uint32_t _entry, uint32_t *bits, int core_id)
+{
+    if(_entry >= RDD_IPV4_HOST_ADDRESS_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_IPV4_HOST_ADDRESS_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv6_host_address_crc_table_set(uint32_t _entry, uint32_t bits)
+{
+    if(_entry >= RDD_IPV6_HOST_ADDRESS_CRC_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_WRITE_G(bits, RDD_IPV6_HOST_ADDRESS_CRC_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv6_host_address_crc_table_set_core(uint32_t _entry, uint32_t bits, int core_id)
+{
+    if(_entry >= RDD_IPV6_HOST_ADDRESS_CRC_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_WRITE_CORE(bits, RDD_IPV6_HOST_ADDRESS_CRC_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv6_host_address_crc_table_get(uint32_t _entry, uint32_t *bits)
+{
+    if(_entry >= RDD_IPV6_HOST_ADDRESS_CRC_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_READ_G(*bits, RDD_IPV6_HOST_ADDRESS_CRC_TABLE_ADDRESS_ARR, _entry);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_ipv6_host_address_crc_table_get_core(uint32_t _entry, uint32_t *bits, int core_id)
+{
+    if(_entry >= RDD_IPV6_HOST_ADDRESS_CRC_TABLE_SIZE)
+          return BDMF_ERR_PARM;
+
+    RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_IPV6_HOST_ADDRESS_CRC_TABLE_ADDRESS_ARR, _entry, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_set(uint32_t low, uint32_t high)
+{
+    RDD_DDR_ADDRESS_LOW_WRITE_G(low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+    RDD_DDR_ADDRESS_HIGH_WRITE_G(high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_set_core(uint32_t low, uint32_t high, int core_id)
+{
+    RDD_DDR_ADDRESS_LOW_WRITE_CORE(low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+    RDD_DDR_ADDRESS_HIGH_WRITE_CORE(high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_get(uint32_t *low, uint32_t *high)
+{
+    RDD_DDR_ADDRESS_LOW_READ_G(*low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+    RDD_DDR_ADDRESS_HIGH_READ_G(*high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_addr_get_core(uint32_t *low, uint32_t *high, int core_id)
+{
+    RDD_DDR_ADDRESS_LOW_READ_CORE(*low, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+    RDD_DDR_ADDRESS_HIGH_READ_CORE(*high, RDD_RNR_WR_TEST_ADDR_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_set(uint32_t bits)
+{
+    RDD_BYTES_4_BITS_WRITE_G(bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_set_core(uint32_t bits, int core_id)
+{
+    RDD_BYTES_4_BITS_WRITE_CORE(bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_get(uint32_t *bits)
+{
+    RDD_BYTES_4_BITS_READ_G(*bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_from_get_core(uint32_t *bits, int core_id)
+{
+    RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_RNR_WR_TEST_FROM_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_set(uint8_t bits)
+{
+    RDD_BYTE_1_BITS_WRITE_G(bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_set_core(uint8_t bits, int core_id)
+{
+    RDD_BYTE_1_BITS_WRITE_CORE(bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_get(uint8_t *bits)
+{
+    RDD_BYTE_1_BITS_READ_G(*bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_start_get_core(uint8_t *bits, int core_id)
+{
+    RDD_BYTE_1_BITS_READ_CORE(*bits, RDD_RNR_WR_TEST_START_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_set(uint32_t bits)
+{
+    RDD_BYTES_4_BITS_WRITE_G(bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_set_core(uint32_t bits, int core_id)
+{
+    RDD_BYTES_4_BITS_WRITE_CORE(bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_get(uint32_t *bits)
+{
+    RDD_BYTES_4_BITS_READ_G(*bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0);
+
+    return BDMF_ERR_OK;
+}
+
+int rdd_ag_cpu_rx_rnr_wr_test_to_get_core(uint32_t *bits, int core_id)
+{
+    RDD_BYTES_4_BITS_READ_CORE(*bits, RDD_RNR_WR_TEST_TO_ADDRESS_ARR, 0, core_id);
+
+    return BDMF_ERR_OK;
+}
+

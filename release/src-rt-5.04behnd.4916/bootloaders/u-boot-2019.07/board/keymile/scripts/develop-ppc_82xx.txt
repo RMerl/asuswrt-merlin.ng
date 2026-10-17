@@ -1,1 +1,0 @@
-setup_debug_env=tftpboot 0x200000 scripts/develop-common.txt && env import -t 0x200000 ${filesize} && run configure

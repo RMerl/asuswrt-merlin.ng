@@ -401,7 +401,7 @@ void bcm_mcast_igmp_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev,
 {
    t_igmp_grp_entry *mc_fdb;
    int i;
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    int ret;
 #endif
 
@@ -431,7 +431,7 @@ void bcm_mcast_igmp_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev,
          else if ( (mc_fdb->dst_dev == dev) ||
                    (mc_fdb->from_dev == dev) )
          {
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
             if (0 == activate)
             {
                 __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d dev %s",
@@ -460,7 +460,7 @@ void bcm_mcast_igmp_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev,
    }
 
    /* activate entries for dev */
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    if ((dev != NULL) && (1 == activate))
    {
       for (i = 0; i < BCM_MCAST_HASH_SIZE; i++) 
@@ -603,7 +603,7 @@ void bcm_mcast_igmp_wipe_grp_reporter_for_port (bcm_mcast_ifdata *pif,
     spin_unlock_bh(&pif->mc_igmp_lock);
 }
 
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
 void bcm_mcast_igmp_process_blog_enable( bcm_mcast_ifdata *pif, int enable )
 {
    t_igmp_grp_entry *mc_fdb;
@@ -891,7 +891,7 @@ static void bcm_mcast_igmp_display_entry(struct seq_file *seq,
    unsigned char    *rxAddressP = (unsigned char *)&(dst->rxGrp.s_addr);
    unsigned char    *srcAddressP = (unsigned char *)&(dst->src_entry.src.s_addr);
 
-   seq_printf(seq, "%-6s %-6s %-6s %-7s %4d %02d    0x%04x   0x%04x%04x 0x%x",
+   seq_printf(seq, "%-6s %-6s\t%-6s\t%-7s %4d\t%02d    0x%04x   0x%04x%04x 0x%x",
               pif->dev->name, 
               dst->dst_dev->name, 
               dst->to_accel_dev->name, 
@@ -905,7 +905,7 @@ static void bcm_mcast_igmp_display_entry(struct seq_file *seq,
 
    seq_printf(seq, " %03u.%03u.%03u.%03u", txAddressP[0],txAddressP[1],txAddressP[2],txAddressP[3]);
 
-   seq_printf(seq, " %-4s %03u.%03u.%03u.%03u %03u.%03u.%03u.%03u", 
+   seq_printf(seq, "\t%-4s %03u.%03u.%03u.%03u %03u.%03u.%03u.%03u", 
               (dst->src_entry.filt_mode == MCAST_EXCLUDE) ? 
               "EX" : "IN",  
               rxAddressP[0],rxAddressP[1],rxAddressP[2],rxAddressP[3], 
@@ -927,13 +927,13 @@ static void bcm_mcast_igmp_display_entry(struct seq_file *seq,
 
       if(first)
       {
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
          bcm_mcast_flowhdl_t *flowhdl_p = (bcm_mcast_flowhdl_t *)dst->flowhdl;
-         seq_printf(seq, " %03u.%03u.%03u.%03u %-7d %-5d  %d \n", 
+         seq_printf(seq, " %03u.%03u.%03u.%03u       %-7d  %-5d     %d \n", 
                     repAddressP[0],repAddressP[1],repAddressP[2],repAddressP[3],
                     tstamp, dst->excludePort, flowhdl_p ? flowhdl_p->numkeys : -1);
 #else
-         seq_printf(seq, " %03u.%03u.%03u.%03u %-7d %d\n",
+         seq_printf(seq, " %03u.%03u.%03u.%03u       %-7d  %5d\n",
                     repAddressP[0],repAddressP[1],repAddressP[2],repAddressP[3],
                     tstamp, dst->excludePort);
 #endif
@@ -941,7 +941,7 @@ static void bcm_mcast_igmp_display_entry(struct seq_file *seq,
       }
       else
       {
-         seq_printf(seq, "%100s %03u.%03u.%03u.%03u %-7d\n", " ", 
+         seq_printf(seq, "%124s %03u.%03u.%03u.%03u       %-7d\n", " ", 
                     repAddressP[0],repAddressP[1],repAddressP[2],repAddressP[3],
                     tstamp);
       }
@@ -972,11 +972,11 @@ int bcm_mcast_igmp_display(struct seq_file *seq, bcm_mcast_ifdata *pif)
          dev_put(lowerDev);
       }
    }
-   seq_printf(seq, "bridge dstdev dstaccdev src-dev type #tags lan-tci  wan-tci info");
-#if defined(CONFIG_BLOG)
-   seq_printf(seq, "    group           mode RxGroup         source          reporter        timeout ExcludPt Index      \n");
+   seq_printf(seq, "bridge dstdev dstaccdev src-dev   type #tags  lan-tci   wan-tci   info");
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
+   seq_printf(seq, "     group       mode    RxGroup          source         reporter          timeout ExcludPt   Index      \n");
 #else
-   seq_printf(seq, "    group           mode RxGroup         source          reporter        timeout ExcludPt\n");
+   seq_printf(seq, "     group       mode    RxGroup          source         reporter            timeout ExcludPt\n");
 #endif
 
    spin_lock_bh(&pif->mc_igmp_lock);
@@ -1001,11 +1001,15 @@ int bcm_mcast_igmp_display(struct seq_file *seq, bcm_mcast_ifdata *pif)
 #if defined(CC_MCAST_HOST_CLIENT_SUPPORT)
    bcm_mcast_hostclient_entries_dump();
 #endif
+
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    if (bcmLog_logIsEnabled(BCM_LOG_ID_MCAST, BCM_LOG_LEVEL_INFO)) 
    {
        bcm_mcast_fc_flowhdl_dump();
        bcm_mcast_dump_grpinfo_all();
    }
+#endif
+
    return 0;
 }
 

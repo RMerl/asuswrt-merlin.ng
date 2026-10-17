@@ -1,0 +1,13 @@
+config UBIFS_SILENCE_MSG
+	bool "UBIFS silence verbose messages"
+	default ENV_IS_IN_UBI
+	help
+	  Make the verbose messages from UBIFS stop printing. This leaves
+	  warnings and errors enabled.
+
+config UBIFS_SILENCE_DEBUG_DUMP
+	bool "UBIFS silence debug dumps"
+	default y if UBIFS_SILENCE_MSG
+	help
+	  Make the debug dumps from UBIFS stop printing.
+	  This decreases size of U-Boot binary.

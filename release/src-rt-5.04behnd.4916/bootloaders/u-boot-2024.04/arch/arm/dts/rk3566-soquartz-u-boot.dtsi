@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rk356x-u-boot.dtsi"
+
+&sdhci {
+	cap-mmc-highspeed;
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_datastrobe>;
+};
+
+&usb_host0_xhci {
+	dr_mode = "host";
+};

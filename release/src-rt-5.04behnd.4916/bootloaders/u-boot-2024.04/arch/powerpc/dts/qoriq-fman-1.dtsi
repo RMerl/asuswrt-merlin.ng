@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * QorIQ FMan device tree stub [ controller @ offset 0x500000 ]
+ *
+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2020 NXP
+ *
+ */
+
+fman1: fman@500000 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	cell-index = <1>;
+	compatible = "fsl,fman";
+	ranges = <0 0x500000 0xfe000>;
+	reg = <0x500000 0xfe000>;
+	interrupts = <97 2 0 0>, <16 2 1 0>;
+	clocks = <&clockgen 3 1>;
+	clock-names = "fmanclk";
+	fsl,qman-channel-range = <0x60 0xc>;
+	ptimer-handle = <&ptp_timer1>;
+
+	muram@0 {
+		compatible = "fsl,fman-muram";
+		reg = <0x0 0x28000>;
+	};
+
+	fman1_oh_0x1: port@81000 {
+		cell-index = <0x1>;
+		compatible = "fsl,fman-v2-port-oh";
+		reg = <0x81000 0x1000>;
+	};
+
+	fman1_oh_0x2: port@82000 {
+		cell-index = <0x2>;
+		compatible = "fsl,fman-v2-port-oh";
+		reg = <0x82000 0x1000>;
+	};
+
+	fman1_oh_0x3: port@83000 {
+		cell-index = <0x3>;
+		compatible = "fsl,fman-v2-port-oh";
+		reg = <0x83000 0x1000>;
+	};
+
+	fman1_oh_0x4: port@84000 {
+		cell-index = <0x4>;
+		compatible = "fsl,fman-v2-port-oh";
+		reg = <0x84000 0x1000>;
+	};
+
+	fman1_oh_0x5: port@85000 {
+		cell-index = <0x5>;
+		compatible = "fsl,fman-v2-port-oh";
+		reg = <0x85000 0x1000>;
+		status = "disabled";
+	};
+
+	fman1_oh_0x6: port@86000 {
+		cell-index = <0x6>;
+		compatible = "fsl,fman-v2-port-oh";
+		reg = <0x86000 0x1000>;
+		status = "disabled";
+	};
+
+	fman1_oh_0x7: port@87000 {
+		cell-index = <0x7>;
+		compatible = "fsl,fman-v2-port-oh";
+		reg = <0x87000 0x1000>;
+		status = "disabled";
+	};
+};
+
+ptp_timer1: ptp-timer@5fe000 {
+	compatible = "fsl,fman-ptp-timer";
+	reg = <0x5fe000 0x1000>;
+	interrupts = <97 2 0 0>;
+	clocks = <&clockgen 3 1>;
+};

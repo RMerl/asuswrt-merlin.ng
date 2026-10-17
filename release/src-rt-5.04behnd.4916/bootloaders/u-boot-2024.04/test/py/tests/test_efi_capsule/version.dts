@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+/dts-v1/;
+/plugin/;
+
+&{/} {
+	firmware-version {
+		image1 {
+			lowest-supported-version = <3>;
+			image-index = <1>;
+			image-type-id = "09D7CF52-0720-4710-91D1-08469B7FE9C8";
+		};
+		image2 {
+			lowest-supported-version = <7>;
+			image-index = <2>;
+			image-type-id = "5A7021F5-FEF2-48B4-AABA-832E777418C0";
+		};
+		image3 {
+			lowest-supported-version = <3>;
+			image-index = <1>;
+			image-type-id = "3673B45D-6A7C-46F3-9E60-ADABB03F7937";
+		};
+	};
+};

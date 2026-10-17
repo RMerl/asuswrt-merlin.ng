@@ -191,7 +191,7 @@ static skp_hw_cmn_err_t fsr_read(
 			skp_hw_cmn_row_t  *row,
 			skp_hw_cmn_row_conf_t* row_conf,
 			uint32_t *data,
-			uint32_t size)
+			uint32_t *size)
 {
         int i;
 	skp_hw_cmn_err_t rc = SKP_HW_CMN_ERR_FAIL; 
@@ -199,6 +199,11 @@ static skp_hw_cmn_err_t fsr_read(
 	uint32_t raw_read = 0;
 	uint32_t desc = 0;
 	uint32_t num_words;
+
+	if (!size) {
+		_ETR(rc);
+		goto err;
+	}
 
 	fsr_offs = FSR_SIZE*(row->addr-FSR_START_ROW_ADDR);
 	if (row_conf && row_conf->op_type != SKP_HW_CMN_CTL_OTPCMD_ECC) {
@@ -224,21 +229,22 @@ static skp_hw_cmn_err_t fsr_read(
 				__FUNCTION__,__LINE__,
 			fsr_hw_readl( FSR_PORTAL_STATUS_OFFSET+fsr_offs));
 			/* Portal is empty --> return zeroed data */
-			memset(data, 0x0, size);
+			memset(data, 0x0, *size);
 		} else {
 			_DPRT("%s %d Blocked Portal! portal_status 0x%x\n",
 				__FUNCTION__,__LINE__,
 				fsr_hw_readl( FSR_PORTAL_STATUS_OFFSET+fsr_offs));
 			/* Portal is bocked */
-			for (i = 0; i < size/sizeof(uint32_t); i++ ) {
+			for (i = 0; i < *size/sizeof(uint32_t); i++ ) {
 				data[i] = 0xDEADBEEF;
 			}
 		}
-		for (i = 0; i < size/sizeof(uint32_t); i++ ) {
+		for (i = 0; i < *size/sizeof(uint32_t); i++ ) {
 			_DPRT("%s %d \n\t\t\t\t read data[%d] 0x%x \n",
 				__FUNCTION__,__LINE__, i, data[i]);
 		}
 		rc = SKP_HW_CMN_OK; 
+		num_words = row->range;
 		goto err;
 	}
 
@@ -282,10 +288,10 @@ static skp_hw_cmn_err_t fsr_read(
 		goto err;
 	}
 	/* Check if requested data fits inside this FSR, check SIZE(23:12) */
-	num_words = ((size/sizeof(uint32_t)) > FSR_RD_DDATA_SIZE(desc))? FSR_RD_DDATA_SIZE(desc):(size/sizeof(uint32_t));
+	num_words = ((*size/sizeof(uint32_t)) > FSR_RD_DDATA_SIZE(desc))? FSR_RD_DDATA_SIZE(desc):(*size/sizeof(uint32_t));
 
 	/* 3 - Read data */
-	memset(data, 0x0, size);
+	memset(data, 0x0, *size);
 	_DPRT("%s %d \n\t\t\t\t Num_words:%d \n",
 		__FUNCTION__,__LINE__, (int)num_words);
 	for (i = 0; i < num_words; i++ ) {
@@ -307,7 +313,10 @@ static skp_hw_cmn_err_t fsr_read(
 		/* Optional - Read ECC from FSR_PORTAL_FP0_RD_ECC */
 	}
 	rc = SKP_HW_CMN_OK;
+
 err:
+	/* Update read size based on FSR length */
+	*size = num_words*sizeof(uint32_t);
 	return rc;
 }
 
@@ -951,7 +960,7 @@ static skp_hw_cmn_err_t skp_read(
 			uint32_t addr,
 			skp_hw_cmn_row_conf_t* conf,
 			uint32_t *data,
-			int size)
+			int * size)
 {
 	skp_hw_cmn_err_t rc = SKP_HW_CMN_ERR_FAIL; 
         skp_hw_cmn_row_t  *row;
@@ -962,7 +971,7 @@ static skp_hw_cmn_err_t skp_read(
 		_ETR(rc); 
 		goto err;
 	}
-	if ((int)size <= 0 || (int)row->addr < 0) {
+	if (!size || *size <= 0 || (int)row->addr < 0) {
 		rc = SKP_HW_CMN_ERR_INVAL; 
 		_ETR(rc);
 		goto err;
@@ -970,7 +979,7 @@ static skp_hw_cmn_err_t skp_read(
 
 	row_conf = conf? conf : &row->conf;
 	if( IS_KSR_ADDR(row->addr) ) {
-		rc = ksr_read( row, row_conf, (uint32_t*)data, size );
+		rc = ksr_read( row, row_conf, (uint32_t*)data, *size );
 	} else if(IS_FSR_ADDR(row->addr)) {
 		rc = fsr_read( row, row_conf, (uint32_t*)data, size );
 	} else {
@@ -1068,7 +1077,7 @@ static int skp_antirollback_lvl_ctl( uint32_t * lvl, int write )
 		return rc;
 	}
 
-	rc = skp_read( addr, NULL, pdata, size);
+	rc = skp_read( addr, NULL, pdata, &size);
 	if (rc) {
 		printk("%s: ERROR! Failed to retrieve antirollback level data! rc:%d\n",
 			__FUNCTION__, rc);
@@ -1144,7 +1153,7 @@ finish:
 	return rc;
 }
 
-int skp_get_keyslot_data( int section_num, char* skp_data, int data_len, int * result )
+int skp_get_keyslot_data( int section_num, char* skp_data, int * data_len, int * result )
 {
 	*result = skp_read( KSR_START_ROW_ADDR + section_num, NULL, 
 			(uint32_t *)skp_data, data_len );
@@ -1187,6 +1196,7 @@ int skp_dump_map( int * result )
 	uint32_t i,j;
 	uint32_t * skp_data;
 	skp_hw_cmn_row_t* rows = sotp_rows;
+	int skp_data_len;
 	
 	printk("+---------------+:\n");
 	printk("| SOTP raw data |:\n");
@@ -1203,8 +1213,8 @@ int skp_dump_map( int * result )
 	                printk("    RESERVED: %s\n", rows[i].reserved_name);
 
 		skp_data = kmalloc( rows[i].range * sizeof(uint32_t), GFP_KERNEL);
-		*result = skp_read( rows[i].addr, NULL,
-		      skp_data, rows[i].range * sizeof(uint32_t) );
+		skp_data_len = rows[i].range * sizeof(uint32_t);
+		*result = skp_read( rows[i].addr, NULL, skp_data, &skp_data_len );
 		for (j = 0; j < rows[i].range; j++ ) {
 			printk("        Row[%d]: 0x%08x\n", j, skp_data[j]);
 		}

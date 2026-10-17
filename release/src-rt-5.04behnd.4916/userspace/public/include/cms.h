@@ -126,8 +126,15 @@
 #endif
 
 #define CMS_MAX_ETHLAG_INTF         2        //!< max ethernet LAG interfaces supported )
+#ifdef DMP_DEVICE2_ETHLAG_TEAM
+#define DEFAULT_ETHLAG_MODULE       "team"
+#define DEFAULT_ETHLAG_0            "team0"  //!< first default ethlag interface name
+#define DEFAULT_ETHLAG_1            "team1"  //!< second default ethlag interface name
+#else
+#define DEFAULT_ETHLAG_MODULE       "bonding"
 #define DEFAULT_ETHLAG_0            "bond0"  //!< first default ethlag interface name
-#define DEFAULT_ETHLAG_1            "bond1"  //!< first default ethlag interface name
+#define DEFAULT_ETHLAG_1            "bond1"  //!< second default ethlag interface name
+#endif
 
 /**
  * Values for network protocol
@@ -139,6 +146,7 @@
 #define PROTO_PPPOE_RELA   4  //!< PPPoE relay protocol
 #define PROTO_IPOA         5  //!< ip over atm protocol
 #define PROTO_IPOWAN       6  //!< ip over wan protocol
+#define PROTO_WWAN         7  //!< wwan mode, which will create a bridge to serve as wan, and hold the wifi interface.
 #define PROTO_NONE         10 //!< invalid protocol
 
 #define IFC_WAN_MAX        16 //!< Max WAN Connection in the system.
@@ -155,6 +163,7 @@ typedef enum {
    WAN_IFC_PTM=4,       /**< Ptm */
    WAN_IFC_WIFI=5,      /**< Wifi */
    WAN_IFC_ETHLAG=7,    /**< EthLAG */
+   WAN_IFC_PROXY_WIFI=8,    /**< WWAN mode in TR181 */
    WAN_IFC_NONE=10      /**< undefined/invalid */
 } WanIfcType;
 
@@ -188,6 +197,7 @@ typedef enum
    CMS_WAN_TYPE_PPPOE_RELAY         = 4,
    CMS_WAN_TYPE_IPOA                = 5,
    CMS_WAN_TYPE_STATIC_IPOE         = 6,
+   CMS_WAN_TYPE_WWAN                = 7,
 
    CMS_WAN_TYPE_STATIC_ETHERNET_IP  = 10,
    CMS_WAN_TYPE_DYNAMIC_ETHERNET_IP = 11,
@@ -212,9 +222,14 @@ typedef enum
 #define WLAN_IFC_STR          "wl"
 #define GPON_IFC_STR          "veip"
 #define GPON_WAN_IF_NAME      "veip0"
+#ifdef DMP_DEVICE2_ETHLAG_TEAM
+#define ETHLAG_IFC_STR        "team"
+#else
 #define ETHLAG_IFC_STR        "bond"
+#endif
 #define VXLAN_IFC_STR         "vxlan"
 #define GRE_IFC_STR           "gre"
+#define BR_IFC_STR            "br"
 
 #define SDN_OVS_BR_NAME       "brsdn"
 
@@ -288,28 +303,34 @@ static inline char *epon_veip_name(void)
         char line_buff[BUFLEN_64] = {0};
         int offset = 2, port = 0;
         f = popen("pspctl dump DpoePortType | awk '/^[0-9][0-9]*06/ {print$1}'", "r");
-        if(fgets(line_buff, sizeof(line_buff), f) == NULL)
+        if (f)
         {
-            snprintf(ifName, BUFLEN_16, "veip0");
-            pclose(f);
-            goto SetIfName;
-        }
-        pclose(f);
-        while(offset < 64 && line_buff[offset]!=0)
-        {
-            sscanf(&line_buff[offset], "%02d", &port);
-            if (port == 0x6)
+            if(fgets(line_buff, sizeof(line_buff), f) == NULL)
             {
-                snprintf(ifName, BUFLEN_16, "veip%d", offset/2 - 1);
+                snprintf(ifName, BUFLEN_16, "veip0");
+                pclose(f);
                 goto SetIfName;
             }
-            offset += 2;
+            pclose(f);
+            while(offset < 64 && line_buff[offset]!=0)
+            {
+                sscanf(&line_buff[offset], "%02d", &port);
+                if (port == 0x6)
+                {
+                    snprintf(ifName, BUFLEN_16, "veip%d", offset/2 - 1);
+                    goto SetIfName;
+                }
+                offset += 2;
+            }
         }
     }
 
 SetIfName:                        
     snprintf(cmdStr, sizeof(cmdStr), "echo %s>%s", ifName, CMS_EPON_IF_NAME_CFG);
-    system(cmdStr);
+    if ( system(cmdStr) == -1 )
+    {
+        printf("system(%s) failed\n", cmdStr);
+    }
 
 FindName: 
     return ifName;
@@ -351,7 +372,7 @@ typedef enum
    WAN_EPON_EPTA = 2
 }PKTCBL_WAN_TYPE;
 
-#if (DMP_X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT_1 == 2)
+#ifdef DMP_X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT_1
 #if defined(BRCM_PKTCBL_SUPPORT)
 #define TR69C_1_ASSOCIATED_WAN_IF_NAME   (epon_voice_wan_name())
 #define TR69C_2_ASSOCIATED_WAN_IF_NAME   (epon_epta_wan_name())
@@ -359,7 +380,7 @@ typedef enum
 #define TR69C_1_ASSOCIATED_WAN_IF_NAME   "veip0.1" /* default */
 #define TR69C_2_ASSOCIATED_WAN_IF_NAME   "veip0.2" /* default */
 #endif // defined(BRCM_PKTCBL_SUPPORT)
-#endif // (DMP_X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT_1 == 2)
+#endif // DMP_X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT_1
 
 #define MULTI_TR69C_CONFIG_INDEX_1  "1"
 #define MULTI_TR69C_CONFIG_INDEX_2  "2"
@@ -372,6 +393,7 @@ typedef enum
 #define BRIDGE_IFC_STR        "br"
 #define IPOA_IFC_STR          "ipoa"
 #define IPOE_IFC_STR          "ipoe"
+#define IPOW_IFC_STR          "ipow"
 #define PPP_IFC_STR           "ppp"
 #define PPPOE_IFC_STR         "pppoe"
 #define PPPOA_IFC_STR         "pppoa"

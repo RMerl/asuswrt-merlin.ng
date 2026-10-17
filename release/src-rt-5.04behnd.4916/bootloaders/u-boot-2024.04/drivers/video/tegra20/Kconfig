@@ -1,0 +1,24 @@
+config VIDEO_TEGRA20
+	bool "Enable Display Controller support on Tegra20 and Tegra 30"
+	depends on OF_CONTROL
+	help
+	   T20/T30 support video output to an attached LCD panel as well as
+	   other options such as HDMI. Only the LCD is supported in U-Boot.
+	   This option enables this support which can be used on devices which
+	   have an LCD display connected.
+
+config VIDEO_DSI_TEGRA30
+	bool "Enable Tegra 30 DSI support"
+	depends on PANEL && DM_GPIO
+	select VIDEO_TEGRA20
+	select VIDEO_MIPI_DSI
+	help
+	   T30 has native support for DSI panels. This option enables support
+	   for such panels which can be used on endeavoru and tf600t.
+
+config TEGRA_BACKLIGHT_PWM
+	bool "Enable Tegra DC PWM backlight support"
+	depends on BACKLIGHT
+	select VIDEO_TEGRA20
+	help
+	   Tegra DC dependent backlight.

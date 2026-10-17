@@ -1,7 +1,0 @@
-M54451EVB BOARD
-#M:	-
-S:	Maintained
-F:	board/freescale/m54451evb/
-F:	include/configs/M54451EVB.h
-F:	configs/M54451EVB_defconfig
-F:	configs/M54451EVB_stmicro_defconfig

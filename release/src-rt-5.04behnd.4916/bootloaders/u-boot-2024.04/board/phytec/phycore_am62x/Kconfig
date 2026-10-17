@@ -1,0 +1,33 @@
+# SPDX-License-Identifier:     GPL-2.0+
+#
+# Copyright (C) 2022 - 2023 PHYTEC Messtechnik GmbH
+# Author: Wadim Egorov <w.egorov@phytec.de>
+
+if TARGET_PHYCORE_AM62X_A53
+
+config SYS_BOARD
+       default "phycore_am62x"
+
+config SYS_VENDOR
+       default "phytec"
+
+config SYS_CONFIG_NAME
+       default "phycore_am62x"
+
+endif
+
+if TARGET_PHYCORE_AM62X_R5
+
+config SYS_BOARD
+       default "phycore_am62x"
+
+config SYS_VENDOR
+       default "phytec"
+
+config SYS_CONFIG_NAME
+       default "phycore_am62x"
+
+config SPL_LDSCRIPT
+	default "arch/arm/mach-omap2/u-boot-spl.lds"
+
+endif

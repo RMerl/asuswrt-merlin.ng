@@ -1,0 +1,35 @@
+* Freescale ColdFire DMA-FEC ethernet controller
+
+Required properties:
+- compatible: should be "fsl,mcf-dma-fec"
+- reg: address and length of the register set for the device.
+- rx-task: dma channel
+- tx-task: dma channel
+- rx-priority: dma channel
+- tx-priority: dma channel
+- rx-init: dma channel
+- tx-init: dma channel
+
+Optional properties:
+- mii-base: index of FEC reg area, 0 for FEC0, 1 for FEC1
+- max-speed: max speedm Mbits/sec
+- phy-addr: phy address
+- timeout-loop: integer value for driver loops time out
+
+
+Example:
+
+fec0: ethernet@9000 {
+	compatible = "fsl,mcf-dma-fec";
+	reg = <0x9000 0x800>;
+	mii-base = <0>;
+	phy-addr = <0>;
+	timeout-loop = <5000>;
+	rx-task = <0>;
+	tx-task = <1>;
+	rx-piority = <6>;
+	tx-piority = <7>;
+	rx-init = <16>;
+	tx-init = <17>;
+	status = "disabled";
+};

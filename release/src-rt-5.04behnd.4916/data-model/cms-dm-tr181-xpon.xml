@@ -1,0 +1,578 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2023" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly. It will not be inserted into the data model. The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON." shortObjectName="Dev2XponObject" specSource="TR181" profile="Device2_XPON:1" requirements="P" supportLevel="Present" oid="2900" lockZone="9" />
+  <description source="TRx">This object models one or more xPON interfaces or ONUs as specified by the ITU based PON standards. It does not address IEEE based PON standards (like EPON). An ONU performs tasks such as traffic classification, VLAN manipulation, GEM port mapping, aggregation and/or forwarding between one or more UNIs and one or more ANIs.</description>
+  <description source="BROADCOM">Imported from BBF TR181 version 2.16, June 2023</description>
+
+  <parameter name="ONUNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in ONU Table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}." shortObjectName="Dev2XponOnuObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object models one xPON interface or ONU as specified by the ITU based PON standards.  At most one entry in this table can exist with a given value for Name.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables this ONU. If disabled, the ONU should prevent user traffic from flowing, suppress notifications, and power down as much as possible.</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The textual name of the ONU as assigned by the CPE. This is a non-functional key and its value MUST NOT change once it’s been assigned by the Controller or set internally by the Agent.</description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="14" />
+    <description source="TRx">This attribute identifies the version of the ONU as defined by the vendor. This parameter is based on Version from Section 9.1.1/G.988.</description>
+
+  <parameter name="EquipmentID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="20" />
+    <description source="TRx">This attribute may be used to identify the specific type of ONU.  This parameter is based on Equipment ID from Section 9.1.2/G.988.</description>
+
+  <parameter name="SoftwareImageNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="2" />
+    <description source="TRx">The number of entries in the SoftwareImage table.</description>
+
+  <parameter name="EthernetUNINumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the EthernetUNI table.</description>
+
+  <parameter name="ANINumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the ANI table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.SoftwareImage.{i}." shortObjectName="Dev2XponOnuSoftwareObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">This table models the software images stored in the ONU.  It is expected this table has two entries: the ONU normally creates two instances of the Software Image ME to model the 2 software images in the ONU.</description>
+
+  <parameter name="ID" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="1" />
+    <description source="TRx">The ID as assigned by the CPE to this object entry.</description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="14" />
+    <description source="TRx">A string identifying the software version.  This parameter is based on Version from G.988 Section 9.1.4.</description>
+
+  <parameter name="IsCommitted" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter indicates whether or not the associated software image is committed. This parameter is based on &quot;Is committed&quot; from G.988 Section 9.1.4.</description>
+
+  <parameter name="IsActive" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter indicates whether or not the associated software image is active (true) or inactive (false).  This parameter is based on &quot;Is Active&quot; from G.988 Section 9.1.4.</description>
+
+  <parameter name="IsValid" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter indicates whether or not the associated software image is valid (true) or invalid (false).  This parameter is based on &quot;Is Valid&quot; from G.988 Section 9.1.4.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.EthernetUNI.{i}." shortObjectName="Dev2XponOnuEthUniObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">Ethernet UNI table (a stackable interface object as described in TR-181 Section 4.2. This object models User Network Interfaces carrying Ethernet frames.  An EthernetUNI can be a virtual or a physical UNI. If the ONU i managed via OMCI, an EthernetUNI has an associated service, which is either a VEIP (see G.988 Section 9.5.5) or a PPTP Ethernet UNI (see G.988 Section 9.5.1).  If the associated service is a VEIP, the ONU shows a VEIP ME in the OMCI MIB. If it's a PPTP Ethernet UNI, the ONU shows a PPTP Ethernet UNI ME in the OMCI MIB. It is expected the associated service is a VEIP for a virtual UNI, and that it is a PPTP Ethernet UNI for a physical UNI. However, some network operators require that the ONU shows a PPTP Ethernet UNI ME instead of a VEIP ME in its OMCI MIB even if the EthernetUNI models a virtual UNI.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether this interface is enabled (true) or not (false). If the ONU is managed via OMCI, the interface is enabled if the OLT set the parameter &quot;Administrative state&quot; of the ME managing the associated service to 0. (The value 0 unlocks the functions performed by the ME.) The ME is either the VEIP ME (see G.988|Section 9.5.5) or the PPTP Ethernet UNI ME (see G.988 Section 9.5.1.  This parameter is based on &quot;ifAdminStatus&quot; from RFC2863.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponEthUniStatusValues" />
+    <description source="TRx">The current operational state of the interface (see TR-181i2 Section 4.2.2).</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-xponethuni" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">Alias.</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The textual name of the interface entry as assigned by the CPE.</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the interface entered its current operational state.</description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">an interface object that is stacked immediately below this interface object.  See TR-181i2 Section 4.2.1.  Note: it is expected that LowerLayers will not be used: if object models a physical UNI, it represents a layer 1 interface; if object models a virtual UNI, it virtualizes a layer 1 interface.</description>
+
+  <parameter name="ANIs" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">References all associated ANI interfaces.  An ONU is potentially capable of forwarding frames between a UNI and its associated ANI interfaces. This parameter defines such a relationship. However, the list does not mean that the forwarding is actually happening, or the forwarding policies have been provisioned, between the UNI and the associated ANI interfaces. For an ONU with a single TC layer device, the parameter value can be either empty for simplicity, or can be the path name of the associated ANI. For an ONU with multiple TC layer devices, this parameter value may have one or more path names.</description>
+
+  <parameter name="InterdomainID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">String to identify the associated service in the ONU management domain to the TR-181 management domain. If the ONU is managed via OMCI, it is recommended to format this string as (service_type,MEID), with service_type being an enumeration of &quot;VEIP&quot; or &quot;PPTPEthernetUNI&quot;, and MEID the value of the attribute &quot;Managed entity ID&quot; of the ME instance managing the service associated with this EthernetUNI.  Examples: (VEIP,1025) (PPTPEthernetUNI,257).  An OSS (Operations Support System) having access to both the TR-181 and the OMCI domain can then find out which EthernetUNI instance represents a certain VEIP or PPTPEthernetUNI ME instance in the OMCI domain.</description>
+
+  <parameter name="InterdomainName" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="25" />
+    <description source="TRx">String that provides an additional way to identify the associated service to the TR-181 management domain. If the ONU is managed via OMCI and if the service associated with this EthernetUNI is a VEIP, then the value of this parameter is the value of the attribute &quot;Interdomain name&quot; of the corresponding VEIP ME instance.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.EthernetUNI.{i}.Stats." shortObjectName="Dev2XponOnuEthUniStatsObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this interface.  The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's Enable parameter transitions from false to true). Administrative and operational interface status is discussed in TR-181i2 section 4.2.2.  Transmit direction has PON as destination. Receive direction has PON as source.</description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.</description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.</description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames transmitted out of the interface, including framing characters.</description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames received on the interface, including framing characters.</description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound Ethernet frames that could not be transmitted because of errors.</description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound Ethernet frames that contained errors preventing them from being delivered to the TR-181 domain.</description>
+
+  <parameter name="UnicastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames requested for transmission which were not addressed to a multicast or broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="UnicastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames, delivered by this interface to the TR-181 domain, which were not addressed to a multicast or broadcast address at this layer.</description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound Ethernet frames which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound Ethernet frames which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="MulticastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames requested for transmission and which were addressed to a multicast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="MulticastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received Ethernet frames, delivered by this interface to the TR-181 domain, which were addressed to a multicast address at this layer.</description>
+
+  <parameter name="BroadcastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames requested for transmission and which were addressed to a broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="BroadcastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received Ethernet frames, delivered by this interface to the TR-181 domain, which were addressed to a broadcast address at this layer.</description>
+
+  <parameter name="UnknownProtoPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames received via the interface which were discarded because of an unknown or unsupported protocol.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}." shortObjectName="Dev2XponOnuAniObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">Access Node Interface (ANI) table. An ANI models the xPON MAC/PHY as defined in the ITU-T PON standards.  This object is not an interface object as described in TR-181i2 Section 4.2, but it has many of the same core parameters as an interface object, and they follow largely the same conventions.  This object is not an interface object as described in TR-181i2 Section 4.2, but it has many of the same core parameters as an interface object, and they follow largely the same conventions. The most important deviations are: This object does not have a LowerLayers parameter, The value LowerLayerDown is not a valid value for its Status parameter.  Because it's not an interface object, it does not occur in the InterfaceStack table.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the interface.  If disabled, the device should force the ONU state of this ANI to O1 (Initial state). This parameter is based on &quot;ifAdminStatus&quot; from RFC2863.  Note: forcing the state to O1 implies the device disables the TX laser of the associated transceiver(s). It's not required to disable the RX part of the transceivers as well.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponOnuAniStatusValues" />
+    <description source="TRx">The current operational state of the interface.  Although this object is not an interface object, it follows largely the conventions of TR-181i2 Section 4.2.2. The most important deviation is that LowerLayerDown is not a valid value.</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-xpononuani" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">Alias.</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The textual name of the interface entry as assigned by the CPE.</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the interface entered its current operational state.</description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="PONMode" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponModeValues" />
+    <description source="TRx">PON mode, defines the detected or configured PON mode of the ANI.  The Transceiver object has a parameter of the same name. For proper operation, the PON mode of the transceiver(s) corresponding to this ANI must be equal to the PON mode of this ANI. But a user might e.g. accidentally insert a G-PON SFP while the PON mode of the ANI is XGS-PON..</description>
+
+  <parameter name="TransceiverNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Transceiver table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.Stats." shortObjectName="Dev2XponOnuAniStatsObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">Throughput statistics for this interface.  The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's Enable parameter transitions from false to true). Administrative and operational interface status is discussed in TR-181i2 section 4.2.2.  Transmit direction has PON as destination. Receive direction has PON as source.</description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.</description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.</description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames transmitted out of the interface, including framing characters.</description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames received on the interface, including framing characters.</description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound Ethernet frames that could not be transmitted because of errors.</description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound Ethernet frames that contained errors preventing them from being forwarded to the UNI(s).</description>
+
+  <parameter name="UnicastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames requested for transmission which were not addressed to a multicast or broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="UnicastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames, forwarded by this interface to the UNI(s), which were not addressed to a multicast or broadcast address at this layer.</description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound Ethernet frames which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound Ethernet frames which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="MulticastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames requested for transmission and which were addressed to a multicast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="MulticastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received Ethernet frames, forwarded by this interface to the UNI(s), which were addressed to a multicast address at this layer.</description>
+
+  <parameter name="BroadcastPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames requested for transmission and which were addressed to a broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="BroadcastPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received Ethernet frames, forwarded by this interface to the UNI(s), which were addressed to a broadcast address at this layer.</description>
+
+  <parameter name="UnknownProtoPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of Ethernet frames received via the interface which were discarded because of an unknown or unsupported protocol.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC." shortObjectName="Dev2XponOnuAniTcObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">This object represents an ITU-T PON TC layer device.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.ONUActivation." shortObjectName="Dev2XponOnuAniTcActivationObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object shows info related to the activation of this ANI by an OLT.</description>
+
+  <parameter name="ONUState" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponOnuStateValues" />
+    <description source="TRx">ONU activation state. See: G.9807.1 Section C.12, G.984.3 Section 10, G.987.3 Section 12, G.989.3 Section 12.</description>
+
+  <parameter name="VendorID" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="4" />
+    <description source="TRx">Identifies the vendor of the ONU. See G.988 Section 9.1.1.</description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="12" />
+    <description source="TRx">Represents the combination of the Vendor-ID and the Vendor-specific serial number (VSSN). The parameter shows the serial number in a human readable format. Example: if the vendor ID is ABCD and the VSSN encodes the number 1234568, the value of this parameter is ABCD12345678. See G.988 Section 9.1.1.</description>
+
+  <parameter name="ONUID" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="1022" />
+    <description source="TRx">Identifier that the OLT assigns to this ANI during the activation.  See: G.9807.1 Section C.6.1.5.6, G.984.3 Section 5.5.2, G.987.3 Section 6.4.2, G.989.3 Section 6.1.5.6.</description>
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.Authentication." shortObjectName="Dev2XponOnuAniTcAuthenticationObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">This object shows info related to authentication of the ONU to the OLT.</description>
+
+  <parameter name="Password" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="72" isTr69Password="true"/>
+    <description source="TRx">All ITU based PON standards specify authentication by PLOAM password or registration ID. When read, this parameter returns an empty string, regardless of the actual value.</description>
+
+  <parameter name="HexadecimalPassword" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">If false, Password is in ASCII format. If true, Password is in hexadecimal format.</description>
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.PM." shortObjectName="Dev2XponOnuAniTcPmObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">Performance monitoring (PM) counters.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.PM.PHY." shortObjectName="Dev2XponOnuAniTcPmPhyObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">PHY PM.</description>
+
+  <parameter name="CorrectedFECBytes" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of bytes that were corrected by the FEC function.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="CorrectedFECCodewords" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Count of FEC codewords that contained errors but were corrected by the FEC function.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="UncorrectableFECCodewords" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Count of FEC codewords that contained errors and could not be corrected by the FEC function.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="TotalFECCodewords" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Count of total received FEC codewords.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="PSBdHECErrorCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">HEC error in any of the fields of PSBd.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="HeaderHECErrorCount" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">HEC errors received in the DS XGTC or FS header.  This counter is called: &quot;FS HEC error count&quot; in G.9807.1 Table C.14.1 and G.989.3 Table 14-1; &quot;XGTC HEC error count&quot; in G.987.3 Table 14-1.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="UnknownProfile" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">ONU could not transmit because the specified burst profile was not known.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.PM.GEM." shortObjectName="Dev2XponOnuAniTcPmGemObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">(X)GEM PM.</description>
+
+  <parameter name="FramesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of (X)GEM frames transmitted.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="FramesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of (X)GEM frames received.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="FrameHeaderHECErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">XGEM frame header HEC errors. Number of events involving loss of XGEM channel delineation.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="KeyErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">XGEM key errors.  XGEM frames discarded because of unknown or invalid encryption key. Examples include: no unicast or broadcast key established for specified key index, key index indicating encrypted XGEM frame on a XGEM port that is not provisioned for encryption, key index indicating upstream encryption on a XGEM port that is provisioned for downstream encryption only, or invalid key index (11). This count is included in FramesReceived.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.PM.PLOAM." shortObjectName="Dev2XponOnuAniTcPmPloamObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">PLOAM PM.</description>
+
+  <parameter name="MICErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">PLOAM MIC errors.  Counter of received PLOAM messages with MIC errors.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="DownstreamMessageCount" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Downstream PLOAM message count.  Count of PLOAM messages sent by OLT, received by ONU, either broadcast or directed to the specific ONU-ID.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="RangingTime" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Count of Ranging_Time PLOAM messages sent by OLT. It provides a base for transmission time drift estimation.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="UpstreamMessageCount" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Upstream PLOAM message count.  Count of messages (other than Acknowledgement) sent by ONU to OLT.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.PM.OMCI." shortObjectName="Dev2XponOnuAniTcPmOmciObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">OMCI PM.</description>
+
+  <parameter name="BaselineMessagesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">OMCI baseline message count.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="ExtendedMessagesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">OMCI extended message count.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="MICErrors" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Count of received OMCI messages with MIC errors.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.GEM." shortObjectName="Dev2XponOnuAniTcGemObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" pruneWriteToConfigFile="true"/ >
+  <description source="TRx">Info about the GEM ports of this ANI.</description>
+
+  <parameter name="PortNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the GEM table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.GEM.Port.{i}." shortObjectName="Dev2XponOnuAniTcGemPortObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">GEM port table. Each entry gives info about a(n) (X)GEM port.</description>
+
+  <parameter name="PortID" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="65534" />
+    <description source="TRx">Identifies a GEM port.  See: G.9807.1 Section C.6.1.5.8, G.984.3 Section 5.5.5, G.987.3 Section 6.4.4,  G.989.3 Section 6.1.5.8.</description>
+
+  <parameter name="Direction" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponGemPortDirectionValues" />
+    <description source="TRx">Type of connection this GEM port is used for. See: G.988 Section 9.2.3.</description>
+
+  <parameter name="PortType" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponGemPortTypeValues" />
+    <description source="TRx">GEM port type.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.GEM.Port.{i}.PM." shortObjectName="Dev2XponOnuAniTcGemPortPmObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" />
+  <description source="TRx">Performance monitoring (PM) counters for this (X)GEM port.</description>
+
+  <parameter name="FramesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">(X)GEM frames transmitted by this (X)GEM port.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+  <parameter name="FramesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">(X)GEM frames received by this (X)GEM port.  See: G.9807.1 Table C.14.1, G.987.3 Table 14-1, G.989.3 Table 14-1.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.PerformanceThresholds." shortObjectName="Dev2XponOnuAniTcPerfThreshObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">Performance thresholds.</description>
+
+  <parameter name="SignalFail" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="3" maxValue="8" />
+    <description source="TRx">Signal fail (SF) threshold.  This parameter specifies the downstream bit error rate (BER) threshold to detect the SF alarm. When this value is y, the BER threshold is 10^–y. This parameter is based on &quot;Signal fail (SF) threshold&quot; from G.988 Section 9.2.1.</description>
+
+  <parameter name="SignalDegrade" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="4" maxValue="10" />
+    <description source="TRx">Signal degrade (SD) threshold. This parameter specifies the downstream BER threshold to detect the SD alarm. When this value is x, the BER threshold for SD is 10^–x . The SD threshold must be lower than the SF threshold; i.e., x &gt; y.  This parameter is based on &quot;Signal degrade (SD) threshold&quot; from G.988 Section 9.2.1.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.TC.Alarms." shortObjectName="Dev2XponOnuAniTcAlarmsObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">Alarms at TC level for this ANI.</description>
+
+  <parameter name="LOS" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Loss of signal. See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="LOF" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Loss of frame.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="SF" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Signal failed.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="SD" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Signal degraded.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="LCDG" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Loss of GEM channel delineation.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="TF" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Transmitter failure.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="SUF" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Start-up failure.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="MEM" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Message error message.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="DACT" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Deactivate ONU-ID.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="DIS" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Disabled ONU.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="MIS" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Link mismatching.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="PEE" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">When the ONU receives a PEE message.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="RDI" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Remote defect indication.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="LODS" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Loss of downstream syncronization.  See G.984.3 Section 11.1.2.</description>
+
+  <parameter name="ROGUE" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The ANI behaves rogue: it is not transmitting in a manner consistent with parameters specified in the ITU-T PON standards. Hence it can threaten all upstream transmissions on the PON, causing interference and disrupting communications of other ONUs on the PON. An example of rogue behavior is transmitting in the wrong timeslot.  See: G.9807.1 Section C.19 and  G.989.3 Section 19.</description>
+
+
+
+
+<object name="InternetGatewayDevice.XPON.ONU.{i}.ANI.{i}.Transceiver.{i}." shortObjectName="Dev2XponOnuAniTransceiverObject" specSource="TR181" profile="Device2_XPON:1" requirements="R" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">Transceiver table. Each entry models a PON transceiver.</description>
+
+  <parameter name="ID" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="1" />
+    <description source="TRx">The ID as assigned by the CPE to this Transceiver entry.</description>
+
+  <parameter name="Identifier" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxValue="255" />
+    <description source="TRx">Transceiver type. Allowed values are given by SFF-8024 Table 4-1.</description>
+
+  <parameter name="VendorName" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Vendor name. See SFF-8472 Table 4-1.</description>
+
+  <parameter name="VendorPartNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Vendor part number. See &quot;Vendor PN&quot; in SFF-8472 Table 4-1.</description>
+
+  <parameter name="VendorRevision" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Vendor part number. See &quot;Vendor rev&quot; in SFF-8472 Table 4-1.</description>
+
+  <parameter name="PONMode" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponModeValues" />
+    <description source="TRx">PON mode, reports the PON mode of the transceiver.</description>
+
+  <parameter name="Connector" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="XponTransceiverConnectorValues" />
+    <description source="TRx">Connector type.</description>
+
+  <parameter name="NominalBitRateDownstream" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Nominal data rate downstream in kbps.</description>
+
+  <parameter name="NominalBitRateUpstream" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Nominal data rate upstream in kbps.</description>
+
+  <parameter name="RxPower" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Measured RX power in 0.1 dBm.</description>
+
+  <parameter name="TxPower" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Measured TX power in 0.1 dBm.</description>
+
+  <parameter name="Voltage" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Measured supply voltage in mV.</description>
+
+  <parameter name="Bias" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Measured bias current in uA.</description>
+
+  <parameter name="Temperature" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="-274" />
+    <description source="TRx">Measured Measured temperature in degrees celsius.  A value of -274 (which is below absolute zero) indicates a good reading has not been obtained.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="XponEthUniStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="XponGemPortDirectionValues" />
+  <element>UNI-to-ANI</element>
+  <element>ANI-to-UNI</element>
+  <element>bidirectional</element>
+
+<validstringarray name="XponGemPortTypeValues" prefix="XPON" />
+  <element>unicast</element>
+  <element>multicast</element>
+  <element>broadcast</element>
+
+<validstringarray name="XponModeValues" />
+  <element>Unknown</element>
+  <element>G-PON</element>
+  <element>XG-PON</element>
+  <element>NG-PON2</element>
+  <element>XGS-PON</element>
+
+<validstringarray name="XponOnuAniStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>Error</element>
+
+<validstringarray name="XponOnuStateValues" />
+  <element>O1</element>
+  <element>O2</element>
+  <element>O3</element>
+  <element>O2-3</element>
+  <element>O4</element>
+  <element>O5</element>
+  <element>O6</element>
+  <element>O7</element>
+  <element>O8</element>
+  <element>O9</element>
+
+<validstringarray name="XponTransceiverConnectorValues" />
+  <element>Unknown</element>
+  <element>LC</element>
+  <element>SC</element>
+  <element>ST</element>
+  <element>FC</element>
+  <element>MT-RJ</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" />
+<profile name="Device2_Baseline:1" />
+<profile name="Device2_Baseline:2" />
+<profile name="Device2_Baseline:3" />
+<profile name="Device2_XPON:1" />
+<profile name="X_BROADCOM_COM_Baseline:1" />
+<profile name="X_BROADCOM_COM_Gpon:1" />
+<profile name="X_BROADCOM_COM_Gpon_EthFlow:1" />
+<profile name="X_BROADCOM_COM_GponWAN:1" />
+<profile name="X_BROADCOM_COM_GponRG_OMCI_Full:1" />
+<profile name="X_BROADCOM_COM_GponOnt:1" />
+<profile name="Unspecified" />
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

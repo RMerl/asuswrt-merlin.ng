@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2021 Trevor Woerner <twoerner@gmail.com>
+ */
+
+/{
+	model = "Embedded Artists LPC3250 DevKit v2 board based on the NXP LPC3250 SoC";
+	chosen {
+		stdout-path = &uart5;
+	};
+};
+
+&uart5 {
+	compatible = "nxp,lpc3220-uart", "ns16550a";
+};

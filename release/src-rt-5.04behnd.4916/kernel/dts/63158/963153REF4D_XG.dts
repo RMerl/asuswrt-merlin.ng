@@ -50,18 +50,6 @@
             rx-polarity-invert;
             pon-led = <&led26>;
     };
-
-	periph {
-		i2s: bcm63xx-i2s {
-			pinctrl-0 = <&i2s_rx_sdata_pin_14 &i2s_mclk_pin_28 &i2s_lrck_pin_29 &i2s_sclk_pin_30 &i2s_tx_sdata_pin_31>;
-			pinctrl-names = "default";
-			compatible = "brcm,bcm63xx-i2s";
-			reg = <0 0x2080 0 0x7f>;
-			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
-			clocks = <&i2sclk>, <&osc>;
-			clock-names = "i2sclk","i2sosc"; 
-		};
-	};
 };
 
 &i2c0 {

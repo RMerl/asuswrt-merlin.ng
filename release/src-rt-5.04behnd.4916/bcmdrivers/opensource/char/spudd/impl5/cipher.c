@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.
 
 :>
 */
-
+//#define DEBUG
 #include <linux/err.h>
 #include <linux/module.h>
 #include <linux/init.h>
@@ -79,6 +79,7 @@ extern u32 flexrm_ops_in_transit(int chan);
 extern void flexrm_register_offload_callback (spu_offload_cbk callback);
 extern int flexrm_spu_and_rings_on(void);
 extern int flexrm_spu_and_rings_shutdown(void);
+extern void flexrm_spu_set_session_cnt_ref(const atomic_t *session_cnt);
 extern SPU_PWR_STATUS flexrm_pwr_status_get(void);
 
 ssize_t static_pwr_get(struct device *d, struct device_attribute *attr, char *buf);
@@ -185,6 +186,15 @@ static int pdc_dma_dev_runtime_off(void)
 {
 	return 0;
 }
+/**
+ * @brief 
+ * @note dummy
+ * @param  session_cnt
+ */
+static void pdc_set_session_cnt(const atomic_t *session_cnt __attribute__((unused)))
+{
+	return;
+}
 #elif (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
 /**
  * @brief turns SPU power on, configures the latter and turns related DMA rings on
@@ -205,6 +215,14 @@ static int spu_dma_dev_runtime_off(void)
 {
 	flexrm_spu_and_rings_shutdown();
 	return 0;
+}
+/**
+ * @brief 
+ * @param session_cnt 
+ */
+void spu_set_session_cnt(const atomic_t *session_cnt)
+{
+	flexrm_spu_set_session_cnt_ref(session_cnt);
 }
 /**
  * @brief gets current SPU static power mode status
@@ -251,7 +269,7 @@ ssize_t static_pwr_set(struct device *d __attribute__((unused)),
 			/* if disable - update the parameter,
 			 * if enable - try to set the SPU on and only then (after success) make an update */
 			if ((!enable) ||
-				(enable && iproc_priv.spu.spu_and_dma_runtime_on &&
+				(iproc_priv.spu.spu_and_dma_runtime_on &&
 				(0 == (ret = iproc_priv.spu.spu_and_dma_runtime_on()))))
 				atomic_set(&iproc_priv.spu.static_pwr, enable);
 			break;
@@ -1839,6 +1857,7 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 	bool incl_icv = false;
 	unsigned int digestsize = ctx->digestsize;
 	u32 assoc_offset = 0;
+	int dst_nents;
 
 	/* number of entries in src and dst sg. Always includes SPU msg header.
 	 */
@@ -2038,18 +2057,14 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 	 */
 	rx_frag_num++;
 
-	if (((ctx->cipher.mode == CIPHER_MODE_GCM) ||
-	     (ctx->cipher.mode == CIPHER_MODE_CCM)) && !rctx->is_encrypt) {
+	if (!rctx->is_encrypt) {
 		/*
-		 * Input is ciphertxt plus ICV, but ICV not incl
-		 * in output.
+		 * Input is ciphertxt plus ICV, but ICV not included in output.
 		 */
 		resp_len -= ctx->digestsize;
-		if (resp_len == 0)
-			/* no rx frags to catch output data */
-			rx_frag_num -= rctx->dst_nents;
-	} else if (!rctx->is_encrypt) {
-		resp_len -= ctx->digestsize;
+		dst_nents = spu_sg_count(rctx->dst_sg, rctx->dst_skip, resp_len);
+		rx_frag_num -= rctx->dst_nents;
+		rx_frag_num += dst_nents;
 	}
 
 	INIT_LIST_HEAD(&mssg->list);
@@ -2656,7 +2671,9 @@ static int ahash_init(struct ahash_request *req)
 			goto err_hash;
 		}
 		ctx->shash->tfm = hash;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,15,0))
 		ctx->shash->flags = req->base.flags;
+#endif
 
 		/* Set the key using data we already have from setkey */
 		if (ctx->authkeylen > 0) {
@@ -3353,11 +3370,18 @@ static int aead_enqueue(struct aead_request *req, bool is_encrypt)
 #if defined(CONFIG_BLOG)
 	if (blog_enable && (req->base.flags & CRYPTO_TFM_REQ_MAY_BLOG) &&
 	    rctx->is_encrypt) {
-		if (spu_blog_emit_aead_us(rctx, 0)) {
+		err = spu_blog_emit_aead_us(rctx, 0);
+		if (err == 1) {
 			/* packet handled in the accelerated path
 			 * and result will be returned asynchronously */
-			spu_chunk_cleanup(rctx);
+			/* request memory (both skb tmp memory and 
+			 * crypto req memory) has been freed */
 			return -EINPROGRESS;
+		} else if (err == -1) {
+			/* IPsec tunnel is offloaded but the packet failed to be
+			 * inserted to the offload engine, free the request */
+			spu_chunk_cleanup(rctx);
+			return -EFAULT;
 		}
 	} 
 #endif
@@ -3825,11 +3849,18 @@ static int aead_esn_enqueue(struct aead_request *req, bool is_encrypt)
 #if defined(CONFIG_BLOG)
 	if (blog_enable && (req->base.flags & CRYPTO_TFM_REQ_MAY_BLOG) &&
 	    rctx->is_encrypt) {
-		if (spu_blog_emit_aead_us(rctx, 1)) {
+		err = spu_blog_emit_aead_us(rctx, 0);
+		if (err == 1) {
 			/* packet handled in the accelerated path
 			 * and result will be returned asynchronously */
-			spu_chunk_cleanup(rctx);
+			/* request memory (both skb tmp memory and 
+			 * crypto req memory) has been freed */
 			return -EINPROGRESS;
+		} else if (err == -1) {
+			/* IPsec tunnel is offloaded but the packet failed to be
+			 * inserted to the offload engine, free the request */
+			spu_chunk_cleanup(rctx);
+			return -EFAULT;
 		}
 	} 
 #endif
@@ -4563,7 +4594,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(md5),ecb(cipher_null))",
-			.cra_driver_name = "authenc-hmac-md5-ecb-null-iproc",
+			.cra_driver_name = "authencesn-hmac-md5-ecb-null-iproc",
 #if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
 			.cra_blocksize = 8,
 #else
@@ -4590,7 +4621,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha1),ecb(cipher_null))",
-			.cra_driver_name = "authenc-hmac-sha1-ecb-null-iproc",
+			.cra_driver_name = "authencesn-hmac-sha1-ecb-null-iproc",
 #if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
 			.cra_blocksize = 8,
 #else
@@ -4617,7 +4648,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha224),ecb(cipher_null))",
-			.cra_driver_name = "authenc-hmac-sha224-ecb-null-iproc",
+			.cra_driver_name = "authencesn-hmac-sha224-ecb-null-iproc",
 #if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
 			.cra_blocksize = 8,
 #else
@@ -4644,7 +4675,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha256),ecb(cipher_null))",
-			.cra_driver_name = "authenc-hmac-sha256-ecb-null-iproc",
+			.cra_driver_name = "authencesn-hmac-sha256-ecb-null-iproc",
 #if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
 			.cra_blocksize = 8,
 #else
@@ -4671,7 +4702,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha384),ecb(cipher_null))",
-			.cra_driver_name = "authenc-hmac-sha384-ecb-null-iproc",
+			.cra_driver_name = "authencesn-hmac-sha384-ecb-null-iproc",
 #if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
 			.cra_blocksize = 8,
 #else
@@ -4698,7 +4729,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha512),ecb(cipher_null))",
-			.cra_driver_name = "authenc-hmac-sha512-ecb-null-iproc",
+			.cra_driver_name = "authencesn-hmac-sha512-ecb-null-iproc",
 #if !defined(CONFIG_BCM_SPU2_MODULO4_SUPPORT)
 			.cra_blocksize = 8,
 #else
@@ -4725,7 +4756,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(md5),cbc(aes))",
-			.cra_driver_name = "authenc-hmac-md5-cbc-aes-iproc",
+			.cra_driver_name = "authencesn-hmac-md5-cbc-aes-iproc",
 			.cra_blocksize = AES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4748,7 +4779,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha1),cbc(aes))",
-			.cra_driver_name = "authenc-hmac-sha1-cbc-aes-iproc",
+			.cra_driver_name = "authencesn-hmac-sha1-cbc-aes-iproc",
 			.cra_blocksize = AES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4771,7 +4802,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha224),cbc(aes))",
-			.cra_driver_name = "authenc-hmac-sha224-cbc-aes-iproc",
+			.cra_driver_name = "authencesn-hmac-sha224-cbc-aes-iproc",
 			.cra_blocksize = AES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4794,7 +4825,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha256),cbc(aes))",
-			.cra_driver_name = "authenc-hmac-sha256-cbc-aes-iproc",
+			.cra_driver_name = "authencesn-hmac-sha256-cbc-aes-iproc",
 			.cra_blocksize = AES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4817,7 +4848,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha384),cbc(aes))",
-			.cra_driver_name = "authenc-hmac-sha384-cbc-aes-iproc",
+			.cra_driver_name = "authencesn-hmac-sha384-cbc-aes-iproc",
 			.cra_blocksize = AES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4840,7 +4871,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha512),cbc(aes))",
-			.cra_driver_name = "authenc-hmac-sha512-cbc-aes-iproc",
+			.cra_driver_name = "authencesn-hmac-sha512-cbc-aes-iproc",
 			.cra_blocksize = AES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4863,7 +4894,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(md5),cbc(des))",
-			.cra_driver_name = "authenc-hmac-md5-cbc-des-iproc",
+			.cra_driver_name = "authencesn-hmac-md5-cbc-des-iproc",
 			.cra_blocksize = DES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4886,7 +4917,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha1),cbc(des))",
-			.cra_driver_name = "authenc-hmac-sha1-cbc-des-iproc",
+			.cra_driver_name = "authencesn-hmac-sha1-cbc-des-iproc",
 			.cra_blocksize = DES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4909,7 +4940,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha224),cbc(des))",
-			.cra_driver_name = "authenc-hmac-sha224-cbc-des-iproc",
+			.cra_driver_name = "authencesn-hmac-sha224-cbc-des-iproc",
 			.cra_blocksize = DES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4932,7 +4963,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha256),cbc(des))",
-			.cra_driver_name = "authenc-hmac-sha256-cbc-des-iproc",
+			.cra_driver_name = "authencesn-hmac-sha256-cbc-des-iproc",
 			.cra_blocksize = DES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4955,7 +4986,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha384),cbc(des))",
-			.cra_driver_name = "authenc-hmac-sha384-cbc-des-iproc",
+			.cra_driver_name = "authencesn-hmac-sha384-cbc-des-iproc",
 			.cra_blocksize = DES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -4978,7 +5009,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha512),cbc(des))",
-			.cra_driver_name = "authenc-hmac-sha512-cbc-des-iproc",
+			.cra_driver_name = "authencesn-hmac-sha512-cbc-des-iproc",
 			.cra_blocksize = DES_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -5001,7 +5032,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(md5),cbc(des3_ede))",
-			.cra_driver_name = "authenc-hmac-md5-cbc-des3-iproc",
+			.cra_driver_name = "authencesn-hmac-md5-cbc-des3-iproc",
 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -5024,7 +5055,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha1),cbc(des3_ede))",
-			.cra_driver_name = "authenc-hmac-sha1-cbc-des3-iproc",
+			.cra_driver_name = "authencesn-hmac-sha1-cbc-des3-iproc",
 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -5047,7 +5078,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha224),cbc(des3_ede))",
-			.cra_driver_name = "authenc-hmac-sha224-cbc-des3-iproc",
+			.cra_driver_name = "authencesn-hmac-sha224-cbc-des3-iproc",
 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -5070,7 +5101,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha256),cbc(des3_ede))",
-			.cra_driver_name = "authenc-hmac-sha256-cbc-des3-iproc",
+			.cra_driver_name = "authencesn-hmac-sha256-cbc-des3-iproc",
 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -5093,7 +5124,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha384),cbc(des3_ede))",
-			.cra_driver_name = "authenc-hmac-sha384-cbc-des3-iproc",
+			.cra_driver_name = "authencesn-hmac-sha384-cbc-des3-iproc",
 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -5116,7 +5147,7 @@ static struct iproc_alg_s driver_algs[] = {
 	 .alg.aead = {
 		 .base = {
 			.cra_name = "authencesn(hmac(sha512),cbc(des3_ede))",
-			.cra_driver_name = "authenc-hmac-sha512-cbc-des3-iproc",
+			.cra_driver_name = "authencesn-hmac-sha512-cbc-des3-iproc",
 			.cra_blocksize = DES3_EDE_BLOCK_SIZE,
 			.cra_flags = CRYPTO_ALG_NEED_FALLBACK | CRYPTO_ALG_ASYNC | CRYPTO_ALG_ESN
 		 },
@@ -6100,7 +6131,9 @@ static int aead_cra_init(struct crypto_aead *aead)
 			}
 		}
 	}
-
+#if defined(CONFIG_BLOG)
+	INIT_LIST_HEAD(&ctx->entry);
+#endif
 	return err;
 }
 
@@ -6147,6 +6180,9 @@ static void spu_functions_register(struct device *dev,
 				   enum spu_spu_subtype spu_subtype)
 {
 	struct spu_hw *spu = &iproc_priv.spu;
+#if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
+    int error;
+#endif
 
 	if (spu_type == SPU_TYPE_SPUM) {
 		dev_dbg(dev, "Registering SPUM functions");
@@ -6214,14 +6250,19 @@ static void spu_functions_register(struct device *dev,
 	spu->spu_get_max_channel = pdc_get_max_channel;
 	spu->spu_and_dma_runtime_on =  pdc_dma_dev_runtime_on;
 	spu->spu_and_dma_runtime_off = pdc_dma_dev_runtime_off;	
+	spu->spu_set_session_cnt = pdc_set_session_cnt;
 #elif (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
 	spu->spu_send_data = flexrm_send_data;
 	spu->spu_select_channel = flexrm_select_channel;
 	spu->spu_get_max_channel = flexrm_get_max_channel;
 	spu->spu_and_dma_runtime_on = spu_dma_dev_runtime_on;
 	spu->spu_and_dma_runtime_off = spu_dma_dev_runtime_off;
-
-	sysfs_create_file(&dev->kobj, &static_pwr_attribute.attr);
+	spu->spu_set_session_cnt = spu_set_session_cnt;
+	error =  sysfs_create_file(&dev->kobj, &static_pwr_attribute.attr);
+    if (error)
+    {
+        pr_debug("failed to create the static_pwr_attribute file for dev \n");
+    }
 #endif
 }
 
@@ -6231,6 +6272,7 @@ static void spu_counters_init(void)
 	int j;
 
 	atomic_set(&iproc_priv.session_count, 0);
+	iproc_priv.spu.spu_set_session_cnt(&iproc_priv.session_count);
 	atomic_set(&iproc_priv.stream_count, 0);
 	atomic_set(&iproc_priv.next_chan, (int)iproc_priv.spu.num_chan);
 	atomic64_set(&iproc_priv.bytes_in, 0);
@@ -6780,7 +6822,7 @@ static int bcm_spu_probe(struct platform_device *pdev)
 			     &iproc_priv);
 
 #ifdef CONFIG_BCM_GLB_COHERENCY
-	err = dma_set_coherent_mask(dev, DMA_BIT_MASK(64));
+	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64));
 	if (err < 0) {
 		dev_err(dev, "dma_set_coherent_mask failure %d.\n", err);
 		goto failure;	
@@ -6822,6 +6864,9 @@ static int bcm_spu_probe(struct platform_device *pdev)
 	return 0;
 
 fail_reg:
+#if defined(CONFIG_BLOG)
+	spu_blog_unregister();
+#endif
 	spu_free_debugfs();
 failure:
 	dev_err(dev, "%s failed with error %d.\n", __func__, err);
@@ -6881,6 +6926,7 @@ static int bcm_spu_remove(struct platform_device *pdev)
 #if (defined(CONFIG_BCM_FLEXRM) || defined(CONFIG_BCM_FLEXRM_MODULE))
 	sysfs_remove_file(&dev->kobj, &static_pwr_attribute.attr);
 #endif
+	iproc_priv.spu.spu_set_session_cnt(NULL);
 	return 0;
 }
 

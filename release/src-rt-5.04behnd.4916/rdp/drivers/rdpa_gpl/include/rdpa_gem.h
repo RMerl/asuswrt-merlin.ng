@@ -38,15 +38,7 @@
  */
 
 /**< Max number of GEM flows */
-#if defined(XRDP) || defined(BCM_PON_XRDP)
-#if !defined(BCM6878)
 #define RDPA_MAX_GEM_FLOW 128 
-#else
-#define RDPA_MAX_GEM_FLOW 64
-#endif
-#else
-#define RDPA_MAX_GEM_FLOW 256 
-#endif
 
 /** GEM Flow Type */
 typedef enum {

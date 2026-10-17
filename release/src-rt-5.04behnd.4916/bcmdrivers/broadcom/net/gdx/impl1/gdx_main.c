@@ -48,12 +48,15 @@
 /**                                                                        **/
 /****************************************************************************/
 
+#include <linux/nbuff.h>
+#include "linux/gbpm.h"
 #include "gdx.h"
 
 extern int  gdx_priv_init(uint32_t page_size, uint32_t max_skb_frags);
 extern void gdx_priv_uninit(void);
 
 int (*gdx_hw_accel_loopbk_fn)(struct sk_buff *skb, bool l3_packet) = NULL;
+int (*gdx_hw_accel_spdtest_tx_start_fn)(struct sk_buff *skb) = NULL;
 
 int gdx_print_lvl = GDX_PRINT_LVL_ERROR;
 
@@ -66,6 +69,29 @@ int gdx_dbg_mask = 0;
 int gdx_dbg_force_nonlinear_pkts = 0;
 int gdx_dbg_nonlinear_hdrlen     = 0;
 int gdx_dbg_force_l3_pkts        = 0;
+int gdx_bulk_free_support        = 0;
+
+/* Dummy mult free function to free fkb one by one */
+static inline void gdx_free_mult_buf_dummy(int cnt, void **buf_arry)
+{
+    int idx;
+    for (idx=0; idx < cnt; idx++)
+    {
+        fkb_free(PDATA_TO_PFKBUFF(buf_arry[idx], BCM_PKT_HEADROOM));
+    }
+}
+
+void gdx_fkb_free_flush(int cnt, void **buf_arry)
+{
+    /* flush  any buffers in the array */
+#if defined(CONFIG_BCM_RUNNER_FEED_RING_SUPPORT)
+    /*In feed Ring platforms, these buffers needs to be recycled through it and
+     * its recycle handler doesn't support bulk free */
+    gdx_free_mult_buf_dummy(cnt, buf_arry);
+#else
+    gbpm_free_mult_buf(cnt, buf_arry);
+#endif
+}
 
 #if !defined(CONFIG_BCM_GDX_HW)
 /* GDX HW Acceleration not supported. Declare dummy functions */
@@ -141,6 +167,7 @@ int gdx_skb_offset_check(gdx_skb_field_offset_t *skb_field_offset_p)
  */
 static int gdx_init(void)
 {
+
     /* First do the private initialization and check whether the skb and
        netdev offsets are ok before proceeding with other initialization */
     if (gdx_priv_init(PAGE_SIZE, MAX_SKB_FRAGS) != 0)

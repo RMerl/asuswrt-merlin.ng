@@ -57,7 +57,8 @@ extern "C" {
 #define PCIE_VDEV_BUS_NUM                   0x118
 #define PCIE_VDEV_SLOT_NUM                  0x119
 
-#define PCIE_VDEV_CFG_SIZE                  (PCI_CFG_REGS_SIZE + VDEV_CFG_REGS_SIZE)
+#define PCIE_VDEV_CFG_SIZE                  \
+	(PCI_CFG_REGS_SIZE + VDEV_CFG_REGS_SIZE)
 #define PCIE_VDEV_CFG_SIZEW                 (PCIE_VDEV_CFG_SIZE/4)
 
 #define PCIE_VDEV_IRQ_IDX_CCM               0
@@ -81,60 +82,63 @@ extern "C" {
  */
 
 /*
- * 00: device_vendor_id    status_command          rev_id_class_code headertype_lat_cachelinesize
- * 10: bar_1               bar_2                   bar_3             bar_4
- * 20: bar_5               bar_6                   cardbus_cis       subsystem_id_vendor_id
- * 30: exp_rom_bar         cap_pointer             reserved          lat_min_grant_int_pin_int_line
- * 40: Reserved            reserved                pm_cap            pm_csr
- * 50: Reserved            reserved                msi_cap           msi_addr_l
- * 60: msi_addr_h          msi_data                vendor-specific   unknown
- * 70: unknown             unknown                 unknown           unknown
- * 80: unknown             unknown                 unknown           unknown
- * 90: unknown             unknown                 unknown           unknown
- * a0: msi_cap             msix_tbl_off_bir        msix_pba_bir_off  pcie_capability
- * b0: device_capability   device_status_control   link_capability   link_status_control
- * c0: slot_capability     slot_control_status     root_cap_control  root_status
- * d0: device_capability_2 device_status_control_2 link_capability_2 link_status_control_2
- * e0: reserved            reserved                reserved          reserved
- * f0: reserved            reserved                reserved          reserved
- * 100: bar_size_1          bar_size_2              bar_size_3        bar_size_4
- * 110: bar_size_5          bar_size_6              dev_bus           reserved
+ * 00: dev_vend_id    sts_cmd          revid_classcode hdrtype_lat_cachelinesz
+ * 10: bar_1          bar_2            bar_3           bar_4
+ * 20: bar_5          bar_6            cardbus_cis     subsystem_id_vendor_id
+ * 30: exp_rom_bar    cap_pointer      reserved       lat_min_grant_int_pin_line
+ * 40: Reserved       reserved         pm_cap          pm_csr
+ * 50: Reserved       reserved         msi_cap         msi_addr_l
+ * 60: msi_addr_h     msi_data         vendor-specific unknown
+ * 70: unknown        unknown          unknown         unknown
+ * 80: unknown        unknown          unknown         unknown
+ * 90: unknown        unknown          unknown         unknown
+ * a0: msi_cap        msix_tbl_off_bir msix_pba_bir_off  pcie_cap
+ * b0: dev_cap        dev_sts_control  link_cap        link_sts_ctrl
+ * c0: slot_cap       slot_ctrl_status root_cap_ctrl   root_sts
+ * d0: dev_cap_2      dev_sts_ctrl_2   link_cap_2      link_sts_ctrl_2
+ * e0: reserved       reserved         reserved        reserved
+ * f0: reserved       reserved         reserved        reserved
+ * 100: bar_size_1    bar_size_2       bar_size_3      bar_size_4
+ * 110: bar_size_5    bar_size_6       dev_bus         reserved
  */
-#define PCIE_VDEV_FILL_CFG_REG(DeviceVend, ClassRevId, BAR_1_Addr, IntLinePin)              \
-	DeviceVend, 0x00100000, ClassRevId, 0x00000000, /* 00 */                            \
-	BAR_1_Addr, 0x00000000, 0x00000004, 0x00000000, /* 10 */                            \
-	0x0000000c, 0x00000000, 0x00000000, DeviceVend, /* 20 */                            \
-	0x00000000, 0x00000048, 0x00000000, IntLinePin, /* 30 */                            \
-	0x00000000, 0x00000000, 0x06035801, 0x00004108, /* 40 */                            \
-	0x00000000, 0x00000000, 0x008b6805, 0x00000000, /* 50 */                            \
-	0x00000000, 0x00000000, 0x0000a009, 0x00000000, /* 60 */                            \
-	0x28100000, 0x00000000, 0x00000000, 0x00000000, /* 70 */                            \
-	0x28000000, 0x00000000, 0x00000080, 0x00000000, /* 80 */                            \
-	0x00000000, 0x00000100, 0x00000000, 0x00000000, /* 90 */                            \
-	0x003fac11, 0x00008000, 0x00008800, 0x00020010, /* a0 */                            \
-	0x00008f82, 0x00102c10, 0x0046dc22, 0x10220000, /* b0 */                            \
-	0x00000000, 0x00000000, 0x00000000, 0x00000000, /* c0 */                            \
-	0x0008081f, 0x00000000, 0x00000006, 0x00000002, /* d0 */                            \
-	0x00000000, 0x00000000, 0x00000000, 0x00000000, /* e0 */                            \
+#define PCIE_VDEV_FILL_CFG_REG(DevVend, ClassRevId, BAR_1_Addr, IntLinePin)  \
+	DevVend, 0x00100000, ClassRevId, 0x00000000, /* 00 */                    \
+	BAR_1_Addr, 0x00000000, 0x00000004, 0x00000000, /* 10 */                 \
+	0x0000000c, 0x00000000, 0x00000000, DevVend, /* 20 */                    \
+	0x00000000, 0x00000048, 0x00000000, IntLinePin, /* 30 */                 \
+	0x00000000, 0x00000000, 0x06035801, 0x00004108, /* 40 */                 \
+	0x00000000, 0x00000000, 0x008b6805, 0x00000000, /* 50 */                 \
+	0x00000000, 0x00000000, 0x0000a009, 0x00000000, /* 60 */                 \
+	0x28100000, 0x00000000, 0x00000000, 0x00000000, /* 70 */                 \
+	0x28000000, 0x00000000, 0x00000080, 0x00000000, /* 80 */                 \
+	0x00000000, 0x00000100, 0x00000000, 0x00000000, /* 90 */                 \
+	0x003fac11, 0x00008000, 0x00008800, 0x00020010, /* a0 */                 \
+	0x00008f82, 0x00102c10, 0x0046dc22, 0x10220000, /* b0 */                 \
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, /* c0 */                 \
+	0x0008081f, 0x00000000, 0x00000006, 0x00000002, /* d0 */                 \
+	0x00000000, 0x00000000, 0x00000000, 0x00000000, /* e0 */                 \
 	0x00000000, 0x00000000, 0x00000000, 0x00000000  /* f0 */
 
-#define PCIE_VDEV_FILL_CFG_EXT(BAR_1_Size, ModSlotBus)                                      \
-	BAR_1_Size, 0x00000000, 0x00000000, 0x00000000, /* 100 */                           \
+#define PCIE_VDEV_FILL_CFG_EXT(BAR_1_Size, ModSlotBus)                       \
+	BAR_1_Size, 0x00000000, 0x00000000, 0x00000000, /* 100 */                \
 	0x00000000, 0x00000000, ModSlotBus, 0x00000000  /* 110 */
 
-#define PCIE_VDEV_FILL_CFG(DeviceVend, ClassRevId, BAR_1_Addr, IntLinePin,                  \
-	                       BAR_1_Size, ModSlotBus)                                      \
-	PCIE_VDEV_FILL_CFG_REG(DeviceVend, ClassRevId, BAR_1_Addr, IntLinePin),             \
+#define PCIE_VDEV_FILL_CFG(DevVend, ClassRevId, BAR_1_Addr, IntLinePin,      \
+	                       BAR_1_Size, ModSlotBus)                           \
+	PCIE_VDEV_FILL_CFG_REG(DevVend, ClassRevId, BAR_1_Addr, IntLinePin),     \
 	PCIE_VDEV_FILL_CFG_EXT(BAR_1_Size, ModSlotBus)
 
-#define PCIE_VDEV_INIT_CFG(dev, rev, bar_1, int_line, bar_1_size, bus, slot)                \
-	PCIE_VDEV_FILL_CFG_REG((((dev) << 16) | 0x14e4), (0x02800000|rev),                  \
-	                       ((bar_1 | 0x04)), (0x100 | (int_line))),                     \
+#define PCIE_VDEV_INIT_CFG(dev, rev, bar_1, int_line, bar_1_size, bus, slot) \
+	PCIE_VDEV_FILL_CFG_REG((((dev) << 16) | 0x14e4), (0x02800000|rev),       \
+	                       ((bar_1 | 0x04)), (0x100 | (int_line))),          \
 	PCIE_VDEV_FILL_CFG_EXT((bar_1_size), (((slot) << 8) | (bus)))
 
-#define PCIE_VDEV_LIST_ELEM(chip, rev, elem)                                                \
-	{.chip_id = chip, .rev_id = rev,                                                    \
-	 .size = sizeof(elem)/PCIE_VDEV_CFG_SIZE, .pcfg = (struct bcmvpcie_vdev_cfg*)(&elem)}
+#define PCIE_VDEV_LIST_ELEM(chip, rev, elem) {                               \
+{                                                                            \
+	.chip_id = chip, .rev_id = rev,                                          \
+	.size = sizeof(elem)/PCIE_VDEV_CFG_SIZE,                                 \
+	.pcfg = (struct bcmvpcie_vdev_cfg*)(&elem)                               \
+}
 
 
 /*
@@ -235,12 +239,12 @@ struct pcie_cfg_space_regs {
 };
 
 /*
- * PCIe Vitual Device configuration
+ * PCIe Virtual Device configuration
  *
- * @regs    : Config space registers
+ * @regs    : Configuration space registers
  * @bar_size: bar memory size
  * @bus     : bus number this device to be enumerated as
- * @slot    : slot number this device to be enuerated as
+ * @slot    : slot number this device to be enumerated as
  *          : <domain>:<bus>:<slot>.0
  * @rsvd    : padding to make it 32 byte aligned
  * @rsvd1   : padding to make it 32 byte aligned
@@ -255,11 +259,11 @@ struct bcmvpcie_vdev_cfg {
 };
 
 /*
- * PCIe Vitual Device configuration information
+ * PCIe Virtual Device configuration information
  *
  * @chip_id : BCA Chip Identifier
  * @rev_id  : BCA Chip Revision
- * @size    : Number of configuraitons per core
+ * @size    : Number of configurations per core
  * @pcfg    : pointer to virtual device configuration
  */
 struct bcmvpcie_vdev_cfg_info {

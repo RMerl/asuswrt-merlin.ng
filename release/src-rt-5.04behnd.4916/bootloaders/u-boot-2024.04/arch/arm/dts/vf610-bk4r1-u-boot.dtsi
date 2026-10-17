@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2019
+ * Lukasz Majewski, DENX Software Engineering, lukma@denx.de
+ */
+
+/ {
+	soc {
+		bootph-all;
+	};
+};
+
+&aips0 {
+	bootph-all;
+};
+
+&pinctrl_ddr {
+	bootph-all;
+};
+
+&pinctrl_uart1 {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};

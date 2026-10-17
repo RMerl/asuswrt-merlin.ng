@@ -1,0 +1,15 @@
+if TARGET_NANOPCT6_RK3588
+
+config SYS_BOARD
+	default "nanopc-t6-rk3588"
+
+config SYS_VENDOR
+	default "friendlyelec"
+
+config SYS_CONFIG_NAME
+	default "nanopc-t6-rk3588"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

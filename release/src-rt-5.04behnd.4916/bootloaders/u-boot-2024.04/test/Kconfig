@@ -1,0 +1,121 @@
+menu "Testing"
+
+config UNIT_TEST
+	bool "Unit tests"
+	depends on CMDLINE
+	help
+	  Select this to compile in unit tests for various parts of
+	  U-Boot. Test suites will be subcommands of the "ut" command.
+	  This does not require sandbox to be included, but it is most
+	  often used there.
+
+config SPL_UNIT_TEST
+	bool "Unit tests in SPL"
+	depends on SPL
+	# We need to be able to unbind devices for tests to work
+	select SPL_DM_DEVICE_REMOVE
+	help
+	  Select this to enable unit tests in SPL. Most test are designed for
+	  running in U-Boot proper, but some are intended for SPL, such as
+	  of-platdata and SPL handover. To run these tests with the sandbox_spl
+	  board, use the -u (unit test) option.
+
+config UT_LIB
+	bool "Unit tests for library functions"
+	depends on UNIT_TEST
+	default y if !SANDBOX_VPL
+	help
+	  Enables the 'ut lib' command which tests library functions like
+	  memcat(), memcyp(), memmove() and ASN1 compiler/decoder.
+
+if UT_LIB
+
+config UT_LIB_ASN1
+	bool "Unit test for asn1 compiler and decoder function"
+	depends on SANDBOX
+	default y
+	imply ASYMMETRIC_KEY_TYPE
+	imply ASYMMETRIC_PUBLIC_KEY_SUBTYPE
+	imply X509_CERTIFICATE_PARSER
+	imply PKCS7_MESSAGE_PARSER
+	imply RSA_PUBLIC_KEY_PARSER
+	help
+	  Enables a test which exercises asn1 compiler and decoder function
+	  via various parsers.
+
+config UT_LIB_CRYPT
+	bool "Unit test for crypt-style password hashing"
+	depends on !SPL && AUTOBOOT_KEYED && AUTOBOOT_ENCRYPTION
+	default y
+	select CRYPT_PW
+	select CRYPT_PW_SHA256
+	select CRYPT_PW_SHA512
+	help
+	  Enables a test for the crypt-style password hash functions.
+
+config UT_LIB_RSA
+	bool "Unit test for rsa_verify() function"
+	depends on RSA
+	depends on RSA_VERIFY_WITH_PKEY
+	select IMAGE_SIGN_INFO
+	default y
+	help
+	  Enables rsa_verify() test, currently rsa_verify_with_pkey only()
+	  only, at the 'ut lib' command.
+
+endif
+
+config UT_BOOTSTD
+	bool "Unit tests for standard boot"
+	depends on UNIT_TEST && BOOTSTD && SANDBOX
+	default y
+
+config UT_COMPRESSION
+	bool "Unit test for compression"
+	depends on UNIT_TEST
+	depends on CMDLINE && GZIP_COMPRESSED && BZIP2 && LZMA && LZO && LZ4 && ZSTD
+	default y
+	help
+	  Enables tests for compression and decompression routines for simple
+	  sanity and for buffer overflow conditions.
+
+config UT_LOG
+	bool "Unit tests for logging functions"
+	depends on UNIT_TEST
+	default y
+	help
+	  Enables the 'ut log' command which tests logging functions like
+	  log_err().
+	  See also CONFIG_LOG_TEST which provides the 'log test' command.
+
+config UT_TIME
+	bool "Unit tests for time functions"
+	depends on UNIT_TEST
+	help
+	  Enables the 'ut time' command which tests that the time functions
+	  work correctly. The test is fairly simple and will not catch all
+	  problems. But if you are having problems with udelay() and the like,
+	  this is a good place to start.
+
+config UT_UNICODE
+	bool "Unit tests for Unicode functions"
+	depends on UNIT_TEST
+	default y
+	select CHARSET
+	help
+	  Enables the 'ut unicode' command which tests that the functions for
+	  manipulating Unicode strings work correctly.
+
+source "test/dm/Kconfig"
+source "test/env/Kconfig"
+source "test/image/Kconfig"
+source "test/lib/Kconfig"
+source "test/optee/Kconfig"
+source "test/overlay/Kconfig"
+
+config POST
+	bool "Power On Self Test support"
+	help
+	  See doc/README.POST for more details
+
+endmenu

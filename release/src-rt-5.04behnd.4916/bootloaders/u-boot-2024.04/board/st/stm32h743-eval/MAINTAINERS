@@ -1,0 +1,7 @@
+STM32H743 EVALUATION BOARD
+M:	Patrice Chotard <patrice.chotard@foss.st.com>
+S:	Maintained
+F:	doc/board/st/
+F:	board/st/stm32h743-eval
+F:	include/configs/stm32h743-eval.h
+F:	configs/stm32h743-eval_defconfig

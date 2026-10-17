@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Device tree fragment for RCW SCH-24801 card
+ *
+ * Copyright 2019-2021 NXP
+ */
+
+/*
+ * SCH-24801 is a 4xSGMII add-on card used with various FSL QDS boards.
+ * It integrates a VSC8234 quad PHY which supports 4 SGMII interfaces.
+ * PHY addresses are 0x1c - 0x1f.
+ * On the card the first port is the top port (farthest from PEX connector).
+ */
+phy@1c {
+	reg = <0x1c>;
+};
+
+phy@1d {
+	reg = <0x1d>;
+};
+
+phy@1e {
+	reg = <0x1e>;
+};
+
+phy@1f {
+	reg = <0x1f>;
+};

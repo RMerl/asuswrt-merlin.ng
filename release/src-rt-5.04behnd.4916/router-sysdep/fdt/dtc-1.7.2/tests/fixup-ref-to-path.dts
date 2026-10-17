@@ -1,0 +1,6 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	prop = < &{/path/to/node} >;
+};

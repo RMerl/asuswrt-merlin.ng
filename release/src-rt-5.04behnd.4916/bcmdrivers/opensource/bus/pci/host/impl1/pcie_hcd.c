@@ -45,6 +45,7 @@
 #include <linux/irqdomain.h>
 #include <linux/msi.h>
 #include <linux/arm-smccc.h>
+#include <linux/pci-ecam.h>
 
 /* brcm bsp */
 #if defined(CONFIG_BRCM_IKOS) || defined(CONFIG_BCM_PCIE_PMC_BRD_STUBS)
@@ -54,7 +55,6 @@
 #include <pmc_pcie.h>
 #include <flash_common.h>
 #endif /* !CONFIG_BRCM_IKOS && !CONFIG_BCM_PCIE_PMC_BRD_STUBS */
-#include <shared_utils.h>
 #include <bcm_intr.h>
 #include <bcm_nvram.h>
 #include <bcm_otp.h>
@@ -76,16 +76,18 @@
 #define PCIE_HC_CORE_REV_OFFSET             0x0000406c
 #define PCI_EXP_CFG_OFFSET                  0x000000AC
 
-#define PCIE_LNKCAP                         (PCI_EXP_CFG_OFFSET + PCI_EXP_LNKCAP)
+#define PCIE_LNKCAP                         \
+	(PCI_EXP_CFG_OFFSET + PCI_EXP_LNKCAP)
 #define PCIE_LNKCAP_LNK_WIDTH(cap)          \
 	(((cap) & PCI_EXP_LNKCAP_MLW) >> PCI_EXP_LNKSTA_NLW_SHIFT)
 #define PCIE_LNKCAP_LNK_SPEED(cap)          ((cap) & PCI_EXP_LNKCAP_SLS)
-#define PCIE_LNKCTLSTA                      (PCI_EXP_CFG_OFFSET + PCI_EXP_LNKCTL)
+#define PCIE_LNKCTLSTA                      \
+	(PCI_EXP_CFG_OFFSET + PCI_EXP_LNKCTL)
 #define PCIE_LNKSTA_LNK_WIDTH(sta)          \
 	(((sta) & PCI_EXP_LNKSTA_NLW) >> PCI_EXP_LNKSTA_NLW_SHIFT)
 #define PCIE_LNKSTA_LNK_SPEED(sta)          ((sta) & PCI_EXP_LNKSTA_CLS)
 
-/* PCI Power ON to PERST# minumum time */
+/* PCI Power ON to PERST# minimum time */
 #define PCIE_PWR_2_PERST_DELAY              100 /* milli seconds */
 #define PCIE_PWR_SETTLING_DELAY             25  /* milli seconds */
 
@@ -98,7 +100,8 @@
 
 /* HCD Settings */
 #define HCD_SETTING_VAL_INV                 0xFFFFFFFF
-#define HCD_SETTING_VAL_STR_LEN             32
+#define HCD_SETTING_VAL_STR_LEN             64
+#define HCD_CORE_ARRAY_SETTING_VALUES       2
 
 /* Local Error Codes */
 #define EHCD_SCAN_DEFER                     EPROBE_DEFER
@@ -128,13 +131,15 @@
 #define PSCI_BRCM_SYSTEM_CONTROL             0x8400001F
 #define CTMR_CTRL_STMR_WRITE_CMD             0x80000000
 
+#define FASTPATH_ADDR_UNINITIALIZED          -1ULL
+
 /*
  * +-----------------------------------------------------
  *  Macros
  * +-----------------------------------------------------
  */
 #define PCI_EXP_LNK_WIDTH(width)            \
-	(((width)&PCI_EXP_LNKSTA_NLW) >> PCI_EXP_LNKSTA_NLW_SHIFT)
+	(((width) & PCI_EXP_LNKSTA_NLW) >> PCI_EXP_LNKSTA_NLW_SHIFT)
 
 #define HCD_USE_DT_ENTRY(core)              \
 	((IS_ENABLED(CONFIG_OF)) ? true : false)
@@ -158,8 +163,8 @@
  * HCD Settings
  *
  * Types:
- *  - Common interdependant settings (cpci)
- *  - Core independant settings      (pcie@)
+ *  - Common interdependent settings (cpci)
+ *  - Core independent settings      (pcie@)
  *
  * Order:
  * - Driver default (Common and Core)
@@ -209,6 +214,63 @@
 	    HCD_HC_CORE_CFG(nv_##name, core) :              \
 	    HCD_HC_CORE_CFG(name, core)
 
+#define HCD_CORE_SETTING(name)                          \
+	((nv_##name != HCD_SETTING_VAL_INV) ?  nv_##name : name)
+
+#define HCD_CMMN_SETTING(name)               (name)
+
+/*
+ * Each core using 'N' u32 values with initialized to 'def' value
+ */
+#define HCD_DECLARE_CORE_ARRAY_SETTING(name, N, def)    \
+	u32 nv_##name[MAX_NUM_PCIE_CORES * (N)] = {         \
+	    [0 ... ((MAX_NUM_PCIE_CORES*(N))-1)] =          \
+	        HCD_SETTING_VAL_INV};                       \
+	u32 name[MAX_NUM_PCIE_CORES * (N)] = {              \
+	    [0 ... ((MAX_NUM_PCIE_CORES*(N))-1)] = (def)};  \
+	int nr_##name = (N);                                \
+	module_param_array(name, int, NULL, S_IRUGO)
+
+#define HCD_READ_CORE_ARRAY_SETTING(name, core)         \
+	do {                                                \
+	    u32 val[HCD_CORE_ARRAY_SETTING_VALUES] = {0};   \
+	    if (pcie_hcd_nvram_get_u32_array(#name, core,   \
+	        nr_##name, val) > 0) {                      \
+	        memcpy(nv_##name + ((core) * nr_##name),    \
+	            val, nr_##name * sizeof(u32));          \
+	    }                                               \
+	} while (0)
+
+#define HCD_UPDATE_CORE_ARRAY_SETTING(name, core)       \
+	do {                                                \
+	    int idx = 0;                                    \
+	    do {                                            \
+	        u32 nv_val = nv_##name[(core)][idx];        \
+	        if (nv_val != HCD_SETTING_VAL_INV)          \
+	            name[(core)][idx] = nv_val;             \
+	    } while (++idx < nr_##name);                    \
+	} while (0)
+
+#define HCD_GET_CORE_ARRAY_SETTING(name, core, idx)                           \
+	(nv_##name[((core)*nr_##name)+(idx)] != HCD_SETTING_VAL_INV) ?            \
+	    nv_##name[((core)*nr_##name)+(idx)] : name[((core)*nr_##name)+(idx)]
+
+#define HCD_CORE_ARRAY_SETTING               HCD_GET_CORE_ARRAY_SETTING
+
+/* Proc File system Core Status information */
+#define foreachcore_seq_printf(m, c, sts, fmt, args...)   \
+{                                                         \
+    int id;                                               \
+	struct pcie_hcd_procfs *pfs_cb = &pcie_hcd_procfs_cb; \
+	if (sts) seq_printf(m, "%15s : ", sts);               \
+	for (id = 0; id < MAX_NUM_PCIE_CORES; id++) {         \
+	    c = pfs_cb->pdrv[id];                             \
+	    if (c == NULL) continue;                          \
+	    seq_printf(m, fmt, ##args);                       \
+	}                                                     \
+	seq_printf(m, "\n");                                  \
+}
+
 /*
  * +-----------------------------------------------------
  *  Structures
@@ -218,11 +280,13 @@
  * PCIe Host Controller Driver Procfs control block
  * @dir:      pcie_hcd procfs directory file pointer
  * @coreinfo: pcie_hcd coreinfo procfs file pointer
+ * @status:   pcie_hcd status procfs file pointer
  * @pdrv:     Host Controller Driver CB array
  */
 struct pcie_hcd_procfs {
 	struct proc_dir_entry *dir;
 	struct proc_dir_entry *coreinfo;
+	struct proc_dir_entry *status;
 	struct pcie_hcd       *pdrv[MAX_NUM_PCIE_CORES];
 };
 
@@ -239,7 +303,7 @@ struct pcie_hcd_procfs {
  * @irq:           MSI interrupt number
  * @nr:            Number of msi interrupts
  * @enabled:       flag to specify msi is enabled or not
- * @pdrv:          Pointer to pcie driver cb
+ * @pdrv:          Pointer to PCIe driver cb
  */
 struct pcie_hcd_msi {
 #ifdef CONFIG_BCM_PCI_MSI
@@ -250,7 +314,7 @@ struct pcie_hcd_msi {
 	struct irq_domain_ops  domain_ops;
 	struct msi_domain_info domain_info;
 	struct mutex           lock;
-	unsigned long          used;
+	DECLARE_BITMAP(used, MAX_MSI_MAP_SIZE);
 	int                    irq;
 #endif /* CONFIG_BCM_PCI_MSI */
 	int                    nr;
@@ -259,7 +323,7 @@ struct pcie_hcd_msi {
 };
 
 /*
- * BCM PCIe Host Contoller Driver Outgoing Window control block
+ * BCM PCIe Host Controller Driver Outgoing Window control block
  *
  * @pci_addr:   Physical address of PCI core to determine the Offset between
  *              CPU  and PCIe
@@ -274,7 +338,7 @@ struct pcie_hcd_owin
 };
 
 /*
- * BCM PCIe Host Contoller Driver Error Log interrupt control block
+ * BCM PCIe Host Controller Driver Error Log interrupt control block
  *
  * @inited:     Errorlog interrupts initialization status
  */
@@ -284,11 +348,11 @@ struct pcie_hcd_errlog
 };
 
 /*
- * BCM PCIe Host Contoller Driver apon control block
+ * BCM PCIe Host Controller Driver apon control block
  *
  * @flags:     power operation flags
  * @powered:   power status of device
- * @cfg:       power configraton of device
+ * @cfg:       power configuration of device
  */
 struct pcie_hcd_apon
 {
@@ -298,7 +362,7 @@ struct pcie_hcd_apon
 };
 
 /*
- * BCM PCIe Host Contoller power supply control block
+ * BCM PCIe Host Controller power supply control block
  *
  * @node:      Linked list node
  * @name:      name of the power supply
@@ -312,12 +376,10 @@ struct pcie_hcd_pwrsup {
 };
 
 /*
- * BCM PCIe Host Contoller Driver control block
+ * BCM PCIe Host Controller Driver control block
  *
- * @sys:             PCI sysdata (only arm32 platforms)
  * @msi:             msi control block
- * @bus:             pointer to root bus
- * @pfs:             pointer to pcie hcd proc file system control block
+ * @pfs:             pointer to PCIe HCD proc file system control block
  * @pwr_supplies:    external power supplies for the slot
  * @core:            host controller core control block
  * @errlog:          error log control block
@@ -326,7 +388,6 @@ struct pcie_hcd_pwrsup {
  */
 struct pcie_hcd {
 	struct pcie_hcd_msi    *msi;
-	struct pci_bus         *bus;
 	struct pcie_hcd_procfs *pfs;
 	struct pcie_hcd_pwrsup pwrsupplies;
 
@@ -334,6 +395,7 @@ struct pcie_hcd {
 	struct pcie_hcd_errlog errlog;
 	struct pcie_hcd_apon   apon;
 	struct pcie_hcd_owin   owin[MAX_NUM_OUTGOING_WINDOWS];
+	struct pci_config_window *ecam_cfg;
 };
 
 /*
@@ -363,6 +425,31 @@ struct pcie_hcd_bus_dsc
 };
 
 /*
+ * BCM PCIe HCD FastPath Address Management (fpam) control block
+ *
+ * @flags:          Configuration flags
+ * @master:         Master core for Broadcast/Mutex
+ * @latent_master:  Likely to be Master from auto selection
+ * @in_pcie_addr:   Incoming fastpath PCIe address base
+ * @in_ubus_addr:   Incoming fastpath UBUS address
+ * @out_addr:       Outgoing fastpath address for Broadcast
+ */
+struct pcie_hcd_bus_fpam
+{
+	/* Configuration */
+	u8  flags;
+	u8  master;
+	u8  latent_master;
+
+	/* incoming addresses */
+	u64 in_pcie_addr;
+	u64 in_ubus_addr;
+
+	/* outgoing addresses */
+	u64 out_addr[FASTPATH_ID_MAX];
+};
+
+/*
  * BCM PCIe Common control block
  *
  * @periph_misc:    MISC core PCIe control register
@@ -372,6 +459,7 @@ struct pcie_hcd_cpci
 {
 	struct pcie_hcd_periph_misc misc;
 	struct pcie_hcd_bus_dsc     dsc;
+	struct pcie_hcd_bus_fpam    fpam;
 };
 
 /*
@@ -380,6 +468,10 @@ struct pcie_hcd_cpci
  * +-----------------------------------------------------
  */
 /* nvram */
+static int pcie_hcd_nvram_get_u32_array_tokenized(char *key, int core, int max,
+	u32 *pval);
+static int pcie_hcd_nvram_get_u32_array(char *key, int core, int max,
+	u32 *pval);
 static int pcie_hcd_nvram_get_u32(char *key, u32 *pval);
 static int pcie_hcd_get_boot_order_core(int index);
 static int pcie_hcd_nvram_init(void);
@@ -387,6 +479,13 @@ static int pcie_hcd_nvram_init(void);
 /* procfs */
 static int pcie_hcd_procfs_init(struct pcie_hcd *pdrv);
 static void pcie_hcd_procfs_deinit(struct pcie_hcd *pdrv);
+
+/* Fastpath */
+static int pcie_hcd_lnkdn_fastpath(struct pcie_hcd *pdrv);
+static int pcie_hcd_init_fastpath(u32 config);
+
+/* deferred scan */
+static int pcie_hcd_init_deferred_scan(void);
 
 #ifdef CONFIG_BCM_PCI_MSI
 /* msi interrupt */
@@ -416,11 +515,13 @@ static void pcie_hcd_errlog_disable(struct pcie_hcd *pdrv);
 
 /* HC core fops access */
 static int pcie_hc_link_up(struct pcie_hcd *pdrv);
+static int pcie_hc_config_core_final(struct pcie_hcd *pdrv);
 static void pcie_hc_unconfig_core(struct pcie_hcd *pdrv);
 static int pcie_hc_config_core(struct pcie_hcd *pdrv);
 static int pcie_hc_reset_core(struct pcie_hcd *pdrv);
 static int pcie_hc_restart_core(struct pcie_hcd *pdrv);
 static int pcie_hc_setup_access(struct pcie_hcd *pdrv);
+static void pcie_hc_remove_access(struct pcie_hcd *pdrv);
 static int pcie_hc_init_core(struct platform_device *pdev,
 	struct pcie_hcd *pdrv);
 static void pcie_hc_free_core(struct pcie_hcd *pdrv);
@@ -430,6 +531,7 @@ static void pcie_hc_dump_core_cfg(struct pcie_hcd *pdrv);
 /* APON */
 static int pcie_hc_apon_pwrup(struct pcie_hcd *pdrv);
 static int pcie_hc_apon_pwrdn(struct pcie_hcd *pdrv);
+static int pcie_hc_apon_pwrphy(struct pcie_hcd *pdrv);
 
 /* Hc helper functions */
 static int pcie_hcd_set_power(struct pcie_hc_core *phc, unsigned int devidx,
@@ -441,20 +543,24 @@ static int pcie_hcd_set_regulators(struct pcie_hcd *pdrv, unsigned int devidx,
 static int pcie_hcd_init_regulators(struct pcie_hcd *pdrv);
 static void pcie_hcd_free_regulators(struct pcie_hcd *pdrv);
 
-/* pci fops */
+/* PCI fops */
 static int pcie_hcd_config_read(struct pci_bus *bus, unsigned int devfn,
 	int where, int size, u32 *val);
 static int pcie_hcd_config_write(struct pci_bus *bus, unsigned int devfn,
 	int where, int size, u32 val);
 static void __iomem *pcie_hcd_map_bus(struct pci_bus *bus,
 	unsigned int devfn, int where);
+static void __iomem *pcie_hcd_map_bus_ecam(struct pci_bus *bus,
+	unsigned int devfn, int where);
 static int pcie_hcd_map_irq(const struct pci_dev *pcidev,
 	u8 slot, u8 pin);
 
-/* pci resources */
+/* PCI resources */
 static int pcie_hcd_setup_resources(struct pcie_hcd *pdrv,
 	struct list_head *resources);
 static void pcie_hcd_unmap_resources(struct pcie_hcd *pdrv);
+static int pcie_hcd_parse_resources(struct pcie_hcd *pdrv,
+	struct device_node *np);
 static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv);
 
 /* driver probe */
@@ -495,6 +601,8 @@ static struct pci_ops pcie_hcd_ops_specific = {
 	.read = pcie_hcd_config_read,
 	.write = pcie_hcd_config_write,
 };
+
+static struct pci_ecam_ops pcie_hcd_ops_ecam;
 
 static const struct of_device_id pcie_hcd_of_match[] = {
 	{ .type = "cpci", .compatible = "brcm,bcm-pcie",       },
@@ -541,7 +649,7 @@ HCD_DECLARE_CMMN_SETTING(pcie_ssc_cfg, 0x0000);
 
 /*
  * phy clock PLL id values
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     [id] - core id of the clock PLL to be used
  *
@@ -553,7 +661,7 @@ HCD_DECLARE_CMMN_SETTING(pcie_pllclkid, 0x3210);
 
 /*
  * phy PLL clock Adjust
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     [id] - core id of the clock PLL to be used
  *     0 - No PLL Clock Adjustment
@@ -572,7 +680,7 @@ HCD_DECLARE_CMMN_SETTING(pcie_log_level, HCD_LOG_LVL_ERROR);
 
 /*
  * core bring up order (right -> left)
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0x000 - default ( 0, 1, 2, ..... )
  *     0x210 - boot order 0, 1, 2
@@ -586,7 +694,7 @@ HCD_DECLARE_CMMN_SETTING(pcie_boot_order, 0x0000);
 
 /*
  * PCIe BAR mask Configuration for DDR memory
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *   [use] Can be used to configure the BAR for the DDR memory
  *     0 - Do not use BAR# for DDR memory access
@@ -600,7 +708,7 @@ HCD_DECLARE_CMMN_SETTING(pcie_barmask, 0x0000);
 
 /*
  * core device scan order (right -> left)
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0x0000 - default ( 0, 1, 2, 3 ..... )
  *     0x3210 - scan order 0, 1, 2, 3
@@ -616,8 +724,27 @@ HCD_DECLARE_CMMN_SETTING(pcie_barmask, 0x0000);
 HCD_DECLARE_CMMN_SETTING(pcie_scan_order, 0x0000);
 
 /*
+ * PCIe fastpath Configuration
+ * (if exists, Device Tree entry has higher preference than this setting)
+ *
+ *     Each 4bit's corresponds to a setting
+ *     [31-28] [27-24] [23-20] [19-16] [15-12] [11-08]  [07-04]  [03-00]
+ *     [                   Reserved          ] [Master] [    flags     ]
+ *
+ *     Flags:
+ *     bit#0 - Enable incoming fastpath
+ *     bit#1 - Enable outgoing fastpath
+ *     bit#2 - Enable non-exclusive mutex clear
+ *     bit#3 - Select given fastpath master (from bits#11:8)
+ *
+ *     Master: (if bit#3 is set to 1'b)
+ *     bit#11-8 - master PCIe core id for fastpath (0, 1)
+ */
+HCD_DECLARE_CORE_SETTING(pcie_fastpath, FASTPATH_EN_MASK);
+
+/*
  * config_speed values
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - default (keep reset value)
  *     1 - 2.5Gbps
@@ -632,7 +759,7 @@ HCD_DECLARE_CORE_SETTING(pcie_speed_cfg, 0x0000);
 
 /*
  * Always power on
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - Power Down PCIe core if no Link (default)
  *     1 - Keep PCIe core Powered up even if there is no Link
@@ -651,7 +778,7 @@ HCD_DECLARE_CORE_SETTING(pcie_apon, 0x0000);
 
 /*
  * phy power mode values
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - default (normal power)
  *     1 - low power
@@ -664,7 +791,7 @@ HCD_DECLARE_CORE_SETTING(pcie_phy_pwrmode, 0x0000);
 
 /*
  * PCIe bus error logging
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - No PCIe bus error logging
  *     1 - enable PCIe bus error logging
@@ -677,7 +804,7 @@ HCD_DECLARE_CORE_SETTING(pcie_errlog, 0x1111);
 
 /*
  * PCIe enable MSI
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - Don't use PCIe MSI interrupts
  *     1 - Use PCIe MSI interrupts (default)
@@ -694,10 +821,10 @@ HCD_DECLARE_CORE_SETTING(pcie_msi, 0x0000);
 
 /*
  * PCIe force Single Lane
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - Auto lane detection
- *     1 - Force to single lane on a dual lane confiuration (RC + EP)
+ *     1 - Force to single lane on a dual lane configuration (RC + EP)
  *
  *     Each 4bit's corresponds to a PCIe core id
  *     [31-28] [27-24][23-20] [19-16] [15-12] [11-08] [07-04] [03-00]
@@ -707,7 +834,7 @@ HCD_DECLARE_CORE_SETTING(pcie_numlanes, 0x0000);
 
 /*
  * PCIe ACK and Credit Coalescing
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - disable Ack and Credit Coalescing
  *     1 - enable Ack and Credit Coalescing
@@ -720,7 +847,7 @@ HCD_DECLARE_CORE_SETTING(pcie_acc, 0x1111);
 
 /*
  * Link Up Retries
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - No Link up retries
  *     [1 - 15] Number of Link up retries
@@ -733,12 +860,12 @@ HCD_DECLARE_CORE_SETTING(pcie_linkupretries, 0x0000);
 
 /*
  * phy rx filter
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - Disable MDIO Rx Filtering
- *     1 - Enanle RC MDIO Rx Filtering
- *     2 - Enanle EP MDIO Rx Filtering
- *     3 - Enanle RC+EP MDIO Rx Filtering
+ *     1 - Enable RC MDIO Rx Filtering
+ *     2 - Enable EP MDIO Rx Filtering
+ *     3 - Enable RC+EP MDIO Rx Filtering
  *
  *     Each 4bit's corresponds to a PCIe core
  *     [31-28] [27-24][23-20] [19-16] [15-12] [11-08] [07-04] [03-00]
@@ -748,7 +875,7 @@ HCD_DECLARE_CORE_SETTING(pcie_phyrxfilter, 0x0000);
 
 /*
  * End Point Power On (GPIO Regulator) after PERSTB asset
- * (if exists, Device Tree entry has higer preference than this setting)
+ * (if exists, Device Tree entry has higher preference than this setting)
  *
  *     0 - Regulator Power up during RC power Up
  *     1 - Regulator power up after PERSTB=1 (default)
@@ -759,6 +886,38 @@ HCD_DECLARE_CORE_SETTING(pcie_phyrxfilter, 0x0000);
  */
 HCD_DECLARE_CORE_SETTING(pcie_epuperstb, 0x1111);
 
+/*
+ * Priority Queues
+ * (if exists, Device Tree entry has higher preference than this setting)
+ *
+ *     0 - Do not use Priority Queues
+ *     1 - Use Priority Queues
+ *
+ *     Each 4bit's corresponds to a PCIe core
+ *     [31-28] [27-24][23-20] [19-16] [15-12] [11-08] [07-04] [03-00]
+ *                                    [core4] [core3] [core2] [core1]
+ */
+HCD_DECLARE_CORE_SETTING(pcie_prioqueue, 0x1111);
+
+/*
+ * GEN3 link equalization presets for the lanes
+ * (if exists, Device Tree entry has higher preference than this setting)
+ *
+ *     Each nibble represent a preset values of RC-TX/RX, EP-TX/RX in order with
+ *     the following possible values
+ *
+ *     0-11: Tx Preset for EP/RC
+ *     0-7:  Rx Preset Hint for EP/RC
+ *
+ *     [31.................16] [15...12] [11...08] [07...04] [03...00]
+ *     [       Reserved      ] [ EP RX ] [ EP TX ] [ RC RX ] [ RC TX ]
+ */
+HCD_DECLARE_CORE_ARRAY_SETTING(pcie_gen3_eq_presets, HCD_PHYLANE_MAX, 0x0000);
+
+/* APON */
+const static char pcie_hcd_apon_name[HCD_APON_LAST+1][8] = {
+	"AUTO", "ON", "OFF", "DOMAIN"
+};
 
 /* procfs */
 static struct pcie_hcd_procfs pcie_hcd_procfs_cb;
@@ -793,10 +952,14 @@ struct pcie_hc_plt_cfg hc_plt_cfg[MAX_HC_TYPE] = {
  * +-----------------------------------------------------
  */
 #if defined(USE_PMC_BRD_STUBS)
-static inline int pcie_hcd_pmc_power_up(int unit, int is_dual_lane) { return 0; }
-static inline int pcie_hcd_pmc_power_down(int unit, int is_dual_lane) { return 0; }
+static inline int pcie_hcd_pmc_power_up(int unit, int is_dual_lane) {
+	return 0;
+}
+static inline int pcie_hcd_pmc_power_down(int unit, int is_dual_lane) {
+	return 0;
+}
 static inline int pcie_hcd_get_port_mode(int port, struct device_node *np) {
-	/* Alwyas RC mode */
+	/* Always RC mode */
 	return 1;
 }
 
@@ -820,7 +983,7 @@ static inline int pmc_hcd_get_chip_id(void) {
 	res = kstrtoul(chipidstr, 0, &chipid);
 
 	if (res != 0) {
-	    HCD_ERROR("kstrtoul for 0x%d with [%s] returned res %d\r\n",
+	    HCD_ERROR("kstrtoul for 0x%d with [%s] returned res %d\n",
 	        CONFIG_BCM_CHIP_NUMBER, chipidstr, res);
 	}
 
@@ -863,7 +1026,8 @@ exit:
 static inline int pmc_hcd_get_chip_id(void) {
 	return kerSysGetChipId();
 }
-static inline int pcie_hcd_ubus_decode_pcie_wnd_cfg(u32 base, u32 size, u32 core) {
+static inline int pcie_hcd_ubus_decode_pcie_wnd_cfg(u32 base, u32 size,
+	u32 core) {
 	return ubus_decode_pcie_wnd_cfg(base, size, core);
 }
 
@@ -1069,6 +1233,15 @@ static inline int pcie_hcd_stmr_en(struct pcie_hcd *pdrv) {
 	return 0;
 }
 
+static inline u32 pcie_hcd_read_reg(struct pcie_hc_core *phc, u32 reg) {
+	return phc->plt_cfg->read_reg(phc, reg);
+}
+
+static inline void pcie_hcd_write_reg(u32 data, struct pcie_hc_core *phc,
+	u32 reg) {
+	return phc->plt_cfg->write_reg(data, phc, reg);
+}
+
 /*
  * +-----------------------------------------------------
  *  External exported Functions
@@ -1078,7 +1251,7 @@ static inline int pcie_hcd_stmr_en(struct pcie_hcd *pdrv) {
  * Function pcie_hcd_get_rootbus (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Get root bus for the given driver
@@ -1087,18 +1260,45 @@ static inline int pcie_hcd_stmr_en(struct pcie_hcd *pdrv) {
  */
 struct pci_bus *pcie_hcd_get_rootbus(struct pcie_hcd *pdrv)
 {
-	return pdrv->bus;
+	struct pci_host_bridge *bridge = pci_host_bridge_from_priv(pdrv);
+	return bridge->bus;
+}
+
+/*
+ * Function pcie_hcd_get_hccore_from_bus (bus)
+ *
+ *   Parameters:
+ *    bus ... pointer to PCIe device bus data structure
+ *
+ *   Description:
+ *    Get HC core control block from bus sysdata
+ *
+ *   Return: Pointer to host contller control block on success, NULL on failure
+ */
+struct pcie_hc_core *pcie_hcd_get_hccore_from_bus(struct pci_bus *bus)
+{
+	struct pcie_hc_core* phc = NULL;
+
+	if (bus->ops == &pcie_hcd_ops_ecam.pci_ops) {
+	    struct pci_config_window *cfg = (struct pci_config_window*)bus->sysdata;
+	    if (cfg)
+	        phc = (struct pcie_hc_core*)cfg->priv;
+	} else {
+	    phc = (struct pcie_hc_core*)bus->sysdata;
+	}
+
+	return phc;
 }
 
 /*
  * Function pcie_hcd_sync_stmr (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *    stmr ... pointer to mapped satellite timer sub-block registers
  *
  *   Description:
- *    Synchronize pcie local timers with Central Timers. Applicable for both
+ *    Synchronize PCIe local timers with Central Timers. Applicable for both
  *    physical and virtual (WiFi) cores that support Central Timer block
  *
  *   Return: 0: on success, -ve on failure
@@ -1149,10 +1349,639 @@ int pcie_hcd_sync_stmr(struct pcie_hcd *pdrv, void __iomem *stmr)
 }
 
 /*
+ * Function pcie_hcd_update_fastpath_in_addr (pdrv, pcie_addr, ubus_offset)
+ *
+ *   Parameters:
+ *    pdrv      ... Pointer to PCIe core HCD data structure
+ *    pcie_addr ... Incoming broadcast address base for PCIe bus (End Point)
+ *    ubus_addr ... Incoming mutex address for UBUS (internal WiFi)
+ *
+ *   Description:
+ *    Update Root Complex Mutex Master information master core id,
+ *    incoming addresses for PCIe and UBUS buses
+ *
+ *   Return: 0: on fastpath master, -ve otherwise
+ */
+int pcie_hcd_update_fastpath_in_addr(struct pcie_hcd *pdrv, u64 pcie_addr,
+	u32 ubus_offset)
+{
+	struct pcie_hc_core      *phc = &pdrv->core;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	int                      rc = -EPERM;
+
+	HCD_FN_ENT();
+
+	if (fpam->flags & FASTPATH_EN_MASK) {
+	    fpam->in_pcie_addr = pcie_addr;
+	    if ((fpam->latent_master != INV_CORE) && (fpam->master == INV_CORE)) {
+	        /* Mutex master selection is enabled and not selected yet */
+	        /* For auto selection, update Master core id with first core */
+	        if (!(fpam->flags & FASTPATH_MASTER)) {
+	            fpam->latent_master = phc->info.id;
+	        }
+
+	        /* Update incoming address for PCIe and UBUS */
+	        if (fpam->latent_master == phc->info.id) {
+	            HCD_LOG("Core [%d] fastpath master\n", phc->info.id);
+	            fpam->master = fpam->latent_master;
+	            fpam->in_ubus_addr = (u64)(phc->res.base.start + ubus_offset);
+	            rc = 0;
+	        }
+	    }
+	}
+
+	if (rc == 0) {
+	    HCD_INFO("Core [%d] Update fastpath Flags [0x%x] Master [0x%x] "
+	        "Latent [0x%x] pcie_addr [0x%llx] ubus_addr [0x%llx]\n",
+	        phc->info.id, fpam->flags, fpam->master, fpam->latent_master,
+	        fpam->in_pcie_addr, fpam->in_ubus_addr);
+	}
+
+	HCD_FN_RET_VAL(rc);
+}
+
+/*
+ * Function pcie_hcd_get_fastpath_in_addr (pdrv)
+ *
+ *   Parameters:
+ *    pdrv      ... Pointer to PCIe core HCD data structure
+ *
+ *   Description:
+ *    Return the incoming fastpath base address to be used by the RC
+ *    for broadcast messages
+ *
+ *   Return: incoming fast path address
+ */
+u64 pcie_hcd_get_fastpath_in_addr(struct pcie_hcd *pdrv)
+{
+	struct pcie_hc_core      *phc = NULL;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	u64                      addr = 0;
+
+	HCD_FN_ENT();
+
+	if (pdrv) phc = &pdrv->core;
+
+	if (fpam->flags & FASTPATH_EN_IN) {
+	    if (phc && (PLTID2HC(phc->info.id) == PHC)) {
+	        /* External WiFi uses address coming from PCIe bus */
+	        if (fpam->in_pcie_addr) {
+	            addr = fpam->in_pcie_addr;
+	        }
+	    } else if (fpam->master != INV_CORE) {
+	        /* Internal WiFi uses address coming from UBUS */
+	        if (fpam->in_ubus_addr) {
+	            addr = fpam->in_ubus_addr;
+	        }
+	    }
+	}
+
+	HCD_INFO("Core [%d] Get fastpath flags [0x%x] Master [0x%x]"
+	    " in_addr [0x%llx]\n",
+	    (phc) ? phc->info.id : fpam->master, fpam->flags, fpam->master, addr);
+
+	HCD_FN_RET_VAL(addr);
+}
+
+/*
+ * Function pcie_hcd_update_fastpath_out_addr (pdrv, np)
+ *
+ *   Parameters:
+ *    pdrv  ... Pointer to PCIe core HCD data structure
+ *    np    ... vPCIe device tree node pointer
+ *
+ *   Description:
+ *    Set the outgoing fastpath address for the given physical core (BAR2 space
+ *    last 4 bytes) or virtual core (mlo register space last 4 bytes) used for
+ *    broadcast messages
+ *
+ *   Return: outgoing fastpath address
+ */
+u64 pcie_hcd_update_fastpath_out_addr(struct pcie_hcd *pdrv,
+	struct device_node *np)
+{
+	struct pcie_hc_core      *phc = NULL;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	u64                      addr = 0;
+	int                      core;
+
+	HCD_FN_ENT();
+
+	if (!(fpam->flags & FASTPATH_EN_OUT)) {
+	    /* Nothing to do */
+	    HCD_FN_RET_VAL(addr);
+	}
+
+	/* For physical cores, use BAR2 space last 4 bytes */
+	/* For virtual cores, use MLO register space last 4 bytes */
+	if (pdrv) {
+	    int ep_res = (FASTPATH_EP_IN_BCAST_BAR << 1);
+	    struct pci_bus *root;
+	    struct pci_bus *child;
+	    struct pci_dev *pdev;
+	    u32 size;
+
+	    phc = &pdrv->core;
+	    core = phc->info.id;
+
+	    /* Gather information needed */
+	    root = pcie_hcd_get_rootbus(pdrv);
+	    /* resources are based on 32bit bars, (twice the 64bit bars) */
+	    list_for_each_entry(child, &root->children, node) {
+	        list_for_each_entry(pdev, &child->devices, bus_list) {
+	            size = pci_resource_len(pdev, ep_res);
+	            if (size > 0) {
+	                addr = (u64)pci_resource_start(pdev, ep_res);
+	                /* Use last 4Bytes of BAR2 address space for fastpath out */
+	                addr += (size - 0x4);
+	                break;
+	            }
+	        }
+	    }
+	} else if (of_property_read_u32(np, "brcm,coreid", &core) >= 0) {
+	    struct resource mlo_reg;
+
+	    core += NUM_PCORES;
+	    /* WIFI MLO core register base (optional) */
+	    if (of_address_to_resource(np, 1, &mlo_reg) == 0) {
+	        addr = mlo_reg.start + FASTPATH_PCIE_OUT_BCAST;
+	    }
+	}
+
+	if (addr)
+	    fpam->out_addr[FASTPATH_COREID_TO_REQID(core)] = addr;
+
+	HCD_INFO("Core [%d] Get fastpath flags [0x%x] Master [0x%x]"
+	    " out_addr [0x%llx]\n",
+	    (phc) ? phc->info.id : fpam->master, fpam->flags, fpam->master, addr);
+
+	HCD_FN_RET_VAL(addr);
+}
+
+/*
+ * Function pcie_hcd_get_fastpath_out_addr (pdrv, core)
+ *
+ *   Parameters:
+ *    pdrv  ... Pointer to PCIe core HCD data structure
+ *    core  ... PCIe core identifier
+ *
+ *   Description:
+ *    Return the outgoing fastpath base address to be used by the RC
+ *    for broadcast messages
+ *
+ *   Return: outgoing fastpath address
+ */
+u64 pcie_hcd_get_fastpath_out_addr(struct pcie_hcd *pdrv, int core)
+{
+	struct pcie_hc_core      *phc = NULL;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	u64                      addr = 0;
+	int                      configure = 1;
+
+	HCD_FN_ENT();
+
+	if (pdrv) {
+	    if (core < 0) configure = 0;
+	    phc = &pdrv->core;
+	    core = phc->info.id;
+	} else {
+	    /* valid 'core' will be supplied by the caller */
+	    configure = 0;
+	}
+
+	if (fpam->flags & FASTPATH_EN_OUT) {
+	    u64* p_addr = &(fpam->out_addr[FASTPATH_COREID_TO_REQID(core)]);
+
+	    if ((*p_addr == FASTPATH_ADDR_UNINITIALIZED) && (configure)) {
+	        *p_addr = 0;
+	        /*
+	         * Fast path address is not initialized yet.
+	         * Initialize and enable fastpath out address if supported by hc
+	         */
+	        pcie_hc_config_core_final(pdrv);
+	    }
+	    addr = *p_addr;
+	    /* Set to 0 if still not initialized */
+	    if (addr == FASTPATH_ADDR_UNINITIALIZED) addr = 0;
+	}
+
+
+	HCD_INFO("Core [%d] Get fastpath flags [0x%x] Master [0x%x]"
+	    " out_addr [0x%llx]\n",
+	    (phc) ? phc->info.id : fpam->master, fpam->flags, fpam->master, addr);
+
+	HCD_FN_RET_VAL(addr);
+}
+
+/*
+ * Function pcie_hcd_get_fastpath_mutexaddr (pdrv)
+ *
+ *   Parameters:
+ *    pdrv      ... Pointer to PCIe core HCD data structure
+ *
+ *   Description:
+ *    Return the incoming mutex lock address to be used by the mutex master core
+ *
+ *   Return: 0: on success, -ve on failure
+ */
+u64 pcie_hcd_get_fastpath_mutexaddr(struct pcie_hcd *pdrv)
+{
+	struct pcie_hc_core      *phc = NULL;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	u64                      addr = 0;
+
+	HCD_FN_ENT();
+
+	if (pdrv) phc = &pdrv->core;
+
+	if (fpam->flags & FASTPATH_EN_IN) {
+	    if (phc && (PLTID2HC(phc->info.id) == PHC)) {
+	        /* External WiFi uses address coming from PCIe bus */
+	        if (fpam->in_pcie_addr) {
+	            addr = fpam->in_pcie_addr + FASTPATH_PCIE_IN_MUTEX;
+	        }
+	    } else if (fpam->master != INV_CORE) {
+	        /* Internal WiFi uses address coming from UBUS */
+	        if (fpam->in_ubus_addr) {
+	            addr = fpam->in_ubus_addr - FASTPATH_PCIE_IN_MUTEX;
+	        }
+	    }
+	}
+
+	addr |= (fpam->flags & FASTPATH_EN_IN);
+	addr |= ((fpam->flags & FASTPATH_NONEXCLUSIVE) >> 1);
+
+	HCD_INFO("Core [%d] Get fastpath flags [0x%x] Master [0x%x] Latent [0x%x]"
+	    " pcie_addr [0x%llx] ubus_addr [0x%llx] mutex_addr [0x%llx]\n",
+	    (phc) ? phc->info.id : fpam->master, fpam->flags, fpam->master,
+	    fpam->latent_master, fpam->in_pcie_addr, fpam->in_ubus_addr, addr);
+
+	HCD_FN_RET_VAL(addr);
+}
+
+/*
+ * Function pcie_hcd_get_fastpath_mutexconfig (pdrv)
+ *
+ *   Parameters:
+ *    pdrv      ... Pointer to PCIe core HCD data structure
+ *
+ *   Description:
+ *    Return the mutex configuration for the given core
+ *
+ *   Return: 0: on success, -ve on failure
+ */
+u32 pcie_hcd_get_fastpath_mutexconfig(struct pcie_hcd *pdrv)
+{
+	struct pcie_hc_core      *phc = NULL;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	u32                      config = 0;
+
+	HCD_FN_ENT();
+
+	if (pdrv) phc = &pdrv->core;
+
+	if (phc) {
+	    u32 req_id = FASTPATH_COREID_TO_REQID(phc->info.id);
+
+	    config = (fpam->flags & FASTPATH_EN_IN);
+	    config |= ((fpam->flags & FASTPATH_NONEXCLUSIVE) >> 1);
+	    config |= (req_id << 4);
+
+	    HCD_INFO("Core [%d] Get fastpath flags [0x%x] Master [0x%x]"
+	        " pcie_addr [0x%llx] ubus_addr [0x%llx] mutex_id [%d]\n",
+	        (phc) ? phc->info.id : fpam->master, fpam->flags, fpam->master,
+	        fpam->in_pcie_addr, fpam->in_ubus_addr, req_id);
+	}
+
+	HCD_FN_RET_VAL(config);
+}
+
+/*
+ * Function pcie_hcd_lnkdn_fastpath (pdrv)
+ *
+ *   Parameters:
+ *    pdrv      ... Pointer to PCIe core HCD data structure
+ *
+ *   Description:
+ *    Process fastpath address management for link down core
+ *
+ *   Return: 0: on success, -ve on failure
+ */
+static int pcie_hcd_lnkdn_fastpath(struct pcie_hcd *pdrv)
+{
+	struct pcie_hc_core      *phc = &pdrv->core;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	int                      rc = -ENODEV;
+
+	HCD_FN_ENT();
+
+	/* Allow configuring the fastpath to determine the master */
+	if (phc->info.id == fpam->latent_master) {
+	    pcie_hc_config_core(pdrv);
+	}
+
+	/* Power down PHY and EP device if allowed and keep RC digital power ON */
+	if (pdrv->apon.flags != APON_F_ON) {
+	    if ((phc->info.id == fpam->master) ||
+	        (pdrv->apon.flags == APON_F_OFF_W_DOM)) {
+
+	        pdrv->apon.flags = APON_F_OFF_W_DOM;
+
+	        pcie_hc_apon_pwrdn(pdrv);
+	        rc = 0;
+	        HCD_INFO("Core [%d] Keep Digital ON\n", phc->info.id);
+	    }
+	}
+
+	HCD_FN_RET_VAL(rc);
+}
+
+/*
+ * Function pcie_hcd_init_fastpath (config)
+ *
+ *   Parameters:
+ *    config      ... fastpath configuration
+ *
+ *   Description:
+ *    Initialize fastpath address manager with the given configuration.
+ *    If enabled, select the fastpath master core
+ *
+ *   Return: 0: on success, -ve on failure
+ */
+static int pcie_hcd_init_fastpath(u32 config)
+{
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	int req_id;
+
+	HCD_FN_ENT();
+
+	/* Initialize with defaults */
+	fpam->in_pcie_addr = 0;
+	fpam->in_ubus_addr = 0;
+	fpam->master = INV_CORE;
+	fpam->latent_master = INV_CORE;
+	for (req_id = 0; req_id < FASTPATH_ID_MAX; req_id++) {
+	    fpam->out_addr[req_id] = -1ULL;
+	}
+
+	/* Update control block from input setting */
+	fpam->flags = HCD_GET_CMMN_SETTING(config, 0);
+
+	/*
+	 * Select last available PCIe core as likely to be the fastpath master
+	 */
+	if (fpam->flags & FASTPATH_EN_MASK) {
+	    u32                core = INV_CORE;
+	    int                latent_master = INV_CORE;
+	    struct device_node *np;
+	    int                vcores = 0;
+
+	    if (fpam->flags & FASTPATH_MASTER) {
+	        fpam->latent_master = HCD_GET_CMMN_SETTING(config, 2);
+	    }
+
+	    /* Search all available "pci" device tree nodes */
+	    for_each_node_by_type(np, "pci") {
+
+	        /* On success, writes core value */
+	        of_property_read_u32(np, "brcm,coreid", &core);
+
+	        if (of_device_is_available(np) && (core != INV_CORE)) {
+	            /* Update as potential future master */
+	            latent_master = core;
+	        } else if (core == fpam->latent_master) {
+	            HCD_ERROR("Core [%d] fastpath master is not enabled, Switching"
+	                " to auto master mode\n", core);
+	            fpam->latent_master = INV_CORE;
+	            fpam->flags &= ~FASTPATH_MASTER;
+	        }
+	    }
+
+	    /* Search all available "vpci" device tree nodes */
+	    for_each_node_by_type(np, "vpci") {
+	        if (of_device_is_available(np)) {
+	            pcie_hcd_update_fastpath_out_addr(NULL, np);
+	            vcores++;
+	        }
+	    }
+
+	    /* For auto selection, store the likely master information */
+	    if ((vcores != 0) && (fpam->latent_master == INV_CORE)) {
+	        if (latent_master != INV_CORE) {
+	            fpam->latent_master = latent_master;
+	            HCD_LOG("Core [%d] latent fastpath master\n", latent_master);
+	        } else {
+	            HCD_ERROR("Core [all] no fastpath master found\n");
+	        }
+
+	        /*
+	         * latent_master will become master during core configuration if
+	         * supports fastpath
+	         */
+	    }
+	}
+
+	HCD_INFO("Core [all] Init fastpath Flags [0x%x] Master [0x%x] Latent [0x%x]"
+	    " pcie_addr [0x%llx] ubus_addr [0x%llx]\n", fpam->flags, fpam->master,
+	    fpam->latent_master, fpam->in_pcie_addr, fpam->in_ubus_addr);
+
+	HCD_FN_RET_VAL(0);
+}
+
+/*
  * +-----------------------------------------------------
  *  Local Functions
  * +-----------------------------------------------------
  */
+
+/*
+ * Function pcie_hcd_init_deferred_scan ()
+ *
+ *   Parameters:
+ *
+ *   Description:
+ *    Initialize deferred scan order after filtering disabled cores in
+ *    device-tree
+ *
+ *   Return: 0: on success, -ve on failure
+ */
+static int pcie_hcd_init_deferred_scan(void)
+{
+	struct device_node *np;
+	u32    scan_order;
+	u32    core;
+	int    order, index;
+	int    avail[MAX_NUM_PCIE_CORES] = {false};
+
+	HCD_FN_ENT();
+
+	/* scan order is not set, nothing to do */
+	if (!pcie_scan_order) {
+	    HCD_FN_RET_VAL(0);
+	}
+
+	/* Get all available physical cores */
+	for_each_node_by_type(np, "pci") {
+	    core = INV_CORE;
+	    of_property_read_u32(np, "brcm,coreid", &core);
+	    if (of_device_is_available(np) && (core < MAX_NUM_PHY_PCIE_CORES)) {
+	        avail[core] = true;
+	    }
+	}
+
+	/* Get all available virtual cores */
+	for_each_node_by_type(np, "vpci") {
+	    core = INV_CORE;
+	    of_property_read_u32(np, "brcm,coreid", &core);
+	    if (of_device_is_available(np) && (core < MAX_NUM_VIRT_PCIE_CORES)) {
+	        avail[core + MAX_NUM_PHY_PCIE_CORES] = true;
+	    }
+	}
+
+	/* Adjust scan order based on available cores */
+	scan_order = 0x0;
+	order = 0;
+	for (index = 0; index < MAX_NUM_PCIE_CORES; index++) {
+	    core = HCD_HC_CORE_CFG(pcie_scan_order, index);
+	    if ((core < MAX_NUM_PCIE_CORES) && (avail[core] == true)) {
+	        /* core DT active, add to new scan order */
+	        HCD_HC_SET_CORE_CFG(scan_order, order, core);
+	        order++;
+	    } else {
+	        /* core DT not available or in-active, filter out from the list */
+	        HCD_INFO("Removing Core [%d] from deferred scan order\n", core);
+	    }
+	}
+
+	/* Update the scan order with the filtered list */
+	if (pcie_scan_order != scan_order) {
+	    HCD_LOG("Adjusting [0x%x] deferred scan order to [0x%x]\n",
+	        pcie_scan_order, scan_order);
+
+	    pcie_scan_order = scan_order;
+	}
+
+	HCD_FN_RET_VAL(0);
+}
+
+/*
+ * Function pcie_hcd_nvram_get_u32_array_tokenized (key, core, max, pval)
+ *
+ *   Parameters:
+ *    key  ... nvram key string
+ *    core ... Core index into the main setting
+ *    max ...  Maximum number of values to read
+ *    pval ... Pointer to u32 values to be returned
+ *
+ *   Description:
+ *    Query the key value from eNVRAM/kNVRAM and convert to u32 values of the
+ *    given key values for the following format.
+ *    - Core values separated by ',' and separated by ' ' within the core
+ *    "core0_val0 core0_val1, core1_val0 core1_val1, ......"
+ *
+ *   Return: On success - number of array elements returned on success
+ *           On failure - -ve value
+ */
+int pcie_hcd_nvram_get_u32_array_tokenized(char *key, int core, int max,
+	u32 *pval)
+{
+	char valstr[HCD_SETTING_VAL_STR_LEN] = {};
+	char *pvalstr = NULL;
+	u32 val;
+
+	HCD_FN_ENT();
+
+#if !defined(USE_PMC_BRD_STUBS)
+	/* uboot environment first */
+	if (eNvramGet(key, valstr, HCD_SETTING_VAL_STR_LEN) > 0) {
+	    pvalstr = valstr;
+	}
+#if defined(CONFIG_BCM_NVRAM) || defined(CONFIG_BCM_NVRAM_MODULE)
+	else
+	{
+	    /* Check kernel nvram */
+	    pvalstr = nvram_k_get(key);
+	    if (pvalstr != NULL) {
+	        strncpy(valstr, pvalstr, sizeof(valstr)-1);
+	        pvalstr = valstr;
+	    }
+	}
+#endif /* CONFIG_BCM_NVRAM */
+#endif /* !USE_PMC_BRD_STUBS */
+
+	if (pvalstr != NULL) {
+	    int cnt = 0;
+	    char *core_token = valstr;
+
+	    /* Get the desired core value(s) string (each core separated by ',') */
+	    do {
+	        core_token = strsep(&pvalstr, ",");
+
+	        if (core_token && (core == cnt)) {
+	            char *indx_token = NULL;
+
+	            /* Extract the core setting values (separated by ' ') */
+	            cnt = 0;
+	            do {
+	                indx_token = strsep(&core_token, " ");
+
+	                if (indx_token) {
+	                    if ((indx_token[0] == '\0') || (indx_token[0] == ' ') ||
+	                        (indx_token[0] == ','))
+	                        continue;
+
+	                    if (sscanf(indx_token, "0x%x", &val) != 1) {
+	                        val = 0;
+	                    }
+	                    if (pval) pval[cnt] = val;
+	                    cnt++;
+	                }
+	            } while ((indx_token) && (cnt < max));
+
+	            HCD_FN_RET_VAL(cnt);
+	        }
+	    } while ((core_token) && (cnt++ < core));
+	}
+
+	HCD_FN_RET_VAL(-EINVAL);
+}
+
+/*
+ * Function pcie_hcd_nvram_get_u32_array (key, core, elem_sz, pval)
+ *
+ *   Parameters:
+ *    key  ... nvram key string
+ *    core ... Core id to be used as an array index in the setting
+ *    max  ... Number of array elements for each core
+ *    pval ... Pointer to u32 array where values to be returned
+ *
+ *   Description:
+ *    Query the key value from eNVRAM/kNVRAM and convert to u32 array of the
+ *    given key index
+ *    value expected in hex format with a 0x prefix
+ *
+ *   Return: On success - number of array elements returned on success
+ *           On failure - -ve value
+ */
+int pcie_hcd_nvram_get_u32_array(char *key, int core, int max, u32 *pval)
+{
+	int rc;
+	char core_key[128];
+
+	HCD_FN_ENT();
+
+	/* Check if individual core based setting exists */
+	/* Convert pcie_xxxx key  to pcie0_xxxx/pcie1_xxxx key */
+	snprintf(core_key, sizeof(core_key), "pcie%d_%s", core, key+5);
+	rc = pcie_hcd_nvram_get_u32_array_tokenized(core_key, 0, max, pval);
+
+	if (rc <= 0) {
+	    /* Check if global setting exists */
+	    rc = pcie_hcd_nvram_get_u32_array_tokenized(key, core, max, pval);
+	}
+
+	HCD_FN_RET_VAL(rc);
+}
 
 /*
  * Function pcie_hcd_nvram_get_u32 (key, pval)
@@ -1163,7 +1992,7 @@ int pcie_hcd_sync_stmr(struct pcie_hcd *pdrv, void __iomem *stmr)
  *
  *   Description:
  *    Query the key value from eNVRAM/kNVRAM and convert to u32 value
- *    value exptected in hex format with a 0xprefix
+ *    value expected in hex format with a 0x prefix
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -1249,6 +2078,7 @@ int pcie_hcd_nvram_init(void)
 	HCD_READ_CMMN_SETTING(pcie_scan_order);
 	HCD_READ_CMMN_SETTING(pcie_pllclkadj);
 	HCD_READ_CMMN_SETTING(pcie_barmask);
+	HCD_READ_CMMN_SETTING(pcie_fastpath);
 #ifdef HCD_DEBUG
 	HCD_READ_CMMN_SETTING(pcie_log_level);
 #endif /* HCD_DEBUG */
@@ -1264,16 +2094,93 @@ int pcie_hcd_nvram_init(void)
 	HCD_READ_CORE_SETTING(pcie_linkupretries);
 	HCD_READ_CORE_SETTING(pcie_phyrxfilter);
 	HCD_READ_CORE_SETTING(pcie_epuperstb);
+	HCD_READ_CORE_SETTING(pcie_prioqueue);
+
+	/* Updated during core probe
+	HCD_READ_CORE_ARRAY_SETTING(pcie_gen3_eq_presets, -1);
+	*/
 
 	HCD_FN_RET_VAL(0);
 
 #else /* !MODULE */
 	HCD_FN_ENT();
 
-	HCD_ERROR("nvram is not supported in built-in mode\r\n");
+	HCD_ERROR("nvram is not supported in built-in mode\n");
 
 	HCD_FN_RET_VAL(-1);
 #endif /* !MODULE */
+}
+
+/*
+ * Function pcie_hcd_procfs_status_show (m, v)
+ *
+ *   Parameters:
+ *
+ *   Description:
+ *    Read function for 'status' proc file
+ *
+ *   Return: length of information on success, 0 on failure/no information
+ */
+static int pcie_hcd_procfs_status_show(struct seq_file *m, void *v)
+{
+	struct pcie_hcd *pdrv;
+	struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+
+	HCD_FN_ENT();
+
+	/*
+	 * Common to all Cores
+	 */
+	seq_printf(m, "\nCOMMON:\n");
+
+	/* (e)nvram status */
+	seq_printf(m, "   dt/(e)nvram  : %-15s 0x%-8x %-15s 0x%-8x %-15s 0x%-8x\n",
+	    "pcie_apon", HCD_CORE_SETTING(pcie_apon),
+	    "pcie_prioqueue", HCD_CORE_SETTING(pcie_prioqueue),
+	    "pcie_fastpath", HCD_CMMN_SETTING(pcie_fastpath));
+
+	/* fastpath status */
+	seq_printf(m, "      fastpath  : %-15s 0x%-8x %-15s %-10d\n",
+	    "Config", pcie_fastpath, "Master", fpam->master);
+
+	/*
+	 * Per Core information
+	 * (each core information takes up 16 characters wide)
+	 */
+	seq_printf(m, "\nCORE:             ");
+	foreachcore_seq_printf(m, pdrv, (char*)NULL, "Core#%d          ",
+	    pdrv->core.info.id);
+
+	foreachcore_seq_printf(m, pdrv, "Revision", "%d.%02d            ",
+	    ((pdrv->core.info.rev >> 8) & 0xFF), (pdrv->core.info.rev & 0xFF));
+
+	foreachcore_seq_printf(m, pdrv, "domain", "%04d            ",
+	    pci_domain_nr(pcie_hcd_get_rootbus(pdrv)));
+
+	foreachcore_seq_printf(m, pdrv, "base", "0x%08x      ",
+	    (u32)pdrv->core.res.base.start);
+
+	foreachcore_seq_printf(m, pdrv, "ecam", "0x%08x      ",
+	    (u32)pdrv->core.res.ecam.start);
+
+	foreachcore_seq_printf(m, pdrv, "BC Out Address", "0x%08x      ",
+	    (u32)(pcie_hcd_get_fastpath_out_addr(pdrv, -1) & ~3ULL));
+
+	foreachcore_seq_printf(m, pdrv, "BC In Address", "0x%08x      ",
+	    (u32)(pcie_hcd_get_fastpath_in_addr(pdrv) & ~3ULL));
+
+	foreachcore_seq_printf(m, pdrv, "Mutex Address", "0x%08x      ",
+	    (u32)(pcie_hcd_get_fastpath_mutexaddr(pdrv) & ~3ULL));
+
+	foreachcore_seq_printf(m, pdrv, "Mutex Config", "0x%08x      ",
+	    pcie_hcd_get_fastpath_mutexconfig(pdrv));
+
+	foreachcore_seq_printf(m, pdrv, "apon", "%-16s",
+	    pcie_hcd_apon_name[ffs(pdrv->apon.flags)-1]);
+
+	seq_printf(m, "\n");
+
+	HCD_FN_RET_VAL(0);
 }
 
 /*
@@ -1298,7 +2205,7 @@ static int pcie_hcd_procfs_coreinfo_show(struct seq_file *m, void *v)
 
 	    if (pfs_cb->pdrv[core] != NULL) {
 	        seq_printf(m, "%d: %04d\n", core,
-	            pci_domain_nr(pfs_cb->pdrv[core]->bus));
+	            pci_domain_nr(pcie_hcd_get_rootbus(pfs_cb->pdrv[core])));
 	    }
 	}
 
@@ -1309,10 +2216,10 @@ static int pcie_hcd_procfs_coreinfo_show(struct seq_file *m, void *v)
  * Function pcie_hcd_procfs_init (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    PCIe hcd driver proc file system initialization
+ *    PCIe HCD driver proc file system initialization
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -1322,28 +2229,39 @@ int pcie_hcd_procfs_init(struct pcie_hcd *pdrv)
 
 	HCD_FN_ENT();
 
-	pfs_cb->pdrv[pdrv->core.info.id] = pdrv;
-	pdrv->pfs = pfs_cb;
+	if (pdrv) {
+	    /* PCIe core addition to procfs CB */
 
-	if (pdrv->pfs->dir) {
-	    /* Already created, Nothing to do */
-	    HCD_FN_RET_VAL(0);
+	    pfs_cb->pdrv[pdrv->core.info.id] = pdrv;
+	    pdrv->pfs = pfs_cb;
+
+	    if (pdrv->pfs->dir) {
+	        /* Already created, Nothing to do */
+	        HCD_FN_RET_VAL(0);
+	    }
+	    HCD_ERROR("Core [%d] unexpected before procfs init\n",
+	        pdrv->core.info.id);
 	}
 
 	/* make a directory in /proc if doesn't exist */
 	pfs_cb->dir = proc_mkdir("pcie_hcd", NULL);
 
 	if (pfs_cb->dir == NULL) {
-	    HCD_ERROR("Core [%d] Unable to create pcie_hcd proc directory\n",
-	        pdrv->core.info.id);
+	    HCD_ERROR("Unable to create pcie_hcd proc directory\n");
 	    HCD_FN_RET_VAL(-1);
 	}
 
 	pfs_cb->coreinfo = proc_create_single("coreinfo", 0, pfs_cb->dir,
 	    pcie_hcd_procfs_coreinfo_show);
 	if (pfs_cb->coreinfo == NULL) {
-	    HCD_ERROR("Core [%d] Unable to create pcie_hcd/coreinfo proc file\n",
-	        pdrv->core.info.id);
+	    HCD_ERROR("Unable to create pcie_hcd/coreinfo proc file\n");
+	    HCD_FN_RET_VAL(-1);
+	}
+
+	pfs_cb->status = proc_create_single("status", 0, pfs_cb->dir,
+	    pcie_hcd_procfs_status_show);
+	if (pfs_cb->status == NULL) {
+	    HCD_ERROR("Unable to create pcie_hcd/status proc file\n");
 	    HCD_FN_RET_VAL(-1);
 	}
 
@@ -1354,10 +2272,10 @@ int pcie_hcd_procfs_init(struct pcie_hcd *pdrv)
  * Function pcie_hcd_procfs_deinit (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    PCIe hcd driver proc file system de-initialization
+ *    PCIe HCD driver proc file system de-initialization
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -1368,20 +2286,31 @@ void pcie_hcd_procfs_deinit(struct pcie_hcd *pdrv)
 
 	HCD_FN_ENT();
 
-	if (pdrv) pfs_cb = pdrv->pfs;
+	if (pdrv) {
+	    /* PCIe core remove from procfs CB */
+	    pfs_cb = pdrv->pfs;
 
-	if (pfs_cb == NULL) {
-	    /* Nothing to do */
+	    if (pfs_cb != NULL) {
+	        pfs_cb->pdrv[pdrv->core.info.id] = NULL;
+	    }
+
 	    HCD_FN_RET();
 	}
 
-	pfs_cb->pdrv[pdrv->core.info.id] = NULL;
+	/* cpci remove */
+	pfs_cb = &pcie_hcd_procfs_cb;
 
 	for (core = 0; core < MAX_NUM_PCIE_CORES; core++) {
 	    if (pfs_cb->pdrv[core]) {
 	        /* There are some cores still running */
-	        HCD_FN_RET();
+	        HCD_ERROR("Core [%d] unexpected during procfs de-init\n",
+	            core);
 	    }
+	}
+
+	if (pfs_cb->status != NULL) {
+	    remove_proc_entry("status", pfs_cb->dir);
+	    pfs_cb->status = NULL;
 	}
 
 	if (pfs_cb->coreinfo != NULL) {
@@ -1408,7 +2337,7 @@ void pcie_hcd_procfs_deinit(struct pcie_hcd *pdrv)
  * Function pcie_hcd_msi_compose_msi_msg (data, msg)
  *
  *   Parameters:
- *    data ... pointer to msi conrol block
+ *    data ... pointer to msi control block
  *    msg  ... pointer to message
  *
  *   Description:
@@ -1435,7 +2364,7 @@ static void pcie_hcd_msi_compose_msi_msg(struct irq_data *data,
  * Function pcie_hcd_msi_set_affinity (irq_data, mask, force)
  *
  *   Parameters:
- *    irq_data  ... pointer to msi conrol block
+ *    irq_data  ... pointer to msi control block
  *    mask      ... affnity mask
  *    force     ... flag to enforce setting
  *
@@ -1456,7 +2385,7 @@ static int pcie_hcd_msi_set_affinity(struct irq_data *irq_data,
  * Function pcie_hcd_msi_top_irq_ack (data)
  *
  *   Parameters:
- *    data    ... pointer to msi conrol block
+ *    data    ... pointer to msi control block
  *
  *   Description:
  *    Dummy as acknowledge is done during pcie_hcd_msi_isr itself
@@ -1477,10 +2406,10 @@ static void pcie_hcd_msi_top_irq_ack(struct irq_data *data)
  *    domain  ... pointer to msi irq domain
  *    virq    ... virtual irq number
  *    nr_irqs ... number of irqs
- *    args    ... platform allocation agruments
+ *    args    ... platform allocation arguments
  *
  *   Description:
- *    Allocate required number of msi interrups from the domain
+ *    Allocate required number of msi interrupts from the domain
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -1502,8 +2431,13 @@ static int pcie_hcd_msi_irq_domain_alloc(struct irq_domain *domain,
 	    }
 	}
 
+	if (nr_irqs > msi->nr) {
+	    HCD_ERROR("requested irq's [%d] exceeds max [%d]\n", nr_irqs, msi->nr);
+	    HCD_FN_RET_VAL(-EINVAL);
+	}
+
 	mutex_lock(&msi->lock);
-	hwirq = bitmap_find_free_region(&msi->used, msi->nr, order_base_2(nr_irqs));
+	hwirq = bitmap_find_free_region(msi->used, msi->nr, order_base_2(nr_irqs));
 	mutex_unlock(&msi->lock);
 
 	if (hwirq < 0) {
@@ -1548,7 +2482,13 @@ static void pcie_hcd_msi_irq_domain_free(struct irq_domain *domain,
 	HCD_FN_ENT();
 
 	mutex_lock(&msi->lock);
-	bitmap_release_region(&msi->used, d->hwirq,  order_base_2(nr_irqs));
+
+	if (nr_irqs > msi->nr) {
+	    HCD_ERROR("requested irq's [%d] exceeds max [%d]\n", nr_irqs, msi->nr);
+	    HCD_FN_RET();
+	}
+
+	bitmap_release_region(msi->used, d->hwirq,  order_base_2(nr_irqs));
 	mutex_unlock(&msi->lock);
 
 	HCD_FN_RET();
@@ -1583,7 +2523,7 @@ static int pcie_hcd_msi_allocate_domains(struct pcie_hcd_msi *msi)
 	    HCD_FN_RET_VAL(-ENOMEM);
 	}
 
-	HCD_INFO("craated top_domain 0x%px\n", msi->top_domain);
+	HCD_INFO("created top_domain 0x%px\n", msi->top_domain);
 
 	msi->top_irq_ops.name = pcie_hcd_msi_name[pdrv->core.info.id];
 	msi->top_irq_ops.irq_ack = pcie_hcd_msi_top_irq_ack;
@@ -1601,7 +2541,7 @@ static int pcie_hcd_msi_allocate_domains(struct pcie_hcd_msi *msi)
 	    HCD_FN_RET_VAL(-ENOMEM);
 	}
 
-	HCD_INFO("craated domain 0x%px\n", msi->domain);
+	HCD_INFO("created domain 0x%px\n", msi->domain);
 
 	HCD_FN_RET_VAL(0);
 }
@@ -1632,7 +2572,7 @@ static void pcie_hcd_msi_free_domains(struct pcie_hcd_msi *msi)
  *
  *   Parameters:
  *    irq  ... PCIe core irq number
- *    data ... pointer to hcd (given through request_irq())
+ *    data ... pointer to HCD (given through request_irq())
  *
  *   Description:
  *    Read the MSI interrupt status. Process all the set MSI interrupts
@@ -1658,7 +2598,7 @@ static irqreturn_t pcie_hcd_msi_isr(int irq, void *data)
 
 	for_each_set_bit(bit, &status, msi->nr) {
 	    ret = -EINVAL;
-	    if (test_bit(bit, &msi->used)) {
+	    if (test_bit(bit, msi->used)) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
 	        ret = generic_handle_domain_irq(msi->top_domain, bit);
 #else
@@ -1716,7 +2656,7 @@ static int pcie_hcd_msi_enable(struct pcie_hcd *pdrv)
 	    HCD_FN_RET_VAL(err);
 	}
 
-	HCD_INFO("Using irq=%d for PCIE-MSI interrupts\r\n", msi->irq);
+	HCD_INFO("Using irq=%d for PCIE-MSI interrupts\n", msi->irq);
 
 	err = pdrv->core.plt_cfg->setup_msi(&pdrv->core);
 	if (err == 0) {
@@ -1757,11 +2697,11 @@ static int pcie_hcd_msi_setup(struct pcie_hcd *pdrv)
 
 	msi = kzalloc(sizeof(*msi), GFP_KERNEL);
 	if (!msi) {
-	    HCD_ERROR("Unable to allocate memory for MSI\r\n");
+	    HCD_ERROR("Unable to allocate memory for MSI\n");
 	    HCD_FN_RET_VAL(-ENOMEM);
 	}
 
-	HCD_INFO("Allocated msi [0x%px] \r\n", msi);
+	HCD_INFO("Allocated msi [0x%px] \n", msi);
 
 	mutex_init(&msi->lock);
 	snprintf(pcie_hcd_msi_name[pdrv->core.info.id], MSI_ISR_NAME_STR_LEN,
@@ -1783,7 +2723,7 @@ static int pcie_hcd_msi_setup(struct pcie_hcd *pdrv)
 
 	msi->irq = pdrv->core.res.irq;
 	/*
-	 * MSI should have been updated by hc with the number of interrupts
+	 * MSI should have been updated by HC with the number of interrupts
 	 * supported
 	 */
 	msi->nr = pdrv->core.cfg.msi_map_size;
@@ -1851,10 +2791,10 @@ static int pcie_hcd_msi_disable(struct pcie_hcd *pdrv)
  * Function pcie_hcd_errlog_enable (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Setup pcie core bus error logging
+ *    Setup PCIe core bus error logging
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -1894,10 +2834,10 @@ static int pcie_hcd_errlog_enable(struct pcie_hcd *pdrv)
  * Function pcie_hcd_errlog_disable (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Setup pcie core bus error logging
+ *    Setup PCIe core bus error logging
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -1915,7 +2855,8 @@ static void pcie_hcd_errlog_disable(struct pcie_hcd *pdrv)
 
 	pdrv->errlog.inited = false;
 
-	HCD_LOG("Core [%d] Disabled PCIE/UBUS Error Interrupts\r\n", pdrv->core.info.id);
+	HCD_LOG("Core [%d] Disabled PCIE/UBUS Error Interrupts\n",
+	    pdrv->core.info.id);
 
 	HCD_FN_RET();
 }
@@ -1924,12 +2865,12 @@ static void pcie_hcd_errlog_disable(struct pcie_hcd *pdrv)
  * Function pcie_hc_link_up (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Check PCIe link is UP or down
  *
- *   Return: 0 on linkup, -ve on linkdown/failure
+ *   Return: 0 on linkup, -ve on link down/failure
  */
 static int pcie_hc_link_up(struct pcie_hcd *pdrv)
 {
@@ -1975,10 +2916,10 @@ static int pcie_hc_link_up(struct pcie_hcd *pdrv)
 	if (err == 0) {
 	    u32 link_status;
 
-	    link_status = phc->plt_cfg->read_reg(&pdrv->core, PCIE_LNKCTLSTA);
+	    link_status = pcie_hcd_read_reg(phc, PCIE_LNKCTLSTA);
 	    link_status >>= 16;
 
-	    HCD_LOG("Core [%d] Link UP - [%d] lanes, [GEN%d] speed\r\n",
+	    HCD_LOG("Core [%d] Link UP - [%d] lanes, [GEN%d] speed\n",
 	        pdrv->core.info.id, PCIE_LNKSTA_LNK_WIDTH(link_status),
 	        PCIE_LNKSTA_LNK_SPEED(link_status));
 	} else {
@@ -1989,15 +2930,39 @@ static int pcie_hc_link_up(struct pcie_hcd *pdrv)
 }
 
 /*
+ * Function pcie_hc_config_core_final (pdrv)
+ *
+ *   Parameters:
+ *    pdev ... pointer to PCIe platform device
+ *    pdrv ... pointer to PCIe core HCD data structure
+ *
+ *   Description:
+ *    Initialize the host controller post enumeration. Retrieve and configure
+ *    End Point BAR4 to be used as fastpath out address.
+ *
+ *   Return: 0 on success, -ve on failure
+ */
+static int pcie_hc_config_core_final(struct pcie_hcd *pdrv)
+{
+	HCD_FN_ENT();
+
+	if (pdrv->core.plt_cfg->config_core_post) {
+	    pdrv->core.plt_cfg->config_core_post(&pdrv->core);
+	}
+
+	HCD_FN_RET_VAL(0);
+}
+
+/*
  * Function pcie_hc_unconfig_core (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    De-configure the HC core
  *
- *   Return: 0 on success, -ve on failure
+ *   Return: None
  */
 static void pcie_hc_unconfig_core(struct pcie_hcd *pdrv)
 {
@@ -2014,7 +2979,7 @@ static void pcie_hc_unconfig_core(struct pcie_hcd *pdrv)
  * Function pcie_hc_config_core (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Configure HC core
@@ -2034,7 +2999,7 @@ static int pcie_hc_config_core(struct pcie_hcd *pdrv)
  * Function pcie_hc_reset_core (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Reset PCIe core devices
@@ -2060,7 +3025,7 @@ static int pcie_hc_reset_core(struct pcie_hcd *pdrv)
  * Function pcie_hc_restart_core (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Restart PCIe core (power down, power up, reset)
@@ -2096,7 +3061,7 @@ static int pcie_hc_restart_core(struct pcie_hcd *pdrv)
  *
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Setup HC core for access
@@ -2121,46 +3086,49 @@ static int pcie_hc_setup_access(struct pcie_hcd *pdrv)
 	if (phc->info.base == NULL) {
 	    phc->info.base = devm_ioremap_resource(dev, &phc->res.base);
 	    if (IS_ERR(phc->info.base)) {
-	        HCD_ERROR("Core [%d] reg base mapping fail: [%ld]\r\n",
+	        HCD_ERROR("Core [%d] reg base mapping fail: [%ld]\n",
 	            phc->info.id, PTR_ERR(phc->info.base));
 	        HCD_FN_RET_VAL(PTR_ERR(phc->info.base));
 	    }
 	}
 
-	/* Initialize misc pcie control base if present */
+	/* Initialize misc PCIe control base if present */
 	phc->info.misc = pcie_hcd_cpci_get()->misc.base;
 
-	HCD_INFO("Core [%d] mapped reg base [0x%px]\r\n", pdev->id,
+	HCD_INFO("Core [%d] mapped reg base [0x%px]\n", pdev->id,
 	    phc->info.base);
 
-	reg_data = phc->plt_cfg->read_reg(phc, PCI_VENDOR_ID);
-	HCD_INFO("Core [%d] Vendor [0x%04x] device [0x%04x]\r\n",
-	    pdev->id, (reg_data&0xFFFF), ((reg_data >> 16)&0xFFFF));
+	reg_data = pcie_hcd_read_reg(phc, PCI_VENDOR_ID);
+	HCD_INFO("Core [%d] Vendor [0x%04x] device [0x%04x]\n",
+	    pdev->id, (reg_data & 0xFFFF), ((reg_data >> 16) & 0xFFFF));
 
 	if (reg_data == 0xdeaddead) {
-	    HCD_ERROR("Core [%d] access returned invalid value 0x%x\r\n",
+	    HCD_ERROR("Core [%d] access returned invalid value 0x%x\n",
 	        pdev->id, reg_data);
 	    HCD_FN_RET_VAL(-ENODEV);
 	}
 
-	reg_data = phc->plt_cfg->read_reg(phc, PCI_CLASS_REVISION);
-	HCD_INFO("Core [%d] Rev [0x%02x] Class [0x%06x]\r\n",
-	    pdev->id, (reg_data&0xFF), ((reg_data >> 8)&0xFFFFFF));
+	reg_data = pcie_hcd_read_reg(phc, PCI_CLASS_REVISION);
+	HCD_INFO("Core [%d] Rev [0x%02x] Class [0x%06x]\n",
+	    pdev->id, (reg_data & 0xFF), ((reg_data >> 8) & 0xFFFFFF));
 
-	phc->info.rev = phc->plt_cfg->read_reg(phc, phc->cfg.core_rev_offset);
+	phc->info.rev = pcie_hcd_read_reg(phc, phc->cfg.core_rev_offset);
 	phc->info.rev &= phc->cfg.core_rev_mask;
 
 	/* Get the Link Width and speed gen configuration from the core */
-	reg_data = phc->plt_cfg->read_reg(phc, PCIE_LNKCAP);
+	reg_data = pcie_hcd_read_reg(phc, PCIE_LNKCAP);
 	phc->info.gen = PCIE_LNKCAP_LNK_SPEED(reg_data);
 	link_width = PCIE_LNKCAP_LNK_WIDTH(reg_data);
 	if (!phc->res.link_width) phc->res.link_width = link_width;
 
-	HCD_LOG("found Port [%d] GEN%d Core Rev [%x.%02x] with %d Lanes\r\n",
-	    pdev->id, phc->info.gen, ((phc->info.rev >> 8)&0xFF),
-	    (phc->info.rev&0xFF), link_width);
+	HCD_LOG("found Port [%d] GEN%d Core Rev [%x.%02x] with %d Lanes\n",
+	    pdev->id, phc->info.gen, ((phc->info.rev >> 8) & 0xFF),
+	    (phc->info.rev & 0xFF), link_width);
 
-	/* Setup pcie core revision based initialization in the HC */
+	/* Set phy power state */
+	pcie_hc_apon_pwrphy(pdrv);
+
+	/* Setup PCIe core revision based initialization in the HC */
 	if (phc->plt_cfg->setup_rev) {
 	    int err;
 
@@ -2173,19 +3141,57 @@ static int pcie_hc_setup_access(struct pcie_hcd *pdrv)
 }
 
 /*
+ * Function pcie_hc_remove_access (pdrv)
+ *
+ *
+ *   Parameters:
+ *    pdrv ... pointer to PCIe core HCD data structure
+ *
+ *   Description:
+ *    Remove/unmap HC core register access
+ *
+ *   Return: 0 on success, -ve on failure
+ */
+static void pcie_hc_remove_access(struct pcie_hcd *pdrv)
+{
+	struct device *dev;
+	struct pcie_hc_core     *phc = NULL;
+
+	HCD_FN_ENT();
+
+	if (pdrv == NULL) {
+	    HCD_FN_RET();
+	}
+
+	phc = &(pdrv->core);
+	dev = &(phc->pdev->dev);
+
+	if (pdrv->core.info.base && phc->res.base.start && phc->res.base.flags) {
+	    devm_iounmap(dev, phc->info.base);
+	    HCD_INFO("Core [%d] unmap reg base [0x%px]\n", phc->info.id,
+	        phc->info.base);
+	    phc->info.base = NULL;
+	}
+
+	HCD_FN_RET();
+}
+
+/*
  * Function pcie_hc_init_core (pdrv)
  *
  *   Parameters:
- *    pdev ... pointer to pcie platform device
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdev ... pointer to PCIe platform device
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Initialize the HCD resource entries to default values. Currently supported resources
+ *    Initialize the HCD resource entries to default values. Currently supported
+ *    resources
  *    - PCIe core base, memory window, PCI bus range
  *
  *   Return: 0 on success, -ve on failure
  */
-static int pcie_hc_init_core(struct platform_device *pdev, struct pcie_hcd *pdrv)
+static int pcie_hc_init_core(struct platform_device *pdev,
+	struct pcie_hcd *pdrv)
 {
 	struct pcie_hc_core     *phc = NULL;
 	struct pcie_hc_core_res *pres = NULL;
@@ -2224,11 +3230,11 @@ static int pcie_hc_init_core(struct platform_device *pdev, struct pcie_hcd *pdrv
 	}
 
 	if (err != 0) {
-	    HCD_ERROR("Core [%d] failed to initialize HC\r\n", pdev->id);
+	    HCD_ERROR("Core [%d] failed to initialize HC\n", pdev->id);
 	    HCD_FN_RET_VAL(err);
 	}
 
-	/* Update configurtion with default parameters */
+	/* Update configuration with default parameters */
 	phc->cfg.ssc = HCD_HC_CORE_CFG(pcie_ssc_cfg, phc->info.id) ? true : false;
 	phc->cfg.speed = HCD_HC_CORE_CFG(pcie_speed_cfg, phc->info.id);
 	phc->cfg.apon = HCD_HC_CORE_CFG(pcie_apon, phc->info.id);
@@ -2242,6 +3248,19 @@ static int pcie_hc_init_core(struct platform_device *pdev, struct pcie_hcd *pdrv
 	phc->cfg.linkupretries = HCD_HC_CORE_CFG(pcie_linkupretries, phc->info.id);
 	phc->cfg.phyrxfilter = HCD_HC_CORE_CFG(pcie_phyrxfilter, phc->info.id);
 	phc->cfg.epuperstb = HCD_HC_CORE_CFG(pcie_epuperstb, phc->info.id);
+	phc->cfg.prioqueue = HCD_HC_CORE_CFG(pcie_prioqueue, phc->info.id);
+
+	if (PHC_CORE(phc->info.id)) {
+	    int lane;
+	    for (lane = 0; lane < HCD_PHYLANE_MAX; lane++) {
+	        phc->cfg.g3_eq_presets[lane] = HCD_HC_CORE_ARRAY_CFG(
+	            pcie_gen3_eq_presets, phc->info.id, lane);
+	        if (phc->cfg.g3_eq_presets[lane] == 0x00000000) {
+	            /* Use lane#0 setting for all, if only lane#0 is set */
+	            phc->cfg.g3_eq_presets[lane] = phc->cfg.g3_eq_presets[0];
+	        }
+	    }
+	}
 
 	pcie_hc_dump_core_cfg(pdrv);
 
@@ -2252,7 +3271,7 @@ static int pcie_hc_init_core(struct platform_device *pdev, struct pcie_hcd *pdrv
  * Function pcie_hc_free_core (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Free the HC core control block
@@ -2274,7 +3293,7 @@ static void pcie_hc_free_core(struct pcie_hcd *pdrv)
  * Function pcie_hc_update_core_cfg (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    update core specific settings from valid nvram settings
@@ -2287,13 +3306,14 @@ static int pcie_hc_update_core_cfg(struct pcie_hcd *pdrv)
 	struct pcie_hc_core_res *pres = &phc->res;
 	u8 core = phc->info.id;
 
-	/* Update core configurtion from common nv parameters */
+	/* Update core configuration from common nv parameters */
 	phc->cfg.ssc = HCD_GET_CMMN_SETTING(pcie_ssc_cfg, core) ? true : false;
 	phc->cfg.pllid = HCD_GET_CMMN_SETTING(pcie_pllclkid, core);
 	phc->cfg.plladj = HCD_GET_CMMN_SETTING(pcie_pllclkadj, core);
 	phc->cfg.barmask = pcie_barmask;
+	phc->cfg.fastpath = pcie_fastpath & 0xFF;
 
-	/* Get updated nvram params after module load */
+	/* Get updated nvram parameters after module load */
 	HCD_READ_CORE_SETTING(pcie_speed_cfg);
 	HCD_READ_CORE_SETTING(pcie_apon);
 	HCD_READ_CORE_SETTING(pcie_phy_pwrmode);
@@ -2304,8 +3324,13 @@ static int pcie_hc_update_core_cfg(struct pcie_hcd *pdrv)
 	HCD_READ_CORE_SETTING(pcie_linkupretries);
 	HCD_READ_CORE_SETTING(pcie_phyrxfilter);
 	HCD_READ_CORE_SETTING(pcie_epuperstb);
+	HCD_READ_CORE_SETTING(pcie_prioqueue);
 
-	/* Update core configurtion from core nv parameters */
+	if (PHC_CORE(core)) {
+	    HCD_READ_CORE_ARRAY_SETTING(pcie_gen3_eq_presets, core);
+	}
+
+	/* Update core configuration from core nv parameters */
 	phc->cfg.speed = HCD_GET_CORE_SETTING(pcie_speed_cfg, core);
 	phc->cfg.apon = HCD_GET_CORE_SETTING(pcie_apon, core);
 	/*
@@ -2325,12 +3350,22 @@ static int pcie_hc_update_core_cfg(struct pcie_hcd *pdrv)
 	phc->cfg.msi = HCD_GET_CORE_SETTING(pcie_msi, core);
 	pres->link_width = HCD_GET_CORE_SETTING(pcie_numlanes, core);
 	phc->cfg.acc = HCD_GET_CORE_SETTING(pcie_acc, core);
-	phc->cfg.linkupretries = HCD_GET_CORE_SETTING(pcie_linkupretries,
-	    phc->info.id);
-	phc->cfg.phyrxfilter = HCD_GET_CORE_SETTING(pcie_phyrxfilter,
-	    phc->info.id);
-	phc->cfg.epuperstb = HCD_GET_CORE_SETTING(pcie_epuperstb,
-	    phc->info.id);
+	phc->cfg.linkupretries = HCD_GET_CORE_SETTING(pcie_linkupretries, core);
+	phc->cfg.phyrxfilter = HCD_GET_CORE_SETTING(pcie_phyrxfilter, core);
+	phc->cfg.epuperstb = HCD_GET_CORE_SETTING(pcie_epuperstb, core);
+	phc->cfg.prioqueue = HCD_GET_CORE_SETTING(pcie_prioqueue, core);
+
+	if (PHC_CORE(core)) {
+	    u8 lane;
+	    for (lane = 0; lane < HCD_PHYLANE_MAX; lane++) {
+	        phc->cfg.g3_eq_presets[lane] = HCD_GET_CORE_ARRAY_SETTING(
+	            pcie_gen3_eq_presets, core, lane);
+	        if (phc->cfg.g3_eq_presets[lane] == 0x00000000) {
+	            /* Use lane#0 setting for all, if only lane#0 is set */
+	            phc->cfg.g3_eq_presets[lane] = phc->cfg.g3_eq_presets[0];
+	        }
+	    }
+	}
 
 	pcie_hc_dump_core_cfg(pdrv);
 
@@ -2341,7 +3376,7 @@ static int pcie_hc_update_core_cfg(struct pcie_hcd *pdrv)
  * Function pcie_hc_dump_core_cfg (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    dump core specific configuration settings
@@ -2358,14 +3393,15 @@ static void pcie_hc_dump_core_cfg(struct pcie_hcd *pdrv)
 	HCD_INFO("    ssc [%d] pllid [%d] plladj [%d]\n",
 	    phc->cfg.ssc, phc->cfg.pllid, phc->cfg.plladj);
 
-	HCD_INFO("    speed [%d] apon [%d] phypwrmode [%d] errlog [%d] msi [%d] barmask [%d]\n",
+	HCD_INFO("    speed [%d] apon [%d] phypwrmode [%d] errlog [%d] msi [%d] "
+	    "barmask [%d]\n",
 	    phc->cfg.speed, phc->cfg.apon, phc->cfg.phypwrmode,
 	    phc->cfg.errlog, phc->cfg.msi, phc->cfg.barmask);
 
 	HCD_INFO("    lanes [%d] linkupretries [%d] phyrxfilter [%d] "
-	    "epuperstb [%d]\n",
+	    "epuperstb [%d] prioqueue [%d] fastpath [%d]\n",
 	    phc->res.link_width, phc->cfg.linkupretries, phc->cfg.phyrxfilter,
-	    phc->cfg.epuperstb);
+	    phc->cfg.epuperstb, phc->cfg.prioqueue, phc->cfg.fastpath);
 
 	return;
 }
@@ -2374,7 +3410,7 @@ static void pcie_hc_dump_core_cfg(struct pcie_hcd *pdrv)
  * Function pcie_hc_apon_pwrup (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *    Set the apon configuration flags
@@ -2401,26 +3437,26 @@ static int pcie_hc_apon_pwrup(struct pcie_hcd *pdrv)
 	    pdrv->apon.flags |= (1 << apon);
 	    pdrv->apon.cfg[devidx] = apon;
 
-	    if (apon <= HCD_APON_ON) {
-	        /* Default or Always ON */
+	    if (apon != HCD_APON_OFF) {
+	        /* Default or Always ON or OFF only PHY */
 	        int rc;
 
 	        rc = pdrv->core.plt_cfg->set_power(phc, devidx, true, HCD_DEV_BOTH);
 	        if (rc == 0) {
 	            pdrv->apon.powered[devidx] = true;
-	            HCD_INFO("Core [%d] dev [%d] powered up\r\n",
+	            HCD_INFO("Core [%d] dev [%d] powered up\n",
 	                pdrv->core.info.id, devidx);
 	            devs++;
 	        } else {
 	            pdrv->apon.powered[devidx] = false;
-	            HCD_ERROR("Core [%d] dev [%d] failed to powered up\r\n",
+	            HCD_ERROR("Core [%d] dev [%d] failed to powered up\n",
 	                pdrv->core.info.id, devidx);
 	            devs = -ENODEV;
 	        }
 	    } else {
-	        /* Always off (with/without domain) */
+	        /* Always off */
 	        pdrv->core.plt_cfg->set_power(phc, devidx, false, HCD_DEV_BOTH);
-	        HCD_LOG("Core [%d] dev [%d] powered down due to apon [%d]\r\n",
+	        HCD_LOG("Core [%d] dev [%d] powered down due to apon [%d]\n",
 	            pdrv->core.info.id, devidx, apon);
 	    }
 	}
@@ -2433,10 +3469,10 @@ static int pcie_hc_apon_pwrup(struct pcie_hcd *pdrv)
  *
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Power down the hc core devices if not configured for always on
+ *    Power down the HC core devices if not configured for always on
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -2449,9 +3485,54 @@ static int pcie_hc_apon_pwrdn(struct pcie_hcd *pdrv)
 
 	for (devidx = 0; devidx < phc->info.devs; devidx++) {
 	    if (pdrv->apon.cfg[devidx] != HCD_APON_ON) {
-	        phc->plt_cfg->set_power(phc, devidx, false, HCD_DEV_BOTH);
+	        struct pcie_hcd_bus_fpam *fpam = &(pcie_hcd_cpci_get()->fpam);
+	        int pwr_devs = HCD_DEV_BOTH;
+
+	        if ((pdrv->apon.cfg[devidx] == HCD_APON_OFF_WITH_DOMAIN) ||
+	            (fpam->master == phc->info.id)) {
+	            /* Only power down RC PHY and keep RC Digital ON */
+	            pwr_devs &= (~HCD_DEV_RC);
+	            pwr_devs |= (HCD_DEV_RC_PHY);
+	            HCD_LOG("Core [%d] skip power down RC digital\n", phc->info.id);
+	        }
+
+	        phc->plt_cfg->set_power(phc, devidx, false, pwr_devs);
 	        pdrv->apon.powered[devidx] = false;
-	        HCD_LOG("Core [%d] dev [%d] powered down\r\n", phc->info.id, devidx);
+	        HCD_LOG("Core [%d] dev [%d] powered down %s\n", phc->info.id,
+	            devidx, (pwr_devs & HCD_DEV_RC) ? "Fully" : "Partially");
+	    }
+	}
+
+	HCD_FN_RET_VAL(0);
+}
+
+/*
+ * Function pcie_hc_apon_pwrphy (pdrv)
+ *
+ *
+ *   Parameters:
+ *    pdrv ... Pointer to PCIe core HCD data structure
+ *
+ *   Description:
+ *    Power down the HC core devices if not configured for always on
+ *
+ *   Return: 0 on success, -ve on failure
+ */
+static int pcie_hc_apon_pwrphy(struct pcie_hcd *pdrv)
+{
+	struct pcie_hc_core *phc = &pdrv->core;
+	u8 devidx;
+
+	HCD_FN_ENT();
+
+	for (devidx = 0; devidx < phc->info.devs; devidx++) {
+	    if (pdrv->apon.cfg[devidx] == HCD_APON_OFF_WITH_DOMAIN) {
+	        phc->plt_cfg->set_power(phc, devidx, false,
+	            (HCD_DEV_RC_PHY | HCD_DEV_EP));
+	        HCD_LOG("Core [%d] dev [%d] PHY powered down due to apon\r\n",
+	            phc->info.id, devidx);
+	    } else {
+	        phc->plt_cfg->set_power(phc, devidx, true, HCD_DEV_RC_PHY);
 	    }
 	}
 
@@ -2462,9 +3543,9 @@ static int pcie_hc_apon_pwrdn(struct pcie_hcd *pdrv)
  * Function pcie_hcd_set_regulators(pdrv, devidx, up)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *    devidx ... core device index (not used)
- *    up     ... flag to sepcify power up/down
+ *    up     ... flag to specify power up/down
  *
  *   Description:
  *     power up/down the core, devidx ignored
@@ -2490,7 +3571,7 @@ int pcie_hcd_set_regulators(struct pcie_hcd *pdrv, unsigned int devidx, bool up)
 	                pdrv->core.info.id, ret ? "failed to " : "", supply->name);
 	            if (ret == 0) {
 	                supply->usage++;
-	                /* Make sure enough delay before asserting pcie reset */
+	                /* Make sure enough delay before asserting PCIe reset */
 	                mdelay(PCIE_PWR_SETTLING_DELAY);
 	                mdelay(PCIE_PWR_2_PERST_DELAY);
 	            }
@@ -2511,7 +3592,7 @@ int pcie_hcd_set_regulators(struct pcie_hcd *pdrv, unsigned int devidx, bool up)
  * Function pcie_hcd_init_regulators(pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *     Parse device tree for power supplies and initialize corresponding
@@ -2571,7 +3652,7 @@ int pcie_hcd_init_regulators(struct pcie_hcd *pdrv)
  * Function pcie_hcd_free_regulators(pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
  *     freeup initialized regulators if any
@@ -2593,7 +3674,7 @@ void pcie_hcd_free_regulators(struct pcie_hcd *pdrv)
  *   Parameters:
  *    phc    ... pointer to core control block
  *    devidx ... core device index (not used)
- *    up     ... flag to sepcify power up/down
+ *    up     ... flag to specify power up/down
  *    type   ... mask to specify EP and/or RC device type
  *
  *   Description:
@@ -2626,7 +3707,7 @@ int pcie_hcd_set_power(struct pcie_hc_core *phc, unsigned int devidx, bool up,
  * Function pcie_hcd_config_read (bus, devfn where, size, val)
  *
  *   Parameters:
- *    bus   ... pointer to pcie bus
+ *    bus   ... pointer to PCIe bus
  *    devfn ... device and function number
  *    where ... offset from the base
  *    size  ... access size
@@ -2645,8 +3726,9 @@ static int pcie_hcd_config_read(struct pci_bus *bus, unsigned int devfn,
 
 	HCD_FN_ENT();
 
-	/* invalid access if powered down with domain */
-	if (phc->pdrv->apon.flags != APON_F_OFF_W_DOM) {
+	/* endpoint device is invalid access if powered down with domain */
+	if ((phc->pdrv->apon.flags != APON_F_OFF_W_DOM) ||
+	    (bus->number == 0)) {
 	    err = phc->plt_cfg->pci_fops->read(bus, devfn, where, size, val);
 	} else {
 	    *val = 0xFFFFFFFF;
@@ -2659,7 +3741,7 @@ static int pcie_hcd_config_read(struct pci_bus *bus, unsigned int devfn,
  * Function pcie_hcd_config_write (bus, devfn, where, size, val)
  *
  *   Parameters:
- *    bus   ... pointer to pcie bus
+ *    bus   ... pointer to PCIe bus
  *    devfn ... device and function number
  *    where ... offset from the base
  *    size  ... access size
@@ -2678,8 +3760,9 @@ static int pcie_hcd_config_write(struct pci_bus *bus, unsigned int devfn,
 
 	HCD_FN_ENT();
 
-	/* invalid access if powered down with domain */
-	if (phc->pdrv->apon.flags != APON_F_OFF_W_DOM) {
+	/* endpoint device is invalid access if powered down with domain */
+	if ((phc->pdrv->apon.flags != APON_F_OFF_W_DOM) ||
+	    (bus->number == 0)) {
 	    err = phc->plt_cfg->pci_fops->write(bus, devfn, where, size, val);
 	}
 
@@ -2690,25 +3773,25 @@ static int pcie_hcd_config_write(struct pci_bus *bus, unsigned int devfn,
  * Function pcie_hcd_map_bus (bus, devfn, where)
  *
  *   Parameters:
- *    bus   ... pointer to pcie bus
+ *    bus   ... pointer to PCIe bus
  *    devfn ... device and function number
  *    where ... offset from the base
  *
  *   Description:
- *    Map pcie hc core config space address
+ *    Map PCIe HC core config space address
  *
  *   Return: valid mapped memory on success, NULL on failure
  */
 static void __iomem *pcie_hcd_map_bus(struct pci_bus *bus,
 	unsigned int devfn, int where)
 {
-	struct pcie_hc_core *phc = (struct pcie_hc_core*)bus->sysdata;
+	struct pcie_hc_core *phc = pcie_hcd_get_hccore_from_bus(bus);
 	void __iomem *addr = NULL;
 
 	HCD_FN_ENT();
 
 	/* invalid access if powered down with domain */
-	if (phc->pdrv->apon.flags != APON_F_OFF_W_DOM) {
+	if (phc->pdrv->apon.flags != APON_F_OFF) {
 	    addr = phc->plt_cfg->pci_fops->map_bus(bus, devfn, where);
 	}
 
@@ -2716,24 +3799,61 @@ static void __iomem *pcie_hcd_map_bus(struct pci_bus *bus,
 }
 
 /*
+ * Function pcie_hcd_map_bus_ecam (bus, devfn, where)
+ *
+ *   Parameters:
+ *    bus   ... pointer to PCIe bus
+ *    devfn ... device and function number
+ *    where ... offset from the base
+ *
+ *   Description:
+ *    Map PCIe HC core config space address
+ *
+ *   Return: valid mapped memory on success, NULL on failure
+ */
+static void __iomem *pcie_hcd_map_bus_ecam(struct pci_bus *bus,
+	unsigned int devfn, int where)
+{
+	struct pci_config_window *cfg = (struct pci_config_window*)bus->sysdata;
+	struct pcie_hc_core *phc = pcie_hcd_get_hccore_from_bus(bus);
+	void __iomem *addr = NULL;
+
+	HCD_FN_ENT();
+
+	if (!cfg)  return NULL;
+
+	/* invalid access if powered down with domain */
+	if (phc->pdrv->apon.flags != APON_F_OFF) {
+	    /* This check is still needed for the initial versions of ECAM SoC's */
+	    if ((bus->number == PCIE_HCD_ROOT_BUSNUM) && (PCI_SLOT(devfn) != 0)) {
+	        goto done;
+	    }
+	    /* Use Default ecam addressing scheme */
+	    addr = pci_ecam_map_bus(bus, devfn, where);
+	}
+
+done:
+	HCD_FN_RET_VAL(addr);
+}
+
+/*
  * Function pcie_hcd_map_irq (pcidev, slot, pin)
  *
  *   Parameters:
- *    pcidev ... pointer to pci device data structure
- *    slot   ... pci slot (not used)
+ *    pcidev ... pointer to PCI device data structure
+ *    slot   ... PCI slot (not used)
  *    pin    ... pin number (not used)
  *
  *   Description:
- *    Get the pcie core irq number.
+ *    Get the PCIe core irq number.
  *
- *   Return: pcie core irq number
+ *   Return: PCIe core irq number
  */
-int pcie_hcd_map_irq(const struct pci_dev *pcidev,
-	u8 slot, u8 pin)
+int pcie_hcd_map_irq(const struct pci_dev *pcidev, u8 slot, u8 pin)
 {
 	int irq = -1;
 	int  (*hc_irq_map)(const struct pci_dev *, u8, u8);
-	struct pcie_hc_core *phc = pcidev->bus->sysdata;
+	struct pcie_hc_core *phc = pcie_hcd_get_hccore_from_bus(pcidev->bus);
 
 	HCD_FN_ENT();
 
@@ -2750,123 +3870,105 @@ int pcie_hcd_map_irq(const struct pci_dev *pcidev,
  * Function pcie_hcd_setup_resources (pdrv, resources)
  *
  *   Parameters:
- *    pdrv      ... pointer to pcie core hcd data structure
- *    resources ... pcie core resources
+ *    pdrv      ... pointer to PCIe core HCD data structure
+ *    resources ... PCIe core resources
  *
  *   Description:
- *    Map window memory resources
+ *    Dummy as window resources are mapped by pci stack
  *
  *   Return: 0 on success, -ve on failure
  */
 static int pcie_hcd_setup_resources(struct pcie_hcd *pdrv,
 	struct list_head *resources)
 {
-	struct pcie_hc_core_res *pres = NULL;
-	struct platform_device *pdev = NULL;
-	struct resource *owin;
-	struct device *dev;
-	int err = 0;
-	int win;
-
 	HCD_FN_ENT();
-
-	pdev = pdrv->core.pdev;
-	dev = &pdev->dev;
-	pres = &pdrv->core.res;
-
-	for (win = OWIN0; win < MAX_NUM_OUTGOING_WINDOWS; win++) {
-
-	    if (!OWIN_RES_CONFIGURED(&pdrv->core, win)) continue;
-
-	    owin = &(pres->owin[win]);
-
-	    if (pdrv->owin[win].need_remap) {
-
-	        err = pcie_hcd_ubus_decode_pcie_wnd_cfg(owin->start,
-	            (owin->end - owin->start) + 1, pdev->id);
-	        if (err != 0) {
-	            HCD_ERROR("Core [%d] pcie failed to config ubus decode window: [%d]\r\n",
-	                pdev->id, err);
-	            HCD_FN_RET_VAL(err);
-	        }
-	    }
-
-	    err =  devm_request_resource(dev, &iomem_resource, owin);
-	    if (err) {
-	        HCD_ERROR("Core [%d] pcie failed to create own resource: [%d]\r\n",
-	            pdev->id, err);
-
-	        HCD_FN_RET_VAL(err);
-	    }
-	    else
-	        HCD_INFO("Core [%d] mapped pcie owin[%d] base [0x%llx]\r\n", pdev->id,
-	            win, (u64)owin->start);
-
-	    pci_add_resource_offset(resources, owin, owin->start - pdrv->owin[win].pci_addr);
-
-	    pdrv->owin[win].inited = true;
-	}
-
-	/* Setup PCIe core bus numbers */
-	pci_add_resource(resources, &pres->bus_range);
-
-	HCD_FN_RET_VAL(err);
+	HCD_FN_RET_VAL(0);
 }
 
 /*
  * Function pcie_hcd_unmap_resources (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Unmap previous allocated resources window memory and register base resources
+ *    Dummy as unmap resources are done by pci stack
  *
  *   Return: 0 on success, -ve on failure
  */
 static void pcie_hcd_unmap_resources(struct pcie_hcd *pdrv)
 {
-	struct pcie_hc_core_res *pres = NULL;
-	struct platform_device *pdev = NULL;
-	struct device *dev;
-	int win;
+	HCD_FN_ENT();
+	HCD_FN_RET();
+}
+
+/*
+ * Function pcie_hcd_parse_resources (pdrv, resources)
+ *
+ *   Parameters:
+ *    pdrv ... Pointer to PCIe core HCD data structure
+ *    np   ... Pointer to device tree node
+ *
+ *   Description:
+ *    Get PCIe memory and bus resources either from DT or from already parsed
+ *    PCIe bridge
+ *
+ *   Return: 0 on success, -ve on failure
+ */
+static int pcie_hcd_parse_resources(struct pcie_hcd *pdrv,
+	struct device_node *np)
+{
+	int win = OWIN0;
+	int err = 0;
+	struct pcie_hc_core_res *pres = &pdrv->core.res;
+	struct resource_entry *entry;
+	struct pci_host_bridge *bridge = pci_host_bridge_from_priv(pdrv);
 
 	HCD_FN_ENT();
 
-	if (pdrv == NULL) {
-	    HCD_FN_RET();
-	}
+	/*
+	 * Outgoing memory window and bus range are already parsed by
+	 * bridge, so get it from bridge windows
+	 */
+	resource_list_for_each_entry(entry, &bridge->windows) {
+	    struct resource *res = entry->res;
 
-	pdev = pdrv->core.pdev;
-	dev = &pdev->dev;
-	pres = &pdrv->core.res;
+	    switch (resource_type(res)) {
+	        case IORESOURCE_BUS:
+	            memcpy(&pres->bus_range, res, sizeof(struct resource));
+	            break;
 
-	for (win = OWIN0; win < MAX_NUM_OUTGOING_WINDOWS; win++) {
-	    if (pdrv->owin[win].inited == true) {
-	        devm_release_resource(dev, &pres->owin[win]);
-	        HCD_INFO("Core [%d] release owin[%d] [0x%llx]\r\n", pdrv->core.info.id,
-	            win, (u64)pres->owin[win].start);
-	        pdrv->owin[win].inited = false;
+	        case IORESOURCE_MEM:
+	            if (win >= MAX_NUM_OUTGOING_WINDOWS) {
+	                HCD_ERROR("Core [%d] outgoing windows [%d] exceeds"
+	                    " max [%d]\n", pdrv->core.info.id, win,
+	                    MAX_NUM_OUTGOING_WINDOWS);
+	                break;
+	            }
+
+	            memcpy(&pres->owin[win], res, sizeof(struct resource));
+	            win++;
+	            break;
+
+	        default:
+	            HCD_ERROR("Core [%d] unknown resource type [%ld]\n",
+	                pdrv->core.info.id, resource_type(res));
+	            break;
 	    }
 	}
-	if (pdrv->core.info.base && pdrv->core.res.base.start) {
-	    devm_iounmap(dev, pdrv->core.info.base);
-	    HCD_INFO("Core [%d] unmap reg base [0x%px]\r\n", pdrv->core.info.id,
-	        pdrv->core.info.base);
-	    pdrv->core.info.base = NULL;
-	}
+	err = (win) ? 0 : -EINVAL;
 
-	HCD_FN_RET();
+	HCD_FN_RET_VAL(err);
 }
 
 /*
  * Function pcie_hcd_parse_dt (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie core hcd data structure
+ *    pdrv ... pointer to PCIe core HCD data structure
  *
  *   Description:
- *    Parse pcie core hcd device tree entries. Currently supported resources
+ *    Parse PCIe core HCD device tree entries. Currently supported resources
  *       - PCIe core base, memory window, PCI bus range
  *
  *   Return: 0 on success, -ve on failure
@@ -2880,8 +3982,6 @@ static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv)
 	struct device *dev = NULL;
 	int win;
 	int err = 0;
-	struct of_pci_range_parser parser;
-	struct of_pci_range range;
 	unsigned int skip_dt = 0;
 	u32 dt_val;
 
@@ -2908,36 +4008,19 @@ static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv)
 	    err = of_address_to_resource(np, 0, &pres->base);
 	    HCD_FAIL_ON_DT_ERROR("reg (core base)", err);
 
-	    /* PCIe Outgoing window Memory ranges */
-	    err = of_pci_range_parser_init(&parser, np);
-	    HCD_FAIL_ON_DT_ERROR("ranges (outgoing window)", err);
+	    /* PCIe core optional ECAM base */
+	    err = of_address_to_resource(np, 1, &pres->ecam);
+	    HCD_WARN_ON_DT_ERROR("reg (ecam base)", err);
 
-	    win = OWIN0;
-	    /* Parse the ranges and add the resources found to the list */
-	    for_each_of_pci_range(&parser, &range) {
+	    /* Use generic ecam operations except mapping */
+	    memcpy(&pcie_hcd_ops_ecam, &pci_generic_ecam_ops,
+	        sizeof(struct pci_ecam_ops));
+	    pcie_hcd_ops_ecam.pci_ops.map_bus = pcie_hcd_map_bus_ecam;
 
-	        if (win >= MAX_NUM_OUTGOING_WINDOWS) {
-	            HCD_ERROR("Core [%d] ougoing windows [%d] exceeds max [%d]\n",
-	                pdev->id, win, MAX_NUM_OUTGOING_WINDOWS);
-	            HCD_FN_RET_VAL(-EINVAL);
-	        }
-
-	        if (range.size & OWIN_REMAP_NEEDED) {
-	            pdrv->owin[win].need_remap = 1;
-	            range.size &= (~OWIN_REMAP_NEEDED);
-	            HCD_INFO("Core [%d] outgoing window [%d] need address remap\n",
-	                pdev->id, win);
-	        }
-
-	        pres->owin[win].flags = range.flags;
-	        pres->owin[win].parent = NULL;
-	        pres->owin[win].child = pres->owin[win].sibling = NULL;
-	        pres->owin[win].name = np->full_name;
-	        pres->owin[win].start = range.cpu_addr;
-	        pres->owin[win].end = range.cpu_addr + range.size - 1;
-	        pdrv->owin[win].pci_addr = range.pci_addr;
-
-	        win++;
+	    /* Parse and get outgoing memory windows and bus ranges */
+	    err = pcie_hcd_parse_resources(pdrv, np);
+	    if (err < 0) {
+	        HCD_FN_RET_VAL(err);
 	    }
 
 	    if (HCD_USE_DT_ENTRY(pdev->id) && (pres->irq == 0)) {
@@ -2945,12 +4028,6 @@ static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv)
 	        err = (pres->irq > 0) ? 0 : 1;
 	        HCD_FAIL_ON_DT_ERROR("interrupt", err);
 	    }
-
-	    /* PCI bus range */
-	    err = of_pci_parse_bus_range(np, &pres->bus_range);
-	    HCD_WARN_ON_DT_ERROR("busnumber", err);
-	    if (pres->bus_range.end > PCIE_HCD_MAX_BUSNUM)
-	        pres->bus_range.end = PCIE_HCD_MAX_BUSNUM;
 
 	    /* PCIe Link width */
 	    err = of_property_read_u32(np, "brcm,num-lanes", &dt_val);
@@ -3030,6 +4107,42 @@ static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv)
 	        pdrv->core.cfg.serdes = dt_val;
 	    }
 	    HCD_WARN_ON_DT_ERROR("brcm,serdes", err);
+
+	    /* PCIe Priority Queues Setting */
+	    err = of_property_read_u32(np, "brcm,prioqueue", &dt_val);
+	    if (err == 0) {
+	        HCD_HC_SET_CORE_CFG(pcie_prioqueue, pdev->id, dt_val);
+	    }
+	    HCD_WARN_ON_DT_ERROR("brcm,prioqueue", err);
+
+	    /*
+	     * PCIe gen3 link equalization presets of the lanes with a
+	     * minimum of 1 and maximum of 2 lanes
+	     */
+	    {
+	        u16 dt_val_array[HCD_PHYLANE_MAX] = {0};
+	        int lane;
+
+	        err = of_property_read_variable_u16_array(np,
+	            "brcm,gen3-eq-presets", dt_val_array, 1, HCD_PHYLANE_MAX);
+	        if (err == 1) {
+	            /* Single value for all lanes */
+	            for (lane = 1; lane < HCD_PHYLANE_MAX; lane++) {
+	                dt_val_array[lane] = dt_val_array[0];
+	            }
+	        }
+
+	        /* Update core configuration with DT values */
+	        if (err > 0) {
+	            for (lane = 0; lane < HCD_PHYLANE_MAX; lane++) {
+	                HCD_HC_SET_CORE_ARRAY_CFG(pcie_gen3_eq_presets, pdev->id,
+	                    lane, dt_val_array[lane]);
+	            }
+	            err = 0;
+	        }
+	    }
+	    HCD_WARN_ON_DT_ERROR("brcm,gen3-eq-presets", err);
+
 	} else {
 	    for (win = OWIN0; win < MAX_NUM_OUTGOING_WINDOWS; win++) {
 	        pdrv->owin[win].pci_addr = pres->owin[win].start;
@@ -3043,18 +4156,15 @@ static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv)
 	        err);
 	}
 
-	HCD_INFO("Core [%d] regs: start [0x%llx] end [0x%llx] flags [0x%lx]\r\n",
-	    pdev->id, (u64)pres->base.start, (u64)pres->base.end,
-	    pres->base.flags);
-	HCD_INFO("Core [%d] Interrupt [%d]\r\n", pdev->id, pres->irq);
-	HCD_INFO("Core [%d] bus_range: start [0x%llx] end [0x%llx] flags [0x%lx]\r\n",
-	    pdev->id, (u64)pres->bus_range.start, (u64)pres->bus_range.end,
-	    pres->bus_range.flags);
+	HCD_INFO("Core [%d] regs-base: %pR\n", pdev->id, &pres->base);
+	if (hcd_resource_len(&pres->ecam))
+	    HCD_LOG("Core [%d] ECAM: %pR\n", pdev->id, &pres->ecam);
+	HCD_INFO("Core [%d] Interrupt [%d]\n", pdev->id, pres->irq);
+	HCD_INFO("Core [%d] bus_range: %pR\n", pdev->id, &pres->bus_range);
 	for (win = OWIN0; win < MAX_NUM_OUTGOING_WINDOWS; win++) {
-	    if (pres->owin[win].start) {
-	        HCD_INFO("Core [%d] owin[%d]: start [0x%llx] end [0x%llx] flags [0x%lx]\r\n",
-	            pdev->id, win, (u64)pres->owin[win].start, (u64)pres->owin[win].end,
-	            pres->owin[win].flags);
+	    if (hcd_resource_len(pres->owin + win)) {
+	        HCD_INFO("Core [%d] owin[%d]: %pR\n", pdev->id, win,
+	           (pres->owin + win));
 	    }
 	}
 
@@ -3067,10 +4177,10 @@ static int pcie_hcd_parse_dt(struct pcie_hcd *pdrv)
  * Function pcie_hcd_cpci_probe (pdev)
  *
  *   Parameters:
- *    pdev ... pointer to pcie platform device data structure
+ *    pdev ... pointer to PCIe platform device data structure
  *
  *   Description:
- *    read and initialize the pcie device tree entries common for all cores
+ *    read and initialize the PCIe device tree entries common for all cores
  *
  *   Return: 0 on processed, -ve on not processed
  */
@@ -3091,28 +4201,28 @@ static int pcie_hcd_cpci_probe(struct platform_device *pdev)
 
 	err = of_property_read_string(np, "device_type", &type);
 	if ((err != 0) || (type == NULL) || (strcmp(type, "cpci") != 0)) {
-	    /* Not a common pcie device tree entry */
+	    /* Not a common PCIe device tree entry */
 	    err = -1;
 	    goto done;
 	}
 
 	memset(cpci, 0, sizeof(struct pcie_hcd_cpci));
 
-	HCD_INFO("common core settings\r\n");
+	HCD_INFO("common core settings\n");
 
 	/* MISC PCIe registers base */
 	err = of_address_to_resource(np, 0, &cpci->misc.res);
 	if ((cpci->misc.res.start != 0) && (cpci->misc.base == NULL)) {
 	    cpci->misc.base = devm_ioremap_resource(&pdev->dev, &cpci->misc.res);
 	    if (IS_ERR(cpci->misc.base)) {
-	        HCD_ERROR("cpci MISC reg base mapping fail: [%ld]\r\n",
+	        HCD_ERROR("cpci MISC reg base mapping fail: [%ld]\n",
 	            PTR_ERR(cpci->misc.base));
 	        HCD_FN_RET_VAL(PTR_ERR(cpci->misc.base));
 	    }
 	}
-	HCD_INFO("Mapped misc reg base [0x%px]\r\n", cpci->misc.base);
+	HCD_INFO("Mapped misc reg base [0x%px]\n", cpci->misc.base);
 
-	/* read common pcie device configuration */
+	/* read common PCIe device configuration */
 	err = of_property_read_u32(np, "brcm,pllclkid", &dt_val);
 	if (err == 0) {
 	    pcie_pllclkid = dt_val;
@@ -3147,12 +4257,23 @@ static int pcie_hcd_cpci_probe(struct platform_device *pdev)
 	}
 	HCD_WARN_ON_DT_ERROR("brcm,scan_order", err);
 
+	/* PCIe Fastpath configuration */
+	err = of_property_read_u32(np, "brcm,fastpath", &dt_val);
+	if (err == 0) {
+	    pcie_fastpath = dt_val;
+	}
+	HCD_WARN_ON_DT_ERROR("brcm,fastpath", err);
+
 	/* Update settings from NVRAM (kernel, environment) if valid */
 	HCD_UPDATE_CMMN_SETTING(pcie_pllclkid);
 	HCD_UPDATE_CMMN_SETTING(pcie_ssc_cfg);
 	HCD_UPDATE_CMMN_SETTING(pcie_pllclkadj);
 	HCD_UPDATE_CMMN_SETTING(pcie_barmask);
 	HCD_UPDATE_CMMN_SETTING(pcie_scan_order);
+	HCD_UPDATE_CMMN_SETTING(pcie_fastpath);
+
+	pcie_hcd_init_deferred_scan();
+	pcie_hcd_init_fastpath(pcie_fastpath);
 
 	/* Disable SSC if PLL Clock frequency adjustment is enabled */
 	if (pcie_pllclkadj && pcie_ssc_cfg) {
@@ -3160,6 +4281,8 @@ static int pcie_hcd_cpci_probe(struct platform_device *pdev)
 	    /* disable for port#1,2,3. Port#0 setting unchanged */
 	    pcie_ssc_cfg &= 0x000F;
 	}
+
+	pcie_hcd_procfs_init(NULL);
 
 	platform_set_drvdata(pdev, NULL);
 	err = 0;
@@ -3173,7 +4296,7 @@ done:
  *
  *
  *   Parameters:
- *    pdev ... pointer to pcie platform device data structure
+ *    pdev ... pointer to PCIe platform device data structure
  *
  *   Description:
  *    Currently a place holder
@@ -3184,6 +4307,8 @@ static int  pcie_hcd_cpci_remove(struct platform_device *pdev)
 {
 	struct pcie_hcd_cpci *cpci = pcie_hcd_cpci_get();
 	HCD_FN_ENT();
+
+	pcie_hcd_procfs_deinit(NULL);
 
 	if ((cpci->misc.res.start != 0) && (cpci->misc.base != NULL)) {
 	    devm_iounmap(&pdev->dev, cpci->misc.base);
@@ -3196,45 +4321,67 @@ static int  pcie_hcd_cpci_remove(struct platform_device *pdev)
  * Function pcie_hcd_scan_bus (pdrv)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie driver hcd data structure
+ *    pdrv ... pointer to PCIe driver HCD data structure
  *
  *   Description:
- *    PCIe hcd driver bus scan. Called for each instance of the PCIe core.
+ *    PCIe HCD driver bus scan. Called for each instance of the PCIe core.
  *    start the PCI bus and enumerate PCI devices
  *
  *   Return: 0 on success, -ve on failure
  */
 static int pcie_hcd_scan_bus(struct pcie_hcd *pdrv)
 {
-	struct pci_bus *bus = pdrv->bus;
-	struct pci_host_bridge *bridge = to_pci_host_bridge(bus->bridge);
-	struct pci_bus *child;
+	struct pci_host_bridge *bridge = pci_host_bridge_from_priv(pdrv);
+	struct pcie_hc_core_res *pres = NULL;
+	int err;
+
+
+	pres = &pdrv->core.res;
+	if (hcd_resource_len(&pres->ecam) > 0) {
+	    pdrv->ecam_cfg = pci_ecam_create(&(pdrv->core.pdev->dev), &pres->ecam,
+	        &pres->bus_range, &pcie_hcd_ops_ecam);
+
+	    if (IS_ERR(pdrv->ecam_cfg)) {
+	        HCD_ERROR("Core [%d] failed to create ECAM, rc (%ld) \n",
+	            pdrv->core.info.id, PTR_ERR(pdrv->ecam_cfg));
+	    }
+	}
+
+	if (pdrv->ecam_cfg) {
+	    HCD_LOG("Core [%d] created ECAM %pR\n", pdrv->core.info.id,
+	        &pres->ecam);
+
+	    pdrv->ecam_cfg->priv = (void*)&(pdrv->core);
+	    bridge->ops = (struct pci_ops *)&pcie_hcd_ops_ecam.pci_ops;
+	    bridge->sysdata = pdrv->ecam_cfg;
+	} else {
+	    bridge->sysdata = &pdrv->core;
+	    if (pdrv->core.plt_cfg->pci_fops->map_bus) {
+	        bridge->ops = &pcie_hcd_ops_generic;
+	    } else {
+	        bridge->ops = &pcie_hcd_ops_specific;
+	    }
+	}
 
 	bridge->map_irq = pcie_hcd_map_irq;
-	bridge->swizzle_irq = pci_common_swizzle;
+	err = pci_host_probe(bridge);
+	if (err < 0) {
+	    HCD_ERROR("Core [%d] failed to probe host, rc (%d)\n",
+	        pdrv->core.info.id, err);
+	    pcie_hcd_remove(pdrv->core.pdev);
+	}
 
-	pci_scan_child_bus(bus);
-
-	pci_bus_size_bridges(bus);
-	pci_bus_assign_resources(bus);
-
-	/* Configure PCI Express settings */
-	list_for_each_entry(child, &bus->children, node)
-	    pcie_bus_configure_settings(child);
-
-	pci_bus_add_devices(bus);
-
-	return 0;
+	return err;
 }
 
 /*
  * Function pcie_hcd_probe (pdev)
  *
  *   Parameters:
- *    pdev ... pointer to pcie platform device data structure
+ *    pdev ... pointer to PCIe platform device data structure
  *
  *   Description:
- *    PCIe hcd driver probe. Called for each instance of the PCIe core.
+ *    PCIe HCD driver probe. Called for each instance of the PCIe core.
  *    Get and allocate resource, configure hardware, start the PCI bus and
  *    enumerate PCI devices
  *
@@ -3246,8 +4393,7 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	struct device_node *np = pdev->dev.of_node;
 	u32 core = (u32)pdev->id;
 	int err = 0;
-	struct pci_bus *bus;
-	struct pci_ops *pci_fops = NULL;
+	struct pci_host_bridge *bridge;
 	int active;
 	LIST_HEAD(res);
 
@@ -3262,7 +4408,7 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	    const char *type = NULL;
 
 	    if (of_property_read_u32(np, "brcm,coreid", &core) < 0) {
-	        HCD_ERROR("Unable to get coreid from device tree\r\n");
+	        HCD_ERROR("Unable to get coreid from device tree\n");
 	        HCD_FN_RET_VAL(-ENODEV);
 	    }
 
@@ -3275,10 +4421,10 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	    pdev->id = core;
 	}
 
-	HCD_INFO("Core [%d] probe\r\n", core);
+	HCD_INFO("Core [%d] probe\n", core);
 
 	if (core >= NUM_CORES) {
-	    HCD_ERROR("Core [%d] exceeds max Cores [%d]\r\n", core, NUM_CORES);
+	    HCD_ERROR("Core [%d] exceeds max Cores [%d]\n", core, NUM_CORES);
 	    HCD_FN_RET_VAL(-ENODEV);
 	}
 
@@ -3287,30 +4433,30 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	    pcie_hcd_deferred_scan_add(pdev);
 	}
 
-	if (!pcie_hcd_port_enabled(core, np))
-	{
-	    HCD_ERROR("Core [%d] not enabled\r\n", core);
+	if (!pcie_hcd_port_enabled(core, np)) {
+	    HCD_ERROR("Core [%d] not enabled\n", core);
 	    err = -ENODEV;
 	    goto error;
 	}
 
-	if (pcie_hcd_get_port_mode(core, np) == 0)
-	{
-	    HCD_ERROR("Core [%d] Not in RC Mode\r\n", core);
+	if (pcie_hcd_get_port_mode(core, np) == 0) {
+	    HCD_ERROR("Core [%d] Not in RC Mode\n", core);
 	    err = -ENODEV;
 	    goto error;
 	}
 
-	/* Allocate HCD control block */
-	pdrv = kzalloc(sizeof(*pdrv), GFP_KERNEL);
-	if (!pdrv) {
-	    HCD_ERROR("Core [%d] Unable to allocate memory for CB\r\n", core);
-	    err =  -ENOMEM;
+	/* Allocate bridge with HCD control block */
+	bridge = devm_pci_alloc_host_bridge(&pdev->dev, sizeof(*pdrv));
+	if (!bridge) {
+	    HCD_ERROR("Core [%d] failed to allocate bridge\n", core);
+	    err = -ENOMEM;
 	    goto error;
 	}
-	HCD_INFO("Core [%d] Allocated [0x%px] hcd\r\n", core, pdrv);
 
-	/* Initialize  hcd elements */
+	pdrv = pci_host_bridge_priv(bridge);
+	HCD_INFO("Core [%d] Allocated [0x%px] hcd\n", core, pdrv);
+
+	/* Initialize  HCD elements */
 	platform_set_drvdata(pdev, pdrv);
 	INIT_LIST_HEAD(&pdrv->pwrsupplies.node);
 
@@ -3319,7 +4465,7 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	 */
 	err = pcie_hc_init_core(pdev, pdrv);
 	if (err < 0) {
-	    HCD_ERROR("Core [%d] failed to initialize HC\r\n", core);
+	    HCD_ERROR("Core [%d] failed to initialize HC\n", core);
 	    err =  -EINVAL;
 	    goto error;
 	}
@@ -3327,7 +4473,7 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	/* Update core resource elements  (DT based) */
 	err = pcie_hcd_parse_dt(pdrv);
 	if (err < 0) {
-	    HCD_ERROR("Core [%d] failed to update dt entries\r\n", core);
+	    HCD_ERROR("Core [%d] failed to update dt entries\n", core);
 	    err =  -EINVAL;
 	    goto error;
 	}
@@ -3335,7 +4481,7 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	/* Update core setting from valid nvram settings */
 	err = pcie_hc_update_core_cfg(pdrv);
 	if (err < 0) {
-	    HCD_ERROR("Core [%d] failed to update dt entries\r\n", core);
+	    HCD_ERROR("Core [%d] failed to update dt entries\n", core);
 	    err =  -EINVAL;
 	    goto error;
 	}
@@ -3346,7 +4492,7 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	 */
 	active = pcie_hc_apon_pwrup(pdrv);
 	if (active < 0) {
-	    HCD_LOG("Core [%d] skip due to apon setting [%d]\r\n", core,
+	    HCD_LOG("Core [%d] skip due to apon setting [%d]\n", core,
 	        pdrv->core.cfg.apon);
 	    err = active;
 	    goto error;
@@ -3355,38 +4501,16 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	/* Setup PCIe core memory window */
 	err = pcie_hcd_setup_resources(pdrv, &res);
 	if (err < 0) {
-	    HCD_ERROR("Core [%d] failed to setup owin resource, err [%d]\r\n",
+	    HCD_ERROR("Core [%d] failed to setup owin resource, err [%d]\n",
 	        core, err);
 	    err =  -ENOMEM;
 	    goto error;
 	}
 
-	if (pdrv->core.plt_cfg->pci_fops->map_bus)
-	    pci_fops = &pcie_hcd_ops_generic;
-	else
-	    pci_fops = &pcie_hcd_ops_specific;
-
-	/* No more active devices, skip enumeration, create bus and exit */
-	bus = pci_create_root_bus(&pdev->dev, pdrv->core.res.bus_range.start,
-	    pci_fops, &pdrv->core, &res);
-	if (!bus) {
-	    HCD_ERROR("Core [%d] failed to create root bus: %d\r\n", core, err);
-	    err =  -ENXIO;
-	    goto error;
-	}
-	pdrv->bus = bus;
-
-	if (active == 0) {
-	    pcie_hcd_procfs_init(pdrv);
-	    HCD_LOG("Core [%d] skip due to apon setting [%d]\r\n", core,
-	        pdrv->core.cfg.apon);
-	    goto scan_trigger;
-	}
-
-	/* setup pcie Core registers for access to PCIe core */
+	/* setup PCIe Core registers for access to PCIe core */
 	err = pcie_hc_setup_access(pdrv);
 	if (err < 0) {
-	    HCD_ERROR("Core [%d] failed to setup regs, err [%d]\r\n", core,
+	    HCD_ERROR("Core [%d] failed to setup regs, err [%d]\n", core,
 	        err);
 	    err =  -ENOMEM;
 	    goto error;
@@ -3399,14 +4523,19 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	err = pcie_hc_link_up(pdrv);
 	if (err < 0) {
 	    /* No device connected to PCIe core */
-	    HCD_ERROR("Core [%d] link is DOWN\r\n", core);
-	    goto error;
+	    HCD_ERROR("Core [%d] link is DOWN\n", core);
+	    /* Fastpath master processing for link down cores */
+	    err = pcie_hcd_lnkdn_fastpath(pdrv);
+	    if (err < 0) {
+	        goto error;
+	    }
+	    /* Continue to initialize even though no link */
 	}
 
 	/* Got all core resources, Now configure the PCIe core */
 	err = pcie_hc_config_core(pdrv);
 	if (err < 0) {
-	    HCD_ERROR("Core [%d] failed to setup hw, err [%d]\r\n", core, err);
+	    HCD_ERROR("Core [%d] failed to setup hw, err [%d]\n", core, err);
 	    err =  -ENODEV;
 	    goto error;
 	}
@@ -3415,7 +4544,7 @@ static int pcie_hcd_probe(struct platform_device *pdev)
 	if (pdrv->core.cfg.errlog) {
 	    err = pcie_hcd_errlog_enable(pdrv);
 	    if (err < 0) {
-	        HCD_ERROR("Core [%d] failed to setup error logging, err [%d]\r\n",
+	        HCD_ERROR("Core [%d] failed to setup error logging, err [%d]\n",
 	            core, err);
 	        err =  -ENODEV;
 	        goto error;
@@ -3440,7 +4569,6 @@ error:
 	    pcie_hcd_remove(pdev);
 	}
 
-scan_trigger:
 	{
 	    bool scan = ((err == 0) && (active)) ? true : false;
 
@@ -3450,7 +4578,7 @@ scan_trigger:
 	            (scan == true) ? -EHCD_SCAN_DEFER: -ENODEV);
 	        pcie_hcd_deferred_scan_trigger(pdev);
 	    } else if (scan == true) {
-	        pcie_hcd_scan_bus(pdrv);
+	        err = pcie_hcd_scan_bus(pdrv);
 	    }
 	}
 
@@ -3464,16 +4592,17 @@ scan_trigger:
  *
  *
  *   Parameters:
- *    pdev ... pointer to pcie platform device data structure
+ *    pdev ... pointer to PCIe platform device data structure
  *
  *   Description:
- *    PCIe hcd driver remove Free the resources and power down the PCIe core
+ *    PCIe HCD driver remove Free the resources and power down the PCIe core
  *
  *   Return: 0 on success, -ve on failure
  */
 static int  pcie_hcd_remove(struct platform_device *pdev)
 {
 	struct pcie_hcd *pdrv = platform_get_drvdata(pdev);
+	struct pci_host_bridge *bridge;
 
 	HCD_FN_ENT();
 
@@ -3482,9 +4611,14 @@ static int  pcie_hcd_remove(struct platform_device *pdev)
 	    HCD_FN_RET_VAL(0);
 	}
 
-	if (pdrv->bus) {
-	    pci_stop_root_bus(pdrv->bus);
-	    pci_remove_root_bus(pdrv->bus);
+	bridge = pci_host_bridge_from_priv(pdrv);
+	if (bridge->bus) {
+	    pci_stop_root_bus(bridge->bus);
+	    pci_remove_root_bus(bridge->bus);
+	}
+
+	if (pdrv->ecam_cfg) {
+	    pci_ecam_free(pdrv->ecam_cfg);
 	}
 
 	pcie_hcd_procfs_deinit(pdrv);
@@ -3497,23 +4631,24 @@ static int  pcie_hcd_remove(struct platform_device *pdev)
 
 	pcie_hc_unconfig_core(pdrv);
 
-	pcie_hcd_unmap_resources(pdrv);
-
 	/* power off ports based on apon setting */
 	pcie_hc_apon_pwrdn(pdrv);
 
 	pcie_hcd_free_regulators(pdrv);
 
-	pcie_hc_free_core(pdrv);
+	pcie_hcd_unmap_resources(pdrv);
 
-	kfree(pdrv);
+	pcie_hc_remove_access(pdrv);
+
+	pcie_hc_free_core(pdrv);
 
 	platform_set_drvdata(pdev, NULL);
 
 	HCD_FN_RET_VAL(0);
 }
 
-extern bool enet_init_done;
+extern bool xport_init_done;
+
 /*
  * +-----------------------------------------------------
  *  Global Functions
@@ -3525,8 +4660,9 @@ extern bool enet_init_done;
  *   Parameters:
  *
  *   Description:
- *    PCIe hcd driver init, register the driver from platform list including misc driver
- *    This inturn should call our probe()
+ *    PCIe HCD driver init, register the driver from platform list including
+ *    misc driver
+ *    This in turn should call our probe()
  *
  *   Return: 0 on success, -ve on failure
  */
@@ -3538,47 +4674,51 @@ static int __init pcie_hcd_init(void)
 
 	HCD_FN_ENT();
 
-	printk("Broadcom PCIe Host Controller Driver (impl%d)\r\n", CONFIG_BCM_PCIE_HCD_IMPL);
+#ifdef CONFIG_BCM968880
+	while (!xport_init_done) {
+	    msleep(100);
+	}
+	msleep(100);
+#endif
 
-    while (!enet_init_done) {
-        mdelay(1000);
-    }
-    mdelay(1000);
+	printk("Broadcom PCIe Host Controller Driver (impl%d)\n",
+	    CONFIG_BCM_PCIE_HCD_IMPL);
 
 #if defined(MODULE)
 	if ((ret = pcie_hcd_nvram_init()) != 0) {
-	    HCD_ERROR("Failed to initialize nvram parameters\r\n");
+	    HCD_ERROR("Failed to initialize nvram parameters\n");
 	    goto done;
 	}
 
 	/* Need to initialize platform dev for loadable kernel module */
 	if ((ret = pcie_hcd_plt_init()) != 0) {
-	    HCD_ERROR("Failed to initialize platform device\r\n");
+	    HCD_ERROR("Failed to initialize platform device\n");
 	    goto done;
 	}
 #endif /* MODULE */
 
-	/* Register common hcd driver */
-	HCD_INFO("register [%s] driver with platform driver\r\n",
+	/* Register common HCD driver */
+	HCD_INFO("register [%s] driver with platform driver\n",
 	    phcd_drv->driver.name);
 	ret = platform_driver_register(phcd_drv);
 	if (ret != 0) {
-	    HCD_ERROR("Failed to register%s driver with platform driver\r\n",
+	    HCD_ERROR("Failed to register%s driver with platform driver\n",
 	        phcd_drv->driver.name);
 	    goto done;
 	}
 
-	/* Register individual HC drivers, if different from hcd driver */
+	/* Register individual HC drivers, if different from HCD driver */
 	for (index = 0; index < MAX_HC_TYPE; index++) {
 	    int hc = pcie_hcd_hc_enum_order[index];
 	    struct platform_driver *phc_drv = hc_plt_cfg[hc].plt_drv;
 
 	    if ((hc_plt_cfg[hc].num_cores) && (phc_drv != phcd_drv)) {
 
-	        HCD_INFO("register [%s] driver with platform driver\r\n", phc_drv->driver.name);
+	        HCD_INFO("register [%s] driver with platform driver\n",
+	            phc_drv->driver.name);
 	        ret = platform_driver_register(phc_drv);
 	        if (ret != 0) {
-	            HCD_ERROR("Failed to register [%s] driver with platform driver\r\n",
+	            HCD_ERROR("Failed to register [%s] with platform driver\n",
 	                phc_drv->driver.name);
 	            goto done;
 	        }
@@ -3595,8 +4735,9 @@ done:
  *   Parameters:
  *
  *   Description:
- *    PCIe hcd driver exit, unregister the driver from platform list including misc driver
- *    This inturn should call our remove()
+ *    PCIe HCD driver exit, de register the driver from platform list including
+ *    misc driver
+ *    This in turn should call our remove()
  *
  *   Return: None
  */
@@ -3607,21 +4748,24 @@ static void __exit pcie_hcd_exit(void)
 
 	HCD_FN_ENT();
 
-	/* Un-register individual HC drivers, if different from hcd driver */
+	/* Disable fastpath to completely power down the master core */
+	pcie_hcd_init_fastpath(FASTPATH_OFF);
+
+	/* Un-register individual HC drivers, if different from HCD driver */
 	for (index = MAX_HC_TYPE-1; index >= 0; index--) {
 	    int hc = pcie_hcd_hc_enum_order[index];
 	    struct platform_driver *phc_drv = hc_plt_cfg[hc].plt_drv;
 
 	    if ((hc_plt_cfg[hc].num_cores) && (phc_drv != phcd_drv)) {
 
-	        HCD_INFO("Un register [%s] driver with platform driver\r\n",
+	        HCD_INFO("De-register [%s] driver with platform driver\n",
 	            phc_drv->driver.name);
 	        platform_driver_unregister(phc_drv);
 	    }
 	}
 
-	/* Un-register pcie hcd driver */
-	HCD_INFO("Un register [%s] driver with platform driver\r\n",
+	/* Un-register PCIe HCD driver */
+	HCD_INFO("De-register [%s] driver with platform driver\n",
 	    phcd_drv->driver.name);
 	platform_driver_unregister(phcd_drv);
 
@@ -3643,7 +4787,7 @@ MODULE_LICENSE("GPL");
  * Function pcie_hcd_plt_dev_release (dev)
  *
  *   Parameters:
- *    pdrv ... pointer to pcie platform device data structure
+ *    pdrv ... pointer to PCIe platform device data structure
  *
  *   Description:
  *    PCIe platform device release callback
@@ -3674,6 +4818,7 @@ static int __init pcie_hcd_plt_init(void)
 	int i, core, hc;
 	int ret = 0;
 	struct platform_device  *pdev = NULL;
+	struct pcie_hc_plt_cfg  *plt_cfg = NULL;
 
 	HCD_FN_ENT();
 
@@ -3684,7 +4829,7 @@ static int __init pcie_hcd_plt_init(void)
 	    hc_plt_cfg[PHC].plt_dev = &pcie_hcd_plt_dev[NUM_CORES];
 	    ret = pcie_phc_plt_init(&hc_plt_cfg[PHC]);
 	    if (ret < 0) {
-	        HCD_ERROR("Failed to initialize HC\r\n");
+	        HCD_ERROR("Failed to initialize HC\n");
 	        HCD_FN_RET_VAL(ret);
 	    }
 
@@ -3692,82 +4837,85 @@ static int __init pcie_hcd_plt_init(void)
 	    hc_plt_cfg[VHC].plt_dev = &pcie_hcd_plt_dev[NUM_CORES];
 	    ret = pcie_vhc_plt_init(&hc_plt_cfg[VHC]);
 	    if (ret < 0) {
-	        HCD_ERROR("Failed to initialize VHC\r\n");
+	        HCD_ERROR("Failed to initialize VHC\n");
 	        HCD_FN_RET_VAL(ret);
 	    }
 #endif /* CONFIG_BCM_PCIE_VCD */
 
 	    for (hc = PHC; hc < MAX_HC_TYPE; hc++) {
-	        if ((hc_plt_cfg[hc].num_cores &&
-	            ((hc_plt_cfg[hc].plt_drv->probe == pcie_hcd_driver.probe) ||
-	            (hc_plt_cfg[hc].plt_drv->remove == pcie_hcd_driver.remove))) &&
-	            ((hc_plt_cfg[hc].init_core == NULL) || (hc_plt_cfg[hc].config_core == NULL) ||
-	            (hc_plt_cfg[hc].read_reg == NULL) || (hc_plt_cfg[hc].write_reg == NULL))) {
+	        plt_cfg = &hc_plt_cfg[hc];
+	        if ((plt_cfg->num_cores &&
+	            ((plt_cfg->plt_drv->probe == pcie_hcd_driver.probe) ||
+	            (plt_cfg->plt_drv->remove == pcie_hcd_driver.remove))) &&
+	            ((!plt_cfg->init_core) || (!plt_cfg->config_core) ||
+	            (!plt_cfg->read_reg) || (!plt_cfg->write_reg))) {
 
-	            HCD_ERROR("Failed to initialize platform driver fops\r\n");
+	            HCD_ERROR("Failed to initialize platform driver fops\n");
 	            HCD_ERROR("PCIe Platform HC[%d] Configuration:\n", hc);
-	            HCD_ERROR("num_cores           :%d\n", hc_plt_cfg[hc].num_cores);
-	            HCD_INFO("flags               :0x%08x\n", hc_plt_cfg[hc].flags);
-	            HCD_ERROR("plt_dev             :0x%px\n", hc_plt_cfg[hc].plt_dev);
-	            HCD_ERROR("plt_drv             :0x%px\n", hc_plt_cfg[hc].plt_drv);
-	            HCD_ERROR("pci_fops            :0x%px\n", hc_plt_cfg[hc].pci_fops);
-	            HCD_ERROR("init_core           :0x%px\n", hc_plt_cfg[hc].init_core);
-	            HCD_ERROR("free_core           :0x%px\n", hc_plt_cfg[hc].free_core);
-	            HCD_ERROR("read_reg            :0x%px\n", hc_plt_cfg[hc].read_reg);
-	            HCD_ERROR("write_reg           :0x%px\n", hc_plt_cfg[hc].write_reg);
-	            HCD_ERROR("config_core         :0x%px\n", hc_plt_cfg[hc].config_core);
-	            HCD_ERROR("reset_core          :0x%px\n", hc_plt_cfg[hc].reset_core);
-	            HCD_ERROR("is_linkup           :0x%px\n", hc_plt_cfg[hc].is_linkup);
-	            HCD_ERROR("map_core_irq        :0x%px\n", hc_plt_cfg[hc].map_core_irq);
-	            HCD_ERROR("setup_msi           :0x%px\n", hc_plt_cfg[hc].setup_msi);
-	            HCD_ERROR("teardown_msi        :0x%px\n", hc_plt_cfg[hc].teardown_msi);
-	            HCD_ERROR("setup_errint        :0x%px\n", hc_plt_cfg[hc].setup_errint);
-	            HCD_ERROR("teardown_errint     :0x%px\n", hc_plt_cfg[hc].teardown_errint);
+	            HCD_ERROR("num_cores       :%d\n", plt_cfg->num_cores);
+	            HCD_INFO("flags            :0x%08x\n", plt_cfg->flags);
+	            HCD_ERROR("plt_dev         :0x%px\n", plt_cfg->plt_dev);
+	            HCD_ERROR("plt_drv         :0x%px\n", plt_cfg->plt_drv);
+	            HCD_ERROR("pci_fops        :0x%px\n", plt_cfg->pci_fops);
+	            HCD_ERROR("init_core       :0x%px\n", plt_cfg->init_core);
+	            HCD_ERROR("free_core       :0x%px\n", plt_cfg->free_core);
+	            HCD_ERROR("read_reg        :0x%px\n", plt_cfg->read_reg);
+	            HCD_ERROR("write_reg       :0x%px\n", plt_cfg->write_reg);
+	            HCD_ERROR("config_core     :0x%px\n", plt_cfg->config_core);
+	            HCD_ERROR("reset_core      :0x%px\n", plt_cfg->reset_core);
+	            HCD_ERROR("is_linkup       :0x%px\n", plt_cfg->is_linkup);
+	            HCD_ERROR("map_core_irq    :0x%px\n", plt_cfg->map_core_irq);
+	            HCD_ERROR("setup_msi       :0x%px\n", plt_cfg->setup_msi);
+	            HCD_ERROR("teardown_msi    :0x%px\n", plt_cfg->teardown_msi);
+	            HCD_ERROR("setup_errint    :0x%px\n", plt_cfg->setup_errint);
+	            HCD_ERROR("teardown_errint :0x%px\n", plt_cfg->teardown_errint);
 	            HCD_FN_RET_VAL(-EINVAL);
 	        } else {
 	            HCD_INFO("PCIe Platform HC[%d] Configuration:\n", hc);
-	            HCD_INFO("num_cores           :%d\n", hc_plt_cfg[hc].num_cores);
-	            HCD_INFO("flags               :0x%08x\n", hc_plt_cfg[hc].flags);
-	            HCD_INFO("plt_dev             :0x%px\n", hc_plt_cfg[hc].plt_dev);
-	            HCD_INFO("plt_drv             :0x%px\n", hc_plt_cfg[hc].plt_drv);
-	            HCD_INFO("pci_fops            :0x%px\n", hc_plt_cfg[hc].pci_fops);
-	            HCD_INFO("init_core           :0x%px\n", hc_plt_cfg[hc].init_core);
-	            HCD_INFO("free_core           :0x%px\n", hc_plt_cfg[hc].free_core);
-	            HCD_INFO("read_reg            :0x%px\n", hc_plt_cfg[hc].read_reg);
-	            HCD_INFO("write_reg           :0x%px\n", hc_plt_cfg[hc].write_reg);
-	            HCD_INFO("config_core         :0x%px\n", hc_plt_cfg[hc].config_core);
-	            HCD_INFO("reset_core          :0x%px\n", hc_plt_cfg[hc].reset_core);
-	            HCD_INFO("is_linkup           :0x%px\n", hc_plt_cfg[hc].is_linkup);
-	            HCD_INFO("map_core_irq        :0x%px\n", hc_plt_cfg[hc].map_core_irq);
-	            HCD_INFO("setup_msi           :0x%px\n", hc_plt_cfg[hc].setup_msi);
-	            HCD_INFO("teardown_msi        :0x%px\n", hc_plt_cfg[hc].teardown_msi);
-	            HCD_INFO("setup_errint        :0x%px\n", hc_plt_cfg[hc].setup_errint);
-	            HCD_INFO("teardown_errint     :0x%px\n", hc_plt_cfg[hc].teardown_errint);
+	            HCD_INFO("num_cores        :%d\n", plt_cfg->num_cores);
+	            HCD_INFO("flags            :0x%08x\n", plt_cfg->flags);
+	            HCD_INFO("plt_dev          :0x%px\n", plt_cfg->plt_dev);
+	            HCD_INFO("plt_drv          :0x%px\n", plt_cfg->plt_drv);
+	            HCD_INFO("pci_fops         :0x%px\n", plt_cfg->pci_fops);
+	            HCD_INFO("init_core        :0x%px\n", plt_cfg->init_core);
+	            HCD_INFO("free_core        :0x%px\n", plt_cfg->free_core);
+	            HCD_INFO("read_reg         :0x%px\n", plt_cfg->read_reg);
+	            HCD_INFO("write_reg        :0x%px\n", plt_cfg->write_reg);
+	            HCD_INFO("config_core      :0x%px\n", plt_cfg->config_core);
+	            HCD_INFO("reset_core       :0x%px\n", plt_cfg->reset_core);
+	            HCD_INFO("is_linkup        :0x%px\n", plt_cfg->is_linkup);
+	            HCD_INFO("map_core_irq     :0x%px\n", plt_cfg->map_core_irq);
+	            HCD_INFO("setup_msi        :0x%px\n", plt_cfg->setup_msi);
+	            HCD_INFO("teardown_msi     :0x%px\n", plt_cfg->teardown_msi);
+	            HCD_INFO("setup_errint     :0x%px\n", plt_cfg->setup_errint);
+	            HCD_INFO("teardown_errint  :0x%px\n", plt_cfg->teardown_errint);
 	        }
 	    }
 
-	    HCD_LOG("DEF CFG: ssc 0x%x, speed  0x%x, scanorder 0x%x, apon 0x%x barmask 0x%x\n",
+	    HCD_INFO("DEF CFG: ssc 0x%x, speed  0x%x, scanorder 0x%x, apon 0x%x "
+	        "barmask 0x%x\n",
 	        pcie_ssc_cfg, pcie_speed_cfg, pcie_scan_order, pcie_apon,
-	            pcie_barmask);
-	    HCD_LOG("       : pwr 0x%x, errlog 0x%x, msi 0x%x, acc  0x%x, pllclkid 0x%x\n",
+	        pcie_barmask);
+	    HCD_INFO("       : pwr 0x%x, errlog 0x%x, msi 0x%x, acc  0x%x, "
+	        "pllclkid 0x%x\n",
 	        pcie_phy_pwrmode, pcie_errlog, pcie_msi, pcie_acc, pcie_pllclkid);
-	    HCD_LOG("       : loglevel 0x%x pllclkadj 0x%x linkupretries 0x%x "
-	        "phyrxfilter 0x%x epuperstb 0x%x\n",
+	    HCD_INFO("       : loglevel 0x%x pllclkadj 0x%x linkupretries 0x%x "
+	        "phyrxfilter 0x%x epuperstb 0x%x prioqueue 0x%x fastpath 0x%x\n",
 	        pcie_log_level, pcie_pllclkadj, pcie_linkupretries,
-	        pcie_phyrxfilter, pcie_epuperstb);
+	        pcie_phyrxfilter, pcie_epuperstb, pcie_prioqueue, pcie_fastpath);
 	}
 
 	if (HCD_USE_DT_ENTRY(0)) {
 	    /* Nothing to do, DT entries will populate the devices */
-	    HCD_INFO("Using PCIe DT to probe\r\n");
+	    HCD_INFO("Using PCIe DT to probe\n");
 	    HCD_FN_RET_VAL(ret);
 	}
 
-	/* Register All Pcie cores as platform devices */
+	/* Register All PCIe cores as platform devices */
 	for (i = 0; i < NUM_CORES; i++) {
 	    core = pcie_hcd_get_boot_order_core(i);
 	    if (core >= NUM_CORES) {
-	        HCD_LOG("Core [%d] not in range (> %d)\r\n", core, NUM_CORES);
+	        HCD_LOG("Core [%d] not in range (> %d)\n", core, NUM_CORES);
 	        continue;
 	    }
 
@@ -3782,7 +4930,7 @@ static int __init pcie_hcd_plt_init(void)
 	        HCD_ERROR("Core [%d] unable to register device: ret = %d\n",
 	            core, ret);
 	    } else {
-	        HCD_INFO("Core [%d] registered device successfully\r\n", core);
+	        HCD_INFO("Core [%d] registered device successfully\n", core);
 	    }
 	}
 
@@ -3795,7 +4943,8 @@ static int __init pcie_hcd_plt_init(void)
  *    Parameters:
  *
  *    Description:
- *     PCIe platform de-initialization. Unregister PCIe cores to the platform devices
+ *     PCIe platform de-initialization. De-register PCIe cores to the platform
+ *     devices
  *     Generally this is done outside, but since there is no support outside,
  *     it is done here.
  *
@@ -3809,21 +4958,21 @@ static void __exit pcie_hcd_plt_deinit(void)
 	HCD_FN_ENT();
 
 	if (NUM_CORES < 0) {
-	    HCD_INFO("HC configuration not initialized\r\n");
+	    HCD_INFO("HC configuration not initialized\n");
 	    HCD_FN_RET();
 	}
 
 	if (HCD_USE_DT_ENTRY(0)) {
 	    /* Nothing to do, DT entries will populate the devices */
-	    HCD_INFO("Using PCIe DT to probe\r\n");
+	    HCD_INFO("Using PCIe DT to probe\n");
 	    HCD_FN_RET();
 	}
 
-	/* Un register All Pcie cores as platform devices */
+	/* Un register All PCIe cores as platform devices */
 	for (i = 0; i < NUM_CORES; i++) {
 	    core = pcie_hcd_get_boot_order_core(i);
 	    if (core >= NUM_CORES) {
-	        HCD_LOG("Core [%d] not in range (> %d)\r\n", core, NUM_CORES);
+	        HCD_LOG("Core [%d] not in range (> %d)\n", core, NUM_CORES);
 	        continue;
 	    }
 
@@ -3833,7 +4982,7 @@ static void __exit pcie_hcd_plt_deinit(void)
 	    pdev->id = core;
 
 	    platform_device_unregister(pdev);
-	    HCD_INFO("Core [%d] unregister device successfully\r\n", core);
+	    HCD_INFO("Core [%d] de-register device successfully\n", core);
 	}
 
 	HCD_FN_RET();

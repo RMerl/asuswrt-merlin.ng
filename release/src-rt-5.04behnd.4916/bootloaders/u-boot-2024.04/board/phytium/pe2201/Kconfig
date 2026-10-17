@@ -1,0 +1,12 @@
+if TARGET_PE2201
+
+config SYS_BOARD
+	default "pe2201"
+
+config SYS_VENDOR
+	default "phytium"
+
+config SYS_CONFIG_NAME
+	default "pe2201"
+
+endif

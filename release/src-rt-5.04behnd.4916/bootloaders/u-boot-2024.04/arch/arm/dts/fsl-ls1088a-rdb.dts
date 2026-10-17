@@ -1,0 +1,175 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls1088a RDB board device tree source
+ *
+ * Copyright 2017 NXP
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1088a.dtsi"
+
+/ {
+	model = "NXP Layerscape 1088a RDB Board";
+	compatible = "fsl,ls1088a-rdb", "fsl,ls1088a";
+	aliases {
+		spi0 = &qspi;
+	};
+};
+
+&dpmac1 {
+	status = "okay";
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac2 {
+	status = "okay";
+	phy-handle = <&mdio2_phy1>;
+	phy-connection-type = "10gbase-r";
+};
+
+&dpmac3 {
+	status = "okay";
+	phy-handle = <&mdio1_phy5>;
+	phy-connection-type = "qsgmii";
+};
+
+&dpmac4 {
+	status = "okay";
+	phy-handle = <&mdio1_phy6>;
+	phy-connection-type = "qsgmii";
+};
+
+&dpmac5 {
+	status = "okay";
+	phy-handle = <&mdio1_phy7>;
+	phy-connection-type = "qsgmii";
+};
+
+&dpmac6 {
+	status = "okay";
+	phy-handle = <&mdio1_phy8>;
+	phy-connection-type = "qsgmii";
+};
+
+&dpmac7 {
+	status = "okay";
+	phy-handle = <&mdio1_phy1>;
+	phy-connection-type = "qsgmii";
+};
+
+&dpmac8 {
+	status = "okay";
+	phy-handle = <&mdio1_phy2>;
+	phy-connection-type = "qsgmii";
+};
+
+&dpmac9 {
+	status = "okay";
+	phy-handle = <&mdio1_phy3>;
+	phy-connection-type = "qsgmii";
+};
+
+&dpmac10 {
+	status = "okay";
+	phy-handle = <&mdio1_phy4>;
+	phy-connection-type = "qsgmii";
+};
+
+&emdio1 {
+	status = "okay";
+
+	/* Freescale F104 PHY1 */
+	mdio1_phy1: emdio1_phy@1 {
+		reg = <0x1c>;
+		};
+	mdio1_phy2: emdio1_phy@2 {
+		reg = <0x1d>;
+		};
+	mdio1_phy3: emdio1_phy@3 {
+		reg = <0x1e>;
+		};
+	mdio1_phy4: emdio1_phy@4 {
+		reg = <0x1f>;
+	};
+
+	/* F104 PHY2 */
+	mdio1_phy5: emdio1_phy@5 {
+		reg = <0x0c>;
+	};
+	mdio1_phy6: emdio1_phy@6 {
+		reg = <0x0d>;
+	};
+	mdio1_phy7: emdio1_phy@7 {
+		reg = <0x0e>;
+	};
+	mdio1_phy8: emdio1_phy@8 {
+		reg = <0x0f>;
+	};
+};
+
+&emdio2 {
+	status = "okay";
+
+	/* Aquantia AQR105 10G PHY */
+	mdio2_phy1: emdio2_phy@1 {
+		compatible = "ethernet-phy-ieee802.3-c45";
+		interrupts = <0 2 0x4>;
+		reg = <0x0>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	bootph-all;
+
+	i2c-mux@77 {
+		compatible = "nxp,pca9547";
+		reg = <0x77>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x3>;
+
+			rtc@51 {
+				compatible = "nxp,pcf2129";
+				reg = <0x51>;
+			};
+		};
+	};
+};
+
+&duart0 {
+	status = "okay";
+};
+
+&duart1 {
+	status = "okay";
+};
+
+&qspi {
+	status = "okay";
+
+	s25fs512s0: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+	};
+
+	s25fs512s1: flash@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <1>;
+	 };
+};
+
+&sata {
+	status = "okay";
+};

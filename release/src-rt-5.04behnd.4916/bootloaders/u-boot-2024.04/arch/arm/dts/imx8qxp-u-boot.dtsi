@@ -1,0 +1,133 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018, 2021 NXP
+ */
+
+/ {
+	binman: binman {
+		multiple-images;
+	};
+};
+
+&binman {
+#ifdef CONFIG_SPL_BUILD
+	u-boot-spl-ddr {
+		align = <4>;
+		align-size = <4>;
+		filename = "u-boot-spl-ddr.bin";
+		pad-byte = <0xff>;
+
+		u-boot-spl {
+			align-end = <4>;
+			filename = "u-boot-spl.bin";
+		};
+	};
+
+	spl {
+		filename = "spl.bin";
+
+		mkimage {
+			args = "-n spl/u-boot-spl.cfgout -T imx8image -e 0x100000";
+
+			blob {
+				filename = "u-boot-spl-ddr.bin";
+			};
+		};
+	};
+#endif
+
+	itb {
+		filename = "u-boot.itb";
+
+		fit {
+			description = "Configuration to load ATF before U-Boot";
+			fit,external-offset = <CONFIG_FIT_EXTERNAL_OFFSET>;
+			fit,fdt-list = "of-list";
+			#address-cells = <1>;
+
+			images {
+				uboot {
+					arch = "arm64";
+					compression = "none";
+					description = "U-Boot (64-bit)";
+					load = <CONFIG_TEXT_BASE>;
+					type = "standalone";
+
+					uboot-blob {
+						filename = "u-boot-nodtb.bin";
+						type = "blob-ext";
+					};
+				};
+
+				atf {
+					arch = "arm64";
+					compression = "none";
+					description = "ARM Trusted Firmware";
+					entry = <0x00910000>;
+					load =  <0x00091000>;
+					type = "firmware";
+
+					atf-blob {
+						filename = "bl31.bin";
+						type = "atf-bl31";
+					};
+				};
+
+				scfw {
+					arch = "arm64";
+					compression = "none";
+					description = "System Controler Firmware";
+					type = "firmware";
+
+					scfw_blob {
+						filename = "mx8qx-mek-scfw-tcm.bin";
+						type = "blob-ext";
+					};
+				};
+
+				seco {
+					arch = "arm64";
+					compression = "none";
+					description = "Seco Firmware";
+					type = "firmware";
+
+					seco_blob {
+						filename = "mx8qxc0-ahab-container.img";
+						type = "blob-ext";
+					};
+				};
+
+				fdt {
+					type = "flat_dt";
+					compression = "none";
+
+					uboot-fdt-blob {
+						filename = "u-boot.dtb";
+						type = "blob-ext";
+					};
+				};
+			};
+
+			configurations {
+				default = "conf";
+
+				conf {
+					fdt = "fdt";
+					firmware = "uboot";
+					loadables = "atf";
+				};
+			};
+		};
+	};
+
+	imx-boot {
+		filename = "flash.bin";
+		pad-byte = <0x00>;
+
+		spl {
+			filename = "spl.bin";
+			offset = <0x0>;
+			type = "blob-ext";
+		};
+	};
+};

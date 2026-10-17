@@ -1,7 +1,0 @@
-SNAPPER9260 BOARD
-M:	Simon Glass <sjg@chromium.org>
-S:	Maintained
-F:	board/bluewater/snapper9260/
-F:	include/configs/snapper9260.h
-F:	configs/snapper9260_defconfig
-F:	configs/snapper9g20_defconfig

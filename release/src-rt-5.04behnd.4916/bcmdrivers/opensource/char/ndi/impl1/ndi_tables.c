@@ -477,7 +477,7 @@ void sa_delete(struct ndi_sa *sa)
 }
 
 /* --- proc-related functions --- */
-#define DEFINE_NDI_HLIST_SEQ(name, _table, entry_type, fmt, show_fun) \
+#define DEFINE_NDI_HLIST_FUNC(name, _table, entry_type, fmt, show_fun) \
 	static void *ndi_##name##_seq_start(struct seq_file *s, loff_t *pos) \
 	{ \
 		loff_t *spos = s->private; \
@@ -530,13 +530,27 @@ void sa_delete(struct ndi_sa *sa)
 	{ \
 		return seq_open_private(file, &ndi_##name##_seq_ops, \
 					sizeof(loff_t)); \
-	} \
-	static const struct file_operations ndi_##name##_fops = { \
+	}
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0))
+#define DEFINE_NDI_HLIST_SEQ(name, _table, entry_type, fmt, show_fun) \
+	DEFINE_NDI_HLIST_FUNC(name, _table, entry_type, fmt, show_fun) \
+	static const struct file_operations ndi_##name##_fops = {      \
 		.open		= ndi_##name##_open, \
 		.read		= seq_read, \
 		.llseek		= seq_lseek, \
 		.release	= seq_release_private, \
 	}
+#else
+#define DEFINE_NDI_HLIST_SEQ(name, _table, entry_type, fmt, show_fun)	\
+	DEFINE_NDI_HLIST_FUNC(name, _table, entry_type, fmt, show_fun) \
+ 	static const struct proc_ops ndi_##name##_fops = { \
+		.proc_open	= ndi_##name##_open, \
+		.proc_read	= seq_read, \
+		.proc_lseek	= seq_lseek, \
+		.proc_release	= seq_release_private, \
+	}
+#endif
 
 static int __ndi_dev_entry_show(struct seq_file *s, struct ndi_dev *entry)
 {
@@ -687,7 +701,7 @@ err:
 		spin_unlock_bh(&name.lock); \
 	} while (0)
 
-void __exit ndi_tables_exit(void)
+void ndi_tables_exit(void)
 {
 	remove_proc_entry("devices", ndi_dir);
 	remove_proc_entry("ignored_devices", ndi_dir);

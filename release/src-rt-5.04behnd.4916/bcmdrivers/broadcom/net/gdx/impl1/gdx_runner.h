@@ -31,9 +31,14 @@ written consent.
 #define __GDX_RUNNER__H__
 
 #include "rdpa_api.h"
-#include "rdp_cpu_ring_defs.h"
 #include "rdp_mm.h"
 #include "rdp_cpu_ring.h"
+
+#if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
+#include "linux/bcm_log.h"
+#include "spdsvc_defs.h"
+#include "rdpa_spdtest_common_ex.h"
+#endif
 
 /** README **
  *  This file is split into 2 sets of function definitions.
@@ -204,12 +209,13 @@ static inline int gdx_hwacc_pkt_recv(unsigned int groupidx, unsigned long qid, g
 
     if (rc == 0)
     {
-        info->data = rdpa_info.data;
+        info->data = (uint8_t *)rdpa_info.data;
         info->data_offset = rdpa_info.data_offset;
         info->gdx_pd_data = rdpa_info.gdx_pd_data;
         info->is_exception = rdpa_info.is_exception;
         info->size = rdpa_info.size;
         info->rx_csum_verified = rdpa_info.rx_csum_verified;
+        info->iq_prio = (rdpa_info.iq_prio == rdpa_iq_priority_high) ? 1: 0;
     }
     else if (rc == BDMF_ERR_NO_MORE) 
     {
@@ -995,6 +1001,41 @@ gdx_alloc_skb_idx_free_skb:
     return skb_idx;
 }
 
+inline int gdx_hwacc_spdtest_tx_start(struct sk_buff *skb)
+{
+    int ret = GDX_SUCCESS;
+#if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
+    rdpa_cpu_tx_info_t info = {};
+    uint32_t so_mark;
+    bdmf_boolean is_wan;
+
+    so_mark = skbuff_bcm_ext_spdt_get(skb, so_mark);
+
+    if ((so_mark & RDPA_UDPSPDTEST_SO_MARK_PREFIX_MASK) == RDPA_UDPSPDTEST_SO_MARK_PREFIX)
+    {
+        int rc;
+        info.spdt_so_mark = so_mark;
+
+        rc = rdpa_port_is_wan_get(gdx_hwacc_priv.hw_specific_data_p, &is_wan);
+        if (rc)
+        {
+            GDX_PRINT_ERROR("Failed to start UDP TX speed test (rc %d)", rc);
+            ret = GDX_FAILURE; 
+        }
+        else
+        {
+            rc = rdpa_udpspdtest_tx_start(&info, (int)is_wan, skb);
+            if (rc)
+            {
+                GDX_PRINT_ERROR("Failed to start UDP TX speed test (rc %d)", rc);
+                ret = GDX_FAILURE; 
+            }
+        }
+    }
+#endif
+    return ret;
+}
+
 /****************************************************************************/
 /** Name: _gdx_hwacc_runner_tx                                             **/
 /**                                                                        **/
@@ -1435,7 +1476,7 @@ static inline pNBuff_t gdx_single_packet_read_and_handle(gdx_dev_group_t *dev_gr
     FkBuff_t *fkb = NULL;
     pNBuff_t nbuff_p = NULL;
     gdx_gendev_info_t *gendev_info_p;
-    uint32_t prepend_size = 0;
+    int prepend_size = 0;
     bcmFun_t *gdx_prepend_fill_info_fn = bcmFun_get(BCM_FUN_ID_PREPEND_FILL_INFO_FROM_BUF);
     int dev_idx;
     *rc = GDX_SUCCESS;
@@ -1514,7 +1555,7 @@ static inline pNBuff_t gdx_single_packet_read_and_handle(gdx_dev_group_t *dev_gr
     {
         g_fill_info.prepend_data = info->data + info->data_offset;
         prepend_size = gdx_prepend_fill_info_fn(&g_fill_info);
-        if (prepend_size == (uint32_t)-1)
+        if (prepend_size == -1)
             goto gdx_single_packet_read_and_handle_err;
     }
     else
@@ -1522,7 +1563,14 @@ static inline pNBuff_t gdx_single_packet_read_and_handle(gdx_dev_group_t *dev_gr
         GDX_PRINT_ERROR("gdx_prepend_fill_info_fn NULL\n");
         goto gdx_single_packet_read_and_handle_err;
     }
-    GDX_PRINT_INFO("prepend_size:%d\n",prepend_size);
+    GDX_PRINT_INFO("prepend_size:%d\n", prepend_size);
+
+    if ((info->data_offset + prepend_size) < 0)
+    {
+        GDX_PRINT_ERROR("Can't restore BCM_PKT_HEADROOM data_offset %d, "
+                        "prepend_size %d\n", info->data_offset, prepend_size);
+        goto gdx_single_packet_read_and_handle_err;
+    }
 
     if (is_netdev_accel_tx_fkb(info->tx_dev))
     {

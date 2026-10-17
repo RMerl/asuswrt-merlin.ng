@@ -79,9 +79,6 @@ extern void cfe_usleep(int);
 #include "bdmf_data_types.h"
 
 
-#ifndef __UBOOT__
-#include "bcm_misc_hw_init.h"
-#endif
 
 dpi_params_t *p_dpi_cfg;
 
@@ -815,6 +812,7 @@ static int dispatcher_reorder_init(void)
     rc = rc ? rc : drv_dis_reor_tasks_to_rg_init();
     rc = rc ? rc : drv_dis_reor_free_linked_list_init();
     rc = rc ? rc : drv_dis_reor_cfg(&cfg);
+    rc = rc ? rc : ag_drv_dsptchr_load_balancing_lb_cfg_set(1, 2); /*set strict task priority mode in dispatcher*/
     return rc;
 }
 

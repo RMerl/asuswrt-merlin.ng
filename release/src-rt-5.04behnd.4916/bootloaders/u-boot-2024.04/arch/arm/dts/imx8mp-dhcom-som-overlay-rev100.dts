@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * Copyright (C) 2023 Marek Vasut <marex@denx.de>
+ */
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+#include "imx8mp-pinfunc.h"
+
+&brcmf {
+	reset-gpios = <&gpio1 13 GPIO_ACTIVE_LOW>;
+};
+
+&eeprom0 {	/* EEPROM with EQoS MAC address */
+	compatible = "atmel,24c02";
+	pagesize = <16>;
+};
+
+&eeprom1 {	/* EEPROM with FEC MAC address */
+	compatible = "atmel,24c02";
+	pagesize = <16>;
+};
+
+&eeprom0wl {
+	status = "disabled";
+};
+
+&eeprom1wl {
+	status = "disabled";
+};
+
+&ethphy0f { /* SMSC LAN8740Ai */
+	pinctrl-0 = <&pinctrl_ethphy0 &pinctrl_ioexp>;
+	reset-gpios = <&gpio3 20 GPIO_ACTIVE_LOW>;
+};
+
+&ethphy0g { /* Micrel KSZ9131RNXI */
+	pinctrl-0 = <&pinctrl_ethphy0 &pinctrl_ioexp>;
+	reset-gpios = <&gpio3 20 GPIO_ACTIVE_LOW>;
+};
+
+&i2c3 {
+	adc@48 {
+		compatible = "ti,tla2024";
+		interrupts-extended;
+	};
+};
+
+&ioexp {
+	status = "disabled";
+};
+
+&reg_eth_vio {
+	gpio = <&gpio2 10 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&pinctrl_enet_vio>;
+	pinctrl-names = "default";
+};
+
+&rv3032 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_rtc>;
+	interrupts-extended = <&gpio5 5 IRQ_TYPE_LEVEL_LOW>;
+};
+
+&uart2 {
+	bluetooth {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_uart2_bt>;
+		shutdown-gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&usb_dwc3_0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb0_vbus>;
+};
+
+&usdhc1 {
+	pinctrl-0 = <&pinctrl_usdhc1 &pinctrl_usdhc1_wl_reg_en>;
+	pinctrl-1 = <&pinctrl_usdhc1_100mhz &pinctrl_usdhc1_wl_reg_en>;
+	pinctrl-2 = <&pinctrl_usdhc1_200mhz &pinctrl_usdhc1_wl_reg_en>;
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_hog_base
+		     &pinctrl_dhcom_a &pinctrl_dhcom_b &pinctrl_dhcom_c
+		     &pinctrl_dhcom_d &pinctrl_dhcom_e &pinctrl_dhcom_f
+		     &pinctrl_dhcom_g &pinctrl_dhcom_h &pinctrl_dhcom_i
+		     &pinctrl_dhcom_j &pinctrl_dhcom_k &pinctrl_dhcom_l
+		     /* GPIO_M is connected to CLKOUT2 */
+		     &pinctrl_dhcom_int>;
+
+	pinctrl_enet_vio: dhcom-enet-vio-grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SD1_RESET_B__GPIO2_IO10		0x22
+		>;
+	};
+
+	pinctrl_rtc: dhcom-rtc-grp {
+		fsl,pins = <
+			/* RTC_#INT Interrupt */
+			MX8MP_IOMUXC_SPDIF_EXT_CLK__GPIO5_IO05		0x400001c6
+		>;
+	};
+
+	pinctrl_uart2_bt: dhcom-uart2-bt-grp {
+		fsl,pins = <
+			/* BT_REG_EN */
+			MX8MP_IOMUXC_GPIO1_IO12__GPIO1_IO12		0x144
+		>;
+	};
+
+	pinctrl_usb0_vbus: dhcom-usb0-grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_GPIO1_IO10__USB1_OTG_ID		0x0
+		>;
+	};
+
+	pinctrl_usdhc1_wl_reg_en: dhcom-usdhc1-wl-reg-en-grp {
+		fsl,pins = <
+			/* WL_REG_EN */
+			MX8MP_IOMUXC_GPIO1_IO13__GPIO1_IO13		0x144
+		>;
+	};
+};

@@ -1,0 +1,19 @@
+PMIC ESM Binding
+======================
+
+Certain Power Management ICs contain safety handling logic within them,
+allowing automatic reset of the board in case a safety error is signaled.
+For this purpose, ESM (Error Signal Monitor) is implemented within
+the PMIC running its own state machine.
+
+Required properties :
+- compatible	: "ti,tps659413-esm"
+
+Example
+=======
+
+&tps659413a {
+	esm: esm {
+		compatible = "ti,tps659413-esm";
+	};
+};

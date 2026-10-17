@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Xilinx Versal NET QSPI single DTS
+ *
+ * (C) Copyright 2023, Advanced Micro Devices, Inc.
+ */
+
+#include "versal-net-mini-qspi.dtsi"
+
+/ {
+	model = "Xilinx Versal NET MINI QSPI SINGLE";
+};
+
+&flash0 {
+	spi-rx-bus-width = <4>;
+};

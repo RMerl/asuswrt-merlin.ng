@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+#include "rk3066a-u-boot.dtsi"
+
+/ {
+	config {
+		u-boot,boot-led = "mk808:blue:power";
+	};
+};
+
+&cru {
+	bootph-all;
+};
+
+&dmc {
+	compatible = "rockchip,rk3066-dmc", "syscon";
+	rockchip,pctl-timing = <0x12c 0xc8 0x1f4 0x1e 0x4e 0x4 0x69 0x6
+				0x3 0x0 0x6 0x5 0xc 0x10 0x6 0x4
+				0x4 0x5 0x4 0x200 0x3 0xa 0x40 0x0
+				0x1 0x5 0x5 0x3 0xc 0x1e 0x100 0x0
+				0x4 0x0>;
+	rockchip,phy-timing = <0x208c6690 0x690878 0x10022a00
+			       0x220 0x40 0x0 0x0>;
+	rockchip,sdram-params = <0x24716310 0 2 300000000 3 9 0>;
+};
+
+&mmc0 {
+	fifo-mode;
+	max-frequency = <4000000>;
+	bootph-pre-ram;
+	u-boot,spl-fifo-mode;
+};
+
+&mmc1 {
+	status = "disabled";
+};
+
+&noc {
+	compatible = "rockchip,rk3066-noc", "syscon";
+};
+
+&timer2 {
+	clock-frequency = <24000000>;
+	bootph-all;
+};
+
+&uart2 {
+	bootph-all;
+};

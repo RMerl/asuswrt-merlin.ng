@@ -1,0 +1,489 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal a2197 RevA System Controller
+ *
+ * (C) Copyright 2019, Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@amd.com>
+ */
+/dts-v1/;
+
+#include "zynqmp.dtsi"
+#include "zynqmp-clk-ccf.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "Versal System Controller on a2197 Memory Char board RevA";
+	compatible = "xlnx,zynqmp-m-a2197-01-revA", "xlnx,zynqmp-a2197-revA",
+		     "xlnx,zynqmp-a2197", "xlnx,zynqmp";
+
+	aliases {
+		ethernet0 = &gem0;
+		i2c0 = &i2c0;
+		i2c1 = &i2c1;
+		mmc0 = &sdhci0;
+		mmc1 = &sdhci1;
+		nvmem0 = &eeprom;
+		rtc0 = &rtc;
+		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &dcc;
+		usb0 = &usb0;
+		usb1 = &usb1;
+		spi0 = &qspi;
+	};
+
+	chosen {
+		bootargs = "earlycon";
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>; /* FIXME don't know how big memory is there */
+	};
+
+	ina226-vcc-aux {
+		compatible = "iio-hwmon";
+		io-channels = <&vcc_aux 0>, <&vcc_aux 1>, <&vcc_aux 2>, <&vcc_aux 3>;
+	};
+	ina226-vcc-ram {
+		compatible = "iio-hwmon";
+		io-channels = <&vcc_ram 0>, <&vcc_ram 1>, <&vcc_ram 2>, <&vcc_ram 3>;
+	};
+	ina226-vcc1v1-lp4 {
+		compatible = "iio-hwmon";
+		io-channels = <&vcc1v1_lp4 0>, <&vcc1v1_lp4 1>, <&vcc1v1_lp4 2>, <&vcc1v1_lp4 3>;
+	};
+	ina226-vcc1v2-lp4 {
+		compatible = "iio-hwmon";
+		io-channels = <&vcc1v2_lp4 0>, <&vcc1v2_lp4 1>, <&vcc1v2_lp4 2>, <&vcc1v2_lp4 3>;
+	};
+	ina226-vdd1-1v8-lp4 {
+		compatible = "iio-hwmon";
+		io-channels = <&vdd1_1v8_lp4 0>, <&vdd1_1v8_lp4 1>, <&vdd1_1v8_lp4 2>, <&vdd1_1v8_lp4 3>;
+	};
+	ina226-vcc0v6-lp4 {
+		compatible = "iio-hwmon";
+		io-channels = <&vcc0v6_lp4 0>, <&vcc0v6_lp4 1>, <&vcc0v6_lp4 2>, <&vcc0v6_lp4 3>;
+	};
+};
+
+&qspi {
+	status = "okay";
+	num-cs = <2>;
+	flash@0 {
+		compatible = "m25p80", "jedec,spi-nor"; /* 32MB */
+		reg = <0>, <1>;
+		parallel-memories = /bits/ 64 <0x4000000 0x4000000>; /* 64MB */
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <108000000>;
+	};
+};
+
+&sdhci0 { /* emmc MIO 13-23 - with some settings  16GB */
+	status = "okay";
+	non-removable;
+	disable-wp;
+	bus-width = <8>;
+	xlnx,mio-bank = <0>; /* FIXME tap delay */
+};
+
+&uart0 { /* uart0 MIO38-39 */
+	status = "okay";
+};
+
+&uart1 { /* uart1 MIO40-41 */
+	status = "okay";
+};
+
+&sdhci1 { /* sd1 MIO45-51 cd in place */
+	status = "disable";
+	no-1-8-v;
+	disable-wp;
+	xlnx,mio-bank = <1>;
+};
+
+&gem0 {
+	status = "okay";
+	phy-handle = <&phy0>;
+	phy-mode = "sgmii"; /* DTG generates this properly  1512 */
+	mdio: mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reset-gpios = <&gpio 142 GPIO_ACTIVE_LOW>;
+		phy0: ethernet-phy@0 { /* marwell m88e1512 - SGMII */
+			reg = <0>;
+/*		xlnx,phy-type = <PHY_TYPE_SGMII>; */
+		};
+	};
+};
+
+&gpio {
+	status = "okay";
+	gpio-line-names = "SCLK_OUT", "MISO_MO1", "MO2", "MO3", "MOSI_MIO0", /* 0 - 4 */
+		  "N_SS_OUT", "", "SYS_CTRL0", "SYS_CTRL1", "SYS_CTRL2", /* 5 - 9 */
+		  "SYS_CTRL3", "SYS_CTRL4", "SYS_CTRL5", "EMMC_DAT0", "EMMC_DAT1", /* 10 - 14 */
+		  "EMMC_DAT2", "EMMC_DAT3", "EMMC_DAT4", "EMMC_DAT5", "EMMC_DAT6", /* 15 - 19 */
+		  "EMMC_DAT7", "EMMC_CMD", "EMMC_CLK", "EMMC_RST_B", "", /* 20 - 24 */
+		  "", "RXD0_IN", "TXD0_OUT", "TXD1_OUT", "RXD1_IN", /* 25 - 29 */
+		  "", "", "", "", "LP_I2C0_PMC_SCL", /* 30 - 34 */
+		  "LP_I2C0_PMC_SDA", "LP_I2C1_SCL", "LP_I2C1_SDA", "UART0_RXD_IN", "UART0_TXD_OUT", /* 35 - 39 */
+		  "UART1_TXD_OUT", "UART1_RXD_IN", "ETH_RESET_B", "", "", /* 40 - 44 */
+		  "SD1_CD_B", "SD1_DATA0", "SD1_DATA1", "SD1_DATA2", "SD1_DATA3", /* 45 - 49 */
+		  "SD1_CMD", "SD1_CLK", "USB0_CLK", "USB0_DIR", "USB0_DATA2", /* 50 - 54 */
+		  "USB0_NXT", "USB0_DATA0", "USB0_DATA1", "USB0_STP", "USB0_DATA3", /* 55 - 59 */
+		  "USB0_DATA4", "USB0_DATA5", "USB0_DATA6", "USB0_DATA7", "USB1_CLK", /* 60 - 64 */
+		  "USB1_DIR", "USB1_DATA2", "USB1_NXT", "USB1_DATA0", "USB1_DATA1", /* 65 - 69 */
+		  "USB1_STP", "USB1_DATA3", "USB1_DATA4", "USB1_DATA5", "USB1_DATA6", /* 70 - 74 */
+		  "USB1_DATA7", "ETH_MDC", "ETH_MDIO", /* 75 - 77, MIO end and EMIO start */
+		  "", "", "", "", "", /* 78 - 79 */
+		  "", "", "", "", "", /* 80 - 84 */
+		  "", "", "", "", "", /* 85 -89 */
+		  "", "", "", "", "", /* 90 - 94 */
+		  "", "", "", "", "", /* 95 - 99 */
+		  "", "", "", "", "", /* 100 - 104 */
+		  "", "", "", "", "", /* 105 - 109 */
+		  "", "", "", "", "", /* 110 - 114 */
+		  "", "", "", "", "", /* 115 - 119 */
+		  "", "", "", "", "", /* 120 - 124 */
+		  "", "", "", "", "", /* 125 - 129 */
+		  "", "", "", "", "", /* 130 - 134 */
+		  "", "", "", "", "", /* 135 - 139 */
+		  "", "", "", "", "", /* 140 - 144 */
+		  "", "", "", "", "", /* 145 - 149 */
+		  "", "", "", "", "", /* 150 - 154 */
+		  "", "", "", "", "", /* 155 - 159 */
+		  "", "", "", "", "", /* 160 - 164 */
+		  "", "", "", "", "", /* 165 - 169 */
+		  "", "", "", ""; /* 170 - 173 */
+};
+
+&i2c0 { /* MIO 34-35 - can't stay here */
+	status = "okay";
+	clock-frequency = <400000>;
+	i2c-mux@74 { /* u46 */
+		compatible = "nxp,pca9548";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x74>;
+		/* FIXME reset connected to SYSCTRL_IIC_MUX0_RESET */
+		i2c@0 { /* PMBUS  must be enabled via SW21 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			reg_vcc1v2_lp4: tps544@15 { /* u97 */
+				compatible = "ti,tps544b25";
+				reg = <0x15>;
+			};
+			reg_vcc1v1_lp4: tps544@16 { /* u95 */
+				compatible = "ti,tps544b25";
+				reg = <0x16>;
+			};
+			reg_vdd1_1v8_lp4: tps544@17 { /* u99 */
+				compatible = "ti,tps544b25";
+				reg = <0x17>;
+			};
+			/* UTIL_PMBUS connection */
+			reg_vcc1v8: tps544@13 { /* u92 */
+				compatible = "ti,tps544b25";
+				reg = <0x13>;
+			};
+			reg_vcc3v3: tps544@14 { /* u93 */
+				compatible = "ti,tps544b25";
+				reg = <0x14>;
+			};
+			reg_vcc5v0: tps544@1e { /* u94 */
+				compatible = "ti,tps544b25";
+				reg = <0x1e>;
+			};
+		};
+		i2c@1 { /* PMBUS_INA226 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+			vcc_aux: ina226@42 { /* u86 */
+				compatible = "ti,ina226";
+				#io-channel-cells = <1>;
+				label = "ina226-vcc-aux";
+				reg = <0x42>;
+				shunt-resistor = <5000>;
+			};
+			vcc_ram: ina226@43 { /* u81 */
+				compatible = "ti,ina226";
+				#io-channel-cells = <1>;
+				label = "ina226-vcc-ram";
+				reg = <0x43>;
+				shunt-resistor = <5000>;
+			};
+			vcc1v1_lp4: ina226@46 { /* u96 */
+				compatible = "ti,ina226";
+				#io-channel-cells = <1>;
+				label = "ina226-vcc1v1-lp4";
+				reg = <0x46>;
+				shunt-resistor = <5000>;
+			};
+			vcc1v2_lp4: ina226@47 { /* u98 */
+				compatible = "ti,ina226";
+				#io-channel-cells = <1>;
+				label = "ina226-vcc1v2-lp4";
+				reg = <0x47>;
+				shunt-resistor = <5000>;
+			};
+			vdd1_1v8_lp4: ina226@48 { /* u100 */
+				compatible = "ti,ina226";
+				#io-channel-cells = <1>;
+				label = "ina226-vdd1-1v8-lp4";
+				reg = <0x48>;
+				shunt-resistor = <5000>;
+			};
+			vcc0v6_lp4: ina226@49 { /* u101 */
+				compatible = "ti,ina226";
+				#io-channel-cells = <1>;
+				label = "ina226-vcc0v6-lp4";
+				reg = <0x49>;
+				shunt-resistor = <5000>;
+			};
+		};
+		i2c@2 { /* PMBUS1 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+			reg_vccint: tps53681@60 { /* u69 - 0xc0 */
+				compatible = "ti,tps53681", "ti,tps53679";
+				reg = <0x60>;
+			};
+			reg_vcc_pmc: tps544@7 { /* u80 */
+				compatible = "ti,tps544b25";
+				reg = <0x7>;
+			};
+			reg_vcc_ram: tps544@8 { /* u82 */
+				compatible = "ti,tps544b25";
+				reg = <0x8>;
+			};
+			reg_vcc_pslp: tps544@9 { /* u83 */
+				compatible = "ti,tps544b25";
+				reg = <0x9>;
+			};
+			reg_vcc_psfp: tps544@a { /* u84 */
+				compatible = "ti,tps544b25";
+				reg = <0xa>;
+			};
+			reg_vccaux: tps544@d { /* u85 */
+				compatible = "ti,tps544b25";
+				reg = <0xd>;
+			};
+			reg_vccaux_pmc: tps544@e { /* u87 */
+				compatible = "ti,tps544b25";
+				reg = <0xe>;
+			};
+			reg_vcco_500: tps544@f { /* u88 */
+				compatible = "ti,tps544b25";
+				reg = <0xf>;
+			};
+			reg_vcco_501: tps544@10 { /* u89 */
+				compatible = "ti,tps544b25";
+				reg = <0x10>;
+			};
+			reg_vcco_502: tps544@11 { /* u90 */
+				compatible = "ti,tps544b25";
+				reg = <0x11>;
+			};
+			reg_vcco_503: tps544@12 { /* u91 */
+				compatible = "ti,tps544b25";
+				reg = <0x12>;
+			};
+		};
+		i2c@3 { /* MEM PMBUS - FIXME bug in schematics */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			/* reg = <3>; */
+		};
+		i2c@4 { /* LP_I2C_SM */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <4>;
+			/* connected to U20G */
+		};
+		/* 5-7 unused */
+	};
+};
+
+/* TODO sysctrl via J239 */
+/* TODO samtec J212G/H via J242 */
+/* TODO teensy via U30 PCA9543A bus 1 */
+&i2c1 { /* i2c1 MIO 36-37 */
+	status = "okay";
+	clock-frequency = <400000>;
+
+	/* Must be enabled via J242 */
+	eeprom_versal: eeprom@51 { /* x-prc-01-revA u116, x-prc-02-revA u12 */
+		compatible = "atmel,24c02";
+		reg = <0x51>;
+	};
+
+	i2c-mux@74 { /* u47 */
+		compatible = "nxp,pca9548";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x74>;
+		/* FIXME reset connected to SYSCTRL_IIC_MUX1_RESET */
+		dc_i2c: i2c@0 { /* DC_I2C */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+			/* Use for storing information about SC board */
+			eeprom: eeprom@54 { /* u51 - m24128 16kB FIXME addr */
+				compatible = "atmel,24c08";
+				reg = <0x54>;
+			};
+			si570_ref_clk: clock-generator@5d { /* u26 */
+				#clock-cells = <0>;
+				compatible = "silabs,si570";
+				reg = <0x5d>; /* FIXME addr */
+				temperature-stability = <50>;
+				factory-fout = <33333333>;
+				clock-frequency = <33333333>;
+				clock-output-names = "REF_CLK"; /* FIXME */
+				silabs,skip-recall;
+			};
+			/* Connection via Samtec U20D */
+			/* Use for storing information about X-PRC card */
+			x_prc_eeprom: eeprom@52 { /* x-prc-01-revA u120, x-prc-02-revA u16 */
+				compatible = "atmel,24c02";
+				reg = <0x52>;
+			};
+
+			/* Use for setting up certain features on X-PRC card */
+			x_prc_tca9534: gpio@22 { /* x-prc-01-revA u121, x-prc-02-revA u17 */
+				compatible = "nxp,pca9534";
+				reg = <0x22>;
+				gpio-controller; /* IRQ not connected */
+				#gpio-cells = <2>;
+				gpio-line-names = "sw4_1", "sw4_2", "sw4_3", "sw4_4",
+						  "", "", "", "";
+				gtr-sel0 {
+					gpio-hog;
+					gpios = <0 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_1";
+				};
+				gtr-sel1 {
+					gpio-hog;
+					gpios = <1 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_2";
+				};
+				gtr-sel2 {
+					gpio-hog;
+					gpios = <2 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_3";
+				};
+				gtr-sel3 {
+					gpio-hog;
+					gpios = <3 0>;
+					input; /* FIXME add meaning */
+					line-name = "sw4_4";
+				};
+			};
+		};
+		i2c@2 { /* C0_LP4 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+			si570_c0_lp4: clock-generator@55 { /* u10 */
+				#clock-cells = <0>;
+				compatible = "silabs,si570";
+				reg = <0x55>;
+				temperature-stability = <50>;
+				factory-fout = <30000000>;
+				clock-frequency = <30000000>;
+				clock-output-names = "C0_LP4_SI570_CLK";
+			};
+		};
+		i2c@3 { /* C1_LP4 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+			si570_c1_lp4: clock-generator@5d { /* u10 */
+				#clock-cells = <0>;
+				compatible = "silabs,si570";
+				reg = <0x5d>; /* FIXME addr */
+				temperature-stability = <50>;
+				factory-fout = <30000000>;
+				clock-frequency = <30000000>;
+				clock-output-names = "C1_LP4_SI570_CLK";
+			};
+		};
+		i2c@4 { /* C2_LP4 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <4>;
+			si570_c2_lp4: clock-generator@55 { /* u10 */
+				#clock-cells = <0>;
+				compatible = "silabs,si570";
+				reg = <0x55>;
+				temperature-stability = <50>;
+				factory-fout = <30000000>;
+				clock-frequency = <30000000>;
+				clock-output-names = "C2_LP4_SI570_CLK";
+			};
+		};
+		i2c@5 { /* C3_LP4 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <5>;
+			si570_c3_lp4: clock-generator@55 { /* u15 */
+				#clock-cells = <0>;
+				compatible = "silabs,si570";
+				reg = <0x55>;
+				temperature-stability = <50>;
+				factory-fout = <30000000>;
+				clock-frequency = <30000000>;
+				clock-output-names = "C3_LP4_SI570_CLK";
+			};
+		};
+		i2c@6 { /* HSDP_SI570 */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <6>;
+			si570_hsdp: clock-generator@5d { /* u19 */
+				#clock-cells = <0>;
+				compatible = "silabs,si570";
+				reg = <0x5d>; /* FIXME addr */
+				temperature-stability = <50>;
+				factory-fout = <156250000>;
+				clock-frequency = <156250000>;
+				clock-output-names = "HSDP_SI570";
+			};
+		};
+	};
+};
+
+&usb0 {
+	status = "okay";
+};
+
+&dwc3_0 {
+	status = "okay";
+	dr_mode = "host";
+	/* dr_mode = "peripheral"; */
+	maximum-speed = "high-speed";
+};
+
+&usb1 {
+	status = "disabled"; /* not at mem board */
+};
+
+&dwc3_1 {
+	/delete-property/ phy-names ;
+	/delete-property/ phys ;
+	maximum-speed = "high-speed";
+	snps,dis_u2_susphy_quirk ;
+	snps,dis_u3_susphy_quirk ;
+	status = "disabled";
+};

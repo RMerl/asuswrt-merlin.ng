@@ -1,0 +1,390 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Qualcomm QCS404 based evaluation board device tree source
+ *
+ * (C) Copyright 2022 Sumit Garg <sumit.garg@linaro.org>
+ */
+
+/dts-v1/;
+
+#include "skeleton64.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/clock/qcom,gcc-qcs404.h>
+
+/ {
+	model = "Qualcomm Technologies, Inc. QCS404 EVB";
+	compatible = "qcom,qcs404-evb", "qcom,qcs404";
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		serial0 = &debug_uart;
+		i2c0 = &blsp1_i2c0;
+		i2c1 = &blsp1_i2c1;
+		i2c2 = &blsp1_i2c2;
+		i2c3 = &blsp1_i2c3;
+		i2c4 = &blsp1_i2c4;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0x80000000 0 0x40000000>;
+	};
+
+	soc {
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		ranges = <0x0 0x0 0x0 0xffffffff>;
+		compatible = "simple-bus";
+
+		soc_gpios: pinctrl_north@1300000 {
+			compatible = "qcom,qcs404-pinctrl";
+			reg = <0x1300000 0x200000>;
+			gpio-controller;
+			gpio-count = <120>;
+			gpio-bank-name="soc";
+			#gpio-cells = <2>;
+
+			blsp1_uart2: uart {
+				pins = "GPIO_17", "GPIO_18";
+				function = "blsp_uart2";
+			};
+
+			blsp1_i2c0_default: blsp1-i2c0-default {
+				pins = "GPIO_32", "GPIO_33";
+				function = "blsp_i2c0";
+			};
+
+			blsp1_i2c1_default: blsp1-i2c1-default {
+				pins = "GPIO_24", "GPIO_25";
+				function = "blsp_i2c1";
+			};
+
+			blsp1_i2c2_default: blsp1-i2c2-default {
+				sda {
+					pins = "GPIO_19";
+					function = "blsp_i2c_sda_a2";
+				};
+
+				scl {
+					pins = "GPIO_20";
+					function = "blsp_i2c_scl_a2";
+				};
+			};
+
+			blsp1_i2c3_default: blsp1-i2c3-default {
+				pins = "GPIO_84", "GPIO_85";
+				function = "blsp_i2c3";
+			};
+
+			blsp1_i2c4_default: blsp1-i2c4-default {
+				pins = "GPIO_117", "GPIO_118";
+				function = "blsp_i2c4";
+			};
+
+			ethernet_defaults: ethernet-defaults {
+				int {
+					pins = "GPIO_61";
+					function = "rgmii_int";
+					bias-disable;
+					drive-strength = <2>;
+				};
+				mdc {
+					pins = "GPIO_76";
+					function = "rgmii_mdc";
+					bias-pull-up;
+				};
+				mdio {
+					pins = "GPIO_75";
+					function = "rgmii_mdio";
+					bias-pull-up;
+				};
+				tx {
+					pins = "GPIO_67", "GPIO_66", "GPIO_65", "GPIO_64";
+					function = "rgmii_tx";
+					bias-pull-up;
+					drive-strength = <16>;
+				};
+				rx {
+					pins = "GPIO_73", "GPIO_72", "GPIO_71", "GPIO_70";
+					function = "rgmii_rx";
+					bias-disable;
+					drive-strength = <2>;
+				};
+				tx-ctl {
+					pins = "GPIO_68";
+					function = "rgmii_ctl";
+					bias-pull-up;
+					drive-strength = <16>;
+				};
+				rx-ctl {
+					pins = "GPIO_74";
+					function = "rgmii_ctl";
+					bias-disable;
+					drive-strength = <2>;
+				};
+				tx-ck {
+					pins = "GPIO_63";
+					function = "rgmii_ck";
+					bias-pull-up;
+					drive-strength = <16>;
+				};
+				rx-ck {
+					pins = "GPIO_69";
+					function = "rgmii_ck";
+					bias-disable;
+					drive-strength = <2>;
+				};
+			};
+		};
+
+		blsp1_i2c0: i2c@78b5000 {
+			compatible = "qcom,i2c-qup-v2.2.1";
+			reg = <0x078b5000 0x600>;
+			clocks = <&gcc GCC_BLSP1_AHB_CLK>,
+				 <&gcc GCC_BLSP1_QUP0_I2C_APPS_CLK>;
+			clock-names = "iface", "core";
+			pinctrl-names = "default";
+			pinctrl-0 = <&blsp1_i2c0_default>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		blsp1_i2c1: i2c@78b6000 {
+			compatible = "qcom,i2c-qup-v2.2.1";
+			reg = <0x078b6000 0x600>;
+			clocks = <&gcc GCC_BLSP1_AHB_CLK>,
+				 <&gcc GCC_BLSP1_QUP1_I2C_APPS_CLK>;
+			clock-names = "iface", "core";
+			pinctrl-names = "default";
+			pinctrl-0 = <&blsp1_i2c1_default>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		blsp1_i2c2: i2c@78b7000 {
+			compatible = "qcom,i2c-qup-v2.2.1";
+			reg = <0x078b7000 0x600>;
+			clocks = <&gcc GCC_BLSP1_AHB_CLK>,
+				 <&gcc GCC_BLSP1_QUP2_I2C_APPS_CLK>;
+			clock-names = "iface", "core";
+			pinctrl-names = "default";
+			pinctrl-0 = <&blsp1_i2c2_default>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		blsp1_i2c3: i2c@78b8000 {
+			compatible = "qcom,i2c-qup-v2.2.1";
+			reg = <0x078b8000 0x600>;
+			clocks = <&gcc GCC_BLSP1_AHB_CLK>,
+				 <&gcc GCC_BLSP1_QUP3_I2C_APPS_CLK>;
+			clock-names = "iface", "core";
+			pinctrl-names = "default";
+			pinctrl-0 = <&blsp1_i2c3_default>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		blsp1_i2c4: i2c@78b9000 {
+			compatible = "qcom,i2c-qup-v2.2.1";
+			reg = <0x078b9000 0x600>;
+			clocks = <&gcc GCC_BLSP1_AHB_CLK>,
+				 <&gcc GCC_BLSP1_QUP4_I2C_APPS_CLK>;
+			clock-names = "iface", "core";
+			pinctrl-names = "default";
+			pinctrl-0 = <&blsp1_i2c4_default>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		gcc: clock-controller@1800000 {
+			compatible = "qcom,gcc-qcs404";
+			reg = <0x1800000 0x80000>;
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+		};
+
+		debug_uart: serial@78b1000 {
+			compatible = "qcom,msm-uartdm-v1.4";
+			reg = <0x78b1000 0x200>;
+			clock = <&gcc GCC_BLSP1_UART2_APPS_CLK>,
+				<&gcc GCC_BLSP1_AHB_CLK>;
+			bit-rate = <0xFF>;
+			pinctrl-names = "uart";
+			pinctrl-0 = <&blsp1_uart2>;
+		};
+
+		sdhci@7804000 {
+			compatible = "qcom,sdhci-msm-v5";
+			reg = <0x7804000 0x1000 0x7805000 0x1000>;
+			clock = <&gcc GCC_SDCC1_APPS_CLK>,
+				<&gcc GCC_SDCC1_AHB_CLK>;
+			bus-width = <0x8>;
+			index = <0x0>;
+			non-removable;
+			mmc-ddr-1_8v;
+			mmc-hs400-1_8v;
+		};
+
+		usb3_phy: phy@78000 {
+			compatible = "qcom,usb-ss-28nm-phy";
+			#phy-cells = <0>;
+			reg = <0x78000 0x400>;
+			clocks = <&gcc GCC_USB_HS_PHY_CFG_AHB_CLK>,
+				 <&gcc GCC_USB3_PHY_PIPE_CLK>;
+			clock-names = "ahb", "pipe";
+			resets = <&gcc GCC_USB3_PHY_BCR>,
+				 <&gcc GCC_USB3PHY_PHY_BCR>;
+			reset-names = "com", "phy";
+		};
+
+		usb2_phy_prim: phy@7a000 {
+			compatible = "qcom,usb-hs-28nm-femtophy";
+			#phy-cells = <0>;
+			reg = <0x7a000 0x200>;
+			clocks = <&gcc GCC_USB_HS_PHY_CFG_AHB_CLK>,
+				 <&gcc GCC_USB2A_PHY_SLEEP_CLK>;
+			clock-names = "ahb", "sleep";
+			resets = <&gcc GCC_USB_HS_PHY_CFG_AHB_BCR>,
+				 <&gcc GCC_USB2A_PHY_BCR>;
+			reset-names = "phy", "por";
+		};
+
+		usb2_phy_sec: phy@7c000 {
+			compatible = "qcom,usb-hs-28nm-femtophy";
+			#phy-cells = <0>;
+			reg = <0x7c000 0x200>;
+			clocks = <&gcc GCC_USB_HS_PHY_CFG_AHB_CLK>,
+				 <&gcc GCC_USB2A_PHY_SLEEP_CLK>;
+			clock-names = "ahb", "sleep";
+			resets = <&gcc GCC_QUSB2_PHY_BCR>,
+				 <&gcc GCC_USB2_HS_PHY_ONLY_BCR>;
+			reset-names = "phy", "por";
+		};
+
+		usb3: usb@7678800 {
+			compatible = "qcom,dwc3";
+			reg = <0x7678800 0x400>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+			clocks = <&gcc GCC_USB30_MASTER_CLK>,
+				 <&gcc GCC_SYS_NOC_USB3_CLK>,
+				 <&gcc GCC_USB30_SLEEP_CLK>,
+				 <&gcc GCC_USB30_MOCK_UTMI_CLK>;
+			clock-names = "core", "iface", "sleep", "mock_utmi";
+
+			dwc3@7580000 {
+				compatible = "snps,dwc3";
+				reg = <0x7580000 0xcd00>;
+				phys = <&usb2_phy_prim>, <&usb3_phy>;
+				phy-names = "usb2-phy", "usb3-phy";
+				dr_mode = "host";
+				snps,has-lpm-erratum;
+				snps,hird-threshold = /bits/ 8 <0x10>;
+				snps,usb3_lpm_capable;
+				maximum-speed = "super-speed";
+			};
+		};
+
+		usb2: usb@79b8800 {
+			compatible = "qcom,dwc3";
+			reg = <0x79b8800 0x400>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+			clocks = <&gcc GCC_USB_HS_SYSTEM_CLK>,
+				 <&gcc GCC_PCNOC_USB2_CLK>,
+				 <&gcc GCC_USB_HS_INACTIVITY_TIMERS_CLK>,
+				 <&gcc GCC_USB20_MOCK_UTMI_CLK>;
+			clock-names = "core", "iface", "sleep", "mock_utmi";
+
+			dwc3@78c0000 {
+				compatible = "snps,dwc3";
+				reg = <0x78c0000 0xcc00>;
+				phys = <&usb2_phy_sec>;
+				phy-names = "usb2-phy";
+				dr_mode = "peripheral";
+				snps,has-lpm-erratum;
+				snps,hird-threshold = /bits/ 8 <0x10>;
+				snps,usb3_lpm_capable;
+				maximum-speed = "high-speed";
+			};
+		};
+
+		ethernet: ethernet@7a80000 {
+			compatible = "qcom,qcs404-ethqos";
+			reg = <0x07a80000 0x10000>,
+				<0x07a96000 0x100>;
+			reg-names = "stmmaceth", "rgmii";
+			clock-names = "stmmaceth", "pclk", "ptp_ref", "rgmii";
+			clocks = <&gcc GCC_ETH_AXI_CLK>,
+				 <&gcc GCC_ETH_SLAVE_AHB_CLK>,
+				 <&gcc GCC_ETH_PTP_CLK>,
+				 <&gcc GCC_ETH_RGMII_CLK>;
+
+			resets = <&gcc GCC_EMAC_BCR>;
+			reset-names = "emac";
+
+			snps,tso;
+			rx-fifo-depth = <4096>;
+			tx-fifo-depth = <4096>;
+
+			snps,reset-gpio = <&soc_gpios 60 GPIO_ACTIVE_LOW>;
+			snps,reset-active-low;
+			snps,reset-delays-us = <0 10000 10000>;
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&ethernet_defaults>;
+
+			phy-handle = <&phy1>;
+			phy-mode = "rgmii";
+			max-speed = <1000>;
+
+			mdio {
+				#address-cells = <0x1>;
+				#size-cells = <0x0>;
+				compatible = "snps,dwmac-mdio";
+				phy1: phy@3 {
+					compatible = "ethernet-phy-ieee802.3-c22";
+					device_type = "ethernet-phy";
+					reg = <0x3>;
+				};
+			};
+		};
+
+		spmi@200f000 {
+			compatible = "qcom,spmi-pmic-arb";
+			reg = <0x200f000 0x001000>,
+			      <0x2400000 0x800000>,
+			      <0x2c00000 0x800000>;
+			reg-names = "core", "chnls", "obsrvr";
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+
+			pms405_0: pms405@0 {
+				compatible = "qcom,spmi-pmic";
+				reg = <0x0 0x1>;
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+
+				pms405_gpios: pms405_gpios@c000 {
+					compatible = "qcom,pms405-gpio";
+					reg = <0xc000 0x400>;
+					gpio-controller;
+					gpio-ranges = <&pms405_gpios 0 0 12>;
+					#gpio-cells = <2>;
+				};
+			};
+		};
+	};
+};
+
+#include "qcs404-evb-uboot.dtsi"

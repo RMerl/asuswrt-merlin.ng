@@ -1,0 +1,13 @@
+EVB-RK3308
+M:      Andy Yan <andy.yan@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rk3308
+F:      include/configs/evb_rk3308.h
+F:      configs/evb-rk3308_defconfig
+
+ROCK-PI-S
+M:      Akash Gajjar <gajjar04akash@gmail.com>
+S:      Maintained
+F:      configs/rock-pi-s-rk3308_defconfig
+F:      arch/arm/dts/rk3308-rock-pi-s.dts
+F:      arch/arm/dts/rk3308-rock-pi-s-u-boot.dtsi

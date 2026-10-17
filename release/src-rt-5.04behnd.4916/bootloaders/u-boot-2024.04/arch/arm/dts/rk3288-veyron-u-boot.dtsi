@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2015 Google, Inc
+ */
+
+#include "rk3288-u-boot.dtsi"
+
+/ {
+	chosen {
+		u-boot,spl-boot-order = &spi_flash;
+	};
+};
+
+&dmc {
+	logic-supply = <&vdd_logic>;
+	rockchip,odt-disable-freq = <333000000>;
+	rockchip,dll-disable-freq = <333000000>;
+	rockchip,sr-enable-freq = <333000000>;
+	rockchip,pd-enable-freq = <666000000>;
+	rockchip,auto-self-refresh-cnt = <0>;
+	rockchip,auto-power-down-cnt = <64>;
+	rockchip,ddr-speed-bin = <21>;
+	rockchip,trcd = <10>;
+	rockchip,trp = <10>;
+	operating-points = <
+		/* KHz    uV */
+		200000 1050000
+		333000 1100000
+		533000 1150000
+		666000 1200000
+	>;
+};
+
+&emmc {
+	bootph-all;
+};
+
+&gpio3 {
+	bootph-all;
+};
+
+&gpio7 {
+	bootph-all;
+};
+
+&gpio8 {
+	bootph-all;
+};
+
+&i2c0 {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&rk808 {
+	bootph-all;
+};
+
+&sdmmc {
+	bootph-all;
+};
+
+&spi2 {
+	bootph-all;
+};
+
+&spi_flash {
+	bootph-all;
+};
+
+&uart2 {
+	bootph-all;
+};

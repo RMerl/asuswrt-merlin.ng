@@ -1,0 +1,15 @@
+if TARGET_KONTRON_MX8MM
+
+config SYS_BOARD
+	string
+	default "sl-mx8mm"
+
+config SYS_VENDOR
+	string
+	default "kontron"
+
+config SYS_CONFIG_NAME
+	string
+	default "kontron-sl-mx8mm"
+
+endif

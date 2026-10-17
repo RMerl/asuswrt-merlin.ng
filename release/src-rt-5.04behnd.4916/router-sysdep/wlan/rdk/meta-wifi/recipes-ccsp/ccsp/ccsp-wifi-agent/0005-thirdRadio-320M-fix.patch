@@ -1,0 +1,52 @@
+diff --git a/config-atom/TR181-WiFi-USGv2.XML b/config-atom/TR181-WiFi-USGv2.XML
+index baef71d..b5d0d10 100644
+--- a/config-atom/TR181-WiFi-USGv2.XML
++++ b/config-atom/TR181-WiFi-USGv2.XML
+@@ -1002,7 +1002,7 @@ INSTMSMT_PH2 -->
+                         </parameter>
+                         <parameter>
+                             <name>OperatingChannelBandwidth</name>
+-                            <type>string: Auto(0),20MHz(1),40MHz(2),80MHz(3),160MHz(4)</type>
++                            <type>string: Auto(0),20MHz(1),40MHz(2),80MHz(3),160MHz(4),80+80MHz(5),320MHz(6)</type>
+                             <syntax>uint32/mapped</syntax>
+                             <writable>true</writable>
+                         </parameter>
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.c b/source/TR-181/sbapi/cosa_wifi_apis.c
+index cd2b324..2ee6cd5 100644
+--- a/source/TR-181/sbapi/cosa_wifi_apis.c
++++ b/source/TR-181/sbapi/cosa_wifi_apis.c
+@@ -1964,13 +1964,19 @@ struct  wifiStdCosaHalMap wifiStdMap[] =
+ #endif //_WIFI_AX_SUPPORT_
+ };
+ 
++#ifndef WIFI_CHANNELBANDWIDTH_320MHZ
++/* for compatible with wifi_hal <3.0.3(2023q2)  */
++#define WIFI_CHANNELBANDWIDTH_320MHZ (0x20)
++#endif
++
+ struct wifiChanWidthCosaHalMap wifiChanWidthMap[] =
+ {
+     {WIFI_CHANNELBANDWIDTH_20MHZ,    COSA_DML_WIFI_CHAN_BW_20M,    "20MHz"},
+     {WIFI_CHANNELBANDWIDTH_40MHZ,    COSA_DML_WIFI_CHAN_BW_40M,    "40MHz"},
+     {WIFI_CHANNELBANDWIDTH_80MHZ,    COSA_DML_WIFI_CHAN_BW_80M,    "80MHz"},
+     {WIFI_CHANNELBANDWIDTH_160MHZ,   COSA_DML_WIFI_CHAN_BW_160M,   "160MHz"},
+-    {WIFI_CHANNELBANDWIDTH_80_80MHZ, COSA_DML_WIFI_CHAN_BW_80_80M, "80+80MHz"}
++    {WIFI_CHANNELBANDWIDTH_80_80MHZ, COSA_DML_WIFI_CHAN_BW_80_80M, "80+80MHz"},
++    {WIFI_CHANNELBANDWIDTH_320MHZ,   COSA_DML_WIFI_CHAN_BW_320M,   "320MHz"},
+ };
+ 
+ struct wifiCountryEnumStrMap wifiCountryMap[] =
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.h b/source/TR-181/sbapi/cosa_wifi_apis.h
+index 7255a7d..f4f9744 100755
+--- a/source/TR-181/sbapi/cosa_wifi_apis.h
++++ b/source/TR-181/sbapi/cosa_wifi_apis.h
+@@ -216,7 +216,8 @@ _COSA_DML_WIFI_CHAN_BW
+     COSA_DML_WIFI_CHAN_BW_40M,
+     COSA_DML_WIFI_CHAN_BW_80M,
+     COSA_DML_WIFI_CHAN_BW_160M,
+-    COSA_DML_WIFI_CHAN_BW_80_80M
++    COSA_DML_WIFI_CHAN_BW_80_80M,
++    COSA_DML_WIFI_CHAN_BW_320M
+ }
+ COSA_DML_WIFI_CHAN_BW, *PCOSA_DML_WIFI_CHAN_BW;
+ 

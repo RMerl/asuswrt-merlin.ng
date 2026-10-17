@@ -44,11 +44,6 @@
 #include "trxbus.h"
 #include "phy_drv_psp.h"
 
-#if defined(CONFIG_BRCM_SMC_BOOT)
-#include <bp3_license.h>
-#include <pmc_wan.h>
-#endif
-
 #define wanae_err(fmt, ...) printk("ERROR: wan_ae:" fmt, ##__VA_ARGS__)
 #define DEBUG
 #ifdef DEBUG
@@ -94,28 +89,10 @@ static int is_link(void)
     int is_locked = is_pcs_locked();
 
     if (state || !is_locked)
-        wanae_err("Failed reading expected link status: state %x, locked %x\n", state, is_locked);
+        wanae_dbg("Failed reading expected link status: state %x, locked %x\n", state, is_locked);
 
     return !state && is_locked;
 }
-
-#if defined(CONFIG_BRCM_SMC_BOOT)
-static int wan_ae_license_check(phy_speed_t speed)
-{
-    bp3_license_feature_t bp3_feature = BP3_FEATURE_MAX;
-
-    if (speed == PHY_SPEED_10000)
-        bp3_feature = BP3_FEATURE_ACTIVE_ETH_10;
-    else if (speed == PHY_SPEED_5000)
-        bp3_feature = BP3_FEATURE_ACTIVE_ETH_5;
-    else if (speed == PHY_SPEED_2500)
-        bp3_feature = BP3_FEATURE_ACTIVE_ETH_2_5;
-    else if (speed == PHY_SPEED_1000)
-        bp3_feature = BP3_FEATURE_ACTIVE_ETH_2_5;
-
-    return bcm_license_check_msg(bp3_feature);
-}
-#endif
 
 static int init_mpcs(phy_speed_t speed)
 {
@@ -169,11 +146,6 @@ static int _phy_wan_serdes_config(phy_speed_t speed)
         wanae_err("Unsupported speed mode: %d\n", speed);
         return -1;
     }
-
-#if defined(CONFIG_BRCM_SMC_BOOT)
-    if (wan_ae_license_check(speed) <= 0)
-        return -1;
-#endif
 
     if (wan_serdes_conf(wan_type))
         return -1;
@@ -233,7 +205,7 @@ static int _trx_init(phy_dev_t *phy_dev)
     trxbus_i2cbus = trxbus_dt_bus_get(phy_dev->dt_handle);
     if (trxbus_i2cbus < 0)
     {
-        wanae_err("Missing SFP attribute 'trx' in DT\n");
+        wanae_err("Missing SFP attribute 'trx' in DT; ret: %d dt_handle: %px\n", trxbus_i2cbus, phy_dev->dt_handle);
         return 0;
     }
 
@@ -248,8 +220,7 @@ static int _trx_init(phy_dev_t *phy_dev)
 static int _phy_init(phy_dev_t *phy_dev)
 {
 #if defined(CONFIG_BRCM_SMC_BOOT)
-    if (!phy_dev->cascade_next && pmc_wan_interface_power_control(WAN_INTF_AE, 1))
-        return -1;
+    mpcs_power_set(1);
 #endif
 
    /* Has external PHY ? */
@@ -258,6 +229,15 @@ static int _phy_init(phy_dev_t *phy_dev)
 
 #if defined(DSL_DEVICES)
     phy_dev->flag |= PHY_FLAG_FORCE_2P5G_XGMII;
+#endif
+
+    return 0;
+}
+
+static int _phy_uninit(phy_dev_t *phy_dev)
+{
+#if defined(CONFIG_BRCM_SMC_BOOT)
+    mpcs_power_set(0);
 #endif
 
     return 0;
@@ -282,7 +262,7 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
 #if defined(CONFIG_BRCM_SMC_BOOT)
         if (phy_dev->cascade_next)
         {
-            pmc_wan_interface_power_control(WAN_INTF_AE, 0);
+            mpcs_power_set(0);
             wan_serdes_conf(SERDES_WAN_TYPE_NONE);
         }
 #endif
@@ -292,9 +272,7 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
     {
 #if defined(CONFIG_BRCM_SMC_BOOT)
         if (phy_dev->cascade_next)
-        {
-            pmc_wan_interface_power_control(WAN_INTF_AE, 1);
-        }
+            mpcs_power_set(1);
 #endif
     }
 
@@ -325,6 +303,17 @@ static int _phy_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t du
      * be initialized */
     is_signal_detect_change(0);
     return 0;
+}
+
+static int _phy_speed_set_lock(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex)
+{
+    int ret;
+
+    phy_dev_mutex_lock(phy_dev);
+    ret = _phy_speed_set(phy_dev, speed, duplex);
+    phy_dev_mutex_unlock(phy_dev);
+
+    return ret;
 }
 
 static int configure_on_sigdet_change(void)
@@ -368,6 +357,7 @@ static int _phy_read_status(phy_dev_t *phy_dev)
     phy_speed_t speed = PHY_SPEED_UNKNOWN;
     int old_link = phy_dev->link;
 
+    phy_dev_mutex_lock(phy_dev);
     if (!PhyIsPowerSetEnabled(phy_dev))
        goto exit_dn;
 
@@ -394,6 +384,7 @@ static int _phy_read_status(phy_dev_t *phy_dev)
     {
         phy_dev->speed = speed;
         phy_dev->duplex = PHY_DUPLEX_FULL;
+        phy_dev_mutex_unlock(phy_dev);
         return 0;
     }
 
@@ -401,6 +392,7 @@ exit_dn:
     phy_dev->link = 0;
     phy_dev->speed = PHY_SPEED_UNKNOWN;
     phy_dev->duplex = PHY_DUPLEX_UNKNOWN;
+    phy_dev_mutex_unlock(phy_dev);
     return 0;
 }
 
@@ -446,8 +438,10 @@ static int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
     else if (caps & PHY_CAP_1000_FULL)
         speed = PHY_SPEED_1000;
 
+    phy_dev_mutex_lock(phy_dev);
     if (speed != PHY_SPEED_UNKNOWN)
         _phy_speed_set(phy_dev, speed, PHY_DUPLEX_FULL);
+    phy_dev_mutex_unlock(phy_dev);
 
     return 0;
 }
@@ -470,12 +464,24 @@ static int _phy_power_set(phy_dev_t *phy_dev, int enable)
 
 static int _phy_read(phy_dev_t *phy_dev, uint16_t reg, uint16_t *val)
 {
-    return mpcs_read(reg, val);
+    int ret;
+
+    phy_dev_mutex_lock(phy_dev);
+    ret = mpcs_read(reg, val);
+    phy_dev_mutex_unlock(phy_dev);
+
+    return ret;
 }
 
 static int _phy_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val)
 {
-    return mpcs_write(reg, val);
+    int ret;
+
+    phy_dev_mutex_lock(phy_dev);
+    ret = mpcs_write(reg, val);
+    phy_dev_mutex_unlock(phy_dev);
+
+    return ret;
 }
 
 static int _phy_int_silent_start_get(phy_dev_t *phy_dev, int *mode)
@@ -497,7 +503,7 @@ phy_drv_t phy_drv_wan_ae =
 {
     .phy_type = PHY_TYPE_WAN_AE,
     .read_status = _phy_read_status,
-    .speed_set = _phy_speed_set,
+    .speed_set = _phy_speed_set_lock,
     .caps_get = _phy_caps_get,
     .caps_set = _phy_caps_set,
     .power_get = _phy_power_get,
@@ -505,6 +511,7 @@ phy_drv_t phy_drv_wan_ae =
     .read = _phy_read,
     .write = _phy_write,
     .init = _phy_init,
+    .uninit = _phy_uninit,
     .silent_start_set = _phy_int_silent_start_set,
     .silent_start_get = _phy_int_silent_start_get,
     .name = "AE",

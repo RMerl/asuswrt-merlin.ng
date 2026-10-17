@@ -22,7 +22,6 @@ endif
 
 
 MODSW_GLOBAL=1
-include $(BUILD_DIR)/make.modsw
 include $(SRCBASE)/router/common.mak
 include $(SRCBASE)/.config
 include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
@@ -33,6 +32,19 @@ router_all    : public-include
 	$(MAKE) -C $(HND_SRC)/router all
 	$(MAKE) -C $(HND_SRC)/router install
 	$(MAKE) -C $(HND_SRC)/router reinstall
+# all directories (regardless of what level they are at) containing an
+# autodetect file will be automatically built
+autodirs_list := $(patsubst ./%/autodetect,%,$(shell find -L . -name autodetect))
+
+# AUTODIRS and MULTIARCH_AUTODIRS are defined in makefile.modsw.autogen
+makefile.modsw.autogen : $(BUILD_DIR)/.last_profile
+	@echo "AUTODIRS := $(autodirs_list)"  > m1 ; 
+	$(BUILD_DIR)/hostTools/create_autogen.pl --ke $(KERNEL_ARCH) --pr $(PROFILE_ARCH)  m1 makefile.modsw.autogen
+	$(BUILD_DIR)/hostTools/create_autogen.pl --ke $(KERNEL_ARCH) --pr $(PROFILE_ARCH) --mini m1 makefile.modsw.autogen.mini
+	rm -f m1
+
+include makefile.modsw.autogen
+
 
 #
 # The build sequence of userspace is:
@@ -64,7 +76,7 @@ circular_dep_check: public-include private-include
 	@echo '$$(AUTODIRS) :' >> $(CIRC.MAKE)
 	@echo "" >> $(CIRC.MAKE)
 	@echo 'circ_check: $$(AUTODIRS)' >> $(CIRC.MAKE)
-	make -f $(CIRC.MAKE) circ_check > $(CIRC.OUTPUT) 2>&1
+	$(MAKE) -f $(CIRC.MAKE) circ_check > $(CIRC.OUTPUT) 2>&1
 	@if grep Circular $(CIRC.OUTPUT) ; then \
 		echo "ERROR!!  Circular dependency detected!  Abort build."; \
 		exit 1; \
@@ -82,3 +94,18 @@ clean:
 	@rm -f makefile.modsw.autogen makefile.modsw.autogen.mini
 	@$(MAKE) -C public/include clean
 
+
+
+#
+# Debug stuff
+#
+show_subdirs:
+	@echo AUTODIRS=$(AUTODIRS)
+	@echo MULTIARCH_AUTODIRS=$(MULTIARCH_AUTODIRS)
+	@echo PROFILE_ARCH=$(PROFILE_ARCH)
+	@echo KERNEL_ARCH=$(KERNEL_ARCH)
+
+shell:
+	@echo "Entering makefile debug shell (type exit to exit) >>>"
+	@bash -i
+	@echo "exiting debug shell."

@@ -1,0 +1,96 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * CMPC885 Device Tree Source
+ *
+ * Copyright 2020 CS Group
+ *
+ */
+
+/dts-v1/;
+
+/ {
+	model = "CMPC885";
+	compatible = "fsl, cmpc885", "fsl,mod885";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {
+		stdout-path = &SERIAL;
+	};
+
+	SERIAL: serial {
+		compatible = "fsl,pq1-smc";
+	};
+
+	FEC1: fec@0 {
+		compatible = "fsl,pq1-fec1";
+	};
+
+	FEC2: fec@1 {
+		compatible = "fsl,pq1-fec2";
+	};
+
+	soc: immr@ff000000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device-type = "soc";
+		compatible = "simple-bus";
+		ranges = <0 0xff000000 0x4000>;
+		reg = <0xff000000 0x00000200>;
+
+		WDT: watchdog@0 {
+			compatible = "fsl,pq1-wdt";
+			reg = <0x0 0x10>;
+			timeout-sec = <2>;
+			hw_margin_ms = <1000>;
+		};
+
+		CPM1_PIO_B: gpio-controller@ab8 {
+			#gpio-cells = <2>;
+			compatible = "fsl,cpm1-pario-bank-b";
+			reg = <0xab8 0x10>;
+			gpio-controller;
+		};
+
+		CPM1_PIO_D: gpio-controller@970 {
+			#gpio-cells = <2>;
+			compatible = "fsl,cpm1-pario-bank-d";
+			reg = <0x970 0x10>;
+			gpio-controller;
+		};
+
+		CPM1_PIO_A: gpio-controller@950 {
+			#gpio-cells = <2>;
+			compatible = "fsl,cpm1-pario-bank-a";
+			reg = <0x950 0x10>;
+			gpio-controller;
+		};
+
+		CPM1_PIO_C: gpio-controller@960 {
+			#gpio-cells = <2>;
+			compatible = "fsl,cpm1-pario-bank-c";
+			reg = <0x960 0x10>;
+			gpio-controller;
+		};
+
+		CPM1_PIO_E: gpio-controller@ac8 {
+			#gpio-cells = <2>;
+			compatible = "fsl,cpm1-pario-bank-e";
+			reg = <0xac8 0x18>;
+			gpio-controller;
+		};
+
+		spi: spi@aa0 {
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			cell-index = <0>;
+			compatible = "fsl,mpc8xx-spi";
+			gpios = <&CPM1_PIO_B 21 1>; /* /EEPROM_CS ACTIVE_LOW */
+
+			eeprom@0 {
+				cell-index = <1>;
+			};
+		};
+	};
+};

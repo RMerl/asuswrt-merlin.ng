@@ -42,12 +42,8 @@
  * @{
  */
 
-#if defined(XRDP)
 #define RDPA_UCAST_MAX_PATHS 64
 #define RDPA_L2_KEY_EXCLUDE_FIELDS 0
-#else
-#define RDPA_UCAST_MAX_PATHS 64
-#endif
 
 #if defined(CONFIG_BCM_MAX_UNKNOWN_UCAST_CLIENTS_PER_GROUP)
 #define MAX_L2_CLIENTS_NUM CONFIG_BCM_MAX_UNKNOWN_UCAST_CLIENTS_PER_GROUP
@@ -75,9 +71,6 @@
 #endif
 #endif
 
-#if ((defined(LEGACY_RDP)) && ((RDPA_L2_UCAST_MAX_FLOWS) > (16*1024)))
-#error " Number of runner flows for RDP platforms cann't exceed 16K !"
-#endif
 
 #include "rdpa_l2_common.h"
 
@@ -101,16 +94,9 @@ typedef struct {
     uint8_t is_tunnel;                                     /**< 1: Downstream tunnel flow DSLITE/GRE/VXLAN/MAPT */
     bdmf_object_handle policer_obj;                        /**< Policer Object used if ::rdpa_fc_action_policer is set (supported for downstream traffic only).*/
     uint8_t drop;                                          /**< 1: Drop packets; 0: Forward packets */
-#ifdef XRDP
     uint16_t max_pkt_len;                                  /**< Max packet size according to Egress Port MTU */
-#else
-    uint16_t mtu;                                          /**< Egress Port MTU */
-#endif
     uint8_t is_tos_mangle;                                 /**< 1: Mangle ToS; 0: No Mangle ToS */
     uint8_t tos;                                           /**< mangled TX ToS value */
-#if defined(CONFIG_MULTI_IMP_SF2_LAG_PORT_SUPPORT)
-    uint8_t lag_port;                                      /**< Runner Egress LAG Port */
-#endif
     union {
         uint32_t wl_metadata;                              /**< WL metadata */
         rdpa_wfd_t wfd;
@@ -118,6 +104,10 @@ typedef struct {
     };
     uint8_t cpu_reason;                                    /**< CPU_rx trap reason */
     uint8_t pathstat_idx;                                  /**< Pathstat counter index */
+    uint8_t score_stream_incarn;                           /**< SCORE stream incarnation */
+    uint8_t score_stream_dir;                              /**< SCORE stream direction */
+    uint16_t score_stream_id;                              /**< Score stream index */
+    uint16_t score_dcp_bitmask;                            /**< SCORE Data Collection profiles bitmask */
     uint8_t cmd_list_data_length;                          /**< (XPE) length of data in the command list */    
     uint8_t tx_adjust;                                     /**< tx adjust */    
     uint8_t cmd_list_length;                               /**< Command List Length, in bytes */
@@ -125,21 +115,36 @@ typedef struct {
     uint32_t clients_vector[RDPA_MASTER_MC_FLOW_CACHE_CONTEXT_ENTRY_CLIENT_IDX_VECTOR_NUMBER]; /**< used in case of master flow l2 flooding (hould be maximal size to support L3\L3 flooding and multicats) */
     uint8_t fwd_and_trap; /**< forward and trap */
     uint8_t cntxt_ext;                                     /**< 1: Context extended to another flow */ 
-#ifdef RDP_UFC_TUNNEL    
-    uint8_t tunnel_type;
-    uint8_t tunnel_inner_packet_offset;
-    uint8_t tunnel_index_ref;
-#endif    
-#if defined(CONFIG_RUNNER_GDX_SUPPORT) /* TX */
-    uint8_t is_gdx_tx;
-    uint8_t gdx_prio;
-    uint16_t gdx_ctx_data;
-#endif
+    uint8_t  tunnel_inner_pkt_offset;
+    uint8_t  tunnel_key_offset;
+    uint8_t  is_inner_hdr_l3;
+    uint32_t tunnel_key;
+    uint32_t tunnel_key_mask;
+    uint32_t tunnel_flowid;                                /**< only valid for tunnel inner flow */
     uint8_t is_group_master;
-#if defined(CONFIG_RUNNER_FPI)
-    uint8_t vtag_check;
-    uint16_t vtag_value;
-#endif
+    /* for GDX support */
+    struct 
+    {
+        uint8_t is_gdx_tx;
+        uint8_t gdx_prio;
+        uint16_t gdx_ctx_data;
+    };
+    /* for FPI */
+    struct
+    {
+        uint8_t vtag_check;
+        uint16_t vtag_value;
+        uint8_t ethmac_validate;
+        bdmf_mac_t src_mac_valid;  /**< Source MAC address */
+        bdmf_mac_t dst_mac_valid;  /**< Destination MAC address */
+    };
+    /* for LAG */
+    struct
+    {
+        uint8_t lag_port;            /**< Runner Egress LAG Port */
+        uint8_t is_lag;
+        uint8_t lag_hash_idx;
+    };
 } rdpa_l2_flow_result_t;
 
 /** L2 flow classifaction info (key + result).\n

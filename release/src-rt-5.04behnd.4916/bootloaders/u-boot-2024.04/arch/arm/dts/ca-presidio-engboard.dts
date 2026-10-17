@@ -1,0 +1,143 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2020, Cortina Access Inc.
+ */
+
+/dts-v1/;
+
+/ {
+   #address-cells = <2>;
+   #size-cells = <1>;
+
+	mmc0: mmc@f4400000 {
+		compatible = "cortina,ca-mmc";
+		reg = <0x0 0xf4400000 0x1000>;
+		bus-width = <4>;
+		sd_dll_ctrl = <0xf43200e8>;
+		io_drv_ctrl = <0xf432004c>;
+	};
+
+	gpio0: gpio-controller@0xf4329280  {
+		compatible = "cortina,ca-gpio";
+		reg = <0x0 0xf4329280 0x24>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		status = "okay";
+	};
+	gpio1: gpio-controller@0xf43292a4  {
+		compatible = "cortina,ca-gpio";
+		reg = <0x0 0xf43292a4 0x24>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		status = "disabled";
+	};
+
+	watchdog: watchdog@0xf432901c {
+		compatible = "cortina,ca-wdt";
+		reg = <0x0 0xf432901c 0x34>,
+		      <0x0 0xf4320020 0x04>;
+		status = "okay";
+	};
+
+	uart0: serial@0xf4329148  {
+		bootph-all;
+		compatible = "cortina,ca-uart";
+		reg = <0x0 0xf4329148 0x30>;
+		status = "okay";
+	};
+
+	i2c: i2c@f4329120 {
+		compatible = "cortina,ca-i2c";
+		reg = <0x0 0xf4329120 0x28>;
+		clock-frequency = <400000>;
+	};
+
+	nand: nand-controller@f4324000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "cortina,ca-nand";
+		reg = <0 0xf4324000 0x3b0>, /* NAND controller */
+		      <0 0xf7001000 0xb4>, /* DMA_GLOBAL */
+		      <0 0xf7001a00 0x80>; /* DMA channel0 for FLASH */
+		status = "okay";
+		nand-ecc-mode = "hw";
+		nand-ecc-strength = <16>;
+		nand-ecc-step-size = <1024>;    /* Must be 1024 */
+		nand_flash_base_addr = <0xe0000000>;
+	};
+
+	sflash: sflash-controller@f4324000 {
+		#address-cells = <2>;
+		#size-cells = <1>;
+		compatible = "cortina,ca-sflash";
+		reg = <0x0 0xf4324000 0x50>;
+		reg-names = "sflash-regs";
+		flash@0 {
+			compatible = "jedec,spi-nor";
+			spi-rx-bus-width = <1>;
+			spi-max-frequency = <108000000>;
+		};
+	};
+
+	leds: led-controller@f43200f0 {
+		compatible = "cortina,ca-leds";
+		reg = <0x0 0xf43200f0 0x40>;
+
+		cortina,blink-rate1 = <256>;
+		cortina,blink-rate2 = <512>;
+
+		led@0 {
+			pin = <0>;
+			active-low;
+			blink-sel =<0>;
+			port = <0>;
+			off-event = <0>;
+			label = "led0";
+		};
+
+		led@1 {
+			pin = <1>;
+			active-low;
+			blink-sel =<1>;
+			label = "led1";
+		};
+
+		led@2 {
+			pin = <2>;
+			active-low;
+			label = "led2";
+		};
+
+	};
+
+	eth: ethnet@0xf4300000 {
+		compatible = "eth_cortina";
+		reg = <0x0 0xf4320000 0x34>,
+		      <0x0 0xf43290d8 0x04>,
+		      <0x0 0xf4304000 0x04>;
+
+		/* port0: phy address 1 - GMAC0: port 0
+		 * port1: phy address 2 - GMAC1: port 1
+		 * port2: phy address 3 - GMAC2: port 2
+		 * port3: phy address 4 - GMAC3: port 3
+		 * port4: phy address 5 - RGMII: port 4
+		 */
+		valid-port-map = <0x1f>;
+		valid-port-num = <5>;
+		valid-ports = <0x1 0x0>,
+			      <0x2 0x1>,
+			      <0x3 0x2>,
+			      <0x4 0x3>,
+			      <0x5 0x4>;
+		def-active-port = <0x3>;
+		inter-gphy-num = <6>;
+		inter-gphy-val = <0xf43380fc 0xbcd>,
+				 <0xf43380dc 0xeeee>,
+				 <0xf43380d8 0xeeee>,
+				 <0xf43380fc 0xbce>,
+				 <0xf43380c0 0x7777>,
+				 <0xf43380c4 0x7777>;
+		init-rgmii = <1>;
+		ni-xram-base = <0xF4500000>;
+	};
+};

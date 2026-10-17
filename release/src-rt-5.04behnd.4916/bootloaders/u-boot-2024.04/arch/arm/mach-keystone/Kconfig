@@ -1,0 +1,44 @@
+if ARCH_KEYSTONE
+
+choice
+	prompt "TI Keystone board select"
+	optional
+
+config TARGET_K2HK_EVM
+	bool "TI Keystone 2 Kepler/Hawking EVM"
+	select SOC_K2HK
+
+config TARGET_K2E_EVM
+	bool "TI Keystone 2 Edison EVM"
+	select SOC_K2E
+
+config TARGET_K2L_EVM
+	bool "TI Keystone 2 Lamar EVM"
+	select SOC_K2L
+
+config TARGET_K2G_EVM
+	bool "TI Keystone 2 Galileo EVM"
+        select BOARD_LATE_INIT
+	select SOC_K2G
+        select TI_I2C_BOARD_DETECT
+
+endchoice
+
+config SOC_K2E
+	bool
+
+config SOC_K2G
+	bool
+
+config SOC_K2HK
+	bool
+
+config SOC_K2L
+	bool
+
+config SYS_SOC
+	default "keystone"
+
+source "board/ti/ks2_evm/Kconfig"
+
+endif

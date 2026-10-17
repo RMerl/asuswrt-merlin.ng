@@ -1,0 +1,34 @@
+/*
+ * Copyright (c) 2024 Uwe Kleine-König
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+
+/dts-v1/;
+/plugin/;
+
+&{/} {
+	/*
+	 * /b already has a label "node_b" in the base dts, also b is already
+	 * referenced in the base, so both the base's b and this b have a
+	 * phandle value.
+	 */
+	node_b2: b {
+		value = <42>;
+		d = <&node_d>;
+	};
+
+	node_c: c {
+		value = <23>;
+		b = <&node_b2>;
+	};
+
+	d {
+		a = <&node_a>;
+		c = <&node_c>;
+	};
+};
+
+&node_a {
+	value = <32>;
+};

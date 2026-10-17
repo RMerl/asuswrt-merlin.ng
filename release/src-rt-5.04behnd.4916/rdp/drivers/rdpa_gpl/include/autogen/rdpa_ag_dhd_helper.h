@@ -64,6 +64,7 @@ typedef enum {
     rdpa_dhd_helper_attr_int_coalescing_timeout = 16, /* int_coalescing_timeout : RW : number : Coalescing timeout in msec */
     rdpa_dhd_helper_attr_codel_enable = 17, /* codel_enable : RW : bool : CoDel management switch */
     rdpa_dhd_helper_attr_flow_ring_update = 18, /* flow_ring_update : W : number : Update FlowRing */
+    rdpa_dhd_helper_attr_pcap_cfg = 19, /* pcap_cfg : RW : aggregate dhd_pcap_config(rdpa_dhd_pcap_cfg_t) : PCAP DHD Configuration */
 } rdpa_dhd_helper_attr_types;
 
 extern int (*f_rdpa_dhd_helper_get)(bdmf_number radio_idx_, bdmf_object_handle *pmo);
@@ -505,6 +506,34 @@ static inline int rdpa_dhd_helper_codel_enable_set(bdmf_object_handle mo_, bdmf_
 static inline int rdpa_dhd_helper_flow_ring_update_set(bdmf_object_handle mo_, bdmf_number flow_ring_update_)
 {
     return bdmf_attr_set_as_num(mo_, rdpa_dhd_helper_attr_flow_ring_update, flow_ring_update_);
+}
+
+
+/** Get dhd_helper/pcap_cfg attribute.
+ *
+ * Get PCAP DHD Configuration.
+ * \param[in]   mo_ dhd_helper object handle or mattr transaction handle
+ * \param[out]  pcap_cfg_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_dhd_helper_pcap_cfg_get(bdmf_object_handle mo_, rdpa_dhd_pcap_cfg_t * pcap_cfg_)
+{
+    return bdmf_attr_get_as_buf(mo_, rdpa_dhd_helper_attr_pcap_cfg, pcap_cfg_, sizeof(*pcap_cfg_));
+}
+
+
+/** Set dhd_helper/pcap_cfg attribute.
+ *
+ * Set PCAP DHD Configuration.
+ * \param[in]   mo_ dhd_helper object handle or mattr transaction handle
+ * \param[in]   pcap_cfg_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_dhd_helper_pcap_cfg_set(bdmf_object_handle mo_, const rdpa_dhd_pcap_cfg_t * pcap_cfg_)
+{
+    return bdmf_attr_set_as_buf(mo_, rdpa_dhd_helper_attr_pcap_cfg, pcap_cfg_, sizeof(*pcap_cfg_));
 }
 
 /** @} end of dhd_helper Doxygen group */

@@ -33,6 +33,7 @@
 #include "mac_drv.h"
 #include "xport_drv.h"
 #include "xport_stats.h"
+#include <linux/delay.h>
 
 static uint32_t enabled_ports;
 
@@ -371,6 +372,20 @@ static int port_xport_mtu_set(mac_dev_t *mac_dev, int mtu)
     return 0;
 }
 
+static int port_xport_eee_get(mac_dev_t *mac_dev, int *enable, int *sleep_timer, int *wakeup_timer)
+{
+    XPORT_PORT_ID port_id = mac_dev->mac_id;
+    xport_assert(XPORT_PORT_VALID(port_id));
+
+    if (xport_eee_get(port_id, enable, sleep_timer, wakeup_timer))
+    {
+        __xportError("Failed to get eee to %d for xport mac %d\n", enable, port_id);
+        return -1;
+    }
+
+    return 0;
+}
+
 static int port_xport_eee_set(mac_dev_t *mac_dev, int enable)
 {
     XPORT_PORT_ID port_id = mac_dev->mac_id;
@@ -477,6 +492,9 @@ static int _port_xport_drv_init(XPORT_PORT_ID port_id)
 #include "pmc_xport.h"
 #endif
 
+bool xport_init_done = false;
+EXPORT_SYMBOL(xport_init_done);
+
 static int port_xport_drv_init(mac_drv_t *mac_drv)
 {
     int rc = 0, i;
@@ -499,6 +517,9 @@ static int port_xport_drv_init(mac_drv_t *mac_drv)
         rc |= _port_xport_drv_init(i);
 
     }
+
+    mdelay(100);
+    xport_init_done = 1;
 
     return rc;
 }
@@ -572,6 +593,7 @@ mac_drv_t mac_drv_xport =
     .stats_clear = port_xport_stats_clear,
     .mtu_set = port_xport_mtu_set,
     .eee_set = port_xport_eee_set,
+    .eee_get = port_xport_eee_get,
     .wol_enable = port_xport_wol_enable,
     .dev_add = port_xport_dev_add,
     .dev_del = port_xport_dev_del,

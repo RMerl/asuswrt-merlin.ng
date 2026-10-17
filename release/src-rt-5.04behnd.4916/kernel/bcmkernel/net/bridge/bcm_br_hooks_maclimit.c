@@ -45,10 +45,12 @@ static int bcm_mac_limit_en = 0;       /* mac limit default disabled */
 static void bcm_mac_limit_learning_notify_extend(struct net_device *dev, int type)
 {
     struct net_device *root_dev = netdev_path_get_root(dev);
-    struct mac_limit *root_dev_mac_limit = &root_dev->bcm_nd_ext.mac_limit;
+    struct mac_limit *root_dev_mac_limit = NULL;
 
-    if (unlikely(root_dev == dev))
+    if (unlikely(root_dev == NULL || root_dev == dev))
         return;
+
+    root_dev_mac_limit = &(root_dev->bcm_nd_ext.mac_limit);
 
     if (type == RTM_DELNEIGH)
     {
@@ -63,22 +65,25 @@ static void bcm_mac_limit_learning_notify_extend(struct net_device *dev, int typ
 static void bcm_mac_limit_learning_update_extend(struct net_device *dev, int add)
 {
     struct net_device *root_dev = netdev_path_get_root(dev);
-    struct mac_limit *root_dev_mac_limit = &root_dev->bcm_nd_ext.mac_limit;
+    struct mac_limit *root_dev_mac_limit = NULL;
 
-    if (unlikely(root_dev == dev))
+    if (unlikely(root_dev == NULL || root_dev == dev))
         return;
 
+    root_dev_mac_limit = &(root_dev->bcm_nd_ext.mac_limit);
     root_dev_mac_limit->learning_count--;
 }
 
 static unsigned int bcm_mac_limit_rcv_extend(struct net_device *dev)
 {
     struct net_device *root_dev = netdev_path_get_root(dev);
-    struct mac_limit *root_dev_mac_limit = &root_dev->bcm_nd_ext.mac_limit;
+    struct mac_limit *root_dev_mac_limit = NULL;
 
-    if (unlikely(root_dev == dev))
+    if (unlikely(root_dev == NULL || root_dev == dev))
         return NF_ACCEPT;
-        
+
+    root_dev_mac_limit = &(root_dev->bcm_nd_ext.mac_limit);
+
     if (!root_dev_mac_limit->enable)
         return NF_ACCEPT;
 
@@ -94,10 +99,10 @@ static unsigned int bcm_mac_limit_rcv_extend(struct net_device *dev)
 static unsigned int bcm_mac_limit_rcv_check_extend(struct net_device *dev)
 {
     struct net_device *root_dev = netdev_path_get_root(dev);
-    struct mac_limit *root_dev_mac_limit = &root_dev->bcm_nd_ext.mac_limit;
+    struct mac_limit *root_dev_mac_limit = root_dev?(&root_dev->bcm_nd_ext.mac_limit):NULL;
 
     /* To check if the mac limit enabled on root device */
-    return root_dev_mac_limit->enable;
+    return root_dev_mac_limit?root_dev_mac_limit->enable:0;
 }
 
 void bcm_mac_limit_learning_notify(struct net_bridge *br, const struct net_bridge_fdb_entry *fdb, int type)
@@ -106,19 +111,20 @@ void bcm_mac_limit_learning_notify(struct net_bridge *br, const struct net_bridg
     struct mac_limit *dev_mac_limit;
     struct mac_limit *br_mac_limit;
     int br_update = 0;
+    const struct net_bridge_port *dst = NULL;
     
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(5, 10, 0))
-    if (!fdb || !fdb->dst || test_bit(BR_FDB_LOCAL, &fdb->flags))
+    if (!fdb || !(dst = READ_ONCE(fdb->dst)) || test_bit(BR_FDB_LOCAL, &fdb->flags))
 #else
-    if (!fdb || !fdb->dst || fdb->is_local)
+    if (!fdb || !(dst = READ_ONCE(fdb->dst)) || fdb->is_local)
 #endif        
         return;
     
-    dev = fdb->dst->dev;
+    dev = dst->dev;
     dev_mac_limit = &dev->bcm_nd_ext.mac_limit;
     br_mac_limit = &br->dev->bcm_nd_ext.mac_limit;
 
-    spin_lock(&mac_limit_spinlock);
+    spin_lock_bh(&mac_limit_spinlock);
     br_update = dev_mac_limit->enable;
     if (type == RTM_DELNEIGH)
     {
@@ -148,7 +154,7 @@ void bcm_mac_limit_learning_notify(struct net_bridge *br, const struct net_bridg
     if (_notify_ex)
         _notify_ex(dev, type);
     
-    spin_unlock(&mac_limit_spinlock);
+    spin_unlock_bh(&mac_limit_spinlock);
 }
 
 void bcm_mac_limit_learning_update(struct net_bridge_fdb_entry *fdb,struct net_bridge_port *source)
@@ -157,19 +163,20 @@ void bcm_mac_limit_learning_update(struct net_bridge_fdb_entry *fdb,struct net_b
     struct mac_limit *dev_mac_limit;
     struct mac_limit *br_mac_limit;
     int br_update = 0;
+    const struct net_bridge_port *dst = NULL;
     
-    if (!fdb || !fdb->dst || !source)
+    if (!fdb || !(dst = READ_ONCE(fdb->dst)) || !source)
         return;
     
-    dev = fdb->dst->dev;
+    dev = dst->dev;
     br_dev = source->br->dev;
     dev_mac_limit = &dev->bcm_nd_ext.mac_limit;
     br_mac_limit = &br_dev->bcm_nd_ext.mac_limit;
 
-    spin_lock(&mac_limit_spinlock);
+    spin_lock_bh(&mac_limit_spinlock);
     br_update = dev_mac_limit->enable;
     /* mac move case, delete obselete then notify new */
-    if (unlikely(source != fdb->dst))
+    if (unlikely(source != dst))
     {
        dev_mac_limit->learning_count--;
        if (br_update)
@@ -184,7 +191,7 @@ void bcm_mac_limit_learning_update(struct net_bridge_fdb_entry *fdb,struct net_b
        if (_update_ex)
            _update_ex(dev, 0);
     }
-    spin_unlock(&mac_limit_spinlock);
+    spin_unlock_bh(&mac_limit_spinlock);
 }
 
 static unsigned int _bcm_mac_limit_rcv(struct sk_buff *skb)
@@ -197,6 +204,7 @@ static unsigned int _bcm_mac_limit_rcv(struct sk_buff *skb)
     struct net_bridge_fdb_entry *fdb;
     u16 vid = 0;
     bool entry_exist = false;
+    const struct net_bridge_port *dst = NULL;
         
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(5, 10, 0))
     if (!netif_is_bridge_port(dev))
@@ -211,8 +219,8 @@ static unsigned int _bcm_mac_limit_rcv(struct sk_buff *skb)
     br_vlan_get_tag(skb, &vid);
     rcu_read_lock();
     fdb = br_fdb_find_rcu(p->br, eth_hdr(skb)->h_source, vid);
-    if (fdb && fdb->dst)
-        entry_exist = (dev == fdb->dst->dev);
+    if (fdb && (dst = READ_ONCE(fdb->dst)))
+        entry_exist = (dev == dst->dev);
     rcu_read_unlock();
 
     if (unlikely(!entry_exist))

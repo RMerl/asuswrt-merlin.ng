@@ -1,0 +1,46 @@
+Update from original Marvell U-Boot to mainline U-Boot:
+-------------------------------------------------------
+
+Generate the U-Boot image with these commands:
+
+$ make helios4_defconfig
+$ make
+
+The resulting image including the SPL binary with the
+full DDR setup is "u-boot-with-spl.kwb".
+
+Now all you need to do is copy this image on a SD card.
+For example with this command:
+
+$ sudo dd if=u-boot-with-spl.kwb of=/dev/sdX bs=512 seek=1
+
+Please use the correct device node for your setup instead
+of "/dev/sdX" here!
+
+Boot selection:
+---------------
+
+Before powering up the board, boot selection should be done via the SW1 dip
+switch (0: OFF, 1: ON):
+
+ - SPI:     00010
+ - SD/eMMC: 00111
+ - SATA1:   11100
+ - UART:    11110
+
+Boot from UART:
+---------------
+
+Connect the on-board micro-USB (CF Pro: CON11, CF Base: CON5)
+to your host.
+
+Set the SW1 DIP switches to UART boot (see above).
+
+Run the following command to initiate U-Boot download:
+
+  ./tools/kwboot -p -b u-boot-with-spl.kwb /dev/ttyUSBX
+
+Use the correct UART device node for /dev/ttyUSBX.
+
+When download finishes start your favorite terminal emulator
+on /dev/ttyUSBX.

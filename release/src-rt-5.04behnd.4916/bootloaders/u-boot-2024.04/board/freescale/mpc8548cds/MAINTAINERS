@@ -1,0 +1,8 @@
+MPC8548CDS BOARD
+M:	Priyanka Jain <priyanka.jain@nxp.com>
+S:	Maintained
+F:	board/freescale/mpc8548cds/
+F:	include/configs/MPC8548CDS.h
+F:	configs/MPC8548CDS_defconfig
+F:	configs/MPC8548CDS_36BIT_defconfig
+F:	configs/MPC8548CDS_legacy_defconfig

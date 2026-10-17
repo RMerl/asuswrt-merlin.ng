@@ -1,5 +1,6 @@
 #include "94916QBRH.dts"
 
+/* *** SPI BUS *** */
 / {
 	bcmgps: bcmgps {
 		compatible = "brcm, bcmgps"; 
@@ -20,4 +21,27 @@
 		reg = <2>;
 		spi-max-frequency = <25000000>;
 	};
+};
+
+/* *** UART PORT *** */
+/*
+/ {
+	bcmgps: bcmgps {
+		compatible = "brcm, bcmgps"; 
+		reset-gpio = <&gpioc 10 GPIO_ACTIVE_HIGH>;
+		uart-port = <&hs_uart0>;
+		status = "okay";
+	};
+};
+
+&hs_uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_hs_uart_cts_n_pin_44 &a_hs_uart_rts_n_pin_43 &a_hs_uart_sdin_pin_51 &a_hs_uart_sdout_pin_42 >;
+	status = "okay";
+};
+*/
+
+&sdhci {
+	brcm,sdhci-pll-baseclk-mhz = <5200>;
+	status = "okay";
 };

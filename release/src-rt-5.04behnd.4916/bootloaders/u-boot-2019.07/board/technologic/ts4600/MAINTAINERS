@@ -1,6 +1,0 @@
-TS4600 BOARD
-M:	Sebastien Bourdelin <sebastien.bourdelin@savoirfairelinux.com>
-S:	Maintained
-F:	board/technologic/ts4600/
-F:	include/configs/ts4600.h
-F:	configs/ts4600_defconfig

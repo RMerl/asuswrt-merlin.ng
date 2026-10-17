@@ -1430,7 +1430,7 @@ static int bcm_mcast_netlink_process_ignore_group_list(struct nlmsghdr *nlh, uns
 static int bcm_mcast_netlink_process_blog_enable(struct nlmsghdr *nlh, unsigned char *pdata)
 {
 #if defined(CONFIG_BR_IGMP_SNOOP) || defined(CONFIG_BR_MLD_SNOOP)
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
     t_BCM_MCAST_BLOG_ENABLE *pq;
 
     /* make sure length is correct, read is not accepted */

@@ -744,7 +744,7 @@ static UINT32 bcmxtmrt_pad (pNBuff_t pNBuf, UINT8 **ppData, UINT32 len, UINT32 i
 
 // #if !defined (CONFIG_BCM963158) /* No padding required for 158 onwards platforms due to short packet support. Currently DEFERRED. */
 
-#if !defined (CONFIG_BCM963138) && !defined (CONFIG_BCM963148) /* RDP FW pads for these platform so we save extra CPU cycles for this path */
+   /* RDP FW pads for these platform so we save extra CPU cycles for this path */
    if (len < ETH_ZLEN &&
        !isAtmCell &&
        (hdrType == HT_PTM ||
@@ -753,15 +753,6 @@ static UINT32 bcmxtmrt_pad (pNBuff_t pNBuf, UINT8 **ppData, UINT32 len, UINT32 i
       goto _doPad ;
    else
       goto _doNoPad ;
-#else
-      /* PTM bonded fragments cant go less than MinFragSize which is 64 per
-      ** standards. */
-   if ( (trafficType == TRAFFIC_TYPE_PTM_BONDED) &&
-        (len < ETH_ZLEN) )
-      goto _doPad ;
-   else 
-      goto _doNoPad ;
-#endif
 
 _doPad :
    nbuff_pad(pNBuf, ETH_ZLEN - len) ; /* Pad the buffer at the end, as SAR packet mode can not handle packets of lesser
@@ -999,7 +990,7 @@ int bcmxtmrt_xmit(pNBuff_t pNBuf, struct net_device *dev)
                             bufStatus, skbMark, is_spdsvc_setup_packet, &spdsvc_so_mark);
    if (rc)
    {
-#if defined (CONFIG_BCM963138) || defined (CONFIG_BCM963148) || defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158)
       pDevCtx->DevStats.tx_dropped++;
       goto unlock_done_xmit ;
 #else
@@ -1133,7 +1124,7 @@ static pNBuff_t AddRfc2684Hdr(pNBuff_t pNBuf, UINT32 hdrType)
  */
 UINT32 bcmxtmrt_processRxPkt(PBCMXTMRT_DEV_CONTEXT pDevCtx, void *rxdma,
                              UINT8  *pData, UINT16 bufStatus, UINT32 len, UINT32 flow_key,
-                             UINT8 is_group_fwd_exp)
+                             UINT8 is_group_fwd_exp, INT iq_prio)
 {
    struct sk_buff *skb  = NULL;
    FkBuff_t       *pFkb = NULL;
@@ -1299,6 +1290,7 @@ UINT32 bcmxtmrt_processRxPkt(PBCMXTMRT_DEV_CONTEXT pDevCtx, void *rxdma,
 
    /* Initialize the FKB context for the received packet. */
    pFkb = bcmxapi_fkb_qinit(pBuf, pData, len, rxdma);
+   pFkb->iq_prio = iq_prio;
 
 #if defined(CONFIG_BCM_FCACHE_CLASSIFICATION_BYPASS)
    if (flow_key) 
@@ -1352,6 +1344,7 @@ UINT32 bcmxtmrt_processRxPkt(PBCMXTMRT_DEV_CONTEXT pDevCtx, void *rxdma,
       if ((skb != NULL))
       {
          skb->dev = pDevCtx->pDev;
+         skbuff_bcm_ext_iq_prio_set(skb, iq_prio); 
          
 #if !defined(HW_ACCEL_MIRRORING)
          blog_hw_accel_force_disable (pNBuf, hw_accel_force_disable) ;

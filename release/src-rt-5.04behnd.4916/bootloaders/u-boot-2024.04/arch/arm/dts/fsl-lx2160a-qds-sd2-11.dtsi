@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP LX2160AQDS device tree source for the SERDES block #2 - protocol 11
+ *
+ * Some assumptions are made:
+ *    * 2 mezzanine cards M1/M4 are connected to IO SLOT 7 and IO SLOT 8
+ *       (sgmii for DPMAC 12, 13, 14, 16, 17, 18)
+ *
+ * Copyright 2020 NXP
+ *
+ */
+#include "fsl-lx2160a-qds.dtsi"
+
+&dpmac12 {
+	status = "okay";
+	phy-handle = <&sgmii_phy7_2>;
+	phy-connection-type = "sgmii";
+};
+
+&dpmac17 {
+	status = "okay";
+	phy-handle = <&sgmii_phy7_3>;
+	phy-connection-type = "sgmii";
+};
+
+&dpmac18 {
+	status = "okay";
+	phy-handle = <&sgmii_phy7_4>;
+	phy-connection-type = "sgmii";
+};
+
+&dpmac16 {
+	status = "okay";
+	phy-handle = <&sgmii_phy8_2>;
+	phy-connection-type = "sgmii";
+};
+
+&dpmac13 {
+	status = "okay";
+	phy-handle = <&sgmii_phy8_3>;
+	phy-connection-type = "sgmii";
+};
+
+&dpmac14 {
+	status = "okay";
+	phy-handle = <&sgmii_phy8_4>;
+	phy-connection-type = "sgmii";
+};
+
+&emdio1_slot7 {
+	sgmii_phy7_2: ethernet-phy@1d {
+		reg = <0x1d>;
+	};
+
+	sgmii_phy7_3: ethernet-phy@1e {
+		reg = <0x1e>;
+	};
+
+	sgmii_phy7_4: ethernet-phy@1f {
+		reg = <0x1f>;
+	};
+};
+
+&emdio1_slot8 {
+	sgmii_phy8_2: ethernet-phy@1d {
+		reg = <0x1d>;
+	};
+
+	sgmii_phy8_3: ethernet-phy@1e {
+		reg = <0x1e>;
+	};
+
+	sgmii_phy8_4: ethernet-phy@1f {
+		reg = <0x1f>;
+	};
+};

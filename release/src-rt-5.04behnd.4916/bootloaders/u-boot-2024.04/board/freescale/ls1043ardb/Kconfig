@@ -1,0 +1,16 @@
+
+if TARGET_LS1043ARDB
+
+config SYS_BOARD
+	default "ls1043ardb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1043ardb"
+
+endif

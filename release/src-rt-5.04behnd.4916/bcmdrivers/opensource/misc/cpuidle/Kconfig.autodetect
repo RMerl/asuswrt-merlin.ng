@@ -1,7 +1,7 @@
 config BCM_ARM_CPUIDLE
 	bool "Broadcom cpuidle driver"
 	default n
-	select CPU_IDLE if !BCM963148
+	select CPU_IDLE
 	help
 	  Add Broadcom ARM and ARM64 cpuidle support
 

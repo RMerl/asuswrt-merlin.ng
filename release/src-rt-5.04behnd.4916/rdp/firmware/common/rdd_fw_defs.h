@@ -33,20 +33,30 @@
 
 /* chip version - should contain all chips increment by the chip order*/
 
-#define    RDP_GEN_30      30 /* ALL RDP projects*/
-#define    RDP_GEN_40      40 /* BCM6858 */
-#define    RDP_GEN_41      41 /* BCM6846 */
-#define    RDP_GEN_42      42 /* BCM63158 */
-#define    RDP_GEN_43      43 /* BCM6856*/
-#define    RDP_GEN_50      50 /* BCM6878 */
-#define    RDP_GEN_60      60 /* BCM63146_A0, BCM4912_A0 */
-#define    RDP_GEN_61      61 /* BCM6855, BCM63146_B0, BCM4912_B0, BCM6813 */
-#define    RDP_GEN_62      62 /* BCM6888, BCM6837 */
+#define    RDP_GEN_30      30  /* ALL RDP projects*/
+#define    RDP_GEN_40      40  /* BCM6858 */
+#define    RDP_GEN_41      41  /* BCM6846 */
+#define    RDP_GEN_42      42  /* BCM63158 */
+#define    RDP_GEN_43      43  /* BCM6856*/
+#define    RDP_GEN_50      50  /* BCM6878 */
+#define    RDP_GEN_60      60  /* BCM63146_A0, BCM4912_A0 */
+#define    RDP_GEN_61      61  /* BCM6855, BCM63146_B0, BCM4912_B0, BCM6813 */
+#define    RDP_GEN_62      62  /* BCM6888, BCM6837 BCM68375*/
+#define    RDP_GEN_100     100 /* BCM6885*/
 
 #define CHIP_VER_USE 1
 
 #define DYNAMIC_SECTION_SIZE_PER_TASK   32
+
+/* The residue is added each N cycles of the generic timer, hence it is dependent on the timer's periodicity. Originally
+ * it was each 16 cycles @100usec and the RESIDUE_PERIODICITY_RATIO makes a general case for, e.g., 32 cycles @ 50usec
+ */
+#ifdef TM_C_CODE
+#define RESIDUE_PERIODICITY_RATIO       (DS_RATE_LIMITER_TIMER_PERIOD_IN_USEC / GENERAL_TIMER_PERIODICITY)
+#define RESIDUE_NUMBER_OF_CYCLES        (16 * RESIDUE_PERIODICITY_RATIO)
+#else
 #define RESIDUE_NUMBER_OF_CYCLES        16
+#endif
 #define RESIDUE_NUMBER_OF_CYCLES_BIT    4
 
 /*

@@ -484,8 +484,10 @@ int bcm_hwf_pkt_rcv(void *arg1, void *arg2, void *arg3)
 
 			if(!hwf_obj) {
 				ct_miss = true;
-				if ((bcm_hwf_debug_lvl_g >= HWF_DEBUG_INFO))
+				if ((bcm_hwf_debug_lvl_g >= HWF_DEBUG_INFO)) {
+					pr_info("%s:%d : ct lookup miss for: \n", __func__, __LINE__);
 					nf_ct_dump_tuple(&key_tuple);
+				}
 			}
 		}
 
@@ -568,7 +570,7 @@ static inline bcm_hwf_ratelimiter_t *hwf_ratelimiter_alloc(void)
 
 static inline void hwf_ratelimiter_free(bcm_hwf_ratelimiter_t *ratelimiter)
 {
-	ratelimiter->valid = 0;		
+	ratelimiter->valid = 0;
 	bcm_hwf_g.num_ratelimiters--;
 }
 
@@ -1046,7 +1048,11 @@ static int hwf_node_seq_show(struct seq_file *s, void *v)
 
 	ret = -ENOSPC;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0))
+	l4proto = nf_ct_l4proto_find(hwf_obj->tuple.dst.protonum);
+#else
 	l4proto = __nf_ct_l4proto_find(hwf_obj->tuple.src.l3num, hwf_obj->tuple.dst.protonum);
+#endif
 	WARN_ON(!l4proto);
 
 	seq_printf(s, "%-8s %u %-8s %u ",
@@ -1129,6 +1135,30 @@ static bcm_hwf_vserver_t *vserver_get_next(struct seq_file *seq, void *v)
 	return NULL;
 }
 
+/* this function is used by start, when seq_oveflow happens,
+ * we need to retreive the element where seq_overflow happened 
+ */ 
+static inline void *get_curr_vserver_by_pos(struct seq_file *seq, loff_t *pos)
+{
+	struct vserver_iter_state *st = seq->private;
+	bcm_hwf_vserver_t *vserver = NULL;
+
+	/* instead of iterating from begining again till pos,
+	 * as we are using array just using st->index
+	 */
+
+	if(*pos > HWF_MAX_VSERVERS)
+		return NULL;
+
+	if (st->index && (st->index <= HWF_MAX_VSERVERS))
+		vserver = &bcm_hwf_g.vservers[st->index - 1];/*incremented get_next node */
+
+	if (vserver && vserver->valid)
+		return vserver;
+	else 
+		return NULL;
+}
+
 static void *hwf_vserver_seq_start(struct seq_file *seq, loff_t *pos)
 {
 	struct vserver_iter_state *st = seq->private;
@@ -1136,12 +1166,12 @@ static void *hwf_vserver_seq_start(struct seq_file *seq, loff_t *pos)
 
 	BCM_HWF_CONFIG_LOCK();
 
-	/*not sure why but, when cat is used, start,next,show stop qeuence is
-	* repeating, to break this loop check if pos !=0 (second iteration) 
-	* to break the loop 
-    */
+	/* start,next,show stop sequence can repeat if seq_overflow happpens
+	 * or at the end of file, but *pos will be zero only for first sequence,
+	 * handle *pos!=0 properly to break the loop 
+	 */
 	if (p != 0)
-		return NULL; /* needed to break loop for read() sycall */
+		return get_curr_vserver_by_pos(seq, pos);
 
 	st->index = 0;
 	return SEQ_START_TOKEN;
@@ -1149,7 +1179,7 @@ static void *hwf_vserver_seq_start(struct seq_file *seq, loff_t *pos)
 
 static void *hwf_vserver_seq_next(struct seq_file *s, void *v, loff_t *pos)
 {
-	(*pos)++; /* cuurently not used */
+	(*pos)++;
 	return vserver_get_next(s, v);
 }
 
@@ -1210,7 +1240,7 @@ static bcm_hwf_ratelimiter_t *ratelimiters_get_next(struct seq_file *seq, void *
 	bcm_hwf_ratelimiter_t *ratelimiter = NULL;
 	int i;
 
-	for (i = st->index; i < HWF_MAX_VSERVERS; i++) {
+	for (i = st->index; i < HWF_MAX_RATELIMITERS; i++) {
 		ratelimiter = &bcm_hwf_g.ratelimiters[i];
 		if ((ratelimiter->valid))
 		{
@@ -1222,6 +1252,30 @@ static bcm_hwf_ratelimiter_t *ratelimiters_get_next(struct seq_file *seq, void *
 	return NULL;
 }
 
+/* this function is used by start, when seq_oveflow happens,
+ * we need to retreive the element where seq_overflow happened 
+ */ 
+static inline void *get_curr_ratelimiter_by_pos(struct seq_file *seq, loff_t *pos)
+{
+	struct ratelimiters_iter_state *st = seq->private;
+	bcm_hwf_ratelimiter_t *ratelimiter = NULL;
+
+	/* instead of iterating from begining again till pos,
+	 * as we are using array just using st->index
+	 */
+
+	if(*pos > HWF_MAX_RATELIMITERS)
+		return NULL;
+
+	if (st->index && (st->index <= HWF_MAX_RATELIMITERS))
+		ratelimiter = &bcm_hwf_g.ratelimiters[st->index - 1];/*incremented get_next node */
+
+	if (ratelimiter && ratelimiter->valid)
+		return ratelimiter;
+	else 
+		return NULL;
+}
+
 static void *hwf_ratelimiters_seq_start(struct seq_file *seq, loff_t *pos)
 {
 	struct ratelimiters_iter_state *st = seq->private;
@@ -1229,12 +1283,12 @@ static void *hwf_ratelimiters_seq_start(struct seq_file *seq, loff_t *pos)
 
 	BCM_HWF_CONFIG_LOCK();
 
-	/*not sure why but, when cat is used, start,next,show stop qeuence is
-	* repeating, to break this loop check if pos !=0 (second iteration) 
-	* to break the loop 
-    */
+	/* start,next,show stop sequence can repeat if seq_overflow happpens
+	 * or at the end of file, but *pos will be zero only for first sequence,
+	 * handle *pos!=0 properly to break the loop 
+	 */
 	if (p != 0)
-		return NULL; /* needed to break loop for read() sycall */
+		return get_curr_ratelimiter_by_pos(seq, pos);
 
 	st->index = 0;
 	return SEQ_START_TOKEN;
@@ -1242,7 +1296,7 @@ static void *hwf_ratelimiters_seq_start(struct seq_file *seq, loff_t *pos)
 
 static void *hwf_ratelimiters_seq_next(struct seq_file *s, void *v, loff_t *pos)
 {
-	(*pos)++; /* cuurently not used */
+	(*pos)++;
 	return ratelimiters_get_next(s, v);
 }
 
@@ -1431,9 +1485,15 @@ void hwf_event_thread_destroy(void)
 	 kthread_stop(bcm_hwf_g.event_thread);
 }
 
+#include "bp3_license.h"
+
 static int __init bcm_hwf_init(void)
 {
 	int ret;
+
+	if (bcm_license_check(BP3_FEATURE_DDOS) <= 0) {
+		pr_err("Missing DDOS license, DDOS/HWF will not work \n");
+	}
 
 	get_random_once(&hwf_hash_rnd, sizeof(hwf_hash_rnd));
 	bcm_hwf_g.hwf_enable = true;

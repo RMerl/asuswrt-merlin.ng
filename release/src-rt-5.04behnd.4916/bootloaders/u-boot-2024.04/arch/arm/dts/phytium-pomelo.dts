@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * dts file for Phytium Pomelo board
+ * Copyright (C) 2021, Phytium Ltd.
+ * lixinde         <lixinde@phytium.com.cn>
+ * weichangzheng   <weichangzheng@phytium.com.cn>
+ */
+/dts-v1/;
+
+/ {
+	model = "Phytium Pomelo Board";
+	compatible = "phytium,d2000-pomelo", "phytium,d2000";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	sysclk_48mhz: clk48mhz {
+		compatible = "fixed-clock";
+		#clock-cells = <0x0>;
+		clock-frequency = <48000000>;
+		clock-output-names = "sysclk_48mhz";
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		uart0: serial@28001000 {
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0x0 0x28001000 0x0 0x1000>;
+			clocks = <&sysclk_48mhz>;
+		};
+
+		pcie@40000000 {
+			compatible = "pci-host-ecam-generic";
+			device_type = "pci";
+			#address-cells = <3>;
+			#size-cells = <2>;
+			reg = <0x0 0x40000000 0x0 0x10000000>;
+			ranges = <0x01000000 0x00 0x00000000 0x0  0x50000000 0x0  0x00F00000>,
+			 <0x02000000 0x00 0x58000000 0x0  0x58000000 0x0  0x28000000>,
+			 <0x43000000 0x10 0x00000000 0x10 0x00000000 0x10  0x00000000>;
+		};
+	};
+};

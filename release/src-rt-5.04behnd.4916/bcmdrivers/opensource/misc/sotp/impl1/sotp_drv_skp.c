@@ -122,7 +122,7 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
 
     bufp = kmalloc(ctrlParms.data_len, GFP_KERNEL);
 
-    if (!bufp) 
+    if (!bufp)
     {
         dev_err(dev, "Kmalloc failed\n");
         return -ENOMEM;
@@ -139,19 +139,25 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
             ret = skp_dump_map( &ctrlParms.result );
             break;
         case SOTP_KEYSLOT:
-            ret = skp_get_keyslot_data( ctrlParms.keyslot_section_num, bufp, ctrlParms.data_len, &ctrlParms.result );
+            ret = skp_get_keyslot_data( ctrlParms.keyslot_section_num, bufp, &ctrlParms.data_len, &ctrlParms.result );
             break;
         case SOTP_KEYSLOT_READLOCK:
             ret = skp_get_keyslot_readlock_status( ctrlParms.keyslot_section_num, &ctrlParms.result );
-	case SOTP_ROLLBACK_LVL:
-	    ret = skp_get_rollback_lvl( (uint32_t*)bufp, &ctrlParms.result );
+            break;
+        case SOTP_ROLLBACK_LVL:
+            ret = skp_get_rollback_lvl( (uint32_t*)bufp, &ctrlParms.result );
             break;
         default:
             ret = -1;
         }
 
         /* Copy SOTP data */
-        copy_to_user(ctrlParms.inout_data, bufp, ctrlParms.data_len);
+        if(copy_to_user(ctrlParms.inout_data, bufp, ctrlParms.data_len))
+        {
+            dev_err(dev, "Failed to copy to user data buf!\n");
+            kfree(bufp);
+            return ret;
+        }
 
         break;
 
@@ -159,13 +165,13 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
         /* Copy user data */
         if( ctrlParms.data_len )
         {
-            if (copy_from_user(bufp, ctrlParms.inout_data, ctrlParms.data_len) != 0) 
+            if (copy_from_user(bufp, ctrlParms.inout_data, ctrlParms.data_len) != 0)
             {
                 dev_err(dev, "Failed to copy user data buf!\n");
                 kfree(bufp);
                 return ret;
             }
-        }  
+        }
 
         switch (ctrlParms.element) {
         case SOTP_KEYSLOT:
@@ -174,9 +180,9 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
         case SOTP_KEYSLOT_READLOCK:
             ret = skp_set_keyslot_readlock( ctrlParms.keyslot_section_num, &ctrlParms.result );
             break;
-	case SOTP_ROLLBACK_LVL:
-	    ret = skp_set_rollback_lvl( (uint32_t*)bufp, &ctrlParms.result );
-	    break;
+        case SOTP_ROLLBACK_LVL:
+            ret = skp_set_rollback_lvl( (uint32_t*)bufp, &ctrlParms.result );
+            break;
         default:
             ret = -1;
         }
@@ -185,10 +191,11 @@ static int sotp_ioctl(struct inode *inode, struct file *flip, unsigned int comma
         break;
     }
 
-    copy_to_user((void *)arg, (void *) &ctrlParms, sizeof(ctrlParms));
+    if (copy_to_user((void *)arg, (void *) &ctrlParms, sizeof(ctrlParms)) !=0)
+            dev_err(dev, "Failed to copy to user data parm!\n");
 
     return (ret);
-} 
+}
 
 static long unlocked_sotp_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {

@@ -1,0 +1,7 @@
+OCTEON_EBB7304 BOARD
+M:	Aaron Williams <awilliams@marvell.com>
+S:	Maintained
+F:	board/Marvell/octeon_ebb7304/*
+F:	configs/octeon_ebb7304_defconfig
+F:	include/configs/octeon_ebb7304.h
+F:	arch/mips/dts/mrvl,octeon-ebb7304.dts

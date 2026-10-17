@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: meson
+OSS_REFERENCE_Version: 1.3.2
+OSS_REFERENCE_License: Apache 2.0
+OSS_REFERENCE_DownloadURL: https://github.com/mesonbuild/meson/releases/download/1.3.2/meson-1.3.2.tar.gz
+OSS_REFERENCE_BroadcomURL:
+OSS_Broadcom_RelativePath: ./meson-1.3.2.tar.gz

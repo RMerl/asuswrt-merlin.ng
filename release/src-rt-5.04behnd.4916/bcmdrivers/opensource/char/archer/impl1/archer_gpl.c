@@ -51,6 +51,9 @@
 #include <linux/nbuff.h>
 #include <linux/blog.h>
 #include <linux/bcm_skb_defines.h>
+#include <linux/debugfs.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
 #include <net/ipv6.h>
 #include "shared_utils.h"
 #include <bcm_OS_Deps.h>
@@ -59,6 +62,7 @@
 #endif
 
 #include "archer_gpl.h"
+#include "archer_gpl_hooks.h"
 #include "crossbow_gpl.h"
 
 #define ARCHER_GPL_NAME_SIZE  32
@@ -118,6 +122,8 @@ typedef struct {
     archer_driver_gso_t gso;
 #endif
     struct device *dummy_dev;
+    /* debugfs dir useful for FPI builds only */
+    struct dentry *debugfs_dir;
 } archer_gpl_t;
 
 static archer_gpl_t archer_gpl_g;
@@ -873,6 +879,138 @@ EXPORT_SYMBOL(archer_gpl_crossbow_get);
 
 /*******************************************************************************
  *
+ * Hooks
+ *
+ *******************************************************************************/
+
+// SCORE
+
+archer_gpl_score_hooks_t archer_gpl_score_hooks_g;
+EXPORT_SYMBOL(archer_gpl_score_hooks_g);
+
+int archer_gpl_score_bind(archer_gpl_score_hooks_t *hooks_p)
+{
+    archer_gpl_score_hooks_g = *hooks_p;
+
+    return 0;
+}
+EXPORT_SYMBOL(archer_gpl_score_bind);
+
+archer_gpl_score_callbacks_t archer_gpl_score_callbacks_g;
+EXPORT_SYMBOL(archer_gpl_score_callbacks_g);
+
+int archer_gpl_score_callbacks_bind(archer_gpl_score_callbacks_t *callbacks_p)
+{
+    archer_gpl_score_callbacks_g = *callbacks_p;
+
+    return 0;
+}
+EXPORT_SYMBOL(archer_gpl_score_callbacks_bind);
+
+/*******************************************************************************
+ *
+ * PROC FS
+ *
+ *******************************************************************************/
+
+#if IS_ENABLED(CONFIG_BCM_SCORE)
+
+#define PROC_DIR_ARCHER         "driver/archer"
+#define PROC_FILE_QSTAT_ENABLE  "qstat_enable"
+#define PROC_FILE_QSTAT_DUMP    "qstat_dump"
+
+static struct proc_dir_entry *proc_dir_archer;
+
+static ssize_t archer_proc_qstat_enable(struct file *file, const char __user *buf,
+                                        size_t count, loff_t *ppos)
+{
+    unsigned long enable;
+
+    if(kstrtoul_from_user(buf, count, 10, &enable))
+    {
+        return -1;
+    }
+
+    archer_gpl_score_qstat_enable(enable);
+
+    return count;
+}
+
+static ssize_t archer_proc_qstat_dump(struct file *file, const char __user *buf,
+                                      size_t count, loff_t *ppos)
+{
+    archer_gpl_score_qstat_dump();
+
+    return count;
+}
+
+static int archer_proc_single_open(struct seq_file *s, void *v)
+{
+    return 0;
+}
+
+static int archer_proc_open(struct inode *inode, struct file *file)
+{
+    return single_open(file, archer_proc_single_open, NULL);
+}
+
+static const struct proc_ops archer_proc_qstat_enable_fops = {
+    .proc_open    = archer_proc_open,
+    .proc_read    = seq_read,
+    .proc_lseek   = seq_lseek,
+    .proc_release = single_release,
+    .proc_write   = archer_proc_qstat_enable
+};
+
+static const struct proc_ops archer_proc_qstat_dump_fops = {
+    .proc_open    = archer_proc_open,
+    .proc_read    = seq_read,
+    .proc_lseek   = seq_lseek,
+    .proc_release = single_release,
+    .proc_write   = archer_proc_qstat_dump
+};
+
+static int archer_proc_init(void)
+{
+    proc_dir_archer = proc_mkdir(PROC_DIR_ARCHER, NULL);
+
+    if(!proc_dir_archer)
+    {
+        __logError("couldn't create %s proc directory\n", PROC_DIR_ARCHER);
+
+	goto err;
+    }
+
+    if(!proc_create(PROC_FILE_QSTAT_ENABLE, 0666, proc_dir_archer,
+                    &archer_proc_qstat_enable_fops))
+    {
+        __logError("failed to create %s entry\n", PROC_FILE_QSTAT_ENABLE);
+
+        proc_remove(proc_dir_archer);
+
+        goto err;
+    }
+
+    if(!proc_create(PROC_FILE_QSTAT_DUMP, 0666, proc_dir_archer,
+                    &archer_proc_qstat_dump_fops))
+    {
+        __logError("failed to create %s entry\n", PROC_FILE_QSTAT_DUMP);
+
+        proc_remove(proc_dir_archer);
+
+        goto err;
+    }
+
+    return 0;
+
+ err:
+    return -ENOMEM;
+}
+
+#endif /* CONFIG_BCM_SCORE */
+
+/*******************************************************************************
+ *
  * Driver Initialization
  *
  *******************************************************************************/
@@ -883,7 +1021,20 @@ int __init archer_construct(void)
 
     bcm_print(CLRcb "Broadcom Archer GPL Driver" CLRnl);
 
+    memset(&archer_gpl_score_hooks_g, 0, sizeof(archer_gpl_score_hooks_t));
+    memset(&archer_gpl_score_callbacks_g, 0, sizeof(archer_gpl_score_callbacks_t));
+
     memset(&archer_gpl_g, 0, sizeof(archer_gpl_t));
+
+#if IS_ENABLED(CONFIG_BCM_SCORE)
+    ret = archer_proc_init();
+    if(ret)
+    {
+        __logError("Could not archer_proc_init");
+
+        return ret;
+    }
+#endif
 
     ret = archer_gpl_sysport_init();
     if(ret)
@@ -924,7 +1075,12 @@ int __init archer_construct(void)
 #endif
 
 #if defined(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)
-    ret = crossbow_gpl_construct();
+#if IS_ENABLED(CONFIG_BCM_FPI)
+    if(archer_gpl_g.debugfs_dir == NULL)
+        archer_gpl_g.debugfs_dir = debugfs_create_dir("archer", NULL);
+#endif
+
+    ret = crossbow_gpl_construct(archer_gpl_g.debugfs_dir);
     if(ret)
     {
         return ret;
@@ -938,6 +1094,11 @@ void __exit archer_destruct(void)
 {
 #if defined(CONFIG_BCM_ARCHER_GSO)
     archer_remove_netdevice(archer_gpl_g.gso.dev);
+#endif
+
+#if defined(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)
+    crossbow_gpl_destruct();
+    debugfs_remove_recursive(archer_gpl_g.debugfs_dir);
 #endif
 
     archer_dummy_device_free();

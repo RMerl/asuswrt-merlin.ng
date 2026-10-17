@@ -2293,6 +2293,9 @@ static const ru_reg_rec *NATC_REGS[] =
 const ru_block_rec NATC_BLOCK =
 {
     "NATC",
+#if RU_INCLUDE_SIZE
+    { 0x000004B8 },
+#endif
     NATC_ADDRS,
     1,
     8,

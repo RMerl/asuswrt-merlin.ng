@@ -1,0 +1,15 @@
+if TARGET_IMX8MP_DATA_MODUL_EDM_SBC
+
+config SYS_BOARD
+	default "imx8mp_edm_sbc"
+
+config SYS_VENDOR
+	default "data_modul"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_data_modul_edm_sbc"
+
+config IMX_CONFIG
+	default "board/data_modul/imx8mp_edm_sbc/imximage.cfg"
+
+endif

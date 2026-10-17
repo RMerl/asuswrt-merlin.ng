@@ -1,6 +1,0 @@
-MX53ARD BOARD
-M:	Fabio Estevam <fabio.estevam@nxp.com>
-S:	Maintained
-F:	board/freescale/mx53ard/
-F:	include/configs/mx53ard.h
-F:	configs/mx53ard_defconfig

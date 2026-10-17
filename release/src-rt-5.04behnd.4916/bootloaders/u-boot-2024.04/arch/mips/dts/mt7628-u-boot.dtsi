@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2020 MediaTek Inc.
+ *
+ * Author: Weijie Gao <weijie.gao@mediatek.com>
+ */
+
+&palmbus {
+	bootph-all;
+};
+
+&reboot {
+	bootph-all;
+};
+
+&clkctrl {
+	bootph-all;
+};
+
+&rstctrl {
+	bootph-all;
+};
+
+&pinctrl {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};
+
+&uart2 {
+	bootph-all;
+};

@@ -1,0 +1,6 @@
+RV1126-NEU2
+M:	Jagan Teki <jagan@edgeble.ai>
+S:	Maintained
+F:	board/edgeble/neural-compute-module-2
+F:	include/configs/neural-compute-module-2.h
+F:	configs/neu2-io-rv1126_defconfig

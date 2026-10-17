@@ -1,0 +1,7 @@
+ULCB BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/*ulcb*
+F:	board/renesas/ulcb/
+F:	configs/rcar3_ulcb_defconfig
+F:	include/configs/ulcb.h

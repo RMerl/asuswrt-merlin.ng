@@ -1,0 +1,73 @@
+/** @file
+ * Copyright (c) 2018, Linaro Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: BSD-2-Clause-Patent
+ */
+
+#define __L1(cpuref, l2ref)                 \
+cpuref {                                    \
+    i-cache-size = <0x8000>;                \
+    i-cache-line-size = <64>;               \
+    i-cache-sets = <256>;                   \
+    d-cache-size = <0x8000>;                \
+    d-cache-line-size = <64>;               \
+    d-cache-sets = <128>;                   \
+    l2-cache = <l2ref>;                     \
+};
+
+#define __L2(idx)                           \
+L2_##idx: l2-cache##idx {                   \
+    cache-size = <0x40000>;                 \
+    cache-line-size = <64>;                 \
+    cache-sets = <256>;                     \
+    cache-unified;                          \
+    next-level-cache = <&L3>;               \
+};
+
+/ {
+    __L2(0)
+    __L2(1)
+    __L2(2)
+    __L2(3)
+    __L2(4)
+    __L2(5)
+    __L2(6)
+    __L2(7)
+    __L2(8)
+    __L2(9)
+    __L2(10)
+    __L2(11)
+
+    L3: l3-cache {
+        cache-level = <3>;
+        cache-size = <0x400000>;
+        cache-line-size = <64>;
+        cache-sets = <4096>;
+        cache-unified;
+    };
+};
+
+__L1(&CPU0, &L2_0)
+__L1(&CPU1, &L2_0)
+__L1(&CPU2, &L2_1)
+__L1(&CPU3, &L2_1)
+__L1(&CPU4, &L2_2)
+__L1(&CPU5, &L2_2)
+__L1(&CPU6, &L2_3)
+__L1(&CPU7, &L2_3)
+__L1(&CPU8, &L2_4)
+__L1(&CPU9, &L2_4)
+__L1(&CPU10, &L2_5)
+__L1(&CPU11, &L2_5)
+__L1(&CPU12, &L2_6)
+__L1(&CPU13, &L2_6)
+__L1(&CPU14, &L2_7)
+__L1(&CPU15, &L2_7)
+__L1(&CPU16, &L2_8)
+__L1(&CPU17, &L2_8)
+__L1(&CPU18, &L2_9)
+__L1(&CPU19, &L2_9)
+__L1(&CPU20, &L2_10)
+__L1(&CPU21, &L2_10)
+__L1(&CPU22, &L2_11)
+__L1(&CPU23, &L2_11)

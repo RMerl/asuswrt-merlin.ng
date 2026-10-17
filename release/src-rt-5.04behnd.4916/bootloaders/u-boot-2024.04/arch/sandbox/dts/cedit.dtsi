@@ -1,0 +1,72 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Expo definition for the configuration editor
+ *
+ * This used for testing building an expo from a data file. This devicetree
+ * provides a description of the objects to be created.
+ */
+
+#include <test/cedit-test.h>
+
+&cedit {
+	dynamic-start = <ID_DYNAMIC_START>;
+
+	scenes {
+		main {
+			id = <ID_SCENE1>;
+
+			/* value refers to the matching id in /strings */
+			title-id = <ID_SCENE1_TITLE>;
+
+			/* simple string is used as it is */
+			prompt = "UP and DOWN to choose, ENTER to select";
+
+			/* defines a menu within the scene */
+			cpu-speed {
+				type = "menu";
+				id = <ID_CPU_SPEED>;
+
+				/*
+				 * has both string and ID. The string is ignored
+				 * if the ID is present and points to a string
+				 */
+				title = "CPU speed";
+				title-id = <ID_CPU_SPEED_TITLE>;
+
+				/* menu items as simple strings */
+				item-label = "2 GHz", "2.5 GHz", "3 GHz";
+
+				/* IDs for the menu items */
+				item-id = <ID_CPU_SPEED_1 ID_CPU_SPEED_2
+					ID_CPU_SPEED_3>;
+			};
+
+			power-loss {
+				type = "menu";
+				id = <ID_POWER_LOSS>;
+
+				title = "AC Power";
+				item-label = "Always Off", "Always On",
+					"Memory";
+
+				item-id = <ID_AC_OFF ID_AC_ON ID_AC_MEMORY>;
+			};
+
+			machine-name {
+				id = <ID_MACHINE_NAME>;
+				type = "textline";
+				max-chars = <20>;
+				title = "Machine name";
+				edit-id = <ID_MACHINE_NAME_EDIT>;
+			};
+		};
+	};
+
+	strings {
+		title {
+			id = <ID_SCENE1_TITLE>;
+			value = "Test Configuration";
+			value-es = "configuración de prueba";
+		};
+	};
+};

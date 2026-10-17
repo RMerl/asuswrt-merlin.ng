@@ -1,0 +1,65 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * dts file for Xilinx Versal Mini eMMC0 Configuration
+ *
+ * (C) Copyright 2018-2019, Xilinx, Inc.
+ *
+ * Siva Durga Prasad Paladugu <siva.durga.prasad.paladugu@amd.com>
+ * Michal Simek <michal.simek@amd.com>
+ */
+
+/dts-v1/;
+
+/ {
+	compatible = "xlnx,versal";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	model = "Xilinx Versal MINI eMMC0";
+
+	clk200: clk200 {
+		compatible = "fixed-clock";
+		#clock-cells = <0x0>;
+		clock-frequency = <200000000>;
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "okay";
+		bootph-all;
+	};
+
+	amba: amba {
+		bootph-all;
+		compatible = "simple-bus";
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		ranges;
+
+		sdhci0: sdhci@f1040000 {
+			compatible = "xlnx,versal-8.9a", "arasan,sdhci-8.9a";
+			status = "okay";
+			non-removable;
+			disable-wp;
+			bus-width = <8>;
+			reg = <0x0 0xf1040000 0x0 0x10000>;
+			clock-names = "clk_xin", "clk_ahb";
+			clocks = <&clk200 &clk200>;
+			no-1-8-v;
+			xlnx,mio-bank = <0>;
+		};
+	};
+
+	aliases {
+		serial0 = &dcc;
+		mmc0 = &sdhci0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x20000000>;
+	};
+};

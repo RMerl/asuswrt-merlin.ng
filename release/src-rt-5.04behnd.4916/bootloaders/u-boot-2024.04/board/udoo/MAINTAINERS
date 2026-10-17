@@ -1,0 +1,6 @@
+UDOO BOARD
+M:	Fabio Estevam <festevam@gmail.com>
+S:	Maintained
+F:	board/udoo/
+F:	include/configs/udoo.h
+F:	configs/udoo_defconfig

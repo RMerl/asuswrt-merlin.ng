@@ -1,0 +1,30 @@
+KM83XX BOARD
+M:	Holger Brunck <holger.brunck@hitachienergy.com>
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	board/keymile/km83xx/
+F:	board/keymile/common/
+F:	board/keymile/scripts/
+F:	include/configs/km8360.h
+F:	configs/kmcoge5ne_defconfig
+F:	configs/kmeter1_defconfig
+F:	include/configs/tuxx1.h
+F:	configs/kmopti2_defconfig
+F:	configs/kmsupx5_defconfig
+F:	configs/kmtepr2_defconfig
+F:	configs/tuge1_defconfig
+F:	configs/tuxx1_defconfig
+F:	arch/powerpc/dts/km8321-uboot.dtsi
+F:	arch/powerpc/dts/km8321.dtsi
+F:	arch/powerpc/dts/km836x-uboot.dtsi
+F:	arch/powerpc/dts/km836x.dtsi
+F:	arch/powerpc/dts/kmcoge5ne-uboot.dtsi
+F:	arch/powerpc/dts/kmcoge5ne.dts
+F:	arch/powerpc/dts/kmeter1-uboot.dtsi
+F:	arch/powerpc/dts/kmeter1.dts
+F:	arch/powerpc/dts/kmopti2.dts
+F:	arch/powerpc/dts/kmsupc5.dts
+F:	arch/powerpc/dts/kmsupm5.dts
+F:	arch/powerpc/dts/kmtepr2.dts
+F:	arch/powerpc/dts/kmtuge1.dts
+F:	arch/powerpc/dts/kmtuxa1.dts

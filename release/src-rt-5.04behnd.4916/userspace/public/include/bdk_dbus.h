@@ -150,4 +150,8 @@
 #define AUDIO_MD_INTERFACE_NAME         "com.broadcom.audio_md"
 #define AUDIO_MD_OBJECT_PATH            "/com/broadcom/audio_md"
 
+#define WIFI_CONTROLLER_BUS_NAME	"WiFi.Controller"
+#define WIFI_CONTROLLER_OBJECT_PATH	WIFI_CONTROLLER_BUS_NAME
+#define WIFI_CONTROLLER_INTERFACE	WIFI_CONTROLLER_BUS_NAME
+
 #endif /* BDK_DBUS_H */

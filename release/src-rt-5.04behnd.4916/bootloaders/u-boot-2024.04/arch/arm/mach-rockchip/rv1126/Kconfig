@@ -1,0 +1,70 @@
+if ROCKCHIP_RV1126
+
+config TARGET_RV1126_NEU2
+	bool "Edgeble Neural Compute Module 2(Neu2) SoM"
+	help
+	  Neu2:
+	  Neural Compute Module 2(Neu2) is a 96boards SoM-CB compute module
+	  based on Rockchip RV1126 from Edgeble AI.
+	  Neu2 powered with Consumer grade (0 to +80 °C) RV1126 SoC.
+	  Neu2k powered with Industrial grade (-40 °C to +85 °C) RV1126K SoC.
+
+	  Neu2-IO:
+	  Neural Compute Module 2(Neu2) IO board is an industrial form factor
+	  IO board and Neu2 needs to mount on top of this IO board in order to
+	  create complete Edgeble Neural Compute Module 2(Neu2) IO platform.
+
+config TARGET_RV1126_SONOFF_IHOST
+	bool "Sonoff iHost smart home hub"
+	help
+	  Sonoff iHost is a smart home gateway based on Rockchip RV1126 SoC.
+	  It features Wifi, Bluetooth and Zigbee radios that are used by many
+	  smart home devices.
+
+config SOC_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select HAS_CUSTOM_SYS_INIT_SP_ADDR
+
+config ROCKCHIP_BOOT_MODE_REG
+	default 0xfe020200
+
+config ROCKCHIP_STIMER_BASE
+	default 0xff670020
+
+config SYS_SOC
+	default "rv1126"
+
+config CUSTOM_SYS_INIT_SP_ADDR
+	default 0x800000
+
+config SPL_STACK
+	default 0x600000
+
+config SPL_STACK_R_ADDR
+	default 0x800000
+
+config TPL_LDSCRIPT
+	default "arch/arm/mach-rockchip/u-boot-tpl.lds"
+
+config TPL_STACK
+        default 0xff718000
+
+config TPL_SYS_MALLOC_F
+	default y
+
+config TPL_SYS_MALLOC_F_LEN
+	default 0x2000
+
+config TPL_TEXT_BASE
+	default 0xff701000
+
+config SYS_MALLOC_F_LEN
+	default 0x2000
+
+config TEXT_BASE
+	default 0x600000
+
+source board/edgeble/neural-compute-module-2/Kconfig
+source board/itead/sonoff-ihost/Kconfig
+
+endif

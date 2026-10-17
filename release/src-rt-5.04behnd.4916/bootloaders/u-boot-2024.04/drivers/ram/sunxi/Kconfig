@@ -1,0 +1,60 @@
+config DRAM_SUN20I_D1
+	bool
+	depends on ARCH_SUNXI
+	help
+	  This enables support for the DRAM controller driver covering
+	  the Allwinner D1/R528/T113s SoCs.
+
+if DRAM_SUN20I_D1
+
+config DRAM_SUNXI_ODT_EN
+	hex "DRAM ODT EN parameter"
+	help
+	  ODT EN value from vendor DRAM settings.
+
+config DRAM_SUNXI_TPR0
+	hex "DRAM TPR0 parameter"
+	help
+	  TPR0 value from vendor DRAM settings.
+
+config DRAM_SUNXI_TPR11
+	hex "DRAM TPR11 parameter"
+	help
+	  TPR11 value from vendor DRAM settings.
+
+config DRAM_SUNXI_TPR12
+	hex "DRAM TPR12 parameter"
+	help
+	  TPR12 value from vendor DRAM settings.
+
+config DRAM_SUNXI_TPR13
+	hex "DRAM TPR13 parameter"
+	help
+	  TPR13 value from vendor DRAM settings. It tells which features
+	  should be configured.
+
+choice
+	prompt "DRAM chip type"
+	default SUNXI_DRAM_TYPE_DDR3 if DRAM_SUN20I_D1
+
+config SUNXI_DRAM_TYPE_DDR2
+	bool "DDR2 chips"
+
+config SUNXI_DRAM_TYPE_DDR3
+	bool "DDR3 chips"
+
+config SUNXI_DRAM_TYPE_LPDDR2
+	bool "LPDDR2 chips"
+
+config SUNXI_DRAM_TYPE_LPDDR3
+	bool "LPDDR3 chips"
+endchoice
+
+config SUNXI_DRAM_TYPE
+	int
+	default 2 if SUNXI_DRAM_TYPE_DDR2
+	default 3 if SUNXI_DRAM_TYPE_DDR3
+	default 6 if SUNXI_DRAM_TYPE_LPDDR2
+	default 7 if SUNXI_DRAM_TYPE_LPDDR3
+
+endif

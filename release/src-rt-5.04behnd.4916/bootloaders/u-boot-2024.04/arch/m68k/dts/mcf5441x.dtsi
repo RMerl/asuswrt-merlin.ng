@@ -1,0 +1,167 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Angelo Dureghello <angelo@sysam.it>
+ */
+
+/ {
+	compatible = "fsl,mcf5441x";
+
+	aliases {
+		serial0 = &uart0;
+		spi0 = &dspi0;
+		fec0 = &fec0;
+		fec1 = &fec1;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		uart0: uart@fc060000 {
+			compatible = "fsl,mcf-uart";
+			reg = <0xfc060000 0x40>;
+			status = "disabled";
+		};
+
+		uart1: uart@fc064000 {
+			compatible = "fsl,mcf-uart";
+			reg = <0xfc064000 0x40>;
+			status = "disabled";
+		};
+
+		uart2: uart@fc068000 {
+			compatible = "fsl,mcf-uart";
+			reg = <0xfc068000 0x40>;
+			status = "disabled";
+		};
+
+		uart3: uart@fc06c000 {
+			compatible = "fsl,mcf-uart";
+			reg = <0xfc06c000 0x40>;
+			status = "disabled";
+		};
+
+		dspi0: dspi@fc05c000 {
+			compatible = "fsl,mcf-dspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xfc05c000 0x100>;
+			spi-max-frequency = <50000000>;
+			num-cs = <4>;
+			spi-mode = <0>;
+			status = "disabled";
+		};
+
+		dspi1: dspi@fc03c000 {
+			compatible = "fsl,mcf-dspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xfc03c000 0x100>;
+			spi-max-frequency = <50000000>;
+			num-cs = <4>;
+			spi-mode = <0>;
+			status = "disabled";
+		};
+
+		dspi2: dspi@ec038000 {
+			compatible = "fsl,mcf-dspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xec038000 0x100>;
+			spi-max-frequency = <50000000>;
+			num-cs = <4>;
+			spi-mode = <0>;
+			status = "disabled";
+		};
+
+		dspi3: dspi@ec03c000 {
+			compatible = "fsl,mcf-dspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xec03c00 0x100>;
+			spi-max-frequency = <50000000>;
+			num-cs = <4>;
+			spi-mode = <0>;
+			status = "disabled";
+		};
+
+		fec0: ethernet@fc0d4000 {
+			compatible = "fsl,mcf-fec";
+			reg = <0xfc0d4000 0x4000>;
+			mii-base = <0>;
+			max-speed = <100>;
+			timeout-loop = <50000>;
+			status = "disabled";
+		};
+
+		fec1: ethernet@fc0d8000 {
+			compatible = "fsl,mcf-fec";
+			reg = <0xfc0d8000 0x4000>;
+			mii-base = <1>;
+			max-speed = <100>;
+			timeout-loop = <50000>;
+			status = "disabled";
+		};
+
+		i2c0: i2c@0xfc058000 {
+			compatible = "fsl-i2c";
+			#address-cells=<1>;
+			#size-cells=<0>;
+			cell-index = <0>;
+			reg = <0xfc058000 0x100>;
+			clock-frequency = <100000>;
+			status = "disabled";
+		};
+
+		i2c1: i2c@0xfc038000 {
+			compatible = "fsl-i2c";
+			#address-cells=<1>;
+			#size-cells=<0>;
+			cell-index = <1>;
+			reg = <0xfc038000 0x100>;
+			clock-frequency = <100000>;
+			status = "disabled";
+		};
+
+		i2c2: i2c@0xfc010000 {
+			compatible = "fsl-i2c";
+			#address-cells=<1>;
+			#size-cells=<0>;
+			cell-index = <2>;
+			reg = <0xfc010000 0x100>;
+			clock-frequency = <100000>;
+			status = "disabled";
+		};
+
+		i2c3: i2c@0xfc014000 {
+			compatible = "fsl-i2c";
+			#address-cells=<1>;
+			#size-cells=<0>;
+			cell-index = <3>;
+			reg = <0xfc014000 0x100>;
+			clock-frequency = <100000>;
+			status = "disabled";
+		};
+
+		i2c4: i2c@0xfc018000 {
+			compatible = "fsl-i2c";
+			#address-cells=<1>;
+			#size-cells=<0>;
+			cell-index = <4>;
+			reg = <0xfc018000 0x100>;
+			clock-frequency = <100000>;
+			status = "disabled";
+		};
+
+		i2c5: i2c@0xfc01c000 {
+			compatible = "fsl-i2c";
+			#address-cells=<1>;
+			#size-cells=<0>;
+			cell-index = <5>;
+			reg = <0xfc01c000 0x100>;
+			clock-frequency = <100000>;
+			status = "disabled";
+		};
+	};
+};

@@ -1,6 +1,0 @@
-TS4800 BOARD
-M:	Lucile Quirion <lucile.quirion@savoirfairelinux.com>
-S:	Maintained
-F:	board/ts/ts4800/
-F:	include/configs/ts4800.h
-F:	configs/ts4800_defconfig

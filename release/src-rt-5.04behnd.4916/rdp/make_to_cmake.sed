@@ -33,9 +33,9 @@ s/\([[:blank:]]*\)ifneq[[:blank:]]*([[:blank:]]*"\(.*\)"[[:blank:]]*,[[:blank:]]
 # ifneq(${var}, value) --> if (NOT "${var}" STREQUAL "value")
 s/\([[:blank:]]*\)ifneq[[:blank:]]*([[:blank:]]*\(.*\)[[:blank:]]*,[[:blank:]]*\(.*\)[[:blank:]]*)/\1\if(NOT "\2" STREQUAL "\3")/
 # ifdef var --> if (DEFINED var)
-s/\([[:blank:]]*\)ifdef[[:blank:]]*\(.*\)[[:blank:]]*/\1\if(DEFINED \2)/
+s/\([[:blank:]]*\)ifdef[[:blank:]]*\(.*\)[[:blank:]]*/\1if(DEFINED ENV{\2})/
 # ifndef var --> if (NOT DEFINED var)
-s/\([[:blank:]]*\)ifndef[[:blank:]]*\(.*\)[[:blank:]]*/\1\if(NOT DEFINED \2)/
+s/\([[:blank:]]*\)ifndef[[:blank:]]*\(.*\)[[:blank:]]*/\1if(NOT DEFINED ENV{\2})/
 # $(error xx --> message(FATAL_ERROR xx)
 s/\([[:blank:]]*\)$(error \(.*\)[[:blank:]]*/\1\message(FATAL_ERROR "\2")/
 

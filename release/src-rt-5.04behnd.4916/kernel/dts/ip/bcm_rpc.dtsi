@@ -30,3 +30,11 @@ rpcavssmc: rpcavssmc {
     rx-fifo = <5>;
 };
 
+rpctpmsmc: rpctpmsmc {
+    reg = <0x10>;
+    compatible = "brcm,itc-rpc";
+    dev-name = "tpm-smc";
+    fifo-dev = "smc";
+    tx-fifo = <16>;
+    rx-fifo = <17>;
+};

@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: GPL-2.0 OR MIT
+/*
+ * Copyright (C) 2017 exceet electronics GmbH
+ * Copyright (C) 2018 Kontron Electronics GmbH
+ */
+
+#if defined(CONFIG_FIT)
+
+/ {
+	binman: binman {
+		filename = "flash.bin";
+		pad-byte = <0x00>;
+
+		spl: blob-ext@1 {
+			offset = <0x0>;
+			filename = "SPL";
+		};
+
+		uboot: blob-ext@2 {
+			offset = <0x11000>;
+			filename = "u-boot.img";
+		};
+	};
+};
+
+#endif /* CONFIG_FIT */
+
+/*
+ * To make the PHYs work, we need to set the reset pin once. Afterwards
+ * in Linux we can't assign the shared reset GPIO to the PHYs, as this
+ * would cause Linux to reset both PHYs every time one of them gets
+ * reinitialized.
+ *
+ * Also we disable the second ethernet as it currently doesn't work with
+ * the devicetree setup in U-Boot.
+ */
+
+&fec1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_enet1 &pinctrl_enet1_mdio>;
+	phy-mode = "rmii";
+	phy-handle = <&ethphy1>;
+	phy-reset-gpios = <&gpio5 9 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy1: ethernet-phy@1 {
+			reg = <1>;
+			micrel,led-mode = <0>;
+			clocks = <&clks IMX6UL_CLK_ENET_REF>;
+			clock-names = "rmii-ref";
+		};
+	};
+};
+
+&fec2 {
+	status = "disabled";
+	/delete-property/ phy-handle;
+	/delete-node/ mdio;
+};

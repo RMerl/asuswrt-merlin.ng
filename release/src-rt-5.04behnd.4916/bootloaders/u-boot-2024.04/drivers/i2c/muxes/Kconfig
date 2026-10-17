@@ -1,0 +1,46 @@
+config I2C_MUX
+	bool "Support I2C multiplexers"
+	depends on DM_I2C
+	help
+	  This enables I2C buses to be multiplexed, so that you can select
+	  one of several buses using some sort of control mechanism. The
+	  bus select is handled automatically when that bus is accessed,
+	  using a suitable I2C MUX driver.
+
+config SPL_I2C_MUX
+	bool "Support I2C multiplexers on SPL"
+	depends on SPL && I2C_MUX
+	help
+	  This enables I2C buses to be multiplexed, so that you can select
+	  one of several buses using some sort of control mechanism. The
+	  bus select is handled automatically when that bus is accessed,
+	  using a suitable I2C MUX driver.
+
+config I2C_ARB_GPIO_CHALLENGE
+	bool "GPIO-based I2C arbitration"
+	depends on I2C_MUX
+	help
+	  If you say yes to this option, support will be included for an
+	  I2C multimaster arbitration scheme using GPIOs and a challenge &
+	  response mechanism where masters have to claim the bus by asserting
+	  a GPIO.
+
+config I2C_MUX_PCA954x
+	tristate "TI PCA954x I2C Mux/switches"
+	depends on I2C_MUX
+	help
+	  If you say yes here you get support for the TI PCA954x I2C mux/switch
+	  devices. It is x width I2C multiplexer which enables to partitioning
+	  I2C bus and connect multiple devices with the same address to the same
+	  I2C controller where driver handles proper routing to target i2c
+	  device. Supported chips are PCA9543, PCA9544, PCA9546, PCA9547,
+	  PCA9548 and PCA9646.
+
+config I2C_MUX_GPIO
+        tristate "GPIO-based I2C multiplexer"
+	depends on I2C_MUX && DM_GPIO
+	help
+	  If you say yes to this option, support will be included for
+	  a GPIO based I2C multiplexer. This driver provides access to
+	  I2C busses connected through a MUX, which is controlled
+	  through GPIO pins.

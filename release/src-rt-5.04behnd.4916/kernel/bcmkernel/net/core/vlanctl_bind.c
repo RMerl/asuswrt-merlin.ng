@@ -157,7 +157,7 @@ int	vlanctl_notify(vlanctl_bind_Notify_t event, void *ptr, vlanctl_bind_client_t
     if (unlikely(vlanctl_bind_sn_hook_g[client] == (vlanctl_bind_SnHook_t)NULL))
         goto bypass;
 
-	BLOG_LOCK_BH();
+    BLOG_LOCK_BH();
     vlanctl_bind_sn_hook_g[client](event, ptr);
     BLOG_UNLOCK_BH();
 

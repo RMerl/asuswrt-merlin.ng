@@ -1,0 +1,46 @@
+if TEGRA210
+
+choice
+	prompt "Tegra210 board select"
+
+config TARGET_P2371_0000
+	bool "NVIDIA Tegra210 P2371-0000 board"
+	select BOARD_LATE_INIT
+	help
+	  P2371-0000 is a P2581 or P2530 CPU board married to a P2595 I/O
+	  board. The combination contains SoC, DRAM, eMMC, SD card slot,
+	  HDMI, USB micro-B port, Ethernet via USB3, USB3 host port, SATA,
+	  a GPIO expansion header, and an analog audio jack.
+
+config TARGET_P2371_2180
+	bool "NVIDIA Tegra210 P2371-2180 (Jetson TX1) board"
+	select BOARD_LATE_INIT
+	help
+	  P2371-2180 (Jetson TX1 developer kit) is a P2180 CPU board married
+	  to a P2597 I/O board. The combination contains SoC, DRAM, eMMC, SD
+	  card slot, HDMI, USB micro-B port, Ethernet via USB3, USB3 host
+	  port, SATA, PCIe, and two GPIO expansion headers.
+
+config TARGET_P2571
+	bool "NVIDIA Tegra210 P2571 base board"
+	select BOARD_LATE_INIT
+	help
+	  P2571 is a P2530 married to a P1963 I/O board
+
+config TARGET_P3450_0000
+	bool "NVIDIA Jetson Nano Developer Kit"
+	select BOARD_LATE_INIT
+	help
+	  P3450-0000 is a P3448 CPU board married to a P3449 I/O board.
+
+endchoice
+
+config SYS_SOC
+	default "tegra210"
+
+source "board/nvidia/p2371-0000/Kconfig"
+source "board/nvidia/p2371-2180/Kconfig"
+source "board/nvidia/p2571/Kconfig"
+source "board/nvidia/p3450-0000/Kconfig"
+
+endif

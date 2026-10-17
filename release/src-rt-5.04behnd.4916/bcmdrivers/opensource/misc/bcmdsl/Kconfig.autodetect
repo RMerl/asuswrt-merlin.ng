@@ -1,7 +1,7 @@
 config BCM_DSL_DT
 	bool "DSL Driver Open Portion"
 	default n
-	depends on BCM963158 || BCM963178 || BCM963146 || BCM963138 || BCM963148
+	depends on BCM963158 || BCM963178 || BCM963146
 	help
 	  This driver parses the DSL configuration and provide API to the core DSL
 	  driver

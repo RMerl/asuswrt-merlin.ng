@@ -28,7 +28,7 @@ source /etc/sf2/_util
 
 sf2_shaper() { #sf2_shaper <unit>
     local unit=$1
-    read_chip $unit
+    read_chip $unit $2
     if [ $sf2_unit == -1 ]
     then echo "device has no (connected) sf2 switch!!"; return;
     fi

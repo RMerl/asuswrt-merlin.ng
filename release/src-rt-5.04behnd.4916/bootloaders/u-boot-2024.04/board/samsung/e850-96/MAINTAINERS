@@ -1,0 +1,9 @@
+WINLINK E850-96 BOARD
+M:	Sam Protsenko <semen.protsenko@linaro.org>
+S:	Maintained
+F:	arch/arm/dts/exynos850-e850-96-u-boot.dtsi
+F:	arch/arm/dts/exynos850-e850-96.dts
+F:	board/samsung/e850-96/
+F:	configs/e850-96_defconfig
+F:	doc/board/samsung/e850-96.rst
+F:	include/configs/e850-96.h

@@ -189,7 +189,7 @@ static void dcm_config_set(ubus_dcm_t *ubus_dcm)
 #if 0
     if (ubus_dcm->rcq_gen) {
         u32 d32 = 0;
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96856)
         d32 = (1<<XRDP_RCQ_GENERAL_DDR_CONGEST_THRESHOLD_SHIFT) |
               (1<<XRDP_RCQ_GENERAL_PSRAM_CONGEST_THRESHOLD_SHIFT);
 #elif defined(CONFIG_BCM963158) || defined(CONFIG_BCM96858)
@@ -341,7 +341,7 @@ static int ubus4_dcm_thold_set(const char *val, const struct kernel_param *kp)
     if(kstrtouint (val, 0, &ival))
         printk("%s:%d failed to scan ival\n", __func__, __LINE__);
 
-    if ((ival&0xFFFF) && ((ival&0xFFFF) <= 0xFFFF)) {
+    if (ival>0 && ival<=0xFFFF) {
         dcm_thold_set (ubus_dcm_sys, 1, ival);
         dcm_thold_set (ubus_dcm_xrdp, 1, ival);
     } else {

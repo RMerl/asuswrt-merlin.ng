@@ -127,13 +127,7 @@ int pmc_dsl_power_up(void)
 	if (ret)
 		return ret;
 
-#if IS_BCMCHIP(63138) || IS_BCMCHIP(63148)
-	/* 3) set the dsl clock */
-	ret = pmc_dsl_clock_set(1);
-	if (ret)
-		return ret;
-#endif
-#if IS_BCMCHIP(63138) || IS_BCMCHIP(63148) || IS_BCMCHIP(63158)
+#if IS_BCMCHIP(63158)
 	ret = PowerOnDevice(PMB_ADDR_VDSL3_MIPS);
 #endif
 	if (ret)
@@ -251,53 +245,6 @@ int pmc_dsl_power_down(void)
 	return ret;
 }
 
-#if IS_BCMCHIP(63138) || IS_BCMCHIP(63148)
-int pmc_dsl_clock_set(int flag)
-{
-	int ret;
-	BPCM_SR_CONTROL sr_ctrl;
-	BPCM_MISC_CONTROL misc_ctrl;
-
-	ret = ReadBPCMRegister(PMB_ADDR_VDSL3_CORE,
-			BPCMVDSLRegOffset(sr_control), &sr_ctrl.Reg32);
-	if (ret)
-		return ret;
-	sr_ctrl.Bits.sr |= 0x1;
-	sr_ctrl.Bits.gp = 0xffffff;
-
-	ret = WriteBPCMRegister(PMB_ADDR_VDSL3_CORE,
-			BPCMVDSLRegOffset(sr_control), sr_ctrl.Reg32);
-	if (ret)
-		return ret;
-
-	ret = ReadBPCMRegister(PMB_ADDR_VDSL3_CORE, 
-			BPCMVDSLRegOffset(misc_control), &misc_ctrl.Reg32);
-	if (ret)
-		return ret;
-
-	if (flag)
-		misc_ctrl.Bits_vdsl_phy.ctl |= 0x3;
-	else
-		misc_ctrl.Bits_vdsl_phy.ctl &= ~0x3;
-
-	ret = WriteBPCMRegister(PMB_ADDR_VDSL3_CORE,
-			BPCMVDSLRegOffset(misc_control), misc_ctrl.Reg32);
-	if (ret)
-		return ret;
-
-	ret = ReadBPCMRegister(PMB_ADDR_VDSL3_CORE,
-			BPCMVDSLRegOffset(sr_control), &sr_ctrl.Reg32);
-	if (ret)
-		return ret;
-	sr_ctrl.Bits.sr |= 0x3;
-	sr_ctrl.Bits.gp = 0xffffff;
-
-	ret = WriteBPCMRegister(PMB_ADDR_VDSL3_CORE,
-			BPCMVDSLRegOffset(sr_control), sr_ctrl.Reg32);
-	return ret;
-}
-#endif /* IS_BCMCHIP(63138) || IS_BCMCHIP(63148) */
-
 #if IS_BCMCHIP(63146)
 __attribute__((unused))
 static int pmc_dsl_armcore_reset(void)
@@ -392,24 +339,6 @@ int pmc_dsl_mipscore_enable(int flag, int core)
 	int ret;
 	BPCM_MISC_CONTROL misc_ctrl;
 	int misc_offset = BPCMVDSLRegOffset(misc_control);
-
-
-#if IS_BCMCHIP(63138)
-        int val;
-
-        val = 0xa040001;
-        WriteBPCMRegister(AFEPLL_PMB_ADDR_VDSL3_CORE, BPCMRegOffset(rosc_thresh_h), val);
-        val = 0x300;
-        WriteBPCMRegister(AFEPLL_PMB_ADDR_VDSL3_CORE, BPCMRegOffset(rosc_thresh_s), val);
-        val = 0x6400;
-        WriteBPCMRegister(AFEPLL_PMB_ADDR_VDSL3_CORE, BPCMRegOffset(pwd_accum_control), val);
-
-	/* 63138 B0 has two PHY MIPS core, the misc_ctrl for second core is next to the first one,
-	   the Bits_vdsl_mips definition is same in both control and control2 structure so we can
-	   just share the same misc_ctrl variable */
-	if ((UtilGetChipRev() != 0xA0) && core )
-		misc_offset = BPCMVDSLRegOffset(misc_control2);
-#endif
 
 #if IS_BCMCHIP(63158) || IS_BCMCHIP(63178)
 	if( core ) {
@@ -822,9 +751,6 @@ EXPORT_SYMBOL(SetVDSL3EnablCh1);
 
 EXPORT_SYMBOL(pmc_dsl_power_up);
 EXPORT_SYMBOL(pmc_dsl_power_down);
-#if IS_BCMCHIP(63138) || IS_BCMCHIP(63148)
-EXPORT_SYMBOL(pmc_dsl_clock_set);
-#endif 
 EXPORT_SYMBOL(pmc_dsl_mips_enable);
 EXPORT_SYMBOL(pmc_dsl_mipscore_enable);
 EXPORT_SYMBOL(pmc_dsl_core_reset);

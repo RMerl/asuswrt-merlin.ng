@@ -1,0 +1,9 @@
+config SCSI
+	bool "Support SCSI controllers with driver model"
+	help
+	  This enables support for SCSI (Small Computer System Interface),
+	  a parallel interface widely used with storage peripherals such as
+	  hard drives and optical drives. The SCSI standards define physical
+	  interfaces as well as protocols for controlling devices and
+	  tranferring data. For every device configuration (IDs/LUNs) a block
+	  device is created with RAW read/write and filesystem support.

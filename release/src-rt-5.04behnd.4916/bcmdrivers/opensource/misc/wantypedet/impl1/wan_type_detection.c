@@ -30,7 +30,6 @@ written consent.
 #include <linux/string.h>
 #include <linux/delay.h>
 #include <linux/bcm_log.h>
-#include "pmd.h"
 #include "board.h"
 #include "wan_drv.h"
 #include "opticaldet.h"
@@ -42,7 +41,6 @@ written consent.
 #endif
 #include <pmc_wan.h>
 
-static int get_optics_type(uint16_t *optics_type);
 static int get_supported_wan_type_bm(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm);
 
 
@@ -50,12 +48,6 @@ static int get_supported_wan_type_bm(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm);
 #define SENSE_RESULT_FALSE      (0)
 #define SKIP_SENSING_WAN_TYPE   (1)
 #define KEEP_SENSING_WAN_TYPE   (0)
-
-static int configure_pmd_wan_type(uint16_t optics_type, PMD_WAN_TYPES new_pmd_wan_type, pmd_calibration_parameters
-    *calibration_parameters_from_json);
-
-static get_non_brcm_pmd_supported_wan_type_bm   get_non_brcm_pmd_supported_wan_type_bm_cb = NULL;
-static configure_non_brcm_pmd_wan_type          configure_non_brcm_pmd_wan_type_cb = NULL;
 
 #define REG_CHECK_TIMES            (15)
 #define SLEEP_IN_MILI_SECONDS      (50)
@@ -166,13 +158,10 @@ static int wan_serdes_conf(serdes_wan_type_t wan_type)
 }
 #define wan_serdes_config wan_serdes_conf
 
-static int is_gpon_lof_synced(uint16_t optics_type, pmd_calibration_parameters *calibration_parameters_from_json)
+static int is_gpon_lof_synced(void)
 {
-    unsigned int ret, reg_value, is_sensed;
+    unsigned int reg_value, is_sensed;
     volatile unsigned int *reg_address;
-
-    ret = configure_pmd_wan_type(optics_type, PMD_GPON_2_1_WAN, calibration_parameters_from_json);
-    if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
     wan_serdes_config(SERDES_WAN_TYPE_GPON);
 
@@ -202,32 +191,13 @@ static int is_gpon_lof_synced(uint16_t optics_type, pmd_calibration_parameters *
     return is_sensed;
 }
  
-static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type, pmd_calibration_parameters
-    *calibration_parameters_from_json)
+static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 {
  
     unsigned int reg_value, is_sensed;
     volatile unsigned int *reg_address;
     char *wan_type_string;
-    int ret;
     int i = 0;
-    
-    switch (wan_type)
-    {
-        case SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1:
-            ret = configure_pmd_wan_type(optics_type, PMD_EPON_2_1_WAN, calibration_parameters_from_json);
-            break;
-        case SUPPORTED_WAN_TYPES_BIT_EPON_1_1:
-            ret = configure_pmd_wan_type(optics_type, PMD_EPON_1_1_WAN, calibration_parameters_from_json);
-            break;
-        case SUPPORTED_WAN_TYPES_BIT_AE_1_1:
-            ret = configure_pmd_wan_type(optics_type, PMD_GBE_1_1_WAN, calibration_parameters_from_json);
-            break;
-        default:
-            ret = KEEP_SENSING_WAN_TYPE;
-    }
-
-    if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
 #if !defined(CONFIG_BCM96855)
     reg_address = EPON_TOP_ADDR(EPON_TOP_RESET_REG_OFFSET);
@@ -316,24 +286,11 @@ static void disable_10g_epon_ae_mac(void)
     *reg_address = EPON_TOP_RESET_ALL;
 }
  
-static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type, pmd_calibration_parameters
-    *calibration_parameters_from_json)
+static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 {
     unsigned int reg_value, is_sensed, is_locked;
     volatile unsigned int *reg_address;
     char *wan_type_string;
-    int ret;
-
-    switch (wan_type)
-    {
-        case SUPPORTED_WAN_TYPES_BIT_EPON_10_1:
-            ret = configure_pmd_wan_type(optics_type, PMD_EPON_10_1_WAN, calibration_parameters_from_json);
-            break;
-        default:
-            ret = KEEP_SENSING_WAN_TYPE;
-    }
-
-    if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
     if(EPON_XPCSR_ADDR(0) == NULL)
     {
@@ -463,21 +420,15 @@ static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t 
     return SENSE_RESULT_FALSE;
 }
 
-
-static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type,
-    pmd_calibration_parameters *calibration_parameters_from_json)
+static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 {
     unsigned int reg_value, is_sensed, mac_mode;
     volatile unsigned int *reg_address;
     char *wan_type_string;
-    int ret;
 
     switch (wan_type)
     {
         case SUPPORTED_WAN_TYPES_BIT_XGPON:
-            ret = configure_pmd_wan_type(optics_type, PMD_XGPON1_10_2_WAN, calibration_parameters_from_json);
-            if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
-
             mac_mode = GPON_RX_GEN_RCVRCFG_MAC_MODE_NGPON2_2_5G;
             wan_serdes_config(SERDES_WAN_TYPE_XGPON_10G_2_5G);
             wan_type_string = "XGPON";
@@ -549,33 +500,6 @@ static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16
     return is_sensed;
 }
  
-static int configure_pmd_wan_type(uint16_t optics_type, PMD_WAN_TYPES new_pmd_wan_type, pmd_calibration_parameters
-    *calibration_parameters_from_json)
-{
-#ifdef CONFIG_BCM_PMD     
-    int rc;
-#endif    
-    
-    if (BCM_I2C_PON_OPTICS_TYPE_NON_BRCM_PMD == optics_type)
-    {
-        configure_non_brcm_pmd_wan_type_cb(new_pmd_wan_type);
-        return KEEP_SENSING_WAN_TYPE;        
-    }
-
-    if (BCM_I2C_PON_OPTICS_TYPE_PMD != optics_type)
-    {
-        return KEEP_SENSING_WAN_TYPE;
-    }
-#ifdef CONFIG_BCM_PMD     
-    rc = pmd_dev_reconfigure_wan_type(new_pmd_wan_type, calibration_parameters_from_json);
-    if (rc)
-    {
-        return SKIP_SENSING_WAN_TYPE;
-    }
-#endif    
-    return KEEP_SENSING_WAN_TYPE;
-}
-
 static int power_wan_type(SUPPORTED_WAN_TYPES_BITMAP wan_type, int enabled)
 {
 #if defined(CONFIG_BRCM_SMC_BOOT)
@@ -652,8 +576,7 @@ static int power_wan_type(SUPPORTED_WAN_TYPES_BITMAP wan_type, int enabled)
     return 0;
 }
 
-static int is_specific_wan_type_sensed(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type,
-    pmd_calibration_parameters *calibration_parameters_from_json)
+static int is_specific_wan_type_sensed(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 {
     int ret = SENSE_RESULT_FALSE;
 
@@ -663,27 +586,27 @@ static int is_specific_wan_type_sensed(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint
     switch (wan_type)
     {
         case SUPPORTED_WAN_TYPES_BIT_GPON:
-            ret = is_gpon_lof_synced(optics_type, calibration_parameters_from_json);
+            ret = is_gpon_lof_synced();
             break;
         case SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1:
         case SUPPORTED_WAN_TYPES_BIT_EPON_1_1:
-#if defined (CONFIG_BCM96858) || defined (CONFIG_BCM96856) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878)
+#if defined (CONFIG_BCM96858) || defined (CONFIG_BCM96856) || defined(CONFIG_BCM96855)
         case SUPPORTED_WAN_TYPES_BIT_AE_1_1:
 #endif
-            ret = is_epon_ae_in_sync(wan_type, optics_type, calibration_parameters_from_json);
+            ret = is_epon_ae_in_sync(wan_type);
             break;
         case SUPPORTED_WAN_TYPES_BIT_EPON_10_10:
         case SUPPORTED_WAN_TYPES_BIT_EPON_10_1:
-#if defined (CONFIG_BCM96858) || defined (CONFIG_BCM96856) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878)
+#if defined (CONFIG_BCM96858) || defined (CONFIG_BCM96856) || defined(CONFIG_BCM96855)
         case SUPPORTED_WAN_TYPES_BIT_AE_10_10:
 #endif
-            ret = is_10g_epon_ae_in_sync(wan_type, optics_type, calibration_parameters_from_json);
+            ret = is_10g_epon_ae_in_sync(wan_type);
             break;
         case SUPPORTED_WAN_TYPES_BIT_XGPON:
         case SUPPORTED_WAN_TYPES_BIT_NGPON2_10_25:
         case SUPPORTED_WAN_TYPES_BIT_NGPON2_10_10:
         case SUPPORTED_WAN_TYPES_BIT_XGSPON:
-            ret = is_10g_itu_pon_frame_sync(wan_type, optics_type, calibration_parameters_from_json);
+            ret = is_10g_itu_pon_frame_sync(wan_type);
             break;
 #if defined (CONFIG_BCM_MPCS)
         case SUPPORTED_WAN_TYPES_BIT_AE_1_1:
@@ -717,34 +640,25 @@ static int is_only_single_wan_type_bit_set_in_bitmap(SUPPORTED_WAN_TYPES_BITMAP 
 }
 
 static int do_sensing(SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bit,
-    SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bm, uint16_t optics_type,
-    pmd_calibration_parameters *calibration_parameters_from_json, int signal_detect_required)
+    SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bm, int signal_detect_required)
 {
     if (!is_wan_type_bit_set_in_bitmap(supported_wan_type_bit, supported_wan_type_bm))
         return SENSE_RESULT_FALSE;
     if (!signal_detect_required &&
         is_only_single_wan_type_bit_set_in_bitmap(supported_wan_type_bit, supported_wan_type_bm))
         return SENSE_RESULT_TRUE;
-    if (is_specific_wan_type_sensed(supported_wan_type_bit, optics_type, calibration_parameters_from_json))
+    if (is_specific_wan_type_sensed(supported_wan_type_bit))
         return SENSE_RESULT_TRUE;
 
     return SENSE_RESULT_FALSE;
 }
 
 
-int try_wan_type_sensing(pmd_calibration_parameters *calibration_parameters_from_json,
-    int signal_detect_required,
+int try_wan_type_sensing(int signal_detect_required,
     wan_type_auto_detect_result *result)
 {
     int ret = 0;
     SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bm;
-    uint16_t optics_type;
-
-    ret = get_optics_type(&optics_type);
-    if (ret)
-    {
-        return ret;
-    }
 
     ret = get_supported_wan_type_bm(&supported_wan_type_bm);
     if (OPTICALDET_SUCCESS != ret)
@@ -754,7 +668,7 @@ int try_wan_type_sensing(pmd_calibration_parameters *calibration_parameters_from
     BCM_LOG_DEBUG(BCM_LOG_ID_WANTYPEDET, "supported_wan_type_bm = 0x%x\n", supported_wan_type_bm);
 
 #define SPECIFIC_TYPE_SENSING(wan_type_bit) do_sensing(wan_type_bit, \
-    supported_wan_type_bm, optics_type, calibration_parameters_from_json, signal_detect_required)
+    supported_wan_type_bm, signal_detect_required)
 #define SET_WAN_DETECT_RESULT(token, value) do    \
     {    \
         memcpy(token, value, strlen(value)); \
@@ -830,42 +744,9 @@ int try_wan_type_sensing(pmd_calibration_parameters *calibration_parameters_from
     return ret;
 }
 
-
-static int get_optics_type(uint16_t *optics_type)
-{
-    int ret;
-
-    if (get_non_brcm_pmd_supported_wan_type_bm_cb || configure_non_brcm_pmd_wan_type_cb)
-    {
-        *optics_type = BCM_I2C_PON_OPTICS_TYPE_NON_BRCM_PMD;
-        return OPTICALDET_SUCCESS;
-    }
-
-    ret = trxbus_is_pmd(wan_i2c_bus_get());
-    if (ret < 0)
-    {
-        BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET,
-            "Error: The PMD board profile is not configured and the optics type cannot be determined\n");
-        return -1;
-    }
-
-    if (ret > 0)
-        *optics_type = BCM_I2C_PON_OPTICS_TYPE_PMD;
-    else 
-        *optics_type = BCM_I2C_PON_OPTICS_TYPE_LEGACY;
-
-    return OPTICALDET_SUCCESS;
-}
-
 static int get_supported_wan_type_bm(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm)
 {
     int ret, bus;
-
-    if (get_non_brcm_pmd_supported_wan_type_bm_cb)
-    {
-        get_non_brcm_pmd_supported_wan_type_bm_cb(wan_type_bm);
-        return OPTICALDET_SUCCESS;
-    }
 
     bus = wan_i2c_bus_get();
     if (bus < 0)
@@ -882,11 +763,3 @@ static int get_supported_wan_type_bm(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm)
     return ret;
 }
 
-
-void register_non_brcm_pmd(get_non_brcm_pmd_supported_wan_type_bm get_bitmap_callback, configure_non_brcm_pmd_wan_type
-    configure_callback)
-{
-    get_non_brcm_pmd_supported_wan_type_bm_cb = get_bitmap_callback;
-    configure_non_brcm_pmd_wan_type_cb = configure_callback;
-}
-EXPORT_SYMBOL(register_non_brcm_pmd);

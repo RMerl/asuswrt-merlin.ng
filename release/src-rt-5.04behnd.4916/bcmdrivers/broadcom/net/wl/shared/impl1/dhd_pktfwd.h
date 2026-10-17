@@ -137,9 +137,9 @@ extern void   dhd_pktfwd_flush_pktqueues(dhd_pub_t *dhd_pub);
 
 /* Callbacks to populate DHD domain D3LUT pool */
 extern unsigned long
-	(*dhd_pktc_req_hook)(int req_id, unsigned long param0,
+	(*dhd_pktfwd_req_hook)(int req_id, unsigned long param0,
 		unsigned long param1, unsigned long param2);
-extern void   (*dhd_pktc_del_hook)(unsigned long addr, struct net_device *net_device);
+extern void   (*dhd_pktfwd_del_hook)(unsigned long addr, struct net_device *net_device);
 extern int    (*fdb_check_expired_dhd_hook)(unsigned char *addr, struct net_device *net_device);
 
 /* PKTFWD KEYMAP: SET/RESET pktfwd_key to flowid map */

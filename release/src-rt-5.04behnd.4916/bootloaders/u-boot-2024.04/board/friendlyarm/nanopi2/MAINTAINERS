@@ -1,0 +1,7 @@
+NANOPI2 BOARD
+NANOPC-T2 BOARD
+M:  Stefan Bosch <stefan_b@posteo.net>
+S:  Maintained
+F:  board/s5p4418/nanopi2/
+F:  include/configs/s5p4418_nanopi2.h
+F:  configs/s5p4418_nanopi2_defconfig

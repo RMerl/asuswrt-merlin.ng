@@ -1,0 +1,17 @@
+if TARGET_TEN64
+
+config SYS_BOARD
+	default "ten64"
+
+config SYS_VENDOR
+	default "traverse"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ten64"
+
+endif
+
+source "board/traverse/common/Kconfig"

@@ -1,7 +1,0 @@
-CCV XPRESS BOARD
-M:	Stefan Roese <sr@denx.de>
-S:	Maintained
-F:	board/ccv/xpress/
-F:	include/configs/xpress.h
-F:	configs/xpress_defconfig
-F:	configs/xpress_spl_defconfig

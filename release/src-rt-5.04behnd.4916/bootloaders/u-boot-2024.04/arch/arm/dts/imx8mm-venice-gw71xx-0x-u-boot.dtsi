@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2021 Gateworks Corporation
+ */
+#include "imx8mm-venice-gw700x-u-boot.dtsi"
+
+&gpio1 {
+	pci_usb_sel {
+		gpio-hog;
+		output-low;
+		gpios = <6 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_usb_sel";
+	};
+
+	dio_0 {
+		gpio-hog;
+		input;
+		gpios = <7 GPIO_ACTIVE_HIGH>;
+		line-name = "dio0";
+	};
+
+	dio_1 {
+		gpio-hog;
+		input;
+		gpios = <9 GPIO_ACTIVE_HIGH>;
+		line-name = "dio1";
+	};
+};
+
+&gpio4 {
+	dio_2 {
+		gpio-hog;
+		input;
+		gpios = <3 GPIO_ACTIVE_HIGH>;
+		line-name = "dio2";
+	};
+
+	dio_3 {
+		gpio-hog;
+		input;
+		gpios = <4 GPIO_ACTIVE_HIGH>;
+		line-name = "dio3";
+	};
+
+	pci_wdis {
+		gpio-hog;
+		output-high;
+		gpios = <7 GPIO_ACTIVE_HIGH>;
+		line-name = "pci_wdis#";
+	};
+};

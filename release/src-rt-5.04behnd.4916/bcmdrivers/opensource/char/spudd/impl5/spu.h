@@ -48,7 +48,8 @@ enum spu_cipher_alg {
 	CIPHER_ALG_DES = 0x2,
 	CIPHER_ALG_3DES = 0x3,
 	CIPHER_ALG_AES = 0x4,
-	CIPHER_ALG_LAST = 0x5
+	CIPHER_ALG_CHACHA = 0x5,
+	CIPHER_ALG_LAST = 0x6
 };
 
 enum spu_cipher_mode {
@@ -61,7 +62,8 @@ enum spu_cipher_mode {
 	CIPHER_MODE_CCM = 0x5,
 	CIPHER_MODE_GCM = 0x6,
 	CIPHER_MODE_XTS = 0x7,
-	CIPHER_MODE_LAST = 0x8
+	CIPHER_MODE_CHACHA = 0x8,
+	CIPHER_MODE_LAST = 0x9
 };
 
 enum spu_cipher_type {
@@ -73,6 +75,7 @@ enum spu_cipher_type {
 	CIPHER_TYPE_AES192 = 0x1,
 	CIPHER_TYPE_UPDT = 0x1,	/* used for ARC4 */
 	CIPHER_TYPE_AES256 = 0x2,
+	CIPHER_TYPE_CHACHA = 0x3,
 };
 
 enum hash_alg {
@@ -89,6 +92,7 @@ enum hash_alg {
 	HASH_ALG_SHA3_256 = 0x9,
 	HASH_ALG_SHA3_384 = 0xa,
 	HASH_ALG_SHA3_512 = 0xb,
+	HASH_ALG_POLY1305 = 0xc,
 	HASH_ALG_LAST
 };
 
@@ -103,6 +107,7 @@ enum hash_mode {
 	HASH_MODE_FHMAC = 0x6,
 	HASH_MODE_CCM = 0x5,
 	HASH_MODE_GCM = 0x6,
+	HASH_MODE_POLY1305 = 0x7,
 };
 
 enum hash_type {
@@ -113,7 +118,8 @@ enum hash_type {
 	HASH_TYPE_FIN = 0x3,
 	HASH_TYPE_AES128 = 0x0,
 	HASH_TYPE_AES192 = 0x1,
-	HASH_TYPE_AES256 = 0x2
+	HASH_TYPE_AES256 = 0x2,
+	HASH_TYPE_POLY1305 = 0x4,
 };
 
 enum aead_type {

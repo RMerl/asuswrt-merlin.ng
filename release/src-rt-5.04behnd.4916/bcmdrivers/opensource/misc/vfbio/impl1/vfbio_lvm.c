@@ -149,6 +149,7 @@ int vfbio_lun_create(const char *name, uint64_t size, uint32_t lun_flags, int *l
         goto vfbio_err;
     }
 
+    /* coverity[BUFFER_SIZE:SUPPRESS] */
     strncpy(create_request->lun_name, lun_name, sizeof(create_request->lun_name));
     create_request->lun_size = rounded_size / VFBIO_LVM_ALLOC_BLOCK_SIZE;
     create_request->lun_flags = lun_flags;
@@ -294,6 +295,7 @@ int vfbio_lun_rename(uint8_t num_luns, struct vfbio_lun_id_name id_name[])
     rename_request->num_luns = num_luns;
     for (i = 0; i < num_luns; i++) {
         rename_request->idx_name[i].lun_idx = id_name[i].lun_id;
+        /* coverity[BUFFER_SIZE:SUPPRESS] */
         strncpy(rename_request->idx_name[i].lun_name, id_name[i].lun_name, VFBIO_LVM_MAX_NAME_SIZE);
     }
 
@@ -361,6 +363,8 @@ int vfbio_get_info(struct vfbio_device *vfbio, struct vfbio_lun_descr *lun_descr
     rpc_msg_init(&msg, RPC_SERVICE_VFBIO, VFBIO_FUNC_LUN_INFO, 0, 0, 0, 0);
     vfbio_lvm_msg_set_req_buf_addr(&msg, dma_addr);
 
+    mutex_lock(&vfdevs_lock);
+
     /* Send create request to the SMC */
     status = vfbio_lun_request_timeout_msg(vfbio, &msg);
     if (!status && !lun_info->n_blks)
@@ -369,13 +373,16 @@ int vfbio_get_info(struct vfbio_device *vfbio, struct vfbio_lun_descr *lun_descr
     {
         memset(lun_descr, 0, sizeof(*lun_descr));
         lun_descr->lun_id = vfbio->lun;
-        strncpy(lun_descr->lun_name, lun_info->name, sizeof(lun_info->name));
+        /* coverity[BUFFER_SIZE:SUPPRESS] */
+        strncpy(lun_descr->lun_name, lun_info->name, sizeof(lun_descr->lun_name));
         lun_descr->block_size = 512 * (1 << vfbio_lun_info_get_blk_sz(lun_info));
         lun_descr->size_in_blocks = lun_info->n_blks;
         lun_descr->read_only = (lun_info->flags & VFBIO_LUN_INFO_FLAG_READ_ONLY) != 0;
         lun_descr->dynamic = (lun_info->flags & VFBIO_LUN_INFO_FLAG_DYNAMIC) != 0;
         lun_descr->encrypted = (lun_info->flags & VFBIO_LUN_INFO_FLAG_ENCRYPTED) != 0;
     }
+
+    mutex_unlock(&vfdevs_lock);
 
 vfbio_req_done:
     if (lun_info != NULL) {
@@ -632,7 +639,7 @@ vfbio_rpmb_trans_err:
 }
 
 /* Get error text */
-const char *vfbio_error_str(int err)
+const char *vfbio_error_str(vfbio_error err)
 {
     const char *err_text;
     switch(err)

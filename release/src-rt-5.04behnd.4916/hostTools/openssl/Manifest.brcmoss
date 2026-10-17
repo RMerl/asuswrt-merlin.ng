@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: openssl
+OSS_REFERENCE_Version: 3.4.1
+OSS_REFERENCE_License: Apache License 2.0
+OSS_REFERENCE_DownloadURL: http://www.openssl.org/source/openssl-3.4.1.tar.gz
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./openssl-3.4.1.tar.gz

@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  Overlay test file
+ */
+
+/dts-v1/;
+/plugin/;
+
+&{/buttons} {
+	btn3 {
+		gpios = <&gpio_a 5 0>;
+		label = "button3";
+	};
+};

@@ -1,0 +1,160 @@
+if RCAR_32
+
+config ARCH_RENESAS_BOARD_STRING
+	string "Renesas RCar Gen2 board name"
+	default "Board"
+
+config RCAR_GEN2
+	bool "Renesas RCar Gen2"
+	select PHY
+	select PHY_RCAR_GEN2
+	select TMU_TIMER
+
+config R8A7790
+	bool "Renesas SoC R8A7790"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7790
+	imply PINCTRL_PFC_R8A7790
+
+config R8A7791
+	bool "Renesas SoC R8A7791"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7791
+	imply PINCTRL_PFC_R8A7791
+
+config R8A7792
+	bool "Renesas SoC R8A7792"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7792
+	imply PINCTRL_PFC_R8A7792
+
+config R8A7793
+	bool "Renesas SoC R8A7793"
+	select RCAR_GEN2
+	select ARM_CORTEX_A15_CVE_2017_5715
+	imply CLK_R8A7793
+	imply PINCTRL_PFC_R8A7793
+
+config R8A7794
+	bool "Renesas SoC R8A7794"
+	select RCAR_GEN2
+	imply CLK_R8A7794
+	imply PINCTRL_PFC_R8A7794
+
+choice
+	prompt "Renesas ARM SoCs board select"
+	optional
+
+config TARGET_BLANCHE
+	bool "Blanche board"
+	select DM
+	select DM_SERIAL
+	imply CMD_DM
+
+config TARGET_GOSE
+	bool "Gose board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select SPL_USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_KOELSCH
+	bool "Koelsch board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select SPL_USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_LAGER
+	bool "Lager board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select SPL_USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_ALT
+	bool "Alt board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select SPL_USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_SILK
+	bool "Silk board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select SPL_USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_PORTER
+	bool "Porter board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select SPL_USE_TINY_PRINTF
+	imply CMD_DM
+
+config TARGET_STOUT
+	bool "Stout board"
+	select DM
+	select DM_SERIAL
+	select SPL_TINY_MEMSET
+	select SUPPORT_SPL
+	select SPL_USE_TINY_PRINTF
+	imply CMD_DM
+
+endchoice
+
+config TMU_TIMER
+	bool
+
+config RENESAS_EXTRAM_BOOT
+	bool "Enable boot from RAM"
+	depends on TARGET_ALT || TARGET_BLANCHE || TARGET_KOELSCH || TARGET_LAGER || TARGET_PORTER || TARGET_SILK || TARGET_STOUT
+
+choice
+	prompt "Qos setting primary"
+	depends on TARGET_ALT || TARGET_BLANCHE || TARGET_GOSE || TARGET_KOELSCH || TARGET_LAGER
+	default QOS_PRI_NORMAL
+
+config QOS_PRI_NORMAL
+	bool "Non primary"
+	help
+	   Select normal mode for QoS setting.
+
+config QOS_PRI_MEDIA
+	bool "Media primary"
+	help
+	   Select multimedia primary mode for QoS setting.
+
+config QOS_PRI_GFX
+	bool "GFX primary"
+	help
+	   Select GFX(graphics) primary mode for QoS setting.
+
+endchoice
+
+source "board/renesas/blanche/Kconfig"
+source "board/renesas/gose/Kconfig"
+source "board/renesas/koelsch/Kconfig"
+source "board/renesas/lager/Kconfig"
+source "board/renesas/alt/Kconfig"
+source "board/renesas/silk/Kconfig"
+source "board/renesas/porter/Kconfig"
+source "board/renesas/stout/Kconfig"
+
+endif

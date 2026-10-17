@@ -1,6 +1,0 @@
-MX51EVK BOARD
-M:	Stefano Babic <sbabic@denx.de>
-S:	Maintained
-F:	board/freescale/mx51evk/
-F:	include/configs/mx51evk.h
-F:	configs/mx51evk_defconfig

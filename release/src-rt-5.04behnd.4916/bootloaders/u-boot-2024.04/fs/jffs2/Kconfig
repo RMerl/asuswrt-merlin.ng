@@ -1,0 +1,31 @@
+config FS_JFFS2
+	bool "Enable JFFS2 filesystem support"
+	help
+	  This provides support for reading images from JFFS2 (Journalling
+	  Flash File System version 2). JFFS2 is a log-structured file system
+	  for use with flash memory devices. It supports raw NAND devices,
+	  hard links and compression.
+
+config JFFS2_LZO
+	bool "Enable LZO compression in JFFS2"
+	depends on FS_JFFS2
+	help
+	  Enable LZO compression in the JFFS2 filesystem
+
+config JFFS2_NAND
+	bool "Enable JFFS2 support for NAND flash"
+	depends on FS_JFFS2
+	help
+	  Enable support for NAND flash as the backing store for JFFS2.
+
+config SYS_JFFS2_SORT_FRAGMENTS
+	bool "Enable JFFS2 sorting of filesystem fragments (SLOW!)"
+	depends on FS_JFFS2
+	help
+	  If you boot from a partition which is mounted writable, and you
+	  update your boot environment by replacing single files on that
+	  partition, you should also define CONFIG_SYS_JFFS2_SORT_FRAGMENTS.
+	  Scanning the JFFS2 filesystem takes *much* longer with this feature,
+	  though.  Sorting is done while inserting into the fragment list,
+	  which is more or less a bubble sort. That algorithm is known to be
+	  O(n^2), thus you should really consider if you can avoid it!

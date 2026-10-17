@@ -40,11 +40,8 @@
  * @{
  */
 
-#if defined(XRDP) && !defined(BCM6846) && !defined(BCM6878)
+
 #define RDPA_EPON_MAX_LLID      32
-#else
-#define RDPA_EPON_MAX_LLID      8
-#endif
 
 /** Max number of L1 data queues per LLID, excluding the management queue */
 #define RDPA_EPON_LLID_QUEUES   8
@@ -59,9 +56,9 @@ typedef struct {
     bdmf_object_handle data_egress_tm;          /* egress_tm object handle */
     bdmf_object_handle control_egress_tm;       /* egress_tm object handle */
     bdmf_index ds_def_flow;                     /* llid downstream default flow configuration index*/
-    bdmf_boolean fec_overhead;                  /* fec overhead for ghost reporting (XRDP only) */
-    bdmf_boolean sci_overhead;                  /* sci overhead for ghost reporting (XRDP only) */
-    bdmf_boolean q_802_1ae;                     /* 802.1AE overhead for ghost reporting (XRDP only) */
+    bdmf_boolean fec_overhead;                  /* fec overhead for ghost reporting */
+    bdmf_boolean sci_overhead;                  /* sci overhead for ghost reporting */
+    bdmf_boolean q_802_1ae;                     /* 802.1AE overhead for ghost reporting */
     int16_t deleted_channels[RDPA_EPON_LLID_QUEUES+1];  /* Check if channels were already deleted*/ 
     bdmf_object_handle pbit_to_q;               /* linked pbit to queue table */
 } llid_drv_priv_t;

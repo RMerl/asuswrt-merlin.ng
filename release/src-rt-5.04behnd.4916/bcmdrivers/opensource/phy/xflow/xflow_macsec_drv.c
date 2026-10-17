@@ -49,6 +49,8 @@
 #define DRIVER_DESC   "Broadcom MACSEC driver"
 
 extern int macsec_proc_init(void);
+
+static int macsec_init = 0;
 /*
  * Setup the TDM data bandwidth calendar table.
  */
@@ -85,12 +87,6 @@ static int macsec_fl_init(int unit)
     int rv;
     uint32_t rval;
     uint64_t val64;
-
-    /*
-     * Before changing and MACSEC hardware settings, assert
-     * the XLMAC soft reset
-     */
-//     xlmac_enable_core_soft_reset(mdev, mdev->macsec_port, 1);
 
     /* Enable MACSEC register accesses */
     soc_ubus_reg32_get(unit, MACSEC_CNTRLreg, REG_PORT_ANY, &rval);
@@ -147,26 +143,25 @@ static int macsec_fl_init(int unit)
 
 error_exit:
 
-    /*
-     * After changing and MACSEC hardware settings, de-assert
-     * the XLMAC soft reset
-     */
-//     xlmac_enable_core_soft_reset(mdev, mdev->macsec_port, 0);
-
     return rv;
+}
+
+static void bcm_macsec_drv_init(void)
+{
+    if (macsec_init)
+        return;
+
+    macsec_fl_init(FL_UNIT);
+    macsec_proc_init();
+    macsec_init = 1;
 }
 
 static void macsec_fl_init_dev(macsec_dev_t *mdev, int unit, int port)
 {
     mdev->macsec_unit = unit;
     mdev->macsec_port = port;
-//    mdev->policy_id_decrypt = XFLOW_MACSEC_POLICY_ID_CREATE(xflowMacsecIdTypePolicy, mdev->macsec_port);
-//    mdev->chan_id_decrypt = BCM_XFLOW_MACSEC_SECURE_CHAN_ID_CREATE(BCM_XFLOW_MACSEC_DECRYPT, mdev->macsec_port);
+    mdev->mac_port = -1;
 	mdev->chan_id_encrypt = BCM_XFLOW_MACSEC_SECURE_CHAN_ID_CREATE(BCM_XFLOW_MACSEC_ENCRYPT, mdev->macsec_port);
-//    mdev->flow_id_decrypt = BCM_XFLOW_MACSEC_DECRYPT_FLOW_ID_CREATE(mdev->macsec_port);
-//    mdev->assoc_id_decrypt = { 0, 0, 0, 0 };
-//    mdev->assoc_id_encrypt = { 0, 0 };
-//        BCM_XFLOW_MACSEC_SECURE_ASSOC_ID_CREATE(BCM_XFLOW_MACSEC_ENCRYPT, mdev->macsec_port);
     mdev->assoc_num = 0;
     mdev->include_sci = 1;
     COMPILER_64_SET(mdev->egress_sci, 0, 0);
@@ -175,43 +170,51 @@ static void macsec_fl_init_dev(macsec_dev_t *mdev, int unit, int port)
     COMPILER_64_SET(mdev->ingress_sci_mask, 0xffffffff, 0xffffffff);
 
     printk("macsec_fl_init_dev macsec_unit=%d, macsec_port=%d\n", mdev->macsec_unit, mdev->macsec_port);
-
-//    xflow_macsec_firelight_port_control_set(mdev->macsec_unit, BCM_XFLOW_MACSEC_DECRYPT, mdev->macsec_port,
-//        xflowMacsecPortMgmtDefaultSubPort, mdev->macsec_port);
 }
 
 static int macsec_fl_port_get(int mac_port)
 {
-    int i = - 1;
+    int i;
+
+    if (!macsec_init)
+        return -1;
 
     for (i = 0; i < CMBB_FL_MACSEC_MAX_PORT_NUM; i++)
     {
         if (msec_devs[FL_UNIT][i].mac_port == mac_port)
             return i;
     }
-    return i;
+    return -1;
 }
 
 int macsec_fl_port_enabled(int mac_port)
 {
-    int i;
+    int i, ret = -1;
 
     i = macsec_fl_port_get(mac_port);
     if (i != -1)
-        return msec_devs[FL_UNIT][i].enabled ? i : -1;
-    return -1;
+        ret = msec_devs[FL_UNIT][i].enabled ? i : -1;
+    return ret;
 }
 
-int macsec_fl_port_init(int macsec_port)
+/* Called from XPORT_DRV */
+int macsec_fl_port_init(int mac_port)
 {
+    int macsec_port;
     macsec_dev_t *mdev;
     uint32_t rval;
 
-    macsec_port = macsec_fl_port_get(macsec_port);
+    macsec_port = macsec_fl_port_get(mac_port);
+
+    if (macsec_port == -1) /* Nothing to do */
+        return 0;
 
     mdev = &msec_devs[FL_UNIT][macsec_port];
     /* Release soft reset for the specified MACSEC port */
     soc_ubus_reg32_get(mdev->macsec_unit, MACSEC_CTRLreg, mdev->macsec_port, &rval);
+    /* Trigger bit reset */
+    soc_ubus_reg_field32_set(mdev->macsec_unit, MACSEC_CTRLreg, &rval, SOFT_RESET_fld, 1);
+    soc_ubus_reg32_set(mdev->macsec_unit, MACSEC_CTRLreg, mdev->macsec_port, rval);
     soc_ubus_reg_field32_set(mdev->macsec_unit, MACSEC_CTRLreg, &rval, SOFT_RESET_fld, 0);
     if (msec_devs[FL_UNIT][macsec_port].enabled)
         soc_ubus_reg_field32_set(mdev->macsec_unit, MACSEC_CTRLreg, &rval, BYPASS_EN_fld, 0);
@@ -222,17 +225,21 @@ int macsec_fl_port_init(int macsec_port)
     return 0;
 }
 
-int macsec_fl_port_reset(int macsec_port)
+/* Called from XPORT_DRV */
+int macsec_fl_port_reset(int mac_port)
 {
+    int macsec_port;
     macsec_dev_t *mdev;
     uint32_t rval;
 
-    macsec_port = macsec_fl_port_get(macsec_port);
+    macsec_port = macsec_fl_port_get(mac_port);
+
+    if (macsec_port == -1) /* Nothing to do */
+        return 0;
 
     mdev = &msec_devs[FL_UNIT][macsec_port];
     /* Release soft reset for the specified MACSEC port */
     soc_ubus_reg32_get(mdev->macsec_unit, MACSEC_CTRLreg, mdev->macsec_port, &rval);
-    soc_ubus_reg_field32_set(mdev->macsec_unit, MACSEC_CTRLreg, &rval, SOFT_RESET_fld, 1);
     if (msec_devs[FL_UNIT][macsec_port].enabled)
         soc_ubus_reg_field32_set(mdev->macsec_unit, MACSEC_CTRLreg, &rval, BYPASS_EN_fld, 1);
     soc_ubus_reg32_set(mdev->macsec_unit, MACSEC_CTRLreg, mdev->macsec_port, rval);
@@ -243,9 +250,18 @@ int macsec_fl_port_reset(int macsec_port)
 
 void bcm_macsec_port_set(int macsec_port, int mac_port)
 {
+    if (!macsec_init)
+        bcm_macsec_drv_init();
+
     if (macsec_port >= 0 && macsec_port < CMBB_FL_MACSEC_MAX_PORT_NUM)
     {
+        uint32_t rval;
+
         msec_devs[FL_UNIT][macsec_port].mac_port = mac_port;
+        /* Release soft reset for the specified MACSEC port */
+        soc_ubus_reg32_get(msec_devs[FL_UNIT][macsec_port].macsec_unit, MACSEC_CTRLreg, macsec_port, &rval);
+        soc_ubus_reg_field32_set(msec_devs[FL_UNIT][macsec_port].macsec_unit, MACSEC_CTRLreg, &rval, SOFT_RESET_fld, 0);
+        soc_ubus_reg32_set(msec_devs[FL_UNIT][macsec_port].macsec_unit, MACSEC_CTRLreg, macsec_port, rval);
     } 
 }
 EXPORT_SYMBOL(bcm_macsec_port_set);
@@ -281,9 +297,7 @@ static int bcm_macsec_probe(dt_device_t *pdev)
     if ((ret = soc_attach(FL_UNIT)))
         goto exit;
 
-    macsec_fl_init(FL_UNIT);
     macsec_fl_init_devs(FL_UNIT);
-    macsec_proc_init();
 
     dev_info(&pdev->dev, "registered\n");
 

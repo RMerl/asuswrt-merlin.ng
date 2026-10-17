@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+&{/soc/bus@2000000} { /* AIPS1 */
+	bootph-all;
+};
+
+&pinctrl_uart1 {
+	bootph-all;
+};
+
+&{/soc} {
+	bootph-all;
+};
+
+&uart1 {
+	bootph-all;
+};

@@ -1,0 +1,7 @@
+DS414 BOARD
+M:	Phil Sutter <phil@nwl.cc>
+S:	Maintained
+F:	board/Synology/ds414/
+F:	board/Synology/common/
+F:	include/configs/ds414.h
+F:	configs/ds414_defconfig

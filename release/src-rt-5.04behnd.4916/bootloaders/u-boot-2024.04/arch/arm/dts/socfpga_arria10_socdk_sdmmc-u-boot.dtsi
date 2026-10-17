@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2014-2015, 2020 Intel. All rights reserved.
+ */
+
+#include "socfpga_arria10_socdk_sdmmc_handoff.h"
+#include "socfpga_arria10-handoff.dtsi"
+#include "socfpga_arria10_handoff_u-boot.dtsi"
+#include "socfpga_arria10_socdk-u-boot.dtsi"
+
+/ {
+	chosen {
+		firmware-loader = <&fs_loader0>;
+	};
+
+	fs_loader0: fs-loader {
+		bootph-all;
+		compatible = "u-boot,fs-loader";
+		phandlepart = <&mmc 1>;
+	};
+};
+
+&fpga_mgr {
+	bootph-all;
+	altr,bitstream = "fit_spl_fpga.itb";
+};
+
+&mmc {
+	bootph-all;
+};
+
+/* Clock available early */
+&main_sdmmc_clk {
+	bootph-all;
+};
+
+&peri_sdmmc_clk {
+	bootph-all;
+};
+
+&sdmmc_free_clk {
+	bootph-all;
+};
+
+&sdmmc_clk {
+	bootph-all;
+};

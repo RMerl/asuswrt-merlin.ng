@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * sama5d27_wlsom1.dtsi - Device Tree file for SAMA5D27 WLSOM1
+ *
+ * Copyright (C) 2019 Microchip Technology Inc. and its subsidiaries
+ *
+ * Author: Nicolas Ferre <nicolas.ferre@microcihp.com>
+ */
+#include "sama5d2.dtsi"
+#include "sama5d2-pinfunc.h"
+/ {
+	model = "Microchip SAMA5D27 WLSOM1";
+	compatible = "microchip,sama5d27-wlsom1", "atmel,sama5d2", "atmel,sama5";
+
+	memory {
+		reg = <0x20000000 0x10000000>;
+	};
+
+	ahb {
+		apb {
+			qspi1: spi@f0024000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_qspi1_default>;
+
+				qspi1_flash: spi_flash@0 {
+					compatible = "jedec,spi-nor";
+					reg = <0>;
+					spi-max-frequency = <50000000>;
+					spi-rx-bus-width = <4>;
+					spi-tx-bus-width = <4>;
+				};
+			};
+
+			macb0: ethernet@f8008000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_macb0_rmii &pinctrl_macb0_phy_irq>;
+				phy-mode = "rmii";
+
+				ethernet-phy@0 {
+					reg = <0x0>;
+				};
+			};
+
+			pioA: pinctrl@fc038000 {
+				pinctrl_macb0_phy_irq: macb0_phy_irq {
+					pinmux = <PIN_PB24__GPIO>;
+					bias-disable;
+				};
+
+				pinctrl_macb0_rmii: macb0_rmii {
+					pinmux = <PIN_PB14__GTXCK>,
+						 <PIN_PB15__GTXEN>,
+						 <PIN_PB16__GRXDV>,
+						 <PIN_PB17__GRXER>,
+						 <PIN_PB18__GRX0>,
+						 <PIN_PB19__GRX1>,
+						 <PIN_PB20__GTX0>,
+						 <PIN_PB21__GTX1>,
+						 <PIN_PB22__GMDC>,
+						 <PIN_PB23__GMDIO>;
+					bias-disable;
+				};
+
+				pinctrl_qspi1_default: qspi1_default {
+					pinmux = <PIN_PB5__QSPI1_SCK>,
+						 <PIN_PB6__QSPI1_CS>,
+						 <PIN_PB7__QSPI1_IO0>,
+						 <PIN_PB8__QSPI1_IO1>,
+						 <PIN_PB9__QSPI1_IO2>,
+						 <PIN_PB10__QSPI1_IO3>;
+					bias-pull-up;
+				};
+			};
+		};
+	};
+};

@@ -1,0 +1,76 @@
+/dts-v1/;
+
+/ {
+	description = "Chrome OS kernel image with one or more FDT blobs";
+	#address-cells = <1>;
+
+	images {
+		kernel {
+			data = /incbin/("test-kernel.bin");
+			type = "kernel_noload";
+			arch = "sandbox";
+			os = "linux";
+			compression = "none";
+			load = <0x4>;
+			entry = <0x8>;
+			kernel-version = <1>;
+			hash-0 {
+                                algo = "crc16-ccitt";
+                        };
+                        hash-1 {
+                                algo = "crc32";
+                        };
+                        hash-2 {
+                                algo = "md5";
+                        };
+                        hash-3 {
+                                algo = "sha1";
+                        };
+                        hash-4 {
+                                algo = "sha256";
+                        };
+                        hash-5 {
+                                algo = "sha384";
+                        };
+                        hash-6 {
+                                algo = "sha512";
+                        };
+		};
+		fdt-1 {
+			description = "snow";
+			data = /incbin/("sandbox-kernel.dtb");
+			type = "flat_dt";
+			arch = "sandbox";
+			compression = "none";
+			fdt-version = <1>;
+			hash-0 {
+                                algo = "crc16-ccitt";
+                        };
+                        hash-1 {
+                                algo = "crc32";
+                        };
+                        hash-2 {
+                                algo = "md5";
+                        };
+                        hash-3 {
+                                algo = "sha1";
+                        };
+                        hash-4 {
+                                algo = "sha256";
+                        };
+                        hash-5 {
+                                algo = "sha384";
+                        };
+                        hash-6 {
+                                algo = "sha512";
+                        };
+		};
+	};
+	configurations {
+		default = "conf-1";
+		conf-1 {
+			kernel = "kernel";
+			fdt = "fdt-1";
+		};
+	};
+};

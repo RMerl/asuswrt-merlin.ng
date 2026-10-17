@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: (GPL-2.0+)
+/*
+ * Copyright (C) 2020 Harald Seiler <hws@denx.de>
+ * Copyright (C) 2022 Philip Oberfichtner <pro@denx.de>
+ */
+
+/ {
+	aliases {
+		eeprom0 = &eeprom0;
+	};
+
+	wdt-reboot {
+		compatible = "wdt-reboot";
+		wdt = <&wdog1>;
+		bootph-pre-ram;
+	};
+};
+
+&fec {
+	phy-reset-duration = <1>;
+	phy-reset-post-delay = <10>;
+	phy-supply = <&reg_eth_vio>;
+};
+
+&i2c3 {
+	eeprom0: eeprom@50 {
+	};
+};
+
+&reg_usb_otg_vbus {
+	gpio = <&gpio3 31 GPIO_ACTIVE_HIGH>;
+	enable-active-high;
+};
+
+&wdog1 {
+	bootph-pre-ram;
+};

@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * QorIQ GPIO device tree stub [ controller @ offset 0x130000 ]
+ *
+ * Copyright 2011 Freescale Semiconductor Inc.
+ * Copyright 2020 NXP
+ *
+ */
+
+gpio0: gpio@130000 {
+	compatible = "fsl,qoriq-gpio";
+	reg = <0x130000 0x1000>;
+	interrupts = <55 2 0 0>;
+	#gpio-cells = <2>;
+	gpio-controller;
+};

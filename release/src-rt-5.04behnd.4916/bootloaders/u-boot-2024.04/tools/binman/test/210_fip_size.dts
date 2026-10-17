@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		atf-fip {
+			size = <0x100>;
+			pad-byte = <0xff>;
+			soc-fw {
+				filename = "bl31.bin";
+			};
+		};
+		u-boot {
+		};
+	};
+};

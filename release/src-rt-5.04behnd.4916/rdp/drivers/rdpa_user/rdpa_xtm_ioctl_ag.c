@@ -68,7 +68,7 @@ static int rdpa_user_xtm_index_get(rdpa_ioctl_cmd_t *pa)
 		BDMF_TRACE_DBG("rdpa_xtm_index_get failed, ret:%d\n", pa->ret);
 	}
 
-	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
+	if (copy_to_user((void *)(bdmf_long_t)pa->ptr, (void *)&parm, sizeof(bdmf_number)))
 	{
 		BDMF_TRACE_ERR("failed to copy to user\n");
 		return -1;
@@ -77,7 +77,7 @@ static int rdpa_user_xtm_index_get(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
-long rdpa_xtm_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
+bdmf_long_t rdpa_xtm_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
 

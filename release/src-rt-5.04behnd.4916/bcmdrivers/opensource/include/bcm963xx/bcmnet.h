@@ -256,6 +256,7 @@ struct ethctl_data {
 #define ETHCTL_FLAG_WAKE_BTN_SET    (1<<8)
 #define ETHCTL_FLAG_WAKE_TME_SET    (1<<9)
 #define ETHCTL_FLAG_WAKE_WAN_SET    (1<<10)
+#define ETHCTL_FLAG_WAKE_SW_SET     (1<<11)
     char mac[6];
     char psw[6];
     int rep;
@@ -299,16 +300,14 @@ enum {
     ETHCTL_FLAG_ACCESS_EXT_PHY              = (1<<0),
     ETHCTL_FLAG_ACCESS_EXTSW_PHY            = (1<<1),
     ETHCTL_FLAG_ACCESS_I2C_PHY              = (1<<2),
-    ETHCTL_FLAG_ACCESS_I2C_PHY_EEPROM       = (1<<3),
-
-    ETHCTL_FLAG_ACCESS_SERDES               = (1<<4),
-    ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE    = (1<<5),
-    ETHCTL_FLAG_ACCESS_32BIT                = (1<<6),
-    ETHCTL_FLAG_ACCESS_10GSERDES            = (1<<7),
-
-    ETHCTL_FLAG_ACCESS_10GPCS               = (1<<8),
-    ETHCTL_FLAG_ACCESS_SILENT_START         = (1<<9),
-    ETHCTL_FLAG_ACCESS_SERDES_TIMER         = (1<<10),
+    ETHCTL_FLAG_ACCESS_SERDES               = (1<<3),
+    ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE    = (1<<4),
+    ETHCTL_FLAG_ACCESS_32BIT                = (1<<5),
+    ETHCTL_FLAG_ACCESS_10GSERDES            = (1<<6),
+    ETHCTL_FLAG_ACCESS_10GPCS               = (1<<7),
+    ETHCTL_FLAG_ACCESS_SILENT_START         = (1<<8),
+    ETHCTL_FLAG_ACCESS_SERDES_TIMER         = (1<<9),
+    ETHCTL_FLAG_ACCESS_TX_POWER             = (1<<10),
 };
 #define ETHCTL_FLAG_ANY_SERDES  (ETHCTL_FLAG_ACCESS_SERDES|ETHCTL_FLAG_ACCESS_10GSERDES)
 
@@ -327,9 +326,15 @@ enum {
     ETHCTL_SET          = (1<<0),
 };
 
+/* For Silent Start Get return value extra encoding */
+#define ETHCTL_SILENT_START_LASER_BIT_VALID (1<<31)
+#define ETHCTL_SILENT_START_LASER_ON        (1<<30)
+#define ETHCTL_SILENT_START_LASER_MASK (ETHCTL_SILENT_START_LASER_BIT_VALID | ETHCTL_SILENT_START_LASER_ON)
+
 enum ethctl_error {
-    ETHCTL_ERROR_POWER_SAVING_DOWN = -100,
-    ETHCTL_ERROR_POWER_ADMIN_DOWN = -101,
+    ETHCTL_ERROR_POWER_SAVING_DOWN          = -100,
+    ETHCTL_ERROR_POWER_ADMIN_DOWN           = -101,
+    ETHCTL_ERROR_FUNCTION_NOT_SUPPORTED     = -102,
 };
 
 #if 1	/* used by router/shared/ */
@@ -551,6 +556,7 @@ enum mac_limit_set_op{
 typedef enum bcmnet_ioctl_cmd
 {
     BCMNET_IOCTL_GET_EXT_FLAGS,
+    BCMNET_IOCTL_UPDATE_FLAG,
     BCMNET_IOCTL_GET_LAST_CHANGE,
     BCMNET_IOCTL_CLR_STATS,
     BCMNET_IOCTL_ADD_NETDEV_PATH,
@@ -560,6 +566,9 @@ typedef enum bcmnet_ioctl_cmd
     BCMNET_IOCTL_SET_ACCEL_FC_TX_THREAD,
     BCMNET_IOCTL_GET_ACCEL,
     BCMNET_IOCTL_DUMP_NETDEV_DEVID,
+    BCMNET_IOCTL_SET_PKT_DROP_MONITOR,
+    BCMNET_IOCTL_INHERIT_DEV_FLAGS,
+    BCMNET_IOCTL_BCM_HOOK_SKIP,
     BCMNET_IOCTL_SET_SDN_IGNORE,
     BCMNET_IOCTL_MAX
 } bcmnet_ioctl_cmd_t;
@@ -591,8 +600,8 @@ typedef struct {
     char if_name[IFNAMSIZ];
     union {
         struct {
-            bcmnet_extflags ret_val;
-        }st_get_ext_flags;
+            bcmnet_extflags flag_val;
+        }st_ext_flags;
         bcmnet_accel_t accel;
         struct {
             unsigned long last_change;
@@ -601,6 +610,11 @@ typedef struct {
             char next_if_name[IFNAMSIZ];
         }st_add_netdev_path;
         mac_limit_arg_t st_mac_limit;
+        int pktdrop_monitor;
+        struct {
+            char lower_dev_name[IFNAMSIZ];
+        }st_inherit_dev_flags;
+        unsigned int bcm_hook_skip;
     };
 }bcmnet_info_t;
 
@@ -618,8 +632,8 @@ typedef struct {
     char if_name[IFNAMSIZ];
     union {
         struct {
-            bcmnet_extflags ret_val;
-        }st_get_ext_flags;
+            bcmnet_extflags flag_val;
+        }st_ext_flags;
         struct {
             uint32 unused:26;
             uint32 fc_tx_thread:1;
@@ -664,7 +678,7 @@ static inline int bcmnet_ioctl_get_ext_flags(char const* if_name, bcmnet_extflag
     close(fd);
     if (err == -1)
         return err;
-    *flags = info.st_get_ext_flags.ret_val;
+    *flags = info.st_ext_flags.flag_val;
     return 0;
 }
 

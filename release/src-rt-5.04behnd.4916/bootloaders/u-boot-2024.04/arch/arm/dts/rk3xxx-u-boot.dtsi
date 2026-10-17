@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+/ {
+	noc: syscon@10128000 {
+		compatible = "rockchip,rk3188-noc", "syscon";
+		reg = <0x10128000 0x2000>;
+		bootph-all;
+	};
+
+	dmc: dmc@20020000 {
+		/* unreviewed u-boot-specific binding */
+		compatible = "rockchip,rk3188-dmc", "syscon";
+		reg = <0x20020000 0x3fc
+		       0x20040000 0x294>;
+		clocks = <&cru PCLK_DDRUPCTL>, <&cru PCLK_PUBL>;
+		clock-names = "pclk_ddrupctl", "pclk_publ";
+		rockchip,cru = <&cru>;
+		rockchip,grf = <&grf>;
+		rockchip,pmu = <&pmu>;
+		rockchip,noc = <&noc>;
+		bootph-all;
+	};
+};
+
+&grf {
+	bootph-all;
+};
+
+&pmu {
+	bootph-all;
+};
+
+&uart2 {
+	clock-frequency = <24000000>;
+};
+
+&xin24m {
+	bootph-all;
+};

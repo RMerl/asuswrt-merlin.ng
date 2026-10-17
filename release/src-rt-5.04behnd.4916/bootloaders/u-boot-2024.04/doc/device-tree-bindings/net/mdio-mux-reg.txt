@@ -1,0 +1,82 @@
+Device tree structures used by register based MDIO muxes is described here.
+This binding is based on reg-mux.txt binding in Linux and is currently used by
+mdio-mux-i2creg driver in U-Boot.
+
+Required properties:
+#mux-control-cells = <1> indicates how many registers are used for mux
+			selection.  mux-reg-mask property described below must
+			include this number of pairs.
+mux-reg-masks = <reg mask> describes pairs of register offset and register mask.
+			Register bits enabled in mask are set to the selection
+			value defined in reg property of child MDIOs to control
+			selection.
+Properties described in mdio-mux.txt also apply.
+
+Example structure, used on Freescale LS1028A QDS board:
+
+&i2c0 {
+	status = "okay";
+	bootph-all;
+
+	fpga@66 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "simple-mfd";
+		reg = <0x66>;
+
+		mux-mdio@54 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mdio-mux-i2creg";
+			reg = <0x54>;
+			#mux-control-cells = <1>;
+			mux-reg-masks = <0x54 0xf0>;
+			mdio-parent-bus = <&mdio0>;
+
+			/* on-board MDIO with a single RGMII PHY */
+			mdio@00 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x00>;
+
+				/* on-board 1G RGMII PHY */
+				qds_phy0: phy@5 {
+					reg = <5>;
+				};
+			};
+			/* card slot 1 */
+			mdio@40 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x40>;
+				/* VSC8234 1G SGMII card */
+				sgmii_port0: phy@1c {
+					reg = <0x1c>;
+				};
+			};
+			/* card slot 2 */
+			mdio@50 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x50>;
+			};
+			/* card slot 3 */
+			mdio@60 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x60>;
+			};
+			/* card slot 4 */
+			mdio@70 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				reg = <0x70>;
+			};
+		};
+	};
+};
+
+/* Parent MDIO, defined in SoC .dtsi file, just enabled here */
+&mdio0 {
+	status = "okay";
+};

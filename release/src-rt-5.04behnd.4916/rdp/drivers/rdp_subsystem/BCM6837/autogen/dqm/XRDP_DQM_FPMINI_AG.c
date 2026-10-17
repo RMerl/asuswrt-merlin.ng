@@ -1080,6 +1080,9 @@ static const ru_reg_rec *DQM_FPMINI_REGS[] =
 const ru_block_rec DQM_FPMINI_BLOCK =
 {
     "DQM_FPMINI",
+#if RU_INCLUDE_SIZE
+    { 0x00008408 },
+#endif
     DQM_FPMINI_ADDRS,
     1,
     18,

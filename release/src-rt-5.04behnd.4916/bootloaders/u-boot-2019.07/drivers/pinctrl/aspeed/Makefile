@@ -1,1 +1,0 @@
-obj-$(CONFIG_ASPEED_AST2500_PINCTRL) += pinctrl_ast2500.o

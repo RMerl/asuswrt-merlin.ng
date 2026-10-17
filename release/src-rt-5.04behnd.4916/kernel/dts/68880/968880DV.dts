@@ -23,10 +23,6 @@
     xphy1-enabled;
 };
 
-&macsec {
-    status = "okay";
-};
-
 &mdio_bus {
     egphy0 {
         status = "okay";
@@ -317,4 +313,31 @@
         };
 };
 
+&i2c0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
 
+#ifdef CONFIG_SND_SOC_MAPLETREE
+	codec_playback: codec_palyback@18{
+		compatible = "ti,tlv320dac3203";
+		reg = <0x18>;
+	};
+	codec_capture: codec_capture@4e{
+		compatible = "ti,tlv320adc5140";
+		reg = <0x4e>;
+	};
+#endif
+
+#ifdef CONFIG_SND_SOC_MAPLELEAF
+	codec_playback:codec_playback@18{
+		compatible = "ti,tlv320dac3203";
+		reg = <0x18>;
+	};
+	codec_capture:codec_capture@19{
+		compatible = "ti,tlv320adc3101";
+		reg = <0x19>;
+	};
+#endif
+
+};

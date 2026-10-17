@@ -155,6 +155,7 @@ struct loadHdr {
 #define TEST_ACT_TEST  0
 #define TEST_ACT_STOP1 1
 #define TEST_ACT_STOP2 2
+#define TEST_ACT_MAX   TEST_ACT_STOP2
         uint8_t testAction;  // Test action
         uint8_t rxStopped;   // Receive traffic stopped indicator (BOOL)
         uint32_t lpduSeqNo;  // Load PDU sequence number
@@ -167,7 +168,7 @@ struct loadHdr {
         uint32_t lpduTime_nsec; // Send time of this load PDU
         //
         uint16_t rttRespDelay; // Response delay for RTT calculation (ms)
-        uint16_t reserved1;    // (Alignment)
+        uint16_t checkSumOrRsvd;    // (Alignment)
 };
 #else
 struct loadHdr {
@@ -187,10 +188,10 @@ struct loadHdr {
         uint32_t lpduTime_sec;  // Send time of this load PDU
         uint32_t lpduTime_nsec; // Send time of this load PDU
 };
-#endif /* OBUDPST_MFLOW */
-#endif
+#endif /* defined(CONFIG_BCM_TR471_MFLOW) */
+#endif /* !defined(BRCM_UDPST_OFFLOAD) */
 
-#define SPDSVC_TR471_RX_QUEUE_SIZE  256 // Must be power of 2
+#define SPDSVC_TR471_RX_QUEUE_SIZE  8192 // Must be power of 2
 
 typedef struct _spdsvc_tr471_rx_queue_if_entry {
    int            connindex;
@@ -222,13 +223,13 @@ static inline int spdsvc_tr471_rx_queue_mem_size(void)
 }
 
 typedef struct {
-    int connindex;
-    int totalburst;
-    int burstsize;
-    unsigned int payload;
-    unsigned int addon;
-    int randPayload;
-    int firstBurst;
+    uint16_t connindex;
+    uint8_t randPayload;
+    uint8_t firstBurst;
+    uint16_t totalburst;
+    uint16_t burstsize;
+    uint16_t payload;
+    uint16_t addon;
     int pid;
     int event_fd;
     int burst_cmpl_event_fd;

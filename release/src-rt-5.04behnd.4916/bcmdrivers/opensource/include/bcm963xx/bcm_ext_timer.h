@@ -67,6 +67,8 @@ int ext_timer_set_count(EXT_TIMER_NUMBER timer_num, uint64_t count);
 int ext_timer_set_period(EXT_TIMER_NUMBER timer_num, unsigned long timer_period);
 int ext_timer_set_mode(EXT_TIMER_NUMBER timer_num, unsigned int mode);
 int ext_timer_set_affinity(EXT_TIMER_NUMBER timer_num, unsigned int cpuId, int force);
+#define ext_timer_alloc_freerun(timer_num)  ext_timer_alloc(timer_num, 0, NULL, 0);
+uint32_t ext_timer_read_32b_ms(EXT_TIMER_NUMBER timer_num);
 
 #ifdef __cplusplus
 }

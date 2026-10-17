@@ -1,0 +1,11 @@
+BEELINK-S922X
+M:	Christian Hewitt <christianshewitt@gmail.com>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/beelink-s922x/
+F:	configs/beelink-gsking-x_defconfig
+F:	configs/beelink-gtking_defconfig
+F:	configs/beelink-gtkingpro_defconfig
+F:	doc/board/amlogic/beelink-gskingx.rst
+F:	doc/board/amlogic/beelink-gtking.rst
+F:	doc/board/amlogic/beelink-gtkingpro.rst

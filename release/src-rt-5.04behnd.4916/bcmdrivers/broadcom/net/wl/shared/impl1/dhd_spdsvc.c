@@ -21,11 +21,14 @@
 #if defined(BCM_NBUFF)
 #include <linux/nbuff.h>
 #endif
+#if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE)) && \
+	(defined(CONFIG_BCM_SPDSVC)||defined(CONFIG_BCM_SPDSVC_MODULE))
+#include "rdpa_api.h"
+#endif
 
 #include <dngl_stats.h>
 #include <dhd.h>
 #include <dhd_bus.h>
-#include <dhd_runner.h>
 #include <dhd_flowring.h>
 
 #include "bcm_spdsvc.h"
@@ -47,13 +50,19 @@ int dhd_spdsvc_tx(dhd_pub_t *dhdp, void **pktbuf)
 
 	if (dhd_spdsvc_transmit != NULL)
 	{
-#if defined(BCM_DHD_RUNNER)
+#if defined(BCM_DHD_OFFLOAD) || defined(BCM_DHD_RUNNER)
 		uint16 flowid = DHD_PKT_GET_FLOWID(*pktbuf);
 		flow_ring_node_t *flow_ring_node = dhd_flow_ring_node(dhdp, flowid);
 
 		if (!DHD_FLOWRING_RNR_OFFL(flow_ring_node))
-#endif /* BCM_DHD_RUNNER */
+#endif /* BCM_DHD_OFFLOAD || BCM_DHD_RUNNER */
 		{
+
+#if defined(BCM_WKB)
+			/* XXX: TODO: Not supported yet */
+			ASSERT(!IS_WKBUFF_PTR(*pktbuf));
+#endif /* BCM_WKB */
+
 			if (IS_SKBUFF_PTR(*pktbuf))
 			{
 				struct sk_buff *skb;
@@ -74,6 +83,20 @@ int dhd_spdsvc_tx(dhd_pub_t *dhdp, void **pktbuf)
 				if (dhd_spdsvc_transmit(&spdsvc_transmit))
 				{
 					ret = BCME_OK;
+#if (defined(CONFIG_BCM_RDPA)||defined(CONFIG_BCM_RDPA_MODULE)) && \
+	(defined(CONFIG_BCM_SPDSVC)||defined(CONFIG_BCM_SPDSVC_MODULE))
+					if ((spdsvc_transmit.so_mark &
+						RDPA_UDPSPDTEST_SO_MARK_PREFIX)
+						== RDPA_UDPSPDTEST_SO_MARK_PREFIX)
+					{
+						rdpa_cpu_tx_info_t spdt_cpu_info;
+
+						spdt_cpu_info.spdt_so_mark =
+							spdsvc_transmit.so_mark;
+						ret = rdpa_udpspdtest_tx_start(
+							&spdt_cpu_info, 0, *pktbuf);
+					}
+#endif
 					goto exit;
 				}
 			}
@@ -83,7 +106,7 @@ exit:
 	return ret;
 }
 
-int dhd_spdsvc_rx(struct sk_buff *skb)
+int dhd_spdsvc_rx(void *pkt)
 {
 	int ret = 1; /* init as positive value, as BCME_OK is 0 and BCME_XXX are all negative */
 
@@ -91,7 +114,12 @@ int dhd_spdsvc_rx(struct sk_buff *skb)
 	{
 		spdsvcHook_receive_t spdsvc_receive;
 
-		spdsvc_receive.pNBuff = SKBUFF_2_PNBUFF(skb);
+#if defined(BCM_WKB)
+		/* XXX: TODO: Not supported yet */
+		ASSERT(IS_SKBUFF_PTR(pkt));
+#endif /* BCM_WKB */
+
+		spdsvc_receive.pNBuff = pkt;
 		spdsvc_receive.header_type = SPDSVC_HEADER_TYPE_ETH;
 		spdsvc_receive.phy_overhead = WL_SPDSVC_OVERHEAD;
 

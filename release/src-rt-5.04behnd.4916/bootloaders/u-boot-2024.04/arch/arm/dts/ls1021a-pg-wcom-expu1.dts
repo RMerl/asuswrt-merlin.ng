@@ -1,0 +1,141 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Hitachi ABB Power Grids EXPU1 board device tree source
+ *
+ * Copyright 2020 Hitachi ABB Power Grids
+ *
+ * Copyright 2013-2015 Freescale Semiconductor, Inc.
+ */
+
+/dts-v1/;
+#include "ls1021a.dtsi"
+
+/ {
+	model = "EXPU1 Service Unit for XMC and FOX";
+
+	aliases {
+		enet2-rgmii-debug-phy = &debug_phy;
+	};
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+
+&enet0 {
+	status = "okay";
+	tbi-handle = <&tbi0>;
+	phy-connection-type = "sgmii";
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&enet1 {
+	status = "okay";
+	tbi-handle = <&tbi1>;
+	phy-connection-type = "sgmii";
+	fixed-link {
+		speed = <1000>;
+		full-duplex;
+	};
+};
+
+&enet2 {
+	phy-handle = <&debug_phy>;
+	phy-connection-type = "rgmii-id";
+	max-speed = <100>;
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&dspi1 {
+	bus-num = <0>;
+	status = "okay";
+	zl30343@0 {
+		compatible = "gen,spidev", "zarlink,zl30343";
+		reg = <0>;
+		spi-max-frequency = <8000000>;
+	};
+};
+
+&ifc {
+	#address-cells = <2>;
+	#size-cells = <1>;
+	/* NOR Flash on board */
+	ranges = <0x0 0x0 0x60000000 0x04000000>;
+	status = "okay";
+
+	nor@0,0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "cfi-flash";
+		reg = <0x0 0x0 0x4000000>;
+		bank-width = <2>;
+		device-width = <1>;
+
+		partition@0 {
+			label = "rcw";
+			reg = <0x0 0x20000>;
+			read-only;
+		};
+		partition@20000 {
+			label = "qe";
+			reg = <0x20000 0x20000>;
+		};
+		partition@40000 {
+			label = "envred";
+			reg = <0x40000 0x20000>;
+		};
+		partition@60000 {
+			label = "env";
+			reg = <0x60000 0x20000>;
+		};
+		partition@100000 {
+			label = "u-boot";
+			reg = <0x100000 0x100000>;
+		};
+		partition@200000 {
+			label = "redenvred";
+			reg = <0x200000 0x20000>;
+		};
+		partition@220000 {
+			label = "redenv";
+			reg = <0x220000 0x20000>;
+		};
+		partition@240000 {
+			label = "redu-boot";
+			reg = <0x240000 0x100000>;
+		};
+		partition@340000 {
+			label = "ubi0";
+			reg = <0x340000 0x03C00000>;
+		};
+	};
+};
+
+&mdio0 {
+	debug_phy: ethernet-phy@11 {
+		reg = <0x11>;
+	};
+
+	tbi0: tbi-phy@0xb {
+		reg = <0xb>;
+		device_type = "tbi-phy";
+	};
+};
+
+&mdio1 {
+	tbi1: tbi-phy@0xd {
+		reg = <0xd>;
+		device_type = "tbi-phy";
+	};
+};
+
+&uart0 {
+	status = "okay";
+};

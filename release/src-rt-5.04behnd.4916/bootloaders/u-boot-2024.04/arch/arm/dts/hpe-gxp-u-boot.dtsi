@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree file for HPE GXP
+ */
+
+/include/ "hpe-gxp.dtsi"
+
+/ {
+
+	axi {
+		bootph-all;
+
+		ahb@c0000000 {
+			bootph-all;
+
+			spi0: spi@200 {
+				compatible = "hpe,gxp-spi";
+				reg = <0x200 0x80>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "okay";
+			};
+		};
+	};
+};

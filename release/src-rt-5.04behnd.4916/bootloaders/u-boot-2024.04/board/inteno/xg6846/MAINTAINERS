@@ -1,0 +1,6 @@
+INTENO XG6846 BOARD
+M:	Linus Walleij <linusw@kernel.org>
+S:	Maintained
+F:	board/inteno/xg6846
+F:	include/configs/inteno_xg6846.h
+F:	configs/inteno_xg6846_ram_defconfig

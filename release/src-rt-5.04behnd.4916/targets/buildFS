@@ -62,7 +62,7 @@ grep /dev $ROOTFS/rom/etc/make_static_devnodes.sh | cut -d' ' -f 2 | cut -d'/' -
 # Remove all svn metadata files
 find $ROOTFS -name ".svn" -exec rm -rf '{}' \;
 
-if [ "$BUILD_EMMC_IMG" == "y" ]; then
+if [ "$BRCM_FLASH_BUILD_EMMC" == "y" ]; then
 	bfiles="cms_entity_info.d  init.d  ld.so.cache  ld.so.conf  rc3.d  rdpa_init.sh wlan openssl.cnf fstab mdev.conf make_mmc_links.sh get_rootfs_dev.sh"
 else
 	bfiles="cms_entity_info.d  init.d  ld.so.cache  ld.so.conf  rc3.d  rdpa_init.sh wlan openssl.cnf"
@@ -108,6 +108,12 @@ if [ "$USER_ARCH" == "aarch64" ]; then
 	fi
 	# Copy all loaders to /lib, thats where linux looks for them
 	parl_cmd "cp -av $INSTALL_DIR/lib/ld* $ROOTFS/lib"
+	if [ -d $INSTALL_DIR/lib/python3.11 ]; then
+		ln -s ../lib64/python3.11 $ROOTFS/lib/python3.11
+		ln -s libc.so.6 $ROOTFS/lib64/libpthread.so.0
+		ln -s libc.so.6 $ROOTFS/lib64/librt.so.1
+		ln -s libc.so.6 $ROOTFS/lib64/libdl.so.2
+	fi
 else
 	parl_cmd "rsync -av --exclude=\"/public\" --exclude=\"/private\" --exclude=\"/gpl\" --exclude=\"/aarch64\" $INSTALL_DIR/lib/* $ROOTFS/lib"
 	parl_cmd "cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib"
@@ -136,6 +142,13 @@ mkdir $ROOTFS/proc
 mkdir $ROOTFS/var
 mkdir $ROOTFS/rom/etc/adsl
 mkdir $ROOTFS/data
+
+if [[ $PROFILE == *"_CPC"* ]]; then
+	mkdir $ROOTFS/opt/bcm686xx
+    chmod 666 $ROOTFS/opt/bcm686xx
+    ln -s /opt/bcm686xx $ROOTFS/opt/bcm68620
+fi
+
 cp -av $BRCMDRIVERS_DIR/broadcom/char/adsl/bcm9$BRCM_CHIP/*.bin  $ROOTFS/rom/etc/adsl
 
 # debugfs
@@ -267,6 +280,11 @@ fi
      popd
    fi
 cd $MOD_DIR
+for link_file in `find lib/modules/${LINUX_VER_STR} -type l ` 
+do
+echo removing link ${link_file} 
+rm ${link_file} 
+done
 kd=${LINUX_VER_STR}
 mkdir -p lib/modules/${kd}/extra
 #go through every directory other than the lib/modules/${LINUX_VER_STR}
@@ -292,9 +310,13 @@ fi
 
 cp -a lib $TARGETS_DIR/$ROOTFS/.
 
-if [ "$CONFIG_BCM_UBUSCAP" == "y" ]; then
+if [ "$CONFIG_BCM_UBUSCAP" == "y" -o "$CONFIG_BCM_UBUSCAP" == "m" ]; then
     # copy UBUSCAP control script
     cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.sh  $TARGETS_DIR/$ROOTFS/opt/scripts/ubcap
+    if [ -f $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.inc ]
+    then
+    	cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.inc  $TARGETS_DIR/$ROOTFS/opt/scripts/ubcap_$BRCM_CHIP.inc
+    fi
 fi
 
 if [ "$CONFIG_GCOV_KERNEL" == "y" ]; then
@@ -325,27 +347,13 @@ find $TARGETS_DIR/$ROOTFS/lib/modules -name "*.ko"
    fi
 fi
 
-if [ -f $TARGETS_DIR/$PROFILE/filesystem.tgz ]
-then
-  echo "consumer build -- not dynamically generating bcm-base-drivers.sh"
-else
+function generate_drivers_list()
+{
+  BCM_DRIVERS_SCRIPT=$1
   line_num=0
-  TMP_DRIVERS_SH_BASE=bcm-base-drivers.sh.tmp
-  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.head > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-if [ "$BUILD_NAME" == "GT-BE98" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ] || [ "$BUILD_NAME" == "RT-BE86U" ]; then
-  echo "echo Trigger RESET_OUT_B" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "sw 0xff800554 0" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "sw 0xff800558 0x403e" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "sw 0xff80055c 0x21" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "echo 255 > /sys/class/leds/led_gpio_62/brightness" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "usleep 80" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "echo 0 > /sys/class/leds/led_gpio_62/brightness" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "sw 0xff800554 0" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "sw 0xff800558 0x003e" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  echo "sw 0xff80055c 0x21" >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-fi
-
-  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.list | ( while IFS= read -r driver_line
+  TMP_DRIVERS_SH_BASE=${BCM_DRIVERS_SCRIPT}.sh.tmp
+  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.head > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.list | ( while IFS= read -r driver_line
   do
      let line_num=line_num+1
      parl_token_get
@@ -450,13 +458,18 @@ fi
   )
 
   # Reorder and combine parallel processing results
-  ( cd $TARGETS_DIR/$ROOTFS/rom/etc/init.d; ls *.${TMP_DRIVERS_SH_BASE} | sort -n -t '.' -k 1 |  xargs cat >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh )
+  ( cd $TARGETS_DIR/$ROOTFS/rom/etc/init.d; ls *.${TMP_DRIVERS_SH_BASE} | sort -n -t '.' -k 1 |  xargs cat >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh )
   rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/*.${TMP_DRIVERS_SH_BASE}
 
-  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.tail >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+  # 63158 does not support 'wanconf --preload', delete it for now
+  if [ "$BRCM_CHIP" == "63158" ]; then
+      sed -i '/wanconf --preload/d' $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+  fi
+
+  cat $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.tail >> $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
   if [[ -z $BUILD_CUSTOMER ]]; then
-      sed -e 1d $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh1
-      cat - $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh1 <<ENDEND > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
+      sed -e 1d $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh1
+      cat - $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh1 <<ENDEND > $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
 #!/bin/sh
 
 interactive_insmod() {
@@ -486,12 +499,20 @@ interactive_insmod() {
 alias insmod=interactive_insmod
 
 ENDEND
-      rm $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh1
+      rm $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh1
   fi
-  chmod +x $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.sh
-  rm  -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.tail
-  rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.head
-  rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/bcm-base-drivers.list
+  chmod +x $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+  rm  -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.tail
+  rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.head
+  rm -f $TARGETS_DIR/$ROOTFS/rom/etc/init.d/${BCM_DRIVERS_SCRIPT}.list
+}
+
+if [ -f $TARGETS_DIR/$PROFILE/filesystem.tgz ]
+then
+  echo "consumer build -- not dynamically generating bcm-base-drivers.sh and bcm-late-drivers.sh"
+else
+  generate_drivers_list bcm-base-drivers
+  generate_drivers_list bcm-late-drivers
 fi
 
 #delete unwanted module
@@ -629,6 +650,7 @@ fi
 
 if [ "$BUILD_NAME" == "GT-BE19000AI" ] || [ "$BUILD_NAME" == "GT-BE96_AI" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/wl.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/cdrom
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/mtd
 fi
 
@@ -688,47 +710,27 @@ fi
 # sstrip is set to /bin/touch if BUILD_GDBSERVER=y
 if [ "$SSTRIP" != "/bin/touch" ]; then
     echo "Stripping userspace binaries..."
-    ls $TARGETS_DIR/$ROOTFS/bin/* $TARGETS_DIR/$ROOTFS/sbin/* $TARGETS_DIR/$ROOTFS/usr/bin/* $TARGETS_DIR/$ROOTFS/usr/sbin/* $TARGETS_DIR/$ROOTFS/lib/*.so* $TARGETS_DIR/$ROOTFS/lib/*/*.so* $TARGETS_DIR/$ROOTFS/usr/lib/*.so* | parl_flist_cmd "$SSTRIP" sl
+    ls $TARGETS_DIR/$ROOTFS/bin/* $TARGETS_DIR/$ROOTFS/sbin/* $TARGETS_DIR/$ROOTFS/usr/bin/* $TARGETS_DIR/$ROOTFS/usr/sbin/* $TARGETS_DIR/$ROOTFS/lib/*.so* $TARGETS_DIR/$ROOTFS/libexec/*/* $TARGETS_DIR/$ROOTFS/lib/*/*.so* $TARGETS_DIR/$ROOTFS/usr/lib/*.so* | parl_flist_cmd "$SSTRIP" sl
+    # Need to use the aarch64 tc's strip to strip those 64B libs.
+    # Luckly the $KSTRIP is what we needed.
+    if [ "$KSTRIP" != "/bin/touch" ]; then
+       ls $TARGETS_DIR/$ROOTFS/lib64/*.so* | parl_flist_cmd "$KSTRIP" sl
+       $KSTRIP $TARGETS_DIR/$ROOTFS/lib/ld-linux-aarch64.so*
+    fi
 fi
 
-
-# Clear the execute bit in the stack segment, and fatal exit if we are not able
-# to modify the file.  Perhaps we can change this logic to "check if execute
-# bit is set on the stack segment, and fatal exit if found", so we warn the
-# user, but do not modify the file.
-EXECSTACK=$HOSTTOOLS_DIR/prelink/src/execstack
-
-if [ "$BUILD_DISABLE_EXEC_STACK" == "y" ]; then
-        echo "Running $EXECSTACK on $TARGETS_DIR/$ROOTFS"
-        RET_FAIL_FILE_PREFIX=${SUBSHELL_RET_DIR}/exestack_error_
-        rm -f ${RET_FAIL_FILE_PREFIX}*
-        find $TARGETS_DIR/$ROOTFS -type f -executable -exec file -i '{}' \; | grep 'x-executable; charset=binary' |(while read filename; \
-        do \
-        parl_token_get; \
-        ( \
-	IS_ELF=$(dd if=$filename count=3 skip=1  bs=1 2> /dev/null); \
-	if [ "x${IS_ELF}" == "xELF" ]; then\
-		E=$($EXECSTACK -c $filename 2>&1); \
-		if [ "x$?" == "x127" ]; then \
-		    echo "Fatal error " . $E;\
-		    touch ${RET_FAIL_FILE_PREFIX}${RANDOM}; \
-		    parl_token_free; \
-		    exit 1;\
-		fi;\
-        fi;\
-        parl_token_free; \
-        )& \
-        done; \
-        parl_wait;\
-        )
-
-        ls -l ${RET_FAIL_FILE_PREFIX}* > /dev/null 2>&1
-        if [ $? == "0" ]; then
-            rm -f ${RET_FAIL_FILE_PREFIX}*
-            exit 1;
-        fi
+#get rid of any quotes from the UBOOT_DIR var
+UBOOT_DIR=$(eval echo ${UBOOT_DIR})
+if [ -f ${BUILD_DIR}/bootloaders/${UBOOT_DIR}/repo_info.txt ]; then
+	echo uboot > $TARGETS_DIR/$ROOTFS/etc/GIT_COMMIT_LIST.txt
+	cat  ${BUILD_DIR}/bootloaders/${UBOOT_DIR}/repo_info.txt >> $TARGETS_DIR/$ROOTFS/etc/GIT_COMMIT_LIST.txt
+else
+	echo > $TARGETS_DIR/$ROOTFS/etc/GIT_COMMIT_LIST.txt
 fi
-
+if [ -f $KERNEL_DIR/repo_info.txt ]; then 
+	echo kernel >> $TARGETS_DIR/$ROOTFS/etc/GIT_COMMIT_LIST.txt
+	cat  $KERNEL_DIR/repo_info.txt >> $TARGETS_DIR/$ROOTFS/etc/GIT_COMMIT_LIST.txt
+fi
 
 # Generate vmlinux_rd_boot
 if [ "$BRCM_IKOS" != "y" ]; then
@@ -793,7 +795,7 @@ fi
         echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
         echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
-        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
         echo -e " $" >> $PROFILE_DIR/image_ident
 
@@ -801,7 +803,7 @@ fi
         echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
         echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
-        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
         echo -e " $" >> $PROFILE_DIR/image_ident
 

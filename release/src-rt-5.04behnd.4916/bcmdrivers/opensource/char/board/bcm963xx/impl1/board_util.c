@@ -43,9 +43,7 @@
 #include <flash_api.h>
 #include <flash_common.h>
 #include <shared_utils.h>
-#include <bcm_pinmux.h>
 #include <linux/bcm_log.h>
-#include <bcmSpiRes.h>
 #include "bcm_otp.h"
 
 #include "board_util.h"
@@ -55,21 +53,11 @@
 #include "bcm_bootstate.h"
 #endif
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-#if defined(CONFIG_SMP)
-#include <linux/cpu.h>
-#endif
-#include "pmc_dsl.h"
-#endif
 #include <bcm_strap_drv.h>
 
-#if defined(CONFIG_BCM94908)
-#include "clk_rst.h"
-#endif
-
-#include "bcm_mbox_map.h"
 
 #include <linux/bcm_version_compat.h>
+#include <linux/panic_notifier.h>
 
 extern int g_ledInitialized;
 
@@ -83,12 +71,6 @@ static unsigned long long g_ulSdramSize;
 #define MAX_PAYLOAD_LEN 64
 static struct sock *g_monitor_nl_sk;
 static int g_monitor_nl_pid = 0 ;
-
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-/*SATA Test module callback */
-int (*bcm_sata_test_ioctl_fn)(void *) = NULL; 
-EXPORT_SYMBOL(bcm_sata_test_ioctl_fn);
-#endif
 
 /* A global variable used by Power Management and other features to determine if Voice is idle or not */
 volatile int isVoiceIdle = 1;
@@ -307,35 +289,36 @@ void kerSysSoftReset(void)
     unsigned long cpu;
     cpu = smp_processor_id();
     printk(KERN_INFO "kerSysSoftReset: called on cpu %lu\n", cpu);
-    // FIXME - Once in many thousands of reboots, this function could 
-    // fail to complete a reboot.  Arm the watchdog just in case.
 
 #if defined(CONFIG_BCM96XXX_WDT) 
-    // give enough time(25ms) for resetPwrmgmtDdrMips and other function to finish
-    // 4908 need to access some BPCM register which takes very long time to read/write
-    bcmbca_wd_start(25000);
+    /* Arm the watchdog for a 3s expiry just incase we experience a hang/crash in the
+     * subsequent reset handlers. This will also call the pre-timout handlers
+     */
+    bcmbca_wd_start(3000000);
 #endif
     resetPwrmgmtDdrMips();
 }
+
+void kerSysRegisterPanicNotifier(void *notifier)
+{
+    atomic_notifier_chain_register(&panic_notifier_list, (struct notifier_block *) notifier);
+}
+EXPORT_SYMBOL(kerSysRegisterPanicNotifier);
+
+void kerSysUnregisterPanicNotifier(void *notifier)
+{
+    atomic_notifier_chain_unregister(&panic_notifier_list, (struct notifier_block *) notifier);
+}
+EXPORT_SYMBOL(kerSysUnregisterPanicNotifier);
 
 /* this function is only called in SPI nor kernel flash update */
 void stopOtherCpu(void)
 {
 #if defined(CONFIG_SMP)
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
-    /* in ARM, CPU#0 should be the last one to get shut down, and for
-     * both 63138 and 63148, we have dualcore system, so we can hardcode
-     * cpu_down() on CPU#1. Also, if this function is handled by the 
-     * CPU which is going to be shut down, kernel will transfer the
-     * current task to another CPU.  Thus when we return from cpu_down(),
-     * the task is still running. */
-    remove_cpu(1);
-#else  
     /* This cause call stack dump unless we hack the system_state to reboot. See
        ipi_cpu_stop() in arch/arm64/kernel/smp.c. But not a big deal as this function
-       is only used in SPI nor which is not offically supported in 63158/4908/6858 */
+       is only used in SPI nor which is not offically supported in 63158/6858 */
     smp_send_stop();
-#endif
 #endif
 }
 
@@ -368,26 +351,12 @@ void resetPwrmgmtDdrMips(void)
 #if defined(CONFIG_BCM947622)
     bcm47622a0_war();
 #endif /* CONFIG_BCM947622 */
-    
-#if defined(CONFIG_BCM94908)
-    /* reset the pll manually to bypass mode if strap for slow clock */
-    if (bcm_strap_parse_and_test(NULL, "strap-cpu-slow-freq") == 1)
-    {
-        bcm_change_cpu_clk(BCM_CPU_CLK_LOW);
-    }
-#endif
 
     // let UART finish printing
     udelay(100);
 
 #if defined(CONFIG_WATCHDOG)
-#if defined(CONFIG_BRCM_SMC_BOOT) && defined(CONFIG_BCM_BOOTSTATE)
-    // leave intact only activate reason bit
-    bcmbca_set_boot_reason(bcmbca_get_boot_reason() & BCM_BOOT_REASON_ACTIVATE);
-#endif
-#if !defined(CONFIG_BRCM_SMC_BASED) || defined(CONFIG_BRCM_SMC_BOOT)
-    bcmbca_wd_start(1);
-#else
+#if defined(CONFIG_BRCM_SMC_BASED) && !defined(CONFIG_BRCM_SMC_BOOT)
     {
         // VVV temporary code only for bring up of XIP mode
         volatile unsigned int* sw_reset_reg = ioremap(0x842100B8, 4);
@@ -396,8 +365,7 @@ void resetPwrmgmtDdrMips(void)
 #endif
 #endif    
 
-
-    for(;;) {} // spin and wait soft reset to take effect
+    /* Return and allow ATF based reset handler to trigger the reset */
 }
 
 unsigned long kerSysGetMacAddressType( unsigned char *ifName )
@@ -537,7 +505,8 @@ int kerSysReleaseMacAddresses( unsigned char *pucaMacAddr, unsigned int num_addr
 
     ulIdx = getIdxForNthMacAddr(g_pMacInfo->ucaBaseMacAddr, pucaMacAddr);
 
-    if( ulIdx < g_pMacInfo->ulNumMacAddrs )
+    /*ulIdx = 0 means basemac, don't release it.*/
+    if (ulIdx && (ulIdx < g_pMacInfo->ulNumMacAddrs))
     {
         for(i=0; i<num_addresses; i++) {
             if ((ulIdx + i) < g_pMacInfo->ulNumMacAddrs) {
@@ -603,11 +572,13 @@ int kerSysGetAfeId( unsigned int *afeId )
 }
 
 #if !defined(CONFIG_BCM_BCA_LEGACY_LED_API)
+#ifndef CONFIG_BCM_QEMU_SIM
 void kerSysLedCtrl(BOARD_LED_NAME ledName, BOARD_LED_STATE ledState)
 {
     if (g_ledInitialized)
        boardLedCtrl(ledName, ledState);
 }
+#endif
 #endif
 
 /*functionto receive message from usersapce
@@ -812,10 +783,6 @@ int kerSysGetChipId() {
         int r;
 #if defined(CONFIG_BCM96858)
         r = 0x6858;
-#elif defined(CONFIG_BCM96846)
-        r = 0x68460;
-#elif defined(CONFIG_BCM96878)
-        r = 0x6878;
 #elif defined(CONFIG_BCM96855)
         r = 0x6855;
 #elif defined(CONFIG_BCM96856)

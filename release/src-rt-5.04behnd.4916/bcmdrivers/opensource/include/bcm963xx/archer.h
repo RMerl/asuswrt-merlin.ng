@@ -62,6 +62,7 @@ written consent.
     defined(CHIP_6766) || defined(CONFIG_BCM96766)
 #define HW_TXQ_SHAPER
 #define HW_SVQ_SHAPER
+#define CC_CROSSBOW_QMON
 #elif defined(CHIP_6764) || defined(CONFIG_BCM96764)
 #define HW_TXQ_SHAPER
 #endif
@@ -116,6 +117,8 @@ typedef enum {
     ARCHER_DECL(ARCHER_IOC_SOCKET_BUDGET_SET)
     ARCHER_DECL(ARCHER_IOC_SOCKET_RXQ_CFG_GET)
     ARCHER_DECL(ARCHER_IOC_SOCKET_RXQ_CFG_SET)
+    ARCHER_DECL(ARCHER_IOC_NOTIFY_SETPORTSHAPER)
+    ARCHER_DECL(ARCHER_IOC_QMON)
     ARCHER_DECL(ARCHER_IOC_MAX)
 } archer_ioctl_cmd_t;
 
@@ -271,6 +274,11 @@ typedef enum {
     ARCHER_DPI_MODE_MAX
 } archer_dpi_mode_t;
 
+typedef struct {
+    char if_name[ARCHER_IFNAMSIZ];
+    int kbps;
+} archer_notify_setportshaper_t;
+
 typedef enum {
     ARCHER_SQ_ARBITER_SP,
     ARCHER_SQ_ARBITER_RR,
@@ -364,5 +372,19 @@ typedef struct {
     uint32_t pkt_prio_favor;
 
 } archer_wlflctl_config_t;
+
+#if defined(CC_CROSSBOW_QMON)
+typedef enum {
+    ARCHER_QMON_CMD_DISABLE,
+    ARCHER_QMON_CMD_STAT,
+    ARCHER_QMON_CMD_FWQ,
+    ARCHER_QMON_CMD_MAX
+} archer_qmon_cmd_t;
+
+typedef struct {
+    archer_qmon_cmd_t   cmd;
+    int                 qmap;
+} archer_qmon_cfg_t;
+#endif
 
 #endif  /* __ARCHER_H_INCLUDED__ */

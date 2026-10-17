@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: GPL-2.0
+if TARGET_LS1021ATSN
+
+config SYS_BOARD
+	default "ls1021atsn"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "ls102xa"
+
+config SYS_CONFIG_NAME
+	default "ls1021atsn"
+
+endif

@@ -1,0 +1,15 @@
+if TARGET_IMX8MP_DH_DHCOM_PDK2
+
+config SYS_BOARD
+	default "dh_imx8mp"
+
+config SYS_VENDOR
+	default "dhelectronics"
+
+config SYS_CONFIG_NAME
+	default "imx8mp_dhcom_pdk2"
+
+config IMX_CONFIG
+	default "board/dhelectronics/dh_imx8mp/imximage-lpddr4.cfg"
+
+endif

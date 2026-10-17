@@ -1,0 +1,25 @@
+P1_P2_RDB_PC BOARD
+M:	Priyanka Jain <priyanka.jain@nxp.com>
+S:	Maintained
+F:	board/freescale/p1_p2_rdb_pc/
+F:	include/configs/p1_p2_rdb_pc.h
+F:	configs/P1020RDB-PC_defconfig
+F:	configs/P1020RDB-PC_36BIT_defconfig
+F:	configs/P1020RDB-PC_36BIT_NAND_defconfig
+F:	configs/P1020RDB-PC_36BIT_SDCARD_defconfig
+F:	configs/P1020RDB-PC_36BIT_SPIFLASH_defconfig
+F:	configs/P1020RDB-PC_NAND_defconfig
+F:	configs/P1020RDB-PC_SDCARD_defconfig
+F:	configs/P1020RDB-PC_SPIFLASH_defconfig
+F:	configs/P1020RDB-PD_defconfig
+F:	configs/P1020RDB-PD_NAND_defconfig
+F:	configs/P1020RDB-PD_SDCARD_defconfig
+F:	configs/P1020RDB-PD_SPIFLASH_defconfig
+F:	configs/P2020RDB-PC_defconfig
+F:	configs/P2020RDB-PC_36BIT_defconfig
+F:	configs/P2020RDB-PC_36BIT_NAND_defconfig
+F:	configs/P2020RDB-PC_36BIT_SDCARD_defconfig
+F:	configs/P2020RDB-PC_36BIT_SPIFLASH_defconfig
+F:	configs/P2020RDB-PC_NAND_defconfig
+F:	configs/P2020RDB-PC_SDCARD_defconfig
+F:	configs/P2020RDB-PC_SPIFLASH_defconfig

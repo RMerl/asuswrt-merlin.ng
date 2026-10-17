@@ -1,6 +1,0 @@
-ADP-AG101P BOARD
-M:	Andes <uboot@andestech.com>
-S:	Maintained
-F:	board/AndesTech/adp-ag101p/
-F:	include/configs/adp-ag101p.h
-F:	configs/adp-ag101p_defconfig

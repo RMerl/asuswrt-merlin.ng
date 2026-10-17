@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/*
+ * T4240 Silicon/SoC Device Tree Source (post include)
+ *
+ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
+ * Copyright 2021-2023 NXP
+ *
+ */
+&soc {
+/include/ "qoriq-clockgen2.dtsi"
+/include/ "qoriq-duart-0.dtsi"
+/include/ "qoriq-duart-1.dtsi"
+/include/ "qoriq-gpio-0.dtsi"
+/include/ "qoriq-gpio-1.dtsi"
+/include/ "qoriq-gpio-2.dtsi"
+/include/ "qoriq-gpio-3.dtsi"
+/include/ "qoriq-sec5.0-0.dtsi"
+
+/include/ "qoriq-fman3-0.dtsi"
+/include/ "qoriq-fman3-0-1g-0.dtsi"
+/include/ "qoriq-fman3-0-1g-1.dtsi"
+/include/ "qoriq-fman3-0-1g-2.dtsi"
+/include/ "qoriq-fman3-0-1g-3.dtsi"
+/include/ "qoriq-fman3-0-1g-4.dtsi"
+/include/ "qoriq-fman3-0-1g-5.dtsi"
+/include/ "qoriq-fman3-0-10g-0.dtsi"
+/include/ "qoriq-fman3-0-10g-1.dtsi"
+	fman@400000 {
+		enet0: ethernet@e0000 {
+		};
+
+		enet1: ethernet@e2000 {
+		};
+
+		enet2: ethernet@e4000 {
+		};
+
+		enet3: ethernet@e6000 {
+		};
+
+		enet4: ethernet@e8000 {
+		};
+
+		enet5: ethernet@ea000 {
+		};
+
+		enet6: ethernet@f0000 {
+		};
+
+		enet7: ethernet@f2000 {
+		};
+
+		mdio@fc000 {
+			status = "disabled";
+		};
+
+		mdio@fd000 {
+			status = "disabled";
+		};
+	};
+
+/include/ "qoriq-fman3-1.dtsi"
+/include/ "qoriq-fman3-1-1g-0.dtsi"
+/include/ "qoriq-fman3-1-1g-1.dtsi"
+/include/ "qoriq-fman3-1-1g-2.dtsi"
+/include/ "qoriq-fman3-1-1g-3.dtsi"
+/include/ "qoriq-fman3-1-1g-4.dtsi"
+/include/ "qoriq-fman3-1-1g-5.dtsi"
+/include/ "qoriq-fman3-1-10g-0.dtsi"
+/include/ "qoriq-fman3-1-10g-1.dtsi"
+	fman@500000 {
+		enet8: ethernet@e0000 {
+		};
+
+		enet9: ethernet@e2000 {
+		};
+
+		enet10: ethernet@e4000 {
+		};
+
+		enet11: ethernet@e6000 {
+		};
+
+		enet12: ethernet@e8000 {
+		};
+
+		enet13: ethernet@ea000 {
+		};
+
+		enet14: ethernet@f0000 {
+		};
+
+		enet15: ethernet@f2000 {
+		};
+
+		mdio@5fc000 {
+			interrupts = <100 1 0 0>;
+		};
+
+		mdio@5fd000 {
+			interrupts = <101 1 0 0>;
+		};
+	};
+};

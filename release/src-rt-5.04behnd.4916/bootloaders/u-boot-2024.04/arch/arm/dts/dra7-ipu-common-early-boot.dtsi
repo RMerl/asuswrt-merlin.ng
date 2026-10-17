@@ -1,0 +1,113 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Texas Instruments Incorporated - https://www.ti.com/
+ */
+
+/ {
+	chosen {
+		firmware-loader = &fs_loader0;
+	};
+
+	fs_loader0: fs_loader@0 {
+		bootph-all;
+		compatible = "u-boot,fs-loader";
+		phandlepart = <&mmc1 1>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		bootph-pre-ram;
+
+		ipu2_memory_region: ipu2-memory@95800000 {
+			compatible = "shared-dma-pool";
+			reg = <0x0 0x95800000 0x0 0x3800000>;
+			reusable;
+			status = "okay";
+			bootph-pre-ram;
+		};
+
+		ipu1_memory_region: ipu1-memory@9d000000 {
+			compatible = "shared-dma-pool";
+			reg = <0x0 0x9d000000 0x0 0x2000000>;
+			reusable;
+			status = "okay";
+			bootph-pre-ram;
+		};
+
+		ipu1_pgtbl: ipu1-pgtbl@95700000 {
+			reg = <0x0 0x95700000 0x0 0x40000>;
+			no-map;
+			bootph-pre-ram;
+		};
+
+		ipu2_pgtbl: ipu2-pgtbl@95740000 {
+			reg = <0x0 0x95740000 0x0 0x40000>;
+			no-map;
+			bootph-pre-ram;
+		};
+	};
+};
+
+&timer3 {
+	bootph-pre-ram;
+};
+
+&timer4 {
+	bootph-pre-ram;
+};
+
+&timer7 {
+	bootph-pre-ram;
+};
+
+&timer8 {
+	bootph-pre-ram;
+};
+
+&timer9 {
+	bootph-pre-ram;
+};
+
+&timer11 {
+	bootph-pre-ram;
+};
+
+&mmu_ipu1 {
+	bootph-pre-ram;
+};
+
+&mmu_ipu2 {
+	bootph-pre-ram;
+};
+
+&ipu1 {
+	status = "okay";
+	memory-region = <&ipu1_memory_region>;
+	pg-tbl = <&ipu1_pgtbl>;
+	bootph-pre-ram;
+};
+
+&ipu2 {
+	status = "okay";
+	memory-region = <&ipu2_memory_region>;
+	pg-tbl = <&ipu2_pgtbl>;
+	bootph-pre-ram;
+};
+
+&l4_wkup {
+	bootph-pre-ram;
+};
+
+&prm {
+	bootph-pre-ram;
+};
+
+&ipu1_rst {
+	bootph-pre-ram;
+};
+
+&ipu2_rst {
+	bootph-pre-ram;
+};

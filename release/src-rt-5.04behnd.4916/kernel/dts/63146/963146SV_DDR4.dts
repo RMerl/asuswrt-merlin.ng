@@ -8,8 +8,7 @@
 			BP_DDR_TOTAL_SIZE_2048MB   | \
 			BP_DDR_DEVICE_WIDTH_8      | \
 			BP_DDR_TOTAL_WIDTH_16BIT   | \
-			BP_DDR_63146_DEFAULT          | \
-			BP_DDR_CONFIG_DEBUG)>;
+			BP_DDR_63146_DEFAULT)>;
 	};
 
 	buttons {
@@ -57,7 +56,7 @@
 };
 
 &nand {
-	write-protect = <1>;
+	/delete-property/ brcm,wp-not-connected;
 };
 
 #if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

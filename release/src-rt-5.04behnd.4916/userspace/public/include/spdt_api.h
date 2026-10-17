@@ -42,6 +42,8 @@ written consent.
 #include <tcpspdtest_defs.h> /* Temporary */
 
 /*************** APIs ************************/
+/* Translate increasing prioirty (0 - 7) scheme, i.e. 0 is low priority, to system priority scheme */
+int spdt_get_system_priority(int priority);
 
 /* Add stream, to support multi streaming. Streams pool is common for both TX and RX.
  * For TCP, will create/delete the internal socket, for UDP only allocate/free a stream IDX.
@@ -70,6 +72,30 @@ void spdt_uninit(uint8_t stream_idx);
  * */
 int spdt_connect(uint8_t stream_idx, spdt_stream_dir_t dir, spdt_conn_params_t *conn_params);
 
+/* Listen connection preparations. For TCP only, will set missing socket configuration for user space socket 
+ * will set new stream at driver for listening mode
+ * if the userspace is the listener socket owner it need to pass sockfd, in case the driver need to open 
+ * listener socket, it should pass sockfd=-1
+ * Args:
+ *   stream_idx
+ *   sockfd - userspace listener sock number
+ *   dir - direction rx/tx.
+ *   conn_params - connection information
+ * Return: 0 - on success, other on failure
+ * */
+int spdt_listen(uint8_t stream_idx, int sockfd, spdt_stream_dir_t dir, spdt_conn_params_t *conn_params);
+
+/* Accept new connection. For TCP only, will accept new connection(internal socket) and
+ * will verify the oob cookie got from the server 
+ * if the userspace is the listener socket owner it need to pass sockfd and conn_params=NULL,
+ * in case the driver is the owner is should pass sockfd=-1 and conn_params should include local_port info
+ * Args:
+ *   stream_idx
+ *   sockfd - userspace listener sock number
+ *   conn_params - local connection information (proto + port)
+ * Return: 0 - on success, other on failure
+ * */
+int spdt_accept(uint8_t *stream_idx, int sockfd, spdt_conn_params_t *conn_params);
 
 /* Set stream options.
  * Currently, used only in UDP test to set a sock_fd created by the caller.
@@ -98,6 +124,15 @@ void spdt_disconnect(uint8_t stream_idx);
  * */
 int spdt_oob_send(uint8_t stream_idx, char *buff, uint32_t length);
 
+/* Send msg to connected server.
+ * Each protocol should implement it's own messaging system.
+ * Args:
+ *   stream_idx 
+ *   buff - Pointer to buffer to be sent
+ *   length - length of buffer to be sent
+ * Return: 0 - on success, other on failure
+ * */
+int spdt_msg_send(uint8_t stream_idx, char *buff, uint32_t length);
 
 /* Recevie a message from connected peer.
  * Some protocol (applications) require such capability for handshake.
@@ -155,6 +190,13 @@ int spdt_recv_start(uint8_t stream_idx, spdt_rx_params_t *rx_params);
  * */
 void spdt_recv_stop(uint8_t stream_idx);
 
+
+/* get stream status
+ * Args:
+ *   stream_idx 
+ *  Return: 0 - no stream , 1 stream exist
+ * */
+int spdt_get_stream_status(uint8_t stream_idx);
 
 /* Start/stop transmit data on the opened connection (generator mode).
  * Args:

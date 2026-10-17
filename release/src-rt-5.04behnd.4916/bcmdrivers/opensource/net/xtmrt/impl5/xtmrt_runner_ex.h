@@ -30,27 +30,15 @@
 
 #include <rdpa_api.h>
 #include <rdpa_mw_cpu_queue_ids.h>
-
-#if defined(CONFIG_BCM_RDP)
-#include "rdd_defs.h"
-#include "rdd_runner_defs_auto.h"
-#include "rdd_runner_defs.h"
-#include "rdpa_cpu_helper.h"
-#else
 #include "rdd_data_structures_auto.h"
-#endif
-
-#if IS_ENABLED(CONFIG_BCM_DPI)
-#include "bcmdpi.h"
-#endif
-
-#if defined(CONFIG_BCM_XRDP)
+#include "us_sq.h"
 
 /* For XRDP, since XTM exists as a separate CPU object instance, we use the
 ** initial set of queues between CPU Rx/Runner Rx/
 **/
+#define MAX_PACKET_SIZE     1536 /* L2 Ethernet and keeping in sync with system configuration apps like tmctl */
 
-#define QUEUE_DROP_THRESHOLD(QSize)  (QSize*1518) /*  in bytes, 256-byte size units. */
+#define QUEUE_DROP_THRESHOLD(QSize)  (QSize*MAX_PACKET_SIZE) /*  in bytes, */
 #define XTM_RDPA_CPU_PORT     rdpa_cpu_xtm
 
 /* We have 8 MBR profiles as per QM MBR. We need to make sure to map atleast 2
@@ -90,23 +78,6 @@
 
 #define US_CHANNEL_OFFSET_DSL    RDD_US_CHANNEL_OFFSET_DSL
 
-#else
-
-/* For RDP, since XTM exists as part of the global CPU object instance, we use the
-** middle set of queues defined already in global RDPA definitions between CPU Rx/Runner Rx 
-** as the inital set of queues in use for other interfaces.
-**/
-
-#define QUEUE_DROP_THRESHOLD(QSize)  QSize
-
-#define QUEUE_RESV_BUFFERS(MBR,prio)  0  /* No support HW accel. Supported in FW in a different way. pri low-high : 0...7 */
-
-#define XTM_RDPA_CPU_PORT            rdpa_cpu_host
-
-#define US_CHANNEL_OFFSET_DSL    RDD_WAN_CHANNEL_1
-
-#endif /* end of else defined(CONFIG_BCM_XRDP) */
-
 #define XTM_RDPA_CPU_HI_RX_QUEUE_IDX    (RDPA_XTM_CPU_HI_RX_QUEUE_ID - RDPA_XTM_CPU_RX_QUEUE_ID_BASE)
 #define XTM_RDPA_CPU_LO_RX_QUEUE_IDX    (RDPA_XTM_CPU_LO_RX_QUEUE_ID - RDPA_XTM_CPU_RX_QUEUE_ID_BASE)
 #define XTM_RDPA_CPU_RX_QUEUE_IDX(hw_q) (hw_q - RDPA_XTM_CPU_RX_QUEUE_ID_BASE)
@@ -138,10 +109,9 @@ int bcmxapiex_runner_xtm_objects_init(bdmf_object_handle wan);
 int bcmxapiex_cfg_cpu_ds_queues (rdpa_cpu_reason reason, uint8_t tc, uint8_t queue_id);
 void bcmxapiex_SetOrStartTxQueue (rdpa_tm_queue_cfg_t *pQueueCfg, bdmf_object_handle egress_tm);
 void bcmxapiex_StopTxQueue (rdpa_tm_queue_cfg_t *pQueueCfg, bdmf_object_handle egress_tm);
-void bcmxapiex_ShutdownTxQueue (UINT32 queueIdx, bdmf_object_handle egress_tm);
-int bcmxapiex_dpi_egress_tm_rl_rate_mode_set(bdmf_object_handle tm_attr,
+int bcmxapiex_us_sq_egress_tm_rl_rate_mode_set(bdmf_object_handle tm_attr,
 		rdpa_tm_rl_rate_mode rl_rate_mode);
-int bcmxapiex_dpi_add_best_effort_sub_queues(bdmf_object_handle owner,
+int bcmxapiex_us_sq_add_best_effort_sub_queues(bdmf_object_handle owner,
                 rdpa_tm_queue_cfg_t *parent_queue, bdmf_index idx);
 
 #endif /* _BCMXTM_RUNNER_EX_H_ */

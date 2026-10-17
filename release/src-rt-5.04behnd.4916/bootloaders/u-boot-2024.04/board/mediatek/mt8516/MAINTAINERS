@@ -1,0 +1,6 @@
+MT8516 Pumpkin
+M:	Fabien Parent <fparent@baylibre.com>
+S:	Maintained
+F:	board/mediatek/mt8516
+F:	include/configs/mt8516.h
+F:	configs/mt8516_pumpkin_defconfig

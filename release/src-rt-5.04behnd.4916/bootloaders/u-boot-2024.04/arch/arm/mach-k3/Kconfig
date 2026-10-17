@@ -1,0 +1,159 @@
+if ARCH_K3
+
+choice
+	prompt "Texas Instruments' K3 based SoC select"
+	optional
+
+config SOC_K3_AM654
+	bool "TI's K3 based AM654 SoC Family Support"
+
+config SOC_K3_J721E
+	bool "TI's K3 based J721E SoC Family Support"
+
+config SOC_K3_J721S2
+	bool "TI's K3 based J721S2 SoC Family Support"
+
+config SOC_K3_AM642
+	bool "TI's K3 based AM642 SoC Family Support"
+
+config SOC_K3_AM625
+	bool "TI's K3 based AM625 SoC Family Support"
+
+config SOC_K3_AM62A7
+	bool "TI's K3 based AM62A7 SoC Family Support"
+
+endchoice
+
+if SOC_K3_J721E
+config SOC_K3_J721E_J7200
+	bool "TI's K3 based J7200 SoC variant Family Support"
+endif
+
+config SYS_SOC
+	default "k3"
+
+config SYS_K3_NON_SECURE_MSRAM_SIZE
+	hex
+	default 0x80000 if SOC_K3_AM654
+	default 0x100000 if SOC_K3_J721E || SOC_K3_J721S2
+	default 0x1c0000 if SOC_K3_AM642
+	default 0x3c000 if SOC_K3_AM625 || SOC_K3_AM62A7
+	help
+	  Describes the total size of the MCU or OCMC MSRAM present on
+	  the SoC in use. This doesn't specify the total size of SPL as
+	  ROM can use some part of this RAM. Once ROM gives control to
+	  SPL then this complete size can be usable.
+
+config SYS_K3_MAX_DOWNLODABLE_IMAGE_SIZE
+	hex
+	default 0x58000 if SOC_K3_AM654
+	default 0xc0000 if SOC_K3_J721E || SOC_K3_J721S2
+	default 0x180000 if SOC_K3_AM642
+	default 0x38000 if SOC_K3_AM625 || SOC_K3_AM62A7
+	help
+	  Describes the maximum size of the image that ROM can download
+	  from any boot media.
+
+config SYS_K3_MCU_SCRATCHPAD_BASE
+	hex
+	default 0x40280000 if SOC_K3_AM654
+	default 0x41cff9fc if SOC_K3_J721S2
+	default 0x41cff9fc if SOC_K3_J721E
+	help
+	  Describes the base address of MCU Scratchpad RAM.
+
+config SYS_K3_MCU_SCRATCHPAD_SIZE
+	hex
+	default 0x200 if SOC_K3_AM654
+	default 0x200 if SOC_K3_J721E || SOC_K3_J721S2
+	help
+	  Describes the size of MCU Scratchpad RAM.
+
+config SYS_K3_BOOT_PARAM_TABLE_INDEX
+	hex
+	default 0x41c7fbfc if SOC_K3_AM654
+	default 0x41cffbfc if SOC_K3_J721E
+	default 0x41cfdbfc if SOC_K3_J721S2
+	default 0x701bebfc if SOC_K3_AM642
+	default 0x43c3f290 if SOC_K3_AM625
+	default 0x43c3f290 if SOC_K3_AM62A7 && CPU_V7R
+	default 0x7000f290 if SOC_K3_AM62A7 && ARM64
+	help
+	  Address at which ROM stores the value which determines if SPL
+	  is booted up by primary boot media or secondary boot media.
+
+config SYS_K3_KEY
+	string "Key used to generate x509 certificate"
+	help
+	  This option enables to provide a custom key that can be used for
+	  generating x509 certificate for spl binary. If not needed leave
+	  it blank so that a random key is generated and used.
+
+config SYS_K3_BOOT_CORE_ID
+	int
+	default 16
+
+config K3_EARLY_CONS
+	bool "Activate to allow for an early console during SPL"
+	depends on SPL
+	help
+	  Turn this option on to enable an early console functionality in SPL
+	  before the main console is being brought up. This can be useful in
+	  situations where the main console is dependent on System Firmware
+	  (SYSFW) being up and running, which is usually not the case during
+	  the very early stages of boot. Using this early console functionality
+	  will allow for an alternate serial port to be used to support things
+	  like UART-based boot and early diagnostic messages until the main
+	  console is ready to get activated.
+
+config K3_EARLY_CONS_IDX
+	depends on K3_EARLY_CONS
+	int "Index of serial device to use for SPL early console"
+	default 1
+	help
+	  Use this option to set the index of the serial device to be used
+	  for the early console during SPL execution.
+
+config SYS_K3_SPL_ATF
+	bool "Start Cortex-A from SPL"
+	depends on CPU_V7R
+	help
+	  Enabling this will try to start Cortex-A (typically with ATF)
+	  after SPL from R5.
+
+config K3_ATF_LOAD_ADDR
+	hex "Load address of ATF image"
+	default 0x70000000
+	help
+	  The load address for the ATF image. This value defaults to 0x70000000
+	  if not provided in the board defconfig file.
+
+config K3_DM_FW
+	bool "Separate DM firmware image"
+	depends on CPU_V7R && (SOC_K3_J721E || SOC_K3_J721S2 || SOC_K3_AM625 || SOC_K3_AM62A7) && !CLK_TI_SCI && !TI_SCI_POWER_DOMAIN
+	default y
+	help
+	  Enabling this will indicate that the system has separate DM
+	  and TIFS firmware images in place, instead of a single SYSFW
+	  firmware. Due to DM being executed on the same core as R5 SPL
+	  bootloader, it makes RM and PM services not being available
+	  during R5 SPL execution time.
+
+config K3_X509_SWRV
+	int "SWRV for X509 certificate used for boot images"
+	default 1
+	help
+	  SWRV for X509 certificate used for boot images
+
+if CPU_V7R
+source "arch/arm/mach-k3/r5/Kconfig"
+endif
+
+source "arch/arm/mach-k3/am65x/Kconfig"
+source "arch/arm/mach-k3/am64x/Kconfig"
+source "arch/arm/mach-k3/am62x/Kconfig"
+source "arch/arm/mach-k3/am62ax/Kconfig"
+source "arch/arm/mach-k3/j721e/Kconfig"
+source "arch/arm/mach-k3/j721s2/Kconfig"
+
+endif

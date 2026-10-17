@@ -560,7 +560,7 @@ err_code_t merlin16_shortfin_wait_uc_active(srds_access_t *sa__) {
 
 err_code_t merlin16_shortfin_init_merlin16_shortfin_info(srds_access_t *sa__) {
     uint32_t info_table[INFO_TABLE_END / sizeof(uint32_t)];
-    uint32_t info_table_signature;
+    uint32_t info_table_signature, info_table_base = INFO_TABLE_RAM_BASE;
     uint8_t  info_table_version;
     err_code_t err_code = ERR_CODE_NONE;
     srds_info_t * merlin16_shortfin_info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
@@ -571,6 +571,9 @@ err_code_t merlin16_shortfin_init_merlin16_shortfin_info(srds_access_t *sa__) {
         EFUN_PRINTF(("ERROR:  Info table pointer is null.\n"));
         RELEASE_LOCK_AND_RETURN (merlin16_shortfin_error(sa__, ERR_CODE_INFO_TABLE_ERROR));
     }
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    EFUN_PRINTF(("merlin16_shortfin_init_merlin16_shortfin_info: core=0x%X hwExcp=0x%X\n", merlin16_shortfin_info_ptr->core_var_ram_base, merlin16_shortfin_info_ptr->micro_var_ram_base));
+#endif
     if (merlin16_shortfin_info_ptr->signature == SRDS_INFO_SIGNATURE) {
         /*Already initalized and so check for microcode version and exit with proper status*/
         err_code = merlin16_shortfin_INTERNAL_match_ucode_from_info(sa__);
@@ -585,7 +588,18 @@ err_code_t merlin16_shortfin_init_merlin16_shortfin_info(srds_access_t *sa__) {
     }
     /*Never initialized so far, continue with initialization */
 
-    err_code = merlin16_shortfin_rdblk_uc_prog_ram(sa__, (uint8_t *)info_table, INFO_TABLE_RAM_BASE, INFO_TABLE_END);
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    err_code = merlin16_shortfin_rdblk_uc_prog_ram(sa__, (uint8_t *)&info_table_base, 16, 4);
+    /* Release lock before returning from the call to avoid deadlock */
+    if (ERR_CODE_NONE != err_code) {
+       RELEASE_LOCK_AND_RETURN(merlin16_shortfin_error(sa__, err_code));
+    }
+    EFUN_PRINTF(("merlin16_shortfin_init_merlin16_shortfin_info:  info_table_base=0x%X\n", info_table_base));
+    if (info_table_base == 0)
+       info_table_base = INFO_TABLE_RAM_BASE;
+#endif
+
+    err_code = merlin16_shortfin_rdblk_uc_prog_ram(sa__, (uint8_t *)info_table, info_table_base, INFO_TABLE_END);
     /* Release lock before returning from the call to avoid deadlock */
     if (ERR_CODE_NONE != err_code) {
        RELEASE_LOCK_AND_RETURN(merlin16_shortfin_error(sa__, err_code));
@@ -593,7 +607,7 @@ err_code_t merlin16_shortfin_init_merlin16_shortfin_info(srds_access_t *sa__) {
 
     info_table_signature = info_table[INFO_TABLE_OFFS_SIGNATURE / sizeof(uint32_t)];
     info_table_version = (uint8_t)(info_table_signature >> 24);
-    if (((info_table_signature & 0x00FFFFFF) != 0x666E49)
+    if (((info_table_signature & 0x00FFFFFF) != (INFO_TABLE_SIGNATURE & 0x00FFFFFF))
         || (!(   ((info_table_version >= 0x32) && (info_table_version <= 0x39))
               || ((info_table_version >= 0x41) && (info_table_version <= 0x5A))))) {
         RELEASE_LOCK_AND_RETURN (merlin16_shortfin_error(sa__, ERR_CODE_INFO_TABLE_ERROR));
@@ -601,6 +615,7 @@ err_code_t merlin16_shortfin_init_merlin16_shortfin_info(srds_access_t *sa__) {
 
     merlin16_shortfin_info_ptr->lane_count = info_table[INFO_TABLE_OFFS_OTHER_SIZE / sizeof(uint32_t)] & 0xFF;
     merlin16_shortfin_info_ptr->trace_memory_descending_writes = ((info_table[INFO_TABLE_OFFS_OTHER_SIZE / sizeof(uint32_t)] & 0x1000000) != 0);
+    merlin16_shortfin_info_ptr->trace_memory_concurrent_read = ((info_table[INFO_TABLE_OFFS_OTHER_SIZE / sizeof(uint32_t)] & 0x2000000) != 0);
 
     merlin16_shortfin_info_ptr->core_var_ram_size = (info_table[INFO_TABLE_OFFS_OTHER_SIZE / sizeof(uint32_t)] >> 8) & 0xFF;
 
@@ -614,9 +629,13 @@ err_code_t merlin16_shortfin_init_merlin16_shortfin_info(srds_access_t *sa__) {
 
     merlin16_shortfin_info_ptr->core_var_ram_base = info_table[INFO_TABLE_OFFS_CORE_MEM_PTR / sizeof(uint32_t)];
 
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    /* hw and sw exception pointers */
+    merlin16_shortfin_info_ptr->micro_var_ram_base = info_table[0x28 / sizeof(uint32_t)];
+#else
     merlin16_shortfin_info_ptr->micro_var_ram_base = info_table[INFO_TABLE_OFFS_MICRO_MEM_PTR / sizeof(uint32_t)];
     merlin16_shortfin_info_ptr->micro_var_ram_size = (info_table[INFO_TABLE_OFFS_OTHER_SIZE_2 / sizeof(uint32_t)] >> 4) & 0xFF;
-
+#endif
     merlin16_shortfin_info_ptr->lane_var_ram_base = info_table[INFO_TABLE_OFFS_LANE_MEM_PTR / sizeof(uint32_t)];
 
 
@@ -713,6 +732,12 @@ err_code_t merlin16_shortfin_ucode_mdio_load(srds_access_t *sa__, uint8_t *ucode
     uint32_t   ucode_len_padded, count = 0;
     uint16_t   wrdata_lsw;
     uint8_t    wrdata_lsb;
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    srds_info_t * merlin16_shortfin_info_ptr = merlin16_shortfin_INTERNAL_get_merlin16_shortfin_info_ptr(sa__);
+    uint32_t   *image_ptr = (uint32_t *) ucode_image;
+    uint32_t   info_table_base = image_ptr[4];
+    uint32_t   ramCfg, stackTop = image_ptr[0];
+#endif
 
     if(!ucode_image) {
         return(merlin16_shortfin_error(sa__, ERR_CODE_BAD_PTR_OR_INVALID_INPUT));
@@ -722,6 +747,19 @@ err_code_t merlin16_shortfin_ucode_mdio_load(srds_access_t *sa__, uint8_t *ucode
         return (merlin16_shortfin_error(sa__, ERR_CODE_INVALID_UCODE_LEN));
     }
 
+#if 1 && defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+    if (info_table_base == 0)
+       info_table_base = INFO_TABLE_RAM_BASE;
+
+    if (0 == (stackTop & 0x20000000)) /* single code/data address space */
+      ramCfg = 0;
+    else
+      ramCfg = ( (((stackTop & 0xFFFF) + 0x3FF) >> 10) << 8 ) | 0x8001;
+    EFUN(merlin16_shortfin_acc_wr_reg(sa__, 0xD225, ramCfg));
+    EFUN_PRINTF(("merlin16_shortfin_ucode_mdio_load: stackTop=0x%X ramCfg=0x%X\n", stackTop, ramCfg));
+    /* hw and sw exception pointers */
+    merlin16_shortfin_info_ptr->micro_var_ram_base = image_ptr[(info_table_base + 0x28) / sizeof(uint32_t)];
+#endif
     EFUN(wrc_micro_master_clk_en(0x1));                   /* Enable clock to microcontroller subsystem */
     EFUN(wrc_micro_master_rstb(0x1));                     /* De-assert reset to microcontroller sybsystem */
     EFUN(wrc_micro_master_rstb(0x0));                     /* Assert reset to microcontroller sybsystem - Toggling reset*/

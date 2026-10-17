@@ -29,11 +29,7 @@
 #ifndef _BCMETHSW_H_
 #define _BCMETHSW_H_
 
-#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963138)
-#define SF2_REG_SHIFT   1
-#else
 #define SF2_REG_SHIFT   2
-#endif
 
 typedef struct {
     // following blocks are in sf2 switch
@@ -46,6 +42,7 @@ typedef struct {
     volatile uint8_t *acb_base;
     volatile uint8_t *lfh_base;
     volatile uint8_t *sib_base;
+    volatile uint8_t *wol_base;
     // following blocks can be in sf2 or runner based
     volatile uint8_t *xbar_ctrl;
     volatile uint8_t *qphy_ctrl;
@@ -117,13 +114,6 @@ extern sw_base_t sw_mmap_base;
     #define ETHSW_LED_CTRL_NOLINK_SHIFT          0
     #define ETHSW_LED_CTRL_ALL_SPEED_MASK        0x3ffff
     #define ETHSW_LED_CTRL_SPEED_MASK            0x7
-
-#elif defined(CONFIG_BCM94908)
-    #define CONFIG_3x2_CROSSBAR_SUPPORT
-#elif defined(CONFIG_BCM963148)
-    #define CONFIG_4x2_CROSSBAR_SUPPORT
-#elif defined(CONFIG_BCM963138)
-    #define CONFIG_5x3_CROSSBAR_SUPPORT
 #endif
 
 #if defined(CONFIG_BCM947622)
@@ -148,7 +138,7 @@ extern sw_base_t sw_mmap_base;
     #define ETHSW_PHY_TEST_CTRL_EN_MASK             (0x1<<ETHSW_PHY_TEST_CTRL_EN_SHIFT)
 #endif
 
-#if defined(CONFIG_BCM963138)||defined(CONFIG_BCM963148)||defined(CONFIG_BCM94908)||defined(CONFIG_BCM963158)||defined(CONFIG_BCM963178)||defined(CONFIG_BCM963146)||defined(CONFIG_BCM94912)||defined(CONFIG_BCM96813)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813)
     #define QPHY_CNTRL ((volatile uint32_t *)sw_mmap_base.qphy_ctrl)
 
     // 63146, 4912
@@ -184,7 +174,7 @@ extern sw_base_t sw_mmap_base;
     #define ETHSW_QPHY_CTRL_IDDQ_BIAS_MASK          (0x1<<ETHSW_QPHY_CTRL_IDDQ_BIAS_SHIFT)
 #endif
 
-#if defined(CONFIG_BCM963138)||defined(CONFIG_BCM963148)||defined(CONFIG_BCM94908)||defined(CONFIG_BCM963158)||defined(CONFIG_BCM947622)||defined(CONFIG_BCM963178)||defined(CONFIG_BCM96756)||defined(CONFIG_BCM963146) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96756) || defined(CONFIG_BCM963146) || defined(CONFIG_BCM96766) || defined(CONFIG_BCM96764)
     #define SPHY_CNTRL ((volatile uint32_t *)sw_mmap_base.sphy_ctrl)
 
  #if defined(CONFIG_BCM963146)

@@ -1,0 +1,107 @@
+EVB-RK3399
+M:      Kever Yang <kever.yang@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rk3399
+F:      include/configs/evb_rk3399.h
+F:      configs/evb-rk3399_defconfig
+F:      configs/firefly-rk3399_defconfig
+
+EAIDK-610
+M:      Andy Yan <andy.yan@rock-chips.com>
+S:      Maintained
+F:	configs/eaidk-610-rk3399_defconfig
+F:	arch/arm/dts/rk3399-eaidk-610-u-boot.dtsi
+
+KHADAS-EDGE
+M:	Nick Xie <nick@khadas.com>
+S:	Maintained
+F:	configs/khadas-edge-rk3399_defconfig
+F:	arch/arm/dts/rk3399-khadas-edge-u-boot.dtsi
+
+KHADAS-EDGE-CAPTAIN
+M:	Nick Xie <nick@khadas.com>
+S:	Maintained
+F:	configs/khadas-edge-captain-rk3399_defconfig
+F:	arch/arm/dts/rk3399-khadas-edge-captain-u-boot.dtsi
+
+KHADAS-EDGE-V
+M:	Nick Xie <nick@khadas.com>
+S:	Maintained
+F:	configs/khadas-edge-v-rk3399_defconfig
+F:	arch/arm/dts/rk3399-khadas-edge-v-u-boot.dtsi
+
+LEEZ-P710
+M:	Andy Yan <andy.yan@rock-chips.com>
+S:      Maintained
+F:	arch/arm/dts/rk3399-leez-p710-u-boot.dtsi
+F:	configs/leez-rk3399_defconfig
+
+NANOPC-T4
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopc-t4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopc-t4-u-boot.dtsi
+
+NANOPI-M4
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopi-m4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopi-m4-u-boot.dtsi
+
+NANOPI-M4-2GB
+M:	Jagan Teki <jagan@amarulasolutions.com>
+M:	Deepak Das <deepakdas.linux@gmail.com>
+S:	Maintained
+F:	configs/nanopi-m4-2gb-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopi-m4-2gb-u-boot.dtsi
+
+NANOPI-M4B
+M:	Alexandre Vicenzi <linux@alxd.me>
+S:	Maintained
+F:	configs/nanopi-m4b-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopi-m4b-u-boot.dtsi
+
+NANOPI-NEO4
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopi-neo4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopi-neo4-u-boot.dtsi
+
+NANOPI-R4S
+M:	Xiaobo Tian <peterwillcn@gmail.com>
+S:	Maintained
+F:	configs/nanopi-r4s-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopi-r4s-u-boot.dtsi
+
+ORANGEPI-RK3399
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/orangepi-rk3399_defconfig
+F:	arch/arm/dts/rk3399-u-boot.dtsi
+F:	arch/arm/dts/rk3399-orangepi-u-boot.dtsi
+
+ROCK-4C+
+M:	FUKAUMI Naoki <naoki@radxa.com>
+S:	Maintained
+F:	configs/rock-4c-plus-rk3399_defconfig
+F:	arch/arm/dts/rk3399-rock-4c-plus.dts
+
+ROCK-4SE
+M:	Christopher Obbard <chris.obbard@collabora.com>
+S:	Maintained
+F:	configs/rock-4se-rk3399_defconfig
+F:	arch/arm/dts/rk3399-rock-4se-u-boot.dtsi
+
+ROCK-PI-4
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/rock-pi-4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-rock-pi-4-u-boot.dtsi
+F:	configs/rock-pi-4c-rk3399_defconfig
+F:	arch/arm/dts/rk3399-rock-pi-4c-u-boot.dtsi
+
+ROCK-PI-N10
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/rock-pi-n10-rk3399pro_defconfig
+F:	arch/arm/dts/rk3399pro-rock-pi-n10-u-boot.dtsi

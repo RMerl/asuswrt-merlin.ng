@@ -1,0 +1,112 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include "rk3399-u-boot.dtsi"
+
+#ifdef CONFIG_TARGET_PUMA_RK3399_RAM_DDR3_1333
+#include "rk3399-sdram-ddr3-1333.dtsi"
+#endif
+#ifdef CONFIG_TARGET_PUMA_RK3399_RAM_DDR3_1600
+#include "rk3399-sdram-ddr3-1600.dtsi"
+#endif
+#ifdef CONFIG_TARGET_PUMA_RK3399_RAM_DDR3_1866
+#include "rk3399-sdram-ddr3-1866.dtsi"
+#endif
+
+/ {
+	config {
+		u-boot,spl-payload-offset = <0x80000>; /* @ 512KB */
+		u-boot,mmc-env-offset = <0x5000>;      /* @  20KB */
+		u-boot,efi-partition-entries-offset = <0x200000>; /* 2MB */
+		u-boot,boot-led = "module_led";
+		sysreset-gpio = <&gpio1 RK_PA6 GPIO_ACTIVE_HIGH>;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		u-boot,spl-boot-order = \
+			"same-as-spl", &norflash, &sdhci, &sdmmc;
+	};
+
+	aliases {
+		spi5 = &spi5;
+	};
+
+	vdd_log: vdd-log {
+		compatible = "pwm-regulator";
+		pwms = <&pwm2 0 25000 1>;
+		regulator-name = "vdd_log";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <800000>;
+		regulator-max-microvolt = <1400000>;
+		regulator-init-microvolt = <950000>;
+		vin-supply = <&vcc5v0_sys>;
+	};
+};
+
+&binman {
+	simple-bin {
+		fit {
+			offset = <((CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR - 64) * 512)>;
+		};
+	};
+
+#ifdef CONFIG_ROCKCHIP_SPI_IMAGE
+	simple-bin-spi {
+		fit {
+			/* same as u-boot,spl-payload-offset */
+			offset = <0x80000>;
+		};
+	};
+#endif
+};
+
+&gpio1 {
+	bootph-all;
+};
+
+&gpio3 {
+	bootph-all;
+
+	/*
+	 * The Qseven BIOS_DISABLE signal on the RK3399-Q7 keeps the on-module
+	 * eMMC and SPI flash powered-down initially (in fact it keeps the
+	 * reset signal asserted). BIOS_DISABLE_OVERRIDE pin allows to re-enable
+	 * eMMC and SPI after the SPL has been booted from SD Card.
+	 */
+	bios_disable_override {
+		bootph-all;
+		gpios = <RK_PD5 GPIO_ACTIVE_LOW>;
+		output-high;
+		line-name = "bios_disable_override";
+		gpio-hog;
+	};
+};
+
+&gpio4 {
+	bootph-all;
+};
+
+&norflash {
+	bootph-all;
+};
+
+&pcfg_pull_none {
+	bootph-all;
+};
+
+&pcfg_pull_up {
+	bootph-all;
+};
+
+&sdmmc_bus4 {
+	bootph-all;
+};
+
+&sdmmc_clk {
+	bootph-all;
+};
+
+&sdmmc_cmd {
+	bootph-all;
+};

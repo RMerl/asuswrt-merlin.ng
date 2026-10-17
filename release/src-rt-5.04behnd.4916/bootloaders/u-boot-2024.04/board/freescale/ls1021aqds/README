@@ -1,0 +1,117 @@
+Overview
+--------
+The LS1021AQDS is a Freescale reference board that hosts the LS1021A SoC.
+
+LS1021A SoC Overview
+------------------
+The QorIQ LS1 family, which includes the LS1021A communications processor,
+is built on Layerscape architecture, the industry's first software-aware,
+core-agnostic networking architecture to offer unprecedented efficiency
+and scale.
+
+A member of the value-performance tier, the QorIQ LS1021A processor provides
+extensive integration and power efficiency for fanless, small form factor
+enterprise networking applications. Incorporating dual ARM Cortex-A7 cores
+running up to 1.0 GHz, the LS1021A processor delivers pre-silicon CoreMark
+performance of over 6,000, as well as virtualization support, advanced
+security features and the broadest array of high-speed interconnects and
+optimized peripheral features ever offered in a sub-3 W processor.
+
+The QorIQ LS1021A processor features an integrated LCD controller,
+CAN controller for implementing industrial protocols, DDR3L/4 running
+up to 1600 MHz, integrated security engine and QUICC Engine, and ECC
+protection on both L1 and L2 caches. The LS1021A processor is pin- and
+software-compatible with the QorIQ LS1020A and LS1022A processors.
+
+The LS1021A SoC includes the following function and features:
+
+ - ARM Cortex-A7 MPCore compliant with ARMv7-A architecture
+ - Dual high-preformance ARM Cortex-A7 cores, each core includes:
+   - 32 Kbyte L1 Instruction Cache and Data Cache for each core (ECC protection)
+   - 512 Kbyte shared coherent L2 Cache (with ECC protection)
+   - NEON Co-processor (per core)
+   - 40-bit physical addressing
+   - Vector floating-point support
+ - ARM Core-Link CCI-400 Cache Coherent Interconnect
+ - One DDR3L/DDR4 SDRAM memory controller with x8/x16/x32-bit configuration
+   supporting speeds up to 1600Mtps
+   - ECC and interleaving support
+ - VeTSEC Ethernet complex
+   - Up to 3x virtualized 10/100/1000 Ethernet controllers
+   - MII, RMII, RGMII, and SGMII support
+   - QoS, lossless flow control, and IEEE 1588 support
+ - 4-lane 6GHz SerDes
+ - High speed interconnect (4 SerDes lanes with are muxed for these protocol)
+   - Two PCI Express Gen2 controllers running at up to 5 GHz
+   - One Serial ATA 3.0 supporting 6 GT/s operation
+   - Two SGMII interfaces supporting 1000 Mbps
+ - Additional peripheral interfaces
+   - One high-speed USB 3.0 controller with integrated PHY and one high-speed
+     USB 2.00 controller with ULPI
+   - Integrated flash controller (IFC) with 16-bit interface
+   - Quad SPI NOR Flash
+   - One enhanced Secure digital host controller
+   - Display controller unit (DCU) 24-bit RGB (12-bit DDR pin interface)
+   - Ten UARTs comprised of two 16550 compliant DUARTs, and six low power
+     UARTs
+   - Three I2C controllers
+   - Eight FlexTimers four supporting PWM and four FlexCAN ports
+   - Four GPIO controllers supporting up to 109 general purpose I/O signals
+ - Integrated advanced audio block:
+   - Four synchronous audio interfaces (SAI)
+   - Sony/Philips Digital Interconnect Format (SPDIF)
+   - Asynchronous Sample Rate Converter (ASRC)
+ - Hardware based crypto offload engine
+   - IPSec forwarding at up to 1Gbps
+   - QorIQ Trust Architecture, Secure Boot, and ARM TrustZone supported
+   - Public key hardware accelerator
+   - True Random Number Generator (NIST Certified)
+   - Advanced Encryption Standard Accelerators (AESA)
+   - Data Encryption Standard Accelerators
+ - QUICC Engine ULite block
+   - Two universal communication controllers (TDM and HDLC) supporting 64
+   multichannels, each running at 64 Kbps
+   - Support for 256 channels of HDLC
+ - QorIQ TrustArchitecture with Secure Boot, as well as ARM TrustZone supported
+
+LS1021AQDS board Overview
+-------------------------
+ - DDR Controller
+     - Supports rates of up to 1600 MHz data-rate
+     - Supports one DDR3LP UDIMM, of single-, dual- types.
+ - IFC/Local Bus
+     - NAND flash: 512M 8-bit NAND flash
+     - NOR: 128MB 16-bit NOR Flash
+ - Ethernet
+     - Three on-board RGMII 10/100/1G ethernet ports.
+ - FPGA
+ - Clocks
+     - System and DDR clock (SYSCLK, DDRCLK)
+     - SERDES clocks
+ - Power Supplies
+ - SDHC
+     - SDHC/SDXC connector
+ - Other IO
+    - Two Serial ports
+    - Three I2C ports
+
+Memory map
+-----------
+The addresses in brackets are physical addresses.
+
+Start Address	End Address	Description			Size
+0x00_0000_0000	0x00_000F_FFFF	Secure Boot ROM			1MB
+0x00_0100_0000	0x00_0FFF_FFFF	CCSRBAR				240MB
+0x00_1000_0000	0x00_1000_FFFF	OCRAM0				64KB
+0x00_1001_0000	0x00_1001_FFFF	OCRAM1				64KB
+0x00_2000_0000	0x00_20FF_FFFF	DCSR				16MB
+0x00_4000_0000	0x00_5FFF_FFFF	QSPI				512MB
+0x00_6000_0000	0x00_67FF_FFFF	IFC - NOR Flash			128MB
+0x00_7E80_0000	0x00_7E80_FFFF	IFC - NAND Flash		64KB
+0x00_7FB0_0000	0x00_7FB0_0FFF	IFC - FPGA			4KB
+0x00_8000_0000	0x00_FFFF_FFFF	DRAM1				2GB
+
+LS1021a rev1.0 Soc specific Options/Settings
+--------------------------------------------
+If the LS1021a Soc is rev1.0, you need modify the configuration and enable
+CONFIG_SPL_SKIP_LOWLEVEL_INIT in menuconfig or similar.

@@ -1,15 +1,15 @@
 /*
    <:copyright-BRCM:2017:DUAL/GPL:standard
-   
-      Copyright (c) 2017 Broadcom 
+
+      Copyright (c) 2017 Broadcom
       All Rights Reserved
-   
+
    Unless you and Broadcom execute a separate written software license
    agreement governing use of this software, this software is licensed
    to you under the terms of the GNU General Public License version 2
    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
    with the following added to such license:
-   
+
       As a special exception, the copyright holders of this software give
       you permission to link this software with independent modules, and
       to copy and distribute the resulting executable under terms of your
@@ -18,12 +18,12 @@
       An independent module is a module which is not derived from this
       software.  The special exception does not apply to any modifications
       of the software.
-   
+
    Not withstanding the above, under no circumstances may you combine
    this software in any way with any other Broadcom software provided
    under a license other than the GPL, without Broadcom's express prior
    written consent.
-   
+
    :>
  */
 
@@ -37,6 +37,7 @@
 #include "enet.h"
 #include "port.h"
 #include "trxbus.h"
+#include "wan_drv.h"
 
 #ifdef CONFIG_BCM_PTP_1588
 extern int ptp_1588_get_ts_info(struct net_device *net, struct ethtool_ts_info *info);
@@ -102,6 +103,15 @@ static void phy_caps_to_link_mode(uint32_t caps, unsigned long* lm)
     if (caps&PHY_CAP_AUTONEG)       LM_SET(lm,ETHTOOL_LINK_MODE_Autoneg_BIT);
 }
 
+#if defined(CONFIG_BCM_ENERGY_EFFICIENT_ETHERNET)
+static void phy_caps_to_link_mode_u32(uint32_t caps, uint32_t *_lm)
+{
+    __ETHTOOL_DECLARE_LINK_MODE_MASK(lm) = {0};
+    phy_caps_to_link_mode(caps, lm);
+    *_lm = lm[0];
+}
+#endif
+
 static void link_mode_to_phy_caps(const unsigned long* lm, uint32_t *caps)
 {
     if (LM_GET(lm,ETHTOOL_LINK_MODE_10baseT_Half_BIT))      *caps |= PHY_CAP_10_HALF;
@@ -149,9 +159,12 @@ static int advertise_help(const unsigned long *lm, phy_dev_t *phy_dev)
 
 static int enet_ethtool_get_ksettings(struct net_device *dev, struct ethtool_link_ksettings *ecmd)
 {
+#ifndef CONFIG_BCM_QEMU_SIM
     enetx_port_t *port = ((enetx_netdev *)netdev_priv(dev))->port;
     phy_dev_t *phy_dev;
     uint32_t caps = 0, lp_caps = 0, supported = 0;
+    phy_mdix_t mdix_mode = PHY_MDIX_UNKNOWN;
+    phy_mdix_t mdix_status = PHY_MDIX_UNKNOWN;
 
     if (!port || port->port_class != PORT_CLASS_PORT)
         return -EOPNOTSUPP;
@@ -197,6 +210,36 @@ static int enet_ethtool_get_ksettings(struct net_device *dev, struct ethtool_lin
     ecmd->base.phy_address = phy_dev->addr;
 
     enet_dbg("(%s) sup=%lx adv=%lx\n", dev->name, ecmd->link_modes.supported[0], ecmd->link_modes.advertising[0]);
+
+    phy_dev_mdix_mode_get(phy_dev, &mdix_mode);
+
+    if (mdix_mode == PHY_MDIX_AUTO)
+        ecmd->base.eth_tp_mdix_ctrl = ETH_TP_MDI_AUTO;
+    else if (mdix_mode == PHY_MDIX_OFF)
+        ecmd->base.eth_tp_mdix_ctrl = ETH_TP_MDI;
+    else if (mdix_mode == PHY_MDIX_ON)
+        ecmd->base.eth_tp_mdix_ctrl = ETH_TP_MDI_X;
+    else
+        ecmd->base.eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
+
+    phy_dev_mdix_status_get(phy_dev, &mdix_status);
+
+    ecmd->base.eth_tp_mdix = mdix_status == PHY_MDIX_ON ? ETH_TP_MDI_X : ETH_TP_MDI;
+#else
+    ecmd->base.speed = phy_speed_2_mbps(PHY_SPEED_10);
+    ecmd->base.duplex = DUPLEX_FULL;
+    ecmd->base.autoneg = AUTONEG_DISABLE;
+    ecmd->base.eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
+    ecmd->base.eth_tp_mdix = ETH_TP_MDI;
+    LM_SET(ecmd->link_modes.supported, ETHTOOL_LINK_MODE_TP_BIT);
+    LM_SET(ecmd->link_modes.supported, ETHTOOL_LINK_MODE_Autoneg_BIT);
+    LM_SET(ecmd->link_modes.supported, ETHTOOL_LINK_MODE_Pause_BIT);
+    LM_SET(ecmd->link_modes.supported, ETHTOOL_LINK_MODE_Asym_Pause_BIT);
+    LM_SET(ecmd->link_modes.supported, ETHTOOL_LINK_MODE_10baseT_Full_BIT);
+    LM_SET(ecmd->link_modes.advertising , ETHTOOL_LINK_MODE_10baseT_Full_BIT);
+    LM_SET(ecmd->link_modes.lp_advertising , ETHTOOL_LINK_MODE_10baseT_Full_BIT);
+#endif
+
     return 0;
 }
 
@@ -212,6 +255,7 @@ static int enet_ethtool_set_ksettings(struct net_device *dev, const struct ethto
     uint32_t caps;
     uint8_t cur_duplex, cur_autoneg;
     uint32_t cur_speed;
+    phy_mdix_t mdix_mode = PHY_MDIX_UNKNOWN;
 
     if (!port || port->port_class != PORT_CLASS_PORT)
         return -EOPNOTSUPP;
@@ -234,7 +278,7 @@ static int enet_ethtool_set_ksettings(struct net_device *dev, const struct ethto
     if (advertise_help(ecmd->link_modes.advertising, phy_dev))
         return -1;
 
-    printk("set_ksettings(%s):base[autoneg=%d speed=%d duplex=%d] advertise=%lx\n", dev->name, 
+    enet_dbg("set_ksettings(%s):base[autoneg=%d speed=%d duplex=%d] advertise=%lx\n", dev->name, 
         ecmd->base.autoneg, ecmd->base.speed, ecmd->base.duplex, ecmd->link_modes.advertising[0]);
 
     if (cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_ADVERTISE, &caps))
@@ -265,6 +309,15 @@ static int enet_ethtool_set_ksettings(struct net_device *dev, const struct ethto
         if (ecmd->base.autoneg == AUTONEG_ENABLE) caps |= PHY_CAP_AUTONEG;
     } else
         link_mode_to_phy_caps(ecmd->link_modes.advertising, &caps);
+
+    if (ecmd->base.eth_tp_mdix_ctrl == ETH_TP_MDI_AUTO)
+        mdix_mode = PHY_MDIX_AUTO;
+    else if (ecmd->base.eth_tp_mdix_ctrl == ETH_TP_MDI)
+        mdix_mode = PHY_MDIX_OFF;
+    else if (ecmd->base.eth_tp_mdix_ctrl == ETH_TP_MDI_X)
+        mdix_mode = PHY_MDIX_ON;
+
+    phy_dev_mdix_mode_set(phy_dev, mdix_mode);
 
     return cascade_phy_dev_caps_set(phy_dev, caps);
 }
@@ -317,16 +370,19 @@ static int enet_ethtool_set_pauseparam(struct net_device *dev, struct ethtool_pa
 static int enet_ethtool_get_eee(struct net_device *dev, struct ethtool_eee *info)
 {
     enetx_port_t *port = ((enetx_netdev *)netdev_priv(dev))->port;
+    mac_dev_t *mac_dev;
     phy_dev_t *phy_dev;
-    int enabled;
+    int enabled = 0, sleep_timer = 0, wakeup_timer = 0;
+    uint32_t supported_caps = 0, adv_caps = 0, lp_caps = 0;
 
     if (!port || port->port_class != PORT_CLASS_PORT)
         return -1;
 
+    mac_dev = port->p.mac;
     phy_dev = port->p.phy;
-    if (!phy_dev)
+    if (!phy_dev || !mac_dev)
     {
-        printk("Error: %s has no PHY connect\n", dev->name);
+        printk("Error: %s has no PHY or no MAC connected\n", dev->name);
         return -1;
     }
     phy_dev = cascade_phy_get_last_active(phy_dev);
@@ -336,7 +392,19 @@ static int enet_ethtool_get_eee(struct net_device *dev, struct ethtool_eee *info
     phy_dev_eee_resolution_get(phy_dev, &enabled);
     info->eee_active = enabled;
 
-    info->supported = SUPPORTED_TP; // need to be non-zero to display above values;
+    phy_dev = cascade_phy_get_last_active(phy_dev);
+    cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps);
+    cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_ADVERTISE, &adv_caps);
+    cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_LP_ADVERTISED, &lp_caps);
+
+    phy_caps_to_link_mode_u32(supported_caps, &info->supported);
+    phy_caps_to_link_mode_u32(adv_caps, &info->advertised);
+    phy_caps_to_link_mode_u32(lp_caps, &info->lp_advertised);
+
+    mac_dev_eee_get(mac_dev, &enabled, &sleep_timer, &wakeup_timer);
+    info->tx_lpi_enabled = enabled;
+    info->tx_lpi_timer = sleep_timer;
+
     return 0;
 }
 
@@ -359,7 +427,7 @@ static int enet_ethtool_set_eee(struct net_device *dev, struct ethtool_eee *info
 }
 #endif
 
-#if defined(CONFIG_BCM_SFP) && defined(DSL_DEVICES)
+#if defined(CONFIG_BCM_SFP)
 #include "crossbar_dev.h"
 
 static int dev_get_i2c_bus(struct net_device *dev)
@@ -374,7 +442,13 @@ static int dev_get_i2c_bus(struct net_device *dev)
     while ( phy && phy->cascade_next)
         phy = phy->cascade_next;
 
-    if (!phy || phy->phy_drv->phy_type != PHY_TYPE_I2C_PHY)
+    if (!phy)
+        return -1;
+
+    if (phy->phy_drv->phy_type == PHY_TYPE_PON || phy->phy_drv->phy_type == PHY_TYPE_WAN_AE)
+        return wan_i2c_bus_get();
+
+    if (phy->phy_drv->phy_type != PHY_TYPE_I2C_PHY)
         return -1;
 
     return phy->addr;
@@ -383,65 +457,24 @@ static int dev_get_i2c_bus(struct net_device *dev)
 static int enet_ethtool_get_module_info(struct net_device *dev, struct ethtool_modinfo *modinfo)
 {
     int bus = dev_get_i2c_bus(dev);
-    uint8_t sff8472_compliance;
-    uint8_t diag_mon_type;
-
     if (bus < 0)
         return -ENODEV;
 
-    trxbus_module_read_raw(bus, SFP_I2C_A0_ADDR, 92, &diag_mon_type, 1);
-    trxbus_module_read_raw(bus, SFP_I2C_A0_ADDR, 94, &sff8472_compliance, 1);
-    if (sff8472_compliance & !(diag_mon_type & SFP_DIAGMON_ADDRMODE))
-    {
-        modinfo->type = ETH_MODULE_SFF_8472;
-        modinfo->eeprom_len = ETH_MODULE_SFF_8472_LEN;
-    }
-    else
-    {
-        modinfo->type = ETH_MODULE_SFF_8079;
-        modinfo->eeprom_len = ETH_MODULE_SFF_8079_LEN;
-    }
-    return 0;
+    // coverity[tainted_data] - false alarm, bus validated in bus2sfp
+    return trxbus_module_info(bus, modinfo);
 }
 
-static int enet_ethtool_get_module_eeprom(struct net_device *dev, struct ethtool_eeprom *ee, uint8_t *data)
+static int enet_ethtool_get_module_eeprom(struct net_device *dev, struct ethtool_eeprom *ee, u8 *data)
 {
-    int len, offset;
-    int ret = 0;
-    int bus = dev_get_i2c_bus(dev);
-    int section_len = ETH_MODULE_SFF_8472_LEN/2;
-#define MIN(a,b) (a<b? a: b)
-	
+    int bus = dev_get_i2c_bus(dev);	
     if (bus < 0)
         return -ENODEV;
 
-    offset = ee->offset;
-    if (offset < section_len)
-    {
-        len = MIN((section_len - offset), ee->len);
-        ret |= trxbus_module_read_raw(bus, SFP_I2C_A0_ADDR, offset, data, len);
+    // coverity[tainted_data] - false alarm, bus validated in bus2sfp
+    if (trxbus_module_eeprom(bus, ee, data) != 0)
+        return -EINVAL;
 
-        /* some SFP module don't specify phy dev ID, set to SFP so ethtool will parse correctly */
-        if (ee->offset == 0 && data[0] == 0)
-            data[0] = 3;
-
-        offset = offset + len - section_len;
-        data += len;
-        len = ee->len - len;
-    }
-    else
-    {
-        offset -= section_len;
-        len = ee->len;
-    }
-
-    if (offset >= 0)
-    {
-        len = MIN((section_len - offset), len);
-        ret |= trxbus_module_read_raw(bus, SFP_I2C_A2_ADDR, offset, data, len);
-    }
-
-    return ret < 0? -ENODEV: 0;
+    return 0;
 }
 #endif
 
@@ -460,7 +493,7 @@ const struct ethtool_ops enet_ethtool_ops =
 #ifdef CONFIG_BCM_PTP_1588
     .get_ts_info = ptp_1588_get_ts_info,
 #endif
-#if defined(CONFIG_BCM_SFP) && defined(DSL_DEVICES)
+#if defined(CONFIG_BCM_SFP)
     .get_module_info =      enet_ethtool_get_module_info,
     .get_module_eeprom =    enet_ethtool_get_module_eeprom,
 #endif

@@ -63,6 +63,7 @@ typedef enum {
     rdpa_egress_tm_attr_weight = 15, /* weight : RW : number : Weight for WRR scheduling (0 for unset) */
     rdpa_egress_tm_attr_queue_location = 16, /* queue_location : RF : aggregate[] rdpa_tm_queue_location(rdpa_tm_queue_location_t) : Get queue location by qid */
     rdpa_egress_tm_attr_aqm_stats = 17, /* aqm_stats : RW : bool : Collect AQM statistics */
+    rdpa_egress_tm_attr_subsidiary_type = 18, /* subsidiary_type : RI : enum : Subsidiary Egress TM type */
 } rdpa_egress_tm_attr_types;
 
 extern int (*f_rdpa_egress_tm_get)(bdmf_number index_, bdmf_object_handle *pmo);
@@ -295,7 +296,7 @@ static inline int rdpa_egress_tm_rate_limit_get(bdmf_object_handle mo_, bdmf_obj
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_egress_tm_attr_rate_limit, &_nn_);
-    *rate_limit_ = (bdmf_object_handle)(long)_nn_;
+    *rate_limit_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -310,7 +311,7 @@ static inline int rdpa_egress_tm_rate_limit_get(bdmf_object_handle mo_, bdmf_obj
  */
 static inline int rdpa_egress_tm_rate_limit_set(bdmf_object_handle mo_, bdmf_object_handle rate_limit_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_egress_tm_attr_rate_limit, (long)rate_limit_);
+    return bdmf_attr_set_as_num(mo_, rdpa_egress_tm_attr_rate_limit, (bdmf_long_t)rate_limit_);
 }
 
 
@@ -481,7 +482,7 @@ static inline int rdpa_egress_tm_subsidiary_get(bdmf_object_handle mo_, bdmf_ind
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_egress_tm_attr_subsidiary, (bdmf_index)ai_, &_nn_);
-    *subsidiary_ = (bdmf_object_handle)(long)_nn_;
+    *subsidiary_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -497,7 +498,7 @@ static inline int rdpa_egress_tm_subsidiary_get(bdmf_object_handle mo_, bdmf_ind
  */
 static inline int rdpa_egress_tm_subsidiary_set(bdmf_object_handle mo_, bdmf_index ai_, bdmf_object_handle subsidiary_)
 {
-    return bdmf_attrelem_set_as_num(mo_, rdpa_egress_tm_attr_subsidiary, (bdmf_index)ai_, (long)subsidiary_);
+    return bdmf_attrelem_set_as_num(mo_, rdpa_egress_tm_attr_subsidiary, (bdmf_index)ai_, (bdmf_long_t)subsidiary_);
 }
 
 
@@ -597,6 +598,38 @@ static inline int rdpa_egress_tm_aqm_stats_get(bdmf_object_handle mo_, bdmf_bool
 static inline int rdpa_egress_tm_aqm_stats_set(bdmf_object_handle mo_, bdmf_boolean aqm_stats_)
 {
     return bdmf_attr_set_as_num(mo_, rdpa_egress_tm_attr_aqm_stats, aqm_stats_);
+}
+
+
+/** Get egress_tm/subsidiary_type attribute.
+ *
+ * Get Subsidiary Egress TM type.
+ * \param[in]   mo_ egress_tm object handle or mattr transaction handle
+ * \param[out]  subsidiary_type_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_egress_tm_subsidiary_type_get(bdmf_object_handle mo_, rdpa_subsidiary_type *subsidiary_type_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_egress_tm_attr_subsidiary_type, &_nn_);
+    *subsidiary_type_ = (rdpa_subsidiary_type)_nn_;
+    return _rc_;
+}
+
+
+/** Set egress_tm/subsidiary_type attribute.
+ *
+ * Set Subsidiary Egress TM type.
+ * \param[in]   mo_ egress_tm object handle or mattr transaction handle
+ * \param[in]   subsidiary_type_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task and softirq contexts.
+ */
+static inline int rdpa_egress_tm_subsidiary_type_set(bdmf_object_handle mo_, rdpa_subsidiary_type subsidiary_type_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_egress_tm_attr_subsidiary_type, subsidiary_type_);
 }
 
 /** @} end of egress_tm Doxygen group */

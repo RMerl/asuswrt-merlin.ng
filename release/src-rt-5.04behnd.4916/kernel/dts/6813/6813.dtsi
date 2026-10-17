@@ -33,8 +33,12 @@
 					"phyctl_idle_pad_en1",	\
 					"phybl0_idle_pad_ctl",	\
 					"phybl1_idle_pad_ctl",	\
+					"phybl2_idle_pad_ctl",  \
+					"phybl3_idle_pad_ctl",  \
 					"phybl0_clock_idle",	\
 					"phybl1_clock_idle",	\
+					"phybl2_clock_idle",	\
+					"phybl3_clock_idle",	\
 					"auto_self_refresh",	\
 					"glb_gcfg"
 
@@ -45,8 +49,12 @@
 					<0 0x80060208 0 4>,	\
 					<0 0x8006071c 0 4>,	\
 					<0 0x8006091c 0 4>,	\
+					<0 0x80060b1c 0 4>,	\
+					<0 0x80060d1c 0 4>,	\
 					<0 0x8006073c 0 4>,	\
 					<0 0x8006093c 0 4>,	\
+					<0 0x80060b3c 0 4>,	\
+					<0 0x80060d3c 0 4>,	\
 					<0 0x8004000c 0 4>,	\
 					<0 0x80040008 0 4>
 
@@ -68,7 +76,7 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 		/* increase coherent_pool size */
-		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe console=ttyAMA0,115200  rootwait rng_core.default_quality=1024";
+		bootargs = "coherent_pool=4M pci=pcie_bus_safe console=ttyAMA0,115200  rootwait rng_core.default_quality=1024";
 	};
 
 	/* wan type auto detect */
@@ -519,7 +527,7 @@
 			wan_ae:wan_ae {
 				compatible = "brcm,bcaphy";
 				phy-type = "AE";
-				reg = <0x1>;
+				reg = <0x20>;
 				status = "disabled";
 			};
 		};
@@ -607,7 +615,7 @@
 		};
 
 		/* EMMC */
-		sdhci: sdhci {
+		sdhci: mmc {
 			pinctrl-0 = <&emmc_ctrl_pins>;
 			pinctrl-names="default";
 			#define SDHCI_OFFSET			0x00000000 0x10000
@@ -622,8 +630,8 @@
 			#define SDIO_EMMC_SPI			38
 			#include "../ip/bcm_sdhci.dtsi"
 			mmc-ddr-3_3v;
-			sdhci-pll-baseclk-mhz = <4400>;
-			sdhci-pll-valid-op-mhz = <100 110 160 176 200>;
+			brcm,sdhci-pll-baseclk-mhz = <4400>;
+			brcm,sdhci-pll-valid-op-mhz = <100 110 160 176 200>;
 		};
 
 #if defined (CONFIG_MMC_OOPS) || (CONFIG_MMC_OOPS_MODULE)
@@ -635,6 +643,12 @@
 		};
 #endif
 
+		/* RNG */
+#if defined (CONFIG_BCM_RNG_SHIM)
+		rng_shim: rngshim {
+			#include "../ip/bcm_rng_shim.dtsi"
+		};
+#else
 		rng: rng {
 			#define RNG200_OFFSET                   0x00000000 0xb80
 			#define RNG200_SIZE                     0x00000000 0x30
@@ -647,6 +661,7 @@
 			#include "../ip/bcm_trng.dtsi"
 			status = "disabled";
 		};
+#endif
 
 		strap: strap {
 			#define STRAP_REG_OFFSET            0x0 0x2600
@@ -698,6 +713,19 @@
 			#define GPIO_DATA_OFFSET     0x0 0x520
 			#define GPIO_DATA_SIZE       0x0 0x20
 			#define NUM_OF_GPIOS         80
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			#define EXTINTR_OFFSET       0x0 0x4
+			#define EXTINTR_SIZE         0x0 0x48
+			#define MAX_EXT_INTR         8
+			interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 48 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
+#endif
 			#include "../ip/bcm_bca_gpio.dtsi"
 		};
 
@@ -708,6 +736,9 @@
 			#define MAX_EXT_INTR         8
 			#include "../ip/bcm_bca_extintr.dtsi"
 			external_interrupts = <47 48 49 50 51 52 53 54>;
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			status = "disabled";
+#endif
 		};
 
 		uart0: serial0 {
@@ -790,6 +821,17 @@
 			#include "../ip/bcm_i2c_bus.dtsi"
 		};
 
+		i2s: bcm63xx-i2s {
+			pinctrl-0 = <&a_i2s_tx_lrck_pin_12 &a_i2s_tx_mclk_pin_13  &a_i2s_rx_sclk_pin_45 &a_i2s_rx_lrck_pin_46 &a_i2s_sdata_in_pin_47 &a_i2s_rx_mclk_pin_48 &a_i2s_sdata_out_pin_49 &a_i2s_tx_sclk_pin_50>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x7f>;
+			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2stxclk>,<&i2srxclk>,<&osc>;
+			clock-names = "i2stxclk","i2srxclk","i2sosc";
+			status = "disabled";
+		};
+
 		/* periph timers */
 		timers: timers {
 			#define TIMERS_OFFSET		0x0 0x400
@@ -806,6 +848,7 @@
 			#define WATCHDOG_OFFSET			0x0 0x480
 			#define WATCHDOG_SIZE			0x0 0x10
 			#define WATCHDOG_TIMEOUT		80
+			#define WATCHDOG_CLK_LABEL		refclk50mhz
 			#include "../ip/bcm_wdt.dtsi"
 			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
 		};
@@ -1065,6 +1108,7 @@
 &spu_crypto {
 	brcm,spu_type = <2>;
 	status = "okay";
+	dma-coherent;
 };
 #endif
 

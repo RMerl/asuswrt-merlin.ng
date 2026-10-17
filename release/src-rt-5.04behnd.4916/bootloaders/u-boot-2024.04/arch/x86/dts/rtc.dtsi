@@ -1,0 +1,7 @@
+/ {
+	rtc: rtc {
+		compatible = "motorola,mc146818";
+		bootph-some-ram;
+		reg = <0x70 2>;
+	};
+};

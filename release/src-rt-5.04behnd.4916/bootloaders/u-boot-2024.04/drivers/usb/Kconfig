@@ -1,0 +1,185 @@
+menuconfig USB
+	bool "USB support"
+	---help---
+	  Universal Serial Bus (USB) is a specification for a serial bus
+	  subsystem which offers higher speeds and more features than the
+	  traditional PC serial port.  The bus supplies power to peripherals
+	  and allows for hot swapping.  Up to 127 USB peripherals can be
+	  connected to a single USB host in a tree structure.
+
+	  The USB host is the root of the tree, the peripherals are the
+	  leaves and the inner nodes are special USB devices called hubs.
+	  Most PCs now have USB host ports, used to connect peripherals
+	  such as scanners, keyboards, mice, modems, cameras, disks,
+	  flash memory, network links, and printers to the PC.
+
+	  Say Y here if your device has an USB port, either host, peripheral or
+	  dual-role.
+
+	  For an USB host port, you then need to say Y to at least one of the
+	  Host Controller Driver (HCD) options below.  Choose a USB 1.1
+	  controller, such as "UHCI HCD support" or "OHCI HCD support",
+	  and "EHCI HCD (USB 2.0) support" except for older systems that
+	  do not have USB 2.0 support.  It doesn't normally hurt to select
+	  them all if you are not certain.
+
+	  If your system has a device-side USB port, used in the peripheral
+	  side of the USB protocol, see the "USB Gadget" framework instead.
+
+	  After choosing your HCD, then select drivers for the USB peripherals
+	  you'll be using.  You may want to check out the information provided
+	  in <file:Documentation/usb/> and especially the links given in
+	  <file:Documentation/usb/usb-help.txt>.
+
+if USB
+
+config DM_USB
+	bool
+	depends on DM && OF_CONTROL
+	help
+	  Enable driver model for USB. The USB interface is then implemented
+	  by the USB uclass. Multiple USB controllers of different types
+	  (XHCI, EHCI, OHCI) can be attached and used. The 'usb' command works
+	  as normal.
+
+	  Much of the code is shared but with this option enabled the USB
+	  uclass takes care of device enumeration. USB devices can be
+	  declared with the U_BOOT_USB_DEVICE() macro and will be
+	  automatically probed when found on the bus.
+
+config SPL_DM_USB
+	bool "Enable driver model for USB host mode in SPL"
+	depends on SPL_DM && DM_USB
+	default n if ARCH_MVEBU
+	default y
+
+config DM_USB_GADGET
+	bool "Enable driver model for USB Gadget"
+	depends on DM_USB
+	help
+	  Enable driver model for USB Gadget (Peripheral
+	  mode)
+
+config SPL_DM_USB_GADGET
+	bool "Enable driver model for USB Gadget in SPL"
+	depends on SPL_DM_USB
+	help
+	  Enable driver model for USB Gadget in SPL
+	  (Peripheral mode)
+
+source "drivers/usb/host/Kconfig"
+
+source "drivers/usb/isp1760/Kconfig"
+
+source "drivers/usb/cdns3/Kconfig"
+
+source "drivers/usb/dwc3/Kconfig"
+
+source "drivers/usb/mtu3/Kconfig"
+
+source "drivers/usb/musb/Kconfig"
+
+source "drivers/usb/musb-new/Kconfig"
+
+source "drivers/usb/emul/Kconfig"
+
+source "drivers/usb/phy/Kconfig"
+
+source "drivers/usb/ulpi/Kconfig"
+
+if USB_HOST
+
+comment "USB peripherals"
+
+config USB_STORAGE
+	bool "USB Mass Storage support"
+	---help---
+	  Say Y here if you want to connect USB mass storage devices to your
+	  board's USB port.
+
+config USB_KEYBOARD
+	bool "USB Keyboard support"
+	select DM_KEYBOARD if DM_USB
+	select SYS_STDIO_DEREGISTER
+	---help---
+	  Say Y here if you want to use a USB keyboard for U-Boot command line
+	  input.
+
+config USB_ONBOARD_HUB
+	bool "Onboard USB hub support"
+	depends on DM_USB
+	---help---
+	  Say Y here if you want to support discrete onboard USB hubs that
+	  don't require an additional control bus for initialization, but
+	  need some non-trivial form of initialization, such as enabling a
+	  power regulator. An example for such a hub is the Microchip
+	  USB2514B.
+
+config USB_HUB_DEBOUNCE_TIMEOUT
+	int "Timeout in milliseconds for USB HUB connection"
+	default 1000
+	help
+	  Value in milliseconds of the USB connection timeout, the max delay to
+	  wait the hub port status to be connected steadily after being powered
+	  off and powered on in the usb hub driver.
+	  This define allows to increase the HUB_DEBOUNCE_TIMEOUT default
+	  value = 1s because some usb device needs around 1.5s to be initialized
+	  and a 2s value should solve detection issue on problematic USB keys.
+
+if SPL_USB_HOST
+
+comment "USB peripherals in SPL"
+
+config SPL_USB_STORAGE
+	bool "Support loading from USB"
+	help
+	  Enable support for USB devices in SPL. This allows use of USB
+	  devices such as hard drives and flash drivers for loading U-Boot.
+	  The actual drivers are enabled separately using the normal U-Boot
+	  config options. This enables loading from USB using a configured
+	  device.
+
+config SYS_USB_FAT_BOOT_PARTITION
+	int "Partition on USB to use to load U-Boot from"
+	depends on SPL_USB_STORAGE
+	default 1
+	help
+	  Partition on the USB storage device to load U-Boot from.
+
+endif
+
+if USB_KEYBOARD
+
+config USB_KEYBOARD_FN_KEYS
+	bool "USB keyboard function key support"
+	help
+	  Say Y here if you want support for keys F1 - F12, INS, HOME, DELETE,
+	  END, PAGE UP, and PAGE DOWN.
+
+choice
+	prompt "USB keyboard polling"
+	default SYS_USB_EVENT_POLL_VIA_INT_QUEUE if ARCH_SUNXI
+	default SYS_USB_EVENT_POLL
+	---help---
+	  Enable a polling mechanism for USB keyboard.
+
+config SYS_USB_EVENT_POLL
+    bool "Interrupt polling"
+
+config SYS_USB_EVENT_POLL_VIA_INT_QUEUE
+    bool "Poll via interrupt queue"
+
+config SYS_USB_EVENT_POLL_VIA_CONTROL_EP
+    bool "Poll via control EP"
+
+endchoice
+
+endif
+
+source "drivers/usb/eth/Kconfig"
+
+endif
+
+source "drivers/usb/gadget/Kconfig"
+
+endif

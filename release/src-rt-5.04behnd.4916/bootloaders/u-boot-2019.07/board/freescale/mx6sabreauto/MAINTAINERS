@@ -1,7 +1,0 @@
-MX6SABREAUTO BOARD
-M:	Fabio Estevam <fabio.estevam@nxp.com>
-M:	Peng Fan <peng.fan@nxp.com>
-S:	Maintained
-F:	board/freescale/mx6sabreauto/
-F:	include/configs/mx6sabreauto.h
-F:	configs/mx6sabreauto_defconfig

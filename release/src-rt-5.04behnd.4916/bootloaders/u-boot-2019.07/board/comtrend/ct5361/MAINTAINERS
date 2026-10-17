@@ -1,6 +1,0 @@
-COMTREND CT-5361 BOARD
-M:	Álvaro Fernández Rojas <noltari@gmail.com>
-S:	Maintained
-F:	board/comtrend/ct-5361/
-F:	include/configs/comtrend_ct5361.h
-F:	configs/comtrend_ct5361_ram_defconfig

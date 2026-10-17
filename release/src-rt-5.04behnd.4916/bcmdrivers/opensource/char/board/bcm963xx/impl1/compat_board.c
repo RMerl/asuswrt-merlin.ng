@@ -112,14 +112,11 @@ typedef struct compatBoardMemaccessIoctlParms
 #define COMPAT_BOARD_IOCTL_SPI_SLAVE_SET_BITS          _IOWR(BOARD_IOCTL_MAGIC, 47, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_SPI_SLAVE_CLEAR_BITS        _IOWR(BOARD_IOCTL_MAGIC, 48, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_SPI_SLAVE_WRITE_BUF         _IOWR(BOARD_IOCTL_MAGIC, 49, COMPAT_BOARD_IOCTL_PARMS)
-#define COMPAT_BOARD_IOCTL_GET_GPIOVERLAYS             _IOWR(BOARD_IOCTL_MAGIC, 50, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_GET_BATTERY_ENABLE          _IOWR(BOARD_IOCTL_MAGIC, 51, COMPAT_BOARD_IOCTL_PARMS)
-#define COMPAT_BOARD_IOCTL_FTTDP_DSP_BOOTER            _IOWR(BOARD_IOCTL_MAGIC, 52, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_MEM_ACCESS                  _IOWR(BOARD_IOCTL_MAGIC, 53, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_SET_DYING_GASP_INTERRUPT    _IOWR(BOARD_IOCTL_MAGIC, 54, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_GET_BTRM_BOOT               _IOWR(BOARD_IOCTL_MAGIC, 55, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_GET_BOOT_SECURE             _IOWR(BOARD_IOCTL_MAGIC, 56, COMPAT_BOARD_IOCTL_PARMS)
-#define COMPAT_BOARD_IOCTL_SATA_TEST                   _IOWR(BOARD_IOCTL_MAGIC, 57, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_BT_GPIO                     _IOWR(BOARD_IOCTL_MAGIC, 58, COMPAT_BOARD_IOCTL_PARMS)
 #define COMPAT_BOARD_IOCTL_GET_BOOT_MFG_SECURE         _IOWR(BOARD_IOCTL_MAGIC, 59, COMPAT_BOARD_IOCTL_PARMS)
 
@@ -132,6 +129,7 @@ static int compat_put_board_ioctl_parms( COMPAT_BOARD_IOCTL_PARMS __user *ioctlP
     int err = 0;
     COMPAT_BOARD_IOCTL_PARMS temp_ioctl_parms;
 
+    memset(&temp_ioctl_parms.string, '\0', sizeof(temp_ioctl_parms));
     temp_ioctl_parms.strLen=ioctlParms->strLen;
     temp_ioctl_parms.offset=ioctlParms->offset;
     temp_ioctl_parms.action=ioctlParms->action;
@@ -185,7 +183,7 @@ static int compat_get_board_ioctl_mem_access_parms( COMPAT_BOARD_MEMACCESS_IOCTL
 
 long compat_board_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-    long ret;
+    long ret = 0;
     int err;
     void *user_val_string_bufp = NULL;
     void *temp_string_bufp = NULL;
@@ -223,11 +221,11 @@ long compat_board_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
                 return err;
 
             /* Copy over data from union ioctlParms.string OR ioctlParms.value */
-            if( ioctlParms.string && ioctlParms.strLen )
+            if (ioctlParms.string && ioctlParms.strLen)
             {
                 /* allocate one extra byte due to legacy reasons */
                 temp_string_bufp = kmalloc(ioctlParms.strLen+1, GFP_KERNEL);
-                if( temp_string_bufp )
+                if (temp_string_bufp)
                 {
                     memset(temp_string_bufp, 0, ioctlParms.strLen+1);
                     if (copy_from_user((void*)temp_string_bufp, (void*)(ioctlParms.string), ioctlParms.strLen) == 0) {
@@ -249,18 +247,25 @@ long compat_board_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
             }
 
 #if !defined(CONFIG_BRCM_IKOS)
-            ret=board_ioctl_cmd_handler(filp, COMPAT_TO_REG_IOCTL(cmd), arg, &ioctlParms);
-
-            /* Copy to user ioctlParms and memory pointed to by ioctlParms.string OR ioctlParms.value */
-            if( ioctlParms.string && ioctlParms.strLen )
+            if (!ret)
             {
-                temp_string_bufp = ioctlParms.string;
-                ioctlParms.string = user_val_string_bufp;
-                if(copy_to_user((void*)ioctlParms.string, temp_string_bufp, ioctlParms.strLen))
-  	            printk("__copy_to_user failed %s:%d\n", __FILE__, __LINE__);
+                // coverity[tainted_data] : too many scenarios to check for max possible value
+                ret = board_ioctl_cmd_handler(filp, COMPAT_TO_REG_IOCTL(cmd), arg, &ioctlParms);
+    
+                /* Copy to user ioctlParms and memory pointed to by ioctlParms.string OR ioctlParms.value */
+                if(!ret && ioctlParms.string && ioctlParms.strLen)
+                {
+                    temp_string_bufp = ioctlParms.string;
+                    ioctlParms.string = user_val_string_bufp;
+                    if (copy_to_user((void*)ioctlParms.string, temp_string_bufp, ioctlParms.strLen))
+                    {
+      	                printk("__copy_to_user failed %s:%d, string : %s #%i\n", __FILE__, __LINE__,(char *)temp_string_bufp, (int) ioctlParms.strLen);
+                        ret = -EFAULT;
+                    }
+                }
                 kfree(temp_string_bufp);
+                err = compat_put_board_ioctl_parms(ioctlParms32, &ioctlParms);
             }
-            err = compat_put_board_ioctl_parms(ioctlParms32, &ioctlParms);
             return ret ? ret : err;
 #else
             return -ENOENT;

@@ -7,8 +7,7 @@
 			BP_DDR_TOTAL_SIZE_1024MB   | \
 			BP_DDR_DEVICE_WIDTH_16     | \
 			BP_DDR_TOTAL_WIDTH_16BIT   | \
-			BP_DDR_6756_DEFAULT          | \
-			BP_DDR_CONFIG_DEBUG)>;
+			BP_DDR_6756_DEFAULT)>;
 	};
 
 	buttons {
@@ -99,6 +98,8 @@
 			pinctrl-0 = <&i2s_tx_sclk_pin_11 &i2s_tx_lrck_pin_12 &i2s_tx_sdata_pin_15 &i2s_tx_mclk_pin_14 &i2s_rx_sclk_pin_22 &i2s_rx_lrck_pin_23 &i2s_rx_sdata_pin_13 &i2s_rx_mclk_pin_24>;
 			pinctrl-names = "default";
 			status = "okay";
+			clocks = <&i2stxclk>,<&osc>;
+			clock-names = "i2stxclk","i2sosc";
 			mic_sel_1-gpio = <&gpioc 9 GPIO_ACTIVE_LOW>;
 			mic_sel_2-gpio = <&gpioc 10 GPIO_ACTIVE_LOW>;
 			mic_array_sw1-gpio = <&gpioc 38 GPIO_ACTIVE_LOW>;

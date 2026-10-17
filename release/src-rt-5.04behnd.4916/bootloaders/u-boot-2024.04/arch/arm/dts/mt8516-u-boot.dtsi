@@ -1,0 +1,25 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2019 BayLibre, SAS
+ * Author: Fabien Parent <fparent@baylibre.com>
+ */
+
+&infracfg {
+	bootph-all;
+};
+
+&topckgen_ {
+	bootph-all;
+};
+
+&topckgen_cg {
+	bootph-all;
+};
+
+&apmixedsys {
+	bootph-all;
+};
+
+&uart0 {
+	bootph-all;
+};

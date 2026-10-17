@@ -1,0 +1,24 @@
+Bootcount Configuration
+This is the implementation of the feature as described in
+https://www.denx.de/wiki/DULG/UBootBootCountLimit.
+
+Required Properties:
+- compatible: must be "u-boot,bootcount-syscon".
+- syscon: reference to the syscon device used.
+- reg: contains address and size of the register and the location and size of the bootcount value.
+	   The driver supports a 4 bytes register length and 2 and 4 bytes bootcount value length.
+- reg-names: must be "syscon_reg", "offset";
+
+Example:
+	...
+	syscon0: syscon@0 {
+		compatible = "sandbox,syscon0";
+		reg = <0x10 16>;
+	};
+	...
+	bootcount@0 {
+		compatible = "u-boot,bootcount-syscon";
+		syscon = <&syscon0>;
+		reg = <0x0 0x04>, <0x0 0x04>;
+		reg-names = "syscon_reg", "offset";
+	};

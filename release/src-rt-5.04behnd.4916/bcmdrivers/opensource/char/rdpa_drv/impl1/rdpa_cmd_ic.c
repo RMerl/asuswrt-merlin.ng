@@ -186,51 +186,6 @@ static int add_ic(rdpactl_classification_rule_t *rule, bdmf_object_handle *ingre
     }
 }
 
-static void ic_vlan_action_find(rdpa_vlan_action_cfg_t *action, 
-    rdpa_traffic_dir dir, 
-    bdmf_object_handle *vlan_action_obj)
-{
-#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
-    bdmf_object_handle obj = NULL;
-    rdpa_vlan_action_cfg_t action_tmp;
-    rdpa_traffic_dir dir_tmp;
-
-    *vlan_action_obj = NULL;
-
-    while ((obj = bdmf_get_next(rdpa_vlan_action_drv(), obj, NULL)))
-    {
-        rdpa_vlan_action_dir_get(obj, &dir_tmp);
-        if (dir != dir_tmp)
-            continue;
-
-        rdpa_vlan_action_action_get(obj, &action_tmp);
-        if (!memcmp(action, &action_tmp, sizeof(action_tmp)))
-        {
-            *vlan_action_obj = obj;
-            return;
-        }
-    }
-#endif
-}
-
-
-static int ic_vlan_action_add(rdpa_vlan_action_cfg_t *action, rdpa_traffic_dir dir, bdmf_object_handle *vlan_action_obj)
-{
-    int rc = 0;
-#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
-    BDMF_MATTR_ALLOC(vlan_action_attr, rdpa_vlan_action_drv());
-
-    rc = rdpa_vlan_action_dir_set(vlan_action_attr, dir);
-    rc = rc ? : rdpa_vlan_action_action_set(vlan_action_attr, action);
-    /* index will be picked automatically by rdpa */
-    rc = rc ? : bdmf_new_and_set(rdpa_vlan_action_drv(), NULL, vlan_action_attr, vlan_action_obj);
-
-    BDMF_MATTR_FREE(vlan_action_attr);
-#endif
-    return rc; 
-}
-
-
 static int create_ic_flow_result(uint8_t action, rdpactl_classification_rule_t *rule, rdpa_ic_info_t *flow, rdpa_traffic_dir dir)
 {
     int rc = 0;
@@ -244,48 +199,12 @@ static int create_ic_flow_result(uint8_t action, rdpactl_classification_rule_t *
     flow->result.trap_reason = rdpa_cpu_rx_reason_udef_0 + rule->trap_reason;
 
     flow->result.forw_mode = rule->forw_mode;
-    flow->result.port_egress_obj = ic_get_rdpa_port(rule->egress_port_name);
+
     flow->result.queue_id = rule->queue_id & (~RDPACTL_WANFLOW_MASK); 
-
-    //vlan action parse
-    if (rule->vlan_action.cmd != RDPA_VLAN_CMD_TRANSPARENT)
-    {
-        bdmf_object_handle vlan_action_obj;
-        ic_vlan_action_find(&rule->vlan_action, dir, &vlan_action_obj);
-        if (!vlan_action_obj)//no same vlan_action existed, should create a new one.
-        {
-            if (action)
-                rc = ic_vlan_action_add(&rule->vlan_action, dir, &vlan_action_obj);
-        }
-        else
-        {
-            bdmf_number idx;
-            rdpa_vlan_action_index_get(vlan_action_obj, &idx);
-        }
-
-        if (!rc)
-            flow->result.vlan_action = vlan_action_obj;
-    }
-
-    flow->result.opbit_remark = (rule->opbit_remark != -1); 
-    flow->result.opbit_val =(rule->opbit_remark == -1) ? 0 : rule->opbit_remark; 
-
-    flow->result.ipbit_remark = (rule->ipbit_remark != -1); 
-    flow->result.ipbit_val =(rule->ipbit_remark == -1) ? 0 : rule->ipbit_remark; 
-
-    flow->result.dscp_remark = (rule->dscp_remark != -1); 
-    flow->result.dscp_val =(rule->dscp_remark == -1) ? 0 : rule->dscp_remark;
 #if defined(CONFIG_BCM_RDPA_INGRESS_QOS)
     flow->result.iq_priority = rule->iq_priority;
 #endif
-    flow->result.policer = NULL;  //Sarah: TBD
-
-    if(rule->service_queue_info & RDPACTL_SERVICEACT_Q_MASK)
-    {
-        flow->result.action_vec |= rdpa_ic_action_service_q;
-        flow->result.service_q_id = 
-            rule->service_queue_info & RDPACTL_SERVICEQUEUE_MASK;
-    }
+  
 
     return rc;
 }
@@ -352,13 +271,12 @@ static void create_ic_flow_key(rdpactl_classification_rule_t *rule, rdpa_ic_info
     if (rule->field_mask & RDPA_IC_MASK_DSCP)
         flow->key.dscp = rule->dscp;
 
-#if defined(CONFIG_BCM_XRDP)   
     if (rule->field_mask & RDPA_IC_MASK_TOS)
     {
         flow->key.tos = rule->tos;
         flow->key.tos_mask = rule->tos_mask;
     }
-#endif
+
     if (rule->field_mask & RDPA_IC_MASK_INGRESS_PORT)
         flow->key.port_ingress_obj = ic_get_rdpa_port(rule->ingress_port_name);
     
@@ -443,19 +361,8 @@ static int rdpactl_compare_ic_flows(rdpa_ic_info_t *a, rdpa_ic_info_t *b)
     COMPARE(result.qos_method);
     COMPARE(result.wan_flow);
     COMPARE(result.action);
-    COMPARE(result.policer);
     COMPARE(result.forw_mode);
-    COMPARE(result.port_egress_obj);
     COMPARE(result.queue_id);
-    COMPARE(result.vlan_action);
-    COMPARE(result.opbit_remark);
-    COMPARE(result.opbit_val);
-    COMPARE(result.ipbit_remark);
-    COMPARE(result.ipbit_val);
-    COMPARE(result.dscp_remark);
-    COMPARE(result.dscp_val);
-    COMPARE(result.ecn_val);
-    COMPARE(result.pbit_to_gem_table);
 
     return 0;
 }
@@ -471,7 +378,7 @@ static void rdpactl_match_ic_flow(bdmf_object_handle ingress_class_obj, rdpa_ic_
     while (rdpa_ingress_class_flow_get_next(ingress_class_obj, flow_idx) != BDMF_ERR_NO_MORE)
     {
         rdpa_ingress_class_flow_get(ingress_class_obj, *flow_idx, &flow_tmp);
-        flow_tmp.result.vlan_action = NULL;
+
         if (!rdpactl_compare_ic_flows(&flow_tmp, flow))
         {
             CMD_IC_LOG_DEBUG("IC flow match found idx(%d)", (int)*flow_idx);
@@ -690,10 +597,6 @@ static int rdpa_ic_del_flow(rdpactl_classification_rule_t *pRule)
         bdmf_put(ingress_class_obj);
         goto del_flow_exit;
     }
-
-    if (ic_flow.result.vlan_action) 
-        bdmf_put(ic_flow.result.vlan_action);
-
     CMD_IC_LOG_INFO("Delete flow: ic_idx %d, flow_idx %d",(int)ic_idx, (int)ic_flow_idx);          
     rc = rdpa_ingress_class_flow_delete(ingress_class_obj, ic_flow_idx);
     if (rc)
@@ -783,8 +686,6 @@ int rdpa_cmd_ic_ioctl(unsigned long arg)
     return ret;
 }
 
-/* DSL RDP platform does not rely on ingress classification for DS WAN UDP filter */
-#if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908)
 #define MAX_GEN_RULES   4
 
 bdmf_object_handle ic_objs[MAX_GEN_RULES];
@@ -1036,7 +937,6 @@ ioctl_exit:
 
     return ret;
 }
-#endif /* !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908) */
 
 #if defined(CONFIG_BCM_INGQOS) || defined(CONFIG_BCM_INGQOS_MODULE)
 static int iq_param_to_rdpactl_classification(iq_param_t *iq_param,
@@ -1185,24 +1085,13 @@ int rdpa_iq_ingress_class_add(void *iq_param)
 
     rule.type = RDPA_IC_TYPE_GENERIC_FILTER;
     rule.dir = rdpa_dir_ds; /* In FC there is 1 table for both US & DS, so US traffic will be catched as well */
-#if defined(RDP_UFC)
-    rule.generic_filter_location = RDPA_ALL_TRAFFIC;
-#else
     rule.generic_filter_location = RDPA_FLOW_MISSED_TRAFFIC;
-#endif
 
     if (action->type == IQ_ACTION_TYPE_PRIO)
     {
-#if defined(CONFIG_BCM_XRDP)
         rule.iq_priority = rdpa_iq_priority_high;
-#endif
         rule.trap_reason = RDPACTL_IC_TRAP_REASON_HIGH;
-
-#if defined(CONFIG_BCM_RDPA_INGRESS_QOS)
-        rule.action = rdpa_forward_action_none;
-#else  /* RDP/63138/148/4908, XRDP_G4/G5 */
         rule.action = rdpa_forward_action_host;
-#endif   
     }
 
 #if defined(CONFIG_BCM_RDPA_INGRESS_QOS)       
@@ -1219,12 +1108,6 @@ int rdpa_iq_ingress_class_add(void *iq_param)
     if (ret) 
         CMD_IC_LOG_ERROR("Add ingress qos rule failed");
 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
-    rule.dir = rdpa_dir_us;
-    ret = rdpa_ic_add_flow(&rule, &prty);
-    if (ret) 
-        CMD_IC_LOG_ERROR("Add ingress qos rule failed");
-#endif
     return 0;
 }
 
@@ -1248,11 +1131,10 @@ int rdpa_iq_ingress_class_rem(void *iq_param)
     rule.generic_filter_location = RDPA_FLOW_MISSED_TRAFFIC;
     if (action->type == IQ_ACTION_TYPE_PRIO)
     {
+        rule.action = rdpa_forward_action_host;
 #if defined(CONFIG_BCM_RDPA_INGRESS_QOS)
-        rule.action = rdpa_forward_action_none;
         rule.iq_priority = rdpa_iq_priority_high;
 #else
-        rule.action = rdpa_forward_action_host;
         rule.trap_reason = RDPACTL_IC_TRAP_REASON_HIGH;
 #endif
     }
@@ -1269,13 +1151,6 @@ int rdpa_iq_ingress_class_rem(void *iq_param)
     ret = rdpa_ic_del_flow(&rule);
     if (ret) 
         CMD_IC_LOG_ERROR("Delete ingress qos rule failed");
-
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
-    rule.dir = rdpa_dir_us;
-    ret = rdpa_ic_del_flow(&rule);
-    if (ret) 
-        CMD_IC_LOG_ERROR("Delete ingress qos rule failed");
-#endif
 
     return 0;
 }

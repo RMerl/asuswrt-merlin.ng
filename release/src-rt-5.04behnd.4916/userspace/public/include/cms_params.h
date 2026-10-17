@@ -198,14 +198,8 @@
 #define MAX_LAYER2_BRIDGES                16
 
 
-/* MAX_MDM_INSTANCE_DEPTH defined in os_defs.h */
+/* MAX_MDM_INSTANCE_DEPTH and MAX_MDM_PARAM_NAME_LENGTH defined in os_defs.h */
 
-
-/** Maximum length of a parameter name in the Data Model that we can support.
- *  If the data model has a greater actual param name length than what is defined here,
- *  cmsMdm_init() will fail.
- */
-#define MAX_MDM_PARAM_NAME_LENGTH   55
 
 
 /** Maximum MDM instance number.  Instance numbers are signed 32 bit integers.

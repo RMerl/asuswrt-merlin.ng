@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		u_boot: u-boot {
+		};
+
+		dtb: u-boot-dtb {
+		};
+
+		/*
+		 * Put the vblock after the dtb so that the dtb is updated
+		 * before the vblock reads its data. At present binman does not
+		 * understand dependencies between entries, but simply
+		 * iterates again when it thinks something needs to be
+		 * recalculated.
+		 */
+		vblock {
+			content = <&u_boot &dtb>;
+			keyblock = "firmware.keyblock";
+			signprivate = "firmware_data_key.vbprivk";
+			version = <1>;
+			kernelkey = "kernel_subkey.vbpubk";
+			preamble-flags = <1>;
+		};
+	};
+};

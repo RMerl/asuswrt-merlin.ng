@@ -3,6 +3,7 @@
 export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
 source $KERNEL_DIR/.config
 source $TARGETS_DIR/image_version.sh
+source $TARGETS_DIR/openwrt_bcmswversion.sh
 
 [ -f $PROFILE_DIR/$PROFILE ] && source $PROFILE_DIR/$PROFILE
 
@@ -70,55 +71,24 @@ rsync -av --exclude="/lib"  $INSTALL_DIR/* $ROOTFS
 
 # Setup lib directories
 mkdir $ROOTFS/lib
-if [ "$USER_ARCH" == "aarch64" ]; then
-	# In aarch64 build, all 64-bit libs are in /lib, but the 
-	# default search path for Dynamic Linker is /lib64
-	rsync -av --exclude="/public" --exclude="/private" --exclude="/gpl" --exclude="/arm" $INSTALL_DIR/lib/* $ROOTFS/lib64
-	cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib64
-	cp -av $INSTALL_DIR/lib/private/* $ROOTFS/lib64
-	cp -av $INSTALL_DIR/lib/gpl/* $ROOTFS/lib64
-	# If there are 32-bit libs present in 64-bit build
-	if [ -d $INSTALL_DIR/lib/arm ] ; then
-		cp -av $INSTALL_DIR/lib/arm/* $ROOTFS/lib
-	fi
-	# Move all loaders to /lib, thats where linux looks for them
-	mv $ROOTFS/lib64/ld* $ROOTFS/lib
+rsync -av --exclude="/public" --exclude="/private" --exclude="/gpl" --exclude="/aarch64" $INSTALL_DIR/lib/* $ROOTFS/lib
+cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib
+cp -av $INSTALL_DIR/lib/private/* $ROOTFS/lib
+cp -av $INSTALL_DIR/lib/gpl/* $ROOTFS/lib
+# If there are 64-bit libs present in 32-bit build
+if [ -d $INSTALL_DIR/lib/aarch64 ] ; then
+	mkdir $ROOTFS/lib64
+	cp -av $INSTALL_DIR/lib/aarch64/* $ROOTFS/lib64
 else
-	rsync -av --exclude="/public" --exclude="/private" --exclude="/gpl" --exclude="/aarch64" $INSTALL_DIR/lib/* $ROOTFS/lib
-	cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib
-	cp -av $INSTALL_DIR/lib/private/* $ROOTFS/lib
-	cp -av $INSTALL_DIR/lib/gpl/* $ROOTFS/lib
-	# If there are 64-bit libs present in 32-bit build
-	if [ -d $INSTALL_DIR/lib/aarch64 ] ; then
-		mkdir $ROOTFS/lib64
-		cp -av $INSTALL_DIR/lib/aarch64/* $ROOTFS/lib64
+	# In 64B build, the /lib64 is symbolic linked to /lib in openwrt fs.
+	if [ "$USER_ARCH" == "aarch64" ]; then
+		# Copy the lib64/x to /lib
+		if [ -d $INSTALL_DIR/lib64 ] ; then
+			mv $ROOTFS/lib64/* $ROOTFS/lib/.
+			rm -rf  $ROOTFS/lib64
+		fi
+		ln -s /lib $ROOTFS/lib64
 	fi
-fi
-
-EXECSTACK=`which execstack`
-if [ "x$EXECSTACK" == "x" ]; then 
-	EXECSTACK=$HOSTTOOLS_DIR/prelink/src/execstack
-fi
-
-if [ "$BUILD_DISABLE_EXEC_STACK" == "y" ]; then
-	#clear execute bit on binaries
-        rm .exestack_error
-        find $INSTALL_DIR -type f -perm /u=x,g=x,o=x -print |(while read filename; do\
-	IS_ELF=$(dd if=$filename count=3 skip=1  bs=1 2> /dev/null); \
-	if [ "x${IS_ELF}" == "xELF" ]; then\
-		E=$($EXECSTACK -c $filename); \
-		if [ "x$?" == "x127" ]; then \
-		    echo "Fatal error " . $E;\
-		    touch .exestack_error
-		    exit 1;\
-		fi;\
-	fi;\
-        done;\
-        )
-        if [ -f .exestack_error ]; then
-            rm .exestack_error
-            exit 1
-        fi
 fi
 
 # Conflict exists between two systems:
@@ -171,11 +141,19 @@ if [ "$BRCM_KERNEL_OPROFILE" == "y" ] ; then
 fi
 
 
-# this tells busybox to set the core rlimit to unlimited, thus allowing
-# apps to dump their core when they crash
+# This hint file (init_enable_core) tells busybox to set the core rlimit to
+# unlimited on all apps, thus allowing them to dump their core when they crash.
+# There are several config variables that controls coredumps.
+# At the top level, there is the  BDK menuconfig variable ENABLE_APP_COREDUMPS.
+# ENABLE_APP_COREDUMPS then controls the setting of the kernel config variable CONFIG_ELF_CORE
+# and the busybox config variable CONFIG_FEATURE_INIT_COREDUMPS.  Note that
+# even if CONFIG_FEATURE_INIT_COREDUMPS=y, busybox/init.c still requires this
+# hint file.  There is also additional
+# logic in etc/init.d/system-config.sh which controls coredumps.
 if [ "$CONFIG_ELF_CORE" == "y" ]; then
    touch $ROOTFS/.init_enable_core
 fi
+
 
 # copy our top level PROFILE file and image version to filesystem
 # We use some of the profile settings to configure the kernel through /proc settings
@@ -184,6 +162,7 @@ rm -f $ROOTFS/etc/$PROFILE
 cp $PROFILE_DIR/$PROFILE $ROOTFS/etc
 ln -s $PROFILE $ROOTFS/etc/build_profile
 record_image_version
+record_bcm_swversion
 cp $BUILD_DIR/patch.version $ROOTFS/etc
 
 DEFAULTCFG=`echo $BRCM_DEFAULTCFG | tr -d '"'`
@@ -192,7 +171,7 @@ if [ ! -z $DEFAULTCFG ]; then
     if [[ $DEFAULTCFG != /* ]]; then
         DEFAULTCFG=$DEFAULTCFG_DIR/$DEFAULTCFG
     fi
-   
+
    if [ -f "$DEFAULTCFG" ]; then
        echo "Using $DEFAULTCFG as default config"
        mkdir -p $ROOTFS/etc
@@ -230,6 +209,9 @@ ln -s /var/samba $ROOTFS/etc/samba
 #ln -s /var/localtime $ROOTFS/etc/localtime
 #ln -s /var/iproute2/rt_tables $ROOTFS/etc/iproute2/rt_tables
 #ln -s /data $ROOTFS/usr/local/data
+
+date > $ROOTFS/etc/build_time
+
 if [ "$BUILD_DBUS" == "y" ]; then
    ln -s /var/dbus-1/system.d $ROOTFS/share/dbus-1/system.d
 fi
@@ -238,11 +220,13 @@ if [ -x $PROFILE/special-buildFS ]; then
 fi
 
 # Copy proprietary binaries if any
-FSBIN=`ls $TARGETS_DIR/fs.bin|wc -l`
-if [ $FSBIN != 0 ]; then
-   echo "Copying proprietary binaries..."
-   cd $TARGETS_DIR
-   cp -avf fs.bin/* $ROOTFS
+if [ -d $TARGETS_DIR/fs.bin ]; then
+   FSBIN=`ls $TARGETS_DIR/fs.bin|wc -l`
+   if [ $FSBIN != 0 ]; then
+      echo "Copying proprietary binaries..."
+      cd $TARGETS_DIR
+      cp -avf fs.bin/* $ROOTFS
+   fi
 fi
 
 # Copy 3rdParty supplied .ko onto dummy .ko
@@ -252,11 +236,18 @@ if [ "$BRCM_DRIVER_ISDN" == "m" ] ; then
 fi
 
 
-   if [ -d $ROOTFS/opt/modules ]; then
-     pushd $ROOTFS/opt/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
-     popd
-   fi
+cd $TARGETS_DIR
+if [ -d $ROOTFS/opt/modules ]; then
+  pushd $ROOTFS/opt/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
+  popd
+fi
+
 cd $MOD_DIR
+for link_file in `find lib/modules/${LINUX_VER_STR} -type l ` 
+do
+echo removing link ${link_file} 
+rm ${link_file} 
+done
 kd=${LINUX_VER_STR}
 mkdir -p lib/modules/${kd}/extra
 #go through every directory other than the lib/modules/${LINUX_VER_STR}
@@ -268,12 +259,12 @@ do
    done
    rm -rf lib/modules/$dir
 done
-#some modules are built with full build path (e.g. adsl, wl), treat them diferently   
+#some modules are built with full build path (e.g. adsl, wl), treat them diferently
 bd=$(realpath ${BUILD_DIR})
-for file in `find lib/modules/${kd}/kernel/${bd}/ -type f -name \*.ko`
+for file in `find lib/modules/${kd}*/kernel/${bd}/ -type f -name \*.ko`
 do
    mv $file lib/modules/${kd}/extra/
-done 
+done
 if [ ! "x${bd}" == "x" ]; then
    rm -rf lib/modules/${kd}/kernel/${bd}/
 fi
@@ -281,10 +272,18 @@ fi
 
 cp -a lib $TARGETS_DIR/$ROOTFS/.
 
-if [ "$CONFIG_BCM_UBUSCAP" == "y" ]; then
+if [ "$CONFIG_BCM_UBUSCAP" == "y" -o "$CONFIG_BCM_UBUSCAP" == "m" ]; then
     # copy UBUSCAP control script
     cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.sh  $TARGETS_DIR/$ROOTFS/opt/scripts/ubcap
-fi    
+    if [ -f $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.inc ]
+    then
+    	cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.inc  $TARGETS_DIR/$ROOTFS/opt/scripts/ubcap_$BRCM_CHIP.inc
+    fi
+fi
+
+if [ "$CONFIG_GCOV_KERNEL" == "y" ]; then
+    cp -avf $BUILD_DIR/userspace/private/apps/scripts/debug/gcov_gather.sh  $TARGETS_DIR/$ROOTFS/bin/
+fi
 
 if [ "$KSTRIP" != "/bin/touch" ]; then
 # Stripping unneeded module symbols only when strip is "enabled"
@@ -292,7 +291,7 @@ echo "Stripping kernel modules..."
 find $TARGETS_DIR/$ROOTFS/lib/modules -name "*.ko"
    if [ "$CONFIG_KALLSYMS" == "y" ]; then
       #if KALLSYMS is enabled only strip debug symbols from all modules, this helps
-      #to retain symbols of static functions 
+      #to retain symbols of static functions
       eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name '*.ko' |xargs $KSTRIP --strip-debug"
    else
       #Modules that need parameters cannot be stripped
@@ -302,29 +301,65 @@ find $TARGETS_DIR/$ROOTFS/lib/modules -name "*.ko"
    fi
 fi
 
-# /etc/modules.d/bcm-ipt-ext
 echo "prepare kmodloader autoload ko and file ..."
-if [ -f "$TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter/xt_SKIPLOG.ko" ]; then
-   cp -f $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter/xt_SKIPLOG.ko $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/
-   cp -f $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter/xt_blog.ko $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/
-   echo -e "xt_SKIPLOG\nxt_blog" > $TARGETS_DIR/$ROOTFS/etc/modules.d/bcm-ipt-ext
-fi
 
-if [ -f $TARGETS_DIR/$PROFILE/filesystem.tgz ]
-then
-  echo "consumer build -- not dynamically generating bcm-base-drivers.sh"
+# /lib/modules/$LINUX_VER_STR/xxx.ko are from openwrt's kmod_nf_yyy/kmod_nft_yyy/kmod_ipt_yyy
+# They are duplicated libaries as we are using external kernel build.
+# Here just create the symbolic link to the real xxx.ko file instead of hard copy.
+cd $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR
+owrt_ko_files=`ls *.ko`
+for k in $owrt_ko_files
+do
+   # Assuming we only find one ko file.
+   real_ko=`find ./kernel -name $k`
+   if [ "$real_ko" != "" ]; then
+      rm -f $k
+      ln -s $real_ko $k
+   fi
+done
+
+if [ "$BUILD_NF_TABLES" == "y" ]; then
+   # bcm nft extension: use symoblic link to avoid duplicated .ko files
+   cd $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter
+   bcm_nft_kfiles=`ls nft_*.ko`
+   cd $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR
+   for k in $bcm_nft_kfiles
+   do
+      ln -s ./bcmkernel/net/netfilter/$k $k
+      k_woko=`echo $k | cut -d"." -f1`
+      echo -e "$k_woko" >> $TARGETS_DIR/$ROOTFS/etc/modules.d/bcm-nft-ext
+   done
+   if [[ -f $TARGETS_DIR/$ROOTFS/usr/sbin/nft &&  ! -f $TARGETS_DIR/$ROOTFS/bin/nft ]]; then
+      ln -s /usr/sbin/nft $TARGETS_DIR/$ROOTFS/bin/nft
+   fi
 else
-  cat $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.head > $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-  cat $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.list | ( while IFS= read -r driver_line 
+   # bcm ipt extension: use symoblic link to avoid duplicated .ko files
+   cd $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter
+   bcm_ipt_kfiles=`ls xt_*.ko`
+   cd $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR
+   for k in $bcm_ipt_kfiles
+   do
+      ln -s ./bcmkernel/net/netfilter/$k $k
+      k_woko=`echo $k | cut -d"." -f1`
+      echo -e "$k_woko" >> $TARGETS_DIR/$ROOTFS/etc/modules.d/bcm-ipt-ext
+   done
+fi
+cd $TARGETS_DIR/$MOD_DIR
+
+function generate_drivers_list()
+{
+  BCM_DRIVERS_SCRIPT=$1
+  cat $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.head > $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+  cat $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.list | ( while IFS= read -r driver_line
   do
      read a b c <<< $driver_line
      if echo $a | egrep -q '^\s*(#.*)?$'
      then
       if echo $a | egrep -q '^\s*(#KP:.*)?$'
       then
-         echo "${driver_line:4}" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         echo "${driver_line:4}" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
       else
-         echo "$a $b" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         echo "$a $b" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
       fi
      else
        if echo $a | egrep -q '^-!'
@@ -359,60 +394,68 @@ else
        then
          if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa.ko || test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
          then
-           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa.ko $b $c\n    echo 'FC operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "  else" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko $b $c\n    echo 'Provision operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "  fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa.ko $b $c\n    echo 'FC operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "  else" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko $b $c\n    echo 'Provision operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "  fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
          fi
        elif echo $a | egrep -q 'extra/pktflow.ko'
        then
          if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
          then
-           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
          else
-           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
          fi
        elif echo $a | egrep -q 'extra/pktrunner.ko'
        then
          if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
          then
-           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
          else
-           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
          fi
        elif echo $a | egrep -q 'extra/bcm_spdsvc.ko|extra/bcm_tcpspdtest.ko'
        then
          if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/$a
          then
-           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\n then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "    insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "  fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\n then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "    insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "  fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
          fi
        else
          if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/$a
          then
-           echo "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
          fi
        fi
      fi
   done
   )
-  cat $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.tail >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-  chmod +x $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
-  rm  -f $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.tail  
-  rm -f $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.head  
-  rm -f $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.list
+  cat $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.tail >> $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+  chmod +x $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.sh
+  rm  -f $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.tail
+  rm -f $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.head
+  rm -f $TARGETS_DIR/$ROOTFS/etc/init.d/${BCM_DRIVERS_SCRIPT}.list
+}
+
+if [ -f $TARGETS_DIR/$PROFILE/filesystem.tgz ]
+then
+  echo "consumer build -- not dynamically generating bcm-base-drivers.sh and bcm-late-drivers.sh"
+else
+  generate_drivers_list bcm-base-drivers
+  generate_drivers_list bcm-late-drivers
 fi
 
 #delete unwanted module
@@ -437,31 +480,14 @@ eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name wlobj-*.ko | xargs rm -f"
 # strip userspace binaries is sstrip is "enabled"
 # sstrip is set to /bin/touch if BUILD_GDBSERVER=y
 if [ "$SSTRIP" != "/bin/touch" ]; then
-    # Even though libcreduction did some stripping, we can make the
-    # libraries even smaller by doing sstrip here.  Also libcreduction
-    # does not process all libs, e.g. libmdm.so
     echo "Stripping userspace binaries..."
-    if [ "$BUILD_DISABLE_EXEC_STACK" == "y" ]; then
-        rm .exestack_error
-        #clear execute bit on binaries
-        find $TARGETS_DIR/$ROOTFS -type f -perm /u=x,g=x,o=x -print |(while read filename; \
-        do \
-	IS_ELF=$(dd if=$filename count=3 skip=1  bs=1 2> /dev/null); \
-	if [ "x${IS_ELF}" == "xELF" ]; then\
-		E=$($EXECSTACK -c $filename 2>&1); \
-		if [ "x$?" == "x127" ]; then \
-		    echo "Fatal error " . $E;\
-		    touch .exestack_error
-		    exit 1;\
-		fi;\
-        fi;\
-        done;)
-        if [ -f .exestack_error ]; then
-            rm .exestack_error
-            exit 1;
-        fi
+    $SSTRIP $TARGETS_DIR/$ROOTFS/bin/* $TARGETS_DIR/$ROOTFS/sbin/* $TARGETS_DIR/$ROOTFS/usr/bin/* $TARGETS_DIR/$ROOTFS/usr/sbin/* $TARGETS_DIR/$ROOTFS/lib/*.so* $TARGETS_DIR/$ROOTFS/libexec/*/* $TARGETS_DIR/$ROOTFS/lib/*/*.so* $TARGETS_DIR/$ROOTFS/usr/lib/*.so*
+    # Need to use the aarch64 tc's strip to strip those 64B libs.
+    # Luckly the $KSTRIP is what we needed.
+    if [ "$KSTRIP" != "/bin/touch" ]; then
+       $KSTRIP $TARGETS_DIR/$ROOTFS/lib64/*.so*
+       $KSTRIP $TARGETS_DIR/$ROOTFS/lib/ld-linux-aarch64.so*
     fi
-    $SSTRIP $TARGETS_DIR/$ROOTFS/bin/* $TARGETS_DIR/$ROOTFS/sbin/* $TARGETS_DIR/$ROOTFS/usr/bin/* $TARGETS_DIR/$ROOTFS/usr/sbin/* $TARGETS_DIR/$ROOTFS/lib/*.so* $TARGETS_DIR/$ROOTFS/lib/*/*.so*
 fi
 
 # Generate vmlinux_rd_boot
@@ -527,7 +553,7 @@ fi
         echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
         echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
-        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
         echo -e " $" >> $PROFILE_DIR/image_ident
 
@@ -535,7 +561,7 @@ fi
         echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
         echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
-        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
         echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
         echo -e " $" >> $PROFILE_DIR/image_ident
 
@@ -544,4 +570,3 @@ fi
 # If a consumer release has created a filesystem tarball, fill in
 # any missing proprietary binaries using that tarball
 ( cd $TARGETS_DIR/$ROOTFS ; tar xzkf ../filesystem.tgz 2>/dev/null ; true )
-

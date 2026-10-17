@@ -108,7 +108,7 @@ static inline int rdpa_xtmchannel_egress_tm_get(bdmf_object_handle mo_, bdmf_obj
     bdmf_number _nn_;
     int _rc_;
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_xtmchannel_attr_egress_tm, &_nn_);
-    *egress_tm_ = (bdmf_object_handle)(long)_nn_;
+    *egress_tm_ = (bdmf_object_handle)(bdmf_long_t)_nn_;
     return _rc_;
 }
 
@@ -123,7 +123,7 @@ static inline int rdpa_xtmchannel_egress_tm_get(bdmf_object_handle mo_, bdmf_obj
  */
 static inline int rdpa_xtmchannel_egress_tm_set(bdmf_object_handle mo_, bdmf_object_handle egress_tm_)
 {
-    return bdmf_attr_set_as_num(mo_, rdpa_xtmchannel_attr_egress_tm, (long)egress_tm_);
+    return bdmf_attr_set_as_num(mo_, rdpa_xtmchannel_attr_egress_tm, (bdmf_long_t)egress_tm_);
 }
 
 

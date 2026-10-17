@@ -1,0 +1,15 @@
+# RDPA
+drivers/rdpa/rdpa_score.c
+drivers/rdpa_gpl/include/rdpa_score.h
+drivers/rdpa_gpl/include/autogen/rdpa_ag_score.h
+drivers/rdpa_gpl/rdpa_gpl_score.c
+
+# RDP_DRV
+drivers/rdp_drv/rdp_drv_score.c
+drivers/rdp_drv/rdp_drv_score.h
+
+# RDPA USER
+drivers/rdpa_user/autogen/rdpa_score_user_ioctl_ag.h
+drivers/rdpa_user/include/autogen/rdpa_score_user_ag.h
+drivers/rdpa_user/rdpa_score_ioctl_ag.c
+

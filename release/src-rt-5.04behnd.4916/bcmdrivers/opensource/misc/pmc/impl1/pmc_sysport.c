@@ -31,7 +31,7 @@ written consent.
 #include "pmc_drv.h"
 #include "pmc_sysport.h"
 #include "BPCM.h"
-
+#include "bcm_ubus4.h"
 
 int pmc_sysport_power_up(void)
 {
@@ -41,6 +41,13 @@ int pmc_sysport_power_up(void)
     pmc_sysport_reset_system_port(0);
 #if defined(_BCM947622_) || defined(CONFIG_BCM947622)
     pmc_sysport_reset_system_port(1);
+#endif
+
+#if defined(CONFIG_BCM_UBUS4_DCM)
+    ubus_cong_threshold_wr(UBUS_PORT_ID_SYSPORT, 0);
+#if defined(_BCM947622_) || defined(CONFIG_BCM947622)
+    ubus_cong_threshold_wr(UBUS_PORT_ID_SYSPORT1, 0);
+#endif
 #endif
 
     return 0;

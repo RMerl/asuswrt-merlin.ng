@@ -1,6 +1,0 @@
-MX23EVK BOARD
-M:	Otavio Salvador <otavio@ossystems.com.br>
-S:	Maintained
-F:	board/freescale/mx23evk/
-F:	include/configs/mx23evk.h
-F:	configs/mx23evk_defconfig

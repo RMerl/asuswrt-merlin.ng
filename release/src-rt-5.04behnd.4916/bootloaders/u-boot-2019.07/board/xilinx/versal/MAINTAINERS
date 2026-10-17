@@ -1,7 +1,0 @@
-XILINX_VERSAL BOARDS
-M:	Michal Simek <michal.simek@xilinx.com>
-S:	Maintained
-F:	arch/arm/dts/versal*
-F:	board/xilinx/versal/
-F:	include/configs/xilinx_versal*
-F:	configs/xilinx_versal*

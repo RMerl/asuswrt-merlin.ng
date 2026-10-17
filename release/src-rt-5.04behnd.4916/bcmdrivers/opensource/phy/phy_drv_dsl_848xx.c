@@ -45,10 +45,34 @@
 typedef struct phy_cl45_s {
     phy_dsl_priv_m;
     void *descriptor;
-    int forced_100m_fd;
-    int (*read_status)(phy_dev_t *phy_dev);
+    int forced_100m_10m_fd;
+    phy_drv_t *public_drv;
     int support_speed_caps; /* The hardware does not tell us correct thing, so need to guess and save here */
+    int full_support_speed_caps; /* Including half duplex that MAC does not support */
 } phy_cl45_t;
+
+static void phy_drv_hd_workaround(phy_dev_t *phy_dev, uint32_t *adv_phy_caps) /* Half Duplex workaround */
+{
+    uint32_t phy_supported_caps;
+
+    phy_dev_caps_get(phy_dev, CAPS_TYPE_FULL_SUPPORTED, &phy_supported_caps);
+    /* Work around for our Half Duplex link partner */
+    if (*adv_phy_caps & PHY_CAP_AUTONEG)
+    {
+        if ((*adv_phy_caps & PHY_CAP_100_FULL) && (phy_supported_caps & PHY_CAP_100_HALF))
+            *adv_phy_caps |= PHY_CAP_100_HALF;
+        if ((*adv_phy_caps & PHY_CAP_10_FULL) && (phy_supported_caps & PHY_CAP_10_HALF))
+            *adv_phy_caps |= PHY_CAP_10_HALF;
+    }
+}
+
+static int phy_drv_can_hd_workaround(phy_dev_t *phy_dev, phy_speed_t speed)
+{
+    uint32_t speed_caps, speed_caps2;
+    speed_caps = speed_caps2 = phy_speed_to_cap(speed, PHY_DUPLEX_FULL);
+    phy_drv_hd_workaround(phy_dev, &speed_caps);
+    return speed_caps != speed_caps2;
+}
 
 #define PHY_SPEED_HIGHEST_SUPPORT PHY_SPEED_10000
 #define SET_1GFD(p, v) do { \
@@ -62,7 +86,14 @@ typedef struct phy_cl45_s {
     uint16 v16; \
     phy_bus_c45_read32(p, CL45_REG_COP_AN, &v16); \
     v16 &= ~CL45_REG_COP_AN_100M_ADV_MASK; \
-    if (v>0) v16 |= CL45_REG_COP_AN_100M_FHD_ADV; /* Added 100MHD to detect forced 100M link partner */ \
+    if (v>0) v16 |= phy_drv_can_hd_workaround(p,PHY_SPEED_100)? CL45_REG_COP_AN_100M_FHD_ADV: CL45_REG_COP_AN_100M_FD_ADV; \
+    phy_bus_c45_write32(p, CL45_REG_COP_AN, v16);} while(0)
+
+#define SET_10MFD(p, v) do { \
+    uint16 v16; \
+    phy_bus_c45_read32(p, CL45_REG_COP_AN, &v16); \
+    v16 &= ~CL45_REG_COP_AN_10M_ADV_MASK; \
+    if (v>0) v16 |= phy_drv_can_hd_workaround(p,PHY_SPEED_10)? CL45_REG_COP_AN_10M_FHD_ADV: CL45_REG_COP_AN_10M_FD_ADV; \
     phy_bus_c45_write32(p, CL45_REG_COP_AN, v16);} while(0)
 
 #define SET_2P5G(p, v) do { \
@@ -76,23 +107,23 @@ typedef struct phy_cl45_s {
     } \
     else \
     { \
-        phy_bus_c45_read32(p, CL45REG_10GBASET_AN_DEF_CTL, &v16); \
+        phy_bus_c45_read32(p, CL45_REG_10GBASET_AN_DEF_CTL, &v16); \
         v16 = v>0? v16|CL45_10GAN_2P5G_ABL: v16&~CL45_10GAN_2P5G_ABL; \
-        phy_bus_c45_write32(p, CL45REG_10GBASET_AN_DEF_CTL, v16); \
+        phy_bus_c45_write32(p, CL45_REG_10GBASET_AN_DEF_CTL, v16); \
     } } while(0)
 
 #define SET_5G(p, v) do { \
     uint16 v16; \
-    phy_bus_c45_read32(p, CL45REG_10GBASET_AN_DEF_CTL, &v16); \
+    phy_bus_c45_read32(p, CL45_REG_10GBASET_AN_DEF_CTL, &v16); \
     v16 = v>0? v16|CL45_10GAN_5G_ABL : v16&~CL45_10GAN_5G_ABL; \
-    phy_bus_c45_write32(p, CL45REG_10GBASET_AN_DEF_CTL, v16); \
+    phy_bus_c45_write32(p, CL45_REG_10GBASET_AN_DEF_CTL, v16); \
     } while(0)
 
 #define SET_10G(p, v) do { \
     uint16 v16; \
-    phy_bus_c45_read32(p, CL45REG_10GBASET_AN_DEF_CTL, &v16); \
+    phy_bus_c45_read32(p, CL45_REG_10GBASET_AN_DEF_CTL, &v16); \
     v16 = v>0? v16|CL45_10GAN_10G_ABL : v16&~CL45_10GAN_10G_ABL; \
-    phy_bus_c45_write32(p, CL45REG_10GBASET_AN_DEF_CTL, v16); \
+    phy_bus_c45_write32(p, CL45_REG_10GBASET_AN_DEF_CTL, v16); \
     } while(0)
 
 typedef struct phyDesc {
@@ -150,6 +181,24 @@ static int dsl_cl45phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *cap
 static int dsl_cl45phy_loopback_set(phy_dev_t *phy_dev, int enable, phy_speed_t speed);
 static int dsl_cl45phy_loopback_get(phy_dev_t *phy_dev, int *enable, phy_speed_t *speed);
 static int dsl_cl45phy_wol_enable(phy_dev_t *phy_dev, wol_params_t *wol_params);
+
+static int dsl_cl45phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
+{
+    phy_cl45_t *phy_cl45 = phy_dev->priv;
+    uint32_t supported_caps;
+
+    phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps);
+    if (caps & (~supported_caps))
+        return -1;
+
+    phy_drv_hd_workaround(phy_dev, &caps);
+
+    if (!phy_dev->phy_drv->caps_set)
+        return 0;
+
+    return phy_cl45->public_drv->caps_set(phy_dev, caps);
+}
+
 #define MAX_CL45_PHYS 8
 int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
 {
@@ -189,7 +238,7 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
         _phy_drv.initialized = phy_drv->initialized;
         _phy_drv.speed_set = dsl_cl45phy_set_speed;
         _phy_drv.caps_get = dsl_cl45phy_caps_get;
-        _phy_drv.caps_set = phy_drv->caps_set;
+        _phy_drv.caps_set = dsl_cl45phy_caps_set;
         _phy_drv.config_speed_get = dsl_cl45phy_get_config_speed;
         _phy_drv.phyid_get = phy_drv->phyid_get;
         _phy_drv.init = dsl_runner_ext3_phy_init;
@@ -223,13 +272,18 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
         _phy_drv.xfi_rx_polarity_inverse_set = phy_drv->xfi_rx_polarity_inverse_set;
         _phy_drv.wirespeed_get = phy_drv->wirespeed_get;
         _phy_drv.wirespeed_set = phy_drv->wirespeed_set;
+        _phy_drv.mdix_mode_set = phy_drv->mdix_mode_set;
+        _phy_drv.mdix_mode_get = phy_drv->mdix_mode_get;
+        _phy_drv.mdix_status_get = phy_drv->mdix_status_get,
         _phy_drv.leds_init = dsl_phy_leds_init;
         _phy_drv.drv_init = phy_drv->drv_init;
+        _phy_drv.tx_pwr_get = phy_drv->tx_pwr_get;
+        _phy_drv.tx_pwr_set = phy_drv->tx_pwr_set;
     }
 
     phy_cl45 = phy_dev->priv = &phys_cl45[init++];
     phy_cl45->config_speed = -1;
-    phy_cl45->read_status = phy_drv->read_status;
+    phy_cl45->public_drv = phy_drv;
     phy_dev->phy_drv = &_phy_drv;
 
     for (i=0; i<ARRAY_SIZE(phyDesc); i++)
@@ -303,50 +357,47 @@ static int dsl_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_dupl
 {
     u16 v16;
     phy_cl45_t *phy_cl45 = phy_dev->priv;
-    u32 caps;
+    u32 supported_caps;
+    uint32_t speed_cap = phy_speed_to_cap(speed, duplex);
+
 
     if (speed == phy_cl45->config_speed) return 0;
 
-    cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &caps);
+    cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &supported_caps);
+    if ((supported_caps & speed_cap) == 0)
+        goto not_supported;
 
     switch(speed)
     {
         case  PHY_SPEED_AUTO:
-            SET_10G(phy_dev, ((caps & PHY_CAP_10000)>0));
-            SET_5G(phy_dev, ((caps & PHY_CAP_5000)>0));
-            SET_2P5G(phy_dev, ((caps & PHY_CAP_2500)>0));
-            SET_1GFD(phy_dev, 1);
-            SET_100MFD(phy_dev, 1);
+            phy_dev_caps_set(phy_dev, supported_caps);
             break;
 
         case PHY_SPEED_10000:
-            if (!(caps & PHY_CAP_10000))
-                goto not_supported;
             SET_10G(phy_dev, 1);
             SET_5G(phy_dev, 0);
             SET_2P5G(phy_dev, 0);
             SET_1GFD(phy_dev, 0);
             SET_100MFD(phy_dev, 0);
+            SET_10MFD(phy_dev, 0);
             break;
 
         case PHY_SPEED_5000:
-            if (!(caps & PHY_CAP_5000))
-                goto not_supported;
             SET_10G(phy_dev, 0);
             SET_5G(phy_dev, 1);
             SET_2P5G(phy_dev, 0);
             SET_1GFD(phy_dev, 0);
             SET_100MFD(phy_dev, 0);
+            SET_10MFD(phy_dev, 0);
             break;
 
         case PHY_SPEED_2500:
-            if (!(caps & PHY_CAP_2500))
-                goto not_supported;
             SET_10G(phy_dev, 0);
             SET_5G(phy_dev, 0);
             SET_2P5G(phy_dev, 1);
             SET_1GFD(phy_dev, 0);
             SET_100MFD(phy_dev, 0);
+            SET_10MFD(phy_dev, 0);
             break;
 
         case PHY_SPEED_1000:
@@ -355,6 +406,7 @@ static int dsl_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_dupl
             SET_2P5G(phy_dev, 0);
             SET_1GFD(phy_dev, 1);
             SET_100MFD(phy_dev, 0);
+            SET_10MFD(phy_dev, 0);
             break;
 
         case PHY_SPEED_100:
@@ -363,7 +415,18 @@ static int dsl_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_dupl
             SET_2P5G(phy_dev, 0);
             SET_1GFD(phy_dev, 0);
             SET_100MFD(phy_dev, 1);
+            SET_10MFD(phy_dev, 0);
             break;
+
+        case PHY_SPEED_10:
+            SET_10G(phy_dev, 0);
+            SET_5G(phy_dev, 0);
+            SET_2P5G(phy_dev, 0);
+            SET_1GFD(phy_dev, 0);
+            SET_100MFD(phy_dev, 0);
+            SET_10MFD(phy_dev, 1);
+            break;
+
         default:
             goto not_supported;
     }
@@ -371,23 +434,14 @@ static int dsl_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_dupl
     phy_dev->an_enabled = 1;
 
     /* Restart 10G level AN for IEEE2.5G */
-    phy_bus_c45_read32(phy_dev, CL45REG_10GBASET_AN_CTL, &v16);
+    phy_bus_c45_read32(phy_dev, CL45_REG_10GBASET_AN_CTL, &v16);
     v16 |= CL45_REG_10G_AN_ENABLE | CL45_REG_10G_AN_RESTART;
-    phy_bus_c45_write32(phy_dev, CL45REG_10GBASET_AN_CTL, v16);
+    phy_bus_c45_write32(phy_dev, CL45_REG_10GBASET_AN_CTL, v16);
 
     /* Restart Auto Negotiation */
     phy_bus_c45_read32(phy_dev, CL45_REG_1G100M_CTL, &v16);
     v16 |= CL45_REG_1G100M_AN_ENABLED | CL45_REG_1G100M_AN_RESTART;
     phy_bus_c45_write32(phy_dev, CL45_REG_1G100M_CTL, v16);
-
-    /* Restart XIFI Auto Negotiation */
-    /* Below not correct, need to add TBD */
-    #if 0
-    phy_bus_c45_read32(phy_dev, 0, &v16);
-    v16 |= CL45_REG_1G100M_AN_ENABLED | CL45_REG_1G100M_AN_RESTART;
-    phy_bus_c45_read32(phy_dev, 0x10000, &v16);
-    phy_bus_c45_write32(phy_dev, 0, v16);
-    #endif
 
     phy_cl45->config_speed = speed;
 
@@ -406,21 +460,21 @@ static int dsl_cl45phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *cap
     phy_cl45_t *phy_cl45 = phy_dev->priv;
 
     *caps = 0;
-    if (caps_type == CAPS_TYPE_SUPPORTED)
+    if (caps_type == CAPS_TYPE_SUPPORTED || caps_type == CAPS_TYPE_FULL_SUPPORTED)
     {
         if (phy_cl45->support_speed_caps)
         {
-            *caps = phy_cl45->support_speed_caps;
+            *caps = caps_type == CAPS_TYPE_SUPPORTED? phy_cl45->support_speed_caps: phy_cl45->full_support_speed_caps;
             return 0;
         }
 
         /* Use hardware power on advertisement caps as its support caps, since hw caps is not always correct in every chips */
         dsl_cl45phy_caps_get(phy_dev, CAPS_TYPE_ADVERTISE, caps);
-
-        *caps = phy_xfi_speed_cap_adjust(phy_dev, *caps);
         *caps |= PHY_CAP_PAUSE | PHY_CAP_PAUSE_ASYM | PHY_CAP_REPEATER;
+        *caps = phy_xfi_speed_cap_adjust(phy_dev, *caps);
 
-        phy_cl45->support_speed_caps = *caps;
+        phy_cl45->full_support_speed_caps = *caps;
+        phy_cl45->support_speed_caps = *caps & ~PHY_CAP_HALF_DUPLEX;
         return 0;
     }
     else if (caps_type == CAPS_TYPE_ADVERTISE)
@@ -452,11 +506,37 @@ static int dsl_cl45phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *cap
         }
         else
         {
-            phy_bus_c45_read32(phy_dev, CL45REG_10GBASET_AN_DEF_CTL, &v16);
-            if (v16 & CL45_10GAN_2P5G_ABL)     *caps |= PHY_CAP_2500;
-            if (v16 & CL45_10GAN_5G_ABL)       *caps |= PHY_CAP_5000;
+            phy_bus_c45_read32(phy_dev, CL45_REG_10GBASET_AN_DEF_CTL, &v16);
             if (v16 & CL45_10GAN_10G_ABL)      *caps |= PHY_CAP_10000;
+            if (v16 & CL45_10GAN_5G_ABL)       *caps |= PHY_CAP_5000;
+            if (v16 & CL45_10GAN_2P5G_ABL)     *caps |= PHY_CAP_2500;
         }
+
+        if (phy_cl45->support_speed_caps)
+            *caps &= ~PHY_CAP_HALF_DUPLEX;
+    }
+    else if (caps_type == CAPS_TYPE_LP_ADVERTISED)
+    {
+        phy_bus_c45_read32(phy_dev, CL45_REG_AN_STATUS, &v16);
+        if (!(v16 & CL45_REG_AN_COMPLETE) || !(v16 & CL45_REG_LP_AN_ABLTY))
+            return 0;
+
+        *caps |= PHY_CAP_AUTONEG;
+
+        phy_bus_c45_read32(phy_dev, CL45_REG_LP_AN_STATUS, &v16);
+        if (v16 & CL45_REG_LP_10GBASE_T)  *caps |= PHY_CAP_10000;
+        if (v16 & CL45_REG_LP_5GBASE_T)  *caps |= PHY_CAP_5000;
+        if (v16 & CL45_REG_LP_2P5GBASE_T)  *caps |= PHY_CAP_2500;
+
+        phy_bus_c45_read32(phy_dev, CL45_REG_LP_ABLTY, &v16);
+        if (v16 & CL45_REG_LP_ASYM_PAUSE)  *caps |= PHY_CAP_PAUSE_ASYM;
+        if (v16 & CL45_REG_LP_PAUSE) *caps |= PHY_CAP_PAUSE;
+        if (v16 & CL45_REG_LP_100BASE_T_FULL)  *caps |= PHY_CAP_100_FULL;
+        if (v16 & CL45_REG_LP_100BASE_T_HALF)  *caps |= PHY_CAP_100_HALF;
+
+        phy_bus_c45_read32(phy_dev, CL45_REG_1000BASE_T_STATUS, &v16);
+        if (v16 & CL45_REG_LP_1GBASE_T_FULL) *caps |= PHY_CAP_1000_FULL;
+        if (v16 & CL45_REG_LP_1GBASE_T_HALF) *caps |= PHY_CAP_1000_HALF;
     }
 
     return 0;
@@ -578,11 +658,12 @@ static int phy_bus_c45_xfi_read32(phy_dev_t *phy_dev, int reg, uint16_t *v16)
 
     return 0;
 }
+
 static int dsl_cl45phy_read_status(phy_dev_t *phy_dev)
 {
     u16 v16;
     phy_cl45_t *phy_cl45 = phy_dev->priv;
-    phy_speed_t org_speed = phy_dev->speed;
+    phy_speed_t org_speed = phy_dev->speed, new_speed;
     int org_link = phy_dev->link;
     int i = 0;
 
@@ -592,7 +673,7 @@ static int dsl_cl45phy_read_status(phy_dev_t *phy_dev)
         goto ret;
     }
 
-    phy_cl45->read_status(phy_dev);
+    phy_cl45->public_drv->read_status(phy_dev);
 
     phy_bus_c45_read32(phy_dev, CL45_REG_UDEF_STATUS, &v16);
     phy_dev->mac_link = ((v16 & CL45_UDEF_STATUS_MAC_LINK)> 0) | PHY_MAC_LINK_VALID;
@@ -600,43 +681,45 @@ static int dsl_cl45phy_read_status(phy_dev_t *phy_dev)
     if (org_link && phy_dev->link && org_speed != phy_dev->speed)
         phy_dev->link = 0;
 
-    /* Check 100M speed specially */
-    if (phy_dev->link && phy_dev->speed == PHY_SPEED_100 &&
-        phy_dev->duplex == PHY_DUPLEX_HALF)
+    if (!phy_dev->link)
+        goto ret;
+
+    /* Check Half Duplex or AN off link partner speed specially */
+    if (phy_dev->speed <= PHY_SPEED_100 && phy_dev->duplex == PHY_DUPLEX_HALF)
     {
-        phy_bus_c45_read32(phy_dev, CL45_REG_1G_CTL, &v16);
-        if ((v16 & CL45_AN_LP_AN_CAP))  /* We don't support HD, suppress link up */
-            phy_dev->link = 0;
-        else    /* It is 100M Non AN LP, set to forced 100M FD to link with it */
+        new_speed = phy_dev->speed;
+        /* Set wrong speed to force current link down for XFI */
+        phy_bus_c45_xfi_read32(phy_dev, 0x10000, &v16);
+        if (v16)
         {
-            /* Set wrong speed to force current link down for XFI */
-            phy_bus_c45_xfi_read32(phy_dev, 0x10000, &v16);
-            if (v16)
-            {
-                phy_bus_c45_write32(phy_dev, CL45_REG_1G100M_CTL, CL45_REG_1000M_SPEED);
-                for (i=0; i<30 && phy_dev->link; i++, msleep(100))
-                    phy_cl45->read_status(phy_dev);
-            }
-            phy_bus_c45_write32(phy_dev, CL45_REG_1G100M_CTL, FORCED_100MFD_CTRL);
-            msleep(1000);   /* This delay is important, or link will keep flipping */
-            for (i=0; i<60 && (!phy_dev->link || phy_dev->duplex == PHY_DUPLEX_HALF); i++, msleep(100))
-                phy_cl45->read_status(phy_dev);
-            phy_cl45->forced_100m_fd = 1;
+            phy_bus_c45_write32(phy_dev, CL45_REG_1G100M_CTL, CL45_REG_1000M_SPEED);
+            for (i=0; i<30 && phy_dev->link; i++, msleep(100))
+                phy_cl45->public_drv->read_status(phy_dev);
         }
+
+        /* Our MAC does not support half duplex, so set to AN off Full duplex no matter Link Partner is AN On or Off */
+        if (new_speed == PHY_SPEED_100)
+            phy_bus_c45_write32(phy_dev, CL45_REG_1G100M_CTL, CL45_REG_FORCED_100MFD_CTRL);
+        else
+            phy_bus_c45_write32(phy_dev, CL45_REG_1G100M_CTL, CL45_REG_FORCED_10MFD_CTRL);
+        msleep(1000);
+        for (i=0; i<60 && (!phy_dev->link || phy_dev->duplex == PHY_DUPLEX_HALF); i++, msleep(100))
+            phy_cl45->public_drv->read_status(phy_dev);
+        phy_cl45->forced_100m_10m_fd = 1;
     }
 
 ret:
     if (phy_dev->link == 0)
     {
-        if (phy_cl45->forced_100m_fd)
+        if (phy_cl45->forced_100m_10m_fd)
         {
             phy_bus_c45_write32(phy_dev, CL45_REG_1G100M_CTL, REGULAR_CTRL_REG0_VAL);
-            phy_cl45->forced_100m_fd = 0;
+            phy_cl45->forced_100m_10m_fd = 0;
         }
         phy_dev->speed = 0; /* For uboot trick borrowing NON DSL code */
     }
 
-    if (org_link ^ phy_dev->link)
+    if ((org_link ^ phy_dev->link) && phy_dev->configured_current_inter_phy_type == INTER_PHY_TYPE_AUTO)
         phy_dev_configured_inter_phy_types_set(phy_dev, INTER_PHY_TYPE_UP, phy_dev->configured_inter_phy_types);
 
     return 0;

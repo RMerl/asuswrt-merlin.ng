@@ -1,0 +1,12 @@
+if TARGET_GROUPER
+
+config SYS_BOARD
+	default "grouper"
+
+config SYS_VENDOR
+	default "asus"
+
+config SYS_CONFIG_NAME
+	default "grouper"
+
+endif

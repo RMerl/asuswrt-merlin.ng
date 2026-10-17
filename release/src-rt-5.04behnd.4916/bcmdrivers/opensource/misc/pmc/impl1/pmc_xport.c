@@ -32,7 +32,7 @@ written consent.
 
 int pmc_xport_power_on(int xport_id)
 {
-#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96813) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
     uint32_t data;
     int port_offset;
 
@@ -44,7 +44,7 @@ int pmc_xport_power_on(int xport_id)
         case 1:
             port_offset = BPCMETHRegOffset(xport1_cntrl);
             break;
-#if defined(CONFIG_BCM96888) || defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
+#if defined(CONFIG_BCM968880) || defined(CONFIG_BCM96837)
         case 2:
             port_offset = BPCMETHRegOffset(xport2_cntrl);
             break;

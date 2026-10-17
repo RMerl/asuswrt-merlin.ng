@@ -42,7 +42,6 @@ int UtilGetLan1LedGpio(unsigned short *gpio_num);
 int UtilGetLan2LedGpio(unsigned short *gpio_num);
 int UtilGetLan3LedGpio(unsigned short *gpio_num);
 int UtilGetLan4LedGpio(unsigned short *gpio_num);
-#include "bcm_pinmux.h"
 #define set_pinmux bcm_set_pinmux
 
 #endif

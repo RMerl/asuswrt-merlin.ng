@@ -44,6 +44,10 @@
 #ifndef MERLIN16_SHORTFIN_API_DEPENDENCIES_H
 #define MERLIN16_SHORTFIN_API_DEPENDENCIES_H
 
+#if defined(CONFIG_BCM_PHYDIAG_SERDES_PCIE) || defined(CONFIG_BCM_PHYDIAG_SERDES_ETH)
+#define BCM_PHYDIAG_SERDES
+#endif
+
 #include "common/srds_api_err_code.h"
 #include "common/srds_api_types.h"
 
@@ -100,6 +104,15 @@ int logger_write(srds_access_t *sa__, int message_verbose_level, const char *for
 #else
 int logger_write(int message_verbose_level, const char *format, ...);
 #endif
+
+/** Write raw eye scan data 
+ * Output is sent to DslDiags or stdout.
+ * @param[in] sa__ is an opaque state vector passed through to device access functions.
+ * @param[in] buffer is a buffer with eye scan data
+ * @param[in] size is number of items in buffer.
+ * @return none.
+ */
+void merlin16_shortfin_report_raw_eye_scan_stripe(srds_access_t *sa__, uint32_t *buffer, uint16_t size);
 
 /** Delay the execution of the code for atleast specified amount of time in nanoseconds.
  * This function is used ONLY for delays less than 1 microsecond, non-zero error code may be returned otherwise.

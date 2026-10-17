@@ -1,0 +1,206 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Nexell's s5p6818 SoC pin-mux and pin-config device tree source
+ *
+ * (C) Copyright 2020 Stefan Bosch <stefan_b@posteo.net>
+ *
+ * Copyright (C) 2016  Nexell Co., Ltd.
+ *		http://www.nexell.co.kr
+ *
+ * Nexell's s5p6818 SoC pin-mux and pin-config options are listed as
+ * device tree nodes in this file.
+ */
+
+pinctrl@C0010000 {
+	/*
+	 * values for "pin-pull":
+	 *	pulldown resistor = 0
+	 *	pullup = 1
+	 *	no pullup/down = 2
+	 */
+
+	/* MMC */
+	mmc0_clk: mmc0-clk {
+		pins = "gpioa-29";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <2>;
+	};
+
+	mmc0_cmd: mmc0-cmd {
+		pins = "gpioa-31";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	mmc0_bus4: mmc0-bus-width4 {
+		pins = "gpiob-1, gpiob-3, gpiob-5, gpiob-7";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	mmc1_clk: mmc1-clk {
+		pins = "gpiod-22";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <2>;
+	};
+
+	mmc1_cmd: mmc1-cmd {
+		pins = "gpiod-23";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	mmc1_bus4: mmc1-bus-width4 {
+		pins = "gpiod-24, gpiod-25, gpiod-26, gpiod-27";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	mmc2_clk: mmc2-clk {
+		pins = "gpioc-18";
+		pin-function = <2>;
+		pin-pull = <2>;
+		pin-strength = <2>;
+	};
+
+	mmc2_cmd: mmc2-cmd {
+		pins = "gpioc-19";
+		pin-function = <2>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	mmc2_bus4: mmc2-bus-width4 {
+		pins = "gpioc-20, gpioc-21, gpioc-22, gpioc-23";
+		pin-function = <2>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	mmc2_bus8: mmc2-bus-width8 {
+		nexell,pins = "gpioe-21", "gpioe-22", "gpioe-23", "gpioe-24";
+		pin-function = <2>;
+		pin-pull = <2>;
+		pin-strength = <1>;
+	};
+
+	/* I2C */
+	i2c0_sda:i2c0-sda {
+		pins = "gpiod-3";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	i2c0_scl:i2c0-scl {
+		pins = "gpiod-2";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	i2c1_sda:i2c1-sda {
+		pins = "gpiod-5";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	i2c1_scl:i2c1-scl {
+		pins = "gpiod-4";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	i2c2_sda:i2c2-sda {
+		pins = "gpiod-7";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	i2c2_scl:i2c2-scl {
+		pins = "gpiod-6";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	/* UART */
+	uart0_rx:uart0-rx {
+		pins = "gpiod-14";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart0_tx:uart0-tx {
+		pins = "gpiod-18";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart1_rx:uart1-rx {
+		pins = "gpiod-15";
+		pin-function = <2>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart1_tx:uart1-tx {
+		pins = "gpiod-19";
+		pin-function = <2>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart2_rx:uart2-rx {
+		pins = "gpiod-16";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart2_tx:uart2-tx {
+		pins = "gpiod-20";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart3_rx:uart3-rx {
+		pins = "gpiod-17";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart3_tx:uart3-tx {
+		pins = "gpiod-21";
+		pin-function = <1>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart4_rx:uart4-rx {
+		pins = "gpiob-28";
+		pin-function = <3>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+
+	uart4_tx:uart4-tx {
+		pins = "gpiob-29";
+		pin-function = <3>;
+		pin-pull = <2>;
+		pin-strength = <0>;
+	};
+};

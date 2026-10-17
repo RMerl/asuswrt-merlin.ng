@@ -1,0 +1,12 @@
+--- mtd-utils-2.2.1/configure.ac.orig	2024-10-08 11:14:14.626251947 +0800
++++ mtd-utils-2.2.1/configure.ac	2024-10-08 11:15:30.216770034 +0800
+@@ -145,8 +145,7 @@
+ ], [])
+ 
+ if test "x$need_uuid" = "xyes"; then
+-	PKG_CHECK_MODULES(UUID, [uuid], [],
+-			  [PKG_CHECK_MODULES_STATIC(UUID, [uuid], [], [uuid_missing="yes"])])
++	PKG_CHECK_MODULES(UUID, [uuid], [], [uuid_missing="yes"])
+ fi
+ 
+ if test "x$need_clock_gettime" = "xyes"; then

@@ -38,14 +38,18 @@
 #define MCLK_RATIO             ( params_rate(params)<=48000 ? 8 : 1)
 #define MCLK_RATIO_FACTOR      2
 
+extern void bcm63xx_set_i2s_independent_clk(struct device *dev, int val);
+
 static int bcm63xxx_hw_params(struct snd_pcm_substream *substream,
                             struct snd_pcm_hw_params *params)
 {
    int ret = 0;
    unsigned int MClk; 
    struct snd_soc_pcm_runtime *rtd = substream->private_data;
-   struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-   struct snd_soc_dai *codec_dai = rtd->codec_dai;
+   struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
+   struct snd_soc_dai *codec_dai = asoc_rtd_to_codec(rtd, 0);
+
+   bcm63xx_set_i2s_independent_clk(cpu_dai->dev,false);
 
    /* Set the AP DAI configuration */
    ret = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_I2S   | 
@@ -79,8 +83,8 @@ static int tlv320adc3101_hw_params(struct snd_pcm_substream *substream,
    int ret = 0;
    unsigned int MClk; 
    struct snd_soc_pcm_runtime *rtd = substream->private_data;
-   struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-   struct snd_soc_dai *codec_dai = rtd->codec_dai;
+   struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
+   struct snd_soc_dai *codec_dai = asoc_rtd_to_codec(rtd, 0);
 
    /* Set the AP DAI configuration */
    ret = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_I2S   | 
@@ -119,6 +123,16 @@ static struct snd_soc_ops tlv320adc3101_ops = {
 };
 #endif
 
+SND_SOC_DAILINK_DEFS(tlv320dac3203,
+	DAILINK_COMP_ARRAY(COMP_CPU("whistler-cpu-dai")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("tlv320dac3203.0-0018", "tlv320dac3203-hifi")),
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("ff802080.bcm63xx-i2s")));
+
+SND_SOC_DAILINK_DEFS(tlv320adc3101,
+	DAILINK_COMP_ARRAY(COMP_CPU("whistler-cpu-dai")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("tlv320adc3101.0-0019", "tlv320adc3101-hifi")),
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("ff802080.bcm63xx-i2s")));
+
 static struct snd_soc_dai_link bcm63xx_soc_card_dai[] = 
 {
 
@@ -143,26 +157,18 @@ static struct snd_soc_dai_link bcm63xx_soc_card_dai[] =
    {
       .name           = "MapleLeaf Speaker", //This is chosen arbitrarily.  Can be anything.
       .stream_name    = "Playback",
-      .codec_dai_name = "tlv320dac3203-hifi",
-      .cpu_dai_name   = "ff802080.bcm63xx-i2s",
-      //.platform_name  = "bcm63xx-pcm-audio",
-      .platform_name  = "ff802080.bcm63xx-i2s",
-      .codec_name     = "tlv320dac3203.0-0018",
       .ops            = &bcm63xxx_ops,
+	  SND_SOC_DAILINK_REG(tlv320dac3203),
       .dai_fmt 	      = (SND_SOC_DAIFMT_CBS_CFS | SND_SOC_DAIFMT_I2S |
-                         SND_SOC_DAIFMT_IB_NF),	
+                         SND_SOC_DAIFMT_NB_NF),	
    },
    {
       .name           = "MapleLeaf Mic Array",
       .stream_name    = "Capture",
-      .codec_dai_name = "tlv320adc3101-hifi",
-      .cpu_dai_name   = "ff802080.bcm63xx-i2s",
-      //.platform_name  = "bcm63xx-pcm-audio",
-      .platform_name  = "ff802080.bcm63xx-i2s",
-      .codec_name     = "tlv320adc3101.0-0019",
       .ops            = &tlv320adc3101_ops,
+	  SND_SOC_DAILINK_REG(tlv320adc3101),
       .dai_fmt 	      = (SND_SOC_DAIFMT_CBS_CFS | SND_SOC_DAIFMT_I2S |
-                         SND_SOC_DAIFMT_IB_NF),	
+                         SND_SOC_DAIFMT_NB_NF),	
    },
 #endif
 
@@ -211,4 +217,4 @@ module_exit(bcm63xx_audio_exit);
 
 MODULE_AUTHOR("Kevin Li kevin-ke.li@broadcom.com");
 MODULE_DESCRIPTION("ALSA SoC BCM 63153REF4D-bcm63xxx");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");

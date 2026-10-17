@@ -1,0 +1,21 @@
+if OMAP44XX
+
+choice
+	prompt "OMAP4 board select"
+	optional
+
+config TARGET_OMAP4_PANDA
+	bool "TI OMAP4 PandaBoard"
+
+config TARGET_OMAP4_SDP4430
+	bool "TI OMAP4 SDP4430"
+
+endchoice
+
+config SYS_SOC
+	default "omap4"
+
+source "board/ti/panda/Kconfig"
+source "board/ti/sdp4430/Kconfig"
+
+endif

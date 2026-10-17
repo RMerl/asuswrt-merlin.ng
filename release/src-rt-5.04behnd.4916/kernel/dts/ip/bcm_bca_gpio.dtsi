@@ -3,7 +3,45 @@
 compatible = "brcm,bca-gpio";
 gpio-controller;
 #gpio-cells = <2>;
-reg = <GPIO_DIR_OFFSET GPIO_DIR_SIZE>, <GPIO_DATA_OFFSET GPIO_DATA_SIZE>;
-reg-names = "gpio-dir", "gpio-data";
+reg = <GPIO_DIR_OFFSET GPIO_DIR_SIZE>, <GPIO_DATA_OFFSET GPIO_DATA_SIZE>
+#if defined(EXTINTR_OFFSET)
+	, <EXTINTR_OFFSET EXTINTR_SIZE>
+#endif
+#if defined(INTSET0_OFFSET) 
+	, <INTSET0_OFFSET INTSET0_SIZE>
+#if defined(INTSET1_OFFSET) 
+	, <INTSET1_OFFSET INTSET1_SIZE>
+#if defined(INTSET2_OFFSET) 
+	, <INTSET2_OFFSET INTSET2_SIZE>
+#if defined(INTSET3_OFFSET) 
+	, <INTSET3_OFFSET INTSET3_SIZE>
+#endif
+#endif
+#endif
+#endif
+;
+reg-names = "gpio-dir", "gpio-data"
+#if defined(EXTINTR_OFFSET)
+	, "gpio-intr"
+#endif
+#if defined(INTSET0_OFFSET) 
+	, "intset0"
+#if defined(INTSET1_OFFSET) 
+	, "intset1"
+#if defined(INTSET2_OFFSET) 
+	, "intset2"
+#if defined(INTSET3_OFFSET) 
+	, "intset3"
+#endif
+#endif
+#endif
+#endif
+;
 ngpios = <NUM_OF_GPIOS>;
 gpio-ranges = <&pincontroller 0 0 NUM_OF_GPIOS>;
+
+#if defined(EXTINTR_OFFSET)
+interrupt-controller;
+#interrupt-cells = <2>;
+num_ext_intr = <MAX_EXT_INTR>;
+#endif

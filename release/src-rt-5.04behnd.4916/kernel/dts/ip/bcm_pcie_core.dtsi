@@ -4,9 +4,23 @@
 #define HI32
 #endif
 
+#if !defined(CPU_ADDR_OFFSET)
+#define CPU_ADDR_OFFSET 0
+#endif
+
+#define CPU_REG_ADDR           (PCIE_ADDR - CPU_ADDR_OFFSET)
+
 compatible = "brcm,bcm963xx-pcie";
 device_type = "pci";
-reg = <HI32 PCIE_ADDR HI32 PCIE_SIZE>;
+#if defined(PCIE_ECAM_ADDR)
+#define CPU_ECAM_ADDR          (PCIE_ECAM_ADDR - CPU_ADDR_OFFSET)
+reg-names = "core-base", "ecam-base";
+reg = <HI32 CPU_REG_ADDR HI32 PCIE_SIZE>,
+      <HI32 CPU_ECAM_ADDR HI32 PCIE_ECAM_SIZE>;
+#else
+reg-names = "core-base";
+reg = <HI32 CPU_REG_ADDR HI32 PCIE_SIZE>;
+#endif
 
 #address-cells = <3>;
 #size-cells = <2>;
@@ -14,12 +28,9 @@ reg = <HI32 PCIE_ADDR HI32 PCIE_SIZE>;
 #if defined(PCIE_RANGE)
 ranges = <PCIE_RANGE>;
 #else
+#define CPU_RANGE_ADDR         (PCIE_RANGE_ADDR - CPU_ADDR_OFFSET)
 /*       <flags(32b)> <pci_addr(64b)>   <cpu_addr(64b)  > <size(64)>      */
-#if defined(CPU_RANGE_ADDR)
 ranges = <0x02000000  0 PCIE_RANGE_ADDR HI32 CPU_RANGE_ADDR 0 PCIE_RANGE_SIZE>;
-#else
-ranges = <0x02000000  0 PCIE_RANGE_ADDR HI32 PCIE_RANGE_ADDR 0 PCIE_RANGE_SIZE>;
-#endif
 #endif
 
 /* core error log interrupts */
@@ -36,6 +47,7 @@ linux,pci-domain = <PCIE_DOMAIN_ID>;
 #else
 linux,pci-domain = <PCIE_ID>;
 #endif
+bus-range = <0 1>;
 
 status = "disabled";
 
@@ -45,9 +57,13 @@ status = "disabled";
 #undef PCIE_SPI
 #undef PCIE_ADDR
 #undef PCIE_SIZE
+#undef PCIE_ECAM_ADDR
+#undef PCIE_ECAM_SIZE
 #undef PCIE_RANGE
 #undef PCIE_RANGE_ADDR
 #undef PCIE_RANGE_SIZE
 #undef CPU_RANGE_ADDR
+#undef CPU_REG_ADDR
+#undef CPU_ECAM_ADDR
 #undef HI32
 

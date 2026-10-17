@@ -52,7 +52,9 @@ int bcm_mcast_mld_add_entry(struct net_device *from_dev,
    t_mld_grp_entry *mc_fdb;
    t_mld_rep_entry *rep_entry = NULL;
    struct hlist_head *head = NULL;
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    int ret = 0;
+#endif
 
    mc_fdb = kmem_cache_alloc(mcast_ctrl->ipv6_grp_cache, GFP_ATOMIC);
    if (!mc_fdb)
@@ -92,7 +94,7 @@ int bcm_mcast_mld_add_entry(struct net_device *from_dev,
    hlist_add_head(&mc_fdb->hlist, head);
 
    bcm_mcast_notify_event(BCM_MCAST_EVT_SNOOP_ADD, BCM_MCAST_PROTO_IPV6, mc_fdb, rep_entry);
-#if defined(CONFIG_BLOG)
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
    ret = bcm_mcast_create_flow(pif, 
                                (void *)mc_fdb, 
                                BCM_MCAST_PROTO_IPV6, 
@@ -160,7 +162,7 @@ int bcm_mcast_mld_del_entry(bcm_mcast_ifdata *pif,
    if(list_empty(&mld_fdb->rep_list)) 
    {
       hlist_del(&mld_fdb->hlist);
-#if defined(CONFIG_BLOG) 
+#if IS_ENABLED(CONFIG_BCM_PKTFLOW)
       bcm_mcast_delete_flow(BCM_MCAST_PROTO_IPV6, &(mld_fdb->flowhdl));
 #endif
 #if defined(CC_MCAST_WHITELIST_SUPPORT)

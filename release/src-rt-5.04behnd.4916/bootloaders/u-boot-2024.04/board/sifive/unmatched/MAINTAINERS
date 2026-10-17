@@ -1,0 +1,8 @@
+SiFive HiFive Unmatched FU740 BOARD
+M:	Paul Walmsley <paul.walmsley@sifive.com>
+M:	Green Wan <green.wan@sifive.com>
+S:	Maintained
+F:	board/sifive/unmatched/
+F:	doc/board/sifive/hifive-unmatched-fu740.rst
+F:	include/configs/sifive-unmatched.h
+F:	configs/sifive_unmatched_defconfig

@@ -32,7 +32,7 @@
 		hs_serial0  = &hs_uart0;
 	};
 	chosen {
-		bootargs = "console=ttyAMA0 earlyprintk irqaffinity=0 pci=pcie_bus_safe isolcpus=2 rootwait rng_core.default_quality=1024";
+		bootargs = "console=ttyAMA0 earlycon irqaffinity=0 pci=pcie_bus_safe isolcpus=2 rootwait rng_core.default_quality=1024";
         };
 
 	/* memc */
@@ -237,11 +237,18 @@
 		};
 
 		/* RNG */
+#if defined (CONFIG_BCM_RNG_SHIM)
+		rng_shim: rngshim {
+			#include "../ip/bcm_rng_shim.dtsi"
+		};
+#else
 		rng: rng {
 			#define RNG200_OFFSET                   0xb80
 			#define RNG200_SIZE                     0x30
 			#include "../ip/bcm_rng200.dtsi"
 		};
+#endif
+
 
 		strap: strap {
 			#define STRAP_REG_OFFSET            0x2600
@@ -296,6 +303,7 @@
 			#define WATCHDOG_OFFSET			0x480
 			#define WATCHDOG_SIZE			0x10
 			#define WATCHDOG_TIMEOUT		80
+			#define WATCHDOG_CLK_LABEL		refclk50mhz
 			#include "../ip/bcm_wdt.dtsi"
 			interrupts = <GIC_SPI 16 IRQ_TYPE_LEVEL_HIGH>;
 		};
@@ -365,6 +373,19 @@
 			#define GPIO_DATA_OFFSET     0x520
 			#define GPIO_DATA_SIZE       0x20
 			#define NUM_OF_GPIOS         88
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			#define EXTINTR_OFFSET       0x4
+			#define EXTINTR_SIZE         0x48
+			#define MAX_EXT_INTR         8
+			interrupts = <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 125 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>;
+#endif
 			#include "../ip/bcm_bca_gpio.dtsi"
 		};
 
@@ -375,8 +396,11 @@
 			#define MAX_EXT_INTR         8
 			#include "../ip/bcm_bca_extintr.dtsi"
 			external_interrupts = <120 121 122 123 124 125 126 127>;
+#if !defined(CONFIG_BCM_BCA_EXTINTR)
+			status = "disabled";
+#endif
 		};
-		
+
 		/* UART 1*/
 		uart0: serial@0 {
 			#define UART_OFFSET			0x12000
@@ -419,6 +443,17 @@
 			interrupts = <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>;
 		};		
 
+		i2s: bcm63xx-i2s {
+			pinctrl-0 = <&d_i2s_sclk_pin_67 &d_i2s_lrck_pin_68 &d_i2s_rx_sdata_pin_69 &d_i2s_tx_sdata_pin_70 &d_i2s_mclk_pin_71>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0x2080 0x21>;
+			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2sclk>, <&osc>;
+			clock-names = "i2sclk","i2sosc";
+			status = "disabled";			
+		};
+
 		i2s_clkmclk_syscon: i2s_clkmclk_syscon{
 			compatible        = "brcm,i2s-audio-clkmclk-syscon", "syscon";
 			reg               = <0x2080 0x4>;
@@ -429,6 +464,23 @@
 			reg = <0x60C00 0x50>; /* temp setting here. to do: size should be re-cal for only we need.*/
 		};
 
+		i2c0_gpio: i2c0_gpio {
+			compatible = "i2c-gpio";
+			gpios = <&gpioc 3 0 &gpioc 4 0>;/* sda and scl */
+			i2c-gpio,delay-us   = <50>;     /* ~10 kHz */
+			i2c-gpio,timeout-ms = <100>;    /* 100ms */
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			codec_playback: codec_playback@18{
+				compatible = "ti,tlv320dac3203";
+				reg = <0x18>;
+			};
+			codec_capture: codec_capture@19{
+				compatible = "ti,tlv320adc3101";
+				reg = <0x19>;
+			};
+		};	
 	};
 
 	legacy_leds: legacy_leds {

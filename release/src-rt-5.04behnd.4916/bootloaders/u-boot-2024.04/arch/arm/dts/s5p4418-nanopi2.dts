@@ -1,0 +1,116 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2020 Stefan Bosch <stefan_b@posteo.net>
+ *
+ * (C) Copyright 2017 FriendlyElec Computer Tech. Co., Ltd.
+ * (http://www.friendlyarm.com)
+ *
+ * (C) Copyright 2016 Nexell
+ * Youngbok, Park <park@nexell.co.kr>
+ */
+
+/dts-v1/;
+#include "s5p4418.dtsi"
+
+/ {
+	model = "FriendlyElec boards based on Nexell s5p4418";
+	cpu-model = "S5p4418";
+
+	compatible = "friendlyelec,nanopi2",
+		     "nexell,s5p4418";
+
+	aliases {
+		mmc0 = "/mmc@c0069000";
+		mmc1 = "/mmc@c0062000";
+		i2c0 = "/i2c@c00a4000";
+		i2c1 = "/i2c@c00a5000";
+		i2c2 = "/i2c@c00a6000";
+		serial0 = "/uart@c00a1000";
+	};
+
+	mmc0:mmc@c0062000 {
+		frequency = <50000000>;
+		drive_dly = <0x0>;
+		drive_shift = <0x03>;
+		sample_dly = <0x00>;
+		sample_shift = <0x02>;
+		mmcboost = <0>;
+		status = "okay";
+	};
+
+	mmc2:mmc@c0069000 {
+		frequency = <50000000>;
+		drive_dly = <0x0>;
+		drive_shift = <0x03>;
+		sample_dly = <0x00>;
+		sample_shift = <0x02>;
+		mmcboost = <0>;
+		status = "okay";
+	};
+
+	/* NanoPi2: Header "CON2", NanoPC-T2: EEPROM (MAC-Addr.) and Audio */
+	i2c0:i2c@c00a4000 {
+		status ="okay";
+	};
+
+	/* NanoPi2: Header "CON2" and HDMI, NanoPC-T2: HDMI */
+	i2c1:i2c@c00a5000 {
+		status ="okay";
+	};
+
+	/* NanoPi2: LCD interface, NanoPC-T2: LCD, LVDS and MIPI interfaces */
+	i2c2:i2c@c00a6000 {
+		status ="okay";
+	};
+
+	dp0:dp@c0102800 {
+		status = "okay";
+		module = <0>;
+		lcd-type = "lvds";
+
+		dp-device {
+			format = <0>;	/* 0:VESA, 1:JEIDA */
+		};
+
+		dp-sync {
+			h_active_len = <1024>;
+			h_front_porch = <84>;
+			h_back_porch = <84>;
+			h_sync_width = <88>;
+			h_sync_invert = <0>;
+			v_active_len = <600>;
+			v_front_porch = <10>;
+			v_back_porch = <10>;
+			v_sync_width = <20>;
+			v_sync_invert = <0>;
+		};
+
+		dp-ctrl {
+			clk_src_lv0 = <3>;
+			clk_div_lv0 = <16>;
+			clk_src_lv1 = <7>;
+			clk_div_lv1 = <1>;
+			out_format = <2>;
+		};
+
+		dp-planes {
+			layer_top {
+				screen_width = <1024>;
+				screen_height = <600>;
+				back_color = <0x0>;
+			};
+
+			layer_1 {	/* RGB 1 */
+				width = <1024>;
+				height = <600>;
+				format = <0x06530000>;
+				pixel_byte = <4>;
+			};
+		};
+	};
+
+	uart0:uart@c00a1000 {
+		skip-init;
+		status = "okay";
+	};
+};

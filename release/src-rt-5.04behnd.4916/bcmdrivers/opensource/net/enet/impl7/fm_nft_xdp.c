@@ -238,23 +238,6 @@ int nft_fm_to_xdp_lookup_entry_delete(fm_nft_ctx_t *fm_nft_ctx, fm_nft_flow_node
     return 0;
 }
 
-u32 fm_nft_run_xdp_meta(struct net_device *dev, struct bpf_prog *xdp_prog, struct xdp_buff *xdp, unsigned long *cookie)
-{
-    u32 act;
-
-    /* Shift meta_data offset to leave room for L2 header and cookie */
-    xdp->data_meta = xdp->data - sizeof(*cookie) - MAX_L2_HEADER;
-    *(unsigned long *)xdp->data_meta = 0;
-
-    act = bpf_prog_run_xdp(xdp_prog, xdp);
-
-    *cookie = *(unsigned long *)xdp->data_meta;
-
-    fm_nft_printk(LOGLEVEL_DEBUG, dev, "%s: Received cookie %lu\n", __FUNCTION__, *cookie);
-
-    return act;
-}
-
 
 int xdp_nft_init(fm_nft_ctx_t *ctx, xdp_nft_get_progs_by_dev_cb get_xdp_prog_cb)
 {

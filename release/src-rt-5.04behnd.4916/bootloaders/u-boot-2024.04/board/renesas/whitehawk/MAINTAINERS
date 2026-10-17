@@ -1,0 +1,7 @@
+WHITEHAWK BOARD
+M:	Marek Vasut <marek.vasut+renesas@mailbox.org>
+S:	Maintained
+F:	arch/arm/dts/r8a779g0*
+F:	board/renesas/whitehawk/
+F:	configs/r8a779g0_whitehawk_defconfig
+F:	include/configs/whitehawk.h

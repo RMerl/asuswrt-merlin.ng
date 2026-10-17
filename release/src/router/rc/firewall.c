@@ -1799,11 +1799,6 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 #endif
 #endif
 
-	/* Add rule to jump to VUPNP chain when UPNP is enabled*/
-	snprintf(tmp, sizeof(tmp), "wan%d_upnp_enable", wan_primary_ifunit());
-	if (nvram_get_int(tmp) == 1)
-		fprintf(fp, "-A PREROUTING -j VUPNP\n");
-
 	/* VSERVER chain */
 	if (inet_addr_(wan_ip)) {
 #ifdef RTCONFIG_SOFTWIRE46

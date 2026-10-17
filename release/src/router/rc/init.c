@@ -2802,24 +2802,6 @@ restore_defaults(void)
 		 && nvram_get(t->name))
 			continue;
 #endif
-#ifdef RTCONFIG_UUPLUGIN
-		if (!strcmp(t->name, "uuplugin_enable")) {
-			/* not exist (upgrade from old FW) or restore: decide default by SKU */
-			if (restore_defaults || !nvram_get(t->name)) {
-				int cn = is_CN_sku(), uu = uu_model_check();
-				/* only upgrade from old FW (not factory default / restore) turns it on */
-				int upgrade = !restore_defaults && strlen(nvram_safe_get("extendno_org")) > 0;
-				const char *val = (upgrade && cn && uu) ? "1" : t->value;
-				_dprintf("[UUPLUGIN] restore_defaults=[%d], enable=[%s](%s), extendno_org=[%s] upgrade=[%d], territory_code=[%s], is_CN_sku=[%d], uu_model_check=[%d] -> uuplugin_enable set %s\n",
-					restore_defaults, nvram_safe_get(t->name), nvram_get(t->name) ? "Y" : "N",
-					nvram_safe_get("extendno_org"), upgrade,
-					nvram_safe_get("territory_code"), cn, uu, val);
-				nvram_set(t->name, val);
-			} else
-				_dprintf("[UUPLUGIN] keep existing uuplugin_enable=[%s]\n", nvram_safe_get(t->name));
-			continue;
-		}
-#endif
 		if (restore_defaults || !nvram_get(t->name))
 			nvram_set(t->name, t->value);
 	}
@@ -24637,6 +24619,13 @@ int init_nvram2(void)
 		nvram_set("dhcp_start", nvram_default_get("dhcp_start"));
 		nvram_set("dhcp_end", nvram_default_get("dhcp_end"));
 	}
+
+#ifdef RTCONFIG_UUPLUGIN
+	if (strlen(nvram_safe_get("extendno_org")) > 0) {
+		if (is_CN_sku() && uu_model_check() && strlen(nvram_safe_get("uuplugin_enable")) == 0)
+			nvram_set("uuplugin_enable", "1");
+	}
+#endif
 
 	return 0;
 }  // end of init_nvram2

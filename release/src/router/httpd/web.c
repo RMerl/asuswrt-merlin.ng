@@ -13761,8 +13761,7 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	}
 	else if (!strcmp(action_mode, "logout")) // but, every one can reset it by this call
 	{
-		http_logout(&login_uip_tmp, cookies_buf, check_user_agent(user_agent));
-		websRedirect(wp, "Main_Login.asp");
+		websRedirect(wp, "Logout.asp");
 	}
 	else if (!strcmp(action_mode, "change_wl_unit"))
 	{

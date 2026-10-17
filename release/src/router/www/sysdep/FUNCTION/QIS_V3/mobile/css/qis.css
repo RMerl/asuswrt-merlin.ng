@@ -717,13 +717,6 @@ a{
 	color: #DBDBDB;
 	cursor: pointer;
 }
-/* Keep leading/trailing spaces of a scanned SSID visible: the default
-   white-space:normal drops them, so "  foo" and "foo" look the same.
-   break-spaces also lets a long space run wrap, so the row cannot grow
-   past the page and get clipped by .ui-page-active's overflow-x:hidden. */
-#apList .ap_ssid{
-	white-space: break-spaces;
-}
 .ap_ssid_hover{
 	color: #007AFF !important;
 }

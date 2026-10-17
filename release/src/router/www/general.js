@@ -480,8 +480,6 @@ function openLink(s){
                         tourl = "https://dash.cloudflare.com/sign-up";
                 else if (document.form.ddns_server_x.value == 'PUBYUN.COM')
                         tourl = "https://www.pubyun.com";
-                else if (document.form.ddns_server_x.value == 'DYNV6.COM')
-                        tourl = "https://dynv6.com";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
 			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')

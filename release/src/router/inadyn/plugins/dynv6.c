@@ -21,14 +21,10 @@
  */
 
 #include "plugin.h"
-#ifdef ASUSWRT
-#include <bcmnvram.h>
-#endif
 
 #define DYNV6_UPDATE_IP_REQUEST						\
 	"GET %s?"							\
-	"ipv4=auto&"							\
-	"ipv6=%s&"							\
+	"%s=auto&"							\
 	"hostname=%s&"							\
 	"token=%s"							\
 	" "								\
@@ -77,8 +73,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 	return snprintf(ctx->request_buf, ctx->request_buflen,
 			DYNV6_UPDATE_IP_REQUEST,
 			info->server_url,
-			/* ver,			ipv6=auto, or ipv4=auto */
-			nvram_safe_get("ddns_ipv6_ipaddr"),
+			ver,			/* ipv6=auto, or ipv4=auto */
 			alias->name,
 			info->creds.username,
 			info->server_name.name,

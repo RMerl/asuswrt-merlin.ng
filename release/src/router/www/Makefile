@@ -366,7 +366,6 @@ endif
 	cp -rf $(INSTALLDIR)/www/dashboard/ajax/* $(INSTALLDIR)/www/ajax/
 	cp -rf $(INSTALLDIR)/www/dashboard/css/* $(INSTALLDIR)/www/css/
 	cp -rf $(INSTALLDIR)/www/dashboard/images/* $(INSTALLDIR)/www/images/
-	cp -rf $(INSTALLDIR)/www/dashboard/datatables $(INSTALLDIR)/www/
 endif
 
 ifeq ($(RTCONFIG_AUTODICT), y)

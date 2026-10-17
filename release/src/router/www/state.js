@@ -330,7 +330,6 @@ var is_CH_sku = in_territory_code("CH");
 var is_SG_sku = in_territory_code("SG");
 var is_EU_sku = in_territory_code("EU");
 var SG_mode = ('<% nvram_get("SG_mode"); %>' == 1);
-var ID_mode = ('<% nvram_get("ID_mode"); %>' == 1);
 
 var isGundam = in_territory_code("GD") || CoBrand_flag == 1;
 var isKimetsu = (CoBrand_flag == '2');

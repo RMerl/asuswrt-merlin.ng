@@ -4251,11 +4251,6 @@ extern int realip_main(int argc, char *argv[]);
 extern int ig_s2s_client_main(int argc, char *argv[]);
 #endif
 
-#if defined(RTCONFIG_LIB_CODB) && defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_DNS_PING)
-extern void stop_dns_ping(void);
-extern void start_dns_ping(void);
-#endif
-
 void wl_apply_akm_by_auth_mode(int unit, int subunit, char *sp_prefix_auth);
 
 #if defined(RTCONFIG_WISP)

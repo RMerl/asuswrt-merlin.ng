@@ -678,7 +678,7 @@ function validForm(){
 					return false;
 				}
 
-				if(document.form.ddns_server_x.value != "DYNV6.COM" && document.form.ddns_passwd_x.value == ""){
+				if(document.form.ddns_passwd_x.value == ""){
 					alert("<#File_Pop_content_alert_desc6#>");
 					document.form.ddns_passwd_x.focus();
 					document.form.ddns_passwd_x.select();
@@ -914,10 +914,7 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 0);
 			else
 				inputCtrl(document.form.ddns_username_x, 1);
-			if(v == "DYNV6.COM")
-				inputCtrl(document.form.ddns_passwd_x, 0);
-			else
-				inputCtrl(document.form.ddns_passwd_x, 1);
+			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
 			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM" || v == "PUBYUN.COM" || v == "DUCKDNS.ORG")
 				var disable_wild = 1;
@@ -959,11 +956,6 @@ function change_ddns_setting(v){
 		document.getElementById("ddns_username_th").innerHTML = "Account Name";
 		document.getElementById("ddns_password_th").innerHTML = "Update Key";
 		document.getElementById("ddns_hostname_th").innerHTML = "Tunnel ID";
-	}
-	else if (v == "DYNV6.COM") {
-		document.getElementById("ddns_username_th").innerHTML = "User Token";	/*Untranslated*/
-		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
-		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 	}
 	else {
 		document.getElementById("ddns_username_th").innerHTML = "<#LANHostConfig_x_DDNSUserName_itemname#>";
@@ -1359,7 +1351,6 @@ function clear_cert_key(){
 						<option value="DYNU.COM" <% nvram_match("ddns_server_x", "DYNU.COM","selected"); %>>DYNU.COM</option>
 						<option value="CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "CLOUDFLARE.COM","selected"); %>>CLOUDFLARE.COM</option>
 						<option value="PUBYUN.COM" <% nvram_match("ddns_server_x", "PUBYUN.COM","selected"); %>>PUBYUN.COM</option>
-						<option value="DYNV6.COM" <% nvram_match("ddns_server_x", "DYNV6.COM","selected"); %>>DYNV6.COM</option>
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>

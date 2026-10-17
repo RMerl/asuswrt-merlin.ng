@@ -5402,8 +5402,6 @@ start_ddns(char *caller, int isAidisk)
 		service = "dyndns@3322.org";
 	else if (strcmp(server, "DUCKDNS.ORG") == 0)
 		service = "default@duckdns.org";
-	else if (strcmp(server, "DYNV6.COM") == 0)
-		service = "dynv6.com";
 #endif
 	else if (strcmp(server, "WWW.ORAY.COM") == 0) {
 		service = "peanuthull", asus_ddns = 2;
@@ -10034,33 +10032,25 @@ void radiusd_ascii_to_char(void)
 
 void radiusd_updateDB(void)
 {
+
 		char *nv=NULL, *nvp=NULL, *b=NULL;
 		char *profile_idx=NULL, *userlist=NULL, *tmp=NULL;
 		char *cli_act=NULL, *cli_name=NULL, *cli_passwd=NULL, *cli_ip=NULL;
+		char tmpcmd[256];
 		char name[128];
 		char passwd[128];
-		sqlite3 *rdb = NULL;
-		sqlite3_stmt *rstmt = NULL;
-		char *rErrMsg = NULL;
-		int rrc;
 
 		unlink("/tmp/freeradius.db");
-		/* create database schema — .read is a sqlite3 CLI command, requires shell */
+		/* create database for radius */
 		system("sqlite3 /tmp/freeradius.db '.read /usr/freeradius/raddb/mods-config/sql/main/sqlite/schema.sql'");
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 		if(!access("/jffs/.sys/Permission/PMS_data.db3", F_OK)){
 		//add user permission data to freeradius database.
+			//system("sqlite3 /tmp/freeradius.db 'attach \"/jffs/.sys/Permission/PMS_data.db3\" as pms;insert into main.radcheck select NULL, Name, \"Cleartext-Password\", \":=\", passwd from pms.user;'");
 			radiusd_ascii_to_char();
 		}
 #endif
-
-		if (sqlite3_open("/tmp/freeradius.db", &rdb) != SQLITE_OK) {
-			logmessage("radiusd", "radiusd_updateDB: failed to open freeradius.db");
-			sqlite3_close(rdb);
-			return;
-		}
-
 		//add local user (for captive portal) to freeradius database.
 		nv = nvp = strdup(nvram_safe_get("captive_portal_adv_local_clientlist"));
 		if (nv) {
@@ -10070,40 +10060,19 @@ void radiusd_updateDB(void)
 				while((tmp = strsep(&userlist, ",")) != NULL ){
 					memset(name, 0, sizeof(name));
 					memset(passwd, 0, sizeof(passwd));
-					sscanf(tmp, "%127[^:]:%127s", name, passwd);
+					sscanf(tmp, "%[^:]:%s", name, passwd);
 
-					rrc = sqlite3_prepare_v2(rdb,
-						"INSERT INTO radcheck(username,attribute,op,value) VALUES(?,?,?,?)",
-						-1, &rstmt, NULL);
-					if (rrc == SQLITE_OK) {
-						sqlite3_bind_text(rstmt, 1, name,   -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 2, "Cleartext-Password", -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 3, ":=",   -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 4, passwd, -1, SQLITE_STATIC);
-						sqlite3_step(rstmt);
-						sqlite3_finalize(rstmt);
-						rstmt = NULL;
-					}
+			  		snprintf(tmpcmd, sizeof(tmpcmd), "sqlite3 /tmp/freeradius.db 'insert into radcheck(username,attribute,op,value) values(\"%s\",\"Cleartext-Password\",\":=\",\"%s\");'", name, passwd);
+			  		system(tmpcmd);
 
-					rrc = sqlite3_prepare_v2(rdb,
-						"INSERT INTO radcheck(username,attribute,op,value) VALUES(?,?,?,?)",
-						-1, &rstmt, NULL);
-					if (rrc == SQLITE_OK) {
-						sqlite3_bind_text(rstmt, 1, name,     -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 2, "NAS-Identifier", -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 3, "==",     -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 4, "radius", -1, SQLITE_STATIC);
-						sqlite3_step(rstmt);
-						sqlite3_finalize(rstmt);
-						rstmt = NULL;
-					}
+			  		snprintf(tmpcmd, sizeof(tmpcmd), "sqlite3 /tmp/freeradius.db 'insert into radcheck(username,attribute,op,value) values(\"%s\",\"NAS-Identifier\",\"==\",\"%s\");'", name, "radius");
+			  		system(tmpcmd);
 				}
 			}
 			free(nv);
 		}
-
-		sqlite3_exec(rdb, "DELETE FROM nas", NULL, NULL, &rErrMsg);
-		if (rErrMsg) { sqlite3_free(rErrMsg); rErrMsg = NULL; }
+		snprintf(tmpcmd, sizeof(tmpcmd), "sqlite3 /tmp/freeradius.db 'delete from nas;'");
+		system(tmpcmd);
 
 		//add radius client to freeradius database
 		nv = nvp = strdup(nvram_safe_get("radius_serv_list"));
@@ -10112,23 +10081,13 @@ void radiusd_updateDB(void)
 				if ((vstrsep(b, ">", &cli_act, &cli_name, &cli_passwd, &cli_ip) != 4 ))
 					continue;
 				if(safe_atoi(cli_act) == 1){
-					rrc = sqlite3_prepare_v2(rdb,
-						"INSERT INTO nas(id,nasname,shortname,secret) VALUES(NULL,?,?,?)",
-						-1, &rstmt, NULL);
-					if (rrc == SQLITE_OK) {
-						sqlite3_bind_text(rstmt, 1, cli_ip,     -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 2, cli_name,   -1, SQLITE_STATIC);
-						sqlite3_bind_text(rstmt, 3, cli_passwd, -1, SQLITE_STATIC);
-						sqlite3_step(rstmt);
-						sqlite3_finalize(rstmt);
-						rstmt = NULL;
-					}
+					snprintf(tmpcmd, sizeof(tmpcmd), "sqlite3 /tmp/freeradius.db 'insert into nas(id,nasname,shortname,secret) values(NULL,\"%s\",\"%s\",\"%s\");'", cli_ip, cli_name, cli_passwd);
+			  	system(tmpcmd);
+
 				}
 			}
 			free(nv);
 		}
-
-		sqlite3_close(rdb);
 
 #if 0
 		/* add group and radgroupreply for auth check */
@@ -21459,7 +21418,9 @@ retry_wps_enr:
 					if (is_tpvpn_configured(TPVPN_HMA, region, conntype, unit))
 						start_ovpn_client(unit);
 					else {
-						safe_fork_do_system("hmavpn setconf \"%s\" \"%s\" %d", region, conntype, unit);
+						snprintf(cmd, sizeof(cmd), "hmavpn setconf '%s' '%s' %d &"
+							, region, conntype, unit);
+						system(cmd);
 					}
 					break;
 				}

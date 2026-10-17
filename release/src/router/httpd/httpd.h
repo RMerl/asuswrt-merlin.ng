@@ -511,7 +511,7 @@ extern char url[128];
 extern char referer_url[128];
 extern unsigned int login_ip; // the logined ip
 extern unsigned int app_login_ip; // the app logined ip
-extern char cookies_buf[10000];
+extern char cookies_buf[4096];
 extern unsigned int login_ip_tmp; /* IPv6 compat */
 extern uaddr login_uip;
 extern uaddr login_uip_tmp;
@@ -520,7 +520,6 @@ extern time_t login_timestamp_cache;
 extern int hook_get_json;
 extern char wl_band_list[8][8];
 extern int check_user_agent(char* user_agent);
-extern void http_logout(uaddr *uip, char *cookies, int fromapp_flag);
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 extern void add_ifttt_flag(void);
 #endif

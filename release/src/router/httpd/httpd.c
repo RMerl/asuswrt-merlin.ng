@@ -138,7 +138,7 @@ time_t login_timestamp_cache = 0;
 int url_do_auth = 0;
 int spam_count = 0;
 int auth_result = 1;
-char cookies_buf[10000];
+char cookies_buf[4096];
 int do_ssl = 0; 	// use Global for HTTPS upgrade judgment in web.c
 int ssl_stream_fd; 	// use Global for HTTPS stream fd in web.c
 int json_support = 0;

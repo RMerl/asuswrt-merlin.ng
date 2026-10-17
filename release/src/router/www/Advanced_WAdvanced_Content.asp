@@ -216,11 +216,6 @@ var country_selection_array = new Array();
 var _AU1_support = false;
 var _AU2_support = false;
 
-if(ID_mode && tcode == "AA"){
-	country_array = ["AA"];
-	country_selection_list = [["AA", "Indonesia"]];
-}
-
 if(tcode == "GD"){
 	country_array = country_array.join("-").replace("-CN", "").split("-")
 	country_selection_list.push(["GD", "<#country_CN#>"]);

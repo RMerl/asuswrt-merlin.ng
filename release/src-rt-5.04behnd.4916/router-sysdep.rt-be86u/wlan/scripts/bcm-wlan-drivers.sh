@@ -34,8 +34,8 @@ fi
 
 # Allow wifi.sh script to correct dpd settings first
 /rom/etc/init.d/wifi.sh dpdmode 1
-DPDMODE=`sh /rom/etc/init.d/wifi.sh dpdmode |  cut -d '|' -f1`
-if [ -z $DPDMODE ]; then
+DPDMODE=`/bin/sh /rom/etc/init.d/wifi.sh dpdmode |  cut -d '|' -f1`
+if [ -z "$DPDMODE" ]; then
   DPDMODE=0
 fi
 echo "DPDMODE:$DPDMODE"
@@ -413,7 +413,7 @@ fi
 # Parse the first argument
 case "$1" in
     start)
-        if [ $ALLOW_LOAD_DRIVER_IN_BACKGROUND == "y" ]; then
+        if [ "$ALLOW_LOAD_DRIVER_IN_BACKGROUND" = "y" ]; then
             start_main &
         else
             start_main

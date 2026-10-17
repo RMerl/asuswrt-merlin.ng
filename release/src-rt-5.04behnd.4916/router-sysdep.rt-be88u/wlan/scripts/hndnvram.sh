@@ -14,18 +14,45 @@ wl_srom_nm=".wlsromcustomerfile.nvm"    #wl calibration file name
 SYSTEM_INFO_INDICATOR=$(cat /proc/nvram/wl_nand_manufacturer)
 SYSTEM_UBOOT=$(($SYSTEM_INFO_INDICATOR & 8))
 
-echo "[$0]: mount /tmp/mnt/defaults"
-mkdir /tmp/mnt/defaults
-if  [[ $SYSTEM_UBOOT -gt 0 ]]; then
-    _root_fs_dev=`/rom/etc/get_rootfs_dev.sh`
-    if [[ ! -z $(echo $_root_fs_dev|grep mmcblk) ]]; then
-	echo "[$0]: mount -t ext4 /dev/defaults /tmp/mnt/defaults"
-	mount -t ext4 /dev/defaults /tmp/mnt/defaults
-    elif [[ ! -z $(echo $_root_fs_dev|grep ubi)  ]]; then
-	echo "[$0]: mount -t ubifs ubi:defaults /tmp/mnt/defaults"
-	mount -t ubifs ubi:defaults /tmp/mnt/defaults
-    fi
-fi
+# This block sits at the top level of the script, so it runs on every
+# invocation - S40hndnvram "start" as well as the later "mount_ubi" and
+# "stop" calls - and the defaults volume is normally already mounted by
+# mount-data.inc (S25mount-fs). Mounting it again just stacks a second mount
+# on the same directory: both stay listed in /proc/mounts and the lower one
+# can never be unmounted by path again.
+#
+# /proc/mounts cannot be used to detect that, though: /mnt is a symlink to
+# /tmp/mnt, and rc stacks a *fresh* tmpfs onto /tmp right after it runs
+# "bcm_boot_launcher start" (rc/init.c, sysinit()). That hides the volume
+# mount-data.inc mounted - it keeps the very same path text in /proc/mounts
+# but is no longer reachable from "/", so a path match cannot tell it apart
+# from a live mount and wrongly skips, leaving an empty tmpfs directory that
+# silently swallows every nvram/envram commit until the next reboot.
+#
+# So ask the live path which filesystem it is actually on. This busybox has
+# neither the "stat" nor the "mountpoint" applet, hence df; the trailing
+# "/." is required because busybox df string-matches /proc/mounts mount
+# points first and would otherwise report the hidden entry. An empty result
+# means df could not tell, in which case mounting is the safe answer.
+mkdir -p /tmp/mnt/defaults
+case "`df /tmp/mnt/defaults/. 2>/dev/null | awk 'NR == 2 { print $1 }'`" in
+    tmpfs|"")
+	echo "[$0]: mount /tmp/mnt/defaults"
+	if  [[ $SYSTEM_UBOOT -gt 0 ]]; then
+	    _root_fs_dev=`/rom/etc/get_rootfs_dev.sh`
+	    if [[ ! -z $(echo $_root_fs_dev|grep mmcblk) ]]; then
+		echo "[$0]: mount -t ext4 /dev/defaults /tmp/mnt/defaults"
+		mount -t ext4 /dev/defaults /tmp/mnt/defaults
+	    elif [[ ! -z $(echo $_root_fs_dev|grep ubi)  ]]; then
+		echo "[$0]: mount -t ubifs ubi:defaults /tmp/mnt/defaults"
+		mount -t ubifs ubi:defaults /tmp/mnt/defaults
+	    fi
+	fi
+	;;
+    *)
+	echo "[$0]: /tmp/mnt/defaults already mounted, skipping"
+	;;
+esac
 
 # user_nvram_file is required for UNFWLCFG. In BASESHELL build,
 # we would store nvram configurations accessed by userspace into the file

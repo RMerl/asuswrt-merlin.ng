@@ -1,0 +1,85 @@
+#!/bin/sh
+
+klibdir=/usr/ark
+GTOOLS_PATH="$klibdir/gtools.ko"
+GBUS_PATH="$klibdir/gbus.ko"
+action=$1
+
+usage_prompt() {
+    echo "GBUS module control script"
+    echo "Usage: $0 <start|stop|status>"
+}
+
+if [ $# -ne 1 ]; then
+    usage_prompt
+    exit 1
+fi
+
+status() {
+    if [ -e /proc/gtb/gbus ]; then
+        echo "1"
+    else
+        echo "0"
+    fi
+}
+
+start() {
+    echo "Starting GBUS..."
+
+    if [ "$(status)" = "1" ]; then
+        echo "Module is already loaded."
+        return 0
+    fi
+
+    insmod "$GTOOLS_PATH" 2>/dev/null
+    insmod "$GBUS_PATH" 2>/dev/null
+
+    if [ "$(status)" = "1" ]; then
+        echo "Module loaded successfully."
+        return 0
+    else
+        echo "Failed to load module!"
+        return 1
+    fi
+}
+
+stop() {
+    echo "Stopping GBUS..."
+
+    if [ "$(status)" = "0" ]; then
+        echo "Module is not loaded."
+        return 0
+    fi
+
+    rmmod gbus 2>/dev/null
+    rmmod gtools 2>/dev/null
+
+    if [ "$(status)" = "1" ]; then
+        echo "Failed to unload module!"
+        return 1
+    else
+        echo "Module unloaded successfully."
+        return 0
+    fi
+}
+
+case $action in
+    status)
+        result=$(status)
+        echo $result
+        exit 0
+        ;;
+    start)
+        start
+        exit $?
+        ;;
+    stop)
+        stop
+        exit $?
+        ;;
+    *)
+        echo "Invalid action: $action"
+        usage_prompt
+        exit 1
+        ;;
+esac

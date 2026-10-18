@@ -16,11 +16,12 @@ include(GNUInstallDirs)
 set(OBUSPA_LOCAL_STATE_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LOCALSTATEDIR}/obuspa)
 message(STATUS "OBUSPA_LOCAL_STATE_DIR: ${OBUSPA_LOCAL_STATE_DIR}")
 
-option(ENABLE_STOMP "enable STOMP Message support" ON)
-option(ENABLE_MQTT "enable MQTT Message support" ON)
-option(ENABLE_COAP "enable CoAP Message support" ON)
-option(ENABLE_WEBSOCKETS "enable WebSockets Message support" ON)
-message(STATUS "MTP to support: STOMP:${ENABLE_STOMP} MQTT:${ENABLE_MQTT} COAP:${ENABLE_COAP} WEBSOCKETS:${ENABLE_WEBSOCKETS}")
+option(ENABLE_STOMP "enable STOMP MTP support" ON)
+option(ENABLE_MQTT "enable MQTT MTP support" ON)
+option(ENABLE_COAP "enable CoAP MTP support" ON)
+option(ENABLE_WEBSOCKETS "enable WebSockets MTP support" ON)
+option(ENABLE_UDS "enable UDS MTP support" ON)
+message(STATUS "MTP to support: STOMP:${ENABLE_STOMP} MQTT:${ENABLE_MQTT} COAP:${ENABLE_COAP} WEBSOCKETS:${ENABLE_WEBSOCKETS} UDS:${ENABLE_UDS}")
 
 add_executable(obuspa
     src/core/main.c)
@@ -41,6 +42,7 @@ target_compile_definitions(obuspa
     $<$<BOOL:${ENABLE_MQTT}>:ENABLE_MQTT>
     $<$<BOOL:${ENABLE_COAP}>:ENABLE_COAP>
     $<$<BOOL:${ENABLE_WEBSOCKETS}>:ENABLE_WEBSOCKETS>
+    $<$<BOOL:${ENABLE_UDS}>:ENABLE_UDS>
     _GNU_SOURCE=1)
 
 target_link_libraries(obuspa

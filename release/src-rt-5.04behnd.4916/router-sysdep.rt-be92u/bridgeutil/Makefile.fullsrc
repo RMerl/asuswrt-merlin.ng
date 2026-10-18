@@ -29,4 +29,5 @@ binaryonly_prepare:
 
 # Generate and use dependencies.
 CFLAGS += -MD -I$(HND_SRC)/kernel/ -I$(HND_SRC)/userspace/private/include/
+CFLAGS += -Werror -Wfatal-errors -Wno-format-truncation -Wno-error=stringop-truncation
 -include $(OBJS:%.o=%.d)

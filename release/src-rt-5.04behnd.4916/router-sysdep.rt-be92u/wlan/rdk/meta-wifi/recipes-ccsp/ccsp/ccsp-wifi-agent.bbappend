@@ -10,6 +10,7 @@ CFLAGS_append += " -U_COSA_SIM_ -fno-exceptions -ffunction-sections -fdata-secti
            -D_COSA_INTEL_USG_ARM_ -D_COSA_FOR_COMCAST_ -D_NO_EXECINFO_H_\
            -DBUILD_WEB -D_NO_ANSC_ZLIB_ -D_DEBUG -U_ANSC_IPV6_COMPATIBLE_ -D_COSA_BCM_ARM_ -DUSE_NOTIFY_COMPONENT \
            -DENABLE_SD_NOTIFY -UPARODUS_ENABLE -U_PLATFORM_RASPBERRYPI_ \
+           -DWPA3_PERSONAL_TRANSITION_AKM24_SUPPORTED \
            -D_ENABLE_BAND_STEERING_ -DBRCM_RDKB -DRDK_BUILD -DBCA_CPEROUTER_RDK"
 
 
@@ -38,12 +39,14 @@ do_install_append(){
      install -m 777 ${WORKDIR}/brcm_checkwifi.sh ${D}/usr/ccsp/wifi/
      install -m 777 ${WORKDIR}/bridge_mode.sh ${D}/usr/ccsp/wifi/
      install -d ${D}${systemd_unitdir}/system/ccspwifiagent.service.d/
+     install -m 777 ${WORKDIR}/wifi-agent.conf ${D}${systemd_unitdir}/system/ccspwifiagent.service.d/wifi-agent.conf
 }
 
 FILES_${PN} += " \
     ${prefix}/ccsp/wifi/CcspWifiSsp \
     ${prefix}/ccsp/wifi/brcm_checkwifi.sh \
     ${prefix}/ccsp/wifi/bridge_mode.sh \
+    ${systemd_unitdir}/system/ccspwifiagent.service.d/wifi-agent.conf \
 "
 
 python() {
@@ -75,4 +78,9 @@ SRC_URI_append += " \
             file://0001-fix-halv3.patch \
             file://0002-fix-mgmt_frame_received_callback-not-defined.patch \
             file://0003-json-c-conflict.patch \
+            file://0004-add-encr_aes_gcmp256.patch \
+            file://0005-thirdRadio-320M-fix.patch \
+            file://0006-add-add-sae-ext-support.patch \
+            file://0007-mlo-dmcli-apply-fix.patch \
+            file://wifi-agent.conf \
             "

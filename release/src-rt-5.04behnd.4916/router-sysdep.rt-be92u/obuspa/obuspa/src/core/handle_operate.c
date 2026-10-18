@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -68,12 +68,12 @@ void AddOperRes_ReqOutputArgs(Usp__OperateResp *oper_resp, char *path, kv_vector
 **
 ** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
 ** \param   controller_endpoint - endpoint which sent this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  None - This code must handle any errors by sending back error messages
 **
 **************************************************************************/
-void MSG_HANDLER_HandleOperate(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt)
+void MSG_HANDLER_HandleOperate(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc)
 {
     int i;
     int err;
@@ -101,7 +101,7 @@ void MSG_HANDLER_HandleOperate(Usp__Msg *usp, char *controller_endpoint, mtp_rep
         (usp->body->request->operate == NULL) )
     {
         USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
+        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp);
         goto exit;
     }
 
@@ -110,7 +110,7 @@ void MSG_HANDLER_HandleOperate(Usp__Msg *usp, char *controller_endpoint, mtp_rep
     if ((oper->n_input_args > 0) && (oper->input_args == NULL))
     {
         USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
+        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp);
         goto exit;
     }
 
@@ -123,7 +123,7 @@ void MSG_HANDLER_HandleOperate(Usp__Msg *usp, char *controller_endpoint, mtp_rep
         if ((ame == NULL) || (ame->key == NULL) || (ame->value == NULL))
         {
             USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
+            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp);
             goto exit;
         }
 
@@ -140,7 +140,7 @@ void MSG_HANDLER_HandleOperate(Usp__Msg *usp, char *controller_endpoint, mtp_rep
     err = PATH_RESOLVER_ResolveDevicePath(oper->command, &paths, NULL, kResolveOp_Oper, FULL_DEPTH, &combined_role, 0);
     if (err != USP_ERR_OK)
     {
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, NULL);
+        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp);
         goto exit;
     }
 
@@ -151,7 +151,7 @@ void MSG_HANDLER_HandleOperate(Usp__Msg *usp, char *controller_endpoint, mtp_rep
         err = DM_TRANS_Start(&trans);
         if (err != USP_ERR_OK)
         {
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, NULL);
+            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp);
             goto exit;
         }
 
@@ -195,7 +195,7 @@ exit:
     // Send the response (if required)
     if ((oper != NULL) && (oper->send_resp) && (resp != NULL))
     {
-        MSG_HANDLER_QueueMessage(controller_endpoint, resp, mrt);
+        MSG_HANDLER_QueueMessage(controller_endpoint, resp, mtpc);
     }
 
     // Free the response structure
@@ -220,43 +220,19 @@ exit:
 **************************************************************************/
 Usp__Msg *CreateOperResp(char *msg_id)
 {
-    Usp__Msg *resp;
-    Usp__Header *header;
-    Usp__Body *body;
-    Usp__Response *response;
+    Usp__Msg *msg;
     Usp__OperateResp *oper_resp;
 
-    // Allocate and initialise memory to store the parts of the USP message
-    resp = USP_MALLOC(sizeof(Usp__Msg));
-    usp__msg__init(resp);
 
-    header = USP_MALLOC(sizeof(Usp__Header));
-    usp__header__init(header);
-
-    body = USP_MALLOC(sizeof(Usp__Body));
-    usp__body__init(body);
-
-    response = USP_MALLOC(sizeof(Usp__Response));
-    usp__response__init(response);
-
+    msg = MSG_HANDLER_CreateResponseMsg(msg_id, USP__HEADER__MSG_TYPE__OPERATE_RESP, USP__RESPONSE__RESP_TYPE_OPERATE_RESP);
     oper_resp = USP_MALLOC(sizeof(Usp__OperateResp));
     usp__operate_resp__init(oper_resp);
-
-    // Connect the structures together
-    resp->header = header;
-    header->msg_id = USP_STRDUP(msg_id);
-    header->msg_type = USP__HEADER__MSG_TYPE__OPERATE_RESP;
-
-    resp->body = body;
-    body->msg_body_case = USP__BODY__MSG_BODY_RESPONSE;
-    body->response = response;
-    response->resp_type_case = USP__RESPONSE__RESP_TYPE_OPERATE_RESP;
-    response->operate_resp = oper_resp;
+    msg->body->response->operate_resp = oper_resp;
 
     oper_resp->n_operation_results = 0;    // Start from an empty list
     oper_resp->operation_results = NULL;
 
-    return resp;
+    return msg;
 }
 
 /*********************************************************************//**

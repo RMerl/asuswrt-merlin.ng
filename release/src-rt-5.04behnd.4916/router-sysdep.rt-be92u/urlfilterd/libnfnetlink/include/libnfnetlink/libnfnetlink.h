@@ -214,7 +214,9 @@ int nlif_index2name(struct nlif_handle *nlif_handle,
 #  define __be64_to_cpu(x)	(x)
 # else
 # if __BYTE_ORDER == __LITTLE_ENDIAN
+# ifndef __be64_to_cpu
 #  define __be64_to_cpu(x)	__bswap_64(x)
+# endif
 # endif
 #endif
 

@@ -32,19 +32,7 @@ install_exe: all
 	install -p -m 755 -t $(EXE_INSTALL_DIR) $(EXE)
 
 
-ifneq ($(strip $(BUILD_SYSV_INIT)),)
-install_scripts: install_exe
-	mkdir -p $(INSTALL_DIR)/etc/init.d
-	mkdir -p $(INSTALL_DIR)/etc/rc3.d
-endif
-
-ifneq ($(strip $(BUILD_SYSTEMD)),)
-install_scripts: install_exe
-endif
-
-
-# first build the exe, then install the startup scripts
-install: install_scripts
+install: install_exe
 
 
 clean:

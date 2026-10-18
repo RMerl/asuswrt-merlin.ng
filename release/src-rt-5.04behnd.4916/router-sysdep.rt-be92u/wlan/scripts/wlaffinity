@@ -24,10 +24,14 @@ if [ $# -lt 1 ]; then
 
 fi
 
+
 # Parse the first argument
 case "$1" in
     auto)
-        auto_config
+	# SKIP_RTPOLICY is active
+	if [ -f "/bin/rtpolicy" ]; then
+		auto_config
+	fi
         exit 0
         ;;
 

@@ -90,6 +90,19 @@ typedef struct Usp__Notify__OperationComplete__OutputArgs__OutputArgsEntry Usp__
 typedef struct Usp__Notify__OperationComplete__CommandFailure Usp__Notify__OperationComplete__CommandFailure;
 typedef struct Usp__Notify__OnBoardRequest Usp__Notify__OnBoardRequest;
 typedef struct Usp__NotifyResp Usp__NotifyResp;
+typedef struct Usp__Register Usp__Register;
+typedef struct Usp__Register__RegistrationPath Usp__Register__RegistrationPath;
+typedef struct Usp__RegisterResp Usp__RegisterResp;
+typedef struct Usp__RegisterResp__RegisteredPathResult Usp__RegisterResp__RegisteredPathResult;
+typedef struct Usp__RegisterResp__RegisteredPathResult__OperationStatus Usp__RegisterResp__RegisteredPathResult__OperationStatus;
+typedef struct Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure;
+typedef struct Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess;
+typedef struct Usp__Deregister Usp__Deregister;
+typedef struct Usp__DeregisterResp Usp__DeregisterResp;
+typedef struct Usp__DeregisterResp__DeregisteredPathResult Usp__DeregisterResp__DeregisteredPathResult;
+typedef struct Usp__DeregisterResp__DeregisteredPathResult__OperationStatus Usp__DeregisterResp__DeregisteredPathResult__OperationStatus;
+typedef struct Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure;
+typedef struct Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess;
 
 
 /* --- enums --- */
@@ -113,7 +126,11 @@ typedef enum _Usp__Header__MsgType {
   USP__HEADER__MSG_TYPE__GET_INSTANCES_RESP = 15,
   USP__HEADER__MSG_TYPE__NOTIFY_RESP = 16,
   USP__HEADER__MSG_TYPE__GET_SUPPORTED_PROTO = 17,
-  USP__HEADER__MSG_TYPE__GET_SUPPORTED_PROTO_RESP = 18
+  USP__HEADER__MSG_TYPE__GET_SUPPORTED_PROTO_RESP = 18,
+  USP__HEADER__MSG_TYPE__REGISTER = 19,
+  USP__HEADER__MSG_TYPE__REGISTER_RESP = 20,
+  USP__HEADER__MSG_TYPE__DEREGISTER = 21,
+  USP__HEADER__MSG_TYPE__DEREGISTER_RESP = 22
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(USP__HEADER__MSG_TYPE)
 } Usp__Header__MsgType;
 typedef enum _Usp__GetSupportedDMResp__ParamAccessType {
@@ -225,7 +242,9 @@ typedef enum {
   USP__REQUEST__REQ_TYPE_DELETE = 6,
   USP__REQUEST__REQ_TYPE_OPERATE = 7,
   USP__REQUEST__REQ_TYPE_NOTIFY = 8,
-  USP__REQUEST__REQ_TYPE_GET_SUPPORTED_PROTOCOL = 9
+  USP__REQUEST__REQ_TYPE_GET_SUPPORTED_PROTOCOL = 9,
+  USP__REQUEST__REQ_TYPE_REGISTER = 10,
+  USP__REQUEST__REQ_TYPE_DEREGISTER = 11
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(USP__REQUEST__REQ_TYPE__CASE)
 } Usp__Request__ReqTypeCase;
 
@@ -243,6 +262,8 @@ struct  Usp__Request
     Usp__Operate *operate;
     Usp__Notify *notify;
     Usp__GetSupportedProtocol *get_supported_protocol;
+    Usp__Register *register_;
+    Usp__Deregister *deregister;
   };
 };
 #define USP__REQUEST__INIT \
@@ -260,7 +281,9 @@ typedef enum {
   USP__RESPONSE__RESP_TYPE_DELETE_RESP = 6,
   USP__RESPONSE__RESP_TYPE_OPERATE_RESP = 7,
   USP__RESPONSE__RESP_TYPE_NOTIFY_RESP = 8,
-  USP__RESPONSE__RESP_TYPE_GET_SUPPORTED_PROTOCOL_RESP = 9
+  USP__RESPONSE__RESP_TYPE_GET_SUPPORTED_PROTOCOL_RESP = 9,
+  USP__RESPONSE__RESP_TYPE_REGISTER_RESP = 10,
+  USP__RESPONSE__RESP_TYPE_DEREGISTER_RESP = 11
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(USP__RESPONSE__RESP_TYPE__CASE)
 } Usp__Response__RespTypeCase;
 
@@ -278,6 +301,8 @@ struct  Usp__Response
     Usp__OperateResp *operate_resp;
     Usp__NotifyResp *notify_resp;
     Usp__GetSupportedProtocolResp *get_supported_protocol_resp;
+    Usp__RegisterResp *register_resp;
+    Usp__DeregisterResp *deregister_resp;
   };
 };
 #define USP__RESPONSE__INIT \
@@ -1193,6 +1218,168 @@ struct  Usp__NotifyResp
     , (char *)protobuf_c_empty_string }
 
 
+struct  Usp__Register__RegistrationPath
+{
+  ProtobufCMessage base;
+  char *path;
+};
+#define USP__REGISTER__REGISTRATION_PATH__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__register__registration_path__descriptor) \
+    , (char *)protobuf_c_empty_string }
+
+
+struct  Usp__Register
+{
+  ProtobufCMessage base;
+  protobuf_c_boolean allow_partial;
+  size_t n_reg_paths;
+  Usp__Register__RegistrationPath **reg_paths;
+};
+#define USP__REGISTER__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__register__descriptor) \
+    , 0, 0,NULL }
+
+
+struct  Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure
+{
+  ProtobufCMessage base;
+  uint32_t err_code;
+  char *err_msg;
+};
+#define USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_FAILURE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__register_resp__registered_path_result__operation_status__operation_failure__descriptor) \
+    , 0, (char *)protobuf_c_empty_string }
+
+
+struct  Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess
+{
+  ProtobufCMessage base;
+  char *registered_path;
+};
+#define USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_SUCCESS__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__register_resp__registered_path_result__operation_status__operation_success__descriptor) \
+    , (char *)protobuf_c_empty_string }
+
+
+typedef enum {
+  USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS__NOT_SET = 0,
+  USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE = 1,
+  USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_SUCCESS = 2
+    PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS__CASE)
+} Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperStatusCase;
+
+struct  Usp__RegisterResp__RegisteredPathResult__OperationStatus
+{
+  ProtobufCMessage base;
+  Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperStatusCase oper_status_case;
+  union {
+    Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure *oper_failure;
+    Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess *oper_success;
+  };
+};
+#define USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__register_resp__registered_path_result__operation_status__descriptor) \
+    , USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS__NOT_SET, {0} }
+
+
+struct  Usp__RegisterResp__RegisteredPathResult
+{
+  ProtobufCMessage base;
+  char *requested_path;
+  Usp__RegisterResp__RegisteredPathResult__OperationStatus *oper_status;
+};
+#define USP__REGISTER_RESP__REGISTERED_PATH_RESULT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__register_resp__registered_path_result__descriptor) \
+    , (char *)protobuf_c_empty_string, NULL }
+
+
+struct  Usp__RegisterResp
+{
+  ProtobufCMessage base;
+  size_t n_registered_path_results;
+  Usp__RegisterResp__RegisteredPathResult **registered_path_results;
+};
+#define USP__REGISTER_RESP__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__register_resp__descriptor) \
+    , 0,NULL }
+
+
+struct  Usp__Deregister
+{
+  ProtobufCMessage base;
+  size_t n_paths;
+  char **paths;
+};
+#define USP__DEREGISTER__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__deregister__descriptor) \
+    , 0,NULL }
+
+
+struct  Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure
+{
+  ProtobufCMessage base;
+  uint32_t err_code;
+  char *err_msg;
+};
+#define USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_FAILURE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__descriptor) \
+    , 0, (char *)protobuf_c_empty_string }
+
+
+struct  Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess
+{
+  ProtobufCMessage base;
+  size_t n_deregistered_path;
+  char **deregistered_path;
+};
+#define USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_SUCCESS__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__deregister_resp__deregistered_path_result__operation_status__operation_success__descriptor) \
+    , 0,NULL }
+
+
+typedef enum {
+  USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS__NOT_SET = 0,
+  USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE = 1,
+  USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_SUCCESS = 2
+    PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS__CASE)
+} Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperStatusCase;
+
+struct  Usp__DeregisterResp__DeregisteredPathResult__OperationStatus
+{
+  ProtobufCMessage base;
+  Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperStatusCase oper_status_case;
+  union {
+    Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure *oper_failure;
+    Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess *oper_success;
+  };
+};
+#define USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__deregister_resp__deregistered_path_result__operation_status__descriptor) \
+    , USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPER_STATUS__NOT_SET, {0} }
+
+
+struct  Usp__DeregisterResp__DeregisteredPathResult
+{
+  ProtobufCMessage base;
+  char *requested_path;
+  Usp__DeregisterResp__DeregisteredPathResult__OperationStatus *oper_status;
+};
+#define USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__deregister_resp__deregistered_path_result__descriptor) \
+    , (char *)protobuf_c_empty_string, NULL }
+
+
+struct  Usp__DeregisterResp
+{
+  ProtobufCMessage base;
+  size_t n_deregistered_path_results;
+  Usp__DeregisterResp__DeregisteredPathResult **deregistered_path_results;
+};
+#define USP__DEREGISTER_RESP__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp__deregister_resp__descriptor) \
+    , 0,NULL }
+
+
 /* Usp__Msg methods */
 void   usp__msg__init
                      (Usp__Msg         *message);
@@ -1802,6 +1989,109 @@ Usp__NotifyResp *
 void   usp__notify_resp__free_unpacked
                      (Usp__NotifyResp *message,
                       ProtobufCAllocator *allocator);
+/* Usp__Register__RegistrationPath methods */
+void   usp__register__registration_path__init
+                     (Usp__Register__RegistrationPath         *message);
+/* Usp__Register methods */
+void   usp__register__init
+                     (Usp__Register         *message);
+size_t usp__register__get_packed_size
+                     (const Usp__Register   *message);
+size_t usp__register__pack
+                     (const Usp__Register   *message,
+                      uint8_t             *out);
+size_t usp__register__pack_to_buffer
+                     (const Usp__Register   *message,
+                      ProtobufCBuffer     *buffer);
+Usp__Register *
+       usp__register__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   usp__register__free_unpacked
+                     (Usp__Register *message,
+                      ProtobufCAllocator *allocator);
+/* Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure methods */
+void   usp__register_resp__registered_path_result__operation_status__operation_failure__init
+                     (Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure         *message);
+/* Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess methods */
+void   usp__register_resp__registered_path_result__operation_status__operation_success__init
+                     (Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess         *message);
+/* Usp__RegisterResp__RegisteredPathResult__OperationStatus methods */
+void   usp__register_resp__registered_path_result__operation_status__init
+                     (Usp__RegisterResp__RegisteredPathResult__OperationStatus         *message);
+/* Usp__RegisterResp__RegisteredPathResult methods */
+void   usp__register_resp__registered_path_result__init
+                     (Usp__RegisterResp__RegisteredPathResult         *message);
+/* Usp__RegisterResp methods */
+void   usp__register_resp__init
+                     (Usp__RegisterResp         *message);
+size_t usp__register_resp__get_packed_size
+                     (const Usp__RegisterResp   *message);
+size_t usp__register_resp__pack
+                     (const Usp__RegisterResp   *message,
+                      uint8_t             *out);
+size_t usp__register_resp__pack_to_buffer
+                     (const Usp__RegisterResp   *message,
+                      ProtobufCBuffer     *buffer);
+Usp__RegisterResp *
+       usp__register_resp__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   usp__register_resp__free_unpacked
+                     (Usp__RegisterResp *message,
+                      ProtobufCAllocator *allocator);
+/* Usp__Deregister methods */
+void   usp__deregister__init
+                     (Usp__Deregister         *message);
+size_t usp__deregister__get_packed_size
+                     (const Usp__Deregister   *message);
+size_t usp__deregister__pack
+                     (const Usp__Deregister   *message,
+                      uint8_t             *out);
+size_t usp__deregister__pack_to_buffer
+                     (const Usp__Deregister   *message,
+                      ProtobufCBuffer     *buffer);
+Usp__Deregister *
+       usp__deregister__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   usp__deregister__free_unpacked
+                     (Usp__Deregister *message,
+                      ProtobufCAllocator *allocator);
+/* Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure methods */
+void   usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__init
+                     (Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure         *message);
+/* Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess methods */
+void   usp__deregister_resp__deregistered_path_result__operation_status__operation_success__init
+                     (Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess         *message);
+/* Usp__DeregisterResp__DeregisteredPathResult__OperationStatus methods */
+void   usp__deregister_resp__deregistered_path_result__operation_status__init
+                     (Usp__DeregisterResp__DeregisteredPathResult__OperationStatus         *message);
+/* Usp__DeregisterResp__DeregisteredPathResult methods */
+void   usp__deregister_resp__deregistered_path_result__init
+                     (Usp__DeregisterResp__DeregisteredPathResult         *message);
+/* Usp__DeregisterResp methods */
+void   usp__deregister_resp__init
+                     (Usp__DeregisterResp         *message);
+size_t usp__deregister_resp__get_packed_size
+                     (const Usp__DeregisterResp   *message);
+size_t usp__deregister_resp__pack
+                     (const Usp__DeregisterResp   *message,
+                      uint8_t             *out);
+size_t usp__deregister_resp__pack_to_buffer
+                     (const Usp__DeregisterResp   *message,
+                      ProtobufCBuffer     *buffer);
+Usp__DeregisterResp *
+       usp__deregister_resp__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   usp__deregister_resp__free_unpacked
+                     (Usp__DeregisterResp *message,
+                      ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*Usp__Msg_Closure)
@@ -2029,6 +2319,45 @@ typedef void (*Usp__Notify_Closure)
 typedef void (*Usp__NotifyResp_Closure)
                  (const Usp__NotifyResp *message,
                   void *closure_data);
+typedef void (*Usp__Register__RegistrationPath_Closure)
+                 (const Usp__Register__RegistrationPath *message,
+                  void *closure_data);
+typedef void (*Usp__Register_Closure)
+                 (const Usp__Register *message,
+                  void *closure_data);
+typedef void (*Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure_Closure)
+                 (const Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure *message,
+                  void *closure_data);
+typedef void (*Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess_Closure)
+                 (const Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess *message,
+                  void *closure_data);
+typedef void (*Usp__RegisterResp__RegisteredPathResult__OperationStatus_Closure)
+                 (const Usp__RegisterResp__RegisteredPathResult__OperationStatus *message,
+                  void *closure_data);
+typedef void (*Usp__RegisterResp__RegisteredPathResult_Closure)
+                 (const Usp__RegisterResp__RegisteredPathResult *message,
+                  void *closure_data);
+typedef void (*Usp__RegisterResp_Closure)
+                 (const Usp__RegisterResp *message,
+                  void *closure_data);
+typedef void (*Usp__Deregister_Closure)
+                 (const Usp__Deregister *message,
+                  void *closure_data);
+typedef void (*Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure_Closure)
+                 (const Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure *message,
+                  void *closure_data);
+typedef void (*Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess_Closure)
+                 (const Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess *message,
+                  void *closure_data);
+typedef void (*Usp__DeregisterResp__DeregisteredPathResult__OperationStatus_Closure)
+                 (const Usp__DeregisterResp__DeregisteredPathResult__OperationStatus *message,
+                  void *closure_data);
+typedef void (*Usp__DeregisterResp__DeregisteredPathResult_Closure)
+                 (const Usp__DeregisterResp__DeregisteredPathResult *message,
+                  void *closure_data);
+typedef void (*Usp__DeregisterResp_Closure)
+                 (const Usp__DeregisterResp *message,
+                  void *closure_data);
 
 /* --- services --- */
 
@@ -2116,6 +2445,19 @@ extern const ProtobufCMessageDescriptor usp__notify__operation_complete__output_
 extern const ProtobufCMessageDescriptor usp__notify__operation_complete__command_failure__descriptor;
 extern const ProtobufCMessageDescriptor usp__notify__on_board_request__descriptor;
 extern const ProtobufCMessageDescriptor usp__notify_resp__descriptor;
+extern const ProtobufCMessageDescriptor usp__register__descriptor;
+extern const ProtobufCMessageDescriptor usp__register__registration_path__descriptor;
+extern const ProtobufCMessageDescriptor usp__register_resp__descriptor;
+extern const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__descriptor;
+extern const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__operation_status__descriptor;
+extern const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__operation_status__operation_failure__descriptor;
+extern const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__operation_status__operation_success__descriptor;
+extern const ProtobufCMessageDescriptor usp__deregister__descriptor;
+extern const ProtobufCMessageDescriptor usp__deregister_resp__descriptor;
+extern const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__descriptor;
+extern const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__operation_status__descriptor;
+extern const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__descriptor;
+extern const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__operation_status__operation_success__descriptor;
 
 PROTOBUF_C__END_DECLS
 

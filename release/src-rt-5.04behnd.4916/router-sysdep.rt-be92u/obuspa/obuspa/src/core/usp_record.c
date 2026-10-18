@@ -1,7 +1,8 @@
 /*
  *
- * Copyright (C) 2022, Broadband Forum
+ * Copyright (C) 2022-2024, Broadband Forum
  * Copyright (C) 2022, Snom Technology GmbH
+ * Copyright (C) 2023  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,7 +32,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 /**
  * \file usp_record.c
  *
@@ -192,6 +192,53 @@ void USPREC_StompConnect_Create(char *cont_endpoint_id, char *destination, mtp_s
     usp_record__stompconnect_record__init(&stomp);
     stomp.subscribed_destination = destination;
     stomp.version = USP_RECORD__STOMPCONNECT_RECORD__STOMPVERSION__V1_2;  // Hardcoded to v1.2, the only supported version
+
+    // Serialize the protobuf record structure into a buffer
+    len = usp_record__record__get_packed_size(&rec);
+    buf = USP_MALLOC(len);
+    size = usp_record__record__pack(&rec, buf);
+    USP_ASSERT(size == len);          // If these are not equal, then we may have had a buffer overrun, so terminate
+
+    // Prepare the MTP item information now it is serialized.
+    MTP_EXEC_MtpSendItem_Init(msi);
+    msi->usp_msg_type = INVALID_USP_MSG_TYPE;
+    msi->content_type = kMtpContentType_ConnectRecord;
+    msi->pbuf = buf;  // Ownership of the serialized USP Record is passed back to the caller
+    msi->pbuf_len = len;
+}
+
+/*********************************************************************//**
+**
+** USPREC_UdsConnect_Create
+**
+** Creates a UDS Connect record
+**
+** \param   cont_endpoint_id - Controller endpoint_id to send the record to
+** \param   msi - pointer to structure in which to return the connect record
+**
+** \return  None
+**
+**************************************************************************/
+void USPREC_UdsConnect_Create(char *cont_endpoint_id, mtp_send_item_t *msi)
+{
+    UspRecord__Record rec;
+    UspRecord__UDSConnectRecord uds;
+    unsigned char *buf;
+    int len;
+    int size;
+
+    // Fill in the USP Record structure
+    // NOTE: No need to dynamically allocate structure members, as structure is stack allocated and will not be freed with usp_record__record__free_unpacked()
+    usp_record__record__init(&rec);
+    rec.version = AGENT_CURRENT_PROTOCOL_VERSION;
+    rec.to_id = cont_endpoint_id;
+    rec.from_id = DEVICE_LOCAL_AGENT_GetEndpointID();
+    rec.payload_security = USP_RECORD__RECORD__PAYLOAD_SECURITY__PLAINTEXT;
+    rec.record_type_case = USP_RECORD__RECORD__RECORD_TYPE_UDS_CONNECT;
+    rec.uds_connect= &uds;
+
+    //Initialize the UDS Connect record
+    usp_record__udsconnect_record__init(&uds);
 
     // Serialize the protobuf record structure into a buffer
     len = usp_record__record__get_packed_size(&rec);

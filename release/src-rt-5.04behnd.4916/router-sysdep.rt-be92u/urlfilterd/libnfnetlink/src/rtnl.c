@@ -195,7 +195,7 @@ int rtnl_receive(struct rtnl_handle *rtnl_handle)
 /* rtnl_open - constructor of rtnetlink module */
 struct rtnl_handle *rtnl_open(void)
 {
-	size_t addrlen;
+	socklen_t addrlen;
 	struct rtnl_handle *h;
 
 	h = calloc(1, sizeof(struct rtnl_handle));

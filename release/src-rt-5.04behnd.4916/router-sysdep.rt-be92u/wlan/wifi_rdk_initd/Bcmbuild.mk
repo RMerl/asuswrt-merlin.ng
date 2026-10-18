@@ -31,7 +31,7 @@ ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
 
 export ARCH CFLAGS BCM_LD_FLAGS CMS_LIB_PATH CMS_OPTION_RPATH CMS_LIB_RPATH EXE_INSTALL_DIR
 export INSTALL_DIR
-export BUILD_DBUS BUILD_UBUS BUILD_SYSV_INIT BUILD_SYSTEMD
+export BUILD_DBUS BUILD_UBUS
 
 
 # Remove all mdm_cbk_* and bcm_*_hal libs from CMS_CORE_LIBS.  The local
@@ -49,12 +49,14 @@ FINAL_EXE_INSTALL_DIR := $(INSTALL_DIR)/bin
 
 ifneq ($(strip $(BRCM_DRIVER_WIRELESS)),)
 ifneq ($(strip $(BUILD_DISTRIBUTED_MDM)),)
-COND_BUILD_WIFI_MD := 1
+ifneq ($(strip $(RDK_BUILD)),)
+COND_BUILD_WIFI_RDK_INITD := 1
+endif
 endif
 endif
 
 
-ifeq ($(strip $(COND_BUILD_WIFI_MD)),1)
+ifeq ($(strip $(COND_BUILD_WIFI_RDK_INITD)),1)
 
 conditional_build:
 	mkdir -p objs

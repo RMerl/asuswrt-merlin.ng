@@ -58,7 +58,6 @@ int devCtl_getSequenceNumber(int image);
 int devCtl_getImageState(void);
 int devCtl_getImageVersion(int partition, char *verStr, int verStrSize);
 int devCtl_getBootedImagePartition(void);
-int devCtl_getBootedImageId(void);
 
 /*
  * ****************** WARNING: THIS FILE IS DEPRECATED ****************

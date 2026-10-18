@@ -132,6 +132,28 @@ BcmRet ethswUtil_getLANWanEthPortNumByPrefix(const char *prefix,
 BcmRet ethswUtil_getLANOnlyEthPortNumByPrefix(const char *prefix,
                                               UINT32 prefixLen, UINT32 *numP);
 
+/*
+ * Function:
+ *    bcm_phy_speed_get
+ * Description:
+ *  This function tests ethtool speeds list against network interface capabilities bitmap aka 'supported'
+ * Parameters:
+ *    iface             (IN)  network interface OS name.
+ *    is_max_speed_caps (IN)  enables to decide whether to return the lowest (wan assymetric interace) or the highest (either wan/lan ethernet) link speed
+ *    link_speed        (OUT) network interface highest supported speed (Mbps)
+ * Returns:
+ *    0  on success, Negative otherwise
+ */
+int bcm_phy_speed_get(const char *iface, const char is_max_speed_caps, uint32_t *link_speed);
 
+typedef enum {
+   __TS_10_MBPS    = 0x00,
+   __TS_100_MBPS         ,
+   __TS_1000_MBPS        ,
+   __TS_2500_MBPS        ,
+   __TS_5000_MBPS        ,
+   __TS_10000_MBPS       ,
+   __TS_LAST   /*End sentinel*/
+} transmission_speeds_t;
 
 #endif /* __BCM_ETHSWUTIL_H__ */

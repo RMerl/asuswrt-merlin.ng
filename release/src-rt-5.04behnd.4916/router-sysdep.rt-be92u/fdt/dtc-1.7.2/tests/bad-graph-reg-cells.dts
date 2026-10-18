@@ -1,0 +1,36 @@
+/dts-v1/;
+ / {
+	bar: bar {
+		ports {
+			#address-cells = <1>;
+			#size-cells = <1>; // should always be 0
+			port@1 {
+				reg = <1 2>; // should always contain only a single cell
+				bar_con: endpoint {
+					remote-endpoint = <&foo_con>;
+				};
+			};
+			port@2 {
+				reg = <2>;
+				bar_con2: endpoint {
+					remote-endpoint = <&foo_con2>;
+				};
+			};
+		};
+	};
+	foo {
+		port {
+			#address-cells = <1>;
+			#size-cells = <1>; // should always be 0
+			foo_con: endpoint@1 {
+				reg = <1 2>; // should always contain only a single cell
+				remote-endpoint = <&bar_con>;
+			};
+			foo_con2: endpoint@2 {
+				reg = <2>;
+				remote-endpoint = <&bar_con2>;
+			};
+		};
+
+	};
+};

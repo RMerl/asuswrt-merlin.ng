@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -47,6 +47,12 @@
 // Maximum socket timeout that the code uses - 1 hour in milliseconds
 #define MAX_SOCKET_TIMEOUT_SECONDS 3600
 #define MAX_SOCKET_TIMEOUT (MAX_SOCKET_TIMEOUT_SECONDS*SECONDS)
+
+//------------------------------------------------------------------------------
+// Maximum time to hold off connecting in the case of the can_mtp_connect vendor hook
+// indicating that the USP Agent should not attempt to connect
+// NOTE: This time in milliseconds (ie *1000)  must fit into a 32 bit signed integer without overflow on 32 bit platforms
+#define CAN_MTP_CONNECT_RETRY_TIME  7*24*60*60   // One week in seconds
 
 //------------------------------------------------------------------------------
 // Socket set structure

@@ -14,7 +14,7 @@
 
 CmsImageFormat parseImgHdr(UINT8 *bufP __attribute__((unused)), UINT32 bufLen __attribute__((unused)))
 {
-   int result = CMS_IMAGE_FORMAT_FLASH;
+   int result = CMS_IMAGE_FORMAT_BROADCOM;
 
    return result;
 }

@@ -47,9 +47,6 @@ LIBS = -L$(INSTALL_DIR)/lib -L$(INSTALL_DIR)/usr/lib -ldl
 ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
  CFLAGS += $(USR_CFLAGS)
  LIBS += -lssk_util
- ifneq ($(strip $(BUILD_PMD)),)
- LIBS += -Wl,-rpath,$(BCM_FSBUILD_DIR)/private/lib:$(BCM_FSBUILD_DIR)/public/lib -L$(BCM_FSBUILD_DIR)/private/lib -lpmd -L$(BCM_FSBUILD_DIR)/public/lib -ljson-c
- endif
  LIBS += -lcms_msg $(CMS_COMMON_LIBS) -lcms_dal -lcms_msg $(CMS_COMMON_LIBS) $(MDM_CORE_LIBS)
  ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
   LIBS += -lstaged -ljson-c -lpthread
@@ -109,7 +106,6 @@ ALLOWED_INCLUDE_PATHS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
 						 -I$(INC_BRCMDRIVER_PRIV_PATH)/$(BRCM_BOARD) \
 						 -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD) \
 						 -I$(SHARED_DIR)/broadcom/include/$(BRCM_BOARD) \
-						 -I$(SHARED_DIR)/opensource/include/$(BRCM_BOARD) \
 						 -I$(INC_WIRELESS_DRIVER_PATH) \
 						 -I$(WIRELESS_DRIVER_PATH)/bcmcrypto \
 						 -I$(WIRELESS_DRIVER_PATH)/include \
@@ -142,9 +138,6 @@ endif
 
 CFLAGS += -DWMF
 CFLAGS += -DDUCATI
-ifneq ($(strip $(BUILD_WL_IDLE_PWRSAVE)),)
-   CFLAGS += -DIDLE_PWRSAVE
-endif
 
 ifeq ($(BUILD_WLHSPOT),y)
 CFLAGS += -DHSPOT_SUPPORT

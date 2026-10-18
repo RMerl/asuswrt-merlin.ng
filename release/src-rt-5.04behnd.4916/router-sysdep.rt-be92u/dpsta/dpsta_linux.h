@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024, Broadcom. All Rights Reserved.
+ * Copyright (C) 2025, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,9 +14,9 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
+ * <<Broadcom-WL-IPTag/Dual:>>
  *
- * $Id: dpsta_linux.h 773108 2019-03-13 07:14:59Z $
+ * $Id: dpsta_linux.h 832689 2023-11-10 16:41:06Z $
  */
 
 #ifndef _DPSTA_LINUX_H_

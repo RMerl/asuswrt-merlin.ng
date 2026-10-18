@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2024 Uwe Kleine-König
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+
+/dts-v1/;
+
+/ {
+	node_a: a {
+		value = <17>;
+	};
+
+	node_b: b {
+		a = <&node_a>;
+	};
+
+	node_d: d {
+		b = <&node_b>;
+	};
+};

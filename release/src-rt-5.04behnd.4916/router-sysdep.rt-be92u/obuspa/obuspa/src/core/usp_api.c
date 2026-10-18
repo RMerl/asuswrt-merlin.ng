@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -50,6 +50,7 @@
 #include "device.h"
 #include "dm_inst_vector.h"
 #include "dm_trans.h"
+#include "str_vector.h"
 
 /*********************************************************************//**
 **
@@ -247,6 +248,47 @@ int USP_DM_GetInstances(char *path, int *vector, int max_entries, int *num_entri
 exit:
     INT_VECTOR_Destroy(&iv);
     return err;
+}
+
+
+/*********************************************************************//**
+**
+** USP_DM_IsRegistered
+**
+** Determines whether the specified data model schema path is registered in the supported data model
+** The path should use either the '{i}' or '*' notation instead of instance numbers. Any instance numbers in the path are treated as '{i}'
+** IMPORTANT:  This function checks for presence in the supported data model, not the instantiated data model.
+**
+** \param   path - supported data model path of the data model element
+**
+** \return  true if the specified data model element exists in the supported data model, false otherwise
+**
+**************************************************************************/
+bool USP_DM_IsRegistered(char *path)
+{
+    dm_node_t *node;
+
+    // Exit if this function has invalid arguments
+    if (path == NULL)
+    {
+        USP_ERR_SetMessage("%s: Invalid argument (path is NULL)", __FUNCTION__);
+        return USP_ERR_INTERNAL_ERROR;
+    }
+
+    // Exit if this function is not being called from the data model thread
+    if (OS_UTILS_IsDataModelThread(__FUNCTION__, PRINT_WARNING)==false)
+    {
+        return USP_ERR_INTERNAL_ERROR;
+    }
+
+    // Exiit if the path does not exist in the data model
+    node = DM_PRIV_GetNodeFromPath(path, NULL, NULL, DONT_LOG_ERRORS);
+    if (node == NULL)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /*********************************************************************//**
@@ -571,8 +613,8 @@ int USP_ARG_GetDateTime(kv_vector_t *kvv, char *key, char *default_value, time_t
 **
 ** USP_ARG_Destroy
 **
-** Deallocates all memory associated with the key-value pair vector
-** This is the opposite of USP_ARG_Create()
+** Deallocates all memory associated with the key-value pair vector, apart from the kv_vector_t structure itself
+** This is the opposite of USP_ARG_Init()
 **
 ** \param   kvv - pointer to structure to destroy all dynmically allocated memory it contains
 **
@@ -582,6 +624,74 @@ int USP_ARG_GetDateTime(kv_vector_t *kvv, char *key, char *default_value, time_t
 void USP_ARG_Destroy(kv_vector_t *kvv)
 {
     KV_VECTOR_Destroy(kvv);
+}
+
+/*********************************************************************//**
+**
+** USP_ARG_Delete
+**
+** Deallocates all memory associated with the key-value pair vector, including the kv_vector_t structure itself
+** This is the opposite of USP_ARG_Create()
+**
+** \param   kvv - pointer to structure to destroy all dynmically allocated memory it contains
+**
+** \return  None
+**
+**************************************************************************/
+void USP_ARG_Delete(kv_vector_t *kvv)
+{
+    KV_VECTOR_Destroy(kvv);
+    USP_FREE(kvv);
+}
+
+/*********************************************************************//**
+**
+** USP_STR_VEC_Init
+**
+** Initialises a string vector structure
+**
+** \param   sv - pointer to structure to initialise
+**
+** \return  None
+**
+**************************************************************************/
+void USP_STR_VEC_Init(str_vector_t *sv)
+{
+    STR_VECTOR_Init(sv);
+}
+
+/*********************************************************************//**
+**
+** USP_STR_VEC_Add
+**
+** Copies a string into the vector of strings
+**
+** \param   sv - pointer to structure to add the string to
+** \param   str - pointer to string to copy
+**
+** \return  None
+**
+**************************************************************************/
+void USP_STR_VEC_Add(str_vector_t *sv, char *str)
+{
+    STR_VECTOR_Add(sv, str);
+}
+
+/*********************************************************************//**
+**
+** USP_STR_VEC_Destroy
+**
+** Deallocates all memory associated with the string vector, apart from the str_vector_t structure itself
+** This is the opposite of USP_STR_VEC_Init()
+**
+** \param   sv - pointer to structure to destroy all dynmically allocated memory it contains
+**
+** \return  None
+**
+**************************************************************************/
+void USP_STR_VEC_Destroy(str_vector_t *sv)
+{
+    STR_VECTOR_Destroy(sv);
 }
 
 /*********************************************************************//**
@@ -622,23 +732,37 @@ char *USP_CONVERT_UnixTimeToDateTime(time_t unix_time, char *buf, int len)
 **
 ** USP_DM_RegisterRoleName
 **
-** Sets the name of a role
+** Sets an entry in the Device.LocalAgent.ControllerTrust.Role.{i} table
 **
-** \param   role - role to which we want to assign a name
+** \param   role_instance - Instance in Device.LocalAgent.ControllerTrust.Role.{i} to which we want to assign a name
+** \param   name - name of the role
 **
 ** \return  USP_ERR_OK if successful
 **
 **************************************************************************/
-int USP_DM_RegisterRoleName(ctrust_role_t role, char *name)
+int USP_DM_RegisterRoleName(int role_instance, char *name)
 {
+    int err;
+    char buf[MAX_DM_PATH];
+
     // Exit if role is out of bounds
-    if ((role < kCTrustRole_Min) || (role >= kCTrustRole_Max))
+    // NOTE: This check is necessary because USP_DM_AddControllerTrustPermission() sizes an array for only MAX_CTRUST_ROLES instances
+    if ((role_instance < 1) || (role_instance >= MAX_CTRUST_ROLES))
     {
-        USP_ERR_SetMessage("%s: Supplied role (%d) is out of bounds (expected < %d)", __FUNCTION__, role, kCTrustRole_Max);
+        USP_ERR_SetMessage("%s: Supplied role (%d) is out of bounds (expected < %d)", __FUNCTION__, role_instance, MAX_CTRUST_ROLES);
         return USP_ERR_INTERNAL_ERROR;
     }
 
-    DEVICE_CTRUST_RegisterRoleName(role, name);
+    // Set this role in the database
+    USP_SNPRINTF(buf, sizeof(buf), "cpe-%d", role_instance);
+    err  = DEVICE_CTRUST_SetRoleParameter(role_instance, "Alias", buf);
+    err |= DEVICE_CTRUST_SetRoleParameter(role_instance, "Name", name);
+    err |= DEVICE_CTRUST_SetRoleParameter(role_instance, "Enable", "true");
+    if (err != USP_ERR_OK)
+    {
+        USP_LOG_Error("%s: Failed to set Role.%d", __FUNCTION__, role_instance);
+        return USP_ERR_INTERNAL_ERROR;
+    }
 
     return USP_ERR_OK;
 }
@@ -647,39 +771,94 @@ int USP_DM_RegisterRoleName(ctrust_role_t role, char *name)
 **
 ** USP_DM_AddControllerTrustPermission
 **
-** Adds additional permissions for the specified role and data model nodes
+** Adds an entry to the Device.LocalAgent.ControllerTrust.Rol.{i}.Permission.{i} table
 **
-** \param   role - role whose data model permissions are being changed
+** \param   role_instance - Instance in Device.LocalAgent.ControllerTrust.Role.{i} to which we want to add a permission
 ** \param   path - pointer to path expression specifying which data model nodes are modified
-**                 Currently this only supports partial paths, full paths and wildcards
+**                 Currently this only supports partial paths, full paths and wildcards. Instance numbers in the path are not supported.
 ** \param   permission_bitmask - bitmask of permissions to apply to the data model nodes
 **
 ** \return  USP_ERR_OK if successful
 **
 **************************************************************************/
-int USP_DM_AddControllerTrustPermission(ctrust_role_t role, char *path, unsigned short permission_bitmask)
+int USP_DM_AddControllerTrustPermission(int role_instance, char *path, unsigned short permission_bitmask)
 {
+    int err;
     dm_node_t *node;
+    static int permission_count[MAX_CTRUST_ROLES] = {0};
+    char buf[MAX_DM_SHORT_VALUE_LEN];
+    int perm_instance;
 
     // Exit if role is out of bounds
-    if ((role < kCTrustRole_Min) || (role >= kCTrustRole_Max))
+    // NOTE: This check is necessary because permission_count[] is sized based on instance numbers in the range 1..MAX_CTRUST_ROLES
+    if ((role_instance < 1) || (role_instance >= MAX_CTRUST_ROLES))
     {
-        USP_ERR_SetMessage("%s: Supplied role (%d) is out of bounds (expected < %d)", __FUNCTION__, role, kCTrustRole_Max);
+        USP_ERR_SetMessage("%s: Supplied role (%d) is out of bounds (expected < %d)", __FUNCTION__, role_instance, MAX_CTRUST_ROLES);
         return USP_ERR_INTERNAL_ERROR;
     }
 
     // Exit if path is not a data model path
-    node =  DM_PRIV_GetNodeFromPath(path, NULL, NULL);
+    // This may occur if the path is owned by a USP Service, and the USP Service has not registered yet.
+    // In this case, when the USP Service registers the path, the permissions will be set then, instead of now
+    node =  DM_PRIV_GetNodeFromPath(path, NULL, NULL, DONT_LOG_ERRORS);
     if (node == NULL)
     {
+        return USP_ERR_OK;
+    }
+
+    // Increment the permission instance counter for this role
+    permission_count[role_instance-1]++;
+    perm_instance = permission_count[role_instance-1];
+
+    // Set this permission in the database
+    USP_SNPRINTF(buf, sizeof(buf), "cpe-%d", perm_instance);
+    err  = DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "Alias", buf);
+    err |= DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "Enable", "true");
+
+    USP_SNPRINTF(buf, sizeof(buf), "%d", perm_instance);
+    err |= DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "Order", buf);
+    err |= DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "Targets", path);
+
+    // Set Device.ControllerTrust.Role.{i}.Permission.{i}.Param
+    #define PERM_CHAR(perm_char, mask) (permission_bitmask & mask) ? perm_char : '-';
+    buf[0] = PERM_CHAR('r', PERMIT_GET);
+    buf[1] = PERM_CHAR('w', PERMIT_SET);
+    buf[2] = '-';
+    buf[3] = PERM_CHAR('n', PERMIT_SUBS_VAL_CHANGE);
+    buf[4] = '\0';
+    err |= DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "Param", buf);
+
+    // Set Device.ControllerTrust.Role.{i}.Permission.{i}.Obj
+    buf[0] = PERM_CHAR('r', PERMIT_OBJ_INFO);
+    buf[1] = PERM_CHAR('w', PERMIT_ADD);
+    buf[2] = '-';
+    buf[3] = PERM_CHAR('n', PERMIT_SUBS_OBJ_ADD);
+    buf[4] = '\0';
+    err |= DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "Obj", buf);
+
+    // Set Device.ControllerTrust.Role.{i}.Permission.{i}.InstantiatedObj
+    buf[0] = PERM_CHAR('r', PERMIT_GET_INST);
+    buf[1] = PERM_CHAR('w', PERMIT_DEL);
+    buf[2] = '-';
+    buf[3] = PERM_CHAR('n', PERMIT_SUBS_OBJ_DEL);
+    buf[4] = '\0';
+    err |= DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "InstantiatedObj", buf);
+
+    // Set Device.ControllerTrust.Role.{i}.Permission.{i}.CommandEvent
+    buf[0] = PERM_CHAR('r', PERMIT_CMD_INFO);
+    buf[1] = '-';
+    buf[2] = PERM_CHAR('x', PERMIT_OPER);
+    buf[3] = PERM_CHAR('n', PERMIT_SUBS_EVT_OPER_COMP);
+    buf[4] = '\0';
+    err |= DEVICE_CTRUST_SetPermissionParameter(role_instance, perm_instance, "CommandEvent", buf);
+
+    if (err != USP_ERR_OK)
+    {
+        USP_LOG_Error("%s: Failed to set Role.%d.Permission.%d", __FUNCTION__, role_instance, perm_instance);
         return USP_ERR_INTERNAL_ERROR;
     }
 
-    // Apply the permissions
-    DM_PRIV_ApplyPermissions(node, role, permission_bitmask);
-
-    // Add the permissions used to the permissions table
-    return DEVICE_CTRUST_AddPermissions(role, path, permission_bitmask);
+    return USP_ERR_OK;
 }
 
 /*********************************************************************//**

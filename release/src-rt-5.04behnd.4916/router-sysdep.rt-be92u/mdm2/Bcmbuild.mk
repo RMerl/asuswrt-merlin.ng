@@ -17,19 +17,14 @@ endif
 ARCH                  := $(PROFILE_ARCH)
 LOCAL_BUILD_SUBDIR    := objs/$(ARCH)
 LIB_INSTALL_DIR       := $(BCM_FSBUILD_DIR)/private/lib$(BCM_INSTALL_SUFFIX_DIR)
-HEADER_INSTALL_DIR    := $(BCM_FSBUILD_DIR)/private/include
 ALLOWED_INCLUDE_PATHS := -I . \
                          -I $(BCM_FSBUILD_DIR)/public/include \
                          -I $(BCM_FSBUILD_DIR)/private/include \
-                         -I $(BUILD_DIR)/userspace/public/include  \
-                         -I $(BUILD_DIR)/userspace/public/include/$(OALDIR) \
-                         -I $(BUILD_DIR)/userspace/private/include  \
-                         -I $(BUILD_DIR)/userspace/private/include/$(OALDIR) \
-                         -I $(BUILD_DIR)/userspace/private/libs/cms_core \
-                         -I $(BUILD_DIR)/userspace/private/libs/cms_core/linux
+                         -I $(BCM_FSBUILD_DIR)/private/include/cms_core \
+                         -I $(BCM_FSBUILD_DIR)/private/include/mdm2
 
 
-export ARCH CFLAGS LIB_INSTALL_DIR HEADER_INSTALL_DIR
+export ARCH CFLAGS LIB_INSTALL_DIR
 
 
 # Final location of LIB for system image.  Only the BRCM build system needs to
@@ -48,7 +43,14 @@ endif
 
 ifeq ($(strip $(COND_BUILD_MDM2)),1)
 
-conditional_build:
+ifneq ($(wildcard Makefile.fullsrc),)
+copy_src:
+	cp -up $(BCM_FSBUILD_DIR)/private/include/mdm2/Device2_Baseline_1.c .
+else
+copy_src:
+endif
+
+conditional_build: copy_src
 	mkdir -p $(LOCAL_BUILD_SUBDIR)
 	$(MAKE) -C $(LOCAL_BUILD_SUBDIR) -f ../../Makefile install
 	mkdir -p  $(FINAL_LIB_INSTALL_DIR)
@@ -66,6 +68,7 @@ clean:
 	rm -f $(FINAL_LIB_INSTALL_DIR)/$(LIB)
 	-mkdir -p $(LOCAL_BUILD_SUBDIR)
 	-$(MAKE) -C $(LOCAL_BUILD_SUBDIR) -f ../../Makefile clean
+	rm -f Device2_Baseline_1.c
 	rm -rf objs
 
 

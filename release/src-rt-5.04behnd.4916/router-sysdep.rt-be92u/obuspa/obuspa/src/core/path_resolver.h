@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,6 +43,7 @@
 
 #include <limits.h>
 
+#include "usp_api.h"
 #include "str_vector.h"
 
 // Enumeration determining what we are attempting to resolve with the path expression
@@ -58,7 +59,7 @@ typedef enum
     kResolveOp_Instances, // Resolves fully qualified objects that exist
 
     // The following operations are similar to their conterparts above, other than they check different permission bits
-    kResolveOp_SubsValChange, // Resolves the ReferenceList of a value change subscription. Forgiving of errors.
+    kResolveOp_SubsValChange, // Resolves the ReferenceList of a value change subscription. Forgiving of errors and does not include VALUE_CHANGE_WILL_IGNORE parameters
     kResolveOp_SubsAdd, // Resolves the ReferenceList of an object creation subscription
     kResolveOp_SubsDel, // Resolves the ReferenceList of an object deletion subscription
     kResolveOp_SubsOper,// Resolves the ReferenceList of an operation complete subscription
@@ -75,7 +76,8 @@ typedef enum
 } resolve_op_t;
 
 // Bitmask for the flags argument of PATH_RESOLVER_ResolvePath(). These flags control resolving of the path
-#define GET_ALL_INSTANCES 0x0001
+#define DONT_LOG_RESOLVER_ERRORS 0x0001  // Don't log any errors that the path resolver finds. This flag is used to prevent unnecessary logging when periodically resolving subscription paths
+#define GET_ALL_INSTANCES        0x0002  // Resolve all instances recursively, not just the ones in the path expression (implements first_level_only=false in Get Instances request)
 
 // Constant for depth argument to indicate traversal of all hierarchical levels in the data model when performing partial path resolution
 #define FULL_DEPTH  (INT_MAX)
@@ -83,6 +85,7 @@ typedef enum
 // API
 int PATH_RESOLVER_ResolveDevicePath(char *path, str_vector_t *sv, int_vector_t *gv, resolve_op_t op, int depth, combined_role_t *combined_role, unsigned flags);
 int PATH_RESOLVER_ResolvePath(char *path, str_vector_t *sv, int_vector_t *gv, resolve_op_t op, int depth, combined_role_t *combined_role, unsigned flags);
+int PATH_RESOLVER_ValidatePath(char *path, subs_notify_t notify_type);
 
 
 

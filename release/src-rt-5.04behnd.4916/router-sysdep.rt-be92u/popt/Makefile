@@ -31,10 +31,12 @@ objs/$(PROFILE_ARCH)/Makefile: $(LIBNAME)/configure
 
 all: check_config
 	mkdir -p $(INSTALL_DIR)/lib/public/
-	cd objs/$(PROFILE_ARCH) ; $(MAKE)
-	cd objs/$(PROFILE_ARCH) ; $(MAKE) install
+	# cd objs/$(PROFILE_ARCH) ; $(MAKE)
+	# cd objs/$(PROFILE_ARCH) ; $(MAKE) install
+	cd objs/armhfp ; $(MAKE)
+	cd objs/armhfp ; $(MAKE) install
 	mkdir -p  $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
-	cp -d $(BCM_FSBUILD_DIR)/public/lib/libpopt.so* $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
+	cp -d objs/$(PROFILE_ARCH)/.libs/libpopt.so* $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
 
 clean:
 	rm -f $(INSTALL_DIR)/lib/public/libpopt.so*
@@ -43,9 +45,11 @@ clean:
 	rm -rf $(LIBNAME)
 
 install:
-	cd objs/$(PROFILE_ARCH) ; $(MAKE) install
+	# cd objs/$(PROFILE_KARCH) ; $(MAKE) install
+	cd objs/armhfp ; $(MAKE) install
 	mkdir -p  $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
-	cp -d $(BCM_FSBUILD_DIR)/public/lib/libpopt.so* $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
+	cp -d objs/$(PROFILE_ARCH)/.libs/libpopt.so* $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
+	cp -d objs/$(PROFILE_ARCH)/.libs/libpopt.so* $(BCM_FSBUILD_DIR)/public/lib/
 
 bcm_dorel_distclean: distclean
 

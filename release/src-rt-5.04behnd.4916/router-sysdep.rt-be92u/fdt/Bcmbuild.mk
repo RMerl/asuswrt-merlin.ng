@@ -1,13 +1,31 @@
+LIB := libfdt.so
 
-all dynamic: conditional_build
+all install: $(LIB)
 
-libfdt_src_name := dtc-1.7.0
+
+ifeq ($(BCM_MODULAR_BUILD),)
+  # Old way: infer location of make.common based on pwd.
+  CURR_DIR := $(shell pwd)
+  BUILD_DIR:=$(HND_SRC)
+  include $(BUILD_DIR)/make.common
+else
+  # New Modular Build way: EXT_BUILD_DIR must be set.
+  # Also point BUILD_DIR to EXT_BUILD_DIR
+  BUILD_DIR := $(EXT_BUILD_DIR)
+  include $(EXT_BUILD_DIR)/make.common
+endif
 
 # BRCM_SUPPORTS_MULTIARCH_BUILD
+ARCH=$(PROFILE_ARCH)
+LOCAL_BUILD_SUBDIR    := objs/$(ARCH)
+LIB_INSTALL_DIR       := $(BCM_FSBUILD_DIR)/public/lib
+HEADER_INSTALL_DIR    := $(BCM_FSBUILD_DIR)/public/include
+ALLOWED_INCLUDE_PATHS := -I . \
+                         -I $(BCM_FSBUILD_DIR)/include \
+                         -I $(BCM_FSBUILD_DIR)/public/include
 
-CURR_DIR := $(shell pwd)
-BUILD_DIR:=$(HND_SRC)
-include $(BUILD_DIR)/make.common
+ALLOWED_LIB_DIRS := /lib:/public/lib
+
 
 ifeq ($(strip $(DESKTOP_LINUX)),y)
 EXTRA_CFLAGS := $(BCM_LD_FLAGS)
@@ -17,45 +35,40 @@ export LDFLAGS
 else
 EXTRA_CFLAGS := -Wno-sign-compare
 endif
+
+
 export LINUX_VER_STR TOOLCHAIN_PREFIX EXTRA_CFLAGS
+export ARCH CFLAGS BCM_LIB_PATH
+export LIB_INSTALL_DIR HEADER_INSTALL_DIR
+export INSTALL
+export BUILD_DTC
 
-check_untar:
-	if [ ! -e $(libfdt_src_name)/Makefile ]; then \
-	echo "Untarring original $(libfdt_src_name) source"; \
-		unzip $(libfdt_src_name).zip; \
-		touch $(libfdt_src_name)/Makefile; \
-	fi;
 
-libfdt: check_untar
-	mkdir -p $(INSTALL_DIR)/lib/public/
-	(export PKG_CONFIG_LIBDIR=$(BCM_FSBUILD_DIR)/public/lib; \
-	export PKG_CONFIG_PATH=$(BCM_FSBUILD_DIR)/public/lib/pkgconfig; \
-	cd $(libfdt_src_name); \
-	$(MAKE) NO_PYTHON=1 libfdt PREFIX=$(BCM_FSBUILD_DIR)/public/; \
-	$(MAKE) NO_PYTHON=1 libfdt PREFIX=$(BCM_FSBUILD_DIR)/public/ INSTALL="$(INSTALL)" install-lib ; \
-	$(MAKE) NO_PYTHON=1 libfdt PREFIX=$(BCM_FSBUILD_DIR)/public/ INSTALL="$(INSTALL)" install-includes; )
-	mkdir -p  $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
-	cp -d $(BCM_FSBUILD_DIR)/public/lib/libfdt*.so* $(INSTALL_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
+# Final location of LIB for system image.  Only the BRCM build system needs to
+# know about this.
+FINAL_LIB_INSTALL_DIR := $(EXT_DEVICEFS_DIR)/lib$(BCM_INSTALL_SUFFIX_DIR)
 
-conditional_build: libfdt
-ifneq ($(strip $(BUILD_DTC)),)
-	mkdir -p $(INSTALL_DIR)/bin
-	cp $(libfdt_src_name)/dtc $(INSTALL_DIR)/bin/
-endif
+
+$(LIB):
+	mkdir -p $(LOCAL_BUILD_SUBDIR)
+	$(MAKE) -C $(LOCAL_BUILD_SUBDIR) -f ../../Makefile install
+	mkdir -p  $(FINAL_LIB_INSTALL_DIR)
+	cp -fav $(LIB_INSTALL_DIR)/libfdt*.so* $(FINAL_LIB_INSTALL_DIR)
 
 
 clean:
-	rm -f $(INSTALL_DIR)/lib/public/libfdt.so*
-	rm -f $(INSTALL_DIR)/bin/dtc
-	if [ -e $(libfdt_src_name)/Makefile ]; then \
-		cd $(libfdt_src_name); $(MAKE) clean; \
-	fi;
-	rm -rf $(libfdt_src_name)
+	rm -f $(FINAL_LIB_INSTALL_DIR)/libfdt*.so*
+	-mkdir -p $(LOCAL_BUILD_SUBDIR)
+	-$(MAKE) -C $(LOCAL_BUILD_SUBDIR) -f ../../Makefile clean
+	rm -rf objs
 
-bcm_dorel_distclean: distclean
 
-distclean: clean
+# The source code in this directory is released to everyone,
+# so binaryonly_prepare is the same as clean
+CONSUMER_RELEASE_BINARYONLY_PREPARE: clean
+
 
 shell:
-	bash -i
-
+	@echo "Entering makefile debug shell (type exit to exit) >>>"
+	@bash -i
+	@echo "exiting debug shell."

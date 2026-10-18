@@ -38,6 +38,16 @@ ifneq  ($(strip $(BUILD_BPM_TRACK)),)
 CFLAGS += -DBPM_TRACK
 endif
 
+ifneq  ($(strip $(BRCM_BPM_SW_ONLY))$(strip $(BRCM_BPM_SW_BACKUP)),)
+CFLAGS += -DBPMCTL_SW_STATS
+endif
+
+ifneq  ($(strip $(BRCM_BPM_HW_ONLY))$(strip $(BRCM_BPM_SW_BACKUP)),)
+CFLAGS += -DBPMCTL_HW_STATS
+ifneq  ($(strip $(BRCM_BPM_HW_CACHE_SUPPORT)),)
+CFLAGS += -DBPMCTL_HW_CACHE_SUPPORT
+endif
+endif
 #
 # Private apps and libs are allowed to include header files from the
 # private and public directories.
@@ -82,6 +92,8 @@ CFLAGS += -include stdint.h
 ifeq ($(strip $(BUILD_BPMCTL)), static)
 CFLAGS += -DBUILD_STATIC
 endif
+
+CFLAGS += -Werror -Wfatal-errors
 
 static: $(PROGRAM_NAME).a
 

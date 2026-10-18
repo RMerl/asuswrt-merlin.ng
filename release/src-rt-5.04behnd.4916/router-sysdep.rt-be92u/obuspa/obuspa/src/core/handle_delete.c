@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -50,17 +50,33 @@
 #include "path_resolver.h"
 #include "device.h"
 #include "text_utils.h"
+#include "group_del_vector.h"
+
+
+//------------------------------------------------------------------------------
+// Structure used to marshall entries in group del vector for a path expression
+// This structure is equivalent to the deleted_obj_results object in the USP Set Response message
+typedef struct
+{
+    char *req_path;     // Path expression string (owned by USP Delete Request message).
+    int index;          // Start index of objects in group del vector for this requested path
+    int num_objects;    // Number of objects in group del vector index that the path expression resolved to
+
+    int err_code;       // error code if the requested path failed to resolve
+    char *err_msg;      // textual cause of error if the requested path failed to resolve
+} del_expr_info_t;
 
 //------------------------------------------------------------------------------
 // Forward declarations. Note these are not static, because we need them in the symbol table for USP_LOG_Callstack() to show them
-int DeleteExpressionObjects(Usp__DeleteResp *del_resp, char *exp_path, bool allow_partial);
-Usp__Msg *CreateDeleteResp(char *msg_id);
-Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure *AddDeleteResp_OperFailure(Usp__DeleteResp *del_resp, char *path, uint32_t err_code, char *err_msg);
+Usp__Msg *ProcessDel_AllowPartialTrue(char *msg_id, del_expr_info_t *del_expr_info, int num_del_expr, group_del_vector_t *gdv, combined_role_t *combined_role);
+Usp__Msg *ProcessDel_AllowPartialFalse(char *msg_id, del_expr_info_t *del_expr_info, int num_del_expr, group_del_vector_t *gdv, combined_role_t *combined_role);
+Usp__Msg *CreateFullDeleteResp(char *msg_id, del_expr_info_t *del_expr_info, int num_del_expr_info, group_del_vector_t *gdv);
+Usp__Msg *CreateBasicDeleteResp(char *msg_id);
 Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationSuccess *AddDeleteResp_OperSuccess(Usp__DeleteResp *del_resp, char *path);
 void AddOperSuccess_AffectedPath(Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationSuccess *oper_success, char *path);
 void AddOperSuccess_UnaffectedPathError(Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationSuccess *oper_success, char *path, uint32_t err_code, char *err_msg);
-void RemoveDeleteResp_LastDeletedObjResult(Usp__DeleteResp *del_resp);
-int ParamError_FromDeleteRespToErrResp(Usp__Msg *del_msg, Usp__Msg *err_msg);
+Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure *AddDeleteResp_OperFailure(Usp__DeleteResp *del_resp, char *path, uint32_t err_code, char *err_msg);
+int DeleteAllInstancesProvidedByGroupId(int group_id, del_expr_info_t *del_expr_info, int num_del_expr, group_del_vector_t *gdv, char **failed_path);
 
 /*********************************************************************//**
 **
@@ -70,20 +86,27 @@ int ParamError_FromDeleteRespToErrResp(Usp__Msg *del_msg, Usp__Msg *err_msg);
 **
 ** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
 ** \param   controller_endpoint - endpoint which sent this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  None - This code must handle any errors by sending back error messages
 **
 **************************************************************************/
-void MSG_HANDLER_HandleDelete(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt)
+void MSG_HANDLER_HandleDelete(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc)
 {
     int i;
     int err;
     Usp__Delete *del;
     Usp__Msg *resp = NULL;
+    str_vector_t obj_paths;
+    int_vector_t group_ids;
+    combined_role_t combined_role;
     char *exp_path;
-    dm_trans_vector_t trans;
-    int count;
+    group_del_vector_t gdv;
+    del_expr_info_t *del_expr_info = NULL;
+    del_expr_info_t *di;
+    int num_del_expr = 0;
+
+    GROUP_DEL_VECTOR_Init(&gdv);
 
     // Exit if message is invalid or failed to parse
     // This code checks the parsed message enums and pointers for expectations and validity
@@ -93,236 +116,443 @@ void MSG_HANDLER_HandleDelete(Usp__Msg *usp, char *controller_endpoint, mtp_repl
         (usp->body->request->delete_ == NULL) )
     {
         USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
+        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp);
         goto exit;
     }
 
-    // Create a Delete Response
-    resp = CreateDeleteResp(usp->header->msg_id);
-
-    // Exit if there are no objects to delete
+    // Exit if there are no objects to delete, sending back an empty delete response
     del = usp->body->request->delete_;
     if ((del->obj_paths == NULL) || (del->n_obj_paths == 0))
     {
+        resp = CreateBasicDeleteResp(usp->header->msg_id);
         goto exit;
     }
 
-#ifdef BDK_USP
-    err = USP_ERR_OK;
-    exp_path = NULL;
-#endif
-    // Start a transaction here, if allow_partial is at the global level
-    if (del->allow_partial == false)
+    DEVICE_SUBSCRIPTION_ResolveObjectDeletionPaths();
+
+    // Iterate over all paths in the message, resolving them into a set of objects to delete
+    num_del_expr = del->n_obj_paths;
+    del_expr_info = USP_MALLOC(num_del_expr*sizeof(del_expr_info_t));
+    MSG_HANDLER_GetMsgRole(&combined_role);
+    for (i=0; i < num_del_expr; i++)
     {
-        err = DM_TRANS_Start(&trans);
-        if (err != USP_ERR_OK)
-        {
-            // If failed to start a transaction, send an error message
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, NULL);
-            goto exit;
-        }
+        exp_path = del->obj_paths[i];
+        di = &del_expr_info[i];
+        di->req_path = exp_path;
+        di->index = gdv.num_entries;
 
-#ifdef BDK_USP
-        exp_path = NULL;
-        // validate over all paths in the message
-        for (i=0; i < del->n_obj_paths; i++)
+        STR_VECTOR_Init(&obj_paths);
+        INT_VECTOR_Init(&group_ids);
+        err = PATH_RESOLVER_ResolveDevicePath(exp_path, &obj_paths, &group_ids, kResolveOp_Del, FULL_DEPTH, &combined_role, 0);
+        if (err == USP_ERR_OK)
         {
-            unsigned short permission_bitmask;
-            combined_role_t combined_role;
-
-            MSG_HANDLER_GetMsgRole(&combined_role);
-            exp_path = del->obj_paths[i];
-            err = DATA_MODEL_GetPermissions(exp_path, &combined_role,
-                                            &permission_bitmask);
-            /* found an invalid object path or a delete permission error */
-            if ((err == USP_ERR_INVALID_PATH) ||
-                !(permission_bitmask & PERMIT_DEL))
-            {
-                break;
-            }
-        }
-#endif
-    }
-
-    // Iterate over all paths in the message
-    for (i=0; i < del->n_obj_paths; i++)
-    {
-#ifdef BDK_USP
-        /*
-         * The workaround when allow_partial is false, we loop through all the
-         * requested paths and check for an erroneous path. If there is an
-         * erroneous path (USP_ERR_INVALID_PATH found), we trigger an error by 
-         * calling DeleteExpressionObjects(erroneous path) first. When an error 
-         * occurs, the operation exits and send ERROR message type to the 
-         * controller. This will avoid deleting the valid object since we 
-         * cannot undo the delete in the case an error occurs later.
-         */
-        if (err == USP_ERR_INVALID_PATH)
-        {
-            err = DeleteExpressionObjects(resp->body->response->delete_resp,
-                                          exp_path, del->allow_partial);;
+            // NOTE: Path resolution may result in no objects to delete, if the requested object has already been deleted
+            GROUP_DEL_VECTOR_AddObjectsToDelete(&gdv, &obj_paths, &group_ids);
+            di->num_objects = obj_paths.num_entries;
+            di->err_code = USP_ERR_OK;
+            di->err_msg = NULL;
         }
         else
         {
-            // Delete the specified path
-            exp_path = del->obj_paths[i];
-            err = DeleteExpressionObjects(resp->body->response->delete_resp,
-                                          exp_path, del->allow_partial);
+            di->num_objects = 0;
+            di->err_code = err;
+            di->err_msg = USP_STRDUP(USP_ERR_GetMessage());
         }
-#else
-        // Delete the specified path
-        exp_path = del->obj_paths[i];
-        err = DeleteExpressionObjects(resp->body->response->delete_resp, exp_path, del->allow_partial);
-#endif
 
-        // If allow_partial is at the global level, and an error occurred, then fail this
-        if ((del->allow_partial == false) && (err != USP_ERR_OK))
-        {
-            // A required object failed to delete
-            // So delete the DeleteResponse message, and send an error message instead
-            count = ParamError_FromDeleteRespToErrResp(resp, NULL);
-            err = ERROR_RESP_CalcOuterErrCode(count, err);
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, ParamError_FromDeleteRespToErrResp);
-
-            // Abort the global transaction, only logging errors (the message we want to send back over USP is above)
-            DM_TRANS_Abort();
-            goto exit;
-        }
+        STR_VECTOR_Destroy(&obj_paths);
+        INT_VECTOR_Destroy(&group_ids);
     }
 
-    // Commit transaction here, if allow_partial is at the global level
-    if (del->allow_partial == false)
+    // Process differently, depending on whether allow_partial is set or not
+    if (del->allow_partial == true)
     {
-        err = DM_TRANS_Commit();
-        if (err != USP_ERR_OK)
-        {
-            // If failed to commit, delete the DeleteResponse message, and send an error message instead
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, NULL);
-            goto exit;
-        }
+        resp = ProcessDel_AllowPartialTrue(usp->header->msg_id, del_expr_info, num_del_expr, &gdv, &combined_role);
     }
-
+    else
+    {
+        resp = ProcessDel_AllowPartialFalse(usp->header->msg_id, del_expr_info, num_del_expr, &gdv, &combined_role);
+    }
 
 exit:
-    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mrt);
+    // Free del_exp_info vector
+    for (i=0; i<num_del_expr; i++)
+    {
+        di = &del_expr_info[i];
+        USP_SAFE_FREE(di->err_msg);
+        // NOTE: No need to free req_path, as ownership of it stays with the Delete request message
+    }
+    USP_SAFE_FREE(del_expr_info);
+
+    GROUP_DEL_VECTOR_Destroy(&gdv);
+    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mtpc);
     usp__msg__free_unpacked(resp, pbuf_allocator);
 }
 
 /*********************************************************************//**
 **
-** DeleteExpressionObjects
+** ProcessDel_AllowPartialTrue
 **
-** Deletes all the objects of the specified path expression
-** Always fills in a DeletedObjectResult for this data model object
+** Processes a Delete request where AllowPartial is true. This means that failure to delete any object does not affect deletion of any other object
 **
-** \param   del_resp - pointer to USP delete response object, which is updated with the results of this operation
-** \param   exp_path - pointer to expression path containing object(s) to delete
-** \param   allow_partial - set to true if failures in this object do not affect all others.
+** \param   msg_id - string containing the message id of the USP message, which initiated this response
+** \param   del_expr_info - pointer to array tying the resolved objects to delete in group del vector, back to the requested paths to delete in the delete request message
+** \param   num_del_expr - number of entries in del_expr_info
+** \param   gdv - pointer to group del vector containing the objects to delete
+** \param   combined_role - roles to use when performing the delete
 **
-** \return  USP_ERR_OK if successful
+** \return  Pointer to an AddResponse message
 **
 **************************************************************************/
-int DeleteExpressionObjects(Usp__DeleteResp *del_resp, char *exp_path, bool allow_partial)
+Usp__Msg *ProcessDel_AllowPartialTrue(char *msg_id, del_expr_info_t *del_expr_info, int num_del_expr, group_del_vector_t *gdv, combined_role_t *combined_role)
 {
     int i;
     int err;
-    str_vector_t obj_paths;
-    Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationSuccess *oper_success;
-    combined_role_t combined_role;
     dm_trans_vector_t trans;
+    group_del_entry_t *gde;
+    Usp__Msg *resp;
 
-    // Exit if unable to resolve to objects that are instantiated
-    STR_VECTOR_Init(&obj_paths);
-    MSG_HANDLER_GetMsgRole(&combined_role);
-    err = PATH_RESOLVER_ResolveDevicePath(exp_path, &obj_paths, NULL, kResolveOp_Del, FULL_DEPTH, &combined_role, 0);
-    if (err != USP_ERR_OK)
+    // Iterate over all objects to delete
+    for (i=0; i < gdv->num_entries; i++)
     {
-        AddDeleteResp_OperFailure(del_resp, exp_path, err, USP_ERR_GetMessage());
-        goto exit;
-    }
-
-    // Add the OperationSuccess object (ie assume successful operation)
-    oper_success = AddDeleteResp_OperSuccess(del_resp, exp_path);
-
-    // Iterate over all object paths resolved for this Object expression
-    for (i=0; i < obj_paths.num_entries; i++)
-    {
-        // Start a transaction here, if allow_partial is at the path expression level
-        if (allow_partial == true)
+        gde = &gdv->vector[i];
+        err = DM_TRANS_Start(&trans);
+        if (err == USP_ERR_OK)
         {
-            // Exit if unable to start a transaction. Note if this occurs, an error response is returned
-            err = DM_TRANS_Start(&trans);
-            if (err != USP_ERR_OK)
+            // Delete the specified object
+            err = DATA_MODEL_DeleteInstance(gde->path, CHECK_DELETABLE);
+
+            // Commit or abort the transaction based on whether the object deleted successfully
+            if (err == USP_ERR_OK)
             {
-                return err;
+                err = DM_TRANS_Commit();
+            }
+            else
+            {
+                DM_TRANS_Abort();
             }
         }
 
-        // Delete the object
-        err = DATA_MODEL_DeleteInstance(obj_paths.vector[i], CHECK_DELETABLE);
-        if (err == USP_ERR_OK)
+        // Update group del vector if an error occurred deleting this object (and no error has been saved yet for this object)
+        if (err != USP_ERR_OK)
         {
-            // No error occurred, so add to the list of objects successfully deleted
-            AddOperSuccess_AffectedPath(oper_success, obj_paths.vector[i]);
+            gde->err_code = err;
+            gde->err_msg = USP_STRDUP(USP_ERR_GetMessage());
+        }
+    }
 
-            // Commit the transaction here, if allow_partial is at the individual object level
-            if (allow_partial == true)
+    // Create the delete response from the results stored in the group del vector
+    resp = CreateFullDeleteResp(msg_id, del_expr_info, num_del_expr, gdv);
+
+    return resp;
+}
+
+/*********************************************************************//**
+**
+** ProcessDel_AllowPartialFalse
+**
+** Processes a Delete request where AllowPartial is false. This means that failure to delete any object results in USP error
+**
+** \param   msg_id - string containing the message id of the USP message, which initiated this request
+** \param   del_expr_info - pointer to array tying the resolved objects to delete in group del vector, back to the requested paths to delete in the delete request message
+** \param   num_del_expr - number of entries in del_expr_info
+** \param   gdv - pointer to group del vector containing the objects to delete
+** \param   combined_role - roles to use when performing the add
+**
+** \return  Pointer to an AddResponse message
+**
+**************************************************************************/
+Usp__Msg *ProcessDel_AllowPartialFalse(char *msg_id, del_expr_info_t *del_expr_info, int num_del_expr, group_del_vector_t *gdv, combined_role_t *combined_role)
+{
+    int i, j;
+    int err = USP_ERR_OK;
+    Usp__Msg *resp = NULL;
+    group_del_entry_t *gde;
+    dm_trans_vector_t trans;
+    del_expr_info_t *di;
+    int outer_err;
+    int group_id;
+    char *failed_path = NULL;
+
+    // Exit if any of the paths failed to resolve
+    for (i=0; i < num_del_expr; i++)
+    {
+        di = &del_expr_info[i];
+        if (di->err_code != USP_ERR_OK)
+        {
+            outer_err = ERROR_RESP_CalcOuterErrCode(di->err_code);
+            resp = ERROR_RESP_Create(msg_id, outer_err, USP_ERR_GetMessage());
+            ERROR_RESP_AddParamError(resp, di->req_path, di->err_code, USP_ERR_GetMessage());
+            goto exit;
+        }
+    }
+
+    // Ensure all resolved paths are provided by the same data model provider as all the others
+    // This is necessary because it is not possible to wind back the deletion of objects across multiple providers
+    if (GROUP_DEL_VECTOR_AreAllPathsTheSameGroupId(gdv, &group_id) == false)
+    {
+        USP_ERR_SetMessage("%s: Cannot process a delete with allow_partial=false across multiple USP Services", __FUNCTION__);
+        resp = ERROR_RESP_Create(msg_id, USP_ERR_RESOURCES_EXCEEDED, USP_ERR_GetMessage());
+        goto exit;
+    }
+
+    // Exit if unable to start a transaction
+    err = DM_TRANS_Start(&trans);
+    if (err != USP_ERR_OK)
+    {
+        resp = ERROR_RESP_Create(msg_id, err, USP_ERR_GetMessage());
+        goto exit;
+    }
+
+    // Delete all instances provided by the internal data model of this executable
+    for (i=0; i < num_del_expr; i++)
+    {
+        di = &del_expr_info[i];
+        for (j=di->index; j < di->index + di->num_objects; j++)
+        {
+            gde = &gdv->vector[j];
+            if (gde->group_id == NON_GROUPED)
             {
-                err = DM_TRANS_Commit();
+                // Exit if unable to delete any of the specified objects
+                err = DATA_MODEL_DeleteInstance(gde->path, CHECK_DELETABLE);
                 if (err != USP_ERR_OK)
                 {
+                    failed_path = di->req_path;
                     goto exit;
                 }
             }
         }
-        else
+    }
+
+    // Delete all instances owned by the data model provider component (if a data model provider component was involved in this delete)
+    if (group_id != NON_GROUPED)
+    {
+        err = DeleteAllInstancesProvidedByGroupId(group_id, del_expr_info, num_del_expr, gdv, &failed_path);
+        if (err != USP_ERR_OK)
         {
-            // If the code gets here, the delete failed
-            // Abort transaction here, if allow_partial is at the path expression level
-            if (allow_partial == true)
+            goto exit;
+        }
+    }
+
+    // Commit transaction for all deleted instances provided by the internal data model
+    err = DM_TRANS_Commit();
+    if (err != USP_ERR_OK)
+    {
+        resp = ERROR_RESP_Create(msg_id, err, USP_ERR_GetMessage());
+        goto exit;
+    }
+
+    // Create the delete response from the results stored in the group del vector
+    resp = CreateFullDeleteResp(msg_id, del_expr_info, num_del_expr, gdv);
+
+exit:
+    // If no response has been created yet, then this must be because an error occurred
+    // So create an error response and rollback the database transaction
+    if (resp == NULL)
+    {
+        USP_ASSERT(err != USP_ERR_OK);
+        USP_ASSERT(failed_path != NULL);
+        outer_err = ERROR_RESP_CalcOuterErrCode(err);
+        resp = ERROR_RESP_Create(msg_id, outer_err, USP_ERR_GetMessage());
+        ERROR_RESP_AddParamError(resp, failed_path, err, USP_ERR_GetMessage());
+        DM_TRANS_Abort();
+    }
+
+    return resp;
+}
+
+/*********************************************************************//**
+**
+** DeleteAllInstancesProvidedByGroupId
+**
+** Deletes all objects in the group delete vector provided by the specified data model provider component
+** NOTE: This function is only called when allow_partial=false, and it aims to delete all objects using a single atomic multi-delete
+**
+** \param   group_id - identifies the data model provider component, which we want to delete objects from
+** \param   del_expr_info - pointer to array tying the resolved objects to delete in group del vector, back to the requested paths to delete in the delete request message
+** \param   num_del_expr - number of entries in del_expr_info
+** \param   gdv - pointer to group del vector containing the objects to delete
+** \param   failed_path - pointer to variable in which to return a pointer to the first path that failed to delete
+**
+** \return  USP_ERR_OK if successful
+**
+**************************************************************************/
+int DeleteAllInstancesProvidedByGroupId(int group_id, del_expr_info_t *del_expr_info, int num_del_expr, group_del_vector_t *gdv, char **failed_path)
+{
+    int i, j;
+    int err;
+    group_del_entry_t *gde;
+    del_expr_info_t *di;
+    dm_multi_del_cb_t   multi_del_cb;
+    int index = INVALID;
+    char **paths;
+    int num_paths;
+    int count;
+
+    // Get the multi-delete vendor hook
+    USP_ASSERT(group_id < MAX_VENDOR_PARAM_GROUPS);
+    multi_del_cb = group_vendor_hooks[group_id].multi_del_cb;
+
+    // If no multi delete vendor hook was registered, then fallback to deleting the instances individually
+    // NOTE: This has the disadvantage that the delete is not atomic - if any instance fails to delete, we cannot add back any instances which were deleted successfully
+    // Also it can lead to instance cache mismatch, as the failure will rollback the instance cache, but instances have been deleted on the data model provider component.
+    // (this is avoided by setting the instance cache expiry time to -1 for USP Services)
+    if (multi_del_cb == NULL)
+    {
+        for (i=0; i < num_del_expr; i++)
+        {
+            di = &del_expr_info[i];
+            for (j=di->index; j < di->index + di->num_objects; j++)
             {
-                // Signal back that we failed to delete this object, but continue with the next object in the loop
-                AddOperSuccess_UnaffectedPathError(oper_success, obj_paths.vector[i], err, USP_ERR_GetMessage());
-                DM_TRANS_Abort();          // Explicitly ignoring errors, as the error code we want to return is that of the
-                                           // original failure
+                gde = &gdv->vector[j];
+                if (gde->group_id == group_id)
+                {
+                    // Exit if unable to delete any of the specified objects
+                    err = DATA_MODEL_DeleteInstance(gde->path, CHECK_DELETABLE);
+                    if (err != USP_ERR_OK)
+                    {
+                        *failed_path = di->req_path;
+                        goto exit;
+                    }
+                }
             }
-            else
+        }
+        err = USP_ERR_OK;
+        goto exit;
+    }
+
+    // If the code gets here, then a multi-delete vendor hook was registered
+    // Form the array of paths to delete for the specified data model provider component
+    paths = USP_MALLOC(gdv->num_entries*sizeof(char *));  // NOTE: This array is larger than strictly required, if some of the objects in the group delete vector were in the local data model
+    num_paths = 0;
+    for (i=0; i < gdv->num_entries; i++)
+    {
+        gde = &gdv->vector[i];
+        if (gde->group_id == group_id)
+        {
+            paths[num_paths] = gde->path;
+            num_paths++;
+        }
+    }
+
+    // Attempt to delete all paths using a single multi-delete IPC operation
+    err = multi_del_cb(group_id, false, paths, num_paths, &index);
+    USP_FREE(paths);        // NOTE: No need to delete the entries in the paths array, as they are still owned by group delete vector
+
+    // Exit if an error occurred, determining the first path which failed to delete
+    if (err != USP_ERR_OK)
+    {
+        if (index != INVALID)
+        {
+            count = 0;
+            for (i=0; i < num_del_expr; i++)
             {
-                // Exit if the delete failed, and we don't allow partial deletion of all objects
-                // Remove the success object and replace with a failure object.
-                // The failure object will get converted into the param_errs element of the Error Message
-                RemoveDeleteResp_LastDeletedObjResult(del_resp);
-                AddDeleteResp_OperFailure(del_resp, exp_path, err, USP_ERR_GetMessage());
-                goto exit;
+                di = &del_expr_info[i];
+                for (j=di->index; j < di->index + di->num_objects; j++)
+                {
+                    gde = &gdv->vector[j];
+                    if (gde->group_id == group_id)
+                    {
+                        if (count == index)
+                        {
+                            *failed_path = di->req_path;
+                            goto exit;
+                        }
+                        count++;
+                    }
+                }
             }
         }
     }
 
-    // NOTE: If the code gets here, the last DeletedObjectResult will be an OperSuccess
-    // If all deletions failed, then change the OperSuccess into an OperFailure
-    if ((oper_success->n_affected_paths == 0) && (oper_success->n_unaffected_path_errs > 0))
+    // If the code gets here, then no error occurred, so all objects were deleted successfully
+    // Ensure that the objects are deleted from the instance cache, and that they would result in USP notifications being sent
+    for (i=0; i < gdv->num_entries; i++)
     {
-        // Keep a copy of the first unaffected path errs error message in the OperSuccess, as we want to put it in the OperFailure
-        char err_msg[USP_ERR_MAXLEN];
-        err = oper_success->unaffected_path_errs[0]->err_code;
-        USP_STRNCPY(err_msg, oper_success->unaffected_path_errs[0]->err_msg, sizeof(err_msg));
-
-        // Remove the success object and replace with a failure object
-        RemoveDeleteResp_LastDeletedObjResult(del_resp);
-        AddDeleteResp_OperFailure(del_resp, exp_path, err, err_msg);
+        gde = &gdv->vector[i];
+        if (gde->group_id == group_id)
+        {
+            DATA_MODEL_NotifyInstanceDeleted(gde->path);
+        }
     }
-
-    // If the code gets here, then all objects have been deleted successfully
     err = USP_ERR_OK;
 
 exit:
-    STR_VECTOR_Destroy(&obj_paths);
     return err;
 }
 
 /*********************************************************************//**
 **
-** CreateDeleteResp
+** CreateFullDeleteResp
+**
+** Forms a DeleteResponse object using the results stored in the specified group del vector
+**
+** \param   msg_id - string containing the message id of the del request, which initiated this response
+** \param   del_expr_info - pointer to array tying the resolved objects to delete in group del vector, back to the requested paths to delete in the delete request message
+** \param   num_del_expr - number of entries in del_expr_info
+** \param   gdv - pointer to group del vector containing the results of attempting to add the objects
+**
+** \return  Pointer to an AddResponse message
+**
+**************************************************************************/
+Usp__Msg *CreateFullDeleteResp(char *msg_id, del_expr_info_t *del_expr_info, int num_del_expr, group_del_vector_t *gdv)
+{
+    int i, j;
+    Usp__Msg *resp;
+    Usp__DeleteResp *del_resp;
+    del_expr_info_t *di;
+    group_del_entry_t *gde;
+    Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationSuccess *oper_success;
+    group_del_entry_t *first_failure;
+
+    // Create a Delete Response
+    // NOTE: All allow_partial=false error cases have already been dealt with, so this code doesn't have to handle them
+    resp = CreateBasicDeleteResp(msg_id);
+    del_resp = resp->body->response->delete_resp;
+
+    // Iterate over all requested paths to delete
+    for (i=0; i < num_del_expr; i++)
+    {
+        di = &del_expr_info[i];
+        if (di->err_code != USP_ERR_OK)
+        {
+            // Add an oper_failure for this requested path
+            AddDeleteResp_OperFailure(del_resp, di->req_path, di->err_code, di->err_msg);
+        }
+        else
+        {
+            first_failure = GROUP_DEL_VECTOR_FindFirstFailureIfAllFailed(gdv, di->index, di->num_objects);
+            if (first_failure != NULL)
+            {
+                // Add an oper_failure for this requested path (since all objects requested to be deleted failed to delete)
+                AddDeleteResp_OperFailure(del_resp, di->req_path, first_failure->err_code, first_failure->err_msg);
+            }
+            else
+            {
+                // Add an oper_success for this requested path, containing the results of deleting each resolved object
+                // NOTE: It is possible for no objects to have been deleted, if the requested path referenced a object which had already been deleted
+                oper_success = AddDeleteResp_OperSuccess(del_resp, di->req_path);
+                for (j = di->index; j < di->index + di->num_objects; j++)
+                {
+                    gde = &gdv->vector[j];
+                    if (gde->err_code == USP_ERR_OK)
+                    {
+                        AddOperSuccess_AffectedPath(oper_success, gde->path);
+                    }
+                    else
+                    {
+                        AddOperSuccess_UnaffectedPathError(oper_success, gde->path, gde->err_code, gde->err_msg);
+                    }
+                }
+            }
+        }
+    }
+
+    return resp;
+}
+
+/*********************************************************************//**
+**
+** CreateBasicDeleteResp
 **
 ** Dynamically creates a DeleteResponse object
 ** NOTE: The object is created without any deleted_obj_results
@@ -334,172 +564,22 @@ exit:
 **          NOTE: If out of memory, USP Agent is terminated
 **
 **************************************************************************/
-Usp__Msg *CreateDeleteResp(char *msg_id)
+Usp__Msg *CreateBasicDeleteResp(char *msg_id)
 {
-    Usp__Msg *resp;
-    Usp__Header *header;
-    Usp__Body *body;
-    Usp__Response *response;
+    Usp__Msg *msg;
     Usp__DeleteResp *del_resp;
 
-    // Allocate and initialise memory to store the parts of the USP message
-    resp = USP_MALLOC(sizeof(Usp__Msg));
-    usp__msg__init(resp);
-
-    header = USP_MALLOC(sizeof(Usp__Header));
-    usp__header__init(header);
-
-    body = USP_MALLOC(sizeof(Usp__Body));
-    usp__body__init(body);
-
-    response = USP_MALLOC(sizeof(Usp__Response));
-    usp__response__init(response);
-
+    // Create Delete Response
+    msg = MSG_HANDLER_CreateResponseMsg(msg_id, USP__HEADER__MSG_TYPE__DELETE_RESP, USP__RESPONSE__RESP_TYPE_DELETE_RESP);
     del_resp = USP_MALLOC(sizeof(Usp__DeleteResp));
     usp__delete_resp__init(del_resp);
+    msg->body->response->delete_resp = del_resp;
 
-    // Connect the structures together
-    resp->header = header;
-    header->msg_id = USP_STRDUP(msg_id);
-    header->msg_type = USP__HEADER__MSG_TYPE__DELETE_RESP;
-
-    resp->body = body;
-    body->msg_body_case = USP__BODY__MSG_BODY_RESPONSE;
-    body->response = response;
-    response->resp_type_case = USP__RESPONSE__RESP_TYPE_DELETE_RESP;
-    response->delete_resp = del_resp;
-
-    del_resp->n_deleted_obj_results = 0;    // Start from an empty list
+    // Start from an empty list
+    del_resp->n_deleted_obj_results = 0;
     del_resp->deleted_obj_results = NULL;
 
-    return resp;
-}
-
-/*********************************************************************//**
-**
-** AddDeleteResp_OperFailure
-**
-** Dynamically adds a deleted object result failure object to the DeleteResponse object
-**
-** \param   del_resp - pointer to DeleteResponse object
-** \param   path - requested search path of object(s) that failed to delete
-** \param   err_code - numeric code indicating reason object failed to be deleted
-** \param   err_msg - error message indicating reason object failed to be deleted
-**
-** \return  Pointer to dynamically allocated deleted object result failure object
-**          NOTE: If out of memory, USP Agent is terminated
-**
-**************************************************************************/
-Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure *
-AddDeleteResp_OperFailure(Usp__DeleteResp *del_resp, char *path, uint32_t err_code, char *err_msg)
-{
-    Usp__DeleteResp__DeletedObjectResult *deleted_obj_res;
-    Usp__DeleteResp__DeletedObjectResult__OperationStatus *oper_status;
-    Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure *oper_failure;
-    int new_num;    // new number of entries in the created object result array
-
-    // Allocate memory to store the created object result
-    deleted_obj_res = USP_MALLOC(sizeof(Usp__DeleteResp__DeletedObjectResult));
-    usp__delete_resp__deleted_object_result__init(deleted_obj_res);
-
-    // Allocate memory to store the created oper status object
-    oper_status = USP_MALLOC(sizeof(Usp__DeleteResp__DeletedObjectResult__OperationStatus));
-    usp__delete_resp__deleted_object_result__operation_status__init(oper_status);
-
-    // Allocate memory to store the created oper failure object
-    oper_failure = USP_MALLOC(sizeof(Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure));
-    usp__delete_resp__deleted_object_result__operation_status__operation_failure__init(oper_failure);
-
-    // Increase the size of the vector
-    new_num = del_resp->n_deleted_obj_results + 1;
-    del_resp->deleted_obj_results = USP_REALLOC(del_resp->deleted_obj_results, new_num*sizeof(void *));
-    del_resp->n_deleted_obj_results = new_num;
-    del_resp->deleted_obj_results[new_num-1] = deleted_obj_res;
-
-    // Fill in its members
-    deleted_obj_res->requested_path = USP_STRDUP(path);
-    deleted_obj_res->oper_status = oper_status;
-
-    oper_status->oper_status_case = USP__DELETE_RESP__DELETED_OBJECT_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE;
-    oper_status->oper_failure = oper_failure;
-
-    oper_failure->err_code = err_code;
-    oper_failure->err_msg = USP_STRDUP(err_msg);
-
-    return oper_failure;
-}
-
-/*********************************************************************//**
-**
-** ParamError_FromDeleteRespToErrResp
-**
-** Extracts the parameters in error from the OperFailure object of the DeleteResponse
-** and adds them as ParamError objects to an ErrResponse object if supplied.
-** If not supplied, it just counts the number of ParamError objects that would be added.
-**
-** \param   del_msg - pointer to DeleteResponse object
-** \param   err_msg - pointer to ErrResponse object. If NULL, this indicates that the purpose of this function is just
-**                    to return the count of ParamErr objects that would be added
-**
-** \return  Number of ParamErr objects that were (or would be) added to an ErrResponse
-**
-**************************************************************************/
-int ParamError_FromDeleteRespToErrResp(Usp__Msg *del_msg, Usp__Msg *err_msg)
-{
-    Usp__Body *body;
-    Usp__Response *response;
-    Usp__DeleteResp *del_resp;
-    Usp__DeleteResp__DeletedObjectResult *deleted_obj_res;
-    Usp__DeleteResp__DeletedObjectResult__OperationStatus *oper_status;
-    Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure *oper_failure;
-    char *path;
-    int err_code;
-    char *err_str;
-    int i;
-    int num_params;
-    int count = 0;
-
-    // Navigate to the DeleteResponse object within the DeleteResponse message
-    body = del_msg->body;
-    USP_ASSERT(body != NULL);
-
-    response = body->response;
-    USP_ASSERT(response != NULL);
-
-    del_resp = response->delete_resp;
-    USP_ASSERT(del_resp != NULL);
-
-    // Iterate over all object failures
-    num_params = del_resp->n_deleted_obj_results;
-    for (i=0; i < num_params; i++)
-    {
-        deleted_obj_res = del_resp->deleted_obj_results[i];
-        USP_ASSERT(deleted_obj_res != NULL);
-
-        oper_status = deleted_obj_res->oper_status;
-        USP_ASSERT(oper_status != NULL);
-
-        // Convert an OperFailure object into a ParamError object
-        if (oper_status->oper_status_case == USP__DELETE_RESP__DELETED_OBJECT_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE)
-        {
-            if (err_msg != NULL)
-            {
-                oper_failure = oper_status->oper_failure;
-                USP_ASSERT(oper_failure != NULL);
-
-                // Extract the ParamError fields
-                path = deleted_obj_res->requested_path;
-                err_code = oper_failure->err_code;
-                err_str = oper_failure->err_msg;
-                ERROR_RESP_AddParamError(err_msg, path, err_code, err_str);
-            }
-
-            // Increment the number of param err fields
-            count++;
-        }
-    }
-
-    return count;
+    return msg;
 }
 
 /*********************************************************************//**
@@ -568,8 +648,7 @@ AddDeleteResp_OperSuccess(Usp__DeleteResp *del_resp, char *path)
 ** \return  None
 **
 **************************************************************************/
-void AddOperSuccess_AffectedPath(Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationSuccess *oper_success,
-                                        char *path)
+void AddOperSuccess_AffectedPath(Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationSuccess *oper_success, char *path)
 {
     int new_num;    // new number of entries in the affected path list
 
@@ -621,27 +700,55 @@ void AddOperSuccess_UnaffectedPathError(Usp__DeleteResp__DeletedObjectResult__Op
 
 /*********************************************************************//**
 **
-** RemoveDeleteResp_LastDeletedObjResult
+** AddDeleteResp_OperFailure
 **
-** Removes the last DeletedObjResult object from the DeleteResp object
-** The LastDeletedObjResult object will contain either an OperSuccess or an OperFailure
+** Dynamically adds a deleted object result failure object to the DeleteResponse object
 **
-** \param   del_resp - pointer to delete response object to modify
+** \param   del_resp - pointer to DeleteResponse object
+** \param   path - requested search path of object(s) that failed to delete
+** \param   err_code - numeric code indicating reason object failed to be deleted
+** \param   err_msg - error message indicating reason object failed to be deleted
 **
-** \return  None
+** \return  Pointer to dynamically allocated deleted object result failure object
+**          NOTE: If out of memory, USP Agent is terminated
 **
 **************************************************************************/
-void RemoveDeleteResp_LastDeletedObjResult(Usp__DeleteResp *del_resp)
+Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure *
+AddDeleteResp_OperFailure(Usp__DeleteResp *del_resp, char *path, uint32_t err_code, char *err_msg)
 {
-    int index;
     Usp__DeleteResp__DeletedObjectResult *deleted_obj_res;
+    Usp__DeleteResp__DeletedObjectResult__OperationStatus *oper_status;
+    Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure *oper_failure;
+    int new_num;    // new number of entries in the created object result array
 
-    // Free the memory associated with the last updated obj_result
-    index = del_resp->n_deleted_obj_results - 1;
-    deleted_obj_res = del_resp->deleted_obj_results[index];
-    protobuf_c_message_free_unpacked ((ProtobufCMessage*)deleted_obj_res, pbuf_allocator);
+    // Allocate memory to store the created object result
+    deleted_obj_res = USP_MALLOC(sizeof(Usp__DeleteResp__DeletedObjectResult));
+    usp__delete_resp__deleted_object_result__init(deleted_obj_res);
 
-    // Fix the DeleteResp object, so that it does not reference the obj_result we have just removed
-    del_resp->deleted_obj_results[index] = NULL;
-    del_resp->n_deleted_obj_results--;
+    // Allocate memory to store the created oper status object
+    oper_status = USP_MALLOC(sizeof(Usp__DeleteResp__DeletedObjectResult__OperationStatus));
+    usp__delete_resp__deleted_object_result__operation_status__init(oper_status);
+
+    // Allocate memory to store the created oper failure object
+    oper_failure = USP_MALLOC(sizeof(Usp__DeleteResp__DeletedObjectResult__OperationStatus__OperationFailure));
+    usp__delete_resp__deleted_object_result__operation_status__operation_failure__init(oper_failure);
+
+    // Increase the size of the vector
+    new_num = del_resp->n_deleted_obj_results + 1;
+    del_resp->deleted_obj_results = USP_REALLOC(del_resp->deleted_obj_results, new_num*sizeof(void *));
+    del_resp->n_deleted_obj_results = new_num;
+    del_resp->deleted_obj_results[new_num-1] = deleted_obj_res;
+
+    // Fill in its members
+    deleted_obj_res->requested_path = USP_STRDUP(path);
+    deleted_obj_res->oper_status = oper_status;
+
+    oper_status->oper_status_case = USP__DELETE_RESP__DELETED_OBJECT_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE;
+    oper_status->oper_failure = oper_failure;
+
+    oper_failure->err_code = err_code;
+    oper_failure->err_msg = USP_STRDUP(err_msg);
+
+    return oper_failure;
 }
+

@@ -33,75 +33,12 @@ written consent.
 #include <string.h>
 #include <stdlib.h>
 #include <net/if.h>
-#include <ctype.h> 
 
 #include "bcm_ulog.h"
 #include "board.h"
+#include "bcm_ethswutils.h"
 
 #define MBPS_TO_KBPS(a) (a) * 1000
-
-/* The returned data from the command 'pspctl dump WanRate' has
-   the format of XXYY, where XX represents the downstream rate and
-   YY represents the upstream rate. If XX or YY is equal to 25, it
-   means that data rate is 2.5G. If XX or YY is equal to 10 or 1,
-   it translates to 10G or 1G, respectively. This function takes
-   the "XX" or "YY" as an input string and returns the corresponding
-   data rate in kbps */
-int bcmNet_getWanTypeStr(char *wanType, int size);
-static inline int __resolveVeipSpeed(char *buf)
-{
-    int tmpSpeed = atoi(buf);
-    if (tmpSpeed == 25)
-        tmpSpeed = 2500000;
-    else
-        tmpSpeed = tmpSpeed * 1000000;
-    return tmpSpeed;
-}
-
-static int bcmNet_WanSpeedSanity(char *intfName, int *upSpeed, int *downSpeed)
-{
-    FILE *p;
-    char buf[128], cmd_buf[128];
-    int rc = 0;
-    int val1, val2;
-   
-    snprintf(cmd_buf, sizeof(cmd_buf), "ethtool %s |grep baseT\n", intfName);
-    p = popen(cmd_buf, "r");
-    if ((NULL == p) || (fgets(buf, sizeof(buf), p) == NULL) || !(strstr(buf,"baseT")) ||
-       EOF == sscanf(buf, "%*[^:]:%*[^0-9]%d", &val1))
-    {
-        fprintf(stderr, "%s:%d get link speed failed!\n", __FUNCTION__, __LINE__);
-        rc = -1;
-        goto exit;
-    }
-
-    /* if no second line the upstream speed is the same as downstream */
-    if ((fgets(buf, sizeof(buf), p) == NULL) || !strstr(buf,"baseT") ||
-        EOF == sscanf(buf, "%*[^0-9]%d", &val2))
-    {
-        val2 = val1; /* symetric rate case */
-    }
-    
-
-    if (val1 > val2)
-    {
-        *upSpeed = MBPS_TO_KBPS(val2);
-        *downSpeed = MBPS_TO_KBPS(val1);
-    }
-    else
-    {
-        *upSpeed = MBPS_TO_KBPS(val1);
-        *downSpeed = MBPS_TO_KBPS(val2);
-    }
-
-exit:
-
-   if (p)
-       pclose(p);
-
-   return rc;
-}
-
 
 /* This function determines the local interface that could reach to the given
    server IP address and the data rate (in kbps) at which the gateway can
@@ -302,13 +239,17 @@ int bcmNet_getRouteInfoToServer(const char *serverIp, char* intfName,
     }
     else if (strstr(tmp_intfName, "veip") != NULL)
     {
-        int rc = 0;
-
-        rc = bcmNet_WanSpeedSanity(tmp_intfName, upSpeed, downSpeed);
-        if (rc)
+        ret = bcm_phy_speed_get(tmp_intfName, 0, (uint32_t *)upSpeed);
+        ret = ret ? ret : bcm_phy_speed_get(tmp_intfName, 1, (uint32_t *)downSpeed);
+        if (ret)
         {
-            *upSpeed = *downSpeed = 10000000; /* set speed to 10G if nothing works out */  
+            *upSpeed = *downSpeed = 10000000; /* set speed to 10G if nothing works out */ 
             ret = -1;
+        }
+        else
+        {
+             *upSpeed = MBPS_TO_KBPS(*upSpeed);
+             *downSpeed = MBPS_TO_KBPS(*downSpeed);
         }
     }
     else
@@ -442,7 +383,11 @@ int bcmNet_getWanTypeStr(char *wanType, int size)
     {
         strncpy(wanType, "dsl", (size - 1));
     }
-    else /* currently, only report in gpon mode */
+    else if (!strncmp(rdpaWanType, RDPA_WAN_TYPE_VALUE_EPON, strlen(RDPA_WAN_TYPE_VALUE_EPON)))
+    {
+        strncpy(wanType, "epon", (size - 1));
+    }
+    else
     {
         rc = -1;
     }

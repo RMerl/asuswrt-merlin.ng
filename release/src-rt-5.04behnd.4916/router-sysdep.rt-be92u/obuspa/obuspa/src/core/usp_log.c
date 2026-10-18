@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2021  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,6 +39,12 @@
  *
  */
 
+#include "vendor_defs.h"   // For REMOVE_DEVICE_SECURITY
+
+#ifndef REMOVE_DEVICE_SECURITY
+#include <openssl/err.h>
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 #include <stdarg.h>
@@ -47,7 +53,6 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <dlfcn.h>
-#include <openssl/err.h>
 
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
@@ -303,6 +308,7 @@ void USP_LOG_HexBuffer(const char *title, const unsigned char *buf, int len)
     }
 }
 
+#ifndef REMOVE_DEVICE_SECURITY
 /*********************************************************************//**
 **
 ** USP_LOG_ErrorSSL
@@ -330,6 +336,7 @@ void USP_LOG_ErrorSSL(const char *func_name, const char *failure_string, int ret
     USP_LOG_Warning("%s: %s: SSL ret=%d, error=%d, errno=%d (%s), ssl err=%s",
               func_name, failure_string, ret, err, errno, str, ssl_str);
 }
+#endif
 
 /*********************************************************************//**
 **
@@ -379,7 +386,7 @@ void USP_LOG_String(log_level_t log_level, log_type_t log_type, char *str)
 ** USP_LOG_Printf
 **
 ** Logs the specified message
-** This function deals with the varargs aspects of the message before calling LogMessage()
+** This function deals with the varargs aspects of the message before calling USP_LOG_Puts()
 **
 ** \param   log_level - severity level of the log
 ** \param   log_type - type of information which the message contains
@@ -476,6 +483,7 @@ int LogLevelToSyslogSeverity(log_level_t log_level)
 
     switch (log_level)
     {
+        case kLogLevel_Trace:
         case kLogLevel_Debug:
             syslog_level = LOG_DEBUG;
             break;

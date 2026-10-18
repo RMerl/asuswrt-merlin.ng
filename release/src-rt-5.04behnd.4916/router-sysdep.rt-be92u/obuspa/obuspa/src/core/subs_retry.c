@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2021  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -333,7 +333,7 @@ void SubsRetryExec(int id)
     subs_retry_t *sr;
     time_t cur_time;
     char buf[MAX_ISO8601_LEN];
-    mtp_reply_to_t mtp_reply_to = {0};  // Ensures mtp_reply_to.is_reply_to_specified=false
+    mtp_conn_t mtp_conn = {0};  // Ensures mtp_conn.is_reply_to_specified=false
 
     cur_time = time(NULL);
     USP_ASSERT(cur_time >= first_retry_time);
@@ -366,7 +366,7 @@ void SubsRetryExec(int id)
 #endif
 
                 // Try resending the saved serialized USP message
-                MSG_HANDLER_QueueUspRecord(&usp_send_item, sr->dest_endpoint, sr->msg_id, &mtp_reply_to, sr->retry_expiry_time);
+                MSG_HANDLER_QueueUspRecord(&usp_send_item, sr->dest_endpoint, sr->msg_id, &mtp_conn, sr->retry_expiry_time);
 
                 // Calculate next time until this message is retried
                 sr->retry_count++;
@@ -552,4 +552,10 @@ void GarbageCollectSubsRetry(void)
 
     // Store the number of valid entries left in the vector
     subs_retry.num_entries = j;
+
+    // Free the vector, if it now has no entries
+    if (subs_retry.num_entries == 0)
+    {
+        USP_SAFE_FREE(subs_retry.vector);  // This will also set the vector to NULL
+    }
 }

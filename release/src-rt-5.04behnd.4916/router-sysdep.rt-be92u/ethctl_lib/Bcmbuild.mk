@@ -9,6 +9,7 @@ include $(BUILD_DIR)/make.common
 
 
 ARCH                  := $(PROFILE_ARCH)
+CFLAGS += -Werror -Wfatal-errors
 LIB_INSTALL_DIR       := $(BCM_FSBUILD_DIR)/private/lib
 HEADER_INSTALL_DIR    := $(BCM_FSBUILD_DIR)/private/include
 ALLOWED_INCLUDE_PATHS := -I.\

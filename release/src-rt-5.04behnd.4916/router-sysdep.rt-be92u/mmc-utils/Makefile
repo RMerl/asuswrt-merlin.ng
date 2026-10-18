@@ -1,40 +1,46 @@
+all dynamic install: conditional_build
 
-name := $(lastword $(MAKEFILE_LIST))
-mdir := $(realpath $(dir $(name)))
-VPATH=$(mdir) $(mdir)/3rdparty/hmac_sha
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+# You do not need to modify this part.
+#
 
+CURR_DIR := $(shell pwd)
+# BUILD_DIR:=$(subst /userspace, /userspace,$(CURR_DIR))
+# BUILD_DIR:=$(word 1, $(BUILD_DIR))
+BUILD_DIR:=$(HND_SRC)
+include $(BUILD_DIR)/make.common
 
-EXE  = mmc 
+CHANGESET = b7e4d5a6ae9942d26a11de9b05ae7d52c0802802
+APP = mmc-utils-$(CHANGESET)
+EXE = mmc
 
-OBJS = mmc.o mmc_cmds.o lsmmc.o hmac_sha2.o sha2.o
+.PHONY: check_untar_patch_configure conditional_build
 
-SAVED = mmc.o_saved
+ifneq ($(strip $(BRCM_DRIVER_EMMC)),$(strip $(BUILD_VFBIO_LVM)),)
+check_untar_patch_configure: sanity_check
+	@if [ ! -e $(APP)/Makefile ]; then \
+    	    echo "Unzipping original $(APP) source"; \
+	    (unzip $(APP).zip > /dev/null || true); \
+	fi   
 
-
-all install : $(EXE)
-	mkdir -p $(INSTALL_DIR)/bin;  \
-	install -m 755 $(EXE) $(INSTALL_DIR)/bin;
-
-
-ifneq ($(wildcard $(mdir)/*.c),)
-$(EXE): $(OBJS)
-	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(CMS_OPTION_RPATH)
-
-else
-$(EXE): $(SAVED)
-	cat $< > $@
-
+conditional_build: check_untar_patch_configure
+	cd ./$(APP); $(MAKE);
+	mkdir -p $(INSTALL_DIR)/bin;
+	install -m 755 $(APP)/$(EXE) $(INSTALL_DIR)/bin;
+else	
+conditional_build: sanity_check
+	@echo "skipping $(APP) (not configured)"
 endif
 
-clean: 
-	-rm -f *.o *.d $(EXE) $(PREFIX)/bin/$(EXE)
+# NOTE: make clean from within app does not do a proper job, so wiping out
+# entire directory to ensure consistency.
+clean:
+	@rm -rf $(APP) ;
+	@rm -f $(INSTALL_DIR)/bin/$(EXE) ;
 
-binaryonly_prepare:
-	-cp $(EXE) $(SAVED)
-	-$(MAKE) -f $(name) clean
-	rm -rf $(mdir)/*.c $(mdir)/*.h 
-
-
-# Generate and use dependencies.
-CFLAGS += -MD
--include $(OBJS:%.o=%.d)
+# The next line is a hint to our release scripts
+# GLOBAL_RELEASE_SCRIPT_CALL_DISTCLEAN
+distclean: clean

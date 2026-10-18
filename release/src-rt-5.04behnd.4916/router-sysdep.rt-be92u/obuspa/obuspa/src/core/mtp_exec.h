@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  * Copyright (C) 2020, BT PLC
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,9 @@ typedef enum
 #ifdef ENABLE_WEBSOCKETS
     kMtpProtocol_WebSockets,
 #endif
+#ifdef ENABLE_UDS
+    kMtpProtocol_UDS,
+#endif
 
     // The following enumeration should always be the last - it is used to size arrays
     kMtpProtocol_Max
@@ -84,7 +87,7 @@ typedef enum
 typedef enum
 {
     kMtpContentType_UspMessage,       // Protobuf encoded USP Record containing an unsegmented USP message. No session context.
-    kMtpContentType_ConnectRecord,    // A STOMP, MQTT or WebSockets USP Connect record
+    kMtpContentType_ConnectRecord,    // A STOMP, MQTT, WebSockets or UDS USP Connect record
     kMtpContentType_DisconnectRecord, // A USP Disconnect record that causes the MTP to disconnect (and retry)
 #ifdef E2ESESSION_EXPERIMENTAL_USP_V_1_2
     kMtpContentType_E2E_SessTermination, // A USP Disconnect record that doesn't cause the MTP to disconnect (used to terminate an E2E session)
@@ -110,7 +113,7 @@ typedef enum
 typedef struct
 {
     mtp_content_type_t content_type;    // Type of content in the payload.
-    Usp__Header__MsgType usp_msg_type;  // USP Message type (For log usage only)
+    Usp__Header__MsgType usp_msg_type;  // USP Message type
     uint8_t *pbuf;                      // Payload to be sent by the MTP (USP Record)
     int pbuf_len;                       // Length of the payload
 } mtp_send_item_t;
@@ -146,9 +149,11 @@ typedef enum
 //------------------------------------------------------------------------------
 // Global Variables
 extern scheduled_action_t mtp_exit_scheduled;
+extern bool mtp_reconnect_scheduled;
 extern bool is_coap_mtp_thread_exited;
 extern bool is_stomp_mtp_thread_exited;
 extern bool is_mqtt_mtp_thread_exited;
+extern bool is_uds_mtp_thread_exited;
 
 //------------------------------------------------------------------------------
 // API functions
@@ -168,6 +173,11 @@ void MTP_EXEC_CoapWakeup(void);
 void *MTP_EXEC_MqttMain(void *args);
 void MTP_EXEC_MqttWakeup(void);
 #endif
+#ifdef ENABLE_UDS
+void *MTP_EXEC_UdsMain(void *args);
+void MTP_EXEC_UdsWakeup(void);
+#endif
+
 //------------------------------------------------------------------------------
 
 #endif

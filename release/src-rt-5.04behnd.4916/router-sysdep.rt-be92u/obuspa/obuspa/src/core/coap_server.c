@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2021, Broadband Forum
- * Copyright (C) 2017-2021  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2017-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -94,7 +94,8 @@ typedef struct
                             // (because the request was received on a new DTLS session, the response will likely need to be too)
 
     STACK_OF(X509) *cert_chain; // Full SSL certificate chain for the CoAP connection, collected in the SSL verify callback
-    ctrust_role_t role;     // role granted by the CA cert in the chain of trust with the CoAP client
+    int role_instance;      // role granted by the CA cert in the chain of trust with the CoAP client (instance in Device.LocalAgent.ControllerTrust.Role.{i})
+
 
     nu_ipaddr_t peer_addr;   // Current peer that sent the first block. Whilst building up a USP Record, only PDUs from this peer are accepted
     uint16_t peer_port;     // Port that peer is using to communicate with us
@@ -304,6 +305,14 @@ int COAP_SERVER_Start(int instance, char *interface, coap_config_t *config)
     coap_server_t *cs;
     coap_server_session_t *css;
     int err = USP_ERR_OK;
+    bool allowed;
+
+    // Exit if the server is not allowed to be enabled/disabled yet
+    allowed = DEVICE_CONTROLLER_CanMtpConnect();
+    if (allowed == false)
+    {
+        return USP_ERR_OK;
+    }
 
     COAP_LockMutex();
 
@@ -380,6 +389,14 @@ int COAP_SERVER_Stop(int instance, char *interface, coap_config_t *unused)
     int i;
     coap_server_t *cs;
     coap_server_session_t *css;
+    bool allowed;
+
+    // Exit if the server is not allowed to be enabled/disabled yet
+    allowed = DEVICE_CONTROLLER_CanMtpConnect();
+    if (allowed == false)
+    {
+        return USP_ERR_OK;
+    }
 
     USP_LOG_Info("%s: Stopping CoAP server [%d]", __FUNCTION__, instance);
 
@@ -771,7 +788,7 @@ void StartCoapSession(coap_server_t *cs)
     USP_PROTOCOL("%s: Accepting %s CoAP session from %s, port %d (using session %d)", __FUNCTION__, IS_ENCRYPTED_STRING(cs->enable_encryption), nu_ipaddr_str(&peer_addr, buf, sizeof(buf)), peer_port, css->index);
     memcpy(&css->peer_addr, &peer_addr, sizeof(peer_addr));
     css->peer_port = peer_port;
-    css->role = ROLE_NON_SSL;       // This role will be overridden if the DTLS handshake is performed
+    css->role_instance = ROLE_NON_SSL;       // This role will be overridden if the DTLS handshake is performed
 
     // Perform DTLS handshake
     if (cs->enable_encryption)
@@ -805,7 +822,7 @@ void InitCoapSession(coap_server_session_t *css)
     css->wbio = NULL;
     css->is_first_usp_msg = true;
     css->cert_chain = NULL;
-    css->role = ROLE_DEFAULT;    // Set default role, if not determined from SSL certs
+    css->role_instance = ROLE_DEFAULT;    // Set default role, if not determined from SSL certs
     memset(&css->peer_addr, 0, sizeof(css->peer_addr));
     css->peer_port = INVALID;
     memset(&css->token, 0, sizeof(css->token));
@@ -1037,7 +1054,7 @@ int PerformSessionDtlsConnect(coap_server_session_t *css)
     if (css->cert_chain != NULL)
     {
         // Exit if unable to determine the role associated with the trusted root cert that signed the peer cert
-        err = DEVICE_SECURITY_GetControllerTrust(css->cert_chain, &css->role);
+        err = DEVICE_SECURITY_GetControllerTrust(css->cert_chain, &css->role_instance);
         if (err != USP_ERR_OK)
         {
             USP_LOG_Error("%s: DEVICE_SECURITY_GetControllerTrust() failed. Resetting CoAP session", __FUNCTION__);
@@ -1179,7 +1196,7 @@ void ReceiveCoapBlock(coap_server_t *cs, coap_server_session_t *css)
     // Exit if an error occurred whilst parsing the PDU
     memset(&pp, 0, sizeof(pp));
     pp.message_id = INVALID;
-    pp.mtp_reply_to.protocol = kMtpProtocol_CoAP;
+    pp.mtp_conn.protocol = kMtpProtocol_CoAP;
 
     action_flags = COAP_ParsePdu(buf, len, &pp);
     if (action_flags != COAP_NO_ERROR)
@@ -1240,16 +1257,16 @@ exit:
         {
             // Create a copy of the reply-to details, modifying coap_host to be the IP literal peer address to send the response back to
             // (This is necessary as the peer's reply-to may be a hostname which has both IPv4 and IPv6 DNS records. We want to reply back using the same IP version we received on)
-            mtp_reply_to_t mtp_reply_to;
-            memcpy(&mtp_reply_to, &pp.mtp_reply_to, sizeof(mtp_reply_to));
-            mtp_reply_to.coap_host = addr_buf;
+            mtp_conn_t mtp_conn;
+            memcpy(&mtp_conn, &pp.mtp_conn, sizeof(mtp_conn));
+            mtp_conn.coap.host = addr_buf;
 
             // The USP response message to this request should be sent back on a new DTLS session, if this USP request was received on a new DTLS session
-            mtp_reply_to.coap_reset_session_hint = css->is_first_usp_msg & cs->enable_encryption;
+            mtp_conn.coap.reset_session_hint = css->is_first_usp_msg & cs->enable_encryption;
             css->is_first_usp_msg = false;
 
             // Post the USP record for processing
-            DM_EXEC_PostUspRecord(css->usp_buf, css->usp_buf_len, css->role, &mtp_reply_to);
+            DM_EXEC_PostUspRecord(css->usp_buf, css->usp_buf_len, UNKNOWN_ENDPOINT_ID, css->role_instance, &mtp_conn);
             FreeReceivedUspRecord(css);
         }
     }
@@ -1628,7 +1645,7 @@ bool IsReplyToValid(coap_server_session_t *css, parsed_pdu_t *pp)
     char host[MAX_COAP_URI_QUERY];
 
     // Percent decode the received host name
-    USP_STRNCPY(host, pp->mtp_reply_to.coap_host, sizeof(host));
+    USP_STRNCPY(host, pp->mtp_conn.coap.host, sizeof(host));
     TEXT_UTILS_PercentDecodeString(host);
 
     // Attempt to interpret the host as an IP literal address (ie no DNS lookup required)

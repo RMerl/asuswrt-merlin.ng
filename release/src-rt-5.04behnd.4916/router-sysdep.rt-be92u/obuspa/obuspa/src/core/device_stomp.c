@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2017-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2017-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -71,7 +71,6 @@ int Notify_StompConnAdded(dm_req_t *req);
 int Notify_StompConnDeleted(dm_req_t *req);
 int Get_StompConnectionStatus(dm_req_t *req, char *buf, int len);
 int Get_StompLastChangeDate(dm_req_t *req, char *buf, int len);
-int Get_StompIsEncrypted(dm_req_t *req, char *buf, int len);
 int Get_StompEnableEncryption(dm_req_t *req, char *buf, int len);
 int Set_StompEnableEncryption(dm_req_t *req, char *buf);
 int Validate_HeartbeatPeriod(dm_req_t *req, char *value);
@@ -145,7 +144,6 @@ int DEVICE_STOMP_Init(void)
     err |= USP_REGISTER_DBParam_ReadWrite(DEVICE_STOMP_CONN_ROOT ".{i}.EnableEncryption", "true", NULL, NotifyChange_StompEnableEncryption, DM_BOOL);
     err |= USP_REGISTER_VendorParam_ReadWrite(DEVICE_STOMP_CONN_ROOT ".{i}.X_ARRIS-COM_EnableEncryption", Get_StompEnableEncryption, Set_StompEnableEncryption, NotifyChange_StompEnableEncryption, DM_BOOL);
 
-    err |= USP_REGISTER_VendorParam_ReadOnly(DEVICE_STOMP_CONN_ROOT ".{i}.IsEncrypted", Get_StompIsEncrypted, DM_BOOL);
     err |=    USP_REGISTER_DBParam_Secure(DEVICE_STOMP_CONN_ROOT ".{i}.Password", "", NULL, NotifyChange_StompPassword);
     err |= USP_REGISTER_DBParam_ReadWrite(DEVICE_STOMP_CONN_ROOT ".{i}.VirtualHost", "/", NULL, NotifyChange_VirtualHost, DM_STRING); // NOTE: RabbitMQ doesn't allow the virtual host be be an empty string
 
@@ -607,32 +605,6 @@ int Get_StompLastChangeDate(dm_req_t *req, char *buf, int len)
 
     // And write the time into the return buffer
     iso8601_from_unix_time(last_change_date, buf, len);
-
-    return USP_ERR_OK;
-}
-
-/*********************************************************************//**
-**
-** Get_StompIsEncrypted
-**
-** Gets the value of Device.STOMP.Connection.{i}.IsEncrypted
-**
-** \param   req - pointer to structure identifying the path
-** \param   buf - pointer to buffer into which to return the value of the parameter (as a textual string)
-** \param   len - length of buffer in which to return the value of the parameter
-**
-** \return  USP_ERR_OK if successful
-**
-**************************************************************************/
-int Get_StompIsEncrypted(dm_req_t *req, char *buf, int len)
-{
-    stomp_conn_params_t *sp;
-
-    // Determine stomp connection to query
-    sp = FindStompParamsByInstance(inst1);
-    USP_ASSERT(sp != NULL);
-
-    val_bool = sp->enable_encryption;
 
     return USP_ERR_OK;
 }

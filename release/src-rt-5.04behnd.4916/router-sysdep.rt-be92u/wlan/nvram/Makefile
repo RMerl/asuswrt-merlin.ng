@@ -63,9 +63,6 @@ endif
 LIBS += -L$(INSTALL_DIR)/lib -L$(INSTALL_DIR)/usr/lib -ldl
 
 ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
- ifneq ($(strip $(BUILD_PMD)),)
- LIBS += $(CMS_OPTION_RPATH) -L$(BCM_FSBUILD_DIR)/private/lib -lpmd -L$(BCM_FSBUILD_DIR)/public/lib -ljson-c
- endif
  LIBS += -lcms_msg $(CMS_COMMON_LIBS) -lcms_dal -lcms_msg $(CMS_COMMON_LIBS) $(MDM_CORE_LIBS)
  ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
   LIBS += -lstaged -ljson-c -lpthread
@@ -179,7 +176,7 @@ libnvram:
 	cp -f ./prebuilt/libnvram.so .
 else
 libnvram: nvram_shared.o brcm_generic_lock.o $(WLCSM_LIB)
-	$(LD) -shared -soname libnvram.so -o libnvram.so nvram_shared.o brcm_generic_lock.o  -L$(LIBDIR) $(WLCSM_LIB) -lc -lpthread
+	$(LD) -shared -soname libnvram.so -o libnvram.so nvram_shared.o brcm_generic_lock.o  -L$(LIBDIR) $(WLCSM_LIB) -lc -lpthread -L$(TOP)/shared -lshared
 	install -m 755 libnvram.so $(INSTALL_DIR)/lib
 endif
 

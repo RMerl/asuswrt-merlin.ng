@@ -14,7 +14,8 @@ python() {
 
     if rdk_branch == 'rdk-next' or rel_year > 2022 :
         d.appendVar('SRC_URI',' file://tdk_platform_utility_rdk_next.patch')
-        d.appendVar('SRC_URI',' file://0001-fix-Wformat-overflow-compiling-issue.patch')
+        if rel_year < 2024:
+            d.appendVar('SRC_URI',' file://0001-fix-Wformat-overflow-compiling-issue.patch')
     else:
         d.appendVar('SRC_URI',' file://tdk_platform_utility.patch')
 }

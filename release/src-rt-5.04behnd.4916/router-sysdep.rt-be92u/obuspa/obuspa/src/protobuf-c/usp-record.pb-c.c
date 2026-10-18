@@ -277,6 +277,51 @@ void   usp_record__stompconnect_record__free_unpacked
   assert(message->base.descriptor == &usp_record__stompconnect_record__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   usp_record__udsconnect_record__init
+                     (UspRecord__UDSConnectRecord         *message)
+{
+  static const UspRecord__UDSConnectRecord init_value = USP_RECORD__UDSCONNECT_RECORD__INIT;
+  *message = init_value;
+}
+size_t usp_record__udsconnect_record__get_packed_size
+                     (const UspRecord__UDSConnectRecord *message)
+{
+  assert(message->base.descriptor == &usp_record__udsconnect_record__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t usp_record__udsconnect_record__pack
+                     (const UspRecord__UDSConnectRecord *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &usp_record__udsconnect_record__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t usp_record__udsconnect_record__pack_to_buffer
+                     (const UspRecord__UDSConnectRecord *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &usp_record__udsconnect_record__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+UspRecord__UDSConnectRecord *
+       usp_record__udsconnect_record__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (UspRecord__UDSConnectRecord *)
+     protobuf_c_message_unpack (&usp_record__udsconnect_record__descriptor,
+                                allocator, len, data);
+}
+void   usp_record__udsconnect_record__free_unpacked
+                     (UspRecord__UDSConnectRecord *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &usp_record__udsconnect_record__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   usp_record__disconnect_record__init
                      (UspRecord__DisconnectRecord         *message)
 {
@@ -350,7 +395,7 @@ const ProtobufCEnumDescriptor usp_record__record__payload_security__descriptor =
   usp_record__record__payload_security__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };
-static const ProtobufCFieldDescriptor usp_record__record__field_descriptors[12] =
+static const ProtobufCFieldDescriptor usp_record__record__field_descriptors[13] =
 {
   {
     "version",
@@ -496,6 +541,18 @@ static const ProtobufCFieldDescriptor usp_record__record__field_descriptors[12] 
     0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "uds_connect",
+    13,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(UspRecord__Record, record_type_case),
+    offsetof(UspRecord__Record, uds_connect),
+    &usp_record__udsconnect_record__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned usp_record__record__field_indices_by_name[] = {
   11,   /* field[11] = disconnect */
@@ -508,13 +565,14 @@ static const unsigned usp_record__record__field_indices_by_name[] = {
   7,   /* field[7] = session_context */
   10,   /* field[10] = stomp_connect */
   1,   /* field[1] = to_id */
+  12,   /* field[12] = uds_connect */
   0,   /* field[0] = version */
   8,   /* field[8] = websocket_connect */
 };
 static const ProtobufCIntRange usp_record__record__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 12 }
+  { 0, 13 }
 };
 const ProtobufCMessageDescriptor usp_record__record__descriptor =
 {
@@ -524,7 +582,7 @@ const ProtobufCMessageDescriptor usp_record__record__descriptor =
   "UspRecord__Record",
   "usp_record",
   sizeof(UspRecord__Record),
-  12,
+  13,
   usp_record__record__field_descriptors,
   usp_record__record__field_indices_by_name,
   1,  usp_record__record__number_ranges,
@@ -889,6 +947,24 @@ const ProtobufCMessageDescriptor usp_record__stompconnect_record__descriptor =
   usp_record__stompconnect_record__field_indices_by_name,
   1,  usp_record__stompconnect_record__number_ranges,
   (ProtobufCMessageInit) usp_record__stompconnect_record__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+#define usp_record__udsconnect_record__field_descriptors NULL
+#define usp_record__udsconnect_record__field_indices_by_name NULL
+#define usp_record__udsconnect_record__number_ranges NULL
+const ProtobufCMessageDescriptor usp_record__udsconnect_record__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp_record.UDSConnectRecord",
+  "UDSConnectRecord",
+  "UspRecord__UDSConnectRecord",
+  "usp_record",
+  sizeof(UspRecord__UDSConnectRecord),
+  0,
+  usp_record__udsconnect_record__field_descriptors,
+  usp_record__udsconnect_record__field_indices_by_name,
+  0,  usp_record__udsconnect_record__number_ranges,
+  (ProtobufCMessageInit) usp_record__udsconnect_record__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor usp_record__disconnect_record__field_descriptors[2] =

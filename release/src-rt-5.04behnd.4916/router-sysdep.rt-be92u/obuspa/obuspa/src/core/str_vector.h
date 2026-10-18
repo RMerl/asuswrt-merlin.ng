@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,15 +42,7 @@
 #ifndef STR_VECTOR_H
 #define STR_VECTOR_H
 
-//-----------------------------------------------------------------------------------------
-// String vector type
-typedef struct
-{
-    char **vector;
-    int num_entries;
-} str_vector_t;
-
-//-----------------------------------------------------------------------------------------
+#include "usp_api.h"
 #include "kv_vector.h"
 
 //-----------------------------------------------------------------------------------------
@@ -60,6 +52,8 @@ void STR_VECTOR_Clone(str_vector_t *sv, char **src_vector, int src_num_entries);
 void STR_VECTOR_Add(str_vector_t *sv, char *str);
 void STR_VECTOR_Add_IfNotExist(str_vector_t *sv, char *str);
 int STR_VECTOR_Find(str_vector_t *sv, char *str);
+void STR_VECTOR_RemoveByIndex(str_vector_t *sv, int index);
+void STR_VECTOR_RemoveUnusedEntries(str_vector_t *sv);
 void STR_VECTOR_Destroy(str_vector_t *sv);
 void STR_VECTOR_Dump(str_vector_t *sv);
 void STR_VECTOR_ConvertToKeyValueVector(str_vector_t *sv, kv_vector_t *kvv);

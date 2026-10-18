@@ -250,6 +250,16 @@ applyDefaultSettings()
     done < $rtSettingsMetadata
 }
 
+
+function elapsed_time()
+{
+    s_time=$1
+    e_time=$2
+
+    elap_s=$((e_time-s_time))
+    echo  "elapsed_time: $elap_s"
+}
+
 usage()
 {
     echo "Usage:"
@@ -297,6 +307,10 @@ case "$1" in
         esac
         exit 0
         ;;
+		#begin_time=`date "+%s"`
+		#end_time=`date "+%s"`
+		#elapsed_time $begin_time $end_time
+
     -h)
         usage
         exit 0

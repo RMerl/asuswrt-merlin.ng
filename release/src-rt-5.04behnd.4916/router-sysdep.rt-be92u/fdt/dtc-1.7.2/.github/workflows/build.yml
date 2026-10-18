@@ -1,0 +1,113 @@
+---
+name: Build test
+'on':
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# ensure that the workflow is only triggered once per PR,  subsequent pushes to the PR will cancel
+# and restart the workflow. See https://docs.github.com/en/actions/using-jobs/using-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-make:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+          os: [ "alpine", "archlinux", "fedora", "ubuntu:23.10" ]
+
+    container:
+      image: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          ./scripts/install-deps.sh
+
+      - name: Build
+        run: |
+          make
+
+      - name: Run check
+        run: |
+          make check
+
+  build-meson:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+          os: [ "alpine", "archlinux", "fedora", "ubuntu:23.10" ]
+
+    container:
+      image: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          ./scripts/install-deps.sh
+
+      - name: Setup
+        run: meson setup -D python=enabled -D yaml=enabled build
+
+      - name: Build
+        run: meson compile -C build
+
+      - name: Run check
+        run: if ! meson test -C build; then cat build/meson-logs/testlog.txt; false; fi
+
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { sys: mingw32 }
+          - { sys: mingw64 }
+          - { sys: ucrt64  }
+          - { sys: clang64 }
+    name: ${{ matrix.sys }}
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{matrix.sys}}
+        update: true
+        install: >-
+          git
+          flex
+          bison
+        pacboy: >-
+          toolchain:p
+          meson:p
+          ninja:p
+          libyaml:p
+          swig:p
+          python-setuptools-scm:p
+
+    - name: '🚧 Build'
+      run: |
+        meson setup -Dtools=true -Dtests=false build
+        meson compile -C build

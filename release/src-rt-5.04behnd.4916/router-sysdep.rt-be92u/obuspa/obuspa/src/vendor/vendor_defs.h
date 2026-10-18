@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  * Copyright (C) 2020, BT PLC
  * Copyright (C) 2022, Snom Technology GmbH
  *
@@ -46,8 +46,6 @@
 
 #define BDK_USP
 
-#define E2ESESSION_EXPERIMENTAL_USP_V_1_2
-
 //------------------------------------------------------------------------------
 // Definitions used to size static arrays
 // You are unlikely to need to change these
@@ -55,12 +53,17 @@
 #define MAX_DM_PATH (256)           // Maximum number of characters in a data model path
 #define MAX_DM_VALUE_LEN (4096)     // Maximum number of characters in a data model parameter value
 #define MAX_DM_SHORT_VALUE_LEN (MAX_DM_PATH) // Maximum number of characters in an (expected to be) short data model parameter value
+#define MAX_ENDPOINT_ID_LEN (256)   // Maximum number of characters in an Endpoint ID
+#define MAX_MSG_ID_LEN (256)        // Maximum number of characters in a USP message ID allocated by this Agent
 #define MAX_PATH_SEGMENTS (32)      // Maximum number of segments (eg "Device, "LocalAgent") in a path. Does not include instance numbers.
 #define MAX_COMPOUND_KEY_PARAMS 8   // Maximum number of parameters in a compound unique key
 #define MAX_CONTROLLERS 5           // Maximum number of controllers which may be present in the DB (Device.LocalAgent.Controller.{i})
 #define MAX_CONTROLLER_MTPS 3       // Maximum number of MTPs that a controller may have in the DB (Device.LocalAgent.Controller.{i}.MTP.{i})
 #define MAX_AGENT_MTPS (MAX_CONTROLLERS)  // Maximum number of MTPs that an agent may have in the DB (Device.LocalAgent.MTP.{i})
 #define MAX_STOMP_CONNECTIONS (MAX_CONTROLLERS)  // Maximum number of STOMP connections that an agent may have in the DB (Device.STOMP.Connection.{i})
+#define MAX_USP_SERVICES 10          // Maximum number of USP services which can connect, when acting as a broker
+#define MAX_UDS_SERVERS 2           // Maximum number of UDS sockets that an agent may have in the DB (Device.UnixDomainSockets.UnixDomainSocket.{i})
+
 #define MAX_COAP_CONNECTIONS (MAX_CONTROLLERS)  // Maximum number of CoAP connections that an agent may have in the DB (Device.LocalAgent.Controller.{i}.MTP.{i}.CoAP)
 #define MAX_COAP_SERVERS 5          // Maximum number of interfaces which an agent listens for CoAP messages on
 #define MAX_COAP_CLIENTS (MAX_CONTROLLERS)  // Maximum number of CoAP controllers which an agent sends to
@@ -68,6 +71,7 @@
 #define MAX_MQTT_SUBSCRIPTIONS 5
 #define MAX_WEBSOCKET_CLIENTS (MAX_CONTROLLERS)  // Maximum number of WebSocket controllers which an agent sends to, or receives from
 #define MAX_NODE_MAP_BUCKETS  1024  // Maximum number of buckets in the data model node map. This should be set to at least the number of registered parameters and objects in the data model
+#define USP_LOG_MAXLEN  (10*1024)   // Maximum number of characters in a single log statement
 
 // Uncomment and change the following define to override the severity level of messages sent to syslog.
 // Refer to the syslog documentation and its priority argument to know the possible values.
@@ -82,7 +86,13 @@
 // Maximum number of bytes allowed in a USP protobuf message.
 // This is not used to size any arrays, just used as a security measure to prevent rogue controllers crashing
 // the agent process with out of memory
-#define MAX_USP_MSG_LEN (64*1024)
+// Increase message length to accommodate tests that send a large amount of requests in the message
+#define MAX_USP_MSG_LEN (256*1024)
+
+// Maximum number of bytes allowed in a UDS MTP frame payload
+// This limits the UDS payload length as a security measure to prevent rogue controllers crashing the agent process by consuming too much memory
+// UDS could be receiving a large response to a USP message so the default is quite large (1 megabyte)
+#define MAX_UDS_FRAME_PAYLOAD_LEN (1024*1024)
 
 // Period of time (in seconds) between polling values that have value change notification enabled on them
 #define VALUE_CHANGE_POLL_PERIOD  (30)
@@ -101,7 +111,8 @@
 //-----------------------------------------------------------------------------------------
 // Definitions associated with grouped parameter get/set
 // Each group represents a software component that can set/get a list of data model parameters in a single operation via RPC/messaging
-#define MAX_VENDOR_PARAM_GROUPS  10 // Maximum number of software components that implement the data model
+#define MAX_VENDOR_PARAM_GROUPS  MAX_USP_SERVICES+10 // Maximum number of software components that implement the data model
+#define GROUP_GET_CHUNK_SIZE     500                 // Specifies the maximum number of parameters to get at one time from a data model provider component
 
 // Uncomment the following define to perform each parameter set individually, rather than in a group
 // This must be uncommented if the underlying data model implementation does not support commit/abort transactional semantics
@@ -124,6 +135,13 @@
 // Uncomment the following to remove code and features from the standard build
 #define REMOVE_DEVICE_INFO               // Removes DeviceInfo from the core data model. It must instead be provided by the vendor.
 #define REMOVE_DEVICE_TIME               // Removes Device.Time from the core data model. It must instead be provided by the vendor.
+#define REMOVE_USP_BROKER                  // Removes all USP Broker functionality, including Device.USPServices
+#define REMOVE_USP_SERVICE                 // Removes all USP Service functionality
+//#define REMOVE_DEVICE_REBOOT             // Removes Device.Reboot() from the core data model
+//#define REMOVE_DEVICE_FACTORY_RESET      // Removes Device.FactoryReset() from the core data model
+//#define REMOVE_DEVICE_SCHEDULE_TIMER     // Removes Device.ScheduleTimer() from the core data model
+//#define REMOVE_DEVICE_BOOT_EVENT         // Removes Device.Boot! from the core data model
+//#define REMOVE_DEVICE_SECURITY           // Removes Device.Security, Device.LocalAgent.Certificate and ControllerTrust Challenge/Response mechanism
 #define REMOVE_SELF_TEST_DIAG_EXAMPLE    // Removes Self Test diagnostics example code
 
 //#define DONT_SORT_GET_INSTANCES          // Disables the sorting of data model paths returned in a GetInstancesResponse. Useful for slow devices supporting large data models.
@@ -164,8 +182,9 @@
 // Key used to obfuscate (using XOR) all secure data model parameters stored in the USP Agent database (eg passwords)
 #define PASSWORD_OBFUSCATION_KEY  "$%^&*()@~#/,?"
 
-// Timeout (in seconds) when performing a connect to a STOMP broker
+// Timeout (in seconds) when performing a connect to a STOMP or MQTT broker
 #define STOMP_CONNECT_TIMEOUT 10
+#define MQTT_CONNECT_TIMEOUT 10
 
 // Number of seconds after a STOMP server heartbeat was expected, before retrying the connection
 #define STOMP_SERVER_HEARTBEAT_GRACE_PERIOD 10
@@ -209,26 +228,40 @@
 #define REPRESENT_JSON_NUMBERS_WITH_FULL_PRECISION
 
 //-----------------------------------------------------------------------------------------
+// Uncomment the following define if you want to use the old way of validating paths for subscriptions, Boot! parameters and Bulk Data parameters.
+// The old way was to actually resolve the path, checking that the path exists in the supported data model
+// The new way performs basic textual checks on the validity of the path but does not check that it exists in the supported data model
+//#define USE_LEGACY_PATH_VALIDATION
+
+//-----------------------------------------------------------------------------------------
 // Uncomment the following define to include the End-to-End Session context in OB-USP-A
 // The current E2E Session Context support is partial and lot of cases are not fully implemented yet.
 //#define E2ESESSION_EXPERIMENTAL_USP_V_1_2
 
 //-----------------------------------------------------------------------------------------
-// Static Declaration of all Controller Trust roles
-// The names of all enumerations may be altered, and enumerations added/deleted, but the last entry must always be kCTrustRole_Max
-typedef enum
-{
-    kCTrustRole_Min = 0,
-    kCTrustRole_FullAccess = 0,
-    kCTrustRole_Untrusted,
+// Instance numbers of roles in Device.LocalAgent.Controller.Role.{i}
+#define ROLE_FULL_ACCESS    1   // Instance to use for trust store certs specified using the -t option
+#define ROLE_UNTRUSTED      2   // Instance to use for untrusted controllers
+#define ROLE_NON_SSL        ROLE_FULL_ACCESS  // Inherited role instance to use if SSL is not being used for the MTP
+#define ROLE_DEFAULT        ROLE_FULL_ACCESS  // Inherited role instance to use if the controller cert does not have an associated inherited role
+#define ROLE_UDS            ROLE_FULL_ACCESS  // Inherited role instance to use for USP requests received over UDS
+#define ROLE_TRUST_STORE_DEFAULT ROLE_FULL_ACCESS  // Inherited role instance to use for trust store certificates specified with the -t option
 
-    kCTrustRole_Max         // This must always be the last entry in this enumeration. It is used to statically size arrays
-} ctrust_role_t;
+#define MAX_CTRUST_ROLES    8  // Maximum number of roles that can be present in Device.LocalAgent.ControllerTrust.Role.{i}
 
-// Definitions of roles used
-#define ROLE_NON_SSL       kCTrustRole_Untrusted   // Role to use, if SSL is not being used
-#define ROLE_DEFAULT       kCTrustRole_FullAccess  // Default Role to use for controllers until determined from MTP certificate
+//-----------------------------------------------------------------------------------------
+// Tests for incompatible build defines
+#ifdef REMOVE_DEVICE_SECURITY
+#if !defined(DISABLE_STOMP) || defined(ENABLE_COAP) || defined(ENABLE_MQTT) || defined(ENABLE_WEBSOCKETS) || !defined(REMOVE_DEVICE_BULKDATA)
+#error "If REMOVE_DEVICE_SECURITY is defined, then STOMP, CoAP, MQTT, WebSockets and Bulk Data Collection must be disabled"
+#endif
+#endif
 
+#ifndef ENABLE_UDS
+#if !defined(REMOVE_USP_BROKER) || !defined(REMOVE_USP_SERVICE)
+#error "If UDS MTP is disabled, then REMOVE_USP_BROKER and REMOVE_USP_SERVICE must be defined"
+#endif
+#endif
 
 #ifdef BDK_USP
 // Role is used to match with Inherited Role, and Inherited Role
@@ -256,4 +289,4 @@ typedef enum
 #define TRUSTED_ROLE_FULL_PATH   "Device.LocalAgent.ControllerTrust.Role.1"
 #define UNTRUSTED_ROLE_FULL_PATH "Device.LocalAgent.ControllerTrust.Role.2"
 
-#endif
+#endif // VENDOR_DEFS_H

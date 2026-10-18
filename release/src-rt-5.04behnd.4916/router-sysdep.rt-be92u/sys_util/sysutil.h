@@ -44,11 +44,11 @@ written consent.
  *
  * @return the thread id.
  */
-int sysUtl_getThreadId();
+int sysUtl_getThreadId(void);
 
 /** Same as sysUtl_getThreadId().
  */
-int sysUtl_gettid();
+int sysUtl_gettid(void);
 
 
 /** Return the number of CPU threads on system.

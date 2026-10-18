@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,6 +40,9 @@
  */
 
 #include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
 #include "common_defs.h"
 
@@ -232,4 +235,80 @@ void OS_UTILS_LockMutex(pthread_mutex_t *mutex)
 void OS_UTILS_UnlockMutex(pthread_mutex_t *mutex)
 {
     pthread_mutex_unlock(mutex);
+}
+
+/*********************************************************************//**
+**
+** OS_UTILS_CreateDirFromFilename
+**
+** Creates all parent directories of the given filename, if they haven't been created already
+**
+** \param   filename - absolute path to the file, which we would like all parent directories to exist
+**
+** \return  USP_ERR_OK if all parent directories of the given filename have been created or exist already
+**
+**************************************************************************/
+int OS_UTILS_CreateDirFromFilename(char *filename)
+{
+    struct stat info;
+    char path[PATH_MAX];
+    char *p;
+    int err;
+
+    USP_ASSERT(filename[0] == '/');  // This function supports only absolute paths from root
+
+    // Take a temporary copy of the filename, as we are going to modify the buffer in place
+    USP_STRNCPY(path, filename, sizeof(path));
+
+    // Iterate over all directory path segments, creating them if they do not exist already
+    p = strchr(&path[1], '/');
+    while (p != NULL)
+    {
+        *p = '\0';  // Temporarily truncate the string at the directory
+
+        err = stat(path, &info);
+        if ((err != 0) && (errno == ENOENT))
+        {
+            // Since dir does not exist, attempt to create it
+            err = mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
+            if (err != 0)
+            {
+                USP_ERR_ERRNO("mkdir", errno);
+                return USP_ERR_INTERNAL_ERROR;
+            }
+        }
+
+        *p = '/';   // Make back into full path
+
+        p = strchr(&p[1], '/');
+    }
+
+    return USP_ERR_OK;
+}
+
+/*********************************************************************//**
+**
+** OS_UTILS_TimeNow
+**
+** Returns the current time. Ideally using the monotonic clock which will not have discontinuities in it when NTP time is acquired
+**
+** \param   None
+**
+** \return  time in seconds since some fixed starting point
+**
+**************************************************************************/
+time_t OS_UTILS_TimeNow(void)
+{
+    int err;
+    struct timespec ts;
+
+    // Exit if able to get the monotonic clock time
+    err = clock_gettime(CLOCK_MONOTONIC, &ts);
+    if (err == 0)
+    {
+        return ts.tv_sec;
+    }
+
+    // Otherwise return the real time clock
+    return time(NULL);
 }

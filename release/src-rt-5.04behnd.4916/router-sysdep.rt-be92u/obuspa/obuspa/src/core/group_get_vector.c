@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2020, Broadband Forum
- * Copyright (C) 2020  CommScope, Inc
+ * Copyright (C) 2020-2024, Broadband Forum
+ * Copyright (C) 2020-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -52,7 +52,7 @@
 
 //------------------------------------------------------------------------------
 // Forward declarations. Note these are not static, because we need them in the symbol table for USP_LOG_Callstack() to show them
-void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv);
+void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv, int start_index, int chunk_size);
 void GetParametersIndividually(group_get_vector_t *ggv);
 
 /*********************************************************************//**
@@ -243,6 +243,7 @@ void GROUP_GET_VECTOR_ConvertToKeyValueVector(group_get_vector_t *ggv, kv_vector
         {
             // Intentionally ignoring errors that occurred whilst getting the value by returning an empty string if they occur
             pair->value = USP_STRDUP("");
+            USP_ASSERT(gge->value == NULL);   // If this is not NULL, a memory leak could occur
         }
 
         USP_SAFE_FREE(gge->err_msg);
@@ -272,9 +273,11 @@ void GROUP_GET_VECTOR_GetValues(group_get_vector_t *ggv)
     char buf[MAX_DM_VALUE_LEN];
     int_vector_t ggv_indexes[MAX_VENDOR_PARAM_GROUPS]; // Array of vectors
     int_vector_t *iv;
+    int start_index;
+    int chunk_size;
 
 #ifdef GET_GROUPED_PARAMETERS_INDIVIDUALLY
-    // Get each parameter in the list individually, stopping at the first required parameter which fails
+    // Get each parameter in the list individually
     GetParametersIndividually(ggv);
     return;
 #endif
@@ -311,7 +314,13 @@ void GROUP_GET_VECTOR_GetValues(group_get_vector_t *ggv)
         iv = &ggv_indexes[i];
         if (iv->num_entries > 0)
         {
-            GetParameterGroup(i, ggv, iv);
+            // Get the parameters in chunks limited to GROUP_GET_CHUNK_SIZE parameters per chunk
+            for (start_index=0; start_index < iv->num_entries; start_index += GROUP_GET_CHUNK_SIZE)
+            {
+                chunk_size = MIN(GROUP_GET_CHUNK_SIZE, iv->num_entries - start_index);
+                GetParameterGroup(i, ggv, iv, start_index, chunk_size);
+            }
+
         }
     }
 
@@ -326,16 +335,18 @@ void GROUP_GET_VECTOR_GetValues(group_get_vector_t *ggv)
 **
 ** GetParameterGroup
 **
-** Gets the value of a group of parameters specified by the indexes in the iv vector
+** Gets the value of a group of parameters specified by the indexes in the iv vector and chunk start/end indexes
 **
 ** \param   group_id - GroupID of the parameters to get
 ** \param   ggv - Contains the list of parameters to get and (after getting) stores the values
 ** \param   iv - pointer to vector containing the index of each parameter to get for this group (index in group get vector)
+** \param   start_index - Index of entry in iv vector representing the start of the chunk to get
+** \param   chunk_size - number of parameters in the chunk to get
 **
 ** \return  None
 **
 **************************************************************************/
-void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv)
+void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv, int start_index, int chunk_size)
 {
     int i;
     kv_vector_t params;
@@ -346,15 +357,19 @@ void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv)
     int err;
     group_get_entry_t *gge;
     char *usp_err_msg;
+    int empty_count;
+
+    USP_ASSERT(start_index < iv->num_entries);
+    USP_ASSERT(chunk_size > 0);
 
     // Exit if there is no callback defined for this group
     get_group_cb = group_vendor_hooks[group_id].get_group_cb;
     if (get_group_cb == NULL)
     {
         // Mark all results for params in this group with an error
-        for (i=0; i < iv->num_entries; i++)
+        for (i=0; i < chunk_size; i++)
         {
-            index = iv->vector[i];
+            index = iv->vector[start_index + i];
             gge = &ggv->vector[index];
             USP_SNPRINTF(err_msg, sizeof(err_msg), "%s: No registered group callback to get param %s", __FUNCTION__, gge->path);
             gge->err_code = USP_ERR_INTERNAL_ERROR;
@@ -366,11 +381,11 @@ void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv)
     // Add all parameters to get in this group to a key value vector
     // NOTE: We form the key value vector manually to avoid copying the param paths.
     //       Ownership of the param paths stay with the group get vector
-    params.num_entries = iv->num_entries;
-    params.vector = USP_MALLOC(sizeof(kv_pair_t)*(iv->num_entries));
-    for (i=0; i < iv->num_entries; i++)
+    params.num_entries = chunk_size;
+    params.vector = USP_MALLOC(sizeof(kv_pair_t) * chunk_size);
+    for (i=0; i < chunk_size; i++)
     {
-        index = iv->vector[i];
+        index = iv->vector[start_index + i];
         gge = &ggv->vector[index];
         USP_ASSERT(gge->path != NULL);
 
@@ -386,9 +401,9 @@ void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv)
     {
         // Mark all results for params in this group with an error
         usp_err_msg = USP_ERR_GetMessage();
-        for (i=0; i < iv->num_entries; i++)
+        for (i=0; i < chunk_size; i++)
         {
-            index = iv->vector[i];
+            index = iv->vector[start_index + i];
             gge = &ggv->vector[index];
             gge->err_code = USP_ERR_INTERNAL_ERROR;
 
@@ -412,10 +427,12 @@ void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv)
 
     // Move all parameter values obtained to the group get vector
     // NOTE: Ownership of the value string transfers from the params vector to the group get vector
-    for (i=0; i < iv->num_entries; i++)
+    usp_err_msg = USP_ERR_GetMessage();
+    empty_count = 0;
+    for (i=0; i < chunk_size; i++)
     {
         kv = &params.vector[i];
-        index = iv->vector[i];
+        index = iv->vector[start_index + i];
         gge = &ggv->vector[index];
 
         if (kv->value != NULL)
@@ -424,9 +441,18 @@ void GetParameterGroup(int group_id, group_get_vector_t *ggv, int_vector_t *iv)
         }
         else
         {
-            USP_SNPRINTF(err_msg, sizeof(err_msg), "%s: Get group callback did not provide a value for param %s", __FUNCTION__, gge->path);
+            // If this is the first parameter with no value, and an error message has been set, then use the error message
+            if ((usp_err_msg[0] != '\0') && (empty_count == 0))
+            {
+                USP_SNPRINTF(err_msg, sizeof(err_msg), "%s", usp_err_msg);
+            }
+            else
+            {
+                USP_SNPRINTF(err_msg, sizeof(err_msg), "%s: Get group callback did not provide a value for param %s", __FUNCTION__, gge->path);
+            }
             gge->err_code = USP_ERR_INTERNAL_ERROR;
             gge->err_msg = USP_STRDUP(err_msg);
+            empty_count++;
         }
     }
 

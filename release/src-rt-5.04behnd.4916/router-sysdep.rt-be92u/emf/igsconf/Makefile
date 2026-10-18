@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -14,9 +14,9 @@
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 #
-# <<Broadcom-WL-IPTag/Open:>>
+# <<Broadcom-WL-IPTag/Dual:>>
 #
-# $Id: Makefile 775415 2019-05-29 18:14:36Z $
+# $Id: Makefile 832689 2023-11-10 16:41:06Z $
 #
 
 CROSS =
@@ -53,3 +53,11 @@ install: all
 .PHONY:	clean
 clean:
 	-rm -f *.o *~ core igs
+
+# This comment block must stay at the bottom of the file.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 noet

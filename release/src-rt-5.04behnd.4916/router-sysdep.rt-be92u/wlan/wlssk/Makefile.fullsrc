@@ -1,0 +1,117 @@
+ifneq ($(strip $(BUILD_OPENWRT_NATIVE)$(BUILD_OPENSYNC)$(BUILD_OPENSYNC_GW)),)
+ 
+include $(mdir)/make.opensync
+ 
+else #NOT_OPENSYNC
+ OBJS = main.o debug.o wlssk.o service.o event.o wlsyscall.o defaults.o wlssk_ops.o
+ LIBS = -L$(INSTALL_DIR)/lib -L$(INSTALL_DIR)/usr/lib -ldl -lwldpd
+ 
+ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+ OBJS += cms.o wlssk_mdm.o cms_linkstatus.o
+ 
+ ifneq ($(strip $(BUILD_RDKWIFI))$(strip $(RDK_BUILD)),)
+  include $(mdir)/make.rdk
+ else
+  OBJS += thread.o
+ endif #RDK
+ 
+ LIBS += -lssk_util
+ LIBS += -lcms_msg $(CMS_COMMON_LIBS) -lcms_dal -lcms_msg $(CMS_COMMON_LIBS) $(MDM_CORE_LIBS)
+ ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
+  LIBS += -lstaged -ljson-c -lpthread
+  ifneq ($(strip $(BUILD_CUSTOMER)),)
+   LIBS += -lwlmdm_customer -lssk_util_customer -lmdm_cbk_customer
+  else
+   LIBS += -lwlmdm
+  endif #BUILD_CUSTOMER
+ endif #BUILD_BRCM_UNFWLCFG
+else # BASE_SHELL
+ LIBS += -lwlsysutil
+ ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
+  LIBS += -lstaged -ljson-c -lpthread -lbcm_util -lsys_util
+ endif
+ CFLAGS += -DBUILD_BRCM_BASE_SHELL
+endif # BASE_SHELL
+ 
+ ifneq ($(strip $(BUILD_HND_EAP)),)
+  CFLAGS += -DBUILD_HND_EAP
+ endif
+ 
+ ifeq ($(WLTEST),1)
+  CFLAGS += -DWLTEST
+ endif
+ 
+ifneq ($(strip $(BRCM_ENGR_ONLY)),)
+ CFLAGS += -DBRCM_ENGR_ONLY
+endif
+ 
+LIBS += -lnvram -lm -lshared
+ 
+ifneq ($(strip $(BUILD_BRCM_HOSTAPD)),)
+CFLAGS += -DCONFIG_HOSTAPD  
+LIBS += -lbcmcrypto -lnv2hapdcfg -L$(INSTALL_DIR)/usr/lib
+endif
+ 
+ifneq ($(strip $(BUILD_BRCM_OPENWRT)),)
+CFLAGS += -DCONFIG_BRCM_OPENWRT
+endif
+LIBS += -lbcm_flashutil -lbcm_boardctl -lbcm_util -lsys_util -lgen_util
+ 
+ifneq ($(strip $(BUILD_WLDATAELD)),)
+CFLAGS += -DBUILD_WLDATAELD
+endif
+ 
+ifneq ($(strip $(BUILD_BAS2)),)
+CFLAGS += -DBUILD_BAS2
+endif
+ 
+endif # NOT_OPENSYNC
+ 
+CFLAGS +=-DWIRELESS -DSUPPORT_MIMO -DBCMWPA2
+ifneq ($(strip $(BUILD_BCM_WLAN_DPDCTL)),)
+CFLAGS += -DBUILD_BCM_WLAN_DPDCTL
+endif
+ 
+CFLAGS += -DWMF
+CFLAGS += -DDUCATI
+ 
+ifeq ($(BUILD_WLHSPOT),y)
+CFLAGS += -DHSPOT_SUPPORT
+endif
+ 
+ifneq ($(strip $(BUILD_WSC)),)
+CFLAGS += -DSUPPORT_WSC
+ifeq ($(strip $(BUILD_WSC_CONFIG_UPNP_DISABLE)),1)
+CFLAGS += -DWSC_CONFIG_UPNP_DISABLE
+endif
+endif
+ 
+ifneq ($(BUILD_BRCM_AIRIQ),)
+CFLAGS += -DWL_AIR_IQ
+endif
+ 
+ifneq ($(strip $(BUILD_BSTREAM_IQOS)),)
+ifneq ($(wildcard $(WIRELESS_DRIVER_PATH)/../components/vendor/trend/iqos),)
+CFLAGS += -DWL_BSTREAM_IQOS
+endif
+endif
+ 
+CFLAGS += -Werror -Wfatal-errors
+ 
+ 
+$(EXE): $(OBJS) 
+	$(CC) $(BCM_LD_FLAGS) $(CMS_LIB_PATH) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) -lc $(LIBS_CC_RT)
+ 
+ 
+save_binaries:
+	-cp $(EXE) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+ 
+# delete source files from source dir (does not know about multi-arch or mdir)
+delete_source:
+	rm -f *.c *.h Makefile.fullsrc
+ 
+ 
+# Generate and use dependencies.
+CFLAGS += -MD
+-include $(OBJS:.o=.d)

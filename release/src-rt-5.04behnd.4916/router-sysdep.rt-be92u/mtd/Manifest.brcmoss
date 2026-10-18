@@ -1,0 +1,7 @@
+OSS_REFERENCE_Name: mtd
+OSS_REFERENCE_Version: 2.2.1
+OSS_REFERENCE_License: GPLv2
+OSS_REFERENCE_DownloadURL: https://github.com/sigma-star/mtd-utils/archive/refs/tags/v2.2.1.tar.gz
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./mtd-utils-2.2.1.tar.gz
+

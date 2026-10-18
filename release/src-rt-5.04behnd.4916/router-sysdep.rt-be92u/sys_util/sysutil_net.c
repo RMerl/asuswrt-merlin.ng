@@ -98,8 +98,6 @@ int sysUtl_getIfindexByIfname(const char *ifname)
    int ifindex = -1;
    struct ifreq ifr;
 
-   memset(&ifr, 0, sizeof(ifr));
-
    if (ifname == NULL)
    {
       return -1;
@@ -112,8 +110,9 @@ int sysUtl_getIfindexByIfname(const char *ifname)
       return -1;
    }
 
+   memset(&ifr, 0, sizeof(ifr));
    strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name)-1);
-   ifr.ifr_name[sizeof(ifr.ifr_name)-1] = '\0';
+
    if (ioctl(sockfd, SIOCGIFINDEX, &ifr) >= 0)
    {
       ifindex = ifr.ifr_ifindex;
@@ -166,8 +165,8 @@ int sysUtl_isInterfaceLinkUp(const char *ifname)
       return 0;
    }
 
+   memset(&intf, 0, sizeof(intf));
    strncpy(intf.ifr_name, ifname, sizeof(intf.ifr_name)-1);
-   intf.ifr_name[sizeof(intf.ifr_name)-1] = '\0';
 
    if (ioctl(skfd, SIOCGIFFLAGS, &intf) == -1) {
       isUp = 0;
@@ -206,8 +205,8 @@ int sysUtl_isInterfaceConfigedUp(const char *ifname)
       return 0;
    }
 
+   memset(&intf, 0, sizeof(intf));
    strncpy(intf.ifr_name, ifname, sizeof(intf.ifr_name)-1);
-   intf.ifr_name[sizeof(intf.ifr_name)-1] = '\0';
 
    if (ioctl(skfd, SIOCGIFFLAGS, &intf) == -1) {
       isUp = 0;
@@ -277,6 +276,45 @@ int sysUtl_interfaceExists(const char *ifname)
     return ret;
 }
 
+// See also isIntf_USB in rut_util.c
+// This version of the func works on 5.15 kernel.
+// Note that the USB device must be plugged in for this function to return 1.
+int sysUtl_isInterfaceUsbNet(const char *ifName)
+{
+   FILE *fp = NULL;
+   int ret = 0;
+   char cmd[256] = { 0 };
+
+   snprintf(cmd, sizeof(cmd), "ls /sys/bus/usb/devices/*/net 2>/dev/null");
+   fp = popen(cmd, "r");
+   if (fp)
+   {
+        char line_buff[256] = { 0 };
+
+        /* There might be multiple USB ethernet, use a while loop */
+        while( fgets(line_buff, sizeof(line_buff), fp) != NULL )
+        {
+            /* We only care ethX, skip the line less than 4 chars */
+            if (strlen(line_buff) >= 4) 
+            {
+                line_buff[strlen(line_buff)-1] = '\0'; // Strip out the ending \n
+            }
+            else
+            {
+                continue;
+            }
+            if ((strlen(line_buff)==strlen(ifName)) && !strncmp(line_buff, ifName, strlen(ifName)))
+            {
+               ret = 1;
+               break;
+            }
+        }
+        pclose(fp);
+   }
+
+   return ret;
+}
+
 static char* sysUtl_getNestedRta(struct rtattr *rta_in, int len_in, int rta_type, int *rta_len)
 {
     struct rtattr *rta = rta_in;
@@ -292,15 +330,26 @@ static char* sysUtl_getNestedRta(struct rtattr *rta_in, int len_in, int rta_type
 
 static int sysUtl_parseVlan(struct rtattr *rta_in)
 {
+#define LINK_KIND_VLAN "vlan"
+
     char* linkinfo = NULL;
+    char* linkkind = NULL;
     char* datainfo = NULL;
     char* vlaninfo = NULL;
+    int linkkind_len = 0;
     int datainfo_len = 0;
     int vlaninfo_len = 0;
     int vlan = INVALID_VLANID;
     struct rtattr *rta = rta_in;
 
     linkinfo = (char *)((char *) rta + NLA_HDRLEN);
+
+    // if this is not a vlan device, just return INVALID_VLANID
+    linkkind = sysUtl_getNestedRta((struct rtattr *)linkinfo, rta->rta_len, IFLA_INFO_KIND, &linkkind_len);
+    if ((linkkind == NULL) || strcmp(linkkind, LINK_KIND_VLAN))
+        return INVALID_VLANID;
+
+    // get the vlan id
     datainfo = sysUtl_getNestedRta((struct rtattr *)linkinfo, rta->rta_len, IFLA_INFO_DATA, &datainfo_len);
     if (datainfo) {
         vlaninfo = sysUtl_getNestedRta((struct rtattr *)datainfo, datainfo_len, IFLA_VLAN_ID, &vlaninfo_len);
@@ -308,6 +357,7 @@ static int sysUtl_parseVlan(struct rtattr *rta_in)
             vlan = *(unsigned short *)vlaninfo;
         }
     }
+
     return vlan;
 }
 
@@ -320,6 +370,7 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
     struct msghdr msg = {0};
     struct nlmsghdr *nh;
     struct route_req req;
+    int ifi_specified = 0;
     unsigned short parent_ifindex = 0;
 
     int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
@@ -336,18 +387,17 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
     req.msg.ifi_change = 0xFFFFFFFF;
     
     if (ifname != NULL) {
-        //Interface specified, request specific interface info
+        // interface specified, request specific interface info
         req.msg.ifi_index = if_nametoindex(ifname);
-        if (req.msg.ifi_index == 0)
-        {
-            fprintf(stderr, "sysUtl_getLink: failed to convert ifname %s to ifindex, error=%s\n",
-                             ifname, strerror(errno));
+        if (req.msg.ifi_index == INVALID_IFINDEX) {
+            perror("invalid ifindex");
             goto exit;
         }
+        ifi_specified = 1;
         req.header.nlmsg_flags = NLM_F_REQUEST;
     }
     else {
-        //No interface specified, request all information
+        // no interface specified, request all information
         req.header.nlmsg_flags = NLM_F_ROOT|NLM_F_MATCH|NLM_F_REQUEST;
     }
 
@@ -397,11 +447,11 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
             for (; RTA_OK(rta, len); rta = RTA_NEXT(rta, len)) {
                 if (rta->rta_type == IFLA_LINK) {
                     parent_ifindex = *(unsigned short *)((char *) rta + NLA_HDRLEN);
-                    if (req.msg.ifi_index && link_req->parent_ifindex == INVALID_IFINDEX) {
+                    if (ifi_specified && link_req->parent_ifindex == INVALID_IFINDEX) {
                         // specific ifindex request, to get the parent's ifindex
                         link_req->parent_ifindex = parent_ifindex;
                     }
-                    else if (!req.msg.ifi_index && link_req->parent_ifindex) {
+                    else if (!ifi_specified && link_req->parent_ifindex) {
                         // not specific ifindex request, to check the parent's ifindex
                         if (link_req->parent_ifindex == parent_ifindex)
                         {
@@ -411,7 +461,7 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
                     }
                 }
                 if(rta->rta_type == IFLA_LINKINFO) {
-                    if (req.msg.ifi_index) {
+                    if (ifi_specified) {
                         // specific request, to get the vlan
                         link_req->vlanid = sysUtl_parseVlan(rta);
                     }
@@ -419,7 +469,7 @@ static int sysUtl_getLink(const char *ifname, struct link_req *link_req)
             }
         }
 
-        if (req.msg.ifi_index) {
+        if (ifi_specified) {
             // specific request, do not wait for the next message.
             break;
         }

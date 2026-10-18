@@ -55,11 +55,22 @@ ifeq ($(strip $(DESKTOP_LINUX)),y)
 conditional_build:
 	@echo "skipping $(EXE) (not supported in desktop build)"
 else
+ifneq ($(strip $(BUILD_USP)),)
 ifneq ($(strip $(BUILD_OBUSPA)),)
 conditional_build:
 	$(MAKE) -f Makefile install
 	mkdir -p $(FINAL_EXE_INSTALL_DIR)
 	cp -p $(EXE_INSTALL_DIR)/$(EXE) $(FINAL_EXE_INSTALL_DIR)
+else ifneq ($(strip $(BCM_COND_HAVE_OBUSPA)),)
+conditional_build:
+	@echo "$(EXE) will be provided externally (not built by BDK build system)"
+else
+conditional_build:
+	@echo "skipping $(EXE) (not configured)"
+endif
+else ifneq ($(strip $(BCM_COND_HAVE_OBUSPA)),)
+conditional_build:
+	@echo "$(EXE) will be provided externally (not built by BDK build system)"
 else
 conditional_build:
 	@echo "skipping $(EXE) (not configured)"

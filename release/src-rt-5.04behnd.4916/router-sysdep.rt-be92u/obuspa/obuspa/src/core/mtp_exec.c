@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2021  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  * Copyright (C) 2020, BT PLC
  *
  * Redistribution and use in source and binary forms, with or without
@@ -67,9 +67,22 @@
 #include "wsserver.h"
 #endif
 
+#ifdef ENABLE_UDS
+#include "uds.h"
+#endif
+
 //------------------------------------------------------------------------------
 // Enumeration that is set when a USP Agent stop has been scheduled (for when connections have finished sending and receiving messages)
 scheduled_action_t mtp_exit_scheduled = kScheduledAction_Off;
+
+//------------------------------------------------------------------------------
+// Flag set if any MTP has a reconnect/disconnect/resubscribe action signalled.
+// Whilst this flag is not strictly necessary (as each MTP contains reconnect/disconnect/resubscribe flags), it's use prevents the
+// data model thread from having to wait on the MTP thread's mutex under normal conditions (ie when a reconnect/disconnect/resubscribe
+// is not scheduled). This is advantageous because the MTP thread may be blocked for a while performing a connect, and we don't want
+// that to hold up the data model thread when none of the MTPs actually need to reconnect/disconnect/resubscribe.
+// NOTE: This flag is only accessed from the data model thread.
+bool mtp_reconnect_scheduled = false;
 
 #ifndef DISABLE_STOMP
 //------------------------------------------------------------------------------
@@ -114,6 +127,20 @@ static int mtp_mqtt_mq_sockets[2] = {-1, -1};
 // Flag set to true if the MTP thread has exited
 // This gets set after a scheduled exit due to a stop command, Reboot or FactoryReset operation
 bool is_mqtt_mtp_thread_exited = false;
+#endif
+
+#ifdef ENABLE_UDS
+//------------------------------------------------------------------------------
+// Unix domain socket pair used to implement a wakeup message queue
+// One socket is always used for sending, and the other always used for receiving
+static int mtp_uds_mq_sockets[2] = {-1, -1};
+#define mq_uds_rx_socket  mtp_uds_mq_sockets[0]
+#define mq_uds_tx_socket  mtp_uds_mq_sockets[1]
+
+//------------------------------------------------------------------------------
+// Flag set to true if the MTP thread has exited
+// This gets set after a scheduled exit due to a stop command, Reboot or FactoryReset operation
+bool is_uds_mtp_thread_exited = false;
 #endif
 
 //------------------------------------------------------------------------------
@@ -191,6 +218,16 @@ int MTP_EXEC_Init(void)
     }
 #endif
 
+#ifdef ENABLE_UDS
+    // Exit if unable to initialize the unix domain socket pair used to implement a wakeup message queue
+    err = socketpair(AF_UNIX, SOCK_DGRAM, 0, mtp_uds_mq_sockets);
+    if (err != 0)
+    {
+        USP_ERR_ERRNO("socketpair", errno);
+        return USP_ERR_INTERNAL_ERROR;
+    }
+#endif
+
     return USP_ERR_OK;
 }
 
@@ -213,6 +250,34 @@ void MTP_EXEC_StompWakeup(void)
 
     // Send the message
     bytes_sent = send(mq_stomp_tx_socket, &msg, sizeof(msg), 0);
+    if (bytes_sent != sizeof(msg))
+    {
+        char buf[USP_ERR_MAXLEN];
+        USP_LOG_Error("%s(%d): send failed : (err=%d) %s", __FUNCTION__, __LINE__, errno, USP_ERR_ToString(errno, buf, sizeof(buf)) );
+        return;
+    }
+}
+#endif
+
+#ifdef ENABLE_UDS
+/*********************************************************************//**
+**
+** MTP_EXEC_UdsWakeup
+**
+** Posts a message on the UDS MTP thread's queue, to cause it to wakeup from the select()
+**
+** \param   None
+**
+** \return  USP_ERR_OK if successful
+**
+**************************************************************************/
+void MTP_EXEC_UdsWakeup(void)
+{
+    char msg = WAKEUP_MESSAGE;
+    int bytes_sent;
+
+    // Send the message
+    bytes_sent = send(mq_uds_tx_socket, &msg, sizeof(msg), 0);
     if (bytes_sent != sizeof(msg))
     {
         char buf[USP_ERR_MAXLEN];
@@ -324,6 +389,10 @@ void MTP_EXEC_ActivateScheduledActions(void)
 #ifdef ENABLE_WEBSOCKETS
     any_mtp_exited = any_mtp_exited || is_wsclient_mtp_thread_exited;
 #endif
+#ifdef ENABLE_UDS
+    any_mtp_exited = any_mtp_exited || is_uds_mtp_thread_exited;
+#endif
+
 
     // Exit if any MTP thread has already exited (because if they have, there is no need to schedule any further actions)
     if (any_mtp_exited)
@@ -349,26 +418,44 @@ void MTP_EXEC_ActivateScheduledActions(void)
         // because the call to XXX_ActivateScheduledActions() later in this function, causes the thread to wake up
 #endif
 
+#ifdef ENABLE_UDS
+        MTP_EXEC_UdsWakeup();
+#endif
+
         // Ensure that exit still occurs, if no MTPs are compiled into the code
 #ifdef DISABLE_STOMP
 #ifndef ENABLE_COAP
 #ifndef ENABLE_MQTT
+#ifndef ENABLE_UDS
         DM_EXEC_HandleScheduledExit();
+#endif
 #endif
 #endif
 #endif
     }
 
-    // Activate all scheduled reconnects, if signalled
+    // Activate all scheduled reconnects, if any were signalled
+    if (mtp_reconnect_scheduled)
+    {
 #ifndef DISABLE_STOMP
-    STOMP_ActivateScheduledActions();
+        STOMP_ActivateScheduledActions();
 #endif
 #ifdef ENABLE_MQTT
-    MQTT_ActivateScheduledActions();
+        MQTT_ActivateScheduledActions();
 #endif
 #ifdef ENABLE_WEBSOCKETS
+        WSSERVER_ActivateScheduledActions();
+#endif
+#ifdef ENABLE_UDS
+        UDS_ActivateScheduledActions();
+#endif
+        mtp_reconnect_scheduled = false;
+    }
+
+#ifdef ENABLE_WEBSOCKETS
+    // NOTE: It's not possible to use the mtp_reconnect_scheduled flag with WSCLIENT, because kScheduledAction_Signalled is set
+    // in the wsclient thread and mtp_reconnect_scheduled is modified only by the data model thread
     WSCLIENT_ActivateScheduledActions();
-    WSSERVER_ActivateScheduledActions();
 #endif
 }
 
@@ -426,9 +513,6 @@ void *MTP_EXEC_StompMain(void *args)
             {
                 // Free all memory associated with MTP layer
                 STOMP_Destroy();
-
-                // Prevent the data model from making any other changes to the MTP thread
-                is_stomp_mtp_thread_exited = true;
 
                 // Signal the data model thread that this thread has exited
                 DM_EXEC_PostMtpThreadExited(STOMP_EXITED);
@@ -492,9 +576,6 @@ void *MTP_EXEC_MqttMain(void *args)
             {
                 // Free all memory associated with MTP layer
                 MQTT_Destroy();
-
-                // Prevent the data model from making any other changes to the MTP thread
-                is_mqtt_mtp_thread_exited = true;
 
                 // Signal the data model thread that this thread has exited
                 DM_EXEC_PostMtpThreadExited(MQTT_EXITED);
@@ -562,9 +643,6 @@ void *MTP_EXEC_CoapMain(void *args)
                 // Free all memory associated with MTP layer
                 COAP_Destroy();
 
-                // Prevent the data model from making any other changes to the MTP thread
-                is_coap_mtp_thread_exited = true;
-
                 // Signal the data model thread that this thread has exited
                 DM_EXEC_PostMtpThreadExited(COAP_EXITED);
                 return NULL;
@@ -573,6 +651,71 @@ void *MTP_EXEC_CoapMain(void *args)
     }
 }
 #endif // ENABLE_COAP
+
+#ifdef ENABLE_UDS
+/*********************************************************************//**
+**
+** MTP_EXEC_UdsMain
+**
+** Main loop of MTP thread for UDS
+**
+** \param   args - arguments (currently unused)
+**
+** \return  None
+**
+**************************************************************************/
+void *MTP_EXEC_UdsMain(void *args)
+{
+    int num_sockets;
+    socket_set_t set;
+
+    while(FOREVER)
+    {
+        // Create the set of all sockets to receive/transmit on (with timeout)
+        SOCKET_SET_Clear(&set);
+        UDS_UpdateAllSockSet(&set);
+
+        // Wait for read/write activity on sockets or timeout
+        SOCKET_SET_AddSocketToReceiveFrom(mq_uds_rx_socket, MAX_SOCKET_TIMEOUT, &set);
+        num_sockets = SOCKET_SET_Select(&set);
+
+        // Process socket activity
+        switch(num_sockets)
+        {
+            case -1:
+                // An unrecoverable error has occurred
+                USP_LOG_Error("%s: Unrecoverable socket select() error. Aborting MTP thread", __FUNCTION__);
+                return NULL;
+                break;
+
+            case 0:
+                // No controllers with any activity, but we still may need to process a timeout, so fall-through
+            default:
+                // Process the wakeup queue
+                ProcessMtpWakeupQueueSocketActivity(&set, mq_uds_rx_socket);
+
+                // Process activity on all UDS message queues
+                UDS_ProcessAllSocketActivity(&set);
+                break;
+        }
+
+        // Exit this thread, if an exit is scheduled and all responses have been sent
+        if (mtp_exit_scheduled == kScheduledAction_Activated)
+        {
+            if (UDS_AreAllResponsesSent())
+            {
+                // Free all memory associated with MTP layer
+                UDS_Destroy();
+
+                // Signal the data model thread that this thread has exited
+                DM_EXEC_PostMtpThreadExited(UDS_EXITED);
+                return NULL;
+            }
+        }
+    }
+}
+
+#endif
 
 /*********************************************************************//**
 **

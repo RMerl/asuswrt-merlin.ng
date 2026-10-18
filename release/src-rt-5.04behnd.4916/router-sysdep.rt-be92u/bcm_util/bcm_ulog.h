@@ -230,8 +230,12 @@ SINT32 bcmuLog_getEidToThreadId(UINT32 eid);
 #define BCMULOG_DESTMASK_FILE      0x0010
 
 /** default destination mask */
+/** OpenWRT use syslog by default, BDK to console stderr */
+#ifndef CONFIG_BRCM_OPENWRT
 #define BCMULOG_DEFAULT_DESTMASK   (BCMULOG_DESTMASK_STDERR)
-
+#else
+#define BCMULOG_DEFAULT_DESTMASK   (BCMULOG_DESTMASK_SYSLOG)
+#endif
 
 /** Max length of the app name in the log line. */
 #define BCMULOG_MAX_APP_NAME_LEN    64

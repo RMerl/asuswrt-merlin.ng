@@ -7,14 +7,24 @@
 
 default:all
 
+ifeq ($(BCM_MODULAR_BUILD),)
+# Old way: infer location of make.common based on pwd.
 CURR_DIR := $(shell pwd)
 BUILD_DIR:=$(subst /userspace, /userspace,$(CURR_DIR))
 BUILD_DIR:=$(word 1, $(BUILD_DIR))
 include $(BUILD_DIR)/make.common
+else
+# New Modular Build way: EXT_BUILD_DIR must be set.
+# Also point BUILD_DIR to EXT_BUILD_DIR
+BUILD_DIR := $(EXT_BUILD_DIR)
+include $(EXT_BUILD_DIR)/make.common
+endif
+
 include $(BUILD_DIR)/make.wlan
 
 LIB := libwbddataelms.so
 OBJS += wbd_dataelms_i5dm.o wbd_dataelms_i5dm_tables.o wbd_dataelms_jsonc_utils.o wbd_dataelms_list.o wbd_dataelms_dm.o wbd_dataelms_dm_tables.o wbd_dataelms_utils.o
+OBJS += wbd_dataelms_debug.o
 
 LIBS = -L$(INSTALL_DIR)/lib -L$(INSTALL_DIR)/usr/lib -ldl -lpthread -lgen_util
 
@@ -78,14 +88,13 @@ ALLOWED_INCLUDE_PATHS += -I$(COMPON_WIRELESS_DRIVER_PATH)/router/bshared/include
 ALLOWED_INCLUDE_PATHS += -I$(COMPON_WIRELESS_DRIVER_PATH)/opensource/router_tools/wpa_supplicant/src/common
 
 
-LIB_RPATH = $(INSTALL_DIR)$(subst :,:$(INSTALL_DIR),$(ALLOWED_LIB_DIRS))
-LDFLAGS += $(BCM_RPATH_LINK_OPTION) -Wl,-rpath-link=$(LIB_RPATH)
+LDFLAGS += $(BCM_RPATH_LINK_OPTION)
 
 %.o: %.c
 	$(CC) -g -c $(CFLAGS) -o $@ $<
 
 $(LIB): $(OBJS) 
-	$(CC) $(CFLAGS) $(BCM_BLT32_FLAGS) -shared -Wl,-soname,$(LIB) -o $(LIB) $(OBJS) -L$(LIBDIR) $(CMS_LIB_PATH) -lc $(LIBS)
+	$(CC) $(CFLAGS) $(BCM_BLT32_FLAGS) -shared -Wl,-soname,$(LIB) -o $(LIB) $(OBJS) -L$(LIBDIR) $(CMS_LIB_PATH) $(BCM_LIB_PATH) -lc $(LIBS)
 
 #
 # Include the rule for making dependency files.

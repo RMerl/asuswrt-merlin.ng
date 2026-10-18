@@ -68,7 +68,7 @@ unsigned int gPreTimeout = MIN_TIMEOUT_SECS-1;
 
 #define WD_START()	{ ioctl(wd_fd, WDIOC_SETPRETIMEOUT, &gPreTimeout); \
 			  ioctl(wd_fd, WDIOC_SETTIMEOUT, &gtimeout); }
-#define WD_PING()    write(wd_fd, "\0", 1)
+#define WD_PING()    {if (write(wd_fd, "\0", 1) == -1) {fprintf(stderr, "Failed to write()!\n");}; }
 #define WD_STOP()    {int opts = WDIOS_DISABLECARD; \
                       ioctl(wd_fd, WDIOC_SETOPTIONS, &opts); }
 
@@ -161,7 +161,10 @@ void write_wdpid()
    }
 
    snprintf(buf, sizeof(buf), "%d", getpid());
-   write(fd, buf, strlen(buf));
+   if (write(fd, buf, strlen(buf)) == -1)
+   {
+      fprintf(stderr, "Failed to write()!\n");
+   }
    close(fd);
    return;
 }
@@ -191,7 +194,7 @@ int get_wdpid()
    return pid;
 }
 
-void sighandler (int signum, siginfo_t *info, void *context) 
+void sighandler (int signum __attribute((unused)), siginfo_t *info, void *context __attribute((unused))) 
 {
    if (info->si_signo == SIGHUP)
       fprintf(stderr, "%s: Recieved SIGHUP from pid %u\n",
@@ -315,6 +318,7 @@ int main(int argc, char *argv[])
    }
 
    // ping is very easy to handle, just do that first and exit.
+   // coverity[dont_call]
    if (!strcmp(argv[argc-1], "ping"))
    {
       if (argc != 2)  // ping takes no options
@@ -327,13 +331,17 @@ int main(int argc, char *argv[])
    }
 
    // timeleft is very easy to handle, just do that first and exit.
+   // coverity[dont_call]
    if (!strcmp(argv[argc-1], "timeleft"))
    {
       if (argc != 2)  // takes no options
       {
          usage(argv[0]);
       }
-      system("cat /sys/class/watchdog/*/timeleft");
+      if (system("cat /sys/class/watchdog/*/timeleft") == -1)
+      {
+        fprintf(stderr, "Failed to system()!\n");
+      }
       exit(EXIT_SUCCESS);
    }
 
@@ -353,6 +361,7 @@ int main(int argc, char *argv[])
 
             case 't':
             {
+               // coverity[dont_call]
                if (strcmp(argv[argc-1], "start")) // used only for start
                   usage(argv[0]);
 
@@ -368,6 +377,7 @@ int main(int argc, char *argv[])
 
             case 'p':
             {
+               // coverity[dont_call]
                if (strcmp(argv[argc-1], "stop")) // used only for stop
                   usage(argv[0]);
 
@@ -388,6 +398,7 @@ int main(int argc, char *argv[])
    }
 
    // There is only two possible commands at this point, start or stop.
+   // coverity[dont_call]
    if (!strcmp(argv[argc-1], "start"))
    {
       // If we are able to open the watchdog device, that means there is no
@@ -409,6 +420,7 @@ int main(int argc, char *argv[])
          printf("Started watchdog timer (%d seconds)\n", gtimeout);
       }
    }
+   // coverity[dont_call]
    else if (!strcmp(argv[argc-1], "stop"))
    {
       // This must be the STOP command

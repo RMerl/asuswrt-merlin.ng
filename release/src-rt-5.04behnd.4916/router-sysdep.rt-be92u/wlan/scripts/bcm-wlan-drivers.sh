@@ -18,6 +18,8 @@ PROD_FW_PATH=_set_by_buildFS_
 CONFIG_WLDPDCTL=_set_by_buildFS_
 WLAN_REMOVE_INTERNAL_DEBUG=_set_by_buildFS_
 ALLOW_LOAD_DRIVER_IN_BACKGROUND=_set_by_buildFS_
+IS_BRCM_ENGR_ONLY=_set_by_buildFS_
+BRCM_WIFI_INDICATOR=/tmp/.brcm_bcacpe_wifi
 if [ ! -z $WLAN_REMOVE_INTERNAL_DEBUG ]; then
     dhd_console_ms=0
 else
@@ -216,17 +218,28 @@ load_modules()
 
         for module in $modules_list
         do
+            # default module path
+            module_path=/lib/modules/$KERNELVER/extra
+
+            if [ "$IS_BRCM_ENGR_ONLY" == "1" ]; then
+                # nvram path if any
+                nvram_path=`nvram kget module_path`
+                if [ -e "$nvram_path/$module.ko" ]; then
+                    echo "WARNING: Dangerous BRCM_ENGR_ONLY is enabled in module loading from $nvram_path/$module.ko."
+                    module_path=$nvram_path
+                fi
+            fi
+
             case "$module" in
                 firmware_class)
-                    insmod /lib/modules/$KERNELVER/kernel/drivers/base/firmware_loader/firmware_class.ko
+                    if [ ! -e "$nvram_path/$module.ko" ]; then
+                        module_path=/lib/modules/$KERNELVER/kernel/drivers/base/firmware_loader
+                    fi
                     ;;
                 cfg80211)
-                    echo "insmod /lib/modules/$KERNELVER/kernel/net/wireless/$module.ko"
-                    ;;
-                aux)
-		    if [ -f /etc/wlan/nvram/aux/nvram.txt ]; then
-			module_params=extnvm_path=/etc/wlan/nvram/aux/nvram.txt
-		    fi
+                    if [ ! -e "$nvram_path/$module.ko" ]; then
+                        module_path=/lib/modules/$KERNELVER/kernel/net/wireless
+                    fi
                     ;;
                 wlemf|emf|igs)
                     #no module parameters
@@ -234,13 +247,13 @@ load_modules()
                     ;;
                 hnd)
                     module_params=""
-                    if  [ $is_mfg -gt 0 ] && [ -f /lib/modules/$KERNELVER/extra/hnd_mfgtest.ko ]; then
+                    if  [ $is_mfg -gt 0 ] && [ -f $module_path/hnd_mfgtest.ko ]; then
                         module="hnd_mfgtest"
                     fi
                     ;;
                 wl)
                     module_params=$wl_module_params
-                    if  [ $is_mfg -gt 0 ] && [ -f /lib/modules/$KERNELVER/extra/wl_mfgtest.ko ]; then
+                    if  [ $is_mfg -gt 0 ] && [ -f $module_path/wl_mfgtest.ko ]; then
                         module="wl_mfgtest"
                     fi
                     ;;
@@ -249,6 +262,16 @@ load_modules()
                     ;;
                 wlshared)
                     module_params=""
+                    ;;
+                rdk_nlhal)
+                    module_params=""
+                    module=""
+                    if [ -e "/etc/device.properties" ]; then
+                        ONE_WIFI_BUILD="`cat /etc/device.properties | grep "OneWiFiEnabled" | awk -F '=' '{print $2}' | tail -1`"
+                        if [ "$ONE_WIFI_BUILD" == "true" ]; then
+                            module="rdk_nlhal"
+                        fi
+                    fi
                     ;;
                 *)
                     echo "wlan-drivers: unrecognized module [$module] in the load module list"
@@ -262,22 +285,24 @@ load_modules()
                 module_params=$module_params" "$instance_base
             fi
 
-            if [ -e /lib/modules/$KERNELVER/extra/$module.ko ]; then
+            if [ -e $module_path/$module.ko ]; then
                 if [ "$module" == "dhd" ]; then
                     for unit in $UNITLIST; do
                         mkdir -p /tmp/wl$unit
                         mkdir -p /tmp/hc/if$unit
                     done
                     pwlcs_preload
-                    echo "insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params"
+                    echo "insmod $module_path/$module.ko $module_params"
                     pwlcs_postload
                 else
                     nic_nvram=`nvram kget wl_path`
                     if [ "$module" == "wl" ] && [ -f "$nic_nvram" ] ; then
                         echo "*** wl$idx Using alternate nic driver from $nic_nvram"
                         echo "insmod $nic_nvram $module_params"
-                    else
-                        echo "insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params"
+		    elif [ "$module" == "aux" ]; then
+			/rom/etc/init.d/aux_load.sh $KERNELVER
+                    elif [ "$module" != "" ]; then
+                        echo "insmod $module_path/$module.ko $module_params"
                     fi
                     if [ "$module" == "wl" ]; then
                         if echo $(/bin/pspctl dump wlSkbFreeOfDis) | grep -q '1'
@@ -297,6 +322,9 @@ load_modules()
 
         # Configuing wlan related threads
         wlaffinity auto
+
+        # Initialize DSPS wrapper
+        /rom/etc/init.d/wifi.sh dsps init;
 }
 
 # Unload given WLAN drivers
@@ -318,7 +346,9 @@ start_main()
 {
 	echo "skip load_modules in bcm-wlan-drivers.sh"
     #indication of bcacpe wifi platform and driver loading done
-    touch /tmp/.brcm_bcacpe_wifi
+    touch $BRCM_WIFI_INDICATOR
+    #file content change to trigger rdkb wifi service to start
+    echo "driver load in background:$ALLOW_LOAD_DRIVER_IN_BACKGROUND">$BRCM_WIFI_INDICATOR
 }
 
 stop_main()
@@ -393,6 +423,11 @@ else
     # add wlshared module
     if [ -f /lib/modules/$KERNELVER/extra/wlshared.ko ]; then
         all_wlan_modules="wlshared $all_wlan_modules"
+    fi
+
+    # add rdk_nlhal module
+    if [ -f /lib/modules/$KERNELVER/extra/rdk_nlhal.ko ]; then
+        all_wlan_modules="$all_wlan_modules rdk_nlhal"
     fi
 
     # Update the wlan module list from nvram if exists

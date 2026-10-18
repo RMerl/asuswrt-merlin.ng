@@ -50,7 +50,8 @@ static const char *rebootSystemCallReasonStr[] = {
    [REBOOT_REASON_SOFTWARE_UPGRADE]     = "Software Upgrade",
    [REBOOT_REASON_MANAGEMENT_REBOOT]    = "Management Reboot",
    [REBOOT_REASON_RESTORE_DEFAULT]      = "Restore Default",
-   [REBOOT_REASON_HARDWARE_ABNORMALITY] = "Hardware Abnormality"
+   [REBOOT_REASON_HARDWARE_ABNORMALITY] = "Hardware Abnormality",
+   [REBOOT_REASON_ANTIROLLBACK_LVL_UPDATE] = "Antirollback level update"
 };
 
 #define NUM_OF_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
@@ -138,7 +139,8 @@ BcmRet bcmUtl_getManufacturer(char *buf, UINT32 bufLen)
    if (bufLen < len+1)
       return BCMRET_RESOURCE_EXCEEDED;
 
-   strcpy(buf, m);
+   strncpy(buf, m, bufLen-1);
+   buf[bufLen-1] = '\0';
    return BCMRET_SUCCESS;
 }
 
@@ -202,7 +204,8 @@ BcmRet bcmUtl_getHardwareVersion(char *buf, UINT32 bufLen)
    if (bufLen < len+1)
       return BCMRET_RESOURCE_EXCEEDED;
 
-   strcpy(buf, hw_version);
+   strncpy(buf, hw_version, bufLen-1);
+   buf[bufLen-1] = '\0';
    return BCMRET_SUCCESS;
 }
 
@@ -216,7 +219,8 @@ BcmRet bcmUtl_getSoftwareVersion(char *buf, UINT32 bufLen)
    if (bufLen < len+1)
       return BCMRET_RESOURCE_EXCEEDED;
 
-   strcpy(buf, CMS_RELEASE_VERSION);
+   strncpy(buf, CMS_RELEASE_VERSION, bufLen-1);
+   buf[bufLen-1] = '\0';
    return BCMRET_SUCCESS;
 }
 
@@ -374,13 +378,18 @@ BcmRet bcmUtl_getBootloaderVersion(char* versionBuf, UINT32 bufLen)
       strBuf[len-1] = '\0';
       len = strlen(strBuf);
    }
+   else if (len == 0)
+   {
+      bcmuLog_error("the string from %s is empty.", fileName);
+      return BCMRET_INTERNAL_ERROR;
+   }
 
    bcmuLog_notice("got len=%d str=%s", len, strBuf);
    if (len >= bufLen)
    {
       bcmuLog_error("versionBuf buffer (len=%d) is too small, need %d",
                     bufLen, len+1);
-      return BCMRET_INTERNAL_ERROR;
+      return BCMRET_INVALID_ARGUMENTS;
    }
 
    snprintf(versionBuf, bufLen, "%s", strBuf);
@@ -388,7 +397,7 @@ BcmRet bcmUtl_getBootloaderVersion(char* versionBuf, UINT32 bufLen)
 }
 
 
-void bcmUtl_startRebootWatchdog()
+void bcmUtl_startRebootWatchdog(void)
 {
    // stop existing wdtd
    if ( system("wdtctl -d stop") != 0 )
@@ -492,7 +501,7 @@ static BcmRet bcmUtl_getResetStatus(UINT8 *isSwReset)
 
    value = strtoul(buffer, NULL, 16);
 
-   if ((value & SW_RESET_STATUS) == SW_RESET_STATUS)
+   if (value & SW_RESET_STATUS)
    {
        *isSwReset = 1;
    }

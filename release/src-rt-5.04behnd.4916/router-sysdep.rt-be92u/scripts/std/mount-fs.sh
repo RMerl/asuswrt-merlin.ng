@@ -4,7 +4,7 @@ source __DATA_MOUNT_INSTALL_PATH__/mount-data.inc
 is_file_to_delete() {
 ##############################################################
 # Append this list with all non removable files in /data 
-    local files_to_skip="reg_id pmd_calibration.json pmd_calibration pmd_temp2apd"
+    local files_to_skip="reg_id"
 ##############################################################
 
     local file=$1
@@ -60,7 +60,9 @@ case "$1" in
 
 		mknod /var/fuse c 10 229
 		chmod a+rw /var/fuse
-		mkdir -p /var/log /var/run /var/state/dhcp /var/ppp /var/udhcpd /var/zebra /var/siproxd /var/cache /var/tmp /var/samba /var/samba/share /var/samba/homes /var/samba/private /var/samba/locks
+		mkdir -p /var/log /var/run /var/state/dhcp /var/ppp /var/udhcpd /var/zebra /var/siproxd /var/cache /var/tmp /var/samba /var/samba/share /var/samba/homes /var/samba/private /var/samba/locks /var/shm
+		[ -x /bin/matter-network-manager-app ] && mkdir -p /var/matter
+		ln -s /var/shm /dev/shm
 		cp  /etc/smb.conf /var/samba/ 2>/dev/null
 
         for i in $(cat /proc/cmdline) ; do

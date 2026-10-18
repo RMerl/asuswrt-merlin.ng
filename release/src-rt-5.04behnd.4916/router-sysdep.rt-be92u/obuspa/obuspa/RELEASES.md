@@ -1,5 +1,89 @@
 # Release History
 
+## Release 9.0.0
+  * MQTT
+    * Application Layer Protocol Negotiation (ALPN) support for MQTT over TLS
+    * Device.MQTT.Client.{i}.ForceReconnect() support added
+    * MQTTv5 Assigned Client Identifier is not being saved in Device.MQTT.Client.{i}.ClientID
+    * MQTT keep alive can now be completely disabled (if required) when linking with libmosquitto v2.0.x
+    * OBUSPA should subscribe to all topics indicated by the subscribe-topic user properties in the CONNACK [R-MQTT.15]
+    * OBUSPA should delete pending USP notifications (on MQTT MTP) if notification has expired whilst waiting to be sent
+    * MQTT connection blocks for too long if server is unresponsive. To workaround the underlying issue in libmosquitto, OBUSPA tests for server responsiveness by transiently connecting, before proceeding with the libmosquitto connect (if responsive).
+    * OBUSPA should disconnect if unable to subscribe to anything [R-MQTT.17]
+    * Device.MQTT.Client.{i}.Name should be auto-assigned by the agent, if not given at creation time, and immutable thereafter
+    * Device.MQTT.Client.{i}.RequestResponseInfo should control whether response information is requested in the CONNECT frame. Previously it was always requested, regardless of the value of the parameter
+    * Removed unimplemented parameter: Device.MQTT.Client.{i}.RequestProblemInfo
+    * Modifying MQTT KeepAliveTime should not force a reconnect
+    * MQTT ConnectRetryTime parameter modifications should apply at the next retry [GH #109]
+    * MQTT CleanSession and CleanStart parameter modifications should apply at the next retry
+    * USP Connect record not always sent immediately after connection on MQTT
+    * Improved MQTT MTP debug
+    * Code maintenance improvements to MQTT MTP
+    * Removed unmaintained MQTT tests
+
+  * Websockets
+    * WebSocket client does not send Boot! event (regression introduced in v8.0)
+    * WebSocket client not started after MTP dynamically added to controller table (regression introduced in v8.0)
+
+  * STOMP
+    * STOMP connects shouldn't block the data model thread
+    * STOMP ServerRetryMaxInterval parameter modifications should apply at the next retry
+
+  * USP Broker
+    * CLI initiated gets have been optimized to pass through the path to the USP Service, when possible
+    * Support a USP Service registering Device.DNS.SD before Device.DNS (in separate register messages)
+    * Workaround for USP Services which have limitations on the number of parameters requested in a get
+    * Support additional DM elements registered directly under Device.
+    * USP Broker should not assume hierarchically ordered fields in GSDM and get instances responses
+    * USP Service acting as pure Controller does not accept responses unless Broker is in the USP Service's Controller table
+
+  * Data model
+    * VALUE_CHANGE_WILL_IGNORE flag support
+    * Get requests with max_depth >= 0x80000000 should return full sub-tree
+    * Get instances failures during path resolution should be gracefully ignored
+    * Device.LocalAgent.X_VANTIVA-COM_PreConnectTimeout controls how long to wait for the can_mtp_connect vendor hook to allow connection, before connecting anyway
+    * USP_REGISTER_Object_UniqueKey() validates that the unique key parameters have not already been registered
+
+  * Miscellaneous
+    * Dockerfile rewritten to use debian:stable and build libwebsockets [GH #95, #108]
+    * Compiling without UDS fails [GH#110]
+    * An unused variable warning seen during cmake based builds has been addressed
+    * Prevent accidental CLI socket stealing
+
+
+## Release 8.0.0
+  * USP Services Support
+    * USP Broker functionality
+    * USP Service functionality
+    * Unix Domain Socket MTP
+    * Register and Deregister messages
+  * Dynamic roles and permissions
+  * CMake build support
+  * Get requests
+    * Requests for concrete data model paths that are not instantiated now return an error, instead of an empty response [R-GET.0]
+    * Under certain circumstances it was possible for an object's parameters to be spread across more than one resolved_path_result in the Get Response
+  * WebSockets MTP
+    * EndpointID is now indicated in the query component of the WebSocket request URI [R-WS.10b]
+    * When using WebSockets MTP, the ping failure count was not being reset after reconnect. Under certain circumstances this led to unnecessary reconnects.
+  * Integrator enhancements
+    * New vendor hooks
+      * can_mtp_connect_cb - allows the vendor layer to delay connection to a Controller ACS until critical device functionality is running (for example NTP time synchronized)
+      * modify_firmware_updated_cb - allows the vendor layer to modify the FirmwareUpdated argument being passed in the Boot! event. This can be used to override the default calculation for this argument, if it does not catch all cases of the firmware being updated.
+    * New USP API functions
+      * USP_PROCESS_DoWork - allows the vendor layer to perform work in the context of the data model thread (for example calling USP_DM_SetParameterValue)
+      * USP_REGISTER_AsyncOperation_MaxConcurrency - used to prevent concurrent processing of duplicate asynchronous USP commands
+
+
+  * Bug Fixes
+    * The default value for Device.LocalAgent.MTP.{i}.Protocol has been made dependent on which MTPs are configured in the build options
+    * In protocol buffer traces, 64 bit numeric values were being printed incorrectly on 32 bit CPU architectures
+    * A minor error in mqtt_factory_reset_example.txt has been addressed (GH#78)
+    * After a reboot which interrupted the action of multiple asynchronous USP commands, it was possible for some commands to not be restarted, when it was intended that they were
+    * Under certain circumstances, object creation notifications could have been sent at start up before the Boot! notification
+    * A cause of error due to changes in the instantiated data model during the processing of USP requests has been prevented
+    * Non UTF-8 characters in JSON formatted text containing parameter values are now converted to the Unicode replacement character (U+FFFD)
+    * A subscription's ReferenceList is now immutable after being set
+
 ## Release 7.0.0
 
   * Bug Fixes

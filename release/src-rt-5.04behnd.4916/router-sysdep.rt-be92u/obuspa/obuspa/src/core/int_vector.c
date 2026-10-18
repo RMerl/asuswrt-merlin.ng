@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2020, Broadband Forum
- * Copyright (C) 2016-2020  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -63,6 +63,31 @@ void INT_VECTOR_Init(int_vector_t *iv)
 
 /*********************************************************************//**
 **
+** INT_VECTOR_Create
+**
+** Creates an integer vector with the specified number of elements, all set to the specified value
+**
+** \param   iv - pointer to structure to initialise
+** \param   num_entries - number of entries to create the vector with
+** \param   initial_value - value to initialise all entries with
+**
+** \return  None
+**
+**************************************************************************/
+void INT_VECTOR_Create(int_vector_t *iv, int num_entries, int initial_value)
+{
+    int i;
+
+    iv->num_entries = num_entries;
+    iv->vector = USP_MALLOC(num_entries*sizeof(int));
+    for (i=0; i<num_entries; i++)
+    {
+        iv->vector[i] = initial_value;
+    }
+}
+
+/*********************************************************************//**
+**
 ** INT_VECTOR_Add
 **
 ** Adds the integer into the vector of integers
@@ -114,6 +139,49 @@ int INT_VECTOR_Find(int_vector_t *iv, int number)
 
     // If the code gets here, then no match has been found
     return INVALID;
+}
+
+/*********************************************************************//**
+**
+** INT_VECTOR_Remove
+**
+** Removes all occurrences of the specified number from the vector (if any exist)
+**
+** \param   iv - pointer to structure to search in
+** \param   number - integer to remove
+**
+** \return  None
+**
+**************************************************************************/
+void INT_VECTOR_Remove(int_vector_t *iv, int number)
+{
+    int i;
+    int count;
+
+    // Iterate over all entries in the vector
+    count = 0;
+    for (i=0; i < iv->num_entries; i++)
+    {
+        if (iv->vector[i] != number)
+        {
+            // Copy down the entries after any that were removed
+            if (i != count)
+            {
+                iv->vector[count] = iv->vector[i];
+            }
+            count++;
+        }
+    }
+
+    // Store the new number of entries in the vector
+    iv->num_entries = count;
+
+    // Ensure that vector is freed, if it is now empty
+    if (count == 0)
+    {
+        USP_SAFE_FREE(iv->vector);
+    }
+
 }
 
 /*********************************************************************//**

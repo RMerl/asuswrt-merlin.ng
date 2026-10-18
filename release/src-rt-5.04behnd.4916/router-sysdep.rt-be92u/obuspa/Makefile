@@ -1,4 +1,4 @@
-VER := 7.0.2
+VER := 9.0.1
 PKG := obuspa-$(VER)
 SRC_DIR := obuspa
 BINARY_DIR := src/vendor
@@ -14,6 +14,7 @@ PATCH_CORE_STOMP := $(SRC_DIR)_core_stomp.patch
 PATCH_CORE_MQTT := $(SRC_DIR)_core_mqtt.patch
 PATCH_CORE_WEBSOCKET := $(SRC_DIR)_core_websocket.patch
 PATCH_CORE_MISC := $(SRC_DIR)_core_misc.patch
+PATCH_WSS_INTERFACES := $(SRC_DIR)_wss_interfaces.patch
 PATCH_AM := $(SRC_DIR)_am.patch
 PATCH_VENDOR := $(SRC_DIR)_vendor.patch
 
@@ -61,7 +62,7 @@ check_config: $(PKG).tar.gz Makefile
 	@if [ ! -e $(SRC_DIR)/Makefile ]; then \
         echo "Untarring original $(EXE) source and configure"; \
         mkdir -p $(SRC_DIR); \
-        ( cd $(SRC_DIR); tar --exclude .git --exclude .gitignore --strip-components=1 -xzkf ../$(PKG).tar.gz; \
+        ( cd $(SRC_DIR); tar --exclude .git --exclude .gitignore --strip-components=1 --skip-old-files -xzf ../$(PKG).tar.gz; \
         cd ..; \
         if [ ! -e $(SRC_DIR)/Makefile.am.orig ]; then \
             patch -p1 -b -s -d $(EXE) <$(PATCH_INCLUDE); \
@@ -71,24 +72,24 @@ check_config: $(PKG).tar.gz Makefile
             patch -p1 -b -s -d $(EXE) <$(PATCH_CORE_MQTT); \
             patch -p1 -b -s -d $(EXE) <$(PATCH_CORE_WEBSOCKET); \
             patch -p1 -b -s -d $(EXE) <$(PATCH_CORE_MISC); \
+            patch -p1 -b -s -d $(EXE) <$(PATCH_WSS_INTERFACES); \
             patch -b $(AM_FILE) -i $(PATCH_AM); \
             patch -b $(VENDOR_HEADER) -i $(PATCH_VENDOR); \
         fi; \
         cd $(SRC_DIR); \
+        mkdir -p m4; \
         autoreconf --force --install ); \
         (cd $(SRC_DIR); \
         ./configure --enable-coap=no --prefix=$(BCM_FSBUILD_DIR)/ --host=$(TOOLCHAIN_PREFIX) $(BCM_BLT32_FLAGS)); \
     fi;
 
 install: handle_binary_obj check_config
-	if [ ! -d $(SRC_DIR)/.libs ]; then \
-		make -C $(SRC_DIR); \
-	    make -C $(SRC_DIR) install; \
-	fi;
+	$(MAKE) -C $(SRC_DIR); \
+	$(MAKE) -C $(SRC_DIR) install;
 
 clean:
 	@if [ -e $(SRC_DIR)/Makefile ]; then \
-	    make -C $(SRC_DIR) distclean; \
+	    $(MAKE) -C $(SRC_DIR) distclean; \
 	    rm -rf $(SRC_DIR)/m4; \
 	    rm -rf $(SRC_DIR)/autom4te.cache; \
 	    rm -f $(SRC_DIR)/*.m4; \

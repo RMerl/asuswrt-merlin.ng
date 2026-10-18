@@ -14,6 +14,7 @@ INV_UNIT=15
 INV_DOMAIN=$INV_UNIT
 IS_RDK_BUILD=RDK_BUILD_HOLDER
 RDK_EDPD_SUPPORT=RDK_EDPD_SUPPORT_HOLDER
+USE_LEGACY_CMD=0
 
 mod='wfd bcm_pcie_hcd'
 
@@ -23,7 +24,9 @@ readonly DPD_MODE_OFF=0
 readonly DPD_MODE_DPD=1
 readonly DPD_MODE_EDPD=2
 readonly DPD_MODE_EDPD_MLO=3
+readonly DPD_MODE_DSPS=4
 readonly DPD_EDPD_FILE="/usr/sbin/wifi_dsps.sh"
+readonly DPD_DSPS_APP="/bin/wldsps"
 
 readonly MLC_SYNC=6
 readonly MLC_ACTIVE=19
@@ -99,6 +102,7 @@ rdkb_radio_control()
         fi
         [[ $doapply -eq 1 ]] && dmcli eRT setv Device.WiFi.Radio.${dm_ifindex}.X_CISCO_COM_ApplySetting bool true
         rm -rf /tmp/dpd_in_progress
+        nvram unset ${ifname}_edpd_radio
         return 0
     fi
     return 0
@@ -113,9 +117,12 @@ wl_suspend()
   killall -q dhd_monitor
   killall -q debug_monitor
   killall -q acsd acsd2
+  killall -q qosmgmtd
   nvram unset acs_ifnames
   /rom/etc/init.d/bcm-wlan-drivers.sh stop
-  for m in ${mod//-/_}; do rmmod -w $m; done
+  for m in ${mod//-/_}; do
+    [ ! -z $(lsmod | grep -w ^$m | cut -d ' ' -f1) ] && rmmod $m;
+  done
 }
 
 #resume WLAN
@@ -138,7 +145,7 @@ wl_mlo_unit()
   local ifname=$1
   local wlunit
   local mlounit
-  
+
   wlunit=$(echo $ifname | cut -d 'l' -f2)
   mlounit=$(echo $wl_mlo_config |  awk -v N=$((wlunit+1)) '{print $N}')
 
@@ -156,7 +163,7 @@ wl_map_unit()
 {
   local wlunit
   local mapunit=-1
-  
+
   for wlunit in $WLUNIT_LIST; do
     if [ $(wl_mlo_unit wl$wlunit) = 0 ]; then
       mapunit=$wlunit
@@ -403,7 +410,7 @@ wledpdctl_wait_app_services_up()
       if [ -f /tmp/edpd_${ifname}_mloready ]; then
         break
       fi
-	  sleep 1;
+      sleep 1;
     done
 
     if [ ! -f /tmp/edpd_${ifname}_mloready ]; then
@@ -656,8 +663,12 @@ wledpdctl_unbind()
           # Save affinity (if any)
           wledpdctl_wlaffinity_down $ifname
 
-          # Unbind the PCIe and wlX interface
-          echo $pcie_base > ${SYS_PCIE_DRV_DIR}/unbind
+          # recheck interface exists again as it may has already been
+          # unbinded in RDKB case
+          if [[ -d $SYS_PCIE_DRV_DIR/$pcie_base ]]; then
+              # Unbind the PCIe and wlX interface
+              echo $pcie_base > ${SYS_PCIE_DRV_DIR}/unbind
+          fi
 
           # Create dummy interface for DPD
           wledpdctl_dummy_if $ifname add
@@ -897,7 +908,7 @@ wldpdctl_init()
     fi
   else
     if [ -z $CONFIG_WLDPDCTL ]; then
-      echo "wlan deep power down control - feature missing"
+      echo "WiFi deep power down control - feature missing"
     else
       if [ -z "$(nvram get lan_ifnames | grep wl0)" ]; then
         A_WLIFL=""
@@ -910,7 +921,7 @@ wldpdctl_init()
       else
         A_WLIFL="wl0 wl1 wl2 wl3"
       fi
-      echo "wlan deep power down control - disabled"
+      echo "WiFi deep power down control - disabled"
     fi
   fi
 }
@@ -1039,19 +1050,21 @@ wldpdctl_status()
   echo "***********************"
   echo "| intf  | cfg | pwrdn |"
   echo "***********************"
-  for intf in $A_WLIFL; do
-    cfg=$(nvram kget ${intf}_dpd)
-    if [ -z $cfg ]; then
-      cfg=0
-    fi
-    sts=`cat /proc/interrupts | grep $intf | cut -d ':' -f1`
-    if [ -z $sts ]; then
-      sts=1
-    else
-      sts=0
-    fi
-    echo "|  $intf  |  $cfg  |  $sts    |"
-  done
+  if [ $wldpdmode != $DPD_MODE_OFF ]; then
+    for intf in $A_WLIFL; do
+      cfg=$(nvram kget ${intf}_dpd)
+      if [ -z $cfg ]; then
+        cfg=0
+      fi
+      sts=`cat /proc/interrupts | grep $intf | cut -d ':' -f1`
+      if [ -z $sts ]; then
+        sts=1
+      else
+        sts=0
+      fi
+      echo "|  $intf  |  $cfg  |  $sts    |"
+    done
+  fi
   echo "***********************"
 
   if [ -z $nv ]; then
@@ -1157,31 +1170,15 @@ wldpdctl_mode()
     echo "=============================================="
     echo "    Restarting PCIe with correct settings     "
     echo "=============================================="
-    rmmod -w bcm_pcie_hcd
+    rmmod bcm_pcie_hcd
     grep -e bcm_pcie_hcd /rom/etc/init.d/bcm-base-drivers.sh | sh
   fi
 
   if [ $mode = $DPD_MODE_EDPD ] && [ $wl_mlo_mapunit != -1 ]; then
     mode=$DPD_MODE_EDPD_MLO;
   fi
-
-  if [ $mode -ge $DPD_MODE_EDPD ] && [ $correct != 0 ]; then
-    # Check persistence setting and clear previous persistence settings
-    # onetime before loading the wifi drivers
-    if [ -f /proc/environment/wl_edpd_persist ]; then
-      persist=$(cat /proc/environment/wl_edpd_persist);
-    else
-      persist=$(nvram kget wl_edpd_persist);
-    fi
-    if [ ! -z $persist ] && [ $persist == 0 ]; then
-      for unit in $WLUNIT_LIST; do
-        if [ ! -z $(nvram kget wl${unit}_dpd) ]; then
-          nvram kset wl${unit}_dpd=0;
-        fi
-      done
-      nvram kcommit;
-    fi
-  fi
+  # Use default DSPS mode
+  mode=$DPD_MODE_DSPS;
 
   echo $mode
 }
@@ -1207,6 +1204,10 @@ wldpdctl_modestr()
         modestr="EDPD_MLO"
       ;;
 
+    $DPD_MODE_DSPS)
+        modestr="DSPS"
+      ;;
+
     *)
       modestr="INV "
       ;;
@@ -1215,60 +1216,9 @@ wldpdctl_modestr()
   echo "$modestr"
 }
 
-# print usage
-wl_usage()
+# Process edpdsts command
+wledpdctl_process_status()
 {
-    echo "Usage:"
-    echo " wifi.sh <cmd>      <cmd args>"
-    echo "         suspend"
-    echo "         resume"
-    echo "         modules"
-    echo "         dpdup      <wlan interface list>"
-    echo "         dpddn      <wlan interface list>"
-    echo "         dpdsts     [nv dump]"
-    echo "         dpdmode    [correct]"
-    echo "         dpden      <en>"
-    echo "                     0: Disable, clear all settings"
-    echo "                     1: Enable,  reset all settings"
-    echo "         edpdup     <wlan interface>  [apps update]"
-    echo "         edpddn     <wlan interface>  [apps update]"
-    echo "         edpdbind   <wlan interface>"
-    echo "         edpdunbind <wlan interface>"
-    echo "         edpdmloup  <wlan interface>"
-    echo "         edpdmlodn  <wlan interface>"
-}
-
-case $1 in
-
-  suspend)
-    wl_suspend
-    ;;
-
-  resume)
-    wl_resume
-    ;;
-
-  modules)
-    for m in ${mod//-/_}; do grep -e"^\<$m\>" /proc/modules; done
-    ;;
-
-  dpdup)
-    wldpdctl_init
-    if [ $wldpdmode != $DPD_MODE_OFF ]; then
-      wldpdctl_set 0 "$2"
-      wldpdctl_restart
-    fi
-    ;;
-
-  dpddn)
-    wldpdctl_init
-    if [ $wldpdmode != $DPD_MODE_OFF ]; then
-      wldpdctl_set 1 "$2"
-      wldpdctl_restart
-    fi
-    ;;
-
-  *dpdsts)
     wldpdctl_init
     if [ ! -z $CONFIG_WLDPDCTL ]; then
       vb=0
@@ -1277,20 +1227,11 @@ case $1 in
       fi
       wldpdctl_status $vb
     fi
-    ;;
+}
 
-  *dpden)
-    wldpdctl_init
-    if [ ! -z $CONFIG_WLDPDCTL ]; then
-      if [ -z $2 ]; then
-        echo "$wldpdmode - $(wldpdctl_modestr $wldpdmode)"
-      else
-        wldpdctl_enable $2 $3
-      fi
-    fi
-    ;;
-
-  edpdup)
+# Process edpdup command
+wledpdctl_process_power_up()
+{
     upintf=$2
     if [ ! -z $3 ]; then
       wledpdappupd=$3
@@ -1313,9 +1254,11 @@ case $1 in
       wldpdctl_set 0 "$intfl"
       wldpdctl_restart
     fi
-    ;;
+}
 
-  edpddn)
+# Process edpddn command
+wledpdctl_process_power_down()
+{
     dnintf=$2
     if [ ! -z $3 ]; then
       wledpdappupd=$3
@@ -1338,9 +1281,140 @@ case $1 in
       wldpdctl_set 1 "$intfl"
       wldpdctl_restart
     fi
+}
+
+# Process mode command
+#
+# $1: Command
+# $2: Correct settings on mismatch
+#
+wledpdctl_process_mode()
+{
+  correct=$2
+  wl_mlo_init
+  wldpdmode=$(wldpdctl_mode $correct)
+
+  echo "$wldpdmode | $(wldpdctl_modestr $wldpdmode)"
+}
+
+# print usage
+wl_usage()
+{
+    echo "Usage:"
+    echo " wifi.sh <cmd>      <cmd args>"
+    echo "         suspend"
+    echo "         resume"
+    echo "         edpdsts    [nv dump]"
+    echo "         edpddn     <wlan interface>"
+    echo "         edpdup     <wlan interface>"
+    echo "         dsps <cmd>         <arguments>"
+    echo "              status"
+    echo "              power_down    <wlan interface>"
+    echo "              power_up      <wlan interface>"
+}
+
+# print discontinued command usage
+wl_discontinued_usage()
+{
+  echo "====================================";
+  echo "WIFI.SH : [$1] support discontinued";
+  echo "====================================";
+  echo
+  wl_usage;
+  exit;
+}
+
+case $1 in
+
+  suspend)
+    wl_suspend
+    ;;
+
+  resume)
+    wl_resume
+    ;;
+
+  modules)
+    # internal use command
+    for m in ${mod//-/_}; do grep -e"^\<$m\>" /proc/modules; done
+    ;;
+
+  dpdup)
+    wl_discontinued_usage $1;
+    wldpdctl_init
+    if [ $wldpdmode != $DPD_MODE_OFF ]; then
+      wldpdctl_set 0 "$2"
+      wldpdctl_restart
+    fi
+    ;;
+
+  dpddn)
+    wl_discontinued_usage $1;
+    wldpdctl_init
+    if [ $wldpdmode != $DPD_MODE_OFF ]; then
+      wldpdctl_set 1 "$2"
+      wldpdctl_restart
+    fi
+    ;;
+
+  dpdsts)
+    wl_discontinued_usage $1;
+    ;;
+
+  edpdsts)
+    echo "WIFI.SH : [$1] support deprecated";
+    if [ -f ${DPD_DSPS_APP} ]; then
+      ${DPD_DSPS_APP} status $2 $3;
+    else
+      wledpdctl_process_status $1 $2 $3;
+    fi
+    ;;
+
+  *dpden)
+    wl_discontinued_usage $1;
+    if [ -f ${DPD_DSPS_APP} ]; then
+      echo "WIFI.SH : Deprecated, DSPS always enabled";
+    else
+      wldpdctl_init
+      if [ ! -z $CONFIG_WLDPDCTL ]; then
+        if [ -z $2 ]; then
+          echo "$wldpdmode - $(wldpdctl_modestr $wldpdmode)"
+        else
+          wldpdctl_enable $2 $3
+        fi
+      fi
+    fi
+    ;;
+
+  edpdup)
+    echo "WIFI.SH : [$1] support deprecated";
+    if [ -f ${DPD_DSPS_APP} ]; then
+      ${DPD_DSPS_APP} power_up $2 $3;
+    else
+      wledpdctl_process_power_up $1 $2 $3;
+    fi
+    ;;
+
+  edpddn)
+    echo "WIFI.SH : [$1] support deprecated";
+    if [ -f ${DPD_DSPS_APP} ]; then
+      ${DPD_DSPS_APP} power_down $2 $3;
+    else
+      wledpdctl_process_power_down $1 $2 $3;
+    fi
+    ;;
+
+  sync_cfg)
+    # internal use command
+    if [ -f ${DPD_DSPS_APP} ]; then
+      ${DPD_DSPS_APP} sync_cfg;
+    else
+      echo "sync_cfg is not supported in DPD MODE"
+    fi
     ;;
 
   edpdbind)
+    wl_discontinued_usage $1;
     upintf=$2
     wldpdctl_init
     if [ -z $upintf ]; then
@@ -1354,6 +1428,7 @@ case $1 in
     ;;
 
   edpdunbind)
+    wl_discontinued_usage $1;
     dnintf=$2
     wldpdctl_init
     if [ -z $dnintf ]; then
@@ -1367,6 +1442,7 @@ case $1 in
     ;;
 
   edpdmloup)
+    wl_discontinued_usage $1;
     upintf=$2
     wldpdctl_init
     if [ -z $upintf ]; then
@@ -1379,6 +1455,7 @@ case $1 in
     ;;
 
   edpdmlodn)
+    wl_discontinued_usage $1;
     dnintf=$2
     wldpdctl_init
     if [ -z $dnintf ]; then
@@ -1391,11 +1468,61 @@ case $1 in
     ;;
 
   dpdmode)
-    correct=$2
-    wl_mlo_init
-    wldpdmode=$(wldpdctl_mode $correct)
+    # internal use command
+    wledpdctl_process_mode $1 $2 $3;
+    ;;
 
-    echo "$wldpdmode | $(wldpdctl_modestr $wldpdmode)"
+  dsps)
+    if [ ! -z $3 ] && [ "$3" = "all" ] && [ ! -z $4 ] && [ $4 -eq 0 ]; then
+      legacy_cmd=1;
+    else
+      legacy_cmd=0;
+    fi
+
+    # interworking with legacy requires clearing the persistency settings
+    if [ -f ${DPD_DSPS_APP} ] && [ $legacy_cmd -eq 1 ]; then
+      ${DPD_DSPS_APP} clear_settings;
+      legacy_cmd=$(nvram kget wl_dpdclt_legacy_cmd);
+      if [ -z $legacy_cmd ]; then
+          legacy_cmd=$USE_LEGACY_CMD;
+      fi
+    fi
+
+    # legacy suspend, resume commands are not Yet supported by DSPS
+    if [ -f ${DPD_DSPS_APP} ] && [ $legacy_cmd -eq 0 ]; then
+      ${DPD_DSPS_APP} $2 $3 $4;
+    else
+      echo "WIFI.SH : Calling EDPD methods";
+      case $2 in
+        status)
+          wledpdctl_process_status $2 $3 $4;
+          ;;
+
+        power_down)
+          if [ $legacy_cmd -eq 1 ]; then
+            wl_suspend;
+          else
+            wledpdctl_process_power_down $2 $3 $4;
+          fi
+          ;;
+
+        power_up)
+          if [ $legacy_cmd -eq 1 ]; then
+            wl_resume;
+          else
+            wledpdctl_process_power_up $2 $3 $4;
+          fi
+          ;;
+
+        mode)
+          wledpdctl_process_mode $2 $3 $4;
+          ;;
+
+        *)
+          echo "WIFI.SH : Invalid dsps option";
+          ;;
+      esac
+    fi
     ;;
 
   *)

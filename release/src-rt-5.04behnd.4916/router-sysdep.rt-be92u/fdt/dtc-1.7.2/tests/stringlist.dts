@@ -1,0 +1,12 @@
+/dts-v1/;
+
+/ {
+	compatible = "test-strings";
+	#address-cells = <0x02>;
+	#size-cells = <0x02>;
+
+	device {
+		compatible = "foo", "bar";
+		big-endian;
+	};
+};

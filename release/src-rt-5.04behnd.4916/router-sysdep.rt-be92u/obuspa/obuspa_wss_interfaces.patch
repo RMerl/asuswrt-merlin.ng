@@ -1,0 +1,167 @@
+diff -Naur obuspa_orig/src/core/wsserver.c obuspa_new/src/core/wsserver.c
+--- obuspa_orig/src/core/wsserver.c	2024-12-19 19:11:22.903089226 -0800
++++ obuspa_new/src/core/wsserver.c	2024-12-19 19:21:45.538724980 -0800
+@@ -168,7 +168,9 @@
+ void HandleWssEvent_WanPollTimer(lws_sorted_usec_list_t *sul);
+ void AssertWanPollCallbackNotInUse(lws_sorted_usec_list_t *sul);
+ int CalcWsservIpAddr(char *buf, int len);
+-
++#ifdef BDK_USP
++int CalcWsservIpAddrFromIntfName(char *ifName, char *buf, int len);
++#endif    
+ /*********************************************************************//**
+ **
+ ** WSSERVER_Init
+@@ -261,6 +263,9 @@
+     // cause the websock ping frame to be sent immediately (so that the new interval is respected immediately)
+     if ((wsserv.ctx != NULL) &&
+         (wsserv.cur_config.port == config->port) &&
++#ifdef BDK_USP
++        (strcmp(wsserv.cur_config.interfaces, config->interfaces)==0) &&
++#endif        
+         (strcmp(wsserv.cur_config.path, config->path)==0) &&
+         (wsserv.cur_config.enable_encryption == config->enable_encryption) &&
+         (wsserv.cur_config.keep_alive != config->keep_alive))
+@@ -801,7 +806,11 @@
+     }
+ 
+     // Exit if unable to determine IP address of interface to listen on
+-    err = CalcWsservIpAddr(wsserv.wan_addr, sizeof(wsserv.wan_addr));
++#ifdef BDK_USP    
++    err = CalcWsservIpAddrFromIntfName(config->interfaces,wsserv.wan_addr, sizeof(wsserv.wan_addr));
++#else
++    err = CalcWsservIpAddr(wsserv.wan_addr, sizeof(wsserv.wan_addr));    
++#endif    
+     if (err != USP_ERR_OK)
+     {
+         return err;
+@@ -868,6 +877,9 @@
+ 
+     // Free cur_config
+     USP_SAFE_FREE(wsserv.cur_config.path);
++#ifdef BDK_USP    
++    USP_SAFE_FREE(wsserv.cur_config.interfaces);
++#endif    
+ 
+     // NOTE: Do not free new_config, as we will need it if restarting the server with a different config
+     // NOTE: Do not modify schedule_restart or schedule_stop. We want their state to persist so that we can decide whether to restart or not
+@@ -1671,22 +1683,28 @@
+ void HandleWssEvent_WanPollTimer(lws_sorted_usec_list_t *sul)
+ {
+     int err;
++#ifndef BDK_USP    
+     char new_wan_addr[NU_IPADDRSTRLEN];
+-
++#endif
+     OS_UTILS_LockMutex(&wss_access_mutex);
+ 
+     // Check that structure is not part of a linked list owned by libwebsockets anymore
+     AssertWanPollCallbackNotInUse(sul);
+-
++    
++#ifdef BDK_USP    
++    err = CalcWsservIpAddrFromIntfName(wsserv.cur_config.interfaces,wsserv.wan_addr, sizeof(wsserv.wan_addr));
++#else
+     // Exit if unable to determine IP address of WAN interface
+     // In this case, we keep the current websocket server running, as it's just that the interface is down
+     new_wan_addr[0] = '\0';
+     err = CalcWsservIpAddr(new_wan_addr, sizeof(new_wan_addr));
++#endif    
+     if (err != USP_ERR_OK)
+     {
+         goto exit;
+     }
+ 
++#ifndef BDK_USP    
+     // Exit if IP address hasn't changed
+     USP_ASSERT(new_wan_addr[0] != '\0');    // Above code should have ensured that the WAN address is not an empty string
+     if (strcmp(new_wan_addr, wsserv.wan_addr)==0)
+@@ -1696,6 +1714,7 @@
+ 
+     // If the code gets here, then the IP address on the WAN interface has changed, so schedule a restart of the server
+     USP_LOG_Info("%s: Restarting WebSocket server as IP address has changed to %s (from %s)", __FUNCTION__, new_wan_addr, wsserv.wan_addr);
++#endif    
+     wsserv.schedule_restart = kScheduledAction_Activated;
+ 
+ exit:
+@@ -2153,6 +2172,10 @@
+     dest->enable_encryption = src->enable_encryption;
+     USP_SAFE_FREE(dest->path);
+     dest->path = USP_STRDUP(src->path);
++#ifdef BDK_USP    
++    USP_SAFE_FREE(dest->interfaces);        
++    dest->interfaces = USP_STRDUP(src->interfaces);
++#endif    
+     dest->keep_alive = src->keep_alive;
+ }
+ 
+@@ -2170,6 +2193,9 @@
+ void DestroyWssConfig(wsserv_config_t *config)
+ {
+     USP_SAFE_FREE(config->path);
++#ifdef BDK_USP
++    USP_SAFE_FREE(config->interfaces);
++#endif    
+     memset(config, 0, sizeof(wsserv_config_t));
+ }
+ 
+@@ -2208,4 +2234,48 @@
+     USP_LOG_Debug("%s: %s", __FUNCTION__, line);
+ }
+ 
++
++/*********************************************************************//**
++**
++** CalcWsservIpAddrFromIntfName
++**
++** Calculates the IP address of the interface that the websocket server listens
++** NOTE: "any" is returned if all IP addresses should be used
++** NOTE: empty string is returned if no IP address found for the specified interface
++**
++** \param   ifName - configured interface that websocket server listens to
++** \param   buf - buffer in which to write the address in string form
++** \param   len - length of buffer
++**
++** \return  USP_ERR_OK if successful
++**
++**************************************************************************/
++int CalcWsservIpAddrFromIntfName(char *ifName, char *buf, int len)
++{
++    int err;
++    char *interface;
++    bool prefer_ipv6;
++
++    // Exit if websocket server should listen on all interfaces
++    interface = ifName;
++    if ((*interface == '\0') || (strcmp(interface, "any")==0))
++    {
++        USP_STRNCPY(buf, "any", len);
++        return USP_ERR_OK;
++    }
++
++    // Get preference for IPv4 or IPv6 address (in case of Dual Stack CPE)
++    prefer_ipv6 = DEVICE_LOCAL_AGENT_GetDualStackPreference();
++
++    // Exit if unable to get current IP address for listening on
++    err = tw_ulib_get_dev_ipaddr(interface, buf, len, prefer_ipv6);
++    if (err != USP_ERR_OK)
++    {
++        USP_LOG_Error("%s: Unable to get IP address of WAN interface (%s). Retrying later", __FUNCTION__, interface);
++        return USP_ERR_INTERNAL_ERROR;
++    }
++
++    return USP_ERR_OK;
++}
++
+ #endif
+diff -Naur obuspa_orig/src/core/wsserver.h obuspa_new/src/core/wsserver.h
+--- obuspa_orig/src/core/wsserver.h	2024-12-19 19:11:11.753986569 -0800
++++ obuspa_new/src/core/wsserver.h	2024-12-19 19:12:48.826877611 -0800
+@@ -55,6 +55,7 @@
+     char *path;                 // resource path in the URL to the websocket server
+     bool enable_encryption;     // set if the server should use TLS connections
+     unsigned keep_alive;        // Keep alive interval (in seconds)
++    char *interfaces;           // interface name server listens to or "any"
+ } wsserv_config_t;
+ 
+ //------------------------------------------------------------------------------

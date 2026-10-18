@@ -1,7 +1,7 @@
 #
 # Router dhd_monitor Makefile
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -16,22 +16,29 @@
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 #
-# <<Broadcom-WL-IPTag/Open:>>
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 #
 
 include $(TOP)/.config
 
-CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/../components/shared -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include -I$(SRCBASE)/shared/bcmwifi/include/
+CFLAGS += -g #-Wall
+CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
+CFLAGS += -I$(SRCBASE)/../components/shared
+CFLAGS += -I$(SRCBASE)/../components/wlioctl/include
+CFLAGS += -I$(SRCBASE)/../components/proto/include
+CFLAGS += -I$(SRCBASE)/common/include -I$(SRCBASE)/shared/bcmwifi/include/
 
 ifeq ($(strip $(BCA_HNDROUTER)),)
 CFLAGS += -I$(TOP)/busybox-1.x
 endif
 
+ifeq ($(BUILD_BCM_WLAUX),y)
+CFLAGS += -DDM_AUX_DRIVER_SUPPORT
+endif
+
 CFLAGS += -DDM_NO_NVRAM_RESTART
 CFLAGS += -DCHECK_DUMPS_WHEN_INIT
-
-#CFLAGS += -DCRASH_HISTORY_FILE_LOGGING
 
 # LDFLAGS += -L$(TOP)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram
 # LDFLAGS += -L$(TOP)/shared -L$(PLATFORMDIR)/install/shared/usr/lib -lshared -lpthread
@@ -44,12 +51,12 @@ ifeq ($(RTCONFIG_MXL_826XX),y)
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
-OBJS := dhd_monitor.o
+OBJS := dhd_monitor.o kmem_monitor.o
 
 all: debug_monitor
 
 clean:
-	rm -f *.o dhd_monitor .*.depend
+	rm -f *.o debug_monitor .*.depend
 
 install: all
 	install -d $(INSTALLDIR)/usr/sbin
@@ -69,3 +76,11 @@ endif
 	$(CC) $(CFLAGS) -M $< > $@
 
 -include $(OBJS:%.o=.%.depend)
+
+# This comment block must stay at the bottom of the file.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 noet

@@ -1,27 +1,25 @@
 diff -Naur obuspa_orig/src/vendor/vendor_defs.h obuspa_new/src/vendor/vendor_defs.h
---- obuspa_orig/src/vendor/vendor_defs.h	2022-10-31 11:07:04.646937497 -0700
-+++ obuspa_new/src/vendor/vendor_defs.h	2022-11-01 16:51:15.758798430 -0700
-@@ -44,6 +44,10 @@
+--- obuspa_orig/src/vendor/vendor_defs.h	2024-10-14 13:57:19.949513413 -0700
++++ obuspa_new/src/vendor/vendor_defs.h	2024-11-04 13:28:31.960663935 -0800
+@@ -44,6 +44,8 @@
  #ifndef VENDOR_DEFS_H
  #define VENDOR_DEFS_H
  
 +#define BDK_USP
 +
-+#define E2ESESSION_EXPERIMENTAL_USP_V_1_2
-+
  //------------------------------------------------------------------------------
  // Definitions used to size static arrays
  // You are unlikely to need to change these
-@@ -52,7 +56,7 @@
- #define MAX_DM_VALUE_LEN (4096)     // Maximum number of characters in a data model parameter value
- #define MAX_DM_SHORT_VALUE_LEN (MAX_DM_PATH) // Maximum number of characters in an (expected to be) short data model parameter value
+@@ -54,7 +56,7 @@
+ #define MAX_ENDPOINT_ID_LEN (256)   // Maximum number of characters in an Endpoint ID
+ #define MAX_MSG_ID_LEN (256)        // Maximum number of characters in a USP message ID allocated by this Agent
  #define MAX_PATH_SEGMENTS (32)      // Maximum number of segments (eg "Device, "LocalAgent") in a path. Does not include instance numbers.
 -#define MAX_COMPOUND_KEY_PARAMS 4   // Maximum number of parameters in a compound unique key
 +#define MAX_COMPOUND_KEY_PARAMS 8   // Maximum number of parameters in a compound unique key
  #define MAX_CONTROLLERS 5           // Maximum number of controllers which may be present in the DB (Device.LocalAgent.Controller.{i})
  #define MAX_CONTROLLER_MTPS 3       // Maximum number of MTPs that a controller may have in the DB (Device.LocalAgent.Controller.{i}.MTP.{i})
  #define MAX_AGENT_MTPS (MAX_CONTROLLERS)  // Maximum number of MTPs that an agent may have in the DB (Device.LocalAgent.MTP.{i})
-@@ -69,6 +73,8 @@
+@@ -75,6 +77,8 @@
  // Refer to the syslog documentation and its priority argument to know the possible values.
  //#define SYSLOG_SEVERITY_OVERRIDE LOG_ERR
  
@@ -30,7 +28,22 @@ diff -Naur obuspa_orig/src/vendor/vendor_defs.h obuspa_new/src/vendor/vendor_def
  // NB: If you change this, you must also change the SSL callback functions within mqtt.c
  // This will compile fail if you do not
  #define MAX_MQTT_CLIENTS (5)  // Maximum number of MQTT Client Connections (Device.MQTT.Client.{i})
-@@ -83,7 +89,7 @@
+@@ -82,7 +86,8 @@
+ // Maximum number of bytes allowed in a USP protobuf message.
+ // This is not used to size any arrays, just used as a security measure to prevent rogue controllers crashing
+ // the agent process with out of memory
+-#define MAX_USP_MSG_LEN (64*1024)
++// Increase message length to accommodate tests that send a large amount of requests in the message
++#define MAX_USP_MSG_LEN (256*1024)
+ 
+ // Maximum number of bytes allowed in a UDS MTP frame payload
+ // This limits the UDS payload length as a security measure to prevent rogue controllers crashing the agent process by consuming too much memory
+@@ -90,11 +95,11 @@
+ #define MAX_UDS_FRAME_PAYLOAD_LEN (1024*1024)
+ 
+ // Period of time (in seconds) between polling values that have value change notification enabled on them
+-#define VALUE_CHANGE_POLL_PERIOD  (15)
++#define VALUE_CHANGE_POLL_PERIOD  (30)
  
  // Location of the database file to use, if none is specified on the command line when invoking this executable
  // NOTE: As the database needs to be stored persistently, this should be changed to a directory which is not cleared on boot up
@@ -39,20 +52,29 @@ diff -Naur obuspa_orig/src/vendor/vendor_defs.h obuspa_new/src/vendor/vendor_def
  
  // Location of unix domain stream file used for CLI communication between client and server
  #define CLI_UNIX_DOMAIN_FILE                "/tmp/usp_cli"
-@@ -116,9 +122,9 @@
+@@ -128,16 +133,16 @@
  
  //-----------------------------------------------------------------------------------------
  // Uncomment the following to remove code and features from the standard build
 -//#define REMOVE_DEVICE_INFO               // Removes DeviceInfo from the core data model. It must instead be provided by the vendor.
 -//#define REMOVE_DEVICE_TIME               // Removes Device.Time from the core data model. It must instead be provided by the vendor.
--//#define REMOVE_SELF_TEST_DIAG_EXAMPLE    // Removes Self Test diagnostics example code
+-//#define REMOVE_USP_BROKER                // Removes all USP Broker functionality, including Device.USPServices
+-//#define REMOVE_USP_SERVICE               // Removes all USP Service functionality
 +#define REMOVE_DEVICE_INFO               // Removes DeviceInfo from the core data model. It must instead be provided by the vendor.
 +#define REMOVE_DEVICE_TIME               // Removes Device.Time from the core data model. It must instead be provided by the vendor.
++#define REMOVE_USP_BROKER                  // Removes all USP Broker functionality, including Device.USPServices
++#define REMOVE_USP_SERVICE                 // Removes all USP Service functionality
+ //#define REMOVE_DEVICE_REBOOT             // Removes Device.Reboot() from the core data model
+ //#define REMOVE_DEVICE_FACTORY_RESET      // Removes Device.FactoryReset() from the core data model
+ //#define REMOVE_DEVICE_SCHEDULE_TIMER     // Removes Device.ScheduleTimer() from the core data model
+ //#define REMOVE_DEVICE_BOOT_EVENT         // Removes Device.Boot! from the core data model
+ //#define REMOVE_DEVICE_SECURITY           // Removes Device.Security, Device.LocalAgent.Certificate and ControllerTrust Challenge/Response mechanism
+-//#define REMOVE_SELF_TEST_DIAG_EXAMPLE    // Removes Self Test diagnostics example code
 +#define REMOVE_SELF_TEST_DIAG_EXAMPLE    // Removes Self Test diagnostics example code
  
  //#define DONT_SORT_GET_INSTANCES          // Disables the sorting of data model paths returned in a GetInstancesResponse. Useful for slow devices supporting large data models.
  
-@@ -132,7 +138,7 @@
+@@ -151,7 +156,7 @@
  // Comment out the following define if you want to let the Linux routing tables decide which network interface to use for USP connections
  // Letting the Linux routing tables decide is better for devices that can connect to the STOMP server through either
  // WiFi or ethernet, and either of these interfaces could be down at any one time
@@ -61,7 +83,7 @@ diff -Naur obuspa_orig/src/vendor/vendor_defs.h obuspa_new/src/vendor/vendor_def
  
  //-----------------------------------------------------------------------------------------
  // OUI (Organization Unique Identifier) to use for this CPE. This code will be unique to the manufacturer
-@@ -177,6 +183,8 @@
+@@ -197,6 +202,8 @@
  // This may be overridden using the '-i' option
  #define WEBSOCKET_LISTEN_INTERFACE "eth0"  /*"lo"*/
  
@@ -70,14 +92,9 @@ diff -Naur obuspa_orig/src/vendor/vendor_defs.h obuspa_new/src/vendor/vendor_def
  // Fallback QoS value for MQTT messages when not configured by TR-369 parameters.
  #define MQTT_FALLBACK_QOS 0 /* 0, 1, 2 */
  
-@@ -218,11 +226,34 @@
- } ctrust_role_t;
- 
- // Definitions of roles used
--#define ROLE_NON_SSL       kCTrustRole_FullAccess  // Role to use, if SSL is not being used
-+#define ROLE_NON_SSL       kCTrustRole_Untrusted   // Role to use, if SSL is not being used
- #define ROLE_DEFAULT       kCTrustRole_FullAccess  // Default Role to use for controllers until determined from MTP certificate
- 
+@@ -256,4 +263,30 @@
+ #endif
+ #endif
  
 +#ifdef BDK_USP
 +// Role is used to match with Inherited Role, and Inherited Role
@@ -101,9 +118,8 @@ diff -Naur obuspa_orig/src/vendor/vendor_defs.h obuspa_new/src/vendor/vendor_def
 +#define USP_CERTIFICATE_PREFIX           "usp"
 +#define USP_CERTIFICATE_PREFIX_LEN       3
 +#endif
- 
--
++
 +#define TRUSTED_ROLE_FULL_PATH   "Device.LocalAgent.ControllerTrust.Role.1"
 +#define UNTRUSTED_ROLE_FULL_PATH "Device.LocalAgent.ControllerTrust.Role.2"
- 
- #endif
++
+ #endif // VENDOR_DEFS_H

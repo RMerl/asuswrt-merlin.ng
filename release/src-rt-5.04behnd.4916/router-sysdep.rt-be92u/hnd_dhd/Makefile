@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom wl driver
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,8 @@
 # OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
-# <<Broadcom-WL-IPTag/Open:>>
+#
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 # $Id: Makefile 692718 2017-03-29 03:25:07Z $
 #
@@ -99,9 +100,9 @@ ifeq ($(REBUILD_DHD_MODULE),1)
 
     # Include router config to source LBR settings
     ifeq ($(CM_BUILDROOT),)
-       -include $(src)/../.config
+      -include $(src)/../.config
     else
-       include $(SRCBASE_ROUTER)/.config
+      include $(SRCBASE_ROUTER)/.config
     endif
 
     # Include master configuration from dhd makefile
@@ -134,3 +135,13 @@ else # Use prebuilt modules
     obj-$(CONFIG_BCM_WLAN) := $(TARGET).o
 
 endif
+
+# This comment block must stay at the bottom of the file.
+# No reason for tabs in this file since no recipes.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# indent-tabs-mode: nil
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 et

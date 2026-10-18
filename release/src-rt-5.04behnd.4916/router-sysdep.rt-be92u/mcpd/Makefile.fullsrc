@@ -12,16 +12,14 @@ endif
 
 LIBS = -L$(HND_SRC)/router-sysdep/bcmmcast/ -lbcmmcast -L$(HND_SRC)/router-sysdep/bridgeutil/ -lbridgeutil -L$(HND_SRC)/router-sysdep/sys_util/ -lsys_util
 
-# mcpd to omcid integration is only available in CMS/BDK mode (not BaseShell)
+# mcpd to omcid integration is available in CMS/BDK/BASESHELL mode.
 # mcpd_omci.o uses BCMIPC to communicate with omcid, so BCMIPC must be defined.
 # mcpd_omci.o uses cms_util but not cms_msg.
-ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 ifneq ($(strip $(BUILD_GPON)),)
 ifneq ($(strip $(BUILD_BCMIPC)),)
 OBJS   += mcpd_omci.o
 LIBS   += -lomciutil $(CMS_COMMON_LIBS) -lbcmipc
 CFLAGS += -DBCMIPC_OMCID
-endif
 endif
 endif
 
@@ -32,6 +30,15 @@ cflags += -Werror -Wfatal-errors -Wno-stringop-truncation
 ifneq ($(strip $(BRCM_OVS_SUPPORT_MCAST)),)
 CFLAGS += -DCONFIG_BCM_OVS_MCAST
 endif
+
+ifneq ($(strip $(BUILD_BRCM_OPENWRT)),)
+CFLAGS += -DSUPPORT_BRCM_OPENWRT
+endif
+
+ifneq ($(strip $(BUILD_NF_TABLES)),)
+CFLAGS += -DSUPPORT_NF_TABLES
+endif
+
 CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
 CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
 CFLAGS += -I$(KERNEL_LINKS_DIR)
@@ -41,6 +48,8 @@ CFLAGS += -DCC_SUPPORT_UNSPECIFIED_MLD_SRC
 endif
 
 CFLAGS += $(SSP_TYP_COMPILER_OPTS)
+
+CFLAGS += -DAUTO_Q_NQ
 
 $(EXE): $(OBJS)
 	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) \

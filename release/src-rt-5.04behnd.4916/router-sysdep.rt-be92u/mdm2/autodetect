@@ -1,1 +1,1 @@
-dependson: public/libs/cms_util
+dependson: common/mgmt

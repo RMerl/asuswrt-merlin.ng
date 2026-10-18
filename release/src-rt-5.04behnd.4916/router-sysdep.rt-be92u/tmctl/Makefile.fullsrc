@@ -17,33 +17,36 @@ all dynamic install: conditional_build
 
 
 clean: generic_clean
-	rm -f $(INSTALL_DIR)/bin/$(EXE)
+	rm -f $(EXT_DEVICEFS_DIR)/bin/$(EXE)
 
 binaryonly_dist_clean: clean generic_binaryonly_dist_clean
 	rm -f Makefile.fullsrc
 
-#
-# Set our CommEngine directory (by splitting the pwd into two words
-# at /userspace and taking the first word only).
-# Then include the common defines under CommEngine.
-#
+
+ifeq ($(BCM_MODULAR_BUILD),)
+# Old way: infer location of make.common based on pwd.
 CURR_DIR := $(shell pwd)
 BUILD_DIR:=$(HND_SRC)
-
 include $(BUILD_DIR)/make.common
+else
+# New Modular Build way: EXT_BUILD_DIR must be set.
+# Also point BUILD_DIR to EXT_BUILD_DIR
+BUILD_DIR := $(EXT_BUILD_DIR)
+include $(EXT_BUILD_DIR)/make.common
+endif
 
 
 ifneq ($(strip $(BUILD_TMCTL)),)
 ifneq ($(strip $(BUILD_RDPACTL)),)
 LIBS += -lrdpactl -L$(HND_SRC)/router-sysdep/ethswctl_lib/ -lethswctl -lbdmf
 ifneq ($(strip $(BUILD_DSL)),)
-LIBS += -latmctl
+LIBS += -lxtmctl
 endif
 BUILD_TMCTL_APP := 1
 else ifneq ($(strip $(BUILD_ARCHERCTL)),)
 LIBS += -L$(HND_SRC)/router-sysdep/ethswctl_lib/ -lethswctl -L$(HND_SRC)/router-sysdep/archer_lib/ -larcher
 ifneq ($(strip $(BUILD_DSL)),)
-LIBS += -latmctl
+LIBS += -lxtmctl
 endif
 BUILD_TMCTL_APP := 1
 else
@@ -92,10 +95,10 @@ ALLOWED_INCLUDE_PATHS := -I.\
 # WARNING: Do not modify this section unless you understand the
 # license implications of what you are doing.
 #
-ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+ALLOWED_LIB_DIRS := /lib:/public/lib:/private/lib
 
 
-CFLAGS += -Werror
+CFLAGS += -Werror -Wfatal-errors
 
 ifneq ($(strip $(BRCM_XDSL_DISTPOINT_USE_G9991)),)
     CUSTOM_CFLAGS += -DG9991
@@ -107,7 +110,7 @@ endif
 # See Section 10.2 of Gnu Make manual
 #
 $(EXE): $(OBJS)
-	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(CMS_RPATH_OPTION) $(CMS_LIB_PATH) $(LIBS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(BCM_RPATH_LINK_OPTION) $(BCM_LIB_PATH) $(LIBS)
 
 
 #

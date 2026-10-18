@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
+# Makefile.pylibfdt
+#
+
+PYLIBFDT_srcs = $(PYLIBFDT_dir)/libfdt.i
+PYMODULE = $(PYLIBFDT_dir)/_libfdt.so
+PYLIBFDT_CLEANFILES_L = libfdt_wrap.c libfdt.py *.pyc *.so
+PYLIBFDT_CLEANFILES = $(PYLIBFDT_CLEANFILES_L:%=$(PYLIBFDT_dir)/%)
+PYLIBFDT_CLEANDIRS_L = __pycache__ libfdt.egg-info
+PYLIBFDT_CLEANDIRS = build $(PYLIBFDT_CLEANDIRS_L:%=$(PYLIBFDT_dir)/%)
+
+SETUP = ./setup.py
+
+ifndef V
+SETUPFLAGS += --quiet
+endif
+
+$(PYMODULE): WARNINGS =  # suppress warnings from generated code
+$(PYMODULE): $(PYLIBFDT_srcs) $(LIBFDT_archive) $(SETUP)
+	@$(VECHO) PYMOD $@
+	CFLAGS="$(CFLAGS) -Wno-error" $(PYTHON) $(SETUP) $(SETUPFLAGS) build_ext
+
+install_pylibfdt: $(PYMODULE)
+	@$(VECHO) INSTALL-PYLIB
+	$(PYTHON) $(SETUP) $(SETUPFLAGS) install --prefix=$(PREFIX)
+
+pylibfdt_clean:
+	@$(VECHO) CLEAN "(pylibfdt)"
+	rm -f $(PYLIBFDT_CLEANFILES)
+	rm -rf $(PYLIBFDT_CLEANDIRS)

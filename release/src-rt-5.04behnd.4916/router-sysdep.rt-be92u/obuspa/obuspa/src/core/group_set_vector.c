@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2020, Broadband Forum
- * Copyright (C) 2020  CommScope, Inc
+ * Copyright (C) 2020-2024, Broadband Forum
+ * Copyright (C) 2020-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -129,11 +129,29 @@ void GROUP_SET_VECTOR_Add(group_set_vector_t *gsv, char *path, char *value, bool
     unsigned type_flags;
 
     // Exit if path does not exist in the schema
-    path_properties = DATA_MODEL_GetPathProperties(path, combined_role, &permission_bitmask, &group_id, &type_flags);
+    path_properties = DATA_MODEL_GetPathProperties(path, combined_role, &permission_bitmask, &group_id, &type_flags, 0);
     if ((path_properties & PP_EXISTS_IN_SCHEMA) == 0)
     {
         err_code = USP_ERR_UNSUPPORTED_PARAM;
         err_msg = USP_ERR_GetMessage();
+        goto exit;
+    }
+
+    // Exit if path is an object. This could occur when performing an AddObject, if the name of a child parameter was empty
+    if (path_properties & PP_IS_OBJECT)
+    {
+        USP_SNPRINTF(buf, sizeof(buf), "%s: Parameter name is empty for child parameter of %s", __FUNCTION__, path);
+        err_code = USP_ERR_INVALID_ARGUMENTS;
+        err_msg = buf;
+        goto exit;
+    }
+
+    // Exit if path is not a parameter. This could occur when performing an AddObject, if the name of the child parameter is actually a child object, event or command
+    if ((path_properties & PP_IS_PARAMETER) == 0)
+    {
+        USP_SNPRINTF(buf, sizeof(buf), "%s: %s is not a parameter", __FUNCTION__, path);
+        err_code = USP_ERR_INTERNAL_ERROR;
+        err_msg = buf;
         goto exit;
     }
 
@@ -155,7 +173,7 @@ void GROUP_SET_VECTOR_Add(group_set_vector_t *gsv, char *path, char *value, bool
         goto exit;
     }
 
-    // If the code gets here, then there were no errors detected which would prevent the parameter from being obtained later
+    // If the code gets here, then there were no errors detected which would prevent the parameter from being set later
 
 exit:
     // All cases result in adding the path to the group set vector

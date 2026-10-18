@@ -19,18 +19,19 @@ done
 WLDRV_PROC_LIST=" dhd wl wl-scheduler wl-avs "
 WLDRV_INTR_LIST=" d11 "
 PROC_LIST_COMMON=" bcmsw_rx skb_free_task "
+PLTDRV_PROC_WL_PRIO_LIST=""
 
 CROSSBOW=`gunzip < /proc/config.gz |grep "CONFIG_BCM_CROSSBOW=y"`
 ARCHER=`cat /proc/net/dev |grep archer |cut -d ':' -f1`
 CROSSBOWFOL=`gunzip < /proc/config.gz |grep "CONFIG_BCM_CROSSBOW_FULL_OFFLOAD=y"`
 CROSSBOWSPC=`gunzip < /proc/config.gz |grep "CONFIG_HAVE_SKBUFF_WL_SPC_V2"`
 if [ ! -z $CROSSBOW ] && [ -z $CROSSBOWFOL ]; then
-    # Crossbow platform without hardware offload (6764L),
-    # make it Archer data path with crossbow WiFi
-    PLTDRV_PROC_LIST=" awl_xfer archer_dhd "
+    # Crossbow platform without hardware offload (6764L/6764),
+    PLTDRV_PROC_CPU_LIST=" awl_xfer archer_dhd "
+    PLTDRV_PROC_COMMON_LIST=" "
+    PLTDRV_PROC_LIST=${PLTDRV_PROC_CPU_LIST}${PLTDRV_PROC_COMMON_LIST}
     WLDRV_INTR_LIST=" ${WLDRV_INTR_LIST} m2m0 m2m1 mlc phy "
-    PROC_LIST_COMMON=" ${PROC_LIST_COMMON} archer_wlan recycle "
-    ARCHER="archer"
+    PROC_LIST_COMMON=" ${PROC_LIST_COMMON} bcm_archer_us archer_wlan recycle "
 elif [ ! -z $ARCHER ]; then
     # Archer platforms
     PLTDRV_PROC_LIST=" awl_xfer archer_dhd "
@@ -50,8 +51,10 @@ elif [ ! -z $CROSSBOW ]; then
     PLTDRV_INTR_LIST=" xbow_socket "
     PROC_LIST_COMMON=" ${PROC_LIST_COMMON} bcm_archer_us recycle "
 else
-    #non-Archer platforms
-    WLDRV_PROC_LIST=" wfd ${WLDRV_PROC_LIST} "
+    # other platforms
+    WLDRV_PROC_LIST=" ${WLDRV_PROC_LIST} "
+    PLTDRV_PROC_LIST=" wfd "
+    PLTDRV_PROC_WL_PRIO_LIST=" wfd " # wfd exception: same prio as WLDRV_PROC_LIST
 fi
 
 PROC_LIST_PER_RADIO=${WLDRV_PROC_LIST}${PLTDRV_PROC_LIST}
@@ -60,6 +63,16 @@ INTR_LIST_PER_RADIO=${WLDRV_INTR_LIST}${PLTDRV_INTR_LIST}
 if [ -z $ALLOW_CPU0_AFF ]; then
     ALLOW_CPU0_AFF=1
 fi
+
+num_items()
+{
+	echo $#
+}
+
+num_radios()
+{
+	echo $(num_items $WL_INTF_LIST)
+}
 
 # is radio interface DHD ?
 # $1 radio interface number
@@ -289,7 +302,7 @@ getIntrNum()
     hndler=$2
   fi
 
-  if [[ "$int_name" == "crossbow"* ]]; then
+  if [ -n "`echo "$int_name" | grep -e 'crossbow'`" ]; then
       local interrupt_line=`cat /proc/interrupts |grep -F "$int_name"`
   else
       local interrupt_line=`cat /proc/interrupts |grep $int_name |grep $hndler`
@@ -339,9 +352,10 @@ setIntrAffinity()
     local irq=$(getIntrNum $int_name);
 
     if [ ! -z $affinity ] && [ ! -z $irq ]; then
+        #recover to the first of ($affinity & cpu_online_mask) after cpu down->up
+        echo $affinity >/proc/irq/$irq/bcm_affinity 2>/dev/NULL
         echo $affinity >/proc/irq/$irq/smp_affinity 2>/dev/NULL
         echo set $int_name irq:$irq aff:$affinity
-        echo ""
         #nvram kset wlan_${radio}_${int_name}_interrupt_affinity=${affinity}
     fi
 }
@@ -366,7 +380,6 @@ setProcPriority() {
     local prio=$4
     if [ -f "/bin/rtpolicy" ]; then
         echo "set $proc_name and pid:$pid to prio:$prio"
-        echo ""
         chrt -p $prio $pid> /dev/null 2>&1
         if [ "$?" != "0" ]; then
             echo "Failed to set $proc_name to realtime priority $prio"
@@ -384,7 +397,6 @@ setProcAffinity() {
     local affinity=$4
     [[ $4 =~ ^[0-9]+$ ]] && affinity=`printf \%x $4`
     echo "set $proc_name $pid to aff:$affinity"
-    echo ""
     if [ ! -f "/bin/rtpolicy" ]; then
        echo "no affinity when no RT policy set"
        return;
@@ -1033,10 +1045,12 @@ set_default_affinity_plat3()
 {
     local ctl_item radio affinity
 
+    fa=$(free_affinity)
+
     for radio in $WL_INTF_LIST
     do
         # /* bind to CPU{x} */
-        affinity=$((1 << (radio%NUM_PROCESSOR)))
+        affinity=$((2 << (radio%NUM_PROCESSOR)))
         # echo "affinity=$affinity"
         for ctl_item in $PROC_LIST_PER_RADIO
         do
@@ -1046,7 +1060,21 @@ set_default_affinity_plat3()
                 setProcAffinity "" $proc_name $proc_pid $affinity
             fi
         done
+        for ctl_item in $PLTDRV_PROC_LIST
+        do
+            proc_name=$(get_process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcAffinity "" $proc_name $proc_pid $(( $affinity | $fa ))
+            fi
+        done
+        for ctl_item in $WLDRV_INTR_LIST
+        do
+            int_name=$(get_interrupt_name $ctl_item $radio);
+            setIntrAffinity $int_name $affinity;
+        done
     done
+
 }
 
 # When CPU0 to be free affine all radio processes to CPU#1
@@ -1213,6 +1241,45 @@ set_xBow_socket_affinity()
     done
 }
 
+cpu_to_mask()
+{
+	echo $(( 1 << $1 ))
+}
+
+free_affinity()
+{
+	radio_cnt=$(num_radios)
+	# if we have a completely free CPU, that's the one.
+	if [ $(( radio_cnt < NUM_PROCESSOR - 1 )) -ne 0 ]; then
+		echo $(cpu_to_mask $(( NUM_PROCESSOR - 1 )))
+		return
+	fi
+
+	# if we have a dongle, that's the one.
+	cpu=0
+
+	while [ $(( cpu < radio_cnt )) -ne 0 ]; do
+		is_dhd_radio=$(isDHDRadio "$cpu")
+
+		if [ "$is_dhd_radio" -eq 1 ]; then
+			echo $(cpu_to_mask $(( cpu + 1 )))
+			return
+		fi
+		cpu=$(( ++cpu ))
+	done
+	echo 0
+}
+
+set_fwq_affinity()
+{
+	proc_name=$(get_process_name "xbow_fwq" $1);
+	proc_pid=$(getPidByName $proc_name);
+
+	if [ $proc_pid -gt 0 ]; then
+		setProcAffinity "" $proc_name $proc_pid $2
+	fi
+}
+
 # xBow systems have 2 internal NIC radios, one of which requires
 # extra processing power (~ 1.5 CPUs) to sustain peak forwarding
 # performance. This is the "first" internal NIC on both 6765 and
@@ -1228,23 +1295,163 @@ set_xBow_socket_affinity()
 # => tri radio all nic, 2G external (CPU #3)
 extra_cpu_for_xBow()
 {
-	is_dhd_radio=$(isDHDRadio 0)
+	fa=$(free_affinity)
 
-	if [ $is_dhd_radio -eq 1 ]; then
-		extra_cpu_affinity=6 # cpu 1 + cpu 2
-		xbow_fwq_unit=1
-	else
-		# cpu 3 is either free or 2G or external
-		extra_cpu_affinity=10 # cpu 3 + cpu 1
-		xbow_fwq_unit=0
+	if [ "$fa" -eq 0 ]; then
+		# no free CPU, so special case for triband
+		# set xbow_fwq[0] to use CPUs 1-3
+		set_fwq_affinity 0 10
+		return
 	fi
 
-	proc_name=$(get_process_name "xbow_fwq" $xbow_fwq_unit);
-	proc_pid=$(getPidByName $proc_name);
+	# we have a free CPU so every fwq gets an extra cpu
+	cur=0
+	radio_cnt=$(num_radios)
 
-	if [ $proc_pid -gt 0 ]; then
-		setProcAffinity "" $proc_name $proc_pid $extra_cpu_affinity
-	fi
+	while [ $(( cur < radio_cnt )) -ne 0 ]; do
+		proc_name=$(get_process_name "xbow_fwq" $cur);
+		proc_pid=$(getPidByName $proc_name);
+		cur_affinity=$(getPidAffinityNum $proc_pid)
+
+		new_affinity=$(( cur_affinity | fa ))
+		set_fwq_affinity $cur $new_affinity
+		cur=$(( ++cur ))
+	done
+}
+
+
+# Low cost xBow systems have 2 internal NIC radios, one of which requires
+# extra processing power (~ 1.5 CPUs) to sustain peak forwarding performance.
+# This is the "first" internal NIC on both 6764 and 6764L.
+#
+# We locate the cpu/unit for this cpu with extra processing demand and steal
+# half a CPU from the other internal radio.
+#
+extra_cpu_for_awl_xfer()
+{
+       is_dhd_radio=$(isDHDRadio 0)
+       extra_cpu_affinity=6 # cpu 1 + cpu 2
+
+       if [ $is_dhd_radio -eq 1 ]; then
+               awl_xfer_unit=1
+       else
+               awl_xfer_unit=0
+       fi
+
+       proc_name=$(get_process_name "awl_xfer" $awl_xfer_unit);
+       proc_pid=$(getPidByName $proc_name);
+
+       if [ $proc_pid -gt 0 ]; then
+               setProcAffinity "" $proc_name $proc_pid $extra_cpu_affinity
+       fi
+}
+
+# All SDK housekeeping processes:                      CPU0
+# If (unlikely) external WiFi, all processes/irupts:   CPU0
+# All processes/interrupts related to Internal WiFi#0: CPU1
+# All processes/interrupts related to Internal WiFi#1: CPU2
+# Crossbow offloading:                                 CPU3
+#
+# wl{x} arragement:
+# Tri-band : DHD(wl0/cpu1), internal radio (wl1/cpu2, wl2/cpu3)
+# Tri-band : internal radio (wl0/cpu1, wl1/cpu2), NIC (wl2/cpu0)
+# Dual-band: internal radio (wl0/cpu1, wl1/cpu2)
+#
+set_default_affinity_priority_xBow_no_hw_offload()
+{
+    local radio affinity cpu
+    local ctl_item int_name proc_name proc_pid
+    local cmn_proc_cpu dhd_radio
+    local is_dhd_radio internal_start
+
+    echo "Default Affinity for non-HW offload xBow"
+
+    cmn_proc_cpu=0
+    cmn_affinity=$((1 << cmn_proc_cpu))
+
+    is_dhd_radio=$(isDHDRadio 0)
+
+    if [ $is_dhd_radio -eq 1 ]; then
+        internal_start=0
+        echo "wl{x}=>CPU{x}, priority 5"
+    else
+        internal_start=1
+        echo "wl{x}=>CPU{x+1}, priority 5"
+    fi
+
+    # Affine WiFi Radio interface specific processes and interrupts
+    for radio in $WL_INTF_LIST
+    do
+        cpu=$((radio%NUM_PROCESSOR + $internal_start))
+        if [ $cpu -eq 3 ]; then
+            #should only happen for external NIC
+            echo "Clear XBOW proc"
+            cpu=0
+        fi
+
+        # /* bind WLAN processes to CPU{x} */
+        affinity=$((1 << cpu))
+        priority=5
+        for ctl_item in $WLDRV_PROC_LIST
+        do
+            proc_name=$(get_process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcAffinity "" $proc_name $proc_pid $affinity
+                setProcPriority "" $proc_name $proc_pid $priority
+            fi
+        done
+
+        priority=1
+        for ctl_item in $PLTDRV_PROC_CPU_LIST
+        do
+            proc_name=$(get_process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcAffinity "" $proc_name $proc_pid $affinity
+                setProcPriority "" $proc_name $proc_pid $priority
+            fi
+        done
+
+       # per-radio threads that need to be bound to the common cpu (for example
+       # stq):
+        for ctl_item in $PLTDRV_PROC_COMMON_LIST
+        do
+            proc_name=$(get_process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcAffinity "" $proc_name $proc_pid $cmn_affinity
+                setProcPriority "" $proc_name $proc_pid $priority
+            fi
+        done
+        # bind WLAN interrupts to CPU{x+$internal_start}
+        for ctl_item in $WLDRV_INTR_LIST
+        do
+            int_name=$(get_interrupt_name $ctl_item $radio);
+            setIntrAffinity $int_name $affinity;
+        done
+    done
+
+    for ctl_item in $PROC_LIST_COMMON
+    do
+        if [ "$ctl_item" == "bcm_archer_us" ]; then
+            # exclude bcm_archer_us from default affinity setting
+            continue
+        fi
+        proc_name=$(get_process_name $ctl_item);
+        proc_pid=$(getPidByName $proc_name);
+        if [ $proc_pid -gt 0 ]; then
+            setProcAffinity "" $proc_name $proc_pid $cmn_affinity
+        fi
+    done
+
+    extra_cpu_for_awl_xfer
+
+    # Set xbow_socket affinities but can't do it here, because these are
+    # registered with the kernel only after bcm_enet.ko is loaded and calls
+    # archer_driver_host_config(). So launch a background task to check for
+    # bcm_enet.ko to be loaded and then run the affinity loop.
+    set_xBow_socket_affinity &
 }
 
 # All SDK housekeeping processes:                      CPU0
@@ -1351,7 +1558,7 @@ set_default_priority()
         for ctl_item in $PROC_LIST_PER_RADIO
         do
             priority=75
-            for ctl_item1 in $WLDRV_PROC_LIST
+            for ctl_item1 in $WLDRV_PROC_LIST $PLTDRV_PROC_WL_PRIO_LIST
             do
                 if [ "$ctl_item" == "$ctl_item1" ]; then
                     #wlan threads default priority=5
@@ -1375,8 +1582,12 @@ set_default_priority()
 pin_wifi_processes_default() {
    echo "Wlan related processes are pinned by default"
    if [ $NUM_WL_INTF -gt 0 ]; then
-       # Archer based platforms
-       if [ ! -z $ARCHER ]; then
+       if [ ! -z $CROSSBOW ] && [ -z $CROSSBOWFOL ]; then
+           # Crossbow platform without hardware offload (6764L/6764)
+           set_default_affinity_priority_xBow_no_hw_offload
+           return
+       elif [ ! -z $ARCHER ]; then
+           # Archer based platforms
            if [ ${NUM_PROCESSOR} -lt 4 ]; then
                # Archer based platforms with 3 cores
                # BCM963178....
@@ -1387,8 +1598,7 @@ pin_wifi_processes_default() {
                set_default_affinity_Archer_NRCPUS4
            fi
        elif [ ! -z $CROSSBOW ]; then
-           # CrossBow platforms
-           # BCM96765, BCM947722, BCM6766
+           # Fully offloaded CrossBow platforms
            set_default_affinity_priority_xBow
            return
        else  # High-end wfd based platforms

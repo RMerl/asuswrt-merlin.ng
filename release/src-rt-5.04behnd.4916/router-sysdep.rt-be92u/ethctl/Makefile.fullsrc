@@ -2,7 +2,7 @@ OBJS := ethctl.o ethctl_cmd.o
 
 LIBS := -L$(HND_SRC)/router-sysdep/ethctl_lib/ -lethctl
 
-#CFLAGS += -Werror -Wfatal-errors
+CFLAGS += -Werror -Wfatal-errors -Wno-type-limits -Wno-error=stringop-truncation
 
 CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP) 
 

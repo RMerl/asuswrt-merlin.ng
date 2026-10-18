@@ -1,7 +1,7 @@
-diff -Naur obuspa_orig/Makefile.am obuspa_new/Makefile.am 
---- obuspa_orig/Makefile.am	2022-07-21 10:39:52.442352903 -0700
-+++ obuspa_new/Makefile.am	2022-08-03 12:38:38.519543551 -0700
-@@ -40,14 +40,6 @@
+diff -Naur obuspa_orig/Makefile.am obuspa_new/Makefile.am
+--- obuspa_orig/Makefile.am	2024-07-29 13:04:17.510220772 -0700
++++ obuspa_new/Makefile.am	2024-07-29 13:56:31.487886665 -0700
+@@ -43,14 +43,6 @@
                      src/core/usp_register.c \
                      src/core/usp_api.c \
                      src/core/dm_access.c \
@@ -16,7 +16,7 @@ diff -Naur obuspa_orig/Makefile.am obuspa_new/Makefile.am
                      src/core/device_selftest_example.c \
                      src/core/device_time.c \
                      src/core/uptime.c \
-@@ -74,7 +66,6 @@
+@@ -77,7 +69,6 @@
                      src/core/iso8601.c \
                      src/core/text_utils.c \
                      src/core/os_utils.c \
@@ -24,7 +24,7 @@ diff -Naur obuspa_orig/Makefile.am obuspa_new/Makefile.am
                      src/core/dllist.c \
                      src/libjson/ccan/json/json.c \
                      src/protobuf-c/usp-msg.pb-c.c \
-@@ -85,7 +76,6 @@
+@@ -88,7 +79,6 @@
                      src/core/coap_server.c \
                      src/core/uri.c \
                      src/core/mqtt.c \
@@ -32,7 +32,7 @@ diff -Naur obuspa_orig/Makefile.am obuspa_new/Makefile.am
                      src/core/wsclient.c \
                      src/core/wsserver.c \
                      src/core/usp_record.c \
-@@ -110,8 +100,6 @@
+@@ -119,8 +109,6 @@
  obuspa_LDADD = -lm -ldl -lpthread -lrt
  obuspa_LDADD += $(openssl_LIBS) $(sqlite3_LIBS) $(libcurl_LIBS) $(zlib_LIBS) $(libmosquitto_LIBS) $(libwebsockets_LIBS)
  

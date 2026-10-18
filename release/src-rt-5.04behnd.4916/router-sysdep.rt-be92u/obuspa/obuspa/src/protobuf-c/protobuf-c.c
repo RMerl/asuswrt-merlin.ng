@@ -1,4 +1,4 @@
-// Copyright 2022 BroadBand Forum
+// Copyright 2022-2024 BroadBand Forum
 
 /*
  * Copyright (c) 2008-2015, Dave Benson and the protobuf-c authors.
@@ -1926,6 +1926,7 @@ repeated_field_pack_to_buffer(const ProtobufCFieldDescriptor *field,
 		buffer->append(buffer, rv, scratch);
 		tmp = pack_buffer_packed_payload(field, count, array, buffer);
 		assert(tmp == payload_len);
+		(void)tmp; // Keep cmake production build happy
 		return rv + payload_len;
 	} else {
 		size_t siz;

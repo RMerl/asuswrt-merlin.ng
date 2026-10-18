@@ -13,7 +13,7 @@ killSwitch() {
         reboot;
     else
         echo "WARNING - POWERING DOWN SWITCH - RESET REQUIRED TO POWER SWITCH BACK UP"
-        mod='wl dhd wfd bcm63xx_pcie pwrmngtd bcm_enet rdpa_cmd rdpa_mw rdpa '
+        mod='wl dhd wfd bcm63xx_pcie bcm_enet rdpa_cmd rdpa_mw rdpa '
         pwrctl stop
         killall -q acsd mcpd
         for m in $mod; do echo \"Removing module $m\"; rmmod -w $m; done

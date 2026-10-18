@@ -3,6 +3,7 @@ HOMEPAGE = "http://github.com/belvedere-yocto/hal"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://../../LICENSE;md5=175792518e4ac015ab6696d16c4f607e"
 
+inherit wifi_util
 FILESEXTRAPATHS_prepend := "${WLIMPL_PATH}/main/components/rdk/ccsp/hal:"
 SRC_URI = "file://wifi;name=wlanhal"
 
@@ -24,9 +25,12 @@ S = "${WORKDIR}/wifi/source/wifi"
 CFLAGS_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'meshwifi', '-DENABLE_FEATURE_MESHWIFI', '', d)}"
 CFLAGS_append = " -I=${includedir}/ccsp "
 CFLAGS_append = " -DBUILD_RDKWIFI -DRDK_BUILD -DBCA_CPEROUTER_RDK -DRDKB\
+		 -DWPA3_PERSONAL_TRANSITION_AKM24_SUPPORTED \
 		 -DWLAN_BCG_CM_LINUX -DWLAN_BCG_CM_RDKB \
 		 -DRDKB_WLDM -DSKY_WLMNGR_SUPPORT_ENABLED \
 "
+CFLAGS_append = " ${@check_feature(d,"main/components/rdk/meta-rdk-broadcom-wifi/meta-brcm-wifi/recipes-ccsp/hal/hal-wifi-broadcom_git.bb", "-DWL11BE")}"
+
 
 python () {
     #import os
@@ -62,21 +66,23 @@ CFLAGS_append = " -Wno-unused-variable -Wno-unused-function  -Wno-return-type  -
 CFLAGS_append = " -DWIFI_HAL_VERSION_3"
 LDFLAGS += " -ldl -lwldm  -lwldpd  -lrt -lcms_util -lcms_dal -lcms_msg -lbcm_flashutil \
             -lbcm_boardctl -lbcm_util  -lcrypt -lcms_core -ldl -lmdm_db \
-            -lcms_qdm -lnanoxml -lvlanctl -lpwrctl -lethswctl -lethctl \
+            -lcms_qdm -lnanoxml -lpwrctl -lethswctl -lethctl \
             -lm -lbridgeutil -ltmctl -lbcmmcast -lwlsysutil -lmdm_cbk_wifi -lwlmdm -lstaged -ljson-c \
             -lpthread -lnvram -lm -lshared -lbcm_flashutil -lbcm_boardctl -lgen_util -lsys_util -lwlcsm \
 "
 
 LDFLAGS_append_brcm-rdpa = " -lbdmf -lrdpactl"
 
-LDFLAGS += " ${@bb.utils.contains('BUILD_VLANCTL', 'y', " -lvlanctl ","",d)} "
-LDFLAGS += " ${@bb.utils.contains('BUILD_VLANSUBIF_VLANCTL', 'y', " -lvlansubif-vlanctl","",d)} "
-LDFLAGS += " ${@bb.utils.contains('BUILD_DSL', 'y', " -latmctl -lxdslctl -lmdm_cbk_wifi ","",d)} "
+LDFLAGS += " ${@bb.utils.contains('BUILD_DSL', 'y', " -lxtmctl -lxdslctl -lmdm_cbk_wifi ","",d)} "
 LDFLAGS += " ${@bb.utils.contains('BUILD_GPON', 'y', \
-                             " -lgponctl -lomciutil -lomcipm_drv -lbcmipc -lvlanctl ","",d)} "
+                             " -lgponctl -lomciutil -lomcipm_drv -lbcmipc ","",d)} "
 LDFLAGS += " ${@bb.utils.contains('BUILD_EPONWAN', 'y', \
                              " -leponctl ","",d)} "
 
 inherit autotools
 PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
+
+do_compile_prepend() {
+    sed -i 's/-Wextra -Wall -Werror/-Wno-error=all/g' ${S}/Makefile.am
+}
 

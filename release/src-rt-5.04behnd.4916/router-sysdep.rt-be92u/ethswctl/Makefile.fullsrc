@@ -2,10 +2,9 @@ OBJS := ethswctl.o
 
 LIBS := -L$(HND_SRC)/router-sysdep/ethswctl_lib/ -lethswctl
 
-#CFLAGS += -Werror -Wfatal-errors
-CFLAGS += -Wfatal-errors
+CFLAGS += -Werror -Wfatal-errors
 
-ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_4908_63158_63178_),_$(strip $(BRCM_CHIP))_)
+ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_63178_),_$(strip $(BRCM_CHIP))_)
 CFLAGS += -DACB_ALGORITHM2
 endif
 

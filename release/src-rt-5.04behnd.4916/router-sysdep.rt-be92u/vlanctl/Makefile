@@ -6,7 +6,8 @@ all:
 
 install: generic_exe_install
 	mkdir -p $(INSTALL_DIR)/bin
-	install prebuilt/rawSocketTest $(INSTALL_DIR)/bin
+	# rawSocketTest is only built when BUILD_VLANCTL is set; skip it when absent
+	[ ! -f prebuilt/rawSocketTest ] || install prebuilt/rawSocketTest $(INSTALL_DIR)/bin
 
 clean:
 

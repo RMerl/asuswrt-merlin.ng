@@ -1,0 +1,7 @@
+/dts-v1/;
+
+/ {
+	foo {
+                remote-endpoint = <0xdeadbeef>;
+	};
+};

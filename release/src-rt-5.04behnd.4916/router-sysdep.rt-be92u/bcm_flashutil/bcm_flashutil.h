@@ -74,6 +74,72 @@
 #define RESET_STATUS_MASK       0xF0000000
 
 
+#define NAND_CFE_RAM_NAME           "cferam.000"
+#define NAND_CFE_RAM_SECBT_NAME     "secram.000"
+#define NAND_CFE_RAM_SECBT_MFG_NAME "secmfg.000"
+#define NAND_HASH_BIN_NAME       "hashes.bin"
+#define NAND_HASH_SECBT_NAME     "hashes.fld"
+#define NAND_HASH_SECBT_MFG_NAME "hashes.mfg"
+#define NAND_RFS_OFS_NAME           "NAND_RFS_OFS"
+#define NAND_COMMAND_NAME           "NANDCMD"
+#define NAND_BOOT_STATE_FILE_NAME   "boot_state_x"
+#define NAND_SEQ_MAGIC              0x53510000
+
+#define BOOTED_NEW_IMAGE            1
+#define BOOTED_OLD_IMAGE            2
+#define BOOTED_ONLY_IMAGE           3
+#define BOOTED_PART1_IMAGE          4
+#define BOOTED_PART2_IMAGE          5
+
+#define BOOT_SET_NEW_IMAGE          '0'
+#define BOOT_SET_OLD_IMAGE          '1'
+#define BOOT_SET_NEW_IMAGE_ONCE     '2'
+#define BOOT_GET_BOOTED_IMAGE_ID    '4'
+#define BOOT_SET_PART1_IMAGE        '5'
+#define BOOT_SET_PART2_IMAGE        '6'
+#define BOOT_SET_PART1_IMAGE_ONCE   '7'
+#define BOOT_SET_PART2_IMAGE_ONCE   '8'
+#define BOOT_GET_BOOT_IMAGE_STATE   '9'
+#define BOOT_SET_OLD_IMAGE_ONCE     'A'
+
+
+/*****************************************************************************/
+/*       Scratch Pad Defines                                                 */
+/*****************************************************************************/
+/* SP - Persistent Scratch Pad format:
+       sp header        : 32 bytes
+       tokenId-1        : 8 bytes
+       tokenId-1 len    : 4 bytes
+       tokenId-1 data    
+       ....
+       tokenId-n        : 8 bytes
+       tokenId-n len    : 4 bytes
+       tokenId-n data    
+*/
+
+#define MAGIC_NUM_LEN       8
+#define MAGIC_NUMBER        "gOGoBrCm"
+#define TOKEN_NAME_LEN      16
+#define SP_VERSION          1
+#define CFE_NVRAM_DATA2_LEN 20
+
+#ifndef _LANGUAGE_ASSEMBLY
+typedef struct _SP_HEADER
+{
+    char SPMagicNum[MAGIC_NUM_LEN];             // 8 bytes of magic number
+    int SPVersion;                              // version number
+    char NvramData2[CFE_NVRAM_DATA2_LEN];       // not related to scratch pad
+                                                // additional NVRAM_DATA
+} SP_HEADER, *PSP_HEADER;                       // total 32 bytes
+
+typedef struct _TOKEN_DEF
+{
+    char tokenName[TOKEN_NAME_LEN];
+    int tokenLen;
+} SP_TOKEN, *PSP_TOKEN;
+#endif
+
+
 
 #define UBOOT_ENV_MAGIC 0x75456e76
 #define PROC_BOOT_MAGIC  "/proc/environment/env_boot_magic"
@@ -210,18 +276,6 @@ unsigned int otp_is_boot_mfg_secure(void);
 unsigned int get_chip_id(void);
 unsigned int get_flash_type(void);
 
-
-/** Get the booted image id.
- *
- * @return             BOOTED_NEW_IMAGE, BOOTED_OLD_IMAGE
- */
-int devCtl_getBootedImageId(void);
-
-
-/** Recommended minimum size for getImageVersion.
- *
- *  A imageversion string looks like this:  $imageversion: 5041test3G0861904 $
- */
 #define IMAGE_VERSION_TAG_SIZE          64
 
 /** Get image version string ("imageversion").
@@ -234,8 +288,6 @@ int devCtl_getBootedImageId(void);
  * @return number of bytes copied into verStr
  */
 int devCtl_getImageVersion(int partition, char *verStr, int verStrSize);
-int getImageVersion(uint8_t *imagePtr, int imageSize, char *image_name,
-                    int image_name_len);
 
 /** Get the ident signature from a partition.
  * @param part (IN)    partition to search, 1=first, 2=second, 3=boot, 4=non-boot
@@ -257,7 +309,6 @@ int getImgValidStatus( int partition, int * status );
 int setImgSeqNum( int partition, int seq );
 int getImgSeqNum( int partition, int * seq );
 int commit( int partition, char *string );
-int writeImageToNand(unsigned char *string, int size);
 int isLegacyFlashLayout(void);
 uint64_t getAvailImgSpace(int update_img_idx);
 uint64_t getAvailLoaderSpace(int update_img_idx);

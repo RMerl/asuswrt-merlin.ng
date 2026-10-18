@@ -646,7 +646,6 @@ mfg_load_drivers()
 
         # other
         mfg_insmod "/lib/modules/*/extra/bcmvlan.ko"
-        mfg_insmod "/lib/modules/*/extra/pwrmngtd.ko"
 
         mfg_insmod "/lib/modules/*/extra/rdpa_cmd.ko"
     fi
@@ -687,7 +686,9 @@ mfg_setup_network()
         fi
     done
     # need this rule to be able run wget
-    iptables -w -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    if [ -d /bin/iptables ]; then
+        iptables -w -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+    fi
 
     return 0
 }

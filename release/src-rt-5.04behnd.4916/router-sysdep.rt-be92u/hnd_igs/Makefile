@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom IGS Layer
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,8 @@
 # OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
-# <<Broadcom-WL-IPTag/Open:>>
+#
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 # $Id$
 #
@@ -87,3 +88,11 @@ else # IGSSRCDIR doesn't exist
 endif
 
 clean-files += $(IGSCSRCDIR)/*.o $(IGSSRCDIR)/*.o $(IGSCSRCDIR)/.*.o.cmd $(IGSSRCDIR)/.*.o.cmd
+
+# This comment block must stay at the bottom of the file.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 noet

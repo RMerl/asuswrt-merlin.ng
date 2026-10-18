@@ -2,7 +2,7 @@
 Description=Check Broadcom  Wifi Support Initialized Path
 
 [Path]
-PathExists=/tmp/pam_initialized
+PathModified=/tmp/.brcm_bcacpe_wifi
 Unit=checkbrcmwifisupport.service
 
 [Install]

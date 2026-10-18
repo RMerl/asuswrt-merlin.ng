@@ -1,6 +1,7 @@
 EXE    := sotpctl
 EXEALT := rollbackctl
-SCRIPT := sotp_write_key.sh
+SCRIPTWR := sotp_write_key.sh
+SCRIPTRD := sotp_read_key.sh
 
 all install: conditional_build 
 
@@ -40,7 +41,8 @@ conditional_build:
 	mkdir -p $(FINAL_EXE_INSTALL_DIR)
 	cp -p $(EXE_INSTALL_DIR)/$(EXE) $(FINAL_EXE_INSTALL_DIR)
 	(cd $(FINAL_EXE_INSTALL_DIR); ln -sf $(EXE) $(EXEALT))
-	\rm -f $(FINAL_EXE_INSTALL_DIR)/$(SCRIPT); cp -p $(SCRIPT) $(FINAL_EXE_INSTALL_DIR)
+	\rm -f $(FINAL_EXE_INSTALL_DIR)/$(SCRIPTWR); cp -p $(SCRIPTWR) $(FINAL_EXE_INSTALL_DIR)
+	\rm -f $(FINAL_EXE_INSTALL_DIR)/$(SCRIPTRD); cp -p $(SCRIPTRD) $(FINAL_EXE_INSTALL_DIR)
 
 else
 

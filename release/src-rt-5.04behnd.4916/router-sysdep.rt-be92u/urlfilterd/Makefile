@@ -22,6 +22,8 @@ endif
 LIBS = -lnetfilter_queue -lnfnetlink
 CFLAGS+=-Wall -I./libnetfilter_queue/include -I./libnfnetlink/include
 
+CFLAGS += -Werror -Wfatal-errors
+
 export $(CFLAGS)
 
 APP = urlfilterd

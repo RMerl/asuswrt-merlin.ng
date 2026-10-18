@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -309,8 +309,8 @@ void KV_VECTOR_Destroy(kv_vector_t *kvv)
     for (i=0; i < kvv->num_entries; i++)
     {
         pair = &kvv->vector[i];
-        USP_FREE( pair->key );
-        USP_FREE( pair->value );
+        USP_SAFE_FREE( pair->key );
+        USP_SAFE_FREE( pair->value );
     }
 
     // Free the vector itself

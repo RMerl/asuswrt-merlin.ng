@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2023, Broadband Forum
+ * Copyright (C) 2023-2024, Broadband Forum
  * Copyright (C) 2022, Snom Technology GmbH
  *
  * Redistribution and use in source and binary forms, with or without

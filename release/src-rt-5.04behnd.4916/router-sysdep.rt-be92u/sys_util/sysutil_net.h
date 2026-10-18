@@ -139,6 +139,12 @@ int sysUtl_isInterfaceUnderBridge(const char *brName, const char *intfName);
 int sysUtl_interfaceExists(const char *ifname);
 
 
+/** Return 1 if interface is a USB network device.
+ * Note that the USB device must be plugged in for this function to return 1.
+ */
+int sysUtl_isInterfaceUsbNet(const char *ifName);
+
+
 /** Return ifindex of the parent device of the given interface.
  *
  * @param ifname   (IN) given interface name

@@ -1,6 +1,6 @@
 diff -Naur obuspa_orig/src/core/e2e_context.c obuspa_new/src/core/e2e_context.c
---- obuspa_orig/src/core/e2e_context.c	2022-09-02 09:54:10.000000000 -0700
-+++ obuspa_new/src/core/e2e_context.c	2022-10-04 17:35:36.963273952 -0700
+--- obuspa_orig/src/core/e2e_context.c	2024-07-29 13:04:17.522221033 -0700
++++ obuspa_new/src/core/e2e_context.c	2024-07-29 15:16:20.237045212 -0700
 @@ -87,6 +87,16 @@
  bool IsValidSessionId(uint64_t session_id);
  unsigned ComputePayloadCapacity(UspRecord__Record *src_rec, unsigned max_record_size);
@@ -85,9 +85,9 @@ diff -Naur obuspa_orig/src/core/e2e_context.c obuspa_new/src/core/e2e_context.c
      if (err != USP_ERR_OK)
      {
 diff -Naur obuspa_orig/src/core/nu_macaddr.h obuspa_new/src/core/nu_macaddr.h
---- obuspa_orig/src/core/nu_macaddr.h	2022-09-06 18:37:54.000000000 -0700
-+++ obuspa_new/src/core/nu_macaddr.h	2022-09-12 10:35:44.678827301 -0700
-@@ -44,7 +44,11 @@
+--- obuspa_orig/src/core/nu_macaddr.h	2024-07-29 13:04:17.530221206 -0700
++++ obuspa_new/src/core/nu_macaddr.h	2024-07-29 15:21:36.691914283 -0700
+@@ -44,7 +44,13 @@
  
  #include <net/ethernet.h>
  
@@ -95,7 +95,38 @@ diff -Naur obuspa_orig/src/core/nu_macaddr.h obuspa_new/src/core/nu_macaddr.h
 +#if !defined(MAC_ADDR_LEN)
  #define MAC_ADDR_LEN  (ETHER_ADDR_LEN)  // from <net/ethernet.h>
 +#endif
++#else
++#define MAC_ADDR_LEN  (ETHER_ADDR_LEN)  // from <net/ethernet.h>
 +#endif
  
  //-------------------------------------------------------------------------------------------------------
  // Network interface specified by the '-i' option
+diff -Naur obuspa_orig/src/core/subs_vector.h obuspa_new/src/core/subs_vector.h
+--- obuspa_orig/src/core/subs_vector.h	2024-07-29 13:04:17.534221293 -0700
++++ obuspa_new/src/core/subs_vector.h	2024-09-04 10:45:53.043987000 -0700
+@@ -75,6 +75,10 @@
+     bool skip_obj_notifications;        // Set if object creation/deletion notifications should not be sent whilst processing the current USP message
+                                         // This flag is used to prevent an obj added/deleted subscription from immediately firing when it is enabled, because the instances
+                                         // have changed since the last time the objects refersh instances vendor hook was called
++#ifdef BDK_USP
++    char *trigger_action;
++    kv_vector_t trigger_config_settings;
++#endif
+ } subs_t;
+ 
+ //------------------------------------------------------------------------------
+diff -Naur obuspa_orig/src/core/subs_vector.c obuspa_new/src/core/subs_vector.c
+--- obuspa_orig/src/core/subs_vector.c	2024-07-29 13:04:17.534221293 -0700
++++ obuspa_new/src/core/subs_vector.c	2024-09-04 10:45:21.171483000 -0700
+@@ -168,6 +168,11 @@
+     KV_VECTOR_Destroy(&sub->last_values);
+     STR_VECTOR_Destroy(&sub->cur_watch_objs);
+     STR_VECTOR_Destroy(&sub->last_watch_objs);
++
++#ifdef BDK_USP
++    USP_SAFE_FREE(sub->trigger_action);
++    KV_VECTOR_Destroy(&sub->trigger_config_settings);
++#endif
+ }
+ 
+ /*********************************************************************//**

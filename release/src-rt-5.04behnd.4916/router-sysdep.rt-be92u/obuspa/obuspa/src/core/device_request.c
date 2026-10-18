@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2023, Broadband Forum
- * Copyright (C) 2017-2023  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2017-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -79,7 +79,6 @@ int DeleteRequestArgs(dm_req_t *req);
 int DEVICE_REQUEST_Init(void)
 {
     int err = USP_ERR_OK;
-
 
     err |= USP_REGISTER_Object(DEVICE_REQ_ROOT ".{i}",
                               USP_HOOK_DenyAddInstance, NULL, NULL,
@@ -191,7 +190,7 @@ int DEVICE_REQUEST_Add(char *path, char *command_key, int *instance)
 ** \param   instance - instance number of operation in Device.LocalAgent.Request table
 ** \param   err_code - error code of the operation (USP_ERR_OK indicates success)
 ** \param   err_msg - error message if the operation failed, or NULL if operation was successful
-** \param   output_args - results of the completed operation (if successful)
+** \param   output_args - results of the completed operation (if successful). NULL indicates no output arguments.
 **
 ** \return  None - This code must handle any errors
 **
@@ -200,7 +199,6 @@ void DEVICE_REQUEST_OperationComplete(int instance, int err_code, char *err_msg,
 {
     int err;
     char path[MAX_DM_PATH];
-    dm_trans_vector_t trans;
     char command[MAX_DM_PATH];
     char command_key[MAX_DM_SHORT_VALUE_LEN];
 
@@ -227,7 +225,7 @@ void DEVICE_REQUEST_OperationComplete(int instance, int err_code, char *err_msg,
         dm_node_t *node;
         dm_oper_info_t *info;
 
-        node = DM_PRIV_GetNodeFromPath(command, NULL, NULL);
+        node = DM_PRIV_GetNodeFromPath(command, NULL, NULL, 0);
         USP_ASSERT(node != NULL);
 
         info = &node->registered.oper_info;
@@ -247,15 +245,37 @@ void DEVICE_REQUEST_OperationComplete(int instance, int err_code, char *err_msg,
         return;
     }
 
+    // Send operation complete events to all subscribers
+    DEVICE_SUBSCRIPTION_ProcessAllOperationCompleteSubscriptions(command, command_key, err_code, err_msg, output_args);
+
+    // Finally, delete the entry in the request table
+    DEVICE_REQUEST_DeleteInstance(instance);
+}
+
+/*********************************************************************//**
+**
+** DEVICE_REQUEST_DeleteInstance
+**
+** Deletes the specified instance in the Request table
+** This function is called, after it is known that the operation has completed
+**
+** \param   instance - instance number in Device.LocalAgent.Request.{i}
+**
+** \return  None
+**
+**************************************************************************/
+void DEVICE_REQUEST_DeleteInstance(int instance)
+{
+    int err;
+    char path[MAX_DM_PATH];
+    dm_trans_vector_t trans;
+
     // Exit if unable to start a database transaction
     err = DM_TRANS_Start(&trans);
     if (err != USP_ERR_OK)
     {
         return;
     }
-
-    // Send operation complete events to all subscribers
-    DEVICE_SUBSCRIPTION_ProcessAllOperationCompleteSubscriptions(command, command_key, err_code, err_msg, output_args);
 
     // Exit if unable to remove this operation from the request table
     // NOTE: Deletion of this instance will cascade to delete any persisted input args
@@ -364,12 +384,17 @@ int DEVICE_REQUEST_RestartAsyncOperations(void)
             goto exit;
         }
 
-        // Exit if unable to determine whether the operation should be restarted
+        // Determine whether the operation should be restarted
         KV_VECTOR_Init(&output_args);       // Not strictly necessary
         err = DATA_MODEL_ShouldOperationRestart(op_path, instance, &is_restart, &err_code, err_msg, sizeof(err_msg), &output_args);
+
+        // If we cannot determine whether the operation can be restarted (eg because the USP command is not in
+        // the supported data model anymore), then assume that the operation cannot be restarted
         if (err != USP_ERR_OK)
         {
-            goto exit;
+            USP_SNPRINTF(err_msg, sizeof(err_msg), "%s: USP Command '%s' cannot be restarted", __FUNCTION__, op_path);
+            is_restart = false;
+            err_code = USP_ERR_COMMAND_FAILURE;
         }
 
         if (is_restart)
@@ -488,11 +513,11 @@ int DEVICE_REQUEST_CountMatchingRequests(char *command_path)
     INT_VECTOR_Init(&iv);
 
     // Find node representing the specified command to find
-    command_node = DM_PRIV_GetNodeFromPath(command_path, NULL, NULL);
+    command_node = DM_PRIV_GetNodeFromPath(command_path, NULL, NULL, 0);
     USP_ASSERT(command_node != NULL);
 
     // Find node representing the request table
-    node = DM_PRIV_GetNodeFromPath(DEVICE_REQ_ROOT ".{i}", &inst, &is_qualified_instance);
+    node = DM_PRIV_GetNodeFromPath(DEVICE_REQ_ROOT ".{i}", &inst, &is_qualified_instance, 0);
     USP_ASSERT(node != NULL);
 
     // Get an array of instances for in the request table
@@ -520,7 +545,7 @@ int DEVICE_REQUEST_CountMatchingRequests(char *command_path)
 
         // Exit if unable to get the data model node associated with the command in this entry of the request table
         // NOTE: This should never happen. It could only happen if commands have been removed from the data model schema
-        node = DM_PRIV_GetNodeFromPath(buf, NULL, NULL);
+        node = DM_PRIV_GetNodeFromPath(buf, NULL, NULL, 0);
         if (node == NULL)
         {
             goto exit;

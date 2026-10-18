@@ -48,6 +48,7 @@
 #include "bcm_ulog.h"
 #include "bcm_fsutils.h"
 #include "sysutil_fs.h"
+#include "bcm_flashutil.h"
 
 
 #ifdef DESKTOP_LINUX
@@ -423,9 +424,10 @@ SINT32 devCtl_scratchPadList(const char *fileName, char *tokBuf, int bufLen)
      
     fd = getScratchPadFile(fileName, &pBuf, &spDataLen);
     if( fd < 0 )
-        // if fd < 0, pbuf is failed to alloc or get freed in getScratchPadFile()
-        /* coverity[leaked_storage] */ 
+    {
+        if (pBuf) free(pBuf);
         return 0;
+    }
 
     if(memcmp(((PSP_HEADER)pBuf)->SPMagicNum, MAGIC_NUMBER, MAGIC_NUM_LEN) != 0) 
     {
@@ -498,8 +500,10 @@ SINT32 devCtl_scratchPadGet(const char *fileName, char *tokenId, char *tokBuf, i
 
     fd = getScratchPadFile(fileName, &pBuf, &spDataLen);
     if( fd < 0 )
-        /* coverity[leaked_storage] */ 
+    {
+        if (pBuf) free(pBuf);
         return 0;
+    }
 
     if(memcmp(((PSP_HEADER)pBuf)->SPMagicNum, MAGIC_NUMBER, MAGIC_NUM_LEN) != 0) 
     {
@@ -719,8 +723,10 @@ SINT32 devCtl_scratchPadClearAll(const char *fileName)
  
     fd = getScratchPadFile(fileName, &pBuf, &spDataLen);
     if( fd < 0 ) 
-        /* coverity[leaked_storage] */
+    {
+        if (pBuf) free(pBuf);
         return 0;
+    }
 
     memset(pBuf, 0x00, spDataLen);
 
@@ -997,20 +1003,14 @@ int fake_board_ioctl(UINT32 command, BOARD_IOCTL_PARMS *ctrlParms)
       ctrlParms->result = 2;
       ret = 0;
       break;
-	     	
+
    case BOARD_IOCTL_GET_NUM_ENET_PORTS:
       ctrlParms->result = 4;
       ret = 0;
       break;
-      
-   case BOARD_IOCTL_GET_CHIP_ID:
-#if defined(CHIP_63138)
-      ctrlParms->result = 0x63138;
-#endif
-#if defined(CHIP_63148)
-      ctrlParms->result = 0x63148;
-#endif
 
+   case BOARD_IOCTL_GET_CHIP_ID:
+      ctrlParms->result = 0x6FEFE;
       ret = 0;
       break;
 

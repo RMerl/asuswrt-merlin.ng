@@ -6,6 +6,8 @@ all dynamic install: conditional_build
 
 EXE = dry
 LCFLAGS =  -O3
+# Disable below warnings in dry.c
+LCFLAGS += -Wall -Wno-implicit-int -Wno-return-type -Wno-unused-variable -Wno-implicit-function-declaration -Wno-maybe-uninitialized -Wno-discarded-qualifiers -Wno-unused-value
 
 clean: generic_clean
 	rm -f $(INSTALL_DIR)/bin/$(EXE)

@@ -3,7 +3,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 python () {
     import re
     rdk_branch = d.getVar('CMF_GIT_BRANCH')
-    if re.match(r'.*rdkb.*-kirkstone.*',rdk_branch):
+    if re.match(r'.*-rdkb-kirkstone.*',rdk_branch):
         d.appendVar('DEPENDS', ' autoconf-native automake-native ')
 }
 

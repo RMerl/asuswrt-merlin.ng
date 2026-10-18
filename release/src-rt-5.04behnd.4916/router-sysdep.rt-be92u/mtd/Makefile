@@ -14,15 +14,20 @@ include $(BUILD_DIR)/make.common
 CROSS := $(CROSS_COMPILE)
 export CROSS
 
-APP := mtd-utils-2.1.6
-APP_TARBALL := mtd-utils-2.1.6.tar.gz
+APP := mtd-utils-2.2.1
+APP_TARBALL := mtd-utils-2.2.1.tar.gz
 
 CFLAGS += -Wno-error=unused-parameter
+
+# Avoid warnings for this oss applications.
+CFLAGS+=-w
+export CFLAGS
 
 $(APP)/configure: $(APP_TARBALL)
 	@if [ ! -e ./$(APP)/Makefile ];then \
 	tar zxvf $(APP_TARBALL) 2> /dev/null || true; \
 	cd $(APP); \
+	patch -p1 -b -s -f < ../pre-autoreconf.patch || true; \
 	autoreconf --force --install; \
 	patch -p1 -b -s -f < ../$(APP).patch || true; \
 	fi
@@ -34,7 +39,7 @@ $(APP)/Makefile: $(APP)/configure
 		--without-ubifs \
 		--without-lzo \
 		--without-jffs \
-		--disable-tests \
+		--without-tests \
 		--prefix $(CURR_DIR)/$(APP)/opt \
 		--host $(TOOLCHAIN_PREFIX)
 

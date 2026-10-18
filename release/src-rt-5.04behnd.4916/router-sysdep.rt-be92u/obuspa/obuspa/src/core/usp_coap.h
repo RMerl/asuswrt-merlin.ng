@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,7 +46,7 @@
 #include "common_defs.h"
 #include "socket_set.h"
 #include "usp-msg.pb-c.h"
-#include "device.h"             // for mtp_reply_to_t
+#include "device.h"             // for mtp_conn_t
 
 
 //------------------------------------------------------------------------
@@ -236,7 +236,7 @@ typedef struct
     // Other parsed options
     char uri_path[MAX_COAP_URI_PATH];   // NOTE: path is stored as percent decoded
     char uri_query[MAX_COAP_URI_QUERY];  // NOTE: query is stored as percent encoded
-    mtp_reply_to_t mtp_reply_to;    // NOTE: pointers in this structure point to strings in pp->uri_query
+    mtp_conn_t mtp_conn;    // NOTE: pointers in this structure point to strings in pp->uri_query
     pdu_content_format_t content_format;
     unsigned total_size;     // total size of the USP record being transferred in blocks
 
@@ -305,9 +305,10 @@ int COAP_CLIENT_InitStart(void);
 void COAP_CLIENT_Destroy(void);
 int COAP_CLIENT_Start(int cont_instance, int mtp_instance, char *endpoint_id);
 void COAP_CLIENT_Stop(int cont_instance, int mtp_instance);
+void COAP_CLIENT_AllowConnect(void);
 void COAP_CLIENT_UpdateAllSockSet(socket_set_t *set);
 void COAP_CLIENT_ProcessAllSocketActivity(socket_set_t *set);
-int COAP_CLIENT_QueueBinaryMessage(mtp_send_item_t *msi, int cont_instance, int mtp_instance, mtp_reply_to_t *mrt, time_t expiry_time);
+int COAP_CLIENT_QueueBinaryMessage(mtp_send_item_t *msi, int cont_instance, int mtp_instance, mtp_conn_t *mtpc, time_t expiry_time);
 bool COAP_CLIENT_AreAllResponsesSent(void);
 
 // coap_common.c

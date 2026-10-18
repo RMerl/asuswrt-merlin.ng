@@ -1,6 +1,6 @@
 OBJS := ethswctl_api.o
 
-#CFLAGS += -Werror -Wfatal-errors
+CFLAGS += -Werror -Wfatal-errors -Wno-error=stringop-truncation
 
 # These are public API headers needed by other apps which want to call this lib.
 # Private/internal headers should not be listed here.

@@ -1,7 +1,7 @@
 /*
  * flash.h: Common definitions for flash access.
  *
- * Copyright (C) 2024, Broadcom. All Rights Reserved.
+ * Copyright (C) 2025, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  *
- * <<Broadcom-WL-IPTag/Open:>>
+ * <<Broadcom-WL-IPTag/Dual:>>
  *
  * $Id: flash.h 527388 2015-01-17 08:59:26Z $
  */

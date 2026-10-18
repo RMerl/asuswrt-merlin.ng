@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -103,8 +103,15 @@ int CLI_CLIENT_ExecCommand(int argc, char *argv[], char *db_file)
     len = 0;
     for (i=0; i<argc; i++)
     {
+        // Exit if command is too long to be sent
         arg = argv[i];
         arg_len = strlen(arg);
+        if (len + arg_len + 2 > sizeof(buf))   // Plus 2 to include terminating '\n\0'
+        {
+            USP_LOG_Error("ERROR: command too long. Increase MAX_CLI_CMD_LEN.");
+            return USP_ERR_INVALID_ARGUMENTS;
+        }
+
         memcpy(&buf[len], arg, arg_len);
         len += arg_len;
 
@@ -119,6 +126,7 @@ int CLI_CLIENT_ExecCommand(int argc, char *argv[], char *db_file)
     // Terminate the command with a LF and turn it into a string
     buf[len++] = '\n';
     buf[len] = '\0';
+    USP_ASSERT(len <= MAX_CLI_CMD_LEN);
 
     // Decide where to handle this command
     is_run_locally = CLI_SERVER_IsCmdRunLocally(argv[0]);
@@ -169,13 +177,14 @@ int HandleCliCommandRemotely(char *cmd_buf)
     // Fill in sockaddr structure
     memset(&sa, 0, sizeof(sa));
     sa.sun_family = AF_UNIX;
-    USP_STRNCPY(sa.sun_path, CLI_UNIX_DOMAIN_FILE, sizeof(sa.sun_path));
+    USP_STRNCPY(sa.sun_path, cli_uds_file, sizeof(sa.sun_path));
 
-    // Exit if unable to bind the socket to the unix domain file
+    // Exit if unable to connect the socket to the unix domain file
     err = connect(sock, (struct sockaddr *) &sa, sizeof(struct sockaddr_un));
     if (err == -1)
     {
         USP_ERR_ERRNO("connect", errno);
+        USP_LOG_Error("%s: Unable to connect to Unix domain socket file %s", __FUNCTION__, cli_uds_file);
         close(sock);
         return USP_ERR_INTERNAL_ERROR;
     }

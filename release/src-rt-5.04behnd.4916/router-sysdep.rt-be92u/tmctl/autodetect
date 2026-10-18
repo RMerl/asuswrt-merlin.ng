@@ -1,4 +1,2 @@
-
-dependson: private/libs/tmctl public/libs/bcm_flashutil public/libs/bcm_boardctl
-
+dependson: private/libs/tmctl common/base
 

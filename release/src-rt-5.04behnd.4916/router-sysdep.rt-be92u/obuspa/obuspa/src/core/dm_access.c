@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2021-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2021-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -419,6 +419,7 @@ int DM_ACCESS_ValidateBool(dm_req_t *req, char *value)
     return err;
 }
 
+#ifndef REMOVE_DEVICE_SECURITY
 /*********************************************************************//**
 **
 ** DM_ACCESS_ValidateBase64
@@ -447,6 +448,7 @@ int DM_ACCESS_ValidateBase64(dm_req_t *req, char *value)
 
     return USP_ERR_OK;
 }
+#endif
 
 /*********************************************************************//**
 **
@@ -586,7 +588,7 @@ int DM_ACCESS_ValidateReference(char *reference, char *table, int *instance)
     }
 
     // Determine the expected number of instance numbers in the specified table
-    node = DM_PRIV_GetNodeFromPath(table, NULL, NULL);
+    node = DM_PRIV_GetNodeFromPath(table, NULL, NULL, 0);
     USP_ASSERT(node != NULL);       // These asserts check that the caller provided a multi-instance table that exists in the supported data model
     USP_ASSERT(node->order > 0);
 

@@ -42,10 +42,13 @@ ALLOWED_INCLUDE_PATHS := -I.\
                          -I$(BUILD_DIR)/userspace/private/include/$(OALDIR) \
                          -I$(BCM_FSBUILD_DIR)/public/include  \
                          -I$(BCM_FSBUILD_DIR)/private/include \
+			 -I$(WIRELESS_IMPL_PATH)/main/components/proto/include \
+                         -I$(WIRELESS_IMPL_PATH)/main/components/wlioctl/include \
+                         -I$(WIRELESS_IMPL_PATH)/main/src/include \
+                         -I$(WIRELESS_IMPL_PATH)/main/src/shared/bcmwifi/include \
                          -I$(WIRELESS_IMPL_PATH)/sys/components/proto/include \
                          -I$(WIRELESS_IMPL_PATH)/sys/components/wlioctl/include \
                          -I$(WIRELESS_IMPL_PATH)/sys/src/include \
-                         -I$(WIRELESS_IMPL_PATH)/sys/components/bcmwifi/include \
                          -I$(WIRELESS_IMPL_PATH)/sys/src/shared/bcmwifi/include \
                          -I$(WIRELESS_IMPL_PATH)/dhd/components/proto/include \
                          -I$(WIRELESS_IMPL_PATH)/dhd/components/wlioctl/include \
@@ -63,9 +66,19 @@ ALLOWED_INCLUDE_PATHS := -I.\
 # WARNING: Do not modify this section unless you understand the
 # license implications of what you are doing.
 #
-ALLOWED_LIB_DIRS := /lib:/lib/public
+ALLOWED_LIB_DIRS := /lib:/private/lib:/public/lib
 
-LIBS = -lcms_msg $(CMS_COMMON_LIBS) -ldl $(CMS_CORE_LIBS) 
+ifneq ($(strip $(BUILD_BRCM_BDK)),)
+# Remove all mdm_cbk_* and bcm_*_hal libs from CMS_CORE_LIBS.  The local
+# Makefile will specify which mdm_cbk and hal libs it needs.
+MDM_CORE_LIBS := $(patsubst -lmdm_cbk_%,,$(CMS_CORE_LIBS))
+MDM_CORE_LIBS := $(patsubst -lbcm_%_hal,,$(MDM_CORE_LIBS))
+MDM_CORE_LIBS += -lmdm_cbk_wifi
+else
+MDM_CORE_LIBS := $(CMS_CORE_LIBS)
+endif
+
+LIBS = $(MDM_CORE_LIBS) -lcms_msg $(CMS_COMMON_LIBS)
 
 # treat all warnings as errors
 CUSTOM_CFLAGS += -Werror -Wfatal-errors
@@ -77,8 +90,7 @@ CUSTOM_CFLAGS += -Werror -Wfatal-errors
 # See Section 10.2 of Gnu Make manual
 # 
 $(EXE): $(OBJS)
-	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(CMS_RPATH_OPTION) $(CMS_LIB_PATH) $(LIBS)
-
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(BCM_RPATH_LINK_OPTION) $(BCM_LIB_PATH) $(LIBS)
 
 
 #

@@ -1,6 +1,6 @@
 # Makefile fragment for bcmdrv-specific configuration.
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,10 +15,20 @@
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 #
-# <<Broadcom-WL-IPTag/Open:>>
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 # $Id$
 #
 
 bcmdrv_IncDirs := include include/ctf include/emf/emf include/emf/igs
 bcmdrv_SrcDirs := shared
+
+# This comment block must stay at the bottom of the file.
+# No reason for tabs in this file since no recipes.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# indent-tabs-mode: nil
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 et

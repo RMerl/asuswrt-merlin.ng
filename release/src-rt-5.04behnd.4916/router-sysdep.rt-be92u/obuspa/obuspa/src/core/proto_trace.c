@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,6 +41,7 @@
 
 #include <string.h>
 #include <protobuf-c/protobuf-c.h>
+#include <inttypes.h>  // For PRIu64
 
 #include "common_defs.h"
 #include "proto_trace.h"
@@ -191,38 +192,39 @@ void PrintProtobufFieldRecursive(const ProtobufCFieldDescriptor *fields, void *p
 
     switch(fields->type)
     {
+        #define INDENT_CHAR ""
         case PROTOBUF_C_TYPE_INT32:      /**< int32 */
         case PROTOBUF_C_TYPE_SINT32:     /**< signed int32 */
         case PROTOBUF_C_TYPE_SFIXED32:   /**< signed int32 (4 bytes) */
-            USP_PROTOCOL("%*s%s: %d", indent, "", fields->name, *((int32_t *)p_value));
+            USP_PROTOCOL("%*s%s: %d", indent, INDENT_CHAR, fields->name, *((int32_t *)p_value));
             break;
 
         case PROTOBUF_C_TYPE_INT64:      /**< int64 */
         case PROTOBUF_C_TYPE_SINT64:     /**< signed int64 */
         case PROTOBUF_C_TYPE_SFIXED64:   /**< signed int64 (8 bytes) */
-            USP_PROTOCOL("%*s%s: %ld", indent, "", fields->name, *((long int *)p_value));
+            USP_PROTOCOL("%*s%s: %"PRId64, indent, INDENT_CHAR, fields->name, *((int64_t *)p_value));
             break;
 
         case PROTOBUF_C_TYPE_UINT32:     /**< unsigned int32 */
         case PROTOBUF_C_TYPE_FIXED32:    /**< unsigned int32 (4 bytes) */
-            USP_PROTOCOL("%*s%s: %u", indent, "", fields->name, *((uint32_t *)p_value));
+            USP_PROTOCOL("%*s%s: %u", indent, INDENT_CHAR, fields->name, *((uint32_t *)p_value));
             break;
 
         case PROTOBUF_C_TYPE_UINT64:     /**< unsigned int64 */
         case PROTOBUF_C_TYPE_FIXED64:    /**< unsigned int64 (8 bytes) */
-            USP_PROTOCOL("%*s%s: %lu", indent, "", fields->name, *((long unsigned *)p_value));
+            USP_PROTOCOL("%*s%s: %"PRIu64, indent, INDENT_CHAR, fields->name, *((uint64_t *)p_value));
             break;
 
         case PROTOBUF_C_TYPE_FLOAT:      /**< float */
-            USP_PROTOCOL("%*s%s: %f", indent, "", fields->name, *((float *)p_value));
+            USP_PROTOCOL("%*s%s: %f", indent, INDENT_CHAR, fields->name, *((float *)p_value));
             break;
 
         case PROTOBUF_C_TYPE_DOUBLE:     /**< double */
-            USP_PROTOCOL("%*s%s: %lf", indent, "", fields->name, *((double *)p_value));
+            USP_PROTOCOL("%*s%s: %lf", indent, INDENT_CHAR, fields->name, *((double *)p_value));
             break;
 
         case PROTOBUF_C_TYPE_BOOL:       /**< boolean */
-            USP_PROTOCOL("%*s%s: %s", indent, "", fields->name, (*((protobuf_c_boolean *)p_value)) ? "true" : "false");
+            USP_PROTOCOL("%*s%s: %s", indent, INDENT_CHAR, fields->name, (*((protobuf_c_boolean *)p_value)) ? "true" : "false");
             break;
 
         case PROTOBUF_C_TYPE_ENUM:       /**< enumerated type */
@@ -233,7 +235,7 @@ void PrintProtobufFieldRecursive(const ProtobufCFieldDescriptor *fields, void *p
                 ev = (ProtobufCEnumValue *) &enum_desc->values[i];
                 if (ev->value == index)
                 {
-                    USP_PROTOCOL("%*s%s: %s", indent, "", fields->name, ev->name);
+                    USP_PROTOCOL("%*s%s: %s", indent, INDENT_CHAR, fields->name, ev->name);
                     break;
                 }
             }
@@ -243,19 +245,19 @@ void PrintProtobufFieldRecursive(const ProtobufCFieldDescriptor *fields, void *p
             str = *((char **)p_value);
             if (str != NULL)
             {
-                USP_PROTOCOL("%*s%s: \"%s\"", indent, "", fields->name, str);
+                USP_PROTOCOL("%*s%s: \"%s\"", indent, INDENT_CHAR, fields->name, str);
             }
             break;
 
         case PROTOBUF_C_TYPE_BYTES:      /**< arbitrary byte sequence */
-            USP_PROTOCOL("%*s%s[%zu]", indent, "", fields->name, ((ProtobufCBinaryData *) p_value)->len);
+            USP_PROTOCOL("%*s%s[%zu]", indent, INDENT_CHAR, fields->name, ((ProtobufCBinaryData *) p_value)->len);
             // We do not print the content out here, only its length. This will get triggered by USP Agent when printing out a USP Record, for the encapsulated USP Message.
             break;
 
         case PROTOBUF_C_TYPE_MESSAGE:    /**< nested message */
-            USP_PROTOCOL("%*s%s {", indent, "", fields->name);
+            USP_PROTOCOL("%*s%s {", indent, INDENT_CHAR, fields->name);
             PrintProtobufCMessageRecursive( *((ProtobufCMessage **)p_value), indent+INDENTATION );
-            USP_PROTOCOL("%*s}", indent, "");
+            USP_PROTOCOL("%*s}", indent, INDENT_CHAR);
             break;
 
         default:

@@ -85,7 +85,7 @@ mk_vfbio_vol() {
 	local default_vol_size=$2
 	local vol_desired_num=$3
 	local vol_current_size=0
-	if vfbio_lvm get_id -n $vol_name 2> /var/tmp/id-$vol_name; then
+	if vfbio_lvm get_id -n $vol_name > /var/tmp/id-$vol_name; then
 		vol_desired_num=`cat /var/tmp/id-$vol_name | grep $vol_name | awk '{print $6}'`
 		vol_current_size=`blockdev --getsize64 /dev/flash-$vol_name`
 		vol_current_size=$(($vol_current_size/1024/1024))
@@ -124,6 +124,7 @@ mk_vfbio_vol() {
 					echo "create VOL:$vol_name failure!!!!"
 					return 1; # -false
 				fi
+				mke2fs __MKE2FSOPTIONS__ -I 256 -b 4096 -t ext4 -F /dev/flash-$vol_name;	
 			fi
 		fi
 	else
@@ -237,28 +238,31 @@ mount_data() {
 	elif TEMP=`grep "\bloader" /proc/mtd` && MTD=`grep image /proc/mtd`; then
 		# /data volume is the most important volume, create and mount first
 		if mk_ubi_vol data __BRCM_DATA_VOLUME_SIZE__ 10; then
-			mount -t ubifs ubi:data /data
+			mount -t ubifs -o compr="lzo" ubi:data /data
 		fi
 		if mk_ubi_vol defaults __BRCM_DEFAULTS_VOLUME_SIZE__  11; then
 			mkdir -p /mnt/defaults
-			mount -t ubifs ubi:defaults /mnt/defaults
+			mount -t ubifs ubi:defaults -o compr="lzo" /mnt/defaults
 			if [ ! -r /proc/environment/write_defaults ] && [ ! -r /proc/environment/mfg_nvram_mode ]; then
-						mount -t ubifs -oremount,ro ubi:defaults /mnt/defaults
+						mount -t ubifs -oremount,ro,compr="lzo" ubi:defaults /mnt/defaults
 			fi
 		fi
 		if mk_ubi_vol misc 0 12; then
 			mkdir -p /mnt/misc
-			mount -t ubifs ubi:misc /mnt/misc
+			mount -t ubifs  -o compr="lzo" ubi:misc /mnt/misc
 			mkdir -p /mnt/misc/crash_logs
 			ln -s /mnt/misc/crash_logs /mnt/crash_logs
 		fi
 		echo ">>>>> add jffs2 UBI Volume for /jffs partition <<<<<"
 		if mk_ubi_vol jffs2 __ASUS_JFFS2_VOLUME_SIZE__ 13; then
-			mount -t ubifs ubi:jffs2 /jffs
+			# Force lzo so a freshly created volume is never formatted with
+			# zstd by the kernel default; keeps /jffs mountable on older
+			# kernels (< 5.3) that do not support UBIFS_COMPR_ZSTD.
+			mount -t ubifs -o compr="lzo" ubi:jffs2 /jffs
 		fi
 	elif TEMP=`grep METADATA /proc/mtd` && MTD=`grep data /proc/mtd`; then # if pure UBI image grab line with "data"
 		# if mounting data partition as UBIFS fails then mount as JFFS2
-		# if this is a pureUBI image attempt to create/mount data partition as UBI if none exists or already UBI
+		# if this is a attempt to create/mount data partition as UBI if none exists or already UBI
 		MTD=${MTD/mtd/}; # replace "mtd" with nothing
 		MTD=${MTD/:*/}; # replace ":*" (trailing) with nothing
 		if UBI=`ubiattach -m "$MTD"`; 	# try to attach data partition mtd to ubi, will format automatically if empty,
@@ -274,7 +278,7 @@ mount_data() {
 				echo ">>>>> Creating ubi volume ubi$UBI:data <<<<<"
 				ubimkvol /dev/ubi"$UBI" -m -N data;
 			fi
-            mount -t ubifs ubi"$UBI":data /data;
+            mount -t ubifs -o compr="lzo" ubi"$UBI":data /data;
 		else # otherwise mount as JFFS2
 		    echo ">>>>> Mounting data partition as JFFS2 <<<<<"
 			mount -t jffs2 -rw mtd:data /data;
@@ -283,16 +287,16 @@ mount_data() {
 		# VFBIO rootfs
         echo "VFBIO Root Filesystem"
         mkdir -p /var/tmp
-		# /data volume is the most important volume, create and mount first
-		if mk_vfbio_vol data __BRCM_DATA_VOLUME_SIZE__ 10; then
+	# /data volume is the most important volume, create and mount first
+	if mk_vfbio_vol data __BRCM_DATA_VOLUME_SIZE__ 10; then
 			mount -t ext4 -rw /dev/flash-data /data
 			if [ ! $? -eq 0 ]; then
 				echo ">>>>> Formatting vfbio Data Partition <<<<<"
 				mke2fs __MKE2FSOPTIONS__ -I 256 -b 4096 -t ext4 -F /dev/flash-data;
 				mount -t ext4 -rw /dev/flash-data /data;
 			fi
-		fi
-		if mk_vfbio_vol defaults __BRCM_DEFAULTS_VOLUME_SIZE__  11; then
+	fi
+	if mk_vfbio_vol defaults __BRCM_DEFAULTS_VOLUME_SIZE__  11; then
 			mkdir -p /mnt/defaults
 			if [ ! -r /proc/environment/write_defaults ] && [ ! -r /proc/environment/mfg_nvram_mode ]
 			then
@@ -304,7 +308,7 @@ mount_data() {
                 mke2fs __MKE2FSOPTIONS__ -I 256 -b 4096 -t ext4 -F /dev/flash-defaults;
                 mount -t ext4 $dfltopt /dev/flash-defaults /mnt/defaults;
             fi
-		fi
+	fi
 		if mk_vfbio_vol misc 0 12; then
 			mkdir -p /mnt/misc
 			mount -t ext4 -rw /dev/flash-misc /mnt/misc
@@ -316,7 +320,22 @@ mount_data() {
 			mkdir -p /mnt/misc/crash_logs
 			ln -s /mnt/misc/crash_logs /mnt/crash_logs
 		fi
-	else # otherwise if this is not a pureUBI image mount data partition as JFFS2 to allow for backwards compatibility
+		if [ -d  "/opt/bcm686xx" ]; then
+			if mk_vfbio_vol cpc __CPC_DEFAULT_SIZE__ 13; then
+				mount -t ext4 -rw /dev/flash-cpc /opt/bcm686xx
+				if [ ! $? -eq 0 ]; then
+					echo ">>>>> Formatting vfbio CPC Partition <<<<<"
+					mke2fs __MKE2FSOPTIONS__ -I 256 -b 4096 -t ext4 -F /dev/flash-cpc;
+					mount -t ext4 -rw /dev/flash-cpc /opt/bcm686xx;
+				fi
+			fi
+		fi
+
+	elif TEMP=`ls /etc | grep QEMUSIM`; then
+		echo ">>>>> Mounting data partition as virtfs <<<<<"
+                mount -t 9p -o rw,trans=virtio,version=9p2000.L host0 /data
+                chmod 777 /data
+	else # otherwise if this is not a UBI image mount data partition as JFFS2 to allow for backwards compatibility
 		echo ">>>>> Mounting data partition as JFFS2 <<<<<"
 		mount -t jffs2 -rw mtd:data /data;
 	fi

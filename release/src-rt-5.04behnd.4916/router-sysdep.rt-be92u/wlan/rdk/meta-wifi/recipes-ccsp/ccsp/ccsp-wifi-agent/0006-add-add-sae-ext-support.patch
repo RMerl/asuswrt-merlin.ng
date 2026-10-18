@@ -1,0 +1,30 @@
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.c b/source/TR-181/sbapi/cosa_wifi_apis.c
+index 148437e..d2f3b97 100644
+--- a/source/TR-181/sbapi/cosa_wifi_apis.c
++++ b/source/TR-181/sbapi/cosa_wifi_apis.c
+@@ -2258,6 +2258,9 @@ struct wifiSecCosaHalMap wifiSecMap[] =
+       {wifi_security_mode_wpa3_personal,       COSA_DML_WIFI_SECURITY_WPA3_Personal,            "WPA3-Personal"},
+       {wifi_security_mode_wpa_wpa2_personal,   COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal,        "WPA-WPA2-Personal"},
+       {wifi_security_mode_wpa3_transition,     COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition, "WPA3-Personal-Transition"},
++#if defined(WPA3_PERSONAL_TRANSITION_AKM24_SUPPORTED)
++      {wifi_security_mode_wpa3_transition_akm24,     COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition_AKM24, "WPA3-Personal-Transition_AKM24"},
++#endif
+       {wifi_security_mode_wpa_enterprise,      COSA_DML_WIFI_SECURITY_WPA_Enterprise,           "WPA-Enterprise"},
+       {wifi_security_mode_wpa2_enterprise,     COSA_DML_WIFI_SECURITY_WPA2_Enterprise,          "WPA2-Enterprise"},
+       {wifi_security_mode_wpa3_enterprise,     COSA_DML_WIFI_SECURITY_WPA3_Enterprise,          "WPA3-Enterprise"},
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.h b/source/TR-181/sbapi/cosa_wifi_apis.h
+index 9467190..a4f438f 100755
+--- a/source/TR-181/sbapi/cosa_wifi_apis.h
++++ b/source/TR-181/sbapi/cosa_wifi_apis.h
+@@ -293,7 +293,10 @@ _COSA_DML_WIFI_SECURITY
+     COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise             = 0x00000100,
+     COSA_DML_WIFI_SECURITY_WPA3_Personal                   = 0x00000200,
+     COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition        = 0x00000400,
+-    COSA_DML_WIFI_SECURITY_WPA3_Enterprise                 = 0x00000800
++    COSA_DML_WIFI_SECURITY_WPA3_Enterprise                 = 0x00000800,
++#if defined(WPA3_PERSONAL_TRANSITION_AKM24_SUPPORTED)
++    COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition_AKM24  = 0x00001000,
++#endif
+ }
+ COSA_DML_WIFI_SECURITY, *PCOSA_DML_WIFI_SECURITY;
+ 

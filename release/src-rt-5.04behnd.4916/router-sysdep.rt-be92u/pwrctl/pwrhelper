@@ -1,0 +1,23 @@
+if [ -f /tmp/pwr_reset ]; then
+    echo "Already in low power mode!"
+    exit 0
+fi
+
+touch /tmp/pwr_reset
+chmod a+x /tmp/pwr_reset
+
+DDR_THRE=$(cat /sys/memc/ddr/en_set_thresh_ddr_autosr 2>/dev/null)
+[ -z "$DDR_THRE" ] && DDR_THRE=-1
+echo "echo $DDR_THRE > /sys/memc/ddr/en_set_thresh_ddr_autosr" >> /tmp/pwr_reset
+echo 20 > /sys/memc/ddr/en_set_thresh_ddr_autosr
+
+IDLEPWCTRL_PID=$(ps | grep idlepwrd | grep -v grep | cut -f 2 -d " ")
+if [ -z "$IDLEPWCTRL_PID" ]; then
+    idlepwrd &> /tmp/idlepwrd.log &
+    IDLEPWCTRL_PID=$!
+    echo "kill $IDLEPWCTRL_PID" >> /tmp/pwr_reset
+fi
+
+echo "echo `cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor` > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor" >> /tmp/pwr_reset
+echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+

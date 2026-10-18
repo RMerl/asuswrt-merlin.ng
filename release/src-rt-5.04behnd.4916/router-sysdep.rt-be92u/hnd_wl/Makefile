@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom wl driver
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,8 @@
 # OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
-# <<Broadcom-WL-IPTag/Open:>>
+#
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 # $Id: Makefile 693762 2017-04-05 02:06:54Z $
 #
@@ -47,14 +48,23 @@ SYSROOT_CC :=$(CC) --sysroot=$(KTOOLCHAIN_SYSROOT)
 CC := $(SYSROOT_CC)
 endif
 
+# pwd = kernel/linux-4.19
+$(shell rm ../../router-sysdep/hnd_wl/main_src; ln -s ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src ../../router-sysdep/hnd_wl/main_src)
+# $(shell rm ../../router-sysdep/hnd_wl/main_src; ln -s $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src ../../router-sysdep/hnd_wl/main_src)
+$(shell rm ../../router-sysdep/hnd_wl/main_components; ln -s ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components ../../router-sysdep/hnd_wl/main_components)
+# $(shell rm ../../router-sysdep/hnd_wl/main_components; ln -s $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components ../../router-sysdep/hnd_wl/main_components)
+
 ifneq ($(strip $(BUILD_HND_NIC)),)
 $(warning hnd_wl/Makefile BUILD_HND_NIC IS set)
-SRCBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
+# SRCBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
+SRCBASE_OFFSET := main_src
 else
-SRCBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
+# SRCBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
+SRCBASE_OFFSET := main_src
 endif
 
-ROUTERBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/router-sysdep
+# ROUTERBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/router-sysdep
+ROUTERBASE_OFFSET := $(abspath ./main_components/router-sysdep)
 
 TARGET := wl
 WLCONF_H := wlconf.h
@@ -125,9 +135,22 @@ $(info "wlsubdirs: $(wlsubdirs)")
 .NOTPARALLEL:
 include $(src)/wl_generic.mk
 
-#ifneq ($(CMWIFI)$(CONFIG_BCM_WLAN_RDKB),)
-$(info ### Writing $(TARGET)-objs to $(src)/wlobjs.tmp ###)
-$(shell echo "$(addprefix $(src)/,$($(TARGET)-objs))" > $(src)/wlobjs.tmp)
+ifneq ($(CMWIFI)$(CONFIG_BCM_WLAN_RDKB),)
+ifneq ($(filter-out 3.%,$(MAKE_VERSION)),)
+  $(info ### Writing $(TARGET)-objs to $(src)/wlobjs.tmp ###)
+  $(file >$(src)/wlobjs.tmp, $(addprefix $(src)/,$($(TARGET)-objs)))
+else
+  # Define variables
+  TMP_WLOBJS  := $(src)/wlobjs.tmp
+  PREFIX := $(src)
+
+  $(info ### Writing $(TARGET)-objs to $(TMP_WLOBJS) ###)
+  $(shell echo "$($(TARGET)-objs)" > $(TMP_WLOBJS))
+  # Adding prefix '/' to each string in $(TMP_WLOBJS)
+  $(shell sed -E -i 's/([^ ]+)/\/\1/g' $(TMP_WLOBJS))
+  # Adding prefix '$(PREFIX)' to each string in $(TMP_WLOBJS)
+  $(shell sed -E -i 's/([^ ]+)/$(shell echo $(PREFIX) | sed 's/[&/]/\\&/g')\1/g' $(TMP_WLOBJS))
+endif
 
 # Copied from cmd_link_multi-y in linux/scripts/Makefile.build, replace $(link_multi_deps) by @$(src)/wlobjs.tmp
 override cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(cmd_secanalysis) @$(src)/wlobjs.tmp
@@ -136,4 +159,14 @@ override cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(cmd_secanalysis) @$(src
 # Replace it by wlobjs.tmp.
 override cmd_mod = cat $(src)/wlobjs.tmp > $@; $(cmd_undef_syms) > $@
 
-#endif # CMWIFI
+endif # CMWIFI
+
+# This comment block must stay at the bottom of the file.
+# No reason for tabs in this file since no recipes.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# indent-tabs-mode: nil
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 et

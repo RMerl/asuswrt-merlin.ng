@@ -10,6 +10,7 @@ LIBS = -l$(LIBNAME)
 
 all dynamic install: $(EXE)
 	install -m 755 $(EXE) $(INSTALL_DIR)/bin
+	install -m 755 pwrhelper $(INSTALL_DIR)/bin
 	ln -sf $(EXE) $(INSTALL_DIR)/bin/$(LN)
 
 clean: generic_clean

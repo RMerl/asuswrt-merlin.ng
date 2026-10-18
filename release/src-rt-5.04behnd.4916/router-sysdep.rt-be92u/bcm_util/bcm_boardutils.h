@@ -56,6 +56,7 @@ typedef enum
     REBOOT_REASON_MANAGEMENT_REBOOT             = 2, /**< tr69/web/omci/oam asked for reboot */    
     REBOOT_REASON_RESTORE_DEFAULT               = 3, /**< configuration restore default */
     REBOOT_REASON_HARDWARE_ABNORMALITY          = 4, /**< hardware abnormalilty detected, app decided to reboot  */
+    REBOOT_REASON_ANTIROLLBACK_LVL_UPDATE       = 5, /**< pending antirollback lvl update, reboot needed */
 } RebootReasonType;
 
 
@@ -145,7 +146,7 @@ BcmRet bcmUtl_getBootloaderVersion(char* versionBuf, UINT32 bufLen);
  *  See userspace/public/apps/wdtctl/README.txt for details on how this
  *  function is used to implement the Firmware Upgrade Watchdog Timer feature.
  */
-void bcmUtl_startRebootWatchdog();
+void bcmUtl_startRebootWatchdog(void);
 
 /** This is just a plain busybox reboot,
  *  but all CMS and BDK apps should use bcmUtl_loggedBusybox_reboot().

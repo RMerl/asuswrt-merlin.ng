@@ -9,11 +9,19 @@ default: all
 LIB := libnvram.so
 CMD := nvram
 
+ifeq ($(BCM_MODULAR_BUILD),)
+# Old way: infer location of make.common based on pwd.
 CURR_DIR := $(shell pwd)
 BUILD_DIR:=$(subst /userspace, /userspace,$(CURR_DIR))
 BUILD_DIR:=$(word 1, $(BUILD_DIR))
-
 include $(BUILD_DIR)/make.common
+else
+# New Modular Build way: EXT_BUILD_DIR must be set.
+# Also point BUILD_DIR to EXT_BUILD_DIR
+BUILD_DIR := $(EXT_BUILD_DIR)
+include $(EXT_BUILD_DIR)/make.common
+endif
+
 include $(BUILD_DIR)/make.wlan
 
 
@@ -23,6 +31,21 @@ endif
 
 LIBS = -ldl -lstaged
 
+ifneq ($(strip $(BUILD_PRPL_FEEDS)),)
+ifeq ($(strip $(BUILD_SMARTMESH_FOR_PRPL)),)
+BUILD_NON_CMS_API := y
+else
+BUILD_NON_CMS_API :=
+endif
+else
+ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+BUILD_NON_CMS_API :=
+else
+BUILD_NON_CMS_API := y
+endif
+endif
+
+ifeq ($(strip $(BUILD_NON_CMS_API)),)
 ifneq ($(strip $(BUILD_BRCM_BDK)),)
 # Remove all mdm_cbk_* and bcm_*_hal libs from CMS_CORE_LIBS.  The local
 # Makefile will specify which mdm_cbk and hal libs it needs.
@@ -32,8 +55,10 @@ MDM_CORE_LIBS += -lmdm_cbk_wifi
 else
 MDM_CORE_LIBS := $(CMS_CORE_LIBS)
 endif
+endif
 
 ifeq ($(strip $(BUILD_RDKWIFI)),)
+ifeq ($(strip $(BUILD_NON_CMS_API)),)
 ifneq ($(strip $(BUILD_BRCM_BDK)),)
 LIBS += -lbcm_zbus_intf
 ifneq ($(strip $(BUILD_DBUS)),)
@@ -44,11 +69,12 @@ LIBS += -lubox -lubus -lblobmsg_json
 endif
 endif
 endif
+endif
 ifneq ($(strip $(BUILD_CUSTOMER)),)
 CFLAGS+=-DCUSTOMER_BUILD
 endif
 
-ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+ifeq ($(strip $(BUILD_NON_CMS_API)),) # it implies ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 LIBS += -lcms_msg $(CMS_COMMON_LIBS) $(MDM_CORE_LIBS)
  ifneq ($(strip $(BUILD_CUSTOMER)),)
   LIBS += -lwlmdm_customer
@@ -109,14 +135,14 @@ ALLOWED_INCLUDE_PATHS := -I.\
                          -I$(BCM_FSBUILD_DIR)/public/include \
                          -I$(BCM_FSBUILD_DIR)/public/include/json-c
 
-ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+ifeq ($(strip $(BUILD_NON_CMS_API)),) # it implies ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 ALLOWED_INCLUDE_PATHS += -I$(BCM_FSBUILD_DIR)/private/include
 endif
 
 KERNEL_NVRAM_FILE_NAME := kernel_nvram.setting
 CFLAGS += -DKERNEL_NVRAM_FILE_NAME='"/data/.$(KERNEL_NVRAM_FILE_NAME)"'
 
-ifeq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+ifneq ($(strip $(BUILD_NON_CMS_API)),) # it implies #ifeq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 USER_NVRAM_FILE_NAME := user_nvram.setting
 CFLAGS += -DUSER_NVRAM_FILE_NAME='"/data/.$(USER_NVRAM_FILE_NAME)"'
 endif
@@ -129,14 +155,13 @@ ALLOWED_INCLUDE_PATHS += -I$(BUILD_DIR)/userspace/private/libs/wlcsm/include
 # WARNING: Do not modify this section unless you understand the
 # license implications of what you are doing.
 #
-ALLOWED_LIB_DIRS := /lib:/lib/public:/lib/private
-LIB_RPATH = $(INSTALL_DIR)$(subst :,:$(INSTALL_DIR),$(ALLOWED_LIB_DIRS))
+ALLOWED_LIB_DIRS := /lib:/public/lib:/private/lib
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $(BCM_BLT32_FLAGS) -o $@ $<
 
 OBJS = nvram_common.o nvram_netlink.o nvram_file.o nvram_utils.o nvram_hash.o
-ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+ifeq ($(strip $(BUILD_NON_CMS_API)),) # it implies ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 OBJS += nvram_api.o
 else
 OBJS += nvram_api_nonCms.o
@@ -151,6 +176,7 @@ endif
 ifneq ($(strip $(BUILD_RDKWIFI)),)
 OBJS += nvram_api_rdkb.o
 else
+ifeq ($(strip $(BUILD_NON_CMS_API)),)
 ifneq ($(strip $(BUILD_BRCM_BDK)),)
 OBJS += nvram_zbus_out.o nvram_zbus_in.o
 ifneq ($(strip $(BUILD_DBUS)),)
@@ -162,6 +188,7 @@ else
 ifneq ($(strip $(BUILD_UBUS)),)
 OBJS += nvram_ubus_out.o nvram_ubus_in.o
 CFLAGS += -DBUILD_UBUS
+endif
 endif
 endif
 endif
@@ -179,7 +206,7 @@ all: $(LIB) $(CMD)
 
 dynamic: all
 
-ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+ifeq ($(strip $(BUILD_NON_CMS_API)),) # it implies ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
  ifneq ($(strip $(BUILD_CUSTOMER)),)
   $(LIB): $(OBJS) $(BUILD_DIR)/userspace/private/libs/wlmdm_customer/libwlmdm_customer.so
  else
@@ -188,7 +215,7 @@ ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 else
 $(LIB): $(OBJS)
 endif
-	$(CC) $(CFLAGS) $(BCM_BLT32_FLAGS) -shared -Wl,-soname,$(LIB) -o $(LIB) $(OBJS) -L$(LIBDIR) $(CMS_LIB_PATH) -lc $(LIBS)
+	$(CC) $(CFLAGS) $(BCM_BLT32_FLAGS) -shared -Wl,-soname,$(LIB) -o $(LIB) $(OBJS) -L$(LIBDIR) $(CMS_LIB_PATH) $(BCM_LIB_PATH) -lc $(LIBS)
 	mkdir -p $(BCM_FSBUILD_DIR)/private/include
 	install -m 644 nvram_api.h $(BCM_FSBUILD_DIR)/private/include
 ifneq ($(strip $(WLAN_CM_NVRAM_EXT)),)
@@ -199,7 +226,7 @@ endif
 
 
 $(CMD): nvram_cmd.o $(LIB)
-	$(CC) $(CFLAGS) $(BCM_BLT32_FLAGS) -Wl,-rpath-link=$(LIB_RPATH) $(CMS_LIB_PATH) -o $@ nvram_cmd.o $(NVRAM_LIBS)
+	$(CC) $(CFLAGS) $(BCM_BLT32_FLAGS) $(BCM_RPATH_LINK_OPTION) $(CMS_LIB_PATH) $(BCM_LIB_PATH) -o $@ nvram_cmd.o $(NVRAM_LIBS)
 
 clean:
 	-rm -f *.o

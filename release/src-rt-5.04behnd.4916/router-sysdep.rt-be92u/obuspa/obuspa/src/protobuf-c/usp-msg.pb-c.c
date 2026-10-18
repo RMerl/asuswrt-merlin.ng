@@ -1393,6 +1393,240 @@ void   usp__notify_resp__free_unpacked
   assert(message->base.descriptor == &usp__notify_resp__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   usp__register__registration_path__init
+                     (Usp__Register__RegistrationPath         *message)
+{
+  static const Usp__Register__RegistrationPath init_value = USP__REGISTER__REGISTRATION_PATH__INIT;
+  *message = init_value;
+}
+void   usp__register__init
+                     (Usp__Register         *message)
+{
+  static const Usp__Register init_value = USP__REGISTER__INIT;
+  *message = init_value;
+}
+size_t usp__register__get_packed_size
+                     (const Usp__Register *message)
+{
+  assert(message->base.descriptor == &usp__register__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t usp__register__pack
+                     (const Usp__Register *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &usp__register__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t usp__register__pack_to_buffer
+                     (const Usp__Register *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &usp__register__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Usp__Register *
+       usp__register__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Usp__Register *)
+     protobuf_c_message_unpack (&usp__register__descriptor,
+                                allocator, len, data);
+}
+void   usp__register__free_unpacked
+                     (Usp__Register *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &usp__register__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   usp__register_resp__registered_path_result__operation_status__operation_failure__init
+                     (Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure         *message)
+{
+  static const Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure init_value = USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_FAILURE__INIT;
+  *message = init_value;
+}
+void   usp__register_resp__registered_path_result__operation_status__operation_success__init
+                     (Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess         *message)
+{
+  static const Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess init_value = USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_SUCCESS__INIT;
+  *message = init_value;
+}
+void   usp__register_resp__registered_path_result__operation_status__init
+                     (Usp__RegisterResp__RegisteredPathResult__OperationStatus         *message)
+{
+  static const Usp__RegisterResp__RegisteredPathResult__OperationStatus init_value = USP__REGISTER_RESP__REGISTERED_PATH_RESULT__OPERATION_STATUS__INIT;
+  *message = init_value;
+}
+void   usp__register_resp__registered_path_result__init
+                     (Usp__RegisterResp__RegisteredPathResult         *message)
+{
+  static const Usp__RegisterResp__RegisteredPathResult init_value = USP__REGISTER_RESP__REGISTERED_PATH_RESULT__INIT;
+  *message = init_value;
+}
+void   usp__register_resp__init
+                     (Usp__RegisterResp         *message)
+{
+  static const Usp__RegisterResp init_value = USP__REGISTER_RESP__INIT;
+  *message = init_value;
+}
+size_t usp__register_resp__get_packed_size
+                     (const Usp__RegisterResp *message)
+{
+  assert(message->base.descriptor == &usp__register_resp__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t usp__register_resp__pack
+                     (const Usp__RegisterResp *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &usp__register_resp__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t usp__register_resp__pack_to_buffer
+                     (const Usp__RegisterResp *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &usp__register_resp__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Usp__RegisterResp *
+       usp__register_resp__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Usp__RegisterResp *)
+     protobuf_c_message_unpack (&usp__register_resp__descriptor,
+                                allocator, len, data);
+}
+void   usp__register_resp__free_unpacked
+                     (Usp__RegisterResp *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &usp__register_resp__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   usp__deregister__init
+                     (Usp__Deregister         *message)
+{
+  static const Usp__Deregister init_value = USP__DEREGISTER__INIT;
+  *message = init_value;
+}
+size_t usp__deregister__get_packed_size
+                     (const Usp__Deregister *message)
+{
+  assert(message->base.descriptor == &usp__deregister__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t usp__deregister__pack
+                     (const Usp__Deregister *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &usp__deregister__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t usp__deregister__pack_to_buffer
+                     (const Usp__Deregister *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &usp__deregister__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Usp__Deregister *
+       usp__deregister__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Usp__Deregister *)
+     protobuf_c_message_unpack (&usp__deregister__descriptor,
+                                allocator, len, data);
+}
+void   usp__deregister__free_unpacked
+                     (Usp__Deregister *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &usp__deregister__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__init
+                     (Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure         *message)
+{
+  static const Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure init_value = USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_FAILURE__INIT;
+  *message = init_value;
+}
+void   usp__deregister_resp__deregistered_path_result__operation_status__operation_success__init
+                     (Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess         *message)
+{
+  static const Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess init_value = USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__OPERATION_SUCCESS__INIT;
+  *message = init_value;
+}
+void   usp__deregister_resp__deregistered_path_result__operation_status__init
+                     (Usp__DeregisterResp__DeregisteredPathResult__OperationStatus         *message)
+{
+  static const Usp__DeregisterResp__DeregisteredPathResult__OperationStatus init_value = USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__OPERATION_STATUS__INIT;
+  *message = init_value;
+}
+void   usp__deregister_resp__deregistered_path_result__init
+                     (Usp__DeregisterResp__DeregisteredPathResult         *message)
+{
+  static const Usp__DeregisterResp__DeregisteredPathResult init_value = USP__DEREGISTER_RESP__DEREGISTERED_PATH_RESULT__INIT;
+  *message = init_value;
+}
+void   usp__deregister_resp__init
+                     (Usp__DeregisterResp         *message)
+{
+  static const Usp__DeregisterResp init_value = USP__DEREGISTER_RESP__INIT;
+  *message = init_value;
+}
+size_t usp__deregister_resp__get_packed_size
+                     (const Usp__DeregisterResp *message)
+{
+  assert(message->base.descriptor == &usp__deregister_resp__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t usp__deregister_resp__pack
+                     (const Usp__DeregisterResp *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &usp__deregister_resp__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t usp__deregister_resp__pack_to_buffer
+                     (const Usp__DeregisterResp *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &usp__deregister_resp__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Usp__DeregisterResp *
+       usp__deregister_resp__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Usp__DeregisterResp *)
+     protobuf_c_message_unpack (&usp__deregister_resp__descriptor,
+                                allocator, len, data);
+}
+void   usp__deregister_resp__free_unpacked
+                     (Usp__DeregisterResp *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &usp__deregister_resp__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 static const ProtobufCFieldDescriptor usp__msg__field_descriptors[2] =
 {
   {
@@ -1444,7 +1678,7 @@ const ProtobufCMessageDescriptor usp__msg__descriptor =
   (ProtobufCMessageInit) usp__msg__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCEnumValue usp__header__msg_type__enum_values_by_number[19] =
+static const ProtobufCEnumValue usp__header__msg_type__enum_values_by_number[23] =
 {
   { "ERROR", "USP__HEADER__MSG_TYPE__ERROR", 0 },
   { "GET", "USP__HEADER__MSG_TYPE__GET", 1 },
@@ -1465,16 +1699,22 @@ static const ProtobufCEnumValue usp__header__msg_type__enum_values_by_number[19]
   { "NOTIFY_RESP", "USP__HEADER__MSG_TYPE__NOTIFY_RESP", 16 },
   { "GET_SUPPORTED_PROTO", "USP__HEADER__MSG_TYPE__GET_SUPPORTED_PROTO", 17 },
   { "GET_SUPPORTED_PROTO_RESP", "USP__HEADER__MSG_TYPE__GET_SUPPORTED_PROTO_RESP", 18 },
+  { "REGISTER", "USP__HEADER__MSG_TYPE__REGISTER", 19 },
+  { "REGISTER_RESP", "USP__HEADER__MSG_TYPE__REGISTER_RESP", 20 },
+  { "DEREGISTER", "USP__HEADER__MSG_TYPE__DEREGISTER", 21 },
+  { "DEREGISTER_RESP", "USP__HEADER__MSG_TYPE__DEREGISTER_RESP", 22 },
 };
 static const ProtobufCIntRange usp__header__msg_type__value_ranges[] = {
-{0, 0},{0, 19}
+{0, 0},{0, 23}
 };
-static const ProtobufCEnumValueIndex usp__header__msg_type__enum_values_by_name[19] =
+static const ProtobufCEnumValueIndex usp__header__msg_type__enum_values_by_name[23] =
 {
   { "ADD", 8 },
   { "ADD_RESP", 9 },
   { "DELETE", 10 },
   { "DELETE_RESP", 11 },
+  { "DEREGISTER", 21 },
+  { "DEREGISTER_RESP", 22 },
   { "ERROR", 0 },
   { "GET", 1 },
   { "GET_INSTANCES", 14 },
@@ -1488,6 +1728,8 @@ static const ProtobufCEnumValueIndex usp__header__msg_type__enum_values_by_name[
   { "NOTIFY_RESP", 16 },
   { "OPERATE", 6 },
   { "OPERATE_RESP", 7 },
+  { "REGISTER", 19 },
+  { "REGISTER_RESP", 20 },
   { "SET", 4 },
   { "SET_RESP", 5 },
 };
@@ -1498,9 +1740,9 @@ const ProtobufCEnumDescriptor usp__header__msg_type__descriptor =
   "MsgType",
   "Usp__Header__MsgType",
   "usp",
-  19,
+  23,
   usp__header__msg_type__enum_values_by_number,
-  19,
+  23,
   usp__header__msg_type__enum_values_by_name,
   1,
   usp__header__msg_type__value_ranges,
@@ -1621,7 +1863,7 @@ const ProtobufCMessageDescriptor usp__body__descriptor =
   (ProtobufCMessageInit) usp__body__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor usp__request__field_descriptors[9] =
+static const ProtobufCFieldDescriptor usp__request__field_descriptors[11] =
 {
   {
     "get",
@@ -1731,22 +1973,48 @@ static const ProtobufCFieldDescriptor usp__request__field_descriptors[9] =
     0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "register",
+    10,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__Request, req_type_case),
+    offsetof(Usp__Request, register_),
+    &usp__register__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "deregister",
+    11,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__Request, req_type_case),
+    offsetof(Usp__Request, deregister),
+    &usp__deregister__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned usp__request__field_indices_by_name[] = {
   4,   /* field[4] = add */
   5,   /* field[5] = delete */
+  10,   /* field[10] = deregister */
   0,   /* field[0] = get */
   2,   /* field[2] = get_instances */
   1,   /* field[1] = get_supported_dm */
   8,   /* field[8] = get_supported_protocol */
   7,   /* field[7] = notify */
   6,   /* field[6] = operate */
+  9,   /* field[9] = register */
   3,   /* field[3] = set */
 };
 static const ProtobufCIntRange usp__request__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 9 }
+  { 0, 11 }
 };
 const ProtobufCMessageDescriptor usp__request__descriptor =
 {
@@ -1756,14 +2024,14 @@ const ProtobufCMessageDescriptor usp__request__descriptor =
   "Usp__Request",
   "usp",
   sizeof(Usp__Request),
-  9,
+  11,
   usp__request__field_descriptors,
   usp__request__field_indices_by_name,
   1,  usp__request__number_ranges,
   (ProtobufCMessageInit) usp__request__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor usp__response__field_descriptors[9] =
+static const ProtobufCFieldDescriptor usp__response__field_descriptors[11] =
 {
   {
     "get_resp",
@@ -1873,22 +2141,48 @@ static const ProtobufCFieldDescriptor usp__response__field_descriptors[9] =
     0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "register_resp",
+    10,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__Response, resp_type_case),
+    offsetof(Usp__Response, register_resp),
+    &usp__register_resp__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "deregister_resp",
+    11,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__Response, resp_type_case),
+    offsetof(Usp__Response, deregister_resp),
+    &usp__deregister_resp__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned usp__response__field_indices_by_name[] = {
   4,   /* field[4] = add_resp */
   5,   /* field[5] = delete_resp */
+  10,   /* field[10] = deregister_resp */
   2,   /* field[2] = get_instances_resp */
   0,   /* field[0] = get_resp */
   1,   /* field[1] = get_supported_dm_resp */
   8,   /* field[8] = get_supported_protocol_resp */
   7,   /* field[7] = notify_resp */
   6,   /* field[6] = operate_resp */
+  9,   /* field[9] = register_resp */
   3,   /* field[3] = set_resp */
 };
 static const ProtobufCIntRange usp__response__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 9 }
+  { 0, 11 }
 };
 const ProtobufCMessageDescriptor usp__response__descriptor =
 {
@@ -1898,7 +2192,7 @@ const ProtobufCMessageDescriptor usp__response__descriptor =
   "Usp__Response",
   "usp",
   sizeof(Usp__Response),
-  9,
+  11,
   usp__response__field_descriptors,
   usp__response__field_indices_by_name,
   1,  usp__response__number_ranges,
@@ -6044,5 +6338,590 @@ const ProtobufCMessageDescriptor usp__notify_resp__descriptor =
   usp__notify_resp__field_indices_by_name,
   1,  usp__notify_resp__number_ranges,
   (ProtobufCMessageInit) usp__notify_resp__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__register__registration_path__field_descriptors[1] =
+{
+  {
+    "path",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Usp__Register__RegistrationPath, path),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__register__registration_path__field_indices_by_name[] = {
+  0,   /* field[0] = path */
+};
+static const ProtobufCIntRange usp__register__registration_path__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor usp__register__registration_path__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.Register.RegistrationPath",
+  "RegistrationPath",
+  "Usp__Register__RegistrationPath",
+  "usp",
+  sizeof(Usp__Register__RegistrationPath),
+  1,
+  usp__register__registration_path__field_descriptors,
+  usp__register__registration_path__field_indices_by_name,
+  1,  usp__register__registration_path__number_ranges,
+  (ProtobufCMessageInit) usp__register__registration_path__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__register__field_descriptors[2] =
+{
+  {
+    "allow_partial",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BOOL,
+    0,   /* quantifier_offset */
+    offsetof(Usp__Register, allow_partial),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reg_paths",
+    2,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__Register, n_reg_paths),
+    offsetof(Usp__Register, reg_paths),
+    &usp__register__registration_path__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__register__field_indices_by_name[] = {
+  0,   /* field[0] = allow_partial */
+  1,   /* field[1] = reg_paths */
+};
+static const ProtobufCIntRange usp__register__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor usp__register__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.Register",
+  "Register",
+  "Usp__Register",
+  "usp",
+  sizeof(Usp__Register),
+  2,
+  usp__register__field_descriptors,
+  usp__register__field_indices_by_name,
+  1,  usp__register__number_ranges,
+  (ProtobufCMessageInit) usp__register__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__register_resp__registered_path_result__operation_status__operation_failure__field_descriptors[2] =
+{
+  {
+    "err_code",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FIXED32,
+    0,   /* quantifier_offset */
+    offsetof(Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure, err_code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "err_msg",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure, err_msg),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__register_resp__registered_path_result__operation_status__operation_failure__field_indices_by_name[] = {
+  0,   /* field[0] = err_code */
+  1,   /* field[1] = err_msg */
+};
+static const ProtobufCIntRange usp__register_resp__registered_path_result__operation_status__operation_failure__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__operation_status__operation_failure__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.RegisterResp.RegisteredPathResult.OperationStatus.OperationFailure",
+  "OperationFailure",
+  "Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure",
+  "usp",
+  sizeof(Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationFailure),
+  2,
+  usp__register_resp__registered_path_result__operation_status__operation_failure__field_descriptors,
+  usp__register_resp__registered_path_result__operation_status__operation_failure__field_indices_by_name,
+  1,  usp__register_resp__registered_path_result__operation_status__operation_failure__number_ranges,
+  (ProtobufCMessageInit) usp__register_resp__registered_path_result__operation_status__operation_failure__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__register_resp__registered_path_result__operation_status__operation_success__field_descriptors[1] =
+{
+  {
+    "registered_path",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess, registered_path),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__register_resp__registered_path_result__operation_status__operation_success__field_indices_by_name[] = {
+  0,   /* field[0] = registered_path */
+};
+static const ProtobufCIntRange usp__register_resp__registered_path_result__operation_status__operation_success__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__operation_status__operation_success__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.RegisterResp.RegisteredPathResult.OperationStatus.OperationSuccess",
+  "OperationSuccess",
+  "Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess",
+  "usp",
+  sizeof(Usp__RegisterResp__RegisteredPathResult__OperationStatus__OperationSuccess),
+  1,
+  usp__register_resp__registered_path_result__operation_status__operation_success__field_descriptors,
+  usp__register_resp__registered_path_result__operation_status__operation_success__field_indices_by_name,
+  1,  usp__register_resp__registered_path_result__operation_status__operation_success__number_ranges,
+  (ProtobufCMessageInit) usp__register_resp__registered_path_result__operation_status__operation_success__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__register_resp__registered_path_result__operation_status__field_descriptors[2] =
+{
+  {
+    "oper_failure",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__RegisterResp__RegisteredPathResult__OperationStatus, oper_status_case),
+    offsetof(Usp__RegisterResp__RegisteredPathResult__OperationStatus, oper_failure),
+    &usp__register_resp__registered_path_result__operation_status__operation_failure__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "oper_success",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__RegisterResp__RegisteredPathResult__OperationStatus, oper_status_case),
+    offsetof(Usp__RegisterResp__RegisteredPathResult__OperationStatus, oper_success),
+    &usp__register_resp__registered_path_result__operation_status__operation_success__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__register_resp__registered_path_result__operation_status__field_indices_by_name[] = {
+  0,   /* field[0] = oper_failure */
+  1,   /* field[1] = oper_success */
+};
+static const ProtobufCIntRange usp__register_resp__registered_path_result__operation_status__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__operation_status__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.RegisterResp.RegisteredPathResult.OperationStatus",
+  "OperationStatus",
+  "Usp__RegisterResp__RegisteredPathResult__OperationStatus",
+  "usp",
+  sizeof(Usp__RegisterResp__RegisteredPathResult__OperationStatus),
+  2,
+  usp__register_resp__registered_path_result__operation_status__field_descriptors,
+  usp__register_resp__registered_path_result__operation_status__field_indices_by_name,
+  1,  usp__register_resp__registered_path_result__operation_status__number_ranges,
+  (ProtobufCMessageInit) usp__register_resp__registered_path_result__operation_status__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__register_resp__registered_path_result__field_descriptors[2] =
+{
+  {
+    "requested_path",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Usp__RegisterResp__RegisteredPathResult, requested_path),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "oper_status",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(Usp__RegisterResp__RegisteredPathResult, oper_status),
+    &usp__register_resp__registered_path_result__operation_status__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__register_resp__registered_path_result__field_indices_by_name[] = {
+  1,   /* field[1] = oper_status */
+  0,   /* field[0] = requested_path */
+};
+static const ProtobufCIntRange usp__register_resp__registered_path_result__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor usp__register_resp__registered_path_result__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.RegisterResp.RegisteredPathResult",
+  "RegisteredPathResult",
+  "Usp__RegisterResp__RegisteredPathResult",
+  "usp",
+  sizeof(Usp__RegisterResp__RegisteredPathResult),
+  2,
+  usp__register_resp__registered_path_result__field_descriptors,
+  usp__register_resp__registered_path_result__field_indices_by_name,
+  1,  usp__register_resp__registered_path_result__number_ranges,
+  (ProtobufCMessageInit) usp__register_resp__registered_path_result__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__register_resp__field_descriptors[1] =
+{
+  {
+    "registered_path_results",
+    1,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__RegisterResp, n_registered_path_results),
+    offsetof(Usp__RegisterResp, registered_path_results),
+    &usp__register_resp__registered_path_result__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__register_resp__field_indices_by_name[] = {
+  0,   /* field[0] = registered_path_results */
+};
+static const ProtobufCIntRange usp__register_resp__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor usp__register_resp__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.RegisterResp",
+  "RegisterResp",
+  "Usp__RegisterResp",
+  "usp",
+  sizeof(Usp__RegisterResp),
+  1,
+  usp__register_resp__field_descriptors,
+  usp__register_resp__field_indices_by_name,
+  1,  usp__register_resp__number_ranges,
+  (ProtobufCMessageInit) usp__register_resp__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__deregister__field_descriptors[1] =
+{
+  {
+    "paths",
+    1,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_STRING,
+    offsetof(Usp__Deregister, n_paths),
+    offsetof(Usp__Deregister, paths),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__deregister__field_indices_by_name[] = {
+  0,   /* field[0] = paths */
+};
+static const ProtobufCIntRange usp__deregister__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor usp__deregister__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.Deregister",
+  "Deregister",
+  "Usp__Deregister",
+  "usp",
+  sizeof(Usp__Deregister),
+  1,
+  usp__deregister__field_descriptors,
+  usp__deregister__field_indices_by_name,
+  1,  usp__deregister__number_ranges,
+  (ProtobufCMessageInit) usp__deregister__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__field_descriptors[2] =
+{
+  {
+    "err_code",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FIXED32,
+    0,   /* quantifier_offset */
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure, err_code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "err_msg",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure, err_msg),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__field_indices_by_name[] = {
+  0,   /* field[0] = err_code */
+  1,   /* field[1] = err_msg */
+};
+static const ProtobufCIntRange usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.DeregisterResp.DeregisteredPathResult.OperationStatus.OperationFailure",
+  "OperationFailure",
+  "Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure",
+  "usp",
+  sizeof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationFailure),
+  2,
+  usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__field_descriptors,
+  usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__field_indices_by_name,
+  1,  usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__number_ranges,
+  (ProtobufCMessageInit) usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__deregister_resp__deregistered_path_result__operation_status__operation_success__field_descriptors[1] =
+{
+  {
+    "deregistered_path",
+    1,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_STRING,
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess, n_deregistered_path),
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess, deregistered_path),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__deregister_resp__deregistered_path_result__operation_status__operation_success__field_indices_by_name[] = {
+  0,   /* field[0] = deregistered_path */
+};
+static const ProtobufCIntRange usp__deregister_resp__deregistered_path_result__operation_status__operation_success__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__operation_status__operation_success__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.DeregisterResp.DeregisteredPathResult.OperationStatus.OperationSuccess",
+  "OperationSuccess",
+  "Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess",
+  "usp",
+  sizeof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus__OperationSuccess),
+  1,
+  usp__deregister_resp__deregistered_path_result__operation_status__operation_success__field_descriptors,
+  usp__deregister_resp__deregistered_path_result__operation_status__operation_success__field_indices_by_name,
+  1,  usp__deregister_resp__deregistered_path_result__operation_status__operation_success__number_ranges,
+  (ProtobufCMessageInit) usp__deregister_resp__deregistered_path_result__operation_status__operation_success__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__deregister_resp__deregistered_path_result__operation_status__field_descriptors[2] =
+{
+  {
+    "oper_failure",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus, oper_status_case),
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus, oper_failure),
+    &usp__deregister_resp__deregistered_path_result__operation_status__operation_failure__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "oper_success",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus, oper_status_case),
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus, oper_success),
+    &usp__deregister_resp__deregistered_path_result__operation_status__operation_success__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__deregister_resp__deregistered_path_result__operation_status__field_indices_by_name[] = {
+  0,   /* field[0] = oper_failure */
+  1,   /* field[1] = oper_success */
+};
+static const ProtobufCIntRange usp__deregister_resp__deregistered_path_result__operation_status__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__operation_status__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.DeregisterResp.DeregisteredPathResult.OperationStatus",
+  "OperationStatus",
+  "Usp__DeregisterResp__DeregisteredPathResult__OperationStatus",
+  "usp",
+  sizeof(Usp__DeregisterResp__DeregisteredPathResult__OperationStatus),
+  2,
+  usp__deregister_resp__deregistered_path_result__operation_status__field_descriptors,
+  usp__deregister_resp__deregistered_path_result__operation_status__field_indices_by_name,
+  1,  usp__deregister_resp__deregistered_path_result__operation_status__number_ranges,
+  (ProtobufCMessageInit) usp__deregister_resp__deregistered_path_result__operation_status__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__deregister_resp__deregistered_path_result__field_descriptors[2] =
+{
+  {
+    "requested_path",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult, requested_path),
+    NULL,
+    &protobuf_c_empty_string,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "oper_status",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(Usp__DeregisterResp__DeregisteredPathResult, oper_status),
+    &usp__deregister_resp__deregistered_path_result__operation_status__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__deregister_resp__deregistered_path_result__field_indices_by_name[] = {
+  1,   /* field[1] = oper_status */
+  0,   /* field[0] = requested_path */
+};
+static const ProtobufCIntRange usp__deregister_resp__deregistered_path_result__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor usp__deregister_resp__deregistered_path_result__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.DeregisterResp.DeregisteredPathResult",
+  "DeregisteredPathResult",
+  "Usp__DeregisterResp__DeregisteredPathResult",
+  "usp",
+  sizeof(Usp__DeregisterResp__DeregisteredPathResult),
+  2,
+  usp__deregister_resp__deregistered_path_result__field_descriptors,
+  usp__deregister_resp__deregistered_path_result__field_indices_by_name,
+  1,  usp__deregister_resp__deregistered_path_result__number_ranges,
+  (ProtobufCMessageInit) usp__deregister_resp__deregistered_path_result__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor usp__deregister_resp__field_descriptors[1] =
+{
+  {
+    "deregistered_path_results",
+    1,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Usp__DeregisterResp, n_deregistered_path_results),
+    offsetof(Usp__DeregisterResp, deregistered_path_results),
+    &usp__deregister_resp__deregistered_path_result__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned usp__deregister_resp__field_indices_by_name[] = {
+  0,   /* field[0] = deregistered_path_results */
+};
+static const ProtobufCIntRange usp__deregister_resp__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor usp__deregister_resp__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "usp.DeregisterResp",
+  "DeregisterResp",
+  "Usp__DeregisterResp",
+  "usp",
+  sizeof(Usp__DeregisterResp),
+  1,
+  usp__deregister_resp__field_descriptors,
+  usp__deregister_resp__field_indices_by_name,
+  1,  usp__deregister_resp__number_ranges,
+  (ProtobufCMessageInit) usp__deregister_resp__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

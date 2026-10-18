@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -124,6 +124,8 @@ int DM_TRANS_Start(dm_trans_vector_t *trans)
 ** DM_TRANS_Add
 **
 ** Adds an operation to the current transaction
+** NOTE: This function only needs to be called if you need the commit to call the notify vendor hook for this operation
+** NOTE: In DM_TRANS_Commit(), after calling the notify vendor hook, object lifecyle events are queued, which ultimately lead to USP notifications being generated if a subscription matches
 **
 ** \param   op - operation (e.g. add, delete, set)
 ** \param   path - pointer to full data model path to parameter or object
@@ -164,13 +166,6 @@ void DM_TRANS_Add(dm_op_t op, char *path, char *value, dm_val_union_t *val_union
                 }
             }
         }
-    }
-
-    // For us to detect that a delete operation matches a resolved path, we need to resolve the list of
-    // ObjectDeletion notify objects, whilst the objects are still in the data model
-    if (op == kDMOp_Del)
-    {
-        DEVICE_SUBSCRIPTION_ResolveObjectDeletionPaths();
     }
 
     // Increase the size of the current transaction vector
@@ -375,8 +370,9 @@ int DM_TRANS_Abort(void)
 
     // Remove all instance add operations which have been aborted from the data model
 
-    // Iterate over all transactions which have been aborted
-    for (i=0; i < cur_transaction->num_entries; i++)
+    // Iterate over all transactions which have been aborted, unwinding them in reverse time order
+    // (This is necessary because an AddRequest can contain parent then child, and you need to unwind the child before the parent)
+    for (i=cur_transaction->num_entries-1; i >= 0 ; i--)
     {
         dt = &cur_transaction->vector[i];
 

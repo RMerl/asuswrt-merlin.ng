@@ -31,25 +31,11 @@ OBJS += collection.o i5_dm_access.o wbd_access.o
 
 
 OBJS += database.o notify_queue.o
-OBJS += encapsulation.o cms_dm_access.o scache.o
-
+OBJS += encapsulation.o cms_helper.o cms_history.o
 
 OBJS += history.o
 OBJS += appevent_access.o
 OBJS += local_wl_access.o local_wl_util.o
-OBJS += nfm_access.o
-
-ifeq ($(strip $(DE_VER)),2_13)
-OBJS += cms_dm_tables_2_13.o
-OBJS += i5_dm_tables_2_13.o
-OBJS += nfm_tables_2_13.o
-endif
-
-ifeq ($(strip $(DE_VER)),2_15)
-OBJS += cms_dm_tables_2_15.o
-OBJS += i5_dm_tables_2_15.o
-OBJS += nfm_tables_2_15.o
-endif
 
 OBJS += ctl_main.o
 # OBJS += ieee1905_cmsmdm.o
@@ -62,6 +48,7 @@ OBJS += $(BCMWIFI_OBJS)
 
 
 LIBS = -L$(INSTALL_DIR)/lib -L$(INSTALL_DIR)/usr/lib -ldl -lpthread -lgen_util
+LIBS += -ldemap
 
 #/userspace/private/apps/wlan/components/apps/ieee1905
 LIBS += -li5api
@@ -72,7 +59,11 @@ LIBS += -ljson-c
 LIBS += -lwldataelm_util
 
 CFLAGS += -DMULTIAP -DMULTIAPR2 $(USR_CFLAGS)
-# CFLAGS += -DBRCM_CMS_BUILD
+
+ifneq ($(strip $(BUILD_BCM_WLMLO)),)
+OBJS += apmld.o
+CFLAGS += -DBUILD_BCM_WLMLO
+endif
 
 ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
 LIBS += -lcms_msg $(CMS_COMMON_LIBS) -lcms_dal -lcms_msg $(CMS_COMMON_LIBS) $(MDM_CORE_LIBS)
@@ -122,16 +113,11 @@ CFLAGS += -I$(HND_SRC)/userspace/private/libs/wlsysutil/
 CFLAGS += -I$(HND_SRC)/userspace/public/libs/cms_msg/
 
 ALLOWED_INCLUDE_PATHS += -I. \
-                         -I$(BUILD_DIR)/userspace/public/include  \
-                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
-                         -I$(BUILD_DIR)/userspace/private/include  \
-                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR) \
                          -I$(BCM_FSBUILD_DIR)/private/include \
+                         -I$(BCM_FSBUILD_DIR)/private/include/cms_core \
                          -I$(BCM_FSBUILD_DIR)/public/include \
                          -I$(INC_BCMDRIVER_PATH)/include \
                          -I$(BCM_FSBUILD_DIR)/public/include/json-c
-
-ALLOWED_INCLUDE_PATHS += -I $(BUILD_DIR)/userspace/private/libs/cms_core
 
 # obviously, this app needs to access wireless driver headers
 ALLOWED_INCLUDE_PATHS += -I$(WIRELESS_DRIVER_PATH)/include \
@@ -157,9 +143,6 @@ ALLOWED_INCLUDE_PATHS += -I$(COMPON_WIRELESS_DRIVER_PATH)/router/bshared/include
 ALLOWED_INCLUDE_PATHS += -I$(COMPON_WIRELESS_DRIVER_PATH)/apps/appeventd
 
 
-LIB_RPATH = $(INSTALL_DIR)$(subst :,:$(INSTALL_DIR),$(ALLOWED_LIB_DIRS))
-LDFLAGS += $(BCM_RPATH_LINK_OPTION) -Wl,-rpath-link=$(LIB_RPATH)
-
 vpath %.c $(WIRELESS_DRIVER_PATH)/../components/bcmwifi/src
 vpath %.c $(WIRELESS_DRIVER_PATH)/shared/bcmwifi/src
 vpath %.c $(WIRELESS_DRIVER_PATH)/shared
@@ -169,8 +152,8 @@ vpath %.c $(WIRELESS_DRIVER_PATH)/shared
 
 
 
-$(EXE): $(OBJS) 
-	$(CC) $(BCM_LD_FLAGS) -s -Os -fomit-frame-pointer $(CMS_LIB_PATH) $(LDFLAGS) -o $@ $(OBJS) $(LIBS) -lc $(LIBS_CC_RT)
+$(EXE): $(OBJS)
+	$(CC) -o $@ $(OBJS) $(BCM_LD_FLAGS) $(CMS_RPATH_OPTION) $(BCM_RPATH_LINK_OPTION) $(BCM_LIB_PATH) $(LIBS) -lc $(LIBS_CC_RT)
 
 #
 # Include the rule for making dependency files.

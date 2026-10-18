@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -50,30 +50,24 @@
 #include "path_resolver.h"
 #include "device.h"
 #include "text_utils.h"
-#include "group_set_vector.h"
+#include "group_add_vector.h"
+#include "dm_inst_vector.h"
 
-//------------------------------------------------------------------------------
-// String vector storing the param_name associated with each OperFailure object in the response message
-// This may be used if the OperFailure objects are converted to param_err objects in an ERROR response, if the Add subsequently fails
-// NOTE: In the case when this is read from to convert from an OperFailure to a param_err object, it will contain only one entry
-//       because we do this when allow_partial=false and the first object fails to create
-//       It may contain multiple entries in the case of allow_partial=true, but that case never leads to an ERROR response
-//       containing param_err objects
-str_vector_t add_oper_failure_param_names;
 
 //------------------------------------------------------------------------------
 // Forward declarations. Note these are not static, because we need them in the symbol table for USP_LOG_Callstack() to show them
-int CreateExpressionObjects(Usp__AddResp *add_resp, Usp__Add__CreateObject *cr, bool allow_partial);
-int CreateObject_Trans(char *obj_path, Usp__AddResp *add_resp, Usp__Add__CreateObject *cr, bool allow_partial);
-int CreateObject(char *obj_path, Usp__AddResp *add_resp, Usp__Add__CreateObject *cr, bool allow_partial);
-Usp__Msg *CreateAddResp(char *msg_id);
-Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure *AddResp_OperFailure(Usp__AddResp *add_resp, char *path, char *param_name, int err_code, char *err_msg);
+int ResolveObjectsToAdd(Usp__Add__CreateObject *cr, group_add_vector_t *gav, combined_role_t *combined_role);
+Usp__Msg *CreateFullAddResp(char *msg_id, group_add_vector_t *gav);
+Usp__Msg *CreateBasicAddResp(char *msg_id);
 Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess *AddResp_OperSuccess(Usp__AddResp *add_resp, char *req_path, char *path);
-void RemoveAddResp_LastCreatedObjResult(Usp__AddResp *add_resp);
 Usp__AddResp__ParameterError *AddResp_OperSuccess_ParamErr(Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess *oper_success, char *path, int err_code, char *err_msg);
 void AddOperSuccess_UniqueKeys(Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess *oper_success, kv_vector_t *kvv);
-int ParamError_FromAddRespToErrResp(Usp__Msg *add_msg, Usp__Msg *err_msg);
-
+Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure *AddResp_OperFailure(Usp__AddResp *add_resp, char *path, int err_code, char *err_msg);
+Usp__Msg *CreateAddResponseError(char *msg_id, group_add_entry_t *gae);
+Usp__Msg *ProcessAdd_AllowPartialTrue(char *msg_id, Usp__Msg *usp, combined_role_t *combined_role);
+Usp__Msg *ProcessAdd_AllowPartialFalse(char *msg_id, Usp__Msg *usp, combined_role_t *combined_role);
+bool AreAllPathsTheSameGroupId(Usp__Add *add);
+int CalcGroupIdForPath(char *path_expr);
 
 /*********************************************************************//**
 **
@@ -83,22 +77,16 @@ int ParamError_FromAddRespToErrResp(Usp__Msg *add_msg, Usp__Msg *err_msg);
 **
 ** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
 ** \param   controller_endpoint - endpoint which sent this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  None - This code must handle any errors by sending back error messages
 **
 **************************************************************************/
-void MSG_HANDLER_HandleAdd(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt)
+void MSG_HANDLER_HandleAdd(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc)
 {
-    int i;
-    int err;
     Usp__Add *add;
-    Usp__Add__CreateObject *cr;
     Usp__Msg *resp = NULL;
-    dm_trans_vector_t trans;
-    int count;
-
-    STR_VECTOR_Init(&add_oper_failure_param_names);
+    combined_role_t combined_role;
 
     // Exit if message is invalid or failed to parse
     // This code checks the parsed message enums and pointers for expectations and validity
@@ -108,340 +96,359 @@ void MSG_HANDLER_HandleAdd(Usp__Msg *usp, char *controller_endpoint, mtp_reply_t
         (usp->body->request->add == NULL) )
     {
         USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
+        resp = ERROR_RESP_Create(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, USP_ERR_GetMessage());
         goto exit;
     }
-
-    // Create an Add Response
-    resp = CreateAddResp(usp->header->msg_id);
 
     // Exit if there are no objects to create
     add = usp->body->request->add;
     if ((add->create_objs == NULL) || (add->n_create_objs == 0))
     {
+        resp = CreateBasicAddResp(usp->header->msg_id);
         goto exit;
     }
 
-    // Start a transaction here, if allow_partial is at the global level
-    if (add->allow_partial == false)
+    // Process differently, depending on whether allow_partial is set or not
+    MSG_HANDLER_GetMsgRole(&combined_role);
+    if (add->allow_partial == true)
     {
-        err = DM_TRANS_Start(&trans);
-        if (err != USP_ERR_OK)
-        {
-            // If failed to start a transaction, send an error message
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, NULL);
-            goto exit;
-        }
+        resp = ProcessAdd_AllowPartialTrue(usp->header->msg_id, usp, &combined_role);
     }
-
-    // Iterate over all create objects in the message
-    for (i=0; i < add->n_create_objs; i++)
+    else
     {
-        // Create the specified object
-        cr = add->create_objs[i];
-        err = CreateExpressionObjects(resp->body->response->add_resp, cr, add->allow_partial);
-
-        // If allow_partial is at the global level, and an error occurred, then fail this
-        if ((add->allow_partial == false) && (err != USP_ERR_OK))
-        {
-            // A required object failed to create
-            // So delete the AddResponse message, and send an error message instead
-            count = ParamError_FromAddRespToErrResp(resp, NULL);
-            err = ERROR_RESP_CalcOuterErrCode(count, err);
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, ParamError_FromAddRespToErrResp);
-
-            // Abort the global transaction, only logging errors (the message we want to send back over USP is above)
-            DM_TRANS_Abort();
-            goto exit;
-        }
+        resp = ProcessAdd_AllowPartialFalse(usp->header->msg_id, usp, &combined_role);
     }
-
-    // Commit transaction here, if allow_partial is at the global level
-    if (add->allow_partial == false)
-    {
-        err = DM_TRANS_Commit();
-        if (err != USP_ERR_OK)
-        {
-            // If failed to commit, delete the AddResponse message, and send an error message instead
-            resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, NULL);
-            goto exit;
-        }
-    }
-
 
 exit:
-    STR_VECTOR_Destroy(&add_oper_failure_param_names);
-
-    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mrt);
+    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mtpc);
     usp__msg__free_unpacked(resp, pbuf_allocator);
 }
 
 /*********************************************************************//**
 **
-** CreateExpressionObjects
+** ProcessAdd_AllowPartialTrue
 **
-** Creates all the objects of the specified path expressions
-** Always fills in an OperFailure or OperSuccess for this data model object
+** Processes an Add request where AllowPartial is true. This means that a failure to create any object does not affect creation of any of the other objects
 **
-** \param   add_resp - pointer to USP add response object, which is updated with the results of this operation
-** \param   cr - pointer to parsed object to create
-** \param   allow_partial - set to true if failures in one object do not affect all others.
+** \param   msg_id - string containing the message id of the USP message, which initiated this request
+** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
+** \param   combined_role - roles to use when performing the add
 **
-** \return  USP_ERR_OK if successful
+** \return  Pointer to an AddResponse message
 **
 **************************************************************************/
-int CreateExpressionObjects(Usp__AddResp *add_resp, Usp__Add__CreateObject *cr, bool allow_partial)
+Usp__Msg *ProcessAdd_AllowPartialTrue(char *msg_id, Usp__Msg *usp, combined_role_t *combined_role)
 {
-    int i;
+    int i, j;
     int err;
-    str_vector_t obj_paths;
-    combined_role_t combined_role;
-    char err_msg[128];
+    int start_index;
+    Usp__Add *add;
+    Usp__Msg *resp = NULL;
+    group_add_vector_t gav;
+    group_add_entry_t *gae;
+    dm_trans_vector_t trans;
 
-    // Return OperFailure if there is no expression
-    STR_VECTOR_Init(&obj_paths);
-    if ((cr->obj_path == NULL) || (cr->obj_path[0] == '\0'))
+    GROUP_ADD_VECTOR_Init(&gav);
+
+    // Iterate over all path expressions, resolving them into the objects to add
+    add = usp->body->request->add;
+    for (i=0; i < add->n_create_objs; i++)
     {
-        USP_SNPRINTF(err_msg, sizeof(err_msg), "%s: Expression missing in AddRequest", __FUNCTION__);
-        AddResp_OperFailure(add_resp, cr->obj_path, NULL, USP_ERR_INVALID_ARGUMENTS, err_msg);
-        err = USP_ERR_OK;
+        start_index = gav.num_entries;
+        ResolveObjectsToAdd(add->create_objs[i], &gav, combined_role);
+
+        // Add all objects that have been resolved for this path expression
+        for (j=start_index; j < gav.num_entries; j++)
+        {
+            gae = &gav.vector[j];
+            if (gae->err_code == USP_ERR_OK)        // Only attempt to add an object if the path resolution was successful
+            {
+                err = DM_TRANS_Start(&trans);
+                if (err == USP_ERR_OK)
+                {
+                    // Create the specified object
+                    err = GROUP_ADD_VECTOR_CreateObject(gae, combined_role);
+
+                    // Commit or abort the transaction based on whether the object created successfully
+                    if (err == USP_ERR_OK)
+                    {
+                        err = DM_TRANS_Commit();
+                    }
+                    else
+                    {
+                        DM_TRANS_Abort();
+                    }
+                }
+
+                // Update group add vector if an error occurred creating this object (and no error has been saved yet for this object)
+                if ((err != USP_ERR_OK) && (gae->err_msg == NULL))
+                {
+                    gae->err_code = err;
+                    gae->err_msg = USP_STRDUP(USP_ERR_GetMessage());
+                }
+            }
+        }
+
+        // NOTE: Intentionally ignoring any errors, as allow_partial=true
+    }
+
+    // Create the add response from the results stored in the group add vector
+    resp = CreateFullAddResp(usp->header->msg_id, &gav);
+
+    GROUP_ADD_VECTOR_Destroy(&gav);
+    return resp;
+}
+
+/*********************************************************************//**
+**
+** ProcessAdd_AllowPartialFalse
+**
+** Processes an Add request where AllowPartial is false. This means that failure to create any object results in USP error
+**
+** \param   msg_id - string containing the message id of the USP message, which initiated this request
+** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
+** \param   combined_role - roles to use when performing the add
+**
+** \return  Pointer to an AddResponse message
+**
+**************************************************************************/
+Usp__Msg *ProcessAdd_AllowPartialFalse(char *msg_id, Usp__Msg *usp, combined_role_t *combined_role)
+{
+    int i, j;
+    int err;
+    int start_index;
+    int rollback_span;      // One more than the instance number of the objects in group add vector that have been created successfully
+    Usp__Add *add;
+    Usp__Msg *resp = NULL;
+    group_add_vector_t gav;
+    group_add_entry_t *gae;
+    dm_trans_vector_t trans;
+
+    GROUP_ADD_VECTOR_Init(&gav);
+    add = usp->body->request->add;
+
+    // Ensure all resolved paths are provided by the same data model provider as all the others
+    // This is necessary because it is not possible to wind back the creation of objects across multiple providers
+    if (AreAllPathsTheSameGroupId(add) == false)
+    {
+        USP_ERR_SetMessage("%s: Cannot process an add with allow_partial=false across multiple USP Services", __FUNCTION__);
+        resp = ERROR_RESP_Create(usp->header->msg_id, USP_ERR_RESOURCES_EXCEEDED, USP_ERR_GetMessage());
         goto exit;
     }
 
-    // Return OperFailure if an internal error occurred
-    MSG_HANDLER_GetMsgRole(&combined_role);
-    err = PATH_RESOLVER_ResolveDevicePath(cr->obj_path, &obj_paths, NULL, kResolveOp_Add, FULL_DEPTH, &combined_role, 0);
+    // Start a transaction
+    err = DM_TRANS_Start(&trans);
     if (err != USP_ERR_OK)
     {
-        AddResp_OperFailure(add_resp, cr->obj_path, NULL, err, USP_ERR_GetMessage());
+        resp = ERROR_RESP_Create(usp->header->msg_id, err, USP_ERR_GetMessage());
         goto exit;
     }
 
-    // Return OperFailure if none of the specified objects exist in the schema
-    if (obj_paths.num_entries == 0)
+    // Iterate over all path expressions, resolving them into the objects to add
+    rollback_span = 0;
+    for (i=0; i < add->n_create_objs; i++)
     {
-        USP_SNPRINTF(err_msg, sizeof(err_msg), "%s: Expression does not reference any objects", __FUNCTION__);
-        AddResp_OperFailure(add_resp, cr->obj_path, NULL, USP_ERR_INVALID_ARGUMENTS, err_msg);
-        err = USP_ERR_OK;
-        goto exit;
-    }
-
-    // Iterate over all object paths resolved for this Object expression
-    for (i=0; i < obj_paths.num_entries; i++)
-    {
-        err = CreateObject_Trans(obj_paths.vector[i], add_resp, cr, allow_partial);
+        // Exit if unable to resolve this path expression
+        start_index = gav.num_entries;
+        err = ResolveObjectsToAdd(add->create_objs[i], &gav, combined_role);
         if (err != USP_ERR_OK)
         {
+            DM_TRANS_Abort();
+
+            DM_TRANS_Start(&trans);
+            GROUP_ADD_VECTOR_Rollback(&gav, rollback_span); // Must come after abort, as otherwise the changes it makes to instance cache would be rolled bacl
+            DM_TRANS_Commit();
+
+            resp = CreateAddResponseError(usp->header->msg_id, &gav.vector[gav.num_entries-1]);
             goto exit;
+        }
+
+        // Add all objects that have been resolved for this path expression
+        for (j=start_index; j < gav.num_entries; j++)
+        {
+            // Exit if unable to create the specified object (since allow_partial=false)
+            gae = &gav.vector[j];
+            err = GROUP_ADD_VECTOR_CreateObject(gae, combined_role);
+            if (err != USP_ERR_OK)
+            {
+                DM_TRANS_Abort();
+
+                DM_TRANS_Start(&trans);
+                GROUP_ADD_VECTOR_Rollback(&gav, rollback_span); // Must come after abort, as otherwise the changes it makes to instance cache would be rolled bacl
+                DM_TRANS_Commit();
+
+                resp = CreateAddResponseError(usp->header->msg_id, gae);
+                goto exit;
+            }
+            rollback_span = j+1;
         }
     }
 
-    // If the code gets here, then all parameters of all objects have been set successfully
+    // Commit transaction
+    err = DM_TRANS_Commit();
+    if (err != USP_ERR_OK)
+    {
+        resp = ERROR_RESP_Create(usp->header->msg_id, err, USP_ERR_GetMessage());
+        goto exit;
+    }
+
+    resp = CreateFullAddResp(usp->header->msg_id, &gav);
+
+exit:
+    GROUP_ADD_VECTOR_Destroy(&gav);
+    return resp;
+}
+
+/*********************************************************************//**
+**
+** ResolveObjectsToAdd
+**
+** Resolves a requested path into a set of object tables to add instances to
+** and adds this list of objects to the group add vector, for the objects to be added later
+**
+** \param   gae - pointer to object to add
+** \param   combined_role - roles to use when performing the add
+** \param   allow_partial - set to true if failures in this object do not affect all others.
+**                          If allow_partial is set then we perform a transaction at this level
+**
+** \return  USP_ERR_OK if successful (NOTE: This includes failing to create an object if allow_partial=true)
+**
+**************************************************************************/
+int ResolveObjectsToAdd(Usp__Add__CreateObject *cr, group_add_vector_t *gav, combined_role_t *combined_role)
+{
+    int i, j;
+    int err;
+    str_vector_t res_paths;
+    int_vector_t group_ids;
+    Usp__Add__CreateParamSetting *cps;
+
+    STR_VECTOR_Init(&res_paths);
+    INT_VECTOR_Init(&group_ids);
+
+    // Exit if no expression
+    if ((cr->obj_path == NULL) || (cr->obj_path[0] == '\0'))
+    {
+        USP_ERR_SetMessage("%s: Expression missing in AddRequest", __FUNCTION__);
+        err = USP_ERR_MESSAGE_NOT_UNDERSTOOD;
+        goto exit;
+    }
+
+    // Exit if unable to resolve the path expression into a list of objects to add instances to
+    err = PATH_RESOLVER_ResolveDevicePath(cr->obj_path, &res_paths, &group_ids, kResolveOp_Add, FULL_DEPTH, combined_role, 0);
+    if (err != USP_ERR_OK)
+    {
+        goto exit;
+    }
+
+    // Exit if no objects were resolved
+    if (res_paths.num_entries == 0)
+    {
+        USP_ERR_SetMessage("%s: Expression does not reference any objects", __FUNCTION__);
+        err = USP_ERR_INVALID_ARGUMENTS;
+        goto exit;
+    }
+
+    // Add all resolved objects to the group add vector
+    USP_ASSERT(res_paths.num_entries == group_ids.num_entries);
+    for (i=0; i<res_paths.num_entries; i++)
+    {
+        GROUP_ADD_VECTOR_AddObjectToCreate(gav, cr->obj_path, res_paths.vector[i], group_ids.vector[i]);
+        for (j=0; j < cr->n_param_settings; j++)
+        {
+            cps = cr->param_settings[j];
+            GROUP_ADD_VECTOR_AddParamSetting(gav, cps->param, cps->value, cps->required);
+        }
+    }
+
     err = USP_ERR_OK;
 
 exit:
-    STR_VECTOR_Destroy(&obj_paths);
+    // If an error occurred, add the requested path to the group add vector, but mark it as in error
+    if (err != USP_ERR_OK)
+    {
+        GROUP_ADD_VECTOR_AddObjectNotCreated(gav, cr->obj_path, err, USP_ERR_GetMessage());
+    }
+
+    STR_VECTOR_Destroy(&res_paths);
+    INT_VECTOR_Destroy(&group_ids);
     return err;
 }
 
 /*********************************************************************//**
 **
-** CreateObject_Trans
+** CreateFullAddResp
 **
-** Wrapper around CreateObject() which performs a transaction at this level, if allow_partial is true
+** Forms an AddResponse object using the results stored in the specified group add vector
 **
-** \param   obj_path - path to the object to create
-** \param   add_resp - pointer to USP add response object, which is updated with the results of this operation
-** \param   cr - pointer to parsed USP CreateObject message
-** \param   allow_partial - set to true if failures in this object do not affect all others.
-**                          If allow_partial is set then we perform a transaction at this level
+** \param   msg_id - string containing the message id of the add request, which initiated this response
+** \param   gav - pointer to group add vector containing the results of attempting to add the objects
 **
-** \return  USP_ERR_OK if successful
+** \return  Pointer to an AddResponse message
 **
 **************************************************************************/
-int CreateObject_Trans(char *obj_path, Usp__AddResp *add_resp, Usp__Add__CreateObject *cr, bool allow_partial)
+Usp__Msg *CreateFullAddResp(char *msg_id, group_add_vector_t *gav)
 {
-    int err;
-    dm_trans_vector_t trans;
+    int i, j;
+    Usp__Msg *resp;
+    Usp__AddResp *add_resp;
+    group_add_entry_t *gae;
+    group_add_param_t *ps;
+    char path[MAX_DM_PATH];
+    Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess *oper_success;
 
-    // Start a transaction here, if allow_partial is at the object level
-    if (allow_partial == true)
+    // Create an Add Response
+    // NOTE: All allow_partial=false error cases have already been dealt with
+    resp = CreateBasicAddResp(msg_id);
+    add_resp = resp->body->response->add_resp;
+
+    for (i=0; i < gav->num_entries; i++)
     {
-        // Return OperFailure, if failed to start a transaction
-        err = DM_TRANS_Start(&trans);
-        if (err != USP_ERR_OK)
+        gae = &gav->vector[i];
+        if (gae->err_code == USP_ERR_OK)
         {
-            AddResp_OperFailure(add_resp, cr->obj_path, NULL, err, USP_ERR_GetMessage());
-            return err;
-        }
-    }
+            // Add an oper_success for this entry
+            USP_ASSERT(gae->instance > 0);
+            USP_SNPRINTF(path, sizeof(path), "%s.%d", gae->res_path, gae->instance);
+            oper_success = AddResp_OperSuccess(add_resp, gae->req_path, path);
 
-    // Create the specified object
-    err = CreateObject(obj_path, add_resp, cr, allow_partial);
-
-    // Commit/Abort transaction here, if allow_partial is at the object level
-    if (allow_partial == true)
-    {
-        if (err == USP_ERR_OK)
-        {
-            err = DM_TRANS_Commit();
-            if (err != USP_ERR_OK)
+            // Add param_errs for all non-required parameters which failed to be set
+            for (j=0; j < gae->num_params; j++)
             {
-                // If transaction failed, then replace the OperSuccess with OperFailure
-                // To do this, we remove the last OperSuccessObject from the USP message
-                RemoveAddResp_LastCreatedObjResult(add_resp);
-                AddResp_OperFailure(add_resp, cr->obj_path, NULL, err, USP_ERR_GetMessage());
+                ps = &gae->params[j];
+                if (ps->err_code != USP_ERR_OK)
+                {
+                    USP_ASSERT(ps->is_required == false);
+                    AddResp_OperSuccess_ParamErr(oper_success, ps->param_name, ps->err_code, ps->err_msg);
+                }
+            }
+
+            // Add unique keys
+            if (gae->unique_keys.num_entries != 0)
+            {
+                AddOperSuccess_UniqueKeys(oper_success, &gae->unique_keys);
             }
         }
         else
         {
-            // Because allow_partial=true, we rollback the creation of this object, but do not fail the entire message
-            DM_TRANS_Abort();
-            err = USP_ERR_OK;
-        }
-    }
-
-    return err;
-}
-
-/*********************************************************************//**
-**
-** CreateObject
-**
-** Creates the specified object (if not already created), and overrides it's default parameters with those specified
-**
-** \param   obj_path - path to the object to create
-** \param   add_resp - pointer to USP add response object, which is updated with the results of this operation
-** \param   cr - pointer to parsed USP CreateObject message
-** \param   allow_partial - set to true if failures in this object do not affect all others.
-**
-** \return  USP_ERR_OK if successful
-**
-**************************************************************************/
-int CreateObject(char *obj_path, Usp__AddResp *add_resp, Usp__Add__CreateObject *cr, bool allow_partial)
-{
-    int err;
-    int instance;
-    Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess *oper_success;
-    Usp__Add__CreateParamSetting *ps;
-    char full_path[MAX_DM_PATH];
-    char *param_name;
-    int i;
-    int len;
-    kv_vector_t unique_key_params;
-    combined_role_t combined_role;
-    group_set_vector_t gsv;
-    group_set_entry_t *gse;
-
-    // Exit if unable to add the specified object (and set the default values of all its child parameters)
-    err = DATA_MODEL_AddInstance(obj_path, &instance, CHECK_CREATABLE);
-    if (err != USP_ERR_OK)
-    {
-        // Add an OperFailure object if this object failed to add, but we are continuing because allow_partial=true
-        // We don't add an OperFailure object in the case of allow_partial=false because then it would get
-        // converted into a param_errs object in the USP Error message
-        if (allow_partial==true)
-        {
-            AddResp_OperFailure(add_resp, cr->obj_path, NULL, err, USP_ERR_GetMessage());
-        }
-        return err;
-    }
-
-    // Create the path to the object
-    len = USP_SNPRINTF(full_path, sizeof(full_path), "%s.%d", obj_path, instance);
-    MSG_HANDLER_GetMsgRole(&combined_role);
-
-    // Assume OperSuccess
-    oper_success = AddResp_OperSuccess(add_resp, cr->obj_path, full_path);
-
-    // Add all parameters to be set to the group set vector
-    GROUP_SET_VECTOR_Init(&gsv);
-    for (i=0; i < cr->n_param_settings; i++)
-    {
-        ps = cr->param_settings[i];
-        USP_SNPRINTF(&full_path[len], sizeof(full_path)-len, ".%s", ps->param);
-        GROUP_SET_VECTOR_Add(&gsv, full_path, ps->value, ps->required, &combined_role);
-    }
-
-    // Perform the set of the parameters for this object
-    GROUP_SET_VECTOR_SetValues(&gsv, 0, gsv.num_entries);
-
-    // Iterate over all parameters
-    USP_ASSERT(gsv.num_entries == cr->n_param_settings);
-    for (i=0; i < cr->n_param_settings; i++)
-    {
-        ps = cr->param_settings[i];
-        gse = &gsv.vector[i];
-
-        if (gse->err_code != USP_ERR_OK)
-        {
-            // The parameter was not set successfully
-            if (ps->required)
+            // Add an oper_failure for this entry
+            ps = GROUP_ADD_VECTOR_FindFirstFailedParam(gae);
+            if (ps != NULL)
             {
-                // Exit if this parameter was required to be set, but failed
-                param_name = ps->param;
-                err = gse->err_code;
-                USP_ERR_SetMessage("%s", gse->err_msg);
-                goto exit;
+                AddResp_OperFailure(add_resp, gae->req_path, ps->err_code, ps->err_msg);
             }
             else
             {
-                // This parameter failed to be set, but was not required
-                // So add it to the ParamErr list
-                AddResp_OperSuccess_ParamErr(oper_success, ps->param, gse->err_code, gse->err_msg);
+                AddResp_OperFailure(add_resp, gae->req_path, gae->err_code, gae->err_msg);
             }
         }
     }
 
-    // If the code gets here, then all overriden parameters for this object have been successfully set
-    // So now we need to get the values of all parameters used as unique keys
-
-    // Exit if unable to retrieve the parameters used as unique keys for this object
-    full_path[len] = '\0';
-    param_name = NULL;
-    err = DATA_MODEL_GetUniqueKeyParams(full_path, &unique_key_params, &combined_role);
-    if (err != USP_ERR_OK)
-    {
-        goto exit;
-    }
-
-    // Exit if any unique keys have been left with a default value which is not unique
-    err = DATA_MODEL_ValidateDefaultedUniqueKeys(full_path, &unique_key_params, &gsv);
-    if (err != USP_ERR_OK)
-    {
-        KV_VECTOR_Destroy(&unique_key_params);
-        goto exit;
-    }
-
-    // Move the unique key parameters to the USP oper success message
-    // NOTE: The unique_key_params vector will be destroyed in the process, so we do not have to destroy it here
-    if (unique_key_params.num_entries > 0)
-    {
-        AddOperSuccess_UniqueKeys(oper_success, &unique_key_params);
-    }
-    err = USP_ERR_OK;
-
-exit:
-    if (err != USP_ERR_OK)
-    {
-        // If object failed to create, then replace the OperSuccess with OperFailure
-        // To do this, we remove the last OperSuccessObject from the USP message
-        RemoveAddResp_LastCreatedObjResult(add_resp);
-        AddResp_OperFailure(add_resp, cr->obj_path, param_name, err, USP_ERR_GetMessage());
-
-        // NOTE: We do not delete the object here. Deletion is handled by the transaction rolling back
-        // the data model instances vector and the database transaction (for child parameters)
-    }
-
-    // Clean up
-    GROUP_SET_VECTOR_Destroy(&gsv);
-
-    return err;
+    return resp;
 }
 
 /*********************************************************************//**
 **
-** CreateAddResp
+** CreateBasicAddResp
 **
 ** Dynamically creates an AddResponse object
 ** NOTE: The object is created without any created_obj_results
@@ -453,209 +460,22 @@ exit:
 **          NOTE: If out of memory, USP Agent is terminated
 **
 **************************************************************************/
-Usp__Msg *CreateAddResp(char *msg_id)
+Usp__Msg *CreateBasicAddResp(char *msg_id)
 {
-    Usp__Msg *resp;
-    Usp__Header *header;
-    Usp__Body *body;
-    Usp__Response *response;
+    Usp__Msg *msg;
     Usp__AddResp *add_resp;
 
-    // Allocate and initialise memory to store the parts of the USP message
-    resp = USP_MALLOC(sizeof(Usp__Msg));
-    usp__msg__init(resp);
-
-    header = USP_MALLOC(sizeof(Usp__Header));
-    usp__header__init(header);
-
-    body = USP_MALLOC(sizeof(Usp__Body));
-    usp__body__init(body);
-
-    response = USP_MALLOC(sizeof(Usp__Response));
-    usp__response__init(response);
-
+    // Create Add Response
+    msg = MSG_HANDLER_CreateResponseMsg(msg_id, USP__HEADER__MSG_TYPE__ADD_RESP, USP__RESPONSE__RESP_TYPE_ADD_RESP);
     add_resp = USP_MALLOC(sizeof(Usp__AddResp));
     usp__add_resp__init(add_resp);
+    msg->body->response->add_resp = add_resp;
 
-    // Connect the structures together
-    resp->header = header;
-    header->msg_id = USP_STRDUP(msg_id);
-    header->msg_type = USP__HEADER__MSG_TYPE__ADD_RESP;
-
-    resp->body = body;
-    body->msg_body_case = USP__BODY__MSG_BODY_RESPONSE;
-    body->response = response;
-    response->resp_type_case = USP__RESPONSE__RESP_TYPE_ADD_RESP;
-    response->add_resp = add_resp;
-
-    add_resp->n_created_obj_results = 0;    // Start from an empty list
+    // Start from an empty list
+    add_resp->n_created_obj_results = 0;
     add_resp->created_obj_results = NULL;
 
-    return resp;
-}
-
-/*********************************************************************//**
-**
-** AddResp_OperFailure
-**
-** Dynamically adds an operation failure object to the AddResponse object
-**
-** \param   resp - pointer to AddResponse object
-** \param   path - requested path of object which failed to create
-** \param   param_name - name of first parameter which caused the create to fail, or NULL if cause of failure was not a parameter
-** \param   err_code - numeric code indicating reason object failed to be created
-** \param   err_msg - error message indicating reason object failed to be created
-**
-** \return  Pointer to dynamically allocated operation failure object
-**          NOTE: If out of memory, USP Agent is terminated
-**
-**************************************************************************/
-Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure *
-AddResp_OperFailure(Usp__AddResp *add_resp, char *path, char *param_name, int err_code, char *err_msg)
-{
-    Usp__AddResp__CreatedObjectResult *created_obj_res;
-    Usp__AddResp__CreatedObjectResult__OperationStatus *oper_status;
-    Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure *oper_failure;
-    int new_num;    // new number of entries in the created object result array
-
-    // Allocate memory to store the created object result
-    created_obj_res = USP_MALLOC(sizeof(Usp__AddResp__CreatedObjectResult));
-    usp__add_resp__created_object_result__init(created_obj_res);
-
-    oper_status = USP_MALLOC(sizeof(Usp__AddResp__CreatedObjectResult__OperationStatus));
-    usp__add_resp__created_object_result__operation_status__init(oper_status);
-
-    oper_failure = USP_MALLOC(sizeof(Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure));
-    usp__add_resp__created_object_result__operation_status__operation_failure__init(oper_failure);
-
-    // Increase the size of the vector
-    new_num = add_resp->n_created_obj_results + 1;
-    add_resp->created_obj_results = USP_REALLOC(add_resp->created_obj_results, new_num*sizeof(void *));
-    add_resp->n_created_obj_results = new_num;
-    add_resp->created_obj_results[new_num-1] = created_obj_res;
-
-    // Connect all objects together, and fill in their members
-    created_obj_res->requested_path = USP_STRDUP(path);
-    created_obj_res->oper_status = oper_status;
-
-    oper_status->oper_status_case = USP__ADD_RESP__CREATED_OBJECT_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE;
-    oper_status->oper_failure = oper_failure;
-
-    oper_failure->err_code = err_code;
-    oper_failure->err_msg = USP_STRDUP(err_msg);
-
-    // In the protobuf schema, the OperFailure object does not store the param_name of the parameter which caused the failure
-    // But we might need this later, if the OperFailure object is converted into a param_errs object of an Error message
-    // (because a later object caused a failure when allow_partial=false).
-    // So for each OperFailure object, we store the associated param_name in a string vector
-    // NOTE: This is not ideal, but we cannot add this extra variable into the OperFailure object without either changing
-    // the protobuf schema for USP messages, or manually hacking the code generated to implement the probuf message
-    if (param_name == NULL)
-    {
-        param_name = "";
-    }
-    STR_VECTOR_Add(&add_oper_failure_param_names, param_name);
-
-    return oper_failure;
-}
-
-/*********************************************************************//**
-**
-** ParamError_FromAddRespToErrResp
-**
-** Extracts the parameters in error from the OperFailure object of the AddResponse
-** and adds them as ParamError objects to an ErrResponse object if supplied.
-** If not supplied, it just counts the number of ParamError objects that would be added.
-**
-** \param   add_msg - pointer to AddResponse object
-** \param   err_msg - pointer to ErrResponse object. If NULL, this indicates that the purpose of this function is just
-**                    to return the count of ParamErr objects that would be added
-**
-** \return  Number of ParamErr objects that were (or would be) added to an ErrResponse
-**
-**************************************************************************/
-int ParamError_FromAddRespToErrResp(Usp__Msg *add_msg, Usp__Msg *err_msg)
-{
-    Usp__Body *body;
-    Usp__Response *response;
-    Usp__AddResp *add_resp;
-    Usp__AddResp__CreatedObjectResult *created_obj_res;
-    Usp__AddResp__CreatedObjectResult__OperationStatus *oper_status;
-    Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure *oper_failure;
-    char *obj_path;
-    char *param_name;
-    char path[MAX_DM_PATH];
-    int err_code;
-    char *err_str;
-    int i;
-    int num_params;
-    int count = 0;
-
-    // Navigate to the AddResponse object within the AddResponse message
-    body = add_msg->body;
-    USP_ASSERT(body != NULL);
-
-    response = body->response;
-    USP_ASSERT(response != NULL);
-
-    add_resp = response->add_resp;
-    USP_ASSERT(add_resp != NULL);
-
-    // Iterate over all object failures
-    num_params = add_resp->n_created_obj_results;
-    for (i=0; i < num_params; i++)
-    {
-        created_obj_res = add_resp->created_obj_results[i];
-        USP_ASSERT(created_obj_res != NULL);
-
-        oper_status = created_obj_res->oper_status;
-        USP_ASSERT(oper_status != NULL);
-
-        // Convert an OperFailure object into a ParamError object
-        if (oper_status->oper_status_case == USP__ADD_RESP__CREATED_OBJECT_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE)
-        {
-            if (err_msg != NULL)
-            {
-                oper_failure = oper_status->oper_failure;
-                USP_ASSERT(oper_failure != NULL);
-
-                // Extract the ParamError fields
-                obj_path = created_obj_res->requested_path;
-                err_code = oper_failure->err_code;
-                err_str = oper_failure->err_msg;
-
-                // Get the name of the parameter associated with this OperFailure
-                if (count < add_oper_failure_param_names.num_entries)
-                {
-                    param_name = add_oper_failure_param_names.vector[count];
-                }
-                else
-                {
-                    // NOTE: This should never occur, as when we add an OperFailure we also add to add_oper_failure_param_names
-                    param_name = "";
-                }
-
-                // Form the full path for the param_err and add it to the response
-                if (param_name[0] != '\0')
-                {
-                    // Path includes a param name
-                    USP_SNPRINTF(path, sizeof(path), "%s{i}.%s", obj_path, param_name);
-                }
-                else
-                {
-                    // Path is just an object name
-                    USP_SNPRINTF(path, sizeof(path), "%s", obj_path);
-                }
-
-                ERROR_RESP_AddParamError(err_msg, path, err_code, err_str);
-            }
-
-            // Increment the number of param err fields
-            count++;
-        }
-    }
-
-    return count;
+    return msg;
 }
 
 /*********************************************************************//**
@@ -720,33 +540,6 @@ AddResp_OperSuccess(Usp__AddResp *add_resp, char *req_path, char *path)
 
 /*********************************************************************//**
 **
-** RemoveAddResp_LastCreatedObjResult
-**
-** Removes the last CreatedObjResult object from the AddResp object
-** The CreatedObjResult object will contain either an OperSuccess or an OperFailure
-**
-** \param   add_resp - pointer to add response object to modify
-**
-** \return  None
-**
-**************************************************************************/
-void RemoveAddResp_LastCreatedObjResult(Usp__AddResp *add_resp)
-{
-    int index;
-    Usp__AddResp__CreatedObjectResult *created_obj_res;
-
-    // Free the memory associated with the last created obj_result
-    index = add_resp->n_created_obj_results - 1;
-    created_obj_res = add_resp->created_obj_results[index];
-    protobuf_c_message_free_unpacked ((ProtobufCMessage*)created_obj_res, pbuf_allocator);
-
-    // Fix the SetResp object, so that it does not reference the obj_result we have just removed
-    add_resp->created_obj_results[index] = NULL;
-    add_resp->n_created_obj_results--;
-}
-
-/*********************************************************************//**
-**
 ** AddResp_OperSuccess_ParamErr
 **
 ** Dynamically adds a parameter_error entry to an OperationSuccess object
@@ -798,14 +591,11 @@ AddResp_OperSuccess_ParamErr(Usp__AddResp__CreatedObjectResult__OperationStatus_
 ** \return  None
 **
 **************************************************************************/
-void AddOperSuccess_UniqueKeys(Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess *oper_success,
-                               kv_vector_t *kvv)
+void AddOperSuccess_UniqueKeys(Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess *oper_success, kv_vector_t *kvv)
 {
     Usp__AddResp__CreatedObjectResult__OperationStatus__OperationSuccess__UniqueKeysEntry *entry;
     kv_pair_t *kv;
     int i;
-
-    USP_ASSERT((kvv->num_entries > 0) && (kvv->vector != NULL));
 
     // Allocate the unique key map vector
     oper_success->n_unique_keys = kvv->num_entries;
@@ -829,5 +619,209 @@ void AddOperSuccess_UniqueKeys(Usp__AddResp__CreatedObjectResult__OperationStatu
     USP_FREE(kvv->vector);
     kvv->vector = NULL;         // Not strictly necessary
     kvv->num_entries = 0;
+}
+
+/*********************************************************************//**
+**
+** AddResp_OperFailure
+**
+** Dynamically adds an operation failure object to the AddResponse object
+**
+** \param   resp - pointer to AddResponse object
+** \param   path - requested path of object which failed to create
+** \param   err_code - numeric code indicating reason object failed to be created
+** \param   err_msg - error message indicating reason object failed to be created
+**
+** \return  Pointer to dynamically allocated operation failure object
+**          NOTE: If out of memory, USP Agent is terminated
+**
+**************************************************************************/
+Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure *
+AddResp_OperFailure(Usp__AddResp *add_resp, char *path, int err_code, char *err_msg)
+{
+    Usp__AddResp__CreatedObjectResult *created_obj_res;
+    Usp__AddResp__CreatedObjectResult__OperationStatus *oper_status;
+    Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure *oper_failure;
+    int new_num;    // new number of entries in the created object result array
+
+    // Allocate memory to store the created object result
+    created_obj_res = USP_MALLOC(sizeof(Usp__AddResp__CreatedObjectResult));
+    usp__add_resp__created_object_result__init(created_obj_res);
+
+    oper_status = USP_MALLOC(sizeof(Usp__AddResp__CreatedObjectResult__OperationStatus));
+    usp__add_resp__created_object_result__operation_status__init(oper_status);
+
+    oper_failure = USP_MALLOC(sizeof(Usp__AddResp__CreatedObjectResult__OperationStatus__OperationFailure));
+    usp__add_resp__created_object_result__operation_status__operation_failure__init(oper_failure);
+
+    // Increase the size of the vector
+    new_num = add_resp->n_created_obj_results + 1;
+    add_resp->created_obj_results = USP_REALLOC(add_resp->created_obj_results, new_num*sizeof(void *));
+    add_resp->n_created_obj_results = new_num;
+    add_resp->created_obj_results[new_num-1] = created_obj_res;
+
+    // Connect all objects together, and fill in their members
+    created_obj_res->requested_path = USP_STRDUP(path);
+    created_obj_res->oper_status = oper_status;
+
+    oper_status->oper_status_case = USP__ADD_RESP__CREATED_OBJECT_RESULT__OPERATION_STATUS__OPER_STATUS_OPER_FAILURE;
+    oper_status->oper_failure = oper_failure;
+
+    oper_failure->err_code = err_code;
+    oper_failure->err_msg = USP_STRDUP(err_msg);
+
+    return oper_failure;
+}
+
+/*********************************************************************//**
+**
+** CreateAddResponseError
+**
+** Creates an ERROR response for the specified object which failed to create
+**
+** \param   msg_id - string containing the message id of the request, which initiated this response
+** \param   gae - pointer to object which failed to create
+**
+** \return  Pointer to a USP Error response message object
+**
+**************************************************************************/
+Usp__Msg *CreateAddResponseError(char *msg_id, group_add_entry_t *gae)
+{
+    Usp__Msg *resp;
+    int outer_err;
+    char path[MAX_DM_PATH];
+    group_add_param_t *ps;
+
+    // Determine whether the cause of failure was at the param or object level
+    ps = GROUP_ADD_VECTOR_FindFirstFailedParam(gae);
+    if (ps != NULL)
+    {
+        // Cause of failure was at param level
+        outer_err = ERROR_RESP_CalcOuterErrCode(ps->err_code);
+        resp = ERROR_RESP_Create(msg_id, outer_err, ps->err_msg);
+        USP_SNPRINTF(path, sizeof(path), "%s.{i}.%s", gae->res_path, ps->param_name);
+        ERROR_RESP_AddParamError(resp, path, ps->err_code, ps->err_msg);
+    }
+    else
+    {
+        // Cause of failure was at object level
+        outer_err = ERROR_RESP_CalcOuterErrCode(gae->err_code);
+        resp = ERROR_RESP_Create(msg_id, outer_err, gae->err_msg);
+        ERROR_RESP_AddParamError(resp, gae->res_path, gae->err_code, gae->err_msg);
+    }
+
+    return resp;
+}
+
+/*********************************************************************//**
+**
+** AreAllPathsTheSameGroupId
+**
+** Determines whether all of the path expressions in an Add request are targetted at the same data model provider component
+** This test is necessary for allow_partial=false, because if any object fails to create
+** it is not possible to wind back previous objects that have been created successfully in other data model providers
+** NOTE: Path expressions containing errors or reference following are ignored by this function as they cannot be handled here
+**       (Unfortunately this could result in being unable to undo an object creation in these cases)
+**
+** \param   add - pointer to parsed Add Request object
+**
+** \return  true if all path expressions reference the same USP Service (or reference the Broker's internal data model)
+**
+**************************************************************************/
+bool AreAllPathsTheSameGroupId(Usp__Add *add)
+{
+    int i;
+    char *path;
+    int group_id;
+    int first_group_id = NON_GROUPED;
+
+    for (i=0; i < add->n_create_objs; i++)
+    {
+        path = add->create_objs[i]->obj_path;
+        if ((path != NULL) && (*path != '\0'))
+        {
+            group_id = CalcGroupIdForPath(path);
+            if (group_id != NON_GROUPED)
+            {
+                if (first_group_id == NON_GROUPED)
+                {
+                    first_group_id = group_id;
+                }
+                else
+                {
+                    if (group_id != first_group_id)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+/*********************************************************************//**
+**
+** CalcGroupIdForPath
+**
+** Determines the GroupId for the specified path expression
+** NOTE: If the path expression contains reference following outside of square barckets (ie outside of a search expression)
+**       then the group_id cannot be determined and NON_GROUPED will be returned
+**
+** \param   path_expr - path expression
+**
+** \return  group_id of the path, or NON_GROUPED if unable to determine it, or if the path is owned by our internal data model
+**
+**************************************************************************/
+int CalcGroupIdForPath(char *path_expr)
+{
+    dm_node_t *node;
+    char buf[MAX_DM_PATH];
+    char *src;
+    char *dst;
+    int dst_remaining;
+
+    // Copy the path expression into buf, replacing any search expressions within square brackets with a wildcard
+    src = path_expr;
+    dst = buf;
+    dst_remaining = sizeof(buf) - 1;
+    while ((*src != '\0') && (dst_remaining > 0))
+    {
+        if (*src == '[')
+        {
+            // Replace characters within square braces with an asterisk
+            *dst++ = '*';
+            dst_remaining--;
+
+            // Skip past the closing square brace
+            src = strchr(src, ']');
+            if (src == NULL)
+            {
+                return NON_GROUPED;  // No closing brace found - path expression in error
+            }
+            src++;
+        }
+        else if (*src == '+')
+        {
+            // Unable to cope with reference following
+            return NON_GROUPED;
+        }
+        else
+        {
+            *dst++ = *src++;
+            dst_remaining--;
+        }
+    }
+    *dst = '\0';        // Terminate the path in buf
+
+    // Exit if unable to determine which node in the data model this references
+    node = DM_PRIV_GetNodeFromPath(buf, NULL, NULL, DONT_LOG_ERRORS);
+    if (node == NULL)
+    {
+        return NON_GROUPED;
+    }
+
+    return node->group_id;
 }
 

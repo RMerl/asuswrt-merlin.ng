@@ -1,0 +1,6 @@
+OSS_REFERENCE_Name: obuspa
+OSS_REFERENCE_Version: 9.0.1
+OSS_REFERENCE_License: MIT
+OSS_REFERENCE_DownloadURL: git clone https://code.broadband-forum.org/scm/obuspa/obuspa.git (commit b4cc339)
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./obuspa-9.0.1.tar.gz

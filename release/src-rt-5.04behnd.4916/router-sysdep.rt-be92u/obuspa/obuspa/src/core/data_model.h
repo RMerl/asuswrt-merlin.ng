@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2023, Broadband Forum
- * Copyright (C) 2016-2023  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -78,7 +78,7 @@ typedef enum
 //-----------------------------------------------------------------------------------------
 // Structures associated with unique key addressing
 // Structure representing a compound unique key. Points to the name of each parameter in the compound unique key.
-// If not all entries in the array are needed (e unique key is a single parameter), then the rest of the entries are NULL.
+// If not all entries in the array are needed (eg unique key is a single parameter), then the rest of the entries are NULL.
 typedef struct
 {
     char *param[MAX_COMPOUND_KEY_PARAMS];
@@ -125,7 +125,6 @@ typedef struct
     dm_notify_set_cb_t notify_set_cb;
     dm_get_value_cb_t get_cb;
     dm_set_value_cb_t set_cb;
-    int group_id;
     unsigned type_flags;                  // type of the parameter
     struct dm_node_tag *table_node;       // database node representing the table which we need to get the number of entries in (for kDMNodeType_Param_NumEntries)
 } dm_param_info_t;
@@ -141,9 +140,6 @@ typedef struct
     dm_notify_del_cb_t   notify_del_cb;
     dm_unique_key_vector_t unique_keys;
 
-    int group_id;                   // Indicates the group_id of the software component implementing this object
-                                    // If set to NON_GROUPED then the add_cb and del_cb etc callbacks are used
-                                    // If set to anything else then the add_group_cb and del_group_cb callbacks are used
     bool group_writable;            // Set if this object can have instances added/deleted by a controller. Only used by grouped objects
 
     // The following are only used by top-level multi-instance objects
@@ -184,25 +180,28 @@ typedef      int db_hash_t;     // This is different from dm_hash_t for historic
 // Structure describing each data model node
 typedef struct dm_node_tag
 {
-    double_link_t link;         // Link to siblings in the data model tree
+    double_link_t link;         // Link to siblings in the data model tree. This is a link in the linked list of the parent node's child_nodes linked list
     struct dm_node_tag *next_node_map_link;  // pointer to next node having the same squashed hash in dm_node_map[]
-    char *path;                 // Schema path for this node. Used for debug, passed to the vendor hooks and with GetSupportedDM
+    char *path;                 // Schema path for this node. Used for debug, passed to the vendor hooks and with GetSupportedDM and Internal Services passthru
 
     char *name;                 // Part of the path that this node implements (name of path segment)
     dm_node_type_t type;
-    double_linked_list_t child_nodes;
+    double_linked_list_t child_nodes;   // Head and tail of the linked list containing child nodes. To traverse that list use the link to siblings
+    struct dm_node_tag *parent_node;    // Pointer to parent of this node
 
     dm_hash_t hash;             // Contains hash of the data model schema path to this node. If this node is a multi-instance object, then schema path includes trailing '{i}'
 
     int order;                   // Number of instance separators in the path to this node
                                  // e.g. Device.Wifi.{i}.Interface.{i}.Enable would have an order of 2
-                                 // And would contain pointers to the 2 nodes 'Device.Wifi' and
-                                 // 'Device.Wifi.{i}.Interface' in the instance_nodes[] array
+                                 // And would contain pointers to the 2 nodes 'Device.Wifi.{i}' and
+                                 // 'Device.Wifi.{i}.Interface.{i}' in the instance_nodes[] array
                                  // For nodes which are objects, if the node is a multi-instance object, then
                                  // it's instance separator is included e.g. Device.Wifi.{i}.Interface.{i} would have an order of 2
     struct dm_node_tag *instance_nodes[MAX_DM_INSTANCE_ORDER]; // See 'order' above
 
-    unsigned short permissions[kCTrustRole_Max];    // Bitmask of permissions for each role
+    unsigned short permissions[MAX_CTRUST_ROLES];    // Bitmask of permissions for each role
+
+    int group_id;                   // Indicates the group_id of the software component implementing this object, or NON_GROUPED
 
     union
     {
@@ -226,6 +225,10 @@ typedef struct
     dm_set_group_cb_t set_group_cb;
     dm_add_group_cb_t add_group_cb;
     dm_del_group_cb_t del_group_cb;
+    dm_subscribe_cb_t subscribe_cb;
+    dm_unsubscribe_cb_t unsubscribe_cb;
+    dm_create_obj_cb_t  create_obj_cb;
+    dm_multi_del_cb_t   multi_del_cb;
 } group_vendor_hook_t;
 
 extern group_vendor_hook_t group_vendor_hooks[MAX_VENDOR_PARAM_GROUPS];
@@ -237,6 +240,11 @@ extern bool is_executing_within_dm_init;
 //------------------------------------------------------------------------------
 // Data model path to parameter recording the cause of the last reset (Internal.Reboot.Cause)
 extern char *reboot_cause_path;
+
+//------------------------------------------------------------------------------
+// Convenience variables to prevent the proliferation of the string 'Device.' everywhere
+extern char *dm_root;
+extern int dm_root_len;
 
 //------------------------------------------------------------------------------
 // Defines for bits in flag variable returned by DATA_MODEL_GetPathProperties()
@@ -251,10 +259,12 @@ extern char *reboot_cause_path;
 #define PP_IS_MULTI_INSTANCE_OBJECT       0x00000100   // Set if the path represents a multi-instance object
 #define PP_IS_SECURE_PARAM                0x00000200   // Set if the path represents a secure parameter
 #define PP_IS_WRITABLE                    0x00000400   // Set if the path represents a writable parameter
+#define PP_VALUE_CHANGE_WILL_IGNORE       0x00000800   // Set if the path represents a parameter that should be ignored by value change subscriptions
 
 //------------------------------------------------------------------------------
 // Convenience macros
-#define IsObject(node)  ((node->type == kDMNodeType_Object_MultiInstance) || (node->type == kDMNodeType_Object_SingleInstance))
+#define IS_OBJECT(type)  ((type == kDMNodeType_Object_MultiInstance) || (type == kDMNodeType_Object_SingleInstance))
+#define IsObject(node)  IS_OBJECT(node->type)
 
 #define IsParam(node)   ((node->type != kDMNodeType_Object_MultiInstance) && \
                          (node->type != kDMNodeType_Object_SingleInstance) && \
@@ -268,11 +278,17 @@ extern char *reboot_cause_path;
                           (node->type == kDMNodeType_DBParam_ReadWriteAuto) || \
                           (node->type == kDMNodeType_DBParam_Secure))
 
+#define IsVendorParam(node)  ((node->type == kDMNodeType_VendorParam_ReadOnly) || \
+                              (node->type == kDMNodeType_VendorParam_ReadWrite))
+
 #define IsOperation(node)  ((node->type == kDMNodeType_SyncOperation) || (node->type == kDMNodeType_AsyncOperation))
+
+#define IsOperationEvent(node)  ((node->type == kDMNodeType_SyncOperation) || (node->type == kDMNodeType_AsyncOperation) || (node->type == kDMNodeType_Event))
 
 //------------------------------------------------------------------------------
 // Definitions for flags in DATA_MODEL_GetParameterValue()
 #define SHOW_PASSWORD 0x00000001        // Used internally by USP Agent to get the actual value of passwords (default behaviour is to return an empty string)
+#define DONT_LOG_NO_INSTANCE_ERROR  0x00000002  // Suppresses logging of the no instance error. The error code is still returned, just not logged
 
 //------------------------------------------------------------------------------
 // Definitions for flags in DATA_MODEL_SetParameterValue()
@@ -295,6 +311,15 @@ extern char *reboot_cause_path;
 #define SUPPRESS_LAST_TYPE_CHECK    0x00000002 // Do not check the type of the last (ie rightmost) node in the path
                                                // This is used when we know that the node has already been added, but it could be more than one type.
                                                // When this is used, the caller must check the type of the last node
+#define OVERRIDE_LAST_TYPE          0x00000004 // Ensures that the type of the last (ie rightmost) node in the path matches that specified
+                                               // overriding (and ignoring) any previous registered type
+                                               // This is used to override the type of a node registered after receiving a USP Register message
+                                               // (at which point we don't know if it is a single or multi-instance object) with the correct
+                                               // type received in the GSDM response
+//-----------------------------------------------------------------------------
+// Definitions for flags in DM_PRIV_GetNodeFromPath() and DM_PRIV_CalcHashFromPath()
+#define DONT_LOG_ERRORS         0x00000001  // Suppresses logging of errors when calling the function - because errors may be expected
+
 //-----------------------------------------------------------------------------
 // API Functions
 int DATA_MODEL_Init(void);
@@ -306,7 +331,7 @@ int DATA_MODEL_GetInstancePaths(char *path, str_vector_t *sv, combined_role_t *c
 int DATA_MODEL_GetAllInstancePaths(char *path, str_vector_t *sv, combined_role_t *combined_role);
 int DATA_MODEL_AddInstance(char *path, int *instance, unsigned flags);
 int DATA_MODEL_DeleteInstance(char *path, unsigned flags);
-int DATA_MODEL_GetPermissions(char *path, combined_role_t *combined_role, unsigned short *perm);
+int DATA_MODEL_GetPermissions(char *path, combined_role_t *combined_role, unsigned short *perm, unsigned flags);
 int DATA_MODEL_NotifyInstanceAdded(char *path);
 int DATA_MODEL_NotifyInstanceDeleted(char *path);
 int DATA_MODEL_GetParameterValue(char *path, char *buf, int len, unsigned flags);
@@ -314,7 +339,7 @@ int DATA_MODEL_SetParameterValue(char *path, char *new_value, unsigned flags);
 int DATA_MODEL_Operate(char *path, kv_vector_t *input_args, kv_vector_t *output_args, char *command_key, int *instance);
 int DATA_MODEL_ShouldOperationRestart(char *path, int instance, bool *is_restart, int *err_code, char *err_msg, int err_msg_len, kv_vector_t *output_args);
 int DATA_MODEL_RestartAsyncOperation(char *path, kv_vector_t *input_args, int instance);
-unsigned DATA_MODEL_GetPathProperties(char *path, combined_role_t *combined_role, unsigned short *permission_bitmask, int *group_id, unsigned *type_flags);
+unsigned DATA_MODEL_GetPathProperties(char *path, combined_role_t *combined_role, unsigned short *permission_bitmask, int *group_id, unsigned *type_flags, unsigned exec_flags);
 int DATA_MODEL_SplitPath(char *path, char **schema_path, dm_req_instances_t *instances, bool *instances_exist);
 int DATA_MODEL_InformInstance(char *path);
 int DATA_MODEL_AddParameterInstances(dm_hash_t hash, char *instances);
@@ -325,6 +350,8 @@ void DATA_MODEL_DumpSchema(void);
 void DATA_MODEL_DumpInstances(void);
 char DATA_MODEL_GetJSONParameterType(char *path);
 int DATA_MODEL_SetParameterInDatabase(char *path, char *value);
+int DATA_MODEL_FindUnusedGroupId(void);
+int DATA_MODEL_DeRegisterPath(char *schema_path);
 
 int DM_PRIV_InitSetRequest(dm_req_t *req, dm_node_t *node, char *path, dm_instances_t *inst, char *new_value);
 void DM_PRIV_RequestInit(dm_req_t *req, dm_node_t *node, char *path, dm_instances_t *inst);
@@ -333,13 +360,16 @@ int DM_PRIV_FormInstantiatedPath(char *schema_path, dm_instances_t *inst, char *
 dm_node_t *DM_PRIV_AddSchemaPath(char *path, dm_node_type_t type, unsigned flags);
 int DM_PRIV_FormDB_FromPath(char *path, dm_hash_t *hash, char *instances, int len);
 int DM_PRIV_FormPath_FromDB(dm_hash_t hash, char *instances, char *buf, int len);
-int DM_PRIV_CalcHashFromPath(char *path, dm_instances_t *inst, dm_hash_t *p_hash);
-dm_node_t *DM_PRIV_GetNodeFromPath(char *path, dm_instances_t *inst, bool *is_qualified_instance);
+int DM_PRIV_CalcHashFromPath(char *path, dm_instances_t *inst, dm_hash_t *p_hash, unsigned flags);
+dm_node_t *DM_PRIV_GetNodeFromPath(char *path, dm_instances_t *inst, bool *is_qualified_instance, unsigned flags);
 dm_node_t *DM_PRIV_FindMatchingChild(dm_node_t *parent, char *name);
 void DM_PRIV_AddUniqueKey(dm_node_t *node, dm_unique_key_t *unique_key);
-void DM_PRIV_ApplyPermissions(dm_node_t *node, ctrust_role_t role, unsigned short permission_bitmask);
+void DM_PRIV_ApplyPermissions(dm_node_t *node, int role_index, unsigned short permission_bitmask);
 unsigned short DM_PRIV_GetPermissions(dm_node_t *node, combined_role_t *combined_role);
 int DM_PRIV_ReRegister_DBParam_Default(char *path, char *value);
+bool DM_PRIV_IsChildOf(char *path, dm_node_t *parent_node);
+bool DM_PRIV_IsChildNodeOf(dm_node_t *node, dm_node_t *parent_node);
+bool DM_PRIV_AreAllChildrenGroupId(dm_node_t *parent, int group_id);
 
 #endif
 

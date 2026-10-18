@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2017-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2017-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,11 +39,13 @@
  *
  */
 
+#ifndef REMOVE_DEVICE_BULKDATA
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include <zlib.h>
+#include <curl/curl.h>
 
 #include "common_defs.h"
 #include "data_model.h"
@@ -59,6 +61,7 @@
 #include "bdc_exec.h"
 #include "dm_exec.h"
 #include "group_get_vector.h"
+#include "usp_broker.h"
 
 //------------------------------------------------------------------------------
 // String versions of defines in vendor_defs.h
@@ -629,21 +632,55 @@ int Validate_BulkDataReportingInterval(dm_req_t *req, char *value)
 **************************************************************************/
 int Validate_BulkDataReference(dm_req_t *req, char *value)
 {
+    // Exit if path is not a valid reference
+    // NOTE: TR157 Bulk Data Collection only allows partial paths and wildcards
+    // However for USP we also allow search expressions. We do not allow reference following
+    // (because the alt-name reduction rules in TR-157 do not support it)
+
+#ifdef USE_LEGACY_PATH_VALIDATION
     int err;
     combined_role_t combined_role;
 
-    // Exit if path is not a valid reference
-    // NOTE: TR157 Bulk Data Collection only allows partial paths and wildcards
     // NOTE: The resolved paths are validated against the current controller's role.
     // So even if a partial path is specified here, it will fail to validate if permissions do not allow it
     MSG_HANDLER_GetMsgRole(&combined_role);
     err = PATH_RESOLVER_ResolveDevicePath(value, NULL, NULL, kResolveOp_GetBulkData, FULL_DEPTH, &combined_role, 0);
-    if (err != USP_ERR_OK)
+    return err;
+
+#else
+    // When running as a USP Broker, the DM elements referenced by the path might not have been registered yet
+    // So since we cannot resolve the path, instead try to verify it textually
+    int err;
+    char *p;
+    bool inside_brackets;
+
+    // Exit if the path contained a reference follow (outside of a unique key search expression)
+    // Reference following is not allowed for BulkData because the alt-name reduction rules in TR-157 do not support it
+    inside_brackets = false;
+    p = value;
+    while (*p != '\0')
     {
-        return err;
+        if (*p == '[')
+        {
+            inside_brackets = true;
+        }
+        else if (*p == ']')
+        {
+            inside_brackets = false;
+        }
+        else if ((*p == '+') && (inside_brackets == false))
+        {
+            USP_ERR_SetMessage("%s: Bulk Data collection does not allow reference following in search expressions", __FUNCTION__);
+            return USP_ERR_INVALID_PATH_SYNTAX;
+        }
+        p++;
     }
 
-    return USP_ERR_OK;
+    err = PATH_RESOLVER_ValidatePath(value, kSubNotifyType_ValueChange);
+
+    return err;
+
+#endif
 }
 
 /*********************************************************************//**
@@ -1780,7 +1817,7 @@ exit:
 **
 ** bulkdata_expand_param_ref
 **
-** Expands the specified parameter reference, storing all the parameters it refrences into the get group vector
+** Expands the specified parameter reference, storing all the parameters it references into the get group vector
 **
 ** \param   pr - pointer to parameter reference to expand
 ** \param   ggv - pointer to vector to add params found in this path expression to
@@ -1793,16 +1830,13 @@ void bulkdata_expand_param_ref(param_ref_entry_t *pr, group_get_vector_t *ggv)
     int err;
     str_vector_t params;
     int_vector_t group_ids;
-    combined_role_t combined_role;
 
     STR_VECTOR_Init(&params);
     INT_VECTOR_Init(&group_ids);
 
     // Exit if unable to get the resolved paths
-    // NOTE: We can safely use the FullAccess role here, because we have already validated the path expression against the controller's role
-    combined_role.inherited = kCTrustRole_FullAccess;
-    combined_role.assigned = kCTrustRole_FullAccess;
-    err = PATH_RESOLVER_ResolveDevicePath(pr->path_expr, &params, &group_ids, kResolveOp_GetBulkData, FULL_DEPTH, &combined_role, 0);
+    // NOTE: This uses the full access role because the Bulk Data Collector is not a Controller and hence not subject to ControllerTrust permissions
+    err = PATH_RESOLVER_ResolveDevicePath(pr->path_expr, &params, &group_ids, kResolveOp_GetBulkData, FULL_DEPTH, INTERNAL_ROLE, DONT_LOG_RESOLVER_ERRORS);
     if (err != USP_ERR_OK)
     {
         STR_VECTOR_Destroy(&params);
@@ -2953,3 +2987,5 @@ void Test_ReduceToAltName(void)
     }
 }
 #endif
+
+#endif // REMOVE_DEVICE_BULKDATA

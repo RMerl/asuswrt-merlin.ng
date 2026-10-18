@@ -2,6 +2,14 @@
 
 ########################### FOR BRIDGE MODE SET UP ##############################
 
+console_out=$(systemctl show --property=StandardOutput ccspwifiagent|grep console)
+clog() {
+	echo "$@"
+	if [[ -z $console_out ]];then
+		echo "$@" >/dev/console
+	fi
+}
+
 sleep 5
 
 BRIDGE_MODE=`dmcli eRT getv Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanMode | grep value | cut -d ':' -f3 | cut -d ' ' -f2`
@@ -15,11 +23,12 @@ if [ "$BRIDGE_MODE" = "bridge-static" ] ; then
 	ps aux | grep hostapd1 | grep -v grep | awk '{print $1}' | xargs kill -9
 	ps aux | grep hostapd0 | grep -v grep | awk '{print $1}' | xargs kill -9
 else
-	echo "Running in Router Mode"
+	clog "Running in Router Mode"
 fi
 touch /tmp/.wifiagent_ready
 if  [[ -n $(cat /tmp/wifi_setup_feature.txt|grep ^start_services$) ]]; then
-	echo "=== STARTING all services ===="
+	clog "=== STARTING all WiFi services ===="
 	wifi_setup.sh start_services
-	echo "=== STARIING sevice done!!!==="
+	/etc/init.d/wifi.sh sync_cfg
+	clog "=== STARTING WiFi sevices done!!!==="
 fi

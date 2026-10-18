@@ -15,12 +15,21 @@ ifneq ($(strip $(BUILD_GPTFDISK)),)
 conditional_build: all
 else
 conditional_build:
-	@echo "skipping gptfdisk (not configured)"
+ifneq ($(strip $(BCM_COND_HAVE_GPTFDISK)),)
+	@echo "$(BIN) will be provided externally (not built by BDK build system)"
+else
+	@echo "skipping $(BIN) (not configured)"
+endif
+endif
+
+# For MUSL 1.24
+ifeq ($(BRCM_GLIBC),)
+CFLAGS = -D_LARGEFILE64_SOURCE
 endif
 
 all: check_config
 	mkdir -p $(INSTALL_DIR)/bin
-	$(MAKE) -C $(APP) $(BIN) CXX="$(CXX)" LDFLAGS="-std=gnu++98 -lpthread -lm -L$(BCM_FSBUILD_DIR)/public/lib" CFLAGS="-std=gnu++98 -I$(BCM_FSBUILD_DIR)/public/include" CXXFLAGS="-std=gnu++98 -I$(BCM_FSBUILD_DIR)/public/include"
+	$(MAKE) -C $(APP) $(BIN) CXX="$(CXX)" LDFLAGS="-std=gnu++98 -lpthread -lm -L$(BCM_FSBUILD_DIR)/public/lib" CFLAGS="-std=gnu++98 -I$(BCM_FSBUILD_DIR)/public/include" CXXFLAGS="-std=gnu++98 -I$(BCM_FSBUILD_DIR)/public/include $(CFLAGS)"
 	cp $(APP)/sgdisk $(INSTALL_DIR)/bin/
 
 check_config: $(APP)/Makefile

@@ -35,7 +35,6 @@
 /* ---- Include Files ----------------------------------------------------- */
 
 #include "os_defs.h"
-#include "bcmTag.h"
 #include "bcm_imgutil_def.h"
 
 
@@ -81,15 +80,9 @@ typedef struct
     UINT8 version[IMGUTIL_VERSION_LEN];
 } imgutil_img_info_t;
 
-typedef enum
-{
-    IMGUTIL_FLASH_TYPE_NOR  = 0x01,
-    IMGUTIL_FLASH_TYPE_NAND = 0x02
-} imgutil_flash_type_e;
-
 typedef struct
 {
-    /* As defined in imgutil_flash_type_e. */
+    /* As defined in bcm_flashutil.h */
     UINT32 flashType;
     /* Total size (in bytes) of the flash device. */
     UINT32 flashSize;
@@ -118,8 +111,6 @@ typedef int (*IMGUTIL_WRITE_IMG_FUNC)(UINT8 *imageP, UINT32 imageLen,
 /*
  * maxBufSize - 0: estimate the max image size from flash; non-zero:
  *   client-specified value.
- * forceWholeFlashB - 1: force whole image upgrade, 0 otherwise (flashing mode
- *   is determined by image and flash type).
  * options - options related to partition.
  * calCrc32Func - client-provided CRC algorithm callback function, if it is
  *   different from the built-in CRC32.
@@ -130,7 +121,6 @@ typedef int (*IMGUTIL_WRITE_IMG_FUNC)(UINT8 *imageP, UINT32 imageLen,
 typedef struct
 {
     UINT32 maxBufSize;
-    UBOOL8 forceWholeFlashB;
     UBOOL8 calStdCrcB;
     imgutil_wr_opt_e options;
     IMGUTIL_CAL_CRC32_FUNC calCrc32Func;

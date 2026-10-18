@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,10 +39,15 @@
  *
  */
 
+#include "vendor_defs.h"   // For REMOVE_DEVICE_SECURITY
+
+#ifndef REMOVE_DEVICE_SECURITY
+#include <openssl/evp.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>  // For strcasecmp
-#include <openssl/evp.h>
 
 #include "common_defs.h"
 #include "str_vector.h"
@@ -458,6 +463,7 @@ int TEXT_UTILS_StringToBinary(char *str, unsigned char *buf, int len, int *bytes
     return USP_ERR_OK;
 }
 
+#ifndef REMOVE_DEVICE_SECURITY
 /*********************************************************************//**
 **
 ** TEXT_UTILS_Base64StringToBinary
@@ -476,7 +482,7 @@ int TEXT_UTILS_StringToBinary(char *str, unsigned char *buf, int len, int *bytes
 **************************************************************************/
 int TEXT_UTILS_Base64StringToBinary(char *str, unsigned char *buf, int len, int *bytes_written)
 {
-    int err;
+    int err = USP_ERR_OK;
     int original_len;
     char *stripped = NULL;
     int stripped_len;
@@ -513,6 +519,7 @@ exit:
     USP_SAFE_FREE(stripped);
     return err;
 }
+#endif
 
 /*********************************************************************//**
 **
@@ -689,7 +696,7 @@ void TEXT_UTILS_StrncpyLen(char *dst, int dst_len, char *src, int src_len)
 **       This is useful for eg ServerSelection diagnostics driven from USP Agent CLI, as HostList also
 **       contains the separator character (',')
 **
-** \param   haystack - string to searh in
+** \param   haystack - string to search in
 ** \param   needle - string to search for
 **
 ** \return  Pointer to the beginning of the needle string found (in haystack) or NULL if no string found
@@ -738,6 +745,44 @@ char *TEXT_UTILS_StrStr(char *haystack, char *needle)
 
 /*********************************************************************//**
 **
+** TEXT_UTILS_StringTailCmp
+**
+** Detemines whether the tail end of haystack matches needle
+**
+** \param   haystack - string whose tail end we want to match
+** \param   needle - string to test for in the tail end of haystack
+**
+** \return  0 if the the tail end of haystack matches needle, 1 if they do not match
+**
+**************************************************************************/
+int TEXT_UTILS_StringTailCmp(char *haystack, char *needle)
+{
+    int len_haystack;
+    int len_needle;
+    char *tail;
+
+    len_haystack = strlen(haystack);
+    len_needle = strlen(needle);
+
+    // Exit if the needle cannot be the tail of the haystack, because it's a longer string
+    if (len_needle > len_haystack)
+    {
+        return 1;
+    }
+
+    // Exit if the tail of the haystack id not equal to needle
+    tail = &haystack[len_haystack - len_needle];
+    if (strcmp(tail, needle) != 0)
+    {
+        return 1;
+    }
+
+    // If the code gets here, then the tail of haystack matches needle
+    return 0;
+}
+
+/*********************************************************************//**
+**
 ** TEXT_UTILS_SplitPath
 **
 ** Splits the specified data model path into an object path (returned in a buffer) and the parameter/event/operation name
@@ -776,6 +821,63 @@ char *TEXT_UTILS_SplitPath(char *path, char *buf, int len)
     // Return a pointer to the right-hand-side
     return p;
 
+}
+
+/*********************************************************************//**
+**
+** TEXT_UTILS_IsPathMatch
+**
+** Determines whether the specified data model absolute path matches that specified by the path specification
+** The path specification may be an absolute path, a wildcarded path, a partial path or a wildcarded path with some instance numbers
+**
+** \param   path - absolute path (ie containing instance numbers) to match
+** \param   path_spec - specification of the path to match
+**
+** \return  None
+**
+**************************************************************************/
+bool TEXT_UTILS_IsPathMatch(char *path, char *path_spec)
+{
+    char *p;
+    char *q;
+
+    p = path_spec;
+    q = path;
+    while (*p != '\0')
+    {
+        if (*p == *q)
+        {
+            // Skip matching characters
+            p++;
+            q++;
+        }
+        else if (*p == '*')
+        {
+            // Skip instance numbers matched by wildcard
+            p++;
+            while (IS_NUMERIC(*q))
+            {
+                q++;
+            }
+        }
+        else
+        {
+            // Otherwise exit if characters don't match
+            return false;
+        }
+    }
+
+    // If the code gets here, then the path matched the characters in the path spec
+    // However the path could still contain characters at the end which do not match the path spec
+    // eg Device.11 should not match Device.1, and Device.WiFi should not match Device.W
+    // NOTE: This is only an issue if the path spec does not end in '.'
+    p--;
+    if ((*p != '.') && (*q != '\0') && (*q != '.'))
+    {
+        return false;
+    }
+
+    return true;
 }
 
 /*********************************************************************//**
@@ -1884,6 +1986,93 @@ void TestPercentEncodeString(void)
         if (strcmp(buf, percent_encode_string_test_cases[i+1]) != 0)
         {
             printf("ERROR: [%d] Test case result for '%s' is '%s' (expected '%s')\n", i/2, percent_encode_string_test_cases[i], buf, percent_encode_string_test_cases[i+1]);
+        }
+    }
+}
+#endif
+
+//------------------------------------------------------------------------------------------
+// Code to test the TEXT_UTILS_IsPathMatch() function
+#if 0
+char *positive_is_path_match_test_cases[] =
+{
+    // Path                                 // Path spec
+    "Device.Test.ParamA",                   "Device.Test.ParamA",
+    "Device.Test.1.ParamA",                 "Device.Test.1.ParamA",
+    "Device.Test.2.ParamA",                 "Device.Test.*.ParamA",
+    "Device.Test.3.ParamA",                 "Device.Test",
+    "Device.Test.3.ParamA",                 "Device.Test.",
+    "Device.Test.4.ParamA",                 "Device.Test.4",
+    "Device.Test.4.ParamA",                 "Device.Test.4.",
+    "Device.Test.5.ObjectA.1.ParamA",       "Device.Test.5.",
+    "Device.Test.6.ObjectA.2.ParamA",       "Device.Test.6.ObjectA.*.ParamA",
+    "Device.Test.7.ObjectA.3.ParamA",       "Device.Test.7.ObjectA.*.",
+    "Device.Test.7.ObjectA.3.ParamA",       "Device.Test.7.ObjectA.*",
+    "Device.Test.8.ObjectA.4.ParamA",       "Device.Test.*.ObjectA.4",
+    "Device.Test.9.ObjectA.10.ParamA",      "Device.Test.*.ObjectA.*.",
+    "Device.Test.10.ObjectA.11.ParamA",     "Device.Test.*.ObjectA.*",
+    "Device.Test.12.ObjectA.13.Cmd()",      "Device.Test.*.ObjectA.13.",
+    "Device.Test.945.ObjectA.946.Cmd1()",   "Device.Test.*.ObjectA.",
+    "Device.Test.945.ObjectA.946.Cmd1()",   "Device.Test.945.ObjectA.*.Cmd1()",
+    "Device.Test.765.ObjectA.375.Cmd1()",   "Device.Test.765.ObjectA.375.Cmd1()",
+    "Device.Test.12.ObjectA.13.Event!",      "Device.Test.*.ObjectA.13.",
+    "Device.Test.945.ObjectA.946.Event1!",   "Device.Test.*.ObjectA.",
+    "Device.Test.945.ObjectA.946.Event1!",   "Device.Test.945.ObjectA.*.Event1!",
+    "Device.Test.765.ObjectA.375.Event1!",   "Device.Test.765.ObjectA.375.Event1!",
+    "Device.Test.765.ObjectA.375.Event1!",   "Device.Test.*.ObjectA.375.Event1!",
+    "Device.Test.765.ObjectA.375.Event1!",   "Device.Test.*.ObjectA.*.Event1!",
+    "Device.Test.765.ObjectA1.375.Event1!",   "Device.Test.*.ObjectA1.375.Event1!",
+};
+
+char *negative_is_path_match_test_cases[] =
+{
+    // Path                                 // Path spec
+    "Device.Test.ParamA",                   "Device.Test.ParamX",
+    "Device.Test.1.ParamA",                 "Device.Test.2.ParamA",
+    "Device.Test.1.ParamA",                 "Device.TestA.",
+    "Device.Test.1.ParamA",                 "Device.Test.1.ParamA.",
+    "Device.Test.1.ParamA",                 "Device.Test.1.ParamA.ParamB",
+    "Device.Test.5.ObjectA.1.ParamA",       "Device.Test.4.",
+    "Device.Test.5.ObjectA.1.ParamA",       "Device.Test.4.",
+    "Device.Test.5.ObjectA.1.ParamA",       "Device.Test.5.ObjectB.",
+    "Device.Test.5.ObjectA.1.ParamA",       "Device.Test.*.ObjectA.2.ParamA",
+    "Device.Test.5.ObjectA.1.ParamA",       "Device.Test.*.ObjectA.2.",
+    "Device.Test.9.ObjectA.10.ParamA",      "Device.Test.9.ObjectA.1",
+    "Device.Test.9.ObjectA.10.ParamA",      "Device.Test.9.ObjectA.1.",
+    "Device.Test.9.ObjectA.10.ParamA",      "Device.Test.*.ObjectA.11.Param",
+    "Device.Test.99.ObjectA.10.ParamA",     "Device.Test.9.ObjectA.*.Param",
+    "Device.Test.99.ObjectA.10.Event!",     "Device.Test.*.ObjectA.*.Event",
+    "Device.Test.99.ObjectA.10.Event!",     "Device.Test.*.ObjectA.1.Event!",
+    "Device.Test.99.ObjectA.10.Event!",     "Device.Test.*.ObjectA.0.Event!",
+    "Device.Test.99.ObjectA.10.Event!",     "Device.Test.9.ObjectA.10.Event!",
+    "Device.Test.99.ObjectA.10.Event!",     "Device.Test.9.ObjectA.10.Event!",
+    "Device.Test.99.ObjectA.10.Event!",     "Device.Test.99.ObjectA.10.Event!X",
+    "Device.Test.99.ObjectA.10.Event!",     "Device.Test.99.ObjectA.10.Event!1",
+    "Device.Test.99.ObjectA.10.Cmd()",      "Device.Test.*.ObjectA.*.Cmd(",
+    "Device.Test.99.ObjectA.10.Cmd()",      "Device.Test.999.ObjectA.10.Cmd()",
+    "Device.Test.99.ObjectA.10.Cmd()",      "Device.Test.*.ObjectA.11.",
+};
+
+void TestIsPathMatch(void)
+{
+    int i;
+    bool result;
+
+    for (i=0; i < NUM_ELEM(positive_is_path_match_test_cases); i+=2)
+    {
+        result = TEXT_UTILS_IsPathMatch(positive_is_path_match_test_cases[i], positive_is_path_match_test_cases[i+1]);
+        if (result != true)
+        {
+            printf("ERROR: [%d] '%s' should match '%s'\n", i/2, positive_is_path_match_test_cases[i], positive_is_path_match_test_cases[i+1]);
+        }
+    }
+
+    for (i=0; i < NUM_ELEM(negative_is_path_match_test_cases); i+=2)
+    {
+        result = TEXT_UTILS_IsPathMatch(negative_is_path_match_test_cases[i], negative_is_path_match_test_cases[i+1]);
+        if (result != false)
+        {
+            printf("ERROR: [%d] '%s' should not match '%s'\n", i/2, negative_is_path_match_test_cases[i], negative_is_path_match_test_cases[i+1]);
         }
     }
 }

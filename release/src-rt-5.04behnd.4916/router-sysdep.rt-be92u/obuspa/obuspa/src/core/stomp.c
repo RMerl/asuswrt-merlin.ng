@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -168,7 +168,7 @@ typedef struct
     SSL *ssl;               // SSL used for this STOMP connection
     STACK_OF(X509) *cert_chain; // Full SSL certificate chain for the STOMP connection, collected in the SSL verify callback
 
-    ctrust_role_t role;     // role granted by the CA cert in the chain of trust with the STOMP broker
+    int role_instance;     // role granted by the CA cert in the chain of trust with the STOMP broker (instance in Device.LocalAgent.ControllerTrust.Role.{i})
 
     char *subscribe_dest;   // STOMP destination to subscribe to (received from the STOMP server in the CONNECTED frame).
                             // This overrides Device.LocalAgent.MTP.{i}.STOMP.Destination.
@@ -340,6 +340,8 @@ void STOMP_Destroy(void)
     int i;
     stomp_connection_t *sc;
 
+    OS_UTILS_LockMutex(&stomp_access_mutex);  // Ensure that the data model is held off accessing this module's data structures until after we have destroyed them
+
     for (i=0; i<MAX_STOMP_CONNECTIONS; i++)
     {
         sc = &stomp_connections[i];
@@ -354,6 +356,11 @@ void STOMP_Destroy(void)
     {
         SSL_CTX_free(stomp_ssl_ctx);
     }
+
+    // Prevent the data model from making any subsequent changes to the MTP thread
+    is_stomp_mtp_thread_exited = true;
+
+    OS_UTILS_UnlockMutex(&stomp_access_mutex);
 }
 
 /*********************************************************************//**
@@ -691,6 +698,50 @@ exit:
 
 /*********************************************************************//**
 **
+** STOMP_AllowConnect
+**
+** Called to start all client connections which were not allowed to connect before
+** and were being held in an indefinite retrying state
+**
+** \param   None
+**
+** \return  None
+**
+**************************************************************************/
+void STOMP_AllowConnect(void)
+{
+    int i;
+    stomp_connection_t *sc;
+
+    OS_UTILS_LockMutex(&stomp_access_mutex);
+
+    // Exit if MTP thread has exited
+    if (is_stomp_mtp_thread_exited)
+    {
+        OS_UTILS_UnlockMutex(&stomp_access_mutex);
+        return;
+    }
+
+    // Iterate over all STOMP connections, releasing all that were not allowed to connect before from the retrying state
+    // by timing out the retrying state. This will then cause them to attempt to connect
+    for (i=0; i<MAX_STOMP_CONNECTIONS; i++)
+    {
+        sc = &stomp_connections[i];
+        if ((sc->instance != INVALID) && (sc->state == kStompState_Retrying))
+        {
+            sc->retry_time = time(NULL);
+        }
+    }
+
+    OS_UTILS_UnlockMutex(&stomp_access_mutex);
+
+    // Cause the MTP thread to wakeup from select() and start connecting
+    // We do this outside of the mutex lock to avoid an unnecessary task switch
+    MTP_EXEC_StompWakeup();
+}
+
+/*********************************************************************//**
+**
 ** STOMP_EnableConnection
 **
 ** TCP Connects to the specified STOMP connection
@@ -740,7 +791,11 @@ int STOMP_EnableConnection(stomp_conn_params_t *sp, char *stomp_queue)
     sc->retry_count = 0;
     sc->failure_code = kStompFailure_None;
 
-    StartStompConnection(sc);
+    // Put the connection into an immediate retrying state, so that the STOMP thread can perform the actual connection
+    // We don't attempt to perform the connection here, as trying to connect can block for upto STOMP_HANDSHAKE_TIMEOUT if the STOMP broker does not respond
+    CopyStompConnParamsFromNext(sc);
+    sc->state = kStompState_Retrying;
+    sc->retry_time = time(NULL);
     err = USP_ERR_OK;
 
 exit:
@@ -886,6 +941,7 @@ void STOMP_ScheduleReconnect(stomp_conn_params_t *sp, char *stomp_queue)
     // Signal a reconnect (which overrides any scheduled resubscribe)
     sc->schedule_reconnect = kScheduledAction_Signalled;
     sc->schedule_resubscribe = kScheduledAction_Off;
+    mtp_reconnect_scheduled = true;     // Set flag to ensure that data model thread subsequently calls STOMP_ActivateScheduledActions()
 
     // No need to perform a resubscribe, if we're reconnecting anyway
     // NOTE: The resubscribe flags could have been set if the agent queue was changed in the same USP set transaction as the other STOMP parameters
@@ -1014,6 +1070,7 @@ void STOMP_ScheduleResubscribe(int instance, char *stomp_queue)
 #else
             sc->schedule_resubscribe = kScheduledAction_Signalled;
 #endif
+            mtp_reconnect_scheduled = true;     // Set flag to ensure that data model thread subsequently calls STOMP_ActivateScheduledActions()
         }
     }
 
@@ -1058,6 +1115,7 @@ void STOMP_UpdateRetryParams(int instance, stomp_retry_params_t *retry_params)
 
     // Copy across the connection parameters to use during a retry
     memcpy(&sc->retry, retry_params, sizeof(stomp_retry_params_t));
+    memcpy(&sc->next_conn_params.retry, retry_params, sizeof(stomp_retry_params_t));
 
 exit:
     OS_UTILS_UnlockMutex(&stomp_access_mutex);
@@ -1259,17 +1317,24 @@ void StartStompConnection(stomp_connection_t *sc)
     nu_ipaddr_t local_mgmt_addr;
     stomp_failure_t stomp_err = kStompFailure_OtherError;
     char *mgmt_interface = "any";   // Used only for debug purposes
+    bool allowed;
 
     // Copy across the next connection parameters to use into the working state
     CopyStompConnParamsFromNext(sc);
 
+    // Exit, putting the connection into an immediate retrying state, if it's not allowed to start connecting yet
+    allowed = DEVICE_CONTROLLER_CanMtpConnect();
+    if (allowed == false)
+    {
+        InitStompConnection(sc);
+        sc->state = kStompState_Retrying;
+        sc->retry_time = time(NULL) + CAN_MTP_CONNECT_RETRY_TIME;
+        return;
+    }
+
 #ifdef CONNECT_ONLY_OVER_WAN_INTERFACE
     mgmt_interface = nu_macaddr_wan_ifname();
 #endif
-
-    USP_LOG_Info("Attempting to connect to host=%s (port=%d, %s) from interface=%s", sc->host, sc->port,
-                    (sc->enable_encryption) ? "encrypted" : "unencrypted",
-                    mgmt_interface);
 
     // Initialise state
     InitStompConnection(sc);
@@ -1304,6 +1369,11 @@ void StartStompConnection(stomp_connection_t *sc)
         stomp_err = kStompFailure_ServerDNS;
         goto exit;
     }
+
+    USP_LOG_Info("Attempting to connect to host=%s (ipaddr=%s, port=%d, %s) from interface=%s",
+                    sc->host, nu_ipaddr_str(&dst, buf, sizeof(buf)), sc->port,
+                    (sc->enable_encryption) ? "encrypted" : "unencrypted",
+                    mgmt_interface);
 
     // Exit if unable to make a socket address structure to contact the STOMP server
     err = nu_ipaddr_to_sockaddr(&dst, sc->port, &saddr, &saddr_len);
@@ -1441,19 +1511,8 @@ void StartStompConnection(stomp_connection_t *sc)
     }
     else
     {
-#ifdef BDK_USP
-        // Role is used to match with Inherited Role, and Inherited Role
-        // is depended on certificate, but not on encryption.
-        // ROLE_NON_SSL is used when certificates are NOT imported.
-        // But when encryption is disabled, certificates still can be
-        // imported to connect with HTTP server through HTTPS.
-        // So when encryption is disabled, role should be ROLE_UNKNOWN
-        // instead of ROLE_NON_SSL.
-        sc->role = ROLE_UNKNOWN;
-#else
         // If encryption is off, then use the Non SSL role
-        sc->role = ROLE_NON_SSL;
-#endif
+        sc->role_instance = ROLE_NON_SSL;
     }
 
     // Update the address used to connect to the controller
@@ -1542,7 +1601,7 @@ void StopStompConnection(stomp_connection_t *sc, bool purge_queued_messages)
     sc->socket_fd = -1;
     sc->ssl = NULL;
     sc->cert_chain = NULL;
-    sc->role = ROLE_DEFAULT;
+    sc->role_instance = ROLE_DEFAULT;
     USP_SAFE_FREE(sc->subscribe_dest);
 #ifdef BDK_USP
     DEVICE_STOMP_SetDestinationFromServer(sc->instance, "");
@@ -1607,7 +1666,7 @@ void InitStompConnection(stomp_connection_t *sc)
     sc->socket_fd = -1;
     sc->ssl = NULL;
     sc->cert_chain = NULL;
-    sc->role = ROLE_DEFAULT;
+    sc->role_instance = ROLE_DEFAULT;
     sc->subscribe_dest = NULL;
 #ifdef BDK_USP
     DEVICE_STOMP_SetDestinationFromServer(sc->instance, "");
@@ -1706,7 +1765,7 @@ int PerformStompSslConnect(stomp_connection_t *sc)
     if (sc->cert_chain != NULL)
     {
         // Exit if unable to determine the role associated with the trusted root cert
-        err = DEVICE_SECURITY_GetControllerTrust(sc->cert_chain, &sc->role);
+        err = DEVICE_SECURITY_GetControllerTrust(sc->cert_chain, &sc->role_instance);
         if (err != USP_ERR_OK)
         {
             return err;
@@ -1885,7 +1944,7 @@ void UpdateStompConnectionSockSet(stomp_connection_t *sc, socket_set_t *set)
             else
             {
                 // Wait until it's time to retry
-                SOCKET_SET_UpdateTimeout(timeout*SECONDS, set);   // Retry in 5 seconds time
+                SOCKET_SET_UpdateTimeout(timeout*SECONDS, set);
             }
             break;
 
@@ -2258,11 +2317,10 @@ int TransmitStompMessage(stomp_connection_t *sc)
             sc->failure_code = kStompFailure_None;  // The reason this is set here is that we don't want to change the previous Connection.{i}.Status until it becomes successful
             sc->last_status_change = time(NULL);
             sc->retry_count = 0;        // Since successful, reset the retry count
-
             // Notify the data model of the role to use for controllers connected to this STOMP connection
             // This will also unblock the Boot! event, subscriptions, and restarting of operations
             agent_queue = (sc->subscribe_dest != NULL) ? sc->subscribe_dest : sc->provisionned_queue;
-            DM_EXEC_PostStompHandshakeComplete(sc->instance, agent_queue, sc->role);
+            DM_EXEC_PostStompHandshakeComplete(sc->instance, agent_queue, sc->role_instance);
 #ifdef BDK_USP
             setStompConnectionStatus(sc);
 #endif
@@ -2675,7 +2733,7 @@ void RemoveReceivedHeartBeats(stomp_connection_t *sc)
     // Determine how many bytes are heartbeat messages
     p = sc->rxframe;
     heartbeat_bytes = 0;
-    while ((*p == '\n') && (heartbeat_bytes < len))
+    while ((heartbeat_bytes < len) && (*p == '\n'))
     {
         heartbeat_bytes++;
         p++;
@@ -2928,7 +2986,7 @@ void HandleRxMsg_RunningState(stomp_connection_t *sc, int msg_size)
     char content_type[64];
     bool is_present;
     char time_buf[MAX_ISO8601_LEN];
-    mtp_reply_to_t mtp_reply_to = {0};
+    mtp_conn_t mtp_conn = {0};
 
     // Exit if this is not the expected MESSAGE frame
     if (IsFrame("MESSAGE", sc->rxframe, msg_size) == false)
@@ -2946,14 +3004,14 @@ void HandleRxMsg_RunningState(stomp_connection_t *sc, int msg_size)
         return;
     }
 
-    // Fill In the mtp_reply_to_t structure, based on whether we have a 'reply-to' field or not
-    mtp_reply_to.protocol = kMtpProtocol_STOMP;
-    mtp_reply_to.stomp_instance = sc->instance;
+    // Fill In the mtp_conn_t structure, based on whether we have a 'reply-to' field or not
+    mtp_conn.protocol = kMtpProtocol_STOMP;
+    mtp_conn.stomp.instance = sc->instance;
     is_present = GetStompHeaderValue("reply-to-dest:", sc->rxframe, msg_size, reply_to_dest, sizeof(reply_to_dest));
     if ((is_present) && (reply_to_dest[0] != '\0'))
     {
-        mtp_reply_to.is_reply_to_specified = true;
-        mtp_reply_to.stomp_dest = reply_to_dest;
+        mtp_conn.is_reply_to_specified = true;
+        mtp_conn.stomp.dest = reply_to_dest;
     }
 
     // Check the content-type
@@ -3000,7 +3058,7 @@ void HandleRxMsg_RunningState(stomp_connection_t *sc, int msg_size)
     USP_PROTOCOL("%s", &sc->rxframe[offset]);
 
     // Send the USP Record to the data model thread for processing
-    DM_EXEC_PostUspRecord(pbuf, pbuf_len, sc->role, &mtp_reply_to);
+    DM_EXEC_PostUspRecord(pbuf, pbuf_len, UNKNOWN_ENDPOINT_ID, sc->role_instance, &mtp_conn);
 }
 
 /*********************************************************************//**
@@ -3338,7 +3396,7 @@ int StartSendingFrame_STOMP(stomp_connection_t *sc)
     char heartbeat_args[64];
     char password_args[256];
     char debug_pw_args[256];
-    char escaped_endpoint_id[256];
+    char escaped_endpoint_id[MAX_ENDPOINT_ID_LEN];
     char escaped_username[256];
     char escaped_password[256];
     char *endpoint_id;
@@ -3569,7 +3627,7 @@ int StartSendingFrame_SEND(stomp_connection_t *sc, char *controller_queue, char 
     // Form the STOMP headers
     body_offset = USP_SNPRINTF((char *)buf, len, SEND_FRAME_FORMAT, content_length, content_type_str, agent_queue, controller_queue);
 
-    MSG_HANDLER_LogMessageToSend(msi, kMtpProtocol_STOMP, sc->host, buf);
+    MSG_HANDLER_LogMessageToSend(msi, kMtpProtocol_STOMP, sc->host, (char *)buf);
 
     // Form the STOMP body
     memcpy(&buf[body_offset], STOMP_BODY_SEPARATOR, sizeof(STOMP_BODY_SEPARATOR)-1);
@@ -4296,7 +4354,7 @@ void QueueUspConnectRecord_STOMP(stomp_connection_t *sc, mtp_send_item_t *msi, c
     stomp_send_item_t *send_item;
     mtp_content_type_t type;
 
-    // Iterate over USP Records in the queue, removing all stale connect and disconnect records
+    // Iterate over USP Records in the queue, removing all stale connect and disconnect records to the specified controller
     // A connect or disconnect record may still be in the queue if the connection failed before the record was fully sent
     cur_msg = (stomp_send_item_t *) sc->usp_record_send_queue.head;
     while (cur_msg != NULL)
@@ -4304,9 +4362,9 @@ void QueueUspConnectRecord_STOMP(stomp_connection_t *sc, mtp_send_item_t *msi, c
         // Save pointer to next message, as we may remove the current message
         next_msg = (stomp_send_item_t *) cur_msg->link.next;
 
-        // Remove current message if it is a connect or disconnect record
+        // Remove current message if it is a connect or disconnect record for the controller
         type = cur_msg->item.content_type;
-        if (IsUspConnectOrDisconnectRecord(type))
+        if (IsUspConnectOrDisconnectRecord(type) && (strcmp(cur_msg->controller_queue, controller_queue)==0))
         {
             RemoveStompQueueItem(sc, cur_msg);
         }

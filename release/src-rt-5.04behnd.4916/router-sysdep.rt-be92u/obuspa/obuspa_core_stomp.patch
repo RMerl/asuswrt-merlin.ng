@@ -1,6 +1,5 @@
-diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
---- obuspa_orig/src/core/stomp.c	2022-09-06 18:37:54.000000000 -0700
-+++ obuspa_new/src/core/stomp.c	2022-09-12 10:35:44.679827389 -0700
+--- obuspa_orig/src/core/stomp.c	2024-07-29 13:04:17.534221293 -0700
++++ obuspa_new/src/core/stomp.c	2024-08-02 11:15:54.405117802 -0700
 @@ -78,6 +78,9 @@
  #include "nu_macaddr.h"
  #include "retry_wait.h"
@@ -21,7 +20,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
  
  /*********************************************************************//**
  **
-@@ -994,7 +1000,20 @@
+@@ -1050,7 +1056,20 @@
          // and the agent's queue is not overridden by the STOMP server, and a reconnect is not pending
          if ((sc->subscribe_dest == NULL) && (sc->schedule_reconnect == kScheduledAction_Off))
          {
@@ -39,10 +38,10 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
 +#else
              sc->schedule_resubscribe = kScheduledAction_Signalled;
 +#endif
+             mtp_reconnect_scheduled = true;     // Set flag to ensure that data model thread subsequently calls STOMP_ActivateScheduledActions()
          }
      }
- 
-@@ -1343,10 +1362,26 @@
+@@ -1413,10 +1432,26 @@
      // Exit if unable to connect to the STOMP server
      // NOTE: The connect is performed in non-blocking mode
      err = connect(sc->socket_fd, (struct sockaddr *) &saddr, saddr_len);
@@ -69,7 +68,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
          goto exit;
      }
  
-@@ -1361,7 +1396,11 @@
+@@ -1431,7 +1466,11 @@
      if (num_sockets == 0)
      {
          USP_LOG_Error("%s: connect timed out", __FUNCTION__);
@@ -81,7 +80,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
          goto exit;
      }
  
-@@ -1370,7 +1409,11 @@
+@@ -1440,7 +1479,11 @@
      if (err == -1)
      {
          USP_ERR_ERRNO("getsockopt", errno);
@@ -93,7 +92,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
          goto exit;
      }
  
-@@ -1378,7 +1421,11 @@
+@@ -1448,7 +1491,11 @@
      if (so_err != 0)
      {
          USP_LOG_Error("%s: async connect failed", __FUNCTION__);
@@ -105,27 +104,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
          goto exit;
      }
  
-@@ -1394,8 +1441,19 @@
-     }
-     else
-     {
-+#ifdef BDK_USP
-+        // Role is used to match with Inherited Role, and Inherited Role
-+        // is depended on certificate, but not on encryption.
-+        // ROLE_NON_SSL is used when certificates are NOT imported.
-+        // But when encryption is disabled, certificates still can be
-+        // imported to connect with HTTP server through HTTPS.
-+        // So when encryption is disabled, role should be ROLE_UNKNOWN
-+        // instead of ROLE_NON_SSL.
-+        sc->role = ROLE_UNKNOWN;
-+#else
-         // If encryption is off, then use the Non SSL role
-         sc->role = ROLE_NON_SSL;
-+#endif
-     }
- 
-     // Update the address used to connect to the controller
-@@ -1415,7 +1473,12 @@
+@@ -1485,7 +1532,12 @@
  #ifndef CONNECT_ONLY_OVER_WAN_INTERFACE
  #endif
  
@@ -138,9 +117,9 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
  
      // Exit if unable to queue the initial STOMP frame for sending
      err = StartSendingFrame_STOMP(sc);
-@@ -1481,6 +1544,9 @@
+@@ -1551,6 +1603,9 @@
      sc->cert_chain = NULL;
-     sc->role = ROLE_DEFAULT;
+     sc->role_instance = ROLE_DEFAULT;
      USP_SAFE_FREE(sc->subscribe_dest);
 +#ifdef BDK_USP
 +    DEVICE_STOMP_SetDestinationFromServer(sc->instance, "");
@@ -148,9 +127,9 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
      sc->agent_heartbeat_period = 0;
      sc->server_heartbeat_period = 0;
      sc->next_heartbeat_time = INVALID_TIME;
-@@ -1543,6 +1609,9 @@
+@@ -1613,6 +1668,9 @@
      sc->cert_chain = NULL;
-     sc->role = ROLE_DEFAULT;
+     sc->role_instance = ROLE_DEFAULT;
      sc->subscribe_dest = NULL;
 +#ifdef BDK_USP
 +    DEVICE_STOMP_SetDestinationFromServer(sc->instance, "");
@@ -158,7 +137,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
  
      sc->agent_heartbeat_period = 0;
      sc->server_heartbeat_period = 0;
-@@ -1564,6 +1633,9 @@
+@@ -1634,6 +1692,9 @@
      if (sc->failure_code == kStompFailure_None)
      {
          sc->last_status_change = cur_time;
@@ -168,17 +147,17 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
      }
  
  }
-@@ -2191,6 +2263,9 @@
+@@ -2260,6 +2321,9 @@
              // This will also unblock the Boot! event, subscriptions, and restarting of operations
              agent_queue = (sc->subscribe_dest != NULL) ? sc->subscribe_dest : sc->provisionned_queue;
-             DM_EXEC_PostStompHandshakeComplete(sc->instance, agent_queue, sc->role);
+             DM_EXEC_PostStompHandshakeComplete(sc->instance, agent_queue, sc->role_instance);
 +#ifdef BDK_USP
 +            setStompConnectionStatus(sc);
 +#endif
              break;
  
          default:
-@@ -2436,7 +2511,16 @@
+@@ -2505,7 +2569,16 @@
      // This code blocks until the retry has completed, or the retry has timed out
      #define ONE_SECOND_IN_MICROSECONDS (1000000)
      #define SSL_RETRY_SLEEP (ONE_SECOND_IN_MICROSECONDS/20)             // Retry 20 times a second
@@ -195,7 +174,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
      #define MAX_SSL_RETRY_COUNT  (SSL_RETRY_TIMEOUT/SSL_RETRY_SLEEP)
      err = SSL_ERROR_WANT_WRITE;
      retry_count = 0;
-@@ -3063,6 +3147,9 @@
+@@ -3132,6 +3205,9 @@
      if (is_present)
      {
          sc->subscribe_dest = USP_STRDUP(buf);
@@ -205,7 +184,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
      }
  }
  
-@@ -3149,6 +3236,9 @@
+@@ -3218,6 +3294,9 @@
      {
          sc->last_status_change = time(NULL);
          sc->failure_code = failure_code;
@@ -215,7 +194,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
      }
  
      // Undo transient state associated with the connection
-@@ -3157,7 +3247,29 @@
+@@ -3226,7 +3305,29 @@
  
      // Start retrying this connection
      sc->state = kStompState_Retrying;
@@ -245,7 +224,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
  
      // Calculate time until next retry
      wait_time = CalculateStompRetryWaitTime(sc->retry_count, sc->retry.initial_interval, sc->retry.interval_multiplier);
-@@ -3230,6 +3342,9 @@
+@@ -3299,6 +3400,9 @@
      char escaped_username[256];
      char escaped_password[256];
      char *endpoint_id;
@@ -255,7 +234,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
  
      // Write the heartbeat header arguments into a buffer (if enabled)
      heartbeat_args[0] = '\0';
-@@ -3266,6 +3381,33 @@
+@@ -3335,6 +3439,33 @@
                                  "\n"        \
                                  EMPTY_BODY
  
@@ -289,7 +268,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
      // Allocate a buffer to store the frame in
      // NOTE: The code assumes that none of the strings (host, login, passcode) contain embedded NULLs or CR/LF
      len = sizeof(STOMP_FRAME_FORMAT) + strlen(sc->virtual_host) + strlen(heartbeat_args)
-@@ -3282,6 +3424,7 @@
+@@ -3351,6 +3482,7 @@
  
      // Form the real STOMP frame
      USP_SNPRINTF(((char *)buf), len, STOMP_FRAME_FORMAT, sc->virtual_host, heartbeat_args, escaped_endpoint_id, password_args);
@@ -297,7 +276,7 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
  
      // Save the frame to transmit
      USP_ASSERT(sc->txframe == NULL);
-@@ -4182,4 +4325,138 @@
+@@ -4251,4 +4383,138 @@
      DLLIST_LinkToHead(&sc->usp_record_send_queue, send_item);
  }
  
@@ -437,17 +416,9 @@ diff -Naur obuspa_orig/src/core/stomp.c obuspa_new/src/core/stomp.c
 +
  #endif // DISABLE_STOMP
 diff -Naur obuspa_orig/src/core/stomp.h obuspa_new/src/core/stomp.h
---- obuspa_orig/src/core/stomp.h	2022-09-06 18:37:54.000000000 -0700
-+++ obuspa_new/src/core/stomp.h	2022-09-12 10:35:44.679827389 -0700
-@@ -1,6 +1,6 @@
- /*
-  *
-- * Copyright (C) 2019-2022, Broadband Forum
-+ * Copyright (C) 2019, Broadband Forum
-  * Copyright (C) 2016-2019  CommScope, Inc
-  *
-  * Redistribution and use in source and binary forms, with or without
-@@ -95,6 +95,10 @@
+--- obuspa_orig/src/core/stomp.h	2024-07-29 13:04:17.534221293 -0700
++++ obuspa_new/src/core/stomp.h	2024-07-30 13:17:06.852099764 -0700
+@@ -98,6 +98,10 @@
  void STOMP_UpdateRetryParams(int instance, stomp_retry_params_t *retry_params);
  void STOMP_GetDestinationFromServer(int instance, char *buf, int len);
  

@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -83,12 +83,12 @@ Usp__GetSupportedDMResp__ParamValueType CalcDMSchemaParamType(dm_node_t *node);
 **
 ** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
 ** \param   controller_endpoint - endpoint which sent this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  None - This code must handle any errors by sending back error messages
 **
 **************************************************************************/
-void MSG_HANDLER_HandleGetSupportedDM(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt)
+void MSG_HANDLER_HandleGetSupportedDM(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc)
 {
     Usp__Msg *resp = NULL;
     int i;
@@ -103,7 +103,7 @@ void MSG_HANDLER_HandleGetSupportedDM(Usp__Msg *usp, char *controller_endpoint, 
         (usp->body->request->get_supported_dm == NULL) )
     {
         USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
+        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp);
         goto exit;
     }
 
@@ -126,7 +126,7 @@ void MSG_HANDLER_HandleGetSupportedDM(Usp__Msg *usp, char *controller_endpoint, 
     }
 
 exit:
-    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mrt);
+    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mtpc);
     usp__msg__free_unpacked(resp, pbuf_allocator);
 }
 
@@ -150,7 +150,7 @@ void ProcessSupportedPathInstances(char *schema_path, unsigned gs_flags, Usp__Ge
     combined_role_t combined_role;
 
     // Exit if unable to find a node matching the specified schema path
-    node = DM_PRIV_GetNodeFromPath(schema_path, NULL, NULL);
+    node = DM_PRIV_GetNodeFromPath(schema_path, NULL, NULL, 0);
     if (node == NULL)
     {
         ror = AddGetSupportedDM_ReqObjResult(gs_resp, schema_path, USP_ERR_INVALID_PATH, USP_ERR_GetMessage(), BBF_DATA_MODEL_URI);
@@ -252,7 +252,7 @@ void WalkSchema(dm_node_t *parent, Usp__GetSupportedDMResp__RequestedObjectResul
             case kDMNodeType_AsyncOperation:
                 if ((gs_flags & RETURN_COMMANDS) &&
                     (parent_perm & PERMIT_OBJ_INFO) && (parent_perm & PERMIT_CMD_INFO) &&
-                    (child_perm & PERMIT_OPER))
+                    (child_perm & PERMIT_CMD_INFO))
                 {
                     AddSupportedObjResult_SupportedCommandResult(sor, child);
                 }
@@ -261,7 +261,7 @@ void WalkSchema(dm_node_t *parent, Usp__GetSupportedDMResp__RequestedObjectResul
             case kDMNodeType_Event:
                 if ((gs_flags & RETURN_EVENTS) &&
                     (parent_perm & PERMIT_OBJ_INFO) && (parent_perm & PERMIT_CMD_INFO) &&
-                    (child_perm & PERMIT_SUBS_EVT_OPER_COMP))
+                    (child_perm & PERMIT_CMD_INFO))
                 {
                     AddSupportedObjResult_SupportedEventResult(sor, child);
                 }
@@ -292,41 +292,16 @@ void WalkSchema(dm_node_t *parent, Usp__GetSupportedDMResp__RequestedObjectResul
 **************************************************************************/
 Usp__Msg *CreateGetSupportedDMResp(char *msg_id)
 {
-    Usp__Msg *resp;
-    Usp__Header *header;
-    Usp__Body *body;
-    Usp__Response *response;
+    Usp__Msg *msg;
     Usp__GetSupportedDMResp *get_sup_resp;
 
-    // Allocate memory to store the USP message
-    resp = USP_MALLOC(sizeof(Usp__Msg));
-    usp__msg__init(resp);
-
-    header = USP_MALLOC(sizeof(Usp__Header));
-    usp__header__init(header);
-
-    body = USP_MALLOC(sizeof(Usp__Body));
-    usp__body__init(body);
-
-    response = USP_MALLOC(sizeof(Usp__Response));
-    usp__response__init(response);
-
+    // Create GSDM Response
+    msg = MSG_HANDLER_CreateResponseMsg(msg_id, USP__HEADER__MSG_TYPE__GET_SUPPORTED_DM_RESP, USP__RESPONSE__RESP_TYPE_GET_SUPPORTED_DM_RESP);
     get_sup_resp = USP_MALLOC(sizeof(Usp__GetSupportedDMResp));
     usp__get_supported_dmresp__init(get_sup_resp);
+    msg->body->response->get_supported_dm_resp = get_sup_resp;
 
-    // Connect the structures together
-    resp->header = header;
-    header->msg_id = USP_STRDUP(msg_id);
-    header->msg_type = USP__HEADER__MSG_TYPE__GET_SUPPORTED_DM_RESP;
-
-    resp->body = body;
-    body->msg_body_case = USP__BODY__MSG_BODY_RESPONSE;
-    body->response = response;
-    response->resp_type_case = USP__RESPONSE__RESP_TYPE_GET_SUPPORTED_DM_RESP;
-
-    response->get_supported_dm_resp = get_sup_resp;
-
-    return resp;
+    return msg;
 }
 
 /*********************************************************************//**
@@ -418,7 +393,7 @@ AddReqObjResult_SupportedObjResult(Usp__GetSupportedDMResp__RequestedObjectResul
         // Multi Instance object
         sor->is_multi_instance = true;
         info = &node->registered.object_info;
-        if (info->group_id == NON_GROUPED)
+        if (node->group_id == NON_GROUPED)
         {
             // Non-grouped multi Instance object
             if ((info->validate_add_cb != USP_HOOK_DenyAddInstance) && (permissions & PERMIT_ADD))
@@ -641,11 +616,11 @@ void AddSupportedObjResult_SupportedParamResult(Usp__GetSupportedDMResp__Support
     sor->n_supported_params = new_num;
     sor->supported_params[new_num-1] = pr;
 
-    // Fill in the SupportedCommandResult object
+    // Fill in the SupportedParamst object
     pr->param_name = USP_STRDUP(node->name);
     pr->access = CalcDMSchemaParamAccess(is_read_allowed, is_write_allowed);
     pr->value_type = CalcDMSchemaParamType(node);
-    pr->value_change = USP__GET_SUPPORTED_DMRESP__VALUE_CHANGE_TYPE__VALUE_CHANGE_ALLOWED;  // Our implementation supports value change reporting on any parameter
+    pr->value_change = (node->registered.param_info.type_flags & DM_VALUE_CHANGE_WILL_IGNORE) ? USP__GET_SUPPORTED_DMRESP__VALUE_CHANGE_TYPE__VALUE_CHANGE_WILL_IGNORE : USP__GET_SUPPORTED_DMRESP__VALUE_CHANGE_TYPE__VALUE_CHANGE_ALLOWED;
 }
 
 /*********************************************************************//**

@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -72,7 +72,7 @@ typedef struct
 
 //------------------------------------------------------------------------------
 // Forward declarations. Note these are not static, because we need them in the symbol table for USP_LOG_Callstack() to show them
-void Grouped_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt);
+void Grouped_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc);
 Usp__Msg *CreateSetResp(char *msg_id);
 Usp__SetResp__UpdatedObjectResult__OperationStatus__OperationFailure *AddSetResp_OperFailure(Usp__SetResp *set_resp, char *path, int err_code, char *err_msg);
 Usp__SetResp__UpdatedInstanceFailure *
@@ -84,10 +84,10 @@ Usp__SetResp__UpdatedInstanceResult *AddOperSuccess_UpdatedInstRes(Usp__SetResp_
 Usp__SetResp__UpdatedInstanceResult__UpdatedParamsEntry *AddUpdatedInstRes_ParamsEntry(Usp__SetResp__UpdatedInstanceResult *updated_inst_result, char *key, char *value);
 Usp__SetResp__ParameterError *AddUpdatedInstRes_ParamErr(Usp__SetResp__UpdatedInstanceResult *updated_inst_result, char *path, int err_code, char *err_msg);
 void ExpandSetPathExpression(Usp__Set__UpdateObject *up, set_expr_info_t *si, group_set_vector_t *gsv);
-Usp__Msg *ProcessAllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv);
+Usp__Msg *ProcessSet_AllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv);
 Usp__Msg *CreateErrRespFromFailedSetParams(char *msg_id, group_set_vector_t *gsv, int first_failure, int last_param_index);
-Usp__Msg *ProcessAllowPartialTrue(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv);
-void ProcessAllowPartialTrue_Expression(char *msg_id, Usp__SetResp *set_resp, set_expr_info_t *si, group_set_vector_t *gsv);
+Usp__Msg *ProcessSet_AllowPartialTrue(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv);
+void ProcessSet_AllowPartialTrue_Expression(char *msg_id, Usp__SetResp *set_resp, set_expr_info_t *si, group_set_vector_t *gsv);
 void PopulateSetResp_OperSuccess(Usp__SetResp *set_resp, set_expr_info_t *si, group_set_vector_t *gsv);
 void DestroySetExprInfo(set_expr_info_t *set_expr_info, int num_set_expr);
 void PopulateSetResp_OperFailure(Usp__SetResp *set_resp, set_expr_info_t *si, group_set_vector_t *gsv);
@@ -101,14 +101,14 @@ void PopulateOperFailure_UpdatedInstFailure(Usp__SetResp__UpdatedObjectResult__O
 **
 ** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
 ** \param   controller_endpoint - endpoint which sent this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  None - This code must handle any errors by sending back error messages
 **
 **************************************************************************/
-void MSG_HANDLER_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt)
+void MSG_HANDLER_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc)
 {
-    Grouped_HandleSet(usp, controller_endpoint, mrt);
+    Grouped_HandleSet(usp, controller_endpoint, mtpc);
 }
 
 /*********************************************************************//**
@@ -119,12 +119,12 @@ void MSG_HANDLER_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_reply_t
 **
 ** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
 ** \param   controller_endpoint - endpoint which sent this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  None - This code must handle any errors by sending back error messages
 **
 **************************************************************************/
-void Grouped_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt)
+void Grouped_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc)
 {
     int i;
     set_expr_info_t *set_expr_info = NULL;
@@ -143,7 +143,7 @@ void Grouped_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t 
         (usp->body->request->set == NULL) )
     {
         USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
+        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp);
         goto exit;
     }
 
@@ -169,15 +169,15 @@ void Grouped_HandleSet(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t 
 
     if (set->allow_partial == false)
     {
-        resp = ProcessAllowPartialFalse(usp->header->msg_id, set_expr_info, num_set_expr, &gsv);
+        resp = ProcessSet_AllowPartialFalse(usp->header->msg_id, set_expr_info, num_set_expr, &gsv);
     }
     else
     {
-        resp = ProcessAllowPartialTrue(usp->header->msg_id, set_expr_info, num_set_expr, &gsv);
+        resp = ProcessSet_AllowPartialTrue(usp->header->msg_id, set_expr_info, num_set_expr, &gsv);
     }
 
 exit:
-    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mrt);
+    MSG_HANDLER_QueueMessage(controller_endpoint, resp, mtpc);
     usp__msg__free_unpacked(resp, pbuf_allocator);
     GROUP_SET_VECTOR_Destroy(&gsv);
     DestroySetExprInfo(set_expr_info, num_set_expr);
@@ -266,7 +266,7 @@ void ExpandSetPathExpression(Usp__Set__UpdateObject *up, set_expr_info_t *si, gr
 
 /*********************************************************************//**
 **
-** ProcessAllowPartialFalse
+** ProcessSet_AllowPartialFalse
 **
 ** Processes a Set request where AllowPartial is false. This means that any error setting any required parameter aborts all
 **
@@ -278,7 +278,7 @@ void ExpandSetPathExpression(Usp__Set__UpdateObject *up, set_expr_info_t *si, gr
 ** \return  None - this function puts any errors into the response message
 **
 **************************************************************************/
-Usp__Msg *ProcessAllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv)
+Usp__Msg *ProcessSet_AllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv)
 {
     int i;
     int err;
@@ -287,6 +287,8 @@ Usp__Msg *ProcessAllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info,
     int first_failure;
     Usp__Msg *resp;
     Usp__SetResp *set_resp;
+    int group_id;
+    int first_group_id = NON_GROUPED;
 
     // Exit if any of the path expressions failed
     for (i=0; i < num_set_expr; i++)
@@ -295,8 +297,33 @@ Usp__Msg *ProcessAllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info,
         if (si->err_code != USP_ERR_OK)
         {
             USP_ERR_SetMessage("%s", si->err_msg);
-            resp = ERROR_RESP_CreateSingle(msg_id, si->err_code, NULL, NULL);
+            resp = ERROR_RESP_CreateSingle(msg_id, si->err_code, NULL);
             return resp;
+        }
+    }
+
+    // Exit if the request was trying to change more than one USP Service
+    // This is not supported with allow_partial=false, because if one USP service fails, then all others need to be rolled back
+    // To do that, we would have to get the value of the parameters before performing a set, which is too expensive computationally
+    // and there is the possibility that rollback may fail, leaving the objects in an unknown state. So don't allow, instead.
+    for (i=0; i < gsv->num_entries; i++)
+    {
+        group_id = gsv->vector[i].group_id;
+        if (group_id != NON_GROUPED)
+        {
+            // Save the first group_id found
+            if (first_group_id == NON_GROUPED)
+            {
+                first_group_id = group_id;
+            }
+
+            // Exit if this group_id does not match the first group_id found
+            if (group_id != first_group_id)
+            {
+                USP_ERR_SetMessage("%s: Allow partial=false not supported across more than one USP Service", __FUNCTION__);
+                resp = ERROR_RESP_CreateSingle(msg_id, USP_ERR_RESOURCES_EXCEEDED, NULL);
+                return resp;
+            }
         }
     }
 
@@ -304,7 +331,7 @@ Usp__Msg *ProcessAllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info,
     err = DM_TRANS_Start(&trans);
     if (err != USP_ERR_OK)
     {
-        resp = ERROR_RESP_CreateSingle(msg_id, err, NULL, NULL);
+        resp = ERROR_RESP_CreateSingle(msg_id, err, NULL);
         return resp;
     }
 
@@ -324,7 +351,7 @@ Usp__Msg *ProcessAllowPartialFalse(char *msg_id, set_expr_info_t *set_expr_info,
     err = DM_TRANS_Commit();
     if (err != USP_ERR_OK)
     {
-        resp = ERROR_RESP_CreateSingle(msg_id, err, NULL, NULL);
+        resp = ERROR_RESP_CreateSingle(msg_id, err, NULL);
         return resp;
     }
 
@@ -366,11 +393,11 @@ Usp__Msg *CreateErrRespFromFailedSetParams(char *msg_id, group_set_vector_t *gsv
 
     // Calculate the outer error code for the error response, based on the error message of the first failing parameter
     gse = &gsv->vector[first_failure];
-    outer_err_code = ERROR_RESP_CalcOuterErrCode(1, gse->err_code);
+    outer_err_code = ERROR_RESP_CalcOuterErrCode(gse->err_code);
 
     // Create an error response
     USP_ERR_SetMessage("%s", gse->err_msg);
-    resp = ERROR_RESP_CreateSingle(msg_id, outer_err_code, NULL, NULL);
+    resp = ERROR_RESP_CreateSingle(msg_id, outer_err_code, NULL);
 
     // Populate the error response with param errors for all failing required parameters
     for (i=first_failure; i <= last_param_index; i++)
@@ -387,7 +414,7 @@ Usp__Msg *CreateErrRespFromFailedSetParams(char *msg_id, group_set_vector_t *gsv
 
 /*********************************************************************//**
 **
-** ProcessAllowPartialTrue
+** ProcessSet_AllowPartialTrue
 **
 ** Processes a Set request where AllowPartial is true, generating a response message
 ** AllowPartial==true means that failures abort the expression they affect
@@ -400,7 +427,7 @@ Usp__Msg *CreateErrRespFromFailedSetParams(char *msg_id, group_set_vector_t *gsv
 ** \return  None - this function puts any errors into the response message
 **
 **************************************************************************/
-Usp__Msg *ProcessAllowPartialTrue(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv)
+Usp__Msg *ProcessSet_AllowPartialTrue(char *msg_id, set_expr_info_t *set_expr_info, int num_set_expr, group_set_vector_t *gsv)
 {
     int i;
     Usp__Msg *resp;
@@ -413,7 +440,7 @@ Usp__Msg *ProcessAllowPartialTrue(char *msg_id, set_expr_info_t *set_expr_info, 
     // Iterate over all resolved expressions
     for (i=0; i < num_set_expr; i++)
     {
-        ProcessAllowPartialTrue_Expression(msg_id, set_resp, &set_expr_info[i], gsv);
+        ProcessSet_AllowPartialTrue_Expression(msg_id, set_resp, &set_expr_info[i], gsv);
     }
 
     return resp;
@@ -421,7 +448,7 @@ Usp__Msg *ProcessAllowPartialTrue(char *msg_id, set_expr_info_t *set_expr_info, 
 
 /*********************************************************************//**
 **
-** ProcessAllowPartialTrue_Expression
+** ProcessSet_AllowPartialTrue_Expression
 **
 ** Processes a single expression in a Set request where AllowPartial is true, generating a response message
 **
@@ -433,7 +460,7 @@ Usp__Msg *ProcessAllowPartialTrue(char *msg_id, set_expr_info_t *set_expr_info, 
 ** \return  None - this function puts any errors into the response message
 **
 **************************************************************************/
-void ProcessAllowPartialTrue_Expression(char *msg_id, Usp__SetResp *set_resp, set_expr_info_t *si, group_set_vector_t *gsv)
+void ProcessSet_AllowPartialTrue_Expression(char *msg_id, Usp__SetResp *set_resp, set_expr_info_t *si, group_set_vector_t *gsv)
 {
     int err;
     dm_trans_vector_t trans;
@@ -446,19 +473,6 @@ void ProcessAllowPartialTrue_Expression(char *msg_id, Usp__SetResp *set_resp, se
         AddSetResp_OperFailure(set_resp, si->requested_path, si->err_code, si->err_msg);
         return;
     }
-
-#ifdef BDK_USP
-    /* usp_functional_1_1_test_1_23:
-     * require oper_failure error code in set response when the requested path
-     * does not match any objects
-     */
-    if (si->resolved_objs.num_entries == 0)
-    {
-        (void)AddSetResp_OperFailure(set_resp, si->requested_path,
-                          USP_ERR_OBJECT_DOES_NOT_EXIST, USP_ERR_GetMessage());
-        return;
-    }
-#endif
 
     // Exit if unable to start a transaction for this object, adding a failure response
     err = DM_TRANS_Start(&trans);
@@ -678,42 +692,20 @@ void DestroySetExprInfo(set_expr_info_t *set_expr_info, int num_set_expr)
 **************************************************************************/
 Usp__Msg *CreateSetResp(char *msg_id)
 {
-    Usp__Msg *resp;
-    Usp__Header *header;
-    Usp__Body *body;
-    Usp__Response *response;
+    Usp__Msg *msg;
     Usp__SetResp *set_resp;
 
-    // Allocate and initialise memory to store the parts of the USP message
-    resp = USP_MALLOC(sizeof(Usp__Msg));
-    usp__msg__init(resp);
-
-    header = USP_MALLOC(sizeof(Usp__Header));
-    usp__header__init(header);
-
-    body = USP_MALLOC(sizeof(Usp__Body));
-    usp__body__init(body);
-
-    response = USP_MALLOC(sizeof(Usp__Response));
-    usp__response__init(response);
-
+    // Create Set Response
+    msg = MSG_HANDLER_CreateResponseMsg(msg_id, USP__HEADER__MSG_TYPE__SET_RESP, USP__RESPONSE__RESP_TYPE_SET_RESP);
     set_resp = USP_MALLOC(sizeof(Usp__SetResp));
     usp__set_resp__init(set_resp);
+    msg->body->response->set_resp = set_resp;
 
-    // Connect the structures together
-    resp->header = header;
-    header->msg_id = USP_STRDUP(msg_id);
-    header->msg_type = USP__HEADER__MSG_TYPE__SET_RESP;
-
-    resp->body = body;
-    body->msg_body_case = USP__BODY__MSG_BODY_RESPONSE;
-    body->response = response;
-    response->resp_type_case = USP__RESPONSE__RESP_TYPE_SET_RESP;
-    response->set_resp = set_resp;
-    set_resp->n_updated_obj_results = 0;    // Start from an empty list
+    // Start from an empty list
+    set_resp->n_updated_obj_results = 0;
     set_resp->updated_obj_results = NULL;
 
-    return resp;
+    return msg;
 }
 
 /*********************************************************************//**

@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom HND Layer
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,8 @@
 # OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
-# <<Broadcom-WL-IPTag/Open:>>
+#
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 # $Id: Makefile 692718 2017-03-29 03:25:07Z $
 #
@@ -64,6 +65,10 @@ HND_OBJS := $(addprefix $(src)/$(WLFILES_OFFSET), $(sort $(WLFILES_SRC:.c=.o)))
 HND_OBJS += $(src)/$(HNDFILES_SRC)/nvram_ext.o
 HND_OBJS += $(COMPONENTSBASE)/math/src/bcm_math.o
 
+ifeq ($(BAS_WLHAL),y)
+  include $(abspath $(COMPONENTSBASE)/bas_hal/fdt/bas_wlhal_fdt.mk)
+endif
+
 #For HNDLIB common files move
 EXTRA_CFLAGS += -DWL11BE -DWL11AX -DWL11AC
 
@@ -108,7 +113,7 @@ endif
 
     # wl shared directory
     ifeq ($(strip $(USE_WLAN_SHARED)), 1)
-         EXTRA_CFLAGS += -I$(WLSRC_BASE)/../../../shared/impl1
+      EXTRA_CFLAGS += -I$(WLSRC_BASE)/../../../shared/impl1
     endif
 
     ifneq ($(strip $(CONFIG_BCM_WIFI_FORWARDING_DRV)),)
@@ -194,3 +199,11 @@ else # HND_DIR doesn't exist
 endif
 
 clean-files += $(HND_DIR)/*.o $(HNDFILES_SRC)/*.o $(HND_DIR)/shared_ksyms.c
+
+# This comment block must stay at the bottom of the file.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 noet

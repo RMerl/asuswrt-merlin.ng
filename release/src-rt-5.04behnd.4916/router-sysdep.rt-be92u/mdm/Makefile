@@ -12,6 +12,7 @@ all install: conditional_build
 
 clean: generic_clean
 	rm -f $(INSTALL_DIR)/lib/private/$(LIB)
+	rm -f Baseline_1.c
 
 
 
@@ -54,16 +55,19 @@ endif
 ALLOWED_INCLUDE_PATHS := -I.\
                          -I $(BCM_FSBUILD_DIR)/public/include \
                          -I $(BCM_FSBUILD_DIR)/private/include \
-                         -I$(BUILD_DIR)/userspace/public/include  \
-                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
-                         -I$(BUILD_DIR)/userspace/private/include  \
-                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR)
+                         -I $(BCM_FSBUILD_DIR)/private/include/cms_core \
+                         -I $(BCM_FSBUILD_DIR)/private/include/mdm
 
-# the mdm lib needs special access to the cms_core lib
-ALLOWED_INCLUDE_PATHS += -I../cms_core
 
 # treat all warnings as errors
 CUSTOM_CFLAGS += -Werror -Wfatal-errors
+
+
+# Data model files are now generated in BCM_FSBUILD_DIR.  Just copy the main
+# Baseline_1.c file here.  All the other files will be sucked into
+# Baseline_1.c via #include
+Baseline_1.c:
+	cp -up $(BCM_FSBUILD_DIR)/private/include/mdm/Baseline_1.c .
 
 
 #

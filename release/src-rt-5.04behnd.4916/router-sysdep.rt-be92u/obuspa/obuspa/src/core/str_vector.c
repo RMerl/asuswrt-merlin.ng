@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2020, Broadband Forum
- * Copyright (C) 2016-2020  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -184,6 +184,83 @@ int STR_VECTOR_Find(str_vector_t *sv, char *str)
 
     // if the code gets here, no string was found
     return INVALID;
+}
+
+/*********************************************************************//**
+**
+** STR_VECTOR_RemoveByIndex
+**
+** Removes the specified entry from the vector
+**
+** \param   sv - pointer to structure to remove an entry from
+** \param   index - index of the string to remove from within the vector
+**
+** \return  None
+**
+**************************************************************************/
+void STR_VECTOR_RemoveByIndex(str_vector_t *sv, int index)
+{
+    int num_items_after;
+
+    // Remove the string at the specified index
+    USP_SAFE_FREE(sv->vector[index]);
+
+    // Move down all items in the vector after the one we just removed
+    num_items_after = sv->num_entries-1 - index;
+    if (num_items_after > 0)
+    {
+        memmove(&sv->vector[index], &sv->vector[index+1], num_items_after*sizeof(char *));
+    }
+
+    sv->num_entries--;
+
+    // Ensure that the vector is freed, if it now contains no entries
+    if (sv->num_entries == 0)
+    {
+        USP_FREE(sv->vector);
+        sv->vector = NULL;
+    }
+}
+
+/*********************************************************************//**
+**
+** STR_VECTOR_RemoveUnusedEntries
+**
+** Removes all NULL string entries from the vector, compacting the vector
+** This function is usually called after marking some entries as NULL in the vector (after freeing them)
+**
+** \param   sv - pointer to structure to remove an entry from
+**
+** \return  None
+**
+**************************************************************************/
+void STR_VECTOR_RemoveUnusedEntries(str_vector_t *sv)
+{
+    int i, j;
+
+    // Move down all items in the vector
+    j = 0;
+    for (i=0; i < sv->num_entries; i++)
+    {
+        if (sv->vector[i] != NULL)
+        {
+            if (i != j)
+            {
+                sv->vector[j] = sv->vector[i];
+            }
+            j++;
+        }
+    }
+
+    // Save the new number of entries, after
+    sv->num_entries = j;
+
+    // Ensure that the vector is freed, if it now contains no entries
+    if (sv->num_entries == 0)
+    {
+        USP_FREE(sv->vector);
+        sv->vector = NULL;
+    }
 }
 
 /*********************************************************************//**

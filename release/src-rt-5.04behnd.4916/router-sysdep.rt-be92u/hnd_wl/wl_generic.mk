@@ -4,7 +4,22 @@
 # input: O_TARGET, CONFIG_WL_CONF and wl_suffix
 # output: obj-m, obj-y
 #
-# <<Broadcom-WL-IPTag/Open:>>
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+# SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+# OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+# CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+#
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 # $Id$
 #
@@ -18,6 +33,8 @@
 # TARGET             wl
 
 # The CWD is the linux kernel root dir, e.g. kernel/linux-4.19
+
+wl_generic_mkfile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
 
@@ -43,8 +60,8 @@ ifeq ($(REBUILD_WL_MODULE),1)
     # Get the source files and flags from the specified config file
     # (Remove config's string quotes before trying to use the file)
     ifeq ($(CONFIG_WL_CONF),)
-         $(error var_vlist($(VLIST)) var_config_wl_use($(shell env|grep CONFIG_WL_USE)))
-         $(error CONFIG_WL_CONF is undefined)
+        $(error var_vlist($(VLIST)) var_config_wl_use($(shell env|grep CONFIG_WL_USE)))
+        $(error CONFIG_WL_CONF is undefined)
     endif
 
     WLCONFFILE := $(strip $(subst ",,$(CONFIG_WL_CONF)))
@@ -106,13 +123,14 @@ endif
     ifeq ($(WLAUTOD11SHM),1)
         # Include makefile to build d11 shm files
         D11SHM_SRCBASE := $(src)/$(SRCBASE_OFFSET)
-        D11SHM_TEMPDIR := $(D11SHM_SRCBASE)/wl
-        D11SHM_TEMPDIR2 := $(SRCBASE_OFFSET)/wl
-        EXTRA_CFLAGS += -I$(D11SHM_TEMPDIR)
+        # match the optimized relative path in WL_OBJS for d11shm.c file.
+        D11SHM_TEMPDIR := $(src)/../../../src/wl
+        D11SHM_TEMPDIR2 := $(abspath $(HND_SRC))/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)/main/src
+        EXTRA_CFLAGS += -I$(D11SHM_TEMPDIR2)
         IFLAGS += -I$(D11SHM_TEMPDIR)
         D11SHM_IFLAGS := $(IFLAGS)
         ifneq ($(CMWIFI),)
-           D11SHM_IFLAGS += -I$(src)
+          D11SHM_IFLAGS += -I$(src)
         endif
         D11SHM_CFLAGS := $(DFLAGS) $(IFLAGS) $(WFLAGS)
         D11SHM_CFGFILE := $(D11SHM_SRCBASE)/wl/sys/wlc_cfg.h
@@ -125,12 +143,13 @@ endif
     ifeq ($(WLAUTOD11REGS),1)
         # Include makefile to build d11 REGS files
         AUTOREGS_SRCBASE := $(abspath $(SRCBASE)/../../main/src)
-        AUTOREGS_TEMPDIR := $(AUTOREGS_SRCBASE)/wl
+        # match the optimized relative path in WL_OBJS for autoreg*.c files.
+        AUTOREGS_TEMPDIR := $(src)/../../../src/wl
         EXTRA_CFLAGS += -I$(AUTOREGS_TEMPDIR)
         IFLAGS += -I$(AUTOREGS_TEMPDIR)
         AUTOREGS_IFLAGS := $(IFLAGS)
         ifneq ($(CMWIFI),)
-           AUTOREGS_IFLAGS += -I$(src)
+          AUTOREGS_IFLAGS += -I$(src)
         endif
         AUTOREGS_CFLAGS := $(DFLAGS) $(IFLAGS) $(WFLAGS)
         D11REGS_CFGFILE := $(AUTOREGS_SRCBASE)/wl/sys/wlc_cfg.h
@@ -176,7 +195,7 @@ endif
     EXTRA_CFLAGS += $(WLAN_StdIncPathA)
 
     ifeq ($(WLFILES_SRC),)
-         $(error WLFILES_SRC is undefined in $(WLCFGDIR)/$(WLCONFFILE))
+      $(error WLFILES_SRC is undefined in $(WLCFGDIR)/$(WLCONFFILE))
     endif
 
     ifeq ($(WLCLMAPI),1)
@@ -185,7 +204,15 @@ endif
       else
         CLM_TYPE ?= router
       endif
-    $(call WLAN_GenClmCompilerRule,$(firstword $(wildcard $(addprefix $(src)/$(SRCBASE_OFFSET)/, wl/clm/src ../components/clm-api/src))),$(src)/$(SRCBASE_OFFSET))
+    # wlc_clm_data_nic.o, wlc_clm_data_nic.c paths should match with the path in
+    # WL_OBJS so optimizing the path for clm.
+    # If the /bin/realpath utility is available, use it for simplicity.
+    # If not, fall back to internal custom makefile code.
+    optimized_clm_path := $(call .relpath,$(wl_generic_mkfile_dir), \
+      $(wl_generic_mkfile_dir)$(SRCBASE_OFFSET)/../components/clm-api/src, \
+      $(if $(wildcard /bin/realpath),1),-m)
+    # $(call WLAN_GenClmCompilerRule,$(src)/$(optimized_clm_path),$(src)/$(SRCBASE_OFFSET))
+    $(call WLAN_GenClmCompilerRule,$(abspath $(src))/main_components/clm-api/src/,$(abspath $(src)/main_src/))
     endif
 
     # need -I. to pick up wlconf.h in build directory
@@ -199,6 +226,8 @@ endif
     EXTRA_CFLAGS += -DDMA $(WLFLAGS)
 ifeq ($(CMWIFI),)
     EXTRA_CFLAGS += -Werror
+else
+    EXTRA_CFLAGS += -Wno-error
 endif
     EXTRA_CFLAGS += -I$(src) -I$(src)/.. -I$(WLSRC_BASE)/wl/linux \
 		    -I$(WLSRC_BASE)/wl/sys -I$(WLSRC_BASE)/wl/dot1as/include \
@@ -217,7 +246,7 @@ ifneq ($(strip $(BUILD_OPENWRT_NATIVE)),)
     # For native OpenWrt we need stricter cfg80211 API compliance
     EXTRA_CFLAGS += -DWL_CFG80211_STRICT
 else ifeq ($(BUILD_PRPL_FEEDS),y)
-    EXTRA_CFLAGS += -DWL_CFG80211_STRICT
+    EXTRA_CFLAGS += -DWL_CFG80211_STRICT -DPRPL_FEEDS
 else ifeq ($(RDKB_ONE_WIFI),y)
     EXTRA_CFLAGS += -DWL_CFG80211_STRICT
 endif
@@ -226,7 +255,7 @@ ifeq ($(RDKB_ONE_WIFI),y)
 endif
 
     ifneq ("$(CONFIG_CC_OPTIMIZE_FOR_SIZE)","y")
-         EXTRA_CFLAGS += -finline-limit=2048
+      EXTRA_CFLAGS += -finline-limit=2048
     endif
 
     ifdef RTCONFIG_DPSTA
@@ -272,12 +301,13 @@ endif
             WLWFD := 1
             EXTRA_CFLAGS += -DBCM_AWL
             WLFILES_SRC += ../../shared/impl1/wl_awl.c
+            # WLFILES_SRC += ../bcmdrivers/broadcom/net/wl/shared/impl1/wl_awl.c
         endif
 
         # Settings that apply only to WFD
         ifeq ($(strip $(WLWFD)), 1)
 		EXTRA_CFLAGS += -DBCM_WFD
-		ifneq ($(strip $(CONFIG_BCM_CROSSBOW_FULL_OFFLOAD)),)
+		ifneq ($(strip $(CONFIG_BCM_CROSSBOW)),)
 			EXTRA_CFLAGS += -DBCM_WLHDR
 		endif
 
@@ -289,7 +319,7 @@ endif
 		endif
 
 		WLFILES_SRC += ../../shared/impl1/wl_wfd.c
-    	endif
+	endif
 
 	# WFD or EAP, but one build currently build, enable and run
 	# PKTFWD while not really using it. There is no way to detect that in a
@@ -321,15 +351,15 @@ endif
 		endif
 
 		 WLFILES_SRC += ../../shared/impl1/wl_thread.c
-	 endif
+	endif
 
-    	ifneq ($(strip $(CONFIG_BLOG)),)
-		EXTRA_CFLAGS += -DBCM_BLOG
-		WLFILES_SRC += ../../shared/impl1/wl_blog.c
-    	endif
+	ifneq ($(strip $(CONFIG_BLOG)),)
+          EXTRA_CFLAGS += -DBCM_BLOG
+          WLFILES_SRC += ../../shared/impl1/wl_blog.c
+	endif
 
 	ifneq ($(strip $(CONFIG_BCM_BPM_BULK_FREE)),)
-		EXTRA_CFLAGS += -DBPM_BULK_FREE
+	  EXTRA_CFLAGS += -DBPM_BULK_FREE
 	endif
     endif
 
@@ -358,7 +388,7 @@ endif
         WLFILES_SRC += ../../shared/impl1/wl_spdsvc.c
 
         ifneq ($(strip $(CONFIG_BCM_WLAN_NIC_RX_RNR_ACCEL)),)
-           EXTRA_CFLAGS += -DMC_RX_LOOPBACK_ENABLED
+          EXTRA_CFLAGS += -DMC_RX_LOOPBACK_ENABLED
         endif
 
     endif
@@ -372,15 +402,67 @@ endif
         EXTRA_CFLAGS += -DWLLED_CLED
     endif
 
-    # Save the $(EXTRA_CFLAGS) into a file and use gcc's @file option to include WL flags for C
-    # compilation to avoid "execvp Argument too long" issue.
-    $(info ### EXTRA_CFLAGS is $(EXTRA_CFLAGS))
-    $(info ### Writing EXTRA_CFLAGS to $(obj)/wlflags.tmp ###)
-    $(shell echo $(EXTRA_CFLAGS) > $(obj)/wlflags.tmp)
-    EXTRA_CFLAGS = @$(obj)/wlflags.tmp
+    ifeq ($(BAS_WLHAL),y)
+      include $(abspath $(WLSRC_BASE)/../components/bas_hal/wlhal/src/bas_wlhal_wl_router.mk)
+    endif
+
+ifneq ($(BCM_SANITIZE),)
+    # these flags apply only to wl.ko when we build with BCM_SANITIZE.
+    EXTRA_CFLAGS += -fsanitize=address -Wframe-larger-than=8192 -Wno-builtin-declaration-mismatch
+    EXTRA_CFLAGS += --param asan-instrumentation-with-call-threshold=0 --param asan-stack=0
+    EXTRA_CFLAGS += --param asan-instrument-allocas=0 --param asan-globals=0
+endif
+
+    # Save the $(EXTRA_CFLAGS) into a file and use gcc's @file option to
+    # include them for C compilation to avoid "execvp Argument too long".
+    wlflags := \
+      $(sort $(filter -D%,$(EXTRA_CFLAGS))) \
+      $(filter-out @% -D% -I%,$(EXTRA_CFLAGS)) \
+      $(filter @%,$(EXTRA_CFLAGS)) \
+      $(addprefix -I,$(abspath $(patsubst -I%,%,$(filter -I%,$(EXTRA_CFLAGS)))))
+    $(info ### EXTRA_CFLAGS is $(sort $(filter-out -I%,$(wlflags))))
+
+    ifneq ($(filter-out 3.%,$(MAKE_VERSION)),)
+      $(file > $(obj)/wlflags)
+      $(foreach wlflag,$(wlflags),$(file >> $(obj)/wlflags,$(wlflag)))
+    else
+      $(shell echo $(wlflags) > $(obj)/wlflags)
+    endif
+
+    # Help the "cmd-check" macro of the kernel to detect command line changes by
+    # changing the command line when the contents of wlflags file has changed.
+    # We do this by hashing wlflags and creating a dummy definition with the
+    # hash.
+    EXTRA_CFLAGS := @$(obj)/wlflags -D__WLFLAGS_SHA1_$(firstword $(shell sha1sum $(obj)/wlflags))
 
     # The paths in WLFILES_SRC need a bit of adjustment.
-    WL_OBJS := $(sort $(patsubst %.c,%.o,$(addprefix $(SRCBASE_OFFSET)/,$(patsubst src/%,%,$(filter src/%, $(WLFILES_SRC))) $(addprefix ../, $(filter-out src/%, $(WLFILES_SRC))))))
+    # WLFILES_SRC1 -> ../components/avs/src/avs.c ../../../shared/impl1/wl_spdsvc.c
+    WLFILES_SRC := $(patsubst ../../shared/%,../bcmdrivers/broadcom/net/wl/shared/%,$(WLFILES_SRC))
+    WLFILES_SRC := $(patsubst components/%,../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/components/%,$(WLFILES_SRC))
+    WLFILES_SRC := $(patsubst src/%,../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src/%,$(WLFILES_SRC))
+    WLFILES_SRC1 := $(addprefix ../,$(filter-out src/%,$(WLFILES_SRC)))
+
+    # WLFILES_SRC2 ->  shared/bcm_app_utils.c wl/sys/wldev_common.c wl/keymgmt/src/km_hw_dump.c
+    WLFILES_SRC2 := $(patsubst src/%,%,$(filter src/%,$(WLFILES_SRC)))
+
+    # WL_OBJS_T ->
+    # $(wl_generic_mkfile_dir)../../../../main/src/shared/bcm_app_utils.o \
+    # $(wl_generic_mkfile_dir)../../../../main/src/wl/sys/wldev_common.o \
+    # $(wl_generic_mkfile_dir)../../../../main/src/../components/avs/src/avs.o \
+    # $(wl_generic_mkfile_dir)../../../../main/src/../../../shared/impl1/wl_spdsvc.o \
+    # $(wl_generic_mkfile_dir)../../../../main/src/../components/phy/cmn/radar/phy_radar_utils.o
+    # WL_OBJS_T := $(patsubst %.c,%.o,$(addprefix $(wl_generic_mkfile_dir)$(SRCBASE_OFFSET)/,$(WLFILES_SRC1) $(WLFILES_SRC2)))
+    WL_OBJS_T := $(patsubst %.c,%.o,$(WLFILES_SRC1) $(WLFILES_SRC2))
+
+    # WL_OBJS ->  ../../avs/src/avs.o ../../phy/cmn/radar/phy_radar_utils.o \
+    # ../../../../../shared/impl1/wl_spdsvc.o ../../../src/shared/bcm_app_utils.o \
+    # ../../../src/wl/keymgmt/src/km_hw_dump.o ../../../src/wl/sys/wldev_common.o
+    # If the /bin/realpath utility is available, use it for simplicity.
+    # If not, fall back to internal custom makefile code.
+    # WL_OBJS := $(sort $(call .relpath,$(wl_generic_mkfile_dir),$(WL_OBJS_T), \
+     #  $(if $(wildcard /bin/realpath),1),-m))
+	# pwd is build/
+    WL_OBJS := $(sort $(patsubst ../../../shared/%,../bcmdrivers/broadcom/net/wl/shared/%,$(WL_OBJS_T)))
 
     # wl-objs is for linking to wl.o
     $(TARGET)-objs := $(WLCONF_O) $(WL_OBJS)
@@ -459,3 +541,11 @@ $(obj)/$(WLCONF_H): $(WLCFGDIR)/$(WLTUNEFILE) FORCE
 FORCE:
 
 clean-files += $(SRCBASE_OFFSET)/wl/sys/*.o $(SRCBASE_OFFSET)/../components/phy/old/*.o $(SRCBASE_OFFSET)/wl/phy/*.o $(SRCBASE_OFFSET)/wl/ppr/src/*.o $(SRCBASE_OFFSET)/wl/sys/.*.*.cmd $(SRCBASE_OFFSET)/../components/phy/old/.*.*.cmd $(SRCBASE_OFFSET)/wl/phy/.*.*.cmd $(SRCBASE_OFFSET)/bcmcrypto/.*.*.cmd $(SRCBASE_OFFSET)/wl/clm/src/*.o $(SRCBASE_OFFSET)/wl/clm/src/.*.*.cmd $(SRCBASE_OFFSET)/shared/bcmwifi/src/*.o $(SRCBASE_OFFSET)/shared/bcmwifi/src/.*.*.cmd ./$(WLCONF_H) $(WLCONF_O) ./$(D11SHM_TEMPDIR)/d11regs* ./$(D11SHM_TEMPDIR)/d11shm* ./autoregs*
+
+# This comment block must stay at the bottom of the file.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 noet

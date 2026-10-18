@@ -1,0 +1,87 @@
+diff --git a/src/rbus/rbus.c b/src/rbus/rbus.c
+index 2531861..dc537bf 100644
+--- a/src/rbus/rbus.c
++++ b/src/rbus/rbus.c
+@@ -28,6 +28,7 @@
+ #include <rbuscore.h>
+ #include <rbus_session_mgr.h>
+ #include <rbus.h>
++#include <regex.h>
+ #include "rbus_buffer.h"
+ #include "rbus_element.h"
+ #include "rbus_valuechange.h"
+@@ -3746,6 +3747,55 @@ rbusError_t rbus_getStr (rbusHandle_t handle, char const* paramName, char** para
+     return rbus_getByType(handle, paramName, paramVal, RBUS_STRING);
+ }
+ 
++#define RBUS_WIFI_APPLY_TIMEOUT_ENV "/proc/environment/rbus_wifi_apply_timeout"
++#define RBUS_WIFI_APPLY_TIMEOUT_DEFAULT 120 /* seconds */
++
++typedef struct _rbus_component_timeout {
++    char *reg_match; /*component's regex match string */
++    char *environment_name;
++    int  default_timeout; /* In seconds */
++} RBUS_COMPONENT_TIMEOUT;
++
++/* Component matching table */
++RBUS_COMPONENT_TIMEOUT g_components_timeout[] = {
++    { "^Device\\.WiFi\\.Radio\\.[1-9]\\.X_CISCO_COM_ApplySetting$", RBUS_WIFI_APPLY_TIMEOUT_ENV, 120 },
++};
++
++#define RBUS_COMPENT_TIMEOUT_SIZE ((int)(sizeof(g_components_timeout)/sizeof(RBUS_COMPONENT_TIMEOUT)))
++
++/* return component timeout in ms */
++int rbus_getComponentTimeout(const char *name)
++{
++    int timeout = 0;
++    regex_t regex;
++
++    for (int i = 0; i < RBUS_COMPENT_TIMEOUT_SIZE; ++i) {
++        if (!regcomp(&regex, g_components_timeout[i].reg_match, REG_EXTENDED) &&
++                !regexec(&regex,name, 0, NULL, 0)) {
++            if (g_components_timeout[i].environment_name != NULL) {
++                FILE *ev_file = fopen(g_components_timeout[i].environment_name, "r");
++                if (ev_file)
++                {
++                    char buffer[64]={0};
++                    size_t bytes_read = fread(buffer, 1, sizeof(buffer), ev_file);
++                    if (bytes_read > 0)
++                    {
++                        timeout = atoi(buffer);
++                    }
++                    fclose(ev_file);
++                }
++            }
++            if (timeout == 0)
++            {
++                timeout = g_components_timeout[i].default_timeout;
++            }
++            regfree(&regex);
++            break;
++        }
++    }
++    return timeout * 1000;
++}
++
+ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rbusSetOptions_t* opts)
+ {
+     rbusError_t errorcode = RBUS_ERROR_INVALID_INPUT;
+@@ -3753,6 +3803,7 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
+     VERIFY_HANDLE(handle);
+     rbusMessage setRequest, setResponse;
+     struct _rbusHandle* handleInfo = (struct _rbusHandle*) handle;
++    int component_set_timeout = 0;
+ 
+     VERIFY_NULL(handle);
+     VERIFY_NULL(name);
+@@ -3788,7 +3839,9 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
+     if (NULL == myConn)
+         myConn = handleInfo->m_connection;
+ 
+-    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_SETPARAMETERVALUES, setRequest, rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
++    component_set_timeout = rbus_getComponentTimeout(name);
++
++    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_SETPARAMETERVALUES, setRequest, component_set_timeout>0 ? component_set_timeout : rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
+     {
+         RBUSLOG_ERROR("set by %s failed; Received error %d from RBUS Daemon for the object %s", handle->componentName, err, name);
+         errorcode = rbusCoreError_to_rbusError(err);

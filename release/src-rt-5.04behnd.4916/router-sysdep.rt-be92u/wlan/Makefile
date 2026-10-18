@@ -643,7 +643,7 @@ util:
 	install -d $(INSTALLDIR)/usr/sbin
 	install -m 755 $(APPS_UTILS_DIR)/WlGetDriverCfg.sh $(INSTALLDIR)/usr/sbin
 	install -m 755 $(APPS_UTILS_DIR)/WlGetDriverStats.sh $(INSTALLDIR)/usr/sbin
-	install -m 755 $(APPS_UTILS_DIR)/init_tmctl.sh $(INSTALLDIR)/usr/sbin
+	# install -m 755 $(APPS_UTILS_DIR)/init_tmctl.sh $(INSTALLDIR)/usr/sbin
 #
 
 #usbdev apps for Wlan USB driver

@@ -2,8 +2,7 @@ OBJS := fcctl.o fcctl_cmds.o
 
 LIBS := -L$(HND_SRC)/router-sysdep/fcctl_lib/ -lfcctl
 
-#CFLAGS += -Werror -Wfatal-errors
-CFLAGS += -Wfatal-errors
+CFLAGS += -Werror -Wfatal-errors
 
 $(EXE): $(OBJS)
 	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(CMS_RPATH_OPTION) $(CMS_LIB_PATH) $(LIBS)

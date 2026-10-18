@@ -51,7 +51,7 @@ int get_url_info()
 			
 	FILE *f = fopen("/var/url_list", "r");
 	if (f != NULL){
-	   while (fgets(temp,96, f) != '\0')
+	   while ( (fgets(temp,96, f) != NULL) && (temp[0] != '\0'))
 	   {
 		if (temp[0]=='h' && temp[1]=='t' && temp[2]=='t' && 
 			temp[3]=='p' && temp[4]==':' && temp[5]=='/' && temp[6]=='/')

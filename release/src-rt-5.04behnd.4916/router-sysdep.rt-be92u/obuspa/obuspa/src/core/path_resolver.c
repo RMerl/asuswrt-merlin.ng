@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2022  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -67,6 +67,8 @@ typedef struct
                             // If the search path resolves to an object or param which there is no permission for,
                             // then a error will be generated (or the path forgivingly ignored in the case of a get)
     unsigned flags;         // flags controlling resolving of the path eg GET_ALL_INSTANCES
+    bool is_search_path;    // Set if the path that has been parsed so far contains a search path (ie wildcard or search expression)
+                            // This flag is used to differentiate between whether to ignore a resolved path, or generate an error, in the case of instances not existing in the resolved path (R.GET-0)
 } resolver_state_t;
 
 // Structure containing unique key search variables
@@ -85,6 +87,14 @@ typedef struct
 //--------------------------------------------------------------------
 // Typedef for the compare callback
 typedef int (*dm_cmp_cb_t)(char *lhs, expr_op_t op, char *rhs, bool *result);
+
+//--------------------------------------------------------------------
+// Convenience macro to wrap calls to USP_ERR_SetMessage(). Prevents USP_ERR_SetMessage() being called if DONT_LOG_RESOLVER_ERRORS is set
+#define USP_ERR_SetMessageIfAllowed(...)      if ((state->flags & DONT_LOG_RESOLVER_ERRORS)==0) { USP_ERR_SetMessage(__VA_ARGS__); }
+
+//--------------------------------------------------------------------
+// Convenience macro passed to data model functions to prevent USP_ERR_SetMessage() being called if DONT_LOG_RESOLVER_ERRORS is set
+#define DONT_LOG_ERRS_FLAG    (state->flags & DONT_LOG_RESOLVER_ERRORS) ? DONT_LOG_ERRORS : 0
 
 //-------------------------------------------------------------------------
 // Forward declarations. Note these are not static, because we need them in the symbol table for USP_LOG_Callstack() to show them
@@ -111,6 +121,7 @@ bool GroupReferencedParameters(str_vector_t *params, resolver_state_t *state, in
 void InitSearchParam(search_param_t *sp);
 void DestroySearchParam(search_param_t *sp);
 void RefreshInstances_LifecycleSubscriptionEndingInPartialPath(char *path);
+int ValidatePathSegment(int path_segment_index, char *segment, subs_notify_t notify_type, char *path);
 
 /*********************************************************************//**
 **
@@ -144,10 +155,9 @@ int PATH_RESOLVER_ResolveDevicePath(char *path, str_vector_t *sv, int_vector_t *
     int len;
 
     // Exit if the path does not begin with "Device."
-    #define DEVICE_ROOT_STR "Device."
-    if (strncmp(path, DEVICE_ROOT_STR, sizeof(DEVICE_ROOT_STR)-1) != 0)
+    if (strncmp(path, dm_root, dm_root_len) != 0)
     {
-        USP_ERR_SetMessage("%s: Expression does not start in '%s' (path='%s')", __FUNCTION__, DEVICE_ROOT_STR, path);
+        USP_ERR_SetMessage("%s: Expression does not start in '%s' (path='%s')", __FUNCTION__, dm_root, path);
         return USP_ERR_INVALID_PATH;
     }
 
@@ -211,9 +221,6 @@ int PATH_RESOLVER_ResolvePath(char *path, str_vector_t *sv, int_vector_t *gv, re
     int err;
     resolver_state_t state;
 
-    // Use of the gv argument is only valid for paths that describe parameters
-    USP_ASSERT((gv==NULL) || (op==kResolveOp_Get) || (op==kResolveOp_Set) || (op==kResolveOp_SubsValChange) || (op==kResolveOp_GetBulkData));
-
     // Exit if path contains any path separators with no intervening objects
     if (strstr(path, "..") != NULL)
     {
@@ -232,10 +239,364 @@ int PATH_RESOLVER_ResolvePath(char *path, str_vector_t *sv, int_vector_t *gv, re
     state.depth = depth;
     state.combined_role = combined_role;
     state.flags = flags;
+    state.is_search_path = false;
 
     err = ExpandPath(resolved, unresolved, &state);
 
     return err;
+}
+
+
+/*********************************************************************//**
+**
+** PATH_RESOLVER_ValidatePath
+**
+** This function attempts to validate the reference list textually without needing the DM elements to
+** have been registered by a USP Service
+** This function is intended to be called to validate subscription paths, Boot! Parameter paths and Bulk Data Collection parameter paths
+**
+** \param   path - Data model path to validate
+** \param   notify_type - Type of notification that the path refers to
+**                        NOTE: If the path is supposed to represent parameters, then use kSubNotifyType_ValueChange
+**
+** \return  USP_ERR_OK if the path looks valid
+**          USP_ERR_INVALID_ARGUMENTS if the path looks invalid
+**
+**************************************************************************/
+int PATH_RESOLVER_ValidatePath(char *path, subs_notify_t notify_type)
+{
+    int i;
+    int err;
+    str_vector_t path_segments;
+    char *last_segment;
+    int len;
+    char *p;
+    char buf[MAX_DM_PATH];
+    bool inside_brackets;
+
+    // Exit if no path setup yet (empty path).
+    // NOTE: This is not an error as it could occur if this function is called when NotifType is set before ReferenceList is set
+    STR_VECTOR_Init(&path_segments);
+    if (*path == '\0')
+    {
+        err = USP_ERR_OK;
+        goto exit;
+    }
+
+    // Exit if path is just to 'Device.' This is only supported for OperationComplete and USP Events
+    if (strcmp(path, dm_root)==0)
+    {
+        switch(notify_type)
+        {
+            case kSubNotifyType_OperationComplete:
+            case kSubNotifyType_Event:
+            case kSubNotifyType_None:    // NOTE: 'None' could occur if this function is called when ReferenceList is set before NotifType
+                err = USP_ERR_OK;
+                break;
+
+            default:
+            case kSubNotifyType_ValueChange:
+                USP_ERR_SetMessage("%s: ReferenceList '%s' is not supported for NotifType=%s", __FUNCTION__, path, TEXT_UTILS_EnumToString(notify_type, notify_types, NUM_ELEM(notify_types)) );
+                err = USP_ERR_RESOURCES_EXCEEDED;
+                break;
+
+            case kSubNotifyType_ObjectCreation:
+            case kSubNotifyType_ObjectDeletion:
+                USP_ERR_SetMessage("%s: Path (%s) is not a multi-instance object", __FUNCTION__, path);
+                err = USP_ERR_NOT_A_TABLE;
+                break;
+        }
+
+        goto exit;
+    }
+
+    // Exit if the path does not start with "Device."
+    if (strncmp(path, dm_root, dm_root_len) != 0)
+    {
+        USP_ERR_SetMessage("%s: Expression does not start in 'Device.' (path='%s')", __FUNCTION__, path);
+        err = USP_ERR_INVALID_PATH;
+        goto exit;
+    }
+
+    // Exit if path contains an empty path segment
+    if (strstr(path, "..") != NULL)
+    {
+        USP_ERR_SetMessage("%s: ReferenceList '%s' contains empty path segment '..'", __FUNCTION__, path);
+        err = USP_ERR_INVALID_PATH_SYNTAX;
+        goto exit;
+    }
+
+    // Exit if the path contains whitespace either side of any '.' path separator
+    p = path;
+    while (*p != '\0')
+    {
+        if (p[0] == '.')
+        {
+            if ((p[-1] == ' ') || (p[-1] == '\t') || (p[1] == ' ') || (p[1] == '\t'))
+            {
+                USP_ERR_SetMessage("%s: ReferenceList '%s' contains whitespace where it shouldn't", __FUNCTION__, path);
+                err = USP_ERR_INVALID_PATH_SYNTAX;
+                goto exit;
+            }
+        }
+        p++;
+    }
+
+    // Workaround a problem that the inside of a search expression could contain '.', and this causes TEXT_UTILS_SplitString() to go wrong
+    // We replace '.' within '[' and ']' with a different character
+    // NOTE: This workaround is suitable, because we don't validate within a search expression
+    USP_STRNCPY(buf, path, sizeof(buf));
+    p = buf;
+    inside_brackets = false;
+    while (*p != '\0')
+    {
+        if (*p == '[')
+        {
+            inside_brackets = true;
+        }
+        else if (*p == ']')
+        {
+            inside_brackets = false;
+        }
+        else if ((*p == '.') && (inside_brackets == true))
+        {
+            *p = 'X';
+        }
+        p++;
+    }
+
+    // Split the string into path segments
+    TEXT_UTILS_SplitString(buf, &path_segments, ".");
+    USP_ASSERT(path_segments.num_entries != 0);    // This shouldn't occur, as we already tested that the string wasn't empty
+
+    // Ensure the last segment ends correctly, removing any trailing '!' or '()'
+    last_segment = path_segments.vector[ path_segments.num_entries-1 ];
+    len = strlen(last_segment);
+
+    switch(notify_type)
+    {
+        case kSubNotifyType_OperationComplete:
+            // OperationComplete subscriptions must end in '()'
+            if (strcmp(&last_segment[len-2], "()") != 0)
+            {
+                USP_ERR_SetMessage("%s: ReferenceList '%s' should end in '()' for NotifType=OperationComplete", __FUNCTION__, path);
+                err = USP_ERR_INVALID_PATH;
+                goto exit;
+            }
+
+            // Remove the trailing '()'
+            last_segment[len-2] = '\0';
+            break;
+
+        case kSubNotifyType_Event:
+            // USP Event subscriptions must end in '!'
+            if (last_segment[len-1] != '!')
+            {
+                USP_ERR_SetMessage("%s: ReferenceList '%s' should end in '!' for NotifType=Event", __FUNCTION__, path);
+                err = USP_ERR_INVALID_PATH;
+                goto exit;
+            }
+
+            // Remove the trailing '!'
+            last_segment[len-1] = '\0';
+            break;
+
+        case kSubNotifyType_ValueChange:
+            // These subscriptions must not end in '()' or '!'
+            if ((strcmp(&last_segment[len-2], "()") == 0) || (last_segment[len-1] == '!'))
+            {
+                USP_ERR_SetMessage("%s: Path '%s' is not a parameter or object partial path", __FUNCTION__, path);
+                err = USP_ERR_INVALID_PATH;
+                goto exit;
+            }
+            break;
+
+        case kSubNotifyType_ObjectCreation:
+        case kSubNotifyType_ObjectDeletion:
+            // These subscriptions must not end in '()' or '!'
+            if ((strcmp(&last_segment[len-2], "()") == 0) || (last_segment[len-1] == '!'))
+            {
+                USP_ERR_SetMessage("%s: Path '%s' is not an object", __FUNCTION__, path);
+                err = USP_ERR_NOT_A_TABLE;
+                goto exit;
+            }
+            break;
+
+        case kSubNotifyType_None:
+            // Remove any trailing '()' or '!' to allow ReferenceList to refer to USP commands or events before NotifType is set
+            if (strcmp(&last_segment[len-2], "()") == 0)
+            {
+                last_segment[len-2] = '\0';
+            }
+            else if (last_segment[len-1] == '!')
+            {
+                // Remove the trailing '!'
+                last_segment[len-1] = '\0';
+            }
+            break;
+
+        default:
+            // Validation of path ending not required
+            break;
+    }
+
+
+    // Iterate over all path segments after the first ('Device'), exiting if any look invalid
+    for (i=1; i < path_segments.num_entries; i++)
+    {
+        err = ValidatePathSegment(i, path_segments.vector[i], notify_type, path);
+        if (err != USP_ERR_OK)
+        {
+            goto exit;
+        }
+    }
+
+    // If the code gets here, then all path segments looked OK
+    err = USP_ERR_OK;
+
+exit:
+    STR_VECTOR_Destroy(&path_segments);
+    return err;
+}
+
+/*********************************************************************//**
+**
+** ValidatePathSegment
+**
+** This function attempts to validate a segment of a path in a subscription reference list
+** (A segment is the text in between each '.' separating each segment) and can be either
+**    - wildcard
+**    - search expression
+**    - instance number
+**    - name of an parameter/object (possibly ending in reference follow '+')
+** NOTE: Not all of these segment types are supported for all notify types
+**
+** \param   path_segment_index - Position of this path segment within the path eg. [0] == "Device"
+** \param   segment - pointer to string containing the segment to check
+**                    NOTE: This string may be truncated by the checking code in the course of checking
+** \param   notify_type - Type of notification that the path refers to
+** \param   path - path which the segment is part of (used for error reporting)
+**
+** \return  USP_ERR_OK if the segment looks valid
+**          USP_ERR_INVALID_ARGUMENTS if the segment looks invalid
+**
+**************************************************************************/
+int ValidatePathSegment(int path_segment_index, char *segment, subs_notify_t notify_type, char *path)
+{
+    int i;
+    int len;
+    char c;
+
+    // Exit if segment is empty. NOTE: TEXT_UTILS_SplitString() should have ensured that this doesn't happen
+    len = strlen(segment);
+    if (len == 0)
+    {
+        USP_ERR_SetMessage("%s: Reference List '%s' contains '..'", __FUNCTION__, path);
+        return USP_ERR_INVALID_PATH;
+    }
+
+    // Exit if segment is a wildcard
+    if (strcmp(segment, "*")==0)
+    {
+        // Wildcards aren't allowed immediately after "Device."
+        if (path_segment_index == 1)
+        {
+            USP_ERR_SetMessage("%s: Path (%s) is not a multi-instance object", __FUNCTION__, path);
+            return USP_ERR_NOT_A_TABLE;
+        }
+
+        return USP_ERR_OK;
+    }
+
+    // Exit if segment is a search expression
+    if (segment[0] == '[')
+    {
+        // Search expressions aren't currently supported for USP Events or OperationComplete notifications
+        // This is because the Broker cannot set this subscription on the USP Service because we cannot be sure that the
+        // USP Service supports search expressions
+        if ((notify_type == kSubNotifyType_OperationComplete) || (notify_type == kSubNotifyType_Event))
+        {
+            USP_ERR_SetMessage("%s: Search expressions in '%s' are not supported for NotifType=%s", __FUNCTION__, path, TEXT_UTILS_EnumToString(notify_type, notify_types, NUM_ELEM(notify_types)) );
+            return USP_ERR_RESOURCES_EXCEEDED;
+        }
+
+        // Exit if search expression is not terminated correctly
+        if (segment[len-1] != ']')
+        {
+            USP_ERR_SetMessage("%s: Search expression in '%s' is not terminated correctly", __FUNCTION__, path);
+            return USP_ERR_INVALID_PATH_SYNTAX;
+        }
+
+        // Search expressions aren't allowed immediately after "Device."
+        if (path_segment_index == 1)
+        {
+            USP_ERR_SetMessage("%s: Path (%s) is not a multi-instance object", __FUNCTION__, path);
+            return USP_ERR_NOT_A_TABLE;
+        }
+
+        return USP_ERR_OK;
+    }
+
+    // Exit if segment is an instance number
+    if (IS_NUMERIC(segment[0]))
+    {
+        // Instance numbers aren't allowed immediately after "Device."
+        if (path_segment_index == 1)
+        {
+            USP_ERR_SetMessage("%s: Path (%s) is not a multi-instance object", __FUNCTION__, path);
+            return USP_ERR_NOT_A_TABLE;
+        }
+
+        // Exit if the rest of the segment is not also numeric (which it needs to be for an instance number)
+        for (i=1; i<len; i++)
+        {
+            c = segment[i];
+            if (IS_NUMERIC(c) == false)
+            {
+                USP_ERR_SetMessage("%s: Instance number '%s' contains invalid characters in ReferenceList '%s'", __FUNCTION__, segment, path);
+                return USP_ERR_INVALID_PATH;
+            }
+        }
+
+        return USP_ERR_OK;
+    }
+
+    // Truncate string if it is a reference follow, removing the trailing '+',
+    // in order to make the path segment into just the name of a parameter
+    if (segment[len-1] == '+')
+    {
+        segment[len-1] = '\0';
+        len--;
+
+        // Exit if path segment contained only '+'
+        if (len == 0)
+        {
+            USP_ERR_SetMessage("%s: ReferenceList '%s' contains reference follow '+' without preceding parameter name", __FUNCTION__, path);
+            return USP_ERR_INVALID_PATH_SYNTAX;
+        }
+
+        // Reference following is not supported for USP Events or OperationComplete notifications
+        // This is because the Broker cannot set the subscription on the USP Service because reference following is always implemented only by the Broker
+        if ((notify_type == kSubNotifyType_OperationComplete) || (notify_type == kSubNotifyType_Event))
+        {
+            USP_ERR_SetMessage("%s: Reference following in '%s' is not supported for NotifType=%s", __FUNCTION__, path, TEXT_UTILS_EnumToString(notify_type, notify_types, NUM_ELEM(notify_types)) );
+            return USP_ERR_RESOURCES_EXCEEDED;
+        }
+    }
+
+    // Iterate over all characters in the path segment, checking them for validity
+    // NOTE: If the code gets here, the path segment can only be the name portion of a DM element
+    for (i=0; i<len; i++)
+    {
+        c = segment[i];
+        if ((IS_ALPHA_NUMERIC(c) == false) && (c != '-') && (c != '_'))
+        {
+            USP_ERR_SetMessage("%s: Unexpected character '%c' in ReferenceList '%s'", __FUNCTION__, c, path);
+            return USP_ERR_INVALID_PATH;
+        }
+    }
+
+    return USP_ERR_OK;
 }
 
 /*********************************************************************//**
@@ -275,6 +636,7 @@ int ExpandPath(char *resolved, char *unresolved, resolver_state_t *state)
         if (c == '*')
         {
             resolved[len] = '\0';
+            state->is_search_path = true;
             err = ExpandWildcard(resolved, &unresolved[1], state);
             return err;
         }
@@ -290,6 +652,7 @@ int ExpandPath(char *resolved, char *unresolved, resolver_state_t *state)
         // If hit a unique key address, handle it (and rest of unresolved), then exit
         if (c == '[')
         {
+            state->is_search_path = true;
             resolved[len] = '\0';
             err = ResolveUniqueKey(resolved, &unresolved[1], state);
             return err;
@@ -403,7 +766,7 @@ void RefreshInstances_LifecycleSubscriptionEndingInPartialPath(char *path)
     dm_instances_t inst;
 
     // Exit if unable to find node representing this object. NOTE: This should never occur, as caller should have ensured path exists in schema
-    node = DM_PRIV_GetNodeFromPath(path, &inst, &is_qualified_instance);
+    node = DM_PRIV_GetNodeFromPath(path, &inst, &is_qualified_instance, 0);
     if (node == NULL)
     {
         return;
@@ -442,7 +805,7 @@ void RefreshInstances_LifecycleSubscriptionEndingInPartialPath(char *path)
 ** ExpandWildcard
 **
 ** Expands the wildcard that exists inbetween 'resolved' and 'unresolved' parts of the path
-** then reurses to resolve the rest of the path
+** then recurses to resolve the rest of the path
 ** NOTE: This function is recursive
 **
 ** \param   resolved - pointer to buffer containing object that we need to search all instances of
@@ -460,12 +823,32 @@ int ExpandWildcard(char *resolved, char *unresolved, resolver_state_t *state)
     int len;
     int len_left;
     char *p;
+    unsigned short permission_bitmask;
+
+    // Exit if unable to get the permissions for this object
+    err = DATA_MODEL_GetPermissions(resolved, state->combined_role, &permission_bitmask, DONT_LOG_ERRS_FLAG);
+    if (err != USP_ERR_OK)
+    {
+        return err;
+    }
+
+    // Exit if the controller does not have permission to read the instance numbers
+    if ((permission_bitmask & PERMIT_GET_INST)==0)
+    {
+        USP_ERR_SetMessageIfAllowed("%s: Not permitted to read instance numbers in %s", __FUNCTION__, resolved);
+        return USP_ERR_PERMISSION_DENIED;
+    }
 
     // Exit if unable to get the instances of this object
     INT_VECTOR_Init(&iv);
     err = DATA_MODEL_GetInstances(resolved, &iv);
     if (err != USP_ERR_OK)
     {
+        // According to R.GET-0, if the path contains a search path (eg wildcard), it acts as a filter, and should not generate an error if instance numbers do not exist
+        if ((state->op == kResolveOp_Get) && (err == USP_ERR_OBJECT_DOES_NOT_EXIST))
+        {
+            err = USP_ERR_OK;
+        }
         goto exit;
     }
 
@@ -536,7 +919,7 @@ int ResolveReferenceFollow(char *resolved, char *unresolved, resolver_state_t *s
     }
 
     // Exit if unable to determine whether we are allowed to read the reference
-    err = DATA_MODEL_GetPermissions(resolved, state->combined_role, &permission_bitmask);
+    err = DATA_MODEL_GetPermissions(resolved, state->combined_role, &permission_bitmask, DONT_LOG_ERRS_FLAG);
     if (err != USP_ERR_OK)
     {
         return err;
@@ -623,7 +1006,7 @@ int ResolveReferenceFollow(char *resolved, char *unresolved, resolver_state_t *s
 
     // Exit if the dereferenced path is not a fully qualified object
     // NOTE: We do not check permissions here, since there may be further parts of the path to resolve after this reference follow
-    flags = DATA_MODEL_GetPathProperties(dereferenced, INTERNAL_ROLE, NULL, NULL, NULL);
+    flags = DATA_MODEL_GetPathProperties(dereferenced, INTERNAL_ROLE, NULL, NULL, NULL, 0);
     if ( ((flags & PP_IS_OBJECT) == 0) || ((flags & PP_IS_OBJECT_INSTANCE) ==0) )
     {
         USP_ERR_SetMessage("%s: The dereferenced path contained in %s was not an object instance (got the value '%s')", __FUNCTION__, resolved, dereferenced);
@@ -724,7 +1107,7 @@ int CheckPathPermission(char *path, resolver_state_t *state, int *gid, int *para
     *has_permission = true;
 
     // Exit if the path is not a parameter
-    flags = DATA_MODEL_GetPathProperties(path, state->combined_role, &permission_bitmask, &param_group_id, &param_type_flags);
+    flags = DATA_MODEL_GetPathProperties(path, state->combined_role, &permission_bitmask, &param_group_id, &param_type_flags, 0);
     if ((flags & PP_IS_PARAMETER) == 0)
     {
         USP_ERR_SetMessage("%s: Search key '%s' is not a parameter", __FUNCTION__, path);
@@ -1083,6 +1466,7 @@ int ResolveUniqueKey(char *resolved, char *unresolved, resolver_state_t *state)
     bool is_match;
     bool is_ref_match;
     expr_op_t valid_ops[] = {kExprOp_Equal, kExprOp_NotEqual, kExprOp_LessThanOrEqual, kExprOp_GreaterThanOrEqual, kExprOp_LessThan, kExprOp_GreaterThan};
+    unsigned short permission_bitmask;
 
     // Exit if unable to find the end of the unique key
     p = strchr(unresolved, ']');
@@ -1090,6 +1474,20 @@ int ResolveUniqueKey(char *resolved, char *unresolved, resolver_state_t *state)
     {
         USP_ERR_SetMessage("%s: Unterminated Unique Key (%s) in search path", __FUNCTION__, unresolved);
         return USP_ERR_INVALID_PATH_SYNTAX;
+    }
+
+    // Exit if unable to get the permissions for this object
+    err = DATA_MODEL_GetPermissions(resolved, state->combined_role, &permission_bitmask, DONT_LOG_ERRS_FLAG);
+    if (err != USP_ERR_OK)
+    {
+        return err;
+    }
+
+    // Exit if the controller does not have permission to read the instance numbers
+    if ((permission_bitmask & PERMIT_GET_INST)==0)
+    {
+        USP_ERR_SetMessage("%s: Not permitted to read instance numbers in %s", __FUNCTION__, resolved);
+        return USP_ERR_PERMISSION_DENIED;
     }
 
     // Initialise vectors used by this function
@@ -1102,6 +1500,11 @@ int ResolveUniqueKey(char *resolved, char *unresolved, resolver_state_t *state)
     err = DATA_MODEL_GetInstances(resolved, &instances);
     if (err != USP_ERR_OK)
     {
+        // According to R.GET-0, if the path contains a search path (eg unique key), it acts as a filter, and should not generate an error if instance numbers do not exist
+        if ((state->op == kResolveOp_Get) && (err == USP_ERR_OBJECT_DOES_NOT_EXIST))
+        {
+            err = USP_ERR_OK;
+        }
         goto exit;
     }
 
@@ -1460,7 +1863,7 @@ int ResolvePartialPath(char *path, resolver_state_t *state)
     bool is_qualified_instance;
 
     // Exit if unable to find node representing this object
-    node = DM_PRIV_GetNodeFromPath(path, &inst, &is_qualified_instance);
+    node = DM_PRIV_GetNodeFromPath(path, &inst, &is_qualified_instance, 0);
     if (node == NULL)
     {
         return USP_ERR_INVALID_PATH;
@@ -1582,7 +1985,6 @@ int GetChildParams(char *path, int path_len, dm_node_t *node, dm_instances_t *in
                     permission_bitmask = DM_PRIV_GetPermissions(child, state->combined_role);
                     if (state->op == kResolveOp_GetBulkData)
                     {
-                        USP_SNPRINTF(&path[path_len], MAX_DM_PATH-path_len, ".%s", child->name);
                         if (permission_bitmask & PERMIT_GET)
                         {
                             add_to_vector = true;
@@ -1595,13 +1997,21 @@ int GetChildParams(char *path, int path_len, dm_node_t *node, dm_instances_t *in
                             return USP_ERR_PERMISSION_DENIED;
                         }
                     }
-
-                    // If permissions allow it, append the name of this parameter to the parent path and add to the vector
-                    // NOTE: If permissions don't allow it, then just forgivingly leave the path out of the vector
-                    if ( ((state->op == kResolveOp_Get) && (permission_bitmask & PERMIT_GET)) ||
-                         ((state->op == kResolveOp_SubsValChange) && (permission_bitmask & PERMIT_SUBS_VAL_CHANGE)) )
+                    else if (state->op == kResolveOp_SubsValChange)
                     {
-                        add_to_vector = true;
+                        // Only include parameters that are permitted and are not supposed to be ignored by value change
+                        if ((permission_bitmask & PERMIT_SUBS_VAL_CHANGE) &&
+                            ((child->registered.param_info.type_flags & DM_VALUE_CHANGE_WILL_IGNORE) == 0))
+                        {
+                            add_to_vector = true;
+                        }
+                    }
+                    else if (state->op == kResolveOp_Get)
+                    {
+                        if (permission_bitmask & PERMIT_GET)
+                        {
+                            add_to_vector = true;
+                        }
                     }
                 }
                 break;
@@ -1644,9 +2054,7 @@ int GetChildParams(char *path, int path_len, dm_node_t *node, dm_instances_t *in
 
             if (state->gv != NULL)
             {
-                dm_param_info_t *info;
-                info = &child->registered.param_info;
-                INT_VECTOR_Add(state->gv, info->group_id);
+                INT_VECTOR_Add(state->gv, child->group_id);
             }
         }
 
@@ -1696,6 +2104,7 @@ int GetChildParams_MultiInstanceObject(char *path, int path_len, dm_node_t *node
     err = DM_INST_VECTOR_GetInstances(node, inst, &iv);
     if (err != USP_ERR_OK)
     {
+        err = USP_ERR_OK;   // Since this function is called when resolving partial paths for 'get' style requests, errors translate into no instances found
         goto exit;
     }
 
@@ -1830,7 +2239,7 @@ int AddPathFound(char *path, resolver_state_t *state)
 ** \param   state - pointer to structure containing state variables to use with this resolution
 ** \param   add_to_vector - pointer to variable in which to return if the path should be added to the vector of resolved objects/parameters
 ** \param   path_properties - pointer to variable in which to return the properties of the resolved object/parameter
-** \param   group_id - pointer to variable in which to return the group_id, or NULL if this is not required. NOTE: Only applicable for parameters
+** \param   group_id - pointer to variable in which to return the group_id, or NULL if this is not required
 **
 ** \return  USP_ERR_OK if path resolution should continue
 **
@@ -1840,19 +2249,19 @@ int AddPathFound(char *path, resolver_state_t *state)
 **************************************************************************/
 int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector, unsigned *path_properties, int *group_id)
 {
-    unsigned flags;
+    unsigned property_flags;
     int err;
     unsigned short permission_bitmask;
 
-    // Assume that the path should be added to the vector
+    // Assume that the path should not be added to the vector
     *add_to_vector = false;
 
     // Exit if the path does not exist in the schema
-    flags = DATA_MODEL_GetPathProperties(path, state->combined_role, &permission_bitmask, group_id, NULL);
-    *path_properties = flags;
-    if ((flags & PP_EXISTS_IN_SCHEMA)==0)
+    property_flags = DATA_MODEL_GetPathProperties(path, state->combined_role, &permission_bitmask, group_id, NULL, DONT_LOG_ERRS_FLAG);
+    *path_properties = property_flags;
+    if ((property_flags & PP_EXISTS_IN_SCHEMA)==0)
     {
-        USP_ERR_SetMessage("%s: Path (%s) does not exist in the schema", __FUNCTION__, path);
+        USP_ERR_SetMessageIfAllowed("%s: Path (%s) does not exist in the schema", __FUNCTION__, path);
         return USP_ERR_INVALID_PATH;
     }
 
@@ -1864,7 +2273,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsValChange:
         case kResolveOp_GetBulkData:
             // Exit if the path does not represent a parameter
-            if ((flags & PP_IS_PARAMETER)==0)
+            if ((property_flags & PP_IS_PARAMETER)==0)
             {
                 USP_ERR_SetMessage("%s: Path (%s) is not a parameter", __FUNCTION__, path);
                 return USP_ERR_INVALID_PATH;
@@ -1878,7 +2287,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsAdd:
         case kResolveOp_SubsDel:
             // Exit if the path does not represent an object
-            if ((flags & PP_IS_OBJECT)==0)
+            if ((property_flags & PP_IS_OBJECT)==0)
             {
                 USP_ERR_SetMessage("%s: Path (%s) is not an object", __FUNCTION__, path);
                 err = (state->op == kResolveOp_Add) ? USP_ERR_OBJECT_NOT_CREATABLE : USP_ERR_NOT_A_TABLE;
@@ -1889,7 +2298,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_Oper:
         case kResolveOp_SubsOper:
             // Exit if the path does not represent an operation
-            if ((flags & PP_IS_OPERATION)==0)
+            if ((property_flags & PP_IS_OPERATION)==0)
             {
                 USP_ERR_SetMessage("%s: Path (%s) is not an operation", __FUNCTION__, path);
                 err = USP_ERR_COMMAND_FAILURE;
@@ -1900,11 +2309,10 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_Event:
         case kResolveOp_SubsEvent:
             // Exit if the path does not represent an event
-            if ((flags & PP_IS_EVENT)==0)
+            if ((property_flags & PP_IS_EVENT)==0)
             {
                 USP_ERR_SetMessage("%s: Path (%s) is not an event", __FUNCTION__, path);
                 return USP_ERR_INVALID_PATH;
-                return err;
             }
             break;
 
@@ -1917,6 +2325,12 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         default:
             TERMINATE_BAD_CASE(state->op);
             break;
+    }
+
+    // Exit if the parameter should be ignored by value change subscriptions
+    if ((state->op == kResolveOp_SubsValChange) && (property_flags & PP_VALUE_CHANGE_WILL_IGNORE))
+    {
+        return USP_ERR_OK;
     }
 
     // ===
@@ -1937,7 +2351,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
 
         case kResolveOp_Del:
             // Exit if the path is not a fully qualified object instance
-            if ((flags & PP_IS_OBJECT_INSTANCE)==0)
+            if ((property_flags & PP_IS_OBJECT_INSTANCE)==0)
             {
                 USP_ERR_SetMessage("%s: Path (%s) should contain instance number of object", __FUNCTION__, path);
                 return USP_ERR_OBJECT_DOES_NOT_EXIST;
@@ -1953,7 +2367,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsAdd:
         case kResolveOp_SubsDel:
             // Exit if the path is not a multi-instance object
-            if ((flags & PP_IS_MULTI_INSTANCE_OBJECT)==0)
+            if ((property_flags & PP_IS_MULTI_INSTANCE_OBJECT)==0)
             {
                 USP_ERR_SetMessage("%s: Path (%s) is not a multi-instance object", __FUNCTION__, path);
                 return USP_ERR_NOT_A_TABLE;
@@ -1962,9 +2376,9 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
 
         case kResolveOp_Add:
             // Exit if the path is a fully qualified object instance
-            if (flags & PP_IS_OBJECT_INSTANCE)
+            if (property_flags & PP_IS_OBJECT_INSTANCE)
             {
-                if (flags & PP_IS_MULTI_INSTANCE_OBJECT)
+                if (property_flags & PP_IS_MULTI_INSTANCE_OBJECT)
                 {
                     USP_ERR_SetMessage("%s: Path (%s) should not end in an instance number", __FUNCTION__, path);
                     err = USP_ERR_CREATION_FAILURE;
@@ -2012,7 +2426,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_Add:
             if ((permission_bitmask & PERMIT_ADD)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to add to %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to add to %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2020,7 +2434,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_Del:
             if ((permission_bitmask & PERMIT_DEL)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to delete %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to delete %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2033,14 +2447,14 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_Oper:
             if ((permission_bitmask & PERMIT_OPER)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to perform operation %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to perform operation %s", __FUNCTION__, path);
 #ifdef BDK_USP
                 /* this should be fixed in the next release of the obuspa and can be removed at that time */
                 /* TP164, usp_conformance 1_28, permission error is expected instead of command failure */
                 return USP_ERR_PERMISSION_DENIED;
 #else
                 return USP_ERR_COMMAND_FAILURE;
-#endif                
+#endif
             }
             break;
 
@@ -2048,7 +2462,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsEvent:
             if ((permission_bitmask & PERMIT_SUBS_EVT_OPER_COMP)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to subscribe to event %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to subscribe to event %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2056,7 +2470,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsOper:
             if ((permission_bitmask & PERMIT_SUBS_EVT_OPER_COMP)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to subscribe to operation %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to subscribe to operation %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2064,7 +2478,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsAdd:
             if ((permission_bitmask & PERMIT_SUBS_OBJ_ADD)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to subscribe to object creation on %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to subscribe to object creation on %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2072,7 +2486,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsDel:
             if ((permission_bitmask & PERMIT_SUBS_OBJ_DEL)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to subscribe to object deletion on %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to subscribe to object deletion on %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2080,7 +2494,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsValChange:
             if ((permission_bitmask & PERMIT_SUBS_VAL_CHANGE)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to subscribe to value change on %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to subscribe to value change on %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2088,7 +2502,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_GetBulkData:
             if ((permission_bitmask & PERMIT_GET)==0)
             {
-                USP_ERR_SetMessage("%s: No permission to get bulk data on %s", __FUNCTION__, path);
+                USP_ERR_SetMessageIfAllowed("%s: No permission to get bulk data on %s", __FUNCTION__, path);
                 return USP_ERR_PERMISSION_DENIED;
             }
             break;
@@ -2109,6 +2523,21 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
     switch(state->op)
     {
         case kResolveOp_Get:
+            // Exit if the instance numbers do not exit, deciding whether this should be ignored or generate an error
+            if ((property_flags & PP_INSTANCE_NUMBERS_EXIST)==0)
+            {
+                // If the path didn't contain a search path, then according to R-GET.0, it should return an error
+                if (state->is_search_path == false)
+                {
+                    USP_ERR_SetMessage("%s: Invalid instance numbers in path %s", __FUNCTION__, path);
+                    return USP_ERR_INVALID_PATH;
+                }
+
+                // Otherwise, the path did contain a search path, so gracefully ignore this resolved path
+                return USP_ERR_OK;
+            }
+            break;
+
         case kResolveOp_Del:
         case kResolveOp_SubsValChange:
         case kResolveOp_SubsAdd:
@@ -2116,10 +2545,9 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_SubsOper:
         case kResolveOp_SubsEvent:
         case kResolveOp_GetBulkData:
-            // It is not an error for instance numbers to not be instantiated for a get parameter value
-            // or a delete or a subscription reference list
+            // It is not an error for instance numbers to not be instantiated for a delete or a subscription reference list
             // Both are forgiving, so just exit here, without adding the path to the vector
-            if ((flags & PP_INSTANCE_NUMBERS_EXIST)==0)
+            if ((property_flags & PP_INSTANCE_NUMBERS_EXIST)==0)
             {
                 return USP_ERR_OK;
             }
@@ -2131,7 +2559,7 @@ int CheckPathProperties(char *path, resolver_state_t *state, bool *add_to_vector
         case kResolveOp_Oper:
         case kResolveOp_Event:
             // Instance numbers must be instantiated (exist in data model)
-            if ((flags & PP_INSTANCE_NUMBERS_EXIST)==0)
+            if ((property_flags & PP_INSTANCE_NUMBERS_EXIST)==0)
             {
                 USP_ERR_SetMessage("%s: Object exists in schema, but instances are invalid: %s", __FUNCTION__, path);
                 return USP_ERR_OBJECT_DOES_NOT_EXIST;
@@ -2220,3 +2648,96 @@ void DestroySearchParam(search_param_t *sp)
     GROUP_GET_VECTOR_Destroy(&sp->ggv);
     INT_VECTOR_Destroy(&sp->key_types);
 }
+
+//------------------------------------------------------------------------------------------
+// Code to test the PATH_RESOLVER_ValidatePath() function
+#if 0
+typedef struct
+{
+    char *path;
+    subs_notify_t notify_type;
+    int expected_err;
+} validate_path_test_case_t;
+
+
+validate_path_test_case_t validate_path_test_cases[] =
+{
+
+    {"",                                                                kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.",                                                         kSubNotifyType_OperationComplete,   USP_ERR_OK },
+    {"Device.",                                                         kSubNotifyType_Event,               USP_ERR_OK },
+    {"Device.",                                                         kSubNotifyType_None,                USP_ERR_OK },
+    {"Device.",                                                         kSubNotifyType_ValueChange,         USP_ERR_RESOURCES_EXCEEDED },
+    {"Device.",                                                         kSubNotifyType_ObjectCreation,      USP_ERR_NOT_A_TABLE },
+    {"Device.",                                                         kSubNotifyType_ObjectDeletion,      USP_ERR_NOT_A_TABLE },
+    {"NotDevice.",                                                      kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.Reboot",                                                   kSubNotifyType_OperationComplete,   USP_ERR_INVALID_PATH },
+    {"Device.Reboot(",                                                  kSubNotifyType_OperationComplete,   USP_ERR_INVALID_PATH },
+    {"Device.Reboot)",                                                  kSubNotifyType_OperationComplete,   USP_ERR_INVALID_PATH },
+    {"Device.Reboot()",                                                 kSubNotifyType_OperationComplete,   USP_ERR_OK },
+    {"Device.Boot",                                                     kSubNotifyType_Event,               USP_ERR_INVALID_PATH },
+    {"Device.Boot!",                                                    kSubNotifyType_Event,               USP_ERR_OK },
+    {"Device.Boot!",                                                    kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.Reboot()",                                                 kSubNotifyType_ObjectCreation,      USP_ERR_NOT_A_TABLE },
+    {"Device.LocalAgent.Subscription.*.Enable",                         kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.LocalAgent.TransferComplete!",                             kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.DeviceInfo.FirmwareImage.*.Download()",                    kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.LocalAgent.Subscription.[Enable==\"true\"].Enable",        kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.LocalAgent.Subscription.[Enable==\"true\".Enable",         kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH_SYNTAX },
+    {"Device.DeviceInfo.FirmwareImage.[Status==\"Available\"].Download()", kSubNotifyType_OperationComplete,USP_ERR_RESOURCES_EXCEEDED },
+    {"Device.BulkData.Profile.[Enable==\"true\"].Push!",                kSubNotifyType_Event,               USP_ERR_RESOURCES_EXCEEDED },
+    {"Device.LocalAgent.Subscription.ParamB+.Event!",                   kSubNotifyType_Event,               USP_ERR_RESOURCES_EXCEEDED },
+    {"Device.DeviceInfo.ActiveFirmwareImage+.Download()",               kSubNotifyType_OperationComplete,   USP_ERR_RESOURCES_EXCEEDED },
+    {"Device.BulkData.Profile.12X.Push!",                               kSubNotifyType_Event,               USP_ERR_INVALID_PATH },
+    {"Device.BulkData.Profile.132.Push!",                               kSubNotifyType_Event,               USP_ERR_OK },
+    {"Device.BulkData.Profile.1Enable",                                 kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.DeviceInfo.ActiveFirmwareImage+.Name",                     kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.LocalAgent.Subscription.*.+.Enable",                       kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH_SYNTAX },
+    {"Device.DeviceInfo.ActiveFirmwareImage+Name",                      kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.DeviceInfo.ActiveFirmwareImage.+NameB",                    kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.BulkData.Profile.132.Push$!",                              kSubNotifyType_Event,               USP_ERR_INVALID_PATH },
+    {"Device.DeviceInfo.ActiveFirmwareImage",                           kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.STOMP.Connection.1.X_ARRS-COM_EnableEncryption",           kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.BulkData.Profile.1.X_ARRS-COM_FailureCount.Connect",       kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.BulkData.Profile.*X_ARRS-COM_FailureCount.Connect",        kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH },
+    {"Device.DeviceInfo..ActiveFirmwareImage",                          kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH_SYNTAX },
+    {"Device*",                                                         kSubNotifyType_ObjectCreation,      USP_ERR_INVALID_PATH },
+    {"Device.*.",                                                       kSubNotifyType_ObjectCreation,      USP_ERR_NOT_A_TABLE },
+    {"Device.1.",                                                       kSubNotifyType_ObjectCreation,      USP_ERR_NOT_A_TABLE },
+    {"Device.[ParamA==\"MyValue\"].ParamA",                             kSubNotifyType_ValueChange,         USP_ERR_NOT_A_TABLE },
+    {"Device. LocalAgent.Subscription.9.Enable",                        kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH_SYNTAX },
+    {"Device.LocalAgent.Subscription .8.Enable",                        kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH_SYNTAX },
+    {"Device.\tLocalAgent.Subscription.*.Enable",                       kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH_SYNTAX },
+    {"Device.LocalAgent.Subscription\t.*.Enable",                       kSubNotifyType_ValueChange,         USP_ERR_INVALID_PATH_SYNTAX },
+    {"Device.LocalAgent.Subscription.[ID==\"boot\"].",                  kSubNotifyType_ObjectCreation,      USP_ERR_OK },
+    {"Device.Reboot()",                                                 kSubNotifyType_None,                USP_ERR_OK },
+    {"Device.Boot!",                                                    kSubNotifyType_None,                USP_ERR_OK },
+    {"Device.Obj.[ObjB.ParamC==\"1\"].ParamA",                          kSubNotifyType_ValueChange,         USP_ERR_OK },
+    {"Device.Obj.[ObjB.ParamC+.ParamD==\"1\"].ParamA",                  kSubNotifyType_ValueChange,         USP_ERR_OK },
+
+};
+
+
+void TestValidatePath(void)
+{
+    int i;
+    int err;
+    validate_path_test_case_t *test;
+    int count = 0;
+
+    for (i=0; i < NUM_ELEM(validate_path_test_cases); i++)
+    {
+        test = &validate_path_test_cases[i];
+        printf("[%d] Testing '%s' (notify_type=%s)\n", i, test->path, TEXT_UTILS_EnumToString(test->notify_type, notify_types, NUM_ELEM(notify_types)) );
+        err = PATH_RESOLVER_ValidatePath(test->path, test->notify_type);
+        if (err != test->expected_err)
+        {
+            printf("ERROR: [%d] Test case result for '%s' is %d (expected %d)\n", i, test->path, err, test->expected_err);
+            count++;
+        }
+    }
+
+    printf("Failure count = %d\n", count);
+}
+#endif
+

@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,21 +49,6 @@
 #include "kv_vector.h"
 
 //------------------------------------------------------------------------------
-// Enumeration of types of subscriptions
-typedef enum
-{
-    kSubNotifyType_Invalid = INVALID,   // Used to mark a subscription for garbage collection and also as a return value if we failed to convert the textual representation of this enum
-    kSubNotifyType_None = 0,            // This is the default value for the notification type parameter - indicates none setup yet
-    kSubNotifyType_ValueChange = 1,
-    kSubNotifyType_ObjectCreation,
-    kSubNotifyType_ObjectDeletion,
-    kSubNotifyType_OperationComplete,
-    kSubNotifyType_Event,
-
-    kSubNotifyType_Max                  // This should always be the last value in this enumeration. It is used to statically size arrays based on one entry for each active enumeration
-} subs_notify_t;
-
-//------------------------------------------------------------------------------
 // Element of subscription vector
 typedef struct
 {
@@ -73,11 +58,27 @@ typedef struct
     char *subscription_id;              // Device.LocalAgent.Subscription.{i}.ID
     bool notification_retry;            // Device.LocalAgent.Subscription.{i}.NotifRetry
     str_vector_t path_expressions;      // Device.LocalAgent.Subscription.{i}.ReferenceList
+                                        // This vector has the same indexes as the handler_group_ids vector
+    int_vector_t handler_group_ids;     // If the path_expression is being handled by a vendor layer subscription, this is set to the group_id of the path.
+                                        // Set to NON_GROUPED if the path_expression is not being handled by the vendor layer
+                                        // This vector has the same indexes as the path_expressions vector
+                                        // For internal services, the handle is set to the group_id of the subscription path, if the path is being handled by the vendor layer
+
+    int_vector_t device_group_ids;      // Vector containing the group_ids of all data model provider components that have had a subscription set on them for 'Device.'
     subs_notify_t notify_type;          // Device.LocalAgent.Subscription.{i}.NotifType
     time_t expiry_time;                 // Time at which this subscription should be stopped and removed from the DB
+    bool persistent;                    // Whether the subscription should be persisted across reboots
     unsigned retry_expiry_period;       // Device.LocalAgent.Subscription.{i}.NotifExpiration
     kv_vector_t last_values;            // List of parameters+values from last time that the subscription was polled (if the subscription is a value change subscription)
-    str_vector_t resolved_paths;       // Used to cache the resolved paths of an object deletion subscription before the object has been deleted from the data model
+    str_vector_t cur_watch_objs;        // Current set of objects to match against object creation or deletions. The lifetime of this vector is just the current DM_EXEC processing period
+    str_vector_t last_watch_objs;       // Stores the last set of objects to match for object deletion (not object creation). This set is matched against, if the deletion occurs before being able to resolve the current set of resolved paths
+    bool skip_obj_notifications;        // Set if object creation/deletion notifications should not be sent whilst processing the current USP message
+                                        // This flag is used to prevent an obj added/deleted subscription from immediately firing when it is enabled, because the instances
+                                        // have changed since the last time the objects refersh instances vendor hook was called
+#ifdef BDK_USP
+    char *trigger_action;
+    kv_vector_t trigger_config_settings;
+#endif
 } subs_t;
 
 //------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
---- obuspa_orig/src/core/wsclient.c	2023-10-17 13:04:49.283448297 -0700
-+++ obuspa_new/src/core/wsclient.c	2023-10-23 10:11:26.647880084 -0700
-@@ -92,6 +92,9 @@
+--- obuspa_orig/src/core/wsclient.c	2024-07-29 13:04:17.538221380 -0700
++++ obuspa_new/src/core/wsclient.c	2024-07-30 13:27:19.721649466 -0700
+@@ -93,6 +93,9 @@
      kWebSockCloseReason_ConnParamsChanged,       // We forced the closure because the connection parameters changed
      kWebSockCloseReason_BadUspRecord,            // We forced the closure, because we received a badly formed USP record
      kWebSockCloseReason_MissingPong,             // We forced the closure, because too many pong heartbeat frames were missing
@@ -11,7 +11,7 @@ diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
  
      kWebSockCloseReason_Max
  } wsclient_close_reason_t;
-@@ -1040,6 +1043,10 @@
+@@ -1114,6 +1117,10 @@
  {
      USP_LOG_Info("%s: Client connection parameters changed for controller.%d.MTP.%d", __FUNCTION__, scm->cont_instance, scm->mtp_instance);
  
@@ -22,7 +22,7 @@ diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
      // Copy new retry algorithm parameters. They will be used, the next time a retry is triggered
      wc->retry_interval = scm->retry_interval;
      wc->retry_multiplier = scm->retry_multiplier;
-@@ -1140,7 +1147,11 @@
+@@ -1222,7 +1229,11 @@
      info.host = wc->host;       // Needed for TLS
      info.origin = wc->host;     // Needed for TLS
      info.pwsi = &wc->ws_handle;     // Needed for TLS
@@ -34,7 +34,7 @@ diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
      info.protocol = WEBSOCKET_PROTOCOL_STR;
      info.opaque_user_data = wc;
  
-@@ -1196,7 +1207,9 @@
+@@ -1289,7 +1300,9 @@
      {
          // NOTE: No need to call ScheduleWsclientRetry() here, as it will have been handled by the LWS_CALLBACK_WSI_DESTROY event within the lws_client_connect_via_info() call
          USP_LOG_Error("%s: lws_client_connect_via_info() failed", __FUNCTION__);
@@ -44,19 +44,7 @@ diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
          return;
      }
  }
-@@ -1413,7 +1426,11 @@
-             break;
- 
-         default:
-+#ifdef BDK_USP
-+            tr_event("WS client: event=%d", event);
-+#else
-             tr_event("WS client: event=%d", __FUNCTION__, event);
-+#endif
-             break;
-     }
- 
-@@ -1517,7 +1534,19 @@
+@@ -1605,7 +1618,19 @@
      // Set the root cause of error, if none set yet
      if (wc->close_reason == kWebSockCloseReason_Unknown)
      {
@@ -76,7 +64,7 @@ diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
      }
  
      return 0;
-@@ -1608,6 +1637,9 @@
+@@ -1696,6 +1721,9 @@
          case kWebSockCloseReason_InternalError:
          case kWebSockCloseReason_BadUspRecord:
          case kWebSockCloseReason_MissingPong:
@@ -86,7 +74,7 @@ diff -Naur obuspa_orig/src/core/wsclient.c obuspa_new/src/core/wsclient.c
              ScheduleWsclientRetry(wc);
              break;
  
-@@ -2115,7 +2147,19 @@
+@@ -2205,7 +2233,19 @@
      // NOTE: libwebsockets will have automatically deallocated its handle, in the cases where this function is called
      wc->state = kWebsockState_Retrying;
      wc->ws_handle = NULL;

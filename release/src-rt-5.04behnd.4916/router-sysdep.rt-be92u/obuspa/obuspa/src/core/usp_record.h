@@ -1,7 +1,8 @@
 /*
  *
- * Copyright (C) 2022, Broadband Forum
+ * Copyright (C) 2022-2024, Broadband Forum
  * Copyright (C) 2022, Snom Technology GmbH
+ * Copyright (C) 2023  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,6 +50,7 @@
 void USPREC_WebSocketConnect_Create(char *cont_endpoint_id, mtp_send_item_t *msi);
 void USPREC_MqttConnect_Create(char *cont_endpoint_id, mqtt_protocolver_t mqtt_version, char *agent_topic, mtp_send_item_t *msi);
 void USPREC_StompConnect_Create(char *cont_endpoint_id, char *destination, mtp_send_item_t *msi);
+void USPREC_UdsConnect_Create(char *cont_endpoint_id, mtp_send_item_t *msi);
 void USPREC_Disconnect_Create(mtp_content_type_t content_type, char *cont_endpoint_id, uint32_t reason_code, char *reason_str, mtp_send_item_t *msi);
 
 #endif

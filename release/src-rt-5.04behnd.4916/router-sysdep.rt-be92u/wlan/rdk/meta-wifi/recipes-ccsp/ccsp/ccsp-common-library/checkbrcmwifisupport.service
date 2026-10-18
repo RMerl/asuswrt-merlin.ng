@@ -7,5 +7,6 @@ Requires=broadcom-wifi-drivers.service
 [Service]
 Type=forking
 ExecStart=/bin/sh -c '/usr/ccsp/wifi/brcm_checkwifi.sh'
+Restart=no
 
-StandardOutput=syslog+console
+StandardOutput=journal+console

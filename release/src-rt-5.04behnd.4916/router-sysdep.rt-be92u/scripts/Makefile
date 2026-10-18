@@ -21,14 +21,11 @@ BRCM_DEFAULTS_VOLUME_SIZE=2
 else
 BRCM_DEFAULTS_VOLUME_SIZE=8
 endif
+CPC_DEFAULT_SIZE=0
 DATA_MOUNT_INSTALL_PATH=/etc/init.d
 DATA_MOUNT_INSTALL_PATH_FOR_SED=$(shell (echo $(DATA_MOUNT_INSTALL_PATH) | sed 's/\//\\\//g'))
 DEFAULT_FILES_LIST=
 INIT_DEFAULT_FILES_LIST=
-ifeq ($(filter-out 6846 6856 6858 6878 63158,${BRCM_CHIP}),)
-DEFAULT_FILES_LIST+=pmd_calibration pmd_calibration.json pmd_temp2apd
-INIT_DEFAULT_FILES_LIST+=pmd_calibration.json
-endif
 ifeq ($(filter-out 6855 6856,${BRCM_CHIP}),)
 DEFAULT_FILES_LIST+=smtc_calibration
 endif
@@ -47,20 +44,26 @@ INIT_PUBLIC += init/defaults init/partitioncfg
 endif
 endif
 
-ifeq ($(filter-out 63138 63148 63158 4908 6858 63178 47622,${BRCM_CHIP}),)
+ifeq (${BRCM_MU},y)
+INIT += mu_scripts/mu.sh
+RC3 += S25mu K94mu
+endif
+
+ifeq ($(filter-out 63158 6858 63178 47622,${BRCM_CHIP}),)
 INIT += pwr/switch.sh
 endif
 
-ifeq ($(filter-out 47622 63178 4912,${BRCM_CHIP}),)
+ifeq ($(filter-out 47622 63178 4912 6813 6756 6764 6765 6766,${BRCM_CHIP}),)
 INIT += pwr/wol.sh
 endif
 
 ifneq ($(strip $(BRCM_DRIVER_FLEXRM)),)
-ifeq ($(filter-out 68880,${BRCM_CHIP}),)
 INIT += pwr/spu_pwr.sh
 endif
-endif
 
+ifeq ($(strip ${BUILD_CPC}),y) # true
+CPC_DEFAULT_SIZE=1000
+endif
 
 ifeq ($(strip ${BRCM_ROOTFS_RW}),y) # true
 INIT += fsys/rw-rootfs.sh
@@ -72,8 +75,18 @@ INIT += cooked/check-and-restore.sh
 RC3 += 	S33init-defaults K82init-defaults
 INIT += cooked/init-defaults.sh
 
-ifeq ($(strip ${RDK_BUILD}${BUILD_SYSTEMD}),y)
-SYSTEMD_UNITS += systemd/broadcom-bdmf.service systemd/broadcom-drivers.service \
+
+ifneq ($(strip $(BCM_QEMU_SIM)),)
+RC3 += 	S90init-qemusim-sshd
+INIT += cooked/init-qemusim-sshd.sh
+RC3 += 	S30virtio-net
+INIT += cooked/virtio-net.sh
+RC3 += 	S91init-qemusim-user
+INIT += cooked/init-qemusim-user.sh
+endif
+
+ifeq ($(strip ${RDK_BUILD}),y)
+SYSTEMD_UNITS += systemd/broadcom-drivers.service \
 systemd/broadcom-env-setup.service systemd/broadcom-static-nodes.service \
 systemd/broadcom-mountdata.service systemd/broadcom-wanconf.service \
 systemd/broadcom-wdt.service 
@@ -105,6 +118,7 @@ cooked/%: std/%
 		| sed -e "s/__MKE2FSOPTIONS__/$(MKE2FSOPTIONS)/" \
 		| sed -e "s/__INIT_DEFAULT_FILES_LIST__/$(INIT_DEFAULT_FILES_LIST)/" \
 		| sed -e "s/__ASUS_JFFS2_VOLUME_SIZE__/$(JFFS2_UBI_VOLUME_SIZE)/" \
+		| sed -e "s/__CPC_DEFAULT_SIZE__/$(CPC_DEFAULT_SIZE)/" \
 		> $@ 
 
 misc-clean:
@@ -179,10 +193,6 @@ ifneq ($(strip $(BUILD_SERDES_VI)),)
 	sed -i "s/After=broadcom-drivers.service/After=broadcom-drivers.service broadcom-serdes_vi.service/g" \
 		${INSTALL_DIR}/lib/systemd/system/broadcom-wanconf.service
 endif
-ifeq (${RDK_BUILD},)
-	install -p systemd/passwd ${INSTALL_DIR}/etc
-	install -p systemd/shadow ${INSTALL_DIR}/etc
-endif
 endif
 
 systemd-clean: ${SYSTEMD_UNITS}
@@ -192,10 +202,6 @@ ifneq (${SYSTEMD_UNITS},)
 	rm -rf ${INSTALL_DIR}/etc/modules-load.d
 	rm -rf ${INSTALL_DIR}/lib/systemd
 	rm -f cooked/broadcom_mountdata.sh
-ifeq (${RDK_BUILD},)
-	rm -rf ${INSTALL_DIR}/etc/passwd
-	rm -rf ${INSTALL_DIR}/etc/shadow
-endif
 endif
 
 .PHONY: build dynamic install clean bin-install init-install rc3-install bin-clean init-clean rc3-clean sysytemd-install systemd-clean

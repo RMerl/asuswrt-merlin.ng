@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2021-2022, Broadband Forum
- * Copyright (C) 2021-2022  CommScope, Inc
+ * Copyright (C) 2021-2024, Broadband Forum
+ * Copyright (C) 2021-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -99,12 +99,12 @@ typedef struct
     int rx_buf_max_len;     // Current allocated size of rx_buf. This will hold the current websocket fragment. If the USP Record is contained in multiple websocket fragments, then the buffer is reallocated to include the new fragment
     int tx_index;           // Counts the number of bytes sent of the current USP Record to tx (i.e. at the head of the usp_record_send_queue)
 
-    ctrust_role_t role;     // role granted by the CA cert in the chain of trust with the websockets client
+    int role_instance;      // role granted by the CA cert in the chain of trust with the websockets client (instance in Device.LocalAgent.ControllerTrust.Role.{i})
 
     bool send_ping;         // Set if the next LWS_CALLBACK_SERVER_WRITEABLE event should send a ping frame (rather than servicing the USP record send queue)
     int ping_count;         // Number of websocket ping frames sent without corresponding pong responses
 
-    char peer[64];          // Name of peer, either endpoint_id (if available in Sec-WebSocket-Extensions) or an IP address.
+    char peer[MAX_ENDPOINT_ID_LEN]; // Name of peer, either endpoint_id (if available in Sec-WebSocket-Extensions) or an IP address.
     bool is_peer_an_eid;    // Set if the above peer string is an endpoint_id. False if it is an IP address.
 
 } wsconn_t;
@@ -168,7 +168,9 @@ bool ServiceInactiveWebsockServer(void);
 void HandleWssEvent_WanPollTimer(lws_sorted_usec_list_t *sul);
 void AssertWanPollCallbackNotInUse(lws_sorted_usec_list_t *sul);
 int CalcWsservIpAddr(char *buf, int len);
-
+#ifdef BDK_USP
+int CalcWsservIpAddrFromIntfName(char *ifName, char *buf, int len);
+#endif    
 /*********************************************************************//**
 **
 ** WSSERVER_Init
@@ -240,19 +242,26 @@ int WSSERVER_Start(void)
 ** \param   config - pointer to structure containing configuration parameters
 **                   NOTE: Ownership of strings within the config parameters stay with the caller
 **
-** \return  USP_ERR_OK if successful
+** \return  None
 **
 **************************************************************************/
-int WSSERVER_EnableServer(wsserv_config_t *config)
+void WSSERVER_EnableServer(wsserv_config_t *config)
 {
     int i;
     wsconn_t *wc;
-    int err = USP_ERR_OK;
+    bool allowed;
 
     // Exit if websocket server MTP has shutdown
     if (is_wsserv_mtp_shutdown)
     {
-        return USP_ERR_OK;
+        return;
+    }
+
+    // Exit if the websocket server is not allowed to be enabled/disabled yet
+    allowed = DEVICE_CONTROLLER_CanMtpConnect();
+    if (allowed == false)
+    {
+        return;
     }
 
     OS_UTILS_LockMutex(&wss_access_mutex);
@@ -261,6 +270,9 @@ int WSSERVER_EnableServer(wsserv_config_t *config)
     // cause the websock ping frame to be sent immediately (so that the new interval is respected immediately)
     if ((wsserv.ctx != NULL) &&
         (wsserv.cur_config.port == config->port) &&
+#ifdef BDK_USP
+        (strcmp(wsserv.cur_config.interfaces, config->interfaces)==0) &&
+#endif        
         (strcmp(wsserv.cur_config.path, config->path)==0) &&
         (wsserv.cur_config.enable_encryption == config->enable_encryption) &&
         (wsserv.cur_config.keep_alive != config->keep_alive))
@@ -283,11 +295,10 @@ int WSSERVER_EnableServer(wsserv_config_t *config)
     // Otherwise, save the new config and schedule a restart
     CopyWssConfig(&wsserv.new_config, config);
     wsserv.schedule_restart = kScheduledAction_Signalled;
+    mtp_reconnect_scheduled = true;     // Set flag to ensure that data model thread subsequently calls WSSERVER_ActivateScheduledActions()
 
 exit:
     OS_UTILS_UnlockMutex(&wss_access_mutex);
-
-    return err;
 }
 
 /*********************************************************************//**
@@ -298,15 +309,24 @@ exit:
 **
 ** \param   None
 **
-** \return  USP_ERR_OK if successful
+** \return  None
 **
 **************************************************************************/
-int WSSERVER_DisableServer(void)
+void WSSERVER_DisableServer(void)
 {
+    bool allowed;
+
     // Exit if websocket server MTP has shutdown
     if (is_wsserv_mtp_shutdown)
     {
-        return USP_ERR_OK;
+        return;
+    }
+
+    // Exit if the websocket server is not allowed to be enabled/disabled yet
+    allowed = DEVICE_CONTROLLER_CanMtpConnect();
+    if (allowed == false)
+    {
+        return;
     }
 
     OS_UTILS_LockMutex(&wss_access_mutex);
@@ -315,13 +335,12 @@ int WSSERVER_DisableServer(void)
     {
         // If currently running, then we need to wait for all messages to be sent before stopping
         wsserv.schedule_stop = kScheduledAction_Signalled;
+        mtp_reconnect_scheduled = true;     // Set flag to ensure that data model thread subsequently calls WSSERVER_ActivateScheduledActions()
     }
 
     // NOTE: Nothing to do if already stopped
 
     OS_UTILS_UnlockMutex(&wss_access_mutex);
-
-    return USP_ERR_OK;
 }
 
 /*********************************************************************//**
@@ -339,9 +358,17 @@ int WSSERVER_DisableServer(void)
 void WSSERVER_ActivateScheduledActions(void)
 {
     bool wake_thread = false;
+    bool allowed;
 
     // Exit if websocket server MTP has shutdown
     if (is_wsserv_mtp_shutdown)
+    {
+        return;
+    }
+
+    // Exit if the websocket server is not allowed to be enabled/disabled yet
+    allowed = DEVICE_CONTROLLER_CanMtpConnect();
+    if (allowed == false)
     {
         return;
     }
@@ -505,13 +532,13 @@ exit:
 ** and if so returns the parameters specifying the MTP to use
 **
 ** \param   endpoint_id - Endpoint ID of controller that maybe connected to agent's webserver
-** \param   mrt - structure to fill in with MTP details, if the specified controller is connected to the agent's websocket server
+** \param   mtpc - structure to fill in with MTP details, if the specified controller is connected to the agent's websocket server
 **                or NULL if the caller is just trying to determine whether the controller is connected to the agent's websocket server
 **
 ** \return  USP_ERR_OK if specified endpoint is connected to the agent's websocket server
 **
 **************************************************************************/
-int WSSERVER_GetMTPForEndpointId(char *endpoint_id, mtp_reply_to_t *mrt)
+int WSSERVER_GetMTPForEndpointId(char *endpoint_id, mtp_conn_t *mtpc)
 {
     int err;
     wsconn_t *wc;
@@ -527,14 +554,14 @@ int WSSERVER_GetMTPForEndpointId(char *endpoint_id, mtp_reply_to_t *mrt)
     }
 
     // Fill in the MTP to use, in order to send to this endpoint via the agent's websocket server
-    if (mrt != NULL)
+    if (mtpc != NULL)
     {
-        memset(mrt, 0, sizeof(mtp_reply_to_t));
-        mrt->is_reply_to_specified = true;
-        mrt->protocol = kMtpProtocol_WebSockets;
-        mrt->wsclient_cont_instance = INVALID;
-        mrt->wsclient_mtp_instance = INVALID;
-        mrt->wsserv_conn_id = wc->conn_id;
+        memset(mtpc, 0, sizeof(mtp_conn_t));
+        mtpc->is_reply_to_specified = true;
+        mtpc->protocol = kMtpProtocol_WebSockets;
+        mtpc->ws.client_cont_instance = INVALID;
+        mtpc->ws.client_mtp_instance = INVALID;
+        mtpc->ws.serv_conn_id = wc->conn_id;
     }
     err = USP_ERR_OK;
 
@@ -801,7 +828,11 @@ int StartWebsockServer(wsserv_config_t *config)
     }
 
     // Exit if unable to determine IP address of interface to listen on
-    err = CalcWsservIpAddr(wsserv.wan_addr, sizeof(wsserv.wan_addr));
+#ifdef BDK_USP    
+    err = CalcWsservIpAddrFromIntfName(config->interfaces,wsserv.wan_addr, sizeof(wsserv.wan_addr));
+#else
+    err = CalcWsservIpAddr(wsserv.wan_addr, sizeof(wsserv.wan_addr));    
+#endif    
     if (err != USP_ERR_OK)
     {
         return err;
@@ -868,6 +899,9 @@ void StopWebsockServer(void)
 
     // Free cur_config
     USP_SAFE_FREE(wsserv.cur_config.path);
+#ifdef BDK_USP    
+    USP_SAFE_FREE(wsserv.cur_config.interfaces);
+#endif    
 
     // NOTE: Do not free new_config, as we will need it if restarting the server with a different config
     // NOTE: Do not modify schedule_restart or schedule_stop. We want their state to persist so that we can decide whether to restart or not
@@ -957,7 +991,6 @@ int HandleAllWssEvents(struct lws *handle, enum lws_callback_reasons event, void
             tr_event("WS server: LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION");
             result = ValidateReceivedWsservProtocolExtension(handle);
             break;
-
 
         case LWS_CALLBACK_ADD_HEADERS:
             tr_event("WS server: LWS_CALLBACK_ADD_HEADERS");
@@ -1083,10 +1116,9 @@ int HandleWssEvent_NewClient(struct lws *handle)
     wc->rx_buf_len = 0;
     wc->rx_buf_max_len = 0;
     wc->tx_index = 0;
-    wc->role = (wsserv.cur_config.enable_encryption) ? ROLE_NON_SSL : ROLE_DEFAULT;
+    wc->role_instance = (wsserv.cur_config.enable_encryption) ? ROLE_NON_SSL : ROLE_DEFAULT;
     wc->send_ping = false;
     wc->ping_count = 0;
-    wc->role = ROLE_DEFAULT;
     wc->disconnect_sent = false;
 
     // Assign a unique server handle for this connection
@@ -1096,7 +1128,7 @@ int HandleWssEvent_NewClient(struct lws *handle)
         conn_id_counter = 0;
     }
 
-    // Determine the IP address of the peer to use in debug. This will be overridden with endpoint_id if present in Sec_WebSocket_Extensions header
+    // Determine the IP address of the peer to use in debug. This will be overridden with endpoint_id if present in EID URI query string
     // NOTE: libwebsockets insists on using a IPv4 mapped IPv6 address to represent IPv4 addresses
     wc->is_peer_an_eid = false;
     lws_get_peer_simple(handle, wc->peer, sizeof(wc->peer));
@@ -1168,7 +1200,7 @@ int HandleWssEvent_VerifyCerts(struct lws *handle, SSL *ssl, int preverify_ok, X
     if (cert_chain != NULL)
     {
         // NOTE: Ignoring any error returned by DEVICE_SECURITY_GetControllerTrust() - just leave the role to the default setup in HandleWssEvent_NewClient()
-        DEVICE_SECURITY_GetControllerTrust(cert_chain, &wc->role);
+        DEVICE_SECURITY_GetControllerTrust(cert_chain, &wc->role_instance);
 
         // Free the saved cert chain as we don't need it anymore
         sk_X509_pop_free(cert_chain, X509_free);
@@ -1188,9 +1220,7 @@ int HandleWssEvent_VerifyCerts(struct lws *handle, SSL *ssl, int preverify_ok, X
 ** ValidateReceivedWsservProtocolExtension
 **
 ** Called from the LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION event
-** to validate that the endpoint specified in the Sec-WebSocket-Extensions header
-** is not already connected to the agent's websocket client or already connected
-** via another websocket client connection to this server
+** to validate that the Sec-WebSocket-Protocol header is present
 **
 ** \param   handle - libwebsockets handle identifying the connection with activity on it
 **
@@ -1201,8 +1231,6 @@ int ValidateReceivedWsservProtocolExtension(struct lws *handle)
 {
     int num_bytes;
     char buf[256];
-    char *endpoint_id;
-    wsconn_t *wc;
 
     // Exit if Sec-WebSocket-Protocol header is present, but too large for the buffer. In this case we just ignore the header.
     num_bytes = lws_hdr_copy(handle, buf, sizeof(buf)-1, WSI_TOKEN_PROTOCOL);
@@ -1226,65 +1254,6 @@ int ValidateReceivedWsservProtocolExtension(struct lws *handle)
         USP_LOG_Error("%s: Client specified incorrect websocket subprotocol in handshake request (got '%s', expected '%s')", __FUNCTION__, buf, WEBSOCKET_PROTOCOL_STR);
         return -1;
     }
-
-    //---------------------------------------
-    // Exit if Sec-WebSocket-Extensions header is present, but too large for the buffer. In this case we just ignore the header.
-    // NOTE: If the header is not present, then this call returns num_bytes=0
-    num_bytes = lws_hdr_copy(handle, buf, sizeof(buf)-1, WSI_TOKEN_EXTENSIONS);
-    if (num_bytes == -1)
-    {
-        USP_LOG_Error("%s: lws_hdr_copy(Sec-WebSocket-Extensions) failed (%d)", __FUNCTION__, num_bytes);
-        return 0;
-    }
-
-    // Exit if the client did not provide a Sec-WebSocket-Extensions header in its response
-    // NOTE: This is not an error
-    if ((num_bytes == 0) || (buf[0] == '\0'))
-    {
-        return 0;
-    }
-
-    // Exit if unable to parse the endpoint ID. NOTE: This is not an error
-    #define EID_SEPARATOR  "eid="
-    endpoint_id = strstr(buf, EID_SEPARATOR);
-    if (endpoint_id == NULL)
-    {
-        return 0;
-    }
-    endpoint_id += sizeof(EID_SEPARATOR)-1;   // Skip the separator to point to the endpoint_id
-
-    // Strip whitespace and speech marks
-    endpoint_id = TEXT_UTILS_TrimDelimitedBuffer(endpoint_id, "\"\"");
-
-    // Exit if endpoint_id is empty. NOTE: This is not an error
-    if (*endpoint_id == '\0')
-    {
-        return 0;
-    }
-
-    // Exit if already connected to this controller via the agent's websocket client. Abort the connection to the websocket server
-    if (WSCLIENT_IsEndpointConnected(endpoint_id))
-    {
-        USP_LOG_Error("%s: Not permitting controller eid='%s' to connect. Already connected via agent's websocket client", __FUNCTION__, endpoint_id);
-        return -1;
-    }
-
-    // Exit if already connected to this controller via another websocket client connection to this server
-    wc = FindWsConnectionByEndpointId(endpoint_id);
-    if (wc != NULL)
-    {
-        USP_LOG_Error("%s: Not permitting controller eid='%s' to connect. Already connected via agent's websocket server", __FUNCTION__, endpoint_id);
-        return -1;
-    }
-
-    // Save the endpoint_id
-    wc = lws_get_opaque_user_data(handle);
-    USP_ASSERT(wc != NULL);
-    USP_STRNCPY(wc->peer, endpoint_id, sizeof(wc->peer));
-    wc->is_peer_an_eid = true;
-
-    // NOTE: No need to validate the Sec-WebSocket-Protocol header provided by the client in the session initiation request
-    // libwebsockets ensures that the list of websocket sub-protocols provided in the header contains the sub-protocol that we support
 
     return 0;
 }
@@ -1345,30 +1314,58 @@ int AddWsservUspExtension(struct lws *handle, char **ppHeaders, int headers_len)
 **************************************************************************/
 int HandleWssEvent_Established(struct lws *handle)
 {
-    int hdr_len;
-    char buf[256];
-    char *path;
+    int len;
+    char rxed_path[PATH_MAX];
+    char *expected_path;
     wsconn_t *wc;
+    wsconn_t *other_wc;
+    char endpoint_id[MAX_ENDPOINT_ID_LEN];
 
     wc = lws_get_opaque_user_data(handle);
     USP_ASSERT(wc != NULL);
 
     // Exit if unable to get the path from the websocket URL that the controller was connecting to
-    hdr_len = lws_hdr_copy(handle, buf, sizeof(buf), WSI_TOKEN_GET_URI);
-    if (hdr_len == -1)
+    len = lws_hdr_copy(handle, rxed_path, sizeof(rxed_path), WSI_TOKEN_GET_URI);
+    if (len == -1)
     {
         USP_LOG_Error("%s: lws_hdr_copy() returned an error. Closing connection.", __FUNCTION__)
         return -1;
     }
 
     // Calculate the path which we are listening on - an empty config path should be treated the same as '/'
-    path = (wsserv.cur_config.path[0] == '\0') ? "/" : wsserv.cur_config.path;
+    expected_path = (wsserv.cur_config.path[0] == '\0') ? "/" : wsserv.cur_config.path;
 
     // Exit if the controller was trying to connect to the wrong URL path
-    if (strcmp(buf, path) != 0)
+    if (strcmp(rxed_path, expected_path) != 0)
     {
-        USP_LOG_Error("%s: Controller was trying to connect to path '%s', but agent is listening on '%s'. Closing Connection.", __FUNCTION__, buf, path);
+        USP_LOG_Error("%s: Controller was trying to connect to path '%s', but agent is listening on '%s'. Closing Connection.", __FUNCTION__, rxed_path, expected_path);
         return -1;
+    }
+
+    // Extract Endpoint ID from URI query string after the path
+    // NOTE: It is not an error if the client does not provide an endpoint ID
+    #define EID_KEY  "eid="
+    len = lws_get_urlarg_by_name_safe(handle, EID_KEY, endpoint_id, sizeof(endpoint_id));
+    if (len != -1)
+    {
+        // Exit if already connected to this controller via the agent's websocket client. Abort the connection to the websocket server
+        if (WSCLIENT_IsEndpointConnected(endpoint_id))
+        {
+            USP_LOG_Error("%s: Not permitting controller eid='%s' to connect. Already connected via agent's websocket client", __FUNCTION__, endpoint_id);
+            return -1;
+        }
+
+        // Exit if already connected to this controller via another websocket client connection to this server
+        other_wc = FindWsConnectionByEndpointId(endpoint_id);
+        if (other_wc != NULL)
+        {
+            USP_LOG_Error("%s: Not permitting controller eid='%s' to connect. Already connected via agent's websocket server", __FUNCTION__, endpoint_id);
+            return -1;
+        }
+
+        // Save the endpoint_id
+        USP_STRNCPY(wc->peer, endpoint_id, sizeof(wc->peer));
+        wc->is_peer_an_eid = true;
     }
 
     USP_LOG_Info("%s: Accepted connection from %s", __FUNCTION__, wc->peer);
@@ -1401,8 +1398,9 @@ int HandleWssEvent_Established(struct lws *handle)
 **************************************************************************/
 int HandleWssEvent_Receive(struct lws *handle, unsigned char *chunk, int chunk_len)
 {
-    mtp_reply_to_t mtp_reply_to;
+    mtp_conn_t mtp_conn;
     char buf[MAX_ISO8601_LEN];
+    char *cont_endpoint_id;
     wsconn_t *wc;
     int new_len;
 
@@ -1452,14 +1450,14 @@ int HandleWssEvent_Receive(struct lws *handle, unsigned char *chunk, int chunk_l
 
     // Send the USP Record to the data model thread for processing
     // NOTE: Ownership of receive buffer stays with this thread
-    memset(&mtp_reply_to, 0, sizeof(mtp_reply_to));
-    mtp_reply_to.is_reply_to_specified = true;
-    mtp_reply_to.protocol = kMtpProtocol_WebSockets;
-    mtp_reply_to.wsclient_cont_instance = INVALID;
-    mtp_reply_to.wsclient_mtp_instance = INVALID;
-    mtp_reply_to.wsserv_conn_id = wc->conn_id;
-    mtp_reply_to.cont_endpoint_id = (wc->is_peer_an_eid) ? wc->peer : NULL;
-    DM_EXEC_PostUspRecord(wc->rx_buf, wc->rx_buf_len, wc->role, &mtp_reply_to);
+    memset(&mtp_conn, 0, sizeof(mtp_conn));
+    mtp_conn.is_reply_to_specified = true;
+    mtp_conn.protocol = kMtpProtocol_WebSockets;
+    mtp_conn.ws.client_cont_instance = INVALID;
+    mtp_conn.ws.client_mtp_instance = INVALID;
+    mtp_conn.ws.serv_conn_id = wc->conn_id;
+    cont_endpoint_id = (wc->is_peer_an_eid) ? wc->peer : UNKNOWN_ENDPOINT_ID;
+    DM_EXEC_PostUspRecord(wc->rx_buf, wc->rx_buf_len, cont_endpoint_id, wc->role_instance, &mtp_conn);
 
     // Free receive buffer
     USP_FREE(wc->rx_buf);
@@ -1671,22 +1669,28 @@ int HandleWssEvent_PongReceived(struct lws *handle)
 void HandleWssEvent_WanPollTimer(lws_sorted_usec_list_t *sul)
 {
     int err;
+#ifndef BDK_USP    
     char new_wan_addr[NU_IPADDRSTRLEN];
-
+#endif
     OS_UTILS_LockMutex(&wss_access_mutex);
 
     // Check that structure is not part of a linked list owned by libwebsockets anymore
     AssertWanPollCallbackNotInUse(sul);
-
+    
+#ifdef BDK_USP    
+    err = CalcWsservIpAddrFromIntfName(wsserv.cur_config.interfaces,wsserv.wan_addr, sizeof(wsserv.wan_addr));
+#else
     // Exit if unable to determine IP address of WAN interface
     // In this case, we keep the current websocket server running, as it's just that the interface is down
     new_wan_addr[0] = '\0';
     err = CalcWsservIpAddr(new_wan_addr, sizeof(new_wan_addr));
+#endif    
     if (err != USP_ERR_OK)
     {
         goto exit;
     }
 
+#ifndef BDK_USP    
     // Exit if IP address hasn't changed
     USP_ASSERT(new_wan_addr[0] != '\0');    // Above code should have ensured that the WAN address is not an empty string
     if (strcmp(new_wan_addr, wsserv.wan_addr)==0)
@@ -1696,6 +1700,7 @@ void HandleWssEvent_WanPollTimer(lws_sorted_usec_list_t *sul)
 
     // If the code gets here, then the IP address on the WAN interface has changed, so schedule a restart of the server
     USP_LOG_Info("%s: Restarting WebSocket server as IP address has changed to %s (from %s)", __FUNCTION__, new_wan_addr, wsserv.wan_addr);
+#endif    
     wsserv.schedule_restart = kScheduledAction_Activated;
 
 exit:
@@ -2153,6 +2158,10 @@ void CopyWssConfig(wsserv_config_t *dest, wsserv_config_t *src)
     dest->enable_encryption = src->enable_encryption;
     USP_SAFE_FREE(dest->path);
     dest->path = USP_STRDUP(src->path);
+#ifdef BDK_USP    
+    USP_SAFE_FREE(dest->interfaces);        
+    dest->interfaces = USP_STRDUP(src->interfaces);
+#endif    
     dest->keep_alive = src->keep_alive;
 }
 
@@ -2170,6 +2179,9 @@ void CopyWssConfig(wsserv_config_t *dest, wsserv_config_t *src)
 void DestroyWssConfig(wsserv_config_t *config)
 {
     USP_SAFE_FREE(config->path);
+#ifdef BDK_USP
+    USP_SAFE_FREE(config->interfaces);
+#endif    
     memset(config, 0, sizeof(wsserv_config_t));
 }
 
@@ -2206,6 +2218,50 @@ bool WantingToStopWsServer(void)
 void LogWsserverDebug(int level, const char *line)
 {
     USP_LOG_Debug("%s: %s", __FUNCTION__, line);
+}
+
+
+/*********************************************************************//**
+**
+** CalcWsservIpAddrFromIntfName
+**
+** Calculates the IP address of the interface that the websocket server listens
+** NOTE: "any" is returned if all IP addresses should be used
+** NOTE: empty string is returned if no IP address found for the specified interface
+**
+** \param   ifName - configured interface that websocket server listens to
+** \param   buf - buffer in which to write the address in string form
+** \param   len - length of buffer
+**
+** \return  USP_ERR_OK if successful
+**
+**************************************************************************/
+int CalcWsservIpAddrFromIntfName(char *ifName, char *buf, int len)
+{
+    int err;
+    char *interface;
+    bool prefer_ipv6;
+
+    // Exit if websocket server should listen on all interfaces
+    interface = ifName;
+    if ((*interface == '\0') || (strcmp(interface, "any")==0))
+    {
+        USP_STRNCPY(buf, "any", len);
+        return USP_ERR_OK;
+    }
+
+    // Get preference for IPv4 or IPv6 address (in case of Dual Stack CPE)
+    prefer_ipv6 = DEVICE_LOCAL_AGENT_GetDualStackPreference();
+
+    // Exit if unable to get current IP address for listening on
+    err = tw_ulib_get_dev_ipaddr(interface, buf, len, prefer_ipv6);
+    if (err != USP_ERR_OK)
+    {
+        USP_LOG_Error("%s: Unable to get IP address of WAN interface (%s). Retrying later", __FUNCTION__, interface);
+        return USP_ERR_INTERNAL_ERROR;
+    }
+
+    return USP_ERR_OK;
 }
 
 #endif

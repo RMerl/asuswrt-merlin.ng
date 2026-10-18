@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@
 /**
  * \file subs_vector.c
  *
- * Implements a data structure containing a vector of integers
+ * Implements a data structure containing a cache of the parameters in the subscription table
  *
  */
 #include <stdlib.h>
@@ -163,15 +163,23 @@ void SUBS_VECTOR_DestroySubscriber(subs_t *sub)
     USP_SAFE_FREE(sub->subscription_id);
 
     STR_VECTOR_Destroy(&sub->path_expressions);
+    INT_VECTOR_Destroy(&sub->handler_group_ids);
+    INT_VECTOR_Destroy(&sub->device_group_ids);
     KV_VECTOR_Destroy(&sub->last_values);
-    STR_VECTOR_Destroy(&sub->resolved_paths);
+    STR_VECTOR_Destroy(&sub->cur_watch_objs);
+    STR_VECTOR_Destroy(&sub->last_watch_objs);
+
+#ifdef BDK_USP
+    USP_SAFE_FREE(sub->trigger_action);
+    KV_VECTOR_Destroy(&sub->trigger_config_settings);
+#endif
 }
 
 /*********************************************************************//**
 **
 ** SUBS_VECTOR_GetSubsByInstance
 **
-** Deallocates all memory associated with the subscriptions vector
+** Gets a pointer to the subscription identified by instance number in Device.LocalAgent.Subscription
 **
 ** \param   instance - instance number of the subscription in the data model (Device.LocalAgent.Subscription.{i})
 **
@@ -214,7 +222,7 @@ void SUBS_VECTOR_MarkSubscriptionForDeletion(subs_t *sub)
 {
     SUBS_VECTOR_DestroySubscriber(sub);
 
-    // Finally mark the entry as ready for deletion, by marking it as invalid
+    // Mark the entry as ready for deletion, by marking it as invalid
     sub->instance = INVALID;
     sub->notify_type = kSubNotifyType_Invalid;
 }
@@ -295,7 +303,7 @@ void SUBS_VECTOR_Dump(subs_vector_t *suv)
         // Log all path expressions
         for (j=0; j < sub->path_expressions.num_entries; j++)
         {
-            USP_DUMP("path[%d]=%s", j, sub->path_expressions.vector[j]);
+            USP_DUMP("path[%d]=%s, handler_group_id=0x%4x", j, sub->path_expressions.vector[j], sub->handler_group_ids.vector[j]);
         }
 
         // Log all last values

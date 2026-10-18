@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -58,13 +58,11 @@
 ** \param   msg_id - string containing the message id of the USP message, which initiated this response
 ** \param   err_code - error code
 ** \param   src_msg - pointer to current USP response message. This will be deleted (if it exists).
-** \param   paramerror_extractor - callback function which is called to put ParamError fields in the error response
-**                                 It does this by extracting the information from fields in the OperFailure object
 **
 ** \return  Pointer to a USP message object
 **
 **************************************************************************/
-Usp__Msg *ERROR_RESP_CreateSingle(char *msg_id, int err_code, Usp__Msg *src_msg, paramerror_extractor_t paramerror_extractor)
+Usp__Msg *ERROR_RESP_CreateSingle(char *msg_id, int err_code, Usp__Msg *src_msg)
 {
     char *err_str;
     Usp__Msg *resp;
@@ -72,12 +70,6 @@ Usp__Msg *ERROR_RESP_CreateSingle(char *msg_id, int err_code, Usp__Msg *src_msg,
     // Create the new ErrorResponse
     err_str = USP_ERR_GetMessage();
     resp = ERROR_RESP_Create(msg_id, err_code, err_str);
-
-    // Add the ParamError fields to the ErrorResponse, extracted from OperFailure fields of the current USP message being replaced
-    if (paramerror_extractor != NULL)
-    {
-        paramerror_extractor(src_msg, resp);
-    }
 
     // Free the current USP response message (if one exists)
     if (src_msg != NULL)
@@ -96,49 +88,30 @@ Usp__Msg *ERROR_RESP_CreateSingle(char *msg_id, int err_code, Usp__Msg *src_msg,
 ** NOTE: The object is created without any param_errors
 ** NOTE: The object should be deleted using usp__msg__free_unpacked()
 **
-** \param   msg_id - string containing the message id of the get request, which initiated this response
+** \param   msg_id - string containing the message id of the request, which initiated this response
 ** \param   err_code - error code
 ** \param   err_msg - pointer to string containing reason for the error
 **
-** \return  Pointer to a GetResponse object
+** \return  Pointer to a USP Error response message object
 **          NOTE: If out of memory, USP Agent is terminated
 **
 **************************************************************************/
 Usp__Msg *ERROR_RESP_Create(char *msg_id, int err_code, char *err_msg)
 {
-    Usp__Msg *resp;
-    Usp__Header *header;
-    Usp__Body *body;
+    Usp__Msg *msg;
     Usp__Error *error;
 
-    // Allocate memory to store the USP message
-    resp = USP_MALLOC(sizeof(Usp__Msg));
-    usp__msg__init(resp);
-
-    header = USP_MALLOC(sizeof(Usp__Header));
-    usp__header__init(header);
-
-    body = USP_MALLOC(sizeof(Usp__Body));
-    usp__body__init(body);
-
+    msg = MSG_HANDLER_CreateUspMsg(msg_id, USP__HEADER__MSG_TYPE__ERROR, USP__BODY__MSG_BODY_ERROR);
     error = USP_MALLOC(sizeof(Usp__Error));
     usp__error__init(error);
-
-    // Connect the structures together
-    resp->header = header;
-    header->msg_id = USP_STRDUP(msg_id);
-    header->msg_type = USP__HEADER__MSG_TYPE__ERROR;
-
-    resp->body = body;
-    body->msg_body_case = USP__BODY__MSG_BODY_ERROR;
-    body->error = error;
+    msg->body->error = error;
 
     error->err_code = err_code;
     error->err_msg = USP_STRDUP(err_msg);
     error->n_param_errs = 0;
     error->param_errs = NULL;
 
-    return resp;
+    return msg;
 }
 
 /*********************************************************************//**
@@ -190,21 +163,13 @@ ERROR_RESP_AddParamError(Usp__Msg *resp, char *path, int err_code, char *err_msg
 ** These messages should return an outer error code of USP_ERR_INVALID_ARGUMENTS if the inner error code
 ** was caused by a bad input argument and there are param_err elements.
 **
-** \param   count - Count of the number of param_err elements that will be added to the ERROR message
 ** \param   err - USP error code to use in the inner error code of an ERROR message
 **
 ** \return  USP error code to use in the outer error code of an ERROR message
 **
 **************************************************************************/
-int ERROR_RESP_CalcOuterErrCode(int count, int err)
+int ERROR_RESP_CalcOuterErrCode(int err)
 {
-    // If there are no param_err elements, then there are no inner error codes, so the outer error code does not have to change
-    if (count == 0)
-    {
-        return err;
-    }
-
-    // Since there are some param_err elements that will be added, calculate an outer error code
     switch(err)
     {
         case USP_ERR_INVALID_ARGUMENTS:

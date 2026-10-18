@@ -1,0 +1,7 @@
+OSS_REFERENCE_Name: Libpopt
+OSS_REFERENCE_Version: 1.16
+OSS_REFERENCE_License: BSD
+OSS_REFERENCE_DownloadURL: http://rpm5.org/files/popt/popt-1.16.tar.gz
+OSS_REFERENCE_BroadcomURL: 
+OSS_Broadcom_RelativePath: ./opt-1.16.tar.gz
+

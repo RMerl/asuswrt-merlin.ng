@@ -1,3 +1,26 @@
+diff -rupN bridge-utils-1.7.1_orig/Makefile.in bridge-utils-1.7.1_mod/Makefile.in
+--- bridge-utils-1.7.1_orig/Makefile.in	2021-03-05 01:27:42.000000000 +0800
++++ bridge-utils-1.7.1_mod/Makefile.in	2024-05-29 11:46:27.234873610 +0800
+@@ -14,10 +14,10 @@ distdir = $(PACKAGE)-$(VERSION)
+ SUBDIRS=libbridge brctl doc
+ 
+ all:
+-	for x in $(SUBDIRS); do $(MAKE) $(MFLAGS) -C $$x || exit 1 ; done
++	for x in $(SUBDIRS); do $(MAKE) -C $$x || exit 1 ; done
+ 
+ clean:
+-	for x in $(SUBDIRS); do $(MAKE) $(MFLAGS) -C $$x clean ; done
++	for x in $(SUBDIRS); do $(MAKE) -C $$x clean ; done
+ 
+ distclean:	clean
+ 	rm -f config.* 
+@@ -28,5 +28,5 @@ maintainer-clean: distclean
+ 	rm -f brctl/Makefile libbridge/Makefile doc/Makefile
+ 
+ install:
+-	for x in $(SUBDIRS); do $(MAKE) $(MFLAGS) -C $$x install || exit 1 ; done
++	for x in $(SUBDIRS); do $(MAKE) -C $$x install || exit 1 ; done
+ 
 diff -ur bridge-utils-1.7.1_orig/brctl/brctl.c bridge-utils-1.7.1_mod/brctl/brctl.c
 --- bridge-utils-1.7.1_orig/brctl/brctl.c	2022-04-20 15:45:41.039706454 +0300
 +++ bridge-utils-1.7.1_mod/brctl/brctl.c	2022-04-20 15:59:31.754529936 +0300

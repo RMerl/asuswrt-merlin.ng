@@ -30,12 +30,9 @@ ifeq ($(WLDRV),)
 DRV_RC3 += S45bcm-wlan-drivers
 BIN += wlaffinity
 BIN += wlinc.sh
+BIN += wldsps
 SCRIPTS += wifi.sh
 SCRIPTS += mdev_wl.sh
-endif
-
-ifneq ("$(wildcard ubus_cap_start.sh)","")
-SCRIPTS += on_start_monitor.sh ubus_cap_start.sh on_crash_detected.sh ubus_cap_dump.sh
 endif
 
 ifneq ($(strip $(BUILD_BRCM_BDK)),)
@@ -70,6 +67,7 @@ drv-rc3-install:
 	    | sed -e 's/CONFIG_WLDPDCTL=_set_by_buildFS_/CONFIG_WLDPDCTL=$(BUILD_BCM_WLAN_DPDCTL)/'  \
 	    | sed -e 's/WLAN_REMOVE_INTERNAL_DEBUG=_set_by_buildFS_/WLAN_REMOVE_INTERNAL_DEBUG=$(BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG)/'  \
 	    | sed -e 's/ALLOW_LOAD_DRIVER_IN_BACKGROUND=_set_by_buildFS_/ALLOW_LOAD_DRIVER_IN_BACKGROUND=$(ALLOW_LOAD_DRIVER_IN_BACKGROUND)/'  \
+	    | sed -e 's/IS_BRCM_ENGR_ONLY=_set_by_buildFS_/IS_BRCM_ENGR_ONLY=$(BRCM_ENGR_ONLY)/'  \
 	    > ${INSTALL_DIR}/etc/init.d/$${f:3} ; \
 	  chmod +x ${INSTALL_DIR}/etc/init.d/$${f:3} ;  ln -fs ../init.d/$${f:3} ${INSTALL_DIR}/etc/rc3.d/$$s; \
 	done
@@ -79,6 +77,8 @@ drv-rc3-clean:
 bin-install: ${BIN}
 	@echo "wlan bin-install: ${BIN}"    
 	@test -z "${BIN}" || install -Dp ${BIN} ${INSTALL_DIR}/bin
+	sed -ie 's/IS_RDK_BUILD=RDK_BUILD_HOLDER/IS_RDK_BUILD=$(RDK_BUILD)/' ${INSTALL_DIR}/bin/wldsps
+
 bin-clean: ${BIN}
 	for f in ${BIN}; do rm -f ${INSTALL_DIR}/bin/$$f; done
 
@@ -97,6 +97,16 @@ scripts-install: ${SCRIPTS}
 scripts-clean: 
 	for s in ${SCRIPTS}; do rm -f ${INSTALL_DIR}/rom/rom/etc/init.d/$${s}; done
 
+# fill in the content of "user_nvram_file" in hndnvram.sh for UNFWLCFG + (BASESHELL or Prpl && not set BUILD_SMARTMESH_FOR_PRPL builds)
+ifneq ($(strip $(BUILD_BRCM_BASE_SHELL)),)
+SET_USE_NVRAM_FILE := y
+endif
+ifneq ($(strip $(BUILD_PRPL_FEEDS)),)
+ifeq ($(strip $(BUILD_SMARTMESH_FOR_PRPL)),)
+SET_USE_NVRAM_FILE := y
+endif
+endif
+
 nvram-scripts-install:
 	mkdir -p ${INSTALL_DIR}/rom/rom/etc/init.d/
 	mkdir -p ${INSTALL_DIR}/rom/rom/etc/rc3.d/
@@ -107,9 +117,10 @@ ifneq ($(strip $(BRCM_ENGR_ONLY)),)
 endif
 	install -m 755 ./hnddm.sh $(INSTALL_DIR)/usr/sbin
 	sed -e s/KERNEL_NVRAM_FILE_NAME/$(KERNEL_NVRAM_FILE_NAME)/g ./hndnvram.sh > $(INSTALL_DIR)/rom/rom/etc/init.d/hndnvram.sh
-ifeq ($(strip $(BUILD_BRCM_UNFWLCFG)_$(BUILD_BRCM_BASE_SHELL)),y_y)
-# fill in the content of "user_nvram_file" in hndnvram.sh for UNFWLCFG+BASESHELL builds
+ifeq ($(strip $(BUILD_BRCM_UNFWLCFG)),y)
+ifneq ($(strip $(SET_USE_NVRAM_FILE)),)
 	sed -i s/user_nvram_file=\"\"/user_nvram_file=\"\\/data\\/.$(USER_NVRAM_FILE_NAME)\"/g $(INSTALL_DIR)/rom/rom/etc/init.d/hndnvram.sh
+endif
 endif
 ifneq ($(strip $(BUILD_RDKWIFI)),)
 	sed -i s/BUILD_RDKWIFI_HOLDER/1/g  $(INSTALL_DIR)/rom/rom/etc/init.d/hndnvram.sh
@@ -139,12 +150,6 @@ else
 	touch $(INSTALL_DIR)/rom/rom/etc/wlan/$(KERNEL_NVRAM_FILE_NAME)
 endif
 
-ifneq ($(strip $(CONFIG_BCM96846)),)
-# dhda_rnr_offloverride - Override offload support setting, bit[1:0] with each bit position corresponding to a radio
-#   possible values
-#   - 0 (no offload), 1 (offload dhd0), 2 (offload dhd1), 3 (offload dhd0)
-	echo "dhd_rnr_offload_override=1" >> $(INSTALL_DIR)/rom/rom/etc/wlan/kernel_nvram.setting
-endif
 ifneq ($(strip $(BRCM_NVRAM_INCLUDE_IMAGE)),)
 	mkdir -p $(INSTALL_DIR)/rom/rom/etc/wlan/nvram/
 	-cp -f $(BUILD_DIR)/targets/nvram/$(BRCM_CHIP)/*.nvm $(INSTALL_DIR)/rom/rom/etc/wlan/nvram/

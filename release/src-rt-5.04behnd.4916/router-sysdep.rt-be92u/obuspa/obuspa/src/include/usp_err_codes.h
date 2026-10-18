@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -81,6 +81,12 @@
 #define USP_ERR_UNIQUE_KEY_CONFLICT       7025       // unique keys would conflict
 #define USP_ERR_INVALID_PATH              7026       // Path is not present in the data model schema
 #define USP_ERR_INVALID_COMMAND_ARGS      7027       // Command failed due to invalid arguments
+
+#define USP_ERR_REGISTER_FAILURE          7028       // General failure to register a path
+#define USP_ERR_PATH_ALREADY_REGISTERED   7029       // Failure to register a path because it's already registered
+#define USP_ERR_DEREGISTER_FAILURE        7030       // General failure to deregister a path
+#define USP_ERR_NOT_PATH_OWNER            7031       // Failure to deregister a path because it was owned by another USP Service
+#define USP_ERR_UNAVAILABLE_ROLE          7032       // Unavailable Role fault code
 
 // Brokered USP Record Errors
 #define USP_ERR_RECORD_NOT_PARSED         7100       // Record could not be parsed

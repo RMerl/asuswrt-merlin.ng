@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom wl driver
 #
-# Copyright (C) 2024, Broadcom. All Rights Reserved.
+# Copyright (C) 2025, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,8 @@
 # OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
-# <<Broadcom-WL-IPTag/Open:>>
+#
+# <<Broadcom-WL-IPTag/Dual:>>
 #
 # $Id: Makefile 693762 2017-04-05 02:06:54Z $
 #
@@ -36,3 +37,13 @@ WLCONF_O := ../wlconf.o
 
 # kbuild part of makefile
 include $(src)/../wl_generic.mk
+
+# This comment block must stay at the bottom of the file.
+# No reason for tabs in this file since no recipes.
+# Local Variables:
+# mode: makefile-gmake
+# fill-column: 80
+# indent-tabs-mode: nil
+# End:
+#
+# vim: filetype=make sw=2 tw=80 cc=+1 et

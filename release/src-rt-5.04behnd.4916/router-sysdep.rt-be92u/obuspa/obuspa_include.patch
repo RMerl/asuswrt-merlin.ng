@@ -1,7 +1,18 @@
+diff -Naur obuspa/src/include/usp_err_codes.h obuspa_new/src/include/usp_err_codes.h
+--- obuspa/src/include/usp_err_codes.h	2024-08-06 12:58:10.571546285 -0700
++++ obuspa_new/src/include/usp_err_codes.h	2024-08-06 12:56:44.009744642 -0700
+@@ -86,6 +86,7 @@
+ #define USP_ERR_PATH_ALREADY_REGISTERED   7029       // Failure to register a path because it's already registered
+ #define USP_ERR_DEREGISTER_FAILURE        7030       // General failure to deregister a path
+ #define USP_ERR_NOT_PATH_OWNER            7031       // Failure to deregister a path because it was owned by another USP Service
++#define USP_ERR_UNAVAILABLE_ROLE          7032       // Unavailable Role fault code
+ 
+ // Brokered USP Record Errors
+ #define USP_ERR_RECORD_NOT_PARSED         7100       // Record could not be parsed
 diff -Naur obuspa_orig/src/include/vendor_api.h obuspa_new/src/include/vendor_api.h
---- obuspa_orig/src/include/vendor_api.h	2022-06-28 02:09:22.000000000 -0700
-+++ obuspa_new/src/include/vendor_api.h	2022-07-11 16:21:49.992333190 -0700
-@@ -54,5 +54,18 @@
+--- obuspa_orig/src/include/vendor_api.h	2024-10-14 13:57:19.946513347 -0700
++++ obuspa_new/src/include/vendor_api.h	2024-10-15 13:22:10.218709792 -0700
+@@ -54,5 +54,19 @@
  int VENDOR_GetFactoryResetParams(kv_vector_t *kvv);
  #endif
  
@@ -9,6 +20,7 @@ diff -Naur obuspa_orig/src/include/vendor_api.h obuspa_new/src/include/vendor_ap
 +int vendorRegisterOpLocalAgent(void);
 +int vendorRegisterOpController(void);
 +int vendorRegisterOpCtrust(void);
++int vendorRegisterOpMqtt(void);
 +int vendorRegisterOpIpDiag(void);
 +int vendorRegisterOpDslDiag(void);
 +int vendorRegisterOpFirmware(void);

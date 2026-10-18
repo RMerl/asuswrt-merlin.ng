@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019, Broadband Forum
- * Copyright (C) 2017-2019  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2017-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -100,7 +100,7 @@ int WalkCoapOption(option_walker_t *ow, parsed_pdu_t *pp);
 int ParseCoapOption(int option, unsigned char *buf, int len, parsed_pdu_t *pp);
 void AppendUriPath(char *path, int path_len, char *segment, int seg_len);
 void ParseBlock1Option(unsigned char *buf, int len, parsed_pdu_t *pp);
-bool ParseCoapUriQuery(char *uri_query, mtp_reply_to_t *mrt);
+bool ParseCoapUriQuery(char *uri_query, mtp_conn_t *mtpc);
 unsigned ReadUnsignedOptionValue(unsigned char *buf, int len);
 pdu_block_size_t CalcBlockSize_Int2Pdu(int block_size);
 int CalcBlockSize_Pdu2Int(pdu_block_size_t pdu_block_size);
@@ -202,6 +202,9 @@ void COAP_Destroy(void)
 
     COAP_SERVER_Destroy();
     COAP_CLIENT_Destroy();
+
+    // Prevent the data model from making any other changes to the MTP thread
+    is_coap_mtp_thread_exited = true;
 
     COAP_UnlockMutex();
 }
@@ -1037,7 +1040,7 @@ int ParseCoapOption(int option, unsigned char *buf, int len, parsed_pdu_t *pp)
             TEXT_UTILS_StrncpyLen(pp->uri_query, sizeof(pp->uri_query), (char *)buf, len);
             USP_PROTOCOL("%s: Received CoAP UriQueryOption='%s'", __FUNCTION__, pp->uri_query);
 
-            result = ParseCoapUriQuery(pp->uri_query, &pp->mtp_reply_to);
+            result = ParseCoapUriQuery(pp->uri_query, &pp->mtp_conn);
             if (result == false)
             {
                 COAP_SetErrMessage("%s: Received CoAP URI query option (%s) is incorrectly formed", __FUNCTION__, pp->uri_query);
@@ -1182,20 +1185,20 @@ void ParseBlock1Option(unsigned char *buf, int len, parsed_pdu_t *pp)
 **
 ** ParseCoapUriQuery
 **
-** Parses the URI Query option into an mtp_reply_to structure
+** Parses the URI Query option into an mtp_conn structure
 ** The format of the URI Query option is:
 **    reply_to=coap[s]:// hostname [':' port] '/' resource
 **
-** NOTE: On exit, the strings in the mtp_reply_to structure will point to within the uri_query (input) buffer
+** NOTE: On exit, the strings in the mtp_conn structure will point to within the uri_query (input) buffer
 **
 ** \param   uri_query - pointer to buffer containing the URI query option to parse
 **                      NOTE: This buffer will be altered by this function
-** \param   mrt - pointer to structure containing the parsed 'reply-to'
+** \param   mtpc - pointer to structure containing the parsed 'reply-to'
 **
 ** \return  true if parsed successfully
 **
 **************************************************************************/
-bool ParseCoapUriQuery(char *uri_query, mtp_reply_to_t *mrt)
+bool ParseCoapUriQuery(char *uri_query, mtp_conn_t *mtpc)
 {
     char *p;
     char *p_slash;
@@ -1209,14 +1212,14 @@ bool ParseCoapUriQuery(char *uri_query, mtp_reply_to_t *mrt)
     p = uri_query;
     if (strncmp(p, URI_QUERY_COAP, sizeof(URI_QUERY_COAP)-1) == 0)
     {
-        mrt->coap_encryption = false;
-        mrt->coap_port = 5683;
+        mtpc->coap.encryption = false;
+        mtpc->coap.port = 5683;
         p += sizeof(URI_QUERY_COAP)-1;
     }
     else if (strncmp(p, URI_QUERY_COAPS, sizeof(URI_QUERY_COAPS)-1) == 0)
     {
-        mrt->coap_encryption = true;
-        mrt->coap_port = 5684;
+        mtpc->coap.encryption = true;
+        mtpc->coap.port = 5684;
         p += sizeof(URI_QUERY_COAPS)-1;
     }
     else
@@ -1237,7 +1240,7 @@ bool ParseCoapUriQuery(char *uri_query, mtp_reply_to_t *mrt)
     if ((p_colon != NULL) && (p_colon < p_slash))
     {
         // Exit if not all of the characters from the colon to the slash are part of the port value
-        mrt->coap_port = strtol(&p_colon[1], &endptr, 10);
+        mtpc->coap.port = strtol(&p_colon[1], &endptr, 10);
         if (endptr != p_slash)
         {
             return false;
@@ -1246,10 +1249,10 @@ bool ParseCoapUriQuery(char *uri_query, mtp_reply_to_t *mrt)
     }
 
     *hostname_end = '\0';               // Terminate the hostname in the input buffer
-    mrt->coap_host = p;
-    mrt->coap_resource = &p_slash[1];
-    mrt->protocol = kMtpProtocol_CoAP;
-    mrt->is_reply_to_specified = true;
+    mtpc->coap.host = p;
+    mtpc->coap.resource = &p_slash[1];
+    mtpc->protocol = kMtpProtocol_CoAP;
+    mtpc->is_reply_to_specified = true;
 
     return true;
 }

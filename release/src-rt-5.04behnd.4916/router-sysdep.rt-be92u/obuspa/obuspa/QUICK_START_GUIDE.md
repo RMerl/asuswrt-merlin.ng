@@ -54,6 +54,8 @@ $ sudo make install
 * `--disable-mqtt` - Removes MQTT MTP
 * `--disable-websockets` - Removes WebSockets MTP
 * `--disable-stomp` - Removes STOMP MTP
+* `--disable-uds` - Removes UDS MTP
+* `--disable-bulkdata` - Removes Bulk Data Collection
 
 #### Using CMake tool
 ```
@@ -138,46 +140,7 @@ in the database, and try again.
 
 ## Docker integration
 
-### Running OB-USP-AGENT standalone
-
-You can also run OB-USP-AGENT within docker. Simply build the docker container, and tag with `obuspa:latest`.
-
-```
-docker build -t obuspa:latest .
-```
-
-Then run, with mounts for the factory reset file, and specify the arguments you'd like. For example:
-
-```
-docker run -d -v $(pwd)/factory_reset_example.txt:/obuspa/factory_reset_example.txt obuspa:latest obuspa -r /obuspa/factory_reset_example.txt -p -v4
-```
-
-In its current state, this will not preserve the USP database over docker runs.
-
-### Starting OB-USP-AGENT developer environment inside Docker
-
-For advanced IDE tools, it is also possible to uses extra compiling and debugging tools along Docker.
-First you must create the Docker images to build the development environment
-
-```
-docker build -f Dockerfile -t obuspa:build-env --target build-env .
-docker build -f Dockerfile.devel-env -t obuspa:devel-env .
-```
-
-At this point, two Docker images are created:
-- `obuspa:build-env` as the strict minimalist image to build OB-USP-AGENT without any extra tools, and
-- `obuspa:devel-env` as the development environment image to (remotely) execute CMake and GDB, and also with a running SSH daemon
-
-Then run the `obuspa:devel-env` image with the SSH port exposed to any wanted value (e.g. 2222)
-
-```
-docker run -p 2222:22 -t -d --name obuspa-devel obuspa:devel-env
-```
-
-The SSH daemon is reachable with the following credentials (As configured in `Dockerfile.devel-env` file)
-- Username: `user`
-- Password: `password`
-- Host: `localhost:2222` (or the custom port number given along `docker run -p` option)
+Please see the Dockerfile for instructions on how to use it.
 
 ## CoAP Message Transfer Protocol
 OB-USP-AGENT also supports CoAP MTP. As with STOMP MTP, this is enabled
@@ -390,12 +353,11 @@ whilst certificates provided to the `--authcert` and `--truststore` invocation a
 
 ## Advanced APIs
 ### Extending the Data Model using grouped parameter and object API
-With some integrations, the data model is implemented by other executables and OB-USP-AGENT must communicate with the
-other executables to get or set parameters or add or delete object instances.
+With some integrations, the data model is implemented by other executables (called 'data model provider components').  OB-USP-AGENT must communicate with the
+data model provider components to get or set parameters or add or delete object instances. In these integrations, the data model provider component is responsible for persisting the objects and parameters in its own database or configuration file.
 
-Use the `USP_REGISTER_GroupXXX()` set of functions to register the group of parameters and objects implemented by the
-other executable. When getting or setting grouped parameters, OB-USP-AGENT passes a list of all affected parameters
-in the group to a single group get or set callback function, improving communication efficiency with the other executable.
+Use the `USP_REGISTER_GroupXXX()` set of functions to register the group of parameters and objects implemented by the data model provider component. When getting or setting grouped parameters, OB-USP-AGENT passes a list of all affected parameters
+in the group to a single group get or set callback function, improving communication efficiency with the data model provider component.
 
 Example (for Integrators):
 
@@ -427,7 +389,7 @@ functions would be too verbose for this guide. Instead, follow the implementatio
 int GetMyParams(int group_id, kv_vector_t *params)
 {
     // params->vector[].key contains parameters to get
-    // Obtain the value of these parameters from the other executable then use USP_ARG_Replace()
+    // Obtain the value of these parameters from the data model provider component then use USP_ARG_Replace()
     // or USP_ARG_ReplaceWithHint() to copy the obtained value back into params->vector[]
     // If some parameters could not be obtained, then just do not call USP_ARG_Replace()
     // Only return an error if none of the parameters could be obtained (Example: RPC call failure)
@@ -445,7 +407,7 @@ int SetMyParams(int group_id, kv_vector_t *params, unsigned *param_types, int *f
 
 int AddMyObject(int group_id, char *path, int *instance)
 {
-    // return the instance number of the object created by the other executable in *instance
+    // return the instance number of the object created by the data model provider component in *instance
     // return USP_ERR_CREATION_FAILURE if the object could not be created
 }
 

@@ -1,6 +1,5 @@
 
 #include "bcm_flashutil.h"
-#include "bcm_hwdefs.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -114,13 +113,13 @@ int main(int argc, char *argv[])
       printf("\n  Booted Partition: %s\n", (boot == 1) ? "First" : "Second");
       printf(  "  Reboot Partition: %s\n\n", (reboot == 1) ? "First" : "Second");
 
-      printf("%c%cFirst  partition type           : %s\n", (boot == 1) ? 'B' : ' ', (reboot == 1) ? '>' : ' ', (seq1 >= 0) ? ((string1[0] == 'n') ? "JFFS2/UBI" : "pureUBI/GPT") : "NONE");
+      printf("%c%cFirst  partition type           : %s\n", (boot == 1) ? 'B' : ' ', (reboot == 1) ? '>' : ' ', (seq1 >= 0) ? ((string1[0] == 'n') ? "INVALID" : "UBI/GPT") : "NONE");
       printf("%c%cFirst  partition sequence number: %d\n", (boot == 1) ? 'B' : ' ', (reboot == 1) ? '>' : ' ', seq1);
       printf("%c%cFirst  partition image tag      : %s\n", (boot == 1) ? 'B' : ' ', (reboot == 1) ? '>' : ' ', myGetIdent(1));
 
       printf("%c%cFirst  partition commit flag    : %s\n",  (boot == 1) ? 'B' : ' ', (reboot == 1) ? '>' : ' ', string1);
 
-      printf("%c%cSecond partition type           : %s\n", (boot == 2) ? 'B' : ' ', (reboot == 2) ? '>' : ' ', (seq2 >= 0) ? ((string2[0] == 'n') ? "JFFS2/UBI" : "pureUBI/GPT") : "NONE");
+      printf("%c%cSecond partition type           : %s\n", (boot == 2) ? 'B' : ' ', (reboot == 2) ? '>' : ' ', (seq2 >= 0) ? ((string2[0] == 'n') ? "INVALID" : "UBI/GPT") : "NONE");
       printf("%c%cSecond partition sequence number: %d\n", (boot == 2) ? 'B' : ' ', (reboot == 2) ? '>' : ' ', seq2);
       printf("%c%cSecond partition image tag      : %s\n", (boot == 2) ? 'B' : ' ', (reboot == 2) ? '>' : ' ', myGetIdent(2));
 
@@ -145,27 +144,35 @@ int main(int argc, char *argv[])
       return 0;
    }
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "1") || !strcmp(argv[1], "BOOT_SET_NEW_IMAGE"))
       return(setBootImageState(BOOT_SET_NEW_IMAGE));
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "2") || !strcmp(argv[1], "BOOT_SET_OLD_IMAGE"))
       return(setBootImageState(BOOT_SET_OLD_IMAGE));
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "3") || !strcmp(argv[1], "BOOT_SET_NEW_IMAGE_ONCE"))
       return(setBootImageState(BOOT_SET_NEW_IMAGE_ONCE));
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "4") || !strcmp(argv[1], "BOOT_SET_OLD_IMAGE_ONCE"))
       return(setBootImageState(BOOT_SET_OLD_IMAGE_ONCE));
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "5") || !strcmp(argv[1], "BOOT_SET_PART1_IMAGE"))
       return(setBootImageState(BOOT_SET_PART1_IMAGE));
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "6") || !strcmp(argv[1], "BOOT_SET_PART1_IMAGE_ONCE"))
       return(setBootImageState(BOOT_SET_PART1_IMAGE_ONCE));
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "7") || !strcmp(argv[1], "BOOT_SET_PART2_IMAGE"))
       return(setBootImageState(BOOT_SET_PART2_IMAGE));
 
+   // coverity[dont_call]
    if (!strcmp(argv[1], "8") || !strcmp(argv[1], "BOOT_SET_PART2_IMAGE_ONCE"))
       return(setBootImageState(BOOT_SET_PART2_IMAGE_ONCE));
    

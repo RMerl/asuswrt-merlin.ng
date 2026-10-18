@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
+ * Copyright (C) 2019-2024, Broadband Forum
  * Copyright (C) 2020-2021, BT PLC
- * Copyright (C) 2021-2022  CommScope, Inc
+ * Copyright (C) 2021-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,12 +38,14 @@
 #ifndef MQTT_H
 #define MQTT_H
 
+#include <stdbool.h>
+
 #include "vendor_defs.h"  // For MAX_MQTT_SUBSCRIPTIONS
 #include "usp-msg.pb-c.h"
 #include "mtp_exec.h"
 #include "socket_set.h"
+#include "kv_vector.h"
 
-#include <stdbool.h>
 
 typedef struct
 {
@@ -74,6 +76,7 @@ typedef enum
     kMqttSubState_Unsubscribed = 0, // Not currently subscribed
     kMqttSubState_Subscribing,      // MQTT SUBSCRIBE message is being sent, waiting for SUBACK
     kMqttSubState_Subscribed,       // Subscribed (MQTT SUBACK has been received)
+    kMqttSubState_Failed,           // Attempted to subscribe, but SUBACK indicated that subscription failed
     kMqttSubState_Unsubscribing,    // MQTT UNSUBSCRIBE is being sent. When UNSUBACK is received, the subscription will move to the unsubscribed state
     kMqttSubState_Resubscribing,    // MQTT UNSUBSCRIBE is being sent. When UNSUBACK is received, a subscribe will be sent for the new topic.
                                     // Subscription stays in this state until SUBACK is received
@@ -86,12 +89,25 @@ typedef enum
     kMqttTSprotocol_Max,
 } mqtt_tsprotocol_t;
 
+// Structure used by device_mqtt.c, containing the configuration of an MQTT subscription
 typedef struct
 {
     int instance;
-    mqtt_qos_t qos;  // From Device.MQTT.Client.{i}.Subscription.{i}.QoS, used along MQTT SUBSCRIBE messages
+    mqtt_qos_t qos;
     char* topic;
     bool enabled;
+} mqtt_subs_config_t;
+
+// Structure used by mqtt.c, containing the configuration and current state of an MQTT subscription
+typedef struct
+{
+    // Configuration
+    int instance;
+    mqtt_qos_t qos;
+    char* topic;
+    bool enabled;
+
+    // State
     int mid; // Last mid for subscribe or unsubscribe message - to identify the SUBACK/UNSUBACK
     mqtt_substate_t state;
 } mqtt_subscription_t;
@@ -103,13 +119,11 @@ typedef struct
     int keepalive;                // Keepalive setting for broker connection
     char* username;               // Username to connect to broker
     char* password;               // Password to connect to broker
+    char *alpn;                   // Application Layer Protocol Negotiation options to send in SSL handshake (comma separated list)
     int instance;                 // Client instance (Device.MQTT.Client.{i})
     bool enable;
 
     mqtt_protocolver_t version;   // MQTT protocol version to use
-
-    char* topic;                  // Controller's topic: Topic which Agent publishes to, and Controller subscribes to
-                                  // NOTE: If not configured in Device.LocalAgent.Controller.{i}.MTP.{i}.MQTT.Topic, then this variable may be set to NULL
 
     char* response_topic;         // Agent's topic: Topic which agent subscribes to, and Controller publishes to
                                   // NOTE: If not configured in Device.LocalAgent.MTP.{i}.MQTT.ResponseTopicConfigured, then this variable may be set to NULL
@@ -125,7 +139,6 @@ typedef struct
     bool clean_session;
     bool clean_start;
     bool request_response_info;
-    bool request_problem_info;
     char* response_information;
 
     mqtt_retry_params_t retry;
@@ -137,25 +150,28 @@ int MQTT_Init(void);
 void MQTT_Destroy(void);
 int MQTT_Start(void);
 void MQTT_Stop(void);
-int MQTT_EnableClient(mqtt_conn_params_t *mqtt_params, mqtt_subscription_t subscriptions[MAX_MQTT_SUBSCRIPTIONS]);
+void MQTT_ModifyConnectedControllers(int instance, kv_vector_t *controller_topics);
+int MQTT_EnableClient(mqtt_conn_params_t *mqtt_params, mqtt_subs_config_t subscriptions[MAX_MQTT_SUBSCRIPTIONS], kv_vector_t *controller_topics);
 int MQTT_DisableClient(int instance);
-int MQTT_QueueBinaryMessage(mtp_send_item_t *msi, int instance, char *topic);
-void MQTT_ScheduleReconnect(mqtt_conn_params_t *mqtt_params);
+int MQTT_QueueBinaryMessage(mtp_send_item_t *msi, int instance, char *topic, time_t expiry_time);
+void MQTT_UpdateConnectionParams(mqtt_conn_params_t *mqtt_params, bool schedule_reconnect);
 void MQTT_ActivateScheduledActions(void);
 mtp_status_t MQTT_GetMtpStatus(int instance);
 const char* MQTT_GetClientStatus(int instance);
 void MQTT_UpdateRetryParams(int instance, mqtt_retry_params_t *retry_params);
 bool MQTT_AreAllResponsesSent(void);
 void MQTT_ProcessAllActivity(void);
-int MQTT_AddSubscription(int instance, mqtt_subscription_t* subscription);
+int MQTT_AddSubscription(int instance, mqtt_subs_config_t *subscription);
 int MQTT_DeleteSubscription(int instance, int subinstance);
-int MQTT_ScheduleResubscription(int instance, mqtt_subscription_t *new_sub);
+int MQTT_ScheduleResubscription(int instance, mqtt_subs_config_t *new_sub);
 void MQTT_UpdateAllSockSet(socket_set_t *set);
 void MQTT_ProcessAllSocketActivity(socket_set_t* set);
 void MQTT_InitConnParams(mqtt_conn_params_t* params);
 void MQTT_DestroyConnParams(mqtt_conn_params_t* params);
-void MQTT_SubscriptionReplace(mqtt_subscription_t *dest, mqtt_subscription_t *src);
-void MQTT_SubscriptionDestroy(mqtt_subscription_t *sub);
 int MQTT_GetAgentResponseTopicDiscovered(int instance, char *buf, int len);
+void MQTT_AllowConnect(void);
+#ifdef BDK_USP
+mqtt_subscription_t *MQTT_FindSubscriptionByInstances(int instance, int subinstance);
+#endif   /* BDK_USP */
 
 #endif

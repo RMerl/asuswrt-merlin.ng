@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2021-2022, Broadband Forum
- * Copyright (C) 2021  CommScope, Inc
+ * Copyright (C) 2021-2024, Broadband Forum
+ * Copyright (C) 2021-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,7 +43,7 @@
 
 #include "common_defs.h"
 #include "usp-msg.pb-c.h"
-#include "device.h"             // for mtp_reply_to_t
+#include "device.h"             // for mtp_conn_t
 
 
 //------------------------------------------------------------------------------
@@ -66,6 +66,7 @@ void WSCLIENT_Destroy(void);
 int WSCLIENT_Start(void);
 void WSCLIENT_StartClient(int cont_instance, int mtp_instance, char *cont_endpoint_id, wsclient_config_t *config);
 void WSCLIENT_StopClient(int cont_instance, int mtp_instance);
+void WSCLIENT_AllowConnect(void);
 void WSCLIENT_ActivateScheduledActions(void);
 void WSCLIENT_QueueBinaryMessage(mtp_send_item_t *msi, int cont_instance, int mtp_instance, time_t expiry_time);
 unsigned WSCLIENT_GetRetryCount(int cont_instance, int mtp_instance);

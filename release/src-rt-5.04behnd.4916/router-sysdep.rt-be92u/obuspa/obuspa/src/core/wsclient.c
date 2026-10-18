@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2021-2022, Broadband Forum
- * Copyright (C) 2021-2022  CommScope, Inc
+ * Copyright (C) 2021-2024, Broadband Forum
+ * Copyright (C) 2021-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,6 +42,7 @@
 #ifdef ENABLE_WEBSOCKETS
 #include <libwebsockets.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "common_defs.h"
 #include "dllist.h"
@@ -136,8 +137,8 @@ typedef struct
     scheduled_action_t  schedule_reconnect;  // Sets whether a reconnect is scheduled after the send queue has cleared
     scheduled_action_t  schedule_close;      // Sets whether a close is scheduled after the send queue has cleared
 
-    STACK_OF(X509) *cert_chain; // Full SSL certificate chain for the Websocket connection, collected in the SSL verify callback
-    ctrust_role_t role;         // role granted by the CA cert in the chain of trust with the websockets server
+    STACK_OF(X509) *cert_chain;     // Full SSL certificate chain for the Websocket connection, collected in the SSL verify callback
+    int role_instance;              // role granted by the CA cert in the chain of trust with the websockets server (instance in Device.LocalAgent.ControllerTrust.Role.{i})
 
 } wsclient_t;
 
@@ -186,6 +187,7 @@ typedef enum
     kWsclientMsgType_StartClient,
     kWsclientMsgType_StopClient,
     kWsclientMsgType_ActivateScheduledActions,
+    kWsclientMsgType_AllowConnect,
     kWsclientMsgType_QueueUspRecord
 } wsclient_msg_type_t;
 
@@ -234,11 +236,11 @@ void ServiceWsclientMessageQueue(void);
 void HandleWsclient_StartClient(start_client_msg_t *scm);
 void HandleWsclient_ConnParamsChanged(wsclient_t *wc, start_client_msg_t *scm);
 void HandleWsclient_StopClient(stop_client_msg_t *tcm);
+void HandleWsclient_AllowConnect(void);
 void AttemptWsclientConnect(wsclient_t *wc);
 void HandleWsclient_QueueUspRecord(queue_client_usp_record_msg_t *qur);
 void ServiceWsclientSendQueue(void);
 int HandleAllWscEvents(struct lws *handle, enum lws_callback_reasons event, void *per_session_data, void *event_args, size_t event_args_len);
-int AddWsclientUspExtension(struct lws *handle, unsigned char **ppHeaders, int headers_len);
 int ValidateReceivedWsclientSubProtocol(struct lws *handle);
 int HandleWscEvent_LoadCerts(SSL_CTX *ssl_ctx);
 int HandleWscEvent_VerifyCerts(struct lws *handle, SSL *ssl, int preverify_ok, X509_STORE_CTX *x509_ctx);
@@ -526,6 +528,45 @@ void WSCLIENT_StopClient(int cont_instance, int mtp_instance)
 
 /*********************************************************************//**
 **
+** WSCLIENT_AllowConnect
+**
+** Called to start all client connections which were not allowed to connect before
+** and were being held in an indefinite retrying state
+**
+** \param   None
+**
+** \return  None
+**
+**************************************************************************/
+void WSCLIENT_AllowConnect(void)
+{
+    wsclient_msg_t *msg;
+
+    // Exit if MTP thread has exited
+    if (is_wsclient_mtp_thread_exited)
+    {
+        return;
+    }
+
+    // Setup the message to post to the websock thread
+    msg = USP_MALLOC(sizeof(wsclient_msg_t));
+    memset(msg, 0, sizeof(wsclient_msg_t));
+    msg->msg_type = kWsclientMsgType_AllowConnect;
+
+    // Add the message to the end of the message queue
+    OS_UTILS_LockMutex(&wsc_access_mutex);
+    DLLIST_LinkToTail(&wsclient_msg_queue, msg);
+
+    // Cause the libwebsocket poll() to exit and then read this message
+    if (wsc_ctx != NULL)
+    {
+        lws_cancel_service(wsc_ctx);
+    }
+    OS_UTILS_UnlockMutex(&wsc_access_mutex);
+}
+
+/*********************************************************************//**
+**
 ** WSCLIENT_ActivateScheduledActions
 **
 ** Activates all scheduled actions. If a reconnect or close is scheduled, all USP messages
@@ -718,7 +759,7 @@ void *WSCLIENT_Main(void *args)
         ServiceWsclientMessageQueue();
         ServiceWsclientSendQueue();
 
-        // Exit this thread, if an exit is scheduled and all responses have been sent
+        // Exit this thread, if an exit is scheduled and all responses have been sent or all connections are currently disconned ted anyway
         if (mtp_exit_scheduled == kScheduledAction_Activated)
         {
             if (AreAllWsclientResponsesSent())
@@ -790,6 +831,10 @@ void ServiceWsclientMessageQueue(void)
         case kWsclientMsgType_StopClient:
             tcm = &msg->inner.stop_client_msg;
             HandleWsclient_StopClient(tcm);
+            break;
+
+        case kWsclientMsgType_AllowConnect:
+            HandleWsclient_AllowConnect();
             break;
 
         case kWsclientMsgType_ActivateScheduledActions:
@@ -876,7 +921,7 @@ void HandleWsclient_StartClient(start_client_msg_t *scm)
     wc->rx_buf_max_len = 0;
     wc->tx_index = 0;
     wc->cert_chain = NULL;
-    wc->role = (scm->enable_encryption) ? ROLE_NON_SSL : ROLE_DEFAULT;
+    wc->role_instance = (scm->enable_encryption) ? ROLE_NON_SSL : ROLE_DEFAULT;
 
     // Start the connection. If an error occurs, handle by putting into retry state
     AttemptWsclientConnect(wc);
@@ -930,6 +975,35 @@ void HandleWsclient_StopClient(stop_client_msg_t *tcm)
         default:
             TERMINATE_BAD_CASE(wc->state);
             break;
+    }
+}
+
+/*********************************************************************//**
+**
+** HandleWsclient_AllowConnect
+**
+** Processes a kWsclientMsgType_AllowConnect message, by starting all client connections which were not
+** allowed to connect before and were being held in an indefinite retrying state
+**
+** \param   None
+**
+** \return  None
+**
+**************************************************************************/
+void HandleWsclient_AllowConnect(void)
+{
+    int i;
+    wsclient_t *wc;
+
+    // Iterate over all Websocket clients, attempting to connect all that were not allowed to connect before
+    for (i=0; i<NUM_ELEM(wsclients); i++)
+    {
+        wc = &wsclients[i];
+        if (wc->state == kWebsockState_Retrying)
+        {
+            lws_sul_cancel(&wc->retry_timer);
+            AttemptWsclientConnect(wc);
+        }
     }
 }
 
@@ -1133,16 +1207,24 @@ void AttemptWsclientConnect(wsclient_t *wc)
     char *interface = "any";
     char wan_addr[NU_IPADDRSTRLEN];     // scope of wan_addr[] needs to exist until call to lws_client_connect_via_info()
     struct lws *handle;
+    bool allowed;
+    char percent_encoded_eid[PATH_MAX];
+    char uri_path[PATH_MAX];
 
     // Check that structure is not part of a linked list owned by libwebsockets anymore
     AssertRetryCallbackNotInUse(&wc->retry_timer);
     memset(&wc->retry_timer, 0, sizeof(wc->retry_timer));
 
+    // Form the URI path to use
+    #define UNRESERVED_SAFE_CHARS "-._~"
+    TEXT_UTILS_PercentEncodeString(DEVICE_LOCAL_AGENT_GetEndpointID(), percent_encoded_eid, sizeof(percent_encoded_eid), UNRESERVED_SAFE_CHARS, 0);
+    USP_SNPRINTF(uri_path, sizeof(uri_path), "%s?eid=%s", wc->path, percent_encoded_eid);
+
     // Initialize connection parameters passed to libwebsockets
     memset(&info, 0, sizeof(info));
     info.context = wsc_ctx;
     info.port = wc->port;
-    info.path = wc->path;
+    info.path = uri_path;
     info.address = wc->host;
     info.host = wc->host;       // Needed for TLS
     info.origin = wc->host;     // Needed for TLS
@@ -1154,6 +1236,16 @@ void AttemptWsclientConnect(wsclient_t *wc)
 #endif
     info.protocol = WEBSOCKET_PROTOCOL_STR;
     info.opaque_user_data = wc;
+
+    // Exit, putting the client into an immediate retrying state, if it's not allowed to start connecting yet
+    allowed = DEVICE_CONTROLLER_CanMtpConnect();
+    if (allowed == false)
+    {
+        wc->state = kWebsockState_Retrying;
+        AssertRetryCallbackNotInUse(&wc->retry_timer);  // Check that structure is not part of a linked list owned by libwebsockets anymore
+        lws_sul_schedule(wsc_ctx, 0, &wc->retry_timer, HandleWscEvent_RetryTimer, CAN_MTP_CONNECT_RETRY_TIME*LWS_US_PER_SEC);
+        return;
+    }
 
 #ifdef CONNECT_ONLY_OVER_WAN_INTERFACE
 {
@@ -1190,6 +1282,7 @@ void AttemptWsclientConnect(wsclient_t *wc)
     wc->rx_buf = NULL;
     wc->rx_buf_len = 0;
     wc->rx_buf_max_len = 0;
+    wc->ping_count = 0;
 
     encrypt_str = (wc->enable_encryption) ? "encrypted" : "unencrypted";
     USP_LOG_Info("Attempting to connect to host=%s (port=%d, %s, path=%s) from interface=%s", wc->host, wc->port, encrypt_str, wc->path, interface);
@@ -1375,11 +1468,6 @@ int HandleAllWscEvents(struct lws *handle, enum lws_callback_reasons event, void
             result = HandleWscEvent_Error(handle, event_args);
             break;
 
-        case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
-            tr_event("WS client: LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER");
-            result = AddWsclientUspExtension(handle, (unsigned char **)event_args, event_args_len);
-		    break;
-
         case LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH:
             tr_event("WS client: LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH");
             result = ValidateReceivedWsclientSubProtocol(handle);
@@ -1426,11 +1514,7 @@ int HandleAllWscEvents(struct lws *handle, enum lws_callback_reasons event, void
             break;
 
         default:
-#ifdef BDK_USP
             tr_event("WS client: event=%d", event);
-#else
-            tr_event("WS client: event=%d", __FUNCTION__, event);
-#endif
             break;
     }
 
@@ -1529,7 +1613,7 @@ int HandleWscEvent_Error(struct lws *handle, char *err_msg)
     // Log the cause of connection failure
     wc = lws_get_opaque_user_data(handle);
     USP_ASSERT(wc != NULL);
-    USP_LOG_Error("%s: Error (%s) occurred on websocket connection to endpoint_id=%s (host=%s)", __FUNCTION__, err_msg, wc->cont_endpoint_id, wc->host);
+    USP_LOG_Error("%s: Error (%s) occurred on websocket connection to endpoint_id=%s (host=%s, port=%d)", __FUNCTION__, err_msg, wc->cont_endpoint_id, wc->host, wc->port);
 
     // Set the root cause of error, if none set yet
     if (wc->close_reason == kWebSockCloseReason_Unknown)
@@ -1770,12 +1854,15 @@ int HandleWscEvent_Connected(struct lws *handle)
     if (wc->cert_chain != NULL)
     {
         // NOTE: Ignoring any error returned by DEVICE_SECURITY_GetControllerTrust() - just leave the role to the default set in HandleWsclient_StartClient
-        DEVICE_SECURITY_GetControllerTrust(wc->cert_chain, &wc->role);
+        DEVICE_SECURITY_GetControllerTrust(wc->cert_chain, &wc->role_instance);
 
         // Free the saved cert chain as we don't need it anymore
         sk_X509_pop_free(wc->cert_chain, X509_free);
         wc->cert_chain = NULL;
     }
+
+    // Notify the data model that the Boot! event can now be generated (as we know which inherited role to use)
+    DM_EXEC_PostWebsockHandshakeComplete(wc->cont_instance, wc->role_instance);
 
     // Set a timer to expire when it is time to send the websocket PING frame
     lws_set_timer_usecs(handle, wc->keep_alive_interval * LWS_USEC_PER_SEC);
@@ -1805,7 +1892,7 @@ int HandleWscEvent_Connected(struct lws *handle)
 **************************************************************************/
 int HandleWscEvent_Receive(struct lws *handle, unsigned char *chunk, int chunk_len)
 {
-    mtp_reply_to_t mtp_reply_to;
+    mtp_conn_t mtp_conn;
     char buf[MAX_ISO8601_LEN];
     wsclient_t *wc;
     int new_len;
@@ -1858,14 +1945,13 @@ int HandleWscEvent_Receive(struct lws *handle, unsigned char *chunk, int chunk_l
 
     // Send the USP Record to the data model thread for processing
     // NOTE: Ownership of receive buffer stays with this thread
-    memset(&mtp_reply_to, 0, sizeof(mtp_reply_to));
-    mtp_reply_to.is_reply_to_specified = true;
-    mtp_reply_to.protocol = kMtpProtocol_WebSockets;
-    mtp_reply_to.wsclient_cont_instance = wc->cont_instance;
-    mtp_reply_to.wsclient_mtp_instance = wc->mtp_instance;
-    mtp_reply_to.wsserv_conn_id = INVALID;
-    mtp_reply_to.cont_endpoint_id = wc->cont_endpoint_id;
-    DM_EXEC_PostUspRecord(wc->rx_buf, wc->rx_buf_len, wc->role, &mtp_reply_to);
+    memset(&mtp_conn, 0, sizeof(mtp_conn));
+    mtp_conn.is_reply_to_specified = true;
+    mtp_conn.protocol = kMtpProtocol_WebSockets;
+    mtp_conn.ws.client_cont_instance = wc->cont_instance;
+    mtp_conn.ws.client_mtp_instance = wc->mtp_instance;
+    mtp_conn.ws.serv_conn_id = INVALID;
+    DM_EXEC_PostUspRecord(wc->rx_buf, wc->rx_buf_len, wc->cont_endpoint_id, wc->role_instance, &mtp_conn);
 
     // Free receive buffer
     USP_FREE(wc->rx_buf);
@@ -2174,45 +2260,6 @@ void ScheduleWsclientRetry(wsclient_t *wc)
 
 /*********************************************************************//**
 **
-** AddWsclientUspExtension
-**
-** Called from the LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER event
-** to add the 'Sec-WebSocket-Extensions' header with the 'bbf-usp-protocol' WebSocket Extension
-**
-** \param   handle - libwebsockets handle identifying the connection with activity on it
-** \param   ppHeaders - pointer to variable containing a pointer to a buffer containing the headers
-** \param   headers_len - total size of the libwebsockets buffer containing the headers
-**
-** \return  0 if successful, -1 to close the connection and retry
-**
-**************************************************************************/
-int AddWsclientUspExtension(struct lws *handle, unsigned char **ppHeaders, int headers_len)
-{
-    unsigned char *pHeadersEnd;
-    char buf[128];
-    int len;
-    int err;
-    wsclient_t *wc;
-
-    wc = lws_get_opaque_user_data(handle);
-    USP_ASSERT(wc != NULL);
-
-    // If unable to add the header, then return an error, which will cause the connection to be retried
-    pHeadersEnd = (*ppHeaders) + headers_len;
-    len = USP_SNPRINTF(buf, sizeof(buf), "bbf-usp-protocol; eid=\"%s\"", DEVICE_LOCAL_AGENT_GetEndpointID());
-    err = lws_add_http_header_by_token(handle, WSI_TOKEN_EXTENSIONS, (unsigned char *)buf, len, ppHeaders, pHeadersEnd);
-    if (err != 0)
-    {
-        USP_LOG_Error("%s: lws_add_http_header_by_token() returned %d", __FUNCTION__, err);
-        wc->close_reason = kWebSockCloseReason_InternalError;
-        return -1;
-    }
-
-    return 0;
-}
-
-/*********************************************************************//**
-**
 ** ValidateReceivedWsclientSubProtocol
 **
 ** Called from the LWS_CALLBACK_CLIENT_FILTER_PRE_ESTABLISH event
@@ -2390,7 +2437,7 @@ void RemoveExpiredWsclientMessages(wsclient_t *wc)
 **
 ** AreAllWsclientResponsesSent
 **
-** Determines whether all webcocket USP Record queues are empty
+** Determines whether all webcocket USP Record queues are empty, or the client is already disconnected
 ** This function determines whether the websocket client thread can exit due to a scheduled exit (caused by reboot, factory reset or '-c stop')
 **
 ** \param   None
@@ -2403,11 +2450,13 @@ bool AreAllWsclientResponsesSent(void)
     int i;
     wsclient_t *wc;
 
-    // Iterate over all websock clients, exiting if any of them still have USP Records to send
+    // Iterate over all websock clients, exiting if any of them are connected and still have USP Records to send
+    // NOTE: If the websock client is not connected, then we do not wait for it to connect and send all it's queued USP receords,
+    // as we don't know when/if this will happen and we don't want to hold up the exit unnecessarily
     for (i=0; i<NUM_ELEM(wsclients); i++)
     {
         wc = &wsclients[i];
-        if ((wc->state != kWebsockState_Idle) && (wc->usp_record_send_queue.head != NULL))
+        if ((wc->state == kWebsockState_Running) && (wc->usp_record_send_queue.head != NULL))
         {
             return false;
         }
@@ -2455,6 +2504,7 @@ void PurgeWsclientMessageQueue(void)
 
             default:
             case kWsclientMsgType_StopClient:
+            case kWsclientMsgType_AllowConnect:
             case kWsclientMsgType_ActivateScheduledActions:
                 // Nothing to free in these messages
                 break;

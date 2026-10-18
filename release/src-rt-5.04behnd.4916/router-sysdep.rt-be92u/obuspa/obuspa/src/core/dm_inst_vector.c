@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2023, Broadband Forum
- * Copyright (C) 2016-2023  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -63,8 +63,15 @@ static dm_instances_vector_t refreshed_instances_vector = { 0 };
 //--------------------------------------------------------------------
 // Counter that is incremented for each USP request (or item of internal work, such as BulkDataCollection or Value Change subscriptions)
 // Its purpose is to ensure that during the processing of a USP request, the cached set of instances for a table do not expire
-// (which may cause an instance number mismatch whilst performing teh USP request, resulting in an internal error)
+// (which may cause an instance number mismatch whilst performing the USP request, resulting in an internal error)
 static unsigned int cur_lock_period = 1;      // Starts at 1, which is more than the starting value for lock_period in each object (0). This ensures that at startup the instance refresh is called in DM_INST_VECTOR_RefreshBaselineInstances().
+
+//--------------------------------------------------------------------
+// Flag, if set to true, the refresh instances vendor hook will be called, even if the instances cache hasn't expired
+// This is needed to ensure that when periodically resolving object deletion notifications, that notifications aren't missed
+// due to the subscription deletion watch objects being formed ahead (as empty - because of instance cache mismatches) of the
+// instance cache expiring
+static bool refresh_override = false;
 
 //--------------------------------------------------------------------
 // Boolean set after baseline instances have been retrieved. After being set, instance addition/deletion can cause notifications
@@ -487,6 +494,41 @@ void DM_INST_VECTOR_RefreshBaselineInstances(dm_node_t *parent)
 
 /*********************************************************************//**
 **
+** DM_INST_VECTOR_DumpTable
+**
+** Prints out the Object Instances array for the specified top level multi-instance object
+**
+** \param   path - data model path to top evel object
+**
+** \return  None
+**
+**************************************************************************/
+void DM_INST_VECTOR_DumpTable(char *path)
+{
+    dm_node_t *node;
+
+    // Exit if path was invalid
+    node = DM_PRIV_GetNodeFromPath(path, NULL, NULL, 0);
+    if ((node == NULL) || (node->type != kDMNodeType_Object_MultiInstance))
+    {
+        USP_LOG_Warning("%s: Unable to dump instance cache for %p (doesn't exist, or not a multi-instance object)", __FUNCTION__, path);
+        return;
+    }
+
+    // Exit if no instances in the tabe
+    if (node->registered.object_info.inst_vector.num_entries == 0)
+    {
+        USP_LOG_Info("Dumping instance cache for %s - No instances", path);
+        return;
+    }
+
+    USP_LOG_Info("Dumping instance cache for %s", path);
+    DM_INST_VECTOR_Dump(&node->registered.object_info.inst_vector);
+    USP_LOG_Info("End");
+}
+
+/*********************************************************************//**
+**
 ** DM_INST_VECTOR_Dump
 **
 ** Prints out the Object Instances array
@@ -655,6 +697,23 @@ void DM_INST_VECTOR_NextLockPeriod(void)
 
 /*********************************************************************//**
 **
+** DM_INST_VECTOR_SetRefreshOverride
+**
+** Sets a flag which enables or disables forcing the refresh instances vendor hook to be called,
+** even if the instances cache haas not expired yet
+**
+** \param   force_override - set to true if the instances refresh vendor hook should be forced to be called
+**
+** \return  USP_ERR_OK if successful
+**
+**************************************************************************/
+void DM_INST_VECTOR_SetRefreshOverride(bool force_override)
+{
+    refresh_override = force_override;
+}
+
+/*********************************************************************//**
+**
 ** DM_INST_VECTOR_RefreshInstance
 **
 ** Adds the specified object instance into the instance vector
@@ -675,7 +734,7 @@ int DM_INST_VECTOR_RefreshInstance(char *path)
     bool exists;
 
     // Exit if unable to find node representing this object
-    node = DM_PRIV_GetNodeFromPath(path, &inst, &is_qualified_instance);
+    node = DM_PRIV_GetNodeFromPath(path, &inst, &is_qualified_instance, 0);
     if (node == NULL)
     {
         USP_ERR_SetMessage("%s: Path (%s) does not exist in the schema", __FUNCTION__, path);
@@ -732,6 +791,81 @@ int DM_INST_VECTOR_RefreshInstance(char *path)
 
     return USP_ERR_OK;
 }
+
+#ifndef REMOVE_USP_BROKER
+/*********************************************************************//**
+**
+** DM_INST_VECTOR_SeedInstance
+**
+** Called to seed the specified object instance into the instance vector immediately after the USP Service has registered
+** This is necessary to prevent any object creation/deletion notifications that use the refresh instances vendor hook from
+** firing immediately after the USP Service has registered
+** NOTE: This function does not create object lifecycle events, so will not trigger an object created/deleted notification
+**
+** \param   path - data model path of the multi-instance object to add
+** \param   expiry_time - absolute time at which all of the instances for the top level object (specified by this path) expire
+** \param   expected_group_id - group_id that the path must be owned by
+**
+** \return  USP_ERR_OK if successful
+**
+**************************************************************************/
+int DM_INST_VECTOR_SeedInstance(char *path, time_t expiry_time, int expected_group_id)
+{
+    dm_node_t *node;
+    dm_node_t *top_node;
+    dm_instances_t inst;
+    bool is_qualified_instance;
+    bool exists;
+    dm_instances_vector_t *vector_to_refresh;
+
+    // Exit if unable to find node representing this object
+    node = DM_PRIV_GetNodeFromPath(path, &inst, &is_qualified_instance, 0);
+    if (node == NULL)
+    {
+        USP_ERR_SetMessage("%s: Path (%s) does not exist in the schema", __FUNCTION__, path);
+        return USP_ERR_OBJECT_DOES_NOT_EXIST;
+    }
+
+    // Exit if the object was not a multi-instance object
+    if (node->type != kDMNodeType_Object_MultiInstance)
+    {
+        USP_ERR_SetMessage("%s: Path (%s) is not a multi-instance object.", __FUNCTION__, path);
+        return USP_ERR_OBJECT_NOT_CREATABLE;
+    }
+
+    // Exit if this object is not a fully qualified instance
+    if (is_qualified_instance == false)
+    {
+        USP_ERR_SetMessage("%s: Path (%s) should contain instance number of object that was added", __FUNCTION__, path);
+        return USP_ERR_INVALID_ARGUMENTS;
+    }
+
+    // Exit if this path is not owned by the expected USP Service
+    if (node->group_id != expected_group_id)
+    {
+        USP_ERR_SetMessage("%s: Path (%s) is not owned by USP Service", __FUNCTION__, path);
+        return USP_ERR_INVALID_ARGUMENTS;
+    }
+
+    // Update the expiry time for this instance vector
+    top_node = inst.nodes[0];
+    USP_ASSERT(top_node->type == kDMNodeType_Object_MultiInstance);
+    vector_to_refresh = &top_node->registered.object_info.inst_vector;
+    top_node->registered.object_info.refresh_instances_expiry_time = expiry_time;
+
+    // Exit if instance already exists - nothing to do
+    exists = IsExistInInstVector(&inst, vector_to_refresh);
+    if (exists)
+    {
+        return USP_ERR_OK;
+    }
+
+    // Add this to the relevant instances vector
+    AddToInstVector(&inst, vector_to_refresh);
+
+    return USP_ERR_OK;
+}
+#endif
 
 /*********************************************************************//**
 **
@@ -846,6 +980,7 @@ void RefreshBaselineInstances(dm_node_t *parent)
 ** Called before querying the instances vector, to ensure that it is up to date
 ** If a refresh_instances_cb is registered, then the instances vector acts as a cache, with ageing of its content
 ** In this case, this function may call the refresh_instances_cb to obtain the instance numbers if the current ones in the cache have expired
+** NOTE: This function creates object lifecycle events, so will trigger object created/deleted notifications
 **
 ** \param   top_node - pointer to top-level multi-instance object
 **
@@ -856,7 +991,6 @@ int RefreshInstVector(dm_node_t *top_node)
 {
     dm_instances_vector_t *old_instances;
     dm_instances_vector_t *new_instances;
-    dm_instances_vector_t deleted_instances;
     dm_instances_t *inst;
     dm_node_t *node;
     char path[MAX_DM_PATH];
@@ -891,7 +1025,7 @@ int RefreshInstVector(dm_node_t *top_node)
 
     // Exit if it's not yet time to refresh the instance vector
     cur_time = time(NULL);
-    if (cur_time <= info->refresh_instances_expiry_time)
+    if ((cur_time <= info->refresh_instances_expiry_time) && (refresh_override==false))
     {
         // Since we've determined that the instances have not expired, lock the cached instances for the rest of this USP request
         info->lock_period = cur_lock_period;
@@ -911,7 +1045,7 @@ int RefreshInstVector(dm_node_t *top_node)
     // Exit if unable to get the refreshed instances into the refreshed_instances_vector
     refresh_instances_top_node = top_node;      // Indicate to DM_INST_VECTOR_RefreshInstance() the top level node which is meant to be being refreshed
     DM_INST_VECTOR_Init(&refreshed_instances_vector);
-    err = info->refresh_instances_cb(info->group_id, path, &expiry_period);
+    err = info->refresh_instances_cb(top_node->group_id, path, &expiry_period);
     if (err != USP_ERR_OK)
     {
         USP_ERR_ReplaceEmptyMessage("%s: Refresh Instances callback for %s failed", __FUNCTION__, top_node->path);
@@ -925,7 +1059,7 @@ int RefreshInstVector(dm_node_t *top_node)
     info->refresh_instances_expiry_time = cur_time + expiry_period;
     info->lock_period = cur_lock_period;
 
-    // Skip determining add added/deleted instances, if we don't need to notify subscriptions because
+    // Skip determining added/deleted instances, if we don't need to notify subscriptions because
     // we haven't got the baseline set of object instances at bootup yet
     if (notify_subscriptions_allowed == false)
     {
@@ -949,29 +1083,12 @@ int RefreshInstVector(dm_node_t *top_node)
         }
     }
 
-    // Create a vector of all instances which have been deleted, by finding all instances in the old, which are not in the new instance vector
-    // NOTE: For why we create a vector, rather than calling DEVICE_SUBSCRIPTION_NotifyObjectLifeEvent() directly, see below
-    DM_INST_VECTOR_Init(&deleted_instances);
+    // Determine all instances which have been deleted, by finding all instances in the old, which are not in the new instance vector
     for (i=0; i < old_instances->num_entries; i++)
     {
         inst = &old_instances->vector[i];
         if (IsExistInInstVector(inst, new_instances)==false)
         {
-            AddToInstVector(inst, &deleted_instances);
-        }
-    }
-
-    // NOTE: We need to call DEVICE_SUBSCRIPTION_ResolveObjectDeletionPaths() before DEVICE_SUBSCRIPTION_NotifyObjectLifeEvent()
-    //       But as that is an unnecessary (and costly) operation if no instances are deleted, we only do it if there were any instances that were deleted
-    if (deleted_instances.num_entries > 0)
-    {
-        // NOTE: DEVICE_SUBSCRIPTION_ResolveObjectDeletionPaths() must be called before any objects are actually deleted from the data model
-        // NOTE: DEVICE_SUBSCRIPTION_ResolveObjectDeletionPaths() calls RefreshInstVector() recursively, so refresh_instances_top_node must still be set here
-        DEVICE_SUBSCRIPTION_ResolveObjectDeletionPaths();
-
-        for (i=0; i<deleted_instances.num_entries; i++)
-        {
-            inst = &deleted_instances.vector[i];
             node = inst->nodes[inst->order-1];
             err = DM_PRIV_FormInstantiatedPath(node->path, inst, path, sizeof(path));
             if (err == USP_ERR_OK)
@@ -980,7 +1097,6 @@ int RefreshInstVector(dm_node_t *top_node)
             }
         }
     }
-    DM_INST_VECTOR_Destroy(&deleted_instances);
 
 exit:
     // Replace the old instances with the new instances, deleting the old instances first

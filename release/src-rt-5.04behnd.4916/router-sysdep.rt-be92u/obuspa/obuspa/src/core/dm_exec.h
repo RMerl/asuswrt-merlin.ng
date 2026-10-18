@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2022, Broadband Forum
- * Copyright (C) 2016-2021  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  * Copyright (C) 2020, BT PLC
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@
 #endif
 
 #include "device.h"
+#include "uds.h"
 
 //------------------------------------------------------------------------------
 // Bitmask indicating which thread exited to DM_EXEC_PostMtpThreadExited()
@@ -58,14 +59,28 @@
 #define BDC_EXITED      0x00000008
 #define WSCLIENT_EXITED 0x00000010
 #define WSSERVER_EXITED 0x00000020
+#define UDS_EXITED      0x00000040
+
+//------------------------------------------------------------------------------
+// Define for endpoint_id argument of DM_EXEC_PostUspRecord()
+#define UNKNOWN_ENDPOINT_ID  NULL
 
 //------------------------------------------------------------------------------
 // API functions
 int DM_EXEC_Init(void);
 void DM_EXEC_Destroy(void);
-void DM_EXEC_PostUspRecord(unsigned char *pbuf, int pbuf_len, ctrust_role_t role, mtp_reply_to_t *mrt);
-void DM_EXEC_PostStompHandshakeComplete(int stomp_instance, char *agent_queue, ctrust_role_t role);
-void DM_EXEC_PostMqttHandshakeComplete(int mqtt_instance, mqtt_protocolver_t version, char *agent_topic, ctrust_role_t role);
+void DM_EXEC_PostUspRecord(unsigned char *pbuf, int pbuf_len, char *originator, int role_instance, mtp_conn_t *mtpc);
+void DM_EXEC_CopyMTPConnection(mtp_conn_t *dst, mtp_conn_t *src);
+void DM_EXEC_FreeMTPConnection(mtp_conn_t *mtpc);
+void DM_EXEC_PostStompHandshakeComplete(int stomp_instance, char *agent_queue, int role_instance);
+void DM_EXEC_PostMqttHandshakeComplete(int mqtt_instance, mqtt_protocolver_t version, char *client_id, int role_instance);
+#ifdef ENABLE_WEBSOCKETS
+void DM_EXEC_PostWebsockHandshakeComplete(int cont_instance, int role_instance);
+#endif
+#ifdef ENABLE_UDS
+void DM_EXEC_PostUdsHandshakeComplete(char *endpoint_id, uds_path_t path_type, unsigned conn_id);
+void DM_EXEC_PostUdsDisconnected(char *endpoint_id, uds_path_t path_type);
+#endif
 void DM_EXEC_PostMtpThreadExited(unsigned flags);
 int DM_EXEC_NotifyBdcTransferResult(int profile_id, bdc_transfer_result_t transfer_result);
 #if defined(E2ESESSION_EXPERIMENTAL_USP_V_1_2)
@@ -74,6 +89,10 @@ int DM_EXEC_PostE2eEvent(e2e_event_t event, int request_instance, int controller
 void DM_EXEC_HandleScheduledExit(void);
 bool DM_EXEC_IsNotificationsEnabled(void);
 void *DM_EXEC_Main(void *args);
+#ifndef REMOVE_USP_BROKER
+Usp__Msg *DM_EXEC_SendRequestAndWaitForResponse(char *endpoint_id, Usp__Msg *req, mtp_conn_t *mtpc,
+                                                Usp__Header__MsgType header_type, int timeout);
+#endif
 //------------------------------------------------------------------------------
 
 #endif

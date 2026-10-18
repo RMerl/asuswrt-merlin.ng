@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2021, Broadband Forum
- * Copyright (C) 2016-2021  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,4 +40,4 @@
  */
 
  /* Lines below main version may include patch version numbers */
-#define AGENT_SOFTWARE_VERSION  "7.0.2"
+#define AGENT_SOFTWARE_VERSION  "9.0.1"

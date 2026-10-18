@@ -21,6 +21,7 @@ typedef struct UspRecord__SessionContextRecord UspRecord__SessionContextRecord;
 typedef struct UspRecord__WebSocketConnectRecord UspRecord__WebSocketConnectRecord;
 typedef struct UspRecord__MQTTConnectRecord UspRecord__MQTTConnectRecord;
 typedef struct UspRecord__STOMPConnectRecord UspRecord__STOMPConnectRecord;
+typedef struct UspRecord__UDSConnectRecord UspRecord__UDSConnectRecord;
 typedef struct UspRecord__DisconnectRecord UspRecord__DisconnectRecord;
 
 
@@ -72,7 +73,8 @@ typedef enum {
   USP_RECORD__RECORD__RECORD_TYPE_WEBSOCKET_CONNECT = 9,
   USP_RECORD__RECORD__RECORD_TYPE_MQTT_CONNECT = 10,
   USP_RECORD__RECORD__RECORD_TYPE_STOMP_CONNECT = 11,
-  USP_RECORD__RECORD__RECORD_TYPE_DISCONNECT = 12
+  USP_RECORD__RECORD__RECORD_TYPE_DISCONNECT = 12,
+  USP_RECORD__RECORD__RECORD_TYPE_UDS_CONNECT = 13
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(USP_RECORD__RECORD__RECORD_TYPE__CASE)
 } UspRecord__Record__RecordTypeCase;
 
@@ -96,6 +98,7 @@ struct  UspRecord__Record
     UspRecord__MQTTConnectRecord *mqtt_connect;
     UspRecord__STOMPConnectRecord *stomp_connect;
     UspRecord__DisconnectRecord *disconnect;
+    UspRecord__UDSConnectRecord *uds_connect;
   };
 };
 #define USP_RECORD__RECORD__INIT \
@@ -159,6 +162,15 @@ struct  UspRecord__STOMPConnectRecord
 #define USP_RECORD__STOMPCONNECT_RECORD__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&usp_record__stompconnect_record__descriptor) \
     , USP_RECORD__STOMPCONNECT_RECORD__STOMPVERSION__V1_2, (char *)protobuf_c_empty_string }
+
+
+struct  UspRecord__UDSConnectRecord
+{
+  ProtobufCMessage base;
+};
+#define USP_RECORD__UDSCONNECT_RECORD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&usp_record__udsconnect_record__descriptor) \
+     }
 
 
 struct  UspRecord__DisconnectRecord
@@ -286,6 +298,25 @@ UspRecord__STOMPConnectRecord *
 void   usp_record__stompconnect_record__free_unpacked
                      (UspRecord__STOMPConnectRecord *message,
                       ProtobufCAllocator *allocator);
+/* UspRecord__UDSConnectRecord methods */
+void   usp_record__udsconnect_record__init
+                     (UspRecord__UDSConnectRecord         *message);
+size_t usp_record__udsconnect_record__get_packed_size
+                     (const UspRecord__UDSConnectRecord   *message);
+size_t usp_record__udsconnect_record__pack
+                     (const UspRecord__UDSConnectRecord   *message,
+                      uint8_t             *out);
+size_t usp_record__udsconnect_record__pack_to_buffer
+                     (const UspRecord__UDSConnectRecord   *message,
+                      ProtobufCBuffer     *buffer);
+UspRecord__UDSConnectRecord *
+       usp_record__udsconnect_record__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   usp_record__udsconnect_record__free_unpacked
+                     (UspRecord__UDSConnectRecord *message,
+                      ProtobufCAllocator *allocator);
 /* UspRecord__DisconnectRecord methods */
 void   usp_record__disconnect_record__init
                      (UspRecord__DisconnectRecord         *message);
@@ -325,6 +356,9 @@ typedef void (*UspRecord__MQTTConnectRecord_Closure)
 typedef void (*UspRecord__STOMPConnectRecord_Closure)
                  (const UspRecord__STOMPConnectRecord *message,
                   void *closure_data);
+typedef void (*UspRecord__UDSConnectRecord_Closure)
+                 (const UspRecord__UDSConnectRecord *message,
+                  void *closure_data);
 typedef void (*UspRecord__DisconnectRecord_Closure)
                  (const UspRecord__DisconnectRecord *message,
                   void *closure_data);
@@ -344,6 +378,7 @@ extern const ProtobufCMessageDescriptor usp_record__mqttconnect_record__descript
 extern const ProtobufCEnumDescriptor    usp_record__mqttconnect_record__mqttversion__descriptor;
 extern const ProtobufCMessageDescriptor usp_record__stompconnect_record__descriptor;
 extern const ProtobufCEnumDescriptor    usp_record__stompconnect_record__stompversion__descriptor;
+extern const ProtobufCMessageDescriptor usp_record__udsconnect_record__descriptor;
 extern const ProtobufCMessageDescriptor usp_record__disconnect_record__descriptor;
 
 PROTOBUF_C__END_DECLS

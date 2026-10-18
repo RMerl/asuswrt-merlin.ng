@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2021-2022, Broadband Forum
- * Copyright (C) 2021  CommScope, Inc
+ * Copyright (C) 2021-2024, Broadband Forum
+ * Copyright (C) 2021-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,9 +43,8 @@
 
 #include "common_defs.h"
 #include "usp-msg.pb-c.h"
-#include "device.h"             // for mtp_reply_to_t
+#include "device.h"             // for mtp_conn_t
 #include "mtp_exec.h"           // for mtp_status_t
-
 
 //------------------------------------------------------------------------------
 // Structure containing configuration parameters for the agent's websocket server
@@ -55,6 +54,7 @@ typedef struct
     char *path;                 // resource path in the URL to the websocket server
     bool enable_encryption;     // set if the server should use TLS connections
     unsigned keep_alive;        // Keep alive interval (in seconds)
+    char *interfaces;           // interface name server listens to or "any"
 } wsserv_config_t;
 
 //------------------------------------------------------------------------------
@@ -63,12 +63,12 @@ int WSSERVER_Init(void);
 int WSSERVER_Start(void);
 void WSSERVER_QueueBinaryMessage(mtp_send_item_t *msi, int conn_id, time_t expiry_time);
 void *WSSERVER_Main(void *args);
-int WSSERVER_EnableServer(wsserv_config_t *config);
-int WSSERVER_DisableServer(void);
+void WSSERVER_EnableServer(wsserv_config_t *config);
+void WSSERVER_DisableServer(void);
 void WSSERVER_ActivateScheduledActions(void);
 mtp_status_t WSSERVER_GetMtpStatus();
 void WSSERVER_DisconnectEndpoint(char *endpoint_id);
-int WSSERVER_GetMTPForEndpointId(char *endpoint_id, mtp_reply_to_t *mrt);
+int WSSERVER_GetMTPForEndpointId(char *endpoint_id, mtp_conn_t *mtpc);
 
 #endif
 

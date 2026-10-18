@@ -1,6 +1,6 @@
 diff -Naur obuspa_orig/src/core/database.c obuspa_new/src/core/database.c
---- obuspa_orig/src/core/database.c	2022-10-31 11:07:04.642937412 -0700
-+++ obuspa_new/src/core/database.c	2022-10-31 15:20:09.136720733 -0700
+--- obuspa_orig/src/core/database.c	2024-07-29 13:04:17.514220859 -0700
++++ obuspa_new/src/core/database.c	2024-07-29 14:14:56.736787520 -0700
 @@ -53,6 +53,10 @@
  #include "text_utils.h"
  #include "vendor_api.h"
@@ -12,24 +12,36 @@ diff -Naur obuspa_orig/src/core/database.c obuspa_new/src/core/database.c
  //--------------------------------------------------------------------
  // Prepared SQL statements
  typedef enum
-@@ -336,7 +340,11 @@
+@@ -335,6 +339,14 @@
+         }
      }
  
-     // Finally set the reboot cause to "RemoteFactoryReset"
++    // Finally set the reboot cause to "RemoteFactoryReset"
 +#ifdef BDK_USP
 +    err = DEVICE_LOCAL_AGENT_SetRebootCause("RemoteFactoryReset");
++    if (err != USP_ERR_OK)
++    {
++        return;
++    }
 +#else
+ #ifndef REMOVE_DEVICE_BOOT_EVENT
+     // Finally set the reboot cause to "RemoteFactoryReset"
      err = DATA_MODEL_SetParameterInDatabase(reboot_cause_path, "RemoteFactoryReset");
-+#endif
-     if (err != USP_ERR_OK)
-     {
+@@ -343,6 +355,8 @@
          return;
+     }
+ #endif
++#endif
++
+     // NOTE: No need to close this database, as it will be closed by DM_EXEC_Destroy()
+ }
+ 
 diff -Naur obuspa_orig/src/core/dm_exec.c obuspa_new/src/core/dm_exec.c
---- obuspa_orig/src/core/dm_exec.c	2023-03-28 11:22:54.232037740 -0700
-+++ obuspa_new/src/core/dm_exec.c	2023-03-28 14:30:34.020092161 -0700
-@@ -251,6 +251,11 @@
- void ProcessSocketActivity(socket_set_t *set);
- void ProcessMessageQueueSocketActivity(socket_set_t *set);
+--- obuspa_orig/src/core/dm_exec.c	2024-07-29 13:04:17.522221033 -0700
++++ obuspa_new/src/core/dm_exec.c	2024-07-29 14:19:42.723161865 -0700
+@@ -325,6 +325,11 @@
+ void HandleUdsDisconnected(char *endpoint_id, uds_path_t path_type);
+ #endif
  
 +#ifdef BDK_USP
 +void BDK_ProcessSocketActivity(socket_set_t *set);
@@ -39,9 +51,9 @@ diff -Naur obuspa_orig/src/core/dm_exec.c obuspa_new/src/core/dm_exec.c
  /*********************************************************************//**
  **
  ** DM_EXEC_Init
-@@ -1073,6 +1078,10 @@
-     // Add the message queue receiving socket to the socket set
-     SOCKET_SET_AddSocketToReceiveFrom(mq_rx_socket, MAX_SOCKET_TIMEOUT, set);
+@@ -1661,6 +1666,10 @@
+     SOCKET_SET_AddSocketToReceiveFrom(filter_mq_rx_socket, MAX_SOCKET_TIMEOUT, set);
+ #endif
  
 +#ifdef BDK_USP
 +    BDK_UpdateSocketSet(set);
@@ -50,7 +62,7 @@ diff -Naur obuspa_orig/src/core/dm_exec.c obuspa_new/src/core/dm_exec.c
      // Update socket timeout time with the time to the next timer
      delay_ms = SYNC_TIMER_TimeToNext();
      SOCKET_SET_UpdateTimeout(delay_ms, set);
-@@ -1094,6 +1103,11 @@
+@@ -1690,6 +1699,11 @@
      // Process any pending message queue activity first - this allows internal state to be updated before controllers query it
      ProcessMessageQueueSocketActivity(set);
  
@@ -63,9 +75,9 @@ diff -Naur obuspa_orig/src/core/dm_exec.c obuspa_new/src/core/dm_exec.c
      CLI_SERVER_ProcessSocketActivity(set);
  }
 diff -Naur obuspa_orig/src/core/dm_trans.c obuspa_new/src/core/dm_trans.c
---- obuspa_orig/src/core/dm_trans.c	2022-09-06 18:37:54.000000000 -0700
-+++ obuspa_new/src/core/dm_trans.c	2022-09-12 10:37:59.569693516 -0700
-@@ -394,6 +394,12 @@
+--- obuspa_orig/src/core/dm_trans.c	2024-07-29 13:04:17.522221033 -0700
++++ obuspa_new/src/core/dm_trans.c	2024-07-29 14:22:06.550364286 -0700
+@@ -390,6 +390,12 @@
              if (dt->op == kDMOp_Add)
              {
                  // Remove an aborted added object
@@ -79,26 +91,26 @@ diff -Naur obuspa_orig/src/core/dm_trans.c obuspa_new/src/core/dm_trans.c
              }
              else if (dt->op == kDMOp_Del)
 diff -Naur obuspa_orig/src/core/path_resolver.c obuspa_new/src/core/path_resolver.c
---- obuspa_orig/src/core/path_resolver.c	2022-09-06 18:37:54.000000000 -0700
-+++ obuspa_new/src/core/path_resolver.c	2022-09-12 10:35:44.678827301 -0700
-@@ -2034,7 +2034,13 @@
+--- obuspa_orig/src/core/path_resolver.c	2024-07-29 13:04:17.530221206 -0700
++++ obuspa_new/src/core/path_resolver.c	2024-07-29 14:39:58.965973334 -0700
+@@ -2448,7 +2448,13 @@
              if ((permission_bitmask & PERMIT_OPER)==0)
              {
-                 USP_ERR_SetMessage("%s: No permission to perform operation %s", __FUNCTION__, path);
+                 USP_ERR_SetMessageIfAllowed("%s: No permission to perform operation %s", __FUNCTION__, path);
 +#ifdef BDK_USP
 +                /* this should be fixed in the next release of the obuspa and can be removed at that time */
 +                /* TP164, usp_conformance 1_28, permission error is expected instead of command failure */
 +                return USP_ERR_PERMISSION_DENIED;
 +#else
                  return USP_ERR_COMMAND_FAILURE;
-+#endif                
++#endif
              }
              break;
  
 diff -Naur obuspa_orig/src/core/usp_register.c obuspa_new/src/core/usp_register.c
---- obuspa_orig/src/core/usp_register.c	2023-03-28 11:22:54.236037740 -0700
-+++ obuspa_new/src/core/usp_register.c	2023-03-28 14:34:02.076093167 -0700
-@@ -650,7 +650,11 @@
+--- obuspa_orig/src/core/usp_register.c	2024-07-29 13:04:17.538221380 -0700
++++ obuspa_new/src/core/usp_register.c	2024-07-29 14:58:42.134797705 -0700
+@@ -637,7 +637,11 @@
      }
  
      // Add this path to the data model
@@ -110,7 +122,7 @@ diff -Naur obuspa_orig/src/core/usp_register.c obuspa_new/src/core/usp_register.
      if (node == NULL)
      {
          return USP_ERR_INTERNAL_ERROR;
-@@ -701,7 +705,11 @@
+@@ -681,7 +685,11 @@
      }
  
      // Add this path to the data model
@@ -122,7 +134,7 @@ diff -Naur obuspa_orig/src/core/usp_register.c obuspa_new/src/core/usp_register.
      if (node == NULL)
      {
          return USP_ERR_INTERNAL_ERROR;
-@@ -1110,7 +1118,11 @@
+@@ -1119,7 +1127,11 @@
      }
  
      // Add this path to the data model

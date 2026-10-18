@@ -39,6 +39,8 @@ add_library(core
     handle_get_supported_dm.c
     group_get_vector.c
     group_set_vector.c
+    group_add_vector.c
+    group_del_vector.c
     proto_trace.c
     data_model.c
     error_resp.c
@@ -91,7 +93,13 @@ add_library(core
     wsserver.c
     usp_record.c
     sar_vector.c
-    e2e_context.c)
+    e2e_context.c
+    device_uds.c
+    uds.c
+    plugin.c
+    msg_utils.c
+    usp_broker.c
+    usp_service.c)
 
 target_include_directories(core
   PUBLIC
@@ -116,6 +124,7 @@ target_compile_definitions(core
     $<$<BOOL:${ENABLE_MQTT}>:ENABLE_MQTT>
     $<$<BOOL:${ENABLE_COAP}>:ENABLE_COAP>
     $<$<BOOL:${ENABLE_WEBSOCKETS}>:ENABLE_WEBSOCKETS>
+    $<$<BOOL:${ENABLE_UDS}>:ENABLE_UDS>
     _GNU_SOURCE=1)
 
 target_link_libraries(core

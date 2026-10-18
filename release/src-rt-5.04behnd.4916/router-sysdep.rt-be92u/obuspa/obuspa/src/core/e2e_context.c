@@ -1,7 +1,8 @@
 /*
  *
- * Copyright (C) 2022, Broadband Forum
+ * Copyright (C) 2022-2024, Broadband Forum
  * Copyright (C) 2022, Snom Technology GmbH
+ * Copyright (C) 2023-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -78,10 +79,10 @@ const enum_entry_t sar_states[] = {
     { USP_RECORD__SESSION_CONTEXT_RECORD__PAYLOAD_SARSTATE__COMPLETE,  "COMPLETE"},
 };
 
-int HandleSessionContextRecord(UspRecord__Record *rec, ctrust_role_t role, mtp_reply_to_t *mrt);
+int HandleSessionContextRecord(UspRecord__Record *rec, int role_instance, mtp_conn_t *mtpc);
 void ClearE2eSessionState(e2e_session_t * e2e);
 int ValidateNoSessionContextHandling(UspRecord__Record *rec);
-int ValidateSessionContextHandling(UspRecord__Record *rec, mtp_reply_to_t *mrt);
+int ValidateSessionContextHandling(UspRecord__Record *rec, mtp_conn_t *mtpc);
 bool IsValidE2eSarState(sar_vector_t *sar_vector, int sar_state);
 bool IsValidSessionId(uint64_t session_id);
 unsigned ComputePayloadCapacity(UspRecord__Record *src_rec, unsigned max_record_size);
@@ -108,14 +109,14 @@ extern int DEVICE_CONTROLLER_UpdateE2ESessionByInstance
 ** \param   usi - Information about the USP Message to send
 ** \param   endpoint_id - controller to send the message to
 ** \param   usp_msg_id - pointer to string containing the msg_id of the serialized USP Message
-** \param   mrt - details of where this USP response message should be sent
+** \param   mtpc - details of where this USP response message should be sent
 ** \param   expiry_time - time at which the USP message should be removed from the MTP send queue
 **
 ** \return  USP_ERR_OK if successful
 **
 **************************************************************************/
 int E2E_CONTEXT_QueueUspSessionRecord(usp_send_item_t *usi, char *endpoint_id, char *usp_msg_id,
-                                      mtp_reply_to_t *mrt, time_t expiry_time)
+                                      mtp_conn_t *mtpc, time_t expiry_time)
 {
     // TODO: Incomplete implementation.
     // This implementation does not cope with:
@@ -265,7 +266,7 @@ int E2E_CONTEXT_QueueUspSessionRecord(usp_send_item_t *usi, char *endpoint_id, c
 
         // Exit if unable to queue the message, to send to a controller
         // NOTE: If successful, ownership of the buffer passes to the MTP layer. If not successful, buffer is freed here
-        err = DEVICE_CONTROLLER_QueueBinaryMessage(&mtp_send_item, endpoint_id, usp_msg_id, mrt, expiry_time);
+        err = DEVICE_CONTROLLER_QueueBinaryMessage(&mtp_send_item, endpoint_id, usp_msg_id, mtpc, expiry_time);
         if (err != USP_ERR_OK)
         {
             USP_FREE(mtp_send_item.pbuf);
@@ -287,13 +288,13 @@ int E2E_CONTEXT_QueueUspSessionRecord(usp_send_item_t *usi, char *endpoint_id, c
 ** NoSessionContext USP Record handler.
 **
 ** \param   rec - pointer to unpacked USP Record struct containing chuncked payload
-** \param   role - Role allowed for this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   role_instance - Inherited role in Device.LocalAgent.ControllerTrust.Role.{i}
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  USP_ERR_OK if successful
 **
 **************************************************************************/
-int E2E_CONTEXT_HandleUspRecord(UspRecord__Record *rec, ctrust_role_t role, mtp_reply_to_t *mrt)
+int E2E_CONTEXT_HandleUspRecord(UspRecord__Record *rec, int role_instance, mtp_conn_t *mtpc)
 {
     int err = USP_ERR_OK;
 
@@ -314,20 +315,20 @@ int E2E_CONTEXT_HandleUspRecord(UspRecord__Record *rec, ctrust_role_t role, mtp_
             // Process the encapsulated USP Message in a NoSessionContext record
             err = MSG_HANDLER_HandleBinaryMessage(rec->no_session_context->payload.data,
                                                   rec->no_session_context->payload.len,
-                                                  role, rec->from_id, mrt);
+                                                  role_instance, rec->from_id, mtpc);
             break;
         }
 
         case USP_RECORD__RECORD__RECORD_TYPE_SESSION_CONTEXT:
         {
-            err = ValidateSessionContextHandling(rec, mrt);
+            err = ValidateSessionContextHandling(rec, mtpc);
             if (err != USP_ERR_OK)
             {
                 goto exit;
             }
 
             // Process the encapsulated USP Message segment in a SessionContext record
-            err = HandleSessionContextRecord(rec, role, mrt);
+            err = HandleSessionContextRecord(rec, role_instance, mtpc);
             break;
         }
 
@@ -465,7 +466,7 @@ void E2E_CONTEXT_E2eSessionEvent(e2e_event_t event, int request, int controller)
     char err_msg[256];
     int err = USP_ERR_OK;
     char *dest_endpoint = NULL;
-    mtp_reply_to_t mtp_reply_to = {0};  // Ensures mtp_reply_to.is_reply_to_specified=false
+    mtp_conn_t mtp_conn = {0};  // Ensures mtp_conn.is_reply_to_specified=false
     usp_send_item_t usp_send_item;
     e2e_session_t* curr_e2e_session = NULL;
     char *event_str = NULL;
@@ -518,7 +519,7 @@ void E2E_CONTEXT_E2eSessionEvent(e2e_event_t event, int request, int controller)
                                              dest_endpoint,
                                              USP_ERR_SESS_CONTEXT_TERMINATED,
                                              USP_ERR_GetMessage(),
-                                             &mtp_reply_to,
+                                             &mtp_conn,
                                              END_OF_TIME);
     }
 
@@ -530,7 +531,7 @@ void E2E_CONTEXT_E2eSessionEvent(e2e_event_t event, int request, int controller)
         usp_send_item.msg_packed_size = 0;
         usp_send_item.curr_e2e_session = curr_e2e_session;
         usp_send_item.usp_msg = NULL;
-        MSG_HANDLER_QueueUspRecord(&usp_send_item, dest_endpoint, NULL, &mtp_reply_to, END_OF_TIME);
+        MSG_HANDLER_QueueUspRecord(&usp_send_item, dest_endpoint, NULL, &mtp_conn, END_OF_TIME);
     }
 
 exit:
@@ -632,13 +633,13 @@ bool E2E_CONTEXT_IsToSendThroughSessionContext(e2e_session_t *e2e)
 ** or to be received.
 **
 ** \param   rec - pointer to unpacked USP Record struct containing chuncked payload
-** \param   role - Role allowed for this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   role_instance - Inherited role in Device.LocalAgent.ControllerTrust.Role.{i}
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  USP_ERR_OK if successful
 **
 **************************************************************************/
-int HandleSessionContextRecord(UspRecord__Record *rec, ctrust_role_t role, mtp_reply_to_t *mrt)
+int HandleSessionContextRecord(UspRecord__Record *rec, int role_instance, mtp_conn_t *mtpc)
 {
     // TODO: Incomplete implementation.
     // This implementation does not cope with:
@@ -693,7 +694,7 @@ int HandleSessionContextRecord(UspRecord__Record *rec, ctrust_role_t role, mtp_r
     {
         err = MSG_HANDLER_HandleBinaryMessage(recv_payload.data,
                                               recv_payload.len,
-                                              role, rec->from_id, mrt);
+                                              role_instance, rec->from_id, mtpc);
         return err;
     }
 
@@ -728,7 +729,7 @@ int HandleSessionContextRecord(UspRecord__Record *rec, ctrust_role_t role, mtp_r
         err = USP_ERR_INTERNAL_ERROR;
         if (buf)
         {
-            err = MSG_HANDLER_HandleBinaryMessage(buf, reassembled_size, role, rec->from_id, mrt);
+            err = MSG_HANDLER_HandleBinaryMessage(buf, reassembled_size, role_instance, rec->from_id, mtpc);
         }
 
         USP_SAFE_FREE(buf);
@@ -824,12 +825,12 @@ int ValidateNoSessionContextHandling(UspRecord__Record *rec)
 ** by USP Agent for processing according to the E2ESession state.
 **
 ** \param   rec - pointer to protobuf structure describing the received USP record
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **
 ** \return  USP_ERR_OK if record is valid
 **
 **************************************************************************/
-int ValidateSessionContextHandling(UspRecord__Record *rec, mtp_reply_to_t *mrt)
+int ValidateSessionContextHandling(UspRecord__Record *rec, mtp_conn_t *mtpc)
 {
     int err = USP_ERR_OK;
     const int ctrl_inst = MSG_HANDLER_GetMsgControllerInstance();

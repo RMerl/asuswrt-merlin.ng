@@ -1,7 +1,7 @@
 /*
  *
- * Copyright (C) 2019-2020, Broadband Forum
- * Copyright (C) 2016-2020  CommScope, Inc
+ * Copyright (C) 2019-2024, Broadband Forum
+ * Copyright (C) 2016-2024  CommScope, Inc
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -66,14 +66,9 @@ unsigned sub_notify_count[kSubNotifyType_Max] = {0};
 unsigned onboard_request_count = 0;
 
 //------------------------------------------------------------------------------
-// Maximum number of characters in a message id (allocated by this agent) for a notify message
-#define MAX_NOTIFY_MSG_ID 64
-
-//------------------------------------------------------------------------------
 // Forward declarations. Note these are not static, because we need them in the symbol table for USP_LOG_Callstack() to show them
 Usp__Msg *CreateOperComplete(char *command, char *command_key, char *subscription_id, bool send_resp);
 Usp__Msg *CreateNotify(char *msg_id, char *subscription_id, bool send_resp, Usp__Notify__NotificationCase notification_case);
-char *CalcMessageId(subs_notify_t notify_type, char *msg_id, int len);
 char *OnBoardRequestMessageId(char *msg_id, int len);
 void AddObjCreation_UniqueKeys(Usp__Notify__ObjectCreation *obj_creation, kv_vector_t *kvv);
 
@@ -97,10 +92,10 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_ValueChange(char *path, char *value, char 
 {
     Usp__Msg *req;
     Usp__Notify__ValueChange *value_change;
-    char msg_id[MAX_NOTIFY_MSG_ID];
+    char msg_id[MAX_MSG_ID_LEN];
 
     // Get data stored in the NotifyRequest
-    CalcMessageId(kSubNotifyType_ValueChange, msg_id, sizeof(msg_id));
+    MSG_HANDLER_CalcNotifyMsgId(kSubNotifyType_ValueChange, msg_id, sizeof(msg_id));
 
     // Create a NotifyRequest
     req = CreateNotify(msg_id, subscription_id, send_resp, USP__NOTIFY__NOTIFICATION_VALUE_CHANGE);
@@ -126,13 +121,13 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_ValueChange(char *path, char *value, char 
 **
 ** \param   usp - pointer to parsed USP message structure. This is always freed by the caller (not this function)
 ** \param   controller_endpoint - endpoint which sent this message
-** \param   mrt - details of where response to this USP message should be sent
+** \param   mtpc - details of where response to this USP message should be sent
 **                         NOTE: Controller might not populate the 'reply-to' field for notify response messages
 **
 ** \return  None - This code must handle any errors by sending back error messages
 **
 **************************************************************************/
-void MSG_HANDLER_HandleNotifyResp(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt)
+void MSG_HANDLER_HandleNotifyResp(Usp__Msg *usp, char *controller_endpoint, mtp_conn_t *mtpc)
 {
     Usp__Msg *resp = NULL;
 
@@ -145,8 +140,8 @@ void MSG_HANDLER_HandleNotifyResp(Usp__Msg *usp, char *controller_endpoint, mtp_
         (usp->header->msg_id == NULL) || (usp->body->response->notify_resp->subscription_id == NULL))
     {
         USP_ERR_SetMessage("%s: Incoming message is invalid or inconsistent", __FUNCTION__);
-        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp, NULL);
-        MSG_HANDLER_QueueMessage(controller_endpoint, resp, mrt);
+        resp = ERROR_RESP_CreateSingle(usp->header->msg_id, USP_ERR_MESSAGE_NOT_UNDERSTOOD, resp);
+        MSG_HANDLER_QueueMessage(controller_endpoint, resp, mtpc);
         usp__msg__free_unpacked(resp, pbuf_allocator);
         return;
     }
@@ -172,13 +167,13 @@ void MSG_HANDLER_HandleNotifyResp(Usp__Msg *usp, char *controller_endpoint, mtp_
 Usp__Msg *MSG_HANDLER_CreateNotifyReq_ObjectCreation(char *obj_path, char *subscription_id, bool send_resp)
 {
     Usp__Msg *req;
-    char msg_id[MAX_NOTIFY_MSG_ID];
+    char msg_id[MAX_MSG_ID_LEN];
     Usp__Notify__ObjectCreation *obj_creation;
     kv_vector_t unique_key_params;
     int err;
 
     // Get data to store in the NotifyRequest
-    CalcMessageId(kSubNotifyType_ObjectCreation, msg_id, sizeof(msg_id));
+    MSG_HANDLER_CalcNotifyMsgId(kSubNotifyType_ObjectCreation, msg_id, sizeof(msg_id));
 
     // Create a NotifyRequest
     req = CreateNotify(msg_id, subscription_id, send_resp, USP__NOTIFY__NOTIFICATION_OBJ_CREATION);
@@ -226,11 +221,11 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_ObjectCreation(char *obj_path, char *subsc
 Usp__Msg *MSG_HANDLER_CreateNotifyReq_ObjectDeletion(char *obj_path, char *subscription_id, bool send_resp)
 {
     Usp__Msg *req = NULL;
-    char msg_id[MAX_NOTIFY_MSG_ID];
+    char msg_id[MAX_MSG_ID_LEN];
     Usp__Notify__ObjectDeletion *obj_deletion;
 
     // Get data to store in the NotifyRequest
-    CalcMessageId(kSubNotifyType_ObjectDeletion, msg_id, sizeof(msg_id));
+    MSG_HANDLER_CalcNotifyMsgId(kSubNotifyType_ObjectDeletion, msg_id, sizeof(msg_id));
 
     // Create a NotifyRequest
     req = CreateNotify(msg_id, subscription_id, send_resp, USP__NOTIFY__NOTIFICATION_OBJ_DELETION);
@@ -251,56 +246,11 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_ObjectDeletion(char *obj_path, char *subsc
 
 /*********************************************************************//**
 **
-** AddObjCreation_UniqueKeys
-**
-** Moves the specified unique keys to an ObjCreation object, destroying
-** the key-value vector in the process (this is done to prevent unnecessary mallocs)
-**
-** \param   obj_creation - pointer to obj_creation object to add this unique key map to
-** \param   kvv - pointer to key-value vector containing the unique key map
-**
-** \return  None
-**
-**************************************************************************/
-void AddObjCreation_UniqueKeys(Usp__Notify__ObjectCreation *obj_creation, kv_vector_t *kvv)
-{
-    Usp__Notify__ObjectCreation__UniqueKeysEntry *entry;
-    kv_pair_t *kv;
-    int i;
-
-    USP_ASSERT((kvv->num_entries > 0) && (kvv->vector != NULL));
-
-    // Allocate the unique key map vector
-    obj_creation->n_unique_keys = kvv->num_entries;
-    obj_creation->unique_keys = USP_MALLOC(kvv->num_entries*sizeof(void *));
-
-    // Add all unique keys to the unique key map
-    for (i=0; i < kvv->num_entries; i++)
-    {
-        // Allocate memory to store the map entry
-        entry = USP_MALLOC(sizeof(Usp__Notify__ObjectCreation__UniqueKeysEntry));
-        usp__notify__object_creation__unique_keys_entry__init(entry);
-        obj_creation->unique_keys[i] = entry;
-
-        // Move the key and value from the key-value vector to the map entry
-        kv = &kvv->vector[i];
-        entry->key = kv->key;
-        entry->value = kv->value;
-    }
-
-    // Finally destroy the key-value vector, since we have moved it's contents
-    USP_FREE(kvv->vector);
-    kvv->vector = NULL;         // Not strictly necessary
-    kvv->num_entries = 0;
-}
-
-/*********************************************************************//**
-**
 ** MSG_HANDLER_CreateNotifyReq_OperCompleteSuccess
 **
 ** Creates an Operation Complete (Success) Notify message for the specified controller endpoint
 **
-** \param   output_args - key-value vector containing the output arguments of the completed operation
+** \param   output_args - key-value vector containing the output arguments of the completed operation. NULL indicates no output arguments.
 ** \param   command - path to operation in the data model
 ** \param   command_key - pointer to string used by controller to identify the operation in a notification
 ** \param   subscription_id - identifier string which was set by the controller to identify this notification (Device.LocalAgent.Subscription.{i}.ID)
@@ -411,7 +361,7 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_OperCompleteFailure(int err_code, char *er
 ** Creates an Event Notify message for the specified controller endpoint
 **
 ** \param   event_name - full path of the event in the data model
-** \param   param_values - list of parameters and their associated values
+** \param   output_args - list of output arguments and their associated values.  NULL indicates no output arguments.
 ** \param   subscription_id - identifier string which was set by the controller to identify this notification (Device.LocalAgent.Subscription.{i}.ID)
 ** \param   send_resp - Set to true if we require the controller to send a response (otherwise we keep retrying)
 **                      The value of this parameter was set by the controller (in Device.LocalAgent.Subscription.{i}.NotifRetry)
@@ -419,9 +369,9 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_OperCompleteFailure(int err_code, char *er
 ** \return  Pointer to message created
 **
 **************************************************************************/
-Usp__Msg *MSG_HANDLER_CreateNotifyReq_Event(char *event_name, kv_vector_t *param_values, char *subscription_id, bool send_resp)
+Usp__Msg *MSG_HANDLER_CreateNotifyReq_Event(char *event_name, kv_vector_t *output_args, char *subscription_id, bool send_resp)
 {
-    char msg_id[MAX_NOTIFY_MSG_ID];
+    char msg_id[MAX_MSG_ID_LEN];
     Usp__Msg *req;
     Usp__Notify__Event *event;
     Usp__Notify__Event__ParamsEntry *entry;
@@ -432,7 +382,7 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_Event(char *event_name, kv_vector_t *param
     char buf[MAX_DM_PATH];
 
     // Get data to store in the NotifyRequest
-    CalcMessageId(kSubNotifyType_Event, msg_id, sizeof(msg_id));
+    MSG_HANDLER_CalcNotifyMsgId(kSubNotifyType_Event, msg_id, sizeof(msg_id));
 
     // Create a NotifyRequest
     req = CreateNotify(msg_id, subscription_id, send_resp, USP__NOTIFY__NOTIFICATION_EVENT);
@@ -447,8 +397,16 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_Event(char *event_name, kv_vector_t *param
     event->obj_path = USP_STRDUP(buf);
     event->event_name = USP_STRDUP(name);
 
+    // Exit if there are no output arguments to add
+    if (output_args == NULL)
+    {
+        event->n_params = 0;
+        event->params = NULL;
+        return req;
+    }
+
     // Allocate param map array
-    num_entries = param_values->num_entries;
+    num_entries = output_args->num_entries;
     event->n_params = num_entries;
     event->params = USP_MALLOC(num_entries*sizeof(void *));
 
@@ -460,7 +418,7 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_Event(char *event_name, kv_vector_t *param
         usp__notify__event__params_entry__init(entry);
 
         // Copy the param values into the param map entry
-        kv = &param_values->vector[i];
+        kv = &output_args->vector[i];
         entry->key = USP_STRDUP(kv->key);
         entry->value = USP_STRDUP(kv->value);
 
@@ -487,7 +445,7 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_Event(char *event_name, kv_vector_t *param
 **************************************************************************/
 Usp__Msg *MSG_HANDLER_CreateNotifyReq_OnBoard(char* oui, char* product_class, char* serial_number, bool send_resp)
 {
-    char msg_id[MAX_NOTIFY_MSG_ID];
+    char msg_id[MAX_MSG_ID_LEN];
     Usp__Msg *req;
     Usp__Notify__OnBoardRequest *event;
 
@@ -515,6 +473,42 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_OnBoard(char* oui, char* product_class, ch
 
 /*********************************************************************//**
 **
+** MSG_HANDLER_CalcNotifyMsgId
+**
+** Creates a unique message id for a notify message
+**
+** \param   notify_type - type of notify message
+** \param   msg_id - pointer to buffer in which to write the message id
+** \param   len - length of buffer
+**
+** \return  pointer to start of buffer
+**
+**************************************************************************/
+char *MSG_HANDLER_CalcNotifyMsgId(subs_notify_t notify_type, char *msg_id, int len)
+{
+    char *notify_str;
+    unsigned count;
+    char buf[MAX_ISO8601_LEN];
+
+    count = sub_notify_count[notify_type];
+    count++;               // Pre-increment before forming message, because we want to count from 1, and at bootup sub_notify_count[] is zeroed
+    sub_notify_count[notify_type] = count;
+
+    notify_str = TEXT_UTILS_EnumToString(notify_type, notify_types, NUM_ELEM(notify_types));
+
+    // Form a message id string which is unique.
+    {
+        // In production, the string must be unique even across reboots because RabbitMQ queues responses from the controller
+        // and may deliver them at Reboot (and we don't want these responses to inadvertently be for fresh NotifyRequests)
+        USP_SNPRINTF(msg_id, len, "%s-%s-%d", notify_str, iso8601_cur_time(buf, sizeof(buf)), count);
+    }
+
+    return msg_id;
+}
+
+
+/*********************************************************************//**
+**
 ** CreateOperComplete
 **
 ** Creates an Operation Complete Notify message for the specified controller endpoint
@@ -531,14 +525,14 @@ Usp__Msg *MSG_HANDLER_CreateNotifyReq_OnBoard(char* oui, char* product_class, ch
 **************************************************************************/
 Usp__Msg *CreateOperComplete(char *command, char *command_key, char *subscription_id, bool send_resp)
 {
-    char msg_id[MAX_NOTIFY_MSG_ID];
+    char msg_id[MAX_MSG_ID_LEN];
     Usp__Msg *req;
     Usp__Notify__OperationComplete *oper_complete;
     char *name;
     char buf[MAX_DM_PATH];
 
     // Get data to store in the NotifyRequest
-    CalcMessageId(kSubNotifyType_OperationComplete, msg_id, sizeof(msg_id));
+    MSG_HANDLER_CalcNotifyMsgId(kSubNotifyType_OperationComplete, msg_id, sizeof(msg_id));
 
     // Create a NotifyRequest
     req = CreateNotify(msg_id, subscription_id, send_resp, USP__NOTIFY__NOTIFICATION_OPER_COMPLETE);
@@ -576,81 +570,66 @@ Usp__Msg *CreateOperComplete(char *command, char *command_key, char *subscriptio
 **************************************************************************/
 Usp__Msg *CreateNotify(char *msg_id, char *subscription_id, bool send_resp, Usp__Notify__NotificationCase notification_case)
 {
-    Usp__Msg *req;
-    Usp__Header *header;
-    Usp__Body *body;
-    Usp__Request *request;
+    Usp__Msg *msg;
     Usp__Notify *notify;
 
-    // Allocate and initialise memory to store the parts of the USP message
-    req = USP_MALLOC(sizeof(Usp__Msg));
-    usp__msg__init(req);
-
-    header = USP_MALLOC(sizeof(Usp__Header));
-    usp__header__init(header);
-
-    body = USP_MALLOC(sizeof(Usp__Body));
-    usp__body__init(body);
-
-    request = USP_MALLOC(sizeof(Usp__Request));
-    usp__request__init(request);
-
+    // Create Notify Request
+    msg = MSG_HANDLER_CreateRequestMsg(msg_id, USP__HEADER__MSG_TYPE__NOTIFY, USP__REQUEST__REQ_TYPE_NOTIFY);
     notify = USP_MALLOC(sizeof(Usp__Notify));
     usp__notify__init(notify);
-
-    // Connect the structures together
-    req->header = header;
-    header->msg_id = USP_STRDUP(msg_id);
-    header->msg_type = USP__HEADER__MSG_TYPE__NOTIFY;
-
-    req->body = body;
-    body->msg_body_case = USP__BODY__MSG_BODY_REQUEST;
-    body->request = request;
-    request->req_type_case = USP__REQUEST__REQ_TYPE_NOTIFY;
-    request->notify = notify;
+    msg->body->request->notify = notify;
 
     notify->subscription_id = USP_STRDUP(subscription_id);
     notify->send_resp = send_resp;
     notify->notification_case = notification_case;
 
-    return req;
+    return msg;
 }
 
 /*********************************************************************//**
 **
-** CalcMessageId
+** AddObjCreation_UniqueKeys
 **
-** Creates a unique message id for a notify message
+** Moves the specified unique keys to an ObjCreation object, destroying
+** the key-value vector in the process (this is done to prevent unnecessary mallocs)
 **
-** \param   notify_type - type of notify message
-** \param   msg_id - pointer to buffer in which to write the message id
-** \param   len - length of buffer
+** \param   obj_creation - pointer to obj_creation object to add this unique key map to
+** \param   kvv - pointer to key-value vector containing the unique key map
 **
-** \return  pointer to start of buffer
+** \return  None
 **
 **************************************************************************/
-char *CalcMessageId(subs_notify_t notify_type, char *msg_id, int len)
+void AddObjCreation_UniqueKeys(Usp__Notify__ObjectCreation *obj_creation, kv_vector_t *kvv)
 {
-    char *notify_str;
-    unsigned count;
-    char buf[MAX_ISO8601_LEN];
+    Usp__Notify__ObjectCreation__UniqueKeysEntry *entry;
+    kv_pair_t *kv;
+    int i;
 
-    count = sub_notify_count[notify_type];
-    count++;               // Pre-increment before forming message, because we want to count from 1, and at bootup sub_notify_count[] is zeroed
-    sub_notify_count[notify_type] = count;
+    USP_ASSERT((kvv->num_entries > 0) && (kvv->vector != NULL));
 
-    notify_str = TEXT_UTILS_EnumToString(notify_type, notify_types, NUM_ELEM(notify_types));
+    // Allocate the unique key map vector
+    obj_creation->n_unique_keys = kvv->num_entries;
+    obj_creation->unique_keys = USP_MALLOC(kvv->num_entries*sizeof(void *));
 
-    // Form a message id string which is unique.
+    // Add all unique keys to the unique key map
+    for (i=0; i < kvv->num_entries; i++)
     {
-        // In production, the string must be unique even across reboots because RabbitMQ queues responses from the controller
-        // and may deliver them at Reboot (and we don't want these responses to inadvertently be for fresh NotifyRequests)
-        USP_SNPRINTF(msg_id, len, "%s-%s-%d", notify_str, iso8601_cur_time(buf, sizeof(buf)), count);
+        // Allocate memory to store the map entry
+        entry = USP_MALLOC(sizeof(Usp__Notify__ObjectCreation__UniqueKeysEntry));
+        usp__notify__object_creation__unique_keys_entry__init(entry);
+        obj_creation->unique_keys[i] = entry;
+
+        // Move the key and value from the key-value vector to the map entry
+        kv = &kvv->vector[i];
+        entry->key = kv->key;
+        entry->value = kv->value;
     }
 
-    return msg_id;
+    // Finally destroy the key-value vector, since we have moved it's contents
+    USP_FREE(kvv->vector);
+    kvv->vector = NULL;         // Not strictly necessary
+    kvv->num_entries = 0;
 }
-
 
 /*********************************************************************//**
 **

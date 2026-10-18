@@ -1,4 +1,0 @@
-if "$(BCM_KF)" = "y"
-source "../bcmkernel/Kconfig.bcm_kf"
-source "../bcmkernel/Kconfig.bcm"
-endif

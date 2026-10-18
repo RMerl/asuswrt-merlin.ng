@@ -1,0 +1,7 @@
+Quick start: first build your kernel.  Then from this directory, run
+
+  make KDIR=$PWD/../../../..
+
+Copy over the resulting module to the machine you're testing and run
+
+  insmod test-irq-api.ko

@@ -1,0 +1,2 @@
+commit=e1c268846c63ae799c6488d654e53e459160097d
+branch=bca-5.15_patches/CustomBranches/Asustek/6.2.0

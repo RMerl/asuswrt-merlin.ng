@@ -1,0 +1,24 @@
+
+[abi_symbol_list]
+  hid_add_device
+  hid_allocate_device
+  hid_alloc_report_buf
+  hid_destroy_device
+  hid_hw_start
+  hid_hw_stop
+  hidinput_calc_abs_res
+  hid_input_report
+  hid_open_report
+  hid_parse_report
+  __hid_register_driver
+  hid_report_raw_event
+  __hid_request
+  hid_unregister_driver
+  iio_trigger_generic_data_rdy_poll
+  input_device_enabled
+  pci_prepare_to_sleep
+  pci_sriov_set_totalvfs
+  netdev_reset_tc
+  netdev_set_tc_queue
+  netdev_set_num_tc
+  devm_iio_kfifo_buffer_setup_ext

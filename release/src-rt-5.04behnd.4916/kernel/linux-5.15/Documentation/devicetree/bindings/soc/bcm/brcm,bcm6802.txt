@@ -1,0 +1,66 @@
+* Broadcom 6802 driver bindings
+
+The Broadcom 6802 driver provides access to the moca core and EPORT settings
+on the 6802.  This driver controls the 6802 over a SPI link.  The device-tree
+node must be a child of a SPI controller node.
+
+Required properties:
+
+ compatible        : should contain "brcm,bcm6802"
+ reg               : SPI chip select
+ hw-rev            : HW revision number (must be 0x2002 for 6802)
+ enet-id           : phandle to the internal (local) ethernet port 
+ rf-band           : rf band string, possible values "highrf, midrf, wanrf,
+			ext_d, d_low, d_high, e, f, g"
+ local-mac-address : MAC address assigned to the 6802
+ interrupt-parent  : phandle of interrupt controller
+ interrupts        : interrupt used by bcm6802 driver
+ ethernet-ports    : node containing configuration information for the 6802's
+			two RGMII ports
+
+Optional properties:
+
+ spi-max-frequency : SPI clock rate
+ spi-cpol          : SPI clock polarity
+ spi-cpha          : SPI clock phase
+ chip-id           : override chip ID
+
+
+The ethernet-ports node can contain the following sub-nodes:
+
+ rgmii0            : Configuration of the 6802's RGMII0 port
+ rgmii1            : Configuration of the 6802's RGMII0 port
+
+These two rgmii nodes can contain the following properties:
+
+ phy-mode: See Documentation/devicetree/bindings/net/ethernet.txt
+ fixed-link: See Documentation/devicetree/bindings/net/fixed-link.txt
+ 
+Example:
+
+	 ext_moca@0 {
+			compatible = "brcm,bcm6802";
+			reg = <0x0>;
+			spi-max-frequency = <12000000>;
+			spi-cpol;
+			spi-cpha;
+			hw-rev = <0x2002>;
+			enet-id = <0x75>;
+			rf-band = "ext_d";
+			local-mac-address = [ 00 10 18 03 25 d7 ];
+			interrupt-parent = <0x76>;
+			interrupts = <0x11 0x4>;
+			ethernet-ports {
+				rgmii0 {
+					phy-mode = "rgmii-rxid";
+					fixed-link {
+						speed = <1000>;
+						full-duplex;
+					}
+				}
+
+				rgmii1 {
+				}
+			}
+	 };
+

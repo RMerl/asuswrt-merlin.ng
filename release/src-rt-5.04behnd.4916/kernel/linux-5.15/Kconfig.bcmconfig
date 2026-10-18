@@ -1,0 +1,6 @@
+menu "Broadcom Specific Configurations"
+if "$(BCM_KF)" = "y"
+source "$(KCONFIG_BCM_KF_PATH)Kconfig.bcm_kf"
+source "$(KCONFIG_BCMDRIVER_PATH)Kconfig.bcm"
+endif
+endmenu

@@ -1,0 +1,33 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/rng/brcm,bcmbca-trng.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Broadcom BCA bcmbca-trng bindings
+
+maintainers:
+  - Farhan Ali <farhan.ali@broadcom.com>
+
+description: |
+  Broadcom True Random Number Generator core for BCA SOCs
+
+properties:
+  compatible:
+    const: brcm,bcmbca-trng
+
+  reg:
+    maxItems: 1
+
+required:
+  - compatible
+  - reg
+
+additionalProperties: false
+
+examples:
+  - |
+    trng@ff803800 {
+        compatible = "brcm,bcmbca-trng";
+        reg = <0xff803800 0x800>;
+    };

@@ -1,0 +1,114 @@
+# How to use this file: http://go/approve-abi-break
+# ABI freeze commit: 3456f4eeee0b405cd8116d179a95efb7c019aea9
+
+1 variable symbol(s) removed
+  'struct tracepoint __tracepoint_android_vh_record_percpu_rwsem_lock_starttime'
+
+1 function symbol(s) removed
+  'int __traceiter_android_vh_record_percpu_rwsem_lock_starttime(void*, struct task_struct*, unsigned long int)'
+
+type 'enum android_debug_symbol' changed
+  enumerator 'ADS_PUT_TASK_STACK' (21) was added
+  enumerator 'ADS_END' value changed from 21 to 22
+
+type 'struct wiphy' changed
+  member 'u64 android_backport_reserved1' was removed
+  member 'union { const struct wiphy_backport* backport; struct { u64 android_backport_reserved1; }; union { }; }' was added
+
+1 function symbol(s) removed
+  'int PageMovable(struct page*)'
+
+type 'struct dwc3' changed
+  member 'u64 android_kabi_reserved1' was removed
+  member 'u64 android_kabi_reserved2' was removed
+  member 'union { struct { u8 clear_stall_protocol; u8 padding1; u8 padding2; u8 padding3; u8 padding4; u8 padding5; u8 padding6; u8 padding7; }; struct { u64 android_kabi_reserved1; }; union { }; }' was added
+  member 'union { struct dentry* debug_root; struct { u64 android_kabi_reserved2; }; union { }; }' was added
+
+type 'struct fscrypt_info' changed
+  member changed from 'struct key* ci_master_key' to 'struct fscrypt_master_key* ci_master_key'
+    type changed from 'struct key*' to 'struct fscrypt_master_key*'
+      pointed-to type changed from 'struct key' to 'struct fscrypt_master_key'
+
+type 'struct super_block' changed
+  member changed from 'struct key* s_master_keys' to 'struct fscrypt_keyring* s_master_keys'
+    type changed from 'struct key*' to 'struct fscrypt_keyring*'
+      pointed-to type changed from 'struct key' to 'struct fscrypt_keyring'
+
+type 'struct sk_buff' changed
+  member 'u64 android_kabi_reserved1' was removed
+  member 'union { struct { __u8 scm_io_uring; __u8 android_kabi_reserved1_padding1; __u16 android_kabi_reserved1_padding2; __u32 android_kabi_reserved1_padding3; }; struct { u64 android_kabi_reserved1; }; union { }; }' was added
+
+type 'enum bpf_prog_type' changed
+  enumerator 'BPF_PROG_TYPE_FUSE' (32) was added
+
+type 'struct sdhci_host' changed
+  member 'u64 android_kabi_reserved1' was removed
+  member 'union { struct { u8 reinit_uhs; u8 reserve01; u8 drv_type; u16 reserve02; u32 reserve03; }; struct { u64 android_kabi_reserved1; }; union { }; }' was added
+
+type 'struct anon_vma' changed
+  byte size changed from 104 to 120
+  member 'unsigned long int num_children' was added
+  member 'unsigned long int num_active_vmas' was added
+
+type 'struct dwc3' changed
+  member 'u64 android_kabi_reserved2' was removed
+  member 'union { struct dentry* debug_root; struct { u64 android_kabi_reserved2; }; union { }; }' was added
+
+type 'struct hid_device' changed
+  member 'u64 android_kabi_reserved1' was removed
+  member 'union { struct { u32 initial_quirks; u32 padding; }; struct { u64 android_kabi_reserved1; }; union { }; }' was added
+
+function symbol changed from 'char* kobject_get_path(struct kobject*, gfp_t)' to 'char* kobject_get_path(const struct kobject*, gfp_t)'
+  type changed from 'char*(struct kobject*, gfp_t)' to 'char*(const struct kobject*, gfp_t)'
+    parameter 1 type changed from 'struct kobject*' to 'const struct kobject*'
+      pointed-to type changed from 'struct kobject' to 'const struct kobject'
+        qualifier const added
+
+type 'struct snd_soc_card' changed
+  member 'spinlock_t dpcm_lock' was removed
+  member 'spinlock_t unused' was added
+
+type 'struct snd_soc_pcm_runtime' changed
+  member 'u64 android_kabi_reserved1' was removed
+  member 'union { u32 dpcm_be_start[2]; struct { u64 android_kabi_reserved1; }; union { }; }' was added
+
+function symbol 'int migrate_pages(struct list_head*, new_page_t*, free_page_t*, unsigned long int, enum migrate_mode, int, unsigned int*)' changed
+  CRC changed from 0xe0b25d16 to 0x90f84eaa
+
+function symbol 'void migrate_page_states(struct page*, struct page*)' changed
+  CRC changed from 0x32ac080e to 0x8caf3272
+
+function symbol 'int migrate_page_move_mapping(struct address_space*, struct page*, struct page*, int)' changed
+  CRC changed from 0x74bd3238 to 0xb7809eee
+
+function symbol 'void migrate_page_copy(struct page*, struct page*)' changed
+  CRC changed from 0xb3b9058d to 0xe97d88f0
+
+function symbol 'int buffer_migrate_page(struct address_space*, struct page*, struct page*, enum migrate_mode)' changed
+  CRC changed from 0x7951f1db to 0xcdeca50f
+
+function symbol 'int __traceiter_task_rename(void*, struct task_struct*, const char*)' changed
+  CRC changed from 0x6012942d to 0x199d26ce
+
+function symbol 'char* __get_task_comm(char*, size_t, struct task_struct*)' changed
+  CRC changed from 0x84461de to 0x4428fb5e
+
+type 'struct perf_event' changed
+  member 'unsigned int group_generation' was added
+
+type 'struct prefix_info' changed
+  member '__u8 reserved' was removed
+  member '__u8 autoconf' was removed
+  member '__u8 onlink' was removed
+  member 'union { __u8 flags; struct { __u8 reserved; __u8 autoconf; __u8 onlink; }; }' was added
+
+type 'enum binder_work_type' changed
+  enumerator 'BINDER_WORK_FROZEN_BINDER' (9) was added
+  ... 1 other enumerator(s) added
+
+type 'struct clk_core' changed
+  byte size changed from 248 to 264
+  member 'struct hlist_node rpm_node' was added
+  30 members ('struct device_node* of_node' .. 'struct kref ref') changed
+    offset changed by 128
+

@@ -1,0 +1,2 @@
+obj-m := test-memory-api.o
+ccflags-y += -Werror

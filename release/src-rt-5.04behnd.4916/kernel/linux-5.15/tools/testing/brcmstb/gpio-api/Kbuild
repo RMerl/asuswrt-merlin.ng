@@ -1,0 +1,2 @@
+obj-m := test-gpio-api.o
+ccflags-y += -Werror

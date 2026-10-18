@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/iommu/brcmstb,iommu.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Broadcom STB IOMMU
+
+maintainers:
+  - Jim Quinlan <jim2101024@gmail.com>
+
+description: |+
+  A generic IOMMU that can be used for almost any device.
+
+properties:
+  compatible:
+    enum:
+      - brcm,m3u
+      - brcm,bcm7712-m3u
+
+  reg:
+    minItems: 1
+    maxItems: 5
+
+  reg-names:
+    items:
+      - const: mmu
+      - const: mmuc
+      - const: mic
+
+  interrupts:
+    maxItems: 1
+
+  interrupt-names:
+    description: The IOMMU interrupt asserted on violations
+    items:
+      - const: mmu
+
+  "#iommu-cells":
+    const: 0
+
+  brcm,type:
+    description: Specifies the category of usage of the IOMMU
+    enum:
+      - pci
+      - nexus
+
+required:
+  - compatible
+  - reg
+  - interrupts
+  - interrupt-names
+  - brcm,type
+  - "#iommu-cells"
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/interrupt-controller/irq.h>
+    #include <dt-bindings/interrupt-controller/arm-gic.h>
+
+    m3u-mmu@5200 {
+      #iommu-cells = <0x0>;
+      compatible = "brcm,bcm7712-m3u";
+      reg = <0x5200 0x4c 0x5b00 0x28 0x5b80 0x24>;
+      reg-names = "mmu", "mmuc", "mic";
+      interrupts = <0x0 0x34 0x4>;
+      interrupt-names = "mmu";
+      brcm,type = "pci";
+    };

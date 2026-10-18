@@ -1,0 +1,108 @@
+Broadcom ASP 2.0 Ethernet controller
+
+Required properties:
+- compatible: must be one of:
+	"brcm,bcm72165-asp-v2.0"
+	"brcm,asp-v2.0"
+	"brcm,asp-v2.1"
+	"brcm,asp-v2.2"
+
+- reg: base address and length of the register set for the entire ASP block
+- interrupts: first interrupt specifier should be the main interrupt that
+  connects the ASP block. Second and third interrupt specifiers are optional
+  and denote the per-port Wake-on-LAN side band interrupts.
+- #address-cells: must be 1
+- #size-cells: must be 0
+
+Optional properties:
+- clocks: When provided must be a single phandle to the clock controller
+  followed by the unique number for the ASP clocks
+- clock-names: When provided the names of the function clock must be "sw_asp"
+- brcm,reserved-net-filters-mask: When provided the network filter correlated
+  with the bitmap will not be used by the driver.
+
+Required child nodes:
+
+- ethernet-ports: container node describing the Ethernet port(s) within the
+  ASP block
+
+- mdio bus node: this node should always be present regarless of the PHY
+  configuration of the ASP Ethernet port(s)
+
+MDIO bus node required properties:
+
+- compatible: must be "brcm,asp-v2.[0-1]-mdio"
+- reg: address and length relative to the parent node base register address
+- #address-cells: address cell for MDIO bus addressing, should be 1
+- #size-cells: size of the cells for MDIO bus addressing, should be 0
+
+Ethernet ports subnode required properties:
+
+- reg: numeric identifier for the port number
+- channel: ASP channel number for the Ethernet port
+- phy-mode: see ethernet.txt file in the same directory
+
+Ethernet ports subnode optional properties:
+
+- phy-handle: See ethernet.txt file in the same directory; used to describe
+  configurations where a PHY (internal or external) is used.
+
+- fixed-link: When the ASP Ethernet port interface is connected to a MoCA
+  hardware block or when operating in a RGMII to RGMII type of connection, or
+  when the MDIO bus is voluntarily disabled, this property should be used to
+  describe the "fixed link".  See
+  Documentation/devicetree/bindings/net/fixed-link.txt for information on the
+  property specifics
+
+Example:
+
+asp@9c00000 {
+	compatible = "brcm,asp-v2.0";
+	reg = <0x9c00000 0x101010>;
+	interrupts = <0 51 4>;
+	ranges;
+	clocks = <&scmi 14>;
+	brcm,reserved-net-filters-mask = <0xff>;
+
+	mdio@c614 {
+		compatible = "brcm,asp-v2.0-mdio";
+		reg = <0xc614 0x8>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy0: ethernet-phy@1 {
+			reg = <1>;
+		};
+	};
+
+	mdio@ce14 {
+		compatible = "brcm,asp-v2.0-mdio";
+		reg = <0xce14 0x8>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy1: ethernet-phy@1 {
+			reg = <1>;
+		};
+	}
+
+	ethernet-ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			channel = <8>;
+			phy-mode  "rgmii";
+			phy-handle = <&phy0>;
+		};
+
+		port@1 {
+			reg = <1>;
+			channel = <9>;
+			phy-mode  "rgmii";
+			phy-handle = <&phy1>;
+		};
+	};
+};
+

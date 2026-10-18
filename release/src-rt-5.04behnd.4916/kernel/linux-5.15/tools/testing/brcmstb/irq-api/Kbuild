@@ -1,0 +1,2 @@
+obj-m := test-irq-api.o
+ccflags-y += -Werror

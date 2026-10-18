@@ -1,0 +1,10 @@
+[abi_symbol_list]
+# required by igb.ko
+  dev_trans_start
+  eth_get_headlen
+  flow_rule_match_eth_addrs
+  __hw_addr_sync_dev
+  __hw_addr_unsync_dev
+  ndo_dflt_fdb_add
+  pci_sriov_set_totalvfs
+  ptp_find_pin

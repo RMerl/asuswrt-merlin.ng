@@ -1,0 +1,133 @@
+# SPDX-License-Identifier: GPL-2.0-only
+if SOC_BRCMSTB
+
+config BRCMSTB_BMEM
+	bool "Enable BMEM reserved A/V memory"
+	depends on (ARCH_BRCMSTB || BMIPS_GENERIC) && BRCMSTB_MEMORY_API
+	depends on BRCMSTB_MEMORY_API=y
+	help
+	  The A/V peripherals (managed by the PI/Nexus middleware) require
+	  large, contiguous memory regions to be set aside at boot time.  This
+	  option sets those up in a default config that reserves most of
+	  memory.  Also allows the user to manually define region sizes and
+	  locations using the 'bmem' command line param.  Allows for O_DIRECT
+	  I/O using these regions, mmap() from user programs, and
+	  ioremap() from kernel drivers.
+
+	  If you are planning to use Broadcom middleware, choose Y here.
+
+config BRCMSTB_CMA
+	bool "Broadcom STB CMA"
+	depends on ARCH_BRCMSTB && (ARM || ARM64) && CMA && BRCMSTB_MEMORY_API
+	depends on BRCMSTB_MEMORY_API=y
+	help
+	  This driver provides the ioctls for manipulating with the reserved
+	  areas used by Broadcom middleware, as well as the functions for the
+	  kernel interface.  It also provides register and reserve functions
+	  for setting up the CMA regions it uses at early boot.
+
+config BRCMSTB_HUGEPAGES
+	tristate "Broadcom STB Huge Page Allocator"
+	depends on ARCH_BRCMSTB && (ARM || ARM64)
+	default y
+	select CONTIG_ALLOC
+	help
+	  This driver implements a contiguous memory allocator that steals 2MB
+	  huge pages from a ZONE_MOVABLE memory zone for use by the Broadcom
+	  middleware. This allows better sharing of memory with applications
+	  than is available with the fixed boot-time allocations of bmem. It
+	  also avoids issues encountered by standard CMA when using large
+	  allocations.
+
+	  If you are planning to use Broadcom middleware, choose Y here.
+
+config BRCMSTB_MEMORY_API
+	tristate "Enable BRCMSTB memory API"
+	depends on (ARCH_BRCMSTB || BMIPS_GENERIC)
+	select LIBFDT
+	help
+	  This provides information on how system memory is arranged so that
+	  Broadcom STB middleware can determine how to set up its memory heaps.
+
+	  If you are planning to use Broadcom middleware, choose Y here.
+
+config BRCMSTB_PM
+	tristate "Support suspend/resume for STB platforms"
+	default y
+	depends on PM
+	depends on ARCH_BRCMSTB || BMIPS_GENERIC
+	select ARM_CPU_SUSPEND if ARM
+
+config BRCMSTB_PM_DEBUG
+	bool "Add debugfs interface for STB suspend/resume driver"
+	default y
+	depends on BRCMSTB_PM && PM_DEBUG && DEBUG_FS
+	help
+	  This option enables debugfs support for the STB suspend/resume
+	  driver. Specifically, for memory regions to be included or excluded
+	  from hashing.
+
+	  If you are unsure, choose Y here.
+
+config BRCMSTB_SRPD
+	tristate "Support enabling DDR self-refresh modes"
+	help
+	  Provides a sysfs interface for setting the self-refresh timeout
+	  value on Broadcom STB memory controllers.
+
+config BRCMSTB_WKTMR
+	tristate "Support wake-up timer"
+	depends on !RTC_DRV_BRCMSTB
+	default BRCMSTB_PM
+
+config BRCMSTB_NEXUS_API
+	tristate "Support for Nexus APIs"
+	help
+	   Provides APIs for Nexus kernel-mode driver to facilitate
+	   sharing of resources: IRQs, GPIOs, Pinmuxing etc.
+
+config BRCMSTB_NEXUS_SPI_API
+	tristate "Support for SPI shim"
+	depends on SPI_MASTER
+	select OF_DYNAMIC
+	default SPI_BRCMSTB_MSPI || SPI_BCM2835
+
+config BRCMSTB_NEXUS_DVFS_API
+	tristate "Support for DVFS APIs"
+	depends on ARM_SCMI_PROTOCOL || ARM_BRCMSTB_AVS_CPUFREQ
+	default ARM_SCMI_PROTOCOL || ARM_BRCMSTB_AVS_CPUFREQ
+
+config BRCMSTB_NEXUS_CLK_API
+	tristate "Support for CLK APIs"
+	depends on BRCMSTB_NEXUS_API
+	depends on BRCMSTB_NEXUS_API && BRCMSTB_NEXUS_DVFS_API
+	default BRCMSTB_NEXUS_API
+	help
+	   Provides an API for Nexus to enable and disable select
+	   Linux clocks using an integer clock id.
+
+config BRCMSTB_NEXUS_RESET_API
+	tristate "Support for Reset APIs"
+	depends on BRCMSTB_NEXUS_API
+	depends on BRCMSTB_NEXUS_API && BRCMSTB_NEXUS_DVFS_API
+	default BRCMSTB_NEXUS_API
+	help
+	   Provides an API for Nexus to reset select
+	   Linux cores using an integer reset id.
+
+config BRCMSTB_BBSI
+	tristate "Support for BBSI chips"
+	default y
+	depends on SPI_MASTER
+	help
+	  Provides APIs for accessing BBSI devices over SPI.
+
+endif # SOC_BRCMSTB
+
+#####################################################################
+# Hidden options
+#####################################################################
+
+config BRCMSTB
+	default SOC_BRCMSTB
+	bool

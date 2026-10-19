@@ -5007,6 +5007,9 @@ vsftpd-install:
 
 vsftpd-3.x: nvram$(BCMEX)$(EX7) shared libdisk $(ftp_dep)
 	@$(SEP)
+ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
+	cp -f $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libnsl.so.1 arm-glibc/stage/usr/lib/libnsl.so
+endif
 ifeq ($(RTCONFIG_FTP_SSL),y)
 	-cp vsftpd-3.x/builddefs-ssl.h vsftpd-3.x/builddefs.h
 else

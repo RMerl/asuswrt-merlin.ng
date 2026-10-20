@@ -123,7 +123,7 @@ wl_suspend()
 # - restart wlan configuration manager
 wl_resume()
 {
-  grep -e${mod// /.ko -e}.ko /rom/etc/init.d/bcm-base-drivers.sh | sh
+  grep -e${mod// /.ko -e}.ko /rom/etc/init.d/bcm-base-drivers.sh | /bin/sh
   /rom/etc/init.d/bcm-wlan-drivers.sh start
   nvram restart
 }
@@ -142,7 +142,7 @@ wl_mlo_unit()
   wlunit=$(echo $ifname | cut -d 'l' -f2)
   mlounit=$(echo $wl_mlo_config |  awk -v N=$((wlunit+1)) '{print $N}')
 
-  if [ -z $mlounit ]; then
+  if [ -z "$mlounit" ]; then
     mlounit=-1
   fi
 
@@ -234,12 +234,12 @@ wledpdctl_mlo_up()
           # Wait for MLC state to be MLC_SYNC or MLC_ACTIVE
           for i in $(seq 1 3); do
             mlc_state=$(wl -i $wlif mlc_state | cut -d ' ' -f1)
-            if [ $mlc_state = $MLC_SYNC ] || [ $mlc_state = $MLC_ACTIVE ]; then
+            if [ "$mlc_state" = "$MLC_SYNC" ] || [ "$mlc_state" = "$MLC_ACTIVE" ]; then
               break
             fi
             sleep 1
           done
-          if [ $mlc_state != $MLC_SYNC ] && [ $mlc_state != $MLC_ACTIVE ]; then
+          if [ "$mlc_state" != "$MLC_SYNC" ] && [ "$mlc_state" != "$MLC_ACTIVE" ]; then
             echo "WIFI.SH : WARN: $wlif is not in MLC_SYNC/ACTIVE state"
           fi
         fi
@@ -254,17 +254,17 @@ wledpdctl_mlo_up()
       # Wait for MLC state to be MLC_ACTIVE
       for i in $(seq 1 30); do
         mlc_state=$(wl -i $ifname mlc_state | cut -d ' ' -f1)
-        if [ $mlc_state = $MLC_ACTIVE ]; then
+        if [ "$mlc_state" = "$MLC_ACTIVE" ]; then
           break
         fi
         sleep 1
       done
-      if [ $mlc_state != $MLC_ACTIVE ]; then
+      if [ "$mlc_state" != "$MLC_ACTIVE" ]; then
          echo "WIFI.SH : ERROR: wl$wluint is not in MLC_ACTIVE state"
       fi
     fi
     mlc_state=$(wl -i wl$wl_mlo_mapunit mlc_state | cut -d ' ' -f1)
-    if [ $mlc_state = $MLC_ACTIVE ]; then
+    if [ "$mlc_state" = "$MLC_ACTIVE" ]; then
       echo "WIFI.SH : $ifname mlo up Success"
     fi
     touch /tmp/edpd_${ifname}_mloready
@@ -1158,7 +1158,7 @@ wldpdctl_mode()
     echo "    Restarting PCIe with correct settings     "
     echo "=============================================="
     rmmod -w bcm_pcie_hcd
-    grep -e bcm_pcie_hcd /rom/etc/init.d/bcm-base-drivers.sh | sh
+    grep -e bcm_pcie_hcd /rom/etc/init.d/bcm-base-drivers.sh | /bin/sh
   fi
 
   if [ $mode = $DPD_MODE_EDPD ] && [ $wl_mlo_mapunit != -1 ]; then

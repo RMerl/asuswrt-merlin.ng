@@ -32,6 +32,14 @@ endif
 
 export HOSTCC := gcc
 
+# Kernel build user/host (used by mkcompile_h)
+ifeq ($(KBUILD_BUILD_USER),)
+export KBUILD_BUILD_USER := $(shell whoami)
+endif
+ifeq ($(KBUILD_BUILD_HOST),)
+export KBUILD_BUILD_HOST := $(shell hostname)
+endif
+
 export PLT := $(ARCH)
 ifeq ($(RSDK_TOOLCHAIN),)
 export TOOLCHAIN := $(shell cd $(dir $(shell which $(CROSS_COMPILE)gcc))/.. && pwd -P)

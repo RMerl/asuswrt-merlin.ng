@@ -3147,7 +3147,7 @@ endif
 #      no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
 #      no-zlib no-engine no-engines no-sse2 no-perlasm \
 #      no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
-OPENSSL_CIPHERS := no-ssl2 no-gost no-heartbeats no-err no-unit-test
+OPENSSL_CIPHERS := no-gost no-heartbeats no-err no-unit-test
 ifeq ($(RTCONFIG_OPENVPN),y)
 OPENSSL_CIPHERS += enable-rc5
 endif

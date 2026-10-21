@@ -50,8 +50,10 @@ endif
 
 $(info IMAGE GOAL is $(IMAGE_GOAL))
 
+# The top level Makefile runs buildimage itself once router strips is done,
+# so only pull in full_buildimage's prerequisites here, not the image build.
 all_postcheck1: profile_saved_check rdp_link\
-     parallel_targets gdbserver full_buildimage
+     parallel_targets gdbserver full_buildimage_prereqs
 
 # Order-only rules
 #----------------------------------------------------------------------------
@@ -89,7 +91,7 @@ gdbserver : $(CREATE_INSTALL)
 full_buildimage gen_credits linux_tools : parallel_targets gdbserver
 
 
-.PHONY: mkenv all_postcheck1
+.PHONY: mkenv all_postcheck1 full_buildimage_prereqs
 
 # These post kernel top level targets can compile concurrently
 parallel_targets: dynamic_cfe uboot hnd_dongle kernelbuild prepare_linux_image modbuild userspace optee atf rtpolicy_gen_metadata hosttools_image
@@ -943,7 +945,9 @@ endif
 # If full_buildimage is used, the first one is executed, the dependencies are satisifed,
 # and then the execution falls through to the second full_buildimage.
 #
-full_buildimage: kernelbuild $(DTBS) libcreduction gen_credits linux_tools
+full_buildimage_prereqs: kernelbuild $(DTBS) libcreduction gen_credits linux_tools
+
+full_buildimage: full_buildimage_prereqs
 
 full_buildimage buildimage:
 	@echo "=>BUILDIMAGE Starting...<="

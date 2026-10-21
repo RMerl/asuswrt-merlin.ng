@@ -3706,10 +3706,9 @@ else
 INSTALLSUBDIR = /openssl
 endif
 
-openssl: $(OPENSSL)/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
+openssl: $(if $(filter y,$(HND_ROUTER)),fsbuild,) $(OPENSSL)
 	@$(SEP)
 	[ "$(notdir $(realpath $@))" = "$(OPENSSL)" ] || (rm -f $@ && ln -s $(OPENSSL) $@)
-	$(MAKE) $(OPENSSL)
 
 openssl-clean:
 	@$(MAKE) $(OPENSSL)-clean

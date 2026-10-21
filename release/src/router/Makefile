@@ -1994,7 +1994,7 @@ endif
 ifeq ($(BUILD_RDPACTL),y)
 obj-$(HND_ROUTER) += rdpactl
 endif
-ifeq ($(BUILD_VLANCTL),y)
+ifeq ($(BUILD_VLANCTL),dynamic)
 obj-$(HND_ROUTER) += vlanctl
 obj-$(HND_ROUTER) += vlanctl_lib
 endif
@@ -11035,7 +11035,7 @@ endif
 
 .PHONY : bcmtm
 
-ifeq ($(BUILD_VLANCTL),y)
+ifeq ($(BUILD_VLANCTL),dynamic)
 ifneq ($(PREBUILT_BCMBIN),1)
 vlanctl: vlanctl_lib bcm_flashutil
 else
@@ -11048,7 +11048,7 @@ vlanctl:
 	@echo "do nothing"
 endif
 
-ifeq ($(BUILD_VLANCTL),y)
+ifeq ($(BUILD_VLANCTL),dynamic)
 vlanctl-install:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/vlanctl) $(wildcard vlanctl)))
 	$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/vlanctl install

@@ -2,9 +2,16 @@ Asuswrt-Merlin 3006.xxx Changelog
 =================================
 
 3006.102.10 (xx-xxx-2026)
-  - UPDATED: Merged with GPL 102_40585 (other wifi 7)
+  - UPDATED: Merged with GPL 102_40563 for the RT-BE92U, which
+             includes a move to BCM SDK 6.2.0.  That means newer Linux
+             kernel, and a switch from TrendMicro's BWDPI to GTBooster's
+             Ark engine. (RT-BE92U)
+  - UPDATED: Merged with GPL 102_40585 (other wifi 7 models)
   - UPDATED: OpenSSL to 3.5.9.
   - UPDATED: OpenVPN to 2.7.8.
+  - UPDATED: haveged to 1.9.27.
+  - UPDATED: CA bundle (to get rid of recently compromised
+             certificates)
   - FIXED: Various issues with Dual WAN failover/failback,
            and DNS probing (TheUnboundDeveloper/Claude)
   - FIXED: Various issues with the "Internet is down"
@@ -12,6 +19,7 @@ Asuswrt-Merlin 3006.xxx Changelog
   - FIXED: HW AQM wouldn't work if you used a tagged
            WAN interface. Now treat it like we treat
            Multiservice WAN connections.
+  - FIXED: CVE-2026-107159 in miniupnpd.
 
 
 3006.102.9 (23-Sept-2026)

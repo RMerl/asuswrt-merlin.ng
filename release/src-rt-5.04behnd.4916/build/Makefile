@@ -1002,7 +1002,7 @@ endif
 uboot:
 ifneq ($(BUILD_UBOOT),)
 	rm -f bootloaders/obj/binaries/*.pkgtb
-	$(MAKE) -f build/make.uboot all INCLUDE_OPTEE=$(BCM_OPTEE) INCLUDE_ATF=$(BCM_ARMTF) IMAGE_GOAL=$(IMAGE_GOAL)
+	$(MAKE) $(PARALLEL_BUILD) -f build/make.uboot all INCLUDE_OPTEE=$(BCM_OPTEE) INCLUDE_ATF=$(BCM_ARMTF) IMAGE_GOAL=$(IMAGE_GOAL)
 endif
 
 prepare_linux_image: kernelbuild hosttools_image

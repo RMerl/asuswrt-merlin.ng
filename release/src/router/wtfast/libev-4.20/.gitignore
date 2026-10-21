@@ -1,9 +1,0 @@
-.libs
-.deps
-*.lo
-*.o
-*.la
-Makefile
-config.h
-libtool
-ev.3

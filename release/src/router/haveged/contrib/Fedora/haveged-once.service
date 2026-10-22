@@ -5,7 +5,7 @@ DefaultDependencies=no
 
 [Service]
 Type=oneshot
-ExecStart=@SBIN_DIR@/haveged -w 1024 -v 1 --once --Foreground
+ExecStart=@SBIN_DIR@/haveged -w 1024 -v 1 --once --Foreground --no-command
 SuccessExitStatus=137 143
 
 SecureBits=noroot-locked
@@ -13,8 +13,7 @@ CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_CHROOT
 # We can *not* set PrivateTmp=true as it can cause an ordering cycle.
 PrivateTmp=false
 PrivateDevices=true
-# We can *not* set PrivateNetwork=true to allow command mode (chroot when included in initramfs)
-#PrivateNetwork=true
+PrivateNetwork=true
 ProtectSystem=full
 ProtectHome=true
 ProtectHostname=true

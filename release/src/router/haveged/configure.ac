@@ -3,7 +3,7 @@
 ## Minimum Autoconf version
 
 AC_PREREQ([2.59])
-AC_INIT([haveged],[1.9.22])
+AC_INIT([haveged],[1.9.27])
 AC_CONFIG_AUX_DIR(config)
 AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_HEADER([config.h])

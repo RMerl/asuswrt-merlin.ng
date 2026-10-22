@@ -1920,7 +1920,9 @@ obj-$(RTCONFIG_TELENET) += lanauth
 #ifeq ($(HND_ROUTER),y)
 #obj-y += jitterentropy-rngd
 #endif
+ifeq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126))
 obj-y += haveged
+endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
 obj-y += libnfnetlink-1.0.1

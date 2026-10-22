@@ -13158,7 +13158,7 @@ start_services(void)
 #ifdef HND_ROUTER
 	start_jitterentropy();
 #endif /* HND_ROUTER */
-#else
+#elif !defined(WIFI7_SDK_20250506) && !defined(WIFI8_SDK_20251126)
 	start_haveged();
 #endif
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
@@ -13978,7 +13978,7 @@ stop_services(void)
 #ifdef RTCONFIG_BRCM_HOSTAPD
 	stop_wps_pbcd();
 #endif
-#else
+#elif !defined(WIFI7_SDK_20250506) && !defined(WIFI8_SDK_20251126)
 	stop_haveged();
 #endif
 }

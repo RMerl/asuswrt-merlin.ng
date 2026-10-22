@@ -369,48 +369,6 @@ char *get_wanx_ifname(int unit)
 	return wan_ifname;
 }
 
-// Get physical ethernet port of a wan unit, resolving multiservice/802.1Q virtual interfaces
-char *get_wan_phy_ifname(int unit, char *buf, size_t len)
-{
-#ifdef RTCONFIG_MULTISERVICE_WAN
-	char word[IFNAMSIZ], *next;
-	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
-	int i = 0;
-	int base = get_ms_base_unit(unit);
-#else
-	int base = unit;
-#endif
-
-	/* ISP/IPTV profile: wan0 is a vlan or bridge device set up on top of the WAN port */
-	if (base == WAN_UNIT_FIRST && !nvram_match("switch_wantag", "")
-	 && (nvram_get_int("switch_stb_x") > 0 || nvram_get_int("switch_wan0tagid") > 0)) {
-		strlcpy(buf, wan_if_eth(), len);
-		return buf;
-	}
-
-#ifdef RTCONFIG_MULTISERVICE_WAN
-	snprintf(prefix, sizeof(prefix), "wan%d_", base);
-
-	if (is_mswan_enabled()
-	 || (nvram_match("switch_wantag", "none") && nvram_get_int(strlcat_r(prefix, "dot1q", tmp, sizeof(tmp))))) {
-		buf[0] = '\0';
-		foreach(word, nvram_safe_get("wan_ifnames"), next) {
-			if (i++ == base) {
-				strlcpy(buf, word, len);
-				break;
-			}
-		}
-		if (!buf[0])
-			strlcpy(buf, WAN_IF_ETH, len);
-
-		return buf;
-	}
-#endif
-	strlcpy(buf, get_wanx_ifname(unit), len);
-
-	return buf;
-}
-
 // Get wan ifname of working connection
 char *get_wan_ifname(int unit)
 {

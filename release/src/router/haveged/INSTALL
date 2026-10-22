@@ -13,7 +13,10 @@ Basic Installation
 
 should configure, build, and install this package.  The first line,
 which bootstraps, is intended for developers; when building from
-distribution tarballs it does nothing and can be skipped.
+distribution tarballs it does nothing and can be skipped.  A package
+might name the bootstrapping script differently; if the name is
+‘autogen.sh’, for example, the first line should say ‘./autogen.sh’
+instead of ‘./bootstrap’.
 
    The following more-detailed instructions are generic; see the
 ‘README’ file for instructions specific to this package.  Some packages
@@ -25,23 +28,22 @@ found in the GNU Coding Standards.
    Many packages have scripts meant for developers instead of ordinary
 builders, as they may use developer tools that are less commonly
 installed, or they may access the network, which has privacy
-implications.  If the ‘bootstrap’ shell script exists, it attempts to
-build the ‘configure’ shell script and related files, possibly using
-developer tools or the network.  Because the output of ‘bootstrap’ is
-system-independent, it is normally run by a package developer so that
-its output can be put into the distribution tarball and ordinary
-builders and users need not run ‘bootstrap’.  Some packages have
-commands like ‘./autopull.sh’ and ‘./autogen.sh’ that you can run
-instead of ‘./bootstrap’, for more fine-grained control over
-bootstrapping.
+implications.  These scripts attempt to bootstrap by building the
+‘configure’ script and related files, possibly using developer tools or
+the network.  Because the output of bootstrapping is system-independent,
+it is normally run by a package developer so that its output can be put
+into the distribution tarball and ordinary builders and users need not
+bootstrap.  Some packages have commands like ‘./autopull.sh’ and
+‘./autogen.sh’ that you can run instead of ‘./bootstrap’, for more
+fine-grained control over bootstrapping.
 
-   The ‘configure’ shell script attempts to guess correct values for
-various system-dependent variables used during compilation.  It uses
-those values to create a ‘Makefile’ in each directory of the package.
-It may also create one or more ‘.h’ files containing system-dependent
-definitions.  Finally, it creates a shell script ‘config.status’ that
-you can run in the future to recreate the current configuration, and a
-file ‘config.log’ containing output useful for debugging ‘configure’.
+   The ‘configure’ script attempts to guess correct values for various
+system-dependent variables used during compilation.  It uses those
+values to create a ‘Makefile’ in each directory of the package.  It may
+also create one or more ‘.h’ files containing system-dependent
+definitions.  Finally, it creates a script ‘config.status’ that you can
+run in the future to recreate the current configuration, and a file
+‘config.log’ containing output useful for debugging ‘configure’.
 
    It can also use an optional file (typically called ‘config.cache’ and
 enabled with ‘--cache-file=config.cache’ or simply ‘-C’) that saves the
@@ -64,9 +66,10 @@ editing ‘configure’ directly.
   1. ‘cd’ to the directory containing the package’s source code.
 
   2. If this is a developer checkout and file ‘configure’ does not yet
-     exist, type ‘./bootstrap’ to create it.  You may need special
-     developer tools and network access to bootstrap, and the network
-     access may have privacy implications.
+     exist, run the bootstrapping script (typically ‘./bootstrap’ or
+     ‘./autogen.sh’) to bootstrap and create the file.  You may need
+     special developer tools and network access to bootstrap, and the
+     network access may have privacy implications.
 
   3. Type ‘./configure’ to configure the package for your system.  This
      might take a while.  While running, ‘configure’ prints messages
@@ -100,6 +103,18 @@ editing ‘configure’ directly.
 
   9. If the package follows the GNU Coding Standards, you can type ‘make
      uninstall’ to remove the installed files.
+
+Installation Prerequisites
+==========================
+
+   Installation requires a POSIX-like environment with a shell and at
+least the following standard utilities:
+
+     awk cat cp diff echo expr false ls mkdir mv printf pwd rm rmdir sed
+     sort test tr
+
+This package’s installation may need other standard utilities such as
+‘grep’, ‘make’, ‘sleep’ and ‘touch’, along with compilers like ‘gcc’.
 
 Compilers and Options
 =====================
@@ -356,7 +371,7 @@ more details.
 Copyright notice
 ================
 
-   Copyright © 1994–1996, 1999–2002, 2004–2017, 2020–2024 Free Software
+   Copyright © 1994–1996, 1999–2002, 2004–2017, 2020–2025 Free Software
 Foundation, Inc.
 
    Copying and distribution of this file, with or without modification,

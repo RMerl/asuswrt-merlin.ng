@@ -53,6 +53,13 @@ to become rebased
 .B within
 the new root directory.
 .TP
+-C , --no-command
+Disable command mode. The daemon will not open a command socket or create a
+semaphore. This reduces attack surface when command mode is not needed (e.g.
+for the long-running system service). Command mode is still available for
+sending commands to a running instance via
+.BR "-c" .
+.TP
 -d nnn, --data=nnn
 Set data cache size to nnn KB. Default is 16 or as determined dynamically.
 .TP
@@ -306,6 +313,9 @@ haveged -n 3705 -f - 2>/dev/null | uuencode -m - | head -n 66 | tail -n 65
 .TP
 Test the randomness of the generated data with dieharder test suite
 haveged -n 0 | dieharder -g 200 -a
+.TP
+Test the randomness of the generated data with PractRand test suite
+haveged -n 0 | practrand-RNG_test stdin64 -tlmax 16G -multithreaded
 .TP
 Generate 16k of data, testing with procedure A and B with detailed test results. No c result seen because a single buffer fill did not contain enough data to complete the test.
 haveged -n 16k -o tba8ca8 -v 33

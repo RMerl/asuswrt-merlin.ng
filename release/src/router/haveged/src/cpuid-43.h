@@ -56,7 +56,7 @@
 /* %edx */
 #define bit_LM		(1 << 29)
 #define bit_3DNOWP	(1 << 30)
-#define bit_3DNOW	(1 << 31)
+#define bit_3DNOW	(1u << 31)
 
 
 #if defined(__i386__) && defined(__PIC__)

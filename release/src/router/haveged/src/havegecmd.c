@@ -53,7 +53,7 @@ struct ucred
 #include "havegecmd.h"
 
 int first_byte;
-int socket_fd;
+int socket_fd = -1;
 static char errmsg[1024];
 extern  sem_t *sem;
 
@@ -280,6 +280,26 @@ int socket_handler(                /* RETURN: closed file descriptor        */
       goto out;
       }
 
+   /* Reject peers from a different user namespace — uid 0 inside a
+      user namespace maps to an unprivileged host user but passes the
+      SO_PEERCRED check above. */
+   {
+      struct stat self_ns, peer_ns;
+      char ns_path[64];
+      snprintf(ns_path, sizeof(ns_path), "/proc/%d/ns/user", (int)cred.pid);
+      if (stat("/proc/self/ns/user", &self_ns) == 0) {
+         if (stat(ns_path, &peer_ns) != 0 ||
+             self_ns.st_ino != peer_ns.st_ino ||
+             self_ns.st_dev != peer_ns.st_dev) {
+            enqry = ASCII_NAK;
+            ptr = (unsigned char *)enqry;
+            len = (int)strlen(enqry)+1;
+            safeout(fd, ptr, len);
+            goto out;
+         }
+      }
+   }
+
    ptr = &magic[0];
    len = sizeof(magic);
    ret = safein(fd, ptr, len);
@@ -404,7 +424,11 @@ ssize_t safein(                    /* RETURN: read bytes                    */
          if (errno == EAGAIN || errno == EWOULDBLOCK)
             break;
          print_msg("Unable to read from socket %d: %s", socket_fd, strerror(errno));
+         ret = -1;
+         break;
          }
+      if (p == 0)
+         break;
       ptr = (char *) ptr + p;
       ret += p;
       len -= p;
@@ -432,7 +456,10 @@ void safeout(                      /* RETURN: nothing                       */
          if (errno == EPIPE || errno == EAGAIN || errno == EWOULDBLOCK)
                      break;
          print_msg("Unable to write to socket %d: %s", fd, strerror(errno));
+         break;
          }
+       if (p == 0)
+          break;
        ptr = (char *) ptr + p;
        len -= p;
        }

@@ -1,3 +1,35 @@
+v1.9.27 (Oct 18, 2026) [Jirka Hladky]
+* Fix signed integer overflow and undefined shifts in vfs topology parsing [liweiganga]
+* Fix out-of-bounds write in vfs_parseMask with masks of more than 8 words
+  (more than 256 possible CPUs) and stale msw after bitmap clear [liweiganga]
+* vfs_parseList: avoid signed overflow and negative bitmap index on huge numbers
+
+v1.9.26 (Jun 24, 2026) [Jirka Hladky]
+* Fix 100% CPU spin when --no-command is used (BZ#2492029)
+* Initialize socket_fd to -1 so daemon loop skips accept() correctly
+
+v1.9.25 (Jun 24, 2026) [Jirka Hladky]
+* Add haveged-initramfs.service for use inside the initramfs (BZ#2491739)
+* Update dracut module to use initramfs-specific service file
+* Fix: --no-command in initramfs broke switch-root handoff, causing
+  emergency mode on systems where haveged was started but not enabled
+
+v1.9.24 (Jun 19, 2026) [Jirka Hladky]
+* Add --no-command / -C flag to disable command mode at runtime
+* Disable command mode in haveged.service and haveged-once.service
+* Enable PrivateNetwork=true and remove ReadWritePaths=/dev/shm in service files
+
+v1.9.23 (Jun 18, 2026) [Jirka Hladky]
+* Use O_EXCL with sem_open to prevent semaphore pre-planting attacks [pyllyukko]
+* Recover stale semaphores after SIGKILL by unlinking and retrying
+* Add sem_close before sem_unlink for proper cleanup ordering
+* Fix compilation when NO_COMMAND_MODE is defined
+* Fix out-of-bounds memory access in safein()/safeout() on socket errors
+* Reject command socket connections from different user namespaces
+* Use O_NOFOLLOW for PID file to prevent symlink attacks
+* Open random device with O_CLOEXEC to prevent fd leak across execv
+* Restrict semaphore permissions from 0644 to 0600
+
 v1.9.22 (May 21, 2026) [Jirka Hladky]
 * Add ReadWritePaths=/dev/shm to systemd service for semaphore creation
   under ProtectSystem=full sandboxing

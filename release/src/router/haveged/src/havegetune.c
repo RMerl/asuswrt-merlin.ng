@@ -257,6 +257,7 @@ static void cfg_bitClear(     /* RETURN : None  */
   TOPO_MAP *m)                /* IN: bitmap     */
 {
    memset(&m->bits[0], 0, MAX_BIT_IDX * sizeof(H_UINT));
+   m->msw = 0;
 }
 /**
  * Return number of bits set in map
@@ -349,7 +350,7 @@ static int cfg_bitNext (   /* RETURN: index of next bit or -1  */
    bit  = (n+1) % BITS_PER_H_UINT;
    for(word = (n+1) / BITS_PER_H_UINT;word <= m->msw && word < (int)MAX_BIT_IDX;word++) {
       for(;bit<(int)BITS_PER_H_UINT; bit++)
-         if (m->bits[word] & 1<< bit)
+         if (m->bits[word] & 1u<< bit)
             return word * BITS_PER_H_UINT + bit;
       bit = 0;
       }
@@ -368,7 +369,7 @@ static void cfg_bitSet(    /* RETURN: None   */
    if (word < (int)MAX_BIT_IDX) {
       if (word > m->msw)
          m->msw = word;
-      m->bits[word] |= 1 << (n % BITS_PER_H_UINT);
+      m->bits[word] |= 1u << (n % BITS_PER_H_UINT);
       }
 }
 /**
@@ -867,6 +868,9 @@ static void vfs_parseList( /* RETURN: None               */
    char *term, c;
    int  bounds[2], n;
  
+   /* Values at or above the bitmap size are ignored by cfg_bitSet(), so stop
+    * accumulating digits once out of range. This avoids signed overflow and
+    * keeps the range loop below bounded. */
    cfg_bitClear(map);
    for(term = strtok(input, ",");term != NULL;term = strtok(NULL, ",")) {
       n = bounds[0] = bounds[1] = 0;
@@ -874,7 +878,8 @@ static void vfs_parseList( /* RETURN: None               */
          switch(c) {
             case '0': case '1': case '2': case '3': case '4':
             case '5': case '6': case '7': case '8': case '9':
-               bounds[n] = bounds[n] * 10 + (int)(c - '0');
+               if (bounds[n] < (int)(MAX_BIT_IDX * BITS_PER_H_UINT))
+                  bounds[n] = bounds[n] * 10 + (int)(c - '0');
                break;
             case '-':
                n = 1;
@@ -893,7 +898,8 @@ static void vfs_parseMask( /* RETURN: None               */
   char *input)             /* IN: list text              */
 {
    char *term, c;
-   int  m, n;
+   unsigned int m;
+   int n;
  
    cfg_bitClear(map);
    for(term = strtok(input, ",");term != NULL;term = strtok(NULL, ",")) {
@@ -910,13 +916,15 @@ static void vfs_parseMask( /* RETURN: None               */
             case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
                m = m * 16 + (int)(c - 'a') + 10;
             }
+   if (map->msw >= (int)MAX_BIT_IDX-1)
+      map->msw = (int)MAX_BIT_IDX-2;
    for(n=map->msw;n>=0;n--)
       map->bits[n+1] = map->bits[n];
    if (0 != map->bits[map->msw+1])
       map->msw++;
    map->bits[0] = 0;
    for(n=0;n<32;n++)
-      if (m & (1<<n))
+      if (m & (1u<<n))
          cfg_bitSet(map, n);
    }
 }

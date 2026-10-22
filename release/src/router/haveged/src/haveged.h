@@ -75,6 +75,7 @@ struct pparams  {
 #define   MULTI_CORE    0x080
 #define   CMD_MODE      0x100
 #define   RUN_ONCE      0x200
+#define   NO_CMD_FLAG   0x400
 /**
  * Default tests settings
  */

@@ -7,7 +7,7 @@ After=systemd-tmpfiles-setup-dev.service
 Before=sysinit.target shutdown.target systemd-journald.service
 
 [Service]
-ExecStart=@SBIN_DIR@/haveged -w 1024 -v 1 --Foreground -v 64
+ExecStart=@SBIN_DIR@/haveged -w 1024 -v 1 --Foreground -v 64 --no-command
 Restart=always
 SuccessExitStatus=137 143
 
@@ -16,10 +16,8 @@ CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_CHROOT
 # We can *not* set PrivateTmp=true as it can cause an ordering cycle.
 PrivateTmp=false
 PrivateDevices=true
-# We can *not* set PrivateNetwork=true to allow command mode (chroot when included in initramfs)
-#PrivateNetwork=true
+PrivateNetwork=true
 ProtectSystem=full
-ReadWritePaths=/dev/shm
 ProtectHome=true
 ProtectHostname=true
 ProtectKernelLogs=true

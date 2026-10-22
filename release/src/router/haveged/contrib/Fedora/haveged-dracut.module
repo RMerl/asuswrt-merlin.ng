@@ -16,8 +16,10 @@ installkernel() {
 install() {
     inst_multiple -o \
         /usr/sbin/haveged \
-        $systemdsystemunitdir/haveged.service \
         $systemdsystemunitdir/haveged-switch-root.service
+    # Install the initramfs-specific service file (with command mode enabled
+    # for switch-root) as haveged.service inside the initramfs.
+    inst_simple $systemdsystemunitdir/haveged-initramfs.service $systemdsystemunitdir/haveged.service
     mkdir -p "$initdir/$systemdsystemunitdir/sysinit.target.wants"
     mkdir -p "$initdir/$systemdsystemunitdir/initrd-switch-root.target.wants"
     mkdir -p "$initdir/$systemdsystemunitdir/systemd-journald.service.wants"

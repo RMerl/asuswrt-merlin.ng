@@ -172,41 +172,6 @@ ifeq ($(RTCONFIG_DSL),y)
 	cp -f webs_scripts/notif_update.sh $(INSTALLDIR)/usr/sbin/notif_update.sh
 endif
 	#install -m 0755 webs_scripts/*.sh $(INSTALLDIR)/usr/sbin
-
-ifeq ($(RTCONFIG_MERLINUPDATE),y)
-	cp -f webs_scripts/merlin_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
-ifeq ($(RTCONFIG_CFGSYNC),y)
-	cp -f webs_scripts/merlin_webs_note.sh $(INSTALLDIR)/usr/sbin/webs_note.sh
-endif
-ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
-	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
-	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
-endif
-ifeq ($(RTCONFIG_LIVE_UPDATE_RSA),y)
-ifneq ("$(wildcard $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem)","")
-	cp -f $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem $(INSTALLDIR)/usr/sbin/public.pem
-else
-	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
-endif
-else
-ifeq ($(RTCONFIG_HTTPS),y)
-	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
-ifeq ($(RTCONFIG_AI_SERVICE),y)
-	cp -f webs_scripts/ssl_webs_ai_rescue.sh $(INSTALLDIR)/usr/sbin/webs_ai_rescue.sh
-	cp -f webs_scripts/ssl_webs_ai_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_ai_upgrade.sh
-	install -m 0755 apps_scripts/ai_upgrade.sh $(INSTALLDIR)/usr/sbin/ai_upgrade
-	#install -m 0755 apps_scripts/ai_request.sh $(INSTALLDIR)/usr/sbin/ai_request
-ifeq ($(BUILD_NAME), GT-BE19000AI)
-	install -d $(INSTALLDIR)/usr/slmqa
-	cp -f slm-data.archive $(INSTALLDIR)/usr/slmqa/slm-data.archive
-	install -m 0755 webs_scripts/webs_slmqa_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_upgrade.sh
-	install -m 0755 webs_scripts/webs_slmqa_update.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_update.sh
-endif
-endif
-endif
-endif
-
-else	#merlinupdate
 ifeq ($(RTCONFIG_AUTOLIVEUPDATE_ZIP),y)
 	cp -f webs_scripts/zip_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
 	cp -f webs_scripts/zip_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
@@ -223,18 +188,6 @@ endif
 else
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
-ifeq ($(RTCONFIG_AI_SERVICE),y)
-	cp -f webs_scripts/ssl_webs_ai_rescue.sh $(INSTALLDIR)/usr/sbin/webs_ai_rescue.sh
-	cp -f webs_scripts/ssl_webs_ai_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_ai_upgrade.sh
-	install -m 0755 apps_scripts/ai_upgrade.sh $(INSTALLDIR)/usr/sbin/ai_upgrade
-	#install -m 0755 apps_scripts/ai_request.sh $(INSTALLDIR)/usr/sbin/ai_request
-ifeq ($(BUILD_NAME), GT-BE19000AI)
-	install -d $(INSTALLDIR)/usr/slmqa
-	cp -f slm-data.archive $(INSTALLDIR)/usr/slmqa/slm-data.archive
-	install -m 0755 webs_scripts/webs_slmqa_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_upgrade.sh
-	install -m 0755 webs_scripts/webs_slmqa_update.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_update.sh
-endif
-endif
 endif
 endif
 ifeq ($(RTAC68U),y)
@@ -242,7 +195,29 @@ ifneq ("$(wildcard $(SRCBASE)/../../buildtools/tmks.bin)","")
 	cp -f $(SRCBASE)/../../buildtools/tmks.bin $(INSTALLDIR)/usr/sbin/tmks
 endif
 endif
-else # autoliveupdate_zip
+else
+ifeq ($(RTCONFIG_MERLINUPDATE),y)
+	cp -f webs_scripts/merlin_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
+ifeq ($(RTCONFIG_CFGSYNC),y)
+	cp -f webs_scripts/merlin_webs_note.sh $(INSTALLDIR)/usr/sbin/webs_note.sh
+endif
+ifeq ($(RTCONFIG_AI_SERVICE),y)
+	cp -f webs_scripts/ssl_webs_ai_rescue.sh $(INSTALLDIR)/usr/sbin/webs_ai_rescue.sh
+	cp -f webs_scripts/ssl_webs_ai_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_ai_upgrade.sh
+	install -m 0755 apps_scripts/ai_upgrade.sh $(INSTALLDIR)/usr/sbin/ai_upgrade
+	#install -m 0755 apps_scripts/ai_request.sh $(INSTALLDIR)/usr/sbin/ai_request
+	install -m 0755 apps_scripts/ha_adjust.sh $(INSTALLDIR)/usr/sbin/ha_adjust
+	install -d $(INSTALLDIR)/usr/slmqa
+ifeq ($(BUILD_NAME), GT-BE19000AI)
+	cp -f slm-data.archive $(INSTALLDIR)/usr/slmqa/slm-data.archive
+endif
+ifeq ($(BUILD_NAME), GT-BE96_AI)
+	cp -f slm-cn-data.archive $(INSTALLDIR)/usr/slmqa/slm-data.archive
+endif
+	install -m 0755 webs_scripts/webs_slmqa_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_upgrade.sh
+	install -m 0755 webs_scripts/webs_slmqa_update.sh $(INSTALLDIR)/usr/sbin/webs_slmqa_update.sh
+endif
+else	# merlinupdate
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/ssl_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
 ifeq ($(RTCONFIG_AI_SERVICE),y)
@@ -303,6 +278,7 @@ ifeq ($(RTAC68U),y)
 	cp -f webs_scripts/ssl_webs_upgrade_enc.sh $(INSTALLDIR)/usr/sbin/webs_upgrade_enc.sh
 	cp -f webs_scripts/ssl_webs_update_enc.sh $(INSTALLDIR)/usr/sbin/webs_update_enc.sh
 endif
+endif	# merlinupdate
 
 ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
@@ -324,8 +300,7 @@ ifneq ("$(wildcard $(SRCBASE)/../../buildtools/tmks.bin)","")
 	cp -f $(SRCBASE)/../../buildtools/tmks.bin $(INSTALLDIR)/usr/sbin/tmks
 endif
 endif
-endif	#autoliveupdate_zip
-endif	#merlinupdate
+endif
 
 	# remove comments, compress whitespace
 	sed 's/#.*//g;s/[ \t]\+/ /g;s/^[ \t]*//;s/[ \t]*$$//;/^$$/d' < rom/etc/services > $(INSTALLDIR)/rom/etc/services

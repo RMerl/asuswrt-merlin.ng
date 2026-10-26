@@ -504,6 +504,9 @@
 
             if (ark_qoe_support && ark_qoe_enable) {
                 document.getElementById('settingSelection').style.display = "none";
+                if (codel_support) {
+                    document.getElementById('qos_overhead_tr').style.display = "none";
+                }
             } else if (adaptiveqos_support) {
                 if (!ark_qoe_support) {
                     document.getElementById('switch_title').innerHTML = "<#Adaptive_QoS#>";
@@ -1232,7 +1235,7 @@
                 show_up_down(0);
                 document.getElementById('qoe_iframe').style.display = "block";
                 if (codel_support) {
-                    document.getElementById('qos_overhead_tr').style.display = "";
+                    document.getElementById('qos_overhead_tr').style.display = "none";
                 }
                 if (cake_support) {
                     document.getElementById('qos_mpu').style.display = "none";

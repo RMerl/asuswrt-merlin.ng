@@ -23702,8 +23702,8 @@ int start_nat_rules(void)
 	if (nat_state == NAT_STATE_NORMAL) {
 #if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 		setup_ct_timeout(TRUE);
-		setup_udp_timeout(TRUE);
 #endif
+		setup_udp_timeout(TRUE);
 		return nat_state;
 }
 

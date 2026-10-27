@@ -21018,7 +21018,7 @@ void do_get_timezone_cgi(char *url, FILE *stream){
 }
 
 char no_cache[] =
-"Cache-Control: max-age=3, must-revalidate"
+"Cache-Control: no-cache"
 ;
 
 char cache_object[] =

@@ -12,17 +12,24 @@ Asuswrt-Merlin Changelog
          would leak outside of the proxy.  (Claude)
   - UPDATED: amtm to 7.0. (decoderman)
   - UPDATED: tor to 0.4.9.11.
-  - UPDATED: openvpn to 2.7.7.
   - UPDATED: zoneinfo data to 2026c.
-  - CHANGED: Tweaks to OpenVPN Server and Tor pages.  Use 
+  - UPDATED: OpenVPN to 2.7.8.
+  - UPDATED: haveged to 1.9.27.
+  - CHANGED: Tweaks to OpenVPN Server and Tor pages.  Use
              the new CSS radio switcher instead of old
              switcherplugin.
   - CHANGED: Stop forcing FTP TLS to be (re-)enabled after
              a firmware upgrade.
+  - CHANGED: Removed emSign ECC Root CA - G3 signing cert
+             from the CA bundle.
   - FIXED: Various issues with Dual WAN failover/failback,
            and DNS probing (TheUnboundDeveloper/Claude)
   - FIXED: Various issues with the "Internet is down"
            redirection page (TheUnboundDeveloper/Claude)
+  - FIXED: CVE-2026-107159 in miniupnpd.
+  - FIXED: Webui would stall or fail to load certain
+           elements when using Chrome on a self-signed
+           certificate. (Claude)
 
 
 3004.388.12_2 (20-Aug-2026)

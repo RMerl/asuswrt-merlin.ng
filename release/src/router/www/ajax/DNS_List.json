@@ -18,6 +18,15 @@
             "ping_target": "No"
         },
     "2":{
+            "FilterMode": "Ad block",
+            "DNSService": "DNS4EU",
+            "ServiceIP1": "86.54.11.13",
+            "ServiceIP2": "86.54.11.213",
+            "Description": "Hide website and in-app ads on top of the protective functionality.",
+            "confirmed": "Yes",
+            "ping_target": "No"
+        },
+    "3":{
             "FilterMode": "Family",
             "DNSService": "AdGuard",
             "ServiceIP1": "94.140.14.15",
@@ -26,7 +35,7 @@
             "confirmed": "Yes",
             "ping_target": "Yes"
         },
-    "3":{
+    "4":{
             "FilterMode": "Family",
             "DNSService": "CleanBrowsing-1",
             "ServiceIP1": "185.228.168.10",
@@ -36,7 +45,7 @@
             "confirmed": "Yes",
             "ping_target": "No"
         },
-    "4":{
+    "5":{
             "FilterMode": "Family",
             "DNSService": "CleanBrowsing-2",
             "ServiceIP1": "185.228.168.168",
@@ -46,7 +55,7 @@
             "confirmed": "Yes",
             "ping_target": "Yes"
         },
-    "5":{
+    "6":{
             "FilterMode": "Family",
             "DNSService": "Cloudflare",
             "ServiceIP1": "1.1.1.3",
@@ -55,7 +64,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "6":{
+    "7":{
             "FilterMode": "Family",
             "DNSService": "OpenDNS",
             "ServiceIP1": "208.67.222.123",
@@ -64,7 +73,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "7":{
+    "8":{
             "FilterMode": "Family",
             "DNSService": "Yandex",
             "ServiceIP1": "77.88.8.7",
@@ -73,7 +82,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "8":{
+    "9":{
             "FilterMode": "Family",
             "DNSService": "Control D",
             "ServiceIP1": "76.76.2.4",
@@ -82,7 +91,16 @@
             "confirmed": "Yes",
             "ping_target": "No"
         },
-    "9":{
+    "10":{
+            "FilterMode": "Family",
+            "DNSService": "DNS4EU",
+            "ServiceIP1": "86.54.11.12",
+            "ServiceIP2": "86.54.11.212",
+            "Description": "Avoid access to websites inappropriate for children such as explicit content, violence or drugs on top of the protective functionality.",
+            "confirmed": "Yes",
+            "ping_target": "No"
+        },
+    "11":{
             "FilterMode": "Fast DNS",
             "DNSService": "Cloudflare",
             "ServiceIP1": "1.1.1.1",
@@ -91,7 +109,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "10":{
+    "12":{
             "FilterMode": "Fast DNS",
             "DNSService": "DNS Watch",
             "ServiceIP1": "84.200.69.80",
@@ -101,7 +119,7 @@
             "confirmed": "mailing",
             "ping_target": "No"
         },
-    "11":{
+    "13":{
             "FilterMode": "Fast DNS",
             "DNSService": "DYN",
             "ServiceIP1": "216.146.35.35",
@@ -111,7 +129,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "12":{
+    "14":{
             "FilterMode": "Fast DNS",
             "DNSService": "FreeDNS",
             "ServiceIP1": "37.235.1.174",
@@ -121,7 +139,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "13":{
+    "15":{
             "FilterMode": "Fast DNS",
             "DNSService": "Google",
             "ServiceIP1": "8.8.8.8",
@@ -130,7 +148,7 @@
             "confirmed": "Yes",
             "ping_target": "Yes"
         },
-    "14":{
+    "16":{
             "FilterMode": "Fast DNS",
             "DNSService": "Level3",
             "ServiceIP1": "209.244.0.3",
@@ -139,7 +157,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "15":{
+    "17":{
             "FilterMode": "Fast DNS",
             "DNSService": "Neustar",
             "ServiceIP1": "156.154.70.1",
@@ -148,7 +166,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "16":{
+    "18":{
             "FilterMode": "Fast DNS",
             "DNSService": "OpenDNS",
             "ServiceIP1": "208.67.222.222",
@@ -157,7 +175,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "17":{
+    "19":{
             "FilterMode": "Fast DNS",
             "DNSService": "SAFEDNS",
             "ServiceIP1": "195.46.39.39",
@@ -166,7 +184,16 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "18":{
+    "20":{
+            "FilterMode": "Fast DNS",
+            "DNSService": "DNS4EU",
+            "ServiceIP1": "86.54.11.100",
+            "ServiceIP2": "86.54.11.200",
+            "Description": "Unfiltered option is a valid option for users who are confident their devices and connection are secure, and are looking for fast, reliable, and anonymised resolution service.",
+            "confirmed": "Yes",
+            "ping_target": "No"
+        },
+    "21":{
             "FilterMode": "Safe",
             "DNSService": "Cloudflare",
             "ServiceIP1": "1.1.1.2",
@@ -175,7 +202,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "19":{
+    "22":{
             "FilterMode": "Safe",
             "DNSService": "CleanBrowsing",
             "ServiceIP1": "185.228.168.9",
@@ -185,7 +212,7 @@
             "confirmed": "Yes",
             "ping_target": "No"
         },
-    "20":{
+    "23":{
             "FilterMode": "Safe",
             "DNSService": "Comodo ",
             "ServiceIP1": "8.26.56.26",
@@ -194,7 +221,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "21":{
+    "24":{
             "FilterMode": "Safe",
             "DNSService": "Quad9",
             "ServiceIP1": "9.9.9.9",
@@ -204,7 +231,7 @@
             "confirmed": "Yes",
             "ping_target": "Yes"
         },
-    "22":{
+    "25":{
             "FilterMode": "Safe",
             "DNSService": "Yandex",
             "ServiceIP1": "77.88.8.88",
@@ -213,7 +240,7 @@
             "confirmed": "No",
             "ping_target": "No"
         },
-    "23":{
+    "26":{
             "FilterMode": "Safe",
             "DNSService": "Control D",
             "ServiceIP1": "76.76.2.1",
@@ -222,7 +249,16 @@
             "confirmed": "Yes",
             "ping_target": "No"
         },
-    "24":{
+    "27":{
+            "FilterMode": "Safe",
+            "DNSService": "DNS4EU",
+            "ServiceIP1": "86.54.11.11",
+            "ServiceIP2": "86.54.11.211",
+            "Description": "Avoid access to websites inappropriate for children, such as explicit content, violence or drugs. Plus filter ads on top of the protective functionality.",
+            "confirmed": "Yes",
+            "ping_target": "No"
+        },
+    "28":{
             "FilterMode": "Privacy-respecting",
             "DNSService": "Quad9",
             "ServiceIP1": "9.9.9.11",
@@ -232,7 +268,16 @@
             "confirmed": "Yes",
             "ping_target": "No"
         },
-    "25":{
+    "29":{
+            "FilterMode": "Privacy-respecting",
+            "DNSService": "DNS4EU",
+            "ServiceIP1": "86.54.11.1",
+            "ServiceIP2": "86.54.11.201",
+            "Description": "Avoid any access to websites with fraudulent or malicious content.",
+            "confirmed": "Yes",
+            "ping_target": "No"
+        },
+    "30":{
             "FilterMode": "",
             "DNSService": "Baidu",
             "ServiceIP1": "180.76.76.76",
@@ -241,7 +286,7 @@
             "confirmed": "No",
             "ping_target": "CN"
         },
-    "26":{
+    "31":{
             "FilterMode": "",
             "DNSService": "AliDNS",
             "ServiceIP1": "223.5.5.5",

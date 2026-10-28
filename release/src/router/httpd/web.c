@@ -9511,6 +9511,14 @@ finish:
 			}
 		}
 	}
+
+	if (ruleIdxArray)
+		json_object_put(ruleIdxArray);
+	if (statusArray)
+		json_object_put(statusArray);
+	if (timeArray)
+		json_object_put(timeArray);
+
 	return have_data;
 }
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -10675,8 +10683,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 	if(amasReClientDetailList)
 		json_object_put(amasReClientDetailList);
 #endif
-	if(custom_attr_get)
-		json_object_put(custom_attr_get);
 	CLIENT_DPRINTF("get_client_detail_info finish\n");
 
 	return 0;

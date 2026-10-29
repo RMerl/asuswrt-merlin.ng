@@ -30,9 +30,11 @@ default: mkenv prebuild_checks all_postcheck1
 all: cfebuild
 	$(MAKE) -f build/Makefile default
 
+# The top level Makefile runs buildimage itself once router strips is done,
+# so only pull in full_buildimage's prerequisites here, not the image build.
 all_postcheck1: profile_saved_check sanity_check rdp_link\
      pinmuxcheck dynamic_cfe \
-     parallel_targets gdbserver full_buildimage
+     parallel_targets gdbserver full_buildimage_prereqs
 
 # Order-only rules
 #----------------------------------------------------------------------------
@@ -69,7 +71,7 @@ gdbserver : $(CREATE_INSTALL)
 full_buildimage libcreduction gen_credits linux_tools : parallel_targets gdbserver
 
 
-.PHONY: mkenv all_postcheck1
+.PHONY: mkenv all_postcheck1 full_buildimage_prereqs
 
 # These post kernel top level targets can compile concurrently
 parallel_targets: kernelbuild modbuild userspace optee atf rtpolicy_gen_metadata hosttools_image
@@ -812,7 +814,9 @@ else
 ROOTFS_UNTAR_ARGS=-X $(BUILD_DIR)/altsdk/openwrt/exclude_files.txt
 endif
 
-full_buildimage: kernelbuild $(DTBS) libcreduction gen_credits linux_tools
+full_buildimage_prereqs: kernelbuild $(DTBS) libcreduction gen_credits linux_tools
+
+full_buildimage: full_buildimage_prereqs
 
 full_buildimage buildimage:
 ifeq ($(BUILD_DISABLE_EXEC_STACK),y)

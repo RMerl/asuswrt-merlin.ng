@@ -9601,6 +9601,14 @@ finish:
 			}
 		}
 	}
+
+	if (ruleIdxArray)
+		json_object_put(ruleIdxArray);
+	if (statusArray)
+		json_object_put(statusArray);
+	if (timeArray)
+		json_object_put(timeArray);
+
 	return have_data;
 }
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -10771,8 +10779,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 	if(amasReClientDetailList)
 		json_object_put(amasReClientDetailList);
 #endif
-	if(custom_attr_get)
-		json_object_put(custom_attr_get);
 	CLIENT_DPRINTF("get_client_detail_info finish\n");
 
 	return 0;
@@ -21241,7 +21247,7 @@ void do_get_timezone_cgi(char *url, FILE *stream){
 }
 
 char no_cache[] =
-"Cache-Control: max-age=3, must-revalidate"
+"Cache-Control: no-cache"
 ;
 
 char cache_object[] =

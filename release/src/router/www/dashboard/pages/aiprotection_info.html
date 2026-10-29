@@ -526,8 +526,8 @@
 
         function resize_iframe_height() {
             if ($(parent.document).find("#arklog_iframe").length == "1") {
-                const menu_height = $(parent.document).find("#mainMenu").height();
-                const settingsWindow_height = $(top.document).find("#settingsWindow").height();
+                const menu_height = $(parent.document).find("#mainMenu").height() || 0;
+                const settingsWindow_height = $(top.document).find("#settingsWindow").height() || 0;
                 const margin_bottom = 30;
                 $(parent.document).find("#arklog_iframe").css("height", (Math.max(menu_height, settingsWindow_height) - margin_bottom));
             }

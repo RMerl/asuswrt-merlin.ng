@@ -258,7 +258,12 @@ function initial(){
 
 	wans_caps_primary = wans_caps;
 	wans_caps_secondary = wans_caps;
-	
+
+	if(isSupport("wisp_dualwan") && isSwMode("WISP")){
+		wans_caps_primary = "wan";
+		wans_caps_secondary = wans_caps.split(" ").filter(function(t){ return (t == "wan2" || t == "usb"); }).join(" ");
+	}
+
 	if(isSupport("NEW_PHYMAP")){
 		get_lanport_list();
 		setTimeout(function(){
@@ -283,7 +288,7 @@ function initial(){
 
 	document.getElementById("dualwan_faq").href=faq_href1;
 	document.getElementById("network_detect_faq").href=faq_href2;
-   	document.form.wans_mode.value = wans_mode_orig;
+   	document.form.wans_mode.value = (isSupport("wisp_dualwan") && isSwMode("WISP")) ? "fb" : wans_mode_orig;
 
    	//parse nvram to array
 	var parseNvramToArray = function() {
@@ -529,6 +534,11 @@ function get_default_wan(){
 	return default_wan;
 }
 
+const AUTOWAN_SUPPORTED_PROTOS = ["dhcp", "pppoe", "v6plus", "ocnvc", "dslite", "v6opt"];
+function is_autowan_supported_proto(proto){
+	return AUTOWAN_SUPPORTED_PROTOS.includes(proto);
+}
+
 function form_show(v, change_primary_wan){
 	if(change_primary_wan != undefined)
 		var wan_value = change_primary_wan;
@@ -576,7 +586,7 @@ function form_show(v, change_primary_wan){
 			}
 		}
 
-		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && (wan_proto == "dhcp" || wan_proto == "pppoe")){
+		if(isSupport("autowan") && orig_switch_wantag == "none" && switch_stb_x == "0" && (!wan_bonding_support || orig_bond_wan == "0") && (!lacp_support || lacp_enabled == "0") && is_autowan_supported_proto(wan_proto)){
 			if($("#wans_primary option[value='auto']").length == 0){
 				($('<option>', {
 					"value": "auto",
@@ -688,6 +698,14 @@ function form_show(v, change_primary_wan){
 		appendModeOption(document.form.wans_mode_option.value);
 		show_wans_rules();
 		document.getElementById("wans_mode_tr").style.display = "";
+		if(isSupport("wisp_dualwan") && isSwMode("WISP")){
+			/* WISP secwan-first: the connection policy is fixed to failback with
+			 * the secondary WAN as the preferred unit (wanduck WAN_FB_UNIT=SECOND),
+			 * so the user only chooses which secondary WAN to prioritise.  Hide the
+			 * wans_mode selector and force fb so wanduck always preempts to secwan. */
+			document.form.wans_mode.value = "fb";
+			document.getElementById("wans_mode_tr").style.display = "none";
+		}
 		if(usb_bk_support){
 			$("#usb_tethering_tr").hide();
 		}
@@ -695,6 +713,17 @@ function form_show(v, change_primary_wan){
 		$("#primary_tr").show();
 		$("#second_tr").show();
 	}
+
+	update_wisp_secwan_note();
+}
+
+function update_wisp_secwan_note(){
+	var note = document.getElementById("wisp_secwan_first_note");
+	if(!note) return;
+	var sec = document.form.wans_second.value;
+	var secwan_first = '<% nvram_get("wisp_secwan_first"); %>';
+	var show = (isSupport("wisp_dualwan") && isSwMode("WISP") && (sec == "wan2" || sec == "usb") && secwan_first == "1");
+	note.style.display = show ? "" : "none";
 }
 
 function applyRule(){
@@ -1304,6 +1333,15 @@ function addWANOption(obj, wanscapItem){
 			} else if (based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000") {
 				if (wanscapName == "WAN")
 					wanscapName = "2.5G WAN";
+			}
+
+			if(isSupport("wisp_dualwan") && isSwMode("WISP")){
+				if(wanscapItem[i] == "wan")
+					wanscapName = "WiFi";
+				else if(wanscapItem[i] == "wan2")
+					wanscapName = "ETH-WAN";
+				else if(wanscapItem[i] == "usb")
+					wanscapName = "USB";
 			}
 
 			obj.options[i] = new Option(wanscapName, wanscapItem[i]);
@@ -2215,13 +2253,16 @@ function remain_origins(){
 										<tr id="second_tr" style="display: none;">
 											<th><#dualwan_secondary#></th>
 											<td>
-												<select id="wans_second" name="wans_second" class="input_option" onchange="changeWANProto(this);"></select>
+												<select id="wans_second" name="wans_second" class="input_option" onchange="changeWANProto(this);update_wisp_secwan_note();"></select>
 												<select id="wans_lanport2" name="wans_lanport2" class="input_option short_input" style="margin-left:7px;">
 													<option value="1" <% nvram_match("wans_lanport", "1", "selected"); %>>LAN Port 1</option>
 													<option value="2" <% nvram_match("wans_lanport", "2", "selected"); %>>LAN Port 2</option>
 													<option value="3" <% nvram_match("wans_lanport", "3", "selected"); %>>LAN Port 3</option>
-													<option value="4" <% nvram_match("wans_lanport", "4", "selected"); %>>LAN Port 4</option>												
-												</select>											
+													<option value="4" <% nvram_match("wans_lanport", "4", "selected"); %>>LAN Port 4</option>
+												</select>
+												<div id="wisp_secwan_first_note" style="display:none; margin-top:6px;">
+													<span style="color:#FFF;">Prioritize secondary WAN</span>
+												</div>
 											</td>
 									  	</tr>
 										<tr id="usb_tethering_tr" style="display: none;">

@@ -1,4 +1,5 @@
 #include <time.h>
+#include <shutils.h>
 #include <netdb.h>
 #include "pc_block.h"
 
@@ -654,7 +655,7 @@ _dprintf("## pc_block: start ##\n");
 	memset(&sin, 0, sizeof(sin));
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
-	if((sin.sin_port = htons((u_short)atoi(serv_port))) == 0){
+	if((sin.sin_port = htons((u_short)safe_atoi(serv_port))) == 0){
 		perror("fail to get service entry");
 		exit(0);
 	}

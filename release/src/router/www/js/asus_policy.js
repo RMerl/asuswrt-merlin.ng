@@ -12,7 +12,7 @@ const ASUS_POLICY = {
         Notice2: `<#ASUS_POLICY_Notice_2#>`,
         ReadAgain: `<#ASUS_POLICY_Read_Again#>`,
         KnowRisk: `<#ASUS_POLICY_Know_Risk#>`,
-        QisDesc: `<#ASUS_POLICY_QIS_Desc#>`,
+        QisDesc: `<#ASUS_POLICY_QIS_Desc_v5#>`,
         Ok: `<#CTL_ok#>`,
         SelectLanguage: `<#selected_language#>`,
         ModalName: `<#Web_Title2#>`,
@@ -502,7 +502,7 @@ const ASUS_POLICY = {
                     url: `https://www.wtfast.com/en/privacy-policy/`,
                     company: `AAA Internet Publishing Inc.`
                 },
-                '网易UU加速器': {
+                'UU 加速器': {
                     url_text: `网易游戏隐私政策`,
                     url: `https://unisdk.update.netease.com/html/latest_v90.html`,
                     company: `网易游戏隐私政策`
@@ -3396,7 +3396,7 @@ class QisPolicyPageComponent {
                         <div class="page-title" role="heading" aria-level="1" aria-label="${title_orig}">${title}</div>
                         <div>
                             <div class="page-content">
-                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc}</div>
+                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc.replaceAll("%@", policy == 'EULA' ? ASUS_POLICY.Dict.I_Understand : ASUS_POLICY.Dict.Agree)}</div>
                                 <div class="policy-content"></div>
                                 ${policy == 'EULA' ? `<div class="scroll-info">${ASUS_POLICY.Dict.ScrollDown}</div>` : ``}
                                 <div class="policy-age"></div>

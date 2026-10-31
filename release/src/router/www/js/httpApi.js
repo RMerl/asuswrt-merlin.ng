@@ -575,7 +575,7 @@ var httpApi ={
 		var sim_state = parseInt(wanInfo.usb_modem_act_sim);
 		var iptvSupport = (
 					tcode.search("TW") == -1 && tcode.search("US") == -1 &&
-					tcode.search("U2") == -1 && tcode.search("CA") &&
+					tcode.search("U2") == -1 && tcode.search("U3") == -1 && tcode.search("CA") == -1 &&
 					tcode.search("CN") == -1 && tcode.search("CT") == -1 &&
 					tcode.search("GD") == -1 && tcode.search("TC") == -1 && !isSupport("noiptv")
 				);

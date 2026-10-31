@@ -95,7 +95,7 @@ APSurvey_msg_connect_open_wlan=Pokoušíte se připojit k nezabezpečené síti.
 APSurvey_msg_connected=Již jste připojeni k tomuto přístupovému bodu.
 APSurvey_msg_non_support_Auth=Metoda ověření není podporována.
 APSurvey_msg_waiting_to_connect=Počkejte prosím, ZVMODELVZ se připojuje k
-ASUS_Registration=Staňte se členem ASUS a získejte nejnovější informace o produktech. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Registrujte se!</a>
+ASUS_Registration=Staňte se členem ASUS a získejte nejnovější informace o produktech. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Registrujte se!</a>
 ASUS_Notice=UPOZORNĚNÍ ASUS
 ASUS_privacy_desc=Upozorňujeme, že uživatelé jsou povinni souhlasit se sdílením svých údajů před používáním DDNS, vzdáleného připojení (aplikace směrovače ASUS、aplikace Lyra、AiCloud、AiDisk), AiProtection, analyzátoru provozu, analyzátoru aplikací, adaptivního QoS, Game Boost a historie webu. Uživatelé mohou kdykoli vyhledat obsah podmínek na této stránce nebo přestat sdílet své údaje s jinými stranami volbou možnosti <a style="font-weight: bolder;">Withdraw (Zrušit)</a>.
 ASUS_eula_desc0=Vítejte u DDNS/ vzdáleného připojení (ASUS Router APP/Lyra APP/AiCloud/AiDisk). Pečlivě si přečtěte následující pokyny:
@@ -180,6 +180,7 @@ ASUS_EULA_Law_12_Desc=Veškeré cenové nabídky, potvrzení objednávek, toto u
 ASUS_EULA_Info=Používáním produktů síťového řešení ASUS se zavazujete k dodržování podmínek a podmínek uvedených v Licenční ujednání s koncovým uživatelem.
 ASUS_POLICY_Age_Check=Je mi více než 16 let.
 ASUS_POLICY_QIS_Desc=Před používáním jakékoli síťového výrobku je důležité si přečíst tyto podmínky. Kliknutím na tlačítko „Souhlasím“ souhlasíte s tím, že se budete řídit těmito podmínkami. ​
+ASUS_POLICY_QIS_Desc_v5=Před používáním jakékoli síťového výrobku je důležité si přečíst tyto podmínky. Kliknutím na tlačítko „%@“ souhlasíte s tím, že se budete řídit těmito podmínkami. ​
 ASUS_POLICY_Update_Notice=Vážený uživateli, děkujeme za průběžnou podporu tohoto produktu. Abychom mohli dodržovat nařízení o ochraně údajů v různých zemích a další ochranu údajů, vytvořili jsme aktualizované znění oznámení společnosti ASUS o ochraně osobních údajů. Aktualizaci proveďte před používáním síťových produktů ASUS.
 ASUS_POLICY_Read_Again=Přečíst znovu
 ASUS_POLICY_Know_Risk=Rozumím riziku
@@ -371,7 +372,7 @@ CTL_UpgradeNight=Aktualizovat v noci
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Použít výchozí místní přihlašovací heslo
 default_passwd_desc=Výchozí šifrované místní přihlašovací heslo poskytuje bezpečné přihlášení, pokud se připojujete k tomuto síťovému zařízení ASUS místně.
-defaultHint=Další podrobnosti najdete na webu <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Další podrobnosti najdete na webu <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* Minimální paket ping zabere přibližně 128 bajtů/interval. Z tohoto důvodu spotřebuje detektor ping
 Detect_consume_warning2=Mbajtů/měsíc
 Disconnected=Odpojeno
@@ -410,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=Možnost <a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> je aktivní – jakýkoli obsah nakonfigurovaný v této části s výjimkou nastavení Bez filtrování nebo Router půjde mimo servery zabezpečení DNS.
+Dnsfilter_Hint_Dnspriv=Možnost <a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> je aktivní – jakýkoli obsah nakonfigurovaný v této části s výjimkou nastavení Bez filtrování nebo Router půjde mimo servery zabezpečení DNS.
 Enable_user_target=Povolit cíl definovaný uživatelem
 Enable_Login_Captcha=Povolit test CAPTCHA přihlášení
 Encrypted_field=Šifrované pole.
@@ -614,7 +615,7 @@ Offline_desc2=Byla změněna adresa IP nebo číslo portu. Nyní budete odpojeni
 Offline_desc3=Chcete-li přejít na nastavení ZVMODELVZ, znovu se připojte k bezdrátové síti a použijte zaktualizovanou adresu IP a číslo portu.
 OP_AP_desc=V režim přístupového bodu (AP) se zařízení ZVMODELVZ připojuje k bezdrátovému směrovači prostřednictvím kabelu Ethernet pro rozšíření pokrytí bezdrátovým signálem dalším síťovým klientům. V tomto režimu jsou funkce brány firewall, sdílení IP a NAT ve výchozí konfiguraci deaktivovány.
 AiMesh_AP_desc=AiMesh směrovačeV režimu AP dojde k připojení k bezdrátovému směrovači pomocí Ethernetového kabelu pro rozšíření bezdrátového signálu k ostatním uživatelům sítě. V tomto režimu jsou firewall, sdílení IP a funkce NAT standardně deaktivovány.
-OP_AP_hint=Můžete rovněž přejít na web <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> a vyhledat a otevřít stránku konfigurace zařízení.
+OP_AP_hint=Můžete rovněž přejít na web <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> a vyhledat a otevřít stránku konfigurace zařízení.
 OP_AP_item=Režim přístupového bodu (AP)
 AiMesh_AP_item=Režim přístupového bodu (AP) / směrovač AiMesh v režimu AP
 OP_Choose=Choose operation mode
@@ -633,7 +634,7 @@ OP_MB_desc4=Nakonfigurujte jeden ZVMODELVZ jako směrovač a druhý ZVMODELVZ ja
 OP_MB_desc5=Přepnutím na režim mostu médií dosáhnete simultánní připojení WiFi pro vaše mediální zařízení.
 OP_MB_desc6=V režimu mediálního mostu se mohou k P-AP připojit pouze bezdrátová zařízení. Klientská zařízení musí být k mediálnímu mostu připojena pomocí kabelu.
 OP_MB_desc7=ZVMODELVZ v režimu mediálního mostu. IP adresa byla změněna.
-OP_MB_desc8=Pro identifikaci IP adresy mediálního mostu si stáhněte utilitu k nalezení zařízení <a href='http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a>.
+OP_MB_desc8=Pro identifikaci IP adresy mediálního mostu si stáhněte utilitu k nalezení zařízení <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a>.
 OP_MB_desc9=Zkontrolujte, zda jste odpojili síťový kabel od portu WAN.
 OP_RE_desc=V režimu regenerativního zesilovače se zařízení ZVMODELVZ připojuje k existujícímu bezdrátovému signálu a prodlužuje tento signál pro dosažení širšího pokrytí bezdrátové sítě a lepší kvality bezdrátového signálu.
 OP_RE_desc1=IP adresa sítě LAN zařízení ZVMODELVZ se mohla změnit.
@@ -814,7 +815,7 @@ qis_simple_wls_recmd=(doporučené)
 QIS_SmartConn_ISPDesc=Váš poskytovatel připojení (ISP) by vám měl dát kartu nebo doklad s uživatelským jménem a heslem. * Tato ukázka dokumentu je jen příklad a pro daný účel pouze ilustrační.
 QIS_SmartConn_ISPDesc2=Zadejte uživatelské jméno a heslo pro nastavení připojení k Internetu. Tyto údaje jste získali od vašeho poskytovatele internetových služeb (ISP).
 QIS_SmartConn_ISPDesc3=Zadejte uživatelské jméno a heslo PPPoE poskytnuté vaším poskytovatelem internetových služeb (ISP) pro připojení k internetu.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Typ připojení 1
 QIS_SmartConn_Scen2=Typ připojení 2
 QIS_SmartConn_StaticDesc=Váš poskytovatel připojení (ISP) by vám měl poskytnout informace o IP, masce podsítě, bráně a adrese DNS. Pokud tomu tak není, obraťte se na svého poskytovatele internetových služeb.
@@ -996,10 +997,10 @@ QKSet_ISP_desc=Prosím přejděte na nastavení ISP a zadejte potřebné informa
 QKSet_ISP_desc2=Připojení statické IP se nezdařilo.
 QKSet_ISP_desc3=Připojení automatické IP se nezdařilo. Můžete nakonfigurovat zde ručně.
 QKSet_ISP_head=Nastavení informací ISP
-QKset_restore_0=Kliknutím na <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Obnovit nastavení</label></a> načtete nastavení uložené konfigurace.
-QKset_restore_1=Kliknutím na <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Obnovit nastavení</label></a> obnovíte konfiguraci, pokud jste před resetováním směrovače zazálohovali nastavení konfigurace.
-QKset_setup_manual_0=Kliknutím na <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Ruční nastavení</label></a> nastavíte ručně bezdrátovou síť, pokud znáte typ připojení vašeho ISP.
-QKset_setup_manual_1=Kliknutím na <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Ruční nastavení</label></a> ručně nastavíte upřesňující nastavení směrovače nebo nastavíte provoz ZVMODELVZ v režimu
+QKset_restore_0=Kliknutím na <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Obnovit nastavení</label></a> načtete nastavení uložené konfigurace.
+QKset_restore_1=Kliknutím na <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Obnovit nastavení</label></a> obnovíte konfiguraci, pokud jste před resetováním směrovače zazálohovali nastavení konfigurace.
+QKset_setup_manual_0=Kliknutím na <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Ruční nastavení</label></a> nastavíte ručně bezdrátovou síť, pokud znáte typ připojení vašeho ISP.
+QKset_setup_manual_1=Kliknutím na <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Ruční nastavení</label></a> ručně nastavíte upřesňující nastavení směrovače nebo nastavíte provoz ZVMODELVZ v režimu
 QKset_skip_setup=Máte zkušenosti s bezdrátovými sítěmi a chcete přeskočit průvodce nastavením Internetu?
 QKSet_type_desc=Prosím vyberte typ připojení k Internetu, který poskytl váš ISP.
 QKSet_type_head=Typ internetového připojení WAN
@@ -1047,6 +1048,7 @@ Status_RAM=RAM
 Status_Used=Využito
 Status_Free=Volné
 Status_Total=Celkem
+Status_LoggingIn=Přihlašování…
 statusTitle_AP=Stav přístupového bodu
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Aktivní připojení
@@ -1071,7 +1073,7 @@ TBVLAN_UPort=Neoznačený port
 TBVLAN_TPort=Označený port
 TBVLAN_WirelessInf=Bezdrátové rozhraní
 TBVLAN_EditSubnetProfile=Upravit profil podsítě
-TBVLAN_Subnet_desc=Vyberte podsíť, kterou jste vytvořili, nebo zvolte „New Subnet“ (Nová podsíť) pro vytvoření nové podsítě pro VLAN. Pokud potřebujete další konfigurace DHCP, prosím proveďte konfiguraci na<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
+TBVLAN_Subnet_desc=Vyberte podsíť, kterou jste vytvořili, nebo zvolte „New Subnet“ (Nová podsíť) pro vytvoření nové podsítě pro VLAN. Pokud potřebujete další konfigurace DHCP, prosím proveďte konfiguraci na<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
 TBVLAN_BindingInf=Rozhraní s vazbou
 TBVLAN_NoBindingInf=Není dostupné žádné rozhraní s vazbou.
 TBVLAN_BindingInf_Hint=Přidejte prosím rozhraní s vazbou.
@@ -1102,20 +1104,20 @@ WANPPPAuthText=Ověření PPP
 WAN_type_detected=WAN type detected
 WAN_auto_detected=Automatická detekce WAN
 web_redirect_case1_suggestion1=Zkontrolujte, zda je váš kabel připojen k vašemu portu ZVMODELVZ WAN a k vašemu modemu.
-web_redirect_case1_suggestion2=Zkontrolujte, zda je třeba změnit váš <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Provozní režim</a>.
-web_redirect_case2_suggestion1=Nesprávný účet nebo heslo PPPoE, prosím <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>zkontrolujte</a>.
+web_redirect_case1_suggestion2=Zkontrolujte, zda je třeba změnit váš <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Provozní režim</a>.
+web_redirect_case2_suggestion1=Nesprávný účet nebo heslo PPPoE, prosím <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>zkontrolujte</a>.
 web_redirect_case2_title1=Chyba ověření PPPoE
 web_redirect_case3_button=Změňte typ vaší sítě WAN
-web_redirect_case3_suggestion1=Zkontrolujte, zda máte správná <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Nastavení připojení</a>.
-web_redirect_case5_suggestion1=Aktivujte svoje <a style='color:#FFF' href='/'>Připojení WAN</a>
+web_redirect_case3_suggestion1=Zkontrolujte, zda máte správná <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Nastavení připojení</a>.
+web_redirect_case5_suggestion1=Aktivujte svoje <a style='color:var(--wrt-text-color,#FFF)' href='/'>Připojení WAN</a>
 web_redirect_case5_suggestion2=Zkontrolujte, zda je zapnuté napájení vašeho USB modemu.
-web_redirect_case5_suggestion3=Změňte <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>Nastavení USB modemu</a>.
+web_redirect_case5_suggestion3=Změňte <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>Nastavení USB modemu</a>.
 web_redirect_case5_title1=Vaše připojení WAN bylo deaktivováno.
 web_redirect_case5_title2=Váš USB modem není připojen.
 web_redirect_case6_desc1=Klikněte na tlačítko [Další] a použijte následující IP adresu:
 web_redirect_case6_desc2=Zkontrolujte, zda všechny příslušné služby používají vaši novou IP adresu (například předávání portů, DMZ atd.)
 web_redirect_case8_suggestion1=Ověřte, zda se váš nadřazený AP může připojit k internetu.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Změňte nastavení připojení</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Změňte nastavení připojení</a>.
 web_redirect_case8_title=Nelze se připojit k nadřazenému AP.
 web_redirect_case9_suggestion1=Zkontrolujte, zda je zapnuté napájení vašeho AiMesh routeru.
 web_redirect_case9_suggestion2=Restartujte AiMesh router a zkuste to znovu.
@@ -1165,6 +1167,11 @@ Web_Title=Bezdrátový router ASUS ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=Přístupový bod ASUS ZVMODELVZ
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Použít připojení MLO
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) je v současnosti podporováno pouze mezi stejnými modely routerů ASUS. Pokud se modely liší, připojení se nemusí podařit.
+WiFi_MLO_connect_try=Pokusit se připojit pomocí MLO.
+WiFi_MLO_connect_veto=Místo toho použít standardní jednopásmové připojení.
+WiFi_MLO_connect_confirm=Chcete použít připojení MLO?
 wireless_configured=Nakonfigurováno
 Wireless_name=Název bezdrátového připojení
 wireless_router=Bezdrátový směrovač
@@ -1246,6 +1253,7 @@ ADSL_FW_note=Poznámka:
 adsl_fw_ver_itemname=Verze ovladače DSL
 adsl_link_sts_itemname=Stav linky DSL
 adv_wl_desc=Níže nakonfigurujte informace související s bezdrátovým připojením.
+AiBoard_rescue_fail=Obnovení AI Board se nezdařilo
 AiCloud_account_status=Stav účtu
 AiCloud_account_unlock=Odblokovat
 aicloud_bandwidth1=Pro zajištění optimální kvality zobrazení a poslechu je vyžadováno připojení k širokopásmovému Internetu. Viz doporučení níže :
@@ -1358,12 +1366,12 @@ AiMesh_FindNode_confirm=Nelze najít můj uzel AiMesh?
 AiMesh_FindNode_confirm_WPS=WPS bude při vyhledávání uzlu AiMesh povolena.
 AiMesh_FindNode_Desc=Vyhledejte v okolí dostupné uzly AiMesh pro přidání do vašeho systému AiMesh.
 AiMesh_FindNode_Not=Nelze najít žádný uzel AiMesh v okolí.
-AiMesh_FindNode_Not_advA=Pokud je toto zařízení přiřazeno jako <span style='color:#569AC7;'>směrovač AiMesh</span>, ověřte následující a zkuste to znovu.
+AiMesh_FindNode_Not_advA=Pokud je toto zařízení přiřazeno jako <span style='color:var(--wrt-link-color,#569AC7);'>směrovač AiMesh</span>, ověřte následující a zkuste to znovu.
 AiMesh_FindNode_Not_advA1=Je zapnuté napájení vašeho uzlu AiMesh
 AiMesh_FindNode_Not_advA2=Ve vašem uzlu AiMesh je nejnovější firmware
 AiMesh_FindNode_Not_advA3=Byl obnoven výchozí stav vašeho uzlu AiMesh
 AiMesh_FindNode_Not_advA4=Přemístěte svůj uzel AiMesh blízko ke směrovači AiMesh
-AiMesh_FindNode_Not_advB=Pokud je toto zařízení přiřazeno jako <span style='color:#569AC7;'>uzel AiMesh</span>, ověřte následující a zkuste to znovu.
+AiMesh_FindNode_Not_advB=Pokud je toto zařízení přiřazeno jako <span style='color:var(--wrt-link-color,#569AC7);'>uzel AiMesh</span>, ověřte následující a zkuste to znovu.
 AiMesh_FindNode_Not_advB1=Stiskněte resetovací tlačítko na tomto zařízení a počkejte.
 AiMesh_FindNode_Not_advB2=Přihlaste se k rozhraní GUI vašeho směrovače AiMesh a klikněte na ikonu AiMesh.
 AiMesh_FindNode_Not_advB3=Pokud ikonu AiMesh nelze v rozhraní směrovače najít, zaktualizuje firmware směrovače AiMesh.
@@ -1696,6 +1704,13 @@ AiProtection_TrackerBlocking_Desc=Blokování sledovačů pomáhá detekovat a b
 AiProtection_AdvertisementBlocking_Desc=Blokování reklam pomáhá blokovat běžné zdroje reklam za účelem snížení rušení, zlepšení prohlížení a snížení bezpečnostních rizik. Můžete také povolit AdGuard DNS pro další zvýšení ochrany.
 AiProtection_AdvertisementBlocking_Enabled=Blokování reklam povoleno
 AiProtection_TrackerBlocking_Enabled=Blokování sledování povoleno
+AiProtection_select_device=Vyberte zařízení nebo zadejte platnou MAC nebo IP adresu
+AiProtection_rule_exist=Toto zařízení již má pravidlo. Nejdříve jej odstraňte, než vytvoříte nové.
+ArkMigrationNote=Poznámka
+ArkMigrationNote_1=Kvůli ochraně soukromí a optimalizacím systému nyní %@ používá místní detekci. Stávající pravidla profilů musí být ručně znovu nakonfigurována.
+ArkMigrationNote_2=Tyto funkce nejsou zpětně kompatibilní s předchozím firmwarem; downgrade bude vyžadovat obnovení továrního nastavení.
+ArkAiProtectionInfo=Některé weby mohou být ovlivněny blokováním reklam nebo sledovačů kvůli využití těchto služeb. Pokud máte potíže s přístupem na web, zkuste tyto funkce vypnout a stránku znovu načíst.
+FamilyContentBlock=Blokování rodinného obsahu
 BwLimiter_Switch=Přepínač omezení šířky pásma
 BwLimiter_Download=Šířka pásma pro stahování
 BwLimiter_Upload=Šířka pásma nahrávání
@@ -1703,6 +1718,7 @@ BwLimiter_NewDevice=Nové zařízení
 BwLimiter_Status=Stav
 BwLimiter_Delete=Odstranit
 SearchDevice_By_Name_Mac_Ip=Hledat název zařízení, MAC nebo IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Hledat název zařízení, MAC, IP nebo podsíť
 BwLimiter_Target=Cíl
 BwLimiter_enter_bandwidth=Zadejte hodnotu šířky pásma.
 BwLimiter_max=Pravidla pro omezení šířky pásma dosáhla maxima (32).
@@ -1944,7 +1960,9 @@ btn_go=Přejít
 btn_goSetting=Přejít na nastavení
 btn_remove=Odpojit
 btn_send=Poslat
+btn_resend=Odeslat znovu
 btn_to_WAN=nastavení WAN
+btn_verify=Ověřit
 Capability=Schopnost
 Captcha=Captcha
 Captcha_note=Prosím zadejte captcha.
@@ -2154,10 +2172,10 @@ Device_type_03_AP=Přístupový bod
 Device_type_04_NS=NAS
 Device_type_05_IC=IP kamera
 Device_type_06_OD=Jiné zařízení
-deviceDiscorvy2=V režimu Režim opakovače se mění adresa IP přiřazená protokolem DHCP. Nainstalujte <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> a použijte jej k získání nové adresy IP bezdrátového směrovače.
-deviceDiscorvy3=V režimu Access Point (AP) (Přístupový bod) se mění adresa IP přiřazená protokolem DHCP. Nainstalujte a použijte <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Nástroj pro vyhledávání zařízení), aby bylo možné  rozpoznat adresu IP bezdrátového směrovače.
-AiMesh_deviceDiscorvy3=Když jsou směrovače AiMesh v režimu AP,, změní se IP adresa přiřazená DHCP. Nainstalujte a používejte nástroj <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> pro detekci IP adresy bezdrátového směrovače.
-deviceDiscorvy4=V režimu Most médií se mění adresa IP přiřazená protokolem DHCP. Nainstalujte <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> a použijte jej k získání nové adresy IP bezdrátového směrovače.
+deviceDiscorvy2=V režimu Režim opakovače se mění adresa IP přiřazená protokolem DHCP. Nainstalujte <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> a použijte jej k získání nové adresy IP bezdrátového směrovače.
+deviceDiscorvy3=V režimu Access Point (AP) (Přístupový bod) se mění adresa IP přiřazená protokolem DHCP. Nainstalujte a použijte <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Nástroj pro vyhledávání zařízení), aby bylo možné  rozpoznat adresu IP bezdrátového směrovače.
+AiMesh_deviceDiscorvy3=Když jsou směrovače AiMesh v režimu AP,, změní se IP adresa přiřazená DHCP. Nainstalujte a používejte nástroj <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> pro detekci IP adresy bezdrátového směrovače.
+deviceDiscorvy4=V režimu Most médií se mění adresa IP přiřazená protokolem DHCP. Nainstalujte <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> a použijte jej k získání nové adresy IP bezdrátového směrovače.
 DeviceSecurity11a_display1_sectiondesc=Filtr bezdrátového připojení MAC umožňuje ovládat pakety ze zařízení se specifickou adresou MAC ve vaší bezdrátové LAN.
 DHCP_query_freq=Frekvence dotazování DHCP
 DHCPaggressive=Agresivní režim
@@ -2340,7 +2358,7 @@ Excute_processing=Instalování
 External=Pouze externí
 Extend_TTL_Value=Rozšířit hodnotu TTL
 EZQoS=Správa EZQoS připojení
-EzQoS_bandwidth_note1=Informace o šířce pásma získáte od svého poskytovatele internetového připojení nebo zkontrolujte šířku pásma na adrese <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a>
+EzQoS_bandwidth_note1=Informace o šířce pásma získáte od svého poskytovatele internetového připojení nebo zkontrolujte šířku pásma na adrese <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a>
 EzQoS_bandwidth_note2=Výchozí nastavení je 0, což znamená neomezenou šířku pásma.
 EzQoS_desc=Funkce Quality of Service (QoS) zajišťuje potřebnou šířku pásma pro upřednostňované úlohy a aplikace.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Adaptivní funkce QoS</span> zaručuje u kabelových i bezdrátových připojení dostatečnou šířku pásma pro příchozí a odchozí datové pakety upřednostňovaných aplikací a úloh prostřednictvím předvoleb nastavených přetažením myší: hry, streamování médií, VoIP, procházení webu a přenos souborů.
@@ -2407,11 +2425,11 @@ feedback_email_alert=E-mail má neplatný formát.
 feedback_email_confirm=E-mail není zadán. Opravdu chcete pokračovat?
 feedback_extra_info=Zvláštní informace pro ladění
 feedback_fail0=Odeslání hodnocení se nezdařilo. Prosím zkontrolujte vaše připojení k Internetu a zkuste to znovu.
-feedback_fail1=<span style="color:#FC0;">Systém se nemohl připojit k poštovnímu serveru.</span> Můžete odeslat e-mail přímo na adresu
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Systém se nemohl připojit k poštovnímu serveru.</span> Můžete odeslat e-mail přímo na adresu
 feedback_fail2=Jednoduše zkopírujte obsah níže a vložte jej do obsahu vašeho e-mailu.
 feedback_fail3=Stáhněte si následující ladící soubory a přidejte jako přílohu k e-mailu:
 feedback_fail0_new=Systému se nepodařilo připojit k serveru zpětné vazby.
-feedback_fail1_new=<span>Pokud máte problémy s používáním nebo potřebujete technickou podporu, nejprve kontaktujte zákaznický servis ASUS&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Oficiální podpora | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Pokud máte problémy s používáním nebo potřebujete technickou podporu, nejprve kontaktujte zákaznický servis ASUS&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Oficiální podpora | ASUS Global)</a>.</span>
 feedback_fail2_new=Chcete-li poskytnout návrhy na vylepšení týmu pro vývoj, můžete také zaslat následující detekovaný chybový soubor na adresu router_feedback@asus.com. Děkujeme.
 feedback_fail_BindGoogle=Nebo můžete <a id="bind_google">vytvořit vazbu se svým účtem Google</a> a odeslat zpětnou vazbu e-mailem.
 feedback_format_alert=The format is not valid.
@@ -2433,7 +2451,7 @@ feedback_note3=Odesláním vaší zpětné vazby souhlasíte s tím, aby ji spol
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Odesláním vaší zpětné vazby souhlasíte s tím, aby ji společnost ASUS používala svých modemových směrovačů xDSL.
 feedback_note4=Pokud máte nějaké neodkladnéproblémy, požádejte o místní technickou podporu.
 feedback_note5=Zpětná vazba probíhá. Restartování může způsobit ukončení programu a zpětná vazba nemůže být dokončena. Prosím, restartujte později.
-feedback_note6=<span>Tento systém neposkytuje jednotlivé odpovědi. Pokud máte problémy s používáním nebo potřebujete technickou podporu, kontaktujte prosím zákaznický servis ASUS</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Oficiální podpora | ASUS Global)</a>.
+feedback_note6=<span>Tento systém neposkytuje jednotlivé odpovědi. Pokud máte problémy s používáním nebo potřebujete technickou podporu, kontaktujte prosím zákaznický servis ASUS</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Oficiální podpora | ASUS Global)</a>.
 feedback_note7=Náš profesionální tým vám bude oddaně sloužit. Děkujeme.
 feedback_Occasion_interrupt=Občasná přerušení
 feedback_optional=* Volitelné
@@ -2592,7 +2610,7 @@ FW_auto_time=Upřednostňovaná doba upgradu
 FW_auto_upgrade=Automatický upgrade firmwaru
 FW_auto_upgrade_desc=Instalujte automaticky aktualizace systém přes noc po jejich stažení. Některé upgrady, které řeší závažné problémy se zabezpečením nebo jsou nezbytné pro dodržování zákonů, se budou stahovat a instalovat automaticky, i když je možnost „Automatický upgrade firmwaru“ vypnutá.
 FW_beta_check=Chci získat beta verzi firmwaru.
-FW_desc0=Získejte nejnovější verzi firmwaru na <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">stránce podpory ASUS</a>
+FW_desc0=Získejte nejnovější verzi firmwaru na <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">stránce podpory ASUS</a>
 FW_desc1=Nejnovější firmware je k dispozici na stránkách podpory společnosti ASUS https://www.asus.com/support/.
 fw_downloading=Stáhněte firmware
 FW_item1=Identifikační číslo produktu
@@ -2600,9 +2618,9 @@ FW_item2=Verze firmwaru
 FW_item5=Nový soubor firmwaru
 FW_manual_update=Ruční aktualizace firmwaru
 FW_n0=Nejnovější verze firmwaru obsahuje aktualizace od předchozí verze.
-FW_n2=Pokud se upgrade nezdaří, zařízení ZVMODELVZ automaticky přejde do nouzového režimu. Takovou situaci budou indikovat světelné indikátory LED na přední straně zařízení ZVMODELVZ.Přejděte na Centrum stahování <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> a stáhněte nástroj ASUS Firmware Restoration.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=Pokud se upgrade nezdaří, zařízení ZVMODELVZ automaticky přejde do nouzového režimu. Takovou situaci budou indikovat světelné indikátory LED na přední straně zařízení ZVMODELVZ.Přejděte na Centrum stahování <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> a stáhněte nástroj ASUS Firmware Restoration.
+FW_n3=Další pokyny naleznete v <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a>.
+FW_n4=Další pokyny naleznete v <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a>.
 FW_n5=Informace o shromažďování údajů pro upgrady firmwaru/zabezpečení najdete v „OZNÁMENÍ ASUS O OCHRANĚ OSOBNÍCH ÚDAJŮ“ (pro upgrady firmwaru/zabezpečení) na stránce „Správa -> ochrana osobních údajů“.
 FW_note=Poznámka:
 FW_note_AiMesh=Ruční aktualizace firmwaru aktualizuje pouze vybrané směrovače / uzly AiMesh při použití systému AiMesh. Ujistěte se prosím, že nahráváte správnou verzi firmwaru AiMesh na každý relevantní směrovač / uzel.
@@ -2677,12 +2695,12 @@ GB_account_type2=Rozšířený účet routeru
 GB_ended_date=Datum ukončení
 GB_ended_date_desc=WTFast poskytuje každému novému uživateli 14denní pokročilé zkušební období, které se týká pouze Pokročilého účtu s více možnostmi serveru proxy. Po skončení zkušebního období můžete nadále využívat doživotní přihlášení k odběru základních funkcí účtu, který je zadarmo a s omezením provozu.
 GB_ended_date_type0=Nyní používáte bezplatný základní účet routeru.
-GB_management_note1=Když používáte Game Boost, který využívá technologii WTFast, souhlasíte s <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">Podmínkami použití</a></span> a <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">Zásadami ochrany soukromí</a></span> WTFast.
-GB_management_note2=Jak je uvedeno v právním omezení na naší produktové stránce, WTFast stále pracuje na vývoji podpory herní konzole. Seznam her, které jsou aktuálně podporovány, najdete <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">zde</a>. (pravidelně aktualizováno)
+GB_management_note1=Když používáte Game Boost, který využívá technologii WTFast, souhlasíte s <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Podmínkami použití</a></span> a <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Zásadami ochrany soukromí</a></span> WTFast.
+GB_management_note2=Jak je uvedeno v právním omezení na naší produktové stránce, WTFast stále pracuje na vývoji podpory herní konzole. Seznam her, které jsou aktuálně podporovány, najdete <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">zde</a>. (pravidelně aktualizováno)
 GB_management_note3=Výkon GPN se liší podle vašeho poskytovatele internetu nebo umístění. Zkontrolujte, zda byl již zaktualizován firmware.
-GB_management_note4=Jak vybrat dobrý server GPN? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Zde</a></span> Jak získat nejlepší herní zážitky? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Zde</a></span>
-GB_management_note5=Jak používat WTFast se směrovačem ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Zde</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=Jak vybrat dobrý server GPN? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Zde</a></span> Jak získat nejlepší herní zážitky? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Zde</a></span>
+GB_management_note5=Jak používat WTFast se směrovačem ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Zde</a></span>
+GB_mobile=Mobilní herní režim
 GB_mobile_desc=Zrychlete svoje mobilní hry
 GB_mobile_desc1=Stáhněte si a nainstalujte aplikaci ASUS Router. Povolením režimu mobilního hraní v aplikaci zajistíte nejvyšší kvalitu hraní na mobilu.
 GB_mobile_desc_short=Stáhněte si a nainstalujte aplikaci ASUS Router.
@@ -3083,7 +3101,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Interní] Zaregistrujte si název domény
 LANHostConfig_x_DDNS_update_confirm=Adresa IP, server a název hostitele se od poslední aktualizace nezměnily. Chcete-li provést aktualizaci, klikněte na tlačítko [ANO].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=Služba DDNS (Dynamic Domain Name System) umožňuje síťovým klientům připojovat se k bezdrátovému směrovači, dokonce pomocí dynamické veřejné adresy IP, prostřednictvím zaregistrovaného názvu domény.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Více podrobností najdete na stránce <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">Nejčastější dotazy</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Více podrobností najdete na stránce <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">Nejčastější dotazy</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Název hostitele byl úspěšně zaregistrován. Můžete použít "[názevhostitele].asuscomm.com" pro přístup ke službě na domácí síti ze sítě WAN. Použijte "[názevhostitele].asuscomm.com" pro vzdálený přístup k vaší síti.<p>Přejděte na Advanced Setting (Upřesnit nastavení) > WAN a nakonfigurujte předávání portů nebo nastavení DMZ tak, aby mohli ostatní klienti WAN vzdáleně přistupovat k vaší síti.<p>Chcete-li konfigurovat bezdrátový směrovač vzdáleně, přejděte na <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">zde</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Aktuální router využívá privátní IP adresu.
 LANHostConfig_x_DDNSEnable_faq1=Úvod a nastavení pro DDNS
@@ -3406,7 +3424,7 @@ ParentalCtrl_default=Ve výchozí konfiguraci je přístup k Internetu omezen na
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Ve výchozí konfiguraci je přístup k Internetu omezen na časové intervaly.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Zařízení, která jsou přidána do Rodičovské kontroly, budou mít ve výchozím nastavení omezený přístup k internetu.
 ParentalCtrl_deny=Odepřít
-ParentalCtrl_disable_NAT=Zakázáním možnosti <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">Zrychlení NAT</a> dosáhnete přesnější kontroly nad plánováním.
+ParentalCtrl_disable_NAT=Zakázáním možnosti <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">Zrychlení NAT</a> dosáhnete přesnější kontroly nad plánováním.
 ParentalCtrl_Enable=Aktivovat rodičovská kontrola
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Aktivovat kontrola přístupu zařízení
 ParentalCtrl_Enable_TS=Aktivovat časové plánování
@@ -3715,6 +3733,7 @@ select_service=Vyberte název služby.
 select_usb_device=Vyberte zařízení USB
 select_usb_mode=USB Mode
 select_wireless_MAC=Vyberte adresu MAC bezdrátového klienta.
+Sending_str=Odesílání…
 Send_mail=Poslat poštu
 Serial_Number=Sériové číslo
 Servers_Center=Centrum serverů
@@ -3914,10 +3933,33 @@ SDN_Scenarios_desc=Chcete přidat další bezdrátovou síť pro speciální ú�
 SDN_MainFH_for_clients=MLO Fronthaul pro klienty
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Protože byla vytvořena pravidla pro Smart Connect, vyberte jednu WiFi pásmo.
+SDN_mlo_switch_fh_hint1=Je povolen pouze jeden aktivní MLO fronthaul.
+SDN_mlo_switch_fh_hint2=Chcete deaktivovat MLO Fronthaul zařízení %1$@ a aktivovat %2$@?
 SDN_Sync_To_All_Node=Synchronizovat se všemi uzly AiMesh
 SDN_Sync_To_All_Node_Hint=Pokud jsou vaše uzly AiMesh starší modely nebo WiFi dosáhlo svého maxima, nebude možné synchronizovat všechny uzly AiMesh. Vyberte prosím uzly, které chcete synchronizovat, z nabídky níže.
 SDN_Sync_limitation_Hint=U starších uzlů AiMesh jsou omezení na synchronizaci všech pásem.
 SDN_MainFH_WiFi_conflict=%1$@ WiFi pásma byla použita. Konfliktní %2$@ (%3$@) sítě budou po použití nastavení odstraněny.
+SDN_Auth_WPA3_only_subtext1=Nejvyšší úroveň zabezpečení pouze s připojením WPA3.
+SDN_Auth_WPA3_only_subtext2=(Poznámka: Starší zařízení bez podpory WPA3 se nemusí připojit.)
+SDN_Auth_WPA3_dual=Standardní dvourežimová možnost zabezpečení.
+SDN_Auth_WPA3_dual_desc=Moderní zařízení se připojují přes WPA3, starší zařízení přes WPA2.
+SDN_Auth_WPA3_dual_mode=Režim kompatibility
+SDN_Auth_WPA3_dual_mode_subtext1=Vylepšená dvourežimová možnost zabezpečení optimalizovaná pro starší zařízení využívající přepsání RSN.
+SDN_Auth_WPA3_dual_mode_subtext2=Zajišťuje, že starší zařízení zůstanou připojena a moderní zařízení budou používat WPA3.
+SDN_Auth_WPA3_dual_mode_subtext3=(Poznámka: Některá zařízení střední generace mohou používat WPA2.)
+SDN_Auth_WPA3_subtext=Rozšířená možnost zabezpečení optimalizovaná pro starší zařízení pomocí RSN overriding. Poskytuje maximální zabezpečení moderním zařízením a zároveň zachovává stabilní připojení pro nemoderní klienty.
+SDN_WiFi_Mode_Only6G_Hint=Aby byly splněny globální standardy WiFi, musí všechny sítě v pásmu 6 GHz používat stejnou generaci WiFi.
+SDN_WiFi_Mode_24G_Hint=Pásmo 2,4 GHz funguje podle nastavení vašeho režimu WiFi.
+SDN_Compatibility_Mode_Off=Režim kompatibility je vypnutý.
+SDN_Compatibility_Mode_24=Režim kompatibility 2,4 GHz
+SDN_Balance_Mode=Vyvážený
+SDN_Balance_Mode_desc=Optimální rovnováha mezi výkonem a kompatibilitou zařízení.
+SDN_Balance_Mode_desc1=2,4 GHz pracuje v režimu WiFi 6.
+SDN_Ultra_Compatibility_Mode=Maximální kompatibilita
+SDN_Ultra_Compatibility_Mode_desc=Zajišťuje stabilní připojení pro starší zařízení IoT.
+SDN_Ultra_Compatibility_Mode_desc1=2,4 GHz pracuje v režimu WiFi 4.
+SDN_IPv6_FreeWiFi_Hint=Poznámka: Free WiFi nepodporuje prostředí pouze s IPv6. Ujistěte se, že je pro přesměrování klienta povolen protokol IPv4 nebo Dual-Stack.
+SDN_IPv6_MessageBoard_Hint=Poznámka: Message Board nepodporuje prostředí pouze s IPv6. Ujistěte se, že je pro klienta povolen protokol IPv4 nebo Dual-Stack.
 t2BC=Základní nastavení
 t2LAN=LAN
 t2Misc=Různé
@@ -3992,7 +4034,9 @@ TZ02=Midway Island, Samoa
 TZ03=Hawaj
 TZ04=Aljaška
 TZ05=Pacifický čas (Spojené státy, Kanada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Horský čas (Spojené státy, Kanada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4148,7 +4192,7 @@ usb_tls_conflict=Povolení anonymního přihlášení je v konfliktu s nastaven�
 usb_tls_conflict_WANacc=Přístup k WAN je v konfliktu s nastaveními TLS.
 usb_uninstalling=Odinstalování aplikace z paměťového zařízení USB
 usb_unmount=Funkce USB je deaktivována
-use_DevDiscoveryUtil=Nainstalujte a použijte <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Nástroj pro vyhledávání zařízení), aby bylo možné rozpoznat adresu IP bezdrátového směrovače.
+use_DevDiscoveryUtil=Nainstalujte a použijte <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Nástroj pro vyhledávání zařízení), aby bylo možné rozpoznat adresu IP bezdrátového směrovače.
 Username=Jméno uživatele
 Username_Pwd=Uživatelské jméno a heslo
 UserQoS_desc=Z rozevíracího seznamu uživatelem definovaných pravidel QoS můžete upřednostnit síťové aplikace nebo zařízení do pěti úrovní. Na základě úrovně priority služba QoS používá následující metody odesílání datových paketů:<ul><li>Změňte pořadí odesílaných síťových paketů, což znamená pořadí, ve kterém jsou pakety odesílány do Internetu.</li><li>Pakety s nízkou prioritou jsou ignorovány, aby byl zajištěn přenos paketů s vysokou prioritou. Odesílaný paket s vyšší prioritou způsobí přijímaný paket s vyšší prioritou.</li><li>Pokud aplikace s vysokou prioritou neodesílají žádné pakety, je pro pakety s nízkou prioritou k dispozici plná přenosová rychlost internetového připojení.</li></ul>
@@ -4158,6 +4202,7 @@ UserQoS_transferred_hint=Ve sloupci Přeneseno nastavte limit síťového provoz
 UserQoSRule_desc_zero=Aktivujte QoS a potom nastavte uživatelem definovaná pravidla.
 UserQoSRule_desc_one=Ve výchozí konfiguraci je priorita pro šířku pásma ukládání a stahování nastavena na "Nízké". Pokud neexistuje žádné pravidlo priority šířky pásma, je priorita pro šířku pásma ukládání a stahování nastavena na "Nízké".
 Utility=Nástroj
+Verifying_str=Ověřování…
 Video_Find=Najít výuková videa
 Video_Link1=Klepnutím otevřete výukový videoprogram.
 View_List=Zobrazit seznam
@@ -4256,7 +4301,7 @@ vpn_openvpn_required_acc_pwd=Pro aktuální soubor .ovpn jsou vyžadovány uživ
 vpn_openvpnc_importCA=Importovat soubor CA
 vpn_openvpnc_importovpn=Importovat soubor .ovpn
 vpn_openvpnc_manual=Ručně importovat soubor CA nebo upravit soubor .ovpn.
-vpn_privateIP_hint=Bezdrátový směrovač nyní využívá soukromou adresu IP WAN (192.168.x.x, 10.x.x.x nebo 172.16.x.x). Seznamte se s <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>odpovědmi na časté dotazy</a> a nastavte předávání portů.
+vpn_privateIP_hint=Bezdrátový směrovač nyní využívá soukromou adresu IP WAN (192.168.x.x, 10.x.x.x nebo 172.16.x.x). Seznamte se s <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>odpovědmi na časté dotazy</a> a nastavte předávání portů.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT nepodporuje více současných připojení k VPN serveru. Aktivací možnosti \"OpenVPN server\" automaticky deaktivujete možnost \"PPTP server\". Opravdu chcete aktivovat VPN server?
@@ -4352,6 +4397,32 @@ vpnc_profile_assignALL=Použít pro všechna zařízení
 vpnc_profile_assignDevice=Přiřadit zařízení k tomuto profilu
 vpnc_profile_del=Smazat profil
 vpnc_profile_select_suggest=Vyberte jiný profil VPN pro zrušení výchozí sítě WAN pro internet.
+vpnc_ssk_login=Přihlaste se ke svému účtu Surfshark
+vpnc_ssk_login_note=Zadejte účet i heslo.
+vpnc_ssk_invalid_long=Účet nebo heslo je příliš dlouhé (max. 128 znaků).
+vpnc_ssk_invalid_char=Účet nebo heslo obsahuje neplatné znaky.
+vpnc_ssk_invalid_format=Neplatný formát účtu nebo hesla.
+vpnc_ssk_login_AuthCode=Zadejte 6místný ověřovací kód zaslaný na váš e-mail nebo vygenerovaný aplikací Authenticator.
+vpnc_ssk_login_AuthCode_enter=Zadejte 6místný ověřovací kód.
+vpnc_ssk_login_AuthCode_confirm=Neobdrželi jste ověřovací kód? Klikněte výše na „Odeslat znovu“ a zašleme vám nový ověřovací kód.
+vpnc_ssk_login_AuthCode_resender=Opětovné odeslání za %1$@s
+vpnc_ssk_login_ErrMsg1=Nesprávný účet nebo heslo.
+vpnc_ssk_login_ErrMsg2=Server Surfshark je nedostupný. Zkuste to prosím později.
+vpnc_ssk_login_ErrMsg4=Chyba konfigurace. Zkontrolujte své nastavení.
+vpnc_ssk_login_ErrMsg41=Chyba konfigurace.
+vpnc_ssk_login_ErrMsg5=Chyba sítě. Nelze se připojit k Surfshark.
+vpnc_ssk_login_ErrMsgDef=Přihlášení se nezdařilo. Zkuste to prosím znovu.
+vpnc_ssk_login_success=Přihlášení k Surfshark bylo úspěšné.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Opravdu se chcete odhlásit ze svého účtu?
+vpnc_ssk_Failed_resend=Opětovné odeslání kódu se nezdařilo. Zkuste to prosím znovu.
+vpnc_ssk_Failed_verification=Neplatný ověřovací kód. Zkuste to prosím znovu.
+vpnc_ssk_KeyPair_max=Váš účet Surfshark dosáhl maximálního počtu párů klíčů VPN (50). Chcete-li vytvořit nové připojení VPN, odeberte nepoužívané páry klíčů ze svého účtu Surfshark a zkuste to znovu.
+vpnc_ssk_Missing_credent=Chybí přihlašovací údaje. Zavřete aplikaci a přihlaste se znovu.
+vpnc_ssk_Timeout_login=Vypršel časový limit požadavku na přihlášení. Zkuste to prosím znovu.
+vpnc_ssk_Timeout_resend=Vypršel časový limit opětovného odeslání. Zkuste to prosím znovu.
+vpnc_ssk_Timeout_verification=Vypršel časový limit požadavku na ověření. Zkuste to prosím znovu.
+vpnc_ssk_Timeout_network=Chyba sítě. Zkuste to prosím znovu.
 vpnc_step=Chcete-li spustit připojení VPN, řiďte se kroky níže:
 vpnc_step1=Přidejte profil
 vpnc_step2=Vyberte typ připojení VPN
@@ -4359,6 +4430,7 @@ vpnc_step3=Zadejte informace k ověření VPN od vašeho poskytovatele služby V
 vpnc_title=Klient VPN
 vpnc_peer=Partnerský uzel
 vpnc_pppoe_dis_nat_confirm=Když používáte klienta VPN s připojením PPPoE, váš router se automaticky restartuje, aby deaktivoval akceleraci NAT. Opravdu chcete pokračovat?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Překážka
 WAN_Cfg_Ethernet_WAN=Nakonfigurujte nastavení ethernetové sítě WAN zařízení ZVMODELVZ.
 WAN_default_route=Výchozí trasa
@@ -4423,7 +4495,7 @@ WANTCPMSSOptionText=Volba TCP MSS
 WANTCPMSSOptionComm1Text=bajtů
 WANVLANIDText=VLAN ID
 WANAggregation=Agregace WAN
-WANAggregation_desc=Agregace WAN kombinuje dvě síťová připojení pro zvýšení rychlosti vaší sítě WAN na 2 Gb/s. Připojte port #WAN vaše směrovače a port LAN 4 k portům LAN vašeho modemu (použijte dva kabely se stejnými specifikacemi). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Agregace WAN – odpovědi na časté dotazy</a>
+WANAggregation_desc=Agregace WAN kombinuje dvě síťová připojení pro zvýšení rychlosti vaší sítě WAN na 2 Gb/s. Připojte port #WAN vaše směrovače a port LAN 4 k portům LAN vašeho modemu (použijte dva kabely se stejnými specifikacemi). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">Agregace WAN – odpovědi na časté dotazy</a>
 WANAggregation_enable=Povolit agregaci WAN
 WANAggregation_disable_dualwan=Ve vašem směrovači je aktivována funkce duální WAN. Aktivací agregace WAN bude deaktivována funkce duální WAN. Opravdu chcete pokračovat?
 WANAggregation_disable_WANAggregation=Ve vašem směrovači je aktivována funkce agregace WAN. Aktivací funkce duální WAN bude deaktivována funkce agregace WAN. Opravdu chcete pokračovat?
@@ -4432,13 +4504,13 @@ WANAggregation_PortConflict_hint2=Funkce IPTV používá port LAN 4 vašeho smě
 WANAggregation_disable_IPTVDualWAN=Ve vašem směrovači jsou aktivovány obě funkce duální WAN a IPTV. Aktivací funkce agregace WAN budou deaktivovány funkce duální WAN a IPTV, aby se zabránilo konfliktům portů. Opravdu chcete pokračovat?
 WANAggregation_help_WAN=Zkontrolujte, zda jsou k připojení portu #WAN vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
 WANAggregation_help_LAN=Zkontrolujte, zda jsou k připojení portu LAN 4 vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
-WANAggregation_goto_WAN=Chcete-li aktivovat funkci agregace WAN, přejděte na stránku <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN - připojení k internetu</a>.
+WANAggregation_goto_WAN=Chcete-li aktivovat funkci agregace WAN, přejděte na stránku <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN - připojení k internetu</a>.
 WANAggregation_help_desc=Pokud se agregaci WAN nepodaří nastavit, zkuste to znovu podle následujících pokynů.
 WANAggregation_help_step1=Ujistěte se, zda jsou porty LAN modemu připojené k síti #WAN routeru a LAN 4 pomocí kabelů.
 WANAggregation_help_step2=Zkontrolujte, zda je ve vašem modemu aktivován standard 802.3ad
 WANAggregation_help_step3=Ověřte, zda používáte dva kabely se stejnou specifikací (buď gigabit a gigabit nebo 10/100 a 10/100 Mb/s)
 WANAggregation_help_step4=Restartujte svůj router
-WANAggregation_help_final=Pokud výše uvedené kroky nejsou úspěšné, ohlaste tento problém na <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>webu podpory ASUS</a>.
+WANAggregation_help_final=Pokud výše uvedené kroky nejsou úspěšné, ohlaste tento problém na <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>webu podpory ASUS</a>.
 WANAggregation_wanType_hint=Agregace WAN nepodporuje typy sítí WAN, například PPPoE, PPTP a L2TP. Chcete-li změnit typ své sítě WAN na PPPoE, PPTP nebo L2TP, bude agregace WAN automaticky deaktivována. Opravdu chcete pokračovat?
 WebGUI_issue=Přístup ke stránce firmwaru nefunguje
 wechat=WeChat
@@ -4546,8 +4618,8 @@ WLANConfig11b_display31_sectiondesc=Vyberte režim [Pouze WDS] nebo [Hybridní] 
 WLANConfig11b_display32_sectiondesc=Zkontrolujte, zda bezdrátový směrovač a AP, které chcete propojit, používají stejný kanál.
 WLANConfig11b_display33_sectiondesc=Do řídícího rozhraní WDS bodu AP zadejte adresu MAC AP v seznamu AP a adresu MAC bezdrátového směrovače.
 WLANConfig11b_display34_sectiondesc=Pro dosažení optimálního výkonu přejděte na Upřesnit nastavení > Bezdrátová síť > Obecné a přiřaďte každému směrovači v síti stejnou šířku pásma kanálu, řídící kanál a rozšiřovací kanál.
-WLANConfig11b_display41_sectiondesc=Aktuálně používáte automatický Šířka pásma kanálu. Klepnutím <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">Zde</a> upravte.
-WLANConfig11b_display42_sectiondesc=Aktuálně používáte automatický kanál. Klepnutím <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">Zde</a> upravte.
+WLANConfig11b_display41_sectiondesc=Aktuálně používáte automatický Šířka pásma kanálu. Klepnutím <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">Zde</a> upravte.
+WLANConfig11b_display42_sectiondesc=Aktuálně používáte automatický kanál. Klepnutím <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">Zde</a> upravte.
 WLANConfig11b_display5_sectiondesc=Pokročilé nastavení bezdrátového připojení umožňují nastavit další parametry. Doporučeny jsou však původní hodnoty.
 WLANConfig11b_display6_sectiondesc=Technologie WPS (WiFi Protected Setup) poskytuje snadné a bezpečné navázání připojení k bezdrátové síti. Zde můžete nakonfigurovat WPS prostřednictvím kódu PIN nebo tlačítka WPS.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4605,6 +4677,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=Slouží k povolení nebo zákazu WMM APSD (Automatická úspora energie).
 WLANConfig11b_x_APSD_itemname=Povolit WMM APSD
 WLANConfig11b_x_Airtime_Fairness=Rovný přístup k přenosovému pásmu
+WLANConfig11b_x_ApplyAllBands_hint=Tato úprava bude použita pro všechna nastavení pásem.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=Bezdrátový režim musí být nastaven na Automaticky.
 WLANConfig11b_x_Beacon_itemdesc=Interval výstražných signálů označuje časový odstup mezi dvěma přenosy výstražných signálů. Standardní hodnota je 100 (jednotky jsou milisekundy, nebo 1/1000 sekundy). Snížením tohoto intervalu dosáhnete zlepšení přenosu, ale také nestabilního prostředí pro klienty roamingu a současně vyšší spotřeby energie.
@@ -4701,11 +4774,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Při volbě PIN (Personal Information Number) m
 WLANConfig11b_x_WPSMode_itemname=Metoda WPS:
 WLANConfig11b_x_WPSPIN_itemdesc=Zadejte osmimístné číslo kódu PIN klienta.<p>
 WLANConfig11b_x_WPSPIN_itemname=PIN kód klienta
-WLANConfig11n_Auto_note=[automaticky] není kompatibilní s metodou ověřování (TKIP nebo WEP) aktuální hostované sítě, přejděte na <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Hostovaná síť</a> a změňte metodu ověřování.
+WLANConfig11n_Auto_note=[automaticky] není kompatibilní s metodou ověřování (TKIP nebo WEP) aktuální hostované sítě, přejděte na <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Hostovaná síť</a> a změňte metodu ověřování.
 WLANConfig11n_automode_limition_hint=V režimu automaticky se šifrováním WEP nebo TKIP ZVMODELVZ podporuje maximální rychlost přenášení dat 54 Mb/s.
 WLANConfig11n_automode_limition_hint1=Prosím změňte na WPA2-osobní.
-WLANConfig11n_NAC_note=[N+AC] není kompatibilní s metodou ověřování (TKIP nebo WEP) aktuální hostované sítě, přejděte na <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Hostovaná síť</a> a změňte metodu ověřování.
-WLANConfig11n_NOnly_note=[N Only] není kompatibilní s metodou ověřování (TKIP nebo WEP) aktuální hostované sítě, přejděte na <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Hostovaná síť</a> a změňte metodu ověřování.
+WLANConfig11n_NAC_note=[N+AC] není kompatibilní s metodou ověřování (TKIP nebo WEP) aktuální hostované sítě, přejděte na <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Hostovaná síť</a> a změňte metodu ověřování.
+WLANConfig11n_NOnly_note=[N Only] není kompatibilní s metodou ověřování (TKIP nebo WEP) aktuální hostované sítě, přejděte na <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Hostovaná síť</a> a změňte metodu ověřování.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Typ Preambule definuje délku bloku CRC (cyklický redundanční test), což je technika detekce chyb datových přenosů mezi bezdrátovými zařízeními. Doporučujeme nakonfigurovat všechna bezdrátová zařízení na stejný typ preambule. Použijte krátkou preambuli pro bezdrátová zařízení v oblastech s vysokým síťovým provozem. Použijte dlouhou preambuli pro starší bezdrátová zařízení.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4823,7 +4896,21 @@ Captive_Portal_Above=nad
 Captive_Portal_Selected_Color=Vybraná barva
 Captive_Portal_Local=Místní
 Configuration=Konfigurace
+Configuration_dark_mode=Tmavý
+Configuration_light_mode=Světlý
+Configuration_theme=Motiv
+Configuration_fancy_theme=Stylový
+Configuration_flat_theme=Plochý
 Continuous_Mode=nepřetržitý režim
+View_Details=Zobrazit podrobnosti
+NetworkMap_Clients=Klienti
+NetworkMap_Guest_Clients=Klienti pro hosty
+NetworkMap_Add_AiMesh_Hint=Přidejte další uzly AiMesh pro rozšíření pokrytí WiFi.
+Dashboard_Show_more=Zobrazit více
+Dashboard_Show_less=Zobrazit méně
+Dashboard_Expand=Rozbalit
+Dashboard_Refreshing=Obnovování
+Dashboard_Last_updated=Naposledy aktualizováno
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Zásada přístupu
 FreeWiFi_AccountSetting_desc1=Nastavení účtu je snadná konfigurace hostitelského účtu, která vám umožňuje zachovat databázi hostitelských účtů pro zabezpečení hostitelské sítě. Přidružený klient musí před přístupem k internetu zadat následující účet a heslo pro přihlášení.
@@ -4953,8 +5040,8 @@ AURA_Event_Note=Poznámka: Po výběru události bude systém zobrazovat různé
 AURA_Scheme_Marquee=Běžící text
 AURA_Scheme_Gradient=Přechod
 AURA_Scheme_Evolution=Vývoj
-UU_Accelerator=网易 UU 加速器
-UU_Accelerator_desc=UU 路由器插件为三大主机（PS4、Switch、Xbox One）、PC 外服端游提供加速。可实现多设备同时加速，畅享全球联机超快感！
+UU_Accelerator=UU 加速器
+UU_Accelerator_desc=UU 加速器为全平台主机（PlayStation、Xbox、Switch、Steam Deck、ROG掌机等）、PC、手机提供游戏加速服务，可实现多设备同时加速，畅享全球联机超快感！
 weekSche_All_Day=Celý den
 weekSche_Start_Time=Čas zahájení
 weekSche_End_Time=Čas ukončení
@@ -5075,12 +5162,39 @@ Notice_Message_2=Kvůli optimalizaci systému prosím přidejte znovu existujíc
 Notice_Message_3=Přečetl(a) jsem to, znovu nezobrazovat.
 CTL_Decline=Zamítnout
 Outdoor_desc_title=Warning
-Outdoor_desc1=By enabling outdoor mode, AiMesh will be limited and might cause mesh node disconnect.
-Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.
-WiFi_Channel=Wi-Fi kanál
+Outdoor_active_desc_1=Povolením venkovního režimu bude AiMesh omezen a může způsobit odpojení uzlu sítě.
+Outdoor_active_desc_2=V souladu s předpisy systém prohledá kanály přibližně po dobu 1 minuty, aby se zabránilo rušení meteorologickým radarem. <span style="color:var(--wrt-badge-warning-color,#FC0)">Pokud jsou detekovány radarové signály, přepne se na 2,4GHz, což způsobí krátké odpojení. Dotčený kanál bude zablokován na 30 minut.</span>
+Outdoor_active_desc_3=Venkovní režim podporuje pouze režimy Router a AP.
+Outdoor_active_desc_4=Dostupné venkovní kanály se liší podle země/oblasti.
+Outdoor_inactive_desc_1=Deaktivace tohoto režimu na chvíli restartuje bezdrátové připojení a odpojí všechna zařízení.
+Outdoor_inactive_desc_2=Systém přepne na nastavení v souladu s předpisy pro vnitřní použití.
+Outdoor_mode=Venkovní režim
+Outdoor_mode_off=Vypnuto
+Outdoor_status=Stav venkovního režimu
+Outdoor_status_hint=Bylo zjištěno venkovní zařízení. Aby byl zajištěn legální provoz v souladu s bezdrátovými předpisy, jsou vaše 5G kanály nyní omezeny na rozsah schválený pro venkovní použití.
+WiFi_Channel=WiFi kanál
 Channel_In_Use=Kanál se používá
-OtherWifi_Interference=Rušení Wi-Fi
-NonWifi_Interference=Rušení mimo Wi-Fi
+Wifi_Auto_Refresh=Automatické obnovení
+Wifi_Detect_Interference=Detekce rušení
+Wifi_Interference=Rušení
+Wifi_in_ch_Interference=Rušení v kanálu
+Wifi_specscan_Interference=Rušení při skenování spektra
+Wifi_specscan_hint=Skenování rušení spektra pokrývá pouze pásma 2,4 GHz a 5 GHz.
+OtherWifi_Interference=Jiné WiFi rušení
+NonWifi_Interference=Ne-WiFi rušení
+WiFi_Optimized_auto=Automaticky optimalizováno
+WiFi_Optimized=Optimalizováno
+WiFi_INIT=Počáteční automatický výběr
+WiFi_After_Boot=Automatický výběr po restartu
+WiFi_Boot=Spuštění
+WiFi_Adaptive_bw=Adaptivní šířka pásma
+WiFi_CSA_Expand=Rozšířit
+WiFi_CSA_Reduce=Zmenšit
+WiFi_DFS_REENTRY=DFS-ZNOVUPŘIPOJENÍ
+WiFi_ch_conflict=Konflikt kanálů
+WiFi_Regulatory=Regulační
+WiFi_OFF=WiFi Vypnuto
+WiFi8_6G_enable_hint=Pásmo 6 GHz je momentálně v režimu WiFi 7. Chcete-li povolit WiFi 8, zapněte možnost „WiFi 8“ v nastavení Wireless Professional pro 6 GHz.
 Vendor=Výrobce
 Connected_AP=Připojený AP
 Network_SDN=Síť(SDN)

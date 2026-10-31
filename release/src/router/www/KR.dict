@@ -95,7 +95,7 @@ APSurvey_msg_connect_open_wlan=보안 설정이 되지 않은 네트워크에 �
 APSurvey_msg_connected=이 AP 에 이미 연결됨.
 APSurvey_msg_non_support_Auth=인증방법이지원되지않습니다.
 APSurvey_msg_waiting_to_connect=기다리십시오. ZVMODELVZ 가 연결 중...
-ASUS_Registration=ASUS 회원 가입 및 최신 제품 정보 수신. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>지금 가입</a>
+ASUS_Registration=ASUS 회원 가입 및 최신 제품 정보 수신. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>지금 가입</a>
 ASUS_Notice=ASUS 고지 사항
 ASUS_privacy_desc=사용자는 DDNS, 원격 연결(ASUS 라우터 앱, Lyra 앱, AiCloud, AiDisk), AiProtection, 트래픽 분석기, 앱 분석기, 적응형 QoS, 게임 부스트 및 웹 기록을 사용하기 전에 자신의 정보를 공유하는 데 동의해야 합니다. 사용자는 언제라도 이 페이지에서 조건의 내용을 검색하거나 <a style="font-weight: bolder;">철회</a> 를 선택하여 자신의 정보를 다른 당사자와 공유하는 것을 중단할 수 있습니다.
 ASUS_eula_desc0=DDNS/ 원격 연결  (ASUS 라우터 앱/Lyra 앱/AiCloud/AiDisk). 다음 정보를 주의해서 읽으십시오.:
@@ -180,6 +180,7 @@ ASUS_EULA_Law_12_Desc=귀하와 ASUS 간의 모든 인용, 명령 확인, 본 EU
 ASUS_EULA_Info=ASUS 네트워킹 제품을 사용함으로써 최종 사용자 라이선스 계약에 명시된 약관에 동의하는 것으로 간주됩니다.
 ASUS_POLICY_Age_Check=본인은 16세 이상입니다.
 ASUS_POLICY_QIS_Desc=네트워킹 제품을 활용하기 전에 이 조항을 반드시 읽어보아야 합니다. “동의” 버튼을 클릭하면 이 조항에 구속됨을 동의하는 것입니다. ​
+ASUS_POLICY_QIS_Desc_v5=네트워킹 제품을 활용하기 전에 이 조항을 반드시 읽어보아야 합니다. “%@” 버튼을 클릭하면 이 조항에 구속됨을 동의하는 것입니다. ​
 ASUS_POLICY_Update_Notice=소중한 사용자 여러분께, 본 제품을 지속적으로 지원해 주셔서 대단히 감사합니다. 다양한 국가의 개인정보 보호 규정을 준수하고 귀하의 데이터를 한층 더 보호하기 위해 저희는 ASUS 개인정보 보호정책을 업데이트하였습니다. ASUS 네트워킹 제품을 이용하기 전에 해당 내용을 업데이트해 주십시오.
 ASUS_POLICY_Read_Again=다시 읽기
 ASUS_POLICY_Know_Risk=위험을 이해했습니다
@@ -371,7 +372,7 @@ CTL_UpgradeNight=야간 업그레이드
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=기본 로컬 로그인 암호 사용
 default_passwd_desc=기본 암호화 로컬 로그인 암호는 이 ASUS 네트워킹 장치에 로컬로 연결할 때 안전한 로그인 프로세스를 제공합니다.
-defaultHint=보다 자세한 내용은 <a style="font-weight: bolder;text-decoration: underline;color:#00000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a> 을 방문하십시오.
+defaultHint=보다 자세한 내용은 <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a> 을 방문하십시오.
 Detect_consume_warning1=* 최소 ping 패킷은간격당약128바이트를사용합니다.따라서 ping 검출기는매월
 Detect_consume_warning2=MB 를사용합니다
 Disconnected=연결 끊김
@@ -410,7 +411,7 @@ OpenDNS_Home=OpenDNS 가정
 OpenDNS_Family=OpenDNS 가족
 Yandex_Safe=Yandex 안전
 Yandex_Family=Yandex 가족
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a>가 활성화되었습니다 - 여기에에서 필터링 없음 또는 라우터 이외의 구성은 모두 DNS Privacy 서버를 우회하게 됩니다.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a>가 활성화되었습니다 - 여기에에서 필터링 없음 또는 라우터 이외의 구성은 모두 DNS Privacy 서버를 우회하게 됩니다.
 Enable_user_target=사용자정의대상활성화
 Enable_Login_Captcha=로그인 Captcha 사용
 Encrypted_field=암호화된 필드.
@@ -614,7 +615,7 @@ Offline_desc2=IP 주소 또는 포트 번호가 변경되어 ZVMODELVZ 과 연�
 Offline_desc3=ZVMODELVZ 의 설정 페이지에 접속하려면, 무선 네트워크에 재접속한 후 업데이트된 IP 주소와 포트 번호를 사용하십시오.
 OP_AP_desc=AP(Access Point) 모드에서는 ZVMODELVZ 가이더넷케이블을통해무선라우터에연결되어다른네트워크클라이언트들에게무선신호커버력을확장합니다.이모드에서는방화벽, IP 공유,그리고 NAT 기능이디폴트로비활성화됩니다.
 AiMesh_AP_desc=AP 모드에서 AiMesh 라우터는 이더넷 케이블을 통해 무선 라우터에 연결되면서 무선 신호를 다른 네트워크 클라이언트까지 확장합니다. 이 모드의 경우, 기본으로 방화벽, IP 공유 및 NAT 기능이 비활성화됩니다.
-OP_AP_hint=또한 <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> 에서 장치 구성 페이지를 검색하여 들어갈 수 있습니다.
+OP_AP_hint=또한 <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> 에서 장치 구성 페이지를 검색하여 들어갈 수 있습니다.
 OP_AP_item=AP(Access Point) 모드
 AiMesh_AP_item=액세스 지점(AP) 모드 / AP 모드 내의 AiMesh 라우터
 OP_Choose=Choose operation mode
@@ -633,7 +634,7 @@ OP_MB_desc4=하나의 ZVMODELVZ 을 라우터로, 다른 하나는미디어 브�
 OP_MB_desc5=여러 미디어 장치들이 동시에 WiFi 를 사용하게 하려면 미디어 브리지 모드로 전환하십시오.
 OP_MB_desc6=미디어 브리지 모드에서는 무선 장치만 P-AP 에 연결합니다. 클라이언트 장치는 네트워크 케이블로 미디어 브리지에 연결해야 합니다.
 OP_MB_desc7=미디어 브리지 모드의 ZVMODELVZ. IP 주소가 변경되었습니다.
-OP_MB_desc8=<a href='http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>장치 복구 유틸리티</a>를 다운로드 받아 미디어 브리지 IP 주소를 확인하십시오.
+OP_MB_desc8=<a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>장치 복구 유틸리티</a>를 다운로드 받아 미디어 브리지 IP 주소를 확인하십시오.
 OP_MB_desc9=WAN 포트에서 네트워크 케이블을 분리했는지 확인하십시오.
 OP_RE_desc=리피터 모드에서는 ZVMODELVZ 가무선으로기존무선네트워크에연결하여무선버력을확장합니다.이모드에서는방화벽, IP 공유,그리고 NAT 기능이비활성화됩니다.
 OP_RE_desc1=ZVMODELVZ의 LAN IP 주소가 변경될 수 있습니다.
@@ -814,7 +815,7 @@ qis_simple_wls_recmd=(권장)
 QIS_SmartConn_ISPDesc=당신의 인터넷 제공회사는 사용자 이름과 암호가 있는 카드나 서류를 제공해야 합니다.* 이 샘플문서는 예시를 위한 것입니다.
 QIS_SmartConn_ISPDesc2=인터넷 연결 정보를 위해 사용자 이름과 암호를 입력 하십시오. 인터넷서비스제공자(ISP)가제공하는세팅입니다.
 QIS_SmartConn_ISPDesc3=인터넷 서비스 제공업체(ISP)에서 제공한 PPPoE 사용자 이름과 비밀번호를 입력하여 인터넷에 연결하세요.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=연결 시나리오 1
 QIS_SmartConn_Scen2=연결 시나리오 2
 QIS_SmartConn_StaticDesc=당신의 인터넷 제공회사는 IP, 서브넷 마스크, 게이트웨이, DNS 주소를 제공해야 합니다. 만약 그렇지 않다면 인터넷 제공회사에 요청 하십시오
@@ -996,10 +997,10 @@ QKSet_ISP_desc=ISP 설정을 참고하여 관련 정보를 입력하십시오.
 QKSet_ISP_desc2=정적 IP 연결 실패
 QKSet_ISP_desc3=자동 IP 연결 실패. 여기에서 수동 구성할 수 있습니다.
 QKSet_ISP_head=ISP 정보 설정
-QKset_restore_0=저장된 구성 설정을 로딩하기 위해 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">설정 복구</label></a> 를 클릭하십시오.
-QKset_restore_1=라우터를 재설정 하기 전에 구성 설정을 백업한 경우 구성 설정을 복원하기 위해 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">설정 복구</label></a> 를 클릭하십시오.
-QKset_setup_manual_0=ISP 연결 유형을 알고 있는 경우 무선 네트워크를 수동으로 설정하기 위해 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">수동 설정</label></a> 을 클릭하십시오.
-QKset_setup_manual_1=고급 라우터 설정을 수동으로 설정 하거나, ZVMODELVZ 설정을 위해 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">수동 설정</label></a> 을 클릭합니다
+QKset_restore_0=저장된 구성 설정을 로딩하기 위해 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">설정 복구</label></a> 를 클릭하십시오.
+QKset_restore_1=라우터를 재설정 하기 전에 구성 설정을 백업한 경우 구성 설정을 복원하기 위해 <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">설정 복구</label></a> 를 클릭하십시오.
+QKset_setup_manual_0=ISP 연결 유형을 알고 있는 경우 무선 네트워크를 수동으로 설정하기 위해 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">수동 설정</label></a> 을 클릭하십시오.
+QKset_setup_manual_1=고급 라우터 설정을 수동으로 설정 하거나, ZVMODELVZ 설정을 위해 <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">수동 설정</label></a> 을 클릭합니다
 QKset_skip_setup=무선 네트워크 전문가로서 인터넷 설정 마법사를 건너뛰시겠습니까?
 QKSet_type_desc=사용자의 ISP 가 제공하는 인터넷 연결 형태를 선택하십시오.
 QKSet_type_head=인터넷 WAN 연결 형식
@@ -1047,6 +1048,7 @@ Status_RAM=RAM
 Status_Used=사용된 공간
 Status_Free=사용 가능한 공간
 Status_Total=합계
+Status_LoggingIn=로그인 중…
 statusTitle_AP=엑세스 포인트 상태
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=활성 연결
@@ -1071,7 +1073,7 @@ TBVLAN_UPort=태그가지정되지않은포트
 TBVLAN_TPort=태그가지정된포트
 TBVLAN_WirelessInf=무선인터페이스
 TBVLAN_EditSubnetProfile=서브넷프로필편집
-TBVLAN_Subnet_desc=만들어진서브넷을선택하거나, &quot;New Subnet&quot; (새서브넷) 을선택하여 VLAN 의새서브넷을만듭니다. DHCP 구성이더필요하면<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP 서버</a>에서구성하십시오.
+TBVLAN_Subnet_desc=만들어진서브넷을선택하거나, &quot;New Subnet&quot; (새서브넷) 을선택하여 VLAN 의새서브넷을만듭니다. DHCP 구성이더필요하면<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP 서버</a>에서구성하십시오.
 TBVLAN_BindingInf=바인딩인터페이스
 TBVLAN_NoBindingInf=바인딩인터페이스가없습니다.
 TBVLAN_BindingInf_Hint=바인딩인터페이스를추가하십시오.
@@ -1102,20 +1104,20 @@ WANPPPAuthText=PPP Authentication
 WAN_type_detected=WAN type detected
 WAN_auto_detected=WAN 자동 감지
 web_redirect_case1_suggestion1=케이블이 ZVMODELVZ WAN 포트 및 모뎀에 연결되었는지 확인하십시오.
-web_redirect_case1_suggestion2=<a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>작동 모드</a>를 변경해야 하는지 확인하십시오.
-web_redirect_case2_suggestion1=잘못된 PPPoE 계정 또는 비밀번호입니다. <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>확인하십시오</a>.
+web_redirect_case1_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>작동 모드</a>를 변경해야 하는지 확인하십시오.
+web_redirect_case2_suggestion1=잘못된 PPPoE 계정 또는 비밀번호입니다. <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>확인하십시오</a>.
 web_redirect_case2_title1=PPPoE 인증 실패
 web_redirect_case3_button=WAN 유형 변경
-web_redirect_case3_suggestion1=<a style='color:#FFF' href='/Advanced_WAN_Content.asp'>연결 설정</a>이 올바른지 확인하십시오.
-web_redirect_case5_suggestion1=<a style='color:#FFF' href='/'>WAN 연결</a> 활성화
+web_redirect_case3_suggestion1=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>연결 설정</a>이 올바른지 확인하십시오.
+web_redirect_case5_suggestion1=<a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN 연결</a> 활성화
 web_redirect_case5_suggestion2=USB 모뎀의 전원이 켜졌는지 확인하십시오.
-web_redirect_case5_suggestion3=<a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB 모뎀 설정</a>을 변경하십시오.
+web_redirect_case5_suggestion3=<a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB 모뎀 설정</a>을 변경하십시오.
 web_redirect_case5_title1=WAN 연결이 비활성화되었습니다.
 web_redirect_case5_title2=USB 모뎀이 연결되지 않았습니다.
 web_redirect_case6_desc1=[다음] 를 클릭하여 다음 IP 주소를 사용하십시오.
 web_redirect_case6_desc2=모든 관련 서비스가 새 IP 주소를 사용하는지 확인하십시오(예: 포트 포워딩, DMZ 등).
 web_redirect_case8_suggestion1=상위 AP를 인터넷에 연결할 수 있는지 확인하십시오.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>연결 설정 변경</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>연결 설정 변경</a>.
 web_redirect_case8_title=상위 AP에 연결할 수 없습니다.
 web_redirect_case9_suggestion1=AiMesh 라우터의 전원이 켜졌는지 확인하십시오.
 web_redirect_case9_suggestion2=AiMesh 라우터를 다시 시작하여 다시 시도하십시오.
@@ -1165,6 +1167,11 @@ Web_Title=ASUS 무선 라우터 ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=ASUS ZVMODELVZ 액세스 지점
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=MLO 연결 사용
+WiFi_MLO_same_model_desc=MLO(Multi-Link Operation)는 현재 동일한 ASUS 라우터 모델 간에만 지원됩니다. 모델이 서로 다른 경우 연결에 실패할 수 있습니다.
+WiFi_MLO_connect_try=MLO 를 사용하여 연결을 시도합니다.
+WiFi_MLO_connect_veto=대신 표준 단일 밴드 연결을 사용합니다.
+WiFi_MLO_connect_confirm=MLO 연결을 사용하시겠습니까?
 wireless_configured=구성됨
 Wireless_name=무선 이름
 wireless_router=무선 라우터
@@ -1246,6 +1253,7 @@ ADSL_FW_note=참고:
 adsl_fw_ver_itemname=ADSL드라이버 버전
 adsl_link_sts_itemname=ADSL링크 상태
 adv_wl_desc=아래 무선 관련 정보를 설정하십시오.
+AiBoard_rescue_fail=AI Board 복구에 실패했습니다
 AiCloud_account_status=계정 상태
 AiCloud_account_unlock=잠금 해제
 aicloud_bandwidth1=최고의 시청각 경험을 위해 광대역 인터넷 연결이 필요합니다. 아래의 권장 사항을 참조하십시오:
@@ -1358,12 +1366,12 @@ AiMesh_FindNode_confirm=내 AiMesh 노드를찾을수없습니까?
 AiMesh_FindNode_confirm_WPS=AiMesh 노드를검색하는동안 WPS 가활성화됩니다.
 AiMesh_FindNode_Desc=주변에서사용가능한 AiMesh 노드를검색하여 AiMesh 시스템에조인합니다.
 AiMesh_FindNode_Not=주변에서 AiMesh 노드를찾을수없습니다.
-AiMesh_FindNode_Not_advA=이장치가 <span style='color:#569AC7;'>AiMesh 라우터</span> 로지정되지않은경우다음을확인한후다시시도하십시오.
+AiMesh_FindNode_Not_advA=이장치가 <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh 라우터</span> 로지정되지않은경우다음을확인한후다시시도하십시오.
 AiMesh_FindNode_Not_advA1=AiMesh 노드전원이켜졌는지
 AiMesh_FindNode_Not_advA2=AiMesh 노드의펌웨어가최신버전인지
 AiMesh_FindNode_Not_advA3=AiMesh 노드가기본값으로리셋되었는지
 AiMesh_FindNode_Not_advA4=AiMesh 노드를AiMesh라우터가까이이동했는지
-AiMesh_FindNode_Not_advB=이장치가 <span style='color:#569AC7;'>AiMesh 노드</span> 로지정되지않은경우다음을수행한후다시시도하십시오.
+AiMesh_FindNode_Not_advB=이장치가 <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh 노드</span> 로지정되지않은경우다음을수행한후다시시도하십시오.
 AiMesh_FindNode_Not_advB1=이장치의리셋버튼을누른후기다립니다.
 AiMesh_FindNode_Not_advB2=AiMesh 라우터 GUI 에로그인하여 AiMesh 아이콘을클릭합니다.
 AiMesh_FindNode_Not_advB3=라우터 GUI 에서 AiMesh 아이콘을찾을수없는경우 AiMesh 라우터의펌웨어를업그레이드합니다.
@@ -1696,6 +1704,13 @@ AiProtection_TrackerBlocking_Desc=추적기 차단은 웹사이트, 광고주 �
 AiProtection_AdvertisementBlocking_Desc=광고 차단은 일반적인 광고 소스를 차단하여 간섭을 줄이고, 탐색을 개선하며, 보안 위험을 낮추는 데 도움이 됩니다. AdGuard DNS를 활성화하여 보호를 더욱 강화할 수도 있습니다.
 AiProtection_AdvertisementBlocking_Enabled=광고 차단 사용됨
 AiProtection_TrackerBlocking_Enabled=추적기 차단 사용됨
+AiProtection_select_device=기기를 선택하거나 유효한 MAC 또는 IP를 입력하세요
+AiProtection_rule_exist=이 기기는 이미 규칙이 존재합니다. 새 규칙을 만들기 전에 기존 규칙을 삭제하세요.
+ArkMigrationNote=참고
+ArkMigrationNote_1=개인정보 보호 및 시스템 최적화로 인해 %@는 이제 로컬 감지를 사용합니다. 기존 프로필 규칙은 수동으로 다시 구성해야 합니다.
+ArkMigrationNote_2=이 기능들은 이전 펌웨어와 호환되지 않으며, 다운그레이드를 하려면 초기화가 필요합니다.
+ArkAiProtectionInfo=일부 웹사이트는 광고 또는 추적 서비스를 사용하기 때문에 광고 차단 또는 추적 차단의 영향을 받을 수 있습니다. 웹사이트 접근에 문제가 있는 경우, 위 기능을 비활성화하고 페이지를 다시 로드해보세요.
+FamilyContentBlock=가족 콘텐츠 차단
 BwLimiter_Switch=대역폭 제한 스위치
 BwLimiter_Download=다운로드 대역폭
 BwLimiter_Upload=업로드 대역폭
@@ -1703,6 +1718,7 @@ BwLimiter_NewDevice=새 장치
 BwLimiter_Status=상태
 BwLimiter_Delete=삭제
 SearchDevice_By_Name_Mac_Ip=장치 이름, MAC 또는 IP 검색
+SearchDevice_By_Name_Mac_Ip_Subnet=장치 이름, MAC, IP 또는 서브넷 검색
 BwLimiter_Target=대상
 BwLimiter_enter_bandwidth=대역폭 값을 입력하세요.
 BwLimiter_max=대역폭 제한 규칙이 최대치(32)에 도달했습니다.
@@ -1943,8 +1959,10 @@ btn_Export=내보내기
 btn_go=설정
 btn_goSetting=설정으로 이동
 btn_remove=제거
-btn_send=보내
+btn_send=보내기
+btn_resend=다시 보내기
 btn_to_WAN=WAN 설정
+btn_verify=확인
 Capability=기능
 Captcha=그림모드
 Captcha_note=그림모드로들어가십시오.
@@ -2154,10 +2172,10 @@ Device_type_03_AP=엑세스 포인트
 Device_type_04_NS=NAS
 Device_type_05_IC=IP 카메라
 Device_type_06_OD=기타 장치
-deviceDiscorvy2=리피터 모드에서는, DHCP 가할당된 IP 주소가변경됩니다.무선라우터의새로운 IP 주소를받으려면 <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>를설치하여사용하시기바랍니다.
-deviceDiscorvy3=엑세스 포인트(AP) 모드에서, DHCP 가할당된 IP 주소가변경됩니다.무선라우터의IP주소를감지하려면,  <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> 를설치하여사용하시기바랍니다.
-AiMesh_deviceDiscorvy3=AiMesh 라우터가 AP 모드에 있는 경우 DHCP에 할당된 IP 주소가 변경됩니다. 무선 라우터의 IP 주소를 검색하려면 <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> 를 설치한 후 사용하십시오.
-deviceDiscorvy4=Media Bridge 모드에서, DHCP 로 할당된 IP 어드레스는 변경됩니다. <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">장치 탐색 유틸리티(Device Discovery Utility)</a> 를 사용하여 무선 라우터의 IP 어드레스를 탐지하십시오.
+deviceDiscorvy2=리피터 모드에서는, DHCP 가할당된 IP 주소가변경됩니다.무선라우터의새로운 IP 주소를받으려면 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>를설치하여사용하시기바랍니다.
+deviceDiscorvy3=엑세스 포인트(AP) 모드에서, DHCP 가할당된 IP 주소가변경됩니다.무선라우터의IP주소를감지하려면,  <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> 를설치하여사용하시기바랍니다.
+AiMesh_deviceDiscorvy3=AiMesh 라우터가 AP 모드에 있는 경우 DHCP에 할당된 IP 주소가 변경됩니다. 무선 라우터의 IP 주소를 검색하려면 <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> 를 설치한 후 사용하십시오.
+deviceDiscorvy4=Media Bridge 모드에서, DHCP 로 할당된 IP 어드레스는 변경됩니다. <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">장치 탐색 유틸리티(Device Discovery Utility)</a> 를 사용하여 무선 라우터의 IP 어드레스를 탐지하십시오.
 DeviceSecurity11a_display1_sectiondesc=무선 MAC 필터로 무선 LAN에서 지정된 MAC 어드레스를 가진 기기로의 패킷을 제어할 수 있습니다.
 DHCP_query_freq=DHCP 쿼리 주파수
 DHCPaggressive=공격적인 모드
@@ -2340,7 +2358,7 @@ Excute_processing=설치 중…
 External=외부 전용
 Extend_TTL_Value=TTL 값 확장
 EZQoS=EZQoS 대역폭 관리
-EzQoS_bandwidth_note1=ISP 에서 대역폭 정보를 획득하거나  <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> 에 가서 대역폭을 확인하십시오.
+EzQoS_bandwidth_note1=ISP 에서 대역폭 정보를 획득하거나  <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> 에 가서 대역폭을 확인하십시오.
 EzQoS_bandwidth_note2=기본값은0으로서,이는무제한대역폭을의미합니다.
 EzQoS_desc=서비스 품질 (QoS)은 우선 순위 작업과 애플리케이션을위한 대역폭을 보장합니다.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">적응 형 QoS</span> 미리 정의 된, 드래그 드롭 사전 설정을 통해 우선 순위 응용 프로그램 및 작업에 대한 유선 및 무선 연결에 대한 인바운드 및 아웃 바운드 대역폭을 보장합니다: 게임, 미디어 스트리밍, VoIP를, 웹 서핑 및 파일 전송.
@@ -2407,11 +2425,11 @@ feedback_email_alert=이메일 주소 형식이 틀립니다.
 feedback_email_confirm=이메일 주소 필드가 비어 있습니다. 계속 하시겠습니까?
 feedback_extra_info=디버깅에대한추가정보
 feedback_fail0=피드백을보내는데실패했습니다.인터넷연결을확인한후다시시도하십시오.
-feedback_fail1=<span style="color:#FC0;">시스템이 메일 서버에 연결하는 데 실패했습니다.</span> 이메일을으로 직접 보낼 수 있습니다
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">시스템이 메일 서버에 연결하는 데 실패했습니다.</span> 이메일을으로 직접 보낼 수 있습니다
 feedback_fail2=간단히아래의내용을복사하여이를이메일내용으로붙여넣으면됩니다.
 feedback_fail3=다음 디버그 파일들을 다운로드하여 이들을 이메일 첨부 파일로서 추가하십시오.
 feedback_fail0_new=시스템이 피드백 서버에 연결되지 않았습니다.
-feedback_fail1_new=<span>사용 중 문제가 있거나 기술 지원이 필요한 경우 ASUS 고객 서비스 센터에 먼저 문의하십시오&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(공식 지원 | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>사용 중 문제가 있거나 기술 지원이 필요한 경우 ASUS 고객 서비스 센터에 먼저 문의하십시오&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(공식 지원 | ASUS Global)</a>.</span>
 feedback_fail2_new=다음 발견된 오류 파일을 router_feedback@asus.com으로 보내 개발 팀에 개선 제안을 제공할 수 있습니다. 감사합니다.
 feedback_fail_BindGoogle=또는 <a id="bind_google">Google 계정을 바인딩하여</a> 이메일을 통해 피드백을 보내십시오.
 feedback_format_alert=The format is not valid.
@@ -2433,7 +2451,7 @@ feedback_note3=사용자 의견을 제출하면, 이는 ASUS 에서 자사의 �
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=사용자 의견을 제출하면, 이는 ASUS 에서 자사의 xDSL 모뎀 라우터 제품을 개선하기 위해 사용자 의견을 사용할 수 있음에 동의하는 것입니다.
 feedback_note4=긴급한 문제가 발생하면 가까운 기술 지원 센터로 연락하십시오.
 feedback_note5=피드백이 진행 중입니다. 재부팅하면 프로그램이 종료되어 피드백을 완료할 수 없습니다. 나중에 다시 재부팅해 주세요.
-feedback_note6=<span>이 시스템은 개별 응답을 제공하지 않습니다. 사용 중 문제가 있거나 기술 지원이 필요한 경우 ASUS 고객 서비스 센터에 문의하십시오</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(공식 지원 | ASUS Global)</a>.
+feedback_note6=<span>이 시스템은 개별 응답을 제공하지 않습니다. 사용 중 문제가 있거나 기술 지원이 필요한 경우 ASUS 고객 서비스 센터에 문의하십시오</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(공식 지원 | ASUS Global)</a>.
 feedback_note7=전문 팀이 여러분을 위해 헌신할 것입니다. 감사합니다.
 feedback_Occasion_interrupt=가끔 끊김
 feedback_optional=* 옵션
@@ -2592,7 +2610,7 @@ FW_auto_time=선호하는 업그레이드 시간
 FW_auto_upgrade=자동 펌웨어 업그레이드
 FW_auto_upgrade_desc=시스템 업데이트를 다운로드한 후 밤 사이에 자동으로 설치합니다. 자동 펌웨어 업그레이드 를 끈 경우라도 중요한 보안 문제를 해결하거나 법적/규제 요건을 충족하는 일부 업그레이드는 여전히 자동으로 다운로드되어 설치됩니다.
 FW_beta_check=베타 펌웨어로 되돌리고 싶습니다.
-FW_desc0=<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">다음의 ASUS 지원 사이트에서</a> 최신 펌웨어를 다운로드하십시오
+FW_desc0=<a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">다음의 ASUS 지원 사이트에서</a> 최신 펌웨어를 다운로드하십시오
 FW_desc1=최신 펌웨어를 얻으려면 ASUS 지원 사이트  https://www.asus.com/support/ 을 방문하십시오.
 fw_downloading=다운로드 펌웨어
 FW_item1=제품 ID
@@ -2600,9 +2618,9 @@ FW_item2=펌웨어 버전
 FW_item5=새 펌웨어 파일
 FW_manual_update=수동펌웨어업데이트
 FW_n0=최신 펌웨어 버전에는 이전 버전의 업데이트가 포함되어 있습니다.
-FW_n2=업데이트 과정이 실패하면 ZVMODELVZ가 비상 모드로 자동 전환됩니다. ZVMODELVZ 전면의 LED는 이러한 상황을 표시합니다. <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS 다운로드 센터인</a> 에서 ASUS Firmware Restoration 유틸리티를 다운로드하십시오.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=업데이트 과정이 실패하면 ZVMODELVZ가 비상 모드로 자동 전환됩니다. ZVMODELVZ 전면의 LED는 이러한 상황을 표시합니다. <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS 다운로드 센터인</a> 에서 ASUS Firmware Restoration 유틸리티를 다운로드하십시오.
+FW_n3=자세한 내용은 <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a>를 확인하세요.
+FW_n4=자세한 내용은 <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a>를 확인하세요.
 FW_n5=펌웨어/보안 업그레이드를 위한 데이터 수집과 관련해서는 “관리-> 개인정보 보호” 페이지에서 “ASUS 개인정보 보호정책(펌웨어/보안 업그레이드용)을 참조하십시오.
 FW_note=주:
 FW_note_AiMesh=AiMesh 시스템을사용하는경우수동펌웨어업데이트는선택된 AiMesh 라우터/노드만업데이트합니다.적용가능한각라우터/노드에올바른 AiMesh 펌웨어버전을업로드하고있는지확인하십시오.
@@ -2677,12 +2695,12 @@ GB_account_type2=라우터 고급 계정
 GB_ended_date=종료날짜
 GB_ended_date_desc=WTFast 는모든신규사용자에게다양한프록시서버옵션을갖추고고급고객에초점을맞춘고급시험판을14일동안무료로사용할수있도록제공하고있습니다.시험판사용기간이만료되어도사용자는여전히트래픽제한이있는기본계정특징을무료로사용할수있는평생가입혜택을누릴수있습니다.
 GB_ended_date_type0=지금부터 라우터 무료 기본 계정을 사용합니다.
-GB_management_note1=WTFast 탑재 Game Boost 를사용하는경우귀하는 WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">이용약관</a></span>과<span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">개인정보보호정책</a></span>에동의하는것입니다.
-GB_management_note2=제품페이지의책임의한계에명시되어있듯이WTFast는계속해서게임콘솔지원개발을연구중입니다.현재<a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">지원되는게임의목록은다음목록을</a>참조하십시오. (정기적으로업데이트됨)
+GB_management_note1=WTFast 탑재 Game Boost 를사용하는경우귀하는 WTFast <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">이용약관</a></span>과<span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">개인정보보호정책</a></span>에동의하는것입니다.
+GB_management_note2=제품페이지의책임의한계에명시되어있듯이WTFast는계속해서게임콘솔지원개발을연구중입니다.현재<a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">지원되는게임의목록은다음목록을</a>참조하십시오. (정기적으로업데이트됨)
 GB_management_note3=GPN 성능은사용자의ISP또는위치에따라다릅니다.펌웨어가항상업데이트되었는지확인하십시오.
-GB_management_note4=어떻게양호한 GPN 서버를선택합니까? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">여기</a></span> 어떻게최상의게이밍경험을할수있습니까? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">여기</a></span>
-GB_management_note5=어떻게 ASUS 라우터에서 WTFast 를사용합니까? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">여기</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=어떻게양호한 GPN 서버를선택합니까? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">여기</a></span> 어떻게최상의게이밍경험을할수있습니까? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">여기</a></span>
+GB_management_note5=어떻게 ASUS 라우터에서 WTFast 를사용합니까? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">여기</a></span>
+GB_mobile=모바일 게임 모드
 GB_mobile_desc=모바일 게임 플레이 향상
 GB_mobile_desc1=ASUS Router 앱을 다운로드해서 설치하십시오. 최상의 모바일 게임을 경험하려면 앱에서 모바일 게임 모드를 활성화하십시오.
 GB_mobile_desc_short=ASUS Router 앱을 다운로드해서 설치하십시오.
@@ -3083,7 +3101,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[내부] 라우터의 IP/WAN IP를 통해 
 LANHostConfig_x_DDNS_update_confirm=마지막업데이트후 IP 주소,서버및호스트이름이변경되지않았습니다.업데이트하려면 [예] 를클릭하십시오.
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (Dynamic Domain Name System) 은 네트워크 클라이언트가 동적 공용 IP 어드레스를 사용하는 무선 라우터일지라도 등록된 도메인 이름을 통해 접속할 수 있게 해주는 서비스입니다.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">자세한 내용은<a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">이 FAQ</a>를 참조하십시오.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">자세한 내용은<a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">이 FAQ</a>를 참조하십시오.
 LANHostConfig_x_DDNSEnable_sectiondesc3=호스트 이름이 성공적으로 등록되었습니다. WAN 에서 홈 네트워크의 서비스에 "[hostname].asuscomm.com" 을 사용하여 접속할 수 있습니다. "[hostname].asuscomm.com" 으로 당신의 네트워크에 원격으로 접속할 수 있습니다.<p> 고급 설정으로 이동 > WAN 메뉴로 이동하여 포트 포워딩 또는 DMZ 설정을 하면 다른 WAN 클라이언트들도 원격에서 당신의 네트워크에 접속할 수 있습니다.<p> 만약 당신의 무선 라우터를 원격에서 구성하고 싶다면<a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">여기</a>로 이동하십시오.
 LANHostConfig_x_DDNSEnable_sectiondesc4=현재 라우터는 비공개 IP를 사용합니다.
 LANHostConfig_x_DDNSEnable_faq1=DDNS 소개 및 설치
@@ -3406,7 +3424,7 @@ ParentalCtrl_default=상위 제어에 추가된 클라이언트는 기본적으�
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=상위 제어에 추가된 클라이언트는 기본적으로 인터넷 접속이 제한됩니다.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Parental Controls(자녀 보호)에 추가된 장치는 기본으로 인터넷 액세스가 제약을 받습니다.
 ParentalCtrl_deny=거부
-ParentalCtrl_disable_NAT=보다 정밀한 스케줄링 제어를 위해서는 <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT 가속도</a> 을 비활성화하십시오.
+ParentalCtrl_disable_NAT=보다 정밀한 스케줄링 제어를 위해서는 <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT 가속도</a> 을 비활성화하십시오.
 ParentalCtrl_Enable=자녀 보호 기능 사용
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=자녀 보호 기능 사용
 ParentalCtrl_Enable_TS=시간 예약을활성화
@@ -3715,6 +3733,7 @@ select_service=서비스 이름 선택하여
 select_usb_device=USB 장치선택
 select_usb_mode=USB Mode
 select_wireless_MAC=무선 클라이언트의 MAC 주소 선택하여
+Sending_str=전송 중…
 Send_mail=메일보내기
 Serial_Number=일련 번호
 Servers_Center=서버 센터
@@ -3914,10 +3933,33 @@ SDN_Scenarios_desc=특수 사용을 위해 무선 네트워크를 더 추가하�
 SDN_MainFH_for_clients=클라이언트용 MLO 프런트홀
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Smart Connect 규칙이 생성되었으므로 단일 WiFi 대역을 선택하십시오.
+SDN_mlo_switch_fh_hint1=활성 MLO 프론트홀은 하나만 허용됩니다.
+SDN_mlo_switch_fh_hint2=%1$@ 의 MLO Fronthaul 을 비활성화하고 %2$@ 을(를) 활성화하시겠습니까?
 SDN_Sync_To_All_Node=모든 AiMesh 노드에 동기화
 SDN_Sync_To_All_Node_Hint=AiMesh 노드가 구형 모델이거나 WiFi가 최대 용량에 도달한 경우 모든 AiMesh 노드를 동기화할 수 없습니다. 아래 메뉴에서 동기화할 노드를 선택하세요.
 SDN_Sync_limitation_Hint=구형 AiMesh 노드의 경우 모든 대역 동기화에 제한이 있습니다.
 SDN_MainFH_WiFi_conflict=%1$@ WiFi 대역이 사용되었습니다. 충돌하는 %2$@ (%3$@) 네트워크는 설정 적용 후 삭제됩니다.
+SDN_Auth_WPA3_only_subtext1=WPA3 전용의 최고 보안 옵션입니다.
+SDN_Auth_WPA3_only_subtext2=(참고: WPA3를 지원하지 않는 구형 장치는 연결되지 않을 수 있습니다.)
+SDN_Auth_WPA3_dual=표준 듀얼 모드 보안 옵션입니다.
+SDN_Auth_WPA3_dual_desc=최신 장치는 WPA3를, 구형 장치는 WPA2를 사용합니다.
+SDN_Auth_WPA3_dual_mode=호환 모드
+SDN_Auth_WPA3_dual_mode_subtext1=RSN 재정의를 사용하는 구형 장치에 최적화된 향상된 듀얼 모드 보안 옵션입니다.
+SDN_Auth_WPA3_dual_mode_subtext2=구형 장치의 연결을 유지하면서 최신 장치는 WPA3를 사용합니다.
+SDN_Auth_WPA3_dual_mode_subtext3=(참고: 일부 중간 세대 장치는 WPA2를 사용할 수 있습니다.)
+SDN_Auth_WPA3_subtext=RSN overriding을 사용하여 구형 장치에 최적화된 향상된 보안 옵션입니다. 최신 장치에는 최고 수준의 보안을 제공하는 동시에 최신형이 아닌 클라이언트에서도 안정적인 연결을 유지합니다.
+SDN_WiFi_Mode_Only6G_Hint=전 세계 WiFi 표준을 준수하려면 6GHz 대역의 모든 네트워크가 동일한 WiFi 세대를 사용해야 합니다.
+SDN_WiFi_Mode_24G_Hint=2.4GHz는 WiFi 모드 설정에 따라 작동합니다.
+SDN_Compatibility_Mode_Off=호환 모드가 꺼져 있습니다.
+SDN_Compatibility_Mode_24=2.4GHz 호환 모드
+SDN_Balance_Mode=균형
+SDN_Balance_Mode_desc=성능과 장치 호환성의 최적 균형.
+SDN_Balance_Mode_desc1=2.4GHz는 WiFi 6 모드로 작동합니다.
+SDN_Ultra_Compatibility_Mode=최대 호환성
+SDN_Ultra_Compatibility_Mode_desc=기존 또는 오래된 IoT 장치의 안정적인 연결을 보장합니다.
+SDN_Ultra_Compatibility_Mode_desc1=2.4GHz는 WiFi 4 모드로 작동합니다.
+SDN_IPv6_FreeWiFi_Hint=참고: Free WiFi는 IPv6 전용 환경을 지원하지 않습니다. 클라이언트 리디렉션을 위해 IPv4 또는 듀얼 스택이 활성화되어 있는지 확인하십시오.
+SDN_IPv6_MessageBoard_Hint=참고: Message Board는 IPv6 전용 환경을 지원하지 않습니다. 클라이언트에서 IPv4 또는 듀얼 스택이 활성화되어 있는지 확인하십시오.
 t2BC=기본 구성
 t2LAN=LAN
 t2Misc=기타
@@ -3992,7 +4034,9 @@ TZ02=미드웨이 아일랜드, 사모아
 TZ03=하와이
 TZ04=알래스카
 TZ05=태평양 표준시 (미국, 캐나다)
+TZ05_1=밴쿠버, 화이트호스
 TZ06=산지 표준시 (미국, 캐나다)
+TZ06_1=에드먼턴, 옐로나이프
 TZ07=애리조나
 TZ08=마사 틀란
 TZ10=서스 캐처 원
@@ -4148,7 +4192,7 @@ usb_tls_conflict=익명 로그인 허용이 TLS 설정과 충돌합니다.
 usb_tls_conflict_WANacc=WAN 액세스 허용이 TLS 설정과 충돌합니다.
 usb_uninstalling=USB 저장 장치에서 앱 언인스톨 중
 usb_unmount=USB 기능을 사용하지 않습니다.
-use_DevDiscoveryUtil=<a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a>를 설치하여 사용하면 무선 라우터의 IP 어드레스를 감지할 수 있습니다.
+use_DevDiscoveryUtil=<a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a>를 설치하여 사용하면 무선 라우터의 IP 어드레스를 감지할 수 있습니다.
 Username=사용자 이름
 Username_Pwd=사용자 이름과 암호
 UserQoS_desc=사용자 정의 QoS 규칙 리스트로 부터, 네트워크 애플리케이션 또는 장치들을 다섯 수준으로 순위화 할 수 있습니다. 우선 순위 수준에 따라 QoS는 데이터 패킷을 보낼 때 다음과 같은 방법을 사용합니다. <ul><li>업스트림 네트워크 패킷의 순서를 변경, 즉 인터넷으로 보내는 순서를 참조</li><li>낮은 우선 순의 패킷은 높은 순위의 패킷 전송 확인을 위해 무시됨. 높은 순위의 업스트림 패킷은 높은 순위의 다운스트림 패킷을 의미</li><li>높은 우선 순위를 가지는 애플리케이션의 패킷이 없는 경우, 풀 전송 속도를 낮은 우선 순위의 패킷 전송에 할당</li></ul>
@@ -4158,6 +4202,7 @@ UserQoS_transferred_hint=[전송된 칼럼]에서 네트워크 트래픽 제한(
 UserQoSRule_desc_zero=QoS를 사용 가능하게 하고 사용자 정의 규칙을 정의하십시오.
 UserQoSRule_desc_one=기본적으로 업로드 및 다운로드 대역폭에 대한 우선순위는 "낮음"입니다. 대역폭 우선순위 규정에 문제가 없을 경우 업로드 및 다운로드 대역폭은 둘 다 "낮음"입니다.
 Utility=유틸리티
+Verifying_str=확인 중…
 Video_Find=자습 비디오 찾기
 Video_Link1=클릭하여 튜토리얼 동영상을 여십시오.
 View_List=목록 보기
@@ -4256,7 +4301,7 @@ vpn_openvpn_required_acc_pwd=현재 .ovpn 파일에 사용자 이름과 비밀�
 vpn_openvpnc_importCA=CA 파일 가져오기
 vpn_openvpnc_importovpn=.ovpn 파일 가져오기
 vpn_openvpnc_manual=수동으로 CA 파일 가져오기 또는 .ovpn 파일을 편집합니다.
-vpn_privateIP_hint=무선 라우터가 현재 개인 WAN IP 주소(192.168.x.x, 10.x.x.x 또는 172.16.x.x)를 사용하고 있습니다. <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>FAQ</a>를 참조해서 포트 포워딩을 설정하십시오.
+vpn_privateIP_hint=무선 라우터가 현재 개인 WAN IP 주소(192.168.x.x, 10.x.x.x 또는 172.16.x.x)를 사용하고 있습니다. <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>FAQ</a>를 참조해서 포트 포워딩을 설정하십시오.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT 는 한 번에 한 개의 VPN 서버 연결만 지원합니다. \"OpenVPN 서버\"를 활성화한 경우 \"PPTP 서버\"는 자동으로 비활성화됩니다. VPN 서버를 비활성화하시겠습니까?
@@ -4352,6 +4397,32 @@ vpnc_profile_assignALL=모든 장치에 적용
 vpnc_profile_assignDevice=이 구성 프로파일에 장치 할당
 vpnc_profile_del=프로필 삭제
 vpnc_profile_select_suggest=기본 인터넷 WAN을 취소하려면 다른 VPN 프로파일을 선택하십시오.
+vpnc_ssk_login=Surfshark 계정에 로그인
+vpnc_ssk_login_note=계정과 비밀번호를 모두 입력하세요.
+vpnc_ssk_invalid_long=계정 또는 비밀번호가 너무 깁니다(최대 128자).
+vpnc_ssk_invalid_char=계정 또는 비밀번호에 잘못된 문자가 포함되어 있습니다.
+vpnc_ssk_invalid_format=계정 또는 비밀번호 형식이 올바르지 않습니다.
+vpnc_ssk_login_AuthCode=이메일로 전송되었거나 Authenticator 앱에서 생성된 6자리 인증 코드를 입력하세요.
+vpnc_ssk_login_AuthCode_enter=6자리 인증 코드를 입력하세요.
+vpnc_ssk_login_AuthCode_confirm=인증 코드를 받지 못하셨나요? 위의 "다시 보내기"를 클릭하면 새 인증 코드를 보내드립니다.
+vpnc_ssk_login_AuthCode_resender=%1$@초 후 다시 보내기 가능
+vpnc_ssk_login_ErrMsg1=계정 또는 비밀번호가 올바르지 않습니다.
+vpnc_ssk_login_ErrMsg2=Surfshark 서버를 사용할 수 없습니다. 나중에 다시 시도하세요.
+vpnc_ssk_login_ErrMsg4=구성 오류입니다. 설정을 확인하세요.
+vpnc_ssk_login_ErrMsg41=구성 오류입니다.
+vpnc_ssk_login_ErrMsg5=네트워크 오류입니다. Surfshark에 연결할 수 없습니다.
+vpnc_ssk_login_ErrMsgDef=로그인에 실패했습니다. 다시 시도하세요.
+vpnc_ssk_login_success=Surfshark 로그인에 성공했습니다.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=계정에서 로그아웃하시겠습니까?
+vpnc_ssk_Failed_resend=코드를 다시 보내지 못했습니다. 다시 시도하세요.
+vpnc_ssk_Failed_verification=인증 코드가 올바르지 않습니다. 다시 시도하세요.
+vpnc_ssk_KeyPair_max=Surfshark 계정이 VPN 키 쌍의 최대 개수(50개)에 도달했습니다. 새 VPN 연결을 만들려면 Surfshark 계정에서 사용하지 않는 키 쌍을 삭제한 후 다시 시도하세요.
+vpnc_ssk_Missing_credent=인증 정보가 없습니다. 앱을 닫고 다시 로그인하세요.
+vpnc_ssk_Timeout_login=로그인 요청 시간이 초과되었습니다. 다시 시도하세요.
+vpnc_ssk_Timeout_resend=다시 보내기 시간이 초과되었습니다. 다시 시도하세요.
+vpnc_ssk_Timeout_verification=인증 요청 시간이 초과되었습니다. 다시 시도하세요.
+vpnc_ssk_Timeout_network=네트워크 오류입니다. 다시 시도하세요.
 vpnc_step=VPN 연결을 시작하려면 다음 단계대로 합니다:
 vpnc_step1=프로필 추가
 vpnc_step2=VPN 연결 종류 선택
@@ -4359,6 +4430,7 @@ vpnc_step3=VPN 공급자가 제공하는 VPN 인증 정보를 입력한 후 연�
 vpnc_title=VPN 클라이언트
 vpnc_peer=종점
 vpnc_pppoe_dis_nat_confirm=PPPoE 연결로 VPN 클라이언트를 사용하는 경우 라우터가 자동으로 재부팅되면서  NAT Acceleration 이 비활성화됩니다. 계속하시겠습니까?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=장벽
 WAN_Cfg_Ethernet_WAN=ZVMODELVZ 의이더넷 WAN 설정을구성합니다.
 WAN_default_route=루트에게 기본
@@ -4423,7 +4495,7 @@ WANTCPMSSOptionText=TCP MSS 옵션
 WANTCPMSSOptionComm1Text=바이트
 WANVLANIDText=VLAN ID
 WANAggregation=WAN 집계
-WANAggregation_desc=WAN 어그리게이션은 2개의 네트워크를 결합하여 WAN 속도를 최대 2Gbps까지 높일 수 있습니다. 라우터의 #WAN 포트와 LAN 4 포트를 모뎀의 LAN 포트에 연결하십시오(사양이 동일한 2개의 케이블을 사용해야 함). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN 어그리게이션 FAQ</a>
+WANAggregation_desc=WAN 어그리게이션은 2개의 네트워크를 결합하여 WAN 속도를 최대 2Gbps까지 높일 수 있습니다. 라우터의 #WAN 포트와 LAN 4 포트를 모뎀의 LAN 포트에 연결하십시오(사양이 동일한 2개의 케이블을 사용해야 함). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN 어그리게이션 FAQ</a>
 WANAggregation_enable=WAN 어그리게이션 활성화
 WANAggregation_disable_dualwan=라우터가 듀얼 WAN을 활성화했습니다. WAN 어그리게이션을 활성화하면 듀얼 WAN이 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_disable_WANAggregation=라우터가 WAN 어그리게이션을 활성화했습니다. 듀얼 WAN을 활성화하면 WAN 어그리게이션이 비활성화됩니다. 계속하시겠습니까?
@@ -4432,13 +4504,13 @@ WANAggregation_PortConflict_hint2=IPTV가 라우터의 LAN 4 포트를 사용 �
 WANAggregation_disable_IPTVDualWAN=라우터가 듀얼 WAN과 IPTV를 둘 다 활성화했습니다. WAN 어그리게이션을 활성화하면 포트 충돌을 방지하기 위해 듀얼과 IPTV가 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_help_WAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 #WAN 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
 WANAggregation_help_LAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 LAN 4 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
-WANAggregation_goto_WAN=WAN 어그리게이션을 활성화하려면 <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN 인터넷 연결 페이지로</a> 이동하십시오.
+WANAggregation_goto_WAN=WAN 어그리게이션을 활성화하려면 <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN 인터넷 연결 페이지로</a> 이동하십시오.
 WANAggregation_help_desc=WAN 어그리게이션 설정이 실패하면 아래 단계를 따라 다시 시도하십시오.
 WANAggregation_help_step1=모뎀의 LAN 포트와 라우터의 #WAN 및 LAN 4 이(가) 이미 케이블로 연결되어 있는지 확인하십시오.
 WANAggregation_help_step2=모뎀이 802.3ad를 활성화했는지 확인합니다.
 WANAggregation_help_step3=사양이 동일한 두 케이블을 사용했는지 확인합니다(기가비트 및 기가비트 또는 10/100 및 10/100Mbps).
 WANAggregation_help_step4=라우터를 재부팅합니다.
-WANAggregation_help_final=위의 단계대로 수행해도 실패할 경우 이 문제를 <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS 지원 사이트에</a> 보고하십시오.
+WANAggregation_help_final=위의 단계대로 수행해도 실패할 경우 이 문제를 <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>ASUS 지원 사이트에</a> 보고하십시오.
 WANAggregation_wanType_hint=WAN 어그리게이션은 PPPoE, PPTP 및 L2TP와 같은 WAN 유형을 지원하지 않습니다. WAN 유형이 PPPoE, PPTP 또는 L2TP로 변경되면 WAN 어그리게이션이 자동으로 비활성화됩니다. 계속하시겠습니까?
 WebGUI_issue=펌웨어 페이지에 액세스할 수 없습니다.
 wechat=WeChat
@@ -4546,8 +4618,8 @@ WLANConfig11b_display31_sectiondesc=브리지( 또는 WDS - Wireless Distributio
 WLANConfig11b_display32_sectiondesc=이 기능은 오직 [Open System/NONE, Open System/WEP] 보안 인증 방법만 지원합니다.
 WLANConfig11b_display33_sectiondesc=WDS 가 무선 신호를 확장하는 것을 확인하기 위해 다음의 단계를 따르십시오. :<ol><li> [ 오직 WDS ] 또는  [Hybrid] 모드를 선택하고 원격 AP 리스트에 AP의 MAC 어드레스를 추가.</li><li>이 무선 라우터와 연결하고자 하는 AP가 동일한 채널을 사용하는지 확인</li><li>원격 AP의 MAC 어드레스를 원격 AP 리스트에 입력하고 원격 AP의 WDS 관리 인터페이스를 열고 이 라우터의 MAC 어드레스를 입력:</li></ol>
 WLANConfig11b_display34_sectiondesc=최적의 성능을 사용하려면 (고급 설정) > (무선) > (일반) 으로 가서 네트워크에서 모든 라우터에 같은 채널 대역폭, 제어 채널, 확장 채널을 할당하십시오.
-WLANConfig11b_display41_sectiondesc=현재 자동 채널 대역폭을 사용하고 있습니다. <a style="font-size: 13px;font-family:Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">여기</a>를 클릭하여 수정합니다.
-WLANConfig11b_display42_sectiondesc=현재 자동 채널을 사용하고 있습니다. <a style="font-size: 13px;font-family:Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">여기</a>를 클릭하여 수정합니다.
+WLANConfig11b_display41_sectiondesc=현재 자동 채널 대역폭을 사용하고 있습니다. <a style="font-size: 13px;font-family:Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">여기</a>를 클릭하여 수정합니다.
+WLANConfig11b_display42_sectiondesc=현재 자동 채널을 사용하고 있습니다. <a style="font-size: 13px;font-family:Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">여기</a>를 클릭하여 수정합니다.
 WLANConfig11b_display5_sectiondesc=무선 전문가 설정은 무선에 대한 추가 변수들을 입력하게 해줍니다. 그러나 기본값을 권장합니다.
 WLANConfig11b_display6_sectiondesc=WPS(WiFi 보호 설정)은 무선 네트워크를 쉽고 안전하게 구성합니다. PIN 코드와 WPS 버튼을 통해 여기에서 WPS를 구성할 수 있습니다.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4605,6 +4677,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=WMM APSD( Automatic Power Save Delivery) 사용 또는 미사용
 WLANConfig11b_x_APSD_itemname=WMM APSD 사용
 WLANConfig11b_x_Airtime_Fairness=방송시간공정성
+WLANConfig11b_x_ApplyAllBands_hint=이 변경 사항은 모든 밴드 설정에 적용됩니다.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=무선 모드는 자동으로 설정해야 합니다.
 WLANConfig11b_x_Beacon_itemdesc=비콘 간격(Beacon Interval) 은 하나의 비콘과 다음 비콘 사이의 기간을 의미합니다. 기본값은 100 (단위는 밀리초, 또는 1/1000 초). 비콘 간격을 낮추면 불안정한 환경 또는 로킹 클라이언트에 대한 전송 성능은 향상되나 전력 소모가 많습니다.
@@ -4701,11 +4774,11 @@ WLANConfig11b_x_WPSMode_itemdesc=PIN(Personal Information Number)를 선택하�
 WLANConfig11b_x_WPSMode_itemname=WPS 방법:
 WLANConfig11b_x_WPSPIN_itemdesc=클라이언트의 PIN 코드인 8자리 숫자를 입력 <p>
 WLANConfig11b_x_WPSPIN_itemname=클라이언트 PIN 코드
-WLANConfig11n_Auto_note=[자동]는 현재 게스트 네트워크 인증 방식(TKIP 또는 WEP)과 호환되지 않습니다. <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">게스트 네트워크</a>에 가서 인증 방법을 변경하십시오.
+WLANConfig11n_Auto_note=[자동]는 현재 게스트 네트워크 인증 방식(TKIP 또는 WEP)과 호환되지 않습니다. <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">게스트 네트워크</a>에 가서 인증 방법을 변경하십시오.
 WLANConfig11n_automode_limition_hint=WEP 또는 TKIP 암호화를 사용하는 자동 모드에서는 ZVMODELVZ는 최대 54Mbps 의 전송 속도를 지원합니다.
 WLANConfig11n_automode_limition_hint1=WPA2-Personal으로변경하십시오.
-WLANConfig11n_NAC_note=[N+AC] 는 현재  guest network (게스트 네트워크) 인증 방법(TKIP 또는 WEP)과 호환되지 않습니다. <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Guest Network (게스트 네트워크)</a>로 가서 인증 방법을 변경하십시오.
-WLANConfig11n_NOnly_note=[N only] 는 현재  guest network (게스트 네트워크) 인증 방법(TKIP 또는 WEP)과 호환되지 않습니다. <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Guest Network (게스트 네트워크)</a>로 가서 인증 방법을 변경하십시오.
+WLANConfig11n_NAC_note=[N+AC] 는 현재  guest network (게스트 네트워크) 인증 방법(TKIP 또는 WEP)과 호환되지 않습니다. <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Guest Network (게스트 네트워크)</a>로 가서 인증 방법을 변경하십시오.
+WLANConfig11n_NOnly_note=[N only] 는 현재  guest network (게스트 네트워크) 인증 방법(TKIP 또는 WEP)과 호환되지 않습니다. <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Guest Network (게스트 네트워크)</a>로 가서 인증 방법을 변경하십시오.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=프리엠블(Preamble) 형식은 CRC(Cyclic Redundancy Check) 블록의 길이를 정의하여 무선 기기간의 전송 오류를 감지하는 기술입니다. 모든 무선 기기간 동일한 길이의 프리엠블 형식을 권장합니다. 높은 네트워크 트래픽 지역에서는 짧은 프리엠블을 사용하십시오. 구형 무선 기기들의 경우 긴 프리엠블을 사용하십시오.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4823,7 +4896,21 @@ Captive_Portal_Above=이상
 Captive_Portal_Selected_Color=선택된 색상
 Captive_Portal_Local=로컬
 Configuration=구성
+Configuration_dark_mode=다크
+Configuration_light_mode=라이트
+Configuration_theme=테마
+Configuration_fancy_theme=화려함
+Configuration_flat_theme=플랫
 Continuous_Mode=연속 모드
+View_Details=세부 정보 보기
+NetworkMap_Clients=클라이언트
+NetworkMap_Guest_Clients=게스트 클라이언트
+NetworkMap_Add_AiMesh_Hint=WiFi 적용 범위를 확장하려면 AiMesh 노드를 더 추가하세요.
+Dashboard_Show_more=더 보기
+Dashboard_Show_less=간단히 보기
+Dashboard_Expand=확장
+Dashboard_Refreshing=새로 고치는 중
+Dashboard_Last_updated=마지막 업데이트
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=액세스정책
 FreeWiFi_AccountSetting_desc1=Account Setting(계정설정)은쉬운게스트계정구성으로서게스트네트워크보안을위해게스트계정데이터베이스를유지관리할수있습니다.연결된클라이언트는다음계정과비밀번호를입력하여로그인해야인터넷에액세스할수있습니다.
@@ -4953,8 +5040,8 @@ AURA_Event_Note=참고: 이벤트를 선택하면 시스템이 현재 감지된 
 AURA_Scheme_Marquee=마키
 AURA_Scheme_Gradient=기울기
 AURA_Scheme_Evolution=진화
-UU_Accelerator=网易 UU 加速器
-UU_Accelerator_desc=UU 路由器插件为三大主机（PS4、Switch、Xbox One）、PC 外服端游提供加速。可实现多设备同时加速，畅享全球联机超快感！
+UU_Accelerator=UU 加速器
+UU_Accelerator_desc=UU 加速器为全平台主机（PlayStation、Xbox、Switch、Steam Deck、ROG掌机等）、PC、手机提供游戏加速服务，可实现多设备同时加速，畅享全球联机超快感！
 weekSche_All_Day=하루종일
 weekSche_Start_Time=시작 시간
 weekSche_End_Time=끝 시간
@@ -5075,12 +5162,39 @@ Notice_Message_2=시스템 최적화로 인해 네트워크 설정에서 기존 
 Notice_Message_3=읽었습니다. 다시 표시하지 않습니다.
 CTL_Decline=거부
 Outdoor_desc_title=Warning
-Outdoor_desc1=By enabling outdoor mode, AiMesh will be limited and might cause mesh node disconnect.
-Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.
-WiFi_Channel=Wi-Fi 채널
+Outdoor_active_desc_1=야외 모드를 활성화하면 AiMesh 기능이 제한되며 메쉬 노드가 연결 해제될 수 있습니다.
+Outdoor_active_desc_2=규정을 준수하기 위해 시스템은 채널을 약 1분간 스캔하여 기상 레이더 간섭을 피합니다. <span style="color:var(--wrt-badge-warning-color,#FC0)">레이더 신호가 감지되면 2.4GHz로 전환되며 잠시 연결이 끊길 수 있습니다. 영향을 받은 채널은 30분 동안 차단됩니다.</span>
+Outdoor_active_desc_3=야외 모드는 라우터 및 AP 모드만 지원합니다.
+Outdoor_active_desc_4=사용 가능한 야외 채널은 국가/지역에 따라 다릅니다.
+Outdoor_inactive_desc_1=이 모드를 비활성화하면 무선이 잠시 재시작되며 모든 장치가 연결 해제됩니다.
+Outdoor_inactive_desc_2=시스템이 실내 규정을 준수하는 설정으로 전환됩니다.
+Outdoor_mode=야외 모드
+Outdoor_mode_off=끄기
+Outdoor_status=야외 상태
+Outdoor_status_hint=야외 장치가 감지되었습니다. 무선 규정을 준수하여 합법적으로 작동하기 위해 5G 채널이 야외 전용 범위로 제한됩니다.
+WiFi_Channel=WiFi 채널
 Channel_In_Use=사용 중인 채널
-OtherWifi_Interference=Wi-Fi 간섭
-NonWifi_Interference=비 Wi-Fi 간섭
+Wifi_Auto_Refresh=자동 새로 고침
+Wifi_Detect_Interference=간섭 감지
+Wifi_Interference=간섭
+Wifi_in_ch_Interference=채널 내 간섭
+Wifi_specscan_Interference=스펙트럼 스캔 간섭
+Wifi_specscan_hint=스펙트럼 간섭 스캔은 2.4GHz 및 5GHz 대역만을 포함합니다.
+OtherWifi_Interference=기타 WiFi 간섭
+NonWifi_Interference=비-WiFi 간섭
+WiFi_Optimized_auto=자동으로 최적화됨
+WiFi_Optimized=최적화됨
+WiFi_INIT=초기 자동 선택
+WiFi_After_Boot=재부팅 후 자동 선택
+WiFi_Boot=부팅
+WiFi_Adaptive_bw=적응형 대역폭
+WiFi_CSA_Expand=확장
+WiFi_CSA_Reduce=축소
+WiFi_DFS_REENTRY=DFS 재진입
+WiFi_ch_conflict=채널 충돌
+WiFi_Regulatory=규제
+WiFi_OFF=WiFi 꺼짐
+WiFi8_6G_enable_hint=6GHz는 현재 WiFi 7 모드로 작동 중입니다. WiFi 8을 사용하려면 6GHz Wireless Professional 설정에서 "WiFi 8"을 켜십시오.
 Vendor=제조업체
 Connected_AP=연결된 AP
 Network_SDN=네트워크(SDN)

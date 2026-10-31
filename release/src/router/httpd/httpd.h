@@ -581,7 +581,7 @@ extern int change_location(char *lang);
 extern void wtfast_gen_partnercode(char *str, size_t size);
 #endif
 extern void update_wlan_log_sig(int *sig);
-extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
+extern int check_apply_nvram_lan_only(const char *name);
 extern void do_feedback_mail_cgi(char *url, FILE *stream);
 extern void do_dfb_log_file(char *url, FILE *stream);
 extern int is_amas_support(void);

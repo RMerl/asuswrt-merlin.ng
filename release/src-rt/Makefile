@@ -109,7 +109,6 @@ ifeq ($(MTLANCFG),y)
     export SDN_MWL = 0
   endif
 endif
-export ASUSFLAG_IN_BOOT=ASUSFLAG\#$(SDN_MWL)
 
 ifeq ($(TRUSTZONE), y)
 $(shell if grep -q "\# BUILD_SECURE_OS is not set" $(HND_SRC)/targets/$(PROFILE)/$(PROFILE).$(BUILD_NAME); then sed -i "s/\# BUILD_SECURE_OS is not set/BUILD_SECURE_OS=y\nBCM_OPTEE=y\nBCM_ARMTF=y/g" $(HND_SRC)/targets/$(PROFILE)/$(PROFILE).$(BUILD_NAME); fi)
@@ -279,6 +278,10 @@ else
 export EXTENDNO := 0-g$(shell git $(ASUSWRT_SRC_GIT) log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(SDKEXTEND)
 endif
 endif
+
+# must stay after EXTENDNO1/RC_EXT_NO are computed above
+export FW_VER := $(KERNEL_VER).$(FS_VER)_$(SERIALNO)_$(shell expr $(EXTENDNO1) + $(RC_EXT_NO))
+export ASUSFLAG_IN_BOOT := ASUSFLAG\#$(SDN_MWL)\#$(FW_VER)
 
 ifeq ($(SECUREBOOT), y)
 ifeq ($(TRUSTZONE), y)
@@ -1778,6 +1781,10 @@ define RouterOptions
 	if [ "$(WISP)" = "y" ]; then \
 		sed -i "/RTCONFIG_WISP/d" $(1); \
 		echo "RTCONFIG_WISP=y" >>$(1); \
+		if [ "$(RTBE58_GO)" = "y" ]; then \
+			sed -i "/RTCONFIG_HND_WISP_DUALWAN/d" $(1); \
+			echo "RTCONFIG_HND_WISP_DUALWAN=y" >>$(1); \
+		fi; \
 	fi;
 	if [ "$(NVSWJFFS)" = "y" ]; then \
                 sed -i "/RTCONFIG_NVSW_IN_JFFS/d" $(1); \

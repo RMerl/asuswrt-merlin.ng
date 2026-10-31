@@ -1,4 +1,5 @@
 #include <rc.h>
+#include <shutils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -205,7 +206,7 @@ static int _find_active_vpnc_id()
 		case VPNC_PROTO_OVPN:
 			{
 				vpn_clientx_eas = nvram_safe_get("vpn_clientx_eas");
-				ovpn_idx = atoi(vpn_clientx_eas);
+				ovpn_idx = safe_atoi(vpn_clientx_eas);
 				
 				for(i = 0; i < vpnc_prof_cnt_tmp; ++i)
 				{

@@ -2033,6 +2033,8 @@ again:
 		 * just protection against buggy protocols.
 		 */
 		skb_reset_mac_header(skb2);
+		if (skb_network_header(skb2) == skb2->head)
+			skb_reset_network_header(skb2);
 
 		if (skb_network_header(skb2) < skb2->data ||
 		    skb_network_header(skb2) > skb_tail_pointer(skb2)) {

@@ -75,7 +75,7 @@ function uuRegister(mac){
 					</table>
 					<div style="display:flex;border: 2px solid #41484a;padding: 18px 6px;align-items: center;border-radius:4px;margin: 12px 6px;">
 						<div style="margin: 0 12px;">
-							<img src="/images/uu_accelerator.png" alt="">
+							<img src="/images/UU_Logo_RGB.svg" alt="" style="max-width: 200px;">
 						</div>
 						<div style="width:1px;height: 120px;background-color: #929EA1"></div>
 						<div style="width:350px;margin: 0 12px;">

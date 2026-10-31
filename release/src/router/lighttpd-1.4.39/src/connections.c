@@ -745,11 +745,11 @@ static int parser_share_link(server *srv, connection *con){
 					filename2 != NULL && filename2->ptr != NULL &&
 					filename2->used > 0) {
 
-					int com_result = strncmp( filename->ptr, filename2->ptr, filename2->used-1) ;
-					buffer_free(filename2);	
+					int com_result = strcmp( filename->ptr, filename2->ptr );
+					buffer_free(filename2);
 
-					if( com_result!= 0 ){					
-						is_illegal = 1;					
+					if( com_result != 0 ){
+						is_illegal = 1;
 						break;
 					}
 				}

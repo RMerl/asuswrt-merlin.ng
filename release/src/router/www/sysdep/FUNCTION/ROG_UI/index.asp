@@ -1740,13 +1740,11 @@ function popupEditBlock(clientObj){
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(stainfo_support) {
-				if(clientObj.curTx != "")
-					connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
-				if(clientObj.curRx != "")
-					connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
-				connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
-			}
+			if(clientObj.curTx != "")
+				connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
+			if(clientObj.curRx != "")
+				connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
+			connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
 		}
 
 		if(!isSwMode("MB")){

@@ -82,23 +82,33 @@ static size_t curl_header(void *data, size_t size, size_t nmemb, void *handle)
 static size_t curl_write(void *data, size_t size, size_t nmemb, void *handle)
 {
 	struct url_state *h = handle;
+	size_t needed;
 
 	h->stream.running = h->stream.body = 1;
 	size *= nmemb;
 
-	if (h->buf.size < size) {
-		void *buf = realloc(h->buf.data, size);
-		if (buf) {
-			h->buf.data = buf;
-			h->buf.size = size;
-		} else
-			size = h->buf.size;
+	/*
+	 * Append to the buffer instead of overwriting it.  curl 8 can invoke
+	 * this callback multiple times within a single curl_multi_perform()
+	 * call (e.g. multiple HTTP/2 DATA frames delivered in one TCP read).
+	 * The old overwrite approach caused url_read() to see h->pos behind
+	 * h->buf.pos, triggering an infinite download-restart loop and
+	 * leaving hnd-write stuck in the process table forever.
+	 */
+	needed = h->buf.len + size;
+	if (h->buf.size < needed) {
+		void *buf = realloc(h->buf.data, needed);
+		if (!buf)
+			return 0;
+		h->buf.data = buf;
+		h->buf.size = needed;
 	}
 
-	h->buf.pos = h->stream.pos;
-	h->buf.len = size;
-	memcpy(h->buf.data, data, size);
+	if (h->buf.len == 0)
+		h->buf.pos = h->stream.pos;
 
+	memcpy(h->buf.data + h->buf.len, data, size);
+	h->buf.len += size;
 	h->stream.pos += size;
 	return size;
 }
@@ -139,8 +149,13 @@ static int curl_setup(struct url_state *h, int *running)
 	curl_easy_setopt(h->curl, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(h->curl, CURLOPT_NOSIGNAL, 1L);
 
+	/* Defense-in-depth: force HTTP/1.1 to reduce the chance of multiple
+	 * write callbacks per curl_multi_perform() caused by H2 DATA frames. */
+	curl_easy_setopt(h->curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 	curl_easy_setopt(h->curl, CURLOPT_CONNECTTIMEOUT, 10L);
-	//curl_easy_setopt(curl, CURLOPT_TIMEOUT, 120L);
+	curl_easy_setopt(h->curl, CURLOPT_TIMEOUT, 300L);
+	curl_easy_setopt(h->curl, CURLOPT_LOW_SPEED_LIMIT, 1024L);
+	curl_easy_setopt(h->curl, CURLOPT_LOW_SPEED_TIME, 30L);
 
 	memset(&h->stream, 0, sizeof(h->stream));
 
@@ -183,7 +198,7 @@ static int curl_transfer(struct url_state *h)
 static ssize_t url_read(void *handle, char *buf, size_t size)
 {
 	struct url_state *h = handle;
-	size_t bytes, total;
+	size_t bytes, consumed, total;
 	int running;
 
 	for (total = 0; size > 0;) {
@@ -195,6 +210,18 @@ static ssize_t url_read(void *handle, char *buf, size_t size)
 			size -= bytes;
 			total += bytes;
 			h->pos += bytes;
+			/*
+			 * Drain fully consumed bytes from the front of the
+			 * buffer so it does not grow without bound across
+			 * multiple curl_write() calls within one perform.
+			 */
+			consumed = h->pos - h->buf.pos;
+			if (consumed > 0) {
+				h->buf.len -= consumed;
+				h->buf.pos = h->pos;
+				if (h->buf.len > 0)
+					memmove(h->buf.data, h->buf.data + consumed, h->buf.len);
+			}
 			continue;
 		}
 		if (h->pos < h->buf.pos) {
@@ -217,7 +244,7 @@ static ssize_t url_read(void *handle, char *buf, size_t size)
 static int url_seek(void *handle, off64_t *pos, int whence)
 {
 	struct url_state *h = handle;
-	CURLMcode rc;
+	CURLcode rc;
 	curl_off_t size;
 	off64_t new = *pos;
 
@@ -229,7 +256,7 @@ static int url_seek(void *handle, off64_t *pos, int whence)
 		break;
 	case SEEK_END:
 		rc = curl_easy_getinfo(h->curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &size);
-		if (rc != CURLM_OK || size == -1) {
+		if (rc != CURLE_OK || size == -1) {
 			errno = EINVAL;
 			return -1;
 		}

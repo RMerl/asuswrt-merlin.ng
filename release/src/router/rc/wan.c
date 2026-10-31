@@ -278,7 +278,7 @@ add_routes(char *prefix, char *var, char *ifname)
 		 * probably need to allow empty gateway to set on-link route */
 		if (inet_addr_(gateway) == INADDR_ANY)
 			gateway = nvram_safe_get_r(strcat_r(prefix, "xgateway", tmp), tmp, sizeof(tmp));
-		route_add(ifname, atoi(metric) + 1, ipaddr, gateway, netmask);
+		route_add(ifname, safe_atoi(metric) + 1, ipaddr, gateway, netmask);
 	}
 	free(buf);
 
@@ -312,7 +312,7 @@ add_dhcp_routes(char *prefix, char *ifname, int metric)
 	routes = strdup(nvram_safe_get(strcat_r(prefix, "routes_ms", nvname)));
 	for (tmp = routes; tmp && *tmp; ) {
 		ipaddr  = strsep(&tmp, "/");
-		netsize = atoi(strsep(&tmp, " "));
+		netsize = safe_atoi(strsep(&tmp, " "));
 		gateway = strsep(&tmp, " ");
 		if (gateway && netsize > 0 && netsize <= 32 && inet_addr(ipaddr) != INADDR_ANY) {
 			mask.s_addr = htonl(0xffffffff << (32 - netsize));
@@ -326,7 +326,7 @@ add_dhcp_routes(char *prefix, char *ifname, int metric)
 	routes = strdup(nvram_safe_get(strcat_r(prefix, "routes_rfc", nvname)));
 	for (tmp = routes; tmp && *tmp; ) {
 		ipaddr  = strsep(&tmp, "/");
-		netsize = atoi(strsep(&tmp, " "));
+		netsize = safe_atoi(strsep(&tmp, " "));
 		gateway = strsep(&tmp, " ");
 		if (gateway && netsize > 0 && netsize <= 32 && inet_addr(ipaddr) != INADDR_ANY) {
 			mask.s_addr = htonl(0xffffffff << (32 - netsize));
@@ -368,7 +368,7 @@ del_routes(char *prefix, char *var, char *ifname)
 		if (inet_addr_(gateway) == INADDR_ANY)
 			gateway = nvram_safe_get_r(strcat_r(prefix, "xgateway", tmp), tmp, sizeof(tmp));
 
-		route_del(ifname, atoi(metric) + 1, ipaddr, gateway, netmask);
+		route_del(ifname, safe_atoi(metric) + 1, ipaddr, gateway, netmask);
 	}
 	free(buf);
 
@@ -717,7 +717,7 @@ void update_wan_state(char *prefix, int state, int reason)
 	_dprintf("%s(%s, %d, %d)\n", __FUNCTION__, prefix, state, reason);
 
 	if (strncmp(prefix, "wan", 3) == 0)
-		unit = atoi(prefix + 3);
+		unit = safe_atoi(prefix + 3);
 
 	nvram_set_int(strcat_r(prefix, "state_t", tmp), state);
 	if(state == WAN_STATE_CONNECTED)
@@ -957,8 +957,8 @@ static int start_ipoa()
 	}
 	NeighborIpPrefix[i] = 0;
 
-	LastIpNum = atoi(&ip_addr[i+1]);
-	NetMaskLastIpNum = atoi(&ip_mask[12]);
+	LastIpNum = safe_atoi(&ip_addr[i+1]);
+	NetMaskLastIpNum = safe_atoi(&ip_mask[12]);
 	NeighborIpNum = ((~NetMaskLastIpNum) + 1)&0xff;
 	NeiBaseIpNum = LastIpNum & NetMaskLastIpNum;
 
@@ -1045,8 +1045,8 @@ static int stop_ipoa()
 	}
 	NeighborIpPrefix[i] = 0;
 
-	LastIpNum = atoi(&ip_addr[i+1]);
-	NetMaskLastIpNum = atoi(&ip_mask[12]);
+	LastIpNum = safe_atoi(&ip_addr[i+1]);
+	NetMaskLastIpNum = safe_atoi(&ip_mask[12]);
 	NeighborIpNum = ((~NetMaskLastIpNum) + 1)&0xff;
 	NeiBaseIpNum = LastIpNum & NetMaskLastIpNum;
 
@@ -1538,7 +1538,7 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 
 				snprintf(tmp, sizeof(tmp), "%s", nvram_safe_get(strcat_r(prefix2, "act_sim", tmp2)));
 				if(strlen(tmp) > 0){
-					int sim_state = atoi(tmp);
+					int sim_state = safe_atoi(tmp);
 					if(sim_state == 2 || sim_state == 3){
 						TRACE_PT("3g end: Need to input PIN or PUK.\n");
 						update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_PINCODE_ERR);
@@ -1802,6 +1802,10 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		if (!strcmp(wan_ifname, "eth4")){
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
 		}
+#endif
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+		if (wisp_mode() && !strncmp(wan_ifname, "eth", 3))
+			safe_do_system("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
 #endif
 		}
 
@@ -4215,6 +4219,13 @@ NOIP:
 	/* Set connected state */
 	update_wan_state(prefix, WAN_STATE_CONNECTED, 0);
 
+#if defined(RTCONFIG_WISP)
+	/* Fresh connection: let wanduck's captive-portal probe re-decide from
+	 * scratch instead of carrying over a stale portal/URL from before. */
+	if (wisp_mode())
+		nvram_set_int("wisp_captive_portal", 0);
+#endif
+
 #if defined(RTCONFIG_QCA) || \
 		(defined(RTCONFIG_RALINK) && !defined(RTCONFIG_DSL) && !defined(RTN13U))
 	reinit_hwnat(wan_unit);
@@ -4289,7 +4300,7 @@ NOIP:
 		unsetenv("unit");
 
 		char start_sec[32], *str = file2str("/proc/uptime");
-		unsigned int up = atoi(str);
+		unsigned int up = safe_atoi(str);
 
 		free(str);
 		snprintf(start_sec, sizeof(start_sec), "%u", up);
@@ -4691,6 +4702,12 @@ wan_down(char *wan_ifname)
 	/* Figure out nvram variable name prefix for this i/f */
 	if(wan_prefix(wan_ifname, prefix) < 0)
 		return;
+
+#if defined(RTCONFIG_WISP)
+	/* WAN down: nothing to log in about, don't leave a stale portal banner up. */
+	if (wisp_mode())
+		nvram_set_int("wisp_captive_portal", 0);
+#endif
 
 	_dprintf("%s(%s): %s.\n", __FUNCTION__, wan_ifname, nvram_safe_get(strcat_r(prefix, "dns", tmp)));
 
@@ -5401,6 +5418,36 @@ start_wan(void)
 		char *stats_argv[] = { "stats", nvram_safe_get("stats_server"), NULL };
 		_eval(stats_argv, NULL, 5, NULL);
 	}
+#if defined(RTBE58_GO)
+	/* RT-BE58_GO WISP: every start_wan_if() call brings wl1 (==wan0)
+	 * through WLC_UP, which makes the driver macgen re-derive each 5G
+	 * AP-VIF cur_etheraddr to the wrong A2 BSSID.  Re-assert the correct
+	 * BA here so this is covered for all callers: boot, wlcmon profile
+	 * switch (wisp_serv), and future wanduck failover/failback paths. */
+	/* Ensure both STA BSS are up before the VIF-BSSID reassert.
+	 * The reassert's per-VIF bss down/up is a no-op when the primary
+	 * bss (wl1) is still down.  wisp_ensure_both_sta_bss_up() also
+	 * covers the peer STA left down after a 5G->2G fallback.
+	 * allow_reset=0: wpa_supplicant is already running by the time
+	 * start_wan() runs, so a WLC down/up here would disrupt its scan
+	 * (the escan-wedge reset is done at the wisp_serv START site). */
+	wisp_ensure_both_sta_bss_up(0);
+	wl1_reassert_vif_bssid();
+
+	/* WISP profile switch (wlcmon -> restart_wisp_serv -> start_wan)
+	 * changes the WAN-side association/path, but the Broadcom flow
+	 * accelerator (fcache) keeps the stale accelerated flow entries
+	 * bound to the OLD path.  ICMP goes slow-path (ping still works),
+	 * but accelerated TCP flows are black-holed -> "can ping internet
+	 * but cannot surf".  restart_wireless() recovers only because
+	 * stop_lan_wl() does an "fc flush"; start_wan() never did.  Flush
+	 * here so every WAN (re)start on WISP purges the stale flows.  New
+	 * flows re-accelerate through the slow path with correct state.
+	 * Scoped to WISP so a non-WISP RT-BE58_GO does not flush on every
+	 * WAN event. */
+	if (wisp_mode())
+		eval("fc", "flush");
+#endif
 }
 
 void
@@ -5524,6 +5571,71 @@ void convert_wan_nvram(char *prefix, int unit)
 		}
 	}
 #else
+#if defined(RTCONFIG_WISP)
+	else if (wisp_mode()) {
+		/* In WISP mode the WAN interface is a wireless radio; use its own
+		 * hardware address rather than et0macaddr so the WAN MAC matches
+		 * the actual wireless NIC MAC.
+		 *
+		 * For RTBE58_GO, read the authoritative per-radio MAC directly from
+		 * envram sb/<idx>/macaddr (wl0(2G)->sb/1, wl1(5G)->sb/0 => sb/(1-band)).
+		 *
+		 * IMPORTANT: only set wanN_hwaddr here.  Do NOT write wlN_hwaddr at
+		 * this point: convert_wan_nvram() runs from start_wan(), i.e. AFTER
+		 * start_lan_wl()/wlconf has already brought up the AP VIFs.  Writing
+		 * wl1_hwaddr after wl1.1 is up makes the driver re-derive the AP-VIF
+		 * BSSID as (wl1_hwaddr|0x02)+subunit (e.g. A0..EC -> A2..ED), which
+		 * breaks downstream client association until restart_wireless.
+		 * wl1_hwaddr is instead set early (before wlconf) in
+		 * reconfig_manual_wan_ifnames()/init_nvram().
+		 *
+		 * Landmine #2 (dualwan): in a WISP+dualwan setup the second WAN unit
+		 * (eth0/USB) also passes through this branch because wisp_mode() is
+		 * true for the whole session.  Guard on the per-unit dualwan type so
+		 * only the actual WiFi WAN slot gets the radio MAC; eth0/USB slots
+		 * fall through to the et0macaddr branch below.
+		 */
+#if defined(RTCONFIG_DUALWAN)
+		int wisp_dt = get_dualwan_by_unit(unit);
+		int is_wifi_wan = (wisp_dt == WANS_DUALWAN_IF_2G  ||
+		                   wisp_dt == WANS_DUALWAN_IF_5G  ||
+		                   wisp_dt == WANS_DUALWAN_IF_WAN ||
+		                   wisp_dt == WANS_DUALWAN_IF_NONE /* single-WAN */);
+		if (!is_wifi_wan) {
+			nvram_set(strcat_r(prefix, "hwaddr", tmp), nvram_safe_get("et0macaddr"));
+			logmessage("wan", "WISP dualwan: %s=[et0macaddr] (non-wifi unit%d, type%d)\n",
+			           tmp, unit, wisp_dt);
+		} else
+#endif
+		{
+		int wisp_band = nvram_get_int("wlc_band");
+		const char *mac;
+#if defined(RTBE58_GO)
+		char sbkey[20];
+		char wlhwaddr_nv[20];
+		const char *cfemac;
+		snprintf(sbkey, sizeof(sbkey), "sb/%d/macaddr", 1 - wisp_band);
+		cfemac = cfe_nvram_safe_get(sbkey);
+		snprintf(wlhwaddr_nv, sizeof(wlhwaddr_nv), "wl%d_hwaddr", wisp_band);
+		if (cfemac && *cfemac)
+			mac = cfemac;
+		else
+			mac = nvram_safe_get(wlhwaddr_nv);
+#else
+		char wlhwaddr_nv[20];
+		snprintf(wlhwaddr_nv, sizeof(wlhwaddr_nv), "wl%d_hwaddr",
+		         wisp_band);
+		mac = nvram_safe_get(wlhwaddr_nv);
+#endif
+		/* Set ONLY wanN_hwaddr here.  wl1_hwaddr is intentionally NOT touched
+		 * (see comment above) — it is set early in
+		 * reconfig_manual_wan_ifnames()/init_nvram(). */
+		nvram_set(strcat_r(prefix, "hwaddr", tmp), mac);
+		logmessage("wan", "WISP: %s=[%s]; wl%d_hwaddr=[%s] (late, not rewritten)\n",
+		           tmp, mac, wisp_band, nvram_safe_get(wlhwaddr_nv));
+		} /* end is_wifi_wan */
+	}
+#endif	/* RTCONFIG_WISP */
 	else nvram_set(strcat_r(prefix, "hwaddr", tmp), nvram_safe_get("et0macaddr"));
 #endif	/* RTCONFIG_RGMII_BRCM5301X */
 #else
@@ -5665,7 +5777,6 @@ void init_wan46(void) {
 			else
 				snprintf(prefix, sizeof(prefix), "wan46det%d_", unit);
 			nvram_unset(strcat_r(prefix, "state", tmp));
-			nvram_unset(ipv6_nvname_by_unit("ipv6_s46_perfer", unit));
 			nvram_unset(ipv6_nvname_by_unit("ipv6_ra_addr", unit));
 			nvram_unset(ipv6_nvname_by_unit("ipv6_ra_length", unit));
 			nvram_unset(ipv6_nvname_by_unit("ipv6_prefix", unit));

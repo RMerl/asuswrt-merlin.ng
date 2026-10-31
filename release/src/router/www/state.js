@@ -561,7 +561,17 @@ var dsl_support = isSupport("dsl");
 var sfpp_support = isSupport("sfp+");
 var vdsl_support = isSupport("vdsl");
 var mswan_support = isSupport("mswan");
-var dualWAN_support = (wlc_band != "") ? false : isSupport("dualwan");
+/* wlc modes (repeater/media-bridge/hotspot) have no dual-WAN, so wlc_band!=""
+ * always forces this off. WISP (sw_mode==1 && wlc_band!="") firmware may be
+ * built with RTCONFIG_HND_WISP_DUALWAN (advertises "wisp_dualwan") and the
+ * eth1/USB "wan2" backup path is already functional in rc/wanduck.c, but it
+ * is not yet qualified for shipped units -- keep the DualWAN page (and
+ * everything gated on it: Advanced_Modem/MobileBroadband_Content.asp,
+ * dualwan_enabled) hidden in WISP mode regardless of "wisp_dualwan" support
+ * until that's ready. */
+var dualWAN_support = (wlc_band != "")
+	? false
+	: isSupport("dualwan");
 var noWAN_support = isSupport("nowan");
 var mtwancfg_support = isSupport("mtwancfg");
 var ruisp_support = isSupport("ruisp");
@@ -3346,6 +3356,13 @@ function refreshStatus(xhr){
 					else
 						this.link = "/Advanced_WAN_Content.asp";
 					this.className = "_error";
+				}
+
+				if(isSupport("wisp_dualwan") && isSwMode("WISP") && dualwan_enabled && active_wan_unit != unit && (wans_mode == "fo" || wans_mode == "fb")){
+					this.hint = "<#Standby_str#>";
+					this.className = "_standby";
+					this.link = "gotoWAN";
+					this.hasInternet = false;
 				}
 
 				return this;

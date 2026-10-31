@@ -185,8 +185,9 @@ function download_csv(){
           csv += "\n";
   });
   document.write(csv);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   var hiddenElement = document.createElement('a');
-  hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+  hiddenElement.href = URL.createObjectURL(blob);
   hiddenElement.target = '_blank';
   hiddenElement.download = `${app_name}.csv`;
   hiddenElement.click();

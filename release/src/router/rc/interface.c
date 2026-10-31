@@ -540,7 +540,7 @@ static int ipv6_route_manip(int cmd, const char *name, int metric, const char *d
 		ptr = strchr(addr, '/');
 		if (ptr) {
 			*ptr++ = '\0';
-			rt.rtmsg_dst_len = atoi(ptr);
+			rt.rtmsg_dst_len = safe_atoi(ptr);
 		} else
 			rt.rtmsg_dst_len = 128;
 		inet_pton(AF_INET6, addr, &rt.rtmsg_dst);

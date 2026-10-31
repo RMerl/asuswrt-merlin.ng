@@ -87,6 +87,7 @@ enum
 #define USERAGENT           "Asuswrt/networkmap"
 #define NMP_VC_FILE_LOCK    "nmpvc"
 
+#define APGINFO_PATH                 "/tmp/apg_info/"
 #define CFG_FILE_LOCK                "cfg_mnt"
 #define ALLWEVENT_FILE_LOCK          "allwevent"
 #define ALLWCLIENT_LIST_JSON_PATH    "/tmp/allwclientlist.json"
@@ -111,7 +112,7 @@ enum
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
 #define NMP_DEBUG_VC_FILE			"/tmp/NMP_DEBUG_VC"
 
-#define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
+#define IEEE_OUI_FILE		"/usr/networkmap/ieee.oui.json"
 
 #if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
@@ -346,7 +347,7 @@ void get_subnet_ifname(const int subnet_idx, char * subnet_ifname, int ifname_le
 void get_ip_from_arp_table(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const char *subnet);
 int get_sdn_type(const int sdn_idx, char *sdn_type, int sdn_type_len, unsigned char *vlan_id, int *apg_idx);
 int get_vlan_id(const int vlan_idx);
-int get_sdn_idx_form_apg(const char *papMac, const char *ifname, const int ifname_type);
+int get_sdn_idx_form_apg_new(const char *papMac, const char *ifname, const char *prefix);
 #endif
 
 int get_brctl_macs(char * mac);

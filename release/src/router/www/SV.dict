@@ -95,7 +95,7 @@ APSurvey_msg_connect_open_wlan=Du försöker ansluta till ett osäkert nätverk.
 APSurvey_msg_connected=Du är redan ansluten till denna AP.
 APSurvey_msg_non_support_Auth=Verifieringsmetod stöds inte.
 APSurvey_msg_waiting_to_connect=Vänta lite, ZVMODELVZ ansluter till
-ASUS_Registration=Bli en ASUS-medlem och få den senaste produktinformationen. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Registrera dig nu!</a>
+ASUS_Registration=Bli en ASUS-medlem och få den senaste produktinformationen. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Registrera dig nu!</a>
 ASUS_Notice=ASUS MEDDELANDE
 ASUS_privacy_desc=Observera att användare måste godkänna att dela sin information innan de använder DDNS, fjärranslutning (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS, Game Boost och webbhistorik. Användare kan när som helst söka efter innehållet i villkoren på denna sida eller sluta dela sin information med andra parter genom att välja <a style="font-weight: bolder;">Återkalla</a>.
 ASUS_eula_desc0=Välkommen att använda DDNS/ Fjärranslutning (ASUS Router APP/Lyra APP/AiCloud/AiDisk). Läs noga igenom följande instruktioner:
@@ -180,6 +180,7 @@ ASUS_EULA_Law_12_Desc=Alla offerter, orderbekräftelser, detta EULA och försäl
 ASUS_EULA_Info=Genom att använda ASUS nätverksprodukter godkänner du att vara bunden av villkoren som anges i Slutanvändaravtal.
 ASUS_POLICY_Age_Check=Jag har fyllt 16 år.
 ASUS_POLICY_QIS_Desc=Det är viktigt att läsa detta villkor innan du använder en nätverksprodukt. Genom att klicka på knappen ”Godkänner” samtycker du till att vara bunden av villkoren. ​
+ASUS_POLICY_QIS_Desc_v5=Det är viktigt att läsa detta villkor innan du använder en nätverksprodukt. Genom att klicka på knappen ”%@” samtycker du till att vara bunden av villkoren. ​
 ASUS_POLICY_Update_Notice=Hej användare, tack för att du hela tiden stöder den här produkten. För att följa sekretessreglerna i olika länder och ytterligare skydda dina uppgifter har vi uppdaterat ASUS sekretessmeddelande. Vi ber dig godkänna den uppdaterade versionen innan du använder ASUS nätverksprodukter.
 ASUS_POLICY_Read_Again=Läs igen
 ASUS_POLICY_Know_Risk=Jag förstod risken
@@ -371,7 +372,7 @@ CTL_UpgradeNight=Uppgradera på natten
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Använd lösenordet till den lokala inloggningen
 default_passwd_desc=Det krypterade standardlösenordet för lokal inloggning tillhandahåller en säker inloggning när du ansluter till den här ASUS-nätverksenheten lokalt.
-defaultHint=För ytterligare detaljer besök <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=För ytterligare detaljer besök <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* Ett minimalt ping-paket förbrukar ca 128 byte per intervall. Därför kommer ping-detektorn att förbruka
 Detect_consume_warning2=Megabyte per månad
 Disconnected=Frånkopplad
@@ -410,7 +411,7 @@ OpenDNS_Home=OpenDNS, Home
 OpenDNS_Family=OpenDNS, familj
 Yandex_Safe=Yandex, säkerhet
 Yandex_Family=Yandex, familj
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> är aktiverad - allt som konfigureras där som något annat än Ingen filtrering eller Router kringgår DNS-sekretesservrar.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> är aktiverad - allt som konfigureras där som något annat än Ingen filtrering eller Router kringgår DNS-sekretesservrar.
 Enable_user_target=Aktivera användardefinierat mål
 Enable_Login_Captcha=Aktivera captcha för inloggningen
 Encrypted_field=Krypterat fält.
@@ -614,7 +615,7 @@ Offline_desc2=Ändringar har gjorts på IP-adress eller portnummer. Du kommer nu
 Offline_desc3=För åtkomst till inställningar för ZVMODELVZ, återanslut det trådlösa nätverket och använd den uppdaterade IP-adressen och portnumret.
 OP_AP_desc=I Access Point (AP) läge ansluter ZVMODELVZ till en trådlös router via en Ethernet-kabel för att förlänga den trådlösa signaltäckningen till andra nätverksklienter. I detta läge är brandväggs-, IP-delnings- och NAT-funktionerna inaktiverade som standard.
 AiMesh_AP_desc=AiMesh-routrar i AP-läge ansluter till en trådlös router genom en Ethernet-kabel för att förlänga den trådlösa signalen till andra nätverksklienter. I detta läge inaktiveras brandväggs-, IP-delnings- och NAT-funktionerna som standard.
-OP_AP_hint=Du kan även gå till <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> för att söka efter och öppna enhetens konfigurationssida.
+OP_AP_hint=Du kan även gå till <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> för att söka efter och öppna enhetens konfigurationssida.
 OP_AP_item=Access Point(AP/åtkomstpunkt) läge
 AiMesh_AP_item=Åtkomstpunktläge (AP) / AiMesh-router i AP-läge
 OP_Choose=Choose operation mode
@@ -633,7 +634,7 @@ OP_MB_desc4=Konfigurera en ZVMODELVZ som en router och den andra ZVMODELVZ som e
 OP_MB_desc5=Ändra till mediabryggläge för att tillhandahålla en samtidig WiFi-anslutning för dina mediaenheter.
 OP_MB_desc6=I mediabryggläget ansluter enbart trådlösa enheter till P-AP. Klientenheter måste anslutas till mediabryggan med en nätverkskabel.
 OP_MB_desc7=ZVMODELVZ i mediabryggläge. IP-adressen har ändrats.
-OP_MB_desc8=Hämta <a href='http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> (Enhetsupptäckarverktyg) för att identifiera mediabryggans IP-adress.
+OP_MB_desc8=Hämta <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> (Enhetsupptäckarverktyg) för att identifiera mediabryggans IP-adress.
 OP_MB_desc9=Markera om du vill dra ur nätverkskabeln från WAN-porten.
 OP_RE_desc=I Repeterarläget ansluter ZVMODELVZ trådlöst till ett befintligt trådlöst nätverk för att utöka den trådlösa nätverkstäckningen. I detta läge är brandväggen, IP-delning och NAT-funktionerna avaktiverade.
 OP_RE_desc1=LAN-IP-adressen för ZVMODELVZ kan ha ändrats.
@@ -814,7 +815,7 @@ qis_simple_wls_recmd=(Rekommenderad)
 QIS_SmartConn_ISPDesc=Din internetleverantör ska förse dig med användarnamn och lösenord genom ett separat dokument eller kort. *Detta är endast ett exempel som används för att illustrera detta scenario.
 QIS_SmartConn_ISPDesc2=Ange användarnam och lösenord för din internetanslutning. Denna info kommer från din internetleverantör.
 QIS_SmartConn_ISPDesc3=Ange PPPoE-användarnamnet och lösenordet som tillhandahålls av din internetleverantör (ISP) för din internetanslutning.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Anslutningsscenario 1
 QIS_SmartConn_Scen2=Anslutningsscenario 2
 QIS_SmartConn_StaticDesc=Din internetleverantören kan förse dig med info om IP, subnät, gateway and DNS-adress. Vänligen kontakta din leverantör för mer info.
@@ -996,10 +997,10 @@ QKSet_ISP_desc=Se dina ISP-inställningar och ange relevant information.
 QKSet_ISP_desc2=Statisk IP-anslutning misslyckades.
 QKSet_ISP_desc3=Automatisk IP-anslutning misslyckades. Den kan konfigureras manuellt här.
 QKSet_ISP_head=ISP-informationsinställningar
-QKset_restore_0=Klicka på <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Återställ inställningarna</label></a> för att hämta sparade inställningar.
-QKset_restore_1=Klicka på <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Återställ inställningarna</label></a> för att återställa konfigurationen om du har säkerhetskopierat konfigurationsinställningarna innan du återställer routern.
-QKset_setup_manual_0=Klicka på <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Man. inställn.</label></a> för att manuellt ställa in det trådlösa nätverket om du känner till din internetleverantörs anslutningstyp.
-QKset_setup_manual_1=Klicka på <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Man. inställn.</label></a> för att manuellt ställa in routerns avancerade inställningar eller ställa in ZVMODELVZ för att fungera i
+QKset_restore_0=Klicka på <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Återställ inställningarna</label></a> för att hämta sparade inställningar.
+QKset_restore_1=Klicka på <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Återställ inställningarna</label></a> för att återställa konfigurationen om du har säkerhetskopierat konfigurationsinställningarna innan du återställer routern.
+QKset_setup_manual_0=Klicka på <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Man. inställn.</label></a> för att manuellt ställa in det trådlösa nätverket om du känner till din internetleverantörs anslutningstyp.
+QKset_setup_manual_1=Klicka på <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Man. inställn.</label></a> för att manuellt ställa in routerns avancerade inställningar eller ställa in ZVMODELVZ för att fungera i
 QKset_skip_setup=Är du en expert på trådlösa nätverk och vill hoppa över internetguiden?
 QKSet_type_desc=Välj vilken typ av Internetanslutning din Internettjänstleverantör tillhandahåller.
 QKSet_type_head=Internet WAN-anslutningstyp
@@ -1047,6 +1048,7 @@ Status_RAM=RAM
 Status_Used=Använt
 Status_Free=Ledigt
 Status_Total=Totalt
+Status_LoggingIn=Loggar in…
 statusTitle_AP=Åtkomstpunktsstatus
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Aktiva anslutningar
@@ -1071,7 +1073,7 @@ TBVLAN_UPort=Otaggad port
 TBVLAN_TPort=Taggad port
 TBVLAN_WirelessInf=Trådlöst gränssnitt
 TBVLAN_EditSubnetProfile=Redigera undernätsprofil
-TBVLAN_Subnet_desc=Välj undernätet du har skapat eller välj &quot;New Subnet&quot; (Nytt undernät) för att skappa ett nytt undernät för VLAN:et. Om du behöver fler DHCP-konfigurationer, konfigurera på<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
+TBVLAN_Subnet_desc=Välj undernätet du har skapat eller välj &quot;New Subnet&quot; (Nytt undernät) för att skappa ett nytt undernät för VLAN:et. Om du behöver fler DHCP-konfigurationer, konfigurera på<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server</a>.
 TBVLAN_BindingInf=Bindningsgränssnitt
 TBVLAN_NoBindingInf=Inget bindningsgränssnitt finns tillgängligt.
 TBVLAN_BindingInf_Hint=Lägg till ett bindningsgränssnitt.
@@ -1102,20 +1104,20 @@ WANPPPAuthText=PPP-autentisering
 WAN_type_detected=WAN type detected
 WAN_auto_detected=Automatisk WAN-detektion
 web_redirect_case1_suggestion1=Kontrollera att sladden har anslutits till ZVMODELVZ-WAN-porten och till modemet.
-web_redirect_case1_suggestion2=Kontrollera om <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Driftsläge</a> måste ändras.
-web_redirect_case2_suggestion1=Felaktigt PPPoE-konto eller -lösenord. <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Kontrollera uppgifterna</a>.
+web_redirect_case1_suggestion2=Kontrollera om <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Driftsläge</a> måste ändras.
+web_redirect_case2_suggestion1=Felaktigt PPPoE-konto eller -lösenord. <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Kontrollera uppgifterna</a>.
 web_redirect_case2_title1=Fel vid PPPoE-autentisering
 web_redirect_case3_button=Ändra WAN-typen
-web_redirect_case3_suggestion1=Kontrollera att <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>anslutningsinställningen</a>är korrekt.
-web_redirect_case5_suggestion1=Aktivera <a style='color:#FFF' href='/'>WAN-anslutningen</a>
+web_redirect_case3_suggestion1=Kontrollera att <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>anslutningsinställningen</a>är korrekt.
+web_redirect_case5_suggestion1=Aktivera <a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN-anslutningen</a>
 web_redirect_case5_suggestion2=Kontrollera att USB-modemet är påslaget.
-web_redirect_case5_suggestion3=Ändra <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>inställningarna för USB-modemet</a>.
+web_redirect_case5_suggestion3=Ändra <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>inställningarna för USB-modemet</a>.
 web_redirect_case5_title1=WAN-anslutningen har inaktiverats.
 web_redirect_case5_title2=USB-modemet är inte anslutet.
 web_redirect_case6_desc1=Klicka på [Nästa] för att använda följande IP-adress:
 web_redirect_case6_desc2=Kontrollera att du använder alla relevanta tjänster med din nya IP-adress (t.ex. portvidarebefordran eller DMZ)
 web_redirect_case8_suggestion1=Bekräfta att Parent AP kan ansluta till internet.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Ändra anslutningsinställningarna</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Ändra anslutningsinställningarna</a>.
 web_redirect_case8_title=Det går inte att ansluta till Parent AP.
 web_redirect_case9_suggestion1=Kontrollera att AiMesh-routern är påslagen.
 web_redirect_case9_suggestion2=Starta om AiMesh-routern och försök igen.
@@ -1165,6 +1167,11 @@ Web_Title=ASUS trådlös router ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=ASUS ZVMODELVZ åtkomstpunkt
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Använd MLO-anslutning
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) stöds för närvarande endast mellan ASUS-routrar av samma modell. Om modellerna är olika kan anslutningen misslyckas.
+WiFi_MLO_connect_try=Försök ansluta med MLO.
+WiFi_MLO_connect_veto=Använd en vanlig anslutning med ett band i stället.
+WiFi_MLO_connect_confirm=Vill du använda MLO-anslutning?
 wireless_configured=Konfigurerad
 Wireless_name=Trådlöst namn
 wireless_router=Trådlös router
@@ -1246,6 +1253,7 @@ ADSL_FW_note=Notera:
 adsl_fw_ver_itemname=DSL-drivrutinsversion
 adsl_link_sts_itemname=DSL-länkstatus
 adv_wl_desc=Ange trådlösrelaterad information nedan.
+AiBoard_rescue_fail=AI Board-återställning misslyckades
 AiCloud_account_status=Kontostatus
 AiCloud_account_unlock=Upplåsning
 aicloud_bandwidth1=Du behöver en bredbandsanslutning för internet för bästa visnings- och lyssningsupplevelse. Se rekommendationerna nedan :
@@ -1358,12 +1366,12 @@ AiMesh_FindNode_confirm=Jag hittar inte min AiMesh-nod?
 AiMesh_FindNode_confirm_WPS=WPS kommer att aktiveras vid sökninge efter en AiMesh-nod.
 AiMesh_FindNode_Desc=Sök efter tillgängliga AiMesh-noder i närheten för att gå med i ditt aiMesh-system.
 AiMesh_FindNode_Not=Det gick inte att hitta någon AiMesh-nod i närheten.
-AiMesh_FindNode_Not_advA=Om denna enhet tilldelas som en <span style='color:#569AC7;'>AiMesh-router</span>, kontrollera följande, och försök igen.
+AiMesh_FindNode_Not_advA=Om denna enhet tilldelas som en <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh-router</span>, kontrollera följande, och försök igen.
 AiMesh_FindNode_Not_advA1=Din AiMesh-nod är påslagen
 AiMesh_FindNode_Not_advA2=Din AiMesh-nod har den senaste inbyggda programvaran
 AiMesh_FindNode_Not_advA3=Din AiMesh-nod har återställts till standard
 AiMesh_FindNode_Not_advA4=Flytta din AiMesh-nod nära AiMesh-routern
-AiMesh_FindNode_Not_advB=Om denna enhet tilldelas som en <span style='color:#569AC7;'>AiMesh-router</span>, kontrollera följande, och försök igen.
+AiMesh_FindNode_Not_advB=Om denna enhet tilldelas som en <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh-router</span>, kontrollera följande, och försök igen.
 AiMesh_FindNode_Not_advB1=Tryck på återställningsknappen på enheten och vänta.
 AiMesh_FindNode_Not_advB2=Logga in på dinb AiMesh-routers GUI, och klicka på AiMesh-ikonen.
 AiMesh_FindNode_Not_advB3=Uppgradera din AiMesh-routeres inbyggda programvara om du inte kan hitta AiMesh-ikonen på routerns GUI.
@@ -1696,6 +1704,13 @@ AiProtection_TrackerBlocking_Desc=Spårningsblockering hjälper till att upptäc
 AiProtection_AdvertisementBlocking_Desc=Annonsblockering hjälper till att blockera vanliga annonskällor för att minska störningar, förbättra surfningen och minska säkerhetsrisker. Du kan också aktivera AdGuard DNS för ytterligare skydd.
 AiProtection_AdvertisementBlocking_Enabled=Annonsblockering aktiverad
 AiProtection_TrackerBlocking_Enabled=Spårningsblockering aktiverad
+AiProtection_select_device=Välj en enhet eller ange en giltig MAC- eller IP-adress
+AiProtection_rule_exist=Denna enhet har redan en regel. Ta bort den innan du skapar en ny.
+ArkMigrationNote=Observera
+ArkMigrationNote_1=På grund av integritet och systemoptimeringar använder %@ nu lokal detektering. Befintliga profilregler måste konfigureras om manuellt.
+ArkMigrationNote_2=Dessa funktioner är inte bakåtkompatibla med tidigare firmware; nedgradering kräver fabriksåterställning.
+ArkAiProtectionInfo=Vissa webbplatser kan påverkas av annons- eller spårningsblockering på grund av deras användning av sådana tjänster. Om du har problem med att komma åt en webbplats, stäng av ovanstående funktioner och ladda om sidan.
+FamilyContentBlock=Familjeinnehållsblockering
 BwLimiter_Switch=Bandbreddsbegränsningsbrytare
 BwLimiter_Download=Nedladdningsbandbredd
 BwLimiter_Upload=Uppladdningsbandbredd
@@ -1703,6 +1718,7 @@ BwLimiter_NewDevice=Ny enhet
 BwLimiter_Status=Status
 BwLimiter_Delete=Radera
 SearchDevice_By_Name_Mac_Ip=Sök enhetsnamn, MAC eller IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Sök efter enhetsnamn, MAC, IP eller subnät
 BwLimiter_Target=Mål
 BwLimiter_enter_bandwidth=Ange ett värde för bandbredd.
 BwLimiter_max=Regler för bandbreddsbegränsning har nått maxgränsen (32).
@@ -1944,7 +1960,9 @@ btn_go=GÅ
 btn_goSetting=Gå till Inställning
 btn_remove=Ta bort
 btn_send=Skicka
+btn_resend=Skicka igen
 btn_to_WAN=WAN-inställning
+btn_verify=Verifiera
 Capability=Kapacitet
 Captcha=Captcha
 Captcha_note=Ange captcha.
@@ -2154,10 +2172,10 @@ Device_type_03_AP=Anslutningspunkt
 Device_type_04_NS=NAS
 Device_type_05_IC=IP-kamera
 Device_type_06_OD=Annan enhet
-deviceDiscorvy2=I läget Repeterarläge ändras den DHCP-tilldelade IP-adressen. Installera och använd verktyget <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> för att gå till den trådlösa routerns nya IP-adress.
-deviceDiscorvy3=I Access Point (AP) läge, ändras DHCP-tilldelade IP-adressen. Installera och använd <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> för att upptäcka den trådlösa routerns IP-adressen.
-AiMesh_deviceDiscorvy3=När AiMesh-routrar är i AP-läge, ändras IP-adressen som tilldelats av DHCP. Installera och använd <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Enhetsidentifieringsverktyg) för att identifiera den trådlösa routerns IP-adress.
-deviceDiscorvy4=I läget Mediebrygga ändras den DHCP-tilldelade IP-adressen. Installera och använd verktyget <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> för att gå till den trådlösa routerns nya IP-adress.
+deviceDiscorvy2=I läget Repeterarläge ändras den DHCP-tilldelade IP-adressen. Installera och använd verktyget <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> för att gå till den trådlösa routerns nya IP-adress.
+deviceDiscorvy3=I Access Point (AP) läge, ändras DHCP-tilldelade IP-adressen. Installera och använd <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> för att upptäcka den trådlösa routerns IP-adressen.
+AiMesh_deviceDiscorvy3=När AiMesh-routrar är i AP-läge, ändras IP-adressen som tilldelats av DHCP. Installera och använd <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Enhetsidentifieringsverktyg) för att identifiera den trådlösa routerns IP-adress.
+deviceDiscorvy4=I läget Mediebrygga ändras den DHCP-tilldelade IP-adressen. Installera och använd verktyget <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> för att gå till den trådlösa routerns nya IP-adress.
 DeviceSecurity11a_display1_sectiondesc=Det trådlösa MAC-filtret gör det möjligt att kontrollera paket från enheter med angivna MAC-adresser i ditt trådlösa LAN.
 DHCP_query_freq=DHCP-frågefrekvens
 DHCPaggressive=Aggressivt läge
@@ -2340,7 +2358,7 @@ Excute_processing=Installerar...
 External=Extern enbart
 Extend_TTL_Value=Utöka TTL-värdet
 EZQoS=EZQoS bandbreddshantering
-EzQoS_bandwidth_note1=Ange uppladdning och ladda ner Hämta bandbreddsinformation från Internetleverantören eller gå till <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> för att kontrollera bandbredden.
+EzQoS_bandwidth_note1=Ange uppladdning och ladda ner Hämta bandbreddsinformation från Internetleverantören eller gå till <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> för att kontrollera bandbredden.
 EzQoS_bandwidth_note2=Standard är 0, vilket betyder obegränsad bandbredd.
 EzQoS_desc=QoS (Quality of Service) säkerställer bandbredd för prioriterade arbetsuppgifter och applikationer.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Adaptiv QoS</span> garanterar inkommande och utgående bandbredd för både trådanslutna och trådlösa anslutningar för prioriterade program och åtgärder via fördefinierade, dra-och-släpp förinställningar: spel, mediaströmning, VoIP, webbsurfning och filöverföring.
@@ -2407,11 +2425,11 @@ feedback_email_alert=E-postadressens format är ogiltigt.
 feedback_email_confirm=Fältet för E-postadress är tomt. Är du säker på att du vill fortsätta?
 feedback_extra_info=Extra information för felsökning
 feedback_fail0=Din feedback kunde inte skickas. Kontrollera din Internetanslutning och försök igen.
-feedback_fail1=<span style="color:#FC0;">Systemet kunde inte ansluta till e-postservern.</span> Du kan skicka ett mail direkt till
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Systemet kunde inte ansluta till e-postservern.</span> Du kan skicka ett mail direkt till
 feedback_fail2=Kopiera bara innehållet nedan och klistra in det som innehåll i ditt e-postmeddelande.
 feedback_fail3=Ladda ner dessa felsökningsfiler och bifoga dem till ett e-postmeddelande:
 feedback_fail0_new=Systemet kunde inte ansluta till feedback-servern.
-feedback_fail1_new=<span>Om du stöter på problem med användningen eller behöver teknisk support, vänligen kontakta ASUS kundtjänstcenter först&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiellt stöd | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Om du stöter på problem med användningen eller behöver teknisk support, vänligen kontakta ASUS kundtjänstcenter först&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiellt stöd | ASUS Global)</a>.</span>
 feedback_fail2_new=Du kan också skicka följande upptäckta felrapport till router_feedback@asus.com för att ge utvecklingsteamet förslag på förbättringar. Tack.
 feedback_fail_BindGoogle=Du kan också <a id="bind_google">koppla ditt Google-konto</a>och skicka feedback via e-post.
 feedback_format_alert=The format is not valid.
@@ -2433,7 +2451,7 @@ feedback_note3=Genom att skicka din feedback, samtycker du till att ASUS får an
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Genom att skicka din feedback, samtycker du till att ASUS får använda din feedback för att förbättra sina xDSL-modemrouterprodukter.
 feedback_note4=Om du har brådskande ärende, fråga din lokala tekniska support.
 feedback_note5=Feedback pågår. Omstart kan göra att programmet avslutas och feedbacken inte kan slutföras. Starta om senare.
-feedback_note6=<span>Detta system ger inte individuella svar. Om du har problem med användningen eller behöver teknisk support, vänligen kontakta ASUS kundtjänstcenter</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiellt stöd | ASUS Global)</a>.
+feedback_note6=<span>Detta system ger inte individuella svar. Om du har problem med användningen eller behöver teknisk support, vänligen kontakta ASUS kundtjänstcenter</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiellt stöd | ASUS Global)</a>.
 feedback_note7=Vårt professionella team kommer att vara dedikerade till att hjälpa dig. Tack.
 feedback_Occasion_interrupt=Tillfälliga avbrott
 feedback_optional=* Valfritt
@@ -2592,7 +2610,7 @@ FW_auto_time=Föredragen uppgraderingstid
 FW_auto_upgrade=Automatisk uppgradering av inbyggd programvara
 FW_auto_upgrade_desc=Installera systemuppdateringar automatiskt över natten efter att de har hämtats. Vissa uppgraderingar som åtgärdar viktiga säkerhetsproblem eller uppfyller juridiska/regulatoriska krav kommer fortfarande att hämtas och installeras automatiskt, även om Automatisk uppgradering av inbyggd programvara är avstängd.
 FW_beta_check=Jag vill hämta inbyggd beta-programvara.
-FW_desc0=Hämta den senaste fasta programvaran från <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">ASUS supportwebbplats på</a>
+FW_desc0=Hämta den senaste fasta programvaran från <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">ASUS supportwebbplats på</a>
 FW_desc1=Besök ASUS supportwebbplats https://www.asus.com/support/ för den senaste fasta programvaran.
 fw_downloading=Ladda ned fast program
 FW_item1=Produkt-ID
@@ -2600,9 +2618,9 @@ FW_item2=Fast programvaruversion
 FW_item5=Ny fast programvarufil
 FW_manual_update=Manuell uppdatering av inbyggd programvara
 FW_n0=Den senaste fasta programvaruversionen innehåller uppdateringar för den tidigare versionen.
-FW_n2=Om uppgraderingen misslyckas aktiveras automatiskt nödläget i ZMODELVZ. Detta indikeras i så fall med LED:erna på framsidan av ZVMODELVZ. Besök <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> för att ladda ner ASUS Firmware Restoration-verktyget för en manuell uppdatering.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=Om uppgraderingen misslyckas aktiveras automatiskt nödläget i ZMODELVZ. Detta indikeras i så fall med LED:erna på framsidan av ZVMODELVZ. Besök <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> för att ladda ner ASUS Firmware Restoration-verktyget för en manuell uppdatering.
+FW_n3=Se <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a> för fler instruktioner.
+FW_n4=Se <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a> för fler instruktioner.
 FW_n5=Avseende datainsamling för uppgraderingar av inbyggd programvara/säkerhet, finns information i ”ASUS SEKRETESSMEDDELANDE (för uppgraderingar av inbyggd programvara/säkerhet)” på sidan ”Administration -> Sekretess”.
 FW_note=Obs:
 FW_note_AiMesh=En manuell uppdatering av inbyggd programvara kommer endast att uppdatera valda AiMesh-routrar/-noder när AiMesh-systemet används. Kontrollera att du överför korrekt verson av AiMesh inbyggda programvara till varje tillämplig router/nod.
@@ -2677,12 +2695,12 @@ GB_account_type2=Avancerat routerkonto
 GB_ended_date=Slutade den
 GB_ended_date_desc=WTFastger varje ny användare en 14-dagars avancerad försöksperiod, som bara berör det avancerade kontot med fler alternativ för proxy-server. När försöksperioden går ut, kan du ändå använda en livslång prenumeration med grundläggande kontofunktioner, som är utan kostnad och har trafikbegränsningar.
 GB_ended_date_type0=Du använder för närvarande grundläggande kostnadsfritt routerkonto.
-GB_management_note1=När du använder WTFast-powered Game Boost, accepterar du WTFasts <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">Villkor</a></span> och <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">Sekretesspolicy</a></span>.
-GB_management_note2=Som framgår av friskrivningen på vår prioduktsida, arbetar WTFast fortfarande på utvecklingen av spelkonsolsupport. För en lista över spel som för närvarande stöds, se <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">denna lista</a>. (uppdateras regelbundet)
+GB_management_note1=När du använder WTFast-powered Game Boost, accepterar du WTFasts <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Villkor</a></span> och <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Sekretesspolicy</a></span>.
+GB_management_note2=Som framgår av friskrivningen på vår prioduktsida, arbetar WTFast fortfarande på utvecklingen av spelkonsolsupport. För en lista över spel som för närvarande stöds, se <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">denna lista</a>. (uppdateras regelbundet)
 GB_management_note3=GPN-prestanda varierar beroende på din ISP eller plats. Kontrollera att din firmware alltid är uppdaterad.
-GB_management_note4=Hur väljer jag en bra GPN-server? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Här</a></span> Hur kan jag få bästa spelupplevelse? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Här</a></span>
-GB_management_note5=Hur använder jag WTFast på ASUS-router? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Här</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=Hur väljer jag en bra GPN-server? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Här</a></span> Hur kan jag få bästa spelupplevelse? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Här</a></span>
+GB_management_note5=Hur använder jag WTFast på ASUS-router? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Här</a></span>
+GB_mobile=Mobilt spelläge
 GB_mobile_desc=Förstärk ditt mobilspel
 GB_mobile_desc1=Ladda ned och installera ASUS Router App. Aktivera mobilt spelläge i appen för att vara säker på att du får de bästa mobila spelupplevelserna.
 GB_mobile_desc_short=Ladda ned och installera ASUS Router App.
@@ -3083,7 +3101,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Internt] Registrera ett domännamn via di
 LANHostConfig_x_DDNS_update_confirm=IP-adress, server och värdnamn har inte ändrats sedan den senaste uppdateringen. Om du vill uppdatera, klicka på [Ja].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (Dynamic Domain Name System) är en tjänst som låter nätverksklienter ansluta till den trådlösa routern via ett registrerat domännamn även med en dynamisk publik IP-adress.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Mer information finns i <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">denna Vanliga frågor</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Mer information finns i <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">denna Vanliga frågor</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Värdnamnet har integrerats framgångsrikt. Du kan använda "[värdnamn].asuscomm.com" för att komma åt tjänsten på hemnätverket från WAN. Använd "[värdnamn].asuscomm.com" för fjärråtkomst till ditt nätverk.<p>Gå till Advanced Setting (Avancerade inställningar) > WAN för att konfigurera portvidarebefordran eller DMZ-inställningar för att ge andra WAN-klienter fjärråtkomst till ditt nätverk.<p>Om du vill fjärrkonfigurera den trådlösa routern, gå till <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">här</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=Den aktuella routern använder en privat IP-adress.
 LANHostConfig_x_DDNSEnable_faq1=Introduktion och konfiguration av DDNS
@@ -3406,7 +3424,7 @@ ParentalCtrl_default=Som standard är Internet-åtkomsten begränsad i tidsinter
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=Som standard är Internet-åtkomsten begränsad i tidsintervall.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Enheter som läggs till klassificeringskontrollen kommer att få sin Internetåtkomst begränsad som standard.
 ParentalCtrl_deny=Neka
-ParentalCtrl_disable_NAT=Avaktivera i <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT-acceleration</a> för att få en mer precis schemaläggningskontroll.
+ParentalCtrl_disable_NAT=Avaktivera i <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT-acceleration</a> för att få en mer precis schemaläggningskontroll.
 ParentalCtrl_Enable=Aktivera föräldrakontroll
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Aktivera enhetsåtkomstkontroll
 ParentalCtrl_Enable_TS=Aktivera tidsschemaläggning
@@ -3715,6 +3733,7 @@ select_service=Välj tjänstens namn.
 select_usb_device=Välj USB-enhet
 select_usb_mode=USB Mode
 select_wireless_MAC=Välj MAC-adressen för den trådlösa klienten.
+Sending_str=Skickar…
 Send_mail=Skicka e-post
 Serial_Number=Serienummer
 Servers_Center=Servercenter
@@ -3914,10 +3933,33 @@ SDN_Scenarios_desc=Vill du lägga till ytterligare ett trådlöst nätverk för 
 SDN_MainFH_for_clients=MLO Fronthaul för klienter
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Eftersom Smart Connect-regeln har skapats, välj ett enda WiFi-band.
+SDN_mlo_switch_fh_hint1=Endast en aktiv MLO-fronthaul är tillåten.
+SDN_mlo_switch_fh_hint2=Vill du inaktivera MLO Fronthaul för %1$@ och aktivera %2$@?
 SDN_Sync_To_All_Node=Synkronisera med alla AiMesh-noder
 SDN_Sync_To_All_Node_Hint=Om dina AiMesh-noder är äldre modeller eller om WiFi har nått sin maximala kapacitet, kommer det inte vara möjligt att synkronisera alla AiMesh-noder. Välj de noder som ska synkroniseras från menyn nedan.
 SDN_Sync_limitation_Hint=För äldre AiMesh-noder finns det begränsningar för att synkronisera alla band.
 SDN_MainFH_WiFi_conflict=%1$@ WiFi-band har använts. De motstridiga %2$@ (%3$@) nätverken kommer att tas bort efter att inställningarna har tillämpats.
+SDN_Auth_WPA3_only_subtext1=Högsta säkerhetsnivån med endast WPA3-anslutningar.
+SDN_Auth_WPA3_only_subtext2=(Obs! Äldre enheter utan stöd för WPA3 kanske inte kan ansluta.)
+SDN_Auth_WPA3_dual=Standardalternativet för säkerhet med dubbelläge.
+SDN_Auth_WPA3_dual_desc=Moderna enheter ansluter via WPA3 medan äldre använder WPA2.
+SDN_Auth_WPA3_dual_mode=Kompatibilitetsläge
+SDN_Auth_WPA3_dual_mode_subtext1=Förbättrat säkerhetsalternativ med dubbelläge optimerat för äldre enheter med RSN-åsidosättning.
+SDN_Auth_WPA3_dual_mode_subtext2=Säkerställer att äldre enheter förblir anslutna medan moderna använder WPA3.
+SDN_Auth_WPA3_dual_mode_subtext3=(Obs! Vissa enheter i mellangenerationen kan använda WPA2.)
+SDN_Auth_WPA3_subtext=Ett förbättrat säkerhetsalternativ som är optimerat för äldre enheter med hjälp av RSN overriding. Det ger maximal säkerhet för moderna enheter samtidigt som stabila anslutningar bibehålls för mindre moderna klienter.
+SDN_WiFi_Mode_Only6G_Hint=För att uppfylla globala WiFi-standarder måste alla nätverk i 6 GHz-bandet använda samma WiFi-generation.
+SDN_WiFi_Mode_24G_Hint=2,4 GHz fungerar enligt inställningarna för ditt WiFi-läge.
+SDN_Compatibility_Mode_Off=Kompatibilitetsläget är avstängt.
+SDN_Compatibility_Mode_24=2,4 GHz-kompatibilitetsläge
+SDN_Balance_Mode=Balanserad
+SDN_Balance_Mode_desc=Optimal balans mellan prestanda och enhetskompatibilitet.
+SDN_Balance_Mode_desc1=2,4 GHz fungerar i WiFi 6-läge.
+SDN_Ultra_Compatibility_Mode=Maximal kompatibilitet
+SDN_Ultra_Compatibility_Mode_desc=Säkerställer stabil anslutning för äldre eller befintliga IoT-enheter.
+SDN_Ultra_Compatibility_Mode_desc1=2,4 GHz fungerar i WiFi 4-läge.
+SDN_IPv6_FreeWiFi_Hint=Obs! Free WiFi har inte stöd för miljöer med enbart IPv6. Kontrollera att IPv4 eller Dual-Stack är aktiverat för klientomdirigering.
+SDN_IPv6_MessageBoard_Hint=Obs! Message Board har inte stöd för miljöer med enbart IPv6. Kontrollera att IPv4 eller Dual-Stack är aktiverat för klienten.
 t2BC=Grundläggande konfig
 t2LAN=LAN
 t2Misc=Övrigt
@@ -3992,7 +4034,9 @@ TZ02=Midway Island, Samoa
 TZ03=Hawaii
 TZ04=Alaska
 TZ05=Pacific Time (USA, Kanada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Mountain Time (USA, Kanada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4148,7 +4192,7 @@ usb_tls_conflict=Tillåt anonym inloggning står i konflikt med TLS-inställning
 usb_tls_conflict_WANacc=WAN-åtkomst är i konflikt med TLS-inställningarna.
 usb_uninstalling=Avinstallerar app från USB-lagringsenheten
 usb_unmount=USB-funktionen är inaktiverad
-use_DevDiscoveryUtil=Installera och använd <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> för att upptäcka den trådlösa routerns IP-adressen.
+use_DevDiscoveryUtil=Installera och använd <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> för att upptäcka den trådlösa routerns IP-adressen.
 Username=Användarnamn
 Username_Pwd=Användarnamn och lösenord
 UserQoS_desc=I rullgardinsmenyn i User-defined QoS rules (Användardefinierade QoS-regler) kan du prioritera nätverksapplikationer eller -enheter i fem olika nivåer. Beroende på prioritetsnivå använder QoS följande metoder vid sändning av datapaket:<ul><li>Byt turordning för uppströms nätverkspaket vilket hänvisar till den turordning i vilken paket sänds till internet.</li><li>Paket med låg prioritet ignoreras för att garantera överföringen av högprioritetspaket. Uppströmspaket med högre prioritet orsakar nedströmspaket med högre prioritet.</li><li>Om inga paket skickas från högprioritetsapplikationer görs internetanslutningens hela överföringshastighet tillgänglig för paket med låg prioritet.</li></ul>
@@ -4158,6 +4202,7 @@ UserQoS_transferred_hint=I spalten [Överfört], ställ in begränsningen för n
 UserQoSRule_desc_zero=Aktivera QoS och ställ sedan in användardefinierade regler.
 UserQoSRule_desc_one=Som standard är bandbreddsprioriteten för överföring och hämtning "Låg". Saknas regel för bandbreddsprioritet, är bandbreddsprioriteten för både överföring och hämtning "Låg".
 Utility=Verktyg
+Verifying_str=Verifierar…
 Video_Find=Hitta handledningsvideor
 Video_Link1=Klicka för att öppna handledningsvideon.
 View_List=Visa lista
@@ -4256,7 +4301,7 @@ vpn_openvpn_required_acc_pwd=Användarnamn och lösenord krävs för den aktuell
 vpn_openvpnc_importCA=Importera CA-fil
 vpn_openvpnc_importovpn=Importera .ovpn-fil
 vpn_openvpnc_manual=Importera CA-filen eller ändra .ovpn-filen manuellt.
-vpn_privateIP_hint=Den trådlösa routern använder en privat WAN IP-adress (192.168.x.x, 10.x.x.x eller 172.16.x.x). Se <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>FAQ</a> och ställ in portvidarebefordran.
+vpn_privateIP_hint=Den trådlösa routern använder en privat WAN IP-adress (192.168.x.x, 10.x.x.x eller 172.16.x.x). Se <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>FAQ</a> och ställ in portvidarebefordran.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT stödjer bara en VPN-serveranslutning åt gången. Om du aktiverar \"OpenVPN server\", så inaktiveras \"PPTP server\" automatiskt. Är du säker på att du vill aktivera VPN-servern?
@@ -4352,6 +4397,32 @@ vpnc_profile_assignALL=Gäller för alla enheter
 vpnc_profile_assignDevice=Tilldela enheter till denna profil.
 vpnc_profile_del=Ta bort profil
 vpnc_profile_select_suggest=Vänligen välj en annan VPN-profil för att avbryta standard-WAN för internet.
+vpnc_ssk_login=Logga in på ditt Surfshark-konto
+vpnc_ssk_login_note=Ange både konto och lösenord.
+vpnc_ssk_invalid_long=Kontot eller lösenordet är för långt (max 128 tecken).
+vpnc_ssk_invalid_char=Kontot eller lösenordet innehåller ogiltiga tecken.
+vpnc_ssk_invalid_format=Ogiltigt konto- eller lösenordsformat.
+vpnc_ssk_login_AuthCode=Ange den 6-siffriga verifieringskoden som skickades till din e-post eller genererades av Authenticator-appen.
+vpnc_ssk_login_AuthCode_enter=Ange den 6-siffriga verifieringskoden.
+vpnc_ssk_login_AuthCode_confirm=Har du inte fått verifieringskoden? Klicka på "Skicka igen" ovan så skickar vi en ny verifieringskod.
+vpnc_ssk_login_AuthCode_resender=Skicka igen om %1$@s
+vpnc_ssk_login_ErrMsg1=Fel konto eller lösenord.
+vpnc_ssk_login_ErrMsg2=Surfshark-servern är inte tillgänglig. Försök igen senare.
+vpnc_ssk_login_ErrMsg4=Konfigurationsfel. Kontrollera dina inställningar.
+vpnc_ssk_login_ErrMsg41=Konfigurationsfel.
+vpnc_ssk_login_ErrMsg5=Nätverksfel. Det går inte att ansluta till Surfshark.
+vpnc_ssk_login_ErrMsgDef=Inloggningen misslyckades. Försök igen.
+vpnc_ssk_login_success=Inloggning till Surfshark lyckades.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Är du säker på att du vill logga ut från ditt konto?
+vpnc_ssk_Failed_resend=Det gick inte att skicka koden igen. Försök igen.
+vpnc_ssk_Failed_verification=Ogiltig verifieringskod. Försök igen.
+vpnc_ssk_KeyPair_max=Ditt Surfshark-konto har nått det maximala antalet VPN-nyckelpar (50). Om du vill skapa en ny VPN-anslutning tar du bort oanvända nyckelpar från ditt Surfshark-konto och försöker igen.
+vpnc_ssk_Missing_credent=Inloggningsuppgifter saknas. Stäng appen och logga in igen.
+vpnc_ssk_Timeout_login=Tidsgränsen för inloggningsbegäran överskreds. Försök igen.
+vpnc_ssk_Timeout_resend=Tidsgränsen för att skicka igen överskreds. Försök igen.
+vpnc_ssk_Timeout_verification=Tidsgränsen för verifieringsbegäran överskreds. Försök igen.
+vpnc_ssk_Timeout_network=Nätverksfel. Försök igen.
 vpnc_step=För att starta en VPN-anslutning, följ stegen nedan:
 vpnc_step1=Lägg till profil
 vpnc_step2=Välj en VPN-ansluningstyp
@@ -4359,6 +4430,7 @@ vpnc_step3=Ange VPN-autenticeringsinformationen du fått av VPN-leverantören oc
 vpnc_title=VPN-klient
 vpnc_peer=Peer
 vpnc_pppoe_dis_nat_confirm=Om du använder en VPN-klient med en PPPoE-anslutning så startas routern om automatiskt så att NAT-accelerationen ska slås av. Vill du fortsätta?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Barriär
 WAN_Cfg_Ethernet_WAN=Konfigurera Ethernet WAN-inställningarna för ZVMODELVZ.
 WAN_default_route=Standardväg
@@ -4423,7 +4495,7 @@ WANTCPMSSOptionText=TCP MSS-alternativ
 WANTCPMSSOptionComm1Text=byte
 WANVLANIDText=VLAN-ID
 WANAggregation=WAN-aggregering
-WANAggregation_desc=WAN-aggregeringen kombinerar två nätverksanslutningar för att öka WAN-hastigheten till upp till 2 Gbit/s. Anslut routerns #WAN-port och LAN 4-port till modemets LAN-portar (se till att använda två kablar med samma specifikationer). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Vanliga frågor om WAN-aggregering</a>
+WANAggregation_desc=WAN-aggregeringen kombinerar två nätverksanslutningar för att öka WAN-hastigheten till upp till 2 Gbit/s. Anslut routerns #WAN-port och LAN 4-port till modemets LAN-portar (se till att använda två kablar med samma specifikationer). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">Vanliga frågor om WAN-aggregering</a>
 WANAggregation_enable=Aktivera WAN-aggregering
 WANAggregation_disable_dualwan=Dubbel WAN är aktiverat på routern. Om du aktiverar WAN-aggregering kommer detta att inaktivera dubbel WAN. Vill du fortsätta?
 WANAggregation_disable_WANAggregation=WAN-aggregering är aktiverat på routern. Om du aktiverar dubbel WAN kommer detta att inaktivera WAN-aggregeringen. Vill du fortsätta?
@@ -4432,13 +4504,13 @@ WANAggregation_PortConflict_hint2=IPTV används i routerns LAN 4-port. Om du akt
 WANAggregation_disable_IPTVDualWAN=Både dubbel WAN och IPTV är aktiverade på routern. Om du aktiverar WAN-aggregering kommer detta att inaktivera dubbel WAN och IPTV så att det inte blir några portkonflikter. Vill du fortsätta?
 WANAggregation_help_WAN=Säkerställ att routerns #WAN-port och modemets LAN-port har anslutits med två kablar med samma specifikationer.
 WANAggregation_help_LAN=Säkerställ att routerns LAN 4-port och modemets LAN-port har anslutits med två kablar med samma specifikationer.
-WANAggregation_goto_WAN=Gå till sidan för <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-internetanslutning</a> för att aktivera WAN-aggregeringen.
+WANAggregation_goto_WAN=Gå till sidan för <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-internetanslutning</a> för att aktivera WAN-aggregeringen.
 WANAggregation_help_desc=Om konfigureringen av WAN-aggregering inte fungerar följer du stegen nedan för att försöka igen.
 WANAggregation_help_step1=Var noga med att ditt modems LAN-portar redan har kablar anslutna till din routers #WAN och LAN 4.
 WANAggregation_help_step2=Kontrollera att 802.3ad är aktiverat på modemet.
 WANAggregation_help_step3=Bekräfta att du använder två kablar med samma specifikationer (antingen gigabit och gigabit eller 10/100 och 10/100 Mbit/s).
 WANAggregation_help_step4=Starta om routern.
-WANAggregation_help_final=Om stegen ovan inte fungerar ska du rapportera problemet på <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS supportwebbplats</a>.
+WANAggregation_help_final=Om stegen ovan inte fungerar ska du rapportera problemet på <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>ASUS supportwebbplats</a>.
 WANAggregation_wanType_hint=WAN-aggregering har inte stöd för PPoE, PPTP, L2TP och liknande WAN-typer. Om WAN-typen ändras till PPPoE, PPTP eller L2TP stängs WAN-aggregeringen automatiskt av. Vill du fortsätta?
 WebGUI_issue=Får inte åtkomst till sidan med inbyggd programvara
 wechat=WeChat
@@ -4546,8 +4618,8 @@ WLANConfig11b_display31_sectiondesc=Välj läge [WDS Only] eller [Hybrid] och l�
 WLANConfig11b_display32_sectiondesc=Se till att denna trådlösa router och den AP du vill ansluta till använder samma kanal.
 WLANConfig11b_display33_sectiondesc=I AP:ns WDS-hanteringsgränsnitt, ange AP:ns MAC-adress i AP-listan och den trådlösa routerns MAC-adress.
 WLANConfig11b_display34_sectiondesc=För att få bästa prestanda, gå till Avancerade inställningar > Trådlös > Allmänt och tilldela varje router i nätverket samma kanalbandbredd, kontrollkanal och förlängningskanal.
-WLANConfig11b_display41_sectiondesc=Du använder för närvarande inte Auto channel bandwidth (Automatisk Kanalbandbredd). Klicka på <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">Här</a> för att ändra.
-WLANConfig11b_display42_sectiondesc=Du använder för närvarande inte Auto channel (Automatisk kanal). Klicka på <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">Här</a> för att ändra.
+WLANConfig11b_display41_sectiondesc=Du använder för närvarande inte Auto channel bandwidth (Automatisk Kanalbandbredd). Klicka på <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">Här</a> för att ändra.
+WLANConfig11b_display42_sectiondesc=Du använder för närvarande inte Auto channel (Automatisk kanal). Klicka på <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">Här</a> för att ändra.
 WLANConfig11b_display5_sectiondesc=Med trådlös professionell inställning kan du ställa in ytterligare trådlösa parametrar. Standardvärdena rekommenderas dock.
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup, WiFi-skyddad inställning) etablerar ett trådlöst nätverk på ett enkelt och säkert sätt. Konfigurera WPS här via PIN-kod eller WPS-knappen.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4605,6 +4677,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=Aktivera eller inaktivera WMM APSD (Automatic Power Save Delivery).
 WLANConfig11b_x_APSD_itemname=Aktivera WMM APSD
 WLANConfig11b_x_Airtime_Fairness=Airtime Fairness
+WLANConfig11b_x_ApplyAllBands_hint=Den här justeringen kommer att tillämpas på alla bandinställningar.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=Trådöst läge måste ställas på Auto.
 WLANConfig11b_x_Beacon_itemdesc=Beaconintervall anger tiden mellan en beacon och nästa. Standardvärdet är 100 (millisekunder, eller1/1000-dels sekund). Sänk beaconintervallet för att förbättra överföringens prestanda i instabila miljöer eller för roamingklienter. Det kräver större strömförbrukning.
@@ -4701,11 +4774,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Om du väljer PIN (personligt informationsnumme
 WLANConfig11b_x_WPSMode_itemname=WPS-metod:
 WLANConfig11b_x_WPSPIN_itemdesc=Ange ett åttasiffrigt nummer som klientens PIN-kod.<p>
 WLANConfig11b_x_WPSPIN_itemname=Klientens PIN-kod
-WLANConfig11n_Auto_note=[automatiskt] är inte kompatibelt med nuvarande metod för autentisering av gästnätverk (TKIP eller WEP). Gå till <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Gästnätverk</a> och ändra autentiseringsmetod.
+WLANConfig11n_Auto_note=[automatiskt] är inte kompatibelt med nuvarande metod för autentisering av gästnätverk (TKIP eller WEP). Gå till <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Gästnätverk</a> och ändra autentiseringsmetod.
 WLANConfig11n_automode_limition_hint=I automatiskt med WEP-eller TKIP-kryptering stöder ZVMODELVZ en max överföringshastighet på 54 Mbps.
 WLANConfig11n_automode_limition_hint1=Ändra till WPA2-Personal.
-WLANConfig11n_NAC_note=[N+AC] är inte kompatibelt med nuvarande metod för autentisering av gästnätverk (TKIP eller WEP). Gå till <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Gästnätverk</a> och ändra autentiseringsmetod.
-WLANConfig11n_NOnly_note=[N Only] är inte kompatibelt med nuvarande metod för autentisering av gästnätverk (TKIP eller WEP). Gå till <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Gästnätverk</a> och ändra autentiseringsmetod.
+WLANConfig11n_NAC_note=[N+AC] är inte kompatibelt med nuvarande metod för autentisering av gästnätverk (TKIP eller WEP). Gå till <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Gästnätverk</a> och ändra autentiseringsmetod.
+WLANConfig11n_NOnly_note=[N Only] är inte kompatibelt med nuvarande metod för autentisering av gästnätverk (TKIP eller WEP). Gå till <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Gästnätverk</a> och ändra autentiseringsmetod.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Inledningstypen definierar längden på CRC-blocket (Cyclic Redundancy Check), vilket är en teknik för upptäckt av dataöverföringsfel mellan trådlösa enheter. Vi rekommenderar att du ställer in samma inledningstyp på alla trådlösa enheter. Använd kort inledning för trådlösa enheter i områden med hög nätverkstrafik. Använd lång inledning för äldre trådlösa enheter.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4823,7 +4896,21 @@ Captive_Portal_Above=ovan
 Captive_Portal_Selected_Color=Vald färg
 Captive_Portal_Local=Lokalt
 Configuration=Konfiguration
+Configuration_dark_mode=Mörk
+Configuration_light_mode=Ljus
+Configuration_theme=Tema
+Configuration_fancy_theme=Stilren
+Configuration_flat_theme=Platt
 Continuous_Mode=kontinuerligt läge
+View_Details=Visa detaljer
+NetworkMap_Clients=Klienter
+NetworkMap_Guest_Clients=Gästklienter
+NetworkMap_Add_AiMesh_Hint=Lägg till fler AiMesh-noder för att utöka din WiFi-täckning.
+Dashboard_Show_more=Visa mer
+Dashboard_Show_less=Visa mindre
+Dashboard_Expand=Expandera
+Dashboard_Refreshing=Uppdaterar
+Dashboard_Last_updated=Senast uppdaterad
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Åtkomstprincip
 FreeWiFi_AccountSetting_desc1=Account Setting (Kontoinställning) är en enkel gästkontokonfiguration, som ger dig möjlighet att behålla gästkontodatabasen för gästnätverket. Den associerade klienten måste ange följande konto och lösenord för att logga in innan han/hon får åtkomst till Internet.
@@ -4953,8 +5040,8 @@ AURA_Event_Note=Obs! När du har valt Händelse visar systemet olika LED-effekte
 AURA_Scheme_Marquee=Rullande
 AURA_Scheme_Gradient=Toning
 AURA_Scheme_Evolution=Utveckling
-UU_Accelerator=网易 UU 加速器
-UU_Accelerator_desc=UU 路由器插件为三大主机（PS4、Switch、Xbox One）、PC 外服端游提供加速。可实现多设备同时加速，畅享全球联机超快感！
+UU_Accelerator=UU 加速器
+UU_Accelerator_desc=UU 加速器为全平台主机（PlayStation、Xbox、Switch、Steam Deck、ROG掌机等）、PC、手机提供游戏加速服务，可实现多设备同时加速，畅享全球联机超快感！
 weekSche_All_Day=Hela dagen
 weekSche_Start_Time=Starttid
 weekSche_End_Time=Sluttid
@@ -5075,12 +5162,39 @@ Notice_Message_2=På grund av systemoptimering, vänligen lägg till det befintl
 Notice_Message_3=Jag har läst det, visa inte igen.
 CTL_Decline=Avböj
 Outdoor_desc_title=Warning
-Outdoor_desc1=By enabling outdoor mode, AiMesh will be limited and might cause mesh node disconnect.
-Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.
-WiFi_Channel=Wi-Fi-kanal
+Outdoor_active_desc_1=Genom att aktivera utomhusläge kommer AiMesh att begränsas och kan orsaka att mesh-noden kopplas bort.
+Outdoor_active_desc_2=För att följa reglerna kommer systemet att skanna kanaler i cirka 1 minut för att undvika störningar från väderradar. <span style="color:var(--wrt-badge-warning-color,#FC0)">Om radarsignaler upptäcks växlar det till 2,4GHz, vilket orsakar ett kort avbrott. Den påverkade kanalen blockeras i 30 minuter.</span>
+Outdoor_active_desc_3=Utomhusläge stöder endast router- och AP-lägen.
+Outdoor_active_desc_4=Tillgängliga utomhuskanaler varierar beroende på land/region.
+Outdoor_inactive_desc_1=Inaktivering av detta läge kommer tillfälligt att starta om det trådlösa nätverket och koppla bort alla enheter.
+Outdoor_inactive_desc_2=Systemet kommer att växla till inställningar som överenstämmer med inomhusföreskrifter.
+Outdoor_mode=Utomhusläge
+Outdoor_mode_off=Av
+Outdoor_status=Utomhusstatus
+Outdoor_status_hint=En utomhusenhet har upptäckts. För att säkerställa laglig drift enligt trådlösa föreskrifter är dina 5G-kanaler nu begränsade till det godkända intervallet för utomhusbruk.
+WiFi_Channel=WiFi-kanal
 Channel_In_Use=Kanal i bruk
-OtherWifi_Interference=Wi-Fi-störning
-NonWifi_Interference=Icke-Wi-Fi-störning
+Wifi_Auto_Refresh=Automatisk uppdatering
+Wifi_Detect_Interference=Upptäck störning
+Wifi_Interference=Störning
+Wifi_in_ch_Interference=Störning i kanal
+Wifi_specscan_Interference=Spektrumskanning Störning
+Wifi_specscan_hint=Spektrumstörningsskanning täcker endast 2.4GHz och 5GHz banden.
+OtherWifi_Interference=Andra WiFi-störningar
+NonWifi_Interference=Icke-WiFi Störning
+WiFi_Optimized_auto=Optimerad automatiskt
+WiFi_Optimized=Optimerad
+WiFi_INIT=Initialt automatiskt val
+WiFi_After_Boot=Automatiskt val efter omstart
+WiFi_Boot=Uppstart
+WiFi_Adaptive_bw=Adaptiv bandbredd
+WiFi_CSA_Expand=Expandera
+WiFi_CSA_Reduce=Minska
+WiFi_DFS_REENTRY=DFS-ÅTERINTRÄDE
+WiFi_ch_conflict=Kanal konflikt
+WiFi_Regulatory=Regulatorisk
+WiFi_OFF=WiFi Av
+WiFi8_6G_enable_hint=6 GHz körs för närvarande i WiFi 7-läge. Aktivera "WiFi 8" under Wireless Professional-inställningarna för 6 GHz för att använda WiFi 8.
 Vendor=Tillverkare
 Connected_AP=Ansluten AP
 Network_SDN=Nätverk(SDN)

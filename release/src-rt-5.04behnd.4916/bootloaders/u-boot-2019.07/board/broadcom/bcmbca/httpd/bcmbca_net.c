@@ -140,6 +140,8 @@ void httpd_poll_post_process(void)
 	return;
 }
 
+extern int asus_rescue;
+
 int http_rcv(uchar *in_packet, int len, struct ip_udp_hdr *ip)
 {
 	if(ip->ip_p == IPPROTO_TCP)
@@ -178,6 +180,12 @@ int http_rcv(uchar *in_packet, int len, struct ip_udp_hdr *ip)
 						httpd_reset_wait_start_ticks = get_ticks();
 						httpd_reset_wait_timeout_sec = HTTPD_RESET_WAIT_SEC;
 						printk("Resetting in %llu seconds....\n", httpd_reset_wait_timeout_sec);
+						if (asus_rescue) {
+							net_set_udp_handler(NULL);
+							net_set_arp_handler(NULL);
+							net_set_timeout_handler(0, NULL);
+							reset_cpu(0);
+						}
 					}
 				break;
 

@@ -16,6 +16,7 @@
  */
 
 #include <stdio.h>
+#include <shutils.h>
 #include <errno.h>
 #include <signal.h>
 #include <arpa/inet.h>
@@ -129,7 +130,7 @@ int get_lan_link()
 #endif
 	fclose(fp);
 
-	return atoi(st);
+	return safe_atoi(st);
 }
 #endif
 static int send_pack(struct in_addr *src_addr, struct in_addr *dst_addr, struct sockaddr_ll *ME, struct sockaddr_ll *HE)

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <shutils.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -117,7 +118,7 @@ int det_dns_main(int argc, char *argv[])
 				dns_server = strdup(optarg);
 			break;
 			case 't':
-				timeout = atoi(optarg);
+				timeout = safe_atoi(optarg);
 			break;
 			case 'h':
 				hostname = strdup(optarg);

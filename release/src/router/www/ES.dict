@@ -41,7 +41,7 @@ AiMesh_Update_Latest_FW=Información no disponible. Actualice el firmware del en
 AiMesh_Node_Reboot=Al reiniciar el enrutador, todos los dispositivos conectados perderán la conectividad a Internet. Todos los dispositivos recuperarán la conectividad a Internet después de completar el proceso de reinicio. ¿Desea continuar?
 AiMesh_Conn_Quality_Great=Magnífica
 AiMesh_Conn_Quality_Weak=Débil
-AiMesh_Conn_Quality_OK=Aceptar
+AiMesh_Conn_Quality_OK=Aceptable
 AiMesh_Conn_Quality_Normal=Normal
 AiMesh_Conn_Quality=Calidad de la conexión
 AiMesh_Add_Node=Añadir nodo AiMesh
@@ -95,7 +95,7 @@ APSurvey_msg_connect_open_wlan=Está intentando conectarse a una red no segura. 
 APSurvey_msg_connected=Ya se ha conectado a este punto de acceso.
 APSurvey_msg_non_support_Auth=Método de autenticación no admitido.
 APSurvey_msg_waiting_to_connect=Espere. ZVMODELVZ se está conectando a
-ASUS_Registration=Hágase miembro de ASUS y reciba la información más reciente de los productos. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>¡Registrarse ahora!</a>
+ASUS_Registration=Hágase miembro de ASUS y reciba la información más reciente de los productos. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>¡Registrarse ahora!</a>
 ASUS_Notice=AVISO DE ASUS
 ASUS_privacy_desc=Tenga en cuenta que es necesario que los usuarios acepten compartir su información antes de utilizar DDNS, Remote Connection (aplicación ASUS Router, Lyra APP, AiCloud, AiDisk), AiProtection, Analizador de tráfico, Analizador de aplicaciones, CdS adaptativo, Realce de juego e historial web. En cualquier momento, los usuarios pueden buscar el contenido de los términos en esta página o dejar de compartir su información con otras partes seleccionando <a style="font-weight: bolder;">Retirar</a>.
 ASUS_eula_desc0=Bienvenido al uso de DDNS/Conexión remota(aplicación ASUS Router/aplicación Lyra/AiCloud/AiDisk). Lea la siguiente información con atención.:
@@ -180,6 +180,7 @@ ASUS_EULA_Law_12_Desc=Todos los presupuestos, confirmaciones de pedidos, este CL
 ASUS_EULA_Info=Al usar los productos de red de ASUS, aceptas estar sujeto a los términos y condiciones descritos en el Contrato de licencia del usuario final.
 ASUS_POLICY_Age_Check=Tengo 16 años o más
 ASUS_POLICY_QIS_Desc=Es importante leer este término antes de utilizar un producto de red. Al hacer clic en el botón “Acepto”, acepta regirse por los términos. ​
+ASUS_POLICY_QIS_Desc_v5=Es importante leer este término antes de utilizar un producto de red. Al hacer clic en el botón “%@”, acepta regirse por los términos. ​
 ASUS_POLICY_Update_Notice=Estimados usuarios, gracias por su continuado apoyo a este producto.  Para cumplir con las normativas de privacidad en varios países y proteger aún más sus datos, hemos actualizado el Aviso de privacidad de ASUS. Actualícelo antes de utilizar los productos de red ASUS.
 ASUS_POLICY_Read_Again=Volver a leer
 ASUS_POLICY_Know_Risk=Comprendo el riesgo
@@ -371,7 +372,7 @@ CTL_UpgradeNight=Actualizar por la noche
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Usar contraseña de inicio de sesión local predeterminada
 default_passwd_desc=La contraseña de inicio de sesión local cifrada predeterminada proporciona un proceso de inicio de sesión seguro cuando se conecta localmente a este dispositivo de red ASUS.
-defaultHint=Para obtener más detalles, visite <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Para obtener más detalles, visite <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=* Un paquete ping mínimo consume aproximadamente 128 bytes por intervalo. Por tanto, el detector ping consumirá
 Detect_consume_warning2=MB por mes
 Disconnected=Desconectado
@@ -410,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Family
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Family
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> está habilitado; todo lo que se configure aquí en algo distinto de Sin filtrado o Enrutador omitirá los servidores de privacidad de DNS.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> está habilitado; todo lo que se configure aquí en algo distinto de Sin filtrado o Enrutador omitirá los servidores de privacidad de DNS.
 Enable_user_target=Habilitar destino definido por el usuario
 Enable_Login_Captcha=Activar captcha de inicio de sesión
 Encrypted_field=Campo encriptado.
@@ -614,7 +615,7 @@ Offline_desc2=Se han realizado cambios en la dirección IP o en el número de pu
 Offline_desc3=Para acceder a la configuración de ZVMODELVZ, vuelva a conectarse a la red inalámbrica y utilice la dirección IP y el número de puerto actualizados.
 OP_AP_desc=En modo de punto de acceso (AP), ZVMODELVZ se conecta a un router inalámbrico a través de un cable Ethernet para expandir la cobertura de señal inalámbrica a otros clientes de la red. En este modo, las funciones de firewall, IP compartida y NAT quedan deshabilitadas por defecto.
 AiMesh_AP_desc=Los routers AiMesh en el modo PA, ZVMODELVZ se conectan a un router inalámbrico a través de un cable Ethernet para extender la señal inalámbrica a otros clientes de la red. En este modo, las funciones de firewall, uso compartido IP y NAT están deshabilitadas de forma predeterminada.
-OP_AP_hint=También puede visitar <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> para buscar la página de configuración del dispositivo y entrar en ella.
+OP_AP_hint=También puede visitar <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> para buscar la página de configuración del dispositivo y entrar en ella.
 OP_AP_item=Punto de acceso
 AiMesh_AP_item=Modo de punto de acceso (PA) / Router AiMesh en modo PA
 OP_Choose=Choose operation mode
@@ -633,7 +634,7 @@ OP_MB_desc4=Configure un ZVMODELVZ como enrutador y otro ZVMODELVZ como puente m
 OP_MB_desc5=Cambie el modo Puente multimedia para proporcionar una conexión WiFi para sus dispositivos multimedia.
 OP_MB_desc6=En el modo de puente multimedia, solamente los dispositivos multimedia se conectan a P-AP. Los dispositivos clientes necesitan conectarse al puerto multimedia con un cable de red.
 OP_MB_desc7=ZVMODELVZ en el modo de puente multimedia. La dirección IP ha cambiado.
-OP_MB_desc8=Descargue la <a href='http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>Device Discovery Utility</a> para identificar la dirección IP multimedia.
+OP_MB_desc8=Descargue la <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>Device Discovery Utility</a> para identificar la dirección IP multimedia.
 OP_MB_desc9=Compruebe si ha desenchufado el cable de red del puerto WAN.
 OP_RE_desc=En el modo Repetidor, su ZVMODELVZ se conecta de forma inalámbrica a una red inalámbrica existente para ampliar el alcance inalámbrico. En este modo, las funciones de firewall, IP compartida y NAT quedan deshabilitadas.
 OP_RE_desc1=La dirección IP LAN de ZVMODELVZ puede haber cambiado.
@@ -814,7 +815,7 @@ qis_simple_wls_recmd=(recomendado)
 QIS_SmartConn_ISPDesc=Your ISP should give you a card or document with username and password.*This sample document is an example for purpose of illustration only.
 QIS_SmartConn_ISPDesc2=Enter the username and password for your Internet connection information.These settings were given by your Internet Service Provider (ISP) .
 QIS_SmartConn_ISPDesc3=Ingrese el nombre de usuario y la contraseña PPPoE proporcionados por su proveedor de servicios de Internet (ISP) para su conexión a Internet.
-QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=HiNet user's client number is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Connection Scenario 1
 QIS_SmartConn_Scen2=Connection Scenario 2
 QIS_SmartConn_StaticDesc=Your ISP should give you the information about IP, subnet mask, gateway, and DNS address. If not, please contact your ISP.
@@ -996,10 +997,10 @@ QKSet_ISP_desc=Consulte la configuración de su ISP y especifique la informació
 QKSet_ISP_desc2=Error de conexión de dirección IP estática.
 QKSet_ISP_desc3=Error de conexión de dirección IP automática. Aquí puede realizar la configuración manualmente.
 QKSet_ISP_head=Configuración de información de ISP
-QKset_restore_0=Haga clic en <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Restaurar configuración</label></a> para cargar la configuración guardada.
-QKset_restore_1=Haga clic en <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Restaurar configuración</label></a> para restaurar la configuración si ha hecho una copia de seguridad de la configuración antes de restablecer el router.
-QKset_setup_manual_0=Haga clic en <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Ajuste manual</label></a> para configurar manualmente la red inalámbrica si conocer el tipo de conexión de su ISP.
-QKset_setup_manual_1=Haga clic en <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Ajuste manual</label></a> para definir manualmente la configuración avanzada del router o configurar ZVMODELVZ para que funcione en los modos
+QKset_restore_0=Haga clic en <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Restaurar configuración</label></a> para cargar la configuración guardada.
+QKset_restore_1=Haga clic en <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Restaurar configuración</label></a> para restaurar la configuración si ha hecho una copia de seguridad de la configuración antes de restablecer el router.
+QKset_setup_manual_0=Haga clic en <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Ajuste manual</label></a> para configurar manualmente la red inalámbrica si conocer el tipo de conexión de su ISP.
+QKset_setup_manual_1=Haga clic en <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Ajuste manual</label></a> para definir manualmente la configuración avanzada del router o configurar ZVMODELVZ para que funcione en los modos
 QKset_skip_setup=¿Es un experto en redes inalámbricas y desea pasar por alto el asistente para instalación de Internet?
 QKSet_type_desc=Seleccione el tipo de conexión a Internet proporcionado por su ISP.
 QKSet_type_head=Tipo de conexión WAN a Internet
@@ -1047,6 +1048,7 @@ Status_RAM=RAM
 Status_Used=Usado
 Status_Free=Disponible
 Status_Total=Total
+Status_LoggingIn=Iniciando sesión…
 statusTitle_AP=Estado del punto de acceso
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Conexiones activas
@@ -1071,7 +1073,7 @@ TBVLAN_UPort=Puerto sin etiquetar
 TBVLAN_TPort=Puerto etiquetado
 TBVLAN_WirelessInf=Interfaz inalámbrica
 TBVLAN_EditSubnetProfile=Editar perfil de subred
-TBVLAN_Subnet_desc=Seleccione la subred que creó o seleccione &quot;New Subnet&quot; (Nuevas subred) para crear una nueva subred para la VLAN. Si necesita realizar más configuraciones DHCP, hágalo en <a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server (Servidor DHCP)</a>.
+TBVLAN_Subnet_desc=Seleccione la subred que creó o seleccione &quot;New Subnet&quot; (Nuevas subred) para crear una nueva subred para la VLAN. Si necesita realizar más configuraciones DHCP, hágalo en <a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP server (Servidor DHCP)</a>.
 TBVLAN_BindingInf=Filtro de enlace
 TBVLAN_NoBindingInf=No hay ninguna interfaz de enlace disponible.
 TBVLAN_BindingInf_Hint=Agregue una interfaz de enlace.
@@ -1102,20 +1104,20 @@ WANPPPAuthText=Autenticación PPP
 WAN_type_detected=WAN type detected
 WAN_auto_detected=Detección automática de WAN
 web_redirect_case1_suggestion1=Asegúrese de que el cable se ha conectado a su puerto WAN ZVMODELVZ y al módem.
-web_redirect_case1_suggestion2=Compruebe si <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Modo de funcionamiento</a> necesita cambiarse.
-web_redirect_case2_suggestion1=Cuenta o contraseña de PPPoE incorrecta. <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Compruébelo</a>.
+web_redirect_case1_suggestion2=Compruebe si <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Modo de funcionamiento</a> necesita cambiarse.
+web_redirect_case2_suggestion1=Cuenta o contraseña de PPPoE incorrecta. <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Compruébelo</a>.
 web_redirect_case2_title1=Error de autenticación PPPoE
 web_redirect_case3_button=Cambiar el tipo de WAN
-web_redirect_case3_suggestion1=Asegúrese de que el contenido de la opción <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Configuración de conexión</a> es correcto.
-web_redirect_case5_suggestion1=Habilite su <a style='color:#FFF' href='/'>Conexión WAN</a>.
+web_redirect_case3_suggestion1=Asegúrese de que el contenido de la opción <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Configuración de conexión</a> es correcto.
+web_redirect_case5_suggestion1=Habilite su <a style='color:var(--wrt-text-color,#FFF)' href='/'>Conexión WAN</a>.
 web_redirect_case5_suggestion2=Asegúrese de que el módem USB se ha encendido.
-web_redirect_case5_suggestion3=Cambie su <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>Configuración de módem USB</a>.
+web_redirect_case5_suggestion3=Cambie su <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>Configuración de módem USB</a>.
 web_redirect_case5_title1=La conexión WAN se ha deshabilitado.
 web_redirect_case5_title2=Su módem USB no está conectado.
 web_redirect_case6_desc1=Haga clic en [Siguiente] para utilizar la siguiente dirección IP:
 web_redirect_case6_desc2=Asegúrese de que todos los servicios pertinentes están utilizando la nueva dirección IP (por ejemplo, Enrutamiento de puerto, DMZ, etc.).
 web_redirect_case8_suggestion1=Confirme que el PA principal se puede conectar a Internet.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Cambiar configuración de conexión</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Cambiar configuración de conexión</a>.
 web_redirect_case8_title=No se puede conectar con el PA principal.
 web_redirect_case9_suggestion1=Asegúrese de que el enrutador AiMesh se ha encendido.
 web_redirect_case9_suggestion2=Reinicie el enrutador AiMesh e inténtelo de nuevo.
@@ -1165,6 +1167,11 @@ Web_Title=Enrutador inalámbrico de ASUS ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=Punto de acceso de ASUS ZVMODELVZ
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=Usar conexión MLO
+WiFi_MLO_same_model_desc=Actualmente, MLO (Multi-Link Operation) solo es compatible entre routers ASUS del mismo modelo. Si los modelos son diferentes, la conexión puede fallar.
+WiFi_MLO_connect_try=Intentar conectarse mediante MLO.
+WiFi_MLO_connect_veto=Usar en su lugar una conexión estándar de una sola banda.
+WiFi_MLO_connect_confirm=¿Desea usar la conexión MLO?
 wireless_configured=Configurado
 Wireless_name=Nombre inalámbrico
 wireless_router=Router inalámbrico
@@ -1246,6 +1253,7 @@ ADSL_FW_note=Nota:
 adsl_fw_ver_itemname=Versión del controlador de DSL
 adsl_link_sts_itemname=Estado de enlace de DSL
 adv_wl_desc=Establezca la siguiente información inalámbrica.
+AiBoard_rescue_fail=La recuperación de AI Board ha fallado
 AiCloud_account_status=Estado de la cuenta
 AiCloud_account_unlock=Desbloquear
 aicloud_bandwidth1=Necesita una conexión a Internet de banda ancha para disfrutar de la mejor experiencia de visualización y sonido. Tenga en cuenta las recomendaciones siguientes :
@@ -1358,12 +1366,12 @@ AiMesh_FindNode_confirm=¿No puede encontrar mi nodo AiMesh?
 AiMesh_FindNode_confirm_WPS=WPS se habilitará cuando se busque un nodo AiMesh.
 AiMesh_FindNode_Desc=Busque los nodos AiMesh disponibles cercanos para unir a su sistema AiMesh.
 AiMesh_FindNode_Not=No se puede encontrar ningún nodo AiMesh cercano.
-AiMesh_FindNode_Not_advA=Si el dispositivo se asigna como un <span style='color:#569AC7;'>router AiMesh</span>, compruebe lo siguiente e inténtelo de nuevo.
+AiMesh_FindNode_Not_advA=Si el dispositivo se asigna como un <span style='color:var(--wrt-link-color,#569AC7);'>router AiMesh</span>, compruebe lo siguiente e inténtelo de nuevo.
 AiMesh_FindNode_Not_advA1=El nodo AiMesh está encendido.
 AiMesh_FindNode_Not_advA2=El nodo AiMesh tiene el firmware más reciente
 AiMesh_FindNode_Not_advA3=Se han establecido los valores predeterminados del nodo AiMesh
 AiMesh_FindNode_Not_advA4=Acerque el nodo AiMesh al router AiMesh
-AiMesh_FindNode_Not_advB=Si el dispositivo se asigna como un <span style='color:#569AC7;'>nodo AiMesh</span>, compruebe lo siguiente e inténtelo de nuevo.
+AiMesh_FindNode_Not_advB=Si el dispositivo se asigna como un <span style='color:var(--wrt-link-color,#569AC7);'>nodo AiMesh</span>, compruebe lo siguiente e inténtelo de nuevo.
 AiMesh_FindNode_Not_advB1=Pulse el botón de restablecimiento del dispositivo y espere.
 AiMesh_FindNode_Not_advB2=Inicie sesión en la interfaz gráfica del usuario del router AiMesh y haga clic en el icono AiMesh.
 AiMesh_FindNode_Not_advB3=Actualice el firmware del router AiMesh si no puede encontrar el icono AiMesh en la interfaz gráfica del usuario del router.
@@ -1696,6 +1704,13 @@ AiProtection_TrackerBlocking_Desc=El bloqueo de rastreadores ayuda a detectar y 
 AiProtection_AdvertisementBlocking_Desc=El bloqueo de anuncios ayuda a bloquear fuentes comunes de anuncios para reducir interferencias, mejorar la navegación y disminuir los riesgos de seguridad. También puede habilitar AdGuard DNS para mejorar aún más la protección.
 AiProtection_AdvertisementBlocking_Enabled=Bloqueo de anuncios activado
 AiProtection_TrackerBlocking_Enabled=Bloqueo de rastreadores activado
+AiProtection_select_device=Seleccione un dispositivo o ingrese una MAC o IP válida
+AiProtection_rule_exist=Este dispositivo ya tiene una regla. Por favor, elimínela antes de crear una nueva.
+ArkMigrationNote=Nota
+ArkMigrationNote_1=Debido a la privacidad y optimizaciones del sistema, %@ ahora utiliza detección local. Las reglas de perfil existentes deben reconfigurarse manualmente.
+ArkMigrationNote_2=Estas funciones no son compatibles con versiones anteriores del firmware; degradar requerirá un restablecimiento de fábrica.
+ArkAiProtectionInfo=Algunos sitios pueden verse afectados por el bloqueo de anuncios o rastreadores debido al uso de estos servicios. Si tiene problemas para acceder a un sitio web, intente desactivar las funciones anteriores y vuelva a cargar la página.
+FamilyContentBlock=Bloqueo de contenido familiar
 BwLimiter_Switch=Interruptor de limitador de ancho de banda
 BwLimiter_Download=Ancho de banda de descarga
 BwLimiter_Upload=Ancho de banda de carga
@@ -1703,6 +1718,7 @@ BwLimiter_NewDevice=Nuevo dispositivo
 BwLimiter_Status=Estado
 BwLimiter_Delete=Eliminar
 SearchDevice_By_Name_Mac_Ip=Buscar nombre del dispositivo, MAC o IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Buscar nombre del dispositivo, MAC, IP o subred
 BwLimiter_Target=Destino
 BwLimiter_enter_bandwidth=Ingrese un valor de ancho de banda.
 BwLimiter_max=Las reglas de límite de ancho de banda han alcanzado el máximo (32).
@@ -1944,7 +1960,9 @@ btn_go=IR
 btn_goSetting=Ir a Configuración
 btn_remove=Quitar
 btn_send=Enviar
+btn_resend=Reenviar
 btn_to_WAN=configuración WAN
+btn_verify=Verificar
 Capability=Capacidad
 Captcha=Captcha
 Captcha_note=Escriba el captcha.
@@ -2154,10 +2172,10 @@ Device_type_03_AP=Punto de acceso
 Device_type_04_NS=NAS
 Device_type_05_IC=Cámara IP
 Device_type_06_OD=Otro dispositivo
-deviceDiscorvy2=En el modo Repetidor, la dirección IP asignada por DHCP cambia. Instale y emplee la <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> para obtener la nueva dirección IP del router inalámbrico.
-deviceDiscorvy3=En el modo Access Point (Punto de acceso) (PA), la dirección IP asignada por DHCP cambia. Instale y utilice la <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Utilidad de detección de dispositivos) para detectar la dirección IP del enrutador inalámbrico.
-AiMesh_deviceDiscorvy3=Cuando los routers AiMesh se encuentran en el modo PA, la dirección IP asignada mediante DHCP cambia. Instale y utilice la <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> para detectar la dirección IP del router inalámbrico.
-deviceDiscorvy4=En el modo Media Bridge, la dirección IP asignada por DHCP cambia. Instale y emplee la <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> para obtener la nueva dirección IP del router inalámbrico.
+deviceDiscorvy2=En el modo Repetidor, la dirección IP asignada por DHCP cambia. Instale y emplee la <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> para obtener la nueva dirección IP del router inalámbrico.
+deviceDiscorvy3=En el modo Access Point (Punto de acceso) (PA), la dirección IP asignada por DHCP cambia. Instale y utilice la <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Utilidad de detección de dispositivos) para detectar la dirección IP del enrutador inalámbrico.
+AiMesh_deviceDiscorvy3=Cuando los routers AiMesh se encuentran en el modo PA, la dirección IP asignada mediante DHCP cambia. Instale y utilice la <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> para detectar la dirección IP del router inalámbrico.
+deviceDiscorvy4=En el modo Media Bridge, la dirección IP asignada por DHCP cambia. Instale y emplee la <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> para obtener la nueva dirección IP del router inalámbrico.
 DeviceSecurity11a_display1_sectiondesc=El filtro de direcciones MAC inalámbricas le permite controlar paquetes de dispositivos con dirección MAC especificada en la red LAN inalámbrica.
 DHCP_query_freq=Frecuencia de consulta DHCP
 DHCPaggressive=Modo Agresivo
@@ -2340,7 +2358,7 @@ Excute_processing=Instalando...
 External=Solo externa
 Extend_TTL_Value=Extender el valor TTL
 EZQoS=Administración de ancho de banda EzQoS
-EzQoS_bandwidth_note1=Obtenga la información de ancho de banda del ISP o vaya a <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> para comprobar dicho ancho de banda.
+EzQoS_bandwidth_note1=Obtenga la información de ancho de banda del ISP o vaya a <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> para comprobar dicho ancho de banda.
 EzQoS_bandwidth_note2=El valor predeterminado es 0, que significa un ancho de banda ilimitado.
 EzQoS_desc=La calidad de servicio (QoS) garantiza el ancho de banda para tareas y aplicaciones priorizadas.
 EzQoS_desc_Adaptive=La <span style="font-weight:bolder;font-size:14px;">QoS Adaptativa</span> garantiza el ancho de banda entrante y saliente tanto en conexiones cableadas como inalámbricas para aplicaciones y tareas priorizadas a través de programaciones previas de arrastrar y colocar: juegos, streaming multimedia, VoIP, navegación por la Web y transferencia de archivos.
@@ -2407,11 +2425,11 @@ feedback_email_alert=El formato de la dirección de correo electrónico no es v�
 feedback_email_confirm=El campo de dirección de correo electrónico está vacío. ¿Está seguro de que desea continuar?
 feedback_extra_info=Información adicional para depuración
 feedback_fail0=No se pudieron enviar sus comentarios. Compruebe la conexión a Internet e inténtelo de nuevo.
-feedback_fail1=<span style="color:#FC0;">El sistema no pudo conectarse al servidor de correo.</span> Puede enviar un correo electrónico directamente a
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">El sistema no pudo conectarse al servidor de correo.</span> Puede enviar un correo electrónico directamente a
 feedback_fail2=Simplemente copie el contenido que se muestra a continuación y péguelo como contenido de correo electrónico.
 feedback_fail3=Descargue los siguientes archivos de depuración y agréguelos como datos adjuntos de correo electrónico:
 feedback_fail0_new=El sistema no pudo conectarse al servidor de comentarios.
-feedback_fail1_new=<span>Si tiene algún problema de uso o necesita soporte técnico, primero comuníquese con el Centro de Atención al Cliente de ASUS&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Soporte Oficial | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Si tiene algún problema de uso o necesita soporte técnico, primero comuníquese con el Centro de Atención al Cliente de ASUS&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Soporte Oficial | ASUS Global)</a>.</span>
 feedback_fail2_new=También puede enviar el siguiente archivo de error detectado a router_feedback@asus.com para proporcionar sugerencias de mejora al equipo de desarrollo. Gracias.
 feedback_fail_BindGoogle=También puede <a id="bind_google">vincular su cuenta de Google</a> para enviar comentarios por correo electrónico.
 feedback_format_alert=The format is not valid.
@@ -2433,7 +2451,7 @@ feedback_note3=Al enviar sus comentarios, acepta que ASUS puede utilizarlos para
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Al enviar sus comentarios, acepta que ASUS puede utilizarlos para mejorar sus productos de router/módem xDLS.
 feedback_note4=Si tiene alguna pregunta urgente, pregunte al servicio de soporte técnico local.
 feedback_note5=Los comentarios están en curso. Reiniciar puede hacer que el programa termine y no se puedan completar los comentarios. Por favor, reinicie más tarde.
-feedback_note6=<span>Este sistema no proporciona respuestas individuales. Si tiene algún problema de uso o necesita soporte técnico, comuníquese con el Centro de Atención al Cliente de ASUS</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Soporte Oficial | ASUS Global)</a>.
+feedback_note6=<span>Este sistema no proporciona respuestas individuales. Si tiene algún problema de uso o necesita soporte técnico, comuníquese con el Centro de Atención al Cliente de ASUS</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Soporte Oficial | ASUS Global)</a>.
 feedback_note7=Nuestro equipo profesional estará dedicado a atenderle. Gracias.
 feedback_Occasion_interrupt=Interrupciones ocasionales
 feedback_optional=* Opcional
@@ -2592,7 +2610,7 @@ FW_auto_time=Hora de actualización preferida
 FW_auto_upgrade=Actualización de firmware automática
 FW_auto_upgrade_desc=Instale automáticamente por la noche las actualizaciones del sistema una vez que se hayan descargado. Todavía se seguirán descargando e instalando automáticamente ciertas actualizaciones sobre problemas importantes de seguridad o que cumplan los requisitos legales/regulatorios, aunque se desactive Actualización de firmware automática.
 FW_beta_check=Deseo recuperar el firmware beta.
-FW_desc0=Obtenga la versión de firmware más reciente desde <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">el sitio de soporte técnico de ASUS</a>
+FW_desc0=Obtenga la versión de firmware más reciente desde <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">el sitio de soporte técnico de ASUS</a>
 FW_desc1=Por favor visite el sitio de soporte de ASUS https://www.asus.com/support/ para obtener el firmware más reciente.
 fw_downloading=Descargar firmware
 FW_item1=ID del producto
@@ -2600,9 +2618,9 @@ FW_item2=Versión del firmware
 FW_item5=Nuevo archivo del firmware
 FW_manual_update=Actualización manual del firmware
 FW_n0=La versión de firmware más reciente incluye actualizaciones de la versión anterior.
-FW_n2=En el caso de que el proceso de actualización no se pueda realizar, ZVMODELVZ entrará en el modo de emergencia automáticamente. Los LED que se encuentran en la parte delantera de ZVMODELVZ indicarán tal situación.Visite el centro de descargas de <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> para descargar la utilidad ASUS Firmware Restoration.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=En el caso de que el proceso de actualización no se pueda realizar, ZVMODELVZ entrará en el modo de emergencia automáticamente. Los LED que se encuentran en la parte delantera de ZVMODELVZ indicarán tal situación.Visite el centro de descargas de <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> para descargar la utilidad ASUS Firmware Restoration.
+FW_n3=Consulta las <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a> para obtener más instrucciones.
+FW_n4=Consulta las <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a> para obtener más instrucciones.
 FW_n5=En cuanto a la recopilación de datos para las actualizaciones de firmware y de seguridad), consulte el “AVISO DE PRIVACIDAD DE ASUS (para actualizaciones de firmware y de seguridad)" en la página “Administración -> Privacidad”.
 FW_note=Nota:
 FW_note_AiMesh=La actualización manual del firmware solamente actualizará los routers y nodos AiMesh seleccionados cuando utilice el sistema AiMesh. Asegúrese de cargar la versión de firmware AiMesh correcta en cada router o nodo aplicable.
@@ -2677,12 +2695,12 @@ GB_account_type2=Cuenta avanzada para el enrutador
 GB_ended_date=Fecha de finalización
 GB_ended_date_desc=WTFast proporciona a todos los usuarios nuevos un período de 14 de prueba avanzada, que solamente afecta a la cuenta Avanzada con más opciones de servidor proxy. Cuando el período de prueba espira, todavía puede seguir disfrutando de una suscripción de por vida con funciones de cuenta Básica gratuita y con límites de tráfico.
 GB_ended_date_type0=Ahora está usando la cuenta básica gratuita para el enrutador.
-GB_management_note1=Al utilizar la función Realce de juego con tecnología WTFast, acepta los <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">términos de uso</a></span> y la <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">política de privacidad</a> de WTFast</span>.
-GB_management_note2=Como se indica en la renuncia de responsabilidad en nuestra página de producto, WTFast todavía está trabajando en el desarrollo de la compatibilidad con la consola de juegos. Para obtener una lista de los juegos que se admiten actualmente, consulte <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">esta lista</a>. (Se actualiza regularmente)
+GB_management_note1=Al utilizar la función Realce de juego con tecnología WTFast, acepta los <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">términos de uso</a></span> y la <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">política de privacidad</a> de WTFast</span>.
+GB_management_note2=Como se indica en la renuncia de responsabilidad en nuestra página de producto, WTFast todavía está trabajando en el desarrollo de la compatibilidad con la consola de juegos. Para obtener una lista de los juegos que se admiten actualmente, consulte <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">esta lista</a>. (Se actualiza regularmente)
 GB_management_note3=El rendimiento de GPN varía en función de su ISP o ubicación. Asegúrese de que el firmware está siempre actualizado.
-GB_management_note4=¿Cómo selecciono un buen servidor GPN? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Aquí</a></span> ¿Cómo puedo obtener la mejor experiencia de juego? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Aquí</a></span>
-GB_management_note5=¿Cómo utilizo WTFast en un router de ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Aquí</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=¿Cómo selecciono un buen servidor GPN? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Aquí</a></span> ¿Cómo puedo obtener la mejor experiencia de juego? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Aquí</a></span>
+GB_management_note5=¿Cómo utilizo WTFast en un router de ASUS? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Aquí</a></span>
+GB_mobile=Modo de Juego Móvil
 GB_mobile_desc=Mejore su experiencia con juegos en el móvil
 GB_mobile_desc1=Descargue e instale la aplicación ASUS Router. Active en la aplicación el modo de juegos en el móvil para asegurar la mejor experiencia.
 GB_mobile_desc_short=Descargue e instale la aplicación ASUS Router.
@@ -3083,7 +3101,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Interno] Registre un nombre de dominio a 
 LANHostConfig_x_DDNS_update_confirm=La dirección IP, el servidor y el nombre de host no han cambiado desde la última actualización. Si desea actualizar, haga clic en [Sí].
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DNS dinámico (DDNS) permite asignar un nombre de dominio de Internet a un equipo con una dirección IP dinámica. Actualmente, se integran varios servicios en ZVMODELVZ.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Para obtener más información, consulte <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">esta Pregunta Frecuente</a>.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Para obtener más información, consulte <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">esta Pregunta Frecuente</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc3=El nombre de host se ha registrado correctamente. Puede usar "[nombre de host].asuscomm.com" para acceder al servicio en la red doméstica desde la red WAN. Utilice "[nombre de host].asuscomm.com" para acceder a su red de forma remota.<p>Vaya a [Configuración avanzada] > [WAN] para configurar el envío de puertos o configuración DMZ para permitir a otros clientes de la red WAN acceder a su red de forma remota.<p>Si desea configurar el  router inalámbrico de forma remota, vaya <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">aquí</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=El enrutador actual usa una IP privada.
 LANHostConfig_x_DDNSEnable_faq1=Introducción y configuración de DDNS
@@ -3406,7 +3424,7 @@ ParentalCtrl_default=De forma predeterminada, el acceso a Internet se limita en 
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=De forma predeterminada, el acceso a Internet se limita en intervalos de tiempo.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Los dispositivos que no se agregan a los controles parentales tienen restringido el acceso a Internet de forma predeterminada.
 ParentalCtrl_deny=Denegar
-ParentalCtrl_disable_NAT=Deshabilite <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">Aceleración NAT</a> para obtener un control del programa más preciso.
+ParentalCtrl_disable_NAT=Deshabilite <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">Aceleración NAT</a> para obtener un control del programa más preciso.
 ParentalCtrl_Enable=Habilitar control paterno
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Habilitar control de acceso de dispositivos
 ParentalCtrl_Enable_TS=Habilitar programación horaria
@@ -3715,6 +3733,7 @@ select_service=Seleccione el nombre de servicio.
 select_usb_device=Seleccionar dispositivo USB
 select_usb_mode=USB Mode
 select_wireless_MAC=Seleccione la dirección MAC del cliente inalámbrico.
+Sending_str=Enviando…
 Send_mail=Enviar correo
 Serial_Number=Número de serie
 Servers_Center=Centro de servidores
@@ -3914,10 +3933,33 @@ SDN_Scenarios_desc=¿Desea agregar una red inalámbrica adicional para un uso es
 SDN_MainFH_for_clients=MLO Fronthaul para clientes
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Dado que se ha creado la regla de Smart Connect, elija una única banda WiFi.
+SDN_mlo_switch_fh_hint1=Solo se permite un fronthaul MLO activo.
+SDN_mlo_switch_fh_hint2=¿Desea desactivar el MLO Fronthaul de %1$@ y activar %2$@?
 SDN_Sync_To_All_Node=Sincronizar con todos los nodos AiMesh
 SDN_Sync_To_All_Node_Hint=Si sus nodos AiMesh son modelos antiguos o el WiFi ha alcanzado su capacidad máxima, no será posible sincronizar todos los nodos AiMesh. Seleccione los nodos a sincronizar en el menú a continuación.
 SDN_Sync_limitation_Hint=Para nodos AiMesh más antiguos, hay limitaciones para sincronizar todas las bandas.
 SDN_MainFH_WiFi_conflict=%1$@ banda(s) de WiFi han sido utilizadas. Las redes en conflicto %2$@ (%3$@) serán eliminadas después de aplicar la configuración.
+SDN_Auth_WPA3_only_subtext1=La opción de máxima seguridad con conexiones solo WPA3.
+SDN_Auth_WPA3_only_subtext2=(Nota: Es posible que los dispositivos antiguos sin compatibilidad con WPA3 no puedan conectarse.)
+SDN_Auth_WPA3_dual=La opción estándar de seguridad de modo dual.
+SDN_Auth_WPA3_dual_desc=Los dispositivos modernos se conectan mediante WPA3, mientras que los antiguos utilizan WPA2.
+SDN_Auth_WPA3_dual_mode=Modo de compatibilidad
+SDN_Auth_WPA3_dual_mode_subtext1=Una opción de seguridad mejorada de modo dual optimizada para dispositivos antiguos con anulación RSN.
+SDN_Auth_WPA3_dual_mode_subtext2=Garantiza que los dispositivos antiguos permanezcan conectados mientras los modernos usan WPA3.
+SDN_Auth_WPA3_dual_mode_subtext3=(Nota: Algunos dispositivos de generación intermedia pueden usar WPA2.)
+SDN_Auth_WPA3_subtext=Una opción de seguridad mejorada y optimizada para dispositivos antiguos mediante RSN overriding. Ofrece la máxima seguridad a los dispositivos modernos, a la vez que mantiene conexiones estables para los clientes no modernos.
+SDN_WiFi_Mode_Only6G_Hint=Para cumplir con los estándares globales de WiFi, todas las redes de la banda de 6 GHz deben utilizar la misma generación de WiFi.
+SDN_WiFi_Mode_24G_Hint=2,4 GHz funciona según la configuración de su modo WiFi.
+SDN_Compatibility_Mode_Off=El modo de compatibilidad está desactivado.
+SDN_Compatibility_Mode_24=Modo de compatibilidad de 2,4 GHz
+SDN_Balance_Mode=Equilibrado
+SDN_Balance_Mode_desc=Equilibrio óptimo entre rendimiento y compatibilidad de dispositivos.
+SDN_Balance_Mode_desc1=2,4 GHz funciona en modo WiFi 6.
+SDN_Ultra_Compatibility_Mode=Compatibilidad máxima
+SDN_Ultra_Compatibility_Mode_desc=Garantiza una conectividad estable para dispositivos IoT antiguos o heredados.
+SDN_Ultra_Compatibility_Mode_desc1=2,4 GHz funciona en modo WiFi 4.
+SDN_IPv6_FreeWiFi_Hint=Nota: Free WiFi no es compatible con entornos solo IPv6. Asegúrese de que IPv4 o Dual-Stack esté habilitado para la redirección del cliente.
+SDN_IPv6_MessageBoard_Hint=Nota: Message Board no es compatible con entornos solo IPv6. Asegúrese de que IPv4 o Dual-Stack esté habilitado para el cliente.
 t2BC=Configuración básica
 t2LAN=LAN
 t2Misc=Opciones varias
@@ -3992,7 +4034,9 @@ TZ02=Isla Midway, Samoa
 TZ03=Hawái
 TZ04=Alaska
 TZ05=Hora del Pacífico (EE.UU. y Canadá)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Hora de las Montañas (EE.UU. y Canadá)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlán
 TZ10=Saskatchewan
@@ -4148,7 +4192,7 @@ usb_tls_conflict=Permitir inicio de sesión anónimo está en conflicto con la c
 usb_tls_conflict_WANacc=El acceso WAN está en conflicto con la configuración de TLS.
 usb_uninstalling=Desinstalando la aplicación del dispositivo de almacenamiento USB...
 usb_unmount=La función USB no está habilitada.
-use_DevDiscoveryUtil=Instale y utilice la <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> (Utilidad de detección de dispositivos) para detectar la dirección IP del enrutador inalámbrico.
+use_DevDiscoveryUtil=Instale y utilice la <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> (Utilidad de detección de dispositivos) para detectar la dirección IP del enrutador inalámbrico.
 Username=Nombre de usuario
 Username_Pwd=Nombre de usuario y contraseña
 UserQoS_desc=En la lista desplegable sobre las reglas User-defined QoS (Calidad de servicio definida por el usuario), puede clasificar las aplicaciones o dispositivos de red en cinco niveles según prioridad. Con base en el nivel de prioridad, la QoS utiliza los siguientes métodos para el envío de paquetes de datos:<ul><li>Cambio del orden de paquetes de red ascendente, referente al orden en que se envían los paquetes a Internet.</li><li>Los paquetes de prioridad baja son ignorados para garantizar la transmisión de paquetes de prioridad alta. El paquete ascendente de prioridad superior dará lugar al paquete descendente de prioridad superior.</li><li>Si no se está enviando ningún paquete de aplicaciones de prioridad alta, la velocidad total de transmisión de la conexión a Internet queda disponible para paquetes de prioridad baja.</li></ul>
@@ -4158,6 +4202,7 @@ UserQoS_transferred_hint=En la columna (Transferido), establezca el límite de t
 UserQoSRule_desc_zero=Habilite QoS y, a continuación, configure las reglas definidas por el usuario.
 UserQoSRule_desc_one=De forma predeterminada, la prioridad para el ancho de banda de carga y descarga es "Baja". Si no hay ninguna regla de fidelidad para el ancho de banda, la prioridad para el ancho de banda de carga y descarga que es "Baja".
 Utility=Utilidad
+Verifying_str=Verificando…
 Video_Find=Buscar vídeos de tutoriales
 Video_Link1=Haga clic para abrir el vídeo del tutorial.
 View_List=Vista de lista
@@ -4256,7 +4301,7 @@ vpn_openvpn_required_acc_pwd=Se requieren nombre de usuario y contraseña para e
 vpn_openvpnc_importCA=Importar archivo CA
 vpn_openvpnc_importovpn=Importar archivo .ovpn
 vpn_openvpnc_manual=Importe el archivo CA o edite el archivo .ovpn manualmente.
-vpn_privateIP_hint=El router inalámbrico actualmente utiliza una dirección IP WAN privada (192.168.x.x, 10,x,x,x o 172.16.x.x). Consulte <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>FAQ</a> y configure la redirección de puertos.
+vpn_privateIP_hint=El router inalámbrico actualmente utiliza una dirección IP WAN privada (192.168.x.x, 10,x,x,x o 172.16.x.x). Consulte <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>FAQ</a> y configure la redirección de puertos.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT solamente admite una conexión de servidor VPN al mismo tiempo. Si habilita la opción \"OpenVPN server\", la opción \"PPTP server\" se deshabilitará automáticamente. ¿Está seguro de que desea habilitar el servidor VPN?
@@ -4352,6 +4397,32 @@ vpnc_profile_assignALL=Aplicar a todos los dispositivos
 vpnc_profile_assignDevice=Asignar dispositivos a este perfil
 vpnc_profile_del=Eliminar perfil
 vpnc_profile_select_suggest=Seleccione otro perfil de VPN para cancelar la WAN predeterminada de Internet.
+vpnc_ssk_login=Inicia sesión en tu cuenta de Surfshark
+vpnc_ssk_login_note=Introduce la cuenta y la contraseña.
+vpnc_ssk_invalid_long=La cuenta o la contraseña es demasiado larga (máx. 128 caracteres).
+vpnc_ssk_invalid_char=La cuenta o la contraseña contiene caracteres no válidos.
+vpnc_ssk_invalid_format=Formato de cuenta o contraseña no válido.
+vpnc_ssk_login_AuthCode=Introduce el código de verificación de 6 dígitos enviado a tu correo electrónico o generado por la aplicación Authenticator.
+vpnc_ssk_login_AuthCode_enter=Introduce el código de verificación de 6 dígitos.
+vpnc_ssk_login_AuthCode_confirm=¿No has recibido el código de verificación? Haz clic en "Reenviar" arriba y te enviaremos un nuevo código de verificación.
+vpnc_ssk_login_AuthCode_resender=Reenviar disponible en %1$@s
+vpnc_ssk_login_ErrMsg1=Cuenta o contraseña incorrecta.
+vpnc_ssk_login_ErrMsg2=El servidor de Surfshark no está disponible. Inténtalo de nuevo más tarde.
+vpnc_ssk_login_ErrMsg4=Error de configuración. Comprueba tu configuración.
+vpnc_ssk_login_ErrMsg41=Error de configuración.
+vpnc_ssk_login_ErrMsg5=Error de red. No se puede conectar con Surfshark.
+vpnc_ssk_login_ErrMsgDef=Error al iniciar sesión. Inténtalo de nuevo.
+vpnc_ssk_login_success=Inicio de sesión en Surfshark correcto.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=¿Seguro que quieres cerrar sesión en tu cuenta?
+vpnc_ssk_Failed_resend=No se pudo reenviar el código. Inténtalo de nuevo.
+vpnc_ssk_Failed_verification=Código de verificación no válido. Inténtalo de nuevo.
+vpnc_ssk_KeyPair_max=Tu cuenta de Surfshark ha alcanzado el número máximo de pares de claves VPN (50). Para crear una nueva conexión VPN, elimina los pares de claves que no uses de tu cuenta de Surfshark y vuelve a intentarlo.
+vpnc_ssk_Missing_credent=Faltan las credenciales. Cierra la aplicación e inicia sesión de nuevo.
+vpnc_ssk_Timeout_login=La solicitud de inicio de sesión agotó el tiempo de espera. Inténtalo de nuevo.
+vpnc_ssk_Timeout_resend=El reenvío agotó el tiempo de espera. Inténtalo de nuevo.
+vpnc_ssk_Timeout_verification=La solicitud de verificación agotó el tiempo de espera. Inténtalo de nuevo.
+vpnc_ssk_Timeout_network=Error de red. Inténtalo de nuevo.
 vpnc_step=Para iniciar una conexión VPN, siga los pasos que se indican a continuación:
 vpnc_step1=Agregar perfil
 vpnc_step2=Seleccione un tipo de conexión VPN
@@ -4359,6 +4430,7 @@ vpnc_step3=Escriba la información de autenticación VPN proporcionada por su pr
 vpnc_title=Cliente VPN
 vpnc_peer=Homólogo
 vpnc_pppoe_dis_nat_confirm=Cuando use un cliente VPN con un conexión PPPoE, el router se reiniciará automáticamente para deshabilitar la aceleración NAT. ¿Está seguro de que desea continuar?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Barrera
 WAN_Cfg_Ethernet_WAN=Defina la configuración WAN Ethernet de ZVMODELVZ.
 WAN_default_route=Ruta predeterminada
@@ -4423,7 +4495,7 @@ WANTCPMSSOptionText=Opción MSS TCP
 WANTCPMSSOptionComm1Text=bytes
 WANVLANIDText=Identificador de VLAN
 WANAggregation=agregación de WAN
-WANAggregation_desc=La agregación WAN combina dos conexiones de red para aumentar la velocidad WAN hasta 2 Gbps. Conecte el puerto LAN 4 y el puerto #WAN del router a los puertos LAN del módem (asegúrese de utilizar dos cables con la misma especificación). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Preguntas más frecuentes sobre la agregación WAN</a>
+WANAggregation_desc=La agregación WAN combina dos conexiones de red para aumentar la velocidad WAN hasta 2 Gbps. Conecte el puerto LAN 4 y el puerto #WAN del router a los puertos LAN del módem (asegúrese de utilizar dos cables con la misma especificación). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">Preguntas más frecuentes sobre la agregación WAN</a>
 WANAggregation_enable=Habilitar agregación WAN
 WANAggregation_disable_dualwan=El router tiene la conexión WAN dual habilitada. Al habilitar la agregación WAN se deshabilitará la conexión WAN dual. ¿Está seguro de que desea continuar?
 WANAggregation_disable_WANAggregation=El router tiene habilitada la agregación WAN. Al habilitar la conexión WAN dual se deshabilitará la agregación WAN. ¿Está seguro de que desea continuar?
@@ -4432,13 +4504,13 @@ WANAggregation_PortConflict_hint2=IPTV está utilizando el puerto LAN 4 del rout
 WANAggregation_disable_IPTVDualWAN=El router tiene tanto la conexión WAN dual como IPTV habilitadas. Al habilitar la agregación WAN se deshabilitará la conexión WAN dual e IPTV para evitar conflictos con los puertos. ¿Está seguro de que desea continuar?
 WANAggregation_help_WAN=Asegúrese de que el puerto #WAN del router y el puerto LAN del módem se han conectado utilizando dos cables con la misma especificación.
 WANAggregation_help_LAN=Asegúrese de que el puerto LAN 4 del router y el puerto LAN del módem se han conectado utilizando dos cables con la misma especificación.
-WANAggregation_goto_WAN=Para habilitar la agregación WAN, vaya a la <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">página WAN-Internet Connection (Conexión WAN-Internet)</a>.
+WANAggregation_goto_WAN=Para habilitar la agregación WAN, vaya a la <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">página WAN-Internet Connection (Conexión WAN-Internet)</a>.
 WANAggregation_help_desc=Si la configuración de la agregación WAN no es correcta, siga los pasos que se muestran a continuación para intentarlo de nuevo.
 WANAggregation_help_step1=Compruebe que los puertos LAN del módem ya están conectados a #WAN y LAN 4 del router con cables.
 WANAggregation_help_step2=Asegúrese de que el módem tiene 802.3ad habilitado.
 WANAggregation_help_step3=Confirme que utiliza dos cables con las mismas especificaciones (gigabit y gigabit o 10/100 y 10/100 Mbps)
 WANAggregation_help_step4=Reinicie el router
-WANAggregation_help_final=Si los pasos anteriores no se realizan correctamente, informe de este problema a través del <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>sitio de soporte técnico de ASUS</a>.
+WANAggregation_help_final=Si los pasos anteriores no se realizan correctamente, informe de este problema a través del <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>sitio de soporte técnico de ASUS</a>.
 WANAggregation_wanType_hint=La agregación WAN no admite tipos de WAN como PPPoE, PPTP y L2TP. Si el tipo de WAN cambia a PPPoE, PPTP o L2TP, la agregación WAN se desactiva automáticamente. ¿Está seguro de que desea continuar?
 WebGUI_issue=No se puede acceder a la página del firmware
 wechat=WeChat
@@ -4546,8 +4618,8 @@ WLANConfig11b_display31_sectiondesc=Seleccione [WDS Only] o [Hybrid] de modo y a
 WLANConfig11b_display32_sectiondesc=Asegúrese de que el router inalámbrico y el AP al que desea conectarse para utilizar el mismo canal.
 WLANConfig11b_display33_sectiondesc=Introduzca el remoto mac AP la interfaz remota AP en la lista de AP remoto y abra  WDS gestión, introducir la dirección MAC de este encaminador.
 WLANConfig11b_display34_sectiondesc=Para obtener el máximo rendimiento, vaya a Configuración avanzada > Inalámbrico > General y asigne el mismo ancho de banda de canal, canal de control y canal de extensión a cada router de la red.
-WLANConfig11b_display41_sectiondesc=En este momento está utilizando el Ancho de banda del canal automático. Haga clic <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">aquí</a> para realizar modificaciones.
-WLANConfig11b_display42_sectiondesc=En este momento está utilizando el canal automático. Haga clic <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">aquí</a> para realizar modificaciones.
+WLANConfig11b_display41_sectiondesc=En este momento está utilizando el Ancho de banda del canal automático. Haga clic <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">aquí</a> para realizar modificaciones.
+WLANConfig11b_display42_sectiondesc=En este momento está utilizando el canal automático. Haga clic <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">aquí</a> para realizar modificaciones.
 WLANConfig11b_display5_sectiondesc=La configuración profesional inalámbrica permite configurar parámetros adicionales para conectividad inalámbrica. Sin embargo, es recomendable utilizar los valores predeterminados.
 WLANConfig11b_display6_sectiondesc=La configuración protegida mediante WiFi (WiFi, Protected Setup) proporciona un establecimiento sencillo y seguro de una red inalámbrica. Puede configurar WPS mediante el método de código PIN.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4605,6 +4677,7 @@ WLANConfig11b_x_APMode_option2=Hybrid
 WLANConfig11b_x_APSD_itemdesc=Habilite o deshabilite APSD (Automatic Power Save Delivery, es decir, Entrega automática para ahorro de energía) WMM.
 WLANConfig11b_x_APSD_itemname=Habilitar WMM APSD
 WLANConfig11b_x_Airtime_Fairness=Equidad de tiempo de emisión
+WLANConfig11b_x_ApplyAllBands_hint=Este ajuste se aplicará a toda la configuración de bandas.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=El modo inalámbrico se debe establecer en automático.
 WLANConfig11b_x_Beacon_itemdesc=El intervalo de señalización es el período de tiempo comprendido entre una señalización y la siguiente. El valor predeterminado es 100 (la unidad es el milisegundo o 1/1000 de segundo). Reduzca el intervalo de señalización para mejorar el rendimiento de transmisión en entornos inestables o para transitar por clientes itinerantes, lo cual consumirá mucha energía.
@@ -4701,11 +4774,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Si selecciona PIN (Personal Information Number,
 WLANConfig11b_x_WPSMode_itemname=Método WPS:
 WLANConfig11b_x_WPSPIN_itemdesc=Teclee un número de ocho dígitos para el código PIN del cliente.<p>
 WLANConfig11b_x_WPSPIN_itemname=Código PIN de cliente
-WLANConfig11n_Auto_note=[automático] no es compatible con el método de autenticación de red para invitados actual (TKIP o WEP).  Vaya a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Red para invitados </a> y cambie el método de autenticación.
+WLANConfig11n_Auto_note=[automático] no es compatible con el método de autenticación de red para invitados actual (TKIP o WEP).  Vaya a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Red para invitados </a> y cambie el método de autenticación.
 WLANConfig11n_automode_limition_hint=En el modo automático con cifrado WEP o TKIP, ZVMODELVZ admite la tasa de transmisión máxima de 54 Mbps.
 WLANConfig11n_automode_limition_hint1=Cambie a WPA2-Personal.
-WLANConfig11n_NAC_note=[N+AC] no es compatible con el método de autenticación de red para invitados actual (TKIP o WEP).  Vaya a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Red para invitados </a> y cambie el método de autenticación.
-WLANConfig11n_NOnly_note=[N Only] no es compatible con el método de autenticación de red para invitados actual (TKIP o WEP).  Vaya a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;"> Red para invitados </a> y cambie el método de autenticación.
+WLANConfig11n_NAC_note=[N+AC] no es compatible con el método de autenticación de red para invitados actual (TKIP o WEP).  Vaya a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Red para invitados </a> y cambie el método de autenticación.
+WLANConfig11n_NOnly_note=[N Only] no es compatible con el método de autenticación de red para invitados actual (TKIP o WEP).  Vaya a <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;"> Red para invitados </a> y cambie el método de autenticación.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=El tipo de preámbulo define la longitud del bloque de comprobación de redundancia cíclica (CRC, Cyclic Redundancy Check), que es una técnica para detectar errores de transmisión de datos entre dispositivos inalámbricos. Le recomendamos que configure todos los dispositivos inalámbricos con el mismo tipo de preámbulo. Utilice un preámbulo corto para dispositivos inalámbricos en áreas con mucho tráfico de red. Utilice un preámbulo largo para dispositivos inalámbricos antiguos.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4823,7 +4896,21 @@ Captive_Portal_Above=arriba
 Captive_Portal_Selected_Color=Color seleccionado
 Captive_Portal_Local=Local
 Configuration=Configuración
+Configuration_dark_mode=Oscuro
+Configuration_light_mode=Claro
+Configuration_theme=Tema
+Configuration_fancy_theme=Elegante
+Configuration_flat_theme=Plano
 Continuous_Mode=modo continuo
+View_Details=Ver detalles
+NetworkMap_Clients=Clientes
+NetworkMap_Guest_Clients=Clientes invitados
+NetworkMap_Add_AiMesh_Hint=Añada más nodos AiMesh para ampliar la cobertura de su WiFi.
+Dashboard_Show_more=Mostrar más
+Dashboard_Show_less=Mostrar menos
+Dashboard_Expand=Expandir
+Dashboard_Refreshing=Actualizando
+Dashboard_Last_updated=Última actualización
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Política de acceso
 FreeWiFi_AccountSetting_desc1=Account Setting (Configuración de la cuenta) es una configuración sencilla de la cuenta para invitados que le permite mantener la base de datos de la cuenta para invitados para proteger la red para invitados. El cliente asociado tiene que especificar la siguiente cuenta y contraseña para iniciar sesión antes de acceder a Internet.
@@ -4953,8 +5040,8 @@ AURA_Event_Note=Nota: Después de seleccionar el evento, el sistema mostrará di
 AURA_Scheme_Marquee=Marquesina
 AURA_Scheme_Gradient=Gradiente
 AURA_Scheme_Evolution=Evolución
-UU_Accelerator=网易 UU 加速器
-UU_Accelerator_desc=UU 路由器插件为三大主机（PS4、Switch、Xbox One）、PC 外服端游提供加速。可实现多设备同时加速，畅享全球联机超快感！
+UU_Accelerator=UU 加速器
+UU_Accelerator_desc=UU 加速器为全平台主机（PlayStation、Xbox、Switch、Steam Deck、ROG掌机等）、PC、手机提供游戏加速服务，可实现多设备同时加速，畅享全球联机超快感！
 weekSche_All_Day=Todo el día
 weekSche_Start_Time=Hora de inicio
 weekSche_End_Time=Hora de finalización
@@ -5075,12 +5162,39 @@ Notice_Message_2=Debido a la optimización del sistema, por favor, ayude a agreg
 Notice_Message_3=Lo he leído, no volver a mostrar.
 CTL_Decline=Declinar
 Outdoor_desc_title=Warning
-Outdoor_desc1=By enabling outdoor mode, AiMesh will be limited and might cause mesh node disconnect.
-Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.
-WiFi_Channel=Canal Wi-Fi
+Outdoor_active_desc_1=Al habilitar el modo exterior, AiMesh estará limitado y podría causar la desconexión del nodo de malla.
+Outdoor_active_desc_2=En cumplimiento con las regulaciones, el sistema escaneará los canales durante aproximadamente 1 minuto para evitar interferencias del radar meteorológico. <span style="color:var(--wrt-badge-warning-color,#FC0)">Si se detectan señales de radar, cambiará a 2.4GHz, causando una breve desconexión. El canal afectado será bloqueado por 30 minutos.</span>
+Outdoor_active_desc_3=El modo exterior solo admite los modos Router y AP.
+Outdoor_active_desc_4=Los canales exteriores disponibles varían según el país/región.
+Outdoor_inactive_desc_1=Desactivar este modo reiniciará brevemente la conexión inalámbrica y desconectará todos los dispositivos.
+Outdoor_inactive_desc_2=El sistema cambiará a configuraciones que cumplan con las regulaciones interiores.
+Outdoor_mode=Modo exterior
+Outdoor_mode_off=Apagado
+Outdoor_status=Estado exterior
+Outdoor_status_hint=Se ha detectado un dispositivo exterior. Para garantizar el funcionamiento legal según las regulaciones inalámbricas, tus canales 5G ahora están restringidos al rango aprobado para exteriores.
+WiFi_Channel=Canal WiFi
 Channel_In_Use=Canal en uso
-OtherWifi_Interference=Interferencia Wi-Fi
-NonWifi_Interference=Interferencia no Wi-Fi
+Wifi_Auto_Refresh=Actualización Automática
+Wifi_Detect_Interference=Detección de Interferencia
+Wifi_Interference=Interferencia
+Wifi_in_ch_Interference=Interferencia en el Canal
+Wifi_specscan_Interference=Interferencia en el Escaneo del Espectro
+Wifi_specscan_hint=El escaneo de interferencia del espectro cubre solo las bandas de 2.4GHz y 5GHz.
+OtherWifi_Interference=Otras Interferencias WiFi
+NonWifi_Interference=Interferencia No WiFi
+WiFi_Optimized_auto=Optimizado automáticamente
+WiFi_Optimized=Optimizado
+WiFi_INIT=Selección automática inicial
+WiFi_After_Boot=Selección automática tras reinicio
+WiFi_Boot=Arranque
+WiFi_Adaptive_bw=Ancho de banda adaptativo
+WiFi_CSA_Expand=Expandir
+WiFi_CSA_Reduce=Reducir
+WiFi_DFS_REENTRY=REENTRADA DFS
+WiFi_ch_conflict=Conflicto de canal
+WiFi_Regulatory=Regulatorio
+WiFi_OFF=WiFi Apagado
+WiFi8_6G_enable_hint=La banda de 6 GHz está funcionando actualmente en modo WiFi 7. Para habilitar WiFi 8, active "WiFi 8" en la configuración Wireless Professional de 6 GHz.
 Vendor=Proveedor
 Connected_AP=AP conectado
 Network_SDN=Red(SDN)

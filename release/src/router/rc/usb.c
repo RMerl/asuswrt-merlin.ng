@@ -5,6 +5,7 @@
 */
 
 #include <rc.h>
+#include <shutils.h>
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 #include <PMS_DBAPIs.h>
@@ -12,6 +13,7 @@
 
 #ifdef RTCONFIG_USB
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1913,7 +1915,7 @@ int umount_mountpoint(struct mntent *mnt, uint flags)
 			foreach_62(word, b, next_word){
 				switch(count){
 					case 0: // type
-						type = atoi(word);
+						type = safe_atoi(word);
 						break;
 				}
 				++count;
@@ -1932,7 +1934,7 @@ int umount_mountpoint(struct mntent *mnt, uint flags)
 							strncpy(sync_dir, next_word, PATH_MAX);
 							break;
 						case 6: // enable
-							enable = atoi(next_word);
+							enable = safe_atoi(next_word);
 							break;
 					}
 				}
@@ -2406,7 +2408,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 				foreach_62(word, b, next_word){
 					switch(count){
 						case 0: // type
-							type = atoi(word);
+							type = safe_atoi(word);
 							break;
 					}
 					++count;
@@ -2425,7 +2427,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 					for(count = 0, next_word = strsep(&b_bak, ">"); next_word != NULL; ++count, next_word = strsep(&b_bak, ">")){
 						switch(count){
 							case 0: // type
-								type = atoi(next_word);
+								type = safe_atoi(next_word);
 								break;
 							case 1: // username
 								memset(username, 0, 64);
@@ -2440,14 +2442,14 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 								strncpy(url, next_word, PATH_MAX);
 								break;
 							case 4: // rule
-								rule = atoi(next_word);
+								rule = safe_atoi(next_word);
 								break;
 							case 5: // dir
 								memset(sync_dir, 0, PATH_MAX);
 								strncpy(sync_dir, next_word, PATH_MAX);
 								break;
 							case 6: // enable
-								enable = atoi(next_word);
+								enable = safe_atoi(next_word);
 								break;
 						}
 					}
@@ -2960,8 +2962,8 @@ void write_ftpd_conf()
 		}
 	}
 	fprintf(fp, "tcp_wrappers=NO\n");
-	strcpy(maxuser, nvram_safe_get("st_max_user"));
-	if ((atoi(maxuser)) > 0)
+	snprintf(maxuser, sizeof(maxuser), "%s", nvram_safe_get("st_max_user"));
+	if ((safe_atoi(maxuser)) > 0)
 		fprintf(fp, "max_clients=%s\n", maxuser);
 	else
 		fprintf(fp, "max_clients=%s\n", "10");
@@ -3449,7 +3451,6 @@ void
 start_samba(void)
 {
 	int acc_num;
-	char cmd[256];
 #if !defined(RTCONFIG_TUXERA_SMBD)
 #if defined(SMP)
 	char cpu_list[4];
@@ -3556,15 +3557,35 @@ start_samba(void)
 		suit_double_quote(suit_passwd, char_passwd, 64);
 
 #if defined(RTCONFIG_SAMBA36X)
-		// use samba-3.6.x_opwrt to replace from samba-3.6.x
-		//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
-		snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+		safe_do_system("/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #elif defined(RTCONFIG_SAMBA4)
-		snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+		{
+			int _pfd[2];
+			if (pipe(_pfd) == 0) {
+				pid_t _pid = fork();
+				if (_pid == 0) {
+					close(_pfd[1]);
+					dup2(_pfd[0], STDIN_FILENO);
+					close(_pfd[0]);
+					execl("/usr/sbin/smbpasswd", "smbpasswd", "-s", "-a", char_user, (char *)NULL);
+					_exit(127);
+				} else if (_pid > 0) {
+					close(_pfd[0]);
+					write(_pfd[1], char_passwd, strlen(char_passwd));
+					write(_pfd[1], "\n", 1);
+					write(_pfd[1], char_passwd, strlen(char_passwd));
+					write(_pfd[1], "\n", 1);
+					close(_pfd[1]);
+					waitpid(_pid, NULL, 0);
+				} else {
+					close(_pfd[0]);
+					close(_pfd[1]);
+				}
+			}
+		}
 #else
-		snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+		safe_do_system("smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif
-		system(cmd);
 	}
 
 	PMS_FreeAccInfo(&account_list, &group_list);
@@ -3608,18 +3629,57 @@ start_samba(void)
 #if defined(RTCONFIG_TUXERA_SMBD)
 			if(st_samba_mode == 2 || st_samba_mode == 4)
 			{
-				snprintf(cmd, sizeof(cmd), "echo \"%s\" |tsmb-passwd -c /etc/smb.conf -s -a \"%s\"", suit_passwd, suit_user);
+				int _pfd[2];
+				if (pipe(_pfd) == 0) {
+					pid_t _pid = fork();
+					if (_pid == 0) {
+						close(_pfd[1]);
+						dup2(_pfd[0], STDIN_FILENO);
+						close(_pfd[0]);
+						execl("/usr/bin/tsmb-passwd", "tsmb-passwd", "-c", "/etc/smb.conf", "-s", "-a", char_user, (char *)NULL);
+						_exit(127);
+					} else if (_pid > 0) {
+						close(_pfd[0]);
+						write(_pfd[1], char_passwd, strlen(char_passwd));
+						write(_pfd[1], "\n", 1);
+						close(_pfd[1]);
+						waitpid(_pid, NULL, 0);
+					} else {
+						close(_pfd[0]);
+						close(_pfd[1]);
+					}
+				}
 			}
 #elif defined(RTCONFIG_SAMBA36X)
-			// use samba-3.6.x_opwrt to replace from samba-3.6.x
-			//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
-			snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+			safe_do_system("/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #elif defined(RTCONFIG_SAMBA4)
-			snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+			{
+				int _pfd[2];
+				if (pipe(_pfd) == 0) {
+					pid_t _pid = fork();
+					if (_pid == 0) {
+						close(_pfd[1]);
+						dup2(_pfd[0], STDIN_FILENO);
+						close(_pfd[0]);
+						execl("/usr/sbin/smbpasswd", "smbpasswd", "-s", "-a", char_user, (char *)NULL);
+						_exit(127);
+					} else if (_pid > 0) {
+						close(_pfd[0]);
+						write(_pfd[1], char_passwd, strlen(char_passwd));
+						write(_pfd[1], "\n", 1);
+						write(_pfd[1], char_passwd, strlen(char_passwd));
+						write(_pfd[1], "\n", 1);
+						close(_pfd[1]);
+						waitpid(_pid, NULL, 0);
+					} else {
+						close(_pfd[0]);
+						close(_pfd[1]);
+					}
+				}
+			}
 #else
-			snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+			safe_do_system("smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif
-			system(cmd);
 
 			if(++i >= acc_num)
 				break;
@@ -3981,7 +4041,7 @@ void start_dms(void)
 
 			nv = nvram_safe_get("dms_sort");
 			if (!*nv || isdigit(*nv))
-				nv = (!*nv || atoi(nv)) ? "+upnp:class,+upnp:originalTrackNumber,+dc:title" : NULL;
+				nv = (!*nv || safe_atoi(nv)) ? "+upnp:class,+upnp:originalTrackNumber,+dc:title" : NULL;
 			if (nv)
 				fprintf(f, "force_sort_criteria=%s\n", nv);
 
@@ -4084,6 +4144,7 @@ write_mt_daapd_conf(char *servername)
 	fprintf(fp, "web_root /etc/web\n");
 	fprintf(fp, "port 3689\n");
 	fprintf(fp, "admin_pw %s\n", http_passwd);
+	fprintf(fp, "password %s\n", http_passwd);
 	fprintf(fp, "db_dir %s\n", ptr);
 	fprintf(fp, "mp3_dir %s\n", dmsdir);
 	fprintf(fp, "servername %s\n", servername);
@@ -4469,7 +4530,7 @@ void start_cloudsync(int fromUI)
 			foreach_62(word, b, next_word){
 				switch(count){
 					case 0: // type
-						type = atoi(word);
+						type = safe_atoi(word);
 						break;
 				}
 				++count;
@@ -4565,7 +4626,7 @@ void start_cloudsync(int fromUI)
 							strncpy(sync_dir, next_word, PATH_MAX);
 							break;
 						case 6: // enable
-							enable = atoi(next_word);
+							enable = safe_atoi(next_word);
 							break;
 					}
 				}
@@ -5033,7 +5094,7 @@ int __ejusb_main(const char *port_path, int unplug)
 		return -1;
 	}
 
-	all_disk = (atoi(port_path) == -1)? 1 : 0;
+	all_disk = (safe_atoi(port_path) == -1)? 1 : 0;
 	for(disk_info = disk_list; disk_info != NULL; disk_info = disk_info->next){
 		/* If hub port number is not specified in port_path,
 		 * don't compare it with hub port number in disk_info->port.
@@ -5086,13 +5147,13 @@ int ejusb_main(int argc, char *argv[])
 	}
 
 	ports_str = argv[1];
-	ports = atoi(argv[1]);
+	ports = safe_atoi(argv[1]);
 	if(ports != -1 && (ports < 1 || ports > 3)) {
 		ejusb_usage();
 		return -1;
 	}
 	if (argc == 3 && isdigit(*argv[2])) {
-		restart_nasapps = atoi(argv[2]);
+		restart_nasapps = safe_atoi(argv[2]);
 		argc -= 2;
 		argv += 2;
 	} else {
@@ -5103,7 +5164,7 @@ int ejusb_main(int argc, char *argv[])
 	while ((opt = getopt(argc, argv, "u:")) != -1) {
 		switch (opt) {
 		case 'u':
-			unplug = !!atoi(optarg);
+			unplug = !!safe_atoi(optarg);
 			break;
 		}
 	}
@@ -5177,7 +5238,7 @@ static void start_diskformat(char *port_path)
 	strlcpy(disk_label, nvram_safe_get("diskformat_label"), sizeof(disk_label));
 	strlcpy(usbport, nvram_safe_get("diskmon_usbport"), sizeof(usbport));
 
-	if(atoi(port_path) == -1)
+	if(safe_atoi(port_path) == -1)
 		ptr_path = usbport;
 	else
 		ptr_path = port_path;
@@ -5351,7 +5412,7 @@ static void start_diskscan(char *port_path)
 	snprintf(monpart, sizeof(monpart), "%s", nvram_safe_get("diskmon_part"));
 	snprintf(usbport, sizeof(usbport), "%s", nvram_safe_get("diskmon_usbport"));
 
-	if(atoi(port_path) == -1)
+	if(safe_atoi(port_path) == -1)
 		ptr_path = usbport;
 	else
 		ptr_path = port_path;
@@ -5561,11 +5622,11 @@ int diskmon_main(int argc, char *argv[])
 			continue;
 		}
 
-		val_hour[port_num] = atoi(set_hour);
+		val_hour[port_num] = safe_atoi(set_hour);
 		if(diskmon_freq == DISKMON_FREQ_MONTH)
-			val_day[port_num] = atoi(set_day);
+			val_day[port_num] = safe_atoi(set_day);
 		else if(diskmon_freq == DISKMON_FREQ_WEEK)
-			val_day[port_num] = atoi(set_week);
+			val_day[port_num] = safe_atoi(set_week);
 		else if(diskmon_freq == DISKMON_FREQ_DAY)
 			val_day[port_num] = -1;
 cprintf("disk_monitor: Port %d: val_day=%d, val_hour=%d.\n", port_num, val_day[port_num], val_hour[port_num]);
@@ -5821,7 +5882,7 @@ void usb_notify(){
 
 		f_read_string(target, buf, 16);
 
-		killall(entry->d_name, atoi(buf));
+		killall(entry->d_name, safe_atoi(buf));
 	}
 	closedir(dp);
 }
@@ -5845,7 +5906,7 @@ int find_webdav_right(char *account)
 			if((vstrsep(b, ">", &acc, &right) != 2)) continue;
 
 			if(strcmp(acc, account)==0) {
-				ret = atoi(right);
+				ret = safe_atoi(right);
 				break;
 			}
 		}

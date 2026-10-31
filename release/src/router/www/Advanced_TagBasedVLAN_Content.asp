@@ -701,7 +701,7 @@ function show_vlan_rulelist(){
 
 								if( j == 5){
 									if(is_cp_fbwifi)
-										wireless_inf = wireless_inf + "<span style='color:#2F3A3E;' title='This interface is used by Captive Portal or Free Wifi and is disabled in this VLAN.'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + k].if_text) + "</span>"; //untranslated
+										wireless_inf = wireless_inf + "<span style='color:#2F3A3E;' title='This interface is used by Captive Portal or Free WiFi and is disabled in this VLAN.'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + k].if_text) + "</span>"; //untranslated
 									else
 										wireless_inf = wireless_inf + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + k].if_text);
 
@@ -712,7 +712,7 @@ function show_vlan_rulelist(){
 								}
 								else{
 									if(is_cp_fbwifi)
-										wireless_inf = wireless_inf + "<span style='color:#2F3A3E;' title='This interface is used by Captive Portal or Free Wifi and is disabled in this VLAN.'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + wireless_num + k].if_text) + "</span>";//untranslated
+										wireless_inf = wireless_inf + "<span style='color:#2F3A3E;' title='This interface is used by Captive Portal or Free WiFi and is disabled in this VLAN.'>" + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + wireless_num + k].if_text) + "</span>";//untranslated
 									else
 										wireless_inf = wireless_inf + htmlEncode_decodeURI(Interface_Text_Value[wan_num + lan_num + wireless_num + k].if_text);
 

@@ -185,10 +185,17 @@ var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Fa
 var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=127";
 var orig_mtu = '<% nvram_get("wan_mtu"); %>';
 var default_wan_mtu = httpApi.nvramDefaultGet(["wan_mtu"]).wan_mtu;
+var wan_mtu_max = 1500;
+var wan_pppoe_mtu_max = (isSupport("mtk") || isSupport("qca") || !isSupport("no_jumbo_frame")) ? 1500 : 1492;
+var mtu_last_changed = "";
 
 const eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
 
 function initial(){
+	document.getElementById("wan_mtu_range_hint").textContent = "1280 - " + wan_mtu_max;
+	$(document).on("input", "input[name='wan_mtu']", function() { mtu_last_changed = "wan_mtu"; });
+	$(document).on("input", "input[name='wan_pppoe_mtu']", function() { mtu_last_changed = "wan_pppoe_mtu"; });
+	$(document).on("input", "input[name='wan_pppoe_mru']", function() { mtu_last_changed = "wan_pppoe_mru"; });
 	if (dnspriv_support) {
 		if (dnsfilter_support)
 			var dnsfilter_enable = '<% nvram_get("dnsfilter_enable_x"); %>';
@@ -617,7 +624,13 @@ function genWANSoption(){
 			}
 		}
 		else if(wans_dualwan_NAME == "WAN"){
-			if((productid == "GT-AX6000" || productid == "RT-AX88U_PRO") && wans_extwan == "1")
+			/* RT-BE58_GO WISP: the "wan" token is hijacked to the WiFi STA
+			 * radio (wl0/wl1), not the physical WAN jack -- the generic
+			 * physical-port label below would be wrong here. */
+			if(isSwMode("WISP") && based_modelid === 'RT-BE58_GO'){
+				wans_dualwan_NAME = "Wi-Fi WAN";
+			}
+			else if((productid == "GT-AX6000" || productid == "RT-AX88U_PRO") && wans_extwan == "1")
 				wans_dualwan_NAME = "2.5G WAN";
 			else{
 				var ethwan_name = get_ethwan_name();
@@ -625,6 +638,11 @@ function genWANSoption(){
 					wans_dualwan_NAME = ethwan_name;
 			}
 
+		}
+		else if(wans_dualwan_NAME == "WAN2" && isSwMode("WISP") && based_modelid === 'RT-BE58_GO'){
+			/* RT-BE58_GO WISP dual-WAN: "wan2" is the real physical
+			 * 2.5G eth1 WAN jack (the "wan" token owns the WiFi slot). */
+			wans_dualwan_NAME = "2.5G WAN";
 		}
 		else if(wans_dualwan_NAME == "USB" && based_modelid.substring(0,3) == "4G-")
 			wans_dualwan_NAME = "<#Mobile_title#>";
@@ -793,11 +811,20 @@ function applyRule(){
 				(getRadioValue(document.form.dns_fwd_local) != '<% nvram_get("dns_fwd_local"); %>'))
 			document.form.action_script.value += ";restart_dnsmasq";
 
-		if( 
+		if(
 			isSwMode("WISP") &&
 			document.form.wan_hwaddr_x.value != wan_hwaddr_x_orig
 		){
-			document.form.action_script.value += ";restart_wireless";
+			/* RT-BE58_GO WISP: the WAN unit here can be the WiFi STA radio
+			 * itself (wl0/wl1), whose on-air MAC can only be reprogrammed
+			 * via the wisp_serv restart path (bsscfg-0 down -> cur_etheraddr
+			 * -> up, before wpa_supplicant starts) -- a plain restart_wireless
+			 * never touches bsscfg-0's cur_etheraddr. Other WISP-capable
+			 * models keep the original restart_wireless behavior. */
+			if(based_modelid === 'RT-BE58_GO')
+				document.form.action_script.value += ";restart_wisp_serv";
+			else
+				document.form.action_script.value += ";restart_wireless";
 		}
 
 		if(isSupport("autowan") && autowan_conflict){
@@ -1019,21 +1046,26 @@ function validForm(){
 	}
 	
 	if(wan_type == "pppoe"){
-		if(!validator.numberRange(document.form.wan_pppoe_mtu, 128, 1492)
-				|| !validator.numberRange(document.form.wan_pppoe_mru, 128, 1492))
+		if(!validator.numberRange(document.form.wan_pppoe_mtu, 128, wan_pppoe_mtu_max)
+				|| !validator.numberRange(document.form.wan_pppoe_mru, 128, wan_pppoe_mtu_max))
 			return false;
 
-		/* reset wan_mtu to default value */
-		if($("#wan_mtu_tr").css("display") != "none"){
-			if(document.form.wan_mtu.value != "") {
-				if(parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)){
+		/* adjust mtu pair based on which field the user last changed */
+		if(document.form.wan_mtu.value != "") {
+			if(mtu_last_changed == "wan_mtu"){
+				if((parseInt(document.form.wan_pppoe_mtu.value) + 8 > parseInt(document.form.wan_mtu.value)) || 
+				   (parseInt(document.form.wan_pppoe_mru.value) + 8 > parseInt(document.form.wan_mtu.value))){
 					document.form.wan_pppoe_mtu.value = parseInt(document.form.wan_mtu.value) - 8;
+					document.form.wan_pppoe_mru.value = document.form.wan_pppoe_mtu.value;
 				}
 			}
-		}
-		else if(document.form.wan_mtu.value != default_wan_mtu){
-			document.form.wan_mtu.value = default_wan_mtu;
-			document.form.wan_mtu.disabled = false;
+			else{
+				var max_pppoe = Math.max(parseInt(document.form.wan_pppoe_mtu.value), parseInt(document.form.wan_pppoe_mru.value));
+				if(max_pppoe + 8 > parseInt(document.form.wan_mtu.value)){
+					document.form.wan_mtu.value = max_pppoe + 8;
+					document.form.wan_mtu.disabled = false;
+				}
+			}
 		}
 	
 		if(!validator.string(document.form.wan_pppoe_service)
@@ -1116,8 +1148,8 @@ function validForm(){
 		 if(!validator.string(document.form.wan_heartbeat_x))
 		 	return false;
 
-	if($("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
-		if(!validator.numberRange(document.form.wan_mtu, 1280, 1500)) {
+	if(wan_type != "pppoe" && $("#wan_mtu_tr").css("display") != "none" && (orig_mtu != "" || document.form.wan_mtu.value.length > 0)) {
+		if(!validator.numberRange(document.form.wan_mtu, 1280, wan_mtu_max)) {
 			document.form.wan_mtu.focus();
 			document.form.wan_mtu.select();
 			return false;
@@ -1197,7 +1229,9 @@ function change_wan_type(wan_type, flag){
 		change_wan_dhcp_enable(flag);
 	else
 		change_wan_dhcp_enable(1);
-	
+
+	document.form.wan_mtu.value = orig_mtu;
+
 	if(wan_type == "pppoe"){
 		showhide("wan_DHCP_opt",0);
 		inputCtrl(document.form.wan_vendorid, 0);
@@ -1274,7 +1308,7 @@ function change_wan_type(wan_type, flag){
 			document.form.bond_wan_radio.value = "0";
 		}
 
-		inputCtrl(document.form.wan_mtu, 1);
+		inputCtrl(document.form.wan_mtu, 0);
 	}
 	else if(wan_type == "l2tp"){
 		showhide("wan_DHCP_opt",0);
@@ -1314,6 +1348,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(wan_type == "static"){
 		showhide("wan_DHCP_opt",0);
@@ -1370,6 +1405,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus" || wan_type == "ocnvc" || wan_type == "dslite" || wan_type == "v6opt")){
 		showhide("wan_DHCP_opt",0);
@@ -1415,6 +1451,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 	else{	// Automatic IP or 802.11 MD or ""		
 		showhide("wan_DHCP_opt",1);
@@ -1475,6 +1512,7 @@ function change_wan_type(wan_type, flag){
 		}
 
 		inputCtrl(document.form.wan_mtu, 1);
+		if(parseInt(document.form.wan_mtu.value) > 1500) document.form.wan_mtu.value = 1500;
 	}
 }
 
@@ -3121,7 +3159,7 @@ function get_default_wan_name(){
 				<#PPPConnection_x_PPPoEMTU_itemname#>
 			</th>
 			<td>
-				<input type="text" maxlength="5" name="wan_mtu" class="input_6_table" value="<% nvram_get("wan_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;1280 - 1500
+				<input type="text" maxlength="5" name="wan_mtu" class="input_6_table" value="<% nvram_get("wan_mtu"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>&nbsp;<span id="wan_mtu_range_hint"></span>
 			</td>
 		</tr>
 		</table>

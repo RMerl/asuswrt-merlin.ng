@@ -289,7 +289,7 @@ int addr_type_parse(const char *src, char *dst, int size)
 	if (next && *next) {
 		min_addr.s_addr = inet_addr_(addr);
 		max_addr.s_addr = (strchr(next, '.') != NULL) ? inet_addr_(next) :
-			(min_addr.s_addr & htonl(0xffffff00)) | htonl(atoi(next) & 0xff);
+			(min_addr.s_addr & htonl(0xffffff00)) | htonl(safe_atoi(next) & 0xff);
 		if (min_addr.s_addr == max_addr.s_addr &&
 		    min_addr.s_addr == INADDR_ANY)
 			return -1;
@@ -422,24 +422,24 @@ char *portrange_ex_conv(char *port_name, int idx)
 	strcpy(g_buf, "");
 
 	if (!strncmp(port, ">", 1)) {
-		sprintf(g_buf, "%d-65535", atoi(port+1) + 1);
+		sprintf(g_buf, "%d-65535", safe_atoi(port+1) + 1);
 	}
 	else if (!strncmp(port, "=", 1)) {
-		sprintf(g_buf, "%d-%d", atoi(port+1), atoi(port+1));
+		sprintf(g_buf, "%d-%d", safe_atoi(port+1), safe_atoi(port+1));
 	}
 	else if (!strncmp(port, "<", 1)) {
-		sprintf(g_buf, "1-%d", atoi(port+1) - 1);
+		sprintf(g_buf, "1-%d", safe_atoi(port+1) - 1);
 	}
 	//else if (strptr=strchr(port, ':'))
 	else if ((strptr=strchr(port, ':')) != NULL) //2008.11 magic oleg patch
 	{
 		strcpy(itemname_arr, port);
 		strptr = strchr(itemname_arr, ':');
-		sprintf(g_buf, "%d-%d", atoi(itemname_arr), atoi(strptr+1));
+		sprintf(g_buf, "%d-%d", safe_atoi(itemname_arr), safe_atoi(strptr+1));
 	}
 	else if (*port)
 	{
-		sprintf(g_buf, "%d-%d", atoi(port), atoi(port));
+		sprintf(g_buf, "%d-%d", safe_atoi(port), safe_atoi(port));
 	}
 	else
 	{
@@ -463,35 +463,35 @@ char *portrange_ex2_conv(char *port_name, int idx, int *start, int *end)
 
 	if (!strncmp(port, ">", 1))
 	{
-		sprintf(g_buf, "%d-65535", atoi(port+1) + 1);
-		*start=atoi(port+1);
+		sprintf(g_buf, "%d-65535", safe_atoi(port+1) + 1);
+		*start=safe_atoi(port+1);
 		*end=65535;
 	}
 	else if (!strncmp(port, "=", 1))
 	{
-		sprintf(g_buf, "%d-%d", atoi(port+1), atoi(port+1));
-		*start=*end=atoi(port+1);
+		sprintf(g_buf, "%d-%d", safe_atoi(port+1), safe_atoi(port+1));
+		*start=*end=safe_atoi(port+1);
 	}
 	else if (!strncmp(port, "<", 1))
 	{
-		sprintf(g_buf, "1-%d", atoi(port+1) - 1);
+		sprintf(g_buf, "1-%d", safe_atoi(port+1) - 1);
 		*start=1;
-		*end=atoi(port+1);
+		*end=safe_atoi(port+1);
 	}
 	//else if (strptr=strchr(port, ':'))
 	else if ((strptr=strchr(port, ':')) != NULL) //2008.11 magic oleg patch
 	{
 		strcpy(itemname_arr, port);
 		strptr = strchr(itemname_arr, ':');
-		sprintf(g_buf, "%d-%d", atoi(itemname_arr), atoi(strptr+1));
-		*start=atoi(itemname_arr);
-		*end=atoi(strptr+1);
+		sprintf(g_buf, "%d-%d", safe_atoi(itemname_arr), safe_atoi(strptr+1));
+		*start=safe_atoi(itemname_arr);
+		*end=safe_atoi(strptr+1);
 	}
 	else if (*port)
 	{
-		sprintf(g_buf, "%d-%d", atoi(port), atoi(port));
-		*start=atoi(port);
-		*end=atoi(port);
+		sprintf(g_buf, "%d-%d", safe_atoi(port), safe_atoi(port));
+		*start=safe_atoi(port);
+		*end=safe_atoi(port);
 	}
 	else
 	{
@@ -516,34 +516,34 @@ char *portrange_ex2_conv_new(char *port_name, int idx, int *start, int *end)
 
 	if (!strncmp(port, ">", 1))
 	{
-		sprintf(g_buf, "%d-65535", atoi(port+1) + 1);
-		*start=atoi(port+1);
+		sprintf(g_buf, "%d-65535", safe_atoi(port+1) + 1);
+		*start=safe_atoi(port+1);
 		*end=65535;
 	}
 	else if (!strncmp(port, "=", 1))
 	{
-		sprintf(g_buf, "%d-%d", atoi(port+1), atoi(port+1));
-		*start=*end=atoi(port+1);
+		sprintf(g_buf, "%d-%d", safe_atoi(port+1), safe_atoi(port+1));
+		*start=*end=safe_atoi(port+1);
 	}
 	else if (!strncmp(port, "<", 1))
 	{
-		sprintf(g_buf, "1-%d", atoi(port+1) - 1);
+		sprintf(g_buf, "1-%d", safe_atoi(port+1) - 1);
 		*start=1;
-		*end=atoi(port+1);
+		*end=safe_atoi(port+1);
 	}
 	else if ((strptr=strchr(port, ':')) != NULL)
 	{
 		strcpy(itemname_arr, port);
 		strptr = strchr(itemname_arr, ':');
-		sprintf(g_buf, "%d:%d", atoi(itemname_arr), atoi(strptr+1));
-		*start=atoi(itemname_arr);
-		*end=atoi(strptr+1);
+		sprintf(g_buf, "%d:%d", safe_atoi(itemname_arr), safe_atoi(strptr+1));
+		*start=safe_atoi(itemname_arr);
+		*end=safe_atoi(strptr+1);
 	}
 	else if (*port)
 	{
-		sprintf(g_buf, "%d:%d", atoi(port), atoi(port));
-		*start=atoi(port);
-		*end=atoi(port);
+		sprintf(g_buf, "%d:%d", safe_atoi(port), safe_atoi(port));
+		*start=safe_atoi(port);
+		*end=safe_atoi(port);
 	}
 	else
 	{
@@ -887,12 +887,12 @@ int timematch_conv2(char *mstr, int mstr_size, char *nv_date, char *nv_time, cha
 
 	// initialize
 	memset(datetime, 0, sizeof(datetime));
-	//cprintf("%s: dow=%d, timestart=%d, timestop=%d, timestart2=%d, timestop2=%d, sizeof(datetime)=%d\n", __FUNCTION__, dow, atoi(timestart), atoi(timestop), atoi(timestart2), atoi(timestop2), sizeof(datetime)); //tmp test
+	//cprintf("%s: dow=%d, timestart=%d, timestop=%d, timestart2=%d, timestop2=%d, sizeof(datetime)=%d\n", __FUNCTION__, dow, safe_atoi(timestart), safe_atoi(timestop), safe_atoi(timestart2), safe_atoi(timestop2), sizeof(datetime)); //tmp test
 
 	// Sunday
 	if((dow & 0x40) != 0)
 	{
-		if(atoi(timestart2) < atoi(timestop2))
+		if(safe_atoi(timestart2) < safe_atoi(timestop2))
 		{
 			snprintf(datetime[0].start, sizeof(datetime[0].start), "%s00", timestart2);
 			snprintf(datetime[0].stop, sizeof(datetime[0].stop), "%s59", timestop2);
@@ -910,7 +910,7 @@ int timematch_conv2(char *mstr, int mstr_size, char *nv_date, char *nv_time, cha
 	{
 		if((dow & 1<<(6-i)) != 0)
 		{
-			if(atoi(timestart) < atoi(timestop))
+			if(safe_atoi(timestart) < safe_atoi(timestop))
 			{
 				snprintf(datetime[i].start, sizeof(datetime[i].start), "%s00", timestart);
 				snprintf(datetime[i].stop, sizeof(datetime[i].stop), "%s59", timestop);
@@ -927,7 +927,7 @@ int timematch_conv2(char *mstr, int mstr_size, char *nv_date, char *nv_time, cha
 	// Saturday
 	if((dow & 0x01) != 0)
 	{
-		if(atoi(timestart2) < atoi(timestop2))
+		if(safe_atoi(timestart2) < safe_atoi(timestop2))
 		{
 			snprintf(datetime[6].start, sizeof(datetime[6].start), "%s00", timestart2);
 			snprintf(datetime[6].stop, sizeof(datetime[6].stop), "%s59", timestop2);
@@ -948,13 +948,13 @@ int timematch_conv2(char *mstr, int mstr_size, char *nv_date, char *nv_time, cha
 		if((strcmp(datetime[i].tmpstop, "")!=0)
 			&& (strcmp(datetime[i].start, "")!=0) && (strcmp(datetime[i].stop, "")!=0))
 		{
-			if((atoi(datetime[i].tmpstop) >= atoi(datetime[i].start))
-				&& (atoi(datetime[i].tmpstop) <= atoi(datetime[i].stop)))
+			if((safe_atoi(datetime[i].tmpstop) >= safe_atoi(datetime[i].start))
+				&& (safe_atoi(datetime[i].tmpstop) <= safe_atoi(datetime[i].stop)))
 			{
 				strncpy(datetime[i].start, "000000", 6);
 				strncpy(datetime[i].tmpstop, "", 6);
 			}
-			else if (atoi(datetime[i].tmpstop) > atoi(datetime[i].stop))
+			else if (safe_atoi(datetime[i].tmpstop) > safe_atoi(datetime[i].stop))
 			{
 				strncpy(datetime[i].start, "000000", 6);
 				strncpy(datetime[i].stop, datetime[i].tmpstop, 6);
@@ -1180,7 +1180,7 @@ void convert_routes(void)
 
 				len = strlen(routes);
 				_dprintf("%x %s %s %s %s %s\n", ++i, ip, netmask, gateway, metric, interface);
-				sprintf(routes + len, " %s:%s:%s:%d", ip, netmask, gateway, atoi(metric)+1);
+				sprintf(routes + len, " %s:%s:%s:%d", ip, netmask, gateway, safe_atoi(metric)+1);
 			}
 			free(nv);
 		}
@@ -1247,11 +1247,11 @@ void write_yandexdns_filter(FILE *fp, char *lan_if, char *lan_ip)
 	while (nv && (b = strsep(&nvp, "<")) != NULL) {
 		if (vstrsep(b, ">", &name, &mac, &mode, &enable) < 3)
 			continue;
-		if (enable && atoi(enable) == 0)
+		if (enable && safe_atoi(enable) == 0)
 			continue;
 		if (!*mac || !*mode || !ether_atoe(mac, ea))
 			continue;
-		dnsmode = atoi(mode);
+		dnsmode = safe_atoi(mode);
 		/* Skip incorrect and default levels */
 		if (dnsmode < YADNS_FIRST || dnsmode >= YADNS_COUNT || dnsmode == defmode)
 			continue;
@@ -1298,11 +1298,11 @@ void write_yandexdns_filter6(FILE *fp, char *lan_if, char *lan_ip)
 	while (nv && (b = strsep(&nvp, "<")) != NULL) {
 		if (vstrsep(b, ">", &name, &mac, &mode, &enable) < 3)
 			continue;
-		if (enable && atoi(enable) == 0)
+		if (enable && safe_atoi(enable) == 0)
 			continue;
 		if (!*mac || !*mode || !ether_atoe(mac, ea))
 			continue;
-		dnsmode = atoi(mode);
+		dnsmode = safe_atoi(mode);
 		/* Skip incorrect and default levels */
 		if (dnsmode < YADNS_FIRST || dnsmode >= YADNS_COUNT || dnsmode == defmode)
 			continue;
@@ -1688,6 +1688,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	FILE *fp;
 	char lan_class[32];
 	char name[PATH_MAX];
+	char tmp[32];
 	int wan_unit;
 #ifdef RTCONFIG_MULTIWAN_CFG
 	int wanx_rules = 0;
@@ -1717,7 +1718,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	if (wan_unit > WAN_UNIT_MULTISRV_BASE) return;
 #endif
 #ifdef RTCONFIG_IPV6
-#if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_TOR)
+#if defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_TOR) || defined(RTCONFIG_MULTILAN_CFG)
 	if (ipv6_enabled()) {
 		eval("ip6tables", "-t", "nat", "-F");
 	}
@@ -1797,6 +1798,11 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	}
 #endif
 #endif
+
+	/* Add rule to jump to VUPNP chain when UPNP is enabled*/
+	snprintf(tmp, sizeof(tmp), "wan%d_upnp_enable", wan_primary_ifunit());
+	if (nvram_get_int(tmp) == 1)
+		fprintf(fp, "-A PREROUTING -j VUPNP\n");
 
 	/* VSERVER chain */
 	if (inet_addr_(wan_ip)) {
@@ -2275,6 +2281,15 @@ _dprintf("nat_rule: start_nat_rules 1.\n");
 	}
 	else
 _dprintf("%s: nat_rule: skip nat_rules because of no PHY.\n", __func__);
+
+#ifdef RTCONFIG_IPV6
+#if defined(RTCONFIG_MULTILAN_CFG)
+	if (ipv6_enabled()) {
+		eval("ip6tables", "-t", "nat", "-A", "POSTROUTING", "-s", "fc00::/7", "-o", wan_if, "-j", "MASQUERADE");
+	}
+#endif
+#endif
+
 }
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_MULTICAST_IPTV) // RTCONFIG_DUALWAN || RTCONFIG_MULTICAST_IPTV
@@ -2992,7 +3007,7 @@ void write_access_restriction(FILE *fp_ipv4, FILE *fp_ipv6)
 					continue;
 			}
 			cnt++;
-			if (!(atoi(accessType) ^ ACCESS_ALL)) {
+			if (!(safe_atoi(accessType) ^ ACCESS_ALL)) {
 #ifdef RTCONFIG_PROTECTION_SERVER
 				fprintf(fp, "-A ACCESS_RESTRICTION -s %s -j RETURN\n", srcip);
 #else
@@ -3000,11 +3015,11 @@ void write_access_restriction(FILE *fp_ipv4, FILE *fp_ipv6)
 #endif
 				continue;
 			}
-				if (atoi(accessType) & ACCESS_WEBUI) {
+				if (safe_atoi(accessType) & ACCESS_WEBUI) {
 					fprintf(fp, "-A ACCESS_RESTRICTION -s %s -p tcp -m multiport --dport %s -j ACCEPT\n", srcip, webports);
 				}
 #ifdef RTCONFIG_SSH
-			if ((atoi(accessType) & ACCESS_SSH) && nvram_get_int("sshd_enable") != 0 ) {
+			if ((safe_atoi(accessType) & ACCESS_SSH) && nvram_get_int("sshd_enable") != 0 ) {
 #ifdef RTCONFIG_PROTECTION_SERVER
 				// TODO: PROTECTION_SERVER support IPv6
 				fprintf(fp, "-A ACCESS_RESTRICTION -s %s -p tcp --dport %d -j %s\n", srcip, nvram_get_int("sshd_port") ? : 22, (fp==fp_ipv6)?"ACCEPT":"RETURN");
@@ -3013,7 +3028,7 @@ void write_access_restriction(FILE *fp_ipv4, FILE *fp_ipv6)
 #endif
 			}
 #endif
-			if ((atoi(accessType) & ACCESS_TELNET) && nvram_get_int("telnetd_enable") == 1) {
+			if ((safe_atoi(accessType) & ACCESS_TELNET) && nvram_get_int("telnetd_enable") == 1) {
 #ifdef RTCONFIG_PROTECTION_SERVER
 				// TODO: PROTECTION_SERVER support IPv6
 				fprintf(fp, "-A ACCESS_RESTRICTION -s %s -p tcp --dport 23 -j %s\n", srcip, (fp==fp_ipv6)?"ACCEPT":"RETURN");
@@ -5599,6 +5614,12 @@ TRACE_PT("writing Parental Control\n");
 
 	/* Drop the wrong state, INVALID, packets */
 	fprintf(fp, "-A FORWARD -m state --state INVALID -j %s\n", logdrop);
+
+	/* Add rule to jump to FUPNP chain when upnp is enabled */
+	snprintf(tmp, sizeof(tmp), "wan%d_upnp_enable", wan_primary_ifunit());
+	if (nvram_get_int(tmp) == 1)
+		fprintf(fp, "-A FORWARD -j FUPNP\n");
+
 //#if 0
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -8308,7 +8329,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		int wan_ttl = 0;
 
 		if (f_read_string("/proc/sys/net/ipv4/ip_default_ttl", value, sizeof(value)) > 0)
-			wan_ttl = atoi(value);
+			wan_ttl = safe_atoi(value);
 		snprintf(value, sizeof(value), "%d", wan_ttl);
 
 		if (wan_ttl > 1) {
@@ -8639,7 +8660,7 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		int wan_ttl = 0;
 
 		if (f_read_string("/proc/sys/net/ipv4/ip_default_ttl", value, sizeof(value)) > 0)
-			wan_ttl = atoi(value);
+			wan_ttl = safe_atoi(value);
 		snprintf(value, sizeof(value), "%d", wan_ttl);
 
 		for (unit = WAN_UNIT_FIRST; unit < wan_max_unit; unit++) {

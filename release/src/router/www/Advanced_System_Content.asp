@@ -239,6 +239,20 @@ var faq_index_tmp = get_faq_index(FAQ_List, current_page, 1);
 
 var secure_default = isSupport("secure_default");
 
+var get_s46_hgw_case_tmp = '<% nvram_get("wan0_s46_hgw_case"); %>';  //topology 2,3,6
+var s46_ports_check_flag_tmp = (get_s46_hgw_case_tmp == '3' || get_s46_hgw_case_tmp == '6');    //true for topology 3||6
+var get_ipv6_s46_ports_tmp = (Softwire46_support && (wan0_proto=="v6plus" || wan0_proto=="ocnvc" || wan0_proto=="v6opt"))? '<%nvram_get("ipv6_s46_ports");%>':'0';
+var array_ipv6_s46_ports_tmp = [];
+if(get_ipv6_s46_ports_tmp != "0" && get_ipv6_s46_ports_tmp != ""){
+    array_ipv6_s46_ports_tmp = get_ipv6_s46_ports_tmp.split(" ");
+}
+if (typeof s46_ports_check_flag === "undefined") {
+    s46_ports_check_flag = s46_ports_check_flag_tmp;
+}
+if (typeof array_ipv6_s46_ports === "undefined") {
+    array_ipv6_s46_ports = array_ipv6_s46_ports_tmp;
+}
+
 function initial(){	
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
@@ -1118,9 +1132,11 @@ var timezones = [
 	["UTC10",	"(GMT-10:00) <#TZ03#>"],
 	["NAST9DST",	"(GMT-09:00) <#TZ04#>"],
 	["PST8DST",	"(GMT-08:00) <#TZ05#>"],
+	["PST7",	"(GMT-07:00) <#TZ05_1#>"],
 	["MST7DST_1",	"(GMT-07:00) <#TZ06#>"],
 	["MST7_2",	"(GMT-07:00) <#TZ07#>"],
 	["MST7_3",	"(GMT-07:00) <#TZ08#>"],	//MST7DST_3
+	["MST6",	"(GMT-06:00) <#TZ06_1#>"],
 	["CST6_2",	"(GMT-06:00) <#TZ10#>"],
 	["CST6_3",	"(GMT-06:00) <#TZ11#>"],	//CST6DST_3
 	["CST6_3_1",	"(GMT-06:00) <#TZ12#>"],	//CST6DST_3_1

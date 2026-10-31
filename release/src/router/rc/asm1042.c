@@ -41,7 +41,7 @@ static int chk_usb_devices(void)
 			continue;
 
 		pLev = pHead + 4;
-		lev = atoi(pLev);
+		lev = safe_atoi(pLev);
 		if(lev > 0)
 			break;
 	}

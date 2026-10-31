@@ -23,6 +23,7 @@
 */
 
 #include <shared.h>
+#include <shutils.h>
 #include <rc.h>
 #ifndef UU_INT
 typedef u_int64_t u64;
@@ -676,7 +677,7 @@ int ipv6_getconf(const char *ifname, const char *name)
 	if (f_read_string(path, sval, sizeof(sval)) <= 0)
 		return 0;
 
-	return atoi(sval);
+	return safe_atoi(sval);
 }
 
 void set_default_accept_ra(int flag)
@@ -919,7 +920,7 @@ static int check_bonding_mode(const char *mode)
 		return 0;
 
 	if (isdigit(*mode) && strlen(mode) == 1) {
-		v = atoi(mode);
+		v = safe_atoi(mode);
 		if (v < 0 || v > 6)
 			return 0;
 		ret = 1;
@@ -1947,7 +1948,7 @@ void start_lan(void)
 							if(strcmp(ifname, nic_if) == 0)
 							{
 								int vlan_id;
-								if((vlan_id = atoi(ifname + 4)) > 0)
+								if((vlan_id = safe_atoi(ifname + 4)) > 0)
 								{
 									char id[8];
 									sprintf(id, "%d", vlan_id);
@@ -2561,8 +2562,8 @@ gmac3_no_swbr:
 		 * forwarding policy.
 		 */
 		info.enable = 1;
-		info.policy = atoi(nvram_safe_get("dpsta_policy"));
-		info.lan_uif = atoi(nvram_safe_get("dpsta_lan_uif"));
+		info.policy = safe_atoi(nvram_safe_get("dpsta_policy"));
+		info.lan_uif = safe_atoi(nvram_safe_get("dpsta_lan_uif"));
 		foreach(name, nvram_safe_get("dpsta_ifnames"), next) {
 			strcpy((char *)info.upstream_if[di], name);
 			di++;
@@ -3166,12 +3167,12 @@ void do_static_routes(int add)
 
 		if (add) {
 			for (r = 3; r >= 0; --r) {
-				if (route_add(ifname, atoi(metric) + 1, dest, gateway, mask) == 0) break;
+				if (route_add(ifname, safe_atoi(metric) + 1, dest, gateway, mask) == 0) break;
 				sleep(1);
 			}
 		}
 		else {
-			route_del(ifname, atoi(metric) + 1, dest, gateway, mask);
+			route_del(ifname, safe_atoi(metric) + 1, dest, gateway, mask);
 		}
 	}
 	free(buf);
@@ -3637,6 +3638,15 @@ NEITHER_WDS_OR_PSTA:
 				snprintf(buf, sizeof(buf), "%u", pid);
 				nvram_set(strcat_r(prefix2, "act_pid", tmp2), buf);
 				nvram_set(strcat_r(prefix2, "act_dev", tmp2), interface);
+
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+				/* A swapped-in modem must not inherit the previous modem's SIM
+				 * state. */
+				if(wisp_mode()){
+					nvram_unset(strcat_r(prefix2, "act_sim", tmp2));
+					nvram_unset(strcat_r(prefix2, "act_scanning", tmp2));
+				}
+#endif
 
 #ifdef RTCONFIG_MODEM_BRIDGE
 				if(!(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge")))
@@ -4203,7 +4213,7 @@ static int radio_join(int idx, int unit, int subunit, void *param)
 
 	sprintf(f, "/var/run/radio.%d.%d.pid", unit, subunit < 0 ? 0 : subunit);
 	if (f_read_string(f, s, sizeof(s)) > 0) {
-		if ((i = atoi(s)) > 1) {
+		if ((i = safe_atoi(s)) > 1) {
 			kill(i, SIGTERM);
 			sleep(1);
 		}
@@ -4393,7 +4403,7 @@ int delay_main(int argc, char *argv[])
 	int i;
 
 	if(argc > 1){
-		uptime_wait(atoi(argv[1]));
+		uptime_wait(safe_atoi(argv[1]));
 		memset(buff, 0, sizeof(buff));
 		i = 2;
 		while(i < argc){
@@ -4419,11 +4429,11 @@ int radio_main(int argc, char *argv[])
 HELP:
 		usage_exit(argv[0], "on|off|toggle|switch|join [N]\n");
 	}
-	unit = (argc >= 3) ? atoi(argv[2]) : -1;
+	unit = (argc >= 3) ? safe_atoi(argv[2]) : -1;
 #ifdef RTCONFIG_QCA
-	subunit = (argc >= 4) ? atoi(argv[3]) : -1;
+	subunit = (argc >= 4) ? safe_atoi(argv[3]) : -1;
 #else
-	subunit = (argc >= 4) ? atoi(argv[3]) : 0;
+	subunit = (argc >= 4) ? safe_atoi(argv[3]) : 0;
 #endif
 
 	if (strcmp(argv[1], "toggle") == 0)
@@ -4479,7 +4489,7 @@ int wdist_main(int argc, char *argv[])
 		}
 		usage_exit(argv[0], "<meters>");
 	}
-	if ((n = atoi(argv[1])) <= 0) setup_wldistance();
+	if ((n = safe_atoi(argv[1])) <= 0) setup_wldistance();
 		else set_wldistance(n);
 	return 0;
 }
@@ -5289,6 +5299,13 @@ void start_lan_wl(void)
 		fc_init();
 #endif /* HND_ROUTER */
 
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+	/* Re-assert the WISP dual-WAN wan2=eth1 mapping BEFORE br0 is rebuilt here:
+	 * a runtime restart_wireless re-absorbs eth1 into lan_ifnames and drops
+	 * wanN_ifname, which would bridge the wired WAN backup into the LAN. */
+	wisp_dualwan_reassert();
+#endif
+
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
 	update_wlx_psr_mbss();
 #endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST) && !defined(RTCONFIG_HND_ROUTER_BE_4916)
@@ -5559,7 +5576,7 @@ void start_lan_wl(void)
 							if(strcmp(ifname, nic_if) == 0)
 							{
 								int vlan_id;
-								if((vlan_id = atoi(ifname + 4)) > 0)
+								if((vlan_id = safe_atoi(ifname + 4)) > 0)
 								{
 									char id[8];
 									sprintf(id, "%d", vlan_id);
@@ -5933,8 +5950,8 @@ gmac3_no_swbr:
 		 * forwarding policy.
 		 */
 		info.enable = 1;
-		info.policy = atoi(nvram_safe_get("dpsta_policy"));
-		info.lan_uif = atoi(nvram_safe_get("dpsta_lan_uif"));
+		info.policy = safe_atoi(nvram_safe_get("dpsta_policy"));
+		info.lan_uif = safe_atoi(nvram_safe_get("dpsta_lan_uif"));
 		foreach(name, nvram_safe_get("dpsta_ifnames"), next) {
 			strcpy((char *)info.upstream_if[di], name);
 			di++;

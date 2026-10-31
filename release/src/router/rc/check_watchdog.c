@@ -16,6 +16,7 @@
  */
 
 #include <sys/types.h>
+#include <shutils.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
@@ -48,7 +49,7 @@ void check_watchdog()
 	f_read_string("/tmp/reboot", reboot, sizeof(reboot));
 	f_read_string("/tmp/upgrade", upgrade, sizeof(upgrade));
 
-	if (atoi(reboot) || atoi(upgrade))
+	if (safe_atoi(reboot) || safe_atoi(upgrade))
 		return;
 
 #if 0

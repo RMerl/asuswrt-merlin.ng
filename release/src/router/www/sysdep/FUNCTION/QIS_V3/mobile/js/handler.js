@@ -1228,7 +1228,7 @@ apply.getLink = function(){
 	var key = systemVariable.selectedAP.thekey;
 
 	const odmpid = httpApi.nvramGet(["odmpid"]).odmpid;
-	if (["RT-BE58_Go", "RT-BE3600_Go"].includes(odmpid)) {
+	if (["RT-BE58_Go", "RT-BE57_Go", "RT-BE3600_Go"].includes(odmpid)) {
 		obj['rc_service'] = 'restart_wpasupp';
 		obj['wlc_ssid'] = ssid;
 		obj['wlc_auth_mode'] = auth_mode;
@@ -1298,7 +1298,7 @@ apply.getWLCPreLinkState = function (){
 			[`wlc${testBand}_ssid`]: ""
 		}
 		const odmpid = httpApi.nvramGet(["odmpid"]).odmpid;
-		if (["RT-BE58_Go", "RT-BE3600_Go"].includes(odmpid)) {
+		if (["RT-BE58_Go", "RT-BE57_Go", "RT-BE3600_Go"].includes(odmpid)) {
 			obj["rc_service"] = `stop_wpasupp`;
 		}
 		else {
@@ -3521,6 +3521,13 @@ goTo.wispMode = function(){
 	postDataModel.remove(wispObj);
 	postDataModel.insert(wispObj);
 
+	/* wispObj forces wans_dualwan = "wan none"; don't clobber an existing dual WAN
+	 * when an already-configured WISP router re-runs QIS just to change PAP. */
+	if(!systemVariable.isDefault && isOriginSwMode("WISP")){
+		if(Object.prototype.hasOwnProperty.call(qisPostData, 'wans_dualwan'))
+			delete qisPostData.wans_dualwan;
+	}
+
 	if(typeof login_mac_str == 'function' && systemVariable.macClone){
 		qisPostData.wan0_hwaddr_x = login_mac_str(); // WISP MAC clone
 		qisPostData.wan_hwaddr_x = login_mac_str(); // WISP MAC clone
@@ -5505,7 +5512,7 @@ goTo.NoWan_AP = function(){
 };
 
 goTo.ResetModem = function(){
-	if(!isSku("US") && !isSku("CA") && !isSku("U2")){
+	if(!isSku("US") && !isSku("CA") && !isSku("U2") && !isSku("U3")){
 		apply.manual();
 		return false;
 	}
@@ -5546,7 +5553,7 @@ goTo.ResetModem = function(){
 };
 
 goTo.ResetModem_AP = function(){
-	if(!isSku("US") && !isSku("CA") && !isSku("U2")){
+	if(!isSku("US") && !isSku("CA") && !isSku("U2") && !isSku("U3")){
 		goTo.apMode();
 		return false;
 	}
@@ -5595,7 +5602,7 @@ goTo.Waiting = function(){
 				goTo.Modem();
 			}
 			else{
-				if(isSku("US") || isSku("CA") || isSku("U2")){
+				if(isSku("US") || isSku("CA") || isSku("U2") || isSku("U3")){
 					httpApi.log("goTo.Waiting", "goTo.ResetModem()", systemVariable.qisSession);
 					goTo.ResetModem();
 				}
@@ -5654,7 +5661,7 @@ goTo.Waiting_AP = function(){
 		if(systemVariable.manualWanSetup) return false;
 		if(check_linkInternet_count > MAX_LinkInternet_Detection){
 			httpApi.log("goTo.Waiting_AP", "check_linkInternet_count > MAX_LinkInternet_Detection", systemVariable.qisSession);
-			if(isSku("US") || isSku("CA") || isSku("U2")){
+			if(isSku("US") || isSku("CA") || isSku("U2") || isSku("U3")){
 				httpApi.log("goTo.Waiting_AP", "goTo.ResetModem_AP()", systemVariable.qisSession);
 				goTo.ResetModem_AP();
 			}

@@ -208,8 +208,11 @@ function initial(){
 		}
 	}
  
+	var wisp_dw_sel_token = wans_dualwan.split(" ")[(parent.wans_flag) ? parent.document.form.dual_wan_flag.value : 0];
+	var wisp_dw_eth_unit = (isSupport("wisp_dualwan") && wisp_dw_sel_token != "wan");
+
 	if(sw_mode == 1){
-		if(wlc_band == ""){
+		if(wlc_band == "" || wisp_dw_eth_unit){
 			setTimeout("update_wanip();", 1);
 			document.getElementById('goSetting').style.display = "";
 			
@@ -242,11 +245,13 @@ function initial(){
 			document.getElementById("goDualWANSetting").style.display = "none";
 			document.getElementById('RemoteAP_Item_WISP').style.display = "";
 			document.getElementById('sitesurvey_tr_WISP').style.display = "";
+			wisp_check_captive_portal_ui();
 
 			var currWanType = wans_dualwan.split(" ")[parent.document.form.dual_wan_flag.value];
 			if(currWanType == "usb"){
 				document.getElementById('RemoteAP_Item_WISP').style.display = "none";
-				document.getElementById('sitesurvey_tr_WISP').style.display = "none";				
+				document.getElementById('sitesurvey_tr_WISP').style.display = "none";
+				document.getElementById('captivePortalLogin_tr_WISP').style.display = "none";
 			}
 		}
 	}
@@ -807,6 +812,90 @@ function gotoSiteSurvey(){
 function manualSetup(){
 	return 0;
 }
+
+/* Matches WISP_PORTAL_URL_MAX (512, includes the NUL) in rc/wanduck.c --
+ * keep this in lockstep with that buffer size, or a real (untruncated)
+ * long portal URL will trip this guard instead. */
+var WISP_PORTAL_URL_MAX_LEN = 511;
+
+function isSafeCaptivePortalUrl(url){
+	if(!url || url.length > WISP_PORTAL_URL_MAX_LEN)
+		return false;
+	try{
+		const parsed = new URL(url);
+		return parsed.protocol === "http:" || parsed.protocol === "https:";
+	}catch(e){
+		return false;
+	}
+}
+
+/* Matches WISP_PORTAL_RETRY_INTERVAL in rc/wanduck.c, so the UI can never
+ * lag the backend's own re-probe cadence by more than one interval. */
+var WISP_PORTAL_POLL_INTERVAL = 5000;
+
+/* wanduck stores the portal URL percent-encoded, so a malformed value would
+ * make decodeURIComponent throw. This is read on the poll path, where an
+ * uncaught throw would kill the setTimeout chain and freeze the row in
+ * whatever state it was last left in -- hence the catch. */
+function wisp_get_captive_portal_url(){
+	const raw = httpApi.nvramCharToAscii(["wisp_captive_portal_url"], true).wisp_captive_portal_url || "";
+	try{
+		return decodeURIComponent(raw);
+	}catch(e){
+		return "";
+	}
+}
+
+/* internet.asp's iframe only runs initial() once, on load -- it is never
+ * reloaded while the user sits on the Network Map page. wisp_captive_portal
+ * / wisp_captive_portal_url are live backend state (wanduck re-probes every
+ * WISP_PORTAL_RETRY_INTERVAL while a portal is pending), so this function
+ * re-reads them on the same cadence and re-schedules itself, instead of
+ * relying on the one-shot snapshot initial() took at load time. Every
+ * nvramGet/nvramCharToAscii call below passes forceUpdate=true -- without
+ * it httpApi caches the first read for the life of this iframe and every
+ * later call (including this poll) silently returns that stale value. */
+function wisp_check_captive_portal_ui(){
+	var portalRow = document.getElementById('captivePortalLogin_tr_WISP');
+	if(!portalRow)
+		return;
+
+	var currWanType = wans_dualwan.split(" ")[parent.document.form.dual_wan_flag.value];
+	if(currWanType == "usb"){
+		portalRow.style.display = "none";
+		setTimeout(wisp_check_captive_portal_ui, WISP_PORTAL_POLL_INTERVAL);
+		return;
+	}
+
+	var wisp_captive_portal = httpApi.nvramGet(["wisp_captive_portal"], true).wisp_captive_portal || "0";
+	if(wisp_captive_portal != "1"){
+		portalRow.style.display = "none";
+		setTimeout(wisp_check_captive_portal_ui, WISP_PORTAL_POLL_INTERVAL);
+		return;
+	}
+
+	/* The flag can go up a probe or two before wanduck has written the URL, so
+	 * "detected but no usable URL yet" is treated exactly like the guards above:
+	 * stay hidden and re-check next tick. The button must never be offered in a
+	 * state where pressing it cannot open anything. */
+	const wisp_captive_portal_url = wisp_get_captive_portal_url();
+	if(!isSafeCaptivePortalUrl(wisp_captive_portal_url)){
+		portalRow.style.display = "none";
+		setTimeout(wisp_check_captive_portal_ui, WISP_PORTAL_POLL_INTERVAL);
+		return;
+	}
+
+	portalRow.style.display = "";
+	document.getElementById('captivePortalLogin_warning_WISP').style.display = "";
+	/* Re-bound each tick with that tick's URL, so what the button opens is at
+	 * most one WISP_PORTAL_POLL_INTERVAL stale -- the same bound the rest of
+	 * this function is built around. */
+	$("#captivePortalLogin_btn_WISP").off("click").on("click", function(){
+		window.open(wisp_captive_portal_url, "_blank", "noopener");
+	});
+
+	setTimeout(wisp_check_captive_portal_ui, WISP_PORTAL_POLL_INTERVAL);
+}
 </script>
 </head>
 
@@ -1170,6 +1259,20 @@ function manualSetup(){
 	<td height="50" style="padding:10px 15px 0px 15px;text-align: center;">
 		<p class="formfonttitle_nwm" style="float:left;"><#APSurvey_action_search_again_hint2#></p>  
 		<input type="button" class="button_gen" onclick="gotoSiteSurvey();" value="Change Network" style="margin: 5px 0;"><!-- untranslated -->
+	</td>
+</tr>
+
+<tr id="captivePortalLogin_tr_WISP" style="display:none">
+	<td height="50" style="padding:10px 15px 0px 15px;text-align: center;">
+		<div id="captivePortalLogin_warning_WISP" role="alert" aria-live="polite" aria-atomic="true" style="display:none; background-color:var(--wrt-badge-warning-color,#f5a02b); color:#fff; padding:5px; border-radius:var(--radius-xs,4px); margin-bottom:8px; font-size:12px;">
+			&#9888; Captive portal detected &mdash; login required to access the Internet.
+		</div>
+		<p class="formfonttitle_nwm" id="captivePortalLogin_hint_WISP" style="text-align:left;line-height:20px;">Captive Portal Login</p><!-- untranslated -->
+		<input type="button" class="button_gen" id="captivePortalLogin_btn_WISP" value="Open Login Page" style="margin: 5px 0;"><!-- untranslated -->
+		<div style="margin-top:5px; margin-bottom: 12px; font-size:11px; color:var(--text-info-02-color,rgb(167 195 212));">
+			Open the upstream login page and complete authentication to restore Internet access.<!-- untranslated -->
+			If the login page does not appear, refresh the new tab, try another browser or device, reconnect the upstream Wi-Fi if needed, or contact the hotel/venue staff to confirm whether the network requires room-number, voucher, or device registration.<!-- untranslated -->
+		</div>
 	</td>
 </tr>
 </table>

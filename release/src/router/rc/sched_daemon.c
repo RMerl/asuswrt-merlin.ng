@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <shutils.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <signal.h>
@@ -1071,7 +1072,7 @@ static void task_reboot_schedule(void)
 					f_read_string("/tmp/reboot", reboot, sizeof(reboot));
 					f_read_string("/tmp/upgrade", upgrade, sizeof(upgrade));
 
-					if (atoi(reboot) || atoi(upgrade))
+					if (safe_atoi(reboot) || safe_atoi(upgrade))
 						return;
 
 					nvram_set("sys_reboot_reason", "rbt_scheduler");

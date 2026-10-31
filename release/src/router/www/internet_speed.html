@@ -63,6 +63,7 @@ var test_start_time = httpApi.nvramGet(["ookla_start_time"], true).ookla_start_t
 var get_result_time = 0;
 var test_timeout = 120000;
 var go_btn_type = "go";
+var speedTest_quota = {};
 var LEVEL_ERR_MAX = 50;
 var level_err_cnt = 0;
 var ookla_states = {
@@ -76,6 +77,7 @@ var ookla_states = {
 var preferred_lang = httpApi.nvramGet(["preferred_lang"], true).preferred_lang;
 var enable_auto_server = 1;
 var cur_server_id = "";
+var ookla_eos = (isSupport("ookla_eos") == 1);
 
 /* for link rate div */
 var tmp_ispctrl_desc = decodeURIComponent(httpApi.nvramCharToAscii(["ispctrl_desc"], true).ispctrl_desc);
@@ -138,7 +140,12 @@ $(document).ready(function(){
 	$(".bg_linkRate").hide();
 	$(".bg_internetSpeed").hide();
 	setTimeout(function(){
-		if(is_linkRate_over_5G && ((!isSupport("10g_speedTest") && !eth_monitor_support) || is_ispctrl))
+		if(ookla_eos){
+			$(".bg_linkRate").hide();
+			$(".bg_internetSpeed").show();
+			init();
+		}
+		else if(is_linkRate_over_5G && ((!isSupport("10g_speedTest") && !eth_monitor_support) || is_ispctrl))
 		{
 			$(".bg_linkRate").show();
 			$(".bg_internetSpeed").hide();
@@ -182,9 +189,24 @@ function customize_speedTestBtn(){
 		$("#speedTest_btn").addClass("speedTest_btn_25");
 }
 
+function hide_history_related_ui(){
+	$("#history_desc").hide();
+	$("#speedTest_history_div").hide();
+	$("#speed_level_detail").hide();
+	$("#hiddenMask").hide();
+	$("#speed_level_btn").off("click", close_speed_level_detail);
+}
+
 function init(){
 	build_interface_list();
 	customize_speedTestBtn();
+	render_speedTest_notice();
+	if(ookla_eos){
+		hide_history_related_ui();
+		return;
+	}
+
+	get_speedTest_quota();
 	get_speedTest_history();
 	if(!internetSpeed_lite_support)
 		show_history_results();
@@ -199,6 +221,90 @@ function init(){
 		show_latest_record();
 
 	check_wan_status();
+}
+
+function format_reset_remaining(seconds){
+	var total_seconds = parseInt(seconds, 10);
+	var hour = 0;
+
+	if(isNaN(total_seconds) || total_seconds <= 0)
+		return "";
+
+	hour = Math.ceil(total_seconds / 3600);
+	return hour + " hour" + ((hour > 1) ? "s" : "");
+}
+
+function is_quota_exceeded(){
+	return (typeof speedTest_quota.remaining_cnt != "undefined"
+		&& parseInt(speedTest_quota.remaining_cnt, 10) == 0
+		&& typeof speedTest_quota.reset_remaining != "undefined"
+		&& parseInt(speedTest_quota.reset_remaining, 10) >= 0);
+}
+
+function get_quota_warning_text(){
+	var reset_remaining = parseInt(speedTest_quota.reset_remaining, 10);
+
+	if(reset_remaining > 0)
+		return "A new test quota will be restored automatically in " + format_reset_remaining(reset_remaining) + ".";
+
+	return "A new test quota will be restored automatically soon.";
+}
+
+function get_quota_notice_desc_text(){
+	return "Your basic test quota has been used up. If you need an immediate speed test, click the button below to continue on the Speedtest website.";
+}
+
+function get_eos_notice_text(){
+	return "Internet Speed Test Service Ended";
+}
+
+function get_eos_notice_desc_text(){
+	return "Thank you for your support. The built-in speed test is no longer supported. If you would like to test the internet speed, please click the button to continue on the Speed Test website";
+}
+
+function open_speedtest_website(){
+	window.open("https://www.speedtest.net/", "_blank");
+}
+
+function render_speedTest_notice(){
+	var quota_text = "";
+	var quota_desc = get_quota_notice_desc_text();
+	var quota_icon = $("#quota_notice_icon");
+
+	if(ookla_eos){
+		hide_history_related_ui();
+		$("#quota_notice_text").text(get_eos_notice_text());
+		$("#quota_notice_desc").text(get_eos_notice_desc_text());
+		quota_icon.addClass("quota_notice_icon_eos");
+		$("#speedTest_quota_overlay").css("display", "flex");
+		$("#speedTest_div").addClass("speedTest_quota_exceeded");
+		return;
+	}
+
+	if(is_quota_exceeded()){
+		quota_text = get_quota_warning_text();
+		$("#quota_notice_text").text(quota_text);
+		$("#quota_notice_desc").text(quota_desc);
+		quota_icon.removeClass("quota_notice_icon_eos");
+		$("#speedTest_quota_overlay").css("display", "flex");
+		$("#speedTest_div").addClass("speedTest_quota_exceeded");
+	}
+	else{
+		quota_icon.removeClass("quota_notice_icon_eos");
+		$("#speedTest_quota_overlay").hide();
+		$("#speedTest_div").removeClass("speedTest_quota_exceeded");
+	}
+}
+
+function get_speedTest_quota(){
+	var quota_result = httpApi.hookGet("ookla_speedtest_get_quota", true);
+
+	if(quota_result && typeof quota_result == "object")
+		speedTest_quota = quota_result;
+	else
+		speedTest_quota = {};
+
+	render_speedTest_notice();
 }
 
 function continue_show_result(){
@@ -229,11 +335,11 @@ function check_wan_status(){
 			set_ookla_state(ookla_states.ERR_DISCON);
 		}
 		else if(link_internet == "2"){
-			if(go_btn_type != "go")
-				change_speedTestBtn("go");
+				if(go_btn_type != "go")
+					change_speedTestBtn("go");
 
-			if(document.body.clientWidth > 720){
-				if($("#notification_str").css("display") != "none")
+				if(document.body.clientWidth > 720){
+					if($("#notification_str").css("display") != "none")
 					$("#notification_str").hide();
 			}
 			else{
@@ -303,6 +409,7 @@ function change_speedTestBtn(type){
 	else if(type == "disable"){
 		$("#speedTest_btn").removeClass().addClass("speedTest_btn_disable");
 		$("#speedTest_btn").css("pointer-events", "none");
+		$("#speed_level_btn").css("pointer-events", "auto");
 		$("#speedTest_btn_text").text("");
 		go_btn_type = "disable";
 	}
@@ -372,6 +479,9 @@ function reset_speedTest_div(){
 }
 
 function start_speedTest(){
+	if(is_quota_exceeded())
+		return;
+
 	reset_speedTest_div();
 	change_speedTestBtn("testing");
 	if(!enable_auto_server && cur_server_id != "")
@@ -427,6 +537,14 @@ function get_speedTest_result(){
 	else{
 		if(typeof speedTest_result[speedTest_result.length - 2].error != "undefined")
 		{
+			if(speedTest_result[speedTest_result.length - 2].error == "quota exceeded"){
+				level_err_cnt = 0;
+				set_ookla_state(ookla_states.ERR_TERMINATE);
+				reset_speedTest_div();
+				get_speedTest_quota();
+				check_wan_status();
+				return;
+			}
 			error_handling(ookla_states.ERR_TERMINATE);
 			return;
 		}
@@ -522,7 +640,10 @@ function get_speedTest_result(){
 					setTimeout("do_speedTest_exe('list')", 1000);
 
 				change_speedTestBtn('go');
-				setTimeout("check_wan_status()", 3000);
+				setTimeout(function(){
+					get_speedTest_quota();
+					check_wan_status();
+				}, 3000);
 				level_err_cnt = 0;
 			}
 		}
@@ -1343,7 +1464,18 @@ function build_interface_list(){
 				<div onclick="show_alert_message();" style="text-decoration:underline; cursor: pointer;"><#InternetSpeed_More_Info#></div>
 			</div>
 		</div>
-		<div class="speedTest_div">
+		<div id="speedTest_div" class="speedTest_div">
+			<div id="speedTest_quota_overlay" class="speedTest_quota_overlay">
+				<div class="quota_notice_inner">
+					<span id="quota_notice_icon" role="icon" class="quota_notice_icon" aria-hidden="true"></span>
+					<div class="quota_notice_content">
+						<div id="quota_notice_text" class="quota_notice_text"></div>
+						<div id="quota_notice_desc" class="quota_notice_desc"></div>
+						<div class="quota_notice_button" onclick="open_speedtest_website();">Go to Speedtest</div>
+					</div>
+				</div>
+			</div>
+			<div class="speedTest_div_content">
 			<div class="time_column">
 				<div style="width: 30%;">
 					<div class="time_container">
@@ -1431,6 +1563,7 @@ function build_interface_list(){
 						<div class="ping_result_title"><div><#InternetSpeed_Loss#></div></div><div class="ping_value_container"><div id="packet_loss_result" class="ping_result_value">--</div></div><div class="ping_result_unit">%</div>
 					</div>
 				</div>
+			</div>
 			</div>
 		</div>
 		<div class="ookla_info"><div class="info_icon mobile_show" onclick="open_info();"></div><div><#InternetSpeed_ookla_mark#></div><div id="thirdparty_pp"></div></div>

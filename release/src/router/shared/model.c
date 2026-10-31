@@ -246,6 +246,7 @@ static const struct model_s model_list[] = {
 	{ "RT-BE82M",		MODEL_RTBE82M		},
 	{ "RT-BE58U_PRO",	MODEL_RTBE58U_PRO	},
 	{ "RT-BE58_GO",		MODEL_RTBE58_GO	},
+	{ "RT-BE57_Go",		MODEL_RTBE58_GO	},
 	{ "GT-BE19000AI",       MODEL_GTBE19000AI	},
 	{ "GS-BE18000",		MODEL_GSBE18000		},
 	{ "GS-BE12000",		MODEL_GSBE18000		},

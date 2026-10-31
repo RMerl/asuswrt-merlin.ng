@@ -69,7 +69,9 @@ struct hnsSupport_t s_hnsSupport_tuple[] =
 #ifdef RTBE58_GO
 	{"RT-BE58_GO"      , {0, 1, 0, 0, 0, 1}},
 	{"RT-BE58_Go"      , {0, 1, 0, 0, 0, 1}},
+	{"RT-BE57_Go"      , {0, 1, 0, 0, 0, 1}},
 	{"RT-BE3600_Go"    , {0, 1, 0, 0, 0, 1}},
+	{"RT-BE57_Go"      , {0, 1, 0, 0, 0, 1}},
 #endif
 
 #ifdef RTBE58U_V2

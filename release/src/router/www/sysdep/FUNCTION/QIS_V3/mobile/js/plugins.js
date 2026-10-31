@@ -2048,10 +2048,12 @@ var getRestartService = function(){
 			return "reboot";
 	}
 
+	const isWispSameMode = (isOriginSwMode("WISP") && !isSwModeChanged());
+
 	if((qisPostData.hasOwnProperty("switch_wantag") && (qisPostData.switch_wantag != original_switch_wantag)) ||
-		qisPostData.hasOwnProperty("wlc_ssid") ||
-		qisPostData.hasOwnProperty("lan_proto") ||
-		qisPostData.hasOwnProperty("wans_dualwan") ||
+		(!isWispSameMode && qisPostData.hasOwnProperty("wlc_ssid")) ||
+		(!isWispSameMode && qisPostData.hasOwnProperty("lan_proto")) ||
+		(!isWispSameMode && qisPostData.hasOwnProperty("wans_dualwan")) ||
 		qisPostData.hasOwnProperty("wans_mode") ||
 		isSwModeChanged()
 	){
@@ -2065,6 +2067,10 @@ var getRestartService = function(){
 	if(isSupport("mlo") && qisPostData.hasOwnProperty("mld_enable") && isSupport("bcmwifi")){
 		const wl_mlo_config = httpApi.nvramGet(["wl_mlo_config"]).wl_mlo_config;
 		if(wl_mlo_config == "") return "reboot";
+	}
+
+	if(isWispSameMode){
+		actionScript.push("restart_wisp_serv");
 	}
 
 	var restart_net = 0;
@@ -2336,10 +2342,10 @@ var isSupport = function(_ptn){
 			matchingResult = false;
 			break;
 		case "VPNCLIENT":
-			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
+			matchingResult = (isSku("US") || isSku("U2") || isSku("U3") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
 			break;
 		case "IPTV":
-			matchingResult = (isSupport("noiptv") || isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("TW")) ? false : true;
+			matchingResult = (isSupport("noiptv") || isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("U3") || isSku("TW")) ? false : true;
 			break;
 		case "ENABLE_IPv6":
 			matchingResult = (isSku("CN") || isSku("GD") || isSku("TC")) ? true : false;

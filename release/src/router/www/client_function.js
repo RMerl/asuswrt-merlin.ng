@@ -485,11 +485,9 @@ function genClientList(){
 			clientList[thisClientMacAddr].wtfast = parseInt(thisClient.wtfast);
 			clientList[thisClientMacAddr].internetMode = thisClient.internetMode;
 			clientList[thisClientMacAddr].internetState = thisClient.internetState;
-			if(isSupport("stainfo")) {
-				clientList[thisClientMacAddr].curTx = (thisClient.curTx == "") ? "": thisClient.curTx;
-				clientList[thisClientMacAddr].curRx = (thisClient.curRx == "") ? "": thisClient.curRx;
-				clientList[thisClientMacAddr].wlConnectTime = thisClient.wlConnectTime;
-			}
+			clientList[thisClientMacAddr].curTx = (thisClient.curTx == "") ? "": thisClient.curTx;
+			clientList[thisClientMacAddr].curRx = (thisClient.curRx == "") ? "": thisClient.curRx;
+			clientList[thisClientMacAddr].wlConnectTime = thisClient.wlConnectTime;
 
 			if(isSupport("amas")) {
 				if(thisClient.amesh_isRe != undefined) {
@@ -1066,13 +1064,11 @@ function popClientListEditTable(event) {
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(isSupport("stainfo")) {
-				if(clientInfo.curTx != "")
-					connectModeTip += "Tx Rate: " + clientInfo.curTx + "\n"; /*untranslated*/
-				if(clientInfo.curRx != "")
-					connectModeTip += "Rx Rate: " + clientInfo.curRx + "\n"; /*untranslated*/
-				connectModeTip += "<#Access_Time#>: " + clientInfo.wlConnectTime + "";
-			}
+			if(clientInfo.curTx != "")
+				connectModeTip += "Tx Rate: " + clientInfo.curTx + "\n"; /*untranslated*/
+			if(clientInfo.curRx != "")
+				connectModeTip += "Rx Rate: " + clientInfo.curRx + "\n"; /*untranslated*/
+			connectModeTip += "<#Access_Time#>: " + clientInfo.wlConnectTime + "";
 		}
 
 		if(sw_mode != 4){
@@ -2426,6 +2422,8 @@ var sorter = {
 
 		const tableHeader = document.querySelectorAll(`#tr_${clickItem}_list_title th`)[clickIndex];
 
+		if (!tableHeader) return;
+
 		if (clickSortingMethod === "increase") {
 			tableHeader.classList.add('active-top');
 		} else {
@@ -2962,8 +2960,6 @@ function create_clientlist_listview() {
 			break;
 		case "ByInterface" :
 
-			code += create_clientlist_card("<#tm_wired#>", "wired");
-
 			var wl_map = {"2.4 GHz": "1",  "5 GHz": "2", "5 GHz-1": "2", "5 GHz-2": "3", "6 GHz": "4", "6 GHz-1": "4", "6 GHz-2": "5"};
 			var smart_connect_x = httpApi.nvramGet(["smart_connect_x"]).smart_connect_x;
 
@@ -3342,7 +3338,7 @@ function _buildClientListRowHtml(profileArray, objID) {
 	let txRate = "-";
 	let rxRate = "-";
 	let accessTime = "-";
-	if (isSupport("stainfo") && !(isSwMode('mb') || isSwMode('ew'))) {
+	if (!(isSwMode('mb') || isSwMode('ew'))) {
 		if (p.isWL != 0) {
 			txRate = (p.curTx == "") ? "-" : p.curTx;
 			rxRate = (p.curRx == "") ? "-" : p.curRx;

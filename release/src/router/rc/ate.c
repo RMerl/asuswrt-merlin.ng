@@ -2127,7 +2127,7 @@ int
 pincheck(const char *a)
 {
 	unsigned char *c = (unsigned char *) a;
-	unsigned long int uiPINtemp = atoi(a);
+	unsigned long int uiPINtemp = safe_atoi(a);
 	unsigned long int uiAccum = 0;
 	int i = 0;
 
@@ -2414,7 +2414,7 @@ void get_usb_port_eject_button(unsigned int port)
 		v = nvram_get(nv);
 		if (!v)
 			continue;
-		ejbtn = (atoi(v) & GPIO_EJUSB_MASK) >> GPIO_EJUSB_SHIFT;
+		ejbtn = (safe_atoi(v) & GPIO_EJUSB_MASK) >> GPIO_EJUSB_SHIFT;
 		if (ejbtn && ejbtn != (1 << (port - 1)))
 			continue;
 
@@ -2651,7 +2651,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setAllBlueLedLight_level1();
 	}
 	else if (!strcmp(command, "Set_CentralLedLv")) {
-		return setCentralLedLv(atoi(value));
+		return setCentralLedLv(safe_atoi(value));
 	}
 #endif
 #if defined(RTCONFIG_RGBLED) && defined(RTCONFIG_I2CTOOLS)
@@ -2674,7 +2674,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 		return setRogRGBLedTest(5);
 	}
 	else if (!strcmp(command, "Set_RogRGBSet_LedOn")) {
-		return setRogRGBLedSetTest(atoi(value));
+		return setRogRGBLedSetTest(safe_atoi(value));
 	}
 #endif
 #ifdef RTCONFIG_ALPINE
@@ -4316,6 +4316,14 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 			puts("ATE_ERROR_INCORRECT_PARAMETER");
 			return EINVAL;
 		}
+#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)) && defined(RTCONFIG_ASUSCTRL)
+		else {	// clean asusctrl and chg_sku when setTerritoryCode success
+			if (asus_ctrl_sku_write("FF")<0)
+				puts("ATE clean asus_ctrl_sku fail");
+			if (asus_ctrl_write("NONE")<0)
+				puts("ATE clean asus_ctrl fail");
+		}
+#endif
 #ifndef CONFIG_BCMWL5
 		getTerritoryCode();
 #endif
@@ -4438,7 +4446,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	else if (!strcmp(command, "Set_AB")) {
 		int flag;
 		if (value)
-			flag = atoi(value);
+			flag = safe_atoi(value);
 		else
 			flag = 1; /* old flag */
 		if ((flag <= AB_FLAG_NONE) || (flag >= AB_FLAG_MAX))
@@ -5048,7 +5056,7 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_COBRAND)
 	else if (!strcmp(command, "Set_CoBrand")) {
 		int n ;
-		if (value && (n=atoi(value)) && ((n >= 0) && (n <= 100))) {
+		if (value && (n=safe_atoi(value)) && ((n >= 0) && (n <= 100))) {
 			if(set_cb(n) < 0)
 				puts("ATE_ERROR_INCORRECT_PARAMETER");
 		} else

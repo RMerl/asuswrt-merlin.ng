@@ -1,4 +1,5 @@
 #include <rc.h>
+#include <shutils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -387,7 +388,7 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 						i = 0;
 						foreach(word, mt_group, next)
 						{
-							if (group == atoi(word))
+							if (group == safe_atoi(word))
 							{
 								strlcpy(wan_ifname, get_wan_ifname(mtwan_get_mapped_unit(i + MULTI_WAN_START_IDX)), sizeof(wan_ifname));
 								_add_sdn_iptables_wan_rules(fp, wan_ifname, pmtl, logdrop, logaccept);
@@ -410,7 +411,7 @@ int update_SDN_iptables(const MTLAN_T *pmtl, const char *logdrop, const char *lo
 					i = 0;
 					foreach(word, mt_group, next)
 					{
-						if (group == atoi(word))
+						if (group == safe_atoi(word))
 						{
 							strlcpy(wan_ifname, get_wan_ifname(mtwan_get_mapped_unit(i + MULTI_WAN_START_IDX)), sizeof(wan_ifname));
 							_add_sdn_iptables_wan_rules(fp, wan_ifname, pmtl, logdrop, logaccept);
@@ -680,7 +681,7 @@ int _check_urlf_pf_enable(const int urlf_idx)
 		}
 		else
 		{
-			ret = atoi(enable);
+			ret = safe_atoi(enable);
 		}
 		SAFE_FREE(nv);
 	}
@@ -714,8 +715,8 @@ int _get_urlf_pf(const int urlf_idx, URLF_PF *pf)
 		}
 		else
 		{
-			pf->enable = atoi(enable);
-			pf->mode = atoi(mode);
+			pf->enable = safe_atoi(enable);
+			pf->mode = safe_atoi(mode);
 		}
 	}
 	else
@@ -742,7 +743,7 @@ int _get_urlf_pf(const int urlf_idx, URLF_PF *pf)
 		{
 			if (enable)
 			{
-				rule->enable = atoi(enable);
+				rule->enable = safe_atoi(enable);
 			}
 			if (addr && *addr)
 			{
@@ -1213,7 +1214,7 @@ int _check_nwf_pf_enable(const int nwf_idx)
 		}
 		else
 		{
-			ret = atoi(enable);
+			ret = safe_atoi(enable);
 		}
 		SAFE_FREE(nv);
 	}
@@ -1248,7 +1249,7 @@ int _get_nwf_pf(const int nwf_idx, NWF_PF *pf)
 		}
 		else
 		{
-			pf->enable = atoi(enable);
+			pf->enable = safe_atoi(enable);
 			pf->mode = strdup(mode);
 			pf->date = strdup(date);
 			pf->time1 = strdup(time1);
@@ -1411,12 +1412,12 @@ static int _timematch_conv2(char *mstr, const size_t mstr_size, const char *date
 
 	// initialize
 	memset(datetime, 0, sizeof(datetime));
-	// cprintf("%s: dow=%d, timestart=%d, timestop=%d, timestart2=%d, timestop2=%d, sizeof(datetime)=%d\n", __FUNCTION__, dow, atoi(timestart), atoi(timestop), atoi(timestart2), atoi(timestop2), sizeof(datetime)); //tmp test
+	// cprintf("%s: dow=%d, timestart=%d, timestop=%d, timestart2=%d, timestop2=%d, sizeof(datetime)=%d\n", __FUNCTION__, dow, safe_atoi(timestart), safe_atoi(timestop), safe_atoi(timestart2), safe_atoi(timestop2), sizeof(datetime)); //tmp test
 
 	// Sunday
 	if ((dow & 0x40) != 0)
 	{
-		if (atoi(timestart2) < atoi(timestop2))
+		if (safe_atoi(timestart2) < safe_atoi(timestop2))
 		{
 			snprintf(datetime[0].start, sizeof(datetime[0].start), "%s00", timestart2);
 			snprintf(datetime[0].stop, sizeof(datetime[0].stop), "%s59", timestop2);
@@ -1434,7 +1435,7 @@ static int _timematch_conv2(char *mstr, const size_t mstr_size, const char *date
 	{
 		if ((dow & 1 << (6 - i)) != 0)
 		{
-			if (atoi(timestart) < atoi(timestop))
+			if (safe_atoi(timestart) < safe_atoi(timestop))
 			{
 				snprintf(datetime[i].start, sizeof(datetime[i].start), "%s00", timestart);
 				snprintf(datetime[i].stop, sizeof(datetime[i].stop), "%s59", timestop);
@@ -1451,7 +1452,7 @@ static int _timematch_conv2(char *mstr, const size_t mstr_size, const char *date
 	// Saturday
 	if ((dow & 0x01) != 0)
 	{
-		if (atoi(timestart2) < atoi(timestop2))
+		if (safe_atoi(timestart2) < safe_atoi(timestop2))
 		{
 			snprintf(datetime[6].start, sizeof(datetime[6].start), "%s00", timestart2);
 			snprintf(datetime[6].stop, sizeof(datetime[6].stop), "%s59", timestop2);
@@ -1471,12 +1472,12 @@ static int _timematch_conv2(char *mstr, const size_t mstr_size, const char *date
 		// cascade cross-night time
 		if ((strcmp(datetime[i].tmpstop, "") != 0) && (strcmp(datetime[i].start, "") != 0) && (strcmp(datetime[i].stop, "") != 0))
 		{
-			if ((atoi(datetime[i].tmpstop) >= atoi(datetime[i].start)) && (atoi(datetime[i].tmpstop) <= atoi(datetime[i].stop)))
+			if ((safe_atoi(datetime[i].tmpstop) >= safe_atoi(datetime[i].start)) && (safe_atoi(datetime[i].tmpstop) <= safe_atoi(datetime[i].stop)))
 			{
 				strncpy(datetime[i].start, "000000", 6);
 				strncpy(datetime[i].tmpstop, "", 6);
 			}
-			else if (atoi(datetime[i].tmpstop) > atoi(datetime[i].stop))
+			else if (safe_atoi(datetime[i].tmpstop) > safe_atoi(datetime[i].stop))
 			{
 				strncpy(datetime[i].start, "000000", 6);
 				strncpy(datetime[i].stop, datetime[i].tmpstop, 6);
@@ -2038,7 +2039,7 @@ int handle_SDN_internal_access(const char *logdrop, const char *logaccept)
 				if (vstrsep(b, ">", &idx1, &idx2) != 2)
 					continue;
 
-				if (get_mtlan_by_idx(SDNFT_TYPE_SDN, atoi(idx1), pmtl, &mtl_sz) && mtl_sz > 0)
+				if (get_mtlan_by_idx(SDNFT_TYPE_SDN, safe_atoi(idx1), pmtl, &mtl_sz) && mtl_sz > 0)
 				{
 					strlcpy(ifname1, pmtl[0].nw_t.ifname, sizeof(ifname1));
 				}
@@ -2046,7 +2047,7 @@ int handle_SDN_internal_access(const char *logdrop, const char *logaccept)
 				{
 					ifname1[0] = '\0';
 				}
-				if (get_mtlan_by_idx(SDNFT_TYPE_SDN, atoi(idx2), pmtl, &mtl_sz) && mtl_sz > 0)
+				if (get_mtlan_by_idx(SDNFT_TYPE_SDN, safe_atoi(idx2), pmtl, &mtl_sz) && mtl_sz > 0)
 				{
 					strlcpy(ifname2, pmtl[0].nw_t.ifname, sizeof(ifname2));
 				}

@@ -58,7 +58,7 @@ int lteled_main(int argc, char **argv)
 	int sim_state;
 
 	if(argc == 2)
-		modem_unit = atoi(argv[1]);
+		modem_unit = safe_atoi(argv[1]);
 
 	if(modem_unit < 0)
 		modem_unit = MODEM_UNIT_FIRST;

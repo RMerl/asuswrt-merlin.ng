@@ -240,6 +240,9 @@ extern char wan6face[];
 #define RC_SERVICE_STOP 0x01
 #define RC_SERVICE_START 0x02
 
+#define HAVE_DHCP4 0x1
+#define HAVE_DHCP6 0x2
+
 extern int g_reboot;
 extern int wan_phyid;
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2)
@@ -989,6 +992,15 @@ extern bool g_swap;
 #define dtohchanspec(i) (g_swap?dtoh16(i):i)
 
 extern void wl_vif_hwaddr_set(const char *name);
+#if defined(RTBE58_GO)
+extern void wl1_reassert_vif_bssid(void);	/* WISP: re-assert 5G AP-VIF BSSID after start_wan */
+extern void wisp_ensure_both_sta_bss_up(int allow_reset);	/* WISP: bss-up+verify loop for wl0/wl1; allow_reset=1 permits a one-shot WLC down/up (only where wpasupp is not yet running) */
+extern void wisp_apply_sta_mac_clone(void);	/* WISP: push WAN MAC-Clone (wanN_hwaddr_x) onto the WiFi STA's own bsscfg-0 cur_etheraddr; call BEFORE wisp_ensure_both_sta_bss_up(), i.e. before wpa_supplicant starts */
+extern void wisp_fc_hwaccel_pause(void);	/* WISP: pause fc/hw-accel as soon as the WISP STA is seen going down, to keep new flows off the HW fast-path during the transition */
+#endif
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+extern void wisp_dualwan_reassert(void);	/* WISP dual-WAN: re-assert wan2=eth1 mapping (wanN_ifname + out of lan_ifnames) on every lan rebuild */
+#endif
 extern int wlconf(char *ifname, int unit, int subunit);
 extern int wl_send_dif_event(const char *ifname, uint32 event);
 extern int check_wl_client(char *ifname, int unit, int subunit);
@@ -1314,20 +1326,32 @@ extern int eth_down_time;
 #endif
 #endif
 
+//update the datecode once you update the 'backhaul_period_t'.
+#define BHP_VER_STRING "2025061101"
 //The definition comes from Sungmin_Lin
 typedef struct backhaul_period_s {
+	char ver[16];
 	long int bhc_st_init; // initial state
 	long int bhc_st_0; // no backhaul
 	long int bhc_st_1; // eth
 	long int bhc_st_2; // 2G
-	long int bhc_st_4; // 2G+5G
-	long int bhc_st_6; // 2G+5G
-	long int bhc_st_8; // 2G+5G1
+	long int bhc_st_4; // 5G
+	long int bhc_st_8; // 5G1
 	long int bhc_st_10; // eth_2
 	long int bhc_st_20; // eth_3
 	long int bhc_st_40; // eth_4
-	long int bhc_st_128; // 2G+5G(5G1)+6G
+	long int bhc_st_80; // 6G
+	long int bhc_st_100; // 6G-1
+	long int bhc_st_200; // MLO
 } backhaul_period_t;
+
+//update the datecode once you update the 'ahs_dhcp_period_t'.
+#define AHS_DHCP_VER_STRING "2025071001"
+typedef struct ahs_dhcp_period_s {
+	char ver[16];
+	long int ahs_dhcp_st_deconfig; // deconfig or leasefail
+	long int ahs_dhcp_st_nwchg; // network changes
+} ahs_dhcp_period_t;
 
 #ifdef RTCONFIG_DSL
 /* sysdeps/init-*-dsl.c */
@@ -2531,6 +2555,24 @@ void free_usb_devices(usb_device_info_t **device_list);
 #endif
 
 // dsl_fb.c
+
+#ifdef RTCONFIG_DBLOG
+enum {
+	DBLOG_STATE_INIT = 0
+	,DBLOG_STATE_RUN = 1
+	,DBLOG_STATE_REBOOT = 2
+	,DBLOG_STATE_PAUSE = 3
+	,DBLOG_STATE_STOP = 4
+	,DBLOG_STATE_FINISH = 5
+	,DBLOG_STATE_SENDMAIL_SUCCESS
+	,DBLOG_STATE_SENDMAIL_FAIL_SMTP
+	,DBLOG_STATE_SENDMAIL_FAIL_DISK_SPACE
+	,DBLOG_STATE_SENDMAIL_FAIL_OTHER
+	,DBLOG_STATE_ERR_USB
+	,DBLOG_STATE_ERR_OTHERS
+}; // You should sync it with dblog/daemon/dblog.h
+#endif /* RTCONFIG_DBLOG */
+
 extern unsigned long readFileSize( char *filepath );
 #ifdef RTCONFIG_AHS
 #define AHS_HWSW_ST_JFFS_FILE "ahs_hwsw_status.txt"
@@ -2662,6 +2704,7 @@ extern int ce_dad_check(int unit);
 extern int s46_ntt_hgw(int unit);
 extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
 extern int is_v6addr(const char *input);
+extern int switch_v6_mode(int unit, int mode);
 extern int get_s46_prefer(int unit);
 extern char *get_AFTR_addr(const char *host, char *ip, size_t iplen);
 extern char *get_s46_ra(int unit);
@@ -3290,6 +3333,10 @@ extern void start_gu_service();
 extern int speedtest_main(int argc, char **argv);
 extern void wan_bandwidth_detect(void);
 extern int speedtest();
+
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
+extern int ookla_quota_mon_main(int argc, char *argv[]);
+#endif
 
 #if defined(RTCONFIG_HNS)
 extern int hns_main(int argc, char **argv);
@@ -4161,6 +4208,7 @@ void wl_apply_akm_by_auth_mode(int unit, int subunit, char *sp_prefix_auth);
 
 #if defined(RTCONFIG_WISP)
 extern int get_wisp_status(void);
+extern void wisp_promote_5g_first(void);	/* boot 5G-first WAN promotion */
 #endif
 #if defined(RTCONFIG_NVSW_IN_JFFS)
 void nvsw_destroy(void);

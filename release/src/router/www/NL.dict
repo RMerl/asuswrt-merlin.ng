@@ -95,7 +95,7 @@ APSurvey_msg_connect_open_wlan=U probeert verbinding te maken met een niet-bevei
 APSurvey_msg_connected=U bent al verbinden met dit AP.
 APSurvey_msg_non_support_Auth=De verificatiemethode wordt niet ondersteund.
 APSurvey_msg_waiting_to_connect=Even geduld. ZVMODELVZ maakt verbinding met
-ASUS_Registration=Wordt ASUS-lid en ontvang de nieuwste productinformatie. <a style='color:#FC0' target='_blank' href='https://account.asus.com'>Schrijf u nu in!</a>
+ASUS_Registration=Wordt ASUS-lid en ontvang de nieuwste productinformatie. <a style='color:var(--wrt-badge-warning-color,#FC0)' target='_blank' href='https://account.asus.com'>Schrijf u nu in!</a>
 ASUS_Notice=ASUS MELDING
 ASUS_privacy_desc=Denk eraan dat gebruikers akkoord moeten gaan om hun informatie te delen voordat ze DDNS, Remote Connection (ASUS Router APP、Lyra APP、AiCloud、AiDisk), AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS, Game Boost en Web history gebruiken. Gebruikers kunnen op deze pagina op elk ogenblik bladeren door de inhoud van de voorwaarden of het delen van hun informatie met andere partijen stopzetten door te kiezen voor <a style="font-weight: bolder;">Intrekken</a>.
 ASUS_eula_desc0=Welkom bij het gebruik van DDNS/ Externe verbinding (ASUS Router-APP/Lyra-APP/AiCloud/ AiDisk). Lees aandachtig de volgende informatie:
@@ -180,6 +180,7 @@ ASUS_EULA_Law_12_Desc=Alle offertes, orderbevestigingen, deze EULA en verkoopsre
 ASUS_EULA_Info=Door het gebruik van ASUS netwerkproducten, ga je akkoord met de voorwaarden zoals beschreven in de Licentieovereenkomst voor Eindgebruikers.
 ASUS_POLICY_Age_Check=Ik ben ouder dan 16 jaar.
 ASUS_POLICY_QIS_Desc=Het is belangrijk om deze voorwaarden te lezen voordat u een netwerkproduct gebruikt. Door op de knop “Akkoord” te klikken gaat u akkoord met de voorwaarden van deze verklaring. ​
+ASUS_POLICY_QIS_Desc_v5=Het is belangrijk om deze voorwaarden te lezen voordat u een netwerkproduct gebruikt. Door op de knop “%@” te klikken gaat u akkoord met de voorwaarden van deze verklaring. ​
 ASUS_POLICY_Update_Notice=Beste gebruikers, bedankt voor uw voortdurende ondersteuning van dit product. Om aan de privacyregelgeving van verschillende landen te voldoen en om uw gegevens verder te beschermen, hebben we de ASUS-privacyverklaring bijgewerkt. Voer een update uit alvorens ASUS-netwerkproducten te gebruiken.
 ASUS_POLICY_Read_Again=Opnieuw lezen
 ASUS_POLICY_Know_Risk=Ik begrijp het risico
@@ -371,7 +372,7 @@ CTL_UpgradeNight=Upgrade 's nachts
 CTL_UpgradeNow=Upgrade Now
 default_passwd_checkbox=Standaard lokaal aanmeldingswachtwoord gebruiken
 default_passwd_desc=Het standaard gecodeerde lokale aanmeldingswachtwoord biedt een veilig aanmeldingsproces wanneer u lokaal verbinding maakt met dit ASUS-netwerkapparaat.
-defaultHint=Voor meer details, <a style="font-weight: bolder;text-decoration: underline;color:#000000;" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
+defaultHint=Voor meer details, <a style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#000000);" href="https://www.asus.com/support/" target="_blank">https://www.asus.com/support/</a>
 Detect_consume_warning1=*Een minimum pingpakket verbruikt ongeveer 128 bytes per interval. Daarom verbruikt de pingdetector
 Detect_consume_warning2=mbytes per maand
 Disconnected=Verbinding verbroken
@@ -410,7 +411,7 @@ OpenDNS_Home=OpenDNS Home
 OpenDNS_Family=OpenDNS Gezin
 Yandex_Safe=Yandex Safe
 Yandex_Family=Yandex Gezin
-Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:#FFCC00;" href="DNSFilter.asp">DNSFilter</a> is ingeschakeld – Alles wat daar is geconfigureerd als iets anders dan Niet filteren of Router omzeilt DNS Privacy-servers.
+Dnsfilter_Hint_Dnspriv=<a style="text-decoration:underline; color:var(--wrt-badge-warning-color,#FFCC00);" href="DNSFilter.asp">DNSFilter</a> is ingeschakeld – Alles wat daar is geconfigureerd als iets anders dan Niet filteren of Router omzeilt DNS Privacy-servers.
 Enable_user_target=Door gebruiker gedefinieerd doel inschakelen
 Enable_Login_Captcha=Inlog-captcha inschakelen
 Encrypted_field=Versleuteld veld.
@@ -614,7 +615,7 @@ Offline_desc2=Wijzigingen zijn aangebracht aan het IP-adres of het poortnummer. 
 Offline_desc3=Om toegang te krijgen tot de instellingen van ZVMODELVZ, maakt u opnieuw verbinding met het draadloos netwerk en gebruikt u het bijgewerkte IP-adres en poortnummer.
 OP_AP_desc=In de AP-modus (Access Point) maakt ZVMODELVZ verbinding met een draadloze router via een ethernetkabel om het draadloze signaalbereik uit te breiden naar andere netwerkclients. In deze modus worden de firewall, het delen van IP en NAT-functies standaard uitgeschakeld.
 AiMesh_AP_desc=AiMesh-routers in de AP-stand maken verbinding met een draadloze router via een Ethernetkabel om het draadloze signal uit te breiden naar andere netwerkclienten. In deze stand zijn de firewall, IP-delen en NAT-functies standaard uitgeschakeld.
-OP_AP_hint=U kunt ook naar <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">http://findasus.local</a> gaan om de configuratiepagina van het apparaat te zoeken en in te voeren.
+OP_AP_hint=U kunt ook naar <a href=\"http://findasus.local\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">http://findasus.local</a> gaan om de configuratiepagina van het apparaat te zoeken en in te voeren.
 OP_AP_item=AP-modus (Access Point)
 AiMesh_AP_item=Access Point (AP) stand / AiMesh Router in AP-stand
 OP_Choose=Choose operation mode
@@ -633,7 +634,7 @@ OP_MB_desc4=Configureer de ene ZVMODELVZ als een router en de andere ZVMODELVZ a
 OP_MB_desc5=Wijzig naar de Media Bridge-modus om een simultane WiFi-verbinding te bieden voor uw media-apparaten.
 OP_MB_desc6=In de Media Bridge-modus maken alleen draadloze apparaten verbinding met het P-AP. Clientapparaten moeten worden verbonden met de Media Bridge met een netwerkkabel.
 OP_MB_desc7=ZVMODELVZ in Media Bridge-modus. Het IP-adres is gewijzigd.
-OP_MB_desc8=Download het <a href='http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:#FC0;'>hulpprogramma Apparaatopsporing</a> om het IP-adres van de Media Bridge te identificeren.
+OP_MB_desc8=Download het <a href='https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip' target='_blank' style='font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>hulpprogramma Apparaatopsporing</a> om het IP-adres van de Media Bridge te identificeren.
 OP_MB_desc9=Controleer of u de netwerkkabel van de WAN-poort hebt losgekoppeld.
 OP_RE_desc=In de Repeatermodus maakt de ZVMODELVZ draadloos verbinding met een bestaand draadloos netwerk om de draadloze dekking uit te breiden. In deze modus worden de firewall, het delen van IP en NAT-functies uitgeschakeld.
 OP_RE_desc1=Het LAN-IP-adres van ZVMODELVZ is mogelijk gewijzigd.
@@ -814,7 +815,7 @@ qis_simple_wls_recmd=(Aanbevolen)
 QIS_SmartConn_ISPDesc=Uw ISP moet u een kaart of document geven met de gebruikersnaam en het wachtwoord. *Dit voorbeelddocument is een voorbeeld dat alleen ter illustratie is bedoeld.
 QIS_SmartConn_ISPDesc2=Voer de gebruikersnaam en het wachtwoord in voor de informatie over de internetverbinding. Deze instellingen zijn u gegeven door uw internetprovider (ISP).
 QIS_SmartConn_ISPDesc3=Voer de PPPoE-gebruikersnaam en het wachtwoord in die door uw internetprovider (ISP) zijn verstrekt voor uw internetverbinding.
-QIS_SmartConn_ISPDesc_TW=Het clientnummer van de HiNet-gebruiker is <span style="color:#FC0;">xxxxxxxx@hinet.net</span>
+QIS_SmartConn_ISPDesc_TW=Het clientnummer van de HiNet-gebruiker is <span style="color:var(--wrt-badge-warning-color,#FC0);">xxxxxxxx@hinet.net</span>
 QIS_SmartConn_Scen1=Verbindingsscenario 1
 QIS_SmartConn_Scen2=Verbindingsscenario 2
 QIS_SmartConn_StaticDesc=Uw ISP moet u de informatie geven over het IP, het subnetmasker, de gateway en het DNS-adres. Als dat niet het geval is, neemt u contact op met uw ISP.
@@ -996,10 +997,10 @@ QKSet_ISP_desc=Raadpleeg uw ISP-instelling en voer de verwante informatie in.
 QKSet_ISP_desc2=Statische IP-verbinding mislukt.
 QKSet_ISP_desc3=Automatische IP-verbinding mislukt. U kunt hier handmatig configureren.
 QKSet_ISP_head=ISP-informatie-instelling
-QKset_restore_0=Klik op <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Restore setting (Instelling herstellen)</label></a> om de opgeslagen configuratie-instellingen te laden.
-QKset_restore_1=Klik op <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="">Restore setting (Instelling herstellen)</label></a> om de configuratie te herstellen als u een back-up hebt gemaakt van de configuratie-instellingen voordat u een reset van de router hebt uitgevoerd.
-QKset_setup_manual_0=Klik op <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Manual Setting (Handmatige instelling)</label></a> om uw draadloos netwerk handmatig in te stellen als u uw ISP-verbindingstype kent.
-QKset_setup_manual_1=Klik op <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:#FC0;" onclick="submitForm(0)">Manual Setting (Handmatige instelling)</label></a> om de geavanceerde routerinstellingen handmatig in te stellen of stel het ZVMODELVZ in waarin u wilt werken
+QKset_restore_0=Klik op <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Restore setting (Instelling herstellen)</label></a> om de opgeslagen configuratie-instellingen te laden.
+QKset_restore_1=Klik op <a><label for="upload_setting_profile" style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="">Restore setting (Instelling herstellen)</label></a> om de configuratie te herstellen als u een back-up hebt gemaakt van de configuratie-instellingen voordat u een reset van de router hebt uitgevoerd.
+QKset_setup_manual_0=Klik op <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Manual Setting (Handmatige instelling)</label></a> om uw draadloos netwerk handmatig in te stellen als u uw ISP-verbindingstype kent.
+QKset_setup_manual_1=Klik op <a><label style="text-decoration:underline;cursor:pointer;font-weight:bold;color:var(--wrt-badge-warning-color,#FC0);" onclick="submitForm(0)">Manual Setting (Handmatige instelling)</label></a> om de geavanceerde routerinstellingen handmatig in te stellen of stel het ZVMODELVZ in waarin u wilt werken
 QKset_skip_setup=U bent een expert in draadloze netwerken en u wilt de wizard voor het instellen van internet overslaan?
 QKSet_type_desc=Selecteer het type internetverbinding dat uw ISP heeft geleverd.
 QKSet_type_head=Internet-WAN-verbindingstype
@@ -1047,6 +1048,7 @@ Status_RAM=RAM
 Status_Used=Gebruikt
 Status_Free=Vrij
 Status_Total=Totaal
+Status_LoggingIn=Aanmelden…
 statusTitle_AP=Status toegangspunt
 statusTitle_System=ASUS ZVMODELVZ
 System_act_connections=Actieve verbindingen
@@ -1071,7 +1073,7 @@ TBVLAN_UPort=Niet getagde poort
 TBVLAN_TPort=Getagde poort
 TBVLAN_WirelessInf=Draadloze interface
 TBVLAN_EditSubnetProfile=Profiel subnetwerk bewerken
-TBVLAN_Subnet_desc=Selecteer het subnetwerk dat u hebt gemaakt of selecteer &quot;New Subnet&quot; (Nieuw subnetwerk) om een nieuw subnetwerk voor het VLAN te maken. Als u meer DHCP-configuraties wenst, configureert u dit op een<a style='color:#FFF; text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP-server</a>.
+TBVLAN_Subnet_desc=Selecteer het subnetwerk dat u hebt gemaakt of selecteer &quot;New Subnet&quot; (Nieuw subnetwerk) om een nieuw subnetwerk voor het VLAN te maken. Als u meer DHCP-configuraties wenst, configureert u dit op een<a style='color:var(--wrt-text-color,#FFF); text-decoration:underline;' href='/Advanced_MultiSubnet_Content.asp'> LAN >> DHCP-server</a>.
 TBVLAN_BindingInf=Verbindingsinterface
 TBVLAN_NoBindingInf=Geen verbindingsinterface is beschikbaar.
 TBVLAN_BindingInf_Hint=Voeg een verbindingsinterface toe.
@@ -1102,20 +1104,20 @@ WANPPPAuthText=PPP Authentication
 WAN_type_detected=WAN type detected
 WAN_auto_detected=WAN automatische detectie
 web_redirect_case1_suggestion1=Controleer of uw kabel is aangesloten op uw ZVMODELVZ WAN-poort en uw modem.
-web_redirect_case1_suggestion2=Controleer of uw <a style='color:#FFF' href='/Advanced_OperationMode_Content.asp'>Bewerkingsmodus</a> moet worden gewijzigd.
-web_redirect_case2_suggestion1=Onjuiste PPPoE-account of -wachtwoord. <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Controleer</a> dit.
+web_redirect_case1_suggestion2=Controleer of uw <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_OperationMode_Content.asp'>Bewerkingsmodus</a> moet worden gewijzigd.
+web_redirect_case2_suggestion1=Onjuiste PPPoE-account of -wachtwoord. <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Controleer</a> dit.
 web_redirect_case2_title1=PPPoE-verificatiefout
 web_redirect_case3_button=Uw WAN-type wijzigen
-web_redirect_case3_suggestion1=Controleer of uw <a style='color:#FFF' href='/Advanced_WAN_Content.asp'>Verbindingsinstellingen</a> correct zijn.
-web_redirect_case5_suggestion1=Schakel uw <a style='color:#FFF' href='/'>WAN-verbinding</a> in
+web_redirect_case3_suggestion1=Controleer of uw <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_WAN_Content.asp'>Verbindingsinstellingen</a> correct zijn.
+web_redirect_case5_suggestion1=Schakel uw <a style='color:var(--wrt-text-color,#FFF)' href='/'>WAN-verbinding</a> in
 web_redirect_case5_suggestion2=Controleer of uw USB-modem is ingeschakeld.
-web_redirect_case5_suggestion3=Wijzig uw <a style='color:#FFF' href='/Advanced_Modem_Content.asp'>USB-modeminstellingen</a>.
+web_redirect_case5_suggestion3=Wijzig uw <a style='color:var(--wrt-text-color,#FFF)' href='/Advanced_Modem_Content.asp'>USB-modeminstellingen</a>.
 web_redirect_case5_title1=Uw WAN-verbinding is uitgeschakeld.
 web_redirect_case5_title2=Uw USB-modem is niet aangesloten.
 web_redirect_case6_desc1=Klik op [Volgende] om het volgende IP-adres te gebruiken:
 web_redirect_case6_desc2=Controleer of alle relevante services uw nieuwe IP-adres gebruiken (bijv. Port Forwarding, DMZ, enz.)
 web_redirect_case8_suggestion1=Controleer of uw bovenliggend AP kan verbinden met internet.
-web_redirect_case8_suggestion2=<a style='color:#FFF' href='/QIS_wizard.htm?flag=manual'>Verbindingsinstellingen wijzigen</a>.
+web_redirect_case8_suggestion2=<a style='color:var(--wrt-text-color,#FFF)' href='/QIS_wizard.htm?flag=manual'>Verbindingsinstellingen wijzigen</a>.
 web_redirect_case8_title=Kan geen verbinding maken met het bovenliggende AP.
 web_redirect_case9_suggestion1=Controleer of uw AiMesh-router is ingeschakeld.
 web_redirect_case9_suggestion2=Start uw AiMesh-router opnieuw op en probeer het opnieuw.
@@ -1165,6 +1167,11 @@ Web_Title=ASUS draadloze router ZVMODELVZ
 [###MODEL_DEP###][YY]Web_Title=ASUS ZVMODELVZ toegangspunt
 Web_Title2=ZVMODELVZ
 Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
+WiFi_MLO_connect_confirmTitle=MLO-verbinding gebruiken
+WiFi_MLO_same_model_desc=MLO (Multi-Link Operation) wordt momenteel alleen ondersteund tussen ASUS-routers van hetzelfde model. Als de modellen verschillen, kan de verbinding mislukken.
+WiFi_MLO_connect_try=Probeer verbinding te maken via MLO.
+WiFi_MLO_connect_veto=Gebruik in plaats daarvan een standaardverbinding via één band.
+WiFi_MLO_connect_confirm=Wilt u de MLO-verbinding gebruiken?
 wireless_configured=Geconfigureerd
 Wireless_name=Draadloze naam
 wireless_router=Draadloze router
@@ -1246,6 +1253,7 @@ ADSL_FW_note=Opmerking:
 adsl_fw_ver_itemname=DLS-stuurprogrammaversie
 adsl_link_sts_itemname=DSL-verbindingsstatus
 adv_wl_desc=Geef de informatie betreffende de draadloze verbinding hieronder op.
+AiBoard_rescue_fail=AI Board-herstel mislukt
 AiCloud_account_status=Accountstatus
 AiCloud_account_unlock=Ontgrendelen
 aicloud_bandwidth1=U hebt een breedband internetverbinding nodig voor de beste kijk- en luisterervaring. Raadpleeg de onderstaande aanbevelingen:
@@ -1358,12 +1366,12 @@ AiMesh_FindNode_confirm=Ik kan mijn AiMesh-knooppunt niet vinden?
 AiMesh_FindNode_confirm_WPS=WPS is actief terwijl u zoekt naar een AiMesh-node.
 AiMesh_FindNode_Desc=Zoek beschikbare AiMesh-knooppunten in de buurt om ze toe te voegen aan uw AiMesh-systeem.
 AiMesh_FindNode_Not=Kan geen AiMesh-knooppunt in de buurt vinden.
-AiMesh_FindNode_Not_advA=Als dit apparaat is toegewezen als een <span style='color:#569AC7;'> AiMesh-router </span>, dient u het volgende te controleren en het opnieuw te proberen.
+AiMesh_FindNode_Not_advA=Als dit apparaat is toegewezen als een <span style='color:var(--wrt-link-color,#569AC7);'> AiMesh-router </span>, dient u het volgende te controleren en het opnieuw te proberen.
 AiMesh_FindNode_Not_advA1=Uw AiMesh-knooppunt is ingeschakeld
 AiMesh_FindNode_Not_advA2=Uw AiMesh-knooppunt heeft de laatste firmware.
 AiMesh_FindNode_Not_advA3=Uw AiMesh-knooppunt is opnieuw ingesteld naar de standaard
 AiMesh_FindNode_Not_advA4=Verplaats uw AiMesh-knooppunt dicht bij de AiMesh-router
-AiMesh_FindNode_Not_advB=Als dit apparaat is toegewezen als een <span style='color:#569AC7;'>AiMesh-knooppunt</span>, dient u het volgende te controleren en het opnieuw te proberen.
+AiMesh_FindNode_Not_advB=Als dit apparaat is toegewezen als een <span style='color:var(--wrt-link-color,#569AC7);'>AiMesh-knooppunt</span>, dient u het volgende te controleren en het opnieuw te proberen.
 AiMesh_FindNode_Not_advB1=Druk op de resetknop op dit apparaat en wacht even.
 AiMesh_FindNode_Not_advB2=Meld aan bij de GUI van uw AiMesh-router en klik op het AiMesh-pictogram.
 AiMesh_FindNode_Not_advB3=Voer een upgrade uit van de firmware van uw AiMesh-router als u het AiMesh-pictogram niet kunt vinden op de GUI van de router.
@@ -1696,6 +1704,13 @@ AiProtection_TrackerBlocking_Desc=Trackerblokkering helpt bij het detecteren en 
 AiProtection_AdvertisementBlocking_Desc=Advertentieblokkering helpt bij het blokkeren van veelvoorkomende advertentiebronnen om interferentie te verminderen, het browsen te verbeteren en beveiligingsrisico’s te verlagen. U kunt ook AdGuard DNS inschakelen voor extra bescherming.
 AiProtection_AdvertisementBlocking_Enabled=Advertentieblokkering ingeschakeld
 AiProtection_TrackerBlocking_Enabled=Trackerblokkering ingeschakeld
+AiProtection_select_device=Selecteer een apparaat of voer een geldig MAC- of IP-adres in
+AiProtection_rule_exist=Dit apparaat heeft al een regel. Verwijder deze voordat u een nieuwe maakt.
+ArkMigrationNote=Let op
+ArkMigrationNote_1=Vanwege privacy en systeemoptimalisaties gebruikt %@ nu lokale detectie. Bestaande profielregels moeten handmatig opnieuw worden geconfigureerd.
+ArkMigrationNote_2=Deze functies zijn niet compatibel met eerdere firmware; downgraden vereist een fabrieksreset.
+ArkAiProtectionInfo=Sommige websites kunnen worden beïnvloed door advertentie- of trackerblokkering vanwege hun gebruik van deze diensten. Als u problemen ondervindt bij het openen van een website, schakel dan bovenstaande functies uit en laad de pagina opnieuw.
+FamilyContentBlock=Gezinsinhoud blokkeren
 BwLimiter_Switch=Bandbreedtebegrenzer-schakelaar
 BwLimiter_Download=Downloadbandbreedte
 BwLimiter_Upload=Uploadbandbreedte
@@ -1703,6 +1718,7 @@ BwLimiter_NewDevice=Nieuw apparaat
 BwLimiter_Status=Status
 BwLimiter_Delete=Verwijderen
 SearchDevice_By_Name_Mac_Ip=Zoek apparaatnaam, MAC of IP
+SearchDevice_By_Name_Mac_Ip_Subnet=Zoek op apparaatsnaam, MAC, IP of subnet
 BwLimiter_Target=Doel
 BwLimiter_enter_bandwidth=Voer een bandbreedtewaarde in.
 BwLimiter_max=De regels voor bandbreedtebeperking hebben het maximum (32) bereikt.
@@ -1944,7 +1960,9 @@ btn_go=START
 btn_goSetting=Naar instellingen
 btn_remove=Verwijderen
 btn_send=Verzenden
+btn_resend=Opnieuw verzenden
 btn_to_WAN=WAN-instelling
+btn_verify=Verifiëren
 Capability=Capaciteit
 Captcha=Captcha
 Captcha_note=Voer de captcha in.
@@ -2154,10 +2172,10 @@ Device_type_03_AP=Toegangspunt
 Device_type_04_NS=NAS
 Device_type_05_IC=IP-camera
 Device_type_06_OD=Ander apparaat
-deviceDiscorvy2=In de Repeatermodus verandert het door DHCP toegewezen IP-adres. Installeer en gebruik <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het nieuwe IP-adres van uw draadloze router te verkrijgen.
-deviceDiscorvy3=In de AP-modus (Access Point) verandert het door DHCP toegewezen IP-adres. Installeer en gebruik <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het IP-adres van de draadloze router te detecteren.
-AiMesh_deviceDiscorvy3=Staan AiMesh-routers in de AP-stand, dan verandert het door DHCP toegekende IP-adres. Installeer en gebruik het <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility</a> om het IP-adres van de draadloze router te vinden.
-deviceDiscorvy4=In de Media Bridge-modus verandert het door DHCP toegewezen IP-adres. Installeer en gebruik <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het nieuwe IP-adres van uw draadloze router te verkrijgen.
+deviceDiscorvy2=In de Repeatermodus verandert het door DHCP toegewezen IP-adres. Installeer en gebruik <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het nieuwe IP-adres van uw draadloze router te verkrijgen.
+deviceDiscorvy3=In de AP-modus (Access Point) verandert het door DHCP toegewezen IP-adres. Installeer en gebruik <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het IP-adres van de draadloze router te detecteren.
+AiMesh_deviceDiscorvy3=Staan AiMesh-routers in de AP-stand, dan verandert het door DHCP toegekende IP-adres. Installeer en gebruik het <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility</a> om het IP-adres van de draadloze router te vinden.
+deviceDiscorvy4=In de Media Bridge-modus verandert het door DHCP toegewezen IP-adres. Installeer en gebruik <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het nieuwe IP-adres van uw draadloze router te verkrijgen.
 DeviceSecurity11a_display1_sectiondesc=Met de draadloze MAC-filter kunt u pakketten controleren van apparaat met opgegeven MAC-adres in uw draadloos LAN.
 DHCP_query_freq=Frequentie DHCP-query
 DHCPaggressive=Agressieve modus
@@ -2340,7 +2358,7 @@ Excute_processing=Bezig met installeren...
 External=Alleen extern
 Extend_TTL_Value=De TTL-waarde uitbreiden
 EZQoS=EZQoS bandbreedtebeheer
-EzQoS_bandwidth_note1=Verkrijg de bandbreedtegegevens van de ISP of ga naar <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:#FC0;">http://speedtest.net</a> om de bandbreedte te controleren.
+EzQoS_bandwidth_note1=Verkrijg de bandbreedtegegevens van de ISP of ga naar <a href="http://speedtest.net" target="_blank" style="text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);">http://speedtest.net</a> om de bandbreedte te controleren.
 EzQoS_bandwidth_note2=De standaard is 0, wat staat voor onbeperkte bandbreedte.
 EzQoS_desc=Quality of Service (QoS) garandeert een bandbreedte voor taken en toepassingen met prioriteiten.
 EzQoS_desc_Adaptive=<span style="font-weight:bolder;font-size:14px;">Adaptieve QoS</span> garandeert binnenkomende en uitgaande bandbreedte voor zowel bekabelde als draadloze verbindingen voor toepassingen en taken die prioriteiten hebben gekregen via vooraf gedefinieerde voorinstellingen met slepen en neerzetten:gaming, mediastreaming, VoIP, websurfen en bestandsoverdracht.
@@ -2407,11 +2425,11 @@ feedback_email_alert=E-mailadresformaat is niet geldig.
 feedback_email_confirm=E-mailadresveld is leeg. Weet u zeker dat u wilt doorgaan?
 feedback_extra_info=Extra informatie voor foutopsporing
 feedback_fail0=Kan uw feedback niet verzenden. Controleer uw internetverbinding en probeer het opnieuw.
-feedback_fail1=<span style="color:#FC0;">Het systeem kan geen verbinding maken met de e-mailserver.</span> U kunt een e-mail direct verzenden naar
+feedback_fail1=<span style="color:var(--wrt-badge-warning-color,#FC0);">Het systeem kan geen verbinding maken met de e-mailserver.</span> U kunt een e-mail direct verzenden naar
 feedback_fail2=Kopieer gewoon de onderstaande inhoud en plak deze als uw e-mailinhoud.
 feedback_fail3=Download de volgende foutopsporingsbestanden en voeg ze toe als een e-mailbijlage:
 feedback_fail0_new=Het systeem kon geen verbinding maken met de feedbackserver.
-feedback_fail1_new=<span>Als u problemen ondervindt bij het gebruik of technische ondersteuning nodig heeft, neem dan eerst contact op met het ASUS Klantenservicecentrum&nbsp;<a class="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiële Ondersteuning | ASUS Global)</a>.</span>
+feedback_fail1_new=<span>Als u problemen ondervindt bij het gebruik of technische ondersteuning nodig heeft, neem dan eerst contact op met het ASUS Klantenservicecentrum&nbsp;<a class="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiële Ondersteuning | ASUS Global)</a>.</span>
 feedback_fail2_new=U kunt ook het gedetecteerde foutbestand sturen naar router_feedback@asus.com om suggesties voor verbeteringen aan het ontwikkelingsteam te geven. Bedankt.
 feedback_fail_BindGoogle=U kunt ook <a id="bind_google">uw Google-account verbinden</a> om feedback via e-mail te verzenden.
 feedback_format_alert=The format is not valid.
@@ -2433,7 +2451,7 @@ feedback_note3=Door deze feedback in te dienen, gaat u ermee akkoord dat ASUS fe
 [###MODEL_DEP###][DSL-AX82U][DSL-AC68U][DSL-N55U][DSL-N55U-B]feedback_note3=Door deze feedback in te dienen, gaat u ermee akkoord dat ASUS feedback die u hebt gegeven, mag gebruiken om de xDSL-modemrouter van ASUS te verbeteren.
 feedback_note4=Is er een dringend probleem, neem dan contact op met de plaatselijke technische ondersteuning.
 feedback_note5=Feedback is aan de gang. Herstarten kan ervoor zorgen dat het programma wordt beëindigd en de feedback niet kan worden voltooid. Start later opnieuw op.
-feedback_note6=<span>Dit systeem biedt geen individuele reacties. Als u problemen heeft met het gebruik of technische ondersteuning nodig heeft, neem dan contact op met het ASUS Klantenservicecentrum</span>&nbsp;<a id="site_link" style="color:#569AC7;font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiële Ondersteuning | ASUS Global)</a>.
+feedback_note6=<span>Dit systeem biedt geen individuele reacties. Als u problemen heeft met het gebruik of technische ondersteuning nodig heeft, neem dan contact op met het ASUS Klantenservicecentrum</span>&nbsp;<a id="site_link" style="color:var(--wrt-link-color,#569AC7);font-weight:bolder;text-decoration:underline;cursor:pointer;" href="" target="_blank">(Officiële Ondersteuning | ASUS Global)</a>.
 feedback_note7=Ons professionele team staat voor u klaar. Bedankt.
 feedback_Occasion_interrupt=Occasionele onderbrekingen
 feedback_optional=* Optioneel
@@ -2592,7 +2610,7 @@ FW_auto_time=Voorkeursupgradetijdstip
 FW_auto_upgrade=Automatische firmware-upgrade
 FW_auto_upgrade_desc=Gedownloade systeemupdates worden automatisch &#39;s nachts geïnstalleerd. Sommige upgrades die belangrijke beveiligingsproblemen aanpakken of die aan wettelijke/regelgevende vereisten voldoen, worden altijd automatisch gedownload en geïnstalleerd, zelfs als Automatische firmware-upgrade is uitgeschakeld.
 FW_beta_check=Ik wil bèta-firmware ophalen.
-FW_desc0=Verkrijg de nieuwste firmwareversie van <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/" target="_blank">de ASUS-ondersteuningssite</a>
+FW_desc0=Verkrijg de nieuwste firmwareversie van <a id="asus_link2" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/" target="_blank">de ASUS-ondersteuningssite</a>
 FW_desc1=Bezoek de ASUS-ondersteuningssite https://www.asus.com/support voor de nieuwste firmware.
 fw_downloading=Firmware downloaden
 FW_item1=Product-ID
@@ -2600,9 +2618,9 @@ FW_item2=Firmwareversie
 FW_item5=Nieuw firmwarebestand
 FW_manual_update=Handmatige firmware-update
 FW_n0=De nieuwste firmwareversie bevat updates van de vorige versie.
-FW_n2=In het geval het upgradeproces mislukt, gaat ZVMODELVZ automatisch naar de noodmodus. De LED-signalen op de voorkant van ZVMODELVZ zullen een dergelijke situatie aanduiden.Bezoek het <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> om het hulpprogramma ASUS Firmware Restoration.
-FW_n3=Check on <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="" target="_blank">FAQ</a> for more instructions.
-FW_n4=Check on <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: #FFCC00;\" href=\"\" target=\"_blank\">FAQ</a> for more instructions.
+FW_n2=In het geval het upgradeproces mislukt, gaat ZVMODELVZ automatisch naar de noodmodus. De LED-signalen op de voorkant van ZVMODELVZ zullen een dergelijke situatie aanduiden.Bezoek het <a id="asus_link" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="https://www.asus.com/support/Download-Center/" target="_blank">ASUS Download Center</a> om het hulpprogramma ASUS Firmware Restoration.
+FW_n3=Raadpleeg de <a id="faq_link1" style="font-weight: bolder;text-decoration: underline;color:var(--wrt-text-color,#FFFFFF);" href="" target="_blank">FAQ</a> voor meer instructies.
+FW_n4=Raadpleeg de <a id=\"faq_link2\" style=\"font-weight: bolder;text-decoration: underline;color: var(--wrt-badge-warning-color,#FFCC00);\" href=\"\" target=\"_blank\">FAQ</a> voor meer instructies.
 FW_n5=Raadpleeg de "ASUS-PRIVACYVERKLARING (voor firmware-/beveiligingsupgrades) op de pagina "Beheer -> Privacy" voor informatie over verzamelde gegevens voor firmware-/beveiligingsupgrades.
 FW_note=Opmerking:
 FW_note_AiMesh=Bij een handmatige firmware-update worden alleen sommige AiMesh-routers en -nodes bijgewerkt, bij gebruik van het AiMesh-systeem. Controleer of u de juiste AiMesh-firmwareversie uploadt voor elke router of node.
@@ -2677,12 +2695,12 @@ GB_account_type2=Geavanceerde account router
 GB_ended_date=Einddatum
 GB_ended_date_desc=WTFast biedt elke nieuwe gebruiker een geavanceerde testperiode voor 14 dagen die alleen betrekking heeft op de Geavanceerde account met meer proxyserveropties. Wanneer de testperiode vervalt, kunt u nog steeds genieten van een levenslang abonnement met standaard accountfuncties. Deze versie is gratis en heeft verkeerslimieten.
 GB_ended_date_type0=U gebruikt nu een gratis basisaccount van de router.
-GB_management_note1=Als u de WTFast-powered Game Boost, stemt u in met de <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:#008DE5;">Gebruiksvoorwaarden</a></span> en het <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:#008DE5;">Privacybeleid</a></span> van WTFast.
-GB_management_note2=Zoals vermeld in de disclaimer op onze productpagina, werkt WTFast nog steeds aan de ontwikkeling van de ondersteuning voor gameconsoles . Raadpleeg <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:#008DE5;">deze lijst</a> voor de games die momenteel worden ondersteund. (Wordt regelmatig bijgewerkt)
+GB_management_note1=Als u de WTFast-powered Game Boost, stemt u in met de <span><a href="javascript:open_link('terms')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Gebruiksvoorwaarden</a></span> en het <span><a href="javascript:open_link('privacy')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Privacybeleid</a></span> van WTFast.
+GB_management_note2=Zoals vermeld in de disclaimer op onze productpagina, werkt WTFast nog steeds aan de ontwikkeling van de ondersteuning voor gameconsoles . Raadpleeg <a href="javascript:open_link('gameList')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">deze lijst</a> voor de games die momenteel worden ondersteund. (Wordt regelmatig bijgewerkt)
 GB_management_note3=De GPN-prestaties verschillen afhankelijk van uw ISP of locatie. Zorg dat de firmware altijd is bijgewerkt.
-GB_management_note4=Hoe selecteer ik een goede GPN-server? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:#008DE5;">Hier</a></span> Hoe krijg ik de beste game-ervaring? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:#008DE5;">Hier</a></span>
-GB_management_note5=Hoe gebruik ik WTFast op de ASUS-router? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:#008DE5;">Hier</a></span>
-GB_mobile=Mobile Game Mode
+GB_management_note4=Hoe selecteer ik een goede GPN-server? <span><a id="link" href="javascript:open_link('gpn1')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Hier</a></span> Hoe krijg ik de beste game-ervaring? <span><a id="link" href="javascript:open_link('gpn2')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Hier</a></span>
+GB_management_note5=Hoe gebruik ik WTFast op de ASUS-router? <span><a id="link" href="javascript:open_link('howto')" style="text-decoration:underline;color:var(--wrt-link-color,#008DE5);">Hier</a></span>
+GB_mobile=Mobiele Spelmodus
 GB_mobile_desc=Verbeter het spelverloop op mobiele apparaten
 GB_mobile_desc1=Download en installeer de ASUS Router-app. Schakel de mobiele gamemodus in de app in om de beste mobiele gamebeleving te garanderen.
 GB_mobile_desc_short=Download en installeer de ASUS Router-app.
@@ -3083,7 +3101,7 @@ LANHostConfig_x_DDNS_retrieve_IP_note=[Intern] Registreer een domeinnaam via het
 LANHostConfig_x_DDNS_update_confirm=IP-adres, server en hostnaam zijn niet gewijzigd sinds de laatste update. Als u wilt bijwerken, klikt u op [Yes] (Ja).
 LANHostConfig_x_DDNSEnable_itemname=DDNS
 LANHostConfig_x_DDNSEnable_sectiondesc=DDNS (Dynamic Domain Name System) is een service waarmee netwerkclients kunnen verbinden met de draadloze router, zelfs met een dynamisch openbaar IP-adres, via zijn geregistreerde domeinnaam.
-LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:#FFFFFF;">Raadpleeg <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">FAQ</a> voor meer informatie.
+LANHostConfig_x_DDNSEnable_sectiondesc2=<p style="color:var(--wrt-text-color,#FFFFFF);">Raadpleeg <a href="https://www.asus.com/support/FAQ/1050429" target="_blank" style="text-decoration: underline;">FAQ</a> voor meer informatie.
 LANHostConfig_x_DDNSEnable_sectiondesc3=Het registreren van de hostnaam is gelukt. U kunt "[hostname].asuscomm.com" gebruiken om toegang te krijgen tot de service in het thuisnetwerk van het WAN. Gebruik "[hostname].asuscomm.com" om op afstand toegang te krijgen tot uw netwerk.<p>Go to Advanced Settings > WAN voor het configureren van de instellingen voor port forwarding of DMZ om andere WAN-clients toe te staan op afstand toegang te krijgen tot uw netwerk.<p> Als u de draadloze router op afstand wilt configureren, gaat u naar <a href="/Advanced_System_Content.asp?af=misc_http_x" target="_blank" style="text-decoration: underline; font-family:Lucida Console;">hier</a>.
 LANHostConfig_x_DDNSEnable_sectiondesc4=De huidige router gebruikt een privé-IP.
 LANHostConfig_x_DDNSEnable_faq1=Inleiding en installatie van DDNS
@@ -3406,7 +3424,7 @@ ParentalCtrl_default=De internettoegang van de clients die zijn toegevoegd aan P
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_default=De internettoegang van de clients die zijn toegevoegd aan Apparaattoegangsbeheer is standaard beperkt.
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]ParentalCtrl_default=Voor apparaten die worden toegevoegd aan Ouderlijk toezicht, wordt hun internettoegang standaard beperkt.
 ParentalCtrl_deny=Weigeren
-ParentalCtrl_disable_NAT=Schakel <a id="disable_NAT" style="color:#FC0;text-decoration: underline;" href="" target="_blank">NAT-versnelling</a> in voor een nauwkeuriger planningbeheer.
+ParentalCtrl_disable_NAT=Schakel <a id="disable_NAT" style="color:var(--wrt-badge-warning-color,#FC0);text-decoration: underline;" href="" target="_blank">NAT-versnelling</a> in voor een nauwkeuriger planningbeheer.
 ParentalCtrl_Enable=Ouderlijk toezicht inschakelen
 [###MODEL_DEP###][BM68][BR63][EBA63][EBG15][EBG19][EBG19P]ParentalCtrl_Enable=Apparaattoegangsbeheer inschakelen
 ParentalCtrl_Enable_TS=Tijdplanning inschakelen
@@ -3715,6 +3733,7 @@ select_service=De servicenaam selecteren.
 select_usb_device=USB-apparaat selecteren
 select_usb_mode=USB Mode
 select_wireless_MAC=Het MAC-adres van de draadloze client selecteren.
+Sending_str=Verzenden…
 Send_mail=E-mail verzenden
 Serial_Number=Serienummer
 Servers_Center=Serverscentrum
@@ -3914,10 +3933,33 @@ SDN_Scenarios_desc=Wilt u een extra draadloos netwerk toevoegen voor speciaal ge
 SDN_MainFH_for_clients=MLO Fronthaul voor clients
 SDN_MainFH_keep_Hint=At least one main network must be retained.
 SDN_MainFH_Smart_Connect_Hint=Aangezien de Smart Connect-regel is aangemaakt, kiest u een enkele WiFi-band.
+SDN_mlo_switch_fh_hint1=Er is slechts één actieve MLO-fronthaul toegestaan.
+SDN_mlo_switch_fh_hint2=Wilt u de MLO Fronthaul van %1$@ deactiveren en %2$@ activeren?
 SDN_Sync_To_All_Node=Synchroniseer met alle AiMesh-nodes
 SDN_Sync_To_All_Node_Hint=Als uw AiMesh-nodes oude modellen zijn of als de WiFi zijn maximale capaciteit heeft bereikt, is het niet mogelijk om alle AiMesh-nodes te synchroniseren. Selecteer de nodes om te synchroniseren in het onderstaande menu.
 SDN_Sync_limitation_Hint=Voor oudere AiMesh-knooppunten zijn er beperkingen op het synchroniseren van alle banden.
 SDN_MainFH_WiFi_conflict=%1$@ WiFi-band(en) zijn gebruikt. De conflicterende %2$@ (%3$@) netwerken worden verwijderd nadat de instellingen zijn toegepast.
+SDN_Auth_WPA3_only_subtext1=De hoogste beveiligingsoptie met alleen WPA3-verbindingen.
+SDN_Auth_WPA3_only_subtext2=(Opmerking: Oudere apparaten zonder WPA3-ondersteuning kunnen mogelijk geen verbinding maken.)
+SDN_Auth_WPA3_dual=De standaard beveiligingsoptie met dubbele modus.
+SDN_Auth_WPA3_dual_desc=Moderne apparaten maken verbinding via WPA3, oudere apparaten via WPA2.
+SDN_Auth_WPA3_dual_mode=Compatibiliteitsmodus
+SDN_Auth_WPA3_dual_mode_subtext1=Een verbeterde dual-mode beveiligingsoptie geoptimaliseerd voor oudere apparaten met RSN-overschrijving.
+SDN_Auth_WPA3_dual_mode_subtext2=Hierdoor blijven oudere apparaten verbonden terwijl moderne apparaten WPA3 gebruiken.
+SDN_Auth_WPA3_dual_mode_subtext3=(Opmerking: Sommige apparaten van de middengeneratie gebruiken mogelijk WPA2.)
+SDN_Auth_WPA3_subtext=Een verbeterde beveiligingsoptie die met RSN overriding is geoptimaliseerd voor oudere apparaten. Deze biedt maximale beveiliging voor moderne apparaten en behoudt tegelijkertijd stabiele verbindingen voor niet-moderne clients.
+SDN_WiFi_Mode_Only6G_Hint=Om te voldoen aan de wereldwijde WiFi-standaarden moeten alle netwerken op de 6GHz-band dezelfde WiFi-generatie gebruiken.
+SDN_WiFi_Mode_24G_Hint=2,4 GHz werkt volgens uw WiFi-modusinstellingen.
+SDN_Compatibility_Mode_Off=Compatibiliteitsmodus is uitgeschakeld.
+SDN_Compatibility_Mode_24=2,4GHz-compatibiliteitsmodus
+SDN_Balance_Mode=Gebalanceerd
+SDN_Balance_Mode_desc=Optimale balans tussen prestaties en apparaatcompatibiliteit.
+SDN_Balance_Mode_desc1=2,4GHz werkt in WiFi 6-modus.
+SDN_Ultra_Compatibility_Mode=Maximale compatibiliteit
+SDN_Ultra_Compatibility_Mode_desc=Zorgt voor een stabiele verbinding voor oudere of bestaande IoT-apparaten.
+SDN_Ultra_Compatibility_Mode_desc1=2,4GHz werkt in WiFi 4-modus.
+SDN_IPv6_FreeWiFi_Hint=Opmerking: Free WiFi ondersteunt geen omgevingen met alleen IPv6. Zorg ervoor dat IPv4 of Dual-Stack is ingeschakeld voor clientomleiding.
+SDN_IPv6_MessageBoard_Hint=Opmerking: Message Board ondersteunt geen omgevingen met alleen IPv6. Zorg ervoor dat IPv4 of Dual-Stack is ingeschakeld voor de client.
 t2BC=Basisconfiguratie
 t2LAN=LAN
 t2Misc=Diversen
@@ -3992,7 +4034,9 @@ TZ02=Midway-eiland, Samoa
 TZ03=Hawai
 TZ04=Alaska
 TZ05=Pacific Time (V.S., Canada)
+TZ05_1=Vancouver, Whitehorse
 TZ06=Mountain Time (V.S., Canada)
+TZ06_1=Edmonton, Yellowknife
 TZ07=Arizona
 TZ08=Mazatlan
 TZ10=Saskatchewan
@@ -4148,7 +4192,7 @@ usb_tls_conflict=Anoniem aanmelden toestaan is in strijd met de TLS-instellingen
 usb_tls_conflict_WANacc=WAN-toegang is in strijd met de TLS-instellingen.
 usb_uninstalling=Bezig met verwijderen van app van het USB-opslagapparaat...
 usb_unmount=USB-functie is uitgeschakeld.
-use_DevDiscoveryUtil=Installeer en gebruik <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het IP-adres van de draadloze router te detecteren.
+use_DevDiscoveryUtil=Installeer en gebruik <a href=\"https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);\">Device Discovery Utility (hulpprogramma Apparaatopsporing)</a> om het IP-adres van de draadloze router te detecteren.
 Username=Gebruikersnaam
 Username_Pwd=Gebruikersnaam en wachtwoord
 UserQoS_desc=Via de vervolgkeuzelijst met de door gebruiker gedefinieerde QoS-regels, kunt u de netwerktoepassingen of apparaten prioriteiten geven op vijf niveaus. Op basis van het prioriteitsniveau, gebruikt QoS de volgende methoden voor het verzenden van gegevenspakketten:<ul><li>Wijzig de volgorde van de upstream netwerkpakketten die verwijzen naar de volgorde waarin pakketten worden verzonden naar internet.</li><li>Pakketten met lage prioriteit worden genegeerd om de verzending van pakketten met hoge prioriteit te garanderen. Het upstreampakket met de hoogste prioriteit zal het downstreampakket met de hogere prioriteit veroorzaken.</li><li>Als er geen pakketten worden verzonden van toepassingen met hoge prioriteit, is de volledige overdrachtsnelheid van de internetverbinding beschikbaar voor pakketten met lage prioriteit.</li></ul>
@@ -4158,6 +4202,7 @@ UserQoS_transferred_hint=In de kolom 'Transferred’ (Overgedragen) stelt u de n
 UserQoSRule_desc_zero=Schakel QoS in en stel dan de door de gebruiker gedefinieerde regels in.
 UserQoSRule_desc_one=De prioriteit voor de upload- en downloadbandbreedte is standaard "low” (laag). Als er geen regel voor de bandbreedteprioriteit is, is de prioriteit zowel voor de upload- als de downloadbandbreedte "low” (laag).
 Utility=Hulpprogramma
+Verifying_str=Bezig met verifiëren…
 Video_Find=Zelfstudievideo’s zoeken
 Video_Link1=Klik op de video met de zelfstudie te openen.
 View_List=Lijst weergeven
@@ -4256,7 +4301,7 @@ vpn_openvpn_required_acc_pwd=Gebruikersnaam en wachtwoord zijn vereist voor het 
 vpn_openvpnc_importCA=CA-bestand importeren
 vpn_openvpnc_importovpn=ovpn-bestand importeren
 vpn_openvpnc_manual=Importeer het CA-bestand of bewerk het ovpn-bestand handmatig.
-vpn_privateIP_hint=De draadloze router gebruikt momenteel een persoonlijk WAN-IP-adres (192.168.x.x, 10.x.x.x of 172.16.x.x). Raadpleeg <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:#FC0;'>FAQ</a> en stel port forwarding in.
+vpn_privateIP_hint=De draadloze router gebruikt momenteel een persoonlijk WAN-IP-adres (192.168.x.x, 10.x.x.x of 172.16.x.x). Raadpleeg <a id='faq_port_forwarding' href='' target='_blank' style='font-weight:bolder;text-decoration:underline;color:var(--wrt-badge-warning-color,#FC0);'>FAQ</a> en stel port forwarding in.
 vpn_preshared_key=Pre-shared Key (Secret)
 vpn_preshared_key_hint=Enter Pre-shared Key
 vpn_switch_confirm=ASUSWRT ondersteunt slechts één VPN-serververbinding per keer. Als u de \"OpenVPN-server\"inschakelt, wordt de \"PPTP-server\" automatisch uitgeschakeld. Weet u zeker dat u de VPN-server wilt inschakelen?
@@ -4352,6 +4397,32 @@ vpnc_profile_assignALL=Toepassen op alle apparaten
 vpnc_profile_assignDevice=Apparaten aan dit profiel toewijzen
 vpnc_profile_del=Profiel verwijderen
 vpnc_profile_select_suggest=Selecteer een ander VPN-profiel om het standaard-WAN te annuleren.
+vpnc_ssk_login=Meld u aan bij uw Surfshark-account
+vpnc_ssk_login_note=Voer zowel account als wachtwoord in.
+vpnc_ssk_invalid_long=Account of wachtwoord is te lang (max. 128 tekens).
+vpnc_ssk_invalid_char=Account of wachtwoord bevat ongeldige tekens.
+vpnc_ssk_invalid_format=Ongeldige account- of wachtwoordindeling.
+vpnc_ssk_login_AuthCode=Voer de 6-cijferige verificatiecode in die naar uw e-mailadres is verzonden of door de Authenticator-app is gegenereerd.
+vpnc_ssk_login_AuthCode_enter=Voer de 6-cijferige verificatiecode in.
+vpnc_ssk_login_AuthCode_confirm=Geen verificatiecode ontvangen? Klik hierboven op "Opnieuw verzenden"; we sturen u een nieuwe verificatiecode.
+vpnc_ssk_login_AuthCode_resender=Opnieuw verzenden beschikbaar over %1$@s
+vpnc_ssk_login_ErrMsg1=Onjuist account of wachtwoord.
+vpnc_ssk_login_ErrMsg2=Surfshark-server is niet beschikbaar. Probeer het later opnieuw.
+vpnc_ssk_login_ErrMsg4=Configuratiefout. Controleer uw instellingen.
+vpnc_ssk_login_ErrMsg41=Configuratiefout.
+vpnc_ssk_login_ErrMsg5=Netwerkfout. Kan Surfshark niet bereiken.
+vpnc_ssk_login_ErrMsgDef=Aanmelden mislukt. Probeer het opnieuw.
+vpnc_ssk_login_success=Succesvol aangemeld bij Surfshark.
+vpnc_ssk_login_success_note=Close this notice and complete your VPN settings.
+vpnc_ssk_logout_confirm=Weet u zeker dat u zich wilt afmelden bij uw account?
+vpnc_ssk_Failed_resend=Opnieuw verzenden van code mislukt. Probeer het opnieuw.
+vpnc_ssk_Failed_verification=Ongeldige verificatiecode. Probeer het opnieuw.
+vpnc_ssk_KeyPair_max=Uw Surfshark-account heeft het maximale aantal VPN-sleutelparen (50) bereikt. Verwijder ongebruikte sleutelparen uit uw Surfshark-account om een nieuwe VPN-verbinding te maken en probeer het daarna opnieuw.
+vpnc_ssk_Missing_credent=Inloggegevens ontbreken. Sluit de app en meld u opnieuw aan.
+vpnc_ssk_Timeout_login=Time-out bij aanmeldingsverzoek. Probeer het opnieuw.
+vpnc_ssk_Timeout_resend=Time-out bij opnieuw verzenden. Probeer het opnieuw.
+vpnc_ssk_Timeout_verification=Time-out bij verificatieverzoek. Probeer het opnieuw.
+vpnc_ssk_Timeout_network=Netwerkfout. Probeer het opnieuw.
 vpnc_step=Om een VPN-verbinding te starten, volgt u de onderstaande stappen:
 vpnc_step1=Profiel toevoegen
 vpnc_step2=Selecteer een VPN-verbindingstype.
@@ -4359,6 +4430,7 @@ vpnc_step3=Voer de VPN-verificatiegegevens in die u van uw VPN-provider hebt ont
 vpnc_title=VPN-client
 vpnc_peer=Peer
 vpnc_pppoe_dis_nat_confirm=Wanneer u een VPN-client met een PPPoE-verbinding gebruikt, zal uw router automatisch opnieuw opstarten om de NAT-acceleratie uit te schakelen. Weet u zeker dat u wilt doorgaan?
+vpnc_kill_switch_desc=If enabled, this feature blocks all internet traffic instantly if the VPN drops to prevent IP and data leaks. Connection will be suspended until the VPN successfully reconnects or the feature is disabled.
 WAN_barrier=Slagboom
 WAN_Cfg_Ethernet_WAN=Configureer de ethernet WAN-instellingen van ZVMODELVZ.
 WAN_default_route=Standaardroute
@@ -4423,7 +4495,7 @@ WANTCPMSSOptionText=TCP MSS-optie
 WANTCPMSSOptionComm1Text=bytes
 WANVLANIDText=VLAN-ID
 WANAggregation=WAN aggregation
-WANAggregation_desc=WAN-aggregatie combineert twee netwerkverbindingen om uw WAN-snelheid te verhogen tot 2Gbps. Sluit de #WAN-poort en de LAN 4-poort van uw router aan om de LAN-poorten van uw modem (zorg dat u twee kabels met dezelfde specificatie gebruikt). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ WAN-aggregatie</a>
+WANAggregation_desc=WAN-aggregatie combineert twee netwerkverbindingen om uw WAN-snelheid te verhogen tot 2Gbps. Sluit de #WAN-poort en de LAN 4-poort van uw router aan om de LAN-poorten van uw modem (zorg dat u twee kabels met dezelfde specificatie gebruikt). <a id="wanAgg_faq" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">FAQ WAN-aggregatie</a>
 WANAggregation_enable=WAN-aggregatie inschakelen
 WANAggregation_disable_dualwan=Dual WAN is ingeschakeld op uw router. Door WAN-aggregatie in te schakelen, wordt dual WAN uitgeschakeld. Weet u zeker dat u wilt doorgaan?
 WANAggregation_disable_WANAggregation=WAN-aggregatie is ingeschakeld op uw router. Door Dual WAN in te schakelen, wordt WAN-aggregatie uitgeschakeld. Weet u zeker dat u wilt doorgaan?
@@ -4432,13 +4504,13 @@ WANAggregation_PortConflict_hint2=IPTV gebruikt de LAN 4-poort van uw router. Do
 WANAggregation_disable_IPTVDualWAN=Zowel dual WAN als IPTV zijn ingeschakeld op uw router. Door WAN-aggregatie in te schakelen, worden dual WAN en IPTV uitgeschakeld. om poortconflicten te vermijden. Weet u zeker dat u wilt doorgaan?
 WANAggregation_help_WAN=Zorg dat de #WAN-poort van uw router en de LAN-poort van uw modem zijn aangesloten met twee kabels met dezelfde specificatie.
 WANAggregation_help_LAN=Zorg dat de LAN 4-poort van uw router en de LAN-poort van uw modem zijn aangesloten met twee kabels met dezelfde specificatie.
-WANAggregation_goto_WAN=Ga naar de pagina <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-internetverbinding</a> om WAN-aggregatie in te schakelen.
+WANAggregation_goto_WAN=Ga naar de pagina <a href="Advanced_WAN_Content.asp" style="color:var(--wrt-badge-warning-color,#FFCC00);text-decoration:underline;">WAN-internetverbinding</a> om WAN-aggregatie in te schakelen.
 WANAggregation_help_desc=Als de instelling van de WAN-aggregatie mislukt, volgt u de onderstaande stappen om opnieuw te proberen.
 WANAggregation_help_step1=Zorg dat de LAN-poorten van uw modem al met kabels zijn verbonden met #WAN en LAN 4 van uw router.
 WANAggregation_help_step2=Zorg dat uw modem 802.3ad heeft ingeschakeld
 WANAggregation_help_step3=Controleer of u twee kabels met dezelfde specificaties gebruikt (gigabit & gigabit of 10/100& 10/100Mbps)
 WANAggregation_help_step4=Start uw router opnieuw op
-WANAggregation_help_final=Als de bovenstaande stappen mislukken, moet u dit probleem melden op de <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS-ondersteuningssite</a>.
+WANAggregation_help_final=Als de bovenstaande stappen mislukken, moet u dit probleem melden op de <a href='https://www.asus.com/support/' target='_blank' style='color:var(--wrt-text-color,#000);text-decoration:underline;'>ASUS-ondersteuningssite</a>.
 WANAggregation_wanType_hint=WAN-aggregatie biedt geen ondersteuning voor WAN-types, zoals PPPoE, PPTP en L2TP. Als uw WAN-type wijzigt naar PPPoE, PPTP of L2TP, wordt de WAN-aggregatie automatisch uitgeschakeld. Weet u zeker dat u wilt doorgaan?
 WebGUI_issue=De firmwarepagina kan niet worden geopend
 wechat=WeChat
@@ -4546,8 +4618,8 @@ WLANConfig11b_display31_sectiondesc=Selecteer de modus [WDS Only] (Alleen WDS) o
 WLANConfig11b_display32_sectiondesc=Controleer of deze draadloze router en het toegangspunt waarmee u verbinding wilt maken, hetzelfde kanaal gebruiken.
 WLANConfig11b_display33_sectiondesc=Voer het externe AP-mac in de lijst met externe toegangspunten in en open de WDS-beheerinterface van het AP. Voer dan het MAC-adres van deze router in.
 WLANConfig11b_display34_sectiondesc=Ga voor de beste prestaties naar Advanced Settings > Wireless > General (Geavanceerde instellingen > Draadloos > algemeen) in en wijs dezelfde kanaalbandbreedte, het controlekanaal en het uitbreidingskanaal toe aan elke router in het netwerk.
-WLANConfig11b_display41_sectiondesc=U gebruikt momenteel de automatische kanaalbandbreedte. Klik <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">hier</a> om te wijzigen.
-WLANConfig11b_display42_sectiondesc=U gebruikt momenteel het automatische kanaal. Klik <a style="font-size:13px;font-family: Lucida Console;color:#FC0;text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">hier</a> om te wijzigen.
+WLANConfig11b_display41_sectiondesc=U gebruikt momenteel de automatische kanaalbandbreedte. Klik <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_bw">hier</a> om te wijzigen.
+WLANConfig11b_display42_sectiondesc=U gebruikt momenteel het automatische kanaal. Klik <a style="font-size:13px;font-family: Lucida Console;color:var(--wrt-badge-warning-color,#FC0);text-decoration:underline;" href="/Advanced_Wireless_Content.asp?af=wl_channel">hier</a> om te wijzigen.
 WLANConfig11b_display5_sectiondesc=Via de draadloze professionele instelling kunt u extra parameters instellen voor draadloos. Maar standaardwaarden zijn aanbevolen.
 WLANConfig11b_display6_sectiondesc=WPS (WiFi Protected Setup) biedt een eenvoudige en veilige manier voor het tot stand brengen van een draadloos netwerk. U kunt hier WPS configureren via de pincode of de WPS-knop.
 WLANConfig11b_EChannel_acs_ch13=Auto select channel including channel 12, 13
@@ -4605,6 +4677,7 @@ WLANConfig11b_x_APMode_option2=Hybride
 WLANConfig11b_x_APSD_itemdesc=WMM APSD (Automatic Power Save Delivery) in- of uitschakelen.
 WLANConfig11b_x_APSD_itemname=WMM APSD inschakelen
 WLANConfig11b_x_Airtime_Fairness=Airtime Fairness
+WLANConfig11b_x_ApplyAllBands_hint=Deze aanpassing wordt toegepast op alle bandinstellingen.
 WLANConfig11b_x_Airtime_Fairness_itemdesc=Provide Airtime Fairness between multiple links
 WLANConfig11b_x_Auto=De draadloze modus moet worden ingesteld op Auto.
 WLANConfig11b_x_Beacon_itemdesc=Bakeninterval staat voor de periode tussen het ene baken en het volgende. De standaardwaarde is 100 (de eenheid is milliseconde, of 1/1000 seconde). Verlaag het Bakeninterval om de overdrachtprestaties te verbeteren in een onstabiele omgeving of voor het roamen van clients, maar dit zal energie verbruiken.
@@ -4701,11 +4774,11 @@ WLANConfig11b_x_WPSMode_itemdesc=Bij het selecteren van de PIN (Personal Informa
 WLANConfig11b_x_WPSMode_itemname=WPS-methode:
 WLANConfig11b_x_WPSPIN_itemdesc=Voer een achtcijferig getal in voor de pincode van de client.<p>
 WLANConfig11b_x_WPSPIN_itemname=Pincode client
-WLANConfig11n_Auto_note=[Auto] is niet compatibel met de verificatiemethode van het huidige gastnetwerk (TKIP of WEP). Ga naar <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Guest Network (Gastnetwerk)</a> en wijzig de verificatiemethode.
+WLANConfig11n_Auto_note=[Auto] is niet compatibel met de verificatiemethode van het huidige gastnetwerk (TKIP of WEP). Ga naar <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Guest Network (Gastnetwerk)</a> en wijzig de verificatiemethode.
 WLANConfig11n_automode_limition_hint=Onder de modus Auto met de WEP- of TKIP-codering, ondersteunt ZVMODELVZ de maximale overdrachtsnelheid van 54Mbps.
 WLANConfig11n_automode_limition_hint1=Wijzig naar WPA2-Personal.
-WLANConfig11n_NAC_note=[N+AC] is niet compatibel met de verificatiemethode van het huidige gastnetwerk (TKIP of WEP). Ga naar <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Gastnetwerk</a> en wijzig de verificatiemethode.
-WLANConfig11n_NOnly_note=[N Only] (Alleen N) is niet compatibel met de verificatiemethode van het huidige gastnetwerk (TKIP of WEP). Ga naar <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">Gastnetwerk</a> en wijzig de verificatiemethode.
+WLANConfig11n_NAC_note=[N+AC] is niet compatibel met de verificatiemethode van het huidige gastnetwerk (TKIP of WEP). Ga naar <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Gastnetwerk</a> en wijzig de verificatiemethode.
+WLANConfig11n_NOnly_note=[N Only] (Alleen N) is niet compatibel met de verificatiemethode van het huidige gastnetwerk (TKIP of WEP). Ga naar <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:var(--wrt-badge-warning-color,#FFCC00);font-family:Lucida Console;text-decoration:underline;">Gastnetwerk</a> en wijzig de verificatiemethode.
 WLANConfig11ax_AXOnly_note=By enabling AX only mode, if devices do not support 802.11ax(WiFi 6), will not able to connect to this band.
 WLANConfig11n_PremblesType_itemdesc=Het Preamble-type definieert de lengte van het CRC-blok (Cyclic Redundancy Check). Dit is een techniek voor het detecteren van gegevensoverdrachtfouten tussen draadloze apparaten. Wij raden u aan alle draadloze apparaten te configureren voor hetzelfde preamble-type. Gebruik een korte preamble voor draadloze apparaten in gebieden met een druk netwerkverkeer. Gebruik een lange preamble voor oudere draadloze apparaten.
 WLANConfig11n_PremblesType_itemname=802.11b mode
@@ -4823,7 +4896,21 @@ Captive_Portal_Above=boven
 Captive_Portal_Selected_Color=Geselecteerde kleur
 Captive_Portal_Local=Lokaal
 Configuration=Configuratie
+Configuration_dark_mode=Donker
+Configuration_light_mode=Licht
+Configuration_theme=Thema
+Configuration_fancy_theme=Stijlvol
+Configuration_flat_theme=Plat
 Continuous_Mode=continue modus
+View_Details=Details bekijken
+NetworkMap_Clients=Clients
+NetworkMap_Guest_Clients=Gastclients
+NetworkMap_Add_AiMesh_Hint=Voeg meer AiMesh-knooppunten toe om het bereik van uw WiFi uit te breiden.
+Dashboard_Show_more=Meer weergeven
+Dashboard_Show_less=Minder weergeven
+Dashboard_Expand=Uitvouwen
+Dashboard_Refreshing=Bezig met vernieuwen
+Dashboard_Last_updated=Laatst bijgewerkt
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Toegangsbeleid
 FreeWiFi_AccountSetting_desc1=Account Setting (Accountinstelling) is een eenvoudige configuratie voor een gastaccount waarmee u de gastaccountdatabase kunt onderhouden voor het beschermen van uw gastnetwerk. De gekoppelde client moet de volgende account en het wachtwoord invoeren voordat internettoegang mogelijk is.
@@ -4953,8 +5040,8 @@ AURA_Event_Note=Opmerking: na het selecteren van de gebeurtenis, toont het syste
 AURA_Scheme_Marquee=Selectiekader
 AURA_Scheme_Gradient=Verloop
 AURA_Scheme_Evolution=Ontwikkeling
-UU_Accelerator=网易 UU 加速器
-UU_Accelerator_desc=UU 路由器插件为三大主机（PS4、Switch、Xbox One）、PC 外服端游提供加速。可实现多设备同时加速，畅享全球联机超快感！
+UU_Accelerator=UU 加速器
+UU_Accelerator_desc=UU 加速器为全平台主机（PlayStation、Xbox、Switch、Steam Deck、ROG掌机等）、PC、手机提供游戏加速服务，可实现多设备同时加速，畅享全球联机超快感！
 weekSche_All_Day=Hele dag
 weekSche_Start_Time=Begintijd
 weekSche_End_Time=Eindtijd
@@ -5075,12 +5162,39 @@ Notice_Message_2=Vanwege systeemoptimalisatie voegt u de bestaande MAC-filter op
 Notice_Message_3=Ik heb het gelezen, niet opnieuw tonen.
 CTL_Decline=Weigeren
 Outdoor_desc_title=Warning
-Outdoor_desc1=By enabling outdoor mode, AiMesh will be limited and might cause mesh node disconnect.
-Outdoor_desc2=In compliance with regulations, the system will scan channels for about 1 minute to avoid weather radar interference. If radar signals are detected, it will switch to 2.4GHz, causing brief disconnection. The affected channel will be blocked for 30 minutes.
-WiFi_Channel=Wi-Fi-kanaal
+Outdoor_active_desc_1=Bij het inschakelen van de buitenmodus wordt AiMesh beperkt en kan het mesh-knooppunt worden losgekoppeld.
+Outdoor_active_desc_2=Om aan de regelgeving te voldoen, scant het systeem ongeveer 1 minuut lang de kanalen om interferentie door weersradar te vermijden. <span style="color:var(--wrt-badge-warning-color,#FC0)">Als er radarsignalen worden gedetecteerd, schakelt het over naar 2.4GHz, wat een korte onderbreking veroorzaakt. Het getroffen kanaal wordt 30 minuten geblokkeerd.</span>
+Outdoor_active_desc_3=De buitenmodus ondersteunt alleen de Router- en AP-modi.
+Outdoor_active_desc_4=Beschikbare buitenkanalen variëren per land/regio.
+Outdoor_inactive_desc_1=Het uitschakelen van deze modus zal het draadloze netwerk kort herstarten en alle apparaten loskoppelen.
+Outdoor_inactive_desc_2=Het systeem schakelt over naar instellingen die voldoen aan de binnenvoorschriften.
+Outdoor_mode=Buitenmodus
+Outdoor_mode_off=Uit
+Outdoor_status=Buitenstatus
+Outdoor_status_hint=Er is een buitenshuis apparaat gedetecteerd. Om legale werking volgens draadloze regelgeving te garanderen, zijn je 5G-kanalen nu beperkt tot het voor buitengebruik goedgekeurde bereik.
+WiFi_Channel=WiFi-kanaal
 Channel_In_Use=Kanaal in gebruik
-OtherWifi_Interference=Wi-Fi-interferentie
-NonWifi_Interference=Niet-Wi-Fi-interferentie
+Wifi_Auto_Refresh=Automatisch vernieuwen
+Wifi_Detect_Interference=Interferentie detecteren
+Wifi_Interference=Interferentie
+Wifi_in_ch_Interference=Interferentie op kanaal
+Wifi_specscan_Interference=Spectrumscan-interferentie
+Wifi_specscan_hint=Spectruminterferentiescan dekt alleen 2.4GHz en 5GHz banden.
+OtherWifi_Interference=Overige WiFi-interferentie
+NonWifi_Interference=Niet-WiFi-interferentie
+WiFi_Optimized_auto=Automatisch geoptimaliseerd
+WiFi_Optimized=Geoptimaliseerd
+WiFi_INIT=Initiële automatische selectie
+WiFi_After_Boot=Automatische selectie na herstart
+WiFi_Boot=Opstarten
+WiFi_Adaptive_bw=Adaptieve bandbreedte
+WiFi_CSA_Expand=Uitvouwen
+WiFi_CSA_Reduce=Inkrimpen
+WiFi_DFS_REENTRY=DFS-HERINTREDING
+WiFi_ch_conflict=Kanaalconflict
+WiFi_Regulatory=Regelgeving
+WiFi_OFF=WiFi Uit
+WiFi8_6G_enable_hint=6 GHz werkt momenteel in de WiFi 7-modus. Schakel "WiFi 8" in onder de Wireless Professional-instellingen van 6 GHz om WiFi 8 te activeren.
 Vendor=Fabrikant
 Connected_AP=Verbonden AP
 Network_SDN=Netwerk(SDN)

@@ -472,19 +472,26 @@ int upload_server_ipsec_cert_cgi()
 				"svrKey.pem",
 				NULL
 			};
-			snprintf(cmd, sizeof(cmd), "tar -xzf %s -C %s", IPSEC_UPLOAD_FILE, IPSEC_UPLOAD_FLODER);
-			system(cmd);
+			snprintf(cmd, sizeof(cmd), "tar -tzvf %s 2>/dev/null | grep -q ' -> '", IPSEC_UPLOAD_FILE);
+			if (system(cmd) == 0) {
+				/* archive contains a symlink/hardlink entry; a legitimate IPsec cert
+				 * archive never has one, reject to avoid extraction escaping IPSEC_UPLOAD_FLODER */
+				logmessage("httpd", "upload_server_ipsec_cert_cgi: reject archive containing symlink/hardlink entry");
+			} else {
+				snprintf(cmd, sizeof(cmd), "tar -xzf %s -C %s", IPSEC_UPLOAD_FILE, IPSEC_UPLOAD_FLODER);
+				system(cmd);
 
-			for (i = 0; i < ARRAY_SIZE(lists) && lists[i] != NULL; ++i) {
-				memset(file_path, 0, sizeof(file_path));
-				snprintf(file_path, sizeof(file_path), "%s/%s", IPSEC_UPLOAD_FLODER, lists[i]);
-				if(check_if_file_exist(file_path)) {
-					eval("mv", "-f", file_path, JFFS_CA_FILES);
+				for (i = 0; i < ARRAY_SIZE(lists) && lists[i] != NULL; ++i) {
+					memset(file_path, 0, sizeof(file_path));
+					snprintf(file_path, sizeof(file_path), "%s/%s", IPSEC_UPLOAD_FLODER, lists[i]);
+					if(check_if_file_exist(file_path)) {
+						eval("mv", "-f", file_path, JFFS_CA_FILES);
+					}
 				}
+				ret = HTTP_OK;
+				notify_rc("ipsec_restart");
+				sync_profile_update_time(2);
 			}
-			ret = HTTP_OK;
-			notify_rc("ipsec_restart");
-			sync_profile_update_time(2);
 		}
 	}
 

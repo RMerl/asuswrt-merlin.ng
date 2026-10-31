@@ -1963,6 +1963,9 @@ obj-$(HND_ROUTER) += fcctl
 obj-$(HND_ROUTER) += fcctl_lib
 obj-$(HND_ROUTER) += scripts
 #obj-$(HND_ROUTER) += stress
+ifeq ($(BUILD_MEMTESTER),y)
+obj-$(HND_ROUTER) += memtester
+endif
 obj-$(HND_ROUTER) += vpmstats
 obj-$(HND_ROUTER) += bcm_boot_launcher
 obj-$(HND_ROUTER) += bdmf_shell
@@ -4227,7 +4230,7 @@ dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTL
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP) \
 		$(if $(RTCONFIG_DNSSEC_OPENSSL),-I$(TOP)/openssl/include -DHAVE_DNSSEC,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-I$(TOP)/nettle/include -I$(TOP)/gmp -DHAVE_DNSSEC -DHAVE_DNSSEC_STATIC -DNO_GOST,)" \
-	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS) -std=gnu99 \
+	CFLAGS="-Os -ffunction-sections -DASUSWRT -fdata-sections $(EXTRACFLAGS) -std=gnu99 \
 		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-I$(TOP)/shared -I$(SRCBASE)/include -D$(MODEL),)" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS) \
 		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm,) \
@@ -9040,10 +9043,21 @@ wget/Makefile: wget/Makefile.in
 		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(STAGEDIR)/usr/lib -pthread"
 
 wget: openssl zlib wget/Makefile
+ifeq ($(AUTOMAKE_117),yes)
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
+else
+	$(MAKE) -C $@ $(PARALLEL_BUILD) ACLOCAL=true \
+          AUTOMAKE=true \
+          AUTOCONF=true \
+          AUTOHEADER=true
+endif
 
 wget-clean:
+ifeq ($(AUTOMAKE_117),yes)
 	[ ! -f wget/Makefile ] || $(MAKE) -C wget distclean
+else
+	[ ! -f wget/Makefile ] || $(MAKE) -C wget clean
+endif
 	@rm -f wget/Makefile
 
 wget-install:
@@ -10877,6 +10891,22 @@ stress:
 	$(MAKE) -C $(TOPX_DIR)
 
 .PHONY : stress
+
+ifeq ($(BUILD_MEMTESTER),y)
+memtester:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+.PHONY : memtester
+
+# The generic %-clean rule skips packages that only exist under
+# $(TOP_PLATFORM), so provide an explicit clean rule here.
+memtester-clean:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/memtester) $(wildcard memtester)))
+	-@[ ! -d "$(TOPX_DIR)" ] || $(MAKE) -C $(TOPX_DIR) clean
+
+.PHONY : memtester-clean
+endif
 
 vpmstats:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))

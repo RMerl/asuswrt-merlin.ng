@@ -977,25 +977,25 @@ int rtk_get_wps_result(char* result_file,rtk_wps_result* res)
 			}
 			if(strncmp(token,"AUTH_TYPE",strlen("AUTH_TYPE")) == 0)
 			{
-				res->auth_type = atoi(value);
+				res->auth_type = safe_atoi(value);
 				TRACE_PT("auth_type:%d\n",res->auth_type);
 				continue;
 			}
 			if(strncmp(token,"ENCRYPT",strlen("ENCRYPT")) == 0)
 			{
-				res->encrypt = atoi(value);
+				res->encrypt = safe_atoi(value);
 				TRACE_PT("ENCRYPT:%d\n",res->encrypt);
 				continue;
 			}
 			if(strncmp(token,"WSC_AUTH",strlen("WSC_AUTH")) == 0)
 			{
-				res->wsc_auth = atoi(value);
+				res->wsc_auth = safe_atoi(value);
 				TRACE_PT("WSC_AUTH:%d\n",res->wsc_auth);
 				continue;
 			}
 			if(strncmp(token,"WPA_AUTH",strlen("WPA_AUTH")) == 0)
 			{
-				res->wpa_auth = atoi(value);
+				res->wpa_auth = safe_atoi(value);
 				TRACE_PT("WPA_AUTH:%d\n",res->wpa_auth);
 				continue;
 			}
@@ -1007,7 +1007,7 @@ int rtk_get_wps_result(char* result_file,rtk_wps_result* res)
 			}
 			if(strncmp(token,"PSK_FORMAT",strlen("PSK_FORMAT")) == 0)
 			{
-				res->psk_format = atoi(value);
+				res->psk_format = safe_atoi(value);
 				TRACE_PT("PSK_FORMAT:%d\n",res->psk_format);
 				continue;
 			}
@@ -1019,25 +1019,25 @@ int rtk_get_wps_result(char* result_file,rtk_wps_result* res)
 			}
 			if(strncmp(token,"WPA_CIPHER_SUITE",strlen("WPA_CIPHER_SUITE")) == 0)
 			{
-				res->wpa_suite = atoi(value);
+				res->wpa_suite = safe_atoi(value);
 				TRACE_PT("WPA_CIPHER_SUITE:%d\n",res->wpa_suite);
 				continue;
 			}
 			if(strncmp(token,"WPA2_CIPHER_SUITE",strlen("WPA2_CIPHER_SUITE")) == 0)
 			{
-				res->wpa2_suite = atoi(value);
+				res->wpa2_suite = safe_atoi(value);
 				TRACE_PT("WPA2_CIPHER_SUITE:%d\n",res->wpa2_suite);
 				continue;
 			}
 			if(strncmp(token,"WEP",strlen("WEP")) == 0)
 			{
-				res->wep = atoi(value);
+				res->wep = safe_atoi(value);
 				TRACE_PT("wep:%d\n",res->wep);
 				continue;
 			}
 			if(strncmp(token,"WSC_ENC",strlen("WSC_ENC")) == 0)
 			{
-				res->wsc_enc = atoi(value);
+				res->wsc_enc = safe_atoi(value);
 				TRACE_PT("WSC_ENC:%d\n",res->wsc_enc);
 				continue;
 			}
@@ -1942,7 +1942,7 @@ int qca_set_wps_result(int config_index, int band)
 		nvram_set(tmp_str, wlc_s->wep_key);
 
 		sprintf(tmp_str, "wlc_key");
-		sprintf(tmp, "%d", atoi(wlc_s->wep_tx_keyidx) + 1);
+		sprintf(tmp, "%d", safe_atoi(wlc_s->wep_tx_keyidx) + 1);
 		nvram_set(tmp_str, tmp);
 	}
 
@@ -2715,7 +2715,7 @@ static void handle_eject_usb_button(void)
 			sprintf(nv, "btn_ejusb%d_gpio", i + 1);
 			if (!(gpio = nvram_get(nv)))
 				continue;
-			if (((v = atoi(gpio)) & GPIO_PIN_MASK) == GPIO_PIN_MASK)
+			if (((v = safe_atoi(gpio)) & GPIO_PIN_MASK) == GPIO_PIN_MASK)
 				continue;
 
 			nr_ejusb_btn++;
@@ -4566,7 +4566,7 @@ void btn_check(void)
 			char *plc_pb_state = nvram_get("plc_pb_state");
 			int pb_state;
 			if (plc_pb_state != NULL)
-				pb_state = atoi(plc_pb_state);
+				pb_state = safe_atoi(plc_pb_state);
 			else
 				pb_state = -1;
 
@@ -5271,7 +5271,7 @@ end_of_wl_sched:
 					f_read_string("/tmp/reboot", reboot, sizeof(reboot));
 					f_read_string("/tmp/upgrade", upgrade, sizeof(upgrade));
 
-					if (atoi(reboot) || atoi(upgrade))
+					if (safe_atoi(reboot) || safe_atoi(upgrade))
 						return;
 
 					nvram_set("sys_reboot_reason", "rbt_scheduler");
@@ -8551,7 +8551,7 @@ void modem_flow_check(int modem_unit) {
 	putenv(env_unit);
 
 	if (data_save_sec == 0)
-		data_save_sec = atoi(nvram_default_get("modem_bytes_data_save"));
+		data_save_sec = safe_atoi(nvram_default_get("modem_bytes_data_save"));
 	count = data_save_sec/30;
 	modem_data_save = (modem_data_save+1)%count;
 	if (!modem_data_save) {
@@ -9858,7 +9858,7 @@ void cfgsync_check()
 	f_read_string("/tmp/reboot", reboot, sizeof(reboot));
 	f_read_string("/tmp/upgrade", upgrade, sizeof(upgrade));
 	
-	if (atoi(reboot) || atoi(upgrade))
+	if (safe_atoi(reboot) || safe_atoi(upgrade))
 		return;
 
 	if (repeater_mode() || mediabridge_mode() || psr_mode())
@@ -9895,7 +9895,7 @@ void cfgsync_check()
 			}
 			else if (f_read_string("/var/run/cfg_client.pid", value, sizeof(value)) > 0)
 			{
-				pid_by_file = atoi(value);
+				pid_by_file = safe_atoi(value);
 				extern pid_t get_pid_by_process_name(char *name);
 				pid_by_name = get_pid_by_process_name("cfg_client");
 				if (pid_by_file > 0 && pid_by_name > 0 && pid_by_file != pid_by_name) {
@@ -10887,7 +10887,7 @@ void fan_check()
 			{
 				tmp++;
 				p = tmp;
-				tTempe = atoi(p);
+				tTempe = safe_atoi(p);
 				if(preTempe != tTempe)
 					set_fan(tTempe);
 			}
@@ -10899,7 +10899,7 @@ void fan_check()
 			{
 				tmp++;
 				p = tmp;
-				tTempe = atoi(p);
+				tTempe = safe_atoi(p);
 				if(preTempe != tTempe)
 					set_fan(tTempe);
 			}

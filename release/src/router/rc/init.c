@@ -1987,7 +1987,7 @@ misc_defaults(int restore_defaults)
 	// only be unset at boot. }
 
 #ifndef RTCONFIG_INTERNAL_GOBI
-	int sim_num = atoi(nvram_safe_get("modem_sim_num"));
+	int sim_num = safe_atoi(nvram_safe_get("modem_sim_num"));
 	for(i = 1; i <= sim_num; ++i){
 		snprintf(prefix, 32, "modem_sim_imsi%d", i);
 		nvram_unset(prefix);
@@ -2988,7 +2988,7 @@ static int console_init(void)
 	int noconsole = 1;
 
 	if (f_read_string("/proc/environment/noconsole", value, sizeof(value)) > 0)
-		noconsole = atoi(value);
+		noconsole = safe_atoi(value);
 
 	if (!noconsole)
 		nvram_set("noconsole", "0");
@@ -4074,6 +4074,21 @@ void init_ahs_bhc_params(void)
 		nvram_set("ahs_bhc_log_ext", "A");
 	}
 }
+
+void init_ahs_dhcp_params(void)
+{
+	nvram_set("ahs_dhcp_sent", "0");
+	if(nvram_match("ahs_dhcp_log_ext", "A"))
+	{
+		//Change from A to B
+		nvram_set("ahs_dhcp_log_ext", "B");
+	}
+	else
+	{
+		//Change from B or NULL to A
+		nvram_set("ahs_dhcp_log_ext", "A");
+	}
+}
 #endif /* RTCONFIG_AHS */
 #endif /* RTCONFIG_FRS_LIVE_UPDATE */
 
@@ -4175,7 +4190,7 @@ int init_nvram(void)
 #ifdef RTCONFIG_USB
 
 #ifdef RTCONFIG_USB_XHCI
-	usb_usb3 = atoi(nvram_get("usb_usb3")? : nvram_default_get("usb_usb3")? : "0");
+	usb_usb3 = safe_atoi(nvram_get("usb_usb3")? : nvram_default_get("usb_usb3")? : "0");
 #endif
 #endif
 
@@ -21068,6 +21083,16 @@ int init_nvram(void)
 		if(!strncmp(nvram_safe_get("territory_code"), "JP", 2)){
 			add_rc_support("jp_od");
 		}
+
+		// RT-BE57_Go: disable 2.4G BE/AX (AC mode only)
+		if (!strcmp(get_productid(), "RT-BE57_Go")) {
+			_dprintf("%s: RT-BE57_Go detected, disabling wl0_11be and wl0_11ax\n", __func__);
+			nvram_set("wl0_11be", "0");
+			nvram_set("wl0_11ax", "0");
+#if defined(RTCONFIG_MLO) && !defined(RTCONFIG_MULTILAN_MWL)
+			nvram_set("mlo_fh_ap_bss", "0");  // Disable MLO FH for RT-BE57_Go
+#endif
+		}
 		break;
 #endif
 
@@ -22851,6 +22876,14 @@ int init_nvram(void)
 #ifdef RTCONFIG_DUALWAN // RTCONFIG_DUALWAN
 	add_rc_support("dualwan");
 
+#ifdef RTCONFIG_HND_WISP_DUALWAN
+	/* WISP dual-WAN (wan=WiFi STA, secondary=eth1 wan2 or usb backup).  Expose
+	 * eth1 as a selectable "wan2" in the dual-WAN WebUI and advertise the feature
+	 * token so the UI can show the "prefer secondary WAN" option (wisp_secwan_first). */
+	add_wanscap_support("wan2");
+	add_rc_support("wisp_dualwan");
+#endif
+
 #ifdef RTCONFIG_WANPORT2
 #if defined(GTAXY16000) || defined(RTAX89U)
 	if (is_aqr_phy_exist())
@@ -24128,6 +24161,7 @@ int init_nvram2(void)
 #ifdef RTCONFIG_FRS_LIVE_UPDATE
 #ifdef RTCONFIG_AHS
 	init_ahs_bhc_params();
+	init_ahs_dhcp_params();
 #endif /* RTCONFIG_AHS */
 #endif /* RTCONFIG_FRS_LIVE_UPDATE */
 
@@ -24404,7 +24438,7 @@ build_ifnames(char *type, char *names, int *size)
 			if (!strncmp(name, "wl", 2)) {
 				if (wl_probe(ifr.ifr_name) ||
 				    wl_ioctl(ifr.ifr_name, WLC_GET_INSTANCE, &unit, sizeof(unit)) ||
-				    unit != atoi(&name[2]))
+				    unit != safe_atoi(&name[2]))
 					continue;
 			}
 			/* et/il: use mac addr to identify et/il */
@@ -24542,7 +24576,7 @@ fa_mode_init()
 {
 	fa_mode_adjust();
 
-	fa_mode = atoi(nvram_safe_get("ctf_fa_mode"));
+	fa_mode = safe_atoi(nvram_safe_get("ctf_fa_mode"));
 	switch (fa_mode) {
 		case CTF_FA_BYPASS:
 		case CTF_FA_NORMAL:
@@ -24700,9 +24734,9 @@ doSystem("dd if=/dev/mtdblock2 of=/tmp/wifi1.caldata bs=32 count=377 skip=640");
 static void start_hw_wdt(void)
 {
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
-	int wdt = nvram_get("watchdog_new") ? atoi(nvram_safe_get("watchdog_new")) : atoi(nvram_default_get("watchdog_new"));
+	int wdt = nvram_get("watchdog_new") ? safe_atoi(nvram_safe_get("watchdog_new")) : safe_atoi(nvram_default_get("watchdog_new"));
 #else
-	int wdt = nvram_get("watchdog") ? atoi(nvram_safe_get("watchdog")) : atoi(nvram_default_get("watchdog"));
+	int wdt = nvram_get("watchdog") ? safe_atoi(nvram_safe_get("watchdog")) : safe_atoi(nvram_default_get("watchdog"));
 #endif
 
 	/* arm the hw watchdog timer */
@@ -25608,7 +25642,7 @@ def_boot_reinit:
 	init_nvram();  // for system indepent part after getting model
 
 #if defined(RTCONFIG_MULTILAN_CFG)
-	apmx_apgx_to_wlxy();
+	sync_apgx_to_wlunit(NULL);
 #endif
 
 #ifdef RTCONFIG_JFFS_NVRAM
@@ -25774,7 +25808,7 @@ def_boot_reinit:
 {
 	extern void usb3_enable(int en);
 	if (nvram_get("usb_usb3")) {
-		usb3_enable(atoi(nvram_get("usb_usb3")));
+		usb3_enable(safe_atoi(nvram_get("usb_usb3")));
 	}
 }
 #endif
@@ -25808,6 +25842,13 @@ def_boot_reinit:
 		nvram_set("ipv6_service", "ipv6pt");
 	}
 	nvram_set("s46_mapsvr_id", "");
+
+	int unit;
+	if(!nvram_match("extendno_org", nvram_safe_get("extendno"))){
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			s46reset(unit);
+		}
+	}
 #endif
 
 #ifdef RTCONFIG_PC_SCHED_V2
@@ -26649,6 +26690,27 @@ logmessage("ATE", "boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),
 			start_vlan();
 #endif
 			start_wan();
+#if defined(RTBE58_GO)
+			/*
+			 * RT-BE58_GO WISP: start_wan() brings up wl1 (== wan0 in
+			 * WISP), and that WLC_UP makes the driver's macgen re-derive
+			 * every 5G AP-VIF cur_etheraddr to the wrong A2 BSSID,
+			 * clobbering the correct BA set earlier.  Re-assert BA here,
+			 * after the last WLC_UP in the boot path, so the 5G AP VIFs
+			 * beacon on BA and accept clients without a restart_wireless.
+			 */
+			wl1_reassert_vif_bssid();
+#endif
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+			/* WISP dual-WAN: start_lan_wl()->wisp_dualwan_reassert() does NOT
+			 * run on a normal boot (restart_wireless only fires under
+			 * restore_defaults_g), so a USB-backup config leaves eth1 in br0
+			 * (reconfig keeps eth1 in the LAN list for the usb token) and eth1 is
+			 * never marked a WAN port.  Run the reassert here too -- after
+			 * start_wan() (switch + br0 up) -- to pull eth1 out of br0 and
+			 * ethswctl-mark it WAN whenever a secondary WAN exists. */
+			wisp_dualwan_reassert();
+#endif
 
 /* separate from original workaround for XT8_V2 / XT9 etc. */
 #if !defined(XT8PRO) && !defined(BT12) && !defined(BT10) && !defined(BQ16) && !defined(BQ16_PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(ET8PRO) && !defined(ET8_V2)
@@ -27336,6 +27398,85 @@ void reset_button_state(void) {
 	}
 #endif
 	nvram_commit();
+}
+#endif
+
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+/* Re-assert the WISP dual-WAN "wan2 = eth1" mapping.
+ * reconfig_manual_wan_ifnames() establishes it at boot (init_nvram), but a
+ * runtime restart_wireless/restart_net rebuilds lan_ifnames -- re-absorbing eth1
+ * into br0 and dropping the wan2 unit's wanN_ifname -- so the wired backup
+ * silently disappears (eth1 bridged to LAN, wanduck has no unit to fail over to).
+ * start_lan_wl() calls this before it builds br0 so the mapping survives every
+ * rebuild:
+ *   - the wan2 unit's wanN_ifname stays eth1  (wanduck keeps a valid backup WAN),
+ *   - eth1 stays present in wan_ifnames,
+ *   - eth1 is removed from lan_ifnames         (br0 excludes it). */
+void wisp_dualwan_reassert(void)
+{
+	int u, wan2_unit = -1, acted = 0;
+	char prefix[16], nv[32], tmp[256];
+	const char *lan_if = nvram_safe_get("lan_ifname");	/* br0 */
+
+	if (!wisp_mode())
+		return;
+
+	/* dual-WAN enabled = the second WAN slot is not "none". With no secondary
+	 * WAN, eth1 stays a normal LAN bridge member. */
+	if (get_dualwan_by_unit(WAN_UNIT_SECOND) == WANS_DUALWAN_IF_NONE)
+		return;
+
+	for (u = WAN_UNIT_FIRST; u < WAN_UNIT_MAX; u++) {
+		if (get_dualwan_by_unit(u) == WANS_DUALWAN_IF_WAN2) {
+			wan2_unit = u;
+			break;
+		}
+	}
+
+	/* Only when eth1 is the wired backup WAN (wan2) do we bind it as
+	 * wanN_ifname (the boot token-split loop that derives this from wan_ifnames
+	 * only runs in init_nvram, never on restart_wireless; a runtime WAN/lan
+	 * rebuild can drop it). A USB backup leaves eth1 unassigned. */
+	if (wan2_unit >= 0) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", wan2_unit);
+		snprintf(nv, sizeof(nv), "%sifname", prefix);
+		if (!nvram_match(nv, "eth1")) {
+			nvram_set(nv, "eth1");
+			acted = 1;
+		}
+		/* keep eth1 in wan_ifnames (idempotent; appends after wan0=wl1). */
+		add_wan_phy("eth1");
+	}
+
+	/* Regardless of eth-wan vs usb backup, eth1 (the dedicated WAN jack) must
+	 * stay out of br0 whenever dual-WAN is enabled: a cable left in eth1 would
+	 * otherwise bridge the upstream PAP LAN into br0 and hand LAN clients a PAP
+	 * IP. eth0 remains the wired LAN port. */
+	strlcpy(tmp, nvram_safe_get("lan_ifnames"), sizeof(tmp));
+	if (find_in_list(tmp, "eth1")) {
+		remove_from_list("eth1", tmp, sizeof(tmp));
+		nvram_set("lan_ifnames", tmp);
+		acted = 1;
+	}
+
+	/* if a rebuild already bridged eth1 into br0, pull it out now -- editing
+	 * lan_ifnames alone does not remove an interface already added to the
+	 * kernel bridge (this is the LAN-clients-get-PAP-IP symptom). */
+	if (*lan_if && is_bridged(lan_if, "eth1")) {
+		eval("brctl", "delif", (char *)lan_if, "eth1");
+		acted = 1;
+	}
+
+	/* eth1 is a WAN jack in HW whenever dual-WAN is enabled: mark it a WAN port
+	 * on the Broadcom switch (as start_wan_if() does for wan2=eth1) so the
+	 * internal switch never classifies/forwards it as a LAN port -- even when
+	 * eth1 is only the spare for a USB backup (not a WAN unit).  Idempotent if
+	 * already WAN. */
+	eval("ethswctl", "-c", "wan", "-i", "eth1", "-o", "enable");
+
+	if (acted)
+		logmessage("wisp-dw", "reassert: dualwan on (wan2_unit=%d); eth1 kept out of lan_ifnames/%s, marked WAN port",
+			wan2_unit, lan_if);
 }
 #endif
 
@@ -28214,10 +28355,37 @@ void reconfig_manual_wan_ifnames(void) {
 			snprintf(all_ifnames, sizeof(all_ifnames), "eth0 eth1 wl0 wl1");
 			snprintf(avbl_wan_ifnames, sizeof(avbl_wan_ifnames), "eth1 eth0");
 
+			/*
+			 * For RTBE58_GO the two radios use non-obvious envram keys:
+			 *   wl0 (2.4GHz) -> sb/1/macaddr
+			 *   wl1 (5GHz)   -> sb/0/macaddr
+			 * Always re-initialise wl1_hwaddr from the envram value to
+			 * ensure it stays correct across every reconfig call.  The
+			 * conditional approach used previously could fail to trigger
+			 * on certain boot paths and leave a stale value in nvram.
+			 */
+			{
+				/* WISP wl1.1 BSSID fix: wl1_hwaddr MUST be set here (early,
+				 * from init_nvram(), BEFORE start_lan_wl()/wlconf brings wl1.1
+				 * up).  If it is (re)written after wl1.1 is up, the driver
+				 * re-derives the AP-VIF BSSID and breaks downstream assoc. */
+				const char *sb0mac = cfe_nvram_safe_get("sb/0/macaddr");
+				if (sb0mac && *sb0mac) {
+					logmessage("rc", "RTBE58_GO: set wl1_hwaddr [%s]->[%s]\n",
+					           nvram_safe_get("wl1_hwaddr"), sb0mac);
+					nvram_set("wl1_hwaddr", sb0mac);
+				}
+			}
+
 			if (is_router_mode()) {
 #if defined (RTCONFIG_WISP) && defined(RTCONFIG_HND_ROUTER_BE_4916)
-				if (wisp_mode())
+				if (wisp_mode()) {
+					/* Boot 5G-first: flip wlc_band to the same-SSID 5G
+					 * companion BEFORE wan_ifname is derived, so the DUT
+					 * comes up on 5G instead of 2G-then-restore. */
+					wisp_promote_5g_first();
 					nvram_set("wan_ifname", get_wisp_ifname());
+				}
 				else
 #endif /* RTCONFIG_WISP */
 				if (find_in_list(avbl_wan_ifnames, wan_ifname))
@@ -28260,6 +28428,15 @@ void reconfig_manual_wan_ifnames(void) {
 								add_wan_phy("wl1");
 								remove_from_list("wl1", all_ifnames, sizeof(all_ifnames));
 						}
+#ifdef RTCONFIG_HND_WISP_DUALWAN
+						else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_WAN2) {
+								/* wired backup WAN jack = eth1 (WISP dual-WAN
+								 * "wan wan2": wan=WiFi STA, wan2=eth1).  Pull
+								 * eth1 out of br0 and hand it a WAN phy. */
+								add_wan_phy("eth1");
+								remove_from_list("eth1", all_ifnames, sizeof(all_ifnames));
+						}
+#endif
 						else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_USB)
 							add_wan_phy("usb");
 #ifdef RTCONFIG_USB_MULTIMODEM
@@ -28267,6 +28444,29 @@ void reconfig_manual_wan_ifnames(void) {
 							add_wan_phy("usb2");
 #endif
 					}
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+					/* WISP dual-WAN: eth1 is the dedicated WAN jack -- keep it out
+					 * of br0 whenever a secondary WAN exists.  The IF_WAN2 branch
+					 * above already stripped eth1 for a wired backup; a USB backup
+					 * (usb/usb2 token) does not, so strip it here too -- else
+					 * start_lan() bridges eth1 at boot and a cable in it leaks the
+					 * upstream PAP LAN into br0 (LAN clients get a PAP IP). */
+					if (wisp_mode() &&
+					    get_dualwan_by_unit(WAN_UNIT_SECOND) != WANS_DUALWAN_IF_NONE) {
+						remove_from_list("eth1", all_ifnames, sizeof(all_ifnames));
+						/* WISP secwan-first policy is fixed to failback (fb) with the
+						 * secondary WAN preferred (wanduck WAN_FB_UNIT=SECOND).  Force
+						 * it here in init_nvram() -- BEFORE wanduck starts and reads
+						 * wans_mode once -- so an upgraded unit carrying a stale fo/lb
+						 * value is corrected.  The Dual-WAN page hides the wans_mode
+						 * selector and also forces fb.  (fo cannot hotplug-preempt to
+						 * the secwan; lb is not applicable in WISP dual-WAN.) */
+						if (!nvram_match("wans_mode", "fb")) {
+							logmessage("wisp-dw", "reconfig: forcing wans_mode [%s]->fb (secwan-first)", nvram_safe_get("wans_mode"));
+							nvram_set("wans_mode", "fb");
+						}
+					}
+#endif
 					nvram_set("lan_ifnames", all_ifnames);
 				}
 				else {

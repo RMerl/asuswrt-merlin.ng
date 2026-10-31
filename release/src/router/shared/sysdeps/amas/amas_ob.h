@@ -134,6 +134,7 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-BE82M",	50,	120,	60},
 	{ "RT-BE58U_PRO",   50,     120,    60},
 	{ "RT-BE58_Go",   100,     120,    120},
+	{ "RT-BE57_Go",   100,     120,    120},
 	{ "RT-BE3600_Go",   100,     120,    120},
 	{ "GT-BE19000AI", 90,    120,     60},
 	{ "GS-BE18000",	50,	120,	60},

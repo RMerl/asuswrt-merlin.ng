@@ -234,13 +234,21 @@ var secondary_wanlink_ipaddr = secondary_wanlink_ipaddr();
 var le_enable = '<% nvram_get("le_enable"); %>';
 var le_state = '<% nvram_get("le_state"); %>';
 
-if(gobi_support) {
+if(gobi_support || isSupport("wisp_dualwan")) {
 	var dualwan_first_if = wans_dualwan_array[0];
 	var dualwan_second_if = wans_dualwan_array[1];
 }
 
 var wans_flag = (wans_dualwan_orig.search("none") != -1 || !parent.dualWAN_support) ? 0 : 1;
 var wan_ipv6_network_json =('<% wan_ipv6_network(); %>' != '{}')? JSON.parse('<% wan_ipv6_network(); %>'):{};
+
+function wisp_dw_wan_name(token){
+	if(!isSupport("wisp_dualwan") || !isSwMode("WISP")) return "";
+	if(token == "wan")  return "WiFi";
+	if(token == "wan2") return "ETH-WAN";
+	if(token == "usb")  return "USB";
+	return "";
+}
 
 // USB function
 var currentUsbPort = new Number();
@@ -294,7 +302,7 @@ function initial(){
 	if(isIE6)
 		alert("<#ALERT_TO_CHANGE_BROWSER#>");
 
-	if(dualWAN_support && isSwMode("RT")){
+	if(dualWAN_support && (isSwMode("RT") || (isSwMode("WISP") && isSupport("wisp_dualwan")))){
 		check_dualwan(wans_flag);
 	}
 
@@ -565,6 +573,15 @@ function initial(){
 		}
 	}
 
+	if(wans_flag && isSupport("wisp_dualwan")){
+		var wisp_dw_p = wisp_dw_wan_name(dualwan_first_if);
+		var wisp_dw_s = wisp_dw_wan_name(dualwan_second_if);
+		if(wisp_dw_p != "")
+			document.getElementById("first_wan_title").innerHTML = wisp_dw_p + ":";
+		if(wisp_dw_s != "")
+			document.getElementById("second_wan_title").innerHTML = wisp_dw_s + ":";
+	}
+
 	if(is_TW_sku && document.referrer.indexOf("QIS") != -1){
 		if((autodet_state == 6 || autodet_auxstate == 6) && wan_proto == "dhcp"){
 			notification.notiClick();
@@ -707,7 +724,18 @@ function set_default_choice(){
 		clickEvent(document.getElementById(icon_name));
 	}
 	else{
-		if(isSwMode("RP") || isSwMode("WISP")){
+		if(isSwMode("WISP") && isSupport("wisp_dualwan") && wans_flag){
+			document.getElementById("iconRouter").style.backgroundPosition = '0% 0%';
+			if(active_wan_unit == "1"){
+				document.form.dual_wan_flag.value = 1;
+				clickEvent(document.getElementById("iconInternet_secondary"));
+			}
+			else{
+				document.form.dual_wan_flag.value = 0;
+				clickEvent(document.getElementById("iconInternet_primary"));
+			}
+		}
+		else if(isSwMode("RP") || isSwMode("WISP")){
 			document.getElementById("iconRouter").style.backgroundPosition = '0% 0%';
 			if(concurrent_pap && pap_flag == "1"){
 				clickEvent(document.getElementById("iconInternet_primary"));
@@ -982,7 +1010,13 @@ function clickEvent(obj){
 				}
 			}
 			else {
-				if(obj.id.indexOf("primary") != -1)
+				var wisp_dw_stitle = (obj.id.indexOf("primary") != -1)
+					? wisp_dw_wan_name(dualwan_first_if)
+					: wisp_dw_wan_name(dualwan_second_if);
+
+				if(wisp_dw_stitle != "")
+					stitle = wisp_dw_stitle + " Status";
+				else if(obj.id.indexOf("primary") != -1)
 					stitle = "<#statusTitle_Primary_WAN#>";
 				else
 					stitle = "<#statusTitle_Secondary_WAN#>";
@@ -1786,13 +1820,11 @@ function popupEditBlock(clientObj){
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(stainfo_support) {
-				if(clientObj.curTx != "")
-					connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
-				if(clientObj.curRx != "")
-					connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
-				connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
-			}
+			if(clientObj.curTx != "")
+				connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
+			if(clientObj.curRx != "")
+				connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
+			connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
 		}
 
 		if(!isSwMode("MB")){

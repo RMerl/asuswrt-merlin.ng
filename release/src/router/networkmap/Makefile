@@ -241,7 +241,7 @@ ifneq ($(wildcard $(SRCBASE)/router/networkmap/arpstorm),)
 endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap
-	cp -f db/networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js
+	cp -f db/ieee.oui.json $(INSTALLDIR)/usr/networkmap/ieee.oui.json
 	cp -f db/nmp_conv_type.js $(INSTALLDIR)/usr/networkmap/nmp_conv_type.js
 	cp -f db/nmp_vendor_type.js $(INSTALLDIR)/usr/networkmap/nmp_vendor_type.js
 	cp -f db/nmp_bwdpi_type.js $(INSTALLDIR)/usr/networkmap/nmp_bwdpi_type.js

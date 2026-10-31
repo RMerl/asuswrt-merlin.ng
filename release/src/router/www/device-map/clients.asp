@@ -242,13 +242,11 @@ function drawClientList(tab){
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(stainfo_support) {
-				if(clientObj.curTx != "")
-					connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
-				if(clientObj.curRx != "")
-					connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
-				connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
-			}
+			if(clientObj.curTx != "")
+				connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
+			if(clientObj.curRx != "")
+				connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
+			connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
 		}
 
 		if(parent.sw_mode != 4) {
@@ -401,11 +399,9 @@ function retOverLibStr(client){
 		overlibStr += "<p><#Device_service_iTune#></p>YES";
 	if(client.isWL > 0){
 		overlibStr += "<p><#Wireless_Radio#>:</p>" + isWL_map[client.isWL]["text"].replace("G", " GHz") + " (" + client.rssi + " dBm)";
-		if(stainfo_support) {
-			overlibStr += "<p>Tx Rate:</p>" + ((client.curTx != "") ? client.curTx : "-");
-			overlibStr += "<p>Rx Rate:</p>" + ((client.curRx != "") ? client.curRx : "-");
-			overlibStr += "<p><#Access_Time#>:</p>" + client.wlConnectTime;
-		}
+		overlibStr += "<p>Tx Rate:</p>" + ((client.curTx != "") ? client.curTx : "-");
+		overlibStr += "<p>Rx Rate:</p>" + ((client.curRx != "") ? client.curRx : "-");
+		overlibStr += "<p><#Access_Time#>:</p>" + client.wlConnectTime;
 	}
 	return overlibStr;
 }

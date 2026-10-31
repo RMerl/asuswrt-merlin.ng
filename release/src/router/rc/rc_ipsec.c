@@ -131,10 +131,10 @@ int ipsec_profile_int_parse(int ike_esp_type, char *p_end, int *nsize_shifft)
             if(('a' == *p_head) && ('u' == *(p_head + 1))){
                i_value = IKE_TYPE_AUTO; 
             } else {
-               i_value = atoi(strndup(p_head, (size_t)i));
+               i_value = safe_atoi(strndup(p_head, (size_t)i));
             }
         } else if(FLAG_NONE == ike_esp_type){
-            i_value = atoi(strndup(p_head, (size_t)i));
+            i_value = safe_atoi(strndup(p_head, (size_t)i));
         }
     }
     return i_value;
@@ -412,7 +412,7 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
 
     if(!strstr(p_end, ">"))
     {
-        prof[prof_type][prof_idx].ipsec_conn_en = atoi(p_end);
+        prof[prof_type][prof_idx].ipsec_conn_en = safe_atoi(p_end);
     }
     else
     {
@@ -478,7 +478,7 @@ void ipsec_prof_fill_ext(int prof_idx, char *p_data, ipsec_prof_type_t prof_type
 	p_end += i; /*to shifft next '>'*/
 
 	/*pfs_group*/
-    prof[prof_type][prof_idx].pfs_group= atoi(p_end); /*the last one doesn't need to parse ">".*/
+    prof[prof_type][prof_idx].pfs_group= safe_atoi(p_end); /*the last one doesn't need to parse ">".*/
 
 	/*the end of profile*/
 	return;
@@ -794,7 +794,7 @@ int rc_ipsec_ca_fileidx_check()
     }
     memset(str_buf, 0, SZ_MIN);
     while(EOF != fscanf(fp, "%s", str_buf)){
-        i_tmp = atoi(str_buf);
+        i_tmp = safe_atoi(str_buf);
         file_idx_32bits |= (uint32_t)(1 << i_tmp);
         memset(str_buf, 0, SZ_MIN);
     }
@@ -953,53 +953,62 @@ void rc_ipsec_cert_import(char *asus_cert, char *ipsec_cli_cert,
                           char *ipsec_cli_key, char *pks12)
 {
     char *p_file = NULL;
-    char cmd[SZ_BUF], tmp[SZ_MIN];
+    char tmp[SZ_MIN];
     if(NULL != asus_cert){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/cacerts/", asus_cert);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/cacerts/", asus_cert);
     }
     if(NULL != ipsec_cli_cert){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/certs/", ipsec_cli_cert);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/certs/", ipsec_cli_cert);
     }
     if(NULL != ipsec_cli_key){
-        memset(cmd, 0, sizeof(char) * SZ_BUF);
-        sprintf(&cmd[0], "cp -r %s /tmp/etc/ipsec.d/private/", ipsec_cli_key);
-        system(cmd);
+        safe_do_system("cp -r \"%s\" /tmp/etc/ipsec.d/private/", ipsec_cli_key);
     }
     if(NULL != pks12){
-        if(NULL != nvram_safe_get("ca_manage_profile")){
+        const char *profile = nvram_safe_get("ca_manage_profile");
+        if(NULL != profile){
             DBG(("pks12:%s", pks12));
             p_file = &tmp[0];
             memset(p_file, '\0', sizeof(char) * SZ_MIN);
-            strncpy(p_file, pks12, strlen(pks12) - 4); /*4 : strlen(p12)*/
-            sprintf(cmd, "echo %s > "FILE_PATH_CA_ETC"%s.pwd", 
-                    nvram_safe_get("ca_manage_profile"), p_file);
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -clcerts -out "
-                             "/tmp/etc/ipsec.d/certs/%s.pem -password pass:%s", 
-                             FILE_PATH_CA_ETC, pks12, p_file, 
-                             nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -cacerts -out "
-                             "/tmp/etc/ipsec.d/cacerts/%s.pem"
-                             " -password pass:%s",
-                             FILE_PATH_CA_ETC, pks12, p_file,
-                             nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
-            memset(cmd, 0, sizeof(char) * SZ_BUF);
-            sprintf(&cmd[0], "openssl pkcs12 -in %s%s -out "
-                    "/tmp/etc/ipsec.d/certs/%s.pem -nodes -password pass:%s",
-                     FILE_PATH_CA_ETC, pks12, p_file,
-                     nvram_safe_get("ca_manage_profile"));
-            DBG((cmd));
-            system(cmd);
+            {
+                size_t pks12_len = strlen(pks12);
+                /* guard: underflow (<=4) and overflow into SZ_MIN buffer (>=SZ_MIN+4) */
+                if (pks12_len <= 4 || (pks12_len - 4) >= SZ_MIN) {
+                    DBG(("pks12 invalid length: %s\n", pks12));
+                    return;
+                }
+                /* strip last 4 chars (.p12/.pfx), always NUL-terminated */
+                snprintf(p_file, SZ_MIN, "%.*s", (int)(pks12_len - 4), pks12);
+            }
+            /* write password directly to file, avoiding shell interpretation */
+            {
+                char pwd_path[SZ_MIN + sizeof(FILE_PATH_CA_ETC) + 4];
+                snprintf(pwd_path, sizeof(pwd_path), FILE_PATH_CA_ETC"%s.pwd", p_file);
+                FILE *_f = fopen(pwd_path, "w");
+                if (_f) { fprintf(_f, "%s\n", profile); fclose(_f); }
+            }
+            /* pass password as separate argv element to avoid shell metachar issues */
+            {
+                char in_path[SZ_BUF], out_path[SZ_BUF], pass_arg[SZ_BUF];
+                snprintf(in_path,  sizeof(in_path),  "%s%s",                         FILE_PATH_CA_ETC, pks12);
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/certs/%s.pem", p_file);
+                snprintf(pass_arg, sizeof(pass_arg), "pass:%s",                       profile);
+                char *argv_clcerts[] = {"openssl", "pkcs12", "-in", in_path, "-clcerts",
+                                        "-out", out_path, "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -clcerts -out %s -password pass:***\n", in_path, out_path));
+                _eval(argv_clcerts, NULL, 0, NULL);
+
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/cacerts/%s.pem", p_file);
+                char *argv_cacerts[] = {"openssl", "pkcs12", "-in", in_path, "-cacerts",
+                                        "-out", out_path, "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -cacerts -out %s -password pass:***\n", in_path, out_path));
+                _eval(argv_cacerts, NULL, 0, NULL);
+
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/certs/%s.pem", p_file);
+                char *argv_nodes[] = {"openssl", "pkcs12", "-in", in_path, "-out", out_path,
+                                      "-nodes", "-password", pass_arg, NULL};
+                DBG(("openssl pkcs12 -in %s -out %s -nodes -password pass:***\n", in_path, out_path));
+                _eval(argv_nodes, NULL, 0, NULL);
+            }
         }
     }
     return;
@@ -1056,7 +1065,9 @@ void rc_ipsec_gen_cert(int skip_checking)
 
     if(nvram_match("ddns_enable_x", "1"))
     {
-        snprintf(ddns_name, sizeof(ddns_name), "%s", nvram_safe_get("ddns_hostname_x"));
+        const char *s = nvram_safe_get("ddns_hostname_x");
+        if (is_valid_domainname(s))
+            snprintf(ddns_name, sizeof(ddns_name), "%s", s);
     }
 
     if(strlen(ddns_name) == 0 )
@@ -1932,12 +1943,12 @@ get_virtual_ip_format(char *virtual_subnet)
 	mask = strtok(NULL, "/");
 	//DBG(("ip=%s,mask=%s\n", ip, mask));
 	
-	ip_1 = atoi(strtok(ip, "."));
-	ip_2 = atoi(strtok(NULL, "."));
-	ip_3 = atoi(strtok(NULL, "."));
-	ip_4 = atoi(strtok(NULL, "."));
+	ip_1 = safe_atoi(strtok(ip, "."));
+	ip_2 = safe_atoi(strtok(NULL, "."));
+	ip_3 = safe_atoi(strtok(NULL, "."));
+	ip_4 = safe_atoi(strtok(NULL, "."));
 	
-	mask_tmp = atoi(mask);
+	mask_tmp = safe_atoi(mask);
 	int bitpatten = 0xff00;
 	
 	if( mask_tmp >= 8){
@@ -3079,8 +3090,8 @@ static int _get_vpnc_idx_by_prof_idx(int prof_idx)
 				continue;
 			if (!nv_proto || !nv_unit || !vpnc_idx)
 				continue;
-			if (!strcmp(PROTO_IPSec, nv_proto) && atoi(nv_unit) == prof_idx) {
-				ret = atoi(vpnc_idx);
+			if (!strcmp(PROTO_IPSec, nv_proto) && safe_atoi(nv_unit) == prof_idx) {
+				ret = safe_atoi(vpnc_idx);
 				break;
 			}
 		}
@@ -3340,14 +3351,14 @@ int ipsec_updown_main(int argc, char *argv[])
 	int vpn_type = 0;
 
 	if (argv[1])
-		unit = atoi(argv[1]);
+		unit = safe_atoi(argv[1]);
 	else {
 		cprintf("Unknown vpn profile unit\n");
 		return -1;
 	}
 
 	if (argv[2])
-		vpn_type = atoi(argv[2]);
+		vpn_type = safe_atoi(argv[2]);
 	else {
 		cprintf("Unknown vpn type\n");
 		return -1;

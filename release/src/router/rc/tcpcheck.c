@@ -43,6 +43,7 @@
 #include <signal.h>
 #include <time.h>
 #include <bcmnvram.h>
+#include <shutils.h>
 
 #define ERR_SUCCESS 0
 #define ERR_REFUSED 1
@@ -126,7 +127,7 @@ static int setuphost(struct connectinfo *cinfo, char *hostport)
     }
     cinfo->port = ntohs(serv->s_port);
   } else {
-    cinfo->port = atoi(port);
+    cinfo->port = safe_atoi(port);
   }
   cinfo->portname = strdup(port);
 
@@ -321,7 +322,7 @@ int tcpcheck_main(int argc, char *argv[])
   if (argc <= 2) usage();
   if (argv == NULL || argv[1] == NULL || argv[2] == NULL) usage();
 
-  timeout = atoi(argv[1]);
+  timeout = safe_atoi(argv[1]);
 
   numcons = argc-2;
   cons = malloc(sizeof(struct connectinfo *) * (numcons+1));

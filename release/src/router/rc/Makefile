@@ -541,6 +541,10 @@ ifeq ($(RTCONFIG_SPEEDTEST),y)
 OBJS += $(if $(wildcard speedtest.c),speedtest.o,prebuild/speedtest.o)
 endif
 
+ifneq ($(filter y,$(RTCONFIG_OOKLA) $(RTCONFIG_OOKLA_LITE)),)
+OBJS += ookla_quota_mon.o
+endif
+
 OBJS += wanduck.o
 OBJS += tcpcheck.o
 
@@ -1786,6 +1790,9 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hour_monitor
 ifeq ($(RTCONFIG_SPEEDTEST),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc speedtest
+endif
+ifneq ($(filter y,$(RTCONFIG_OOKLA) $(RTCONFIG_OOKLA_LITE)),)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ookla_quota_mon
 endif
 ifeq ($(RTCONFIG_USB_MODEM),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc write_3g_ppp_conf

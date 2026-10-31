@@ -1,4 +1,5 @@
 #include <rtconfig.h>
+#include <shutils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -166,14 +167,14 @@ int readmem_main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "l:u:")) != -1) {
 		switch (opt) {
 		case 'u':
-			tmp = atoi(optarg);
+			tmp = safe_atoi(optarg);
 			if (tmp == 1 || tmp == 2 || tmp == 4)
 				unit = tmp;
 			else
 				usage();
 			break;
 		case 'l':
-			tmp = atoi(optarg);
+			tmp = safe_atoi(optarg);
 			if (tmp > 0 && tmp <= PAGE_SIZE)
 				len = tmp;
 			else

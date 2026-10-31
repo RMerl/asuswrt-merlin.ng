@@ -841,7 +841,7 @@ int mtk_set_wps_result(int n, char *wif)
 					nvram_set("wl1.1_key", pt1);
 				}
 #endif
-				key_idx = atoi(pt1);
+				key_idx = safe_atoi(pt1);
 
 				//Key
 				pt2++;

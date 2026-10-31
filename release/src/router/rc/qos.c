@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "rc.h"
+#include <shutils.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #ifdef RTCONFIG_BWDPI
@@ -1043,6 +1044,10 @@ static int start_tqos(void)
 	obw = strtoul(nvram_safe_get("qos_obw"), NULL, 10);
 	if(ibw==0||obw==0) return -1;
 
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+
 	if((f = fopen(qosfn, "w")) == NULL) return -2;
 
 	QOSDBG("[qos] tc START!\n");
@@ -1088,7 +1093,7 @@ static int start_tqos(void)
 	qsched = "sfq perturb 10";
 #endif
 
-	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+	const char *wan_ifname = wan;
 	const char *lan_ifname = nvram_safe_get("lan_ifname");
 
 	if(strncmp(wan_ifname, "ppp", 3)==0) {
@@ -1575,6 +1580,10 @@ static int start_bandwidth_limiter(void)
 	qsched = "sfq perturb 10";
 #endif
 
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
@@ -1601,7 +1610,7 @@ static int start_bandwidth_limiter(void)
 		"\t$TQAU root handle 2: htb\n"
 		"\t$TCAU parent 2: classid 2:1 htb rate 10240000kbit\n"
 		, qsched
-		, get_wan_ifname(wan_primary_ifunit())
+		, wan
 	);
 	// access router : mark 9
 	// default : 10Gbps
@@ -1977,7 +1986,7 @@ static int nvfgn_GetQoSChannelPort(char *str)
 		if ((p = strsep(&g, "<")) == NULL) break;
 		if ((vstrsep(p, ">", &type, &proto, &port)) != 3) continue;
 		if (!strcmp(str, type)) {
-			ret = atoi(port);
+			ret = safe_atoi(port);
 			break;
 		}
 	}
@@ -2035,6 +2044,10 @@ static int start_GeForce_QoS(void)
 	mtu = nvram_get_int(nvmtu);
 	if (mtu == 0)
 		mtu = 1500;
+
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
 
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
@@ -2249,6 +2262,10 @@ static int start_RouterBoost_QoS(void)
 	if (ibw < 1024 && ibw != 0) ibw = 1024;
 	if (obw < 1024 && obw != 0) obw = 1024;
 	
+	char wan[IFNAMSIZ];
+	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+
 	if ((f = fopen(qosfn, "w")) == NULL) return -2;
 	fprintf(f,
 		"#!/bin/sh\n"
@@ -2263,7 +2280,7 @@ static int start_RouterBoost_QoS(void)
 		"TCA=\"tc class add dev $LAN\"\n"
 		"TFA=\"tc filter add dev $LAN\"\n"
 		"\n"
-		, get_wan_ifname(wan_primary_ifunit())
+		, wan
 		, nvram_safe_get("lan_ifname")
 	);
 
@@ -2602,9 +2619,9 @@ static int start_rog_qos()
 	if (mtu == 0)
 		mtu = 1500;
 
-	if((f = fopen(qosfn, "w")) == NULL) return -2;
-
 	strlcpy(wan, get_wan_ifname(wan_primary_ifunit()), sizeof(wan));
+	if (!is_valid_ifname(wan)) return -1;
+	if((f = fopen(qosfn, "w")) == NULL) return -2;
 
 	/* Create top-level /tmp/qos */
 	QOSDBG("[qos] tc START!\n");

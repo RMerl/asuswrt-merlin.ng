@@ -429,6 +429,11 @@ config RTCONFIG_WISP
 	depends on RTCONFIG_WIRELESSREPEATER
 	default n
 
+config RTCONFIG_HND_WISP_DUALWAN
+	bool "HND WISP Mode w/ dualwan"
+	depends on RTCONFIG_WIRELESSREPEATER
+	default n
+
 config RTCONFIG_VHT80_80
 	bool "80+80MHz bandwidth support"
 	default n

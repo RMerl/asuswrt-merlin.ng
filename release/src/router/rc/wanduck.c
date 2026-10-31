@@ -18,6 +18,7 @@
 #define _GNU_SOURCE
 
 #include <rc.h>
+#include <shutils.h>
 #include <wanduck.h>
 
 #if defined(RTCONFIG_HIDDEN_BACKHAUL)
@@ -1301,11 +1302,31 @@ int detect_internet(int wan_unit)
 			|| (!dns_ret && !wandog_enable)
 			|| (!ping_ret && !dns_ret)
 			){
+#if defined(RTCONFIG_WISP)
+		/* WISP STA behind a captive portal: ping/dns failing here only means
+		 * "no confirmed Internet yet, portal login pending" -- not a dead WAN
+		 * link. Forcing DISCONN falls through to stop_nat_rules() below, which
+		 * DNAT-hijacks every LAN client's own HTTP(80)/DNS(53) traffic to this
+		 * router's local walled-garden pages -- exactly the traffic a client
+		 * needs to reach the portal's real login page, so it can never log in.
+		 * Leave link_internet as CONNED here, matching every other
+		 * is_wan_connect() caller, which already treats
+		 * WAN_AUXSTATE_NO_INTERNET_ACTIVITY as still-connected;
+		 * wisp_captive_portal/_url (set by wisp_run_portal_probe()) still
+		 * report the pending login to the UI. A genuine WAN failure
+		 * (phy/DHCP/PPP) never reaches this ping/dns branch, so it is
+		 * unaffected by this exception. */
+		if(wisp_mode() && wan_unit == wan_primary_ifunit() && nvram_get_int("wisp_captive_portal") == 1)
+			link_internet = CONNED;
+		else
+#endif
+		{
 		link_internet = DISCONN;
 
 		// avoid the nat rules had be applied by wan_up before wanduck.
 		if(nvram_get_int("nat_state") == NAT_STATE_NORMAL)
 			nat_state = stop_nat_rules();
+		}
 	}
 #endif
 	else if(ppp_echo_dns /* PPP connections with DNS detection */
@@ -1342,7 +1363,7 @@ int passivesock(char *service, int protocol_num, int qlen){
 	sin.sin_addr.s_addr = INADDR_ANY;
 
 	// map service name to port number
-	if((sin.sin_port = htons((u_short)atoi(service))) == 0){
+	if((sin.sin_port = htons((u_short)safe_atoi(service))) == 0){
 		perror("cannot get service entry");
 
 		return -1;
@@ -1398,7 +1419,7 @@ int check_ppp_exist(){
 	}
 
 	while((dent = readdir(dir)) != NULL){
-		if((pid = atoi(dent->d_name)) > 1){
+		if((pid = safe_atoi(dent->d_name)) > 1){
 			snprintf(task_file, sizeof(task_file), "/proc/%d/cmdline", pid);
 			if((fd = open(task_file, O_RDONLY | O_NONBLOCK)) > 0){
 				memset(cmdline, 0, 64);
@@ -1729,6 +1750,207 @@ int if_10G_phyconnected(){ // 1: 10G Eth, 2: 10G SFP+.
 }
 #endif
 
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+/* Settle grace (seconds) after switching to the wired/USB backup, during which a
+ * failback to the WiFi STA is held off IF the backup still has physical LINK --
+ * this only suppresses the transient conn/ping hiccup right after the switch (fc
+ * pause window) that would otherwise ping-pong eth1<->wl1.  It does NOT disable
+ * L3 failover: once the grace expires, a backup that keeps LINK but stays L3-dead
+ * (no DHCP / no internet) accumulates disconn_count again and fails back to WiFi
+ * normally.  Overridable via nvram wisp_secwan_grace. */
+#define WISP_SECWAN_GRACE_SECS 30
+static long wisp_backup_switch_ts = 0;	/* uptime() when we last switched to the backup */
+
+/* In WISP the WiFi-STA WAN unit is the one hijacked onto the radio in
+ * reconfig_manual_wan_ifnames() — it carries the 'wan' token (IF_WAN) or an
+ * explicit 2g/5g token.  A wired/USB backup (wan2=eth1, lan, usb) is NOT the
+ * WiFi unit and must use its own physical link state, not the STA's
+ * wlcmon_conn. */
+static int wisp_is_wifi_wan_unit(int unit)
+{
+	int t = get_dualwan_by_unit(unit);
+	return (t == WANS_DUALWAN_IF_WAN
+	     || t == WANS_DUALWAN_IF_2G
+	     || t == WANS_DUALWAN_IF_5G);
+}
+
+/* Secondary-WAN-first (backup-preferred) policy for WISP dual-WAN.  Active when:
+ *   - WISP mode, and
+ *   - a non-WiFi backup unit is configured -- eth1 wan2 (wans_dualwan="wan wan2")
+ *     OR usb/usb2 (wans_dualwan="wan usb"), and
+ *   - the runtime toggle wisp_secwan_first != 0 (default 1).
+ * The wired/USB backup is preferred over the WiFi STA, with the same
+ * preempt+failback behaviour for both backup types.  Backward compatible: the
+ * shipping single-WAN default "wan none" has no backup unit, so this returns 0
+ * and stock WiFi-primary behaviour is kept. */
+static int wisp_secwan_first_active(void)
+{
+	int t0, t1;
+	if (!wisp_mode())
+		return 0;
+	if (!nvram_get_int("wisp_secwan_first"))
+		return 0;
+	t0 = get_dualwan_by_unit(WAN_UNIT_FIRST);
+	t1 = get_dualwan_by_unit(WAN_UNIT_SECOND);
+	return (t0 == WANS_DUALWAN_IF_WAN2 || t0 == WANS_DUALWAN_IF_USB || t0 == WANS_DUALWAN_IF_USB2
+	     || t1 == WANS_DUALWAN_IF_WAN2 || t1 == WANS_DUALWAN_IF_USB || t1 == WANS_DUALWAN_IF_USB2);
+}
+
+/* Is a udhcpc for this WAN unit alive AND bound to its CURRENT ifname?
+ *
+ * The secwan-first bootstrap must fire restart_wan_if exactly once to spawn the
+ * backup's udhcpc, then leave it alone: udhcpc's initial "deconfig" drops the
+ * unit to WAN_STATE_STOPPED before it even sends DISCOVER and keeps it there
+ * while it retries a lease, so a state-only guard re-fires every tick and keeps
+ * killing the very udhcpc that is trying to bind (~3s storm).
+ *
+ * A bare pidfile-exists check is not enough:
+ *  - stop_udhcpc()/kill_pidfile_tk() kills the process but does NOT unlink
+ *    /var/run/udhcpc<unit>.pid, so a stale (dead / PID-reused) entry can linger;
+ *  - during boot churn a udhcpc may have been started on a PREVIOUS ifname for
+ *    this unit, leaving a pidfile that no longer matches eth1.
+ * Either would make us wrongly think the backup is served and skip the bootstrap
+ * forever.  So verify the live pid's /proc/<pid>/cmdline is really a udhcpc bound
+ * to the unit's current ifname (== the new wan-if, eth1). */
+static int wisp_backup_udhcpc_active(int unit, const char *ifname)
+{
+	char pidfile[sizeof("/var/run/udhcpcXXXXXXXXXX.pid")];
+	char path[sizeof("/proc/2147483648/cmdline")];
+	char cmdline[256];
+	FILE *fp;
+	pid_t pid = 0;
+	int n, i, has_udhcpc = 0, has_if = 0;
+
+	if (!ifname || !*ifname)
+		return 0;
+
+	snprintf(pidfile, sizeof(pidfile), "/var/run/udhcpc%d.pid", unit);
+	if ((fp = fopen(pidfile, "r")) == NULL)
+		return 0;
+	if (fscanf(fp, "%d", &pid) != 1) { fclose(fp); return 0; }
+	fclose(fp);
+	if (pid <= 0 || kill(pid, 0) != 0)		/* gone / stale pid */
+		return 0;
+
+	snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
+	if ((fp = fopen(path, "r")) == NULL)
+		return 0;
+	n = fread(cmdline, 1, sizeof(cmdline) - 1, fp);
+	fclose(fp);
+	if (n <= 0)
+		return 0;
+	cmdline[n] = '\0';			/* ensure the last token is terminated */
+	/* argv is NUL-separated; split into tokens and match exactly */
+	i = 0;
+	while (i < n) {
+		char *tok = &cmdline[i];
+		int len = strlen(tok);
+		if (!strcmp(tok, "udhcpc") || strstr(tok, "/udhcpc"))
+			has_udhcpc = 1;
+		if (!strcmp(tok, ifname))
+			has_if = 1;
+		i += len + 1;
+		if (len == 0)			/* trailing padding */
+			break;
+	}
+	return (has_udhcpc && has_if);
+}
+
+/* True if the process named in <pidfile> is alive.  Local helper mirroring the
+ * pid-liveness check in wisp_backup_udhcpc_active() above. */
+static int wisp_pidfile_alive(const char *pidfile)
+{
+	FILE *fp = fopen(pidfile, "r");
+	pid_t pid = 0;
+	if (fp == NULL)
+		return 0;
+	if (fscanf(fp, "%d", &pid) != 1) { fclose(fp); return 0; }
+	fclose(fp);
+	return (pid > 0 && kill(pid, 0) == 0);
+}
+
+/* USB-backup counterpart of wisp_backup_udhcpc_active().
+ *
+ * A USB WAN unit's connection client depends on the modem type -- a usbnet
+ * modem (rndis/ncm/ecm/qmi raw-ip) is driven by udhcpc on the modem's
+ * dynamically-detected node, a serial/ACM dial modem is driven by pppd -- and
+ * while the modem is still being probed start_wan_if() returns early
+ * (act_scanning / act_reset) WITHOUT spawning either.  The eth1 guard checks a
+ * udhcpc bound to a KNOWN ifname, but a USB unit's wanN_ifname is empty/dynamic,
+ * so that check always reads "not active" for USB and the fb bootstrap re-fires
+ * restart_wan_if every tick -- aborting the modem scan mid-bringup (the same
+ * storm the eth1 guard prevents).
+ *
+ * Treat the backup as "active / busy -- do NOT re-fire" when any of:
+ *   - a live client for THIS unit's CURRENT modem type: pppd for a dial modem
+ *     (act_type "tty"), udhcpc for a usbnet modem (qmi/rndis/ncm/ecm ->
+ *     wwan/usb/eth netdev)
+ *   - the modem is scanning or resetting (re-firing would abort it).
+ *
+ * The client checked MUST match the current modem type.  A single modem uses
+ * exactly one client (pppd XOR udhcpc), so checking both unconditionally lets a
+ * STALE client left over from a previously-removed dongle of the OTHER type
+ * wrongly report the unit busy.  Real case : a tty dial dongle is
+ * unplugged while its pppd keeps looping "Failed to open /dev/ttyUSBx" (the
+ * remove path does not kill it on this non-MULTIWAN_IF model), then a QMI
+ * dongle is hot-plugged -- act_type flips to "qmi" but the stale pppd still
+ * holds /var/run/ppp-wan<unit>.pid, so the old both-clients check returned busy
+ * and the secwan-first bootstrap never fired restart_wan_if for the new wwan0
+ * (registered but never brought up).  restart_wan_if stop_wan_if()s that stale
+ * client anyway once the bootstrap is allowed to fire. */
+static int wisp_backup_usb_active(int unit)
+{
+	char pidfile[sizeof("/var/run/ppp-wanXXXXXXXXXX.pid")];
+#ifdef RTCONFIG_USB_MODEM
+	char prefix2[32], tmp2[100], act_type[32];
+	int modem_unit, is_dial = -1;	/* -1 unknown: type not detected yet */
+
+	/* classify this unit's current modem: dial (pppd) vs usbnet (udhcpc). */
+	modem_unit = get_modemunit_by_type(get_dualwan_by_unit(unit));
+	if (modem_unit != MODEM_UNIT_NONE) {
+		usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
+		snprintf(act_type, sizeof(act_type), "%s",
+			nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
+		if (act_type[0] != '\0')
+			is_dial = (strcmp(act_type, "tty") == 0);
+	}
+
+	/* dial modem (or type not yet known): pppd */
+	if (is_dial != 0) {
+		snprintf(pidfile, sizeof(pidfile), "/var/run/ppp-wan%d.pid", unit);
+		if (wisp_pidfile_alive(pidfile))
+			return 1;
+	}
+
+	/* usbnet modem (or type not yet known): udhcpc (ifname-tolerant, per-unit
+	 * pidfile -- the USB node is per-unit and dynamic, no eth1-style churn) */
+	if (is_dial != 1) {
+		snprintf(pidfile, sizeof(pidfile), "/var/run/udhcpc%d.pid", unit);
+		if (wisp_pidfile_alive(pidfile))
+			return 1;
+	}
+
+	/* modem still coming up: scanning / resetting -- a restart_wan_if now would
+	 * interrupt find_modem_*.sh and never let it settle. */
+	if (modem_unit != MODEM_UNIT_NONE) {
+		if (nvram_get_int(strcat_r(prefix2, "act_scanning", tmp2)) != 0)
+			return 1;
+		if (nvram_get_int(strcat_r(prefix2, "act_reset", tmp2)) == 1)
+			return 1;
+	}
+#else
+	/* no USB-modem support built in: keep the conservative both-clients check */
+	snprintf(pidfile, sizeof(pidfile), "/var/run/ppp-wan%d.pid", unit);
+	if (wisp_pidfile_alive(pidfile))
+		return 1;
+	snprintf(pidfile, sizeof(pidfile), "/var/run/udhcpc%d.pid", unit);
+	if (wisp_pidfile_alive(pidfile))
+		return 1;
+#endif
+	return 0;
+}
+#endif
+
 int if_wan_phyconnected(int wan_unit){
 	char *ptr, wired_link_nvram[32];
 #ifdef RTCONFIG_WIRELESSREPEATER
@@ -1874,7 +2096,7 @@ if(test_log)
 _dprintf("# wanduck: if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state=%d.\n", !isFirstUse, link_wan[other_wan_unit], sim_state);
 
 		link_wan_nvname(other_wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
-		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[other_wan_unit] != atoi(ptr)){
+		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[other_wan_unit] != safe_atoi(ptr)){
 			nvram_set_int(wired_link_nvram, link_wan[other_wan_unit]);
 			if(link_wan[other_wan_unit] != 0)
 				record_wan_state_nvram(other_wan_unit, -1, -1, WAN_AUXSTATE_NONE);
@@ -2060,7 +2282,7 @@ if(test_log)
 _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_state=%d.\n", wan_unit, !isFirstUse, link_wan[wan_unit], sim_state);
 
 		link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
-		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
+		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != safe_atoi(ptr)){
 			nvram_set_int(wired_link_nvram, link_wan[wan_unit]);
 			if(link_wan[wan_unit] != 0)
 				record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
@@ -2102,9 +2324,29 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 		snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
 
 #if defined(RTCONFIG_WISP)
-		if (wisp_mode())
-			link_wan[wan_unit] = get_wisp_status();
-		else
+		/* Only the WiFi-STA WAN unit derives its link from the STA state
+		 * (wlcmon_conn / get_wisp_status).  A wired/USB backup unit (e.g.
+		 * wan2=eth1 in "wan wan2" dual-WAN) must fall through to its own
+		 * physical link via get_wanports_status() — otherwise eth1's
+		 * link_wan[] would wrongly track the WiFi STA. */
+		if (wisp_mode()
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+		    && wisp_is_wifi_wan_unit(wan_unit)
+#endif
+		) {
+#if defined(RTCONFIG_DUALWAN)
+			if (nvram_match("enable_wlcmon", "1")) {
+				/* wlcmon_conn=1 when STA is associated (wlcmon-exclusive key,
+				 * avoids conflict with wlcconnect's wlc_state STOPPED writes).
+				 * wlcmon rewrites wlcmon_conn every query tick from the live
+				 * wpa_cli status (wlcmon.c), so it drops to 0 immediately on
+				 * STA loss — it does NOT wait for all-profiles-tried.
+				 * wanduck's disconn_count is the failover hysteresis. */
+				link_wan[wan_unit] = nvram_get_int("wlcmon_conn") ? 1 : 0;
+			} else
+#endif
+				link_wan[wan_unit] = get_wisp_status();
+		} else
 #endif
 		// check wan port.
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
@@ -2145,7 +2387,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 #endif
 			link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
 
-		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
+		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != safe_atoi(ptr)){
 			if(link_wan[wan_unit]){
 //_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, CONNED);
 				nvram_set_int(wired_link_nvram, CONNED);
@@ -2440,6 +2682,333 @@ void check_unpublic_event(const int wan_unit, const int link_internet){
 }
 #endif
 
+/*
+ * WISP (Wireless Internet Service Provider) Captive Portal Detection
+ *
+ * Detects whether the upstream AP the WISP STA is connected to requires a
+ * web-based login (captive portal), and publishes the result via two RAM-only
+ * NVRAM keys read by www/device-map/internet.asp:
+ *   wisp_captive_portal      "1" if a portal is currently blocking Internet
+ *   wisp_captive_portal_url  the detected redirect/login URL, if any
+ *
+ * This module is a READ-ONLY OBSERVER of the WAN/WiFi state machine. It must
+ * never call restart_wan_if / restart_wan / restart_net / restart_wisp_serv,
+ * never force detect_internet()/link_internet into DISCONN, and never touch
+ * DNS, VPN, firewall, QoS or fc nvram/services. The WiFi WAN link is owned by
+ * wlcmon and dual-WAN failover; any restart triggered from here would race
+ * with those and can produce a restart storm (also pauses hw-accel via
+ * wisp_fc_hwaccel_pause() for up to ~90s). A prior implementation cleared
+ * wanN_dns and called restart_wan_if to "help" the portal page load: it did
+ * not help (dnsmasq already forwards to the portal's own DNS; the WAN bounce
+ * only wrote wanN_dns right back via udhcpc) and it silently disabled VPN
+ * servers with no guaranteed restore path. Both have been removed here.
+ */
+#if defined(RTCONFIG_WISP)
+#define WISP_PORTAL_RETRY_INTERVAL	5	/* seconds, while a portal is pending login, or the
+						 * probe result is still inconclusive (see
+						 * WISP_PORTAL_INCONCLUSIVE_RETRY_MAX below) */
+#define WISP_PORTAL_INCONCLUSIVE_RETRY_MAX	6	/* keep retrying an inconclusive read at
+							 * WISP_PORTAL_RETRY_INTERVAL this many times
+							 * (~30s) before backing off to the slow
+							 * recheck cadence -- covers transient DNS/route
+							 * hiccups right after WAN-up without hammering
+							 * curl forever on a genuine outage */
+#define WISP_PORTAL_RECHECK_INTERVAL	300	/* seconds, periodic re-check once healthy, or once an
+						 * inconclusive streak has exceeded the retry cap
+						 * above (e.g. hotel 24h re-auth) */
+#define WISP_PORTAL_CHECK_URL		"http://connectivitycheck.gstatic.com/generate_204"
+#define WISP_PORTAL_RESULT_FILE	"/tmp/wisp_captive_portal_probe"
+/* Some portals (e.g. UniFi guest hotspot) embed a long signed/encrypted
+ * "ec" challenge token in the redirect Location header -- real-world
+ * samples have run past 256 bytes. Every buffer that stores this URL
+ * end-to-end (curl output line, the copy handed back to the caller, and
+ * the last-logged copy used for change detection) must share this same
+ * size, or whichever stage has the smallest buffer silently truncates the
+ * token and the login POST fails with an auth error even though the
+ * splash page itself still renders. */
+#define WISP_PORTAL_URL_MAX		512
+
+static int wisp_probe_checked = 0;
+static unsigned int wisp_probe_last_check = 0;
+static int wisp_portal_last_logged_status = -2;	/* last CONCLUSIVE (0/1) classification logged;
+						 * sentinel -2 = nothing logged yet this episode.
+						 * An inconclusive (-1) read must NEVER be stored
+						 * here -- see wisp_run_portal_probe(). */
+static int wisp_portal_inconc_logged = 0;	/* the "inconclusive" line for the current streak is out */
+static int wisp_probe_inconclusive_streak = 0;	/* consecutive -1 reads since the last 0/1 read */
+
+static void wisp_set_portal_login_state(int need_login)
+{
+	int cur = nvram_get_int("wisp_captive_portal");
+
+	if (need_login) {
+		if (cur != 1)
+			nvram_set_int("wisp_captive_portal", 1);
+	}
+	else if (cur != 0) {
+		nvram_set_int("wisp_captive_portal", 0);
+	}
+}
+
+static void wisp_set_portal_redirect_url(const char *url)
+{
+	if (url && *url)
+		nvram_set("wisp_captive_portal_url", url);
+	else if (nvram_get("wisp_captive_portal_url") != NULL)
+		nvram_unset("wisp_captive_portal_url");
+}
+
+static void wisp_reset_portal_check(void)
+{
+	if (wisp_probe_checked == 0 && wisp_probe_last_check == 0 && nvram_get_int("wisp_captive_portal") == 0)
+		return;
+
+	wisp_probe_checked = 0;
+	wisp_probe_last_check = 0;
+	wisp_portal_last_logged_status = -2;
+	wisp_portal_inconc_logged = 0;
+	wisp_probe_inconclusive_streak = 0;
+	wisp_set_portal_login_state(0);
+	wisp_set_portal_redirect_url(NULL);
+}
+
+/* True once wan_unit has actually completed DHCP (or a static/PPP config)
+ * and holds a real address -- is_wan_connect() alone can flip true a beat
+ * before that, e.g. right after WISP STA association but before udhcpc's
+ * bound handler has run, which used to make the very first captive-portal
+ * probe race a not-yet-configured interface and come back inconclusive. */
+static int wisp_wan_ready(int wan_unit)
+{
+	char prefix[16], tmp[100];
+	char *ip;
+
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+	ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
+	return (*ip && strcmp(ip, "0.0.0.0") != 0);
+}
+
+/* Fast-retry (WISP_PORTAL_RETRY_INTERVAL) applies while a portal is
+ * confirmed pending login, and also for a bounded number of attempts right
+ * after an inconclusive read -- most inconclusive reads are a transient
+ * DNS/route hiccup right after WAN-up and clear up within a few seconds.
+ * Once the streak exceeds WISP_PORTAL_INCONCLUSIVE_RETRY_MAX we fall back to
+ * the slow recheck cadence instead of hammering curl on what is more likely
+ * a genuine outage by then. */
+static int wisp_portal_fast_retry_due(void)
+{
+	if (nvram_get_int("wisp_captive_portal") == 1)
+		return 1;
+
+	/* The streak is bumped only on a -1 read and cleared on any 0/1 read,
+	 * so "streak > 0" is exactly "the most recent read was inconclusive".
+	 * Keyed off the streak rather than the last-logged classification so
+	 * that the logging gate can stay untouched by inconclusive reads. */
+	return (wisp_probe_inconclusive_streak > 0 &&
+		wisp_probe_inconclusive_streak < WISP_PORTAL_INCONCLUSIVE_RETRY_MAX);
+}
+
+static unsigned int wisp_retry_timeout(unsigned int default_timeout)
+{
+	unsigned int now, diff, remaining;
+
+	if (!wisp_mode() || !wisp_portal_fast_retry_due())
+		return default_timeout;
+
+	if (wisp_probe_last_check == 0)
+		return 0;
+
+	now = uptime();
+	diff = now - wisp_probe_last_check;
+	if (diff >= WISP_PORTAL_RETRY_INTERVAL)
+		return 0;
+
+	remaining = WISP_PORTAL_RETRY_INTERVAL - diff;
+	return (remaining < default_timeout) ? remaining : default_timeout;
+}
+
+/*
+ * Probes WISP_PORTAL_CHECK_URL over the given WAN unit's own interface
+ * (important for dual-WAN WISP: without binding, the probe can silently
+ * measure whatever interface currently holds the default route instead of
+ * the WiFi WAN being evaluated). Does not follow redirects, so the first
+ * Location: is preserved instead of whatever the redirect chain ends on.
+ *
+ * Return values:
+ *   1  = real Internet (HTTP 204)
+ *   0  = captive portal detected (HTTP 200/301/302); redirect_url filled if
+ *        the upstream portal provided a Location: header (301/302); empty for
+ *        a splash page served directly at 200.
+ *  -1  = inconclusive (curl failed / HTTP 0 / 4xx / 5xx) -- caller must NOT
+ *        treat this the same as "portal detected": it also fires for a
+ *        genuine outage (DNS down, destination blocked), so flipping the
+ *        portal flag on -1 would misreport plain connectivity loss as a
+ *        login prompt.
+ */
+static int wisp_probe_captive_portal(int wan_unit, char *redirect_url, size_t redirect_url_len)
+{
+	char *wan_ifname;
+	char cmd[400], line[16], url_line[WISP_PORTAL_URL_MAX];
+	FILE *fp;
+	int http_code = 0;
+	int ret;
+
+	if (redirect_url && redirect_url_len > 0)
+		redirect_url[0] = '\0';
+
+	wan_ifname = get_wan_ifname(wan_unit);
+	if (!wan_ifname || !*wan_ifname)
+		return -1;
+
+	remove(WISP_PORTAL_RESULT_FILE);
+	snprintf(cmd, sizeof(cmd),
+		"curl -s -o /dev/null -w '%%{http_code}\\n%%{redirect_url}' "
+		"--max-time 5 --connect-timeout 3 --retry 0 --interface '%s' "
+		"'%s' > %s 2>/dev/null",
+		wan_ifname, WISP_PORTAL_CHECK_URL, WISP_PORTAL_RESULT_FILE);
+
+	ret = system(cmd);
+	if (ret != 0) {
+		/* curl failed below the HTTP layer, so there is no status code
+		 * to classify -- report it as inconclusive. Trace curl's own
+		 * exit code (6=DNS resolve, 7=connect, 28=timeout) because this
+		 * path returns before the verbose trace below and otherwise
+		 * leaves no record at all of WHY a probe was inconclusive. */
+		_dprintf("wanduck: wisp captive-portal probe wan_unit=%d if=%s url=%s -> curl failed, "
+			"status=0x%x exit=%d\n", wan_unit, wan_ifname, WISP_PORTAL_CHECK_URL,
+			ret, WIFEXITED(ret) ? WEXITSTATUS(ret) : -1);
+		remove(WISP_PORTAL_RESULT_FILE);
+		return -1;
+	}
+
+	fp = fopen(WISP_PORTAL_RESULT_FILE, "r");
+	remove(WISP_PORTAL_RESULT_FILE);
+	if (!fp)
+		return -1;
+
+	if (fgets(line, sizeof(line), fp))
+		http_code = atoi(line);
+
+	url_line[0] = '\0';
+	if (fgets(url_line, sizeof(url_line), fp))
+		url_line[strcspn(url_line, "\r\n")] = '\0';
+	fclose(fp);
+
+	/* Verbose per-probe trace -- this runs every WISP_PORTAL_RETRY_INTERVAL
+	 * while a portal is pending, so keep it out of the real syslog (only
+	 * shows up with debug logging enabled); wisp_run_portal_probe() below
+	 * emits the real syslog line, but only on a state transition. */
+	_dprintf("wanduck: wisp captive-portal probe wan_unit=%d if=%s url=%s -> http_code=%d redirect=[%s]\n",
+		wan_unit, wan_ifname, WISP_PORTAL_CHECK_URL, http_code, url_line);
+
+	if (http_code == 204)
+		return 1;
+
+	if (http_code == 301 || http_code == 302) {
+		if (redirect_url && *url_line)
+			strlcpy(redirect_url, url_line, redirect_url_len);
+		return 0;
+	}
+
+	if (http_code == 200)
+		return 0;	/* splash page served directly, no redirect URL to offer */
+
+	return -1;
+}
+
+static void wisp_run_portal_probe(int wan_unit)
+{
+	char redirect_url[WISP_PORTAL_URL_MAX] = {0};
+	int status = wisp_probe_captive_portal(wan_unit, redirect_url, sizeof(redirect_url));
+
+	wisp_probe_checked = 1;
+	wisp_probe_last_check = uptime();
+
+	/* Log to syslog only on a state transition -- otherwise a portal that
+	 * takes the user a few minutes to log into would write a line every
+	 * WISP_PORTAL_RETRY_INTERVAL the whole time. One line in, one line out.
+	 * Do NOT key this off redirect_url content: CoovaChilli/UniFi-style
+	 * portals mint a fresh challenge/md/ec nonce on every probe, so a
+	 * URL-content comparison never settles and defeats the transition
+	 * gate entirely. */
+	if (status == 1) {
+		if (wisp_portal_last_logged_status != 1)
+			logmessage("wanduck", "wisp: captive-portal cleared, Internet reachable on wan_unit=%d", wan_unit);
+		wisp_set_portal_login_state(0);
+		wisp_set_portal_redirect_url(NULL);
+		wisp_portal_last_logged_status = 1;
+		wisp_portal_inconc_logged = 0;
+		wisp_probe_inconclusive_streak = 0;
+	}
+	else if (status == 0) {
+		if (wisp_portal_last_logged_status != 0)
+			logmessage("wanduck", "wisp: captive-portal detected on wan_unit=%d, redirect_url=[%s]",
+				wan_unit, redirect_url);
+		wisp_set_portal_login_state(1);
+		wisp_set_portal_redirect_url(redirect_url);
+		wisp_portal_last_logged_status = 0;
+		wisp_portal_inconc_logged = 0;
+		wisp_probe_inconclusive_streak = 0;
+	}
+	else {
+		/* An inconclusive read deliberately leaves the published state
+		 * alone ("keeping prior state"), so it must leave the logging
+		 * gate alone too: storing -1 in wisp_portal_last_logged_status
+		 * would make the NEXT conclusive read look like a fresh
+		 * transition and re-log it -- with the entire redirect URL for
+		 * the "detected" case. That turned every single transient curl
+		 * failure into two syslog lines (~0.5KB), which is the very
+		 * flash churn this gate exists to prevent; the nonce-keying
+		 * removed earlier was only the other half of it. Announce the
+		 * inconclusive state itself once per streak instead. */
+		if (!wisp_portal_inconc_logged) {
+			logmessage("wanduck", "wisp: captive-portal probe inconclusive on wan_unit=%d, keeping prior state", wan_unit);
+			wisp_portal_inconc_logged = 1;
+		}
+		if (wisp_probe_inconclusive_streak < WISP_PORTAL_INCONCLUSIVE_RETRY_MAX) {
+			wisp_probe_inconclusive_streak++;
+			if (wisp_probe_inconclusive_streak == WISP_PORTAL_INCONCLUSIVE_RETRY_MAX)
+				logmessage("wanduck", "wisp: captive-portal probe still inconclusive after %d fast retries on wan_unit=%d, "
+					"backing off to %ds recheck", WISP_PORTAL_INCONCLUSIVE_RETRY_MAX, wan_unit, WISP_PORTAL_RECHECK_INTERVAL);
+		}
+		/* status == -1: leave wisp_captive_portal/_url untouched */
+	}
+}
+
+static void wisp_check_portal_state(void)
+{
+	int wan_unit;
+	unsigned int now, interval;
+
+	if (!wisp_mode()) {
+		wisp_reset_portal_check();
+		return;
+	}
+
+	wan_unit = wan_primary_ifunit();
+	if (wan_unit < WAN_UNIT_FIRST || wan_unit >= WAN_UNIT_MAX || !is_wan_connect(wan_unit) ||
+			!wisp_wan_ready(wan_unit)) {
+		/* WAN not actually up yet (e.g. STA hasn't associated, or
+		 * associated but DHCP hasn't handed out a lease yet) -- don't
+		 * waste a probe and don't touch existing state. */
+		return;
+	}
+
+	if (!wisp_probe_checked) {
+		logmessage("wanduck", "wisp: WAN(%d) up with DHCP lease, running initial captive-portal probe", wan_unit);
+		wisp_run_portal_probe(wan_unit);
+		return;
+	}
+
+	interval = wisp_portal_fast_retry_due() ? WISP_PORTAL_RETRY_INTERVAL : WISP_PORTAL_RECHECK_INTERVAL;
+
+	now = uptime();
+	if (wisp_probe_last_check != 0 && now - wisp_probe_last_check < interval)
+		return;
+
+	wisp_run_portal_probe(wan_unit);
+}
+#endif
+
 int if_wan_connected(int wan_unit){
 	int link_internet;
 
@@ -2525,8 +3094,50 @@ _dprintf("nat_rule: start_nat_rules 3.\n");
 		if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_USB)
 			system("/usr/sbin/modem_status.sh init_sms");
 #endif
+#if defined(RTCONFIG_WISP)
+		{
+			int _wlcmon_skip = wisp_mode() && nvram_match("enable_wlcmon", "1");
+#if defined(RTCONFIG_DUALWAN)
+			if (_wlcmon_skip) {
+				/* Skip only for the WiFi WAN unit (wlcmon owns it).  In WISP
+				 * secwan-first the WiFi WAN uses the "wan" token, not 2g/5g,
+				 * so match wisp_is_wifi_wan_unit() which covers WAN/2G/5G. */
+				_wlcmon_skip = wisp_is_wifi_wan_unit(wan_unit);
+			}
+#endif
+			if (_wlcmon_skip) {
+				/* wlcmon owns STA reconnection (association/DHCP) for this
+				 * WAN unit, but nothing else here re-validates the WAN
+				 * state machine or removes the walled-garden NAT rules
+				 * stop_nat_rules() just installed above -- restart_wan_if
+				 * is the only other path that would do either, and it's
+				 * intentionally never called for this unit. Left alone,
+				 * wan_state stays WAN_STATE_DISCONNECTED forever (the
+				 * link-up half of the PHY poll only clears auxstate, it
+				 * never restores state -- see the link_wan[] handling
+				 * earlier in this file) even though the STA is fully
+				 * re-associated and passing real traffic: the DNAT
+				 * redirect to the DUT's own "no internet" pages never
+				 * gets undone, and is_wan_connect() being wedged false
+				 * also permanently stops wisp_check_portal_state()'s
+				 * captive-portal probe from ever running again. Reinstate
+				 * both directly since PHY_RECONN already means the link
+				 * came back. */
+				nat_state = start_nat_rules();
+				record_wan_state_nvram(wan_unit, WAN_STATE_CONNECTED, WAN_STOPPED_REASON_NONE, WAN_AUXSTATE_NONE);
 
+				syslog(LOG_NOTICE, "wanduck(%d): wisp+wlcmon wifi-wan, skip restart_wan_if in PHY_RECONN\n", wan_unit);
+				_dprintf("\n# wanduck(%d): wisp+wlcmon wifi-wan, skip restart_wan_if in PHY_RECONN\n", wan_unit);
+				return;
+			}
+		}
+#endif
 		_dprintf("\n# wanduck(%d): Try to restart_wan_if.\n", wan_unit);
+#if defined(RTBE58_GO)
+		/* [wisp-fc dbg] restart_wan_if -> start_wan -> fc_init resumes fc. */
+		if (wisp_mode())
+			logmessage("wisp", "[wisp-fc] wanduck unit%d PHY_RECONN: restart_wan_if -- fc will resume via start_wan", wan_unit);
+#endif
 		snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
 		notify_rc_and_wait(cmd);
 #ifdef RTCONFIG_MULTICAST_IPTV
@@ -3335,7 +3946,42 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 
 	_dprintf("%s: wan(%d) Starting...\n", __FUNCTION__, wan_unit);
 	// Set the modem to be running.
+	{
+		int prev = wan_primary_ifunit();
+		const char *dir = (wan_unit > prev) ? "failover" : "failback";
+		logmessage("DualWAN", "WAN switch: wan%d -> wan%d (%s)", prev, wan_unit, dir);
+	}
 	set_wan_primary_ifunit(wan_unit);
+
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+	/* WISP secwan-first: switching TO the wired/USB backup leaves the WiFi STA
+	 * WAN as standby.  Both face the same PAP subnet, so a lingering WiFi udhcpc
+	 * keeps a duplicate connected route (dev wlN) and a 2nd PAP lease.  Demote it
+	 * here so it runs for EVERY switch path (boot-time initial switch, the
+	 * restart_wan_if-driven switch, and the periodic failback branch) -- stop
+	 * ONLY its L3 via stop_udhcpc (deconfig clears IP/routes, marks STOPPED)
+	 * while leaving the STA netdev associated for a fast failover back.  The
+	 * restart_other loop below then skips it so it is not re-DHCPed. */
+	if (wisp_secwan_first_active() && !wisp_is_wifi_wan_unit(wan_unit)) {
+		int wu;
+		wisp_backup_switch_ts = uptime();	/* start the settle grace for failback */
+		for (wu = WAN_UNIT_FIRST; wu < WAN_UNIT_MAX; wu++) {
+			char pf[sizeof("/var/run/udhcpcXXXXXXXXXX.pid")];
+			snprintf(pf, sizeof(pf), "/var/run/udhcpc%d.pid", wu);
+			/* A WiFi STA that never associated (PAP unreachable) is parked at
+			 * WAN_STATE_STOPPED but its udhcpc is still alive spinning DISCOVER,
+			 * so the plain "state != STOPPED" guard would skip it and leave the
+			 * process running until a manual PAP bss-up finally binds it.  Also
+			 * reap it when a udhcpc pidfile is still alive. */
+			if (wu != wan_unit && wisp_is_wifi_wan_unit(wu)
+					&& (get_wan_state(wu) != WAN_STATE_STOPPED
+						|| wisp_pidfile_alive(pf))) {
+				logmessage("wisp-dw", "secwan-first: switch to backup wan%d -- demote WiFi wan%d (stop udhcpc, keep STA associated)", wan_unit, wu);
+				stop_udhcpc(wu);
+			}
+		}
+	}
+#endif
 
 	clear_nf_conntrack(prefix);
 
@@ -3363,6 +4009,26 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 			if(unit == wan_unit)
 				continue;
+
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+			if (wisp_secwan_first_active()) {
+				/* switching TO the backup: never restart the demoted WiFi
+				 * standby (see the demote above); it stays associated, no udhcpc. */
+				if (!wisp_is_wifi_wan_unit(wan_unit) && wisp_is_wifi_wan_unit(unit))
+					continue;
+				/* switching TO WiFi (backup lost): if the wired/USB backup has no
+				 * LINK (unplugged), don't re-spin a useless udhcpc on it -- stop
+				 * its L3 instead; a later link-up/bootstrap restarts it and fails
+				 * back.  (Mirrors the WiFi-standby demote for the reverse case.) */
+				if (wisp_is_wifi_wan_unit(wan_unit) && !wisp_is_wifi_wan_unit(unit)
+						&& !link_wan[unit]) {
+					logmessage("wisp-dw", "secwan-first: switch to WiFi wan%d -- backup wan%d has no link, stop its udhcpc (no re-spin)", wan_unit, unit);
+					if (get_wan_state(unit) != WAN_STATE_STOPPED)
+						stop_udhcpc(unit);
+					continue;
+				}
+			}
+#endif
 
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
@@ -3445,6 +4111,158 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 	return 1;
 }
 
+#if defined(RTBE58_GO)
+/*
+ * [wisp-fc] Read the REAL accelerator state from `fc status`.
+ * Returns 1 = "Ucast Learning Disabled", 0 = Enabled, -1 = unknown.
+ * Ground truth, independent of the wisp_fc_paused intent marker.
+ */
+static int wisp_fc_ucast_disabled(void)
+{
+	FILE *fp;
+	char line[256];
+	int ret = -1;
+
+	fp = popen("fc status", "r");
+	if (!fp)
+		return -1;
+	while (fgets(line, sizeof(line), fp)) {
+		if (strstr(line, "Ucast Learning")) {
+			if (strstr(line, "Disabled"))
+				ret = 1;
+			else if (strstr(line, "Enabled"))
+				ret = 0;
+			break;
+		}
+	}
+	pclose(fp);
+	return ret;
+}
+
+/*
+ * [wisp-fc] Periodic sampler + resume point for the REAL Broadcom flow-cache
+ * state. The edge logs ("[wisp-fc] ... pausing fc" / "fc_init") say WHY a
+ * pause happened; this says WHETHER fc is actually stuck disabled over time
+ * (an intent line can be a transient manual pause, not the root cause).
+ *
+ * Reads the true accelerator state via wisp_fc_ucast_disabled() ("Ucast
+ * Learning") plus link_internet + fc_disable and correlates with the WAN
+ * state. Self-throttles to ~90s. This is ALSO the designated recovery point:
+ * a self-healing C2D->D2C (STA never disassociated) has no start_wan and so
+ * never runs fc_init, leaving fc paused forever -- but resuming on the wanduck
+ * D2C edge is unsafe (restart_wan_if storms, 072002.log; an in-place enable
+ * mid-transition risks the host-wget-fail re-learn, TENTH). Here the WAN has
+ * settled, so re-enabling fc AND rebuilding the firewall is safe. Logs on
+ * transition, warns + recovers while fc is Disabled but link_internet==2 (the
+ * black-hole condition), reports recovery, and emits a low-rate heartbeat.
+ */
+static void wisp_fc_state_probe(void)
+{
+	static long last_sample = 0;
+	static int  prev_ucast  = -1;	/* -1 unknown, 0 Disabled, 1 Enabled */
+	static int  stuck_cnt   = 0;
+	static int  hb_cnt      = 0;
+	int ucast = -1, d, link_internet, fc_disable, st, unit;
+	long now;
+
+	if (!wisp_mode())
+		return;
+
+	now = uptime();
+	if (last_sample != 0 && (now - last_sample) < 90)	/* poll every ~90s */
+		return;
+	last_sample = now;
+
+	/* single fc-status reader; wisp_fc_ucast_disabled() returns 1=Disabled,
+	 * 0=Enabled, -1=unknown -- map to this function's convention where
+	 * ucast is 1=Enabled, 0=Disabled, -1=unknown. */
+	d = wisp_fc_ucast_disabled();
+	ucast = (d < 0) ? -1 : !d;
+
+	link_internet = nvram_get_int("link_internet");
+	fc_disable    = nvram_get_int("fc_disable");
+	unit          = current_wan_unit;
+	st            = conn_changed_state[unit];
+
+	/* transition edge (Enabled<->Disabled) */
+	if (ucast != -1 && ucast != prev_ucast) {
+		logmessage("wisp", "[wisp-fc] probe: fc_ucast %s->%s fc_disable=%d link_internet=%d state=%d unit=%d",
+			(prev_ucast == 1) ? "Enabled" : ((prev_ucast == 0) ? "Disabled" : "?"),
+			(ucast == 1) ? "Enabled" : "Disabled", fc_disable, link_internet, st, unit);
+		prev_ucast = ucast;
+	}
+
+	/* black-hole condition: accelerator down while we are online. NOTE
+	 * link_internet==2 is the "internet confirmed" nvram state (0=no link,
+	 * 1=link up/internet unverified, 2=internet OK); the stuck syndrome shows
+	 * link_internet=2 because ping to PAP takes the slow path and passes while
+	 * accelerated TCP flows are black-holed (071802.log) -- so the old ==1
+	 * gate never fired. Resume fc here (settled state) with a plain "fc enable"
+	 * only -- do NOT force --hw-accel 1 (off/unavailable on BP3) and do NOT
+	 * restart_wan (would storm). Gated on fc_disable==0 so a legitimate disable
+	 * (QoS / PPTP-GRE workaround) is never overridden. */
+	if (ucast == 0 && link_internet == 2
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+	    /* The fc/Archer black-hole is a WiFi(5G)-WAN-specific defect: it only
+	     * arises when the accelerated flows ride the WiFi STA WAN.  When the
+	     * active WAN is the wired/USB secwan, a Disabled accelerator is NOT a
+	     * black-hole -- it is only the residue of a deliberate transient pause
+	     * (wanduck C2D / wlcmon) -- so the aggressive restart_firewall recovery
+	     * must not run for it (that is the secwan-first storm).  Handle the
+	     * secwan case in the else-if below (one-shot fc enable, no firewall). */
+	    && wisp_is_wifi_wan_unit(unit)
+#endif
+	   ) {
+		stuck_cnt++;
+		logmessage("wisp", "[wisp-fc] WARNING: fc_ucast=Disabled but link_internet=2 (fc_disable=%d state=%d unit=%d stuck=%d) -- accelerator black-hole",
+			fc_disable, st, unit, stuck_cnt);
+		if (fc_disable == 0) {
+			logmessage("wisp", "[wisp-fc] probe resume: online but fc Disabled -> fc enable + restart_firewall (settled, no hw-accel, no restart_wan)");
+			eval("fc", "enable");			/* re-enable the accelerator first */
+			nvram_set_int("wisp_fc_paused", 0);
+			/* The C2D->D2C self-heal only ran start_nat_rules() (NAT table
+			 * only, and a no-op when nat_state==NORMAL); the filter FORWARD
+			 * chain is never rebuilt on that path and can be left stale, so
+			 * LAN cannot reach the internet even with fc back on -- recovered
+			 * on device only by iptables -F / restart_firewall (072003.log).
+			 * Rebuild the full ruleset here. NOTE this is gated on the
+			 * fc-Disabled black-hole signal; a stale filter while fc is still
+			 * Enabled would not be caught (no simple status to read). */
+			notify_rc("restart_firewall");
+		}
+	}
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+	else if (ucast == 0 && link_internet == 2 && fc_disable == 0
+		 && nvram_get_int("wisp_fc_paused")) {
+		/* secwan (wired/USB) is the active WAN and online: not a black-hole,
+		 * just the leftover of a transient pause.  Restore acceleration once so
+		 * the working backup regains the fast path, but do NOT restart_firewall:
+		 * the secwan came up via a full switch_wan_line() so its FORWARD chain
+		 * is already correct, and repeating restart_firewall here is exactly the
+		 * secwan-first storm this probe must avoid. */
+		logmessage("wisp", "[wisp-fc] probe: secwan wan%d online, fc Disabled -> fc enable (no restart_firewall)", unit);
+		eval("fc", "enable");
+		nvram_set_int("wisp_fc_paused", 0);
+		stuck_cnt = 0;
+	}
+#endif
+	else {
+		if (stuck_cnt > 0)
+			logmessage("wisp", "[wisp-fc] recovered: fc_ucast=%s link_internet=%d after stuck=%d cycles",
+				(ucast == 1) ? "Enabled" : "?", link_internet, stuck_cnt);
+		stuck_cnt = 0;
+	}
+
+	/* heartbeat every ~10 samples (~15min) for a healthy baseline */
+	if (++hb_cnt >= 10) {
+		hb_cnt = 0;
+		logmessage("wisp", "[wisp-fc] probe hb: fc_ucast=%s fc_disable=%d link_internet=%d state=%d unit=%d",
+			(ucast == 1) ? "Enabled" : ((ucast == 0) ? "Disabled" : "?"),
+			fc_disable, link_internet, st, unit);
+	}
+}
+#endif
+
 int wanduck_main(int argc, char *argv[]){
 	char *http_servport, *dns_servport;
 	int clilen;
@@ -3500,12 +4318,12 @@ int wanduck_main(int argc, char *argv[]){
 		dns_servport = DFL_DNS_SERV_PORT;
 	}
 	else{
-		if(atoi(argv[1]) <= 0)
+		if(safe_atoi(argv[1]) <= 0)
 			http_servport = DFL_HTTP_SERV_PORT;
 		else
 			http_servport = (char *)argv[1];
 
-		if(atoi(argv[2]) <= 0)
+		if(safe_atoi(argv[2]) <= 0)
 			dns_servport = DFL_DNS_SERV_PORT;
 		else
 			dns_servport = (char *)argv[2];
@@ -3587,14 +4405,39 @@ int wanduck_main(int argc, char *argv[]){
 	get_related_nvram(); // initial the System's variables.
 	get_lan_nvram(); // initial the LAN's variables.
 
+#if defined(RTCONFIG_WISP)
+	wisp_check_portal_state();
+#endif
+
 	nat_redirect_enable_old = nat_redirect_enable;
 	nat_state = nvram_get_int("nat_state");
 
 #ifdef RTCONFIG_DUALWAN
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+	/* secwan-first (backup-preferred) WISP dual-WAN: make the wired/USB backup
+	 * the failback target so wanduck preempts to it whenever it is healthy, and
+	 * falls back to the WiFi STA when the backup is gone.  Requires wans_mode=fb
+	 * (the preempt uses the failback path; the backup->WiFi drop uses the stock
+	 * failover path which also works in fo).  Stock WiFi-primary otherwise. */
+	if (wisp_secwan_first_active()) {
+		WAN_FB_UNIT = wisp_is_wifi_wan_unit(WAN_UNIT_SECOND)
+		            ? WAN_UNIT_FIRST : WAN_UNIT_SECOND;
+		if (strcmp(dualwan_mode, "fb"))
+			_dprintf("wanduck: WISP secwan-first active but wans_mode!=fb (%s) -- "
+			         "preempt-to-backup needs fb; only backup-down->WiFi will work.\n",
+			         dualwan_mode);
+	}
+	else
+#endif
 #if 1
 	WAN_FB_UNIT = WAN_UNIT_FIRST;
 #else
 	WAN_FB_UNIT = WAN_UNIT_SECOND;
+#endif
+
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+	logmessage("wisp-dw", "wanduck start: wisp_secwan_first_active=%d WAN_FB_UNIT=%d(%s) dualwan_mode=%s wans_dualwan=[%s]",
+		wisp_secwan_first_active(), WAN_FB_UNIT, get_wan_ifname(WAN_FB_UNIT), dualwan_mode, nvram_safe_get("wans_dualwan"));
 #endif
 
 	// let wanduck's first detect be activated after start_wan().
@@ -3887,6 +4730,13 @@ _dprintf("wanduck(%d)(first detect   end): state %d, state_old %d, changed %d, w
 	int first_loop = 1;
 	unsigned int diff;
 	for(;;){
+#if defined(RTCONFIG_WISP)
+		wisp_check_portal_state();
+#endif
+#if defined(RTBE58_GO)
+		wisp_fc_state_probe();
+#endif
+
 		if(!first_loop){
 			now = uptime();
 			diff = now-loop_sec;
@@ -3895,6 +4745,10 @@ _dprintf("wanduck(%d)(first detect   end): state %d, state_old %d, changed %d, w
 				rset = allset;
 				tval.tv_sec = scan_interval-diff;
 				tval.tv_usec = 0;
+
+#if defined(RTCONFIG_WISP)
+				tval.tv_sec = wisp_retry_timeout(tval.tv_sec);
+#endif
 
 				goto WANDUCK_SELECT;
 			}
@@ -3907,6 +4761,10 @@ _dprintf("wanduck(%d)(first detect   end): state %d, state_old %d, changed %d, w
 		rset = allset;
 		tval.tv_sec = scan_interval;
 		tval.tv_usec = 0;
+
+#if defined(RTCONFIG_WISP)
+		tval.tv_sec = wisp_retry_timeout(tval.tv_sec);
+#endif
 
 		get_related_nvram();		
 
@@ -4111,6 +4969,24 @@ _dprintf("wanduck(%d): decide start_wan_if or stop_wan_if...\n", wan_unit);
 						else
 #endif
 						{
+#if defined(RTCONFIG_WISP)
+							{
+								int _wlcmon_skip = wisp_mode() && nvram_match("enable_wlcmon", "1");
+#if defined(RTCONFIG_DUALWAN)
+								if (_wlcmon_skip) {
+									/* Skip only for the WiFi WAN unit (wlcmon owns it).  In WISP
+									 * secwan-first the WiFi WAN uses the "wan" token, not 2g/5g,
+									 * so match wisp_is_wifi_wan_unit() which covers WAN/2G/5G. */
+									_wlcmon_skip = wisp_is_wifi_wan_unit(wan_unit);
+								}
+#endif
+								if (_wlcmon_skip) {
+									syslog(LOG_NOTICE, "wanduck(%d): wisp+wlcmon wifi-wan, skip restart_wan_if (wlcmon owns WAN)\n", wan_unit);
+									_dprintf("\n# wanduck(%d): wisp+wlcmon wifi-wan, skip restart_wan_if (wlcmon owns WAN)\n", wan_unit);
+									goto WANDUCK_SELECT;
+								}
+							}
+#endif
 							// connection be activated by wanduck.
 							_dprintf("\n# wanduck(%d): run restart_wan_if.\n", wan_unit);
 							snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
@@ -4992,6 +5868,10 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 #endif
 
 					_dprintf("\n# Enable direct rule(C2D)......\n");
+#if defined(RTBE58_GO)
+					logmessage("wisp", "wanduck: WAN unit%d C2D (link_wan=%d) -- pausing fc", current_wan_unit, link_wan[current_wan_unit]);
+					wisp_fc_hwaccel_pause();
+#endif
 
 #if defined(RTCONFIG_AUTO_WANPORT) && !defined(RTCONFIG_BCM_MFG)
 					if(link_wan[current_wan_unit] == 0 && is_auto_wanport_enabled() == 2){
@@ -5083,6 +5963,21 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 				_dprintf("\n# Disable direct rule(D2C)......\n");
 				rule_setup = 0;
 
+#if defined(RTBE58_GO)
+				/* Self-healing C2D->D2C: the STA never disassociated, so
+				 * recovery is handle_wan_line() only (no start_wan -> no
+				 * fc_init), and fc paused at the preceding C2D is left
+				 * disabled on this path. We deliberately do NOT resume fc
+				 * here: a restart_wan_if bounces the WAN and re-arms this
+				 * very branch -> restart storm (072002.log); an in-place
+				 * "fc enable" this early (rules still settling) can re-learn
+				 * a stale flow and black-hole host traffic (TENTH). fc resume
+				 * is deferred to wisp_fc_state_probe(), which only re-enables
+				 * fc once we are demonstrably online-but-stuck and settled. */
+				if (wisp_mode())
+					logmessage("wisp", "[wisp-fc] wanduck unit%d D2C self-heal: handle_wan_line only, fc resume deferred to probe (paused=%d fc_disable=%d)",
+						current_wan_unit, nvram_get_int("wisp_fc_paused"), nvram_get_int("fc_disable"));
+#endif
 				handle_wan_line(current_wan_unit, rule_setup);
 			}
 		}
@@ -5126,7 +6021,31 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 					}
 					_dprintf("# wanduck(%d): switch hold-off, %lds left.\n", current_wan_unit, SWITCH_HOLDOFF - (hold_now - last_line_switch_ts));
 				}
-				else{
+				else
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+				{
+				/* secwan-first: hold off the failback to the WiFi STA ONLY during
+				 * the settle grace right after switching to the backup, and ONLY
+				 * while the backup still has physical LINK.  This absorbs the
+				 * transient conn/ping hiccup during the fc-pause window (which
+				 * would otherwise ping-pong eth1<->wl1) WITHOUT disabling L3
+				 * failover: once the grace elapses, a backup that keeps LINK but is
+				 * L3-dead (no DHCP / no internet) is failed back to WiFi normally. */
+				long _secwan_grace = nvram_get_int("wisp_secwan_grace");
+				if(_secwan_grace <= 0)
+					_secwan_grace = WISP_SECWAN_GRACE_SECS;
+				if(wisp_secwan_first_active()
+						&& !wisp_is_wifi_wan_unit(current_wan_unit)
+						&& wisp_is_wifi_wan_unit(other_wan_unit)
+						&& link_wan[current_wan_unit]
+						&& (uptime() - wisp_backup_switch_ts) < _secwan_grace){
+					logmessage("wisp-dw", "secwan-first: backup wan%d has link, within %lds settle grace (elapsed %lds) -- hold failback to WiFi wan%d",
+						current_wan_unit, _secwan_grace, (long)(uptime() - wisp_backup_switch_ts), other_wan_unit);
+					set_disconn_count(current_wan_unit, S_IDLE);
+				}
+				else
+#endif
+				{
 					_dprintf("# wanduck(%d): Switching the connect to the %d WAN line...\n", current_wan_unit, get_next_unit(current_wan_unit));
 					set_disconn_count(current_wan_unit, S_IDLE);;
 					if(!link_wan[current_wan_unit] && dualwan_unit__usbif(current_wan_unit))
@@ -5134,6 +6053,9 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 					else
 						switch_wan_line(other_wan_unit, 1);
 				}
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+				}
+#endif
 			}
 			else
 #endif // RTCONFIG_DUALWAN || RTCONFIG_USB_MODEM
@@ -5206,15 +6128,37 @@ if(test_log) _dprintf("nat_rule: stop_nat_rules 7.\n");
 		}
 
 #ifdef RTCONFIG_DUALWAN
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+		if(wisp_secwan_first_active() && nvram_match("wisp_dualwan_dbg", "1"))
+			logmessage("wisp-dw", "tick: mode=%s FB_UNIT=%d cur=%d oth=%d link[%d,%d] cs[%d,%d] ccs[%d,%d] wanst[%d,%d] fbcnt=%d/%d",
+				dualwan_mode, WAN_FB_UNIT, current_wan_unit, other_wan_unit,
+				link_wan[WAN_UNIT_FIRST], link_wan[WAN_UNIT_SECOND],
+				conn_state[WAN_UNIT_FIRST], conn_state[WAN_UNIT_SECOND],
+				conn_changed_state[WAN_UNIT_FIRST], conn_changed_state[WAN_UNIT_SECOND],
+				get_wan_state(WAN_UNIT_FIRST), get_wan_state(WAN_UNIT_SECOND),
+				get_disconn_count(other_wan_unit), max_fb_count);
+#endif
 		if(!strcmp(dualwan_mode, "fb") && other_wan_unit == WAN_FB_UNIT){
 			if(conn_state[other_wan_unit] == CONNED
 					&& get_disconn_count(other_wan_unit) >= max_fb_count
 					){
-				_dprintf("# wanduck: returning to the primary WAN line(%d)...\n", other_wan_unit);
+				_dprintf("# wanduck: switching to the preferred WAN line(%d)...\n", other_wan_unit);
 				rule_setup = 1;
 
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+				if (wisp_secwan_first_active())
+					logmessage("wisp-dw", "secwan-first: failback to preferred backup wan%d (%s), disconn_count=%d>=%d",
+						other_wan_unit, get_wan_ifname(other_wan_unit), get_disconn_count(other_wan_unit), max_fb_count);
+#endif
+#if defined(RTBE58_GO)
+				logmessage("wisp", "wanduck: failback WAN switch -> wan%d -- pausing fc", other_wan_unit);
+				wisp_fc_hwaccel_pause();
+#endif
 				handle_wan_line(other_wan_unit, rule_setup);
 				switch_wan_line(other_wan_unit, 0);
+				/* NOTE: the WiFi STA standby demote (stop_udhcpc, keep STA
+				 * associated) is now centralised in switch_wan_line() so it runs
+				 * for every switch path, not just this periodic failback branch. */
 				/* changed_count[] of the primary was used as the fail-back counter,
 				 * start clean or the next DISCONN scan switches straight back. */
 				set_disconn_count(other_wan_unit, S_IDLE);
@@ -5224,6 +6168,37 @@ if(test_log) _dprintf("nat_rule: stop_nat_rules 7.\n");
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
 				notify_rc(cmd);
 			}
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+			/* secwan-first bootstrap: in fb mode start_wan() only DHCP-starts the
+			 * primary; the preferred wired backup is left IFUP-only.  It then has
+			 * link but no lease, so if_wan_connected() downgrades conn_state to
+			 * DISCONN -- which is neither CONNED nor PHY_RECONN, so the two
+			 * branches above never fire and the backup can never reach CONNED
+			 * (deadlock).  When the preferred backup has link but its WAN unit is
+			 * not up yet, start it once so it can obtain a lease and then fail
+			 * back normally.  Guarded to non-CONNECTING states to avoid storms. */
+			else if(wisp_secwan_first_active()
+					&& link_wan[other_wan_unit] == 1){
+				int st = get_wan_state(other_wan_unit);
+				/* Only bootstrap when the backup's udhcpc is not already up on
+				 * its current ifname.  udhcpc parks the unit at STOPPED while it
+				 * retries a lease, so the state check alone would re-fire every
+				 * tick and keep killing the udhcpc mid-DISCOVER (restart storm).
+				 * restart_wan_if stops the old udhcpc and starts a fresh one on
+				 * the new wan-if; we re-fire only if it actually died. */
+				if((st == WAN_STATE_INITIALIZING
+						|| st == WAN_STATE_STOPPED
+						|| st == WAN_STATE_DISABLED)
+						&& !(dualwan_unit__usbif(other_wan_unit)
+							? wisp_backup_usb_active(other_wan_unit)
+							: wisp_backup_udhcpc_active(other_wan_unit, get_wan_ifname(other_wan_unit)))){
+					logmessage("wisp-dw", "prepare preferred secondary backup wan%d (%s, link up, wan_state=%d, no udhcpc) -> restart_wan_if",
+						other_wan_unit, get_wan_ifname(other_wan_unit), st);
+					snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
+					notify_rc(cmd);
+				}
+			}
+#endif
 		}
 		// hot-standby: Try to prepare the backup line.
 		else if(!strcmp(dualwan_mode, "fo") || !strcmp(dualwan_mode, "fb")){
@@ -5233,6 +6208,37 @@ if(test_log) _dprintf("nat_rule: stop_nat_rules 7.\n");
 				notify_rc(cmd);
 			}
 		}
+
+#if defined(RTCONFIG_HND_WISP_DUALWAN)
+		/* secwan-first reconcile: once we are settled with the wired/USB backup
+		 * as the active primary (CONNED), keep the WiFi STA standby demoted.  A
+		 * transient revival during the switch churn (e.g. a restart_wan_if that
+		 * re-runs the WiFi udhcpc) can leave a duplicate "dev wlN" connected route
+		 * and a 2nd PAP lease on the same subnet.  If a WiFi unit still has an
+		 * active udhcpc (state != STOPPED) while the backup is primary, tear down
+		 * ONLY its L3 again via stop_udhcpc (keep the STA netdev associated).
+		 * Idempotent: once demoted it reads STOPPED and is skipped. */
+		if (wisp_secwan_first_active()
+				&& !wisp_is_wifi_wan_unit(current_wan_unit)
+				&& current_wan_unit == wan_primary_ifunit()
+				&& conn_state[current_wan_unit] == CONNED) {
+			int wu;
+			for (wu = WAN_UNIT_FIRST; wu < WAN_UNIT_MAX; wu++) {
+				char pf[sizeof("/var/run/udhcpcXXXXXXXXXX.pid")];
+				snprintf(pf, sizeof(pf), "/var/run/udhcpc%d.pid", wu);
+				/* Reap a WiFi standby that is parked STOPPED but whose udhcpc is
+				 * still alive spinning DISCOVER (PAP unreachable), not only one
+				 * whose state is still non-STOPPED -- otherwise the never-bound
+				 * udhcpc lingers until a manual PAP bss-up. */
+				if (wisp_is_wifi_wan_unit(wu)
+						&& (get_wan_state(wu) != WAN_STATE_STOPPED
+							|| wisp_pidfile_alive(pf))) {
+					logmessage("wisp-dw", "secwan-first: reconcile -- WiFi wan%d still up while backup wan%d is active, demote (stop udhcpc, keep STA associated)", wu, current_wan_unit);
+					stop_udhcpc(wu);
+				}
+			}
+		}
+#endif
 
 #if defined(RTAC68U) || defined(RTAC87U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || (defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX))
 		if (strcmp(dualwan_wans, "wan none")) {

@@ -1541,6 +1541,9 @@ static inline char *
 parse_search_criteria(const char *str, char *sep)
 {
 	struct string_s criteria;
+	char *lit_buf;
+	int lit_len;
+	int input_len;
 	int len;
 	int literal = 0, like = 0, class = 0;
 	const char *s;
@@ -1548,10 +1551,29 @@ parse_search_criteria(const char *str, char *sep)
 	if (!str)
 		return strdup("1 = 1");
 
-	len = strlen(str) + 32;
+	input_len = strlen(str);
+	/*
+	 * Allocate enough for worst-case SQL escaping: each literal character
+	 * may expand to two (e.g., ' -> ''), plus overhead for keywords/operators.
+	 */
+	len = input_len * 4 + 128;
 	criteria.data = malloc(len);
+	if (!criteria.data)
+		return NULL;
 	criteria.size = len;
 	criteria.off = 0;
+
+	/*
+	 * Separate buffer to collect string literal content before SQL-escaping
+	 * it.  Maximum size is bounded by the input length.
+	 */
+	lit_buf = malloc(input_len + 1);
+	if (!lit_buf)
+	{
+		free(criteria.data);
+		return NULL;
+	}
+	lit_len = 0;
 
 	s = str;
 
@@ -1565,38 +1587,88 @@ parse_search_criteria(const char *str, char *sep)
 			switch (*s) {
 			case '&':
 				if (strncmp(s, "&quot;", 6) == 0)
+				{
+					/*
+					 * &quot; inside a literal means the closing double-quote.
+					 * Advance past "&quot" (s++ below handles the final ';'),
+					 * then fall through to the close-literal path.
+					 */
 					s += 5;
+					goto close_literal;
+				}
 				else if (strncmp(s, "&apos;", 6) == 0)
 				{
-					strcatf(&criteria, "'");
+					/* &apos; = a literal single-quote character in the value */
+					lit_buf[lit_len++] = '\'';
 					s += 6;
 					continue;
 				}
 				else
-					break;
-			case '"':
-				literal = 0;
-				if (like)
 				{
-					charcat(&criteria, '%');
-					like--;
+					lit_buf[lit_len++] = *s;
 				}
-				charcat(&criteria, '"');
+				break;
+			case '"':
+			close_literal:
+				literal = 0;
+				lit_buf[lit_len] = '\0';
+				lit_len = 0;
+				{
+					char *escaped;
+					/*
+					 * Emit a properly SQL-escaped string literal using
+					 * sqlite3_mprintf so that all special characters
+					 * (especially single quotes) are handled safely.
+					 *
+					 * %Q  produces 'value' with internal ' doubled.
+					 * %q  does the same without outer quotes, allowing us
+					 *     to embed LIKE wildcards around it.
+					 *
+					 * like==2 (contains):    '%value%'
+					 * like==1 (derivedfrom): 'value%'
+					 * like==0 (plain =):     'value'
+					 */
+					if (like == 2)
+						escaped = sqlite3_mprintf("'%%%q%%'", lit_buf);
+					else if (like == 1)
+						escaped = sqlite3_mprintf("'%q%%'", lit_buf);
+					else
+						escaped = sqlite3_mprintf("%Q", lit_buf);
+
+					if (escaped)
+					{
+						strcatf(&criteria, "%s", escaped);
+						sqlite3_free(escaped);
+					}
+					like = 0;
+				}
 				break;
 			case '\\':
 				if (strncmp(s, "\\&quot;", 7) == 0)
 				{
-					strcatf(&criteria, "&amp;quot;");
+					/* \&quot; inside literal = a literal double-quote char */
+					lit_buf[lit_len++] = '"';
 					s += 7;
 					continue;
+				}
+				else
+				{
+					lit_buf[lit_len++] = *s;
 				}
 				break;
 			case 'o':
 				if (class)
 				{
+					/*
+					 * Strip the "object." prefix from upnp:class values so
+					 * the SQL compares against the stored short form.
+					 */
 					class = 0;
 					if (strncmp(s, "object.", 7) == 0)
+					{
 						s += 7;
+						continue;
+					}
 					else if (strncmp(s, "object\"", 7) == 0 ||
 					         strncmp(s, "object&quot;", 12) == 0)
 					{
@@ -1604,12 +1676,14 @@ parse_search_criteria(const char *str, char *sep)
 						continue;
 					}
 				}
+				lit_buf[lit_len++] = *s;
+				break;
 			default:
-				charcat(&criteria, *s);
+				lit_buf[lit_len++] = *s;
 				break;
 			}
 		}
-		else
+		else /* non-literal mode */
 		{
 			switch (*s) {
 			case '\\':
@@ -1619,33 +1693,18 @@ parse_search_criteria(const char *str, char *sep)
 					s += 7;
 					continue;
 				}
-				else
-					charcat(&criteria, *s);
+				/* bare backslash outside a literal is not valid UPnP: ignore */
 				break;
 			case '"':
 				literal = 1;
-				charcat(&criteria, *s);
-				if (like == 2)
-				{
-					charcat(&criteria, '%');
-					like--;
-				}
+				lit_len = 0;
+				/* like flags (set by 'contains'/'derivedfrom') are preserved */
 				break;
 			case '&':
 				if (strncmp(s, "&quot;", 6) == 0)
 				{
 					literal = 1;
-					strcatf(&criteria, "\"");
-					if (like == 2)
-					{
-						charcat(&criteria, '%');
-						like--;
-					}
-					s += 5;
-				}
-				else if (strncmp(s, "&apos;", 6) == 0)
-				{
-					strcatf(&criteria, "'");
+					lit_len = 0;
 					s += 5;
 				}
 				else if (strncmp(s, "&lt;", 4) == 0)
@@ -1658,8 +1717,11 @@ parse_search_criteria(const char *str, char *sep)
 					strcatf(&criteria, ">");
 					s += 3;
 				}
-				else
-					charcat(&criteria, *s);
+				/*
+				 * &apos; outside a literal would emit a raw single-quote
+				 * directly into SQL, enabling injection.  Reject it.
+				 * All other unknown entities are also ignored.
+				 */
 				break;
 			case '@':
 				if (strncmp(s, "@refID", 6) == 0)
@@ -1681,9 +1743,22 @@ parse_search_criteria(const char *str, char *sep)
 					strcpy(sep, "*");
 					continue;
 				}
-				else
-					charcat(&criteria, *s);
-				break;
+				/* unknown @attr: skip the token */
+				while (*s && !isspace((unsigned char)*s) && *s != ')' && *s != '(')
+					s++;
+				continue;
+			case 'a': case 'A':
+				if (strncasecmp(s, "and", 3) == 0 &&
+				    !isalnum((unsigned char)s[3]) && s[3] != '_')
+				{
+					strcatf(&criteria, " AND ");
+					s += 3;
+					continue;
+				}
+				/* unrecognised token: skip it */
+				while (*s && !isspace((unsigned char)*s) && *s != ')' && *s != '(')
+					s++;
+				continue;
 			case 'c':
 				if (strncmp(s, "contains", 8) == 0)
 				{
@@ -1692,9 +1767,9 @@ parse_search_criteria(const char *str, char *sep)
 					like = 2;
 					continue;
 				}
-				else
-					charcat(&criteria, *s);
-				break;
+				while (*s && !isspace((unsigned char)*s) && *s != ')' && *s != '(')
+					s++;
+				continue;
 			case 'd':
 				if (strncmp(s, "derivedfrom", 11) == 0)
 				{
@@ -1721,9 +1796,9 @@ parse_search_criteria(const char *str, char *sep)
 					s += 10;
 					continue;
 				}
-				else
-					charcat(&criteria, *s);
-				break;
+				while (*s && !isspace((unsigned char)*s) && *s != ')' && *s != '(')
+					s++;
+				continue;
 			case 'e':
 				if (strncmp(s, "exists", 6) == 0)
 				{
@@ -1742,25 +1817,55 @@ parse_search_criteria(const char *str, char *sep)
 					}
 				}
 				else
-					charcat(&criteria, *s);
-				break;
-			case 'o':
-				if (class)
 				{
-					if (strncmp(s, "object.", 7) == 0)
-					{
-						s += 7;
-						charcat(&criteria, '"');
-						while (*s && !isspace(*s))
-						{
-							charcat(&criteria, *s);
-							s++;
-						}
-						charcat(&criteria, '"');
-					}
-					class = 0;
+					while (*s && !isspace((unsigned char)*s) && *s != ')' && *s != '(')
+						s++;
 					continue;
 				}
+				break;
+			case 'n': case 'N':
+				if (strncasecmp(s, "not", 3) == 0 &&
+				    !isalnum((unsigned char)s[3]) && s[3] != '_')
+				{
+					strcatf(&criteria, " NOT ");
+					s += 3;
+					continue;
+				}
+				while (*s && !isspace((unsigned char)*s) && *s != ')' && *s != '(')
+					s++;
+				continue;
+			case 'o': case 'O':
+				if (!class &&
+				    strncasecmp(s, "or", 2) == 0 &&
+				    !isalnum((unsigned char)s[2]) && s[2] != '_')
+				{
+					strcatf(&criteria, " OR ");
+					s += 2;
+					continue;
+				}
+				if (class)
+				{
+					class = 0;
+					if (strncmp(s, "object.", 7) == 0)
+					{
+						const char *cv = s + 7;
+						const char *cv_end = cv;
+						char *escaped;
+						while (*cv_end && !isspace((unsigned char)*cv_end))
+							cv_end++;
+						memcpy(lit_buf, cv, cv_end - cv);
+						lit_buf[cv_end - cv] = '\0';
+						s = cv_end;
+						escaped = sqlite3_mprintf("%Q", lit_buf);
+						if (escaped)
+						{
+							strcatf(&criteria, "%s", escaped);
+							sqlite3_free(escaped);
+						}
+					}
+					continue;
+				}
+				/* fall through — may be an unrecognised 'o...' or 'upnp:...' */
 			case 'u':
 				if (strncmp(s, "upnp:class", 10) == 0)
 				{
@@ -1793,9 +1898,10 @@ parse_search_criteria(const char *str, char *sep)
 					s += 10;
 					continue;
 				}
-				else
-					charcat(&criteria, *s);
-				break;
+				/* unrecognised token: skip it entirely */
+				while (*s && !isspace((unsigned char)*s) && *s != ')' && *s != '(')
+					s++;
+				continue;
 			case '(':
 				if (s > str && !isspace(s[-1]))
 					charcat(&criteria, ' ');
@@ -1803,11 +1909,27 @@ parse_search_criteria(const char *str, char *sep)
 				break;
 			case ')':
 				charcat(&criteria, *s);
-				if (!isspace(s[1]))
+				if (*s && !isspace(s[1]))
 					charcat(&criteria, ' ');
 				break;
 			default:
-				charcat(&criteria, *s);
+				/*
+				 * Structural whitelist: outside a quoted literal only
+				 * comparison operators (=, !=, <, <=, >=) and whitespace
+				 * are valid structural characters in UPnP search criteria.
+				 *
+				 * Digits are intentionally excluded: per the UPnP
+				 * ContentDirectory spec all values — including numeric ones —
+				 * must appear as double-quoted string literals.  Allowing bare
+				 * digits would let an attacker form always-true conditions
+				 * such as "OR 1=1" even after single-quote injection is
+				 * blocked.
+				 */
+				if (*s == '=' || *s == '<' || *s == '>' || *s == '!' ||
+				    isspace((unsigned char)*s))
+				{
+					charcat(&criteria, *s);
+				}
 				break;
 			}
 		}
@@ -1815,6 +1937,7 @@ parse_search_criteria(const char *str, char *sep)
 	}
 	charcat(&criteria, '\0');
 
+	free(lit_buf);
 	return criteria.data;
 }
 

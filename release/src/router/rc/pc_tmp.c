@@ -38,7 +38,7 @@ pc_event_s *get_event_tmp_list(pc_event_s **target_list, char *target_string){
 	ptr_end = ptr+1;
 	bak = ptr_end[0];
 	ptr_end[0] = 0;
-	(*follow_e_list)->start_day = atoi(ptr);
+	(*follow_e_list)->start_day = safe_atoi(ptr);
 	ptr_end[0] = bak;
 
 	// end_day
@@ -48,7 +48,7 @@ pc_event_s *get_event_tmp_list(pc_event_s **target_list, char *target_string){
 	ptr_end = ptr+1;
 	bak = ptr_end[0];
 	ptr_end[0] = 0;
-	(*follow_e_list)->end_day = atoi(ptr);
+	(*follow_e_list)->end_day = safe_atoi(ptr);
 	ptr_end[0] = bak;
 
 	// start_hour
@@ -58,7 +58,7 @@ pc_event_s *get_event_tmp_list(pc_event_s **target_list, char *target_string){
 	ptr_end = ptr+2;
 	bak = ptr_end[0];
 	ptr_end[0] = 0;
-	(*follow_e_list)->start_hour = atoi(ptr);
+	(*follow_e_list)->start_hour = safe_atoi(ptr);
 	ptr_end[0] = bak;
 
 	// end_hour
@@ -68,7 +68,7 @@ pc_event_s *get_event_tmp_list(pc_event_s **target_list, char *target_string){
 	ptr_end = ptr+2;
 	bak = ptr_end[0];
 	ptr_end[0] = 0;
-	(*follow_e_list)->end_hour = atoi(ptr);
+	(*follow_e_list)->end_hour = safe_atoi(ptr);
 	ptr_end[0] = bak;
 
 	// start_min
@@ -78,7 +78,7 @@ pc_event_s *get_event_tmp_list(pc_event_s **target_list, char *target_string){
 	ptr_end = ptr+2;
 	bak = ptr_end[0];
 	ptr_end[0] = 0;
-	(*follow_e_list)->start_min = atoi(ptr);
+	(*follow_e_list)->start_min = safe_atoi(ptr);
 	ptr_end[0] = bak;
 
 	// end_min
@@ -88,7 +88,7 @@ pc_event_s *get_event_tmp_list(pc_event_s **target_list, char *target_string){
 	ptr_end = ptr+2;
 	bak = ptr_end[0];
 	ptr_end[0] = 0;
-	(*follow_e_list)->end_min = atoi(ptr);
+	(*follow_e_list)->end_min = safe_atoi(ptr);
 	ptr_end[0] = bak;
 
 	if((*follow_e_list)->start_min >= 60){
@@ -159,7 +159,7 @@ pc_s *get_all_pc_tmp_list(pc_s **pc_list){
 			switch(count){
 				case 0: // enabled
 					if(strlen(word) > 0)
-						follow_pc->enabled = atoi(word);
+						follow_pc->enabled = safe_atoi(word);
 					else
 						follow_pc->enabled = 1;
 
@@ -211,7 +211,7 @@ int pc_tmp_main(int argc, char *argv[]){
 		if(argc == 2)
 			match_enabled_pc_list(pc_list, &enabled_list, 1);
 		else
-			match_enabled_pc_list(pc_list, &enabled_list, atoi(argv[2]));
+			match_enabled_pc_list(pc_list, &enabled_list, safe_atoi(argv[2]));
 
 		print_pc_list(enabled_list);
 
@@ -219,11 +219,11 @@ int pc_tmp_main(int argc, char *argv[]){
 	}
 #ifdef RTCONFIG_PC_SCHED_V3
 	else if(argc == 5 && !strcmp(argv[1], "daytime")
-			&& (atoi(argv[2]) >= MIN_DAY && atoi(argv[2]) <= MAX_DAY)
-			&& (atoi(argv[3]) >= MIN_HOUR && atoi(argv[3]) <= MAX_HOUR)
-			&& (atoi(argv[4]) >= MIN_MIN && atoi(argv[4]) <= MAX_MIN)
+			&& (safe_atoi(argv[2]) >= MIN_DAY && safe_atoi(argv[2]) <= MAX_DAY)
+			&& (safe_atoi(argv[3]) >= MIN_HOUR && safe_atoi(argv[3]) <= MAX_HOUR)
+			&& (safe_atoi(argv[4]) >= MIN_MIN && safe_atoi(argv[4]) <= MAX_MIN)
 			){
-		match_daytime_pc_list(pc_list, &daytime_list, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
+		match_daytime_pc_list(pc_list, &daytime_list, safe_atoi(argv[2]), safe_atoi(argv[3]), safe_atoi(argv[4]));
 
 		print_pc_list(daytime_list);
 
@@ -231,10 +231,10 @@ int pc_tmp_main(int argc, char *argv[]){
 	}
 #else
 	else if(argc == 4 && !strcmp(argv[1], "daytime")
-			&& (atoi(argv[2]) >= MIN_DAY && atoi(argv[2]) <= MAX_DAY)
-			&& (atoi(argv[3]) >= MIN_HOUR && atoi(argv[3]) <= MAX_HOUR)
+			&& (safe_atoi(argv[2]) >= MIN_DAY && safe_atoi(argv[2]) <= MAX_DAY)
+			&& (safe_atoi(argv[3]) >= MIN_HOUR && safe_atoi(argv[3]) <= MAX_HOUR)
 			){
-		match_daytime_pc_list(pc_list, &daytime_list, atoi(argv[2]), atoi(argv[3]));
+		match_daytime_pc_list(pc_list, &daytime_list, safe_atoi(argv[2]), safe_atoi(argv[3]));
 
 		print_pc_list(daytime_list);
 

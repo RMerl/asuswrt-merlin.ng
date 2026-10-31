@@ -22,6 +22,7 @@
 
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/statvfs.h>
 #include <dlinklist.h>
 //#include <sys/socket.h>
 
@@ -2066,24 +2067,27 @@ static const char* change_webdav_file_path(server *srv, connection *con, const c
 }
 
 static int count_path_files(const char* file_path) {
-	char command[128];
-	char result[128];  
-	FILE *fp;
-	
-	snprintf(command, sizeof(command), "ls %s | wc -l", file_path);
-	
-	if ((fp = popen(command, "r")) == NULL) {
-		Cdbg(DBE, "fail to do count command=%s, result=%s", command, result); 
-		return 0; 
-	}  
-	
-	fgets(result, sizeof result, fp); 
+	DIR *dir;
+	struct dirent *entry;
+	int count = 0;
 
-	pclose(fp);  
+	dir = opendir(file_path);
+	if (dir == NULL) {
+		Cdbg(DBE, "count_path_files: opendir failed for path=%s", file_path);
+		return 0;
+	}
 
-	Cdbg(DBE, "count command=%s, result=%s", command, result);
+	while ((entry = readdir(dir)) != NULL) {
+		if (entry->d_name[0] == '.')
+			continue;
+		count++;
+	}
 
-	return atoi(result); 
+	closedir(dir);
+
+	Cdbg(DBE, "count_path_files: path=%s, count=%d", file_path, count);
+
+	return count;
 }
 
 URIHANDLER_FUNC(mod_webdav_subrequest_handler) {
@@ -4326,46 +4330,36 @@ propmatch_cleanup:
 
 				buffer_append_string_len(b,CONST_STR_LEN("<item>"));
 					
-				char querycmd[100] = "\0";		
-
-				sprintf(querycmd, "df|grep -i '%s%s'", disk_path, de->d_name);
-								
 				buffer_append_string_len(b,CONST_STR_LEN("<DiskName>"));
 				buffer_append_string(b,de->d_name);
 				buffer_append_string_len(b,CONST_STR_LEN("</DiskName>"));
-						
-				char mybuffer[BUFSIZ]="\0";
-				FILE* fp = popen( querycmd, "r");
-				if(fp){
-					int len = fread(mybuffer, sizeof(char), BUFSIZ, fp);
-					mybuffer[len-1]="\0";
-					pclose(fp);
-					
-					char * pch;
-					pch = strtok(mybuffer, " ");
-					int count=1;
-					while(pch!=NULL){				
-						if(count==3){
-							buffer_append_string_len(b,CONST_STR_LEN("<DiskUsed>"));
-							buffer_append_string(b,pch);
-							buffer_append_string_len(b,CONST_STR_LEN("</DiskUsed>"));
-						}
-						else if(count==4){
-							buffer_append_string_len(b,CONST_STR_LEN("<DiskAvailable>"));
-							buffer_append_string(b,pch);
-							buffer_append_string_len(b,CONST_STR_LEN("</DiskAvailable>"));
-						}
-						else if(count==5){
-							buffer_append_string_len(b,CONST_STR_LEN("<DiskUsedPercent>"));
-							buffer_append_string(b,pch);
-							buffer_append_string_len(b,CONST_STR_LEN("</DiskUsedPercent>"));
-						}
-						
-						//- Next
-						pch = strtok(NULL," ");
-						count++;
-					}
-					
+
+				char statvfs_path[1024];
+				snprintf(statvfs_path, sizeof(statvfs_path), "%s%s", disk_path, de->d_name);
+
+				struct statvfs vfs;
+				if (statvfs(statvfs_path, &vfs) == 0 && vfs.f_blocks > 0) {
+					unsigned long long blksz = vfs.f_frsize ? vfs.f_frsize : vfs.f_bsize;
+					unsigned long long used_kb  = (vfs.f_blocks - vfs.f_bfree)  * blksz / 1024;
+					unsigned long long avail_kb = vfs.f_bavail * blksz / 1024;
+					int use_pct = (int)(((vfs.f_blocks - vfs.f_bavail) * 100) / vfs.f_blocks);
+
+					char tmp[32];
+
+					snprintf(tmp, sizeof(tmp), "%llu", used_kb);
+					buffer_append_string_len(b,CONST_STR_LEN("<DiskUsed>"));
+					buffer_append_string(b, tmp);
+					buffer_append_string_len(b,CONST_STR_LEN("</DiskUsed>"));
+
+					snprintf(tmp, sizeof(tmp), "%llu", avail_kb);
+					buffer_append_string_len(b,CONST_STR_LEN("<DiskAvailable>"));
+					buffer_append_string(b, tmp);
+					buffer_append_string_len(b,CONST_STR_LEN("</DiskAvailable>"));
+
+					snprintf(tmp, sizeof(tmp), "%d%%", use_pct);
+					buffer_append_string_len(b,CONST_STR_LEN("<DiskUsedPercent>"));
+					buffer_append_string(b, tmp);
+					buffer_append_string_len(b,CONST_STR_LEN("</DiskUsedPercent>"));
 				}
 				
 				buffer_append_string_len(b,CONST_STR_LEN("</item>"));

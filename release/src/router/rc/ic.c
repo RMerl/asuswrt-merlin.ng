@@ -113,7 +113,7 @@ ic_event_s *get_ic_event_list(ic_event_s **target_list, char *target_string){
 		ptr_end = ptr+1;
 		bak = ptr_end[0];
 		ptr_end[0] = 0;
-		(*follow_e_list)->access = atoi(ptr)==1 ? IC_ACCESS_ALLOWED : IC_ACCESS_BLOCKED;
+		(*follow_e_list)->access = safe_atoi(ptr)==1 ? IC_ACCESS_ALLOWED : IC_ACCESS_BLOCKED;
 		ptr_end[0] = bak;
 		e_ptr_idx += 1;
 
@@ -124,7 +124,7 @@ ic_event_s *get_ic_event_list(ic_event_s **target_list, char *target_string){
 			//bak = ptr_end[0];
 			//ptr_end[0] = 0;
 			retreive_daytime_from_ts(ptr, (*follow_e_list));
-			//(*follow_e_list)->start_mon = atoi(ptr);
+			//(*follow_e_list)->start_mon = safe_atoi(ptr);
 			//ptr_end[0] = bak;
 			//e_ptr_idx += 10;
 		} else {
@@ -135,7 +135,7 @@ ic_event_s *get_ic_event_list(ic_event_s **target_list, char *target_string){
 				ptr_end = ptr+e_day_size;
 				bak = ptr_end[0];
 				ptr_end[0] = 0;
-				(*follow_e_list)->start_day = atoi(ptr);
+				(*follow_e_list)->start_day = safe_atoi(ptr);
 				ptr_end[0] = bak;
 				e_ptr_idx += e_day_size;
 			}
@@ -145,7 +145,7 @@ ic_event_s *get_ic_event_list(ic_event_s **target_list, char *target_string){
 			ptr_end = ptr+2;
 			bak = ptr_end[0];
 			ptr_end[0] = 0;
-			(*follow_e_list)->start_hour = atoi(ptr);
+			(*follow_e_list)->start_hour = safe_atoi(ptr);
 			ptr_end[0] = bak;
 			e_ptr_idx += 2;
 
@@ -154,7 +154,7 @@ ic_event_s *get_ic_event_list(ic_event_s **target_list, char *target_string){
 			ptr_end = ptr+2;
 			bak = ptr_end[0];
 			ptr_end[0] = 0;
-			(*follow_e_list)->start_min = atoi(ptr);
+			(*follow_e_list)->start_min = safe_atoi(ptr);
 			ptr_end[0] = bak;
 			e_ptr_idx += 2;
 		}
@@ -621,17 +621,17 @@ int ic_main(int argc, char *argv[]){
 		if(argc == 2)
 			match_enabled_ic_list(ic_list, &enabled_list, 1);
 		else
-			match_enabled_ic_list(ic_list, &enabled_list, atoi(argv[2]));
+			match_enabled_ic_list(ic_list, &enabled_list, safe_atoi(argv[2]));
 
 		print_ic_list(enabled_list);
 
 		free_ic_list(&enabled_list);
 	}
 	else if(argc == 4 && !strcmp(argv[1], "daytime")
-			&& (atoi(argv[2]) >= MIN_DAY && atoi(argv[2]) <= MAX_DAY)
-			&& (atoi(argv[3]) >= MIN_HOUR && atoi(argv[3]) <= MAX_HOUR)
+			&& (safe_atoi(argv[2]) >= MIN_DAY && safe_atoi(argv[2]) <= MAX_DAY)
+			&& (safe_atoi(argv[3]) >= MIN_HOUR && safe_atoi(argv[3]) <= MAX_HOUR)
 			){
-		match_daytime_ic_list(ic_list, &daytime_list, atoi(argv[2]), atoi(argv[3]));
+		match_daytime_ic_list(ic_list, &daytime_list, safe_atoi(argv[2]), safe_atoi(argv[3]));
 
 		print_ic_list(daytime_list);
 

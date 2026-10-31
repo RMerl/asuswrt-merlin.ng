@@ -547,7 +547,7 @@ static unsigned int read_ct_timeout(const char *type, const char *name)
 		d_exists("/proc/sys/net/ipv4/netfilter") ? "ipv4/netfilter/ip_conntrack" : "netfilter/nf_conntrack",
 		type, (name && name[0]) ? "_" : "", name ? name : "");
 	if (f_read_string((const char *) buf, v, sizeof(v)) > 0)
-		val = atoi(v);
+		val = safe_atoi(v);
 
 	return val;
 }
@@ -732,44 +732,44 @@ void setup_conntrack(void)
 
 #ifdef LINUX26
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_hashsize"));
-	i = atoi(p);
+	i = safe_atoi(p);
 	if (i >= 127) {
 		f_write_string("/sys/module/nf_conntrack/parameters/hashsize", p, 0, 0);
 	}
 	else if (f_read_string("/sys/module/nf_conntrack/parameters/hashsize", buf, sizeof(buf)) > 0) {
 		if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
-		if (atoi(buf) > 0) nvram_set("ct_hashsize", buf);
+		if (safe_atoi(buf) > 0) nvram_set("ct_hashsize", buf);
 	}
 #endif
 #ifdef LINUX26
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_max"));
-	i = atoi(p);
+	i = safe_atoi(p);
 	if (i >= 128) {
 		f_write_string("/proc/sys/net/nf_conntrack_max", p, 0, 0);
 	}
 	else if (f_read_string("/proc/sys/net/nf_conntrack_max", buf, sizeof(buf)) > 0) {
-		if (atoi(buf) > 0) nvram_set("ct_max", buf);
+		if (safe_atoi(buf) > 0) nvram_set("ct_max", buf);
 	}
 #else
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_max"));
-	i = atoi(p);
+	i = safe_atoi(p);
 	if (i >= 128) {
 		f_write_string("/proc/sys/net/ipv4/netfilter/ip_conntrack_max", p, 0, 0);
 	}
 	else if (f_read_string("/proc/sys/net/ipv4/netfilter/ip_conntrack_max", buf, sizeof(buf)) > 0) {
 		if (buf[strlen(buf)-1] == '\n') buf[strlen(buf)-1] = '\0';
-		if (atoi(buf) > 0) nvram_set("ct_max", buf);
+		if (safe_atoi(buf) > 0) nvram_set("ct_max", buf);
 	}
 #endif
 #ifdef LINUX26
 	if (f_exists("/proc/sys/net/netfilter/nf_conntrack_expect_max")) {
 		snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_expect_max"));
-		i = atoi(p);
+		i = safe_atoi(p);
 		if (i >= 1) {
 			f_write_string("/proc/sys/net/netfilter/nf_conntrack_expect_max", p, 0, 0);
 		}
 		else if (f_read_string("/proc/sys/net/netfilter/nf_conntrack_expect_max", buf, sizeof(buf)) > 0) {
-			if (atoi(buf) > 0) nvram_set("ct_expect_max", buf);
+			if (safe_atoi(buf) > 0) nvram_set("ct_expect_max", buf);
 		}
 	}
 #endif
@@ -1192,9 +1192,11 @@ const zoneinfo_t tz_list[] = {
 	{"UTC10",	"US/Hawaii"},		// (GMT-10:00) Hawaii
        	{"NAST9DST",	"US/Alaska"},		// (GMT-09:00) Alaska
         {"PST8DST",	"US/Pacific"},		// (GMT-08:00) Pacific Time (US & Canada)
+		{"PST7",  "Canada/Vancouver"},	//(GMT-07:00) Vancouver, Whitehorse
         {"MST7DST_1",	"US/Mountain"},		// (GMT-07:00) Mountain Time (US & Canada)
         {"MST7_2",	"US/Arizona"},		// (GMT-07:00) Arizona
 	{"MST7_3",	"America/Mazatlan"},	// (GMT-07:00) La Paz, Mazatlan //MST7DST_3
+		{"MST6",  "Canada/Edmonton"}, // (GMT-06:00) Edmonton, Yellowknife
         {"CST6_2",	"Canada/Saskatchewan"},	// (GMT-06:00) Saskatchewan
         {"CST6_3",	"Mexico/General"},	// (GMT-06:00) Guadalajara, Mexico City
         {"CST6_3_1",	"America/Monterrey"},	// (GMT-06:00) Monterreyi, Chihuahua

@@ -167,14 +167,18 @@ char *
 fd2str(int fd)
 {
 	char *buf = NULL;
-	size_t count = 0, n;
+	size_t count = 0;
+	ssize_t n;
 
 	do {
 		buf = realloc(buf, count + 512);
 		n = read(fd, buf + count, 512);
-		if (n < 0) {
-			free(buf);
-			buf = NULL;
+		if (n <= 0) {
+			if (n < 0) {
+				free(buf);
+				buf = NULL;
+			}
+			break;
 		}
 		count += n;
 	} while (n == 512);

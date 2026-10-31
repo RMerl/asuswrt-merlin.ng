@@ -2,6 +2,15 @@ include ../common.mak
 
 include $(SRCBASE)/.config
 
+# HND_ROUTER_LEGACY: set to y when pwd contains an exact path component of either
+# "src-rt-5.02hnd" or "src-rt-5.02axhnd" (must match the whole directory name,
+# not a prefix such as "src-rt-5.02axhnd.675x"). The surrounding slashes anchor
+# the match to a complete path segment; "\.02" escapes the dot and "\(ax\)\?"
+# accepts both the hnd and axhnd variants.
+ifeq ($(origin HND_ROUTER_LEGACY), undefined)
+export HND_ROUTER_LEGACY := $(if $(shell pwd | grep -e '/src-rt-5\.02\(ax\)\?hnd/'),y,)
+endif
+
 model = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 modelstr = $(shell echo $(model) | tr '[:upper:]' '[:lower:]')
 
@@ -12,12 +21,10 @@ install: all
 ifneq ($(HND_ROUTER),y)
 	install lld2d $(INSTALLDIR)/usr/sbin
 else
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
-	install lld2d.6755axhnd $(INSTALLDIR)/usr/sbin/lld2d
-else ifeq ($(HND_ROUTER_BE_4916),y)
-	echo "skip router/lltd.arm/lld2d"
-else
+ifeq ($(HND_ROUTER_LEGACY),y)
 	install lld2d.hnd $(INSTALLDIR)/usr/sbin/lld2d
+else
+	install lld2d.6755axhnd.patched $(INSTALLDIR)/usr/sbin/lld2d
 endif
 endif
 ifeq ($(BUILD_NAME),RT-AC3200)

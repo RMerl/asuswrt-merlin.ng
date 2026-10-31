@@ -63,6 +63,12 @@ CFLAGS += -I./sysdeps/qca -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)/ -DWE_NOLIBM
 CFLAGS += $(if $(or $(RTCONFIG_SOC_IPQ8064),$(RTCONFIG_SOC_IPQ8074)),-DSMP)
 endif
 
+ifeq ($(or $(RTCONFIG_OOKLA),$(RTCONFIG_OOKLA_LITE)),y)
+ifeq ($(MUSL64),y)
+CFLAGS += -DOOKLA_MUSL64
+endif
+endif
+
 ifeq ($(RTCONFIG_ALPINE),y)
 CFLAGS += -I./sysdeps/alpine -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)/ -DWE_NOLIBM
 CFLAGS += -I$(SRCBASE)/common/include
@@ -198,6 +204,12 @@ endif
 ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 CFLAGS += -DWIFI7_SDK_20250122
 endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260402)
+CFLAGS += -DWIFI8_SDK_20260402
+endif
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260601)
+CFLAGS += -DWIFI8_SDK_20260601
+endif
 endif
 
 OBJS = shutils.o defaults.o model.o rtstate.o boardapi.o
@@ -233,6 +245,9 @@ ifeq ($(RTCONFIG_RGBLED),y)
 OBJS += $(if $(wildcard aura_rgb.c),aura_rgb.o,prebuild/aura_rgb.o)
 endif
 OBJS += timer_utils.o
+ifeq ($(or $(RTCONFIG_OOKLA),$(RTCONFIG_OOKLA_LITE)),y)
+OBJS += ookla_utils.o
+endif
 ifeq ($(RTCONFIG_TRAFFIC_LIMITER),y)
 OBJS += tld_utils.o
 endif

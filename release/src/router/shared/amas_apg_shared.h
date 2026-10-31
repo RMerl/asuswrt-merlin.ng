@@ -21,6 +21,22 @@
 #define IS_CAP() 			( (sw_mode() == SW_MODE_ROUTER || access_point_mode()) )
 #define IS_RE()  			( (nvram_get_int("re_mode") == 1) )
 
+#define APG_IFNAMES_JFFS_DIR    "/jffs/.sys/cfg_mnt/apg_info"    
+#define APG_IFNAMES_DIR "/tmp/apg_info"
+#define GEN_APG_FNAME(RET_FNAME,RET_BSIZE,DUT_MAC) do {\
+    if (RET_FNAME && RET_BSIZE > 0 && DUT_MAC && strlen(DUT_MAC) > 0) {\
+        memset(RET_FNAME, 0, RET_BSIZE);\
+        snprintf(RET_FNAME, RET_BSIZE, "%s/%s.apg", APG_IFNAMES_DIR, DUT_MAC);\
+    }\
+} while(0)
+
+#define APG_FLOCK_NAME(RET_NAME,RET_BSIZE,DUT_MAC) do {\
+	if (RET_NAME && RET_BSIZE > 0 && DUT_MAC && strlen(DUT_MAC) > 0) {\
+		memset(RET_NAME, 0, RET_BSIZE);\
+		snprintf(RET_NAME, RET_BSIZE, "%s.apg.lock", DUT_MAC);\
+	}\
+} while(0)
+
 #define NV_APG_STARTED				"apg_started"
 #define NV_APG_IFNAMES              "apg_ifnames"
 #define NV_APG_BRX_FH_WLIFNAMES     "apg_%s_fh_wlifnames"
@@ -41,6 +57,7 @@
 #define NV_AP_LANIF_RL  "ap_lanif_rl"
 #define NV_WGN_VLAN_RL  "vlan_rulelist"
 #define NV_MLO_RL   "mlo_rl"
+#define NV_VLAN_TRUNK_ISO_RL    "vlan_trunk_iso_rl"
 
 #if MTLAN_MAXINUM > APG_MAXINUM
 #undef APG_MAXINUM
@@ -432,7 +449,10 @@ typedef struct vlan_rl_t {
 } vlan_rl_st;
 extern vlan_rl_st* get_vlan_rl_from_buffer(char *buffer, vlan_rl_st *list, int max_list_size, int *ret_list_size);
 extern int sdn_vlan_is_enabled(vlan_rl_st *vlan_rl);
-extern int get_isolation_mode(int vid);
+extern int get_ap_iso_mode(int vid);
+extern int get_port_iso_mode(int vid);
+extern int get_vlan_trunk_isolation(int vid);
+extern int set_brport_isolated(char *ifname, int mode);
 
 extern void enableSDNRuleForMlo();
 extern char *get_ap_wifi_ifnames_by_sdn(int sdn_idx, int unit, char *ret_ifnames, int ret_bsize);
@@ -447,8 +467,10 @@ extern char* get_fh_ap_ssid_by_unit(int unit);
 extern int get_sdn_index_by_apm(const unsigned int apg_idx);
 extern char* get_sdn_type_by_sdn_idx(int index, char *type, size_t type_bsize);
 extern char* get_fh_if_prefix_by_apm(int apm_idx, char *ret_prefix, size_t ret_bsize);
-
 extern int get_sdn_new_idx(char *sdn_rl);
 extern char *get_cap_main_bh_ifnames(unsigned long wifi_band, char *ret_ifnames, size_t ret_bsize, int get_prefix);
 extern char *lookup_main_wifi_on_lan_ifnames(unsigned long wifi_band, char *ret_wlifname, size_t ret_bsize);
+
+extern int safe_snprintf_append(char **pptr, char *end, const char *fmt, ...);
+extern void str_to_upper(const char *src, char *dest, size_t size);
 #endif  /* !__APG_SHAREDH__ */

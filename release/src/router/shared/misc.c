@@ -2617,6 +2617,28 @@ char *nvram_get_r(const char *name, char *buf, size_t buflen)
 	return v;
 }
 
+/*
+ * nvram_safe_get() wrapper for values written directly into a generated
+ * config file whose format is line-based (some formats support
+ * directives that execute external commands, e.g. dnsmasq's
+ * dhcp-script=, pppd's pty/connect, strongSwan's leftupdown=). A value
+ * containing \n or \r could inject an extra line. Use this instead of
+ * nvram_safe_get() at call sites where the value is written raw into
+ * such a file and is not expected to legitimately span multiple lines.
+ * @param	name	name of variable to get
+ * @return	value of variable or "" if undefined or if the value
+ *		contains \n or \r
+ */
+char *nvram_conf_safe_get(const char *name)
+{
+	char *val = nvram_safe_get(name);
+	if (strchr(val, '\n') || strchr(val, '\r')) {
+		dbg("nvram_conf_safe_get: blocked newline in nvram key %s (config injection guard)\n", name);
+		return "";
+	}
+	return val;
+}
+
 /**
  * Combine prefix and name before nvram_get().
  * @prefix:
@@ -3290,19 +3312,19 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 		if(strcmp(word, ifname) == 0) {
 			if(strncmp(ifname, "wl", 2) == 0){
 				char unit_buf[8], *p1, *p2;
-				int len, idx;
+				int len, idx = i;
 
 				p1 = strchr(word, '.');
 				p2 = strchr(word, 'l');
-				len = p1 - p2;
-				if(len > 0){
-					snprintf(unit_buf, len, "%s", p2+1);
+				len = (p1 && p2) ? (p1 - p2) : -1;
+				if(len > 0 && len < (int)sizeof(unit_buf)){
+					snprintf(unit_buf, sizeof(unit_buf), "%.*s", len, p2+1);
 					idx = atoi(unit_buf);
 				}
-				sprintf(ifname_desc, "WIRELESS%d", idx);
+				snprintf(ifname_desc, 12, "WIRELESS%d", idx);
 			}
 			else{
-				sprintf(ifname_desc, "WIRELESS%d", i);
+				snprintf(ifname_desc, 12, "WIRELESS%d", i);
 			}
 
 			return 1;
@@ -3576,7 +3598,7 @@ void logmessage_normal(char *logheader, char *fmt, ...){
   strlcpy(logheader2, logheader, sizeof (logheader2));
   replace_char(logheader2, ' ', '_');
   openlog(logheader2, 0, 0);
-  syslog(level, buf);
+  syslog(level, "%s", buf);
   closelog();
   va_end(args);
 }
@@ -6211,6 +6233,39 @@ int is_valid_domainname(const char *name)
 	return p - name;
 }
 
+/*
+ * Validate a string is a safe Linux network interface name.
+ *
+ * Combines the kernel's structural rules (dev_valid_name() in
+ * net/core/dev.c) with a strict character whitelist:
+ *   - not empty
+ *   - length < IFNAMSIZ (kernel copies into a fixed IFNAMSIZ buffer)
+ *   - not "." or ".." (reserved by sysfs/procfs path handling)
+ *   - characters restricted to [A-Za-z0-9._-] via is_valid_domainname()
+ *
+ * The kernel itself only rejects '/', ':' and whitespace, which still
+ * permits shell metacharacters (';', '`', '$', '|', ...). Reusing the
+ * is_valid_domainname() whitelist closes that gap so the result is safe
+ * to pass to a shell command, while still accepting every legitimate
+ * interface name (e.g. "wl0.1", "eth6.501", "br-lan").
+ *
+ * @name:	pointer to a string.
+ * Returns non-zero (the name length) when valid, 0 otherwise.
+ */
+int is_valid_ifname(const char *name)
+{
+	if (!name || *name == '\0')
+		return 0;
+
+	if (strnlen(name, IFNAMSIZ) >= IFNAMSIZ)
+		return 0;
+
+	if (!strcmp(name, ".") || !strcmp(name, ".."))
+		return 0;
+
+	return is_valid_domainname(name);
+}
+
 int get_discovery_ssid(char *ssid_g, int size)
 {
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
@@ -7467,12 +7522,61 @@ char *make_salt(char *scheme_id, char *buf, size_t size)
 	return buf;
 }
 
+#include <errno.h>
+
+/* Self-contained safe exec helper (fork+pipe+execvp, no shell), mirroring
+ * libpasswd/passwd.c's local_popen_argv()/local_pclose() twin fix -- kept
+ * local rather than exposing shutils.c's safe_popen_argv() on branches
+ * where that helper does not exist yet, to avoid a broader header change. */
+static int local_popen_argv(const char *path, char *const argv[], pid_t *child_pid)
+{
+	int pipefd[2];
+	pid_t pid;
+
+	if (pipe(pipefd) == -1)
+		return -1;
+
+	pid = fork();
+	if (pid < 0) {
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return -1;
+	}
+
+	if (pid == 0) {
+		close(pipefd[0]);
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
+		execvp(path, argv);
+		_exit(errno);
+	}
+
+	close(pipefd[1]);
+	if (child_pid)
+		*child_pid = pid;
+
+	return pipefd[0];
+}
+
+static void local_pclose(pid_t pid)
+{
+	int status;
+
+	if (pid <= 0)
+		return;
+
+	while (waitpid(pid, &status, 0) == -1 && errno == EINTR)
+		continue;
+}
+
 int asus_openssl_crypt(char *key, char *salt, char *out, int out_len)
 {
 	dbg("asus_openssl_crypt: check toolchain crypt() support\n");
 	int scheme_id = 0, ret = 0;
-	FILE *p_fp = NULL;
-	char cmd_line[256] = {0}, crypt_buf[256] = {0};
+	char scheme_arg[4] = {0}, crypt_buf[256] = {0};
+	char *argv[7];
+	int fd;
+	pid_t pid;
 
 	if(salt && strlen(salt) > 4){
 		if(!strncmp(salt, "$1$", 3))
@@ -7484,14 +7588,27 @@ int asus_openssl_crypt(char *key, char *salt, char *out, int out_len)
 	}else
 		return ret;
 
-	snprintf(cmd_line, sizeof(cmd_line), "openssl passwd -%d -salt %s %s", scheme_id, salt+3, key);
+	snprintf(scheme_arg, sizeof(scheme_arg), "-%d", scheme_id);
+	argv[0] = "openssl";
+	argv[1] = "passwd";
+	argv[2] = scheme_arg;
+	argv[3] = "-salt";
+	argv[4] = salt+3;
+	argv[5] = key;
+	argv[6] = NULL;
 
-	if((p_fp = popen(cmd_line, "r")) != NULL){
-		if(fgets(crypt_buf, sizeof(crypt_buf), p_fp)){
-			if (strlen(crypt_buf) > 0)
-				crypt_buf[strlen(crypt_buf)-1] = '\0';
-		}
-		pclose(p_fp);
+	fd = local_popen_argv("openssl", argv, &pid);
+	if(fd >= 0){
+		FILE *p_fp = fdopen(fd, "r");
+		if(p_fp){
+			if(fgets(crypt_buf, sizeof(crypt_buf), p_fp)){
+				if (strlen(crypt_buf) > 0)
+					crypt_buf[strlen(crypt_buf)-1] = '\0';
+			}
+			fclose(p_fp);
+		}else
+			close(fd);
+		local_pclose(pid);
 	}
 
 	if(crypt_buf[0] != '\0'){

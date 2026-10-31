@@ -11,6 +11,7 @@
 */
 
 #include "rc.h"
+#include <shutils.h>
 #include "shared.h"
 #include "version.h"
 #include "interface.h"
@@ -1854,10 +1855,10 @@ void config_jumbo_frame()
 	int rdp1 = 0;
 
 	if (f_read_string("/proc/environment/mtusize", value, sizeof(value)) > 0)
-		mtusize = atoi(value);
+		mtusize = safe_atoi(value);
 
 	if (f_read_string("/proc/environment/rdp1", value, sizeof(value)) > 0)
-		rdp1 = atoi(value);
+		rdp1 = safe_atoi(value);
 
 	if (nvram_get_int("jumbo_frame_enable")) {
 		if (mtusize != 10240) {
@@ -1885,10 +1886,10 @@ void config_jumbo_frame()
 #ifdef GTAXE16000
 	int bufmem = 0;
 	if (f_read_string("/proc/environment/mtusize", value, sizeof(value)) > 0)
-		mtusize = atoi(value);
+		mtusize = safe_atoi(value);
 
 	if (f_read_string("/proc/environment/bufmem", value, sizeof(value)) > 0)
-		bufmem = atoi(value);
+		bufmem = safe_atoi(value);
 
 	if (nvram_get_int("jumbo_frame_enable")) {
 		if (mtusize != 10240) {
@@ -1918,7 +1919,7 @@ void config_jumbo_frame()
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(RTBE96U) || defined(GTBE96) || defined(BQ16) || defined(BQ16_PRO) || defined(GTBE19000) || defined(BT10) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(RTBE88U)
 	int bufmem = 0;
 	if (f_read_string("/proc/environment/bufmem", value, sizeof(value)) > 0)
-		bufmem = atoi(value);
+		bufmem = safe_atoi(value);
 
 	if (bufmem == 128) {
 		/* BRCM suggest to allocate at least 256M once BCM_JUMBO_FRAME kernel configure is enabled */
@@ -2521,7 +2522,7 @@ void init_switch_pre()
 	int bufmem = 0;
 
 	if (f_read_string("/proc/environment/bufmem", value, sizeof(value)) > 0)
-		bufmem = atoi(value);
+		bufmem = safe_atoi(value);
 	if(bufmem != 128)
 	{
 		dbg("unset env bufmem for BCM4912 B0\n");
@@ -3701,7 +3702,7 @@ void ext_vconfig(char *interface, int port_id)
 int get_extsw_port(char *ethsw_name)
 {
 	if(ethsw_name && strlen(ethsw_name) > 6)
-		return atoi(ethsw_name+6);
+		return safe_atoi(ethsw_name+6);
 	else
 		return -1;
 }
@@ -3788,7 +3789,7 @@ int get_extport_no(char *ifname, char *ethif)
 			if(ethif)
 				strlcpy(ethif, "eth5", 5);
 
-			return atoi(ifname+6);
+			return safe_atoi(ifname+6);
 		}
 		break;
 #endif
@@ -3797,7 +3798,7 @@ int get_extport_no(char *ifname, char *ethif)
 		if(strncmp(ifname, "ethsw_", 6) == 0) {
 			if(ethif)
 				strlcpy(ethif, "eth1", 5);
-			return atoi(ifname+6);
+			return safe_atoi(ifname+6);
 		}
 		break;
 #endif
@@ -6294,7 +6295,7 @@ void init_switch()
 	eval("mknod", "/dev/rtkswitch", "c", "233", "0");
 	eval("insmod", "rtl8365mb");
 #ifdef RTCONFIG_RESET_SWITCH
-	int i, r, gpio_nr = atoi(nvram_safe_get("reset_switch_gpio"));
+	int i, r, gpio_nr = safe_atoi(nvram_safe_get("reset_switch_gpio"));
 	led_control(LED_RESET_SWITCH, 0);
 	usleep(400 * 1000);
 
@@ -6556,11 +6557,11 @@ unsigned char gen_mssid_hwaddr_mac0(unsigned char mac_binary[], int unit)
 
 	memcpy(vif_addr, mac_binary, ETHER_ADDR_LEN);
 
-	if(vif_addr[0] == 96){
-		if(vif_addr[5]%(max_wl_cap_mbss -1) == 0) adjustment = 1;
-		else adjustment = 0;
+	vif_addr[0] = 96 + ((vif_addr[5])%(max_wl_cap_mbss -1) * 8);
+	if(vif_addr[0] == mac_binary[0]){
+		adjustment = 1;
+		vif_addr[0] = 96 + ((vif_addr[5]+adjustment)%(max_wl_cap_mbss -1) * 8);
 	}
-	vif_addr[0] = 96 + ((vif_addr[5]+adjustment)%(max_wl_cap_mbss -1) * 8);
 
 	ETHER_SET_LOCALADDR(vif_addr);
 
@@ -7143,7 +7144,7 @@ void load_wl()
 #endif
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
-	if(atoi(nvram_safe_get("dconpoll")) > 0)
+	if(safe_atoi(nvram_safe_get("dconpoll")) > 0)
 		snprintf(dconpoll_str, sizeof(dconpoll_str), "dhd_console_ms=%s", nvram_safe_get("dconpoll"));
 	else
 		snprintf(dconpoll_str, sizeof(dconpoll_str), "dhd_console_ms=0");
@@ -7938,7 +7939,7 @@ void wl_thread_affinity_update(void)
 	int val;
 
 	/* Check for NVRAM parameter set */
-	if (atoi(nvram_safe_get("cpu_affinity_disable"))) {
+	if (safe_atoi(nvram_safe_get("cpu_affinity_disable"))) {
 		_dprintf("%s: disable by nvram!\n", __func__);
 		return;
 	}
@@ -8014,16 +8015,16 @@ void wl_thread_affinity_update(void)
 				/* Check for MAX CPU and create CMD */
 #if defined(BCM6750) || defined(BCM63178)
 				sprintf(affinity_cmd, "echo %d > /proc/irq/%d/smp_affinity",
-					(CPU_MAP << 1), atoi(interrupt_string));
+					(CPU_MAP << 1), safe_atoi(interrupt_string));
 #else
 				if (map_shift == cpu_count){
 					printf("More interfaces exist than CPUs, Setting Interrupt Affinity to last CPU\n");
 					sprintf(affinity_cmd, "echo %d > /proc/irq/%d/smp_affinity",
-						(CPU_MAP << (cpu_count - 1)), atoi(interrupt_string));
+						(CPU_MAP << (cpu_count - 1)), safe_atoi(interrupt_string));
 				}
 				else {
 					sprintf(affinity_cmd, "echo %d > /proc/irq/%d/smp_affinity",
-						(CPU_MAP << (map_shift++)), atoi(interrupt_string));
+						(CPU_MAP << (map_shift++)), safe_atoi(interrupt_string));
 				}
 #endif
 				system(affinity_cmd);
@@ -8039,7 +8040,7 @@ void wl_thread_affinity_update(void)
 	for (i = 0; i < MAX_RADIO_NUM; i++) {
 		/* Check for MAX CPU and set map index */
 		snprintf(prefix, sizeof(prefix), "wl%d_", i);
-		if ((ptr = nvram_get(strcat_r(prefix, "affinity", tmp))) && *ptr && (val = atoi(ptr)) > 0)
+		if ((ptr = nvram_get(strcat_r(prefix, "affinity", tmp))) && *ptr && (val = safe_atoi(ptr)) > 0)
 			snprintf(affinity, sizeof(affinity), "%d", val);
 		else {
 			if (i >= (cpu_count -1)) {
@@ -8666,13 +8667,13 @@ void adjust_txbf_bfe_cap(int unit, char *orig_txbf_bfe_cap)
 	for( i = 0 ; i < ((int)(sizeof(band_to_config) / sizeof(band_to_config[0]))) ; i++){
 		if(band_to_config[i] == unit){
 			if(is_re_mode == 0){ /* CAP */
-				if(atoi(orig_txbf_bfe_cap) == 15){ /* enable txbf_bfe */
+				if(safe_atoi(orig_txbf_bfe_cap) == 15){ /* enable txbf_bfe */
 					nvram_set(strcat_r(prefix_fh, "txbf_bfe_cap", tmp), "143");
 				}else{ /* disable txbf_bfe */
 					nvram_set(strcat_r(prefix_fh, "txbf_bfe_cap", tmp), orig_txbf_bfe_cap);
 				}
 			}else{	/* RE */
-				if(atoi(orig_txbf_bfe_cap) == 15){ /* enable txbf_bfe */
+				if(safe_atoi(orig_txbf_bfe_cap) == 15){ /* enable txbf_bfe */
 					nvram_set(strcat_r(prefix_bh, "txbf_bfe_cap", tmp), "143");
 					nvram_set(strcat_r(prefix_fh, "txbf_bfe_cap", tmp), "143");
 				}else{ /* disable txbf_bfe */
@@ -9364,7 +9365,11 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #if defined(RTCONFIG_BW320M)
 			nvram_set(strcat_r(prefix, "bw_320", tmp), !nvram_match(strcat_r(prefix, "nband", tmp2), "4") ? "0" : "1");
 #else
+#if defined(RTBE58_GO)
+			_dprintf("%s, skip force reset bw_160\n", __func__);// For RTBE58_GO, do not override bw_160 to 1, respect the default in defaults.c
+#else
 			nvram_set(strcat_r(prefix, "bw_160", tmp), nvram_match(strcat_r(prefix, "nband", tmp2), "2") ? "0" : "1");
+#endif
 #endif
 		}
 #endif
@@ -15707,7 +15712,8 @@ void set_acs_ifnames()
 	}
 #if defined(RTCONFIG_WIFI7)
 	/* special requirement from RF to exclude band4 chanspec to prevent interference from 6G AFC */
-	if (!strncmp(nvram_safe_get("territory_code"), "US", 2) &&
+	if ((!strncmp(nvram_safe_get("territory_code"), "US", 2) ||
+	     !strncmp(nvram_safe_get("territory_code"), "U3", 2)) &&
 	    nvram_match(strcat_r(prefix_5g, "bw_cap", tmp), "15") &&
 	    nvram_match(strcat_r(prefix_5g, "bw", tmp), "0") &&
 	    strlen(list_5g_band4_bw80_chans)) {
@@ -16179,8 +16185,8 @@ void set_port_based_vlan_config(char *interface)
 				if (!strcmp(enable, "0") || strlen(enable) == 0)
 					continue;
 
-				//real_portset = atoi(portset);
-				//real_portset = convert_portset(atoi(portset));
+				//real_portset = safe_atoi(portset);
+				//real_portset = convert_portset(safe_atoi(portset));
 				//_dprintf("%s: real port set=0x%x\n", __FUNCTION__, real_portset);
 
 				/* Port mapping of the switch for MODEL_RTN16 */
@@ -16229,7 +16235,7 @@ void set_port_based_vlan_config(char *interface)
 						MODEL_RTN15U)
 						cpu_port = 8;
 
-					if (atoi(portset) != 0) {
+					if (safe_atoi(portset) != 0) {
 						vlan_id_tmp = vlan_tag;
 						tag_reg_val_tmp = vlan_tag;
 						vlan_tag++;
@@ -16239,8 +16245,8 @@ void set_port_based_vlan_config(char *interface)
 
 						if (set_flag) {
 							/* Set vlan entry for port 0 ~ port 4 */
-							//vlan_entry_tmp = convert_vlan_entry(atoi(enable), atoi(portset), tag_reg_val);
-							vlan_entry_tmp = convert_vlan_entry(0, atoi(portset), tag_reg_val);
+							//vlan_entry_tmp = convert_vlan_entry(safe_atoi(enable), safe_atoi(portset), tag_reg_val);
+							vlan_entry_tmp = convert_vlan_entry(0, safe_atoi(portset), tag_reg_val);
 
 							/* Set vlan entry for cpu port */
 							vlan_entry_tmp |= (1 << cpu_port);
@@ -16276,11 +16282,11 @@ void set_port_based_vlan_config(char *interface)
 						}
 
 						snprintf(vlan_id, sizeof(vlan_id), "vlan%d", vlan_id_tmp);
-						set_vlan_ifnames(br_index, atoi(wlmap), subnet_name, vlan_id);
+						set_vlan_ifnames(br_index, safe_atoi(wlmap), subnet_name, vlan_id);
 					}
 					else	/* portset is 0, only for wireless */
 					{
-						set_vlan_ifnames(br_index, atoi(wlmap), subnet_name, NULL);
+						set_vlan_ifnames(br_index, safe_atoi(wlmap), subnet_name, NULL);
 					}
 				}
 				/* Port mapping of the switch for MODEL_APN12HP, MODEL_RTN53, MODEL_RTN12
@@ -16306,7 +16312,7 @@ void set_port_based_vlan_config(char *interface)
 					eval("et", "robowr", "0x34", "0x3", "0x0080");
 #endif
 
-					if (atoi(portset) != 0) {
+					if (safe_atoi(portset) != 0) {
 						vlan_id_tmp = vlan_tag;
 						tag_reg_val_tmp = vlan_tag;
 						vlan_tag++;
@@ -16316,8 +16322,8 @@ void set_port_based_vlan_config(char *interface)
 
 						if (set_flag) {
 							/* Set vlan entry for port 0 ~ port 4 */
-							//vlan_entry_tmp = convert_vlan_entry_bcm5325(atoi(enable), atoi(portset), tag_reg_val);
-							vlan_entry_tmp = convert_vlan_entry_bcm5325(0, atoi(portset), tag_reg_val);
+							//vlan_entry_tmp = convert_vlan_entry_bcm5325(safe_atoi(enable), safe_atoi(portset), tag_reg_val);
+							vlan_entry_tmp = convert_vlan_entry_bcm5325(0, safe_atoi(portset), tag_reg_val);
 
 							/* Set vlan entry for cpu port */
 							vlan_entry_tmp |= (1 << cpu_port);
@@ -16348,11 +16354,11 @@ void set_port_based_vlan_config(char *interface)
 						}
 
 						snprintf(vlan_id, sizeof(vlan_id), "vlan%d", vlan_id_tmp);
-						set_vlan_ifnames(br_index, atoi(wlmap), subnet_name, vlan_id);
+						set_vlan_ifnames(br_index, safe_atoi(wlmap), subnet_name, vlan_id);
 					}
 					else	/* portset is 0, only for wireless */
 					{
-						set_vlan_ifnames(br_index, atoi(wlmap), subnet_name, NULL);
+						set_vlan_ifnames(br_index, safe_atoi(wlmap), subnet_name, NULL);
 					}
 				}
 
@@ -16381,6 +16387,19 @@ void fc_init()
 #endif
 
 	eval("fc", fc_enable ? "enable" : "disable");
+
+	/* [wisp-fc] fc_init() is the ONLY place that re-enables fc; it runs from
+	 * start_wan() (wan.c). When it enables fc it also clears wisp_fc_paused,
+	 * the marker wisp_fc_hwaccel_pause() set at the C2D transition -- so the
+	 * self-heal D2C path can tell "fc still paused, nobody resumed it" apart
+	 * from "already resumed". If the "resume path" line never appears after a
+	 * "[wisp-fc] ... pausing fc", start_wan() did not run and fc was left
+	 * paused. */
+	if (fc_enable)
+		nvram_set_int("wisp_fc_paused", 0);	/* RAM-only, no commit */
+	if (wisp_mode())
+		logmessage("wisp", "[wisp-fc] fc_init: fc %s (fc_disable=%d) -- resume path (start_wan ran), wisp_fc_paused cleared=%d",
+			fc_enable ? "enable" : "disable", nvram_get_int("fc_disable"), fc_enable ? 1 : 0);
 }
 
 void fc_fini()

@@ -1030,3 +1030,25 @@ void amvpn_set_kilswitch_rules_all() {
 		amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, i, NULL);
 	}
 }
+
+/* Re-apply all VPN Director ip rules, such as after an "ip rule flush".
+ * Killswitch and policy rules are applied based on configuration;
+ * redirect-all rules only for running clients.
+ * Caller must hold VPNROUTING_LOCK. */
+void amvpn_set_all_routing_rules() {
+	int i;
+
+	amvpn_set_kilswitch_rules_all();
+	amvpn_set_wan_routing_rules();
+#ifdef RTCONFIG_WIREGUARD
+	for (i = WG_CLIENT_MAX; i > 0; i--) {
+		amvpn_set_routing_rules(i, VPNDIR_PROTO_WIREGUARD);
+	}
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+	amvpn_refresh_wg_bypass_rules();
+#endif
+#endif
+	for (i = OVPN_CLIENT_MAX; i > 0; i--) {
+		amvpn_set_routing_rules(i, VPNDIR_PROTO_OPENVPN);
+	}
+}

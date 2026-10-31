@@ -4796,7 +4796,11 @@ wan_down(char *wan_ifname)
 	if(nvram_match("wans_mode", "lb")) {
 		add_multi_routes(1, -1);
 #if defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_OPENVPN)
-		amvpn_set_kilswitch_rules_all();
+		{
+			int lock = file_lock(VPNROUTING_LOCK);
+			amvpn_set_all_routing_rules();
+			file_unlock(lock);
+		}
 #endif
 	}
 #endif

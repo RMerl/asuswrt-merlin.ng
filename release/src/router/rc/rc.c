@@ -4767,13 +4767,11 @@ int main(int argc, char **argv)
 	}
 #endif
 	else if (!strcmp(base, "add_multi_routes")) {
-		if(argc == 2)
-			return add_multi_routes(safe_atoi(argv[1]), -1);
-		else
-			return add_multi_routes(0, -1);
+		int ret = add_multi_routes(argc == 2 ? safe_atoi(argv[1]) : 0, -1);
 #if defined(RTCONFIG_WIREGUARD) || defined(RTCONFIG_OPENVPN)
 		amvpn_set_kilswitch_rules_all();
 #endif
+		return ret;
 	}
 	else if (!strcmp(base, "led_ctrl")) {
 		if (argc != 3)

@@ -5565,7 +5565,7 @@ start_ddns(char *caller, int isAidisk)
 				fprintf(fp, "custom namecheap {\n");
 				fprintf(fp, "ddns-server = dynamicdns.park-your-domain.com\n");
 				// We store the domain.tld in the username nvram
-				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=%%h\"\n");
+				fprintf(fp, "ddns-path = \"/update?domain=%%u&password=%%p&host=%%h&ip=%%i\"\n");
 			} else {
 				fprintf(fp, "provider %s {\n", service);
 			}

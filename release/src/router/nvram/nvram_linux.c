@@ -322,7 +322,7 @@ int nvram_commit(void)
 		{
 			set_action(ACT_IDLE);
 			cprintf("# %s SKIP pid(%d %s) #\n", __func__, pid, get_process_name_by_pid(pid));
-			return r;
+			goto finish;
 		}
 		if (nvram_fd < 0) {
 			if ((r = nvram_init(NULL)) != 0) {

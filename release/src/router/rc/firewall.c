@@ -1861,6 +1861,8 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 		{
 			if(!get_mtlan(pmtl, &mtl_sz)){
 				FREE_MTLAN((void *)pmtl);
+				if(cp_type_rl) FREE_MTLAN((void *)cp_type_rl);
+				fclose(fp);
 				return;
 			}
 			for(i = 0; i < mtl_sz; ++i)
@@ -1869,6 +1871,8 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 					
 					if(!get_cp_type_byidx(pmtl[i].sdn_t.cp_idx, cp_type_rl)){
 						FREE_MTLAN((void *)cp_type_rl);
+						FREE_MTLAN((void *)pmtl);
+						fclose(fp);
 						return;
 					}
 					cp_type = cp_type_rl->cp_type;
@@ -1908,6 +1912,8 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 		{
 			if(!get_mtlan(pmtl, &mtl_sz)){
 				FREE_MTLAN((void *)pmtl);
+				if(cp_type_rl) FREE_MTLAN((void *)cp_type_rl);
+				fclose(fp);
 				return;
 			}
 			for(i = 0; i < mtl_sz; ++i)
@@ -1916,6 +1922,8 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 					
 					if(!get_cp_type_byidx(pmtl[i].sdn_t.cp_idx, cp_type_rl)){
 						FREE_MTLAN((void *)cp_type_rl);
+						FREE_MTLAN((void *)pmtl);
+						fclose(fp);
 						return;
 					}
 					cp_type = cp_type_rl->cp_type;
@@ -3285,9 +3293,9 @@ void set_cap_apmode_filter(void)
 	char lan_class[32];
 	int evalRet;
 
-	if((fp = fopen(cap_rules, "w")) == NULL)
-		return;
 	if (sw_mode() == SW_MODE_REPEATER)
+		return;
+	if((fp = fopen(cap_rules, "w")) == NULL)
 		return;
 
 	ip2class(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), lan_class);

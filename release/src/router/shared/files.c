@@ -808,6 +808,8 @@ int chk_nv_sanity(int is_re, int action)
 
 	if (!config_A) {
 		perror("Error opening KNV_FILE");
+		if (config_B)
+			fclose(config_B);
 		return -1;
 	}
 

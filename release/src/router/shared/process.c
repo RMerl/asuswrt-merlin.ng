@@ -73,9 +73,14 @@ static int _pidof(const char *name, pid_t **pids)
 					count = i;
 					break;
 				}
-				if ((*pids = realloc(*pids, sizeof(pid_t) * (count + 1))) == NULL) {
+				pid_t *tmp = realloc(*pids, sizeof(pid_t) * (count + 1));
+				if (tmp == NULL) {
+					free(*pids);
+					*pids = NULL;
+					closedir(dir);
 					return -1;
 				}
+				*pids = tmp;
 				(*pids)[count++] = i;
 			}
 		}

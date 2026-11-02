@@ -60,6 +60,7 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 
 	switch (val) {
 	case DUMP_MACTABLE: /* Dump L2 lookup table of specified LAN port */
+		close(fd);
 		return rtkswitch_port_mactable(val2 + 1);
 
 	/* w/ no options */

@@ -137,8 +137,10 @@ static unsigned int nvsw_mtd_partsize(char *nvram_mtd_name)
 
 	if ((mtd_fd = open(nvram_mtd_name, O_RDWR|O_SYNC)) < 0)
 		return 0;
-	if (ioctl(mtd_fd, MEMGETINFO, &mtd_info) != 0)
+	if (ioctl(mtd_fd, MEMGETINFO, &mtd_info) != 0) {
+		close(mtd_fd);
 		return 0;
+	}
 	close(mtd_fd);
 	return mtd_info.size;
 }

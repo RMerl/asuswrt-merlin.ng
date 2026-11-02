@@ -155,6 +155,9 @@ confmtd_backup()
 
 		unlink(CONFMTD_TGZ_TMP_FILE);
 
+		if (fd >= 0)
+			close(fd);
+
 		return 0;
 	}
 

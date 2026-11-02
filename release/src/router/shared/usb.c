@@ -116,6 +116,7 @@ int is_no_partition(const char *discname)
 			if (strstr(ptname, discname))
 				count++;
 		}
+		fclose(procpt);
 	}
 
 	return (count == 1);

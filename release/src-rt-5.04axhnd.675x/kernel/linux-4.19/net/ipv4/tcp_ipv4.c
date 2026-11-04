@@ -1097,7 +1097,11 @@ static void tcp_v4_reqsk_destructor(struct request_sock *req)
 void tcp_v4_reqsk_destructor(struct request_sock *req)
 #endif
 {
-	kfree(rcu_dereference_protected(inet_rsk(req)->ireq_opt, 1));
+	struct ip_options_rcu *opt;
+
+	opt = rcu_dereference_protected(inet_rsk(req)->ireq_opt, 1);
+	if (opt)
+		kfree_rcu(opt, rcu);
 }
 
 #ifdef CONFIG_TCP_MD5SIG

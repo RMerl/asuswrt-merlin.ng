@@ -1011,9 +1011,11 @@ var timezones = [
 	["UTC10",	"(GMT-10:00) <#TZ03#>"],
 	["NAST9DST",	"(GMT-09:00) <#TZ04#>"],
 	["PST8DST",	"(GMT-08:00) <#TZ05#>"],
+	["PST7",	"(GMT-07:00) Vancouver, Whitehorse"],
 	["MST7DST_1",	"(GMT-07:00) <#TZ06#>"],
 	["MST7_2",	"(GMT-07:00) <#TZ07#>"],
 	["MST7_3",	"(GMT-07:00) <#TZ08#>"],	//MST7DST_3
+	["MST6",	"(GMT-06:00) Edmonton, Yellowknife"],
 	["CST6_2",	"(GMT-06:00) <#TZ10#>"],
 	["CST6_3",	"(GMT-06:00) <#TZ11#>"],	//CST6DST_3
 	["CST6_3_1",	"(GMT-06:00) <#TZ12#>"],	//CST6DST_3_1

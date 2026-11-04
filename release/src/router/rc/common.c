@@ -1184,9 +1184,11 @@ const zoneinfo_t tz_list[] = {
 	{"UTC10",	"US/Hawaii"},		// (GMT-10:00) Hawaii
        	{"NAST9DST",	"US/Alaska"},		// (GMT-09:00) Alaska
         {"PST8DST",	"US/Pacific"},		// (GMT-08:00) Pacific Time (US & Canada)
+		{"PST7",  "Canada/Vancouver"},	//(GMT-07:00) Vancouver, Whitehorse
         {"MST7DST_1",	"US/Mountain"},		// (GMT-07:00) Mountain Time (US & Canada)
         {"MST7_2",	"US/Arizona"},		// (GMT-07:00) Arizona
 	{"MST7_3",	"America/Mazatlan"},	// (GMT-07:00) La Paz, Mazatlan //MST7DST_3
+		{"MST6",  "Canada/Edmonton"}, // (GMT-06:00) Edmonton, Yellowknife
         {"CST6_2",	"Canada/Saskatchewan"},	// (GMT-06:00) Saskatchewan
         {"CST6_3",	"Mexico/General"},	// (GMT-06:00) Guadalajara, Mexico City
         {"CST6_3_1",	"America/Monterrey"},	// (GMT-06:00) Monterreyi, Chihuahua

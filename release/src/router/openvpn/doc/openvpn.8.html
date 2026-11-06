@@ -2336,6 +2336,9 @@ is the source IP:port of the connection to the proxy receiver. This
 directory can be used as a dictionary by the proxy receiver to determine
 the origin of the connection. Each generated file will be automatically
 deleted when the proxied connection is torn down.</p>
+<p>The files in <tt class="docutils literal">dir</tt> are created and removed with the privileges of the
+OpenVPN process, so <tt class="docutils literal">dir</tt> must not be writable by any user other than
+the one OpenVPN runs as.</p>
 <p class="last">Not implemented on Windows.</p>
 </td></tr>
 <tr><td class="option-group">

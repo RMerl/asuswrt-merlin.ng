@@ -255,6 +255,10 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
                 if (!(flags & GET_USER_PASS_PASSWORD_ONLY))
                 {
                     buf_parse(&buf, '\n', up->username, USER_PASS_LEN);
+                    /* The password starts on the next line, even if the username was truncated. */
+                    const char *password = strchr(auth_file, '\n');
+                    password = password ? password + 1 : "";
+                    buf_set_read(&buf, (uint8_t *)password, strlen(password) + 1);
                 }
                 buf_parse(&buf, '\n', up->password, USER_PASS_LEN);
 
@@ -288,6 +292,14 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
                         msg(M_FATAL, "Error reading username from %s authfile: %s", prefix,
                             auth_file);
                     }
+                    if (!strchr(up->username, '\n'))
+                    {
+                        /* Consume the rest of the username line before reading the password. */
+                        int c;
+                        while ((c = fgetc(fp)) != '\n' && c != EOF)
+                        {
+                        }
+                    }
                 }
                 chomp(up->username);
 
@@ -303,7 +315,7 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
 
                 if (password_buf[0])
                 {
-                    strncpy(up->password, password_buf, USER_PASS_LEN);
+                    strncpynt(up->password, password_buf, USER_PASS_LEN);
                 }
                 else
                 {
@@ -452,7 +464,7 @@ get_user_pass_cr(struct user_pass *up, const char *auth_file, const char *prefix
         /* Use tag for blank password if we are not prompting for one */
         if (flags & GET_USER_PASS_USERNAME_ONLY)
         {
-            strncpy(up->password, blank_up, sizeof(up->password));
+            strncpynt(up->password, blank_up, sizeof(up->password));
         }
 
         string_mod(up->username, CC_PRINT, CC_CRLF, 0);

@@ -2335,6 +2335,10 @@ directory can be used as a dictionary by the proxy receiver to determine
 the origin of the connection. Each generated file will be automatically
 deleted when the proxied connection is torn down.
 .sp
+The files in \fBdir\fP are created and removed with the privileges of the
+OpenVPN process, so \fBdir\fP must not be writable by any user other than
+the one OpenVPN runs as.
+.sp
 Not implemented on Windows.
 .TP
 .BI \-\-push \ option

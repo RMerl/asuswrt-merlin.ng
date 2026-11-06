@@ -70,6 +70,7 @@ enum mcv
     MCV_PKSIGN_ALG = 3,
     MCV_USERNAME_ONLY = 4,
     MCV_MULTILINE_PASSWORD = 5,
+    MCV_PREFERRED_USERNAME = 6,
 };
 
 struct management *management; /* GLOBAL */
@@ -2379,7 +2380,7 @@ management_android_control(struct management *man, const char *command, const ch
     }
     struct user_pass up;
     CLEAR(up);
-    strncpy(up.username, msg, sizeof(up.username) - 1);
+    strncpynt(up.username, msg, sizeof(up.username));
 
     management_query_user_pass(management, &up, command, GET_USER_PASS_NEED_OK, (void *)0);
     return strcmp("ok", up.password) == 0;
@@ -3620,7 +3621,7 @@ management_query_user_pass(struct management *man, struct user_pass *up, const c
     {
         volatile int signal_received = 0;
         const bool standalone_disabled_save = man->persist.standalone_disabled;
-        struct buffer alert_msg = alloc_buf_gc(128, &gc);
+        struct buffer alert_msg = alloc_buf_gc(256, &gc);
         const char *alert_type = NULL;
         const char *prefix = NULL;
         unsigned int up_query_mode = 0;
@@ -3673,12 +3674,40 @@ management_query_user_pass(struct management *man, struct user_pass *up, const c
             buf_printf(&alert_msg, " MSG:%s", up->username);
         }
 
+        if (up_query_mode == UP_QUERY_USER_PASS
+            && (man->connection.client_version >= MCV_PREFERRED_USERNAME)
+            && up->username[0])
+        {
+            /*
+             * The buffer up is prefilled with username from auth-file or inline.
+             * Indicate it in the prompt as base64 encoded.
+             */
+            char *user64 = NULL;
+            const int user64_len = openvpn_base64_encode(up->username, (int)strlen(up->username), &user64);
+            if (user64_len == -1)
+            {
+                msg(M_NONFATAL, "ERROR: could not base64-encode username");
+            }
+            else if (user64_len + 4 > 128)
+            {
+                msg(M_WARN | M_INFO, "Preferred username too long for user-pass prompt sent to management; omitting UN:<username> hint.");
+            }
+            else
+            {
+                buf_printf(&alert_msg, " UN:%s", user64);
+            }
+            free(user64);
+        }
+
         if (sc)
         {
-            buf_printf(&alert_msg, " SC:%d,%s",
-                       BOOL_CAST(flags & GET_USER_PASS_STATIC_CHALLENGE_ECHO)
-                           | (BOOL_CAST(flags & GET_USER_PASS_STATIC_CHALLENGE_CONCAT) << 1),
-                       sc);
+            if (!buf_printf(&alert_msg, " SC:%d,%s",
+                            BOOL_CAST(flags & GET_USER_PASS_STATIC_CHALLENGE_ECHO)
+                                | (BOOL_CAST(flags & GET_USER_PASS_STATIC_CHALLENGE_CONCAT) << 1),
+                            sc))
+            {
+                msg(M_WARN | M_INFO, "SC:<challenge-text> in user-pass prompt sent to management got truncated.");
+            }
         }
 
         man_wait_for_client_connection(man, &signal_received, 0, MWCC_PASSWORD_WAIT);

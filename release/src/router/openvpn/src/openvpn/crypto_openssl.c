@@ -561,6 +561,7 @@ crypto_pem_decode(const char *name, struct buffer *dst, const struct buffer *src
 cleanup:
     OPENSSL_free(name_read);
     OPENSSL_free(header_read);
+    OPENSSL_cleanse(data_read, data_read_len);
     OPENSSL_free(data_read);
     if (!BIO_free(bio))
     {
@@ -600,6 +601,15 @@ static evp_cipher_type *
 cipher_get(const char *ciphername)
 {
     ASSERT(ciphername);
+
+    /* "none" is a valid OpenVPN cipher name that OpenSSL does not know.
+     * Return NULL without asking OpenSSL: a failed EVP_CIPHER_fetch() would
+     * leave an "unsupported" entry on the error queue that the cipher_kt_*()
+     * callers never clear. */
+    if (strcmp("none", ciphername) == 0)
+    {
+        return NULL;
+    }
 
     ciphername = translate_cipher_name_from_openvpn(ciphername);
     return EVP_CIPHER_fetch(NULL, ciphername, NULL);

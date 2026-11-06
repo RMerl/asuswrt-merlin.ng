@@ -127,8 +127,7 @@ do_address_service(const bool add, const short family, const struct tuntap *tt)
 
     if (addr.iface.index == TUN_ADAPTER_INDEX_INVALID)
     {
-        strncpy(addr.iface.name, tt->actual_name, sizeof(addr.iface.name));
-        addr.iface.name[sizeof(addr.iface.name) - 1] = '\0';
+        strncpynt(addr.iface.name, tt->actual_name, sizeof(addr.iface.name));
     }
 
     if (addr.family == AF_INET)
@@ -212,7 +211,7 @@ do_dns_domain_service(bool add, const struct tuntap *tt)
         {
             dns.domains[dstlen++] = ',';
         }
-        strncpy(dns.domains + dstlen, o->domain_search_list[i], srclen + 1);
+        memcpy(dns.domains + dstlen, o->domain_search_list[i], srclen + 1);
     }
 
     msg(D_LOW, "%s DNS domains on '%s' (if_index = %d) using service",
@@ -261,8 +260,7 @@ do_dns_service(bool add, const short family, const struct tuntap *tt)
                               .addr_len = addr_len };
 
     /* interface name is required */
-    strncpy(dns.iface.name, tt->actual_name, sizeof(dns.iface.name));
-    dns.iface.name[sizeof(dns.iface.name) - 1] = '\0';
+    strncpynt(dns.iface.name, tt->actual_name, sizeof(dns.iface.name));
 
     if (addr_len > _countof(dns.addr))
     {
@@ -326,8 +324,7 @@ do_wins_service(bool add, const struct tuntap *tt)
                                 .addr_len = addr_len };
 
     /* interface name is required */
-    strncpy(wins.iface.name, tt->actual_name, sizeof(wins.iface.name));
-    wins.iface.name[sizeof(wins.iface.name) - 1] = '\0';
+    strncpynt(wins.iface.name, tt->actual_name, sizeof(wins.iface.name));
 
     if (addr_len > _countof(wins.addr))
     {
@@ -2100,6 +2097,10 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
         ifr.ifr_flags |= IFF_ONE_QUEUE;
 #endif
 
+#ifdef IFF_BACKPRESSURE
+        ifr.ifr_flags |= IFF_BACKPRESSURE;
+#endif
+
         /*
          * Figure out if tun or tap device
          */
@@ -3303,7 +3304,7 @@ tun_read_queue(struct tuntap *tt, int maxsize)
                 tt->reads.iostate = IOSTATE_IMMEDIATE_RETURN;
                 tt->reads.status = err;
                 dmsg(D_WIN32_IO, "WIN32 I/O: TAP Read error [%d] : %s", (int)len,
-                     strerror_win32(status, &gc));
+                     strerror_win32(err, &gc));
                 gc_free(&gc);
             }
         }
@@ -4129,6 +4130,7 @@ get_per_adapter_info(const DWORD index, struct gc_arena *gc)
             {
                 msg(M_INFO, "GetPerAdapterInfo #2 failed (status=%u) : %s", (unsigned int)status,
                     strerror_win32(status, gc));
+                pi = NULL;
             }
         }
     }
@@ -4158,6 +4160,7 @@ get_interface_info_list(struct gc_arena *gc)
         {
             msg(M_INFO, "GetInterfaceInfo #2 failed (status=%u) : %s", (unsigned int)status,
                 strerror_win32(status, gc));
+            ii = NULL;
         }
     }
     return ii;
@@ -5210,7 +5213,6 @@ static void
 windows_set_mtu(const int iface_index, const short family, const int mtu)
 {
     DWORD err = 0;
-    struct gc_arena gc = gc_new();
     MIB_IPINTERFACE_ROW ipiface;
     InitializeIpInterfaceEntry(&ipiface);
     const char *family_name = (family == AF_INET6) ? "IPv6" : "IPv4";
@@ -5235,8 +5237,10 @@ windows_set_mtu(const int iface_index, const short family, const int mtu)
 
     if (err != NO_ERROR)
     {
+        struct gc_arena gc = gc_new();
         msg(M_WARN, "TUN: Setting %s mtu failed: %s [status=%lu if_index=%d]", family_name,
             strerror_win32(err, &gc), err, iface_index);
+        gc_free(&gc);
     }
     else
     {

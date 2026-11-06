@@ -635,7 +635,7 @@ init_route_list(struct route_list *rl, const struct route_option_list *opt,
     {
         setenv_route_addr(es, "net_gateway", rl->ngi.gateway.addr, -1);
 #if defined(ENABLE_DEBUG) && !defined(ENABLE_SMALL)
-        print_default_gateway(D_ROUTE, &rl->rgi, NULL);
+        print_default_gateway(D_ROUTE, &rl->ngi, NULL);
 #endif
     }
     else
@@ -786,7 +786,7 @@ init_route_ipv6_list(struct route_ipv6_list *rl6, const struct route_ipv6_option
     {
         setenv_str(es, "net_gateway_ipv6", print_in6_addr(rl6->ngi6.gateway.addr_ipv6, 0, &gc));
 #if defined(ENABLE_DEBUG) && !defined(ENABLE_SMALL)
-        print_default_gateway(D_ROUTE, NULL, &rl6->rgi6);
+        print_default_gateway(D_ROUTE, NULL, &rl6->ngi6);
 #endif
     }
     else
@@ -3010,8 +3010,7 @@ do_route_ipv6_service(const bool add, const struct route_ipv6 *r, const struct t
 
     if (msg.iface.index == TUN_ADAPTER_INDEX_INVALID)
     {
-        strncpy(msg.iface.name, tt->actual_name, sizeof(msg.iface.name));
-        msg.iface.name[sizeof(msg.iface.name) - 1] = '\0';
+        strncpynt(msg.iface.name, tt->actual_name, sizeof(msg.iface.name));
     }
 
     status = do_route_service(add, &msg, sizeof(msg), tt->options.msg_channel);
@@ -3764,12 +3763,14 @@ get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_
     if (ioctl(sockfd, SIOCGRTSIZE, &config, sizeof(struct ifconf)) < 0)
     {
         msg(M_ERRNO, "%s: Error getting routing table size", __func__);
+        close(sockfd);
         return;
     }
 
     uint32 size = (uint32)config.ifc_value;
     if (size == 0)
     {
+        close(sockfd);
         return;
     }
 
@@ -3778,7 +3779,9 @@ get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_
 
     config.ifc_len = size;
     config.ifc_buf = buffer;
-    if (ioctl(sockfd, SIOCGRTTABLE, &config, sizeof(struct ifconf)) < 0)
+    int ret = ioctl(sockfd, SIOCGRTTABLE, &config, sizeof(struct ifconf));
+    close(sockfd);
+    if (ret < 0)
     {
         free(buffer);
         return;
@@ -3794,7 +3797,7 @@ get_default_gateway(struct route_gateway_info *rgi, in_addr_t dest, openvpn_net_
         {
             rgi->gateway.addr = ntohl(((struct sockaddr_in *)route.gateway)->sin_addr.s_addr);
             rgi->flags = RGI_ADDR_DEFINED | RGI_IFACE_DEFINED;
-            strncpy(rgi->iface, interface->ifr_name, sizeof(rgi->iface));
+            strncpynt(rgi->iface, interface->ifr_name, sizeof(rgi->iface));
         }
 
         int32 address_size = 0;

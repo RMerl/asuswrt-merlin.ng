@@ -137,6 +137,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__extra_recursive_targets = build-tests-recursive
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.plugins \
 	README
@@ -218,7 +219,7 @@ OPENSSL_CFLAGS =
 OPENSSL_LIBS = -lssl -lcrypto 
 OPENVPN_VERSION_MAJOR = 2
 OPENVPN_VERSION_MINOR = 7
-OPENVPN_VERSION_PATCH = .8
+OPENVPN_VERSION_PATCH = .9
 OPTIONAL_CRYPTO_CFLAGS =  
 OPTIONAL_CRYPTO_LIBS =  -lssl -lcrypto 
 OPTIONAL_DL_LIBS = -ldl
@@ -245,10 +246,10 @@ P11TOOL =
 PACKAGE = openvpn
 PACKAGE_BUGREPORT = openvpn-users@lists.sourceforge.net
 PACKAGE_NAME = OpenVPN
-PACKAGE_STRING = OpenVPN 2.7.8
+PACKAGE_STRING = OpenVPN 2.7.9
 PACKAGE_TARNAME = openvpn
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.7.8
+PACKAGE_VERSION = 2.7.9
 PATH_SEPARATOR = :
 PKCS11_HELPER_CFLAGS = 
 PKCS11_HELPER_LIBS = 
@@ -281,7 +282,7 @@ TAP_WIN_MIN_MINOR = 9
 TEST_CFLAGS =       -I$(top_srcdir)/include 
 TEST_LDFLAGS =  -lssl -lcrypto   -lcap-ng    -lcmocka 
 TMPFILES_DIR = 
-VERSION = 2.7.8
+VERSION = 2.7.9
 WINDMC = no
 WOLFSSL_CFLAGS = 
 WOLFSSL_INCLUDEDIR = 
@@ -405,6 +406,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+build-tests-local: 
 tags TAGS:
 
 ctags CTAGS:
@@ -482,6 +484,10 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+build-tests: build-tests-am
+
+build-tests-am: build-tests-local
+
 clean-am: clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
@@ -548,10 +554,11 @@ uninstall-am:
 
 .MAKE: install-am install-strip
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	cscopelist-am ctags-am dist-hook distclean distclean-generic \
-	distclean-libtool distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
+.PHONY: all all-am build-tests-am build-tests-local check check-am \
+	clean clean-generic clean-libtool cscopelist-am ctags-am \
+	dist-hook distclean distclean-generic distclean-libtool \
+	distdir dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \

@@ -110,7 +110,7 @@ dns_server_addr_parse(struct dns_server *server, const char *addr)
         {
             return false;
         }
-        strncpy(addrcopy, addr, copylen);
+        memcpy(addrcopy, addr, copylen);
         addr = addrcopy;
     }
 
@@ -391,7 +391,7 @@ make_domain_list(const char *what, const struct dns_domain *src, bool nrpt_domai
         {
             *(dst + offset++) = '.';
         }
-        strncpy(dst + offset, src->name, len);
+        memcpy(dst + offset, src->name, len);
         offset += len;
 
         src = src->next;
@@ -607,9 +607,16 @@ run_updown_runner(bool up, struct options *o, const struct tuntap *tt,
 {
     int dns_pipe_fd[2];
     int ack_pipe_fd[2];
-    if (pipe(dns_pipe_fd) != 0 || pipe(ack_pipe_fd) != 0)
+    if (pipe(dns_pipe_fd) != 0)
     {
         msg(M_WARN | M_ERRNO, "run_dns_up_down: unable to create pipes");
+        return false;
+    }
+    if (pipe(ack_pipe_fd) != 0)
+    {
+        msg(M_WARN | M_ERRNO, "run_dns_up_down: unable to create pipes");
+        close(dns_pipe_fd[0]);
+        close(dns_pipe_fd[1]);
         return false;
     }
     updown_runner->pid = fork();

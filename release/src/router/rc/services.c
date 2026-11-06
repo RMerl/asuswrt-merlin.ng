@@ -10456,6 +10456,7 @@ void chilli_config(void)
 		fprintf(fp, "localusers %s\n", "/tmp/localusers");
 		if (!(local_fp = fopen("/tmp/localusers", "w"))) {
 			perror("/tmp/localusers");
+			fclose(fp);
 			return;
 		}
 		fprintf(local_fp, "noauth:noauth");
@@ -11861,6 +11862,7 @@ void chilli_confign(char *sn, char *dns1, char *dns2, char *sub_ip)
 		fprintf(fp, "localusers %s\n", "/tmp/localusers");
 		if (!(local_fp = fopen("/tmp/localusers", "w"))) {
 			perror("/tmp/localusers");
+			fclose(fp);
 			return;
 		}
 		fprintf(local_fp, "noauth:noauth");
@@ -27525,13 +27527,15 @@ int realip_main(int argc, char *argv[])
 
 		if (!ret) {
 			FILE *fp = fopen(STUN_RESULT, "r");
-			while (fgets(buf, sizeof(buf), fp)) {
+			while (fp && fgets(buf, sizeof(buf), fp)) {
 				trimNL(buf);
 				if (is_valid_ip4(buf)) {
 					success = 1;
 					break;
 				}
 			}
+			if (fp)
+				fclose(fp);
 
 			if (success) {
 				printf("%s\n", buf);

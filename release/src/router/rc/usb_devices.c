@@ -2438,6 +2438,7 @@ int write_3g_ppp_conf(int modem_unit){
 	// Get USB node.
 	if(get_usb_node_by_device(modem_node, usb_node, sizeof(usb_node)) == NULL){
 		usb_dbg("(%s): test 5.\n", modem_node);
+		fclose(fp);
 		file_unlock(lock);
 		return 0;
 	}
@@ -2445,6 +2446,7 @@ int write_3g_ppp_conf(int modem_unit){
 	// Get VID.
 	if((vid = get_usb_vid(usb_node)) == 0){
 		usb_dbg("(%s): test 6.\n", modem_node);
+		fclose(fp);
 		file_unlock(lock);
 		return 0;
 	}
@@ -2452,6 +2454,7 @@ int write_3g_ppp_conf(int modem_unit){
 	// Get PID.
 	if((pid = get_usb_pid(usb_node)) == 0){
 		usb_dbg("(%s): test 7.\n", modem_node);
+		fclose(fp);
 		file_unlock(lock);
 		return 0;
 	}
@@ -2572,6 +2575,7 @@ int write_beceem_conf(const char *eth_node)
 
 	if(strcmp(modem_enable, "4") || !strcmp(isp, "")){
 		usb_dbg("(%s): test 3.\n", eth_node);
+		fclose(fp);
 		file_unlock(lock);
 		return 0;
 	}
@@ -2671,6 +2675,7 @@ int write_gct_conf(void)
 	snprintf(ttlsid, sizeof(ttlsid), "%s", nvram_safe_get("modem_ttlsid"));
 
 	if(strcmp(modem_enable, "4") || !strcmp(isp, "")){
+		fclose(fp);
 		file_unlock(lock);
 		return 0;
 	}
@@ -2860,6 +2865,7 @@ hotplug_block(void)
 
         if (!retry) {
                 hotplug_dbg("Failed locking LOCK_FILE: %s\n", strerror(errno));
+                close(lock_fd);
                 return -1;
         }
 

@@ -547,7 +547,7 @@ int route_del(char *name, int metric, char *dst, char *gateway, char *genmask)
 
 int route_exist(const char *name, int metric, const char *dst, const char *gateway, const char *mask)
 {
-	FILE *fp = fopen("/proc/net/route", "r");
+	FILE *fp;
 	in_addr_t addr_dst, addr_gate, addr_mask;
 	in_addr_t rtr_dst, rtr_gate, rtr_mask;
 	int rtr_metric;
@@ -562,6 +562,7 @@ int route_exist(const char *name, int metric, const char *dst, const char *gatew
 	 || inet_pton(AF_INET, mask, &addr_mask) < 0)
 		return -1;
 
+	fp = fopen("/proc/net/route", "r");
 	if(fp) {
 		while(fgets(buf, sizeof(buf), fp)) {
 			if(!strncmp(buf, "Iface", 5))

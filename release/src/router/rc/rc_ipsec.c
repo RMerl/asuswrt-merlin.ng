@@ -2919,6 +2919,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 
 	if ((fp1 = fopen(FILE_PATH_IPSEC_IPTABLES_RULE, "w")) == NULL){
 		DBG(("OPEN %s FAIL!!\n", FILE_PATH_IPSEC_IPTABLES_RULE));
+		fclose(fp);
 		return;
 	}
 		

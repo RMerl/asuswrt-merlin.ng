@@ -150,8 +150,8 @@ apps_info_t *get_apps_list(char *argv){
 			memset(buf, 0, sizeof(buf));
 			pkg_tail = pkg_head = buf;
 			do{
-				snprintf(pkg_tail, sizeof(buf), "%s", line);
-				pkg_tail += strlen(line);
+				snprintf(pkg_tail, sizeof(buf) - (pkg_tail - buf), "%s", line);
+				pkg_tail += strlen(pkg_tail);
 
 				memset(line, 0, sizeof(line));
 			}while(fgets(line, sizeof(line), fp) != NULL && strlen(line) > 1);
@@ -170,10 +170,14 @@ apps_info_t *get_apps_list(char *argv){
 
 			// Installed package.
 			if(got_apps){
+				free(follow_apps_info->new_version);
 				follow_apps_info->new_version = get_status_field(pkg_head, FIELD_VERSION);
+				free(follow_apps_info->new_optional_utility);
 				follow_apps_info->new_optional_utility = get_status_field(pkg_head, FIELD_OPTIONALUTILITY);
-				if(strcmp(p_app_list->name, APP_OWNER_OLEG) != 0)
+				if(strcmp(p_app_list->name, APP_OWNER_OLEG) != 0){
+					free(follow_apps_info->new_file_name);
 					follow_apps_info->new_file_name = get_status_field(pkg_head, FIELD_FILENAME);
+				}
 				if(follow_apps_info->from_owner != NULL)
 					free(follow_apps_info->from_owner);
 				follow_apps_info->from_owner = alloc_string(p_app_list->name);
@@ -185,6 +189,8 @@ apps_info_t *get_apps_list(char *argv){
 					follow_apps_info_list = &((*follow_apps_info_list)->next);
 
 				*follow_apps_info_list = initial_apps_data();
+				if(*follow_apps_info_list == NULL)
+					break;
 
 				(*follow_apps_info_list)->name = get_status_field(pkg_head, FIELD_PACKAGE);
 				(*follow_apps_info_list)->new_version = get_status_field(pkg_head, FIELD_VERSION);
@@ -217,16 +223,19 @@ apps_info_t *get_apps_list(char *argv){
 		memset(buf, 0, sizeof(buf));
 		pkg_tail = pkg_head = buf;
 		do{
-			snprintf(pkg_tail, sizeof(buf), "%s", line);
-			pkg_tail += strlen(line);
+			snprintf(pkg_tail, sizeof(buf) - (pkg_tail - buf), "%s", line);
+			pkg_tail += strlen(pkg_tail);
 
 			memset(line, 0, sizeof(line));
 		}while(fgets(line, 128, fp) != NULL && strlen(line) > 1);
 
-		if((STATUS = get_status_field(pkg_head, FIELD_STATUS)) == NULL)
+		if((STATUS = get_status_field(pkg_head, FIELD_STATUS)) == NULL){
+			free(tmp_apps_name);
 			continue;
+		}
 		if(strstr(STATUS, "not-installed")){
 			free(STATUS);
+			free(tmp_apps_name);
 			continue;
 		}
 		free(STATUS);
@@ -245,6 +254,7 @@ apps_info_t *get_apps_list(char *argv){
 
 		// Installed package.
 		if(got_apps){
+			free(follow_apps_info->version);
 			follow_apps_info->version = get_status_field(pkg_head, FIELD_VERSION);
 			if(follow_apps_info->installed != NULL)
 				free(follow_apps_info->installed);
@@ -257,6 +267,8 @@ apps_info_t *get_apps_list(char *argv){
 				follow_apps_info_list = &((*follow_apps_info_list)->next);
 
 			*follow_apps_info_list = initial_apps_data();
+			if(*follow_apps_info_list == NULL)
+				break;
 
 			(*follow_apps_info_list)->name = get_status_field(pkg_head, FIELD_PACKAGE);
 			(*follow_apps_info_list)->version = get_status_field(pkg_head, FIELD_VERSION);
@@ -281,6 +293,7 @@ apps_info_t *get_apps_list(char *argv){
 				follow_apps_info->enabled = get_status_field(apps_info, FIELD_ENABLED);
 				free(tmp_apps_name);
 			}
+			free(follow_apps_info->optional_utility);
 			follow_apps_info->optional_utility = get_status_field(apps_info, FIELD_OPTIONALUTILITY);
 
 			free(apps_info);

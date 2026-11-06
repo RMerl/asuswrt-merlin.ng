@@ -250,6 +250,7 @@ void debug_log_downsizing() {
     FILE *fpTmp = fopen(CONNDIAG_LOG_TEMP_PATH, "a+");
 
     if (NULL == fpTmp) {
+        fclose(fp);
         return;
     }
 

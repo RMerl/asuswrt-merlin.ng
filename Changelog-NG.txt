@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.13 (xx-xxx-xxxx)
+3004.388.13 (7-Nov-2026)
   - NEW: Migrated all devices to OpenSSL 3.5.
          To work around closed source components linked against
          OpenSSL 1.1.1, a shim was developped to pretend being

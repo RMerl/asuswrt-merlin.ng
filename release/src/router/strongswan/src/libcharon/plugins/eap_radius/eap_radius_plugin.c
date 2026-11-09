@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Tobias Brunner
+ * Copyright (C) 2013-2025 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -119,7 +119,7 @@ static void load_configs(private_eap_radius_plugin_t *this)
 {
 	enumerator_t *enumerator;
 	radius_config_t *config;
-	char *nas_identifier, *secret, *address, *section;
+	char *nas_identifier, *secret, *address, *source, *section;
 	int auth_port, acct_port, sockets, preference;
 	u_int retransmit_tries;
 	double retransmit_timeout, retransmit_base;
@@ -135,6 +135,8 @@ static void load_configs(private_eap_radius_plugin_t *this)
 			DBG1(DBG_CFG, "no RADIUS secret defined");
 			return;
 		}
+		source = lib->settings->get_str(lib->settings,
+						"%s.plugins.eap-radius.source", NULL, lib->ns);
 		nas_identifier = lib->settings->get_str(lib->settings,
 						"%s.plugins.eap-radius.nas_identifier", "strongSwan",
 						lib->ns);
@@ -150,7 +152,7 @@ static void load_configs(private_eap_radius_plugin_t *this)
 		retransmit_base = lib->settings->get_double(lib->settings,
 						"%s.plugins.eap-radius.retransmit_base", 1.4, lib->ns);
 
-		config = radius_config_create(address, address, auth_port, ACCT_PORT,
+		config = radius_config_create(address, address, source, auth_port, ACCT_PORT,
 									  nas_identifier, secret, sockets, 0,
 									  retransmit_tries, retransmit_timeout,
 									  retransmit_base);
@@ -183,6 +185,11 @@ static void load_configs(private_eap_radius_plugin_t *this)
 			DBG1(DBG_CFG, "RADIUS server '%s' misses secret, skipped", section);
 			continue;
 		}
+		source = lib->settings->get_str(lib->settings,
+				"%s.plugins.eap-radius.servers.%s.source",
+					lib->settings->get_str(lib->settings,
+						"%s.plugins.eap-radius.source", NULL, lib->ns),
+				lib->ns, section);
 		nas_identifier = lib->settings->get_str(lib->settings,
 				"%s.plugins.eap-radius.servers.%s.nas_identifier",
 					lib->settings->get_str(lib->settings,
@@ -228,7 +235,7 @@ static void load_configs(private_eap_radius_plugin_t *this)
 				"%s.plugins.eap-radius.servers.%s.preference", 0,
 				lib->ns, section);
 
-		config = radius_config_create(section, address, auth_port, acct_port,
+		config = radius_config_create(section, address, source, auth_port, acct_port,
 								nas_identifier, secret, sockets, preference,
 								retransmit_tries, retransmit_timeout,
 								retransmit_base);
@@ -339,7 +346,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *eap_radius_plugin_create()
+PLUGIN_DEFINE(eap_radius)
 {
 	private_eap_radius_plugin_t *this;
 
@@ -438,7 +445,7 @@ void eap_radius_handle_timeout(ike_sa_id_t *id)
 		lib->processor->queue_job(lib->processor,
 				(job_t*)callback_job_create_with_prio(
 						(callback_job_cb_t)delete_all_async, NULL, NULL,
-						(callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+						callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 	}
 	else if (id)
 	{

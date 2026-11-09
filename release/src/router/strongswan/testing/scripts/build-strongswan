@@ -8,7 +8,7 @@ DIR=$(dirname `readlink -f $0`)
 [ -f "$BASEIMG" ] || die "Base image $BASEIMG not found"
 running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
 
-check_commands partprobe qemu-img qemu-nbd
+check_commands blockdev qemu-img qemu-nbd
 
 load_qemu_nbd
 
@@ -23,6 +23,7 @@ Usage:
     --help            (-h)  show usage information
     --all             (-a)  build/install all software, not only strongSwan
     --clean           (-c)  use a new strongSwan build directory
+    --quick-rebuild   (-q)  skip running autoreconf and configure
     --guest NAME      (-g)  only install in a specific guest image
     --no-guests       (-n)  don't build any guest images after the root image
     --replace         (-r)  replace the root image (implies --all)
@@ -32,6 +33,7 @@ EOF
 
 ALL_RECIPES=
 CLEAN=
+QUICK_REBUILD=
 GUEST=
 NO_GUESTS=
 REPLACE=
@@ -48,6 +50,9 @@ while :; do
 		;;
 	-c|--clean)
 		CLEAN=1
+		;;
+	-q|--quick-rebuild)
+		QUICK_REBUILD=1
 		;;
 	-g|--guest)
 		if [ "$2" ]; then
@@ -110,7 +115,9 @@ case "$GUEST" in
 esac
 
 do_on_exit qemu-nbd -d $NBDEV
-partprobe $NBDEV
+# wait for disk to become ready with newer QEMU versions
+sleep 1
+blockdev --rereadpt $NBDEV
 
 log_action "Mounting $NBDPARTITION to $LOOPDIR"
 execute "mount $NBDPARTITION $LOOPDIR"
@@ -153,8 +160,10 @@ if [ -z "$TARBALL" ]; then
 	echo "$version" > $SHAREDDIR/.strongswan-version
 	log_status 0
 
-	log_action "Preparing source tree"
-	execute_chroot 'autoreconf -i /root/strongswan'
+	if [ -z "$QUICK_REBUILD" ]; then
+		log_action "Preparing source tree"
+		execute_chroot 'autoreconf -i /root/strongswan'
+	fi
 fi
 
 RECPDIR=$DIR/recipes
@@ -185,10 +194,10 @@ do
 	log_action "Installing from recipe $r"
 	if [[ $r == *strongswan.mk && -z "$TARBALL" ]]; then
 		cp $RECPDIR/$r $SHAREDDIR/build-strongswan
-		execute_chroot "make SRCDIR=/root/strongswan BUILDDIR=/root/shared/build-strongswan -f /root/shared/build-strongswan/$r"
+		execute_chroot "make SRCDIR=/root/strongswan BUILDDIR=/root/shared/build-strongswan QUICK_REBUILD=$QUICK_REBUILD -f /root/shared/build-strongswan/$r"
 	else
 		cp $RECPDIR/$r ${LOOPDIR}/root/shared/compile
-		execute_chroot "make SWANVERSION=$TARBALL -C /root/shared/compile -f $r"
+		execute_chroot "make SWANVERSION=$TARBALL BASEIMG=$BASEIMGSUITE -C /root/shared/compile -f $r"
 	fi
 done
 

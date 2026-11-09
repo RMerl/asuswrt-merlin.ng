@@ -25,7 +25,9 @@
 
 void charon_esa_acquire(result_type *res, const sp_id_type sp_id)
 {
-	kernel_acquire_data_t data = {};
+	kernel_acquire_data_t data = {
+		.cpu = CPU_ID_MAX,
+	};
 
 	DBG1(DBG_KNL, "ees: acquire received for reqid %u", sp_id);
 	charon->kernel->acquire(charon->kernel, sp_id, &data);

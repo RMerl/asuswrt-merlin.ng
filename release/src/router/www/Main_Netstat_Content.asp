@@ -110,7 +110,7 @@ function checkCmdRet(){
 			if(response.search("XU6J03M6") != -1){
 				document.getElementById("loadingIcon").style.display = "none";
 				_cmdBtn.disabled = false;
-				_cmdBtn.style.color = "#FFF";
+				_cmdBtn.style.color = "var(--wrt-btn-outline-primary-color,#FFF)";
 				retArea.value = response.replace("XU6J03M6", " ");
 				retArea.scrollTop = retArea.scrollHeight;
 				return false;
@@ -124,7 +124,7 @@ function checkCmdRet(){
 			if(noChange > waitLimit){
 				document.getElementById("loadingIcon").style.display = "none";
 				_cmdBtn.disabled = false;
-				_cmdBtn.style.color = "#FFF";
+				_cmdBtn.style.color = "var(--wrt-btn-outline-primary-color,#FFF)";
 				setTimeout("checkCmdRet();", 1000);
 			}
 			else{

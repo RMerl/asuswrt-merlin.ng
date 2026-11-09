@@ -212,13 +212,15 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 		if(con->smb_info==NULL)
 			goto error_401;
 		
-		if( con->smb_info->username->used && con->smb_info->password->used ){
+		Cdbg(DBE, "fail smbc_parser_basic_authentication");
+
+		//- try to get account from smb_info if user-agent is browser and asus_token is not empty.
+		if( isBrowser(con)==1 && !buffer_is_empty(con->asus_token) && con->smb_info->username->used && con->smb_info->password->used ){
 			buffer_copy_buffer(user, con->smb_info->username);			
 			buffer_copy_buffer(pass, con->smb_info->password);
 			get_account_from_smb_info = 1;
+			Cdbg(DBE, "get account from smb_info");
 		}
-		
-		Cdbg(DBE, "fail smbc_parser_basic_authentication and get account from smb_info");
 	}
 	else{
 		buffer_copy_string(user, auth_username);
@@ -273,8 +275,8 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 		int try_times = 3;
 		int try_interval = 1*60; //- 1 minutes
 #endif
-		int isBrowser = ( ds_useragent && (strstr( ds_useragent->value->ptr, "Mozilla" ) || strstr( ds_useragent->value->ptr, "Opera" ))) ? 1 : 0;
-		if( isBrowser == 1 && strcmp(enable_webdav_block, "1") == 0 && strcmp(is_webdav_block, "1") == 0 ){
+		int is_browser = isBrowser(con);
+		if( is_browser == 1 && strcmp(enable_webdav_block, "1") == 0 && strcmp(is_webdav_block, "1") == 0 ){
 			Cdbg(DBE, "Direct go to 455 error page");
 #if EMBEDDED_EANBLE
 #ifdef APP_IPKG
@@ -293,7 +295,7 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 
 			//- login failed.
 			
-			if( isBrowser==1 && strcmp(enable_webdav_block, "1") == 0 && con->smb_info && ds_auth!=NULL ){
+			if( is_browser==1 && strcmp(enable_webdav_block, "1") == 0 && con->smb_info && ds_auth!=NULL ){
 				//- block user
 				
 				con->smb_info->login_count++;

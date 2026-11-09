@@ -62,7 +62,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *tnc_imc_plugin_create(void)
+PLUGIN_DEFINE(tnc_imc)
 {
 	private_tnc_imc_plugin_t *this;
 

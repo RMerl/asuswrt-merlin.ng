@@ -23,7 +23,7 @@ var interval_checkPostMessage_status;
 var count = 0;
 function checkPostMessage(_param, _callback) {
 	//send value to oauth.js
-	window.opener.postMessage(_param, "*");
+	window.opener.postMessage(_param, domainName);
 	count++;
 	if(count >= 3) {
 		if(interval_checkPostMessage_status) {

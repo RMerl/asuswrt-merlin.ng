@@ -3,15 +3,20 @@
 # LEAK_DETECTIVE_LOG is set for automated runs, however, `service` strips
 # the environment. This wrapper is used to set the variable for the charon
 # init script.
+# Similar for LEAK_DETECTIVE_DISABLE. However, we don't pass that along
+# directly, to be able to run the daemon with it while still improving the
+# performance when collecting results etc.
 
 ORIG=/usr/sbin/service
-CONF=/etc/default/charon
+CONF=/etc/default/charon-tkm
 
-if [[ "$1" != "charon" ]]; then
+if [[ "$1" != "charon-tkm" ]]; then
 	$ORIG "$@"
 fi
 
-if [[ "$2" == "start" && -n $LEAK_DETECTIVE_LOG ]]; then
+if [[ "$2" == "start" && -n $LEAK_DETECTIVE_DISABLE_DAEMON ]]; then
+	echo "export LEAK_DETECTIVE_DISABLE=$LEAK_DETECTIVE_DISABLE_DAEMON" >> $CONF
+elif [[ "$2" == "start" && -n $LEAK_DETECTIVE_LOG ]]; then
 	echo "export LEAK_DETECTIVE_LOG=$LEAK_DETECTIVE_LOG" >> $CONF
 fi
 
@@ -19,4 +24,5 @@ $ORIG "$@"
 
 if [[ "$2" == "stop" ]]; then
 	sed -i '/LEAK_DETECTIVE_LOG/d' $CONF 2>/dev/null
+	sed -i '/LEAK_DETECTIVE_DISABLE/d' $CONF 2>/dev/null
 fi

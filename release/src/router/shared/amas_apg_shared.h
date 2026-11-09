@@ -13,7 +13,7 @@
 #include "shutils.h"
 #include <shared.h>
 
-#if defined(HND_ROUTER) && defined(RTCONFIG_VLANCTL) && !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
 #define APG_HAVE_VLAN0
 #endif
 
@@ -144,8 +144,6 @@ typedef struct apg_br_info_t {
 #define NV_APG_X_EXPIRETIME     "apg%d_expiretime"
 #define NV_APG_X_11EB           "apg%d_11be"
 #define NV_APG_X_DISABLED       "apg%d_disabled"
-#define NV_APG_X_IOT_CMPT       "apg%d_iot_cmpt"
-#define NV_APG_X_WIFI_MODE      "apg%d_wifi_mode"
 
 #define NV_APX_X_ENABLE         "ap%s%d_enable"
 #define NV_APX_X_SSID           "ap%s%d_ssid"
@@ -163,8 +161,6 @@ typedef struct apg_br_info_t {
 #define NV_APX_X_EXPIRETIME     "ap%s%d_expiretime"
 #define NV_APX_X_11BE     		"ap%s%d_11be"
 #define NV_APX_X_DISABLED       "ap%s%d_disabled"
-#define NV_APX_X_WIFI_MODE      "ap%s%d_wifi_mode"
-#define NV_APX_X_IOT_CMPT       "ap%s%d_iot_cmpt"
 
 const static char APGx_NVRAM_LIST[] = {
     NV_APG_X_ENABLE","\
@@ -182,43 +178,10 @@ const static char APGx_NVRAM_LIST[] = {
     NV_APG_X_MLO","\
     NV_APG_X_EXPIRETIME","\
 	NV_APG_X_11EB","\
-	NV_APG_X_DISABLED","\
-    NV_APG_X_IOT_CMPT","\
-    NV_APG_X_WIFI_MODE\
+	NV_APG_X_DISABLED\
 };
 
-#if defined(RTCONFIG_WIFI_MODE)
-const static char NV_APG_X_SUFFIX[] = {
-	"ssid,"\
-	"auth_mode_x,"\
-	"crypto,"\
-	"wpa_psk,"\
-    "radius_ipaddr,"\
-    "radius_key,"\
-    "radius_port,"\
-    "radius_acct_ipaddr,"\
-    "radius_acct_key,"\
-    "radius_acct_port,"\
-    "radius2_ipaddr,"\
-    "radius2_key,"\
-    "radius2_port,"\
-    "radius2_acct_ipaddr,"\
-    "radius2_acct_key,"\
-    "radius2_acct_port,"\
-	"bw_dl,"\
-	"bw_enabled,"\
-	"bw_ul,"\
-	"ap_isolate,"\
-	"closed,"\
-    "timesched,"\
-	"sched_v2,"\
-    "expiretime,"\
-    "macmode,"\
-	"maclist_x,"\
-    "wifi_mode,"\
-	"11be"\
-};
-#elif defined(RTCONFIG_WIFI7)
+#if defined(RTCONFIG_WIFI7)
 const static char NV_APG_X_SUFFIX[] = {
     "ssid,"\
     "auth_mode_x,"\
@@ -246,7 +209,8 @@ const static char NV_APG_X_SUFFIX[] = {
     "expiretime,"\
     "macmode,"\
     "maclist_x,"\
-	"11be"\
+	"11be,"\
+    "iot_max_cmpt"
 };
 #else
 const static char NV_APG_X_SUFFIX[] = {
@@ -276,6 +240,7 @@ const static char NV_APG_X_SUFFIX[] = {
     "expiretime,"\
     "macmode,"\
 	"maclist_x,"\
+	"iot_max_cmpt"
 };
 #endif
 
@@ -330,8 +295,6 @@ typedef struct _apg_rule_t {
     unsigned short mlo_support;
 	unsigned int wifi7_support;
 	unsigned int disabled;
-    char wifi_mode[32];
-    char iot_cmpt[32];    
 } apg_rule_st;
 
 extern struct _security_t* get_apg_security(int nvram_idx, struct _security_t* list, int max_list_size, int *ret_list_size, int get_apm);
@@ -423,9 +386,8 @@ const static struct apg_wl_suffix_t apg_wl_suffix_mapping[] = {
 	{ "ap_isolate\0",	"ap_isolate\0"					},
 	{ "macmode\0", 		"macmode\0"						},
 	{ "maclist\0",		"maclist_x\0"					},
-	{ "iot_cmpt\0",     "iot_cmpt\0"				    },
+	{ "iot_max_cmpt\0", "iot_max_cmpt\0"				},
     { "expiretime\0",   "expiretime\0"                  },
-    { "wifi_mode\0",    "wifi_mode\0"                   },
 	{ NULL,				NULL							},
 };
 
@@ -516,10 +478,4 @@ extern char* get_fh_if_prefix_by_apm(int apm_idx, char *ret_prefix, size_t ret_b
 extern int get_sdn_new_idx(char *sdn_rl);
 extern int safe_snprintf_append(char **pptr, char *end, const char *fmt, ...);
 extern void str_to_upper(const char *src, char *dest, size_t size);
-
-#if defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_AMAS_5G_ONBOARDING)
-#define VIF_SELECT_BASE_SUBUNIT	3
-extern int get_avl_obvif_subunit_by_unit(int unit);
-#endif
-extern unsigned int get_sdn_cnt_by_vid(int vid /* vid < 0: match all */);
 #endif  /* !__APG_SHAREDH__ */

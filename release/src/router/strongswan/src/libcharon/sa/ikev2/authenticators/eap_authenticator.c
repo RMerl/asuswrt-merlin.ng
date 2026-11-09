@@ -61,6 +61,11 @@ struct private_eap_authenticator_t {
 	chunk_t sent_init;
 
 	/**
+	 * IntAuth data to include in AUTH calculation
+	 */
+	chunk_t int_auth;
+
+	/**
 	 * Reserved bytes of ID payload
 	 */
 	char reserved[3];
@@ -166,28 +171,21 @@ static eap_payload_t* server_initiate_eap(private_eap_authenticator_t *this,
 		id = auth->get(auth, AUTH_RULE_EAP_IDENTITY);
 		if (id)
 		{
-			if (id->get_type(id) == ID_ANY)
+			this->method = load_method(this, EAP_IDENTITY, 0, EAP_SERVER);
+			if (this->method)
 			{
-				this->method = load_method(this, EAP_IDENTITY, 0, EAP_SERVER);
-				if (this->method)
+				if (this->method->initiate(this->method, &out) == NEED_MORE)
 				{
-					if (this->method->initiate(this->method, &out) == NEED_MORE)
-					{
-						DBG1(DBG_IKE, "initiating %N method (id 0x%02X)",
-							 eap_type_names, EAP_IDENTITY,
-							 this->method->get_identifier(this->method));
-						return out;
-					}
-					this->method->destroy(this->method);
+					DBG1(DBG_IKE, "initiating %N method (id 0x%02X)",
+						 eap_type_names, EAP_IDENTITY,
+						 this->method->get_identifier(this->method));
+					return out;
 				}
-				DBG1(DBG_IKE, "EAP-Identity request configured, "
-					 "but not supported");
+				this->method->destroy(this->method);
 			}
-			else
-			{
-				DBG1(DBG_IKE, "using configured EAP-Identity %Y", id);
-				this->eap_identity = id->clone(id);
-			}
+			DBG1(DBG_IKE, "EAP-Identity request configured, "
+				 "but not supported");
+			return eap_payload_create_code(EAP_FAILURE, 0);
 		}
 	}
 	/* invoke real EAP method */
@@ -229,20 +227,28 @@ static eap_payload_t* server_initiate_eap(private_eap_authenticator_t *this,
 }
 
 /**
- * Replace the existing EAP-Identity in other auth config
+ * Replaces the existing EAP-Identity in other auth config and checks if it
+ * matches the configured identity.
  */
-static void replace_eap_identity(private_eap_authenticator_t *this)
+static bool apply_eap_identity(private_eap_authenticator_t *this,
+							   identification_t *eap_identity)
 {
-	identification_t *eap_identity;
+	identification_t *configured;
 	auth_cfg_t *cfg;
+	bool match;
 
-	eap_identity = this->eap_identity->clone(this->eap_identity);
+	this->eap_identity = eap_identity;
+
 	cfg = this->ike_sa->get_auth_cfg(this->ike_sa, FALSE);
-	cfg->add(cfg, AUTH_RULE_EAP_IDENTITY, eap_identity);
+	configured = cfg->get(cfg, AUTH_RULE_EAP_IDENTITY);
+	match = eap_identity->matches(eap_identity, configured) != ID_MATCH_NONE;
+	cfg->add(cfg, AUTH_RULE_EAP_IDENTITY, eap_identity->clone(eap_identity));
+	return match;
 }
 
 /**
- * Handle EAP exchange as server
+ * Handle EAP exchange as server. Returns an EAP payload, or NULL if the EAP
+ * Identity doesn't match.
  */
 static eap_payload_t* server_process_eap(private_eap_authenticator_t *this,
 										 eap_payload_t *in)
@@ -293,16 +299,31 @@ static eap_payload_t* server_process_eap(private_eap_authenticator_t *this,
 		case SUCCESS:
 			if (!vendor && type == EAP_IDENTITY)
 			{
+				identification_t *id;
 				chunk_t data;
 
 				if (this->method->get_msk(this->method, &data) == SUCCESS)
 				{
-					this->eap_identity = identification_create_from_data(data);
-					DBG1(DBG_IKE, "received EAP identity '%Y'",
-						 this->eap_identity);
-					replace_eap_identity(this);
+					id = identification_create_from_data(data);
+					DBG1(DBG_IKE, "received EAP identity '%Y'", id);
 				}
-				/* restart EAP exchange, but with real method */
+				else
+				{
+					id = this->ike_sa->get_other_id(this->ike_sa);
+					id = id->clone(id);
+					DBG1(DBG_IKE, "client did not send an EAP identity, assume "
+						 "IKE identity '%Y'", id);
+				}
+				/* apply the received or assumed EAP identity and match it
+				 * against config. return NULL if it doesn't match to possibly
+				 * switch to a different config */
+				if (!apply_eap_identity(this, id))
+				{
+					this->method->destroy(this->method);
+					this->method = NULL;
+					return NULL;
+				}
+				/* ID matched, restart EAP exchange, but with real method */
 				this->method->destroy(this->method);
 				return server_initiate_eap(this, FALSE);
 			}
@@ -495,8 +516,9 @@ static bool verify_auth(private_eap_authenticator_t *this, message_t *message,
 
 	other_id = this->ike_sa->get_other_id(this->ike_sa);
 	keymat = (keymat_v2_t*)this->ike_sa->get_keymat(this->ike_sa);
-	if (!keymat->get_psk_sig(keymat, TRUE, init, nonce, this->msk, this->ppk,
-							 other_id, this->reserved, &auth_data))
+	if (!keymat->get_psk_sig(keymat, TRUE, init, nonce, this->int_auth,
+							 this->msk, this->ppk, other_id, this->reserved,
+							 &auth_data))
 	{
 		return FALSE;
 	}
@@ -541,8 +563,9 @@ static bool build_auth(private_eap_authenticator_t *this, message_t *message,
 	DBG1(DBG_IKE, "authentication of '%Y' (myself) with %N",
 		 my_id, auth_class_names, AUTH_CLASS_EAP);
 
-	if (!keymat->get_psk_sig(keymat, FALSE, init, nonce, this->msk, this->ppk,
-							 my_id, this->reserved, &auth_data))
+	if (!keymat->get_psk_sig(keymat, FALSE, init, nonce, this->int_auth,
+							 this->msk, this->ppk, my_id, this->reserved,
+							 &auth_data))
 	{
 		return FALSE;
 	}
@@ -554,8 +577,9 @@ static bool build_auth(private_eap_authenticator_t *this, message_t *message,
 
 	if (this->no_ppk_auth)
 	{
-		if (!keymat->get_psk_sig(keymat, FALSE, init, nonce, this->msk,
-							chunk_empty, my_id, this->reserved, &auth_data))
+		if (!keymat->get_psk_sig(keymat, FALSE, init, nonce, this->int_auth,
+								 this->msk, chunk_empty, my_id, this->reserved,
+								 &auth_data))
 		{
 			DBG1(DBG_IKE, "failed adding NO_PPK_AUTH notify");
 			return FALSE;
@@ -600,6 +624,12 @@ METHOD(authenticator_t, process_server, status_t,
 			return FAILED;
 		}
 		this->eap_payload = server_process_eap(this, eap_payload);
+		if (!this->eap_payload)
+		{
+			/* try to switch to a different config in case the EAP identity
+			 * doesn't match */
+			return INVALID_ARG;
+		}
 	}
 	return NEED_MORE;
 }
@@ -767,6 +797,12 @@ METHOD(authenticator_t, use_ppk, void,
 	this->no_ppk_auth = no_ppk_auth;
 }
 
+METHOD(authenticator_t, set_int_auth, void,
+	private_eap_authenticator_t *this, chunk_t int_auth)
+{
+	this->int_auth = int_auth;
+}
+
 METHOD(authenticator_t, destroy, void,
 	private_eap_authenticator_t *this)
 {
@@ -793,6 +829,7 @@ eap_authenticator_t *eap_authenticator_create_builder(ike_sa_t *ike_sa,
 				.build = _build_client,
 				.process = _process_client,
 				.use_ppk = _use_ppk,
+				.set_int_auth = _set_int_auth,
 				.is_mutual = _is_mutual,
 				.destroy = _destroy,
 			},
@@ -824,6 +861,7 @@ eap_authenticator_t *eap_authenticator_create_verifier(ike_sa_t *ike_sa,
 				.build = _build_server,
 				.process = _process_server,
 				.use_ppk = _use_ppk,
+				.set_int_auth = _set_int_auth,
 				.is_mutual = _is_mutual,
 				.destroy = _destroy,
 			},

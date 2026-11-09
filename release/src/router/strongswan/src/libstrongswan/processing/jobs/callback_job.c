@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 Tobias Brunner
+ * Copyright (C) 2009-2025 Tobias Brunner
  * Copyright (C) 2007-2011 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -130,4 +130,12 @@ callback_job_t *callback_job_create(callback_job_cb_t cb, void *data,
 {
 	return callback_job_create_with_prio(cb, data, cleanup, cancel,
 										 JOB_PRIO_MEDIUM);
+}
+
+/*
+ * Described in header
+ */
+bool callback_job_cancel_thread(void *data)
+{
+	return FALSE;
 }

@@ -1950,7 +1950,7 @@ input:hover{
 	background-color: var(--wrt-overlay-bg) !important;
 }
 #sig_check{
-	margin-left: -200px !important;
+	/* margin-left: -200px !important; */
     margin-top: 38px !important;
 	height: 40px !important;
 	width: unset !important;
@@ -2186,8 +2186,7 @@ input:hover{
 	width: 55% !important;
 }
 .hover_pop_hint_bg.prefer_ap_icon,
-.hover_pop_hint_bg.conn_priority_icon,
-.hover_pop_hint_bg.channel_plan_icon{
+.hover_pop_hint_bg.conn_priority_icon{
 	left: initial;
 	right: 50px;
 }
@@ -2390,6 +2389,12 @@ div.wrapper> table>td{
 }
 .checkFWCurrent, .checkFWResult{
 	font-family: monospace;
+
+}
+.sig_ver_info{
+	height:30px;
+	margin-left:215px;
+	margin-top:-27px;
 }
 #clientListOption {
 	width: 300px !important;
@@ -2423,6 +2428,9 @@ div.wrapper> table>td{
 	margin-left: 278px !important;
 }
 #update_states {
+	color: var(--status-msg-negative-strong);
+}
+#sig_status {
 	color: var(--status-msg-negative-strong);
 }
 .hintstyle:link {

@@ -343,7 +343,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 			info->creds.encoded_password ? : "",
 			info->server_name.name,
 			info->user_agent);
-	logit(LOG_WARNING, "request<%s>", ctx->request_buf);
+	logit(LOG_DEBUG, "request<%s>", ctx->request_buf);
 	return strlen(ctx->request_buf);
 #endif
 }
@@ -359,7 +359,7 @@ static int request_unregister(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alia
 			info->creds.encoded_password ? : "",
 			info->server_name.name,
 			info->user_agent);
-	logit(LOG_WARNING, "unregister_request<%s>", ctx->request_buf);
+	logit(LOG_DEBUG, "unregister_request<%s>", ctx->request_buf);
 	return strlen(ctx->request_buf);
 }
 

@@ -57,7 +57,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * See header file
  */
-plugin_t *kernel_iph_plugin_create()
+PLUGIN_DEFINE(kernel_iph)
 {
 	private_kernel_iph_plugin_t *this;
 

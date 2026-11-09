@@ -274,7 +274,6 @@ static bool determine_credtype(char *type, credential_type_t *credtype,
 		{ "pkcs8",			CRED_PRIVATE_KEY,		KEY_ANY,			},
 		{ "rsa",			CRED_PRIVATE_KEY,		KEY_RSA,			},
 		{ "ecdsa",			CRED_PRIVATE_KEY,		KEY_ECDSA,			},
-		{ "bliss",			CRED_PRIVATE_KEY,		KEY_BLISS,			},
 		{ "pkcs12",			CRED_CONTAINER,			CONTAINER_PKCS12,	},
 	};
 	int i;
@@ -672,7 +671,6 @@ static bool load_secret(load_ctx_t *ctx, char *section)
 		"private",
 		"rsa",
 		"ecdsa",
-		"bliss",
 		"pkcs8",
 		"pkcs12",
 		"token",
@@ -905,6 +903,8 @@ int load_creds_cfg(vici_conn_t *conn, command_format_options_t format,
 	{
 		if (!clear_creds(conn, format))
 		{
+			ctx.keys->destroy_function(ctx.keys, (void*)free);
+			ctx.shared->destroy_function(ctx.shared, (void*)free);
 			return ECONNREFUSED;
 		}
 	}
@@ -922,7 +922,6 @@ int load_creds_cfg(vici_conn_t *conn, command_format_options_t format,
 	load_keys(&ctx, "private", SWANCTL_PRIVATEDIR);
 	load_keys(&ctx, "rsa",     SWANCTL_RSADIR);
 	load_keys(&ctx, "ecdsa",   SWANCTL_ECDSADIR);
-	load_keys(&ctx, "bliss",   SWANCTL_BLISSDIR);
 	load_keys(&ctx, "pkcs8",   SWANCTL_PKCS8DIR);
 
 	load_containers(&ctx, "pkcs12", SWANCTL_PKCS12DIR);

@@ -476,8 +476,6 @@ function openLink(s){
 			tourl = "https://ipv6.he.net/certification/register.php";
 		else if (document.form.ddns_server_x.value == 'DYNU.COM')
 			tourl = "https://www.dynu.com/ControlPanel/CreateAccount";
-                else if (document.form.ddns_server_x.value == 'CLOUDFLARE.COM')
-                        tourl = "https://dash.cloudflare.com/sign-up";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
 			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')
@@ -496,6 +494,8 @@ function openLink(s){
 			tourl = "https://freedns.afraid.org/signup/";
 		else if (document.form.ddns_server_x.value == 'FREEMYIP.COM')
 			tourl = "https://freemyip.com";
+		else if (document.form.ddns_server_x.value == 'DUCKDNS.ORG')
+			tourl = "https://www.duckdns.org/";
 		else	tourl = "";
 		link = window.open(tourl, "DDNSLink","toolbar=yes,location=yes,directories=no,status=yes,menubar=yes,scrollbars=yes,resizable=yes,copyhistory=no,width=640,height=480");
 	}

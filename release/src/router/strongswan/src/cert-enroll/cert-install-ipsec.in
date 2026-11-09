@@ -53,6 +53,22 @@ cp $HOSTCERT $IPSECDIR/certs
 # Install the CA certificates
 #
 cp $ROOTCA $SUBCA $IPSECDIR/cacerts
+if [ -s old/$ROOTCA ]
+then
+  cp old/$ROOTCA $IPSECDIR/cacerts/$OLDROOTCA
+fi
+if [ -s old/$SUBCA ]
+then
+  cp old/$SUBCA $IPSECDIR/cacerts/$OLDSUBCA
+fi
+if [ -s older/$ROOTCA ]
+then
+  cp older/$ROOTCA $IPSECDIR/cacerts/$OLDERROOTCA
+fi
+if [ -s older/$SUBCA ]
+then
+  cp older/$SUBCA $IPSECDIR/cacerts/$OLDERSUBCA
+fi
 
 ##############################################################################
 # Reload the strongSwan charon daemon if it is running

@@ -66,13 +66,7 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
-	let rawValue = getUrlParameter(paramName);
-	if (!rawValue) return "";
-	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
-	return allowedValues.includes(safePrefix) ? safePrefix : "";
-}
-var theme = getSafeTheme("current_theme", ['WHITE', 'ROG', 'GT', 'TUF', '']).toUpperCase();
+var theme = getUrlParameter("current_theme").toUpperCase();
 if(theme == "GT") theme = "ROG";
 var app_control = {
 	"type": (function(){
@@ -96,22 +90,15 @@ var app_control = {
 	})()
 }
 $('link[group="extend_css"]').remove();
-(function(){
-	const is_Web_iframe = (($(parent.document).find("#mainMenu").length > 0) || (top.webWrapper)) ? true : false;
-	const hasThemeCssFile = (theme == "WHITE" || theme == "ROG" || theme == "TUF");
-	let cssSuffix = "";
-	if(theme == "PROART") {
-		cssSuffix = isSupport("UI4") ? "v4" : "";
-	} else if(isSupport("UI4")) {
-		cssSuffix = is_Web_iframe ? "v4" : (hasThemeCssFile ? theme : "");
-	} else if(hasThemeCssFile) {
-		cssSuffix = theme;
+if(theme == "WHITE" || theme == "ROG" || theme == "TUF" || theme == "PROART"){
+	if(isSupport("UI4")) {
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="../RWD_UI/rwd_component_v4.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="../SDN/sdn_v4.css">');
+	} else {
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="../RWD_UI/rwd_component_' + theme + '.css">');
+		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="../SDN/sdn_' + theme + '.css">');
 	}
-	if(cssSuffix) {
-		$('link').last().after(`<link group="extend_css" rel="stylesheet" type="text/css" href="../RWD_UI/rwd_component_${cssSuffix}.css">`);
-		$('link').last().after(`<link group="extend_css" rel="stylesheet" type="text/css" href="../SDN/sdn_${cssSuffix}.css">`);
-	}
-})();
+}
 
 function check_fbwifi2_id_secret(){
 	var nvram_values = httpApi.nvramGet(["fbwifi_id", "fbwifi_secret", "link_internet"], true);
@@ -204,6 +191,25 @@ function initial(){
 				Get_Game_Profile();
 			}
 		}
+
+		if(app_control.type != ""){
+			if(app_control.sdn_idx != ""){
+				$(".popup_element").css("display", "flex");
+				$(".popup_container.popup_element").empty().append(Get_Component_Full_Setting("popup"));
+				var specific_sdn = sdn_all_rl_json.filter(function(item, index, array){
+					return (item.sdn_rl.idx == app_control.sdn_idx);
+				})[0];
+				Update_Setting_Profile($(".popup_container.popup_element"), specific_sdn);
+				$(".popup_container.popup_element").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
+			}
+			else{
+				show_popup_Wizard_Setting(app_control.type);
+				$(".popup_container.popup_element_second").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
+			}
+			$(".container, .hidden_mask").hide();
+		}
+
+		postMessageToApp({"web_init": "1"});
 
 		if((isSwMode("RT") || isSwMode("WISP"))){
 			Get_DNS_List_DB();

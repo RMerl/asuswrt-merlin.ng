@@ -499,69 +499,51 @@ void do_upgrade_adsldrv(void)
 	if (update_tc_fw == 0) return;	
 
 	fp = fopen("/tmp/adsl/tc_ip_addr.txt","r");
-
-	if (fp == NULL) return;
-
-	if (fgets(ipaddr, sizeof(ipaddr), fp)) {
-		ipaddr[strcspn(ipaddr, "\r\n")] = 0; // Remove line breaks
-		const char *ppszText = ipaddr;
-		unsigned char abyAddr[16] = {0};
-		int bIsIPv6 = 0, nPort = 0;
-
-		if (ParseIPv4OrIPv6(&ppszText, abyAddr, &nPort, &bIsIPv6) == 0) {
-		    chk_image_err = 1;
-		}
-	} else {
-		chk_image_err = 1;
-	}
+	if (fp == NULL) chk_image_err = 1;
+	fgets(ipaddr,sizeof(ipaddr),fp);
 	fclose(fp);
 
 	// if adsl fw IP address is different, user should update to a new router fw first
-	if (chk_image_err == 0) {
-		if (strncmp(ipaddr, ADSL_FW_IP_PREFIX, sizeof(ADSL_FW_IP_PREFIX) - 1) != 0) {
-			chk_image_err = 1;
-		}
-	}
+	if (strncmp(ipaddr,ADSL_FW_IP_PREFIX,sizeof(ADSL_FW_IP_PREFIX)-1)!=0) chk_image_err = 1;
 
+	snprintf(UpdateFwBuf, sizeof(UpdateFwBuf), "cd /tmp; tftp -p -l ras.bin ");
+	snprintf(UpdateFwBuf+strlen(UpdateFwBuf), sizeof(UpdateFwBuf)-strlen(UpdateFwBuf), "%s", ipaddr);
+
+	cprintf("## upgrade tc fw\n");
+	
 	if (chk_image_err == 0)
 	{
-		cprintf("## upgrade tc fw\n");
 		cprintf("IP alias for ADSL firmware update\n");
 		// this command will stop tp_init
-		safe_do_system("adslate waitadsl");
-		safe_do_system("adslate quitdrv");
-		safe_do_system("ifconfig eth2.1:0 194.255.255.1 netmask 255.255.255.0");
-		safe_do_system("ifconfig eth2.1:0 up");
-
+		system("adslate waitadsl;adslate quitdrv");
+		system("ifconfig eth2.1:0 194.255.255.1 netmask 255.255.255.0;ifconfig eth2.1:0 up");
 		// wait if up
-		snprintf(PingBuf, sizeof(PingBuf), "ping %s -c 1", ipaddr);
-
+		snprintf(PingBuf, sizeof(PingBuf), "ping ");
+		snprintf(PingBuf+strlen(PingBuf), sizeof(PingBuf)-strlen(PingBuf), "%s", ipaddr);
+		snprintf(PingBuf+strlen(PingBuf), sizeof(PingBuf)-strlen(PingBuf), " -c 1");
 		for (WaitCnt=0; WaitCnt<3; WaitCnt++)
 		{
-			safe_do_system(PingBuf);
+			system(PingBuf);
 		}
-
 		cprintf("Start to update\n");
-
-		// Use system calls instead of ';' when switching directories to avoid using ';' in the system.
-		chdir("/tmp");
-		snprintf(UpdateFwBuf, sizeof(UpdateFwBuf), "tftp -p -l ras.bin %s", ipaddr);
-		safe_do_system(UpdateFwBuf);
-
+		cprintf(UpdateFwBuf);
+		system(UpdateFwBuf);
 		printf("tftp done\n");
 		//usleep(1000*1000*5);
 		// wait a miniute and send set to default setting
 		for (WaitCnt=0; WaitCnt<20; WaitCnt++)
 		{
-			safe_do_system(PingBuf);
+			system(PingBuf);
 		}
 		// ifconfig down also remove IP alias
-		safe_do_system("tp_init clear_modem_var");
+		system("tp_init clear_modem_var");
 		// wait tc flash write completed
 		usleep(1000*1000*2);
 		cprintf("\nupgrade done\n");
 	}
 }
+
+
 
 // -1: different or no origial header, upgrade
 // 0: same or no upgrade file, skip upgrade

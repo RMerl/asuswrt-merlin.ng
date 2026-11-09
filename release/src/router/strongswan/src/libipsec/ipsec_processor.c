@@ -336,9 +336,9 @@ ipsec_processor_t *ipsec_processor_create()
 
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create((callback_job_cb_t)process_inbound, this,
-									NULL, (callback_job_cancel_t)return_false));
+									NULL, callback_job_cancel_thread));
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create((callback_job_cb_t)process_outbound, this,
-									NULL, (callback_job_cancel_t)return_false));
+									NULL, callback_job_cancel_thread));
 	return &this->public;
 }

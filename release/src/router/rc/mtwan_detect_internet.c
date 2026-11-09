@@ -173,7 +173,7 @@ static int _dns_check(const int wan_unit)
 		return -1;
 	}
 
-	timeout = atoi(nvram_safe_get(strlcat_r(wan_prefix, "dns_probe_timeout", tmp, sizeof(tmp))));
+	timeout = safe_atoi(nvram_safe_get(strlcat_r(wan_prefix, "dns_probe_timeout", tmp, sizeof(tmp))));
 	if(!timeout)
 		timeout = DEFAULT_INTERVAL;
 
@@ -370,6 +370,7 @@ void mtwan_set_detect_routing_rule(const char *dest, const char *ifname, int add
 	if(dest && ifname)
 	{
 		mtwan_get_route_table_id(mtwan_ifunit(ifname), table, sizeof(table));
-		safe_do_system("ip rule %s iif lo to %s table %s pref %d", add? "add": "del", dest, table, IP_RULE_PREF_DET_INTERNET);
+		snprintf(cmd, sizeof(cmd), "ip rule %s iif lo to %s table %s pref %d", add? "add": "del", dest, table, IP_RULE_PREF_DET_INTERNET);
+		system(cmd);
 	}
 }

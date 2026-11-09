@@ -288,6 +288,11 @@
 .customize_alert.confirm .action_btn_container .cancel{
 	background: var(--brand-color) !important;
 }
+.action_btn_container .ok,
+.action_btn_container .del,
+.action_btn_container .cancel {
+	border-radius: var(--radius-xs) !important;
+}
 .customize_alert a{
 	color: var(--text-hyperlink-default-color) !important;
 }
@@ -375,8 +380,6 @@
 }
 .icon_switch{
 	border-radius: var(--radius-lg);
-	width: 45px;
-	left: 10px;
 }
 .icon_switch.off{
 	background: none;
@@ -393,38 +396,6 @@
 .icon_switch.on:before{
 	background: var(--switch-btn-on-normal-ellipse-fill-color);
 	border-radius: var(--radius-lg);
-	-webkit-transform: translateX(24px);
-	-ms-transform: translateX(24px);
-	transform: translateX(24px);
-}
-.icon_switch.on::after,
-.icon_switch.off::after {
-	font-family: "Roboto";
-	font-size: 11px;
-	font-weight: bold;
-	color: var(--switch-btn-on-normal-text-color);
-	transition: all 0.6s;
-	position: absolute;
-	opacity: 1;
-	transition: opacity 0.6s;
-	height: 100%;
-	line-height: 100%;
-	display: flex;
-	align-items: center;
-}
-
-.icon_switch.on::after {
-	content: "ON";
-	left: 4px;
-}
-.icon_switch.off::after {
-	content: "OFF";
-	right: 4px;
-}
-.icon_switch.on.hide-text::after,
-.icon_switch.off.hide-text::after {
-	opacity: 0;
-	transition: opacity 0.6s;
 }
 .icon_eye.close{
 	mask-image: var(--ic-eye-close);

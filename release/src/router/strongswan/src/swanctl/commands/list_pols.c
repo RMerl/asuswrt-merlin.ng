@@ -86,7 +86,8 @@ CALLBACK(policies, int,
 	pol = hashtable_create(hashtable_hash_str, hashtable_equals_str, 1);
 	ret = vici_parse_cb(res, NULL, policy_values, policy_list, pol);
 
-	printf("%s, %s\n", name, pol->get(pol, "mode"));
+	printf("%s, reqid %s, %s\n", name, pol->get(pol, "reqid"),
+		   pol->get(pol, "mode"));
 	print_label("  label:  ", pol->get(pol, "label"));
 	printf("  local:  %s\n", pol->get(pol, "local-ts"));
 	printf("  remote: %s\n", pol->get(pol, "remote-ts"));

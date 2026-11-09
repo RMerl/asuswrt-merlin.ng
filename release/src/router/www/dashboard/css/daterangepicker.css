@@ -1,7 +1,7 @@
 .daterangepicker {
   position: absolute;
   color: inherit;
-  background-color: var(--wrt-modal-bg);
+  background-color: var(--wrt-dropdown-bg);
   border-radius: var(--wrt-btn-radius);
   border: 1px solid var(--wrt-modal-border-color);
   width: 278px;
@@ -124,6 +124,7 @@
 .daterangepicker .drp-calendar.single .calendar-table {
   border: none;
 }
+
 .daterangepicker .calendar-table .next span, .daterangepicker .calendar-table .prev span {
   color: #fff;
   border: solid var(--text-primary, black);
@@ -156,12 +157,6 @@
   border: 1px solid transparent;
   white-space: nowrap;
   cursor: pointer;
-}
-
-.daterangepicker .calendar-table {
-  border: 1px solid var(--wrt-card-border);
-  border-radius: var(--wrt-card-radius);
-  background-color: var(--wrt-card-bg);
 }
 
 .daterangepicker .calendar-table table {

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2019 Sean Parkinson, wolfSSL Inc.
  * Copyright (C) 2021 Andreas Steffen, strongSec GmbH
+ * Copyright (C) 2019-2024 Tobias Brunner, codelabs GmbH
+ * Copyright (C) 2019 Sean Parkinson, wolfSSL Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +39,7 @@
 #include "wolfssl_hasher.h"
 #include "wolfssl_hmac.h"
 #include "wolfssl_kdf.h"
+#include "wolfssl_kem.h"
 #include "wolfssl_rsa_private_key.h"
 #include "wolfssl_rsa_public_key.h"
 #include "wolfssl_rng.h"
@@ -46,6 +48,8 @@
 #include "wolfssl_xof.h"
 
 #include <wolfssl/ssl.h>
+
+#undef RNG
 
 #ifndef FIPS_MODE
 #define FIPS_MODE 0
@@ -404,22 +408,13 @@ METHOD(plugin_t, get_features, int,
 	#endif /* !WC_NO_RSA_OAEP */
 #endif /* !NO_RSA */
 #ifdef HAVE_ECC
-	#ifdef HAVE_ECC_KEY_IMPORT
+	#ifdef HAVE_ECC_SIGN
 		/* EC private/public key loading */
 		PLUGIN_REGISTER(PRIVKEY, wolfssl_ec_private_key_load, TRUE),
 			PLUGIN_PROVIDE(PRIVKEY, KEY_ECDSA),
 			PLUGIN_PROVIDE(PRIVKEY, KEY_ANY),
-	#endif
-	#ifdef HAVE_ECC_DHE
 		PLUGIN_REGISTER(PRIVKEY_GEN, wolfssl_ec_private_key_gen, FALSE),
 			PLUGIN_PROVIDE(PRIVKEY_GEN, KEY_ECDSA),
-	#endif
-	#ifdef HAVE_ECC_KEY_IMPORT
-		PLUGIN_REGISTER(PUBKEY, wolfssl_ec_public_key_load, TRUE),
-			PLUGIN_PROVIDE(PUBKEY, KEY_ECDSA),
-	#endif
-	#ifdef HAVE_ECC_SIGN
-		/* signature encryption schemes */
 		PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_ECDSA_WITH_NULL),
 		#ifndef NO_SHA
 			PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_ECDSA_WITH_SHA1_DER),
@@ -436,9 +431,10 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_ECDSA_WITH_SHA512_DER),
 			PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_ECDSA_521),
 		#endif
-	#endif /* HAVE_ECC_SIGN */
+	#endif
 	#ifdef HAVE_ECC_VERIFY
-		/* signature encryption schemes */
+		PLUGIN_REGISTER(PUBKEY, wolfssl_ec_public_key_load, TRUE),
+			PLUGIN_PROVIDE(PUBKEY, KEY_ECDSA),
 		PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_ECDSA_WITH_NULL),
 		#ifndef NO_SHA
 			PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_ECDSA_WITH_SHA1_DER),
@@ -457,6 +453,12 @@ METHOD(plugin_t, get_features, int,
 		#endif
 	#endif /* HAVE_ECC_VERIFY */
 #endif /* HAVE_ECC */
+#ifdef WOLFSSL_HAVE_MLKEM
+		PLUGIN_REGISTER(KE, wolfssl_kem_create),
+			PLUGIN_PROVIDE(KE, ML_KEM_512),
+			PLUGIN_PROVIDE(KE, ML_KEM_768),
+			PLUGIN_PROVIDE(KE, ML_KEM_1024),
+#endif
 #if defined (HAVE_CURVE25519) || defined(HAVE_CURVE448)
 		PLUGIN_REGISTER(KE, wolfssl_x_diffie_hellman_create),
 	#ifdef HAVE_CURVE25519
@@ -530,13 +532,18 @@ METHOD(plugin_t, destroy, void,
 /*
  * Described in header
  */
-plugin_t *wolfssl_plugin_create()
+PLUGIN_DEFINE(wolfssl)
 {
 	private_wolfssl_plugin_t *this;
 	bool fips_mode;
 
 	fips_mode = lib->settings->get_bool(lib->settings,
 								"%s.plugins.wolfssl.fips_mode", FALSE, lib->ns);
+
+#ifdef WC_RNG_SEED_CB
+	wc_SetSeed_Cb(wc_GenerateSeed);
+#endif
+
 #ifdef HAVE_FIPS
 	if (fips_mode)
 	{

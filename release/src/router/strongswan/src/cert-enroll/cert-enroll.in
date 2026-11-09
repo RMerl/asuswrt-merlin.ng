@@ -155,15 +155,23 @@ function check_ca_certs()
   if [ $ROOTCA_CHANGED -ne 0 ]
   then
     echo "Warning: '$ROOTCA' has changed"
+    if [ -s old/$ROOTCA ]
+    then
+      mv old/$ROOTCA older
+    fi
     mv $ROOTCA old
     mv new/$ROOTCA .
   fi
 
   SUBCA_CHANGED=0
-  cmp -s $SUBCA new/$SUBCA || SUBCA_CHANGE=$?
+  cmp -s $SUBCA new/$SUBCA || SUBCA_CHANGED=$?
   if [ $SUBCA_CHANGED -ne 0 ]
   then
     echo "Warning: '$SUBCA' has changed"
+    if [ -s old/$SUBCA ]
+    then
+      mv old/$SUBCA older
+    fi
     mv $SUBCA old
     mv new/$SUBCA .
   fi
@@ -192,6 +200,7 @@ function install_certs()
     KEYTYPE="$KEYTYPE" CERTDIR="$CERTDIR" HOSTKEY="$HOSTKEY" \
     HOSTCERT="$HOSTCERT" ROOTCA="$ROOTCA" SUBCA="$SUBCA" \
     OLDROOTCA="$OLDROOTCA" OLDSUBCA="$OLDSUBCA" \
+    OLDERROOTCA="$OLDERROOTCA" OLDERSUBCA="$OLDERSUBCA" \
     USER_GROUP="$USER_GROUP" SERVICE="$SERVICE" \
     /bin/bash $script || status=$?
     if [ $status -ne 0 ]
@@ -251,7 +260,7 @@ esac
 ##############################################################################
 # Create and change into certificates directory
 #
-mkdir -p $CERTDIR/new $CERTDIR/old
+mkdir -p $CERTDIR/new $CERTDIR/old $CERTDIR/older
 cd $CERTDIR
 echo "  changed into the '$CERTDIR' directory"
 

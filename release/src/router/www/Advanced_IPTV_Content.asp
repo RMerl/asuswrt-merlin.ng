@@ -919,10 +919,10 @@ function applyRule(){
 		let is_mswan_conflicted = false;
 		let is_dot1q_conflicted = false;
 
-		if(document.form.switch_stb_x.value != "0" || document.form.switch_wantag.value != "none"){
+		if(document.form.switch_wantag.value != "none"){
 			if(mswan_support && with_multiservice >= 1){
 				is_mswan_conflicted = true;
-				conflict_functions = `<#multiservice_WAN#>`;
+				conflict_functions = `Multi-Service WAN`;
 			}
 
 			if(httpApi.nvramGet(["wan0_dot1q"], true).wan0_dot1q == "1"){

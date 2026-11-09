@@ -699,8 +699,8 @@ function showInputfield2(s, v){
 			else
 				var IPv6_rtr_addr_split = "";
 						
-			document.form.ipv6_prefix_span_for_start.value = IPv6_rtr_addr_split;
-			document.form.ipv6_prefix_span_for_end.value = IPv6_rtr_addr_split;
+			document.getElementById("ipv6_prefix_span_for_start_span").textContent = IPv6_rtr_addr_split;
+			document.getElementById("ipv6_prefix_span_for_end_span").textContent = IPv6_rtr_addr_split;
 			
 			if(ipv6_dhcp_start_orig != "" && ipv6_dhcp_end_orig != ""){
 				document.form.ipv6_dhcp_start_start.value = ipv6_dhcp_start_orig.split("::")[1];
@@ -717,8 +717,8 @@ function showInputfield2(s, v){
 			else
 				var IPv6_rtr_addr_split = "";
 				
-				document.form.ipv6_prefix_span_for_start.value = IPv6_rtr_addr_split;
-				document.form.ipv6_prefix_span_for_end.value = IPv6_rtr_addr_split;
+				document.getElementById("ipv6_prefix_span_for_start_span").textContent = IPv6_rtr_addr_split;
+				document.getElementById("ipv6_prefix_span_for_end_span").textContent = IPv6_rtr_addr_split;
 				
 				
 			if(ipv6_dhcp_start_orig != "" && ipv6_dhcp_end_orig != ""){
@@ -730,8 +730,8 @@ function showInputfield2(s, v){
 			}			
 		}
 		else if(ipv6_dhcp_start_orig != "" && ipv6_dhcp_end_orig != ""){
-				document.form.ipv6_prefix_span_for_start.value = ipv6_dhcp_start_orig.split("::")[0];
-				document.form.ipv6_prefix_span_for_end.value = ipv6_dhcp_end_orig.split("::")[0];
+				document.getElementById("ipv6_prefix_span_for_start_span").textContent = ipv6_dhcp_start_orig.split("::")[0];
+				document.getElementById("ipv6_prefix_span_for_end_span").textContent = ipv6_dhcp_end_orig.split("::")[0];
 				document.form.ipv6_dhcp_start_start.value = ipv6_dhcp_start_orig.split("::")[1];
 				document.form.ipv6_dhcp_end_end.value = ipv6_dhcp_end_orig.split("::")[1];
 		}
@@ -983,9 +983,9 @@ function applyRule(){
 
 			if(document.form.ipv6_autoconf_type[1].checked){
 				document.form.ipv6_dhcp_start.disabled = false;
-				document.form.ipv6_dhcp_start.value = document.form.ipv6_prefix_span_for_start.value +"::"+document.form.ipv6_dhcp_start_start.value;
+				document.form.ipv6_dhcp_start.value = document.getElementById("ipv6_prefix_span_for_start_span").textContent +"::"+document.form.ipv6_dhcp_start_start.value;
 				document.form.ipv6_dhcp_end.disabled = false;
-				document.form.ipv6_dhcp_end.value = document.form.ipv6_prefix_span_for_end.value +"::"+document.form.ipv6_dhcp_end_end.value;
+				document.form.ipv6_dhcp_end.value = document.getElementById("ipv6_prefix_span_for_end_span").textContent +"::"+document.form.ipv6_dhcp_end_end.value;
 			}
 		}
 
@@ -1009,9 +1009,9 @@ function applyRule(){
 
 			if(document.form.ipv6_autoconf_type[1].checked){
 				document.form.ipv6_dhcp_start.disabled = false;
-				document.form.ipv6_dhcp_start.value = document.form.ipv6_prefix_span_for_start.value +"::"+document.form.ipv6_dhcp_start_start.value;
+				document.form.ipv6_dhcp_start.value = document.getElementById("ipv6_prefix_span_for_start_span").textContent +"::"+document.form.ipv6_dhcp_start_start.value;
 				document.form.ipv6_dhcp_end.disabled = false;
-				document.form.ipv6_dhcp_end.value = document.form.ipv6_prefix_span_for_end.value +"::"+document.form.ipv6_dhcp_end_end.value;
+				document.form.ipv6_dhcp_end.value = document.getElementById("ipv6_prefix_span_for_end_span").textContent +"::"+document.form.ipv6_dhcp_end_end.value;
 			}
 		}
 		
@@ -1435,16 +1435,16 @@ function genWANSoption(){
 					<tr>
 		     		<th><#LANHostConfig_MinAddress_itemname#></th>	<!-- DHCP pool start -->
 		     		<td>
-		     				<input type="text" maxlength="19" class="input_20_table" name="ipv6_prefix_span_for_start" style="color:#BBBBBB" readonly autocorrect="off" autocapitalize="off">		     				
-		     				::
-		     				<input type="text" maxlength="4" class="input_6_table" name="ipv6_dhcp_start_start" autocorrect="off" autocapitalize="off" >
+		     			<div id="ipv6_prefix_span_for_start_span" name="ipv6_prefix_span_for_start" style="display:inline-block;margin-left:8px;"></div>
+		     			::
+		     			<input type="text" maxlength="4" class="input_6_table" name="ipv6_dhcp_start_start" autocorrect="off" autocapitalize="off" >
 		     		</td>
 		    	</tr>
 
 		     	<tr>
 		     		<th><#LANHostConfig_MaxAddress_itemname#></th>	<!-- DHCP pool end -->
 		     		<td>
-		     			<input type="text" maxlength="19" class="input_20_table" name="ipv6_prefix_span_for_end" style="color:#BBBBBB" readonly autocorrect="off" autocapitalize="off">
+		     			<div id="ipv6_prefix_span_for_end_span" name="ipv6_prefix_span_for_end" style="display:inline-block;margin-left:8px;"></div>
 		     			::
 		     			<input type="text" maxlength="4" class="input_6_table" name="ipv6_dhcp_end_end" autocorrect="off" autocapitalize="off">
 		     		</td>

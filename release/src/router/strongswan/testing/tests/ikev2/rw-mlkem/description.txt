@@ -1,0 +1,10 @@
+The roadwarriors <b>carol</b> and <b>dave</b> as well as the gateway <b>moon</b> use
+<b>openssl</b> plugin based on the <b>OpenSSL</b> library for all cryptographical
+functions plus the <b>ml</b> plugin for the post-quantum ML-KEM key exchange algorithm.
+The authentication is based on <b>X.509 certificates</b> and the key exchange on
+<b>x25519-ke1_mlkem512</b> for <b>carol</b> and <b>ecp384-ke1_mlkem786</b> for <b>dave</b>.
+<p/>
+Upon the successful establishment of the IPsec tunnels, the updown script
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

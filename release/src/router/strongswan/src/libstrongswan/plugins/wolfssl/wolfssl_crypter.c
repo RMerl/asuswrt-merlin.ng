@@ -32,6 +32,13 @@
 
 typedef struct private_wolfssl_crypter_t private_wolfssl_crypter_t;
 
+/* if wolfSSL is built in OpenSSL-compat mode, these are not defined as enums */
+#ifdef WC_NO_COMPAT_AES_BLOCK_SIZE
+#define AES_BLOCK_SIZE			WC_AES_BLOCK_SIZE
+#define CAMELLIA_BLOCK_SIZE		WC_CAMELLIA_BLOCK_SIZE
+#define DES_BLOCK_SIZE			WC_DES_BLOCK_SIZE
+#endif
+
 #define CTR_SALT_LEN	4
 
 /**

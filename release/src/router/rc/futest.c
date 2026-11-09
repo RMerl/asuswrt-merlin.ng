@@ -742,7 +742,7 @@ static void process_call_func(TESTCASE* handler, const char* input_params, const
 				}
 				else if (i==2) {
 					snprintf(target_channel_tmp, sizeof(target_channel_tmp), "%s", token);		
-					target_channel = atoi(target_channel_tmp);
+					target_channel = safe_atoi(target_channel_tmp);
 				}
 
 				token = strtok(NULL, delimiters);

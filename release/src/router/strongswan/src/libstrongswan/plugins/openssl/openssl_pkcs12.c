@@ -103,39 +103,17 @@ static bool add_cas(private_pkcs12_t *this, STACK_OF(X509) *cas)
  */
 static bool add_key(private_pkcs12_t *this, EVP_PKEY *private)
 {
-	private_key_t *key = NULL;
-	chunk_t encoding;
-	key_type_t type;
+	private_key_t *key;
 
 	if (!private)
 	{	/* no private key is ok */
 		return TRUE;
 	}
-	switch (EVP_PKEY_base_id(private))
+	key = openssl_wrap_private_key(private, FALSE);
+	if (key)
 	{
-		case EVP_PKEY_RSA:
-			type = KEY_RSA;
-			break;
-		case EVP_PKEY_EC:
-			type = KEY_ECDSA;
-			break;
-		default:
-			EVP_PKEY_free(private);
-			return FALSE;
+		this->creds->add_key(this->creds, key);
 	}
-	encoding = openssl_i2chunk(PrivateKey, private);
-	if (encoding.ptr)
-	{
-		key = lib->creds->create(lib->creds, CRED_PRIVATE_KEY, type,
-								 BUILD_BLOB_ASN1_DER, encoding,
-								 BUILD_END);
-		if (key)
-		{
-			this->creds->add_key(this->creds, key);
-		}
-	}
-	chunk_clear(&encoding);
-	EVP_PKEY_free(private);
 	return key != NULL;
 }
 

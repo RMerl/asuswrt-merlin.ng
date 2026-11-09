@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 			printf("creating signature failed\n");
 			exit(1);
 		}
-	};
+	}
 	printf("sign()/s: %8.1f   ", rounds / end_timing(&timing));
 
 	public = private->get_public_key(private);

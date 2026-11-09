@@ -76,9 +76,6 @@ wf_chspec_aton(char *a)
 	uint channel, band, bw, ctl_sb;
 	char c;
 
-	if (a == NULL || *a == '\0')
-		return 0;
-
 	channel = strtoul(a, &endp, 10);
 
 	/* check for no digits parsed */
@@ -93,10 +90,8 @@ wf_chspec_aton(char *a)
 	ctl_sb = WL_CHANSPEC_CTL_SB_NONE;
 
 	a = endp;
-	if (a == NULL || *a == '\0')
-		goto done;
 
-	c = tolower((unsigned char)a[0]);
+	c = tolower(a[0]);
 	if (c == '\0')
 		goto done;
 
@@ -104,10 +99,7 @@ wf_chspec_aton(char *a)
 	if (c == 'a' || c == 'b') {
 		band = (c == 'a') ? WL_CHANSPEC_BAND_5G : WL_CHANSPEC_BAND_2G;
 		a++;
-		if (*a == '\0')
-			goto done;
-
-		c = tolower((unsigned char)a[0]);
+		c = tolower(a[0]);
 		if (c == '\0')
 			goto done;
 	}

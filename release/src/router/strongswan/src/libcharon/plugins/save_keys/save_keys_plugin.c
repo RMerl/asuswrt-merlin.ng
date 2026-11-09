@@ -88,7 +88,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor.
  */
-plugin_t *save_keys_plugin_create()
+PLUGIN_DEFINE(save_keys)
 {
 	private_save_keys_plugin_t *this;
 

@@ -12,6 +12,29 @@ html::-webkit-scrollbar-thumb{
 html::-webkit-scrollbar-track{
     background-color: #192229 !important;
 }
+
+/* Styling for select element scrollbars - reusable solution */
+select::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+    height: 8px;
+}
+
+select::-webkit-scrollbar-thumb {
+    background-color: #FF3535 !important;   
+    border-radius: 50px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+select::-webkit-scrollbar-thumb:hover {
+    border: 0px solid transparent;
+}
+
+select::-webkit-scrollbar-track {
+    background-color: #192229 !important;
+}
+
 .buttonok {width:52px; font-family:Verdana; font-size:11px; line-height:25px; text-align:center;}
 .buttonok a {height:28px; text-decoration: none;}
 .buttonok a:link, .buttonok a:visited {

@@ -201,8 +201,6 @@ function pop_s46_ports(p, flag){
 	divObj.innerHTML = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer' onclick='close_s46_ports();'></div>";
 	divObj.innerHTML += port_range_hint;
 	divObj.innerHTML += "<br><br>"+get_ipv6_s46_ports+"<br>";
-	divObj.innerHTML += port_range_hint;
-	divObj.innerHTML += "<br><br>"+get_ipv6_s46_ports+"<br>";
 
 	document.body.prepend(divObj);
 	if(flag=="pf")
@@ -441,7 +439,7 @@ var notification = {
 		var header_info = [<% get_header_info(); %>];
 		location.href = header_info[0].current_page;
 	},
-	redirectHint:function(){location.replace(location.href);},
+	redirectHint:function(){location.reload();},
 	clickCallBack: [],
 	pppoe_tw: 0,
 	ie_legacy: 0,

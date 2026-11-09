@@ -71,6 +71,7 @@ static shared_key_t* callback_shared(private_cmd_creds_t *this,
 								id_match_t *match_me, id_match_t *match_other)
 {
 	shared_key_t *shared;
+	linked_list_t *owners;
 	char *label, *pwd = NULL;
 
 	if (type == this->prompted)
@@ -113,7 +114,16 @@ static shared_key_t* callback_shared(private_cmd_creds_t *this,
 	shared = shared_key_create(type, chunk_clone(chunk_from_str(pwd)));
 	memwipe(pwd, strlen(pwd));
 	/* cache password in case it is required more than once */
-	this->creds->add_shared(this->creds, shared, NULL);
+	owners = linked_list_create();
+	if (me)
+	{
+		owners->insert_last(owners, me->clone(me));
+	}
+	if (other && other->get_type(other) != ID_ANY)
+	{
+		owners->insert_last(owners, other->clone(other));
+	}
+	this->creds->add_shared_list(this->creds, shared, owners);
 	return shared->get_ref(shared);
 }
 

@@ -176,10 +176,10 @@ curve25519,       KEY_EXCHANGE_METHOD, CURVE_25519,                0
 x25519,           KEY_EXCHANGE_METHOD, CURVE_25519,                0
 curve448,         KEY_EXCHANGE_METHOD, CURVE_448,                  0
 x448,             KEY_EXCHANGE_METHOD, CURVE_448,                  0
-ntru112,          KEY_EXCHANGE_METHOD, NTRU_112_BIT,               0
-ntru128,          KEY_EXCHANGE_METHOD, NTRU_128_BIT,               0
-ntru192,          KEY_EXCHANGE_METHOD, NTRU_192_BIT,               0
-ntru256,          KEY_EXCHANGE_METHOD, NTRU_256_BIT,               0
-newhope128,       KEY_EXCHANGE_METHOD, NH_128_BIT,                 0
+gost256,          KEY_EXCHANGE_METHOD, GOST3410_256,               0
+gost512,          KEY_EXCHANGE_METHOD, GOST3410_512,               0
+mlkem512,         KEY_EXCHANGE_METHOD, ML_KEM_512,                 0
+mlkem768,         KEY_EXCHANGE_METHOD, ML_KEM_768,                 0
+mlkem1024,        KEY_EXCHANGE_METHOD, ML_KEM_1024,                0
 noesn,            EXTENDED_SEQUENCE_NUMBERS, NO_EXT_SEQ_NUMBERS,   0
 esn,              EXTENDED_SEQUENCE_NUMBERS, EXT_SEQ_NUMBERS,      0

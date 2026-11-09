@@ -575,7 +575,8 @@ METHOD(task_t, build_r, status_t,
 			}
 			if (this->ph1->has_virtual_ip(this->ph1, this->peer_cfg))
 			{
-				if (this->peer_cfg->use_pull_mode(this->peer_cfg))
+				if (!this->peer_cfg->has_option(this->peer_cfg,
+												OPT_IKEV1_PUSH_MODE))
 				{
 					this->ike_sa->queue_task(this->ike_sa,
 						(task_t*)mode_config_create(this->ike_sa, TRUE, TRUE));
@@ -583,7 +584,8 @@ METHOD(task_t, build_r, status_t,
 			}
 			else if (this->ph1->has_pool(this->ph1, this->peer_cfg))
 			{
-				if (!this->peer_cfg->use_pull_mode(this->peer_cfg))
+				if (this->peer_cfg->has_option(this->peer_cfg,
+											   OPT_IKEV1_PUSH_MODE))
 				{
 					if (job)
 					{
@@ -758,7 +760,8 @@ METHOD(task_t, process_i, status_t,
 			/* check for and prepare mode config push/pull */
 			if (this->ph1->has_virtual_ip(this->ph1, this->peer_cfg))
 			{
-				if (this->peer_cfg->use_pull_mode(this->peer_cfg))
+				if (!this->peer_cfg->has_option(this->peer_cfg,
+												OPT_IKEV1_PUSH_MODE))
 				{
 					this->ike_sa->queue_task(this->ike_sa,
 						(task_t*)mode_config_create(this->ike_sa, TRUE, TRUE));
@@ -770,7 +773,8 @@ METHOD(task_t, process_i, status_t,
 			}
 			else if (this->ph1->has_pool(this->ph1, this->peer_cfg))
 			{
-				if (this->peer_cfg->use_pull_mode(this->peer_cfg))
+				if (!this->peer_cfg->has_option(this->peer_cfg,
+												OPT_IKEV1_PUSH_MODE))
 				{
 					schedule_timeout(this->ike_sa);
 				}

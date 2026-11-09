@@ -197,7 +197,17 @@ void array_compress(array_t *array)
 		}
 		if (tail)
 		{
-			array->data = realloc(array->data, get_size(array, array->count));
+			size_t size = get_size(array, array->count);
+
+			if (size)
+			{
+				array->data = realloc(array->data, size);
+			}
+			else
+			{
+				free(array->data);
+				array->data = NULL;
+			}
 			array->tail = 0;
 		}
 	}

@@ -11,17 +11,16 @@ EXTRA_DIST = \
 
 all-local: Vici-Session/pm_to_blib
 
-Vici-Session/Makefile: $(srcdir)/Vici-Session/Makefile.PL
+$(srcdir)/Vici-Session/Makefile: $(srcdir)/Vici-Session/Makefile.PL
 	(cd $(srcdir)/Vici-Session; $(PERL) Makefile.PL)
 
-Vici-Session/pm_to_blib: $(EXTRA_DIST) $(srcdir)/Vici-Session/Makefile
+$(srcdir)/Vici-Session/pm_to_blib: $(EXTRA_DIST) $(srcdir)/Vici-Session/Makefile
 	(cd $(srcdir)/Vici-Session; make)
 
 clean-local:
 	(cd $(srcdir)/Vici-Session; [ ! -f Makefile ] || make clean)
 
 if PERL_CPAN_INSTALL
-install-exec-local: Vici-Session/pm_to_blib
+install-exec-local: $(srcdir)/Vici-Session/pm_to_blib
 	(cd $(srcdir)/Vici-Session; make install)
 endif
-

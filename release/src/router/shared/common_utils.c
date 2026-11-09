@@ -49,7 +49,12 @@
 char*
 strncpy_n(char *destination, const char *source, size_t num)
 {
-	char *ret = strncpy(destination, source, num - 1);
+	char *ret;
+
+	if (num == 0)
+		return destination;
+
+	ret = strncpy(destination, source, num - 1);
 	destination[num - 1] = '\0';
 	return ret;
 }
@@ -151,11 +156,15 @@ get_hex_data(uchar *data_str, uchar *hex_data, int len)
 {
 	uchar *src, *dest;
 	uchar val;
-	int idx;
+	int idx, avail;
 	char hexstr[3] = {0};
 
 	src = data_str;
 	dest = hex_data;
+
+	avail = strlen((char *)data_str) / 2;
+	if (len > avail)
+		len = avail;
 
 	for (idx = 0; idx < len; idx++) {
 		hexstr[0] = src[0];
@@ -240,7 +249,7 @@ dm_register_app_restart_info(int pid, int argc, char **argv,
 	dir = opendir("/tmp/dm");
 	if (!dir) {
 		printf("dm directory may not exist (%s). Creating it\n", strerror(errno));
-		if (mkdir("/tmp/dm", 0777)) {
+		if (mkdir("/tmp/dm", 0750)) {
 			printf("Unable to create dm directory. %s\n", strerror(errno));
 			return;
 		}
@@ -278,54 +287,6 @@ dm_unregister_app_restart_info(int pid)
 		printf("Unable to remove file %s. %s\n", buf, strerror(errno));
 	}
 }
-
-#if defined(WIFI8_SDK_20251126) || defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
-/*
- * Checking for process_cmd numbers in /proc
- * @param	process_name	process name
- * @return	process instance_count
- */
-int
-proc_get_instance_count(char *process_name)
-{
-	DIR *dir;
-	struct dirent *next;
-	int cmp = 0;
-	int process_cmd_count = 0;
-
-	if ((dir = opendir("/proc")) == NULL) {
-		perror("Cannot open /proc");
-		return -1;
-	}
-
-	while ((next = readdir(dir)) != NULL) {
-		FILE *fp;
-		char filename[256];
-		char buffer[256];
-
-		/* If it isn't a number, we don't want it */
-		if (!isdigit(*next->d_name))
-			continue;
-		if (snprintf(filename, sizeof(filename), "/proc/%s/comm", next->d_name) < 0) {
-			filename[sizeof(filename) - 1] = '\0';
-		}
-		fp = fopen(filename, "r");
-		if (!fp) {
-			continue;
-		}
-		buffer[0] = '\0';
-		fgets(buffer, 256, fp);
-		fclose(fp);
-
-		if (!(cmp = strncmp(process_name, buffer, strlen(process_name)))) {
-			process_cmd_count ++;
-		}
-	}
-
-	closedir(dir);
-	return process_cmd_count;
-}
-#endif
 
 #if defined(RTCONFIG_HND_ROUTER_BE_4916)
 /*

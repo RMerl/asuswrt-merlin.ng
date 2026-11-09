@@ -31,6 +31,13 @@
 #define VICI_MESSAGE_SIZE_MAX (512 * 1024)
 #endif
 
+/**
+ * Maximum number of pending connections.
+ */
+#ifndef VICI_SOCKET_BACKLOG
+#define VICI_SOCKET_BACKLOG 3
+#endif
+
 typedef struct vici_socket_t vici_socket_t;
 
 /**

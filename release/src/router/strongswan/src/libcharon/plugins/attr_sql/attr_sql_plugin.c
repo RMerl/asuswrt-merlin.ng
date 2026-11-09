@@ -110,7 +110,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *attr_sql_plugin_create()
+PLUGIN_DEFINE(attr_sql)
 {
 	private_attr_sql_plugin_t *this;
 

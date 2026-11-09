@@ -144,7 +144,7 @@ static bool generate_iv(private_iv_manager_t *this, iv_data_t *iv)
 	else
 	{
 		/* initial phase 2 IV = hash(last_phase1_block | mid) */
-		uint32_t net;;
+		uint32_t net;
 		chunk_t data;
 
 		net = htonl(iv->mid);

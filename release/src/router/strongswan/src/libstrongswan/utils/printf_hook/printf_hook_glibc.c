@@ -68,7 +68,7 @@ struct printf_hook_data_t {
 	/**
 	 * Output FILE stream
 	 */
-	FILE *stream;;
+	FILE *stream;
 };
 
 /* A-Z | 6 other chars | a-z */

@@ -66,7 +66,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *xcbc_plugin_create()
+PLUGIN_DEFINE(xcbc)
 {
 	private_xcbc_plugin_t *this;
 

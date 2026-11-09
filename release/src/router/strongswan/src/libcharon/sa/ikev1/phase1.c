@@ -146,7 +146,7 @@ static shared_key_t *lookup_shared_key(private_phase1_t *this,
 		if (other_auth)
 		{
 			my_id = this->ike_sa->get_my_id(this->ike_sa);
-			if (peer_cfg->use_aggressive(peer_cfg))
+			if (peer_cfg->has_option(peer_cfg, OPT_IKEV1_AGGRESSIVE))
 			{
 				other_id = this->ike_sa->get_other_id(this->ike_sa);
 			}
@@ -220,6 +220,7 @@ METHOD(phase1_t, derive_keys, bool,
 	private_phase1_t *this, peer_cfg_t *peer_cfg, auth_method_t method)
 {
 	shared_key_t *shared_key = NULL;
+	array_t *kes = NULL;
 
 	switch (method)
 	{
@@ -245,9 +246,11 @@ METHOD(phase1_t, derive_keys, bool,
 		DBG1(DBG_IKE, "key derivation for %N failed", auth_method_names, method);
 		return FALSE;
 	}
-	charon->bus->ike_keys(charon->bus, this->ike_sa, this->dh, this->dh_value,
+	array_insert_create(&kes, ARRAY_HEAD, this->dh);
+	charon->bus->ike_keys(charon->bus, this->ike_sa, kes, this->dh_value,
 						  this->nonce_i, this->nonce_r, NULL, shared_key,
 						  method);
+	array_destroy(kes);
 	DESTROY_IF(shared_key);
 	return TRUE;
 }
@@ -570,7 +573,7 @@ METHOD(phase1_t, select_config, peer_cfg_t*,
 	while (enumerator->enumerate(enumerator, &current))
 	{
 		if (check_auth_method(this, current, method) &&
-			current->use_aggressive(current) == aggressive)
+			current->has_option(current, OPT_IKEV1_AGGRESSIVE) == aggressive)
 		{
 			current->get_ref(current);
 			if (!this->peer_cfg)

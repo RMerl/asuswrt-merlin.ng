@@ -229,7 +229,7 @@ static bool select_compliant_config(private_xauth_t *this)
 	}
 	DBG1(DBG_CFG, "selected peer config '%s' unacceptable",
 		 old->get_name(old));
-	aggressive = old->use_aggressive(old);
+	aggressive = old->has_option(old, OPT_IKEV1_AGGRESSIVE);
 
 	my_host = this->ike_sa->get_my_host(this->ike_sa);
 	other_host = this->ike_sa->get_other_host(this->ike_sa);
@@ -240,7 +240,7 @@ static bool select_compliant_config(private_xauth_t *this)
 	while (enumerator->enumerate(enumerator, &current))
 	{
 		if (!current->equals(current, old) &&
-			current->use_aggressive(current) == aggressive &&
+			current->has_option(current, OPT_IKEV1_AGGRESSIVE) == aggressive &&
 			is_compliant(this, current, FALSE))
 		{
 			peer_cfg = current;

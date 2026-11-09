@@ -94,6 +94,7 @@ enum
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
 #define NMP_CLIENT_LIST             "/tmp/nmp_client_list"
 
+#define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
 
 #ifdef RTCONFIG_IPV6
 #define IP6_TABLE_PATH               "/tmp/nmp_ip6_table"
@@ -109,7 +110,7 @@ enum
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
 #define NMP_DEBUG_VC_FILE			"/tmp/NMP_DEBUG_VC"
 
-#define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
+#define IEEE_OUI_FILE		"/usr/networkmap/ieee.oui.json"
 
 #if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS) || defined(RTCONFIG_JFFS_PARTITION))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
@@ -399,6 +400,8 @@ void check_clients_from_ip_cmd(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_ta
 void check_dhcp_ip_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const char *mac, const char *ip_addr);
 
 int get_client_list();
+
+int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i);
 
 void network_ip_scan();
 

@@ -367,31 +367,16 @@
             }
         }
 
-        var GN_with_BandwidthLimeter = false;
-        if (wl_info.band2g_support != '-1') {
-            var gn_array_2g_length = gn_array_2g.length;
-            for (var i = 0; i < gn_array_2g_length; i++) {
-                if (gn_array_2g[i][18] == "1") {	//GN with Bandwidth Limiter
-                    GN_with_BandwidthLimeter = true;
-                }
-            }
-        }
-        if (wl_info.band5g_support != '-1') {
-            var gn_array_5g_length = gn_array_5g.length;
-            for (var j = 0; j < gn_array_5g_length; j++) {
-                if (gn_array_5g[j][18] == "1") {	//GN with Bandwidth Limiter
-                    GN_with_BandwidthLimeter = true;
-                }
-            }
-        }
-        if (wl_info.band5g_2_support != '-1' || wl_info.band6g_support != '-1') {
-            var gn_array_5g_2_length = gn_array_5g_2.length;
-            for (var k = 0; k < gn_array_5g_2_length; k++) {
-                if (gn_array_5g_2[k][18] == "1") {	//GN with Bandwidth Limiter
-                    GN_with_BandwidthLimeter = true;
-                }
-            }
-        }
+        var GN_with_BandwidthLimeter = [
+            { supported: wl_info.band2g_support,                                arr: gn_array_2g   },
+            { supported: wl_info.band5g_support,                                arr: gn_array_5g   },
+            { supported: wl_info.band5g_2_support || wl_info.band6g_support,    arr: gn_array_5g_2 },
+            { supported: wl_info.band6g_2_support || wl_info.band60g_support,   arr: gn_array_60g  },
+        ].some(function(band) {
+            return band.supported && band.arr.some(function(gn) {
+                return gn[0] == "1" && gn[18] == "1";	//GN with Bandwidth Limiter
+            });
+        });
         var GN_with_Amazon_WSS_enabled = (amazon_wss_support && ((httpApi.amazon_wss.getStatue(0, 2) == "1") ? true : false));
 
         if (pm_support) {

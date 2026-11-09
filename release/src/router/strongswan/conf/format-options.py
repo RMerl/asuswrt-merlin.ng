@@ -55,14 +55,6 @@ man pages) the following format can be used:
 
 full.section.name.include files/to/include
 	Description of this include statement
-
-Dots in section/option names may be escaped with a backslash.  For instance,
-with the following section description
-
-charon.filelog./var/log/daemon\.log {}
-	Section to define logging into /var/log/daemon.log
-
-/var/log/daemon.log will be the name of the last section.
 """
 
 import sys
@@ -74,10 +66,10 @@ from functools import cmp_to_key, total_ordering
 @total_ordering
 class ConfigOption:
 	"""Representing a configuration option or described section in strongswan.conf"""
-	def __init__(self, path, default = None, section = False, commented = False, include = False):
-		self.path = path
-		self.name = path[-1]
-		self.fullname = '.'.join(path)
+	def __init__(self, fullname, default = None, section = False, commented = False, include = False):
+		self.path = fullname.split('.')
+		self.name = self.path[-1]
+		self.fullname = fullname
 		self.default = default
 		self.section = section
 		self.commented = commented
@@ -141,8 +133,7 @@ class Parser:
 		if m:
 			if self.__current:
 				self.__add_option(self.__current)
-			path = self.__split_name(m.group('name'))
-			self.__current = ConfigOption(path, m.group('default'),
+			self.__current = ConfigOption(m.group('name'), m.group('default'),
 										  commented = not m.group('assign'))
 			return
 		# section definition
@@ -150,8 +141,7 @@ class Parser:
 		if m:
 			if self.__current:
 				self.__add_option(self.__current)
-			path = self.__split_name(m.group('name'))
-			self.__current = ConfigOption(path, section = True,
+			self.__current = ConfigOption(m.group('name'), section = True,
 										  commented = m.group('comment'))
 			return
 		# include definition
@@ -159,8 +149,7 @@ class Parser:
 		if m:
 			if self.__current:
 				self.__add_option(self.__current)
-			path = self.__split_name(m.group('name'))
-			self.__current = ConfigOption(path, m.group('pattern'), include = True)
+			self.__current = ConfigOption(m.group('name'), m.group('pattern'), include = True)
 			return
 		# paragraph separator
 		m = re.match(r'^\s*$', line)
@@ -170,10 +159,6 @@ class Parser:
 		m = re.match(r'^\s+(?P<text>.+?)\s*$', line)
 		if m and self.__current:
 			self.__current.add(m.group('text'))
-
-	def __split_name(self, name):
-		"""Split the given full name in a list of section/option names"""
-		return [x.replace('\.', '.') for x in re.split(r'(?<!\\)\.', name)]
 
 	def __add_option(self, option):
 		"""Adds the given option to the abstract storage"""
@@ -194,12 +179,14 @@ class Parser:
 		"""Searches/Creates the option (section) based on a list of section names"""
 		option = None
 		options = self.options
-		for i, name in enumerate(path, 1):
+		fullname = ""
+		for name in path:
+			fullname += '.' + name if len(fullname) else name
 			option = next((x for x in options if x.name == name and x.section), None)
 			if not option:
 				if not create:
 					break
-				option = ConfigOption(path[:i], section = True)
+				option = ConfigOption(fullname, section = True)
 				options.append(option)
 				if self.sort:
 					options.sort()
@@ -208,7 +195,7 @@ class Parser:
 
 	def get_option(self, name):
 		"""Retrieves the option with the given name"""
-		return self.__get_option(self.__split_name(name))
+		return self.__get_option(name.split('.'))
 
 class TagReplacer:
 	"""Replaces formatting tags in text"""
@@ -254,6 +241,7 @@ class GroffTagReplacer(TagReplacer):
 			if not punct:
 				punct = ''
 			text = re.sub(r'[\r\n\t]', ' ', m.group('text'))
+			text = re.sub(r'"', '""', text)
 			return '{0}.R{1} "{2}" "{3}" "{4}"\n'.format(nl, format, brack, text, punct)
 		return replacer
 
@@ -318,7 +306,8 @@ class ManFormatter:
 	def __groffize(self, text):
 		"""Encode text as groff text"""
 		text = self.__tags.replace(text)
-		text = re.sub(r'(?<!\\)-', r'\\-', text)
+		text = re.sub(r'\\(?!-)', '\\[rs]', text)
+		text = re.sub(r'(?<!\\)-', '\\-', text)
 		# remove any leading whitespace
 		return re.sub(r'^\s+', '', text, flags = re.MULTILINE)
 

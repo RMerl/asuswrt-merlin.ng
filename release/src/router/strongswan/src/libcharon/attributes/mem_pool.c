@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Tobias Brunner
+ * Copyright (C) 2010-2024 Tobias Brunner
  * Copyright (C) 2008-2010 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -45,11 +45,6 @@ struct private_mem_pool_t {
 	 * base address of the pool
 	 */
 	host_t *base;
-
-	/**
-	 * whether base is the network id of the subnet on which the pool is based
-	 */
-	bool base_is_network_id;
 
 	/**
 	 * size of the pool
@@ -137,22 +132,16 @@ static bool id_equals(identification_t *a, identification_t *b)
 }
 
 /**
- * convert a pool offset to an address
+ * apply the given offset to a base address
  */
-static host_t* offset2host(private_mem_pool_t *pool, int offset)
+static host_t *apply_offset(host_t *base, int offset)
 {
 	chunk_t addr;
 	host_t *host;
 	uint32_t *pos;
 
-	offset--;
-	if (offset > pool->size)
-	{
-		return NULL;
-	}
-
-	addr = chunk_clone(pool->base->get_address(pool->base));
-	if (pool->base->get_family(pool->base) == AF_INET6)
+	addr = chunk_clone(base->get_address(base));
+	if (base->get_family(base) == AF_INET6)
 	{
 		pos = (uint32_t*)(addr.ptr + 12);
 	}
@@ -161,9 +150,22 @@ static host_t* offset2host(private_mem_pool_t *pool, int offset)
 		pos = (uint32_t*)addr.ptr;
 	}
 	*pos = htonl(offset + ntohl(*pos));
-	host = host_create_from_chunk(pool->base->get_family(pool->base), addr, 0);
+	host = host_create_from_chunk(base->get_family(base), addr, 0);
 	free(addr.ptr);
 	return host;
+}
+
+/**
+ * convert a pool offset to an address
+ */
+static host_t* offset2host(private_mem_pool_t *pool, int offset)
+{
+	offset--;
+	if (offset > pool->size)
+	{
+		return NULL;
+	}
+	return apply_offset(pool->base, offset);
 }
 
 /**
@@ -285,6 +287,31 @@ static int get_existing(private_mem_pool_t *this, identification_t *id,
 		return 0;
 	}
 
+	if (peer)
+	{
+		/* check for a valid online lease to reassign during make-before-break
+		 * reauthentication */
+		enumerator = array_create_enumerator(entry->online);
+		while (enumerator->enumerate(enumerator, &lease))
+		{
+			if (lease->hash == hash_addr(peer) &&
+				(requested->is_anyaddr(requested) ||
+				 lease->offset == host2offset(this, requested)))
+			{
+				offset = lease->offset;
+				/* add an additional "online" entry */
+				array_insert(entry->online, ARRAY_TAIL, lease);
+				break;
+			}
+		}
+		enumerator->destroy(enumerator);
+		if (offset)
+		{
+			DBG1(DBG_CFG, "reassigning online lease to '%Y'", id);
+			return offset;
+		}
+	}
+
 	/* check for a valid offline lease, refresh */
 	enumerator = array_create_enumerator(entry->offline);
 	if (enumerator->enumerate(enumerator, &current))
@@ -298,30 +325,6 @@ static int get_existing(private_mem_pool_t *this, identification_t *id,
 	if (offset)
 	{
 		DBG1(DBG_CFG, "reassigning offline lease to '%Y'", id);
-		return offset;
-	}
-	if (!peer)
-	{
-		return 0;
-	}
-	/* check for a valid online lease to reassign */
-	enumerator = array_create_enumerator(entry->online);
-	while (enumerator->enumerate(enumerator, &lease))
-	{
-		if (lease->hash == hash_addr(peer) &&
-			(requested->is_anyaddr(requested) ||
-			 lease->offset == host2offset(this, requested)))
-		{
-			offset = lease->offset;
-			/* add an additional "online" entry */
-			array_insert(entry->online, ARRAY_TAIL, lease);
-			break;
-		}
-	}
-	enumerator->destroy(enumerator);
-	if (offset)
-	{
-		DBG1(DBG_CFG, "reassigning online lease to '%Y'", id);
 	}
 	return offset;
 }
@@ -342,8 +345,7 @@ static int get_new(private_mem_pool_t *this, identification_t *id, host_t *peer)
 			entry = entry_create(id);
 			this->leases->put(this->leases, entry->id, entry);
 		}
-		/* assigning offset, starting by 1 */
-		lease.offset = ++this->unused + (this->base_is_network_id ? 1 : 0);
+		lease.offset = ++this->unused;
 		lease.hash = hash_addr(peer);
 		array_insert(entry->online, ARRAY_TAIL, &lease);
 		DBG1(DBG_CFG, "assigning new lease to '%Y'", id);
@@ -682,13 +684,14 @@ mem_pool_t *mem_pool_create(char *name, host_t *base, int bits)
 
 		if (this->size > 2)
 		{
-			/* if base is the network id we later skip the first address,
+			/* if base is the network id we skip the first address,
 			 * otherwise adjust the size to represent the actual number
 			 * of assignable addresses */
 			diff = network_id_diff(base, bits);
 			if (!diff)
 			{
-				this->base_is_network_id = TRUE;
+				this->base->destroy(this->base);
+				this->base = apply_offset(base, 1);
 				this->size--;
 			}
 			else
@@ -701,6 +704,13 @@ mem_pool_t *mem_pool_create(char *name, host_t *base, int bits)
 		else if (network_id_diff(base, bits))
 		{	/* only serve the second address of the subnet */
 			this->size--;
+		}
+		if (!this->size)
+		{
+			DBG1(DBG_CFG, "virtual IP pool %H/%d is empty",
+				 base, addr_bits - bits);
+			destroy(this);
+			return NULL;
 		}
 	}
 	return &this->public;

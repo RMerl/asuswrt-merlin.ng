@@ -2539,7 +2539,7 @@ class DisagreeNoticeComponent {
                     <div style="color: #ff5722">${ASUS_POLICY.Dict.Notice2}</div>
                     <div style="color: #ff5722">
                         <ul>
-                            <li><#Account_Binding#></li>
+                            <li>Account Binding</li>
                             <li>Config transfer</li>
                             <li>DDNS</li>
                             <li>Alexa</li>
@@ -3406,7 +3406,7 @@ class QisPolicyPageComponent {
                         <div class="page-title" role="heading" aria-level="1" aria-label="${title_orig}">${title}</div>
                         <div>
                             <div class="page-content">
-                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc.replaceAll("%@", ASUS_POLICY.Dict.I_Understand)}</div>
+                                <div class="page-desc">${ASUS_POLICY.Dict.QisDesc.replaceAll("%@", policy == 'EULA' ? ASUS_POLICY.Dict.I_Understand : ASUS_POLICY.Dict.Agree)}</div>
                                 <div class="policy-content"></div>
                                 ${policy == 'EULA' ? `<div class="scroll-info">${ASUS_POLICY.Dict.ScrollDown}</div>` : ``}
                                 <div class="policy-age"></div>

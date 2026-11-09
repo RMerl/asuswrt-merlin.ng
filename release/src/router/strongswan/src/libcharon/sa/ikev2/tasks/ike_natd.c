@@ -304,7 +304,7 @@ METHOD(task_t, process_i, status_t,
 
 		peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
 		if (this->ike_sa->has_condition(this->ike_sa, COND_NAT_ANY) ||
-			(peer_cfg->use_mobike(peer_cfg) &&
+			(!peer_cfg->has_option(peer_cfg, OPT_NO_MOBIKE) &&
 			 this->ike_sa->supports_extension(this->ike_sa, EXT_NATT)))
 		{	/* if the peer supports NAT-T, we switch to port 4500 even if no
 			 * NAT is detected. can't be done later (when we would know
@@ -340,7 +340,29 @@ METHOD(task_t, build_i, status_t,
 
 	ike_cfg = this->ike_sa->get_ike_cfg(this->ike_sa);
 
-	host = message->get_source(message);
+	host = message->get_destination(message);
+	if (host->get_port(host) != IKEV2_UDP_PORT)
+	{
+		/* if not connecting to port 500, the destination socket has to enable
+		 * UDP-encap (we can't float to a different destination port later
+		 * if there is a NAT), so we have to use non-ESP markers from the start.
+		 * that is, our source port can't be 500 at this point. we can use two
+		 * different ephemeral ports and float from one to the other as we'd do
+		 * normally (if neither port is 500, a marker is added). unfortunately,
+		 * some implementations don't reply to the correct port when we do that,
+		 * breaking UDP-encap as our first socket can't process such messages.
+		 * so we switch now, which ensures (1) that we don't send from port 500
+		 * if no ephemeral ports are used and (2) that the source port doesn't
+		 * change later (at least not because of us) */
+		this->ike_sa->float_ports(this->ike_sa);
+		host = this->ike_sa->get_my_host(this->ike_sa);
+		message->set_source(message, host->clone(host));
+	}
+	else
+	{
+		host = message->get_source(message);
+	}
+
 	if (!host->is_anyaddr(host) || force_encap(ike_cfg))
 	{
 		notify = build_natd_payload(this, NAT_DETECTION_SOURCE_IP, host);

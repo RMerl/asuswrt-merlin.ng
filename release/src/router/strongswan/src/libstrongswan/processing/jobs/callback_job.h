@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2025 Tobias Brunner
  * Copyright (C) 2007-2011 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -61,6 +61,15 @@ typedef void (*callback_job_cleanup_t)(void *data);
  * @return				TRUE if canceled, FALSE to explicitly cancel the thread
  */
 typedef bool (*callback_job_cancel_t)(void *data);
+
+/**
+ * Default implementation of callback_job_cancel_t that simply returns FALSE
+ * to force cancellation of the thread by the processor.
+ *
+ * @param data			ignored argument
+ * @return				always returns FALSE
+ */
+bool callback_job_cancel_thread(void *data);
 
 /**
  * Class representing an callback Job.

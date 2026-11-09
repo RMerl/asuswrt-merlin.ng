@@ -1,7 +1,5 @@
 @charset "UTF-8";
-@import "color-table.css";
 @import "svg-icon.css";
-@import "bootstrap-customize.css";
 @import "frame.css";
 @import "effect.css";
 
@@ -140,9 +138,6 @@ body {
     box-shadow: 0 2px 8px rgba(var(--shadow-ambient-20-rgb, 0,0,0), .35);
 }
 
-.chartCard {
-    zoom: 1.11111;
-}
 
 /* HEADER */
 header {
@@ -533,6 +528,25 @@ aside.sidebar.sidebar-show nav {
     width: 0px;
 }
 
+/* 主內容捲動區的捲軸要可見（全域 ::-webkit-scrollbar 把寬度歸零，這裡覆寫回來） */
+article.main-content::-webkit-scrollbar {
+    width: var(--wrt-scrollbar-width, 8px);
+    height: var(--wrt-scrollbar-height, 8px);
+}
+
+article.main-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+article.main-content::-webkit-scrollbar-thumb {
+    background: var(--wrt-scrollbar-thumb-color, rgba(0, 0, 0, 0.28));
+    border-radius: var(--wrt-scrollbar-radius, 4px);
+}
+
+article.main-content::-webkit-scrollbar-thumb:hover {
+    background: var(--wrt-scrollbar-thumb-hover-color, rgba(0, 0, 0, 0.45));
+}
+
 article {
     -webkit-box-flex: 1;
     flex-grow: 1;
@@ -622,6 +636,16 @@ button {
     background-color: var(--surface-banner);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
+    align-items: center;   /* vertically centre icon + label + time + weekday */
+}
+
+/* Tight line-boxes so the glyphs sit dead-centre on the row (no leading skew),
+   and keep everything on one line so the row never wraps and breaks centring. */
+[role~="time-banner"] .banner-title,
+[role~="time-banner"] .banner-time,
+[role~="time-banner"] .banner-time-meridiem {
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .banner-active {
@@ -656,6 +680,13 @@ button {
     font-weight: 500;
     letter-spacing: 0.11px;
     line-height: 0.825rem;
+}
+
+/* Clock icon in the time banner — accent-coloured to pair with the weekday,
+   follows the active theme. */
+.banner-time-icon {
+    background-color: var(--brand-primary);
+    flex: 0 0 auto;
 }
 
 .border-left-title {
@@ -701,8 +732,21 @@ main {
     right: 0;
     left: 0;
     bottom: 0;
-    z-index: 1050;
-    display: block;
+    z-index: 1300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.shadow-bg > .pop_up_card {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .card-header {
@@ -817,6 +861,318 @@ main {
     color: var(--text-hyperlink-default-color);
 }
 
+/* ===== WAN card redesign (主要 WAN) ===== */
+.wan-card-header {
+    padding-top: 16px;
+    padding-bottom: 16px;
+    text-transform: none;
+}
+.wan-header-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    flex: 0 0 32px;
+}
+.wan-header-title {
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: bolder;
+    line-height: 1.2;
+    text-transform: none;
+}
+.wan-header-subtitle {
+    color: var(--text-secondary-color, #9aa0a6);
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: none;
+    margin-top: 2px;
+}
+
+.wan-connected-box {
+    padding: 14px 16px;
+    border-radius: var(--wrt-card-radius);
+    background-color: var(--badge-info-container-bg, rgba(74, 144, 226, 0.12));
+}
+.wan-connected-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: var(--surface-card, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+}
+.wan-connected-avatar-icon {
+    background-color: var(--status-msg-important, #4a90e2);
+}
+.wan-connected-dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-card, #fff);
+}
+.wan-connected-name {
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: bolder;
+    line-height: 1.2;
+}
+.wan-connected-status {
+    color: var(--status-msg-success, #1ea65a);
+    font-size: 13px;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+}
+.wan-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+    display: inline-block;
+    margin-right: 6px;
+}
+.wan-connected-interface {
+    background-color: var(--status-msg-important, #4a90e2);
+    flex: 0 0 32px;
+}
+
+.wan-info-row {
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--wrt-divider-color);
+}
+.wan-info-row:last-child {
+    border-bottom: none;
+}
+.wan-info-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    flex: 0 0 20px;
+}
+.wan-info-label {
+    color: var(--text-title-color, var(--text-primary));
+    font-size: 14px;
+    text-transform: none;
+}
+.wan-info-value {
+    color: var(--text-value-color, var(--text-primary));
+    font-size: 14px;
+    font-weight: bolder;
+    text-align: right;
+}
+.wan-info-value-success {
+    color: var(--status-msg-success, #1ea65a);
+}
+
+/* ===== Ethernet Ports card redesign (乙太網路連接埠) ===== */
+.eth-ports-header {
+    text-transform: none;
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+.eth-ports-header-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: var(--badge-success-container-bg, rgba(30, 166, 90, 0.16));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+}
+.eth-ports-header-icon {
+    background-color: var(--status-msg-positive-strong, #1ea65a);
+}
+.eth-ports-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.eth-port-tile {
+    background-color: var(--wrt-card-content-emphasis-bg);
+    border-radius: 10px;
+    padding: 14px 6px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 92px;
+}
+.eth-port-tile-icon-wrap {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.eth-port-tile[data-state="conn"] .eth-port-tile-icon-wrap {
+    background-color: var(--badge-success-container-bg, rgba(30, 166, 90, 0.16));
+}
+.eth-port-tile[data-state="conn"] [role="icon"] {
+    background-color: var(--status-msg-positive-strong, #1ea65a);
+}
+.eth-port-tile[data-state="warn"] .eth-port-tile-icon-wrap {
+    background-color: var(--badge-warning-container-bg, rgba(247, 144, 9, 0.18));
+}
+.eth-port-tile[data-state="warn"] [role="icon"] {
+    background-color: var(--status-msg-negative, #f79009);
+}
+.eth-port-tile[data-state="unplug"] .eth-port-tile-icon-wrap {
+    background-color: transparent;
+}
+.eth-port-tile[data-state="unplug"] [role="icon"] {
+    background-color: var(--text-secondary-color, #9aa0a6);
+}
+.eth-port-tile-dot {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background-color: var(--status-msg-important, #4a90e2);
+    border: 2px solid var(--surface-card, #fff);
+}
+.eth-port-tile-poe-dot {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-card, #fff);
+}
+.eth-port-tile-poe-dot.poe_en { background-color: #6DD400; }
+.eth-port-tile-poe-dot.poe_dis { background-color: #999999; }
+.eth-port-tile-wan-globe {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--status-msg-important, #4a90e2);
+    border: 2px solid var(--surface-card, #fff);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.eth-port-tile-wan-globe-icon {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    background-color: #fff;
+    -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.6.08-1.18.21-1.74L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.6.08-1.18.21-1.74L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+/* When PoE is also present on the same port, shift the globe up so the two badges don't collide. */
+.eth-port-tile-poe-dot ~ .eth-port-tile-wan-globe {
+    bottom: 14px;
+}
+.eth-port-tile-label {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: bolder;
+    color: var(--text-title-color);
+    line-height: 1.2;
+    word-break: break-word;
+}
+.eth-port-tile[data-state="unplug"] .eth-port-tile-label {
+    color: var(--text-secondary-color, #9aa0a6);
+    font-weight: 400;
+}
+
+.eth-ports-legend {
+    column-gap: 18px;
+    row-gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary-color, var(--text-title-color));
+}
+.eth-ports-legend-item {
+    text-transform: none;
+}
+.eth-ports-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 6px;
+    display: inline-block;
+    flex: 0 0 12px;
+}
+.eth-ports-legend-dot-conn { background-color: var(--status-msg-positive-strong, #1ea65a); }
+.eth-ports-legend-dot-warn { background-color: var(--status-msg-negative, #f79009); }
+.eth-ports-legend-dot-unplug { background-color: var(--text-secondary-color, #9aa0a6); }
+
+/* ===== USB card redesign ===== */
+.usb-info-row {
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--wrt-divider-color);
+}
+.usb-info-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    flex: 0 0 20px;
+}
+.usb-info-label {
+    color: var(--text-title-color, var(--text-primary));
+    font-size: 14px;
+    text-transform: none;
+}
+.usb-info-value {
+    color: var(--text-value-color, var(--text-primary));
+    font-size: 14px;
+    font-weight: bolder;
+    text-align: right;
+    word-break: break-word;
+}
+.usb-progress {
+    margin-top: 16px;
+    height: 8px;
+    border-radius: 999px;
+    background-color: var(--wrt-card-content-emphasis-bg);
+    overflow: hidden;
+}
+.usb-progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background-color: var(--status-msg-important, #4a90e2);
+    transition: width 0.3s ease;
+}
+.usb-progress-meta {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary-color, var(--text-title-color));
+}
+.usb-progress-meta span:last-child {
+    color: var(--text-secondary-color, var(--text-title-color));
+    opacity: 0.7;
+}
+.usb-footer {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+.usb-footer-icon {
+    background-color: var(--text-secondary-color, #9aa0a6);
+    cursor: pointer;
+}
+.usb-footer-icon:hover {
+    background-color: var(--text-title-color, var(--text-primary));
+}
+
+/* Eject (safely-remove) icon — not in svg-icon.css, embed inline. */
+.icon-eject {
+    -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M5 17h14v2H5v-2zm7-12L5.33 15h13.34L12 5z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M5 17h14v2H5v-2zm7-12L5.33 15h13.34L12 5z'/%3E%3C/svg%3E");
+}
+
 /* .content-text {
     color: var(--text-value-color);
     font-size: 14px;
@@ -856,7 +1212,6 @@ main {
 
 /* width < 576x */
 @media (max-width: 576px) {
-    /* [role~="info-text"], */
     [role~="info-banner"],
     [role~="btn-notication"]
     {
@@ -888,13 +1243,6 @@ main {
 
 @media (max-width: 650px) {
     [role~="router-assistant"] {
-        display: none !important;
-    }
-}
-
-/* width > 576px */
-@media (min-width: 576px) {
-    [role~="info-text"] {
         display: none !important;
     }
 }
@@ -934,10 +1282,6 @@ main {
 /* width < 992px*/
 @media (max-width: 992px) {
     [role~="fw-ver-banner"] {
-        display: none !important;
-    }
-
-    [role~="info-text"] {
         display: none !important;
     }
 

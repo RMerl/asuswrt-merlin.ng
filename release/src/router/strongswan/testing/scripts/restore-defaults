@@ -30,12 +30,16 @@ TESTSDIR=$BUILDDIR/tests
 
 . $TESTSDIR/$testname/test.conf
 
+# load files in parallel
+WAIT_FOR=()
+
 if [ -d $TESTSDIR/${testname}/hosts ]
 then
 	for host in `ls $TESTSDIR/${testname}/hosts`
 	do
 		eval HOSTLOGIN="root@`echo $HOSTNAMEIPV4 | sed -n -e "s/^.*${host},//gp" | awk -F, '{ print $1 }' | awk '{ print $1 }'`"
-		scp $SSHCONF -r $HOSTCONFIGDIR/default/etc $HOSTLOGIN:/ > /dev/null 2>&1
-		scp $SSHCONF -r $HOSTCONFIGDIR/${host}/etc $HOSTLOGIN:/ > /dev/null 2>&1
+		tar -cf - -C $HOSTCONFIGDIR/default etc -C ../${host} etc | ssh $SSHCONF $HOSTLOGIN 'tar --overwrite -xhmf - -C /' &
+		WAIT_FOR+=($!)
 	done
+	wait ${WAIT_FOR[@]}
 fi

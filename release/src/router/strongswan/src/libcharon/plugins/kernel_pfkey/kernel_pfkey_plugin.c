@@ -57,7 +57,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *kernel_pfkey_plugin_create()
+PLUGIN_DEFINE(kernel_pfkey)
 {
 	private_kernel_pfkey_plugin_t *this;
 

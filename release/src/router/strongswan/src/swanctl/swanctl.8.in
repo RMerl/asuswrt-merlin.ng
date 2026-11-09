@@ -89,7 +89,7 @@ list loaded algorithms and their implementation
 (re\-)load pool configuration
 .TP
 .B "\-T, \-\-log"
-trace logging output
+trace logging output (levels 0 and 1 only)
 .TP
 .B "\-S, \-\-stats"
 show daemon infos and statistics

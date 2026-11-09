@@ -10,6 +10,76 @@
     <link rel="stylesheet" type="text/css" href="css/basic.css">
     <link rel="stylesheet" type="text/css" href="css/gameprofile.css">
 
+    <style>
+        #s46_ports_content,
+        #s46_ports_confilct {
+            color: #1f2933;
+            background-color: #fff;
+            border: 1px solid #d7dce2;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(20, 31, 43, 0.22);
+            box-sizing: border-box;
+            max-width: calc(100vw - 20px);
+        }
+
+        #s46_ports_content img[src="/images/button-close.gif"],
+        #s46_ports_confilct img[src="/images/button-close.gif"] {
+            opacity: 0.65;
+        }
+
+        #s46_ports_confilct a {
+            color: #006ce1;
+        }
+
+        .settings-filed-title {
+            position: relative;
+            overflow: visible;
+        }
+
+        #externalPort_field .setup_info_icon_game {
+            position: absolute;
+            top: 50%;
+            right: -25px;
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            background: #1378d1;
+            color: #fff;
+            font: 700 14px/20px Arial, sans-serif;
+            text-align: center;
+            box-sizing: border-box;
+            overflow: visible;
+        }
+
+        #externalPort_field .setup_info_icon_game::before {
+            content: "?";
+        }
+
+        #externalPort_field .setup_info_icon_game:focus-visible {
+            outline: 2px solid #1378d1;
+            outline-offset: 2px;
+        }
+
+        #s46_open_nat_conflict_note {
+            color: var(--wrt-badge-warning-color, #FFCC00);
+        }
+
+        #s46_open_nat_conflict_detail {
+            color: inherit;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            margin-left: 6px;
+            font: inherit;
+            line-height: inherit;
+            vertical-align: baseline;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript" src="js/httpApi.js"></script>
     <script type="text/javascript" src="/state.js"></script>
@@ -52,12 +122,17 @@
 
                             <!-- Content field -->
                             <div class="description-container openNatDescription"><#OpenNAT_desc#></div>
-                            <p class="card-subtitle mb-2 text-muted" style="display:none;"
+                            <p class="description-container card-subtitle mb-2 text-muted" style="display:none;"
                                id="v6plus_port_range_note">* When using v6plus, the number of available
                                 assigned
                                 ports is limited. Kindly understand that this may result in an interruption of this
                                 services
                                 and functions.</p>
+                            <p class="description-container card-subtitle mb-2" style="display:none;"
+                               id="s46_open_nat_conflict_note">
+                                <span id="s46_open_nat_conflict_text"></span>
+                                <button type="button" id="s46_open_nat_conflict_detail">Detail</button>
+                            </p>
                             <!-- Untranslated -->
                             <div class="d-flex w-100 align-items-center">
                                 <div class="world-map">
@@ -260,7 +335,8 @@
                             </div>
                             <div id="externalPort_field" class="game-p-s-field">
                                 <div class="settings-filed-title"><#IPConnection_VSList_External_Port#>
-                                    <div class="setup_info_icon_game" style="display:none;"></div>
+                                    <div class="setup_info_icon_game" style="display:none;" role="button" tabindex="0"
+                                         aria-label="Available port range"></div>
                                 </div>
                                 <input id="new_profile_externalPort" type="text" class="input-container" value=""
                                        maxlength="60" onkeypress="return validator.isPortRange(this, event);"
@@ -381,6 +457,10 @@
     var nvram = {};
     var gameList = new Object;
     var wan0_proto = '';
+    var s46PortRangeState = {
+        active: false,
+        ranges: []
+    };
 
     /*handle legacy profile*/
     (function () {
@@ -427,15 +507,179 @@
     })();
 
 
+    function getS46WanDisplayName(wanProto) {
+        switch (wanProto) {
+            case "v6plus":
+                return "<#IPv6_plus#>";
+            case "ocnvc":
+                return "<#IPv6_ocnvc#>";
+            case "v6opt":
+                return "<#IPv6_opt#>";
+            default:
+                return wanProto;
+        }
+    }
+
+    function updateS46PortRangeState(data) {
+        const supportedWanTypes = ["v6plus", "ocnvc", "v6opt"];
+        const restrictedTopologies = ["3", "6"];
+        const ports = (data.ipv6_s46_ports && data.ipv6_s46_ports !== "0")
+            ? data.ipv6_s46_ports : "";
+        const ranges = ports.split(/\s+/).filter(Boolean);
+
+        s46PortRangeState = {
+            active: isSupport("s46")
+                && supportedWanTypes.indexOf(data.wan0_proto) !== -1
+                && restrictedTopologies.indexOf(data.wan0_s46_hgw_case) !== -1
+                && ranges.length > 1,
+            ranges: ranges
+        };
+    }
+
+    function getS46PortConfirmMessage() {
+        return "<#IPv6_plus_port_confirm#>".replace("%0$@", getS46WanDisplayName(wan0_proto));
+    }
+
+    function positionS46PortRangeHint(anchor, source) {
+        const popup = document.getElementById("s46_ports_content");
+        if (!popup || !anchor)
+            return;
+
+        const gap = 10;
+        const viewportMargin = 10;
+        const anchorRect = anchor.getBoundingClientRect();
+        const popupRect = popup.getBoundingClientRect();
+        let desiredLeft;
+        let desiredTop;
+
+        if (source === "table") {
+            const description = document.querySelector(".openNatDescription");
+            const descriptionRect = description
+                ? description.getBoundingClientRect()
+                : anchorRect;
+            desiredLeft = descriptionRect.left;
+            desiredTop = anchorRect.bottom + gap;
+        }
+        else {
+            const externalPort = document.getElementById("new_profile_externalPort");
+            const inputRect = externalPort
+                ? externalPort.getBoundingClientRect()
+                : anchorRect;
+            desiredLeft = inputRect.right - popupRect.width;
+            desiredTop = anchorRect.top - popupRect.height - gap;
+        }
+
+        const minLeft = viewportMargin;
+        const maxLeft = window.innerWidth - popupRect.width - viewportMargin;
+        desiredLeft = Math.max(
+            minLeft,
+            Math.min(desiredLeft, Math.max(minLeft, maxLeft))
+        );
+
+        const minTop = viewportMargin;
+        const maxTop = window.innerHeight - popupRect.height - viewportMargin;
+        if (desiredTop < minTop)
+            desiredTop = anchorRect.bottom + gap;
+        desiredTop = Math.max(
+            minTop,
+            Math.min(desiredTop, Math.max(minTop, maxTop))
+        );
+
+        popup.style.margin = "0";
+        popup.style.left = "0";
+        popup.style.setProperty("top", "0px", "important");
+
+        const originRect = popup.getBoundingClientRect();
+        const scaleX = popup.offsetWidth
+            ? originRect.width / popup.offsetWidth
+            : 1;
+        const scaleY = popup.offsetHeight
+            ? originRect.height / popup.offsetHeight
+            : 1;
+        let left = (desiredLeft - originRect.left) / scaleX;
+        let top = (desiredTop - originRect.top) / scaleY;
+        popup.style.left = left + "px";
+        popup.style.setProperty("top", top + "px", "important");
+
+        const placedRect = popup.getBoundingClientRect();
+        left += (desiredLeft - placedRect.left) / scaleX;
+        top += (desiredTop - placedRect.top) / scaleY;
+        popup.style.left = left + "px";
+        popup.style.setProperty("top", top + "px", "important");
+    }
+
+    function showS46PortRangeHint(position, source, anchor) {
+        if (typeof pop_s46_ports === "function") {
+            const placement = source || "game";
+            const legacySource = placement === "table" ? "ui4" : placement;
+            const previousPopup = document.getElementById("s46_ports_content");
+            let helperCompleted = false;
+
+            try {
+                pop_s46_ports(position, legacySource);
+                helperCompleted = true;
+            }
+            catch (error) {
+                if (typeof console !== "undefined" && typeof console.warn === "function")
+                    console.warn("pop_s46_ports failed:", error);
+            }
+
+            const popup = document.getElementById("s46_ports_content");
+            if (popup && (helperCompleted || popup !== previousPopup)) {
+                try {
+                    $("#s46_ports_content").stop(true, true).show();
+                }
+                catch (error) {
+                    popup.style.display = "block";
+                }
+
+                try {
+                    positionS46PortRangeHint(anchor, placement);
+                }
+                catch (error) {
+                    if (typeof console !== "undefined" && typeof console.warn === "function")
+                        console.warn("Unable to position S46 port range hint:", error);
+                }
+                return;
+            }
+        }
+
+        const rangeHint = "Since you are currently using %1$@ connection, please make sure your external port settings are within the following port range: "
+            .replace("%1$@", getS46WanDisplayName(wan0_proto));
+        alert(rangeHint + "\n\n" + s46PortRangeState.ranges.join(" "));
+    }
+
+    function getS46OpenNatConflict() {
+        const hook = '<%chk_s46_port_range();%>';
+        if (!s46PortRangeState.active || !hook || hook === "0")
+            return false;
+
+        try {
+            return JSON.parse(hook).open_nat === "1";
+        }
+        catch (error) {
+            if (typeof console !== "undefined" && typeof console.warn === "function")
+                console.warn("Unable to parse S46 port range check:", error);
+            return false;
+        }
+    }
+
     async function getInitialData() {
         const [nvramData, charData] = await Promise.all([
-            httpApi.nvramGet(["vts_enable_x", "wan0_proto"], true),
+            httpApi.nvramGet([
+                "vts_enable_x",
+                "wan0_proto",
+                "wan0_s46_hgw_case",
+                "ipv6_s46_ports"
+            ], true),
             httpApi.nvramCharToAscii(["game_vts_rulelist"], true)
         ]);
 
         return {
             vts_enable_x: nvramData.vts_enable_x,
             wan0_proto: nvramData.wan0_proto,
+            wan0_s46_hgw_case: nvramData.wan0_s46_hgw_case,
+            ipv6_s46_ports: nvramData.ipv6_s46_ports,
             game_vts_rulelist: decodeURIComponent(charData.game_vts_rulelist || '').replace(/&#62/g, ">")
         };
     }
@@ -448,26 +692,45 @@
             nvram = data;
             wan0_proto = data.wan0_proto;
             vts_rulelist_array = data.game_vts_rulelist;
+            updateS46PortRangeState(data);
 
-            if ((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1) {
-                $("#v6plus_port_range_note").show();
+            if (s46PortRangeState.active) {
+                const wanDisplayName = getS46WanDisplayName(wan0_proto);
+                const rangeNote = "* When using %0$@, the number of available assigned ports is limited. "
+                    + "Kindly understand that this may result in an interruption of these services and functions.";
+                $("#v6plus_port_range_note").text(rangeNote.replace("%0$@", wanDisplayName)).show();
                 $(".setup_info_icon_game").show();
-                $(".setup_info_icon_game").click(
-                    function () {
+                $(".setup_info_icon_game").on(
+                    "click keydown",
+                    function (event) {
+                        if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ")
+                            return;
+                        event.preventDefault();
                         if ($("#s46_ports_content").is(':visible'))
                             $("#s46_ports_content").fadeOut();
                         else {
                             var position = $(".setup_info_icon_game").position();
-                            pop_s46_ports(position, "game");
+                            showS46PortRangeHint(position, "game", this);
                         }
                     }
                 );
-                $("#new_profile_externalPort").focus(
-                    function () {
-                        var position_text = $("#new_profile_externalPort").position();
-                        pop_s46_ports(position_text, "game");
-                    }
-                );
+
+                if (getS46OpenNatConflict()) {
+                    $("#s46_open_nat_conflict_text").text(
+                        "<#IPv6_plus_notify0#>".replace("%2$@", wanDisplayName) + " "
+                    );
+                    $("#s46_open_nat_conflict_note").show();
+                    $("#s46_open_nat_conflict_detail").click(
+                        function () {
+                            const position = $(this).position();
+                            showS46PortRangeHint(
+                                {left: 0, top: position.top},
+                                "table",
+                                this
+                            );
+                        }
+                    );
+                }
             }
 
             (nvram.vts_enable_x == '1') ? document.getElementById("PF_switch").classList.add('active')
@@ -810,6 +1073,8 @@
     }
 
     function addNewProfile(target) {
+        if ($("#s46_ports_content").is(':visible'))
+            $("#s46_ports_content").fadeOut();
         $('#emptyTable').hide();
         $('#listTable').hide();
         $('#addRuleField').show();
@@ -971,9 +1236,9 @@
             } else {
                 if (!check_multi_range(document.getElementById("new_profile_externalPort"), 1, 65535, true))
                     return false;
-                if ((wan0_proto == "v6plus" || wan0_proto == "ocnvc" || wan0_proto == "v6opt") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1) {
+                if (s46PortRangeState.active) {
                     if (!check_multi_range_s46_ports(document.getElementById("new_profile_externalPort"))) {
-                        if (!confirm(port_confirm)) {
+                        if (!confirm(getS46PortConfirmMessage())) {
                             document.getElementById("new_profile_externalPort").focus();
                             return false;
                         }

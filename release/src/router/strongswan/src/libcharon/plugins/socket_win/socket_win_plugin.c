@@ -59,7 +59,7 @@ METHOD(plugin_t, get_features, int,
 /**
  * Create instance of socket-win plugin
  */
-plugin_t *socket_win_plugin_create()
+PLUGIN_DEFINE(socket_win)
 {
 	private_socket_win_plugin_t *this;
 

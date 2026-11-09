@@ -107,10 +107,6 @@ static int self()
 				{
 					type = KEY_ED448;
 				}
-				else if (streq(arg, "bliss"))
-				{
-					type = KEY_BLISS;
-				}
 				else if (streq(arg, "priv"))
 				{
 					type = KEY_ANY;
@@ -455,8 +451,8 @@ static void __attribute__ ((constructor))reg()
 	command_register((command_t) {
 		self, 's', "self",
 		"create a self signed certificate",
-		{"[--in file|--keyid hex] [--type rsa|ecdsa|ed25519|ed448|bliss|priv]",
-		 " --dn distinguished-name [--san subjectAltName]+",
+		{"[--in file|--keyid hex] [--type rsa|ecdsa|ed25519|ed448|priv]",
+		 "--dn distinguished-name [--san subjectAltName]+",
 		 "[--lifetime days] [--serial hex] [--ca] [--ocsp uri]+",
 		 "[--flag serverAuth|clientAuth|crlSign|ocspSigning|msSmartcardLogon]+",
 		 "[--nc-permitted name] [--nc-excluded name]",

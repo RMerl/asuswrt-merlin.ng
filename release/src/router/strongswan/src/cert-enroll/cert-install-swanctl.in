@@ -69,6 +69,14 @@ if [ -s old/$SUBCA ]
 then
   cp old/$SUBCA ${SWANCTLDIR}/x509ca/$OLDSUBCA
 fi
+if [ -s older/$ROOTCA ]
+then
+  cp older/$ROOTCA ${SWANCTLDIR}/x509ca/$OLDERROOTCA
+fi
+if [ -s older/$SUBCA ]
+then
+  cp older/$SUBCA ${SWANCTLDIR}/x509ca/$OLDERSUBCA
+fi
 
 ##############################################################################
 # Reload the strongswan systemd service if it is running

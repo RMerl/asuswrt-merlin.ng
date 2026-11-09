@@ -57,7 +57,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *winhttp_plugin_create()
+PLUGIN_DEFINE(winhttp)
 {
 	private_winhttp_plugin_t *this;
 

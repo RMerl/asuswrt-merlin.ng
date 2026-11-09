@@ -49,15 +49,19 @@
 }
 .system_settings_bg.led .schedule-wrapper:before,
 .system_settings_bg.led_night_mode .schedule-wrapper:before {
-	border-right: 1px solid var(--wrt-divider-color);
+	border-right: 1px solid var(--wrt-divider-color, #DCDCDC);
 }
 .system_settings_bg.led .schedule,
 .system_settings_bg.led_night_mode .schedule{
-	background-color: var(--wrt-popover-bg);
+	background-color: var(--wrt-btn-icon-color, #8A95A1);
+}
+.system_settings_bg.led .schedule:hover,
+.system_settings_bg.led_night_mode .schedule:hover{
+	background-color: var(--wrt-btn-icon-hover-color, #5E6B7A);
 }
 .system_settings_bg.led .schedule.active,
 .system_settings_bg.led_night_mode .schedule.active{
-	background-color: var(--brand-color);
+	background-color: var(--brand-color, #006CE1);
 }
 .system_settings_bg .bubble_icon{
 	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;

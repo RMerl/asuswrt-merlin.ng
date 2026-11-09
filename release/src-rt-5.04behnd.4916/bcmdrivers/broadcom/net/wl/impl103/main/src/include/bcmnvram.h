@@ -126,16 +126,51 @@ extern char * nvram_get_bitflag(const char *name, const int bit);
  */
 extern int BCMINITFN(nvram_resetgpio_init)(void *sih);
 
+#ifndef __KERNEL__
+#include <syslog.h>
+#endif
+
 /*
  * Get the value of an NVRAM variable.
  * @param	name	name of variable to get
- * @return	value of variable or NUL if undefined
+ * @return	value of variable or "" if undefined; returns "" if value
+ *		contains \n or \r to prevent config injection via nvram.
+ *		VPN custom config keys are exempt because they are intentionally
+ *		multi-line OpenVPN configuration blocks.
  */
 static INLINE char *
 nvram_safe_get(const char *name)
 {
-	char *p = nvram_get(name);
-	return p ? p : "";
+	static const char * const newline_allowed[] = {
+		"vpn_server_custom",
+		"vpn_server1_custom",
+		"vpn_client_custom",
+		"vpn_client1_custom",
+		"vpn_client2_custom",
+		"vpn_client3_custom",
+		"vpn_client4_custom",
+		"vpn_client5_custom",
+		"sshd_authkeys",
+		"fb_comment",
+		NULL
+	};
+	char *val = nvram_get(name);
+	if (!val)
+		return (char *)"";
+	if (strchr(val, '\n') || strchr(val, '\r')) {
+		const char * const *p;
+		for (p = newline_allowed; *p; p++) {
+			if (!strcmp(name, *p))
+				return val;
+		}
+#ifdef __KERNEL__
+		pr_warn_ratelimited("nvram_safe_get: blocked newline in key %s\n", name);
+#else
+		syslog(LOG_WARNING, "nvram_safe_get: blocked newline in key %s", name);
+#endif
+		return (char *)"";
+	}
+	return val;
 }
 
 /*

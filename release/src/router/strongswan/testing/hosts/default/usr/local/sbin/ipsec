@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# LEAK_DETECTIVE_DISABLE might be set, however, we only want to actually use
+# it for the daemons if LEAK_DETECTIVE_DISABLE_DAEMON is set.
+
+ORIG=/usr/local/sbin/ipsec.orig
+
+if [[ "$1" == "start" && -z $LEAK_DETECTIVE_DISABLE_DAEMON ]]; then
+	unset LEAK_DETECTIVE_DISABLE
+fi
+
+$ORIG "$@"

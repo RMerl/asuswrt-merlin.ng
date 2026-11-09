@@ -154,8 +154,16 @@ charon.fragment_size = 1280
 	Maximum size (complete IP datagram size in bytes) of a sent IKE fragment
 	when using proprietary IKEv1 or standardized IKEv2 fragmentation, defaults
 	to 1280 (use 0 for address family specific default values, which uses a
-	lower value for IPv4).  If specified this limit is used for both IPv4 and
-	IPv6.
+	lower value for IPv4).  Unless overridden, this limit is used for both IPv4
+	and IPv6 if specified.
+
+charon.fragment_size_v4 = charon.fragment_size
+	Maximum size (complete IPv4 datagram size in bytes) of a sent IKE fragment
+	when using proprietary IKEv1 or standardized IKEv2 fragmentation.
+
+charon.fragment_size_v6 = charon.fragment_size
+	Maximum size (complete IPv6 datagram size in bytes) of a sent IKE fragment
+	when using proprietary IKEv1 or standardized IKEv2 fragmentation.
 
 charon.group
 	Name of the group the daemon changes to after startup.
@@ -283,7 +291,7 @@ charon.max_ikev1_exchanges = 3
 charon.max_packet = 10000
 	Maximum packet size accepted by charon.
 
-charon.make_before_break = no
+charon.make_before_break = yes
 	Initiate IKEv2 reauthentication with a make-before-break scheme.
 
 	Initiate IKEv2 reauthentication with a make-before-break instead of a

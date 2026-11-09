@@ -1,6 +1,55 @@
+charon-nm {}
+	Section with settings specific to the NetworkManager backend `charon-nm`.
+	Settings from the `charon` section are not inherited, but many can be used
+	here as well. Defaults for some settings are chosen very deliberately and
+	should only be changed in case of conflicts.
+
 charon-nm.ca_dir = <default>
 	Directory from which to load CA certificates if no certificate is
 	configured.
 
+charon-nm.install_virtual_ip_on = lo
+	Interface on which virtual IP addresses are installed. Note that NM
+	also installs the virtual IPs on the XFRM interface.
+
 charon-nm.mtu = 1400
 	MTU for XFRM interfaces created by the NM plugin.
+
+charon-nm.port = 0
+	Source port when sending packets to port 500. Defaults to an ephemeral
+	port. May be set to 500 if firewall rules require a static port.
+
+charon-nm.port_nat_t = 0
+	Source port when sending packets to port 4500 or a custom server port.
+	Defaults to an ephemeral port. May be set to e.g. 4500 if firewall rules
+	require a static port.
+
+charon-nm.retransmit_base = 1.4
+	Base to use for calculating exponential back off, see IKEv2 RETRANSMISSION
+	in **strongswan.conf**(5). Default retransmission settings for charon-nm are
+	deliberately lower to fail and possibly reestablish SAs more quickly.
+
+charon-nm.retransmit_timeout = 2.0
+	Timeout in seconds before sending first retransmit.
+
+charon-nm.retransmit_tries = 3
+	Number of times to retransmit a packet before giving up.
+
+charon-nm.routing_table = 210
+	Table where routes via XFRM interface are installed. Should be different
+	than the table used for the regular IKE daemon due to the mark.
+
+charon-nm.routing_table_prio = 210
+	Priority of the routing table. Higher than the default priority used for the
+	regular IKE daemon.
+
+charon-nm.plugins.kernel-netlink.fwmark = !210
+	Make packets with this mark ignore the routing table. Must be the same mark
+	set in charon-nm.plugins.socket-default.fwmark.
+
+charon-nm.plugins.socket-default.fwmark = 210
+	Mark applied to IKE and ESP packets to ignore the routing table and avoid
+	routing loops when using XFRM interfaces.
+
+charon-nm.syslog.daemon.default = 1
+	Default to logging via syslog's daemon facility on level 1.

@@ -61,7 +61,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *aes_plugin_create()
+PLUGIN_DEFINE(aes)
 {
 	private_aes_plugin_t *this;
 

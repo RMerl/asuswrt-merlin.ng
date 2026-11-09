@@ -479,7 +479,7 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 		)	continue;
 
 		/* Check port, if specified */
-		port = *tlsport ? atoi(tlsport) : 0;
+		port = *tlsport ? safe_atoi(tlsport) : 0;
 		if (port < 0 || port > 65535)
 			continue;
 
@@ -928,7 +928,8 @@ static int _remove_sdn_routing_table(const MTLAN_T *pmtl)
 		snprintf(tmp, sizeof(tmp), "table %d", IP_ROUTE_TABLE_ID_SDN);
 		while (fgets(buf, sizeof(buf), fp))
 		{
-			safe_do_system("ip route del %s", buf);
+			snprintf(cmd, sizeof(cmd), "ip route del %s", buf);
+			system(cmd);
 		}
 		fclose(fp);
 	}
@@ -954,7 +955,8 @@ static int _remove_sdn_routing_rule(const MTLAN_T *pmtl, int v6)
 	{
 		while (fgets(buf, sizeof(buf), fp))
 		{
-			safe_do_system("ip %s rule del iif %s", (v6) ? "-6" : "", pmtl->nw_t.ifname);
+			snprintf(cmd, sizeof(cmd), "ip %s rule del iif %s", (v6) ? "-6" : "", pmtl->nw_t.ifname);
+			system(cmd);
 		}
 		fclose(fp);
 	}
@@ -1117,7 +1119,8 @@ static void _handle_sdn_routing_ipv6_prefix(const MTLAN_T *pmtl)
 					if (sys_info.uptime < finish_time)
 					{
 						fputs(buf, fpw);
-						safe_do_system("ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+						snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+						system(cmd);
 					}
 					break;
 				case 2:
@@ -1126,7 +1129,8 @@ static void _handle_sdn_routing_ipv6_prefix(const MTLAN_T *pmtl)
 						trimNL(buf);
 						finish_time = sys_info.uptime + lifetime;
 						fprintf(fpw, "%s %ld\n", buf, finish_time);
-						safe_do_system("ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+						snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+						system(cmd);
 					}
 					break;
 			}
@@ -1196,12 +1200,14 @@ static void _handle_sdn_routing_ipv6_neigh(const MTLAN_T *pmtl, const char *neig
 			{
 				_dprintf("keep %s", line);
 				fputs(line, fpw);
-				safe_do_system("ip -6 route replace %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+				snprintf(cmd, sizeof(cmd), "ip -6 route replace %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+				system(cmd);
 			}
 			else
 			{
 				_dprintf("drop %s", line);
-				safe_do_system("ip -6 route del %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+				snprintf(cmd, sizeof(cmd), "ip -6 route del %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+				system(cmd);
 			}
 		}
 		fclose(fpw);
@@ -1233,7 +1239,8 @@ static void _handle_sdn_routing_ipv6_neigh(const MTLAN_T *pmtl, const char *neig
 			if (strstr(buf, network))
 				continue;
 			fprintf(fpw, "%s %lu\n", network, utime);
-			safe_do_system("ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+			snprintf(cmd, sizeof(cmd), "ip -6 route add %s dev %s table %d", network, pmtl->nw_t.ifname, IP_ROUTE_TABLE_ID_SDN);
+			system(cmd);
 			_dprintf("Add: %s %lu\n", network, utime);
 		}
 		fclose(fpw);
@@ -1550,14 +1557,16 @@ static int _handle_sdn_routing(const MTLAN_T *pmtl)
 		{
 			while(fgets(buf, sizeof(buf), fp))
 			{
-				safe_do_system("ip route del %s", buf);
+				snprintf(cmd, sizeof(cmd), "ip route del %s", buf);
+				system(cmd);
 			}
 			fclose(fp);
 		}
 
 		if(pmtl->enable)
 		{
-			safe_do_system("ip route add %s/%d dev %s proto kernel scope link src %s table %d", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.ifname, pmtl->nw_t.addr, IP_ROUTE_TABLE_ID_SDN);
+			snprintf(cmd, sizeof(cmd), "ip route add %s/%d dev %s proto kernel scope link src %s table %d", pmtl->nw_t.subnet, pmtl->nw_t.prefixlen, pmtl->nw_t.ifname, pmtl->nw_t.addr, IP_ROUTE_TABLE_ID_SDN);
+			system(cmd);
 		}
 #ifdef RTCONFIG_MULTIWAN_IF
 #ifdef RTCONFIG_IPV6
@@ -1574,14 +1583,16 @@ static int _handle_sdn_routing(const MTLAN_T *pmtl)
 	system(cmd);
 	if(f_size(iproute_tmp) == 0)
 	{
-		safe_do_system("ip rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
+		snprintf(cmd, sizeof(cmd), "ip rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
+		system(cmd);
 	}
 #ifdef RTCONFIG_IPV6
 	snprintf(cmd, sizeof(cmd), "ip -6 rule show | grep \"lookup %d\" > %s", IP_ROUTE_TABLE_ID_SDN, iproute_tmp);
 	system(cmd);
 	if(f_size(iproute_tmp) == 0)
 	{
-		safe_do_system("ip -6 rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
+		snprintf(cmd, sizeof(cmd), "ip -6 rule add table %d pref %d", IP_ROUTE_TABLE_ID_SDN, IP_RULE_PREF_SDN_ROUTE);
+		system(cmd);
 	}
 #endif
 	unlink(iproute_tmp);
@@ -1659,7 +1670,7 @@ void update_sdn_resolvconf()
 					j = 0;
 					foreach(word, mt_group, next)
 					{
-						tmp_group = atoi(word);
+						tmp_group = safe_atoi(word);
 						if (tmp_group == 0
 						 || tmp_group != mtwan_group
 						 || !mtwanduck_get_phy_status(j + MULTI_WAN_START_IDX)
@@ -1721,7 +1732,7 @@ void update_sdn_resolvconf()
 						j = 0;
 						foreach(word, mt_group, next)
 						{
-							tmp_group = atoi(word);
+							tmp_group = safe_atoi(word);
 							if (tmp_group == 0
 							 || tmp_group != mtwan_group
 							 || !mtwanduck_get_phy_status(j + MULTI_WAN_START_IDX)

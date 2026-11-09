@@ -864,7 +864,7 @@ export class WiFiInterferenceChart {
                     cursor: pointer;
                 }
             </style>
-            <div class="card pt-2 h-100">
+            <div class="card h-100">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div class="wifi-insight-card-title">WiFi Insight<i data-faq="AI_FAQ_WiFiInsight" role="icon"
                                                            class="icon icon-help-hexagon icon-size-18 ai-faq-btn"></i>
@@ -4116,5 +4116,183 @@ export class WiFiInterferenceChart {
 
         // Reset initialization flag
         this.isInitialized = false;
+    }
+}
+
+/**
+ * Ethernet ports status view — replaces the legacy iframe to router_status.asp.
+ * Re-renders the same DOM structure that was rendered inside #phy_ports there,
+ * so existing networkMap.css styles (.port_status_bg / .port_icon / ...) apply
+ * unchanged. Polls httpApi.get_port_status_array every `pollInterval` ms.
+ *
+ * Usage:
+ *   const view = new EthernetPortsView('#phy_ports', { onHint: showFn });
+ *   view.start();
+ *   // later: view.stop();
+ */
+export class EthernetPortsView {
+    constructor(target, options = {}) {
+        this.target = (typeof target === 'string') ? document.querySelector(target) : target;
+        this.onHint = options.onHint || null;
+        this.pollInterval = options.pollInterval || 3000;
+        this.timer = null;
+        this._stopped = false;
+    }
+
+    start() {
+        this._stopped = false;
+        this._tick();
+    }
+
+    stop() {
+        this._stopped = true;
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+    }
+
+    _tick() {
+        if (this._stopped || !this.target) return;
+        const api = window.httpApi;
+        if (!api || typeof api.get_port_status_array !== 'function') {
+            this._scheduleNext();
+            return;
+        }
+        if (typeof window.isSupport === 'function' && !window.isSupport('NEW_PHYMAP')) {
+            this.target.style.display = 'none';
+            return;
+        }
+        const capMac = api.hookGet && api.hookGet('get_lan_hwaddr') ? api.hookGet('get_lan_hwaddr') : '';
+        api.get_port_status_array(capMac, (port_info) => {
+            console.log('Fetched port info:', port_info);
+            if (this._stopped) return;
+            this._render(port_info || {});
+            this._scheduleNext();
+        });
+    }
+
+    _scheduleNext() {
+        if (this._stopped) return;
+        this.timer = setTimeout(() => this._tick(), this.pollInterval);
+    }
+
+    _render(port_info) {
+        const target = this.target;
+        if (!target) return;
+        if (!port_info || Object.keys(port_info).length === 0) {
+            target.style.display = 'none';
+            return;
+        }
+        target.style.display = '';
+        target.innerHTML = '';
+
+        const errorPortList = [];
+        let showPoeStatusDesc = false;
+
+        // Flatten WAN + LAN preserving original order so the tiles read
+        // left-to-right top-to-bottom in firmware port order.
+        const allPorts = [];
+        ['WAN', 'LAN'].forEach((label) => {
+            const arr = port_info[label];
+            if (!Array.isArray(arr)) return;
+            arr.forEach((p) => allPorts.push({ label, port: p }));
+        });
+
+        console.log(allPorts)
+
+        allPorts.forEach(({ label, port }) => {
+            const cap = port.cap_support || {};
+            if (cap.INTRAMODULE) return;
+            let allCapFalse = true;
+            for (const k in cap) { if (cap[k]) { allCapFalse = false; break; } }
+            if (allCapFalse) return;
+
+            // Determine port state.
+            let state = 'unplug';
+            if (port.is_on == '1') {
+                state = port.link_rate_status == '1' ? 'conn' : 'warn';
+            } else if (port.is_on == '0' && cap.USB && port.devices) {
+                state = 'conn';
+            }
+
+            // Label text: prefer ui_display, otherwise compose from speed + port name.
+            const speedTag = (port.special_port_name && port.special_port_name !== '') ? port.special_port_name : '';
+            const portName = port.label_port_name || '';
+            let labelText = '';
+            if (port.ui_display && port.ui_display !== '') {
+                labelText = port.ui_display;
+            } else if (cap.USB) {
+                // For USB: prefer max_rate_text like "USB3.0"
+                labelText = port.max_rate_text || speedTag || portName;
+            } else {
+                labelText = (speedTag && portName) ? `${speedTag} ${portName}` : (speedTag || portName);
+            }
+
+            // Tile DOM
+            const tile = document.createElement('div');
+            tile.className = 'eth-port-tile';
+            tile.dataset.state = state;
+            tile.dataset.cap = cap.USB ? 'usb' : 'eth';
+            if (port.link_rate_text) tile.title = port.link_rate_text;
+
+            const iconWrap = document.createElement('div');
+            iconWrap.className = 'eth-port-tile-icon-wrap';
+
+            const icon = document.createElement('div');
+            icon.setAttribute('role', 'icon');
+            icon.className = 'icon-size-24 ' + (cap.USB ? 'icon-usb-port' : 'icon-ethernet-port');
+            iconWrap.appendChild(icon);
+
+            // Link-active dot (top-right) — only when fully connected.
+            if (state === 'conn') {
+                const dot = document.createElement('span');
+                dot.className = 'eth-port-tile-dot';
+                iconWrap.appendChild(dot);
+            }
+
+            // PoE bottom-right marker
+            if (cap.POE) {
+                showPoeStatusDesc = true;
+                const poeDot = document.createElement('span');
+                const poeLink = port.poe_info && port.poe_info.poe_link;
+                poeDot.className = 'eth-port-tile-poe-dot ' + (poeLink == '1' ? 'poe_en' : 'poe_dis');
+                iconWrap.appendChild(poeDot);
+            }
+
+            // WAN globe overlay (bottom-right) — for any port capable of WAN duty.
+            if (cap.WAN || cap.WANAUTO) {
+                const globeWrap = document.createElement('span');
+                globeWrap.className = 'eth-port-tile-wan-globe';
+                const globe = document.createElement('span');
+                globe.className = 'eth-port-tile-wan-globe-icon';
+                globeWrap.appendChild(globe);
+                iconWrap.appendChild(globeWrap);
+            }
+
+            tile.appendChild(iconWrap);
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'eth-port-tile-label';
+            labelEl.textContent = labelText;
+            tile.appendChild(labelEl);
+
+            target.appendChild(tile);
+
+            if (port.link_rate_status != '1' && port.is_on == '1') {
+                errorPortList.push(port);
+            }
+        });
+
+        // Toggle PoE legend rows.
+        document.querySelectorAll('.poe_status_desc_cntr').forEach((el) => {
+            if (showPoeStatusDesc) el.removeAttribute('hidden');
+            else el.setAttribute('hidden', '');
+        });
+
+        // Trigger external hint handler when any port is in error state.
+        if (errorPortList.length > 0 && typeof this.onHint === 'function') {
+            this.onHint(errorPortList);
+        }
     }
 }

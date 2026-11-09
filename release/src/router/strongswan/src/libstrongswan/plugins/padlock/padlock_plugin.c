@@ -101,7 +101,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *padlock_plugin_create()
+PLUGIN_DEFINE(padlock)
 {
 	private_padlock_plugin_t *this;
 

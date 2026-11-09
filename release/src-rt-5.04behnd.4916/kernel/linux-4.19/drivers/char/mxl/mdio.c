@@ -68,12 +68,17 @@ int mxl_ext_swctl_init(void)
 	return 0;
 }
 
+#define MXLSWITCH_IOC_MAGIC	'M'
+
 static int mxl_ioctl(struct inode *inode, struct file *flip, unsigned int command, unsigned long arg)
 {
 	mdio_data data;
 	int ret;
 
-	switch(command) {
+	if (_IOC_TYPE(command) != MXLSWITCH_IOC_MAGIC)
+		return -ENOTTY;
+
+	switch (_IOC_NR(command)) {
 	case 0:	// c45 read
 		raw_copy_from_user(&data, (mdio_data __user *)arg, sizeof(data));
 #if 0
@@ -106,7 +111,7 @@ static int mxl_ioctl(struct inode *inode, struct file *flip, unsigned int comman
 		raw_copy_to_user((mdio_data __user *)arg, &data, sizeof(data));
 
 		break;
-	case 4: // c22 read
+	case 2: // c22 read
 		raw_copy_from_user(&data, (mdio_data __user *)arg, sizeof(data));
 #if 0
 		printk("addr: 0x%x ", data.addr);

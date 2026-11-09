@@ -1,5 +1,6 @@
 @charset "UTF-8";
 @import "/css/color-table.css";
+@import "/css/wrt-ui-alias-tokens.css";
 
 /* Map Bootstrap CSS variables to project color-table variables */
 /* 這份文件為管理BS覆蓋與bridge color-table variables的對應關係/20251113 Roxanne */
@@ -474,7 +475,6 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="
     color: var(--wrt-input-color);
     border: 1px solid var(--wrt-input-border);
     border-radius: var(--global-radius);
-    padding: 0.5rem 0.75rem;
     line-height: 1.5;
 }
 input:focus:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="button"]):not([type="submit"]):not([type="reset"]) {
@@ -706,10 +706,15 @@ input[type="number"] {
 
 .card-header {
     margin-left: 0;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    font-weight: bolder;
+    background-color: transparent;
 }
 
 [data-asuswrt-theme="rog"][data-asuswrt-style="tech"] .card-header {
-    margin-left: 10px;
+    padding-left: 30px;
+    border-bottom: unset;
 }
 .nav-tabs {
     border-bottom: 1px solid var(--wrt-tabs-border-color)!important;
@@ -812,3 +817,44 @@ input[type="number"] {
 .badge[data-variant="outline"][data-tone="danger"],
 .badge[data-variant="outline"][data-tone="error"] { background-color: transparent; color: var(--wrt-badge-error-outline-color); border-color: var(--wrt-badge-error-outline-border); }
 .badge[data-variant="outline"][data-tone="info"] { background-color: transparent; color: var(--wrt-badge-info-outline-color); border-color: var(--wrt-badge-info-outline-border); }
+
+
+/* Component refinement recipes
+ * Uses --nm-* tokens to add an optional refined layer on top of base components.
+ */
+
+/* Button refinement: keep Bootstrap base behavior, add tokenized polish */
+.btn.nm-btn-refined {
+	--_nm-btn-bg: var(--nm-btn-bg, var(--wrt-btn-bg, transparent));
+	--_nm-btn-border: var(--nm-btn-border, var(--wrt-btn-border, transparent));
+	--_nm-btn-fg: var(--nm-btn-fg, var(--wrt-btn-color, inherit));
+	--_nm-btn-shadow: var(--nm-btn-shadow, none);
+	background: var(--_nm-btn-bg);
+	border-color: var(--_nm-btn-border);
+	color: var(--_nm-btn-fg);
+	box-shadow: var(--_nm-btn-shadow);
+	transition:
+		background-color .18s ease,
+		border-color .18s ease,
+		box-shadow .18s ease,
+		color .18s ease;
+}
+
+.btn.nm-btn-refined:hover {
+	background: var(--nm-btn-hover-bg, var(--_nm-btn-bg));
+	border-color: var(--nm-btn-hover-border, var(--_nm-btn-border));
+	box-shadow: var(--nm-btn-hover-shadow, var(--_nm-btn-shadow));
+}
+
+.btn.nm-btn-refined:active,
+.btn.nm-btn-refined.active {
+	background: var(--nm-btn-active-bg, var(--nm-btn-hover-bg, var(--_nm-btn-bg)));
+	box-shadow: var(--nm-btn-active-shadow, var(--_nm-btn-shadow));
+}
+
+.btn.nm-btn-refined:focus-visible {
+	outline: none;
+	box-shadow:
+		0 0 0 2px var(--nm-btn-focus-ring, transparent),
+		var(--nm-btn-hover-shadow, var(--_nm-btn-shadow));
+}

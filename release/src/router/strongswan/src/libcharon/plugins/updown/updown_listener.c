@@ -435,6 +435,11 @@ METHOD(listener_t, child_updown, bool,
 	enumerator_t *enumerator;
 	child_cfg_t *config;
 
+	if (child_sa->get_cpu(child_sa) != CPU_ID_MAX)
+	{	/* don't call the script for per-CPU SAs */
+		return TRUE;
+	}
+
 	config = child_sa->get_config(child_sa);
 	if (config->get_updown(config))
 	{

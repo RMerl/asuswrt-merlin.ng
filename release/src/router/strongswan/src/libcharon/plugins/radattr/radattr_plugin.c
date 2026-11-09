@@ -82,7 +82,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *radattr_plugin_create()
+PLUGIN_DEFINE(radattr)
 {
 	private_radattr_plugin_t *this;
 

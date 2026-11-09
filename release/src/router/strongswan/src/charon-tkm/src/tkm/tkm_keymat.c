@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Tobias Brunner
+ * Copyright (C) 2015-2020 Tobias Brunner
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
  *
@@ -24,7 +24,7 @@
 #include "tkm.h"
 #include "tkm_types.h"
 #include "tkm_utils.h"
-#include "tkm_diffie_hellman.h"
+#include "tkm_key_exchange.h"
 #include "tkm_keymat.h"
 #include "tkm_aead.h"
 
@@ -94,33 +94,50 @@ METHOD(keymat_t, create_nonce_gen, nonce_gen_t*,
 	return lib->crypto->create_nonce_gen(lib->crypto);
 }
 
+/**
+ * Concatenate the TKM KE IDs of the passed key exchanges
+ */
+static bool concat_ke_ids(array_t *kes, ke_ids_type *ids)
+{
+	tkm_key_exchange_t *tkm_ke;
+	uint32_t i;
+
+	memset(ids, 0, sizeof(*ids));
+	ids->size = array_count(kes);
+
+	if (!ids->size || ids->size > 8)
+	{
+		return FALSE;
+	}
+
+	for (i = 0; i < ids->size; i++)
+	{
+		array_get(kes, i, &tkm_ke);
+		ids->data[i] = tkm_ke->get_id(tkm_ke);
+	}
+	return TRUE;
+}
+
 METHOD(keymat_v2_t, derive_ike_keys, bool,
-	private_tkm_keymat_t *this, proposal_t *proposal, key_exchange_t *ke,
+	private_tkm_keymat_t *this, proposal_t *proposal, array_t *kes,
 	chunk_t nonce_i, chunk_t nonce_r, ike_sa_id_t *id,
 	pseudo_random_function_t rekey_function, chunk_t rekey_skd)
 {
-	uint64_t nc_id, spi_loc, spi_rem;
+	uint64_t nc_id = 0, spi_loc, spi_rem;
 	chunk_t *nonce;
-	tkm_diffie_hellman_t *tkm_dh;
-	dh_id_type dh_id;
+	ke_ids_type ke_ids;
 	nonce_type nonce_rem;
 	result_type res;
 	block_len_type block_len;
 	icv_len_type icv_len;
 	iv_len_type iv_len;
 
-	/* Acquire nonce context id */
-	nonce = this->initiator ? &nonce_i : &nonce_r;
-	nc_id = tkm->chunk_map->get_id(tkm->chunk_map, nonce);
-	if (!nc_id)
+	if (!concat_ke_ids(kes, &ke_ids))
 	{
-		DBG1(DBG_IKE, "unable to acquire context id for nonce");
 		return FALSE;
 	}
 
-	/* Get DH context id */
-	tkm_dh = (tkm_diffie_hellman_t *)ke;
-	dh_id = tkm_dh->get_id(tkm_dh);
+	nonce = this->initiator ? &nonce_i : &nonce_r;
 
 	if (this->initiator)
 	{
@@ -137,16 +154,24 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 
 	if (rekey_function == PRF_UNDEFINED)
 	{
+		/* Acquire nonce context id */
+		nc_id = tkm->chunk_map->get_id(tkm->chunk_map, nonce);
+		if (!nc_id)
+		{
+			DBG1(DBG_IKE, "unable to acquire context id for nonce");
+			return FALSE;
+		}
+
 		this->ae_ctx_id = tkm->idmgr->acquire_id(tkm->idmgr, TKM_CTX_AE);
 		if (!this->ae_ctx_id)
 		{
 			DBG1(DBG_IKE, "unable to acquire ae context id");
 			return FALSE;
 		}
-		DBG1(DBG_IKE, "deriving IKE keys (nc: %llu, dh: %llu, spi_loc: %llx, "
-			 "spi_rem: %llx)", nc_id, dh_id, spi_loc, spi_rem);
-		res = ike_isa_create(this->isa_ctx_id, this->ae_ctx_id, 1, dh_id, nc_id,
-							 nonce_rem, this->initiator, spi_loc, spi_rem,
+		DBG1(DBG_IKE, "deriving IKE keys (nc: %llu, ke: %llu, spi_loc: %llx, "
+			 "spi_rem: %llx)", nc_id, ke_ids.data[0], spi_loc, spi_rem);
+		res = ike_isa_create(this->isa_ctx_id, this->ae_ctx_id, 1, ke_ids.data[0],
+							 nc_id, nonce_rem, this->initiator, spi_loc, spi_rem,
 							 &block_len, &icv_len, &iv_len);
 	}
 	else
@@ -159,22 +184,50 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 			return FALSE;
 		}
 		isa_info = *((isa_info_t *)(rekey_skd.ptr));
-		DBG1(DBG_IKE, "deriving IKE keys (parent_isa: %llu, ae: %llu, nc: %llu,"
-			 " dh: %llu, spi_loc: %llx, spi_rem: %llx)", isa_info.parent_isa_id,
-			 isa_info.ae_id, nc_id, dh_id, spi_loc, spi_rem);
 
-		if (!tkm->idmgr->acquire_ref(tkm->idmgr, TKM_CTX_AE, isa_info.ae_id))
+		if (this->ae_ctx_id == isa_info.ae_id)
+		{
+			DBG1(DBG_IKE, "deriving IKE keys (parent_isa: %llu, ae: %llu, "
+				 "ke: %llu, spi_loc: %llx, spi_rem: %llx)", isa_info.parent_isa_id,
+				 isa_info.ae_id, ke_ids.data[0], spi_loc, spi_rem);
+
+			res = ike_isa_update(this->isa_ctx_id, ke_ids.data[0]);
+		}
+		else if (!(nc_id = tkm->chunk_map->get_id(tkm->chunk_map, nonce)))
+		{
+			DBG1(DBG_IKE, "unable to acquire context id for nonce");
+			return FALSE;
+		}
+		else if (!tkm->idmgr->acquire_ref(tkm->idmgr, TKM_CTX_AE, isa_info.ae_id))
 		{
 			DBG1(DBG_IKE, "unable to acquire reference for ae: %llu",
 				 isa_info.ae_id);
 			return FALSE;
 		}
-		this->ae_ctx_id = isa_info.ae_id;
-		res = ike_isa_create_child(this->isa_ctx_id, isa_info.parent_isa_id, 1,
-								   dh_id, nc_id, nonce_rem, this->initiator,
-								   spi_loc, spi_rem, &block_len, &icv_len,
-								   &iv_len);
+		else
+		{
+			DBG1(DBG_IKE, "deriving IKE keys (parent_isa: %llu, ae: %llu, nc: %llu, "
+				 "ke: %llu, spi_loc: %llx, spi_rem: %llx)", isa_info.parent_isa_id,
+				 isa_info.ae_id, nc_id, ke_ids.data[0], spi_loc, spi_rem);
+
+			this->ae_ctx_id = isa_info.ae_id;
+			res = ike_isa_create_child(this->isa_ctx_id, isa_info.parent_isa_id, 1,
+									   ke_ids, nc_id, nonce_rem, this->initiator,
+									   spi_loc, spi_rem, &block_len, &icv_len,
+									   &iv_len);
+		}
+
 		chunk_free(&rekey_skd);
+	}
+
+	if (nc_id)
+	{
+		tkm->chunk_map->remove(tkm->chunk_map, nonce);
+		if (ike_nc_reset(nc_id) != TKM_OK)
+		{
+			DBG1(DBG_IKE, "failed to reset nonce context %llu", nc_id);
+		}
+		tkm->idmgr->release_id(tkm->idmgr, TKM_CTX_NONCE, nc_id);
 	}
 
 	if (res != TKM_OK)
@@ -183,53 +236,51 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 		return FALSE;
 	}
 
-	this->aead = tkm_aead_create(this->isa_ctx_id, block_len, icv_len, iv_len);
+	if (!this->aead)
+	{
+		this->aead = tkm_aead_create(this->isa_ctx_id, block_len, icv_len,
+									 iv_len);
+	}
 
 	/* TODO: Add failure handler (see keymat_v2.c) */
-
-	tkm->chunk_map->remove(tkm->chunk_map, nonce);
-	if (ike_nc_reset(nc_id) != TKM_OK)
-	{
-		DBG1(DBG_IKE, "failed to reset nonce context %llu", nc_id);
-	}
-	tkm->idmgr->release_id(tkm->idmgr, TKM_CTX_NONCE, nc_id);
 
 	return TRUE;
 }
 
 METHOD(keymat_v2_t, derive_child_keys, bool,
-	private_tkm_keymat_t *this, proposal_t *proposal, key_exchange_t *ke,
+	private_tkm_keymat_t *this, proposal_t *proposal, array_t *kes,
 	chunk_t nonce_i, chunk_t nonce_r, chunk_t *encr_i, chunk_t *integ_i,
 	chunk_t *encr_r, chunk_t *integ_r)
 {
 	esa_info_t *esa_info_i, *esa_info_r;
-	dh_id_type dh_id = 0;
+	ke_ids_type ke_ids = {};
 
-	if (ke)
+	if (kes && !concat_ke_ids(kes, &ke_ids))
 	{
-		dh_id = ((tkm_diffie_hellman_t *)ke)->get_id((tkm_diffie_hellman_t *)ke);
+		return FALSE;
 	}
 
 	INIT(esa_info_i,
 		 .isa_id = this->isa_ctx_id,
-		 .spi_r = proposal->get_spi(proposal),
+		 .spi_l = proposal->get_spi(proposal),
 		 .nonce_i = chunk_clone(nonce_i),
 		 .nonce_r = chunk_clone(nonce_r),
 		 .is_encr_r = FALSE,
-		 .dh_id = dh_id,
+		 .ke_ids = ke_ids,
 	);
 
 	INIT(esa_info_r,
 		 .isa_id = this->isa_ctx_id,
-		 .spi_r = proposal->get_spi(proposal),
+		 .spi_l = proposal->get_spi(proposal),
 		 .nonce_i = chunk_clone(nonce_i),
 		 .nonce_r = chunk_clone(nonce_r),
 		 .is_encr_r = TRUE,
-		 .dh_id = dh_id,
+		 .ke_ids = ke_ids,
 	);
 
-	DBG1(DBG_CHD, "passing on esa info (isa: %llu, spi_r: %x, dh_id: %llu)",
-		 esa_info_i->isa_id, ntohl(esa_info_i->spi_r), esa_info_i->dh_id);
+	DBG1(DBG_CHD, "passing on esa info (isa: %llu, spi_l: %x, "
+		 "ke_id[%llu]: %llu)", esa_info_i->isa_id, ntohl(esa_info_i->spi_l),
+		 esa_info_i->ke_ids.size, esa_info_i->ke_ids.data[0]);
 
 	/* store ESA info in encr_i/r, which is passed to add_sa */
 	*encr_i = chunk_create((u_char *)esa_info_i, sizeof(esa_info_t));
@@ -246,10 +297,30 @@ METHOD(keymat_t, get_aead, aead_t*,
 	return this->aead;
 }
 
+METHOD(keymat_v2_t, get_int_auth, bool,
+	private_tkm_keymat_t *this, bool verify, chunk_t data, chunk_t prev,
+	chunk_t *auth)
+{
+	blob_id_type data_id;
+	bool ret = FALSE;
+
+	*auth = chunk_empty;
+
+	data_id = tkm->idmgr->acquire_id(tkm->idmgr, TKM_CTX_BLOB);
+	if (data_id)
+	{
+		ret = chunk_to_blob(data_id, &data) &&
+		      ike_isa_int_auth(this->isa_ctx_id, verify, data_id) == TKM_OK;
+
+		tkm->idmgr->release_id(tkm->idmgr, TKM_CTX_BLOB, data_id);
+	}
+	return ret;
+}
+
 METHOD(keymat_v2_t, get_auth_octets, bool,
 	private_tkm_keymat_t *this, bool verify, chunk_t ike_sa_init,
-	chunk_t nonce, chunk_t ppk, identification_t *id, char reserved[3],
-	chunk_t *octets, array_t *schemes)
+	chunk_t nonce, chunk_t int_auth, chunk_t ppk, identification_t *id,
+	char reserved[3], chunk_t *octets, array_t *schemes)
 {
 	sign_info_t *sign;
 
@@ -279,6 +350,12 @@ METHOD(keymat_v2_t, get_skd, pseudo_random_function_t,
 {
 	isa_info_t *isa_info;
 
+	if (!this->ae_ctx_id)
+	{
+		*skd = chunk_empty;
+		return PRF_UNDEFINED;
+	}
+
 	INIT(isa_info,
 		 .parent_isa_id = this->isa_ctx_id,
 		 .ae_id = this->ae_ctx_id,
@@ -291,8 +368,8 @@ METHOD(keymat_v2_t, get_skd, pseudo_random_function_t,
 
 METHOD(keymat_v2_t, get_psk_sig, bool,
 	private_tkm_keymat_t *this, bool verify, chunk_t ike_sa_init, chunk_t nonce,
-	chunk_t secret, chunk_t ppk, identification_t *id, char reserved[3],
-	chunk_t *sig)
+	chunk_t int_auth, chunk_t secret, chunk_t ppk, identification_t *id,
+	char reserved[3], chunk_t *sig)
 {
 	return FALSE;
 }
@@ -388,6 +465,7 @@ tkm_keymat_t *tkm_keymat_create(bool initiator)
 				.derive_ike_keys_ppk = (void*)return_false,
 				.derive_child_keys = _derive_child_keys,
 				.get_skd = _get_skd,
+				.get_int_auth = _get_int_auth,
 				.get_auth_octets = _get_auth_octets,
 				.get_psk_sig = _get_psk_sig,
 				.add_hash_algorithm = _add_hash_algorithm,

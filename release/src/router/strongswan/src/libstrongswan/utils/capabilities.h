@@ -50,6 +50,12 @@ typedef struct capabilities_t capabilities_t;
 #ifndef CAP_SETPCAP
 # define CAP_SETPCAP 8
 #endif
+#ifndef CAP_SETUID
+# define CAP_SETUID 7
+#endif
+#ifndef CAP_SETGID
+# define CAP_SETGID 6
+#endif
 
 /**
  * POSIX capability dropping abstraction layer.

@@ -131,10 +131,10 @@ int ipsec_profile_int_parse(int ike_esp_type, char *p_end, int *nsize_shifft)
             if(('a' == *p_head) && ('u' == *(p_head + 1))){
                i_value = IKE_TYPE_AUTO; 
             } else {
-               i_value = atoi(strndup(p_head, (size_t)i));
+               i_value = safe_atoi(strndup(p_head, (size_t)i));
             }
         } else if(FLAG_NONE == ike_esp_type){
-            i_value = atoi(strndup(p_head, (size_t)i));
+            i_value = safe_atoi(strndup(p_head, (size_t)i));
         }
     }
     return i_value;
@@ -412,7 +412,7 @@ void ipsec_prof_fill(int prof_idx, char *p_data, ipsec_prof_type_t prof_type)
 
     if(!strstr(p_end, ">"))
     {
-        prof[prof_type][prof_idx].ipsec_conn_en = atoi(p_end);
+        prof[prof_type][prof_idx].ipsec_conn_en = safe_atoi(p_end);
     }
     else
     {
@@ -478,7 +478,7 @@ void ipsec_prof_fill_ext(int prof_idx, char *p_data, ipsec_prof_type_t prof_type
 	p_end += i; /*to shifft next '>'*/
 
 	/*pfs_group*/
-    prof[prof_type][prof_idx].pfs_group= atoi(p_end); /*the last one doesn't need to parse ">".*/
+    prof[prof_type][prof_idx].pfs_group= safe_atoi(p_end); /*the last one doesn't need to parse ">".*/
 
 	/*the end of profile*/
 	return;
@@ -794,7 +794,7 @@ int rc_ipsec_ca_fileidx_check()
     }
     memset(str_buf, 0, SZ_MIN);
     while(EOF != fscanf(fp, "%s", str_buf)){
-        i_tmp = atoi(str_buf);
+        i_tmp = safe_atoi(str_buf);
         file_idx_32bits |= (uint32_t)(1 << i_tmp);
         memset(str_buf, 0, SZ_MIN);
     }
@@ -989,9 +989,9 @@ void rc_ipsec_cert_import(char *asus_cert, char *ipsec_cli_cert,
             /* pass password as separate argv element to avoid shell metachar issues */
             {
                 char in_path[SZ_BUF], out_path[SZ_BUF], pass_arg[SZ_BUF];
-                snprintf(in_path,   sizeof(in_path),   "%s%s",                  FILE_PATH_CA_ETC, pks12);
-                snprintf(out_path,  sizeof(out_path),  "/tmp/etc/ipsec.d/certs/%s.pem",     p_file);
-                snprintf(pass_arg,  sizeof(pass_arg),  "pass:%s",               profile);
+                snprintf(in_path,  sizeof(in_path),  "%s%s",                         FILE_PATH_CA_ETC, pks12);
+                snprintf(out_path, sizeof(out_path), "/tmp/etc/ipsec.d/certs/%s.pem", p_file);
+                snprintf(pass_arg, sizeof(pass_arg), "pass:%s",                       profile);
                 char *argv_clcerts[] = {"openssl", "pkcs12", "-in", in_path, "-clcerts",
                                         "-out", out_path, "-password", pass_arg, NULL};
                 DBG(("openssl pkcs12 -in %s -clcerts -out %s -password pass:***\n", in_path, out_path));
@@ -1013,7 +1013,7 @@ void rc_ipsec_cert_import(char *asus_cert, char *ipsec_cli_cert,
     }
     return;
 }
-#if 0
+
 void rc_ipsec_ca_export(char *verify_pwd)
 {
     char cmd[SZ_BUF];
@@ -1027,7 +1027,7 @@ void rc_ipsec_ca_export(char *verify_pwd)
     }
     return;
 }
-#endif
+
 void rc_ipsec_gen_cert(int skip_checking)
 {
     FILE *fp = NULL;
@@ -1065,7 +1065,9 @@ void rc_ipsec_gen_cert(int skip_checking)
 
     if(nvram_match("ddns_enable_x", "1"))
     {
-        snprintf(ddns_name, sizeof(ddns_name), "%s", nvram_safe_get("ddns_hostname_x"));
+        const char *s = nvram_safe_get("ddns_hostname_x");
+        if (is_valid_domainname(s))
+            snprintf(ddns_name, sizeof(ddns_name), "%s", s);
     }
 
     if(strlen(ddns_name) == 0 )
@@ -1941,12 +1943,12 @@ get_virtual_ip_format(char *virtual_subnet)
 	mask = strtok(NULL, "/");
 	//DBG(("ip=%s,mask=%s\n", ip, mask));
 	
-	ip_1 = atoi(strtok(ip, "."));
-	ip_2 = atoi(strtok(NULL, "."));
-	ip_3 = atoi(strtok(NULL, "."));
-	ip_4 = atoi(strtok(NULL, "."));
+	ip_1 = safe_atoi(strtok(ip, "."));
+	ip_2 = safe_atoi(strtok(NULL, "."));
+	ip_3 = safe_atoi(strtok(NULL, "."));
+	ip_4 = safe_atoi(strtok(NULL, "."));
 	
-	mask_tmp = atoi(mask);
+	mask_tmp = safe_atoi(mask);
 	int bitpatten = 0xff00;
 	
 	if( mask_tmp >= 8){
@@ -2480,10 +2482,13 @@ void add_upnp_port(int type)
 	snprintf(target.extPort, sizeof(target.extPort), "%d", nvram_get_int("ipsec_isakmp_ext_port"));
 	snprintf(target.intPort, sizeof(target.intPort), "%d", nvram_get_int("ipsec_isakmp_port"));
 
-	safe_do_system("miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_isakmp_port"), nvram_get_int("ipsec_isakmp_ext_port"), protocol, duration);
-	safe_do_system("miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_nat_t_port"), nvram_get_int("ipsec_nat_t_ext_port"), protocol, duration);
+	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_isakmp_port"), nvram_get_int("ipsec_isakmp_ext_port"), protocol, duration);
+	system(cmd);
+	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_nat_t_port"), nvram_get_int("ipsec_nat_t_ext_port"), protocol, duration);
+	system(cmd);
 
-	safe_do_system("miniupnpc-new -m eth0 -i -f %s", UPNPC_OUTPUT_FILE);
+	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m eth0 -i -f %s", UPNPC_OUTPUT_FILE);
+	system(cmd);
 
 	r = scan_upnpclist(UPNPC_OUTPUT_FILE, target, NULL, 0);
 	if(r == 1)
@@ -3085,8 +3090,8 @@ static int _get_vpnc_idx_by_prof_idx(int prof_idx)
 				continue;
 			if (!nv_proto || !nv_unit || !vpnc_idx)
 				continue;
-			if (!strcmp(PROTO_IPSec, nv_proto) && atoi(nv_unit) == prof_idx) {
-				ret = atoi(vpnc_idx);
+			if (!strcmp(PROTO_IPSec, nv_proto) && safe_atoi(nv_unit) == prof_idx) {
+				ret = safe_atoi(vpnc_idx);
 				break;
 			}
 		}
@@ -3175,8 +3180,9 @@ static void _ipsec_updown_host_net_cli(int unit)
 				fp = fopen("/tmp/route_tmp", "r");
 				if(fp) {
 					while(fgets(buf, sizeof(buf), fp)) {
-						safe_do_system("ip route add %s table %s ", trim_r(buf), table_str);
+						snprintf(cmd, sizeof(cmd), "ip route add %s table %s ", trim_r(buf), table_str);
 						//_dprintf("[%s]\n", cmd);
+						system(cmd);
 					}
 					fclose(fp);
 				}
@@ -3287,43 +3293,26 @@ static void _get_my_ip_by_subnet(const char* subnet, char *ip, size_t len, int v
 	}
 
 	if (v6) {
-		fp = popen("ip -6 route show table local", "r");
+		snprintf(buf, sizeof(buf), "ip -6 route show table local | grep %s | awk '{print $2}' > /tmp/ipsec_my_subnet", network);
+		system(buf);
+		fp = fopen("/tmp/ipsec_my_subnet", "r");
 		if (fp) {
-			while (fgets(buf, sizeof(buf), fp)) {
-				if (!strstr(buf, network)) continue;
-				/* extract 2nd whitespace token */
-				char *tok = strtok(buf, " \t");
-				if (tok) tok = strtok(NULL, " \t\n");
-				if (!tok) continue;
-				strlcpy(ip, tok, len);
+			while (fgets(ip, len, fp)) {
 				trimNL(ip);
 				if (*(ip + strlen(ip) - 1) == ':')
 					continue;
 				else
 					break;
 			}
-			pclose(fp);
+			fclose(fp);
 		}
 	}
 	else {
-		fp = popen("ip -4 route show table local", "r");
-		if (fp) {
-			while (fgets(buf, sizeof(buf), fp)) {
-				if (!strstr(buf, network)) continue;
-				/* extract 10th whitespace token */
-				char *tok = strtok(buf, " \t");
-				int i;
-				for (i = 1; i < 10 && tok; i++)
-					tok = strtok(NULL, " \t\n");
-				if (tok) {
-					strlcpy(ip, tok, len);
-					trimNL(ip);
-					trimWS(ip);
-					break;
-				}
-			}
-			pclose(fp);
-		}
+		snprintf(buf, sizeof(buf), "ip -4 route show table local | grep %s | awk '{print $10}' > /tmp/ipsec_my_subnet", network);
+		system(buf);
+		f_read_string("/tmp/ipsec_my_subnet", ip, len);
+		trimNL(ip);
+		trimWS(ip);
 	}
 }
 
@@ -3362,14 +3351,14 @@ int ipsec_updown_main(int argc, char *argv[])
 	int vpn_type = 0;
 
 	if (argv[1])
-		unit = atoi(argv[1]);
+		unit = safe_atoi(argv[1]);
 	else {
 		cprintf("Unknown vpn profile unit\n");
 		return -1;
 	}
 
 	if (argv[2])
-		vpn_type = atoi(argv[2]);
+		vpn_type = safe_atoi(argv[2]);
 	else {
 		cprintf("Unknown vpn type\n");
 		return -1;

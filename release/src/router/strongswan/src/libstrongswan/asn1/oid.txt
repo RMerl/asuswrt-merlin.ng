@@ -94,7 +94,7 @@
             0x01             "PKCS"
               0x01           "PKCS-1"
                 0x01         "rsaEncryption"			OID_RSA_ENCRYPTION
-                0x02         "md2WithRSAEncryption"		OID_MD2_WITH_RSA
+                0x02         "md2WithRSAEncryption"
                 0x04         "md5WithRSAEncryption"		OID_MD5_WITH_RSA
                 0x05         "sha-1WithRSAEncryption"	OID_SHA1_WITH_RSA
                 0x07         "id-RSAES-OAEP"			OID_RSAES_OAEP
@@ -148,7 +148,7 @@
                     0x05     "secretBag"
                     0x06     "safeContentsBag"
             0x02             "digestAlgorithm"
-              0x02           "md2"						OID_MD2
+              0x02           "md2"
               0x05           "md5"						OID_MD5
               0x07           "hmacWithSHA1"				OID_HMAC_SHA1
               0x08           "hmacWithSHA224"			OID_HMAC_SHA224
@@ -222,27 +222,7 @@
               0x2A           "ITA"
                 0x01         "strongSwan"				OID_STRONGSWAN
                 0x02         "cps"
-                0x03         "e-voting"
-                0x05         "BLISS"
-                  0x01       "keyType"
-                    0x01     "blissPublicKey"			OID_BLISS_PUBLICKEY
-                  0x02       "parameters"
-                    0x01     "BLISS-I"					OID_BLISS_I
-                    0x02     "BLISS-II"					OID_BLISS_II
-                    0x03     "BLISS-III"				OID_BLISS_III
-                    0x04     "BLISS-IV"					OID_BLISS_IV
-                    0x05     "BLISS-B-I"				OID_BLISS_B_I
-                    0x06     "BLISS-B-II"				OID_BLISS_B_II
-                    0x07     "BLISS-B-III"				OID_BLISS_B_III
-                    0x08     "BLISS-B-IV"				OID_BLISS_B_IV
-                  0x03       "blissSigType"
-                    0x01     "BLISS-with-SHA2-512"		OID_BLISS_WITH_SHA2_512
-                    0x02     "BLISS-with-SHA2-384"		OID_BLISS_WITH_SHA2_384
-                    0x03     "BLISS-with-SHA2-256"		OID_BLISS_WITH_SHA2_256
-                    0x04     "BLISS-with-SHA3-512"		OID_BLISS_WITH_SHA3_512
-                    0x05     "BLISS-with-SHA3-384"		OID_BLISS_WITH_SHA3_384
-                    0x06     "BLISS-with-SHA3-256"		OID_BLISS_WITH_SHA3_256
-          0x89               ""
+         0x89               ""
             0x31             ""
               0x01           ""
                 0x01         ""

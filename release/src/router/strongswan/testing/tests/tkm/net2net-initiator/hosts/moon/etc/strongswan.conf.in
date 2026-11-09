@@ -1,7 +1,7 @@
 # /etc/strongswan.conf - strongSwan configuration file
 
 charon-tkm {
-  dh_mapping {
+  ke_mapping {
     15 = 1
     16 = 2
   }

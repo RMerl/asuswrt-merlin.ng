@@ -265,7 +265,7 @@ METHOD(x509_t, get_flags, x509_flag_t,
 METHOD(x509_t, get_serial, chunk_t,
 	private_openssl_x509_t *this)
 {
-	return openssl_asn1_str2chunk(X509_get_serialNumber(this->x509));
+	return openssl_asn1_int2chunk(X509_get_serialNumber(this->x509));
 }
 
 METHOD(x509_t, get_subjectKeyIdentifier, chunk_t,

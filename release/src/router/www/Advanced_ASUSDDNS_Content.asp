@@ -390,7 +390,7 @@ function submitForm(){
 
 	document.form.submit();
 	showLoading();
-	setTimeout('location.replace(location.href)', 5000);
+	setTimeout('location.reload();', 5000);
 }
 
 function check_update(){
@@ -894,7 +894,7 @@ function change_ddns_setting(v){
 				inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
 			var disable_wild = 0;
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM" || v == "DYNU.COM" || v == "CLOUDFLARE.COM" || v == "DUCKDNS.ORG")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
@@ -1327,6 +1327,7 @@ function clear_cert_key(){
 						<option value="WWW.NAMECHEAP.COM" <% nvram_match("ddns_server_x", "WWW.NAMECHEAP.COM","selected"); %>>WWW.NAMECHEAP.COM</option>
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="FREEMYIP.COM" <% nvram_match("ddns_server_x", "FREEMYIP.COM","selected"); %>>FREEMYIP.COM</option>
+						<option value="DUCKDNS.ORG" <% nvram_match("ddns_server_x", "DUCKDNS.ORG","selected"); %>>DUCKDNS.ORG</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
 					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="<#CTL_Deregister#>"/>
@@ -1359,7 +1360,7 @@ function clear_cert_key(){
 			</tr>
 			<tr>
 				<th id="ddns_username_th"><#LANHostConfig_x_DDNSUserName_itemname#></th>
-				<td><input type="text" maxlength="32" class="input_25_table" name="ddns_username_x" value="<% nvram_get("ddns_username_x"); %>" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
+				<td><input type="text" maxlength="64" class="input_25_table" name="ddns_username_x" value="<% nvram_get("ddns_username_x"); %>" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr>
 				<th id="ddns_password_th"><#LANHostConfig_x_DDNSPassword_itemname#></th>

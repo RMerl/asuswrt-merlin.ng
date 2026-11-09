@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020 Tobias Brunner
+ * Copyright (C) 2012-2024 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -26,6 +26,8 @@
 #include <bus/listeners/logger.h>
 
 typedef struct file_logger_t file_logger_t;
+typedef enum file_logger_time_precision_t file_logger_time_precision_t;
+typedef struct file_logger_options_t file_logger_options_t;
 
 /**
  * Logger to files which implements listener_t.
@@ -48,14 +50,9 @@ struct file_logger_t {
 	/**
 	 * Set options used by this logger
 	 *
-	 * @param time_format	format of timestamp prefix, as in strftime(), cloned
-	 * @param add_ms		TRUE to add the number of milliseconds within the
-	 *						current second after the timestamp
-	 * @param ike_name		TRUE to prefix the name of the IKE_SA
-	 * @param log_level		TRUE to include the log level in the message
+	 * @param options	options for this file logger
 	 */
-	void (*set_options) (file_logger_t *this, char *time_format, bool add_ms,
-						 bool ike_name, bool log_level);
+	void (*set_options) (file_logger_t *this, file_logger_options_t *options);
 
 	/**
 	 * Open (or reopen) the log file according to the given parameters
@@ -69,6 +66,44 @@ struct file_logger_t {
 	 * Destroys a file_logger_t object.
 	 */
 	void (*destroy) (file_logger_t *this);
+};
+
+/**
+ * Precision for timestamps printed by file loggers.
+ */
+enum file_logger_time_precision_t {
+	/** Don't add anything after the timestamp */
+	FILE_LOGGER_TIME_PRECISION_NONE,
+	/** Add the number of milliseconds within the current second after the
+	 * timestamp */
+	FILE_LOGGER_TIME_PRECISION_MS,
+	/** Add the number of microseconds within the current second after the
+	 * timestamp */
+	FILE_LOGGER_TIME_PRECISION_US,
+};
+
+/**
+ * Parse the given time precision string.
+ *
+ * @param str		time precision string value
+ * @return			time precision
+ */
+file_logger_time_precision_t file_logger_time_precision_parse(const char *str);
+
+/**
+ * Options for file loggers.
+ */
+struct file_logger_options_t {
+	/** Format of timestamp prefix, as in strftime(), cloned */
+	char *time_format;
+	/** Optinoal precision suffix for timestamp */
+	file_logger_time_precision_t time_precision;
+	/** Prefix the name/unique ID of the IKE_SA */
+	bool ike_name;
+	/** Include the log level in the message */
+	bool log_level;
+	/** Log as JSON objects */
+	bool json;
 };
 
 /**

@@ -76,6 +76,7 @@ body {
     padding: var(--wrt-segment-padding-y) var(--wrt-segment-padding-x);
     background-color: var(--wrt-segment-fill-bg);
     border-radius: var(--wrt-segment-radius);
+    border: 1px solid var(--wrt-segment-fill-border);
     width: 100%;
 }
 
@@ -519,6 +520,42 @@ body {
 
 }
 
+/* Toolbar layout — mobile-first base (< 700px).
+   Stacks the interface switch, status switch, action buttons and search into a
+   clean column with consistent spacing; the min-width queries below switch it to
+   a single row on wider screens. */
+.table-tools {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.table-tools .left,
+.table-tools .right {
+    width: 100%;
+}
+
+.table-tools .right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    line-height: 1rem;
+}
+
+/* On narrow screens the status switch takes its own row; the action buttons and
+   the search field share the next row, with the search growing to fill it. */
+.table-tools .right #status_switch {
+    flex: 1 1 100%;
+}
+
+.table-tools .right .search {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+
 @media screen and (min-width: 700px) {
     .client-list-sm {
         display: revert;
@@ -541,8 +578,9 @@ body {
     }
 
     .table-tools {
-        display: flex;
+        flex-direction: row;
         justify-content: space-between;
+        align-items: center;
     }
 
     .table-tools .left {
@@ -551,15 +589,18 @@ body {
 
     .table-tools .right {
         width: 60%;
-        display: flex;
+        flex-wrap: nowrap;
         justify-content: flex-end;
-        align-items: center;
-        gap: 10px;
-        line-height: 1rem;
     }
 
-    .table-tools .right .search{
-        width: 20%;
+    /* Back to a single row: status switch sizes to content, search takes a
+       comfortable fixed-ish width and shrinks gracefully if space is tight. */
+    .table-tools .right #status_switch {
+        flex: 0 0 auto;
+    }
+
+    .table-tools .right .search {
+        flex: 0 1 240px;
     }
 }
 
@@ -576,8 +617,8 @@ body {
         display: revert;
     }
 
-    .table-tools .right .search{
-        width: 35%;
+    .table-tools .right .search {
+        flex: 0 1 320px;
     }
 }
 
@@ -2289,6 +2330,68 @@ i.next {
 
 #client_filter_btn.active i.filter_icon {
     background-color: var(--primary-50) !important;
+}
+
+/* Hover / keyboard-focus tooltip for the toolbar action buttons.
+   Uses the shared popover tokens and shows the tooltip *below* the button so the
+   toolbar's top edge can't clip it. Driven by data-tooltip (not title) to avoid
+   a duplicate native OS tooltip; aria-label still carries the name for a11y. */
+#client_filter_btn,
+#client_export_btn {
+    position: relative;
+}
+
+#client_filter_btn[data-tooltip]::after,
+#client_export_btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 9px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: var(--global-radius, 6px);
+    background: var(--wrt-popover-bg, #2b2b2e);
+    border: 1px solid var(--wrt-popover-border, transparent);
+    color: var(--wrt-popover-color, #ffffff);
+    font-size: var(--font-size-body-03, 0.75rem);
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 520;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+/* upward-pointing arrow, filled with the popover background */
+#client_filter_btn[data-tooltip]::before,
+#client_export_btn[data-tooltip]::before {
+    content: "";
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top: 0;
+    border-bottom-color: var(--wrt-popover-bg, #2b2b2e);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 521;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+#client_filter_btn[data-tooltip]:hover::after,
+#client_filter_btn[data-tooltip]:focus-visible::after,
+#client_export_btn[data-tooltip]:hover::after,
+#client_export_btn[data-tooltip]:focus-visible::after,
+#client_filter_btn[data-tooltip]:hover::before,
+#client_filter_btn[data-tooltip]:focus-visible::before,
+#client_export_btn[data-tooltip]:hover::before,
+#client_export_btn[data-tooltip]:focus-visible::before {
+    opacity: 1;
+    visibility: visible;
 }
 
 :root {

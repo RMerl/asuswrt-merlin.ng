@@ -16,16 +16,17 @@ endif
 OBJS    +=  ark_db.o ark_hook.o ark_migrate.o
 
 # ARK engine files to move
-# copy gloger.ini and gdm.ini from package/*.ini directly
+# copy gdm.ini from package/*.ini directly
 ARK_FILES := app.id app.xdb aqua.ko ark.ko ark.xdb ark.xr gar.env \
 	gbusd.ini gbus.ko glog.ini \
 	gmq.conf gst.ini gtools.ko init.d/gar kmod_logger.ko mal.xdb xni.ko xpi.ko \
-	ark.ini \
+	ark.ini gloger.ini \
 	idp.id idp.xr
 
 SBIN_FILES := aqua arkctl arklog arklogd ark_service ark_tmctl.sh arktool garp gar.sh gbus \
 	gbusd gbusd.sh gdm gdm.sh ghs gini gizmo glog gloger gloger.sh gmdns gmq gmq.sh gns gping gst gst.sh gua gupnp mdns \
-	mosquitto mosquitto_pub mosquitto_sub neigh.sh qos.sh xni
+	mosquitto mosquitto_pub mosquitto_sub neigh.sh qos.sh xni \
+	gbus.sh gbusk.sh gtools.sh
 
 LIB_FILES := libgbus.so libgtools.so libpcrecpp.so.0.0.0 libpcreposix.so.0.0.1
 
@@ -57,12 +58,12 @@ ifeq ($(BRCM_CHIP),6765)
 export FILE_NAME := "gar_asus_bcm6765_be92u_aarch64_0.0.1.31"
 endif
 ifeq ($(BRCM_CHIP),6766)
-export FILE_NAME :=
+export FILE_NAME := "gar_asus_bcm6766_gs7_arm_0.0.1.31"
 endif
 endif
 
 ifeq ($(RTCONFIG_SOC_MT7988D),y)
-export FILE_NAME := "gar_asus_mt7988_bt8_aarch64_cortex-a53_0.0.1.27"
+export FILE_NAME := "gar_asus_mt7988_bt8_aarch64_cortex-a53_0.0.1.31"
 endif
 ifeq ($(RTCONFIG_SOC_MT7987),y)
 export FILE_NAME := "gar_asus_mt7987_be59_aarch64_0.0.1.31"
@@ -134,7 +135,7 @@ ifeq ($(ARK_INI_MOVE), y)
 	@echo "[ARK] copy package/ark.ini"
 	@cp package/ark.ini prebuild -rf
 endif
-	@cp package/gloger.ini prebuild -rf
+	#@cp package/gloger.ini prebuild -rf
 	@cp package/gdm.ini prebuild -rf
 ifeq ($(ARK_SIG_MOVE), y)
 	@echo "[ARK] install sig from ark/sig"
@@ -175,19 +176,19 @@ install: all
 	done
 	@echo "[ARK] prebuild installing $(INSTALLDIR)/usr/ark/"
 	-@cp -f prebuild/*.ko $(INSTALLDIR)/usr/ark/
-	-@cp -f prebuild/app.id $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/*.id $(INSTALLDIR)/usr/ark/
 	-@cp -f prebuild/*.xdb $(INSTALLDIR)/usr/ark/
 	-@cp -f prebuild/*.xr $(INSTALLDIR)/usr/ark/
 	-@cp -f prebuild/*.ini $(INSTALLDIR)/usr/ark/
-	-@cp -f prebuild/gmq.conf $(INSTALLDIR)/usr/ark/
+	-@cp -f prebuild/*.conf $(INSTALLDIR)/usr/ark/
 	@echo "[ARK] prebuild installing $(TARGETDIR)/usr/ark/"
 	@install -d $(TARGETDIR)/usr/ark/
 	-@cp -f prebuild/*.ko $(TARGETDIR)/usr/ark/
-	-@cp -f prebuild/app.id $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/*.id $(TARGETDIR)/usr/ark/
 	-@cp -f prebuild/*.xdb $(TARGETDIR)/usr/ark/
 	-@cp -f prebuild/*.xr $(TARGETDIR)/usr/ark/
 	-@cp -f prebuild/*.ini $(TARGETDIR)/usr/ark/
-	-@cp -f prebuild/gmq.conf $(TARGETDIR)/usr/ark/
+	-@cp -f prebuild/*.conf $(TARGETDIR)/usr/ark/
 
 %.o: %.c
 	@echo "[ARK] CC $@"

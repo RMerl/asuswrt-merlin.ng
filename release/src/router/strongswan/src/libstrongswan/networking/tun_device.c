@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2014 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
  * Copyright (C) 2012 Martin Willi
@@ -59,12 +59,11 @@ tun_device_t *tun_device_create(const char *name_tmpl)
 #elif defined(__linux__)
 #include <linux/types.h>
 #include <linux/if_tun.h>
-#elif __FreeBSD__ >= 10
+#include <linux/ipv6.h>
+#else
 #include <net/if_tun.h>
 #include <net/if_var.h>
 #include <netinet/in_var.h>
-#else
-#include <net/if_tun.h>
 #endif
 
 #define TUN_DEFAULT_MTU 1500
@@ -94,6 +93,11 @@ struct private_tun_device_t {
 	int sock;
 
 	/**
+	 * Socket used for ioctl() to set IPv6 interface addr, ...
+	 */
+	int sock_v6;
+
+	/**
 	 * The current MTU
 	 */
 	int mtu;
@@ -109,13 +113,83 @@ struct private_tun_device_t {
 	uint8_t netmask;
 };
 
-/**
- * FreeBSD 10 deprecated the SIOCSIFADDR etc. commands.
- */
-#if __FreeBSD__ >= 10
+#ifdef __linux__
 
-static bool set_address_and_mask(struct in_aliasreq *ifra, host_t *addr,
-								 uint8_t netmask)
+/**
+ * Set an IPv4 address and netmask
+ */
+static bool set_address_v4(private_tun_device_t *this, host_t *addr,
+						   uint8_t netmask)
+{
+	struct ifreq ifr = {0};
+	host_t *mask;
+
+	strncpy(ifr.ifr_name, this->if_name, IFNAMSIZ);
+	memcpy(&ifr.ifr_addr, addr->get_sockaddr(addr),
+		   *addr->get_sockaddr_len(addr));
+
+	if (ioctl(this->sock, SIOCSIFADDR, &ifr) < 0)
+	{
+		DBG1(DBG_LIB, "failed to set address on %s: %s",
+			 this->if_name, strerror(errno));
+		return FALSE;
+	}
+	mask = host_create_netmask(addr->get_family(addr), netmask);
+	if (!mask)
+	{
+		DBG1(DBG_LIB, "invalid netmask: %d", netmask);
+		return FALSE;
+	}
+	memcpy(&ifr.ifr_addr, mask->get_sockaddr(mask),
+		   *mask->get_sockaddr_len(mask));
+	mask->destroy(mask);
+
+	if (ioctl(this->sock, SIOCSIFNETMASK, &ifr) < 0)
+	{
+		DBG1(DBG_LIB, "failed to set netmask on %s: %s",
+			 this->if_name, strerror(errno));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * Set an IPv6 address and netmask
+ */
+static bool set_address_v6(private_tun_device_t *this, host_t *addr,
+						   uint8_t netmask)
+{
+	struct in6_ifreq ifr6 = {0};
+	struct ifreq ifr = {0};
+
+	strncpy(ifr.ifr_name, this->if_name, IFNAMSIZ);
+	if (ioctl(this->sock_v6, SIOCGIFINDEX, &ifr) < 0)
+	{
+		DBG1(DBG_LIB, "failed to determine index of %s: %s",
+			 this->if_name, strerror(errno));
+		return FALSE;
+	}
+
+	memcpy(&ifr6.ifr6_addr, addr->get_sockaddr(addr),
+		   *addr->get_sockaddr_len(addr));
+	ifr6.ifr6_prefixlen = netmask;
+	ifr6.ifr6_ifindex = ifr.ifr_ifindex;
+	if (ioctl(this->sock_v6, SIOCSIFADDR, &ifr6) < 0)
+	{
+		DBG1(DBG_LIB, "failed to set address on %s: %s",
+			 this->if_name, strerror(errno));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+#else /* __linux__ */
+
+/**
+ * Apply address and mask for IPv4
+ */
+static bool set_address_and_mask_v4(struct in_aliasreq *ifra, host_t *addr,
+									uint8_t netmask)
 {
 	host_t *mask;
 
@@ -138,20 +212,18 @@ static bool set_address_and_mask(struct in_aliasreq *ifra, host_t *addr,
 }
 
 /**
- * Set the address using the more flexible SIOCAIFADDR/SIOCDIFADDR commands
- * on FreeBSD 10 an newer.
+ * Set the address for IPv4
  */
-static bool set_address_impl(private_tun_device_t *this, host_t *addr,
-							 uint8_t netmask)
+static bool set_address_v4(private_tun_device_t *this, host_t *addr,
+						   uint8_t netmask)
 {
-	struct in_aliasreq ifra;
+	struct in_aliasreq ifra = {0};
 
-	memset(&ifra, 0, sizeof(ifra));
 	strncpy(ifra.ifra_name, this->if_name, IFNAMSIZ);
 
 	if (this->address)
 	{	/* remove the existing address first */
-		if (!set_address_and_mask(&ifra, this->address, this->netmask))
+		if (!set_address_and_mask_v4(&ifra, this->address, this->netmask))
 		{
 			return FALSE;
 		}
@@ -162,7 +234,7 @@ static bool set_address_impl(private_tun_device_t *this, host_t *addr,
 			return FALSE;
 		}
 	}
-	if (!set_address_and_mask(&ifra, addr, netmask))
+	if (!set_address_and_mask_v4(&ifra, addr, netmask))
 	{
 		return FALSE;
 	}
@@ -175,36 +247,19 @@ static bool set_address_impl(private_tun_device_t *this, host_t *addr,
 	return TRUE;
 }
 
-#else /* __FreeBSD__ */
-
 /**
- * Set the address using the classic SIOCSIFADDR etc. commands on other systems.
+ * Apply address and mask for IPv6
  */
-static bool set_address_impl(private_tun_device_t *this, host_t *addr,
-							 uint8_t netmask)
+static bool set_address_and_mask_v6(struct in6_aliasreq *ifra, host_t *addr,
+									uint8_t netmask)
 {
-	struct ifreq ifr;
 	host_t *mask;
 
-	memset(&ifr, 0, sizeof(ifr));
-	strncpy(ifr.ifr_name, this->if_name, IFNAMSIZ);
-	memcpy(&ifr.ifr_addr, addr->get_sockaddr(addr),
+	memcpy(&ifra->ifra_addr, addr->get_sockaddr(addr),
 		   *addr->get_sockaddr_len(addr));
-
-	if (ioctl(this->sock, SIOCSIFADDR, &ifr) < 0)
-	{
-		DBG1(DBG_LIB, "failed to set address on %s: %s",
-			 this->if_name, strerror(errno));
-		return FALSE;
-	}
-#ifdef __APPLE__
-	if (ioctl(this->sock, SIOCSIFDSTADDR, &ifr) < 0)
-	{
-		DBG1(DBG_LIB, "failed to set dest address on %s: %s",
-			 this->if_name, strerror(errno));
-		return FALSE;
-	}
-#endif /* __APPLE__ */
+	/* set the same address as destination address */
+	memcpy(&ifra->ifra_dstaddr, addr->get_sockaddr(addr),
+		   *addr->get_sockaddr_len(addr));
 
 	mask = host_create_netmask(addr->get_family(addr), netmask);
 	if (!mask)
@@ -212,27 +267,71 @@ static bool set_address_impl(private_tun_device_t *this, host_t *addr,
 		DBG1(DBG_LIB, "invalid netmask: %d", netmask);
 		return FALSE;
 	}
-	memcpy(&ifr.ifr_addr, mask->get_sockaddr(mask),
+	memcpy(&ifra->ifra_prefixmask, mask->get_sockaddr(mask),
 		   *mask->get_sockaddr_len(mask));
 	mask->destroy(mask);
+	return TRUE;
+}
 
-	if (ioctl(this->sock, SIOCSIFNETMASK, &ifr) < 0)
+/**
+ * Set the address for IPv6
+ */
+static bool set_address_v6(private_tun_device_t *this, host_t *addr,
+						   uint8_t netmask)
+{
+	struct in6_aliasreq ifra = {
+		.ifra_lifetime = { 0, 0, 0xffffffff, 0xffffffff },
+	};
+
+	strncpy(ifra.ifra_name, this->if_name, IFNAMSIZ);
+
+	if (this->address)
+	{	/* remove the existing address first */
+		if (!set_address_and_mask_v6(&ifra, this->address, this->netmask))
+		{
+			return FALSE;
+		}
+		if (ioctl(this->sock_v6, SIOCDIFADDR_IN6, &ifra) < 0)
+		{
+			DBG1(DBG_LIB, "failed to remove existing address on %s: %s",
+				 this->if_name, strerror(errno));
+			return FALSE;
+		}
+	}
+	if (!set_address_and_mask_v6(&ifra, addr, netmask))
 	{
-		DBG1(DBG_LIB, "failed to set netmask on %s: %s",
+		return FALSE;
+	}
+	if (ioctl(this->sock_v6, SIOCAIFADDR_IN6, &ifra) < 0)
+	{
+		DBG1(DBG_LIB, "failed to add address on %s: %s",
 			 this->if_name, strerror(errno));
 		return FALSE;
 	}
 	return TRUE;
 }
 
-#endif /* __FreeBSD__ */
+#endif /* __linux__ */
 
 METHOD(tun_device_t, set_address, bool,
 	private_tun_device_t *this, host_t *addr, uint8_t netmask)
 {
-	if (!set_address_impl(this, addr, netmask))
+	switch (addr->get_family(addr))
 	{
-		return FALSE;
+		case AF_INET:
+			if (!set_address_v4(this, addr, netmask))
+			{
+				return FALSE;
+			}
+			break;
+		case AF_INET6:
+			if (!set_address_v6(this, addr, netmask))
+			{
+				return FALSE;
+			}
+			break;
+		default:
+			return FALSE;
 	}
 	DESTROY_IF(this->address);
 	this->address = addr->clone(addr);
@@ -253,9 +352,8 @@ METHOD(tun_device_t, get_address, host_t*,
 METHOD(tun_device_t, up, bool,
 	private_tun_device_t *this)
 {
-	struct ifreq ifr;
+	struct ifreq ifr = {0};
 
-	memset(&ifr, 0, sizeof(ifr));
 	strncpy(ifr.ifr_name, this->if_name, IFNAMSIZ);
 
 	if (ioctl(this->sock, SIOCGIFFLAGS, &ifr) < 0)
@@ -279,9 +377,8 @@ METHOD(tun_device_t, up, bool,
 METHOD(tun_device_t, set_mtu, bool,
 	private_tun_device_t *this, int mtu)
 {
-	struct ifreq ifr;
+	struct ifreq ifr = {0};
 
-	memset(&ifr, 0, sizeof(ifr));
 	strncpy(ifr.ifr_name, this->if_name, IFNAMSIZ);
 	ifr.ifr_mtu = mtu;
 
@@ -298,14 +395,13 @@ METHOD(tun_device_t, set_mtu, bool,
 METHOD(tun_device_t, get_mtu, int,
 	private_tun_device_t *this)
 {
-	struct ifreq ifr;
+	struct ifreq ifr = {0};
 
 	if (this->mtu > 0)
 	{
 		return this->mtu;
 	}
 
-	memset(&ifr, 0, sizeof(ifr));
 	strncpy(ifr.ifr_name, this->if_name, IFNAMSIZ);
 	this->mtu = TUN_DEFAULT_MTU;
 
@@ -390,9 +486,8 @@ METHOD(tun_device_t, destroy, void,
 		/* tun(4) says the following: "These network interfaces persist until
 		 * the if_tun.ko module is unloaded, or until removed with the
 		 * ifconfig(8) command."  So simply closing the FD is not enough. */
-		struct ifreq ifr;
+		struct ifreq ifr = {0};
 
-		memset(&ifr, 0, sizeof(ifr));
 		strncpy(ifr.ifr_name, this->if_name, IFNAMSIZ);
 		if (ioctl(this->sock, SIOCIFDESTROY, &ifr) < 0)
 		{
@@ -416,12 +511,9 @@ static bool init_tun(private_tun_device_t *this, const char *name_tmpl)
 {
 #ifdef __APPLE__
 
-	struct ctl_info info;
-	struct sockaddr_ctl addr;
+	struct ctl_info info = {0};
+	struct sockaddr_ctl addr = {0};
 	socklen_t size = IFNAMSIZ;
-
-	memset(&info, 0, sizeof(info));
-	memset(&addr, 0, sizeof(addr));
 
 	this->tunfd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
 	if (this->tunfd < 0)
@@ -464,7 +556,7 @@ static bool init_tun(private_tun_device_t *this, const char *name_tmpl)
 
 #elif defined(IFF_TUN)
 
-	struct ifreq ifr;
+	struct ifreq ifr = {0};
 
 	strncpy(this->if_name, name_tmpl ?: "tun%d", IFNAMSIZ-1);
 	this->if_name[IFNAMSIZ-1] = '\0';
@@ -475,8 +567,6 @@ static bool init_tun(private_tun_device_t *this, const char *name_tmpl)
 		DBG1(DBG_LIB, "failed to open /dev/net/tun: %s", strerror(errno));
 		return FALSE;
 	}
-
-	memset(&ifr, 0, sizeof(ifr));
 
 	/* TUN device, no packet info */
 	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
@@ -573,6 +663,14 @@ tun_device_t *tun_device_create(const char *name_tmpl)
 	if (this->sock < 0)
 	{
 		DBG1(DBG_LIB, "failed to open socket to configure TUN device");
+		destroy(this);
+		return NULL;
+	}
+	/* FIXME: allow this to fail? (just ignore IPv6 addrs later?) */
+	this->sock_v6 = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (this->sock_v6 < 0)
+	{
+		DBG1(DBG_LIB, "failed to open IPv6 socket to configure TUN device");
 		destroy(this);
 		return NULL;
 	}

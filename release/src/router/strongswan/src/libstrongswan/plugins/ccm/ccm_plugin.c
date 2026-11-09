@@ -94,7 +94,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *ccm_plugin_create()
+PLUGIN_DEFINE(ccm)
 {
 	private_ccm_plugin_t *this;
 

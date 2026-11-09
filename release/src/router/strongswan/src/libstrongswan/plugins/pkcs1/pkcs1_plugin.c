@@ -55,7 +55,6 @@ METHOD(plugin_t, get_features, int,
 				PLUGIN_SDEPEND(PUBKEY, KEY_ECDSA),
 				PLUGIN_SDEPEND(PUBKEY, KEY_ED25519),
 				PLUGIN_SDEPEND(PUBKEY, KEY_ED448),
-				PLUGIN_SDEPEND(PUBKEY, KEY_BLISS),
 				PLUGIN_SDEPEND(PUBKEY, KEY_DSA),
 		PLUGIN_REGISTER(PUBKEY, pkcs1_public_key_load, FALSE),
 			PLUGIN_PROVIDE(PUBKEY, KEY_RSA),
@@ -75,7 +74,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *pkcs1_plugin_create()
+PLUGIN_DEFINE(pkcs1)
 {
 	private_pkcs1_plugin_t *this;
 

@@ -199,6 +199,6 @@ ha_ctl_t *ha_ctl_create(ha_segments_t *segments, ha_cache_t *cache)
 
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)dispatch_fifo,
-			this, NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+			this, NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 	return &this->public;
 }

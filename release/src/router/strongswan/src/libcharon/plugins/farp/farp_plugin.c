@@ -89,7 +89,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *farp_plugin_create()
+PLUGIN_DEFINE(farp)
 {
 	private_farp_plugin_t *this;
 

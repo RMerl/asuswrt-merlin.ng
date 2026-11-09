@@ -933,8 +933,7 @@ function Get_Component_Profile_Item(_profile_data){
 			if(isSupport("wifi_mode")) {
 				const wifiModeMap = {
 					"bn": {type: "WiFi8", text: "WiFi8"},
-					"be": {type: "WiFi7", text: "WiFi7"},
-					"ax": {type: "WiFi6", text: "WiFi6"}
+					"be": {type: "WiFi7", text: "WiFi7"}
 				};
 				const mode = _sdn_data.sdn_rl.wifiMode;
 				if(wifiModeMap[mode]) {
@@ -2760,7 +2759,13 @@ function show_popup_Wizard_Setting(_type){
 					e.stopPropagation();
 					var $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 					if($(this).hasClass("on")){
-						$control_container.show();
+						const $bw_switch = $(this);
+						confirm_bw_limiter_nat_notice(function(){
+							$control_container.show();
+							resize_iframe_height();
+						}, function(){
+							$bw_switch.toggleClass("off on");
+						});
 					}
 					else{
 						$control_container.hide().next(".validate_hint").remove();
@@ -3224,7 +3229,13 @@ function show_popup_Wizard_Setting(_type){
 						e.stopPropagation();
 						var $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 						if($(this).hasClass("on")){
-							$control_container.show();
+							const $bw_switch = $(this);
+							confirm_bw_limiter_nat_notice(function(){
+								$control_container.show();
+								resize_iframe_height();
+							}, function(){
+								$bw_switch.toggleClass("off on");
+							});
 						}
 						else{
 							$control_container.hide().next(".validate_hint").remove();
@@ -3601,7 +3612,13 @@ function show_popup_Wizard_Setting(_type){
 				e.stopPropagation();
 				var $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 				if($(this).hasClass("on")){
-					$control_container.show();
+					const $bw_switch = $(this);
+					confirm_bw_limiter_nat_notice(function(){
+						$control_container.show();
+						resize_iframe_height();
+					}, function(){
+						$bw_switch.toggleClass("off on");
+					});
 				}
 				else{
 					$control_container.hide().next(".validate_hint").remove();
@@ -3923,7 +3940,7 @@ function show_popup_Wizard_Setting(_type){
 
 		if(!is_QIS_flow){
 			if(isSupport("sdn_mwl")){
-				const wizard_dut_list_star = {"title":`<#SDN_Sync_To_All_Node#>`, "type":"switch", "id":"wizard_dut_list_star", "set_value":"off"};
+				const wizard_dut_list_star = {"title":`Sync to all AiMesh node(s)`, "type":"switch", "id":"wizard_dut_list_star", "set_value":"off"};/* untranslated */
 				Get_Component_Switch(wizard_dut_list_star).appendTo($more_config_cntr).find("#" + wizard_dut_list_star.id + "").click(function(e){
 					e = e || event;
 					e.stopPropagation();
@@ -4352,7 +4369,13 @@ function show_popup_Wizard_Setting(_type){
 					e.stopPropagation();
 					var $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 					if($(this).hasClass("on")){
-						$control_container.show();
+						const $bw_switch = $(this);
+						confirm_bw_limiter_nat_notice(function(){
+							$control_container.show();
+							resize_iframe_height();
+						}, function(){
+							$bw_switch.toggleClass("off on");
+						});
 					}
 					else{
 						$control_container.hide().next(".validate_hint").remove();
@@ -4703,7 +4726,13 @@ function show_popup_Wizard_Setting(_type){
 					e.stopPropagation();
 					var $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 					if($(this).hasClass("on")){
-						$control_container.show();
+						const $bw_switch = $(this);
+						confirm_bw_limiter_nat_notice(function(){
+							$control_container.show();
+							resize_iframe_height();
+						}, function(){
+							$bw_switch.toggleClass("off on");
+						});
 					}
 					else{
 						$control_container.hide().next(".validate_hint").remove();
@@ -5118,7 +5147,13 @@ function show_popup_Wizard_Setting(_type){
 				e.stopPropagation();
 				var $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 				if($(this).hasClass("on")){
-					$control_container.show();
+					const $bw_switch = $(this);
+					confirm_bw_limiter_nat_notice(function(){
+						$control_container.show();
+						resize_iframe_height();
+					}, function(){
+						$bw_switch.toggleClass("off on");
+					});
 				}
 				else{
 					$control_container.hide().next(".validate_hint").remove();
@@ -5888,7 +5923,13 @@ function Get_Wizard_MLO(view_mode){
 				e.stopPropagation();
 				let $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 				if($(this).hasClass("on")){
-					$control_container.show();
+					const $bw_switch = $(this);
+					confirm_bw_limiter_nat_notice(function(){
+						$control_container.show();
+						resize_iframe_height();
+					}, function(){
+						$bw_switch.toggleClass("off on");
+					});
 				}
 				else{
 					$control_container.hide().next(".validate_hint").remove();
@@ -6168,7 +6209,7 @@ function Get_Component_Full_Setting(view_mode){
 	Get_Net_Adv_Container().hide().appendTo(category_adv);
 
 	var category_aimesh = $("<div>").addClass("category_container").attr({"data-category-cntr":"aimesh","data-group":"wifi_settings"}).appendTo($subtab_container_net);
-	var aimesh_parm = {"title":"AiMesh", "id":"category_aimesh", "slide_target":"category_aimesh_cntr"};
+	var aimesh_parm = {"title":"AiMesh", "id":"category_aimesh", "slide_target":"category_aimesh_cntr"};/* untranslated */
 	Get_Component_Category_Slide_Title(aimesh_parm).appendTo(category_aimesh)
 		.find(".title_cntr").unbind("click").click(function(e){
 			e = e || event;
@@ -7268,7 +7309,13 @@ function Get_Component_Full_Setting(view_mode){
 				e.stopPropagation();
 				var $control_container = $(this).closest(".profile_setting").find("#container_bw_dl, #container_bw_ul, #container_bw");
 				if($(this).hasClass("on")){
-					$control_container.show();
+					const $bw_switch = $(this);
+					confirm_bw_limiter_nat_notice(function(){
+						$control_container.show();
+						resize_iframe_height();
+					}, function(){
+						$bw_switch.toggleClass("off on");
+					});
 				}
 				else{
 					$control_container.hide().next(".validate_hint").remove();
@@ -7782,7 +7829,6 @@ function Get_Component_Full_Setting(view_mode){
 	}
 }
 function Update_Setting_Profile(_obj, _profile_data){
-	if(!is_page_ready) return;
 	if (!_profile_data.apg_rl || Object.keys(_profile_data.apg_rl).length === 0) {
 		_profile_data.apg_rl = new apg_rl_attr();
 	}
@@ -11089,10 +11135,6 @@ function show_sdn_profilelist(){
 			});
 		},1000);
 	}
-
-	const hasNoTitleContainer = $("#profile_list_content").find(".title_container").length === 0;
-	$("#profile_list_content").toggleClass("no_title_container", hasNoTitleContainer);
-	$("#profile_setting_container").toggleClass("no_title_container", hasNoTitleContainer);
 }
 var vpnc_profile_list = [];
 /*
@@ -11723,61 +11765,9 @@ function init_sdn_all_list(){
 			else
 				show_sdn_profilelist();
 		}
-
 		load_sdn_detail_count++;
 		if(load_sdn_detail_count >= 2){
 			is_page_ready = true;
-		}
-
-		try_auto_open_app_control();
-
-		function try_auto_open_app_control(retry_count){
-			if(typeof app_control === "undefined" || !app_control || app_control.auto_open_handled || (app_control.type === "" && app_control.sdn_idx === "")){
-				return;
-			}
-			const pending_auto_open_timer = app_control.auto_open_timer;
-			if(pending_auto_open_timer){
-				clearTimeout(pending_auto_open_timer);
-				delete app_control.auto_open_timer;
-			}
-
-			const schedule_runtime_ready = (
-				typeof accesstime_handle_data === "object" &&
-				typeof accesstime_handle_data.string_to_json_array === "function"
-			);
-			const current_retry = retry_count || parseInt(app_control.auto_open_retry, 10) || 0;
-			if(!is_page_ready || !schedule_runtime_ready){
-				if(current_retry < 40){
-					app_control.auto_open_retry = current_retry + 1;
-					app_control.auto_open_timer = setTimeout(function(){
-						try_auto_open_app_control(app_control.auto_open_retry);
-					}, 50);
-				}
-				return;
-			}
-			app_control.auto_open_retry = 0;
-
-			if(app_control.sdn_idx !== ""){
-				if(Array.isArray(sdn_all_rl_json)){
-					const specific_sdn = sdn_all_rl_json.find(item => item.sdn_rl && item.sdn_rl.idx == app_control.sdn_idx);
-					if(specific_sdn){
-						app_control.auto_open_handled = true;
-						$(".popup_element").css("display", "flex");
-						$(".popup_container.popup_element").empty().append(Get_Component_Full_Setting("popup"));
-						Update_Setting_Profile($(".popup_container.popup_element"), specific_sdn);
-						$(".popup_container.popup_element").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
-						$(".container, .hidden_mask").hide();
-						postMessageToApp({"web_init": "1"});
-					}
-				}
-			}
-			else if(app_control.type !== ""){
-				app_control.auto_open_handled = true;
-				show_popup_Wizard_Setting(app_control.type);
-				$(".popup_container.popup_element_second").addClass("hide_title_cntr full_width mobile_view").find(".popup_title_container").hide();
-				$(".container, .hidden_mask").hide();
-				postMessageToApp({"web_init": "1"});
-			}
 		}
 	}
 
@@ -15352,4 +15342,11 @@ function checkSubnetConflict(ip1, mask1, ip2, mask2) {
 
 	return (networkAddress1 & mask2Num) === (networkAddress2 & mask2Num) ||
 		(networkAddress2 & mask1Num) === (networkAddress1 & mask1Num);
+}
+
+function confirm_bw_limiter_nat_notice(onConfirm, onCancel){
+	show_customize_confirm(`<#Gear_Accelerator_confirm#>`.replaceAll('%@', `<#Bandwidth_Limiter#>`));
+	const $confirm_obj = $(".popup_container.popup_customize_alert");
+	$confirm_obj.find("[data-btn=ok]").click(function(){ if(typeof onConfirm === "function") onConfirm(); });
+	$confirm_obj.find("[data-btn=cancel]").click(function(){ if(typeof onCancel === "function") onCancel(); });
 }

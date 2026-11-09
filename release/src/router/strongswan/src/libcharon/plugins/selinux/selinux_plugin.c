@@ -81,7 +81,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * Described in header
  */
-plugin_t *selinux_plugin_create()
+PLUGIN_DEFINE(selinux)
 {
 	private_selinux_plugin_t *this;
 

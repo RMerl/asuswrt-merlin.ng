@@ -395,13 +395,15 @@ CALLBACK(shared_owners, bool,
 {
 	if (streq(name, "owners"))
 	{
+		identification_t *id;
 		char buf[256];
 
-		if (!vici_stringify(value, buf, sizeof(buf)))
+		if (!vici_stringify(value, buf, sizeof(buf)) ||
+			!(id = identification_create_from_string_with_regex(buf)))
 		{
 			return FALSE;
 		}
-		owners->insert_last(owners, identification_create_from_string(buf));
+		owners->insert_last(owners, id);
 	}
 	return TRUE;
 }

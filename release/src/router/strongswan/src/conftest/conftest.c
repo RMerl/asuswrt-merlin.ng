@@ -382,19 +382,28 @@ static void load_log_levels(file_logger_t *logger, char *section)
  */
 static void load_logger_options(file_logger_t *logger, char *section)
 {
-	char *time_format;
-	bool add_ms, ike_name, log_level;
+	file_logger_options_t options;
 
-	time_format = conftest->test->get_str(conftest->test,
+	options.time_format = conftest->test->get_str(conftest->test,
 					"log.%s.time_format", NULL, section);
-	add_ms = conftest->test->get_bool(conftest->test,
-					"log.%s.time_add_ms", FALSE, section);
-	ike_name = conftest->test->get_bool(conftest->test,
+	options.time_precision = file_logger_time_precision_parse(
+				conftest->test->get_str(conftest->test,
+					"log.%s.time_precision", NULL, section));
+	/* handle legacy option */
+	if (!options.time_precision &&
+		conftest->test->get_bool(conftest->test,
+					"log.%s.time_add_ms", FALSE, section))
+	{
+		options.time_precision = FILE_LOGGER_TIME_PRECISION_MS;
+	}
+	options.ike_name = conftest->test->get_bool(conftest->test,
 					"log.%s.ike_name", FALSE, section);
-	log_level = conftest->test->get_bool(conftest->test,
+	options.log_level = conftest->test->get_bool(conftest->test,
 					"log.%s.log_level", FALSE, section);
+	options.json = conftest->test->get_bool(conftest->test,
+					"log.%s.json", FALSE, section);
 
-	logger->set_options(logger, time_format, add_ms, ike_name, log_level);
+	logger->set_options(logger, &options);
 }
 
 /**
@@ -438,6 +447,7 @@ int main(int argc, char *argv[])
 	int sig;
 	char *suite_file = "suite.conf", *test_file = NULL, *preload, *plugins;
 	file_logger_t *logger;
+	file_logger_options_t options = {};
 
 	if (!library_init(NULL, "conftest"))
 	{
@@ -460,7 +470,7 @@ int main(int argc, char *argv[])
 	lib->credmgr->add_set(lib->credmgr, &conftest->creds->set);
 
 	logger = file_logger_create("stdout");
-	logger->set_options(logger, NULL, FALSE, FALSE, FALSE);
+	logger->set_options(logger, &options);
 	logger->open(logger, FALSE, FALSE);
 	logger->set_level(logger, DBG_ANY, LEVEL_CTRL);
 	charon->bus->add_logger(charon->bus, &logger->logger);

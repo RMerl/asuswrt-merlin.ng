@@ -244,6 +244,8 @@ METHOD(certreq_payload_t, get_cert_type, certificate_type_t,
 	{
 		case ENC_X509_SIGNATURE:
 			return CERT_X509;
+		case ENC_OCSP_CONTENT:
+			return CERT_X509_OCSP_REQUEST;
 		default:
 			return CERT_ANY;
 	}
@@ -301,6 +303,9 @@ certreq_payload_t *certreq_payload_create_type(certificate_type_t type)
 	{
 		case CERT_X509:
 			this->encoding = ENC_X509_SIGNATURE;
+			break;
+		case CERT_X509_OCSP_REQUEST:
+			this->encoding = ENC_OCSP_CONTENT;
 			break;
 		default:
 			DBG1(DBG_ENC, "certificate type %N not supported in requests",

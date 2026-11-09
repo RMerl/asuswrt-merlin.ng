@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019 Tobias Brunner
+ * Copyright (C) 2013-2025 Tobias Brunner
  * Copyright (C) 2008-2009 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -22,7 +22,10 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/wait.h>
 #include <arpa/inet.h>
+#include <pwd.h>
+#include <grp.h>
 #include <errno.h>
 
 #include <library.h>
@@ -49,6 +52,11 @@ struct private_agent_private_key_t {
 	 * Path to the UNIX socket
 	 */
 	char *path;
+
+	/**
+	 * Optional user to connect to socket as
+	 */
+	char *user;
 
 	/**
 	 * public key encoded in SSH format
@@ -142,12 +150,24 @@ static chunk_t read_string(chunk_t *blob)
 }
 
 /**
- * open socket connection to the ssh-agent
+ * Connect a UNIX socket to the given path.
  */
-static int open_connection(char *path)
+static bool connect_socket(int fd, char *path)
 {
 	struct sockaddr_un addr;
-	int s;
+
+	addr.sun_family = AF_UNIX;
+	addr.sun_path[UNIX_PATH_MAX - 1] = '\0';
+	strncpy(addr.sun_path, path, UNIX_PATH_MAX - 1);
+	return connect(fd, (struct sockaddr*)&addr, SUN_LEN(&addr)) == 0;
+}
+
+/**
+ * Open socket connection to the ssh-agent, optionally as a given user.
+ */
+static int open_connection(char *path, char *user)
+{
+	int s, pid, status;
 
 	s = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (s == -1)
@@ -157,14 +177,63 @@ static int open_connection(char *path)
 		return -1;
 	}
 
-	addr.sun_family = AF_UNIX;
-	addr.sun_path[UNIX_PATH_MAX - 1] = '\0';
-	strncpy(addr.sun_path, path, UNIX_PATH_MAX - 1);
+	if (user)
+	{
+		pid = fork();
+		switch (pid)
+		{
+			case -1:
+				DBG1(DBG_LIB, "forking failed after opening ssh-agent "
+					 "socket: %s", strerror(errno));
+				close(s);
+				return -1;
+			case 0:
+			{
+				/* child, do everything manually to avoid interacting with
+				 * mutexes etc. that are potentially locked in the parent */
+				struct passwd *pwp;
 
-	if (connect(s, (struct sockaddr*)&addr, SUN_LEN(&addr)) != 0)
+				pwp = getpwnam(user);
+				if (pwp)
+				{
+					if (initgroups(user, pwp->pw_gid) == 0)
+					{
+						if (setgid(pwp->pw_gid) == 0 &&
+							setuid(pwp->pw_uid) == 0)
+						{
+							if (connect_socket(s, path))
+							{
+								exit(EXIT_SUCCESS);
+							}
+						}
+					}
+				}
+				exit(EXIT_FAILURE);
+				/* not reached */
+			}
+			default:
+				/* parent */
+				if (waitpid(pid, &status, 0) == -1 ||
+					!WIFEXITED(status))
+				{
+					DBG1(DBG_LIB, "sub-process to connect to ssh-agent didn't "
+						 "terminate normally");
+					close(s);
+					return -1;
+				}
+				if (WEXITSTATUS(status) != 0)
+				{
+					DBG1(DBG_LIB, "connecting to ssh-agent in sub-process "
+						 "failed: %d", WEXITSTATUS(status));
+					close(s);
+					return -1;
+				}
+		}
+	}
+	else if (!connect_socket(s, path))
 	{
 		DBG1(DBG_LIB, "connecting to ssh-agent socket '%s' failed: %s",
-			 addr.sun_path, strerror(errno));
+			 path, strerror(errno));
 		close(s);
 		return -1;
 	}
@@ -181,7 +250,7 @@ static bool read_key(private_agent_private_key_t *this, public_key_t *pubkey)
 	chunk_t blob, key;
 	bool success = FALSE;
 
-	socket = open_connection(this->path);
+	socket = open_connection(this->path, this->user);
 	if (socket < 0)
 	{
 		return FALSE;
@@ -293,7 +362,7 @@ METHOD(private_key_t, sign, bool,
 		return FALSE;
 	}
 
-	socket = open_connection(this->path);
+	socket = open_connection(this->path, this->user);
 	if (socket < 0)
 	{
 		return FALSE;
@@ -512,6 +581,7 @@ METHOD(private_key_t, destroy, void,
 		chunk_free(&this->key);
 		DESTROY_IF(this->pubkey);
 		free(this->path);
+		free(this->user);
 		free(this);
 	}
 }
@@ -523,7 +593,7 @@ agent_private_key_t *agent_private_key_open(key_type_t type, va_list args)
 {
 	private_agent_private_key_t *this;
 	public_key_t *pubkey = NULL;
-	char *path = NULL;
+	char *path = NULL, *user = NULL;
 
 	while (TRUE)
 	{
@@ -531,6 +601,9 @@ agent_private_key_t *agent_private_key_open(key_type_t type, va_list args)
 		{
 			case BUILD_AGENT_SOCKET:
 				path = va_arg(args, char*);
+				continue;
+			case BUILD_AGENT_USER:
+				user = va_arg(args, char*);
 				continue;
 			case BUILD_PUBLIC_KEY:
 				pubkey = va_arg(args, public_key_t*);
@@ -566,6 +639,7 @@ agent_private_key_t *agent_private_key_open(key_type_t type, va_list args)
 			},
 		},
 		.path = strdup(path),
+		.user = strdupnull(user),
 		.ref = 1,
 	);
 

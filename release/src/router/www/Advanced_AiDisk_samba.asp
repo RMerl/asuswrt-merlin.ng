@@ -95,13 +95,13 @@ function initial(){
 		document.getElementById("radio_anonymous_enable_tr").style.display = "none";
 	}
 
-	if(!WebDav_support)
-		document.getElementById("clouddiskstr").style.display = "none";
-		
-	if (!ntfs_sparse_support)
-		document.getElementById('ntfs_sparse_files').style.display = "none";
-	else
-		document.getElementById('ntfs_sparse_files').style.display = "";		
+	var clouddiskstrObj = document.getElementById("clouddiskstr");
+	if(!WebDav_support && clouddiskstrObj)
+		clouddiskstrObj.style.display = "none";
+
+	var ntfsSparseObj = document.getElementById('ntfs_sparse_files');
+	if(ntfsSparseObj)
+		ntfsSparseObj.style.display = ntfs_sparse_support ? "" : "none";
 	
 	// show accounts
 	showAccountGroupMenu(select_flag);

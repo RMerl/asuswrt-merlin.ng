@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
 				status = 0;
 				goto deinit;
 			case 'v':
-				printf("Linux strongSwan %s\n", VERSION);
+				printf("strongSwan %s\n", VERSION);
 				status = 0;
 				goto deinit;
 			case 'l':

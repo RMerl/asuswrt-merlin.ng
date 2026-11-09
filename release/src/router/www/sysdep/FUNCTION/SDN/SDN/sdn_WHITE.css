@@ -125,9 +125,7 @@
 .status_info .conn_type.LAN{
 	background-color: #006CE1;
 }
-.status_info .conn_type.WiFi6,
-.status_info .conn_type.WiFi7,
-.status_info .conn_type.WiFi8{
+.status_info .conn_type.WiFi7{
 	background-color: #000;
 }
 .profile_setting.Get_Start{

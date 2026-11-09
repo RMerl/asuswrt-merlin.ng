@@ -101,19 +101,12 @@ static void task_ark_history(struct timer_entry *timer, void *data);
 #if defined(RTCONFIG_BCM_AFC) && defined(RTCONFIG_AFC_POSITIONING)
 static void task_afc_pos_retry(struct timer_entry *timer, void *data);
 #endif
-#ifdef RTCONFIG_GTBOOSTER
-static void task_ark_signature(struct timer_entry *timer, void *data);
-static void task_ark_alive(struct timer_entry *timer, void *data);
-static void task_ark_protection(struct timer_entry *timer, void *data);
-static void task_ark_history(struct timer_entry *timer, void *data);
-#endif
 #if defined(RTCONFIG_AURA_SCHED) || defined(RTCONFIG_AURA_NIGHT_SCHED)
 static void task_aura_sched(struct timer_entry *timer, void *data);
 #endif
 #if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED)
 static void task_led_sched(struct timer_entry *timer, void *data);
 #endif
-static void task_reset_svc_status(struct timer_entry *timer, void *data);
 ///////////////////////////////////// task prototype /////////////////////////////////////
 
 ///////////////////////////////////// signal handler prototype /////////////////////////////////////
@@ -166,7 +159,6 @@ static struct task_table sd_task_t[] =
 #if defined(RTCONFIG_LED_SCHED) || defined(RTCONFIG_LED_NIGHT_SCHED)
         {SIGALRM, 0, task_led_sched, 0, PERIOD_10_SEC},
 #endif
-        {SIGALRM, 0, task_reset_svc_status, 0, PERIOD_600_SEC},
         {SIGUSR1, 0, sched_daemon_sigusr1, 0, 0},
         {SIGUSR2, 0, sched_daemon_sigusr2, 0, 0},
         {SIGTERM, 0, sched_daemon_exit, 0, 0},
@@ -397,13 +389,6 @@ static void sched_daemon(int sig)
 	task_afc_pos_retry();
 #endif
 
-	/*
-		This is 10 minutes timer, do something that is not urgent but must be done periodically to avoid some unexpected issue, 
-		like wrong wifi status due to some unexpected long time operation like restart_net_and_phy, 
-		which may cause some wifi check to be skipped and then cause wrong wifi status.
-	*/
-	task_reset_svc_status();
-
 /*======== The following is for period 1 hour ========*/
 	if (period_3600_sec)
 		return;
@@ -431,13 +416,6 @@ static void sched_daemon(int sig)
 // the svcStatus and vif_svcstatus is used to save previous radio state.
 static int svcStatus[12] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 static int vif_svcStatus[12][32];
-
-/*
-   10 minutes with 30 seconds check interval (no recording mode), to avoid wrong wifi status due to some unexpected long time operation like restart_net_and_phy, 
-   which may cause some wifi check to be skipped and then cause wrong wifi status.
-*/
-#define NO_RECORDING_MAX_COUNT (600/30)
-static int g_no_recording_mode = 0;
 static void reset_svc_status() {
 	int unit = 0, subunit;
 	char word[256], *next;
@@ -612,9 +590,6 @@ void wl_sched_v2(void)
 		nvram_set("reload_svc_radio", "0");
 
 		reset_svc_status();
-
-		g_no_recording_mode = NO_RECORDING_MAX_COUNT;
-		SCHED_DAEMON_DBG("Enter no recording svc mode, for next %d checks to avoid wrong wifi status.", NO_RECORDING_MAX_COUNT);
 	}
 
 #ifdef RTCONFIG_MULTILAN_CFG
@@ -715,14 +690,12 @@ void wl_sched_v2(void)
 #else
 				if (match_radio_status(unit, activeNow2)) {
 #endif
-					if (g_no_recording_mode == 0)
-						vif_svcStatus[item][subunit] = activeNow2;
+					vif_svcStatus[item][subunit] = activeNow2;
 					subunit++;
 					continue;
 				}
 #else
-				if (g_no_recording_mode == 0)
-					vif_svcStatus[item][subunit] = activeNow2;
+				vif_svcStatus[item][subunit] = activeNow2;
 #endif
 
 				if (activeNow2 == 0) {
@@ -809,15 +782,13 @@ void wl_sched_v2(void)
 #else
 			if (match_radio_status(unit, activeNow)) {
 #endif
-				if (g_no_recording_mode == 0)
-					svcStatus[item] = activeNow;
+				svcStatus[item] = activeNow;
 				item++;
 				unit++;
 				continue;
 			}
 #else
-			if (g_no_recording_mode == 0)
-				svcStatus[item] = activeNow;
+			svcStatus[item] = activeNow;
 #endif
 
 			if (activeNow == 0) {
@@ -858,9 +829,6 @@ void wl_sched_v2(void)
 		unit++;
 
 	}
-
-	if (g_no_recording_mode > 0)
-		g_no_recording_mode--;
 }
 #endif //#ifndef RTCONFIG_WL_SCHED_V2
 
@@ -1177,7 +1145,7 @@ static void task_reboot_schedule(void)
 					f_read_string("/tmp/reboot", reboot, sizeof(reboot));
 					f_read_string("/tmp/upgrade", upgrade, sizeof(upgrade));
 
-					if (atoi(reboot) || atoi(upgrade))
+					if (safe_atoi(reboot) || safe_atoi(upgrade))
 						return;
 
 					nvram_set("sys_reboot_reason", "rbt_scheduler");
@@ -1591,19 +1559,6 @@ LED_SCHED_END:
 #endif
 
 #ifdef USE_TIMERUTIL
-static void task_reset_svc_status(struct timer_entry *timer, void *data)
-#else
-static void task_reset_svc_status(void)
-#endif
-{
-	reset_svc_status();
-	SCHED_DAEMON_DBG("[wifi-scheduler] reset svc status periodically.\n");
-#ifdef USE_TIMERUTIL
-	mod_timer(timer, PERIOD_600_SEC);
-#endif
-}
-
-#ifdef USE_TIMERUTIL
 static void sched_daemon_sigusr1(struct timer_entry *timer, void *data)
 #else
 static void sched_daemon_sigusr1(int sig)
@@ -1673,9 +1628,6 @@ int sched_daemon_main(int argc, char *argv[])
 	setenv("TZ", nvram_safe_get("time_zone_x"), 1);
 
 	_dprintf("TZ sched_daemon\n");
-
-	// initialize service status
-	reset_svc_status();
 
 #ifdef MEM_MON
 	get_ps_mem_list(&pmem_list);

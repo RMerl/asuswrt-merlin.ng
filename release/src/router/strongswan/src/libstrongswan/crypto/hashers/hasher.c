@@ -30,7 +30,6 @@ ENUM_BEGIN(hash_algorithm_names, HASH_SHA1, HASH_IDENTITY,
 	"HASH_IDENTITY");
 ENUM_NEXT(hash_algorithm_names, HASH_UNKNOWN, HASH_SHA3_512, HASH_IDENTITY,
 	"HASH_UNKNOWN",
-	"HASH_MD2",
 	"HASH_MD4",
 	"HASH_MD5",
 	"HASH_SHA2_224",
@@ -48,7 +47,6 @@ ENUM_BEGIN(hash_algorithm_short_names, HASH_SHA1, HASH_IDENTITY,
 	"identity");
 ENUM_NEXT(hash_algorithm_short_names, HASH_UNKNOWN, HASH_SHA3_512, HASH_IDENTITY,
 	"unknown",
-	"md2",
 	"md4",
 	"md5",
 	"sha224",
@@ -66,7 +64,6 @@ ENUM_BEGIN(hash_algorithm_short_names_upper, HASH_SHA1, HASH_IDENTITY,
 	"IDENTITY");
 ENUM_NEXT(hash_algorithm_short_names_upper, HASH_UNKNOWN, HASH_SHA3_512, HASH_IDENTITY,
 	"UNKNOWN",
-	"MD2",
 	"MD4",
 	"MD5",
 	"SHA2_224",
@@ -91,8 +88,6 @@ size_t hasher_hash_size(hash_algorithm_t alg)
 			return HASH_SIZE_SHA384;
 		case HASH_SHA512:
 			return HASH_SIZE_SHA512;
-		case HASH_MD2:
-			return HASH_SIZE_MD2;
 		case HASH_MD4:
 			return HASH_SIZE_MD4;
 		case HASH_MD5:
@@ -121,9 +116,6 @@ hash_algorithm_t hasher_algorithm_from_oid(int oid)
 {
 	switch (oid)
 	{
-		case OID_MD2:
-		case OID_MD2_WITH_RSA:
-			return HASH_MD2;
 		case OID_MD5:
 		case OID_MD5_WITH_RSA:
 			return HASH_MD5;
@@ -323,7 +315,6 @@ integrity_algorithm_t hasher_algorithm_to_integrity(hash_algorithm_t alg,
 					return AUTH_HMAC_SHA2_512_512;
 			}
 			break;
-		case HASH_MD2:
 		case HASH_MD4:
 		case HASH_SHA224:
 		case HASH_SHA3_224:
@@ -350,7 +341,6 @@ bool hasher_algorithm_for_ikev2(hash_algorithm_t alg)
 		case HASH_SHA512:
 			return TRUE;
 		case HASH_UNKNOWN:
-		case HASH_MD2:
 		case HASH_MD4:
 		case HASH_MD5:
 		case HASH_SHA1:
@@ -373,9 +363,6 @@ int hasher_algorithm_to_oid(hash_algorithm_t alg)
 
 	switch (alg)
 	{
-		case HASH_MD2:
-			oid = OID_MD2;
-			break;
 		case HASH_MD5:
 			oid = OID_MD5;
 			break;
@@ -422,8 +409,6 @@ int hasher_signature_algorithm_to_oid(hash_algorithm_t alg, key_type_t key)
 		case KEY_RSA:
 			switch (alg)
 			{
-				case HASH_MD2:
-					return OID_MD2_WITH_RSA;
 				case HASH_MD5:
 					return OID_MD5_WITH_RSA;
 				case HASH_SHA1:
@@ -477,24 +462,6 @@ int hasher_signature_algorithm_to_oid(hash_algorithm_t alg, key_type_t key)
 				default:
 					return OID_UNKNOWN;
 			}
-		case KEY_BLISS:
-			switch (alg)
-			{
-				case HASH_SHA256:
-					return OID_BLISS_WITH_SHA2_256;
-				case HASH_SHA384:
-					return OID_BLISS_WITH_SHA2_384;
-				case HASH_SHA512:
-					return OID_BLISS_WITH_SHA2_512;
-				case HASH_SHA3_256:
-					return OID_BLISS_WITH_SHA3_256;
-				case HASH_SHA3_384:
-					return OID_BLISS_WITH_SHA3_384;
-				case HASH_SHA3_512:
-					return OID_BLISS_WITH_SHA3_512;
-				default:
-					return OID_UNKNOWN;
-			}
 		default:
 			return OID_UNKNOWN;
 	}
@@ -532,28 +499,22 @@ hash_algorithm_t hasher_from_signature_scheme(signature_scheme_t scheme,
 		case SIGN_RSA_EMSA_PKCS1_SHA2_256:
 		case SIGN_ECDSA_WITH_SHA256_DER:
 		case SIGN_ECDSA_256:
-		case SIGN_BLISS_WITH_SHA2_256:
 			return HASH_SHA256;
 		case SIGN_RSA_EMSA_PKCS1_SHA2_384:
 		case SIGN_ECDSA_WITH_SHA384_DER:
 		case SIGN_ECDSA_384:
-		case SIGN_BLISS_WITH_SHA2_384:
 			return HASH_SHA384;
 		case SIGN_RSA_EMSA_PKCS1_SHA2_512:
 		case SIGN_ECDSA_WITH_SHA512_DER:
 		case SIGN_ECDSA_521:
-		case SIGN_BLISS_WITH_SHA2_512:
 			return HASH_SHA512;
 		case SIGN_RSA_EMSA_PKCS1_SHA3_224:
 			return HASH_SHA3_224;
 		case SIGN_RSA_EMSA_PKCS1_SHA3_256:
-		case SIGN_BLISS_WITH_SHA3_256:
 			return HASH_SHA3_256;
 		case SIGN_RSA_EMSA_PKCS1_SHA3_384:
-		case SIGN_BLISS_WITH_SHA3_384:
 			return HASH_SHA3_384;
 		case SIGN_RSA_EMSA_PKCS1_SHA3_512:
-		case SIGN_BLISS_WITH_SHA3_512:
 			return HASH_SHA3_512;
 	}
 	return HASH_UNKNOWN;

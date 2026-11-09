@@ -2,7 +2,7 @@ Host *
 	LogLevel QUIET
 	# debian default
 	SendEnv LANG LC_*
-	SendEnv LEAK_DETECTIVE_LOG
+	SendEnv LEAK_DETECTIVE_*
 	StrictHostKeyChecking no
 	UserKnownHostsFile /dev/null
 	GSSAPIAuthentication yes

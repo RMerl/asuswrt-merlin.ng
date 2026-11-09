@@ -85,7 +85,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *openxpki_plugin_create()
+PLUGIN_DEFINE(openxpki)
 {
 	private_openxpki_plugin_t *this;
 

@@ -46,4 +46,21 @@ void sequence_to_chunk(const byte_t * const first, const uint32_t len,
 void chunk_to_sequence(const chunk_t * const chunk, void *sequence,
 					   const uint32_t typelen);
 
+/**
+ * Convert blob to chunk and reset the blob.
+ *
+ * @param id		id of blob
+ * @param len		length of blob
+ * @param chunk		pointer to chunk struct
+ */
+bool blob_to_chunk(blob_id_type id, blob_length_type len, chunk_t * const chunk);
+
+/**
+ * Convert chunk to newly created blob.
+ *
+ * @param id		id of blob
+ * @param chunk		pointer to chunk struct
+ */
+bool chunk_to_blob(blob_id_type id, const chunk_t * const chunk);
+
 #endif /** TKM_UTILS_H_ @}*/

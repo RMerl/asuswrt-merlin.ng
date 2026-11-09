@@ -211,31 +211,24 @@ int command_usage(char *error, ...)
 	if (error)
 	{
 		out = stderr;
-		fprintf(out, "Error: ");
-		va_start(args, error);
-		vfprintf(out, error, args);
-		va_end(args);
-		fprintf(out, "\n");
 	}
-	fprintf(out, "strongSwan %s swanctl\n", VERSION);
+	fprintf(out, "strongSwan %s swanctl", VERSION);
 
 	if (active == help_idx)
 	{
-		fprintf(out, "loaded plugins: %s\n",
+		fprintf(out, "\nloaded plugins: %s\nusage:\n"
+				"  swanctl command [options]\ncommands:\n",
 				lib->plugins->loaded_plugins(lib->plugins));
-	}
-
-	fprintf(out, "usage:\n");
-	if (active == help_idx)
-	{
 		for (i = 0; i < MAX_COMMANDS && cmds[i].cmd; i++)
 		{
-			fprintf(out, "  swanctl --%-16s (-%c)  %s\n",
+			fprintf(out, "  --%-16s (-%c)  %s\n",
 					cmds[i].cmd, cmds[i].op, cmds[i].description);
 		}
 	}
 	else
 	{
+		fprintf(out, " (--%s/-%c)\n%s\nusage:\n",
+				cmds[active].cmd, cmds[active].op, cmds[active].description);
 		for (i = 0; i < MAX_LINES && cmds[active].line[i]; i++)
 		{
 			if (i == 0)
@@ -245,15 +238,24 @@ int command_usage(char *error, ...)
 			}
 			else
 			{
-				fprintf(out, "                 %s\n", cmds[active].line[i]);
+				fprintf(out, "    %s\n", cmds[active].line[i]);
 			}
 		}
+		fprintf(out, "options:\n");
 		for (i = 0; cmds[active].options[i].name; i++)
 		{
-			fprintf(out, "           --%-15s (-%c)  %s\n",
+			fprintf(out, "  --%-15s (-%c)  %s\n",
 					cmds[active].options[i].name, cmds[active].options[i].op,
 					cmds[active].options[i].desc);
 		}
+	}
+	if (error)
+	{
+		fprintf(out, "error: ");
+		va_start(args, error);
+		vfprintf(out, error, args);
+		va_end(args);
+		fprintf(out, "\n");
 	}
 	return error != NULL;
 }

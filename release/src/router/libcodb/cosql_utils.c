@@ -340,6 +340,33 @@ static int is_valid_text(const char *input)
 	return FORMAT_OK;
 }
 
+//- Avoid SQL identifier injection: column/identifier names may only contain
+//- alphanumeric characters and underscore.
+static int is_valid_identifier(const char *input)
+{
+	int i, len;
+
+	if (!input)
+	{
+		return FORMAT_ERROR;
+	}
+
+	len = strlen(input);
+
+	if (len <= 0 || len > MAX_VALUE_LEN)
+	{
+		return FORMAT_ERROR;
+	}
+
+	for (i = 0; i < len; i++)
+	{
+		if (!isalnum((unsigned char)input[i]) && input[i] != '_')
+			return FORMAT_ERROR;
+	}
+
+	return FORMAT_OK;
+}
+
 static int is_valid_text_mac(const char *input)
 {
 	if (!input)
@@ -567,7 +594,127 @@ static int is_valid_text_json(const char *input)
 	return FORMAT_ERROR;
 }
 
-static char *gen_match_query_string(int match_columns_count, sql_column_match_t *match_columns, char *match_query_string, const char *split_string)
+static int cosql_column_exists(sqlite3 *pdb, const char *table_name, const char *column_name)
+{
+    char *sql;
+    sqlite3_stmt *stmt;
+    int found = 0;
+
+    sql = sqlite3_mprintf("PRAGMA table_info(%Q)", table_name);
+    if (!sql)
+        return 0;
+
+    if (sqlite3_prepare_v2(pdb, sql, -1, &stmt, NULL) != SQLITE_OK)
+    {
+        sqlite3_free(sql);
+        return 0;
+    }
+    sqlite3_free(sql);
+
+    /* PRAGMA table_info 的每一行: cid(0), name(1), type(2), notnull(3), dflt_value(4), pk(5) */
+    while (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        const char *col = (const char *)sqlite3_column_text(stmt, 1);
+        if (col && sqlite3_stricmp(col, column_name) == 0)
+        {
+            found = 1;
+            break;
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    return found;
+}
+
+typedef enum {
+	COLUMN_FRAGMENT_OK,
+	COLUMN_FRAGMENT_SKIP,	/* invalid/absent value: caller should skip this column */
+	COLUMN_FRAGMENT_ERROR	/* hard failure (e.g. OOM in sqlite3_mprintf): caller must abort */
+} column_fragment_result_e;
+
+/* Formats "<column_name><operation_symbol><value>" into buff for every column_type_e,
+ * quoting/escaping text values consistently. Shared by the precount and build passes
+ * of gen_match_query_string() and gen_upsert_query_string() so the type handling only
+ * needs to be updated in one place. */
+static column_fragment_result_e format_column_fragment(char *buff, size_t buff_len, const char *column_name,
+                                                         const char *operation_symbol, column_type_e column_type,
+                                                         column_value_t value)
+{
+	switch (column_type)
+	{
+	case COLUMN_TYPE_TEXT:
+		if (value.t == NULL || is_valid_text(value.t) == FORMAT_ERROR)
+			return COLUMN_FRAGMENT_SKIP;
+		snprintf(buff, buff_len, "%s%s'%s'", column_name, operation_symbol, value.t);
+		break;
+
+	case COLUMN_TYPE_TEXT_MAC:
+		if (value.t == NULL || is_valid_text_mac(value.t) == FORMAT_ERROR)
+			return COLUMN_FRAGMENT_SKIP;
+		snprintf(buff, buff_len, "%s%s'%s'", column_name, operation_symbol, value.t);
+		break;
+
+	case COLUMN_TYPE_TEXT_IP:
+		if (value.t == NULL || is_valid_text_ip(value.t) == FORMAT_ERROR)
+			return COLUMN_FRAGMENT_SKIP;
+		snprintf(buff, buff_len, "%s%s'%s'", column_name, operation_symbol, value.t);
+		break;
+
+	case COLUMN_TYPE_TEXT_JSON:
+	{
+		if (value.t == NULL || is_valid_text_json(value.t) == FORMAT_ERROR)
+			return COLUMN_FRAGMENT_SKIP;
+
+		char *quoted_value = sqlite3_mprintf("%Q", value.t);
+		if (quoted_value == NULL)
+			return COLUMN_FRAGMENT_ERROR;
+
+		snprintf(buff, buff_len, "%s%s%s", column_name, operation_symbol, quoted_value);
+		sqlite3_free(quoted_value);
+		break;
+	}
+
+	case COLUMN_TYPE_INT16:
+		snprintf(buff, buff_len, "%s%s%" PRId16, column_name, operation_symbol, value.i16);
+		break;
+
+	case COLUMN_TYPE_UINT16:
+		snprintf(buff, buff_len, "%s%s%" PRIu16, column_name, operation_symbol, value.ui16);
+		break;
+
+	case COLUMN_TYPE_INT:
+		snprintf(buff, buff_len, "%s%s%" PRId32, column_name, operation_symbol, value.i);
+		break;
+
+	case COLUMN_TYPE_UINT:
+		snprintf(buff, buff_len, "%s%s%" PRIu32, column_name, operation_symbol, value.ui);
+		break;
+
+	case COLUMN_TYPE_INT64:
+		snprintf(buff, buff_len, "%s%s%" PRId64, column_name, operation_symbol, value.i64);
+		break;
+
+	case COLUMN_TYPE_UINT64:
+		snprintf(buff, buff_len, "%s%s%" PRIu64, column_name, operation_symbol, value.ui64);
+		break;
+
+	case COLUMN_TYPE_FLOAT:
+		snprintf(buff, buff_len, "%s%s%lf", column_name, operation_symbol, value.f);
+		break;
+
+	default:
+		return COLUMN_FRAGMENT_SKIP;
+	}
+
+	return COLUMN_FRAGMENT_OK;
+}
+
+/* require_all_valid: when set, any column with an invalid/missing value, name,
+ * or operation aborts the whole call (NULL) instead of silently dropping that
+ * condition from the WHERE clause. Callers pass 1 for AND-joined conditions
+ * (dropping one would widen the match) and 0 for OR-joined ones (dropping one
+ * only narrows it). */
+static char *gen_match_query_string(int match_columns_count, sql_column_match_t *match_columns, char *match_query_string, const char *split_string, int require_all_valid)
 {
 	if (match_columns == NULL)
 	{
@@ -585,6 +732,10 @@ static char *gen_match_query_string(int match_columns_count, sql_column_match_t 
 		char *column_name = match_columns->name;
 		if (is_valid_text(column_name) == FORMAT_ERROR)
 		{
+			if (require_all_valid)
+			{
+				return NULL;
+			}
 			match_columns++;
 			continue;
 		}
@@ -593,119 +744,39 @@ static char *gen_match_query_string(int match_columns_count, sql_column_match_t 
 		char *operation_symbol = get_operations_symbol(match_columns->operation);
 		if (operation_symbol == NULL)
 		{
+			if (require_all_valid)
+			{
+				return NULL;
+			}
 			match_columns++;
 			continue;
 		}
 
 		if (column_name == NULL || strlen(column_name) <= 0)
 		{
+			if (require_all_valid)
+			{
+				return NULL;
+			}
 			match_columns++;
 			continue;
 		}
 
 		memset(buff, 0, MAX_BUF_LEN);
 
-		switch (column_type)
+		column_fragment_result_e fragment_result = format_column_fragment(buff, MAX_BUF_LEN, column_name, operation_symbol, column_type, match_columns->value);
+		if (fragment_result == COLUMN_FRAGMENT_SKIP)
 		{
-		case COLUMN_TYPE_TEXT:
-			if (match_columns->value.t == NULL)
+			if (require_all_valid)
 			{
-				match_columns++;
-				continue;
+				return NULL;
 			}
-
-			if (is_valid_text(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			//- ex. column_name=column_value
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_MAC:
-			if (match_columns->value.t == NULL)
-			{
-				match_columns++;
-				continue;
-			}
-
-			if (is_valid_text_mac(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			//- ex. column_name=column_value
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_IP:
-			if (match_columns->value.t == NULL)
-			{
-				match_columns++;
-				continue;
-			}
-
-			if (is_valid_text_ip(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			//- ex. column_name=column_value
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_JSON:
-			if (match_columns->value.t == NULL)
-			{
-				match_columns++;
-				continue;
-			}
-
-			if (is_valid_text_json(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			//- ex. column_name=column_value
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_INT16:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRId16, column_name, operation_symbol, match_columns->value.i16);
-			break;
-
-		case COLUMN_TYPE_UINT16:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRIu16, column_name, operation_symbol, match_columns->value.ui16);
-			break;
-
-		case COLUMN_TYPE_INT:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRId32, column_name, operation_symbol, match_columns->value.i);
-			break;
-
-		case COLUMN_TYPE_UINT:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRIu32, column_name, operation_symbol, match_columns->value.ui);
-			break;
-
-		case COLUMN_TYPE_INT64:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRId64, column_name, operation_symbol, match_columns->value.i64);
-			break;
-
-		case COLUMN_TYPE_UINT64:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRIu64, column_name, operation_symbol, match_columns->value.ui64);
-			break;
-
-		case COLUMN_TYPE_FLOAT:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%lf", column_name, operation_symbol, match_columns->value.f);
-			break;
-
-		default:
 			match_columns++;
 			continue;
+		}
+		if (fragment_result == COLUMN_FRAGMENT_ERROR)
+		{
+			return NULL;
 		}
 
 		match_query_string_size += strlen(buff) + strlen(split_string);
@@ -731,6 +802,11 @@ static char *gen_match_query_string(int match_columns_count, sql_column_match_t 
 		char *column_name = match_columns->name;
 		if (is_valid_text(column_name) == FORMAT_ERROR)
 		{
+			if (require_all_valid)
+			{
+				free(match_query_string);
+				return NULL;
+			}
 			match_columns++;
 			continue;
 		}
@@ -739,115 +815,43 @@ static char *gen_match_query_string(int match_columns_count, sql_column_match_t 
 		char *operation_symbol = get_operations_symbol(match_columns->operation);
 		if (operation_symbol == NULL)
 		{
+			if (require_all_valid)
+			{
+				free(match_query_string);
+				return NULL;
+			}
 			match_columns++;
 			continue;
 		}
 
 		if (column_name == NULL || strlen(column_name) <= 0)
 		{
+			if (require_all_valid)
+			{
+				free(match_query_string);
+				return NULL;
+			}
 			match_columns++;
 			continue;
 		}
 
 		memset(buff, 0, MAX_BUF_LEN);
 
-		switch (column_type)
+		column_fragment_result_e fragment_result = format_column_fragment(buff, MAX_BUF_LEN, column_name, operation_symbol, column_type, match_columns->value);
+		if (fragment_result == COLUMN_FRAGMENT_SKIP)
 		{
-		case COLUMN_TYPE_TEXT:
-			if (match_columns->value.t == NULL)
+			if (require_all_valid)
 			{
-				match_columns++;
-				continue;
+				free(match_query_string);
+				return NULL;
 			}
-
-			if (is_valid_text(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_MAC:
-			if (match_columns->value.t == NULL)
-			{
-				match_columns++;
-				continue;
-			}
-
-			if (is_valid_text_mac(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_IP:
-			if (match_columns->value.t == NULL)
-			{
-				match_columns++;
-				continue;
-			}
-
-			if (is_valid_text_ip(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_JSON:
-			if (match_columns->value.t == NULL)
-			{
-				match_columns++;
-				continue;
-			}
-
-			if (is_valid_text_json(match_columns->value.t) == FORMAT_ERROR)
-			{
-				match_columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
-			break;
-
-		case COLUMN_TYPE_INT16:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRId16, column_name, operation_symbol, match_columns->value.i16);
-			break;
-
-		case COLUMN_TYPE_UINT16:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRIu16, column_name, operation_symbol, match_columns->value.ui16);
-			break;
-
-		case COLUMN_TYPE_INT:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRId32, column_name, operation_symbol, match_columns->value.i);
-			break;
-
-		case COLUMN_TYPE_UINT:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRIu32, column_name, operation_symbol, match_columns->value.ui);
-			break;
-
-		case COLUMN_TYPE_INT64:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRId64, column_name, operation_symbol, match_columns->value.i64);
-			break;
-
-		case COLUMN_TYPE_UINT64:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%" PRIu64, column_name, operation_symbol, match_columns->value.ui64);
-			break;
-
-		case COLUMN_TYPE_FLOAT:
-			snprintf(buff, MAX_BUF_LEN, "%s%s%lf", column_name, operation_symbol, match_columns->value.f);
-			break;
-
-		default:
 			match_columns++;
 			continue;
+		}
+		if (fragment_result == COLUMN_FRAGMENT_ERROR)
+		{
+			free(match_query_string);
+			return NULL;
 		}
 
 		if (strlen(match_query_string) > 0)
@@ -891,103 +895,15 @@ static char *gen_upsert_query_string(int columns_count, sql_column_t *columns, c
 
 		memset(buff, 0, MAX_VALUE_LEN);
 
-		switch (column_type)
+		column_fragment_result_e fragment_result = format_column_fragment(buff, MAX_VALUE_LEN, column_name, "=", column_type, columns->value);
+		if (fragment_result == COLUMN_FRAGMENT_SKIP)
 		{
-		case COLUMN_TYPE_TEXT:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_MAC:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text_mac(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_IP:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text_ip(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_JSON:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text_json(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_INT16:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRId16, column_name, columns->value.i16);
-			break;
-
-		case COLUMN_TYPE_UINT16:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRIu16, column_name, columns->value.ui16);
-			break;
-
-		case COLUMN_TYPE_INT:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRId32, column_name, columns->value.i);
-			break;
-
-		case COLUMN_TYPE_UINT:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRIu32, column_name, columns->value.ui);
-			break;
-
-		case COLUMN_TYPE_INT64:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRId64, column_name, columns->value.i64);
-			break;
-
-		case COLUMN_TYPE_UINT64:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRIu64, column_name, columns->value.ui64);
-			break;
-
-		case COLUMN_TYPE_FLOAT:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%lf", column_name, columns->value.f);
-			break;
-
-		default:
 			columns++;
 			continue;
+		}
+		if (fragment_result == COLUMN_FRAGMENT_ERROR)
+		{
+			return NULL;
 		}
 
 		match_query_string_size += strlen(buff) + strlen(split_string);
@@ -1027,103 +943,16 @@ static char *gen_upsert_query_string(int columns_count, sql_column_t *columns, c
 
 		memset(buff, 0, MAX_VALUE_LEN);
 
-		switch (column_type)
+		column_fragment_result_e fragment_result = format_column_fragment(buff, MAX_VALUE_LEN, column_name, "=", column_type, columns->value);
+		if (fragment_result == COLUMN_FRAGMENT_SKIP)
 		{
-		case COLUMN_TYPE_TEXT:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_MAC:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text_mac(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_IP:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text_ip(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_TEXT_JSON:
-			if (columns->value.t == NULL)
-			{
-				columns++;
-				continue;
-			}
-
-			if (is_valid_text_json(columns->value.t) == FORMAT_ERROR)
-			{
-				columns++;
-				continue;
-			}
-
-			snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
-			break;
-
-		case COLUMN_TYPE_INT16:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRId16, column_name, columns->value.i16);
-			break;
-
-		case COLUMN_TYPE_UINT16:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRIu16, column_name, columns->value.ui16);
-			break;
-
-		case COLUMN_TYPE_INT:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRId32, column_name, columns->value.i);
-			break;
-
-		case COLUMN_TYPE_UINT:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRIu32, column_name, columns->value.ui);
-			break;
-
-		case COLUMN_TYPE_INT64:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRId64, column_name, columns->value.i64);
-			break;
-
-		case COLUMN_TYPE_UINT64:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%" PRIu64, column_name, columns->value.ui64);
-			break;
-
-		case COLUMN_TYPE_FLOAT:
-			snprintf(buff, MAX_VALUE_LEN, "%s=%lf", column_name, columns->value.f);
-			break;
-
-		default:
 			columns++;
 			continue;
+		}
+		if (fragment_result == COLUMN_FRAGMENT_ERROR)
+		{
+			free(match_query_string);
+			return NULL;
 		}
 
 		if (strlen(match_query_string) > 0)
@@ -1151,7 +980,8 @@ int format_sql_between_data_time(const char *between_column_name, int start_data
 		return COSQL_ERROR;
 	}
 
-	if (between_column_name == NULL || strlen(between_column_name) <= 0 || strlen(between_column_name) > MAX_BUF_LEN)
+	if (between_column_name == NULL || strlen(between_column_name) > MAX_BUF_LEN ||
+	    is_valid_identifier(between_column_name) != FORMAT_OK)
 	{
 		snprintf(ret_sql, MAX_BUF_LEN, " AND (data_time BETWEEN %d AND %d)", start_data_time, end_data_time);
 	}
@@ -1587,7 +1417,7 @@ extern int cosql_count_matchs(sqlite3 *pdb,
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -1597,7 +1427,7 @@ extern int cosql_count_matchs(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -1648,7 +1478,7 @@ extern int cosql_count_matchs_between_time(sqlite3 *pdb,
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -1658,7 +1488,7 @@ extern int cosql_count_matchs_between_time(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -1793,7 +1623,15 @@ int cosql_insert_table(sqlite3 *pdb, int columns_count, sql_column_t *columns)
 				continue;
 			}
 
-			snprintf(buff_insert_value, MAX_VALUE_LEN, "'%s'", columns->value.t);
+			{
+				char *quoted_value = sqlite3_mprintf("%Q", columns->value.t);
+				if (quoted_value == NULL)
+				{
+					return COSQL_ERROR;
+				}
+				snprintf(buff_insert_value, MAX_VALUE_LEN, "%s", quoted_value);
+				sqlite3_free(quoted_value);
+			}
 			break;
 
 		case COLUMN_TYPE_INT16:
@@ -1943,7 +1781,17 @@ int cosql_insert_table(sqlite3 *pdb, int columns_count, sql_column_t *columns)
 				continue;
 			}
 
-			snprintf(buff_insert_value, MAX_VALUE_LEN, "'%s'", columns->value.t);
+			{
+				char *quoted_value = sqlite3_mprintf("%Q", columns->value.t);
+				if (quoted_value == NULL)
+				{
+					free(sql_column_names);
+					free(sql_insert_values);
+					return COSQL_ERROR;
+				}
+				snprintf(buff_insert_value, MAX_VALUE_LEN, "%s", quoted_value);
+				sqlite3_free(quoted_value);
+			}
 			break;
 
 		case COLUMN_TYPE_INT16:
@@ -2075,10 +1923,16 @@ int cosql_get_int_value(sqlite3 *pdb,
 		return COSQL_ERROR;
 	}
 
+	if (!cosql_column_exists(pdb, DATA_TABLE_NAME, column_name))
+	{
+		codbg("column '%s' not found in table %s", column_name, DATA_TABLE_NAME);
+		return COSQL_ERROR;
+	}
+
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2088,7 +1942,7 @@ int cosql_get_int_value(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2183,7 +2037,7 @@ int cosql_get_column_values_ex(sqlite3 *pdb,
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2194,7 +2048,7 @@ int cosql_get_column_values_ex(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2466,12 +2320,18 @@ int cosql_get_last_xth_double_value(sqlite3 *pdb,
 		return COSQL_ERROR;
 	}
 
+	if (!cosql_column_exists(pdb, DATA_TABLE_NAME, column_name))
+	{
+		codbg("column '%s' not found in table %s", column_name, DATA_TABLE_NAME);
+		return COSQL_ERROR;
+	}
+
 	int sql_query_size = 256;
 
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2482,7 +2342,7 @@ int cosql_get_last_xth_double_value(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2607,6 +2467,12 @@ int cosql_sum_between_time(sqlite3 *pdb,
 		return COSQL_ERROR;
 	}
 
+	if (!cosql_column_exists(pdb, DATA_TABLE_NAME, column_name))
+	{
+		codbg("column '%s' not found in table %s", column_name, DATA_TABLE_NAME);
+		return COSQL_ERROR;
+	}
+
 	if (start_data_time <= 0 || end_data_time <= 0 || start_data_time > end_data_time)
 	{
 		return COSQL_ERROR;
@@ -2615,7 +2481,7 @@ int cosql_sum_between_time(sqlite3 *pdb,
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2625,7 +2491,7 @@ int cosql_sum_between_time(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2710,6 +2576,12 @@ int cosql_avg_between_time(sqlite3 *pdb,
 		return COSQL_ERROR;
 	}
 
+	if (!cosql_column_exists(pdb, DATA_TABLE_NAME, column_name))
+	{
+		codbg("column '%s' not found in table %s", column_name, DATA_TABLE_NAME);
+		return COSQL_ERROR;
+	}
+
 	if (start_data_time <= 0 || end_data_time <= 0 || start_data_time > end_data_time)
 	{
 		return COSQL_ERROR;
@@ -2718,7 +2590,7 @@ int cosql_avg_between_time(sqlite3 *pdb,
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2728,7 +2600,7 @@ int cosql_avg_between_time(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2812,10 +2684,16 @@ int cosql_sum_latest_count_limit(sqlite3 *pdb,
 		return COSQL_ERROR;
 	}
 
+	if (!cosql_column_exists(pdb, DATA_TABLE_NAME, column_name))
+	{
+		codbg("column '%s' not found in table %s", column_name, DATA_TABLE_NAME);
+		return COSQL_ERROR;
+	}
+
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2825,7 +2703,7 @@ int cosql_sum_latest_count_limit(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2919,10 +2797,16 @@ int cosql_avg_latest_count_limit(sqlite3 *pdb,
 		return COSQL_ERROR;
 	}
 
+	if (!cosql_column_exists(pdb, DATA_TABLE_NAME, column_name))
+	{
+		codbg("column '%s' not found in table %s", column_name, DATA_TABLE_NAME);
+		return COSQL_ERROR;
+	}
+
 	char *sql_and_where = NULL;
 	if (match_and_columns_count > 0)
 	{
-		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ");
+		sql_and_where = gen_match_query_string(match_and_columns_count, match_and_columns, sql_and_where, " AND ", 1);
 		if (sql_and_where == NULL)
 		{
 			return COSQL_ERROR;
@@ -2932,7 +2816,7 @@ int cosql_avg_latest_count_limit(sqlite3 *pdb,
 	char *sql_or_where = NULL;
 	if (match_or_columns_count > 0)
 	{
-		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ");
+		sql_or_where = gen_match_query_string(match_or_columns_count, match_or_columns, sql_or_where, " OR ", 0);
 		if (sql_or_where == NULL)
 		{
 			return COSQL_ERROR;

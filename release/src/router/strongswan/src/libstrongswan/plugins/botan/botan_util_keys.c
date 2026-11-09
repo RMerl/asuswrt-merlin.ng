@@ -29,6 +29,8 @@
 #include "botan_rsa_public_key.h"
 #include "botan_rsa_private_key.h"
 
+#include <botan/build.h>
+
 #include <asn1/asn1.h>
 #include <asn1/oid.h>
 

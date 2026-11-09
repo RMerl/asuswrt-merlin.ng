@@ -53,9 +53,6 @@ static struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] __attribute__ ((unuse
 #ifdef RTCONFIG_WIFI7
 	{ "11be",		NULL, 1 },
 #endif
-#ifdef RTCONFIG_WIFI8
-	{ "wifi_mode",		NULL, 1 },
-#endif
 	{ NULL, 		NULL, 0 }
 };
 

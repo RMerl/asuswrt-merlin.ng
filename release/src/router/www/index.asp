@@ -932,28 +932,28 @@ function clickEvent(obj){
 				var eLAN_str = "<#Ethernet_wan#>".replace(/WAN/, "LAN");
 				if(obj.id.indexOf("primary") != -1){
 					if(dualwan_first_if == "wan")
-						stitle = `<#AiMesh_WAN_Status#>`;
+						stitle = "<#Ethernet_wan#> Status";
 					else if(dualwan_first_if == "lan")
-						stitle = eLAN_str+" <#Status_Str#>";
+						stitle = eLAN_str+" Status";
 					else if(dualwan_first_if == "usb"){
 						if(gobi_support)
-							stitle = `<#Mobile_status_title#>`;
+							stitle = "<#Mobile_title#> Status";
 						else
-							stitle = `<#HSDPAConfig_hsdpa_mode_status#>`;
+							stitle = "<#menu5_4_4#> Status";
 					}
 					else	
 						stitle = "<#statusTitle_Primary_WAN#>";
 				}
 				else{
 					if(dualwan_second_if == "wan")
-						stitle = `<#AiMesh_WAN_Status#>`;
+						stitle = "<#Ethernet_wan#> Status";
 					else if(dualwan_second_if == "lan")
-						stitle = eLAN_str+" <#Status_Str#>";
+						stitle = eLAN_str+" Status";
 					else if(dualwan_second_if == "usb"){
 						if(gobi_support)
-							stitle = `<#Mobile_status_title#>`;
+							stitle = "<#Mobile_title#> Status";
 						else
-							stitle = `<#HSDPAConfig_hsdpa_mode_status#>`;
+							stitle = "<#menu5_4_4#> Status";
 					}
 					else
 						stitle = "<#statusTitle_Secondary_WAN#>";
@@ -1764,13 +1764,11 @@ function popupEditBlock(clientObj){
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(stainfo_support) {
-				if(clientObj.curTx != "")
-					connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
-				if(clientObj.curRx != "")
-					connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
-				connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
-			}
+			if(clientObj.curTx != "")
+				connectModeTip += "Tx Rate: " + clientObj.curTx + "\n";
+			if(clientObj.curRx != "")
+				connectModeTip += "Rx Rate: " + clientObj.curRx + "\n";
+			connectModeTip += "<#Access_Time#>: " + clientObj.wlConnectTime + "";
 		}
 
 		if(!isSwMode("MB")){
@@ -2827,7 +2825,7 @@ if (isSupport("AURA_SCHED")) {
 					</td>
 					<td colspan="2" valign="middle" bgcolor="#444f53" class="NM_radius_right" onclick="showstausframe('Router');">
 						<div>
-						<span id="SmartConnectName" style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; display:none"><#smart_connect_status#>: </span>
+						<span id="SmartConnectName" style="font-size:14px;font-family: Verdana, Arial, Helvetica, sans-serif; display:none">Smart Connect Status: </span>
 						</div>
 						<div>
 						<strong id="SmartConnectStatus" class="index_status" style="font-size:14px; display:none"><a style="color:#FFF;text-decoration:underline;" href="/

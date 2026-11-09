@@ -195,7 +195,7 @@ define(function () {
                 menuName: "<#UU_Accelerator#>",
                 index: "menu_UU",
                 tab: [
-                    {url: "UUAccelerator.asp", tabName: "<#UU_Accelerator#>"},
+                    {url: "UUAccelerator.html", tabName: "<#UU_Accelerator#>"},
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
             },
@@ -248,7 +248,6 @@ define(function () {
                     },
                     {url: "Advanced_AiDisk_ftp.asp", tabName: "<#menu5_4_2#>"},
                     {url: "PrinterServer.asp", tabName: "<#Network_Printer_Server#>"},
-                    {url: "Advanced_Modem_Content.asp", tabName: "<#menu5_4_4#>"},
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
             },
@@ -361,7 +360,7 @@ define(function () {
                     {url: "Main_IPTStatus_Content.asp", tabName: "<#menu5_7_5#>"},
                     {url: "Main_AdslStatus_Content.asp", tabName: "<#menu_dsl_log#>"},
                     {url: "Main_ConnStatus_Content.asp", tabName: "<#Connections#>"},
-					{url: "Main_Security_Change_Notification.asp", tabName: "<#Notification_security_update#>"},
+					{url: "Main_Security_Change_Notification.asp", tabName: "Security Update Notification"},
                     /* {url: "###Main_ConnStatus_Content.asp", tabName: "Captive Portal Connection Log"}, */
                     {url: "NULL", tabName: "__INHERIT__"}
                 ]
@@ -458,7 +457,6 @@ define(function () {
                 if (!gameMode_support || isUI4) {
                     if (!isSupport("gu_accel") || isUI4) {
                         retArray.push("menu_GameBoost");
-                        retArray.push("menu_UU");
                     }
                 }
 

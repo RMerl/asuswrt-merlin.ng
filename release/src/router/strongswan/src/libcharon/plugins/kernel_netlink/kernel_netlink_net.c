@@ -2876,6 +2876,11 @@ static status_t init_address_list(private_kernel_netlink_net_t *this)
 			}
 			addrs->destroy(addrs);
 		}
+		else
+		{
+			DBG3(DBG_KNL, "  %s (ignored, %s)", iface->ifname,
+				 iface->usable ? "down" : "configuration");
+		}
 	}
 	ifaces->destroy(ifaces);
 	this->lock->unlock(this->lock);

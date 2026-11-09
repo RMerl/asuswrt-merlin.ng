@@ -632,9 +632,7 @@
 .status_info .conn_type.LAN{
 	background-color: var(--brand-color);
 }
-.status_info .conn_type.WiFi6,
-.status_info .conn_type.WiFi7,
-.status_info .conn_type.WiFi8{
+.status_info .conn_type.WiFi7{
 	background-color: var( --icon-static-color);
 }
 .profile_setting.Get_Start{
@@ -834,89 +832,65 @@
 .client_content_container .conn_type.LAN{
 	background-color: var(--brand-color);
 }
-.client_content_container .conn_type.WiFi_2G{
-	width: 20px;
-	height: 20px;
-	display: inline-block;
-	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
-	background-image:
-		linear-gradient(var(--text-primary), var(--text-primary)),
-		linear-gradient(var(--brand-color), var(--brand-color));
-	background-size: 15px 8px, 100% 100%;
-	background-position: 3.4px 11.5px, center center;
-	background-repeat: no-repeat, no-repeat;
-	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
-	-webkit-mask-image: var(--icon-band-text-2G), var(--icon-wifi);
-	        mask-image: var(--icon-band-text-2G), var(--icon-wifi);
-	-webkit-mask-size: 15px 8px, 100% 100%;
-	        mask-size: 15px 8px, 100% 100%;
-	-webkit-mask-position: 3.4px 11.5px, center center;
-	        mask-position: 3.4px 11.5px, center center;
-	-webkit-mask-repeat: no-repeat, no-repeat;
-	        mask-repeat: no-repeat, no-repeat;
-}
-.client_content_container .conn_type.WiFi_5G{
-	width: 20px;
-	height: 20px;
-	display: inline-block;
-	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
-	background-image:
-		linear-gradient(var(--text-primary), var(--text-primary)),
-		linear-gradient(var(--brand-color), var(--brand-color));
-	background-size: 15px 8px, 100% 100%;
-	background-position: 3.4px 11.5px, center center;
-	background-repeat: no-repeat, no-repeat;
-	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
-	-webkit-mask-image: var(--icon-band-text-5G), var(--icon-wifi);
-	        mask-image: var(--icon-band-text-5G), var(--icon-wifi);
-	-webkit-mask-size: 15px 8px, 100% 100%;
-	        mask-size: 15px 8px, 100% 100%;
-	-webkit-mask-position: 3.4px 11.5px, center center;
-	        mask-position: 3.4px 11.5px, center center;
-	-webkit-mask-repeat: no-repeat, no-repeat;
-	        mask-repeat: no-repeat, no-repeat;
-}
-.client_content_container .conn_type.WiFi_6G{
-	width: 20px;
-	height: 20px;
-	display: inline-block;
-	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
-	background-image:
-		linear-gradient(var(--text-primary), var(--text-primary)),
-		linear-gradient(var(--brand-color), var(--brand-color));
-	background-size: 15px 8px, 100% 100%;
-	background-position: 3.4px 11.5px, center center;
-	background-repeat: no-repeat, no-repeat;
-	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
-	-webkit-mask-image: var(--icon-band-text-6G), var(--icon-wifi);
-	        mask-image: var(--icon-band-text-6G), var(--icon-wifi);
-	-webkit-mask-size: 15px 8px, 100% 100%;
-	        mask-size: 15px 8px, 100% 100%;
-	-webkit-mask-position: 3.4px 11.5px, center center;
-	        mask-position: 3.4px 11.5px, center center;
-	-webkit-mask-repeat: no-repeat, no-repeat;
-	        mask-repeat: no-repeat, no-repeat;
-}
+/* Wifi and the band label are painted by two independently masked pseudo-elements.
+   A single element cannot do this: its background layers are rectangles, so the
+   text-primary layer would also recolor whatever part of --icon-wifi it covers.
+   The host must stay unmasked - a mask on it would clip its own pseudo-elements. */
+.client_content_container .conn_type.WiFi_2G,
+.client_content_container .conn_type.WiFi_5G,
+.client_content_container .conn_type.WiFi_6G,
 .client_content_container .conn_type.WiFi_MLO{
-	width: 20px;
-	height: 20px;
+	position: relative;
+	width: 24px;
+	height: 24px;
 	display: inline-block;
-	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
-	background-image:
-		linear-gradient(var(--text-primary), var(--text-primary)),
-		linear-gradient(var(--brand-color), var(--brand-color));
-	background-size: 15px 9px, 100% 100%;
-	background-position: 3.4px 12.4px, center center;
-	background-repeat: no-repeat, no-repeat;
-	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
-	-webkit-mask-image: var(--icon-band-text-mlo), var(--icon-wifi);
-	        mask-image: var(--icon-band-text-mlo), var(--icon-wifi);
-	-webkit-mask-size: 15px 9px, 100% 100%;
-	        mask-size: 15px 9px, 100% 100%;
-	-webkit-mask-position: 3.4px 12.4px, center center;
-	        mask-position: 3.4px 12.4px, center center;
-	-webkit-mask-repeat: no-repeat, no-repeat;
-	        mask-repeat: no-repeat, no-repeat;
+	background: none;
+}
+.client_content_container .conn_type.WiFi_2G::before,
+.client_content_container .conn_type.WiFi_2G::after,
+.client_content_container .conn_type.WiFi_5G::before,
+.client_content_container .conn_type.WiFi_5G::after,
+.client_content_container .conn_type.WiFi_6G::before,
+.client_content_container .conn_type.WiFi_6G::after,
+.client_content_container .conn_type.WiFi_MLO::before,
+.client_content_container .conn_type.WiFi_MLO::after{
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+.client_content_container .conn_type.WiFi_2G::before,
+.client_content_container .conn_type.WiFi_5G::before,
+.client_content_container .conn_type.WiFi_6G::before,
+.client_content_container .conn_type.WiFi_MLO::before{
+	background-color: var(--brand-color);
+	-webkit-mask: var(--icon-wifi) center center / 100% 100% no-repeat;
+	        mask: var(--icon-wifi) center center / 100% 100% no-repeat;
+}
+/* Size each glyph with one axis + auto so its native aspect ratio is kept.
+   "2.4G" is 15x9, "5" is 6x9 and "6" is 7x9 - all three share the same 9-unit
+   type size, so a shared 10px height gives them a matching cap height. "MLO" is
+   a 16x6 wordmark: at a 10px height it would be 26.7px wide and overflow the
+   24px box, so it is sized by width instead. */
+.client_content_container .conn_type.WiFi_2G::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-2G) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-2G) center calc(100% - 3px) / 16px auto no-repeat;
+}
+.client_content_container .conn_type.WiFi_5G::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-5G) center calc(100% - 3px) / auto 10px no-repeat;
+	        mask: var(--icon-band-text-5G) center calc(100% - 3px) / auto 10px no-repeat;
+}
+.client_content_container .conn_type.WiFi_6G::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-6G) center calc(100% - 3px) / auto 10px no-repeat;
+	        mask: var(--icon-band-text-6G) center calc(100% - 3px) / auto 10px no-repeat;
+}
+.client_content_container .conn_type.WiFi_MLO::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-mlo) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-mlo) center calc(100% - 3px) / 16px auto no-repeat;
 }
 .feature_desc_container .title{
 	color: var(--brand-color);
@@ -958,7 +932,6 @@
 }
 .export_btn_container > .export_btn .btn_text:before{
 	background-color: var(--icon-active-color);
-	top: -10px !important;
 }
 .profile_setting_title.Scenarios > .title{
 	color: var(--brand-color);
@@ -1005,16 +978,6 @@
 	.export_btn_container > .export_btn .btn_text:before{
 		background-color: var(--icon-normal-color);
 	}
-}
-
-.customize_alert .cus_alert_main_desc{
-	color: var(--text-info-color) !important;
-}
-.customize_alert .cus_alert_sub_desc{
-	color: var(--wrt-btn-outline-primary-color) !important;
-}
-.customize_alert .cus_alert_hint{
-	color: var(--hint-text-el10-warning) !important;
 }
 
 /* ==================== Theme overrides: ROG (migrate diffs from sdn_ROG.css with tokens) ==================== */

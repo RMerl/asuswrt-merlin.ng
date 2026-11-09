@@ -468,10 +468,10 @@ int mtd_write_main(int argc, char *argv[])
 			dev = optarg;
 			break;
 		case 's':
-			skip_bytes = atoi(optarg);
+			skip_bytes = safe_atoi(optarg);
 			break;
 		case 'c':
-			count_bytes = atoi(optarg);
+			count_bytes = safe_atoi(optarg);
 			break;
 		}
 	}
@@ -877,7 +877,8 @@ mtd_erase(const char *mtd)
 			perror(mtd);
 			close(mtd_fd);
 #ifdef RTAC87U
-						safe_do_system("logger -t ATE mtd_erase failed: [%d]", errno);
+						sprintf(erase_err, "logger -t ATE mtd_erase failed: [%d]", errno);
+						system(erase_err);
 #endif
 			return errno;
 		}
@@ -885,7 +886,8 @@ mtd_erase(const char *mtd)
 
 	close(mtd_fd);
 #ifdef RTAC87U
-	safe_do_system("logger -t ATE mtd_erase OK:[%d]", errno);
+	sprintf(erase_err, "logger -t ATE mtd_erase OK:[%d]", errno);
+	system(erase_err);
 #endif
 	return 0;
 }
@@ -953,7 +955,7 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 	}
 	if ((s = strchr(host, ':'))) {
 		*s++ = '\0';
-		port = atoi(s);
+		port = safe_atoi(s);
 	}
 
 	/* Open socket */
@@ -993,7 +995,7 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 		_dprintf("%s", line);
 		for (s = line; *s && !isspace((int)*s); s++);
 		for (; isspace((int)*s); s++);
-		switch (atoi(s)) {
+		switch (safe_atoi(s)) {
 		case 200: if (offset) goto done; else break;
 		case 206: if (offset) break; else goto done;
 		default: goto done;
@@ -1008,7 +1010,7 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 		if (!strncasecmp(s, "Content-Length:", 15)) {
 			for (s += 15; isblank(*s); s++);
 			chomp(s);
-			len = atoi(s);
+			len = safe_atoi(s);
 		}
 		else if (!strncasecmp(s, "Transfer-Encoding:", 18)) {
 			for (s += 18; isblank(*s); s++);
@@ -1186,11 +1188,7 @@ fail:
 #endif
 
 #ifdef HND_ROUTER
-#if defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
-#include <bcm_flashutil.h>
-#else
 #include <bcm_hwdefs.h>
-#endif /* defined(WIFI7_SDK_20250506) || defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402) */
 
 #define TEMP_KERNEL_NVRM_FILE "/var/.temp.kernel.nvram"
 #define PRE_COMMIT_KERNEL_NVRM_FILE "/var/.kernel_nvram.setting.prec"

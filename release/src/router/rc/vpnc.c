@@ -333,7 +333,7 @@ vpnc_ppp_linkunit(char *linkname)
 		return -1;
 	if (!isdigit(linkname[3]))
 		return -1;
-	return atoi(&linkname[3]);
+	return safe_atoi(&linkname[3]);
 }
 
 void update_vpnc_state(char *prefix, int state, int reason)

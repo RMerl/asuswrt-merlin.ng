@@ -184,10 +184,20 @@ table.dataTable thead > tr > th.dt-orderable-asc span.dt-column-order:before, ta
 .dt-search {
     border-radius: var(--global-radius);
     background-color: var(--wrt-input-bg);
-    border-color: var(--wrt-input-border);
+    color: var(--wrt-input-color);
+    border: 1px solid var(--wrt-input-border);
     padding: 5px 15px;
     display: flex;
     align-items: center;
+}
+
+/* The input lives inside the .dt-search wrapper, so the wrapper never gets
+   :focus itself — use :focus-within so the focus ring shows when the inner
+   input is focused. */
+.dt-search:focus-within {
+    outline: 0;
+    border-color: var(--wrt-input-focus-border);
+    box-shadow: 0 0 0 3px var(--wrt-input-focus-ring);
 }
 
 .dt-search input {
@@ -314,10 +324,10 @@ i.icon-export-file {
     mask-image: var(--svg);
     -webkit-mask-image: var(--svg);
     mask-repeat: no-repeat;
-    mask-position: center -3px;
+    mask-position: center;
     mask-size: contain;
     -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center -3px;
+    -webkit-mask-position: center;
     -webkit-mask-size: contain;
     cursor: pointer;
 }

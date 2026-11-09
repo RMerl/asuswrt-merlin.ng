@@ -26,7 +26,7 @@ INSERT INTO identities (
 
 INSERT INTO identities (
   type, data
-) VALUES ( /* subjkey of 'C=CH, O=Linux strongSwan, CN=dave@strongswan.org' */
+) VALUES ( /* subjkey of 'C=CH, O=strongSwan Project, CN=dave@strongswan.org' */
   11, X'DAVE_SPK_HEX'
  );
 
@@ -40,13 +40,13 @@ INSERT INTO identities (
 
 INSERT INTO certificates (
    type, keytype, data
-) VALUES ( /* C=CH, O=Linux strongSwan, CN=strongSwan Root CA */
+) VALUES ( /* C=CH, O=strongSwan Project, CN=strongSwan Root CA */
   1, 1, X'CA_CERT_HEX'
 );
 
 INSERT INTO certificates (
    type, keytype, data
-) VALUES ( /* C=CH, O=Linux strongSwan, CN=dave@strongswan.org */
+) VALUES ( /* C=CH, O=strongSwan Project, CN=dave@strongswan.org */
   1, 1, X'DAVE_CERT_HEX'
 );
 
@@ -84,7 +84,7 @@ INSERT INTO certificate_identity (
 
 INSERT INTO private_keys (
    type, data
-) VALUES ( /* key of 'C=CH, O=Linux strongSwan, CN=dave@strongswan.org' */
+) VALUES ( /* key of 'C=CH, O=strongSwan Project, CN=dave@strongswan.org' */
   1, X'DAVE_KEY_HEX'
 );
 

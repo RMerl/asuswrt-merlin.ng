@@ -1,0 +1,122 @@
+#!/bin/bash
+
+while getopts "46idt:lr" opt
+do
+	case "$opt" in
+	4)
+		IPV4=YES
+		;;
+	6)
+		IPV6=YES
+		;;
+	i)
+		IPSEC=YES
+		;;
+	d)
+		DB=YES
+		;;
+	t)
+		ROUTING_TABLE=${OPTARG}
+		;;
+	l)
+		LEGACY=YES
+		;;
+	r)
+		RADIUS=YES
+		;;
+	esac
+done
+shift $((OPTIND-1))
+
+NAME=$(hostname)
+OUTPUT_DIR=$1
+
+if [ -z "$OUTPUT_DIR" ]
+then
+	exit 1
+fi
+
+# create/clear output dir
+mkdir -p $OUTPUT_DIR
+rm -f $OUTPUT_DIR/*
+
+# collect networking output
+if [ -n "$IPV4" ]
+then
+	{ ip route list table $ROUTING_TABLE; echo; } >> ${OUTPUT_DIR}/${NAME}.ip.route 2>/dev/null
+	{ iptables-save; echo; } >> ${OUTPUT_DIR}/${NAME}.iptables-save
+	{
+		echo -e '=== filter table ==='
+		iptables -v -n -L
+		echo -e '\n=== nat table ==='
+		iptables  -v -n -t nat -L
+		echo -e '\n=== mangle table ==='
+		iptables  -v -n -t mangle -L
+		echo
+	} >> ${OUTPUT_DIR}/${NAME}.iptables
+fi
+
+if [ -n "$IPV6" ]
+then
+	ip -6 route list table $ROUTING_TABLE >> ${OUTPUT_DIR}/${NAME}.ip.route 2>/dev/null
+	ip6tables-save >> ${OUTPUT_DIR}/${NAME}.iptables-save
+	{
+		echo -e '=== filter table ==='
+		ip6tables -v -n -L
+		echo -e '\n=== nat table ==='
+		ip6tables  -v -n -t nat -L
+		echo -e '\n=== mangle table ==='
+		ip6tables  -v -n -t mangle -L
+	} >> ${OUTPUT_DIR}/${NAME}.iptables
+fi
+
+# collect DB scheme/data
+if [ -n "$DB" ]
+then
+	cp /etc/db.d/ipsec.sql ${OUTPUT_DIR}/${NAME}.ipsec.sql >/dev/null 2>&1
+fi
+
+# collect XFRM and strongSwan output
+if [ -n "$IPSEC" ]
+then
+	ip -s xfrm policy > ${OUTPUT_DIR}/${NAME}.ip.policy
+	ip -s xfrm state > ${OUTPUT_DIR}/${NAME}.ip.state
+
+	cp /etc/strongswan.conf ${OUTPUT_DIR}/${NAME}.strongswan.conf
+	if [ -n "$LEGACY" ]
+	then
+		for file in ipsec.conf ipsec.secrets
+		do
+			cp /etc/$file ${OUTPUT_DIR}/${NAME}.$file
+		done
+
+		for command in statusall listall
+		do
+			ipsec $command > ${OUTPUT_DIR}/${NAME}.$command
+		done
+	else
+		cp /etc/swanctl/swanctl.conf ${OUTPUT_DIR}/${NAME}.swanctl.conf
+
+		swanctl --stats > ${OUTPUT_DIR}/${NAME}.swanctl.stats 2>&1
+
+		for subsys in conns algs certs pools authorities sas pols
+		do
+			swanctl --list-$subsys > ${OUTPUT_DIR}/${NAME}.swanctl.$subsys 2>&1
+		done
+	fi
+	if [ ! -f ${OUTPUT_DIR}/${NAME}.ipsec.sql ]
+	then
+		cp /etc/ipsec.d/ipsec.sql ${OUTPUT_DIR}/${NAME}.ipsec.sql >/dev/null 2>&1
+	fi
+fi
+
+# collect RADIUS output
+if [ -n "$RADIUS" ]
+then
+	for file in clients.conf radiusd.conf proxy.conf users sites-enabled/default sites-enabled/inner-tunnel mods-enabled/eap
+    do
+		cp /etc/freeradius/3.0/$file ${OUTPUT_DIR}/${NAME}.$(basename $file) >/dev/null 2>&1
+    done
+
+    cp /var/log/freeradius/radius.log ${OUTPUT_DIR}/${NAME}.radius.log
+fi

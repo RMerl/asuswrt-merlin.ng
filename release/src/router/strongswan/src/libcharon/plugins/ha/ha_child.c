@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2024 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -51,10 +52,10 @@ struct private_ha_child_t {
 
 METHOD(listener_t, child_keys, bool,
 	private_ha_child_t *this, ike_sa_t *ike_sa, child_sa_t *child_sa,
-	bool initiator, key_exchange_t *dh, chunk_t nonce_i, chunk_t nonce_r)
+	bool initiator, array_t *kes, chunk_t nonce_i, chunk_t nonce_r)
 {
 	ha_message_t *m;
-	chunk_t secret;
+	chunk_t secret, add_secret = chunk_empty;
 	proposal_t *proposal;
 	uint16_t alg, len;
 	linked_list_t *local_ts, *remote_ts;
@@ -63,6 +64,10 @@ METHOD(listener_t, child_keys, bool,
 
 	if (this->tunnel && this->tunnel->is_sa(this->tunnel, ike_sa))
 	{	/* do not sync SA between nodes */
+		return TRUE;
+	}
+	if (child_sa->use_per_cpu(child_sa))
+	{	/* ignore per-CPU SAs */
 		return TRUE;
 	}
 
@@ -91,20 +96,23 @@ METHOD(listener_t, child_keys, bool,
 	{
 		m->add_attribute(m, HA_ALG_INTEG, alg);
 	}
-	if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD, &alg, NULL))
-	{
-		m->add_attribute(m, HA_ALG_DH, alg);
-	}
+	m->add_key_exchange_methods(m, proposal);
 	if (proposal->get_algorithm(proposal, EXTENDED_SEQUENCE_NUMBERS, &alg, NULL))
 	{
 		m->add_attribute(m, HA_ESN, alg);
 	}
+
 	m->add_attribute(m, HA_NONCE_I, nonce_i);
 	m->add_attribute(m, HA_NONCE_R, nonce_r);
-	if (dh && dh->get_shared_secret(dh, &secret))
+	if (kes && key_exchange_concat_secrets(kes, &secret, &add_secret))
 	{
 		m->add_attribute(m, HA_SECRET, secret);
 		chunk_clear(&secret);
+		if (add_secret.len)
+		{
+			m->add_attribute(m, HA_ADD_SECRET, add_secret);
+			chunk_clear(&add_secret);
+		}
 	}
 
 	local_ts = linked_list_create();
@@ -163,7 +171,10 @@ METHOD(listener_t, child_state_change, bool,
 	{	/* do not sync SA between nodes */
 		return TRUE;
 	}
-
+	if (child_sa->use_per_cpu(child_sa))
+	{	/* ignore per-CPU SAs */
+		return TRUE;
+	}
 
 	if (state == CHILD_DESTROYING)
 	{

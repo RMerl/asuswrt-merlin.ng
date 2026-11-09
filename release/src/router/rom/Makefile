@@ -179,6 +179,7 @@ ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif
+
 ifeq ($(RTCONFIG_LIVE_UPDATE_RSA),y)
 ifneq ("$(wildcard $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem)","")
 	cp -f $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem $(INSTALLDIR)/usr/sbin/public.pem
@@ -284,6 +285,11 @@ ifeq ($(or $(RTCONFIG_BWDPI),$(RTCONFIG_HNS)),y)
 	cp -f webs_scripts/sig2nd_upgrade.sh $(INSTALLDIR)/usr/sbin/sig_upgrade.sh
 	cp -f webs_scripts/sig2nd_update.sh $(INSTALLDIR)/usr/sbin/sig_update.sh
 endif
+ifeq ($(RTCONFIG_GTBOOSTER),y)
+	cp -f webs_scripts/sigArk_upgrade.sh $(INSTALLDIR)/usr/sbin/ark_sig_upgrade.sh
+	cp -f webs_scripts/sigArk_update.sh $(INSTALLDIR)/usr/sbin/ark_sig_update.sh
+endif
+
 ifeq ($(RTCONFIG_LIVE_UPDATE_RSA),y)
 ifneq ("$(wildcard $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem)","")
 	cp -f $(KEY_PATH)/public$(LIVE_UPDATE_RSA).pem $(INSTALLDIR)/usr/sbin/public.pem
@@ -490,7 +496,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GS-BE18000 GS-BE12000 GS7_PRO))
 	mkdir -p $(INSTALLDIR)/rom/mxl
 	install -m 0644 mxl/asus282.bin $(INSTALLDIR)/rom/mxl/mxl.bin
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT7 GS7_PRO_MAX))
+ifeq ($(BUILD_NAME), GT7)
 	mkdir -p $(INSTALLDIR)/rom/mxl
 	install -m 0644 mxl/asus252_gt7.bin $(INSTALLDIR)/rom/mxl/mxl.bin
 endif

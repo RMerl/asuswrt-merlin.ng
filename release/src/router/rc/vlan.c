@@ -113,7 +113,7 @@ int vlan_enable(void)
 			if ((vstrsep(b, ">", &enable, &desc, &portset, &wlmap, &subnet_name, &intranet) != 6))
 				continue;
 
-			if (atoi(enable)) {
+			if (safe_atoi(enable)) {
 				vlan_enable = 1;
 				break;
 			}
@@ -217,7 +217,7 @@ void set_vlan_ifnames(int index, int wlmap, char *subnet_name, char *vlan_if)
 						memset(nic_lan_ifname, 0x0, sizeof(nic_lan_ifname));
 						sprintf(nic_lan_ifname, "%s", get_wlifname(unit, subunit, subunit_x, tmp));
 						if (strncmp(nic_lan_ifname, "rai", 3) == 0) {
-							p += sprintf(p, "vlan%d ", PRIMARY_WL_VLAN_ID + atoi(nic_lan_ifname + 3));
+							p += sprintf(p, "vlan%d ", PRIMARY_WL_VLAN_ID + safe_atoi(nic_lan_ifname + 3));
 						}
 #endif
 					}
@@ -701,7 +701,7 @@ int check_intranet_only(char *name)
 
 			if (!strcmp(name, subnet_name)) {
 				if (strlen(intranet))
-					intranet_only = atoi(intranet);
+					intranet_only = safe_atoi(intranet);
 				break;
 			}
 		}
@@ -857,7 +857,7 @@ int check_exist_subnet_access_rule(int index, int subnet_group_tmp)
 	if (nv) {
 		while ((b = strsep(&nvp, "<")) != NULL) {
 			int subnet_group_all = 0;
-			subnet_group_all = atoi(b);
+			subnet_group_all = safe_atoi(b);
 			
 			if ( (subnet_group_all & subnet_group_tmp) == subnet_group_tmp) {
 				result = 1;
@@ -885,7 +885,7 @@ void group_subnet_access_forward(FILE *fp)
 			int group = 0;
 			int i, j;
 
-			group = atoi(b);
+			group = safe_atoi(b);
 			for (i = 0; i < 8; i++) {
 				if ((group >> i) & 0x1) {
 					for (j = (i + 1); j < 8; j++) {

@@ -81,6 +81,8 @@ enum kernel_feature_t {
 	KERNEL_POLICY_SPI = (1<<4),
 	/** IPsec backend reports use time per SA via query_sa() */
 	KERNEL_SA_USE_TIME = (1<<5),
+	/** IPsec backend associates acquires and SAs with a sequence number */
+	KERNEL_ACQUIRE_SEQ = (1<<6),
 };
 
 /**

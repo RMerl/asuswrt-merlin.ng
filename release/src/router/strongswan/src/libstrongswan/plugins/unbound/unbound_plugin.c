@@ -58,7 +58,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *unbound_plugin_create()
+PLUGIN_DEFINE(unbound)
 {
 	private_unbound_plugin_t *this;
 

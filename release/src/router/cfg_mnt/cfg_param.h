@@ -810,45 +810,6 @@ enum {
 
 #endif
 
-#ifdef RTCONFIG_WIFI_MODE
-	/* sub feature Wi-Fi mode */
-	SUBFT_WIFI_MODE_BAND1,
-	SUBFT_WIFI_MODE_BAND2,
-	SUBFT_WIFI_MODE_BAND3,
-	SUBFT_WIFI_MODE_BAND4,
-#ifdef RTCONFIG_MULTILAN_CFG
-    SUBFT_WIFI_MODE_BAND1_G1,
-    SUBFT_WIFI_MODE_BAND2_G1,
-    SUBFT_WIFI_MODE_BAND3_G1,
-    SUBFT_WIFI_MODE_BAND4_G1,
-    SUBFT_WIFI_MODE_BAND1_G2,
-    SUBFT_WIFI_MODE_BAND2_G2,
-    SUBFT_WIFI_MODE_BAND3_G2,
-    SUBFT_WIFI_MODE_BAND4_G2,
-    SUBFT_WIFI_MODE_BAND1_G3,
-    SUBFT_WIFI_MODE_BAND2_G3,
-    SUBFT_WIFI_MODE_BAND3_G3,
-    SUBFT_WIFI_MODE_BAND4_G3,
-    SUBFT_WIFI_MODE_BAND1_G4,
-    SUBFT_WIFI_MODE_BAND2_G4,
-    SUBFT_WIFI_MODE_BAND3_G4,
-    SUBFT_WIFI_MODE_BAND4_G4,
-    SUBFT_WIFI_MODE_BAND1_G5,
-    SUBFT_WIFI_MODE_BAND2_G5,
-    SUBFT_WIFI_MODE_BAND3_G5,
-    SUBFT_WIFI_MODE_BAND4_G5,
-    SUBFT_WIFI_MODE_BAND1_G6,
-    SUBFT_WIFI_MODE_BAND2_G6,
-    SUBFT_WIFI_MODE_BAND3_G6,
-    SUBFT_WIFI_MODE_BAND4_G6,
-    SUBFT_WIFI_MODE_BAND1_G7,
-    SUBFT_WIFI_MODE_BAND2_G7,
-    SUBFT_WIFI_MODE_BAND3_G7,
-    SUBFT_WIFI_MODE_BAND4_G7,
-#endif	// RTCONFIG_MULTILAN_CFG
-#endif	// RTCONFIG_WIFI_MODE
-
-
 	SUBFT_NEW_EULA,
 
 	SUBFT_RA_RSSI_BAND1,
@@ -1423,44 +1384,6 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
     { "11be_b4_g7", SUBFT_11_BE_BAND4_G7, FT_WIRELESS },
 #endif	// RTCONFIG_MULTILAN_CFG
 #endif
-
-#ifdef RTCONFIG_WIFI_MODE
-	/* Wi-Fi mode */
-	{ "wifi_mode_b1", SUBFT_WIFI_MODE_BAND1, FT_WIRELESS },
-	{ "wifi_mode_b2", SUBFT_WIFI_MODE_BAND2, FT_WIRELESS },
-	{ "wifi_mode_b3", SUBFT_WIFI_MODE_BAND3, FT_WIRELESS },
-	{ "wifi_mode_b4", SUBFT_WIFI_MODE_BAND4, FT_WIRELESS },
-#ifdef RTCONFIG_MULTILAN_CFG
-    { "wifi_mode_b1_g1", SUBFT_WIFI_MODE_BAND1_G1, FT_WIRELESS },
-    { "wifi_mode_b2_g1", SUBFT_WIFI_MODE_BAND2_G1, FT_WIRELESS },
-    { "wifi_mode_b3_g1", SUBFT_WIFI_MODE_BAND3_G1, FT_WIRELESS },
-    { "wifi_mode_b4_g1", SUBFT_WIFI_MODE_BAND4_G1, FT_WIRELESS },
-    { "wifi_mode_b1_g2", SUBFT_WIFI_MODE_BAND1_G2, FT_WIRELESS },
-    { "wifi_mode_b2_g2", SUBFT_WIFI_MODE_BAND2_G2, FT_WIRELESS },
-    { "wifi_mode_b3_g2", SUBFT_WIFI_MODE_BAND3_G2, FT_WIRELESS },
-    { "wifi_mode_b4_g2", SUBFT_WIFI_MODE_BAND4_G2, FT_WIRELESS },
-    { "wifi_mode_b1_g3", SUBFT_WIFI_MODE_BAND1_G3, FT_WIRELESS },
-    { "wifi_mode_b2_g3", SUBFT_WIFI_MODE_BAND2_G3, FT_WIRELESS },
-    { "wifi_mode_b3_g3", SUBFT_WIFI_MODE_BAND3_G3, FT_WIRELESS },
-    { "wifi_mode_b4_g3", SUBFT_WIFI_MODE_BAND4_G3, FT_WIRELESS },
-    { "wifi_mode_b1_g4", SUBFT_WIFI_MODE_BAND1_G4, FT_WIRELESS },
-    { "wifi_mode_b2_g4", SUBFT_WIFI_MODE_BAND2_G4, FT_WIRELESS },
-    { "wifi_mode_b3_g4", SUBFT_WIFI_MODE_BAND3_G4, FT_WIRELESS },
-    { "wifi_mode_b4_g4", SUBFT_WIFI_MODE_BAND4_G4, FT_WIRELESS },
-    { "wifi_mode_b1_g5", SUBFT_WIFI_MODE_BAND1_G5, FT_WIRELESS },
-    { "wifi_mode_b2_g5", SUBFT_WIFI_MODE_BAND2_G5, FT_WIRELESS },
-    { "wifi_mode_b3_g5", SUBFT_WIFI_MODE_BAND3_G5, FT_WIRELESS },
-    { "wifi_mode_b4_g5", SUBFT_WIFI_MODE_BAND4_G5, FT_WIRELESS },
-    { "wifi_mode_b1_g6", SUBFT_WIFI_MODE_BAND1_G6, FT_WIRELESS },
-    { "wifi_mode_b2_g6", SUBFT_WIFI_MODE_BAND2_G6, FT_WIRELESS },
-    { "wifi_mode_b3_g6", SUBFT_WIFI_MODE_BAND3_G6, FT_WIRELESS },
-    { "wifi_mode_b4_g6", SUBFT_WIFI_MODE_BAND4_G6, FT_WIRELESS },
-    { "wifi_mode_b1_g7", SUBFT_WIFI_MODE_BAND1_G7, FT_WIRELESS },
-    { "wifi_mode_b2_g7", SUBFT_WIFI_MODE_BAND2_G7, FT_WIRELESS },
-    { "wifi_mode_b3_g7", SUBFT_WIFI_MODE_BAND3_G7, FT_WIRELESS },
-    { "wifi_mode_b4_g7", SUBFT_WIFI_MODE_BAND4_G7, FT_WIRELESS },
-#endif	// RTCONFIG_MULTILAN_CF
-#endif	// RTCONFIG_WIFI_MODE
 
 	/* new eula */
 	{ "new_eula",	SUBFT_NEW_EULA,	FT_NEW_EULA },
@@ -2430,10 +2353,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm1_11be", FT_APM_PARAM, SUBFT_APM_PARAM_1, "1",	0,	0},	
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm1_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_1, "ax",	0,	0},
-	{ "apm1_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_1, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM2
     { "apm2_enable", FT_APM_PARAM, SUBFT_APM_PARAM_2, "0",	0,	0},
     { "apm2_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_2, "",	0,	0},
@@ -2452,10 +2371,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm2_11be", FT_APM_PARAM, SUBFT_APM_PARAM_2, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm2_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_2, "ax",	0,	0},
-	{ "apm2_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_2, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM3
     { "apm3_enable", FT_APM_PARAM, SUBFT_APM_PARAM_3, "0",	0,	0},
     { "apm3_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_3, "",	0,	0},
@@ -2474,10 +2389,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm3_11be", FT_APM_PARAM, SUBFT_APM_PARAM_3, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm3_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_3, "ax",	0,	0},
-	{ "apm3_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_3, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM4
     { "apm4_enable", FT_APM_PARAM, SUBFT_APM_PARAM_4, "0",	0,	0},
     { "apm4_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_4, "",	0,	0},
@@ -2496,10 +2407,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm4_11be", FT_APM_PARAM, SUBFT_APM_PARAM_4, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm4_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_4, "ax",	0,	0},
-	{ "apm4_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_4, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM5
     { "apm5_enable", FT_APM_PARAM, SUBFT_APM_PARAM_5, "0",	0,	0},
     { "apm5_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_5, "",	0,	0},
@@ -2518,10 +2425,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm5_11be", FT_APM_PARAM, SUBFT_APM_PARAM_5, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm5_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_5, "ax",	0,	0},
-	{ "apm5_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_5, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM6
     { "apm6_enable", FT_APM_PARAM, SUBFT_APM_PARAM_6, "0",	0,	0},
     { "apm6_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_6, "",	0,	0},
@@ -2540,10 +2443,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm6_11be", FT_APM_PARAM, SUBFT_APM_PARAM_6, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm6_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_6, "ax",	0,	0},
-	{ "apm6_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_6, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM7
     { "apm7_enable", FT_APM_PARAM, SUBFT_APM_PARAM_7, "0",	0,	0},
     { "apm7_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_7, "",	0,	0},
@@ -2562,10 +2461,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm7_11be", FT_APM_PARAM, SUBFT_APM_PARAM_7, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm7_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_7, "ax",	0,	0},
-	{ "apm7_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_7, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM8
     { "apm8_enable", FT_APM_PARAM, SUBFT_APM_PARAM_8, "0",	0,	0},
     { "apm8_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_8, "",	0,	0},
@@ -2584,10 +2479,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm8_11be", FT_APM_PARAM, SUBFT_APM_PARAM_8, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm8_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_8, "ax",	0,	0},
-	{ "apm8_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_8, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM9
     { "apm9_enable", FT_APM_PARAM, SUBFT_APM_PARAM_9, "0",	0,	0},
     { "apm9_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_9, "",	0,	0},
@@ -2606,10 +2497,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm9_11be", FT_APM_PARAM, SUBFT_APM_PARAM_9, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm9_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_9, "ax",	0,	0},
-	{ "apm9_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_9, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
     // APM10
     { "apm10_enable", FT_APM_PARAM, SUBFT_APM_PARAM_10, "0",	0,	0},
     { "apm10_ssid", FT_APM_PARAM, SUBFT_APM_PARAM_10, "",	0,	0},
@@ -2628,10 +2515,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #if RTCONFIG_WIFI7
     { "apm10_11be", FT_APM_PARAM, SUBFT_APM_PARAM_10, "1",	0,	0},
 #endif
-#if RTCONFIG_WIFI_MODE
-	{ "apm10_wifi_mode", FT_APM_PARAM, SUBFT_APM_PARAM_10, "ax",	0,	0},
-	{ "apm10_iot_cmpt", FT_APM_PARAM, SUBFT_APM_PARAM_10, "disable",	0,	0},
-#endif	// RTCONFIG_WIFI_MODE
 #endif	// RTCONFIG_MULTILAN_MWL
 	// APG0
 	{ "apg0_enable", FT_APG_PARAM, SUBFT_APGROUP_PARAM_0, "0",	0,	0},
@@ -4084,45 +3967,6 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 #endif	// RTCONFIG_MULTILAN_CFG
 #endif
 
-#ifdef RTCONFIG_WIFI_MODE
-	/* Wi-Fi mode */
-	{ "wl0_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1,	"ax",	0,	0},
-	{ "wl1_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2,	"ax",	0,	0},
-	{ "wl2_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3,	"ax",	0,	0},
-	{ "wl3_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4,	"ax",	0,	0},
-
-#ifdef RTCONFIG_MULTILAN_CFG
-    { "wl0.1_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1_G1,	"ax",	0,	0},
-    { "wl1.1_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2_G1, "ax",	0,	0},
-    { "wl2.1_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3_G1, "ax",	0,	0},
-    { "wl3.1_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4_G1,	"ax",	0,	0},
-    { "wl0.2_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1_G2,	"ax",	0,	0},
-    { "wl1.2_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2_G2,	"ax",	0,	0},
-    { "wl2.2_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3_G2,	"ax",	0,	0},
-    { "wl3.2_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4_G2,	"ax",	0,	0},
-    { "wl0.3_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1_G3,	"ax",	0,	0},
-    { "wl1.3_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2_G3,	"ax",	0,	0},
-    { "wl2.3_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3_G3,	"ax",	0,	0},
-    { "wl3.3_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4_G3,	"ax",	0,	0},
-    { "wl0.4_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1_G4,	"ax",	0,	0},
-    { "wl1.4_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2_G4,	"ax",	0,	0},
-    { "wl2.4_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3_G4,	"ax",	0,	0},
-    { "wl3.4_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4_G4,	"ax",	0,	0},
-    { "wl0.5_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1_G5,	"ax",	0,	0},
-    { "wl1.5_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2_G5,	"ax",	0,	0},
-    { "wl2.5_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3_G5,	"ax",	0,	0},
-    { "wl3.5_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4_G5,	"ax",	0,	0},
-    { "wl0.6_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1_G6,	"ax",	0,	0},
-    { "wl1.6_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2_G6,	"ax",	0,	0},
-    { "wl2.6_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3_G6,	"ax",	0,	0},
-    { "wl3.6_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4_G6,	"ax",	0,	0},
-    { "wl0.7_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND1_G7,	"ax",	0,	0},
-    { "wl1.7_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND2_G7,	"ax",	0,	0},
-    { "wl2.7_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND3_G7,	"ax",	0,	0},
-    { "wl3.7_wifi_mode", FT_WIRELESS, SUBFT_WIFI_MODE_BAND4_G7,	"ax",	0,	0},
-#endif	// RTCONFIG_MULTILAN_CFG
-#endif	// RTCONFIG_WIFI_MODE
-
 	/* new eula */
 	{ "ASUS_NEW_EULA", FT_NEW_EULA, SUBFT_NEW_EULA,		"0",	0,	0},
 	{ "ASUS_NEW_EULA_from", FT_NEW_EULA, SUBFT_NEW_EULA,		"",	0,	0},
@@ -4261,9 +4105,6 @@ static struct smart_connect_nvsuffix_t smart_connect_nvsuffix_list[] = {
 	{ "radius_port\0", NULL },
 #ifdef RTCONFIG_WIFI7
 	{ "11be\0",		NULL },
-#endif
-#ifdef RTCONFIG_WIFI8
-	{ "wifi_mode\0",		NULL },
 #endif
 	{ NULL }
 };

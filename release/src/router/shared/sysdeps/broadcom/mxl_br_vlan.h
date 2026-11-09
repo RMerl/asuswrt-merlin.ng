@@ -54,10 +54,6 @@ extern "C"
 #define WAN_PORT 0
 #define CPU_WAN_PORT 0
 #define CPU_LAN_PORT 7
-#elif defined(GS7_PRO_MAX)
-#define WAN_PORT 0
-#define CPU_WAN_PORT 0
-#define CPU_LAN_PORT 6
 #else
 #error "Unsupported platform"
 #endif

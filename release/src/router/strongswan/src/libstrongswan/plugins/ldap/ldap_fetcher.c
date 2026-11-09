@@ -133,6 +133,7 @@ METHOD(fetcher_t, fetch, status_t,
 
 	ldap_set_option(ldap, LDAP_OPT_PROTOCOL_VERSION, &ldap_version);
 	ldap_set_option(ldap, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
+	ldap_set_option(ldap, LDAP_OPT_TIMEOUT, &timeout);
 
 	DBG2(DBG_LIB, "sending LDAP request to '%s'...", url);
 

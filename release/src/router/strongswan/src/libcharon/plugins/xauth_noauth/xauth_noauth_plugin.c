@@ -45,7 +45,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *xauth_noauth_plugin_create()
+PLUGIN_DEFINE(xauth_noauth)
 {
 	xauth_noauth_plugin_t *this;
 

@@ -294,7 +294,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *systime_fix_plugin_create()
+PLUGIN_DEFINE(systime_fix)
 {
 	private_systime_fix_plugin_t *this;
 

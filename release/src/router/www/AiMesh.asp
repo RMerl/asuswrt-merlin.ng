@@ -36,14 +36,7 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
-	let rawValue = getUrlParameter(paramName);
-	if (!rawValue) return "";
-	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
-	return allowedValues.includes(safePrefix) ? safePrefix : "";
-}
-
-var theme = getSafeTheme("current_theme").toUpperCase();
+var theme = getUrlParameter("current_theme").toLocaleUpperCase();
 if (isSupport("UI4")) {
 	$('link').filter("[href*='./aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="./aimesh/aimesh_topology_v4.css">');
 } else if (theme == "WHITE") {

@@ -27,11 +27,11 @@ struct {
 	{ "rsa-sha256-sha512", { SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_RSA_EMSA_PKCS1_SHA2_512, 0 }, {0}},
 	{ "ecdsa-sha256", { SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }, {0}},
 	{ "rsa-sha256-ecdsa-sha256", { SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }, {0}},
-	{ "pubkey-sha256", { SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, SIGN_BLISS_WITH_SHA2_256, 0 }, {0}},
+	{ "pubkey-sha256", { SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }, {0}},
 	{ "ike:rsa-sha256", {0}, { SIGN_RSA_EMSA_PKCS1_SHA2_256, 0 }},
 	{ "ike:rsa-sha256-rsa-sha256", { SIGN_RSA_EMSA_PKCS1_SHA2_256, 0 }, { SIGN_RSA_EMSA_PKCS1_SHA2_256, 0 }},
 	{ "rsa-sha256-ike:rsa-sha256", { SIGN_RSA_EMSA_PKCS1_SHA2_256, 0 }, { SIGN_RSA_EMSA_PKCS1_SHA2_256, 0 }},
-	{ "ike:pubkey-sha256", {0}, { SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, SIGN_BLISS_WITH_SHA2_256, 0 }},
+	{ "ike:pubkey-sha256", {0}, { SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }},
 	{ "rsa-ecdsa-sha256", { SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }, {0}},
 	{ "rsa-4096-ecdsa-sha256", { SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }, {0}},
 	{ "rsa-4096-ecdsa-256-sha256", { SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }, {0}},
@@ -182,7 +182,7 @@ struct {
 	signature_scheme_t sig[6];
 	signature_param_types_t p[6];
 } sig_constraints_rsa_pss_tests[] = {
-	{ "pubkey-sha256", { SIGN_RSA_EMSA_PSS, SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, SIGN_BLISS_WITH_SHA2_256, 0 }, {
+	{ "pubkey-sha256", { SIGN_RSA_EMSA_PSS, SIGN_RSA_EMSA_PKCS1_SHA2_256, SIGN_ECDSA_WITH_SHA256_DER, SIGN_ECDSA_256, 0 }, {
 		{ .pss = { .hash = HASH_SHA256, .mgf1_hash = HASH_SHA256, .salt_len = HASH_SIZE_SHA256, }}, {}, {}, {}, {}}},
 	{ "rsa-sha256", { SIGN_RSA_EMSA_PSS, SIGN_RSA_EMSA_PKCS1_SHA2_256, 0 }, {
 		{ .pss = { .hash = HASH_SHA256, .mgf1_hash = HASH_SHA256, .salt_len = HASH_SIZE_SHA256, }}, {}}},

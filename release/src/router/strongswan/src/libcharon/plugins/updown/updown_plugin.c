@@ -101,7 +101,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *updown_plugin_create()
+PLUGIN_DEFINE(updown)
 {
 	private_updown_plugin_t *this;
 

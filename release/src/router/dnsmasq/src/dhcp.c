@@ -41,8 +41,14 @@ static int make_fd(int port)
 #if defined(IP_MTU_DISCOVER) && defined(IP_PMTUDISC_DONT)
   int mtu = IP_PMTUDISC_DONT;
 #endif
+#if defined(ASUSWRT)
+#if defined(IP_TOS) && defined(IPTOS_CLASS_CS6)
+  int tos = 0;
+#endif
+#else
 #if defined(IP_TOS) && defined(IPTOS_CLASS_CS6)
   int tos = IPTOS_CLASS_CS6;
+#endif
 #endif
 
   if (fd == -1)

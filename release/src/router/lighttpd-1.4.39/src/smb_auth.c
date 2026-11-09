@@ -1,4 +1,6 @@
 #include "base.h"
+#include <fcntl.h>
+#include <unistd.h>
 
 #ifdef HAVE_LIBSMBCLIENT
 
@@ -55,6 +57,22 @@ int change_port_rule_on_iptable(int toOpen, int port_number);
 
 #define DBE 0
 #define LIGHTTPD_ARPPING_PID_FILE_PATH "/tmp/lighttpd/lighttpd-arpping.pid"
+
+static void generate_share_link_id(char *buf, size_t buf_size)
+{
+	unsigned int rand_val = 0;
+	int fd = open("/dev/urandom", O_RDONLY);
+	if (fd >= 0) {
+		read(fd, &rand_val, sizeof(rand_val));
+		close(fd);
+	} else {
+		/* fallback: combine pid + time as last resort */
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		rand_val = (unsigned int)(tv.tv_usec ^ tv.tv_sec ^ (unsigned int)getpid());
+	}
+	snprintf(buf, buf_size, "AICLOUD%08x", rand_val);
+}
 
 int file_exist(const char *filepath)
 {
@@ -1375,7 +1393,7 @@ char *replace_str(char *st, char *orig, char *repl, char *buff, size_t buff_size
 		return st; // check buffer size before copy
 	strncpy(buff, st, ch - st);
 	buff[ch - st] = 0;
-	if (strlen(repl) + strlen(ch + strlen(orig)) >= buff_size)
+	if ((size_t)(ch - st) + strlen(repl) + strlen(ch + strlen(orig)) >= buff_size)
 		return st; // check buffer size before sprintf
 	sprintf(buff + (ch - st), "%s%s", repl, ch + strlen(orig));
 
@@ -2150,7 +2168,7 @@ int smbc_parser_basic_authentication(server *srv, connection *con, char **userna
 			size_t bmsg_size = sizeof(bmsg);
 
 			// fetech the username and password from credential
-			size_t len = basic_msg->used > bmsg_size ? bmsg_size : basic_msg->used;
+			size_t len = basic_msg->used > bmsg_size - 1 ? bmsg_size - 1 : basic_msg->used;
 			memcpy(bmsg, basic_msg->ptr, len);
 			bmsg[len] = '\0';
 
@@ -2344,11 +2362,7 @@ int generate_sharelink(server *srv,
 			/////////////////////////////////////////////////
 
 			char share_link[1024];
-			struct timeval tv;
-			unsigned long long now_utime;
-			gettimeofday(&tv, NULL);
-			now_utime = tv.tv_sec * 1000000 + tv.tv_usec;
-			sprintf(share_link, "AICLOUD%d", abs(now_utime));
+			generate_share_link_id(share_link, sizeof(share_link));
 
 			share_link_info_t *share_link_info;
 			share_link_info = (share_link_info_t *)calloc(1, sizeof(share_link_info_t));
@@ -3094,11 +3108,7 @@ void process_share_link_for_router_sync_use()
 					share_link_info = (share_link_info_t *)calloc(1, sizeof(share_link_info_t));
 
 					char share_link[1024];
-					struct timeval tv;
-					unsigned long long now_utime;
-					gettimeofday(&tv, NULL);
-					now_utime = tv.tv_sec * 1000000 + tv.tv_usec;
-					sprintf(share_link, "AICLOUD%d", abs(now_utime));
+					generate_share_link_id(share_link, sizeof(share_link));
 
 					buffer_append_string(return_sharelink, share_link);
 					buffer_append_string(return_sharelink, ">");

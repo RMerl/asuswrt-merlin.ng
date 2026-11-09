@@ -71,7 +71,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * Described in header
  */
-plugin_t *kdf_plugin_create()
+PLUGIN_DEFINE(kdf)
 {
 	private_kdf_plugin_t *this;
 

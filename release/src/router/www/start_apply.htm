@@ -880,8 +880,8 @@ function initial(){
 				top.location.href = next_page;
 			}, (parseInt(restart_time)+2)*1000);
 		}
-	}else if(action_script == "start_sig_check"){	//check signature, do nothing
-		
+	}else if(action_script.indexOf("start_sig_check") != -1 || action_script.indexOf("start_ark_sig_check") != -1){
+		//check signature, do nothing
 	}
 	else if(getflag == "liveUpdate"){
 		setTimeout("parent.detect_firmware();", 5000);

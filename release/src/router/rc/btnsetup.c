@@ -1096,11 +1096,13 @@ int isWAN_detect()
 
 	remove(isWAN_DETECT_FILE);
 	i = rand_seed_by_time() % 3;
-	safe_do_system_to_file(isWAN_DETECT_FILE, 0, "/usr/sbin/tcpcheck 5 %s:53 %s:53", detect_host[i], detect_host[(i+1)%3]);
+	snprintf(cmd, sizeof(cmd), "/usr/sbin/tcpcheck 5 %s:53 %s:53 >%s", detect_host[i], detect_host[(i+1)%3], isWAN_DETECT_FILE);
 	if (iw_debug) fprintf(stderr, "cmd: %s\n", cmd);
+	system(cmd);
 	if (iw_debug)
 	{
-		safe_do_system("cat %s", isWAN_DETECT_FILE);
+		snprintf(cmd, sizeof(cmd), "cat %s", isWAN_DETECT_FILE);
+		system(cmd);
 //		doSystem("cat %s", isWAN_DETECT_FILE);
 	}
 

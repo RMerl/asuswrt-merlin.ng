@@ -5193,6 +5193,7 @@ function set_primary_info(_node_info){
 	}
 	$(".primary_info_bg").find("#mac").html(mac);
 	$(".primary_info_bg").find(".fw_version_text").empty();
+	$(".primary_info_bg").find(".fw_version_icon").empty();
 	var $fw_version = $("<span>");
 	$fw_version.html(fwver.split('-')[0]);
 	$(".primary_info_bg").find(".fw_version_text").append($fw_version);
@@ -5218,6 +5219,12 @@ function set_primary_info(_node_info){
 	}
 	else
 		$(".primary_info_bg").find(".fw_version_text_bg").find(".hover_pop_hint_bg").remove();
+
+	// Append ASUSWRT 6.0 badge to fw_version_text
+	var $asuswrt60_badge = $("<div>").html(get_asuswrt60_badge_html(_node_info.capability[47]));
+	if($asuswrt60_badge.html() !== '') {
+		$(".primary_info_bg").find(".fw_version_icon").append($asuswrt60_badge);
+	}
 
 	var isReNode = (mac != cap_mac) ? true : false;
 	if(isReNode){
@@ -6212,6 +6219,24 @@ function handle_ui_model_name(_model_name, _ui_model_name){
 		result = _ui_model_name;
 	return result;
 }
+function get_asuswrt60_badge_html(capability_value){
+
+	if(typeof capability_value === 'undefined') {
+		return '';
+	}
+	else{
+
+		var UI4_BIT = 0;			// BIT(0)
+		var GTBOOSTER_BIT = 1;		// BIT(1)
+		var UI4_SUPPORT = 1 << UI4_BIT;
+		var GTBOOSTER_SUPPORT = 1 << GTBOOSTER_BIT;
+		if((capability_value & UI4_SUPPORT) && (capability_value & GTBOOSTER_SUPPORT)){
+			return '<span class="badge bg-primary" style="margin-top:-20px;margin-left:120px;">ASUSWRT 6.0</span>';
+		}
+	}
+
+	return '';
+}
 function optimization_node(){
 	var e = event;
 	event.stopPropagation();
@@ -6731,6 +6756,7 @@ $(document).ready(initial_AiMesh);
 			<div class="fw_version_text_bg">
 				<div>
 					<div class="fw_version_text"></div>
+					<div class="fw_version_icon"></div>
 				</div>
 			</div>
 		</div>

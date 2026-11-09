@@ -1148,6 +1148,42 @@
     --gradient-accent-end: var(--primary-10);
     --gradient-accent-end-rgb: var(--primary-10-rgb);
 
+    /* brand tone palettes（light） */
+    --brand-tone-accent: var(--primary-60);
+    --brand-tone-border-soft: color-mix(in srgb, var(--primary-30) 28%, var(--border-default) 72%);
+    --brand-tone-border-medium: color-mix(in srgb, var(--primary-40) 42%, var(--border-default) 58%);
+    --brand-tone-overlay-05: color-mix(in srgb, var(--primary-60) 5%, transparent);
+    --brand-tone-overlay-10: color-mix(in srgb, var(--primary-60) 10%, transparent);
+    --brand-tone-overlay-18: color-mix(in srgb, var(--primary-50) 18%, transparent);
+    --brand-tone-overlay-32: color-mix(in srgb, var(--primary-30) 32%, transparent);
+    --brand-tone-overlay-42: color-mix(in srgb, var(--primary-40) 42%, transparent);
+
+    /* brand tone semantics（light） */
+    --brand-tone-border-base: var(--brand-tone-border-soft);
+    --brand-tone-border-emphasis: var(--brand-tone-border-medium);
+    --brand-tone-surface-depth: var(--brand-tone-overlay-05);
+    --brand-tone-surface-base: var(--brand-tone-overlay-10);
+    --brand-tone-surface-active: var(--brand-tone-overlay-18);
+    --brand-tone-surface-highlight: var(--brand-tone-overlay-32);
+    --brand-tone-surface-strong: var(--brand-tone-overlay-42);
+    --brand-tone-stripe-gradient: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary-50) 86%, var(--white-alpha-100) 80%) 0%,
+        color-mix(in srgb, var(--primary-60) 90%, var(--black-alpha-100) 10%) 100%
+    );
+    --brand-tone-stripe-gradient-strong: linear-gradient(
+        135deg,
+        var(--primary-50) -10%,
+        var(--primary-40) 50%,
+        var(--primary-60) 100%
+    );
+    --brand-tone-stripe-glow: radial-gradient(
+        circle at 30% 25%,
+        color-mix(in srgb, var(--primary-20) 32%, transparent) 0%,
+        transparent 55%
+    ), var(--brand-tone-accent);
+
+    --text-on-emphasis-secondary: color-mix(in srgb, var(--text-primary) 60%, var(--brand-primary) 50%);
 
     /* interaction/border/focus cores */
     --surface-hover: var(--neutral-20);
@@ -1365,6 +1401,43 @@
     --gradient-accent-mid-02-rgb: var(--primary-70-rgb);
     --gradient-accent-end: var(--primary-80);
     --gradient-accent-end-rgb: var(--primary-80-rgb);
+
+    /* brand tone palettes（dark） */
+    --brand-tone-accent: var(--primary-50);
+    --brand-tone-border-soft: color-mix(in srgb, var(--primary-40) 24%, var(--border-default) 76%);
+    --brand-tone-border-medium: color-mix(in srgb, var(--primary-60) 34%, var(--border-default) 66%);
+    --brand-tone-overlay-05: color-mix(in srgb, var(--primary-50) 6%, transparent);
+    --brand-tone-overlay-10: color-mix(in srgb, var(--primary-50) 12%, transparent);
+    --brand-tone-overlay-18: color-mix(in srgb, var(--primary-60) 20%, transparent);
+    --brand-tone-overlay-32: color-mix(in srgb, var(--primary-40) 34%, transparent);
+    --brand-tone-overlay-42: color-mix(in srgb, var(--primary-60) 44%, transparent);
+
+    /* brand tone semantics（dark） */
+    --brand-tone-border-base: var(--brand-tone-border-soft);
+    --brand-tone-border-emphasis: var(--brand-tone-border-medium);
+    --brand-tone-surface-depth: var(--brand-tone-overlay-05);
+    --brand-tone-surface-base: var(--brand-tone-overlay-10);
+    --brand-tone-surface-active: var(--brand-tone-overlay-18);
+    --brand-tone-surface-highlight: var(--brand-tone-overlay-32);
+    --brand-tone-surface-strong: var(--brand-tone-overlay-42);
+    --brand-tone-stripe-gradient: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--primary-40) 88%, var(--white-alpha-100) 12%) 0%,
+        color-mix(in srgb, var(--primary-70) 90%, var(--black-alpha-100) 10%) 100%
+    );
+    --brand-tone-stripe-gradient-strong: linear-gradient(
+        135deg,
+        var(--primary-60) 0%,
+        var(--primary-50) 50%,
+        var(--primary-70) 100%
+    );
+    --brand-tone-stripe-glow: radial-gradient(
+        circle at 30% 25%,
+        color-mix(in srgb, var(--primary-40) 30%, transparent) 0%,
+        transparent 55%
+    ), var(--brand-tone-accent);
+
+    --text-on-emphasis-secondary: color-mix(in srgb, var(--text-primary) 60%, var(--brand-primary) 50%);
 
     /* optional chart cores */
     --chart-bg-rgb: var(--neutral-80-rgb);
@@ -2624,6 +2697,10 @@
     --chart-interference-wifi-rgb: var(--orange-50-rgb);
     --chart-interference-nonwifi-rgb: var(--purple-50-rgb);
     --chart-interference-total-rgb: var(--red-50-rgb);
+
+    --modal-bg-color: var(--neutral-100);
+    --modal-header-bg-color: var(--card-bg-color);
+    --model-footer-bg-color: var(--card-bg-color);
 }
 
 /* Backward-compat aliases for legacy variables */
@@ -2644,6 +2721,7 @@
     --chart-bg-warning: rgba(var(--chart-seq-4-rgb), .12);
     --chart-color-unplug: rgb(var(--chart-seq-8-rgb), 1);
     --chart-bg-unplug: rgba(var(--chart-seq-8-rgb), .12);
+    --chart-color-connected: #10b880;
 }
 
 /* ==================== Brand Palettes - RT ==================== */

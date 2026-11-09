@@ -58,7 +58,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * Described in header
  */
-plugin_t *rc2_plugin_create()
+PLUGIN_DEFINE(rc2)
 {
 	private_rc2_plugin_t *this;
 

@@ -500,7 +500,8 @@ static bool commit_handle(struct iptc_handle *ipth)
 static bool handle_sa(child_sa_t *child_sa)
 {
 	return child_sa->get_mark(child_sa, TRUE).value &&
-		   child_sa->get_mark(child_sa, FALSE).value;
+		   child_sa->get_mark(child_sa, FALSE).value &&
+		   !child_sa->use_per_cpu(child_sa);
 }
 
 METHOD(listener_t, child_updown, bool,
@@ -544,7 +545,7 @@ METHOD(listener_t, child_rekey, bool,
 	private_forecast_listener_t *this, ike_sa_t *ike_sa,
 	child_sa_t *old, child_sa_t *new)
 {
-	struct iptc_handle *ipth;;
+	struct iptc_handle *ipth;
 	host_t *lhost, *rhost;
 
 	lhost = ike_sa->get_my_host(ike_sa);

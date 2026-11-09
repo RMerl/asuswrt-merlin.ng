@@ -799,8 +799,15 @@
       }
     },
     {
-      "_id": "40,41,42,43,44,45,46,47,48",
+      "_id": "40,41,42,45,46,47,48",
       "name": "Malicious",
+      "main_category_id": "4",
+      "language": {},
+      "display": false
+    },
+    {
+      "_id": "43,44",
+      "name": "IDS",
       "main_category_id": "4",
       "language": {},
       "display": false
@@ -2582,5 +2589,5 @@
       }
     }
   ],
-  "version": "1.2"
+  "version": "1.3"
 }

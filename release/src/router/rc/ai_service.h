@@ -105,6 +105,7 @@ uint32_t commands_to_flag(char *);
 
 #define AI_NVM_AIBOARD_MAC "aiboard_macaddr"
 #define AI_SDK_VER_CODE "ANPU"
+#define AI_RESCUE_FLAG_FILE "/data/AI_RESCUE"
 
 /* request stage, 'ongoing' or 'success' */
 #define AI_REQ_ST_START "ongoing"
@@ -246,6 +247,5 @@ typedef struct LinkedList {
 	ai_req_node_t *tail;
 	pthread_mutex_t lock;
 } ai_req_list_t;
-
 
 #endif

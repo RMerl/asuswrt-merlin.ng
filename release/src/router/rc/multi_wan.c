@@ -87,7 +87,7 @@ int mtwan_get_real_wan(const int unit, char *prefix, const size_t len)
 	if(!dualwan_str)
 		return -1;
 
-	dualwan_idx = atoi(dualwan_str);
+	dualwan_idx = safe_atoi(dualwan_str);
 
 	if (dualwan_idx == WAN_UNIT_NONE)
 	{
@@ -158,7 +158,8 @@ static int _remove_iptables(const char *ifname)
 		{
 			while(fgets(tmp, sizeof(tmp), fp))
 			{
-				safe_do_system("iptables -t %s %s", tables[i], tmp);
+				snprintf(cmd, sizeof(cmd), "iptables -t %s %s", tables[i], tmp);
+				system(cmd);
 			}
 			fclose(fp);
 		}
@@ -173,7 +174,8 @@ static void _show_routing_table(const int unit)
 	FILE *fp;
 
 	mtwan_get_route_table_id(unit, table, sizeof(table));
-	safe_do_system_to_file("/tmp/rttmp", 0, "ip route show table %s", table);
+	snprintf(buf, sizeof(buf), "ip route show table %s > /tmp/rttmp", table);
+	system(buf);
 	fp = fopen("/tmp/rttmp", "r");
 
 	_dprintf("[%s]wan%d routing table:\n", __FUNCTION__, unit);
@@ -286,7 +288,7 @@ int mtwan_get_num_of_wan_by_group(int mtwan_idx, int mtwan_group)
 	strlcpy(mt_group, nvram_safe_get(nvname), sizeof(mt_group));
 	foreach(word, mt_group, next)
 	{
-		if (mtwan_group == atoi(word))
+		if (mtwan_group == safe_atoi(word))
 			cnt++;
 	}
 	return (cnt);
@@ -804,9 +806,9 @@ int mtwan_group_compare(int mtwan_idx, int mtwan_group_1, int mtwan_group_2)
 	idx_2 = -1;
 	foreach(word, mtwan_order, next)
 	{
-		if (atoi(word) == mtwan_group_1)
+		if (safe_atoi(word) == mtwan_group_1)
 			idx_1 = i;
-		if (atoi(word) == mtwan_group_2)
+		if (safe_atoi(word) == mtwan_group_2)
 			idx_2 = i;
 		i++;
 	}
@@ -938,7 +940,7 @@ int mtwan_get_second_group(int mtwan_idx)
 	snprintf(nvname, sizeof(nvname), "mtwan%d_order", mtwan_idx);
 	nvram_safe_get_r(nvname, value, sizeof(value));
 	p = strchr(value, ' ');
-	return (p && (p - value) < strlen(value)) ? atoi(p+1) : atoi(value);
+	return (p && (p - value) < strlen(value)) ? safe_atoi(p+1) : safe_atoi(value);
 }
 
 /// add dns in same group
@@ -1537,7 +1539,7 @@ void mtwan_init_profile()
 		j = 0;
 		foreach(word, buf, next)
 		{
-			mtwan_prof[i].mt_group[j] = atoi(word);
+			mtwan_prof[i].mt_group[j] = safe_atoi(word);
 			j++;
 		}
 		for (; j < MAX_MULTI_WAN_NUM; j++)
@@ -1548,7 +1550,7 @@ void mtwan_init_profile()
 		j = 0;
 		foreach(word, buf, next)
 		{
-			mtwan_prof[i].mt_weight[j] = atoi(word);
+			mtwan_prof[i].mt_weight[j] = safe_atoi(word);
 			j++;
 		}
 		for (; j < MAX_MULTI_WAN_NUM; j++)
@@ -1621,7 +1623,7 @@ void mtwan_init_profile()
 		j = 0;
 		foreach(word, buf, next)
 		{
-			mtwan_prof[i].order[j] = atoi(word);
+			mtwan_prof[i].order[j] = safe_atoi(word);
 			j++;
 		}
 		for (; j < MAX_MULTI_WAN_NUM; j++)
@@ -1917,7 +1919,8 @@ static int _update_iptables(const int unit, const int up)
 			_remove_iptables(gw_ifname);
 			if(up == 1 && ipaddr[0] != '\0')
 			{
-				safe_do_system("iptables -t nat -A POSTROUTING ! -s %s/32 -o %s -j MASQUERADE", ipaddr, gw_ifname);
+				snprintf(tmp, sizeof(tmp), "iptables -t nat -A POSTROUTING ! -s %s/32 -o %s -j MASQUERADE", ipaddr, gw_ifname);
+				system(tmp);
 			}
 			return 0;
 		}
@@ -2244,7 +2247,7 @@ int mtwan_get_default_wan()
 	{
 		snprintf(name, sizeof(name), "wan%d_dualwan_idx", i);
 		dualwan_idx = nvram_safe_get(name);
-		if(dualwan_idx && dualwan_idx[0] != '\0' && atoi(dualwan_idx) == 0)
+		if(dualwan_idx && dualwan_idx[0] != '\0' && safe_atoi(dualwan_idx) == 0)
 			return i;
 	}
 			return -1;
@@ -2868,7 +2871,7 @@ int mtwan_init_nvram()
 		//check default wan
 		snprintf(prefix, sizeof(prefix), "wan%d_", i);
 		val = nvram_get(strlcat_r(prefix, "dualwan_idx", tmp, sizeof(tmp)));
-		if(val && atoi(val) == WAN_UNIT_FIRST)
+		if(val && safe_atoi(val) == WAN_UNIT_FIRST)
 		{
 			default_wan = i;
 			break;
@@ -2947,7 +2950,7 @@ int mtwan_init_nvram()
 			nvram_set(strlcat_r(prefix_orig, "type", tmp, sizeof(tmp)), "lan");
 			if (wan_type[3])
 			{
-				lanport = atoi(wan_type + 3);
+				lanport = safe_atoi(wan_type + 3);
 				nvram_set_int(strlcat_r(prefix, "lanport", tmp, sizeof(tmp)), lanport);
 				if (i == 0 && strstr(wans_dualwan, "none"))
 				{
@@ -3169,7 +3172,7 @@ int mtwan_init_nvram()
 		{
 			snprintf(tmp, sizeof(tmp), "wan%d_primary", i);
 			val = nvram_get(tmp);
-			if(val && atoi(val))
+			if(val && safe_atoi(val))
 				nvram_set(tmp, "0");
 		}
 		nvram_set("wan_primary", "0");
@@ -3189,7 +3192,7 @@ int mtwan_get_mapped_unit (int mtwan_unit)
 	char *p;
 	snprintf(nvname, sizeof(nvname), "wan%d_dualwan_idx", mtwan_unit);
 	if ((p = nvram_get(nvname)))
-		dualwan_idx = atoi(p);
+		dualwan_idx = safe_atoi(p);
 	return ((dualwan_idx >= 0) ? dualwan_idx : mtwan_unit);
 }
 

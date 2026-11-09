@@ -168,6 +168,16 @@ input[type="checkbox"]:checked + label{
 	background-image: linear-gradient(136deg, #657582 0%, #93BCC9 100%);
 }
 
+.quota_notice_icon{
+	background-color: #2ED9C3;
+}
+
+.quota_notice_button {
+	border-color: #2ED9C3;
+	background: rgba(46, 217, 195, 0.15);
+	color: #2ED9C3;
+}
+
 .ookla_info{
 	color: #2ED9C3;
 }

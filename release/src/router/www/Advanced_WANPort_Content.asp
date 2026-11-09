@@ -1017,7 +1017,7 @@ function applyRule(){
 	let conflict_ports = "";
 	if(isSupport("autowan") && $('#wans_primary').find(":selected").val() == "auto"){
 		if(wan_bonding_support && orig_bond_wan == "1"){
-			conflict_func_array.push("<#WANAggregation#>")
+			conflict_func_array.push("<#WANAggregation#>");
 		}
 
 		if(lacp_support && lacp_enabled == "1"){
@@ -1088,7 +1088,7 @@ function applyRule(){
 			}
 		}
 
-		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO"){
+		if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO" || based_modelid == "GT-BN98" || based_modelid == "GT-BN96X"){
 			if(document.form.wans_dualwan.value.indexOf("wan") != -1 && document.form.wans_extwan.value == "1"){ //2.5G WAN included
 				if(lacp_support && lacp_enabled == "1" && lacp_ifnames_x == ""){
 					if(conflict_func_array.indexOf("<#NAT_lacp#>") == -1)
@@ -1114,6 +1114,12 @@ function applyRule(){
 		}
 	}
 
+	/* WAN aggregation conflict check */
+	if(wan_bonding_support && orig_bond_wan == "1" && $("#wans_primary").val() != "wan"){
+		conflict_port_array.push($("#wans_primary option:selected").text());
+		conflict_func_array.push("<#WANAggregation#>")
+	}
+
 	if(conflict_func_array.length > 0 && conflict_port_array.length >0){
 		conflict_func = conflict_func_array.join(",");
 		conflict_ports = conflict_port_array.join(",");
@@ -1137,6 +1143,11 @@ function applyRule(){
 				document.form.switch_stb_x.value = "0";
 				document.form.switch_wantag.disabled = false;
 				document.form.switch_wantag.value = "none";
+			}
+
+			if(conflict_func.indexOf("<#WANAggregation#>") != -1){
+				document.form.bond_wan.disabled = false;
+				document.form.bond_wan.value = "0";
 			}
 		}
 		else{

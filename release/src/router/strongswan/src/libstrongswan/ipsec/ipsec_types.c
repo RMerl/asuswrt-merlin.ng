@@ -16,12 +16,13 @@
 
 #include "ipsec_types.h"
 
-ENUM(ipsec_mode_names, MODE_TRANSPORT, MODE_DROP,
+ENUM(ipsec_mode_names, MODE_TRANSPORT, MODE_IPTFS,
 	"TRANSPORT",
 	"TUNNEL",
 	"BEET",
 	"PASS",
-	"DROP"
+	"DROP",
+	"IPTFS",
 );
 
 ENUM(policy_dir_names, POLICY_IN, POLICY_FWD,
@@ -150,6 +151,48 @@ bool mark_from_string(const char *value, mark_op_t ops, mark_t *mark)
 	return TRUE;
 }
 
+/**
+ * Allocate a unique mark that is non-zero and not one of the special values.
+ */
+static uint32_t allocate_unique_mark()
+{
+	static refcount_t unique_mark = 0;
+	uint32_t m;
+
+	m = ref_get_nonzero(&unique_mark);
+	while (MARK_IS_UNIQUE(m))
+	{
+		m = ref_get_nonzero(&unique_mark);
+	}
+	return m;
+}
+
+/*
+ * Described in header
+ */
+void allocate_unique_marks(uint32_t *in, uint32_t *out)
+{
+	if (MARK_IS_UNIQUE(*in) || MARK_IS_UNIQUE(*out))
+	{
+		uint32_t mark = 0;
+		bool unique_dir = *in == MARK_UNIQUE_DIR ||
+						  *out == MARK_UNIQUE_DIR;
+
+		if (!unique_dir)
+		{
+			mark = allocate_unique_mark();
+		}
+		if (MARK_IS_UNIQUE(*in))
+		{
+			*in = unique_dir ? allocate_unique_mark() : mark;
+		}
+		if (MARK_IS_UNIQUE(*out))
+		{
+			*out = unique_dir ? allocate_unique_mark() : mark;
+		}
+	}
+}
+
 /*
  * Described in header
  */
@@ -191,30 +234,46 @@ bool if_id_from_string(const char *value, uint32_t *if_id)
 	return TRUE;
 }
 
+/**
+ * Allocate a unique interface ID that is non-zero and not one of the special
+ * values.
+ */
+static uint32_t allocate_unique_if_id()
+{
+	static refcount_t unique_if_id = 0;
+	uint32_t if_id;
+
+	if_id = ref_get_nonzero(&unique_if_id);
+	while (IF_ID_IS_UNIQUE(if_id))
+	{
+		if_id = ref_get_nonzero(&unique_if_id);
+	}
+	return if_id;
+}
+
 /*
  * Described in header
  */
 void allocate_unique_if_ids(uint32_t *in, uint32_t *out)
 {
-	static refcount_t unique_if_id = 0;
 
 	if (IF_ID_IS_UNIQUE(*in) || IF_ID_IS_UNIQUE(*out))
 	{
-		refcount_t if_id = 0;
+		uint32_t if_id = 0;
 		bool unique_dir = *in == IF_ID_UNIQUE_DIR ||
 						  *out == IF_ID_UNIQUE_DIR;
 
 		if (!unique_dir)
 		{
-			if_id = ref_get(&unique_if_id);
+			if_id = allocate_unique_if_id();
 		}
 		if (IF_ID_IS_UNIQUE(*in))
 		{
-			*in = unique_dir ? ref_get(&unique_if_id) : if_id;
+			*in = unique_dir ? allocate_unique_if_id() : if_id;
 		}
 		if (IF_ID_IS_UNIQUE(*out))
 		{
-			*out = unique_dir ? ref_get(&unique_if_id) : if_id;
+			*out = unique_dir ? allocate_unique_if_id() : if_id;
 		}
 	}
 }

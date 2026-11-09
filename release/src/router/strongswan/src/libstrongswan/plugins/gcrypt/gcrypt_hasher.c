@@ -92,9 +92,6 @@ gcrypt_hasher_t *gcrypt_hasher_create(hash_algorithm_t algo)
 
 	switch (algo)
 	{
-		case HASH_MD2:
-			gcrypt_alg = GCRY_MD_MD2;
-			break;
 		case HASH_MD4:
 			gcrypt_alg = GCRY_MD_MD4;
 			break;

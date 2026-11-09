@@ -15,6 +15,8 @@
  * for more details.
  */
 
+#include <time.h>
+
 #include "ike_cert_pre.h"
 
 #include <daemon.h>
@@ -59,8 +61,50 @@ static void process_certreq(private_ike_cert_pre_t *this,
 							certreq_payload_t *certreq, auth_cfg_t *auth)
 {
 	enumerator_t *enumerator;
-	u_int unknown = 0;
+	u_int unknown = 0, known = 0;
 	chunk_t keyid;
+
+	if (certreq->get_cert_type(certreq) == CERT_X509_OCSP_REQUEST)
+	{
+		this->ike_sa->set_condition(this->ike_sa, COND_OCSP_REQUEST, TRUE);
+
+		enumerator = certreq->create_keyid_enumerator(certreq);
+		while (enumerator->enumerate(enumerator, &keyid))
+		{
+			identification_t *id;
+			certificate_t *cert;
+
+			id = identification_create_from_encoding(ID_KEY_ID, keyid);
+			cert = lib->credmgr->get_cert(lib->credmgr,
+										  CERT_X509, KEY_ANY, id, TRUE);
+			if (cert)
+			{
+				DBG1(DBG_IKE, "received OCSP cert request claiming trust "
+					 "for \"%Y\"", cert->get_subject(cert));
+				cert->destroy(cert);
+				known++;
+			}
+			else
+			{
+				DBG2(DBG_IKE, "received OCSP cert request claiming trust for "
+					 "unknown certificate with keyid %Y", id);
+				unknown++;
+			}
+			id->destroy(id);
+
+		}
+		if (unknown)
+		{
+			DBG1(DBG_IKE, "received OCSP cert request with %u unknown trusted "
+				 "certificates", unknown);
+		}
+		else if (!known)
+		{
+			DBG1(DBG_IKE, "received empty OCSP cert request");
+		}
+		enumerator->destroy(enumerator);
+		return;
+	}
 
 	this->ike_sa->set_condition(this->ike_sa, COND_CERTREQ_SEEN, TRUE);
 
@@ -256,6 +300,30 @@ static void process_crl(cert_payload_t *payload, auth_cfg_t *auth)
 }
 
 /**
+ * Process an OCSP certificate payload
+ */
+static void process_ocsp(cert_payload_t *payload, auth_cfg_t *auth,
+						 ike_cfg_t *ike_cfg)
+{
+	certificate_t *cert;
+
+	if (!ike_cfg->send_ocsp_certreq(ike_cfg))
+	{
+		DBG1(DBG_IKE, "received OCSP response, but we didn't request any, "
+			 "ignore");
+		return;
+	}
+
+	cert = payload->get_cert(payload);
+	if (cert)
+	{
+		DBG1(DBG_IKE, "received OCSP response issued by \"%Y\"",
+			 cert->get_issuer(cert));
+		auth->add(auth, AUTH_HELPER_REVOCATION_CERT, cert);
+	}
+}
+
+/**
  * Process an attribute certificate payload
  */
 static void process_ac(cert_payload_t *payload, auth_cfg_t *auth)
@@ -318,6 +386,10 @@ static void process_certs(private_ike_cert_pre_t *this, message_t *message)
 				case ENC_CRL:
 					process_crl(cert_payload, auth);
 					break;
+				case ENC_OCSP_CONTENT:
+					process_ocsp(cert_payload, auth,
+								 this->ike_sa->get_ike_cfg(this->ike_sa));
+					break;
 				case ENC_X509_ATTRIBUTE:
 					process_ac(cert_payload, auth);
 					break;
@@ -329,7 +401,6 @@ static void process_certs(private_ike_cert_pre_t *this, message_t *message)
 				case ENC_SPKI:
 				case ENC_RAW_RSA_KEY:
 				case ENC_X509_HASH_AND_URL_BUNDLE:
-				case ENC_OCSP_CONTENT:
 				default:
 					DBG1(DBG_ENC, "certificate encoding %N not supported",
 						 cert_encoding_names, encoding);
@@ -404,6 +475,36 @@ static void add_certreqs(certreq_payload_t **req, auth_cfg_t *auth)
 }
 
 /**
+ * add the keyid of a self-signed OCSP signer to the certificate request payload
+ */
+static void add_certreq_ocsp(certreq_payload_t *req, certificate_t *cert)
+{
+	public_key_t *public;
+	chunk_t keyid;
+	x509_t *x509 = (x509_t*)cert;
+
+	if (cert->get_type(cert) != CERT_X509 ||
+		!(x509->get_flags(x509) & X509_OCSP_SIGNER &&
+		  x509->get_flags(x509) & X509_SELF_SIGNED))
+	{
+		/* no self-signed OCSP-signer cert, skip */
+		return;
+	}
+	public = cert->get_public_key(cert);
+	if (!public)
+	{
+		return;
+	}
+	if (public->get_fingerprint(public, KEYID_PUBKEY_INFO_SHA1, &keyid))
+	{
+		req->add_keyid(req, keyid);
+		DBG1(DBG_IKE, "sending OCSP cert request with self-signed "
+			 "OCSP-signer \"%Y\"", cert->get_subject(cert));
+	}
+	public->destroy(public);
+}
+
+/**
  * build certificate requests
  */
 static void build_certreqs(private_ike_cert_pre_t *this, message_t *message)
@@ -416,46 +517,59 @@ static void build_certreqs(private_ike_cert_pre_t *this, message_t *message)
 	certreq_payload_t *req = NULL;
 
 	ike_cfg = this->ike_sa->get_ike_cfg(this->ike_sa);
-	if (!ike_cfg->send_certreq(ike_cfg))
+	if (ike_cfg->send_certreq(ike_cfg))
 	{
-		return;
-	}
-
-	/* check if we require a specific CA for that peer */
-	peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
-	if (peer_cfg)
-	{
-		enumerator = peer_cfg->create_auth_cfg_enumerator(peer_cfg, FALSE);
-		while (enumerator->enumerate(enumerator, &auth))
+		/* check if we require a specific CA for that peer */
+		peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
+		if (peer_cfg)
 		{
-			add_certreqs(&req, auth);
+			enumerator = peer_cfg->create_auth_cfg_enumerator(peer_cfg, FALSE);
+			while (enumerator->enumerate(enumerator, &auth))
+			{
+				add_certreqs(&req, auth);
+			}
+			enumerator->destroy(enumerator);
 		}
-		enumerator->destroy(enumerator);
+
+		if (!req)
+		{
+			/* otherwise add all trusted CA certificates */
+			enumerator = lib->credmgr->create_cert_enumerator(lib->credmgr,
+													CERT_ANY, KEY_ANY, NULL, TRUE);
+			while (enumerator->enumerate(enumerator, &cert))
+			{
+				add_certreq(&req, cert);
+			}
+			enumerator->destroy(enumerator);
+		}
+
+		if (req)
+		{
+			message->add_payload(message, (payload_t*)req);
+
+			if (lib->settings->get_bool(lib->settings,
+										"%s.hash_and_url", FALSE, lib->ns))
+			{
+				message->add_notify(message, FALSE, HTTP_CERT_LOOKUP_SUPPORTED,
+									chunk_empty);
+				this->do_http_lookup = TRUE;
+			}
+		}
 	}
 
-	if (!req)
+	if (ike_cfg->send_ocsp_certreq(ike_cfg))
 	{
-		/* otherwise add all trusted CA certificates */
+		req = certreq_payload_create_type(CERT_X509_OCSP_REQUEST);
+
 		enumerator = lib->credmgr->create_cert_enumerator(lib->credmgr,
 												CERT_ANY, KEY_ANY, NULL, TRUE);
 		while (enumerator->enumerate(enumerator, &cert))
 		{
-			add_certreq(&req, cert);
+			add_certreq_ocsp(req, cert);
 		}
 		enumerator->destroy(enumerator);
-	}
 
-	if (req)
-	{
 		message->add_payload(message, (payload_t*)req);
-
-		if (lib->settings->get_bool(lib->settings,
-									"%s.hash_and_url", FALSE, lib->ns))
-		{
-			message->add_notify(message, FALSE, HTTP_CERT_LOOKUP_SUPPORTED,
-								chunk_empty);
-			this->do_http_lookup = TRUE;
-		}
 	}
 }
 

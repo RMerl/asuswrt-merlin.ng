@@ -142,7 +142,7 @@
   --wrt-btn-outline-primary-border: var(--brand-primary);
   --wrt-btn-outline-primary-bg: transparent;
   --wrt-btn-outline-primary-hover-bg: rgba(var(--brand-primary-rgb), .08);
-  --wrt-btn-outline-primary-hover-color: var(--primary-btn-text-color);
+  --wrt-btn-outline-primary-hover-color: var(--brand-primary);
   --wrt-btn-outline-primary-hover-border: var(--brand-primary);
   --wrt-btn-outline-primary-active-bg: rgba(var(--brand-primary-rgb), .12);
   --wrt-btn-outline-primary-active-color: var(--primary-btn-text-color);
@@ -156,16 +156,6 @@
   --wrt-btn-icon-hover-color: var(--icon-hover);
   --wrt-btn-icon-active-color: var(--icon-active);
   --wrt-btn-icon-disabled-color: var(--icon-muted);
-  /* static-icon (informational, non-interactive) */
-  --wrt-static-icon-color: var(--icon-static-color);
-  --wrt-static-icon-muted-color: var(--icon-muted);
-  /* semantic tones — align with .wrt-badge[data-tone] container text */
-  --wrt-static-icon-primary-color: var(--wrt-badge-primary-container-color);
-  --wrt-static-icon-neutral-color: var(--wrt-badge-neutral-container-color);
-  --wrt-static-icon-success-color: var(--wrt-badge-success-container-color);
-  --wrt-static-icon-warning-color: var(--wrt-badge-warning-container-color);
-  --wrt-static-icon-error-color: var(--wrt-badge-error-container-color);
-  --wrt-static-icon-info-color: var(--wrt-badge-info-container-color);
   /* 與 btn-fill 對齊的互動容器背景 */
   --wrt-btn-icon-hover-bg: var(--wrt-btn-accent-neutral-hover-bg);
   --wrt-btn-icon-active-bg: var(--wrt-btn-accent-neutral-active-bg);
@@ -266,6 +256,20 @@
   --wrt-btn-hero-disabled-bg: var(--primary-btn-disable-fill);
   --wrt-btn-hero-disabled-color: var(--primary-btn-disable-text-color);
   --wrt-btn-hero-disabled-border: var(--border-subtle);
+
+  /* ==================== Buttons - Interactive overlay（漸層／陰影在此組裝；色 stop 僅引用 color-table Mode Core，不在 color-table 重複定義） ==================== */
+  --wrt-btn-interactive-highlight: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--gradient-accent-start) 40%, transparent) 0%,
+    color-mix(in srgb, var(--gradient-accent-mid-02) 28%, transparent) 48%,
+    color-mix(in srgb, var(--gradient-accent-end) 16%, transparent) 100%
+  );
+  --wrt-btn-interactive-border-strong: color-mix(in srgb, var(--brand-primary) 90%, var(--border-strong) 10%);
+  --wrt-btn-interactive-border-strong-rgb: var(--brand-primary-rgb);
+  --wrt-btn-interactive-shadow-raised:
+    0 1px 2px rgba(var(--shadow-ambient-10-rgb), .1),
+    0 5px 16px rgba(var(--brand-primary-rgb), .14);
+
   /* 可選：secondary/success/info/warning/danger 視需求再補
      例如：
      --wrt-btn-success-bg: var(--status-quality-good);
@@ -797,7 +801,12 @@
   --wrt-icon-primary-color: var(--brand-primary);
   --wrt-text-primary: var(--wrt-text-color);
   --wrt-text-secondary: var(--text-secondary);
+  --wrt-text-tertiary: var(--text-muted);
   --wrt-text-hyperlink-default-color: var(--wrt-link-color);
+  --wrt-text-hyperlink-hover-color: var(--wrt-link-hover-color);
+  --wrt-border-subtle-color: var(--border-subtle);
+  --wrt-border-default-color: var(--border-default);
+  --wrt-border-strong-color: var(--border-strong);
   --wrt-brand-primary: var(--brand-primary);
   --wrt-tab-nav-text-normal-color: var(--wrt-nav-tabs-link-color);
   --wrt-tab-nav-text-active-color: var(--wrt-nav-tabs-link-active-color);
@@ -879,8 +888,8 @@
   --wrt-nav-tabs-link-font-weight: 500;
   --wrt-nav-tabs-link-font-size: var(--font-size-12);
   --wrt-nav-tabs-link-color: var(--text-secondary);
-  --wrt-nav-tabs-link-padding-top: 17px;
-  --wrt-nav-tabs-link-padding-bottom: 16px;
+  --wrt-nav-tabs-link-padding-top: 4px;
+  --wrt-nav-tabs-link-padding-bottom: 4px;
   --wrt-nav-tabs-link-padding-x: 29px;
   --wrt-nav-tabs-link-hover-bg: var(--surface-hover);
   --wrt-nav-tabs-link-border-bottom-width: 2px;
@@ -1450,11 +1459,122 @@
   --wrt-input-focus-ring: rgba(var(--focus-ring-rgb), .45);
 }
 
-/* Theme overrides: ProArt 專用按鈕配色（使用 color-table.css: --gradient-color-to-botton） */
-[data-asuswrt-theme="proart"] {
-  /* 僅覆寫背景（正常/hover/active），其他語意維持 Core/Alias 預設，避免相容性風險 */
-  --wrt-btn-primary-bg: var(--gradient-color-to-botton);
-  --wrt-btn-primary-hover-bg: var(--gradient-color-to-botton);
-  --wrt-btn-primary-active-bg: var(--gradient-color-to-botton);
+
+/* Component refinement tokens
+ * Shared token contract for refined UI layers across pages.
+ * Depends on runtime-loaded color-table / wrt alias tokens.
+ *
+ * Scope:
+ * - Token definitions only (no component class recipes in this file).
+ *
+ * Naming:
+ * - Shared tokens use --nm-* (aligned with Network Map lineage).
+ * - Legacy --ab-* aliases are kept for compatibility with existing pages.
+ *
+ * Module ownership:
+ * - Container: --nm-shell-*, --nm-inset-*
+ * - Typography: --nm-title-*, --nm-meta-*
+ * - Button/Tip: --nm-tip-*
+ * - Feedback/Callout: --nm-result-*, --nm-callout-*, --nm-note-*
+ */
+
+:root {
+	/* ===================== Container ===================== */
+	--nm-shell-border: color-mix(in srgb, var(--border-strong) 42%, transparent);
+	--nm-shell-bg: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--surface-card) 94%, var(--surface-invert) 6%) 0%,
+		color-mix(in srgb, var(--surface-card) 99%, transparent) 100%
+	);
+	--nm-shell-shadow: 0 0 14px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
+	--nm-inset-bg: color-mix(in srgb, var(--surface-card) 90%, var(--surface-invert) 5%);
+	--nm-inset-border: color-mix(in srgb, var(--border-default) 38%, transparent);
+
+	/* ===================== Typography ==================== */
+	--nm-title-fg: var(--brand-primary);
+	--nm-title-glow: 0 0 14px color-mix(in srgb, var(--brand-primary) 26%, transparent);
+	--nm-meta-fg: color-mix(in srgb, var(--text-secondary) 85%, var(--text-primary) 15%);
+
+	/* ====================== Button/Tip ==================== */
+	--nm-btn-bg: var(--wrt-btn-bg, transparent);
+	--nm-btn-border: var(--wrt-btn-border, color-mix(in srgb, var(--border-default) 40%, transparent));
+	--nm-btn-fg: var(--wrt-btn-color, var(--link-color));
+	--nm-btn-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent);
+	--nm-btn-hover-bg: var(--wrt-btn-hover-bg, var(--surface-hover));
+	--nm-btn-hover-border: color-mix(in srgb, var(--brand-primary) 40%, var(--border-default));
+	--nm-btn-hover-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 14%, transparent);
+	--nm-btn-active-bg: var(--wrt-btn-active-bg, var(--surface-hover));
+	--nm-btn-active-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 18%, transparent);
+	--nm-btn-focus-ring: color-mix(in srgb, var(--brand-primary) 40%, transparent);
+
+	--nm-tip-bg: color-mix(in srgb, var(--surface-card) 94%, var(--white-alpha-100) 6%);
+	--nm-tip-border: color-mix(in srgb, var(--border-default) 48%, transparent);
+	--nm-tip-fg: var(--link-color);
+	--nm-tip-hover-bg: color-mix(in srgb, var(--surface-hover) 72%, var(--surface-card) 28%);
+	--nm-tip-pill-bg: var(--brand-primary);
+	--nm-tip-hover-shadow: 0 4px 8px color-mix(in srgb, var(--text-primary) 16%, transparent);
+
+	/* =================== Feedback/Callout ================= */
+	--nm-result-shadow: 0 4px 14px 0 color-mix(in srgb, var(--text-primary) 8%, transparent);
+	--nm-callout-bg: color-mix(in srgb, var(--surface-card) 96%, var(--surface-hover) 4%);
+	--nm-callout-fg: color-mix(in srgb, var(--text-secondary) 90%, var(--text-primary) 10%);
+	--nm-callout-border: color-mix(in srgb, var(--border-default) 56%, transparent);
+	--nm-note-fg: var(--brand-primary);
+
+	/* ============== Backward compatibility aliases ==========
+	 * TODO: remove --ab-* after all pages migrate to --pcs-*.
+	 */
+	--ab-shell-border: var(--nm-shell-border);
+	--ab-shell-bg: var(--nm-shell-bg);
+	--ab-shell-shadow: var(--nm-shell-shadow);
+	--ab-inset-bg: var(--nm-inset-bg);
+	--ab-inset-border: var(--nm-inset-border);
+	--ab-card-title-fg: var(--nm-title-fg);
+	--ab-card-title-glow: var(--nm-title-glow);
+	--ab-meta-fg: var(--nm-meta-fg);
+	--ab-tip-bg: var(--nm-tip-bg);
+	--ab-tip-border: var(--nm-tip-border);
+	--ab-tip-fg: var(--nm-tip-fg);
+	--ab-tip-hover-bg: var(--nm-tip-hover-bg);
+	--ab-tip-pill-bg: var(--nm-tip-pill-bg);
+	--ab-tip-hover-shadow: var(--nm-tip-hover-shadow);
+	--ab-result-shadow: var(--nm-result-shadow);
+	--ab-callout-bg: var(--nm-callout-bg);
+	--ab-callout-fg: var(--nm-callout-fg);
+	--ab-callout-border: var(--nm-callout-border);
+	--ab-note-fg: var(--nm-note-fg);
 }
 
+[data-asuswrt-color="dark"] {
+	/* ===================== Container ===================== */
+	--nm-shell-border: color-mix(in srgb, var(--border-strong) 55%, transparent);
+	--nm-shell-bg: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--surface-card) 88%, var(--surface-invert) 10%) 0%,
+		color-mix(in srgb, var(--surface-card) 96%, transparent) 100%
+	);
+	--nm-shell-shadow: 0 0 14px 0 color-mix(in srgb, var(--text-primary) 14%, transparent);
+	--nm-inset-bg: color-mix(in srgb, var(--surface-card) 82%, var(--surface-invert) 8%);
+	--nm-inset-border: color-mix(in srgb, var(--border-default) 52%, transparent);
+
+	/* ===================== Typography ==================== */
+	--nm-title-glow: 0 0 18px color-mix(in srgb, var(--brand-primary) 22%, transparent);
+	--nm-meta-fg: color-mix(in srgb, var(--text-secondary) 78%, transparent);
+
+	/* ====================== Button/Tip ==================== */
+	--nm-btn-hover-border: color-mix(in srgb, var(--brand-primary) 52%, var(--border-default));
+	--nm-btn-hover-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 24%, transparent);
+	--nm-btn-active-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 28%, transparent);
+	--nm-btn-focus-ring: color-mix(in srgb, var(--brand-primary) 55%, transparent);
+
+	--nm-tip-bg: color-mix(in srgb, var(--surface-card) 88%, var(--surface-invert) 6%);
+	--nm-tip-border: color-mix(in srgb, var(--border-default) 58%, transparent);
+	--nm-tip-hover-bg: color-mix(in srgb, var(--surface-card) 70%, var(--surface-invert) 12%);
+	--nm-tip-hover-shadow: 0 4px 8px color-mix(in srgb, var(--text-primary) 24%, transparent);
+
+	/* =================== Feedback/Callout ================= */
+	--nm-result-shadow: 0 4px 14px 0 color-mix(in srgb, var(--text-primary) 18%, transparent);
+	--nm-callout-bg: color-mix(in srgb, var(--surface-card) 88%, var(--surface-hover) 12%);
+	--nm-callout-fg: color-mix(in srgb, var(--text-secondary) 78%, var(--text-primary) 22%);
+	--nm-callout-border: color-mix(in srgb, var(--border-default) 64%, transparent);
+}

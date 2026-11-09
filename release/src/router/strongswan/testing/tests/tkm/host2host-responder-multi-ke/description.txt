@@ -1,0 +1,5 @@
+A connection between the hosts <b>moon</b> and <b>sun</b> is set up using
+multiple key exchanges. The host <b>moon</b> uses the Trusted Key Manager (TKM)
+and is the responder of the transport connection. The authentication is based
+on X.509 certificates.  Rekeyings are initiated by <b>sun</b> for both the IKE
+and the ESP SA to test rekeying with multiple key exchanges.

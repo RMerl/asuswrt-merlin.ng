@@ -563,7 +563,7 @@
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 	z-index: 200;
-	background-color:#2b373b;
+	background-color: var(--card-bg-color, #2b373b);
 	margin-left: 140px;
 	width: 525px;
 	box-shadow: 3px 3px 10px #000;
@@ -577,10 +577,9 @@
 }
 .amesh_hint_text {
 	margin: 15px 20px 0px 20px;
-	text-shadow: 1px 1px 0px black;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 16px;
-	color: #FFFFFF;
+	color: var(--body-text-color, #FFFFFF);
 	font-weight: bolder;
 }
 .amesh_quality_text {

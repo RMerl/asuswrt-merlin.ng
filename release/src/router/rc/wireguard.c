@@ -243,8 +243,9 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 		{
 			while(fgets(buf, sizeof(buf), fp))
 			{
-				safe_do_system("ip route add %s table %d ", trim_r(buf), table);
+				snprintf(cmd, sizeof(cmd), "ip route add %s table %d ", trim_r(buf), table);
 				//_dprintf("[%s]\n", cmd);
+				system(cmd);
 			}
 			fclose(fp);
 		}

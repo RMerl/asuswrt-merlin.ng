@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * Copyright (C) 2009-2019 Tobias Brunner
+ * Copyright (C) 2009-2025 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  *
@@ -20,6 +20,24 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+
+#ifdef HAVE_REGEX
+#include <regex.h>
+#else
+/* usually, POSIX regular expressions are supported. for the rare case they are
+ * not, e.g. when cross-compiling for Windows, we define some stubs to simplify
+ * the implementation below */
+typedef void regex_t;
+static int regexec(const regex_t *restrict preg, const char *restrict string,
+				   size_t nmatch, void *pmatch, int eflags)
+{
+	return -1;
+}
+
+static void regfree(regex_t *preg)
+{
+}
+#endif /* HAVE_REGEX */
 
 #include "identification.h"
 
@@ -104,7 +122,6 @@ static const x501rdn_t x501rdns[] = {
  */
 #define RDN_MAX			20
 
-
 typedef struct private_identification_t private_identification_t;
 
 /**
@@ -125,7 +142,22 @@ struct private_identification_t {
 	 * Type of this ID.
 	 */
 	id_type_t type;
+
+	/**
+	 * Pointer if we use regex comparison.
+	 */
+	regex_t *regex;
 };
+
+/**
+ * Check that neither object uses a regex.
+ */
+static inline bool neither_is_regex(private_identification_t *this,
+									identification_t *other)
+{
+	private_identification_t *other_priv = (private_identification_t*)other;
+	return !this->regex && !other_priv->regex;
+}
 
 /**
  * Enumerator over RDNs
@@ -174,7 +206,7 @@ METHOD(enumerator_t, rdn_enumerate, bool,
 /**
  * Create an enumerator over all RDNs (oid, string type, data) of a DN
  */
-static enumerator_t* create_rdn_enumerator(chunk_t dn)
+static enumerator_t *create_rdn_enumerator(chunk_t dn)
 {
 	rdn_enumerator_t *e;
 
@@ -613,19 +645,26 @@ METHOD(identification_t, hash_binary, u_int,
 	{
 		hash = chunk_hash_inc(this->encoded, hash);
 	}
+	if (this->regex)
+	{	/* ensure regexes have different hashes even if type/encoding is equal */
+		hash = chunk_hash_inc(chunk_from_chars(0x01), hash);
+	}
 	return hash;
 }
 
 METHOD(identification_t, equals_binary, bool,
 	private_identification_t *this, identification_t *other)
 {
-	if (this->type == other->get_type(other))
+	private_identification_t *other_priv = (private_identification_t*)other;
+
+	if (this->type == other_priv->type &&
+	   (neither_is_regex(this, other) || (this->regex && other_priv->regex)))
 	{
 		if (this->type == ID_ANY)
 		{
 			return TRUE;
 		}
-		return chunk_equals(this->encoded, other->get_encoding(other));
+		return chunk_equals(this->encoded, other_priv->encoded);
 	}
 	return FALSE;
 }
@@ -895,7 +934,8 @@ static bool is_valid_dn(chunk_t dn)
 METHOD(identification_t, equals_dn, bool,
 	private_identification_t *this, identification_t *other)
 {
-	return compare_dn(this->encoded, other->get_encoding(other), NULL);
+	return neither_is_regex(this, other) &&
+		   compare_dn(this->encoded, other->get_encoding(other), NULL);
 }
 
 METHOD(identification_t, hash_dn, u_int,
@@ -924,6 +964,7 @@ METHOD(identification_t, equals_strcasecmp,  bool,
 	/* we do some extra sanity checks to check for invalid IDs with a
 	 * terminating null in it. */
 	if (this->type == other->get_type(other) &&
+		neither_is_regex(this, other) &&
 		this->encoded.len == encoded.len &&
 		memchr(this->encoded.ptr, 0, this->encoded.len) == NULL &&
 		memchr(encoded.ptr, 0, encoded.len) == NULL &&
@@ -949,9 +990,38 @@ METHOD(identification_t, matches_binary, id_match_t,
 	return ID_MATCH_NONE;
 }
 
+/**
+ * Matches the regex in other against our own encoding.
+ */
+static id_match_t matches_regex(private_identification_t *this,
+								private_identification_t *other)
+{
+	char buf[BUF_LEN-1];
+	int rc;
+
+	if (this->regex)
+	{	/* don't match two regex values */
+		return ID_MATCH_NONE;
+	}
+	if (!this->encoded.len)
+	{
+		return ID_MATCH_NONE;
+	}
+	/* match against the string representation of the identity */
+	if (snprintf(buf, sizeof(buf), "%Y", this) >= sizeof(buf))
+	{
+		/* fail if the buffer is too small. note that we use BUF_LEN-1 because
+		 * the printf hook uses BUF_LEN to print the identity internally */
+		return ID_MATCH_NONE;
+	}
+	rc = regexec(other->regex, buf, 0, NULL, 0);
+	return rc == 0 ? ID_MATCH_MAX_WILDCARDS : ID_MATCH_NONE;
+}
+
 METHOD(identification_t, matches_string, id_match_t,
 	private_identification_t *this, identification_t *other)
 {
+	private_identification_t *other_priv = (private_identification_t*)other;
 	chunk_t encoded = other->get_encoding(other);
 	u_int len = encoded.len;
 
@@ -962,6 +1032,10 @@ METHOD(identification_t, matches_string, id_match_t,
 	if (this->type != other->get_type(other))
 	{
 		return ID_MATCH_NONE;
+	}
+	if (other_priv->regex)
+	{
+		return matches_regex(this, other_priv);
 	}
 	/* try a equals check first */
 	if (equals_strcasecmp(this, other))
@@ -1007,6 +1081,7 @@ static id_match_t matches_dn_internal(private_identification_t *this,
 									  identification_t *other,
 									  bool (*match)(chunk_t,chunk_t,int*))
 {
+	private_identification_t *other_priv = (private_identification_t*)other;
 	int wc;
 
 	if (other->get_type(other) == ID_ANY)
@@ -1016,7 +1091,11 @@ static id_match_t matches_dn_internal(private_identification_t *this,
 
 	if (this->type == other->get_type(other))
 	{
-		if (match(this->encoded, other->get_encoding(other), &wc))
+		if (other_priv->regex)
+		{
+			return matches_regex(this, other_priv);
+		}
+		else if (match(this->encoded, other->get_encoding(other), &wc))
 		{
 			wc = min(wc, ID_MATCH_ONE_WILDCARD - ID_MATCH_MAX_WILDCARDS);
 			return ID_MATCH_PERFECT - wc;
@@ -1046,10 +1125,9 @@ METHOD(identification_t, matches_dn_relaxed, id_match_t,
 /**
  * Transform netmask to CIDR bits
  */
-static int netmask_to_cidr(char *netmask, size_t address_size)
+static uint8_t netmask_to_cidr(char *netmask, uint8_t address_size)
 {
-	uint8_t byte;
-	int i, netbits = 0;
+	uint8_t i, byte, netbits = 0;
 
 	for (i = 0; i < address_size; i++)
 	{
@@ -1075,137 +1153,388 @@ static int netmask_to_cidr(char *netmask, size_t address_size)
 	return netbits;
 }
 
-METHOD(identification_t, matches_range, id_match_t,
-	private_identification_t *this, identification_t *other)
+/**
+ * Converts the given network/netmask to an address range
+ */
+static void subnet_to_range(chunk_t encoding, uint8_t address_size,
+							uint8_t *from, uint8_t *to)
 {
-	chunk_t other_encoding;
-	uint8_t *address, *from, *to, *network, *netmask;
-	size_t address_size = 0;
-	int netbits, range_sign, i;
+	uint8_t *network, *netmask, netbits, mask, i;
 
-	if (other->get_type(other) == ID_ANY)
+	network = encoding.ptr;
+	netmask = encoding.ptr + address_size;
+	netbits = netmask_to_cidr(netmask, address_size);
+
+	memcpy(from, network, address_size);
+	memcpy(to, network, address_size);
+
+	i = netbits / 8;
+	if (i < address_size)
 	{
-		return ID_MATCH_ANY;
+		mask = 0xff << (8 - netbits % 8);
+		from[i] = from[i] & mask;
+		to[i] = to[i] | ~mask;
+		memset(&from[i+1], 0, address_size - i - 1);
+		memset(&to[i+1], 0xff, address_size - i - 1);
 	}
-	if (this->type == other->get_type(other) &&
-		chunk_equals(this->encoded, other->get_encoding(other)))
+}
+
+/**
+ * Matches one subnet (or address if netmask is NULL) against another
+ */
+static id_match_t match_subnets(uint8_t *network, uint8_t *netmask,
+								uint8_t *other_network, uint8_t *other_netmask,
+								uint8_t address_size)
+{
+	uint8_t netbits, other_netbits, i;
+
+	other_netbits = other_netmask ? netmask_to_cidr(other_netmask, address_size)
+								  : 8 * address_size;
+	if (!other_netbits)
+	{
+		return ID_MATCH_MAX_WILDCARDS;
+	}
+
+	netbits = netmask ? netmask_to_cidr(netmask, address_size) : 8 * address_size;
+
+	if (netbits == other_netbits)
+	{
+		return memeq(network, other_network, address_size) ? ID_MATCH_PERFECT
+														   : ID_MATCH_NONE;
+	}
+	else if (netbits < other_netbits)
+	{
+		return ID_MATCH_NONE;
+	}
+
+	for (i = 0; i < (other_netbits + 7)/8; i++)
+	{
+		if ((network[i] ^ other_network[i]) & other_netmask[i])
+		{
+			return ID_MATCH_NONE;
+		}
+	}
+	return ID_MATCH_ONE_WILDCARD;
+}
+
+/**
+ * Matches two address ranges against each other
+ */
+static id_match_t match_ranges(uint8_t *from, uint8_t *to,
+							   uint8_t *other_from, uint8_t *other_to,
+							   uint8_t address_size)
+{
+	const uint8_t zeroes[16] = { 0 };
+	const uint8_t ones[16] = { 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+							   0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff };
+	int match_from, match_to;
+
+	if (memcmp(to, from, address_size) < 0 ||
+		memcmp(other_to, other_from, address_size) < 0)
+	{
+		/* to is smaller than from in one of the ranges */
+		return ID_MATCH_NONE;
+	}
+	else if (memeq(other_from, zeroes, address_size) &&
+			 memeq(other_to, ones, address_size))
+	{
+		return ID_MATCH_MAX_WILDCARDS;
+	}
+
+	match_from = memcmp(from, other_from, address_size);
+	match_to = memcmp(to, other_to, address_size);
+
+	if (!match_from && !match_to)
 	{
 		return ID_MATCH_PERFECT;
 	}
-	if ((this->type == ID_IPV4_ADDR &&
-		 other->get_type(other) == ID_IPV4_ADDR_SUBNET))
+	else if (match_from >= 0 && match_to <= 0)
 	{
-		address_size = sizeof(struct in_addr);
-	}
-	else if ((this->type == ID_IPV6_ADDR &&
-		 other->get_type(other) == ID_IPV6_ADDR_SUBNET))
-	{
-		address_size = sizeof(struct in6_addr);
-	}
-	if (address_size)
-	{
-		other_encoding = other->get_encoding(other);
-		if (this->encoded.len != address_size ||
-			other_encoding.len != 2 * address_size)
-		{
-			return ID_MATCH_NONE;
-		}
-		address = this->encoded.ptr;
-		network = other_encoding.ptr;
-		netmask = other_encoding.ptr + address_size;
-		netbits = netmask_to_cidr(netmask, address_size);
-
-		if (netbits == 0)
-		{
-			return ID_MATCH_MAX_WILDCARDS;
-		}
-		if (netbits == 8 * address_size)
-		{
-			return memeq(address, network, address_size) ?
-				   ID_MATCH_PERFECT : ID_MATCH_NONE;
-		}
-		for (i = 0; i < (netbits + 7)/8; i++)
-		{
-			if ((address[i] ^ network[i]) & netmask[i])
-			{
-				return ID_MATCH_NONE;
-			}
-		}
 		return ID_MATCH_ONE_WILDCARD;
-	}
-	if ((this->type == ID_IPV4_ADDR &&
-		 other->get_type(other) == ID_IPV4_ADDR_RANGE))
-	{
-		address_size = sizeof(struct in_addr);
-	}
-	else if ((this->type == ID_IPV6_ADDR &&
-		 other->get_type(other) == ID_IPV6_ADDR_RANGE))
-	{
-		address_size = sizeof(struct in6_addr);
-	}
-	if (address_size)
-	{
-		other_encoding = other->get_encoding(other);
-		if (this->encoded.len != address_size ||
-			other_encoding.len != 2 * address_size)
-		{
-			return ID_MATCH_NONE;
-		}
-		address = this->encoded.ptr;
-		from = other_encoding.ptr;
-		to = other_encoding.ptr + address_size;
-
-		range_sign = memcmp(to, from, address_size);
-		if (range_sign < 0)
-		{	/* to is smaller than from */
-			return ID_MATCH_NONE;
-		}
-
-		/* check lower bound */
-		for (i = 0; i < address_size; i++)
-		{
-			if (address[i] != from[i])
-			{
-				if (address[i] < from[i])
-				{
-					return ID_MATCH_NONE;
-				}
-				break;
-			}
-		}
-
-		/* check upper bound */
-		for (i = 0; i < address_size; i++)
-		{
-			if (address[i] != to[i])
-			{
-				if (address[i] > to[i])
-				{
-					return ID_MATCH_NONE;
-				}
-				break;
-			}
-		}
-		return range_sign ? ID_MATCH_ONE_WILDCARD : ID_MATCH_PERFECT;
 	}
 	return ID_MATCH_NONE;
 }
 
 /**
- * Described in header.
+ * Match a subnet to an address
  */
-int identification_printf_hook(printf_hook_data_t *data,
-							printf_hook_spec_t *spec, const void *const *args)
+static id_match_t matches_subnet_to_addr(private_identification_t *this,
+										 identification_t *other,
+										 uint8_t address_size)
 {
-	private_identification_t *this = *((private_identification_t**)(args[0]));
+	chunk_t other_encoding;
+	uint8_t *network, *netmask, *address;
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != 2 * address_size ||
+		other_encoding.len != address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+	network = this->encoded.ptr;
+	netmask = this->encoded.ptr + address_size;
+	address = other_encoding.ptr;
+	return match_subnets(network, netmask, address, NULL, address_size);
+}
+
+/**
+ * Match a subnet to an address
+ */
+static id_match_t matches_range_to_addr(private_identification_t *this,
+										 identification_t *other,
+										 uint8_t address_size)
+{
+	chunk_t other_encoding;
+	uint8_t *from, *to, *address;
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != 2 * address_size ||
+		other_encoding.len != address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+	from = this->encoded.ptr;
+	to = this->encoded.ptr + address_size;
+	address = other_encoding.ptr;
+	return match_ranges(from, to, address, address, address_size);
+}
+
+/**
+ * Matches an address to a subnet
+ */
+static id_match_t matches_addr_to_subnet(private_identification_t *this,
+										 identification_t *other,
+										 uint8_t address_size)
+{
+	chunk_t other_encoding;
+	uint8_t *address, *network, *netmask;
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != address_size ||
+		other_encoding.len != 2 * address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+	address = this->encoded.ptr;
+	network = other_encoding.ptr;
+	netmask = other_encoding.ptr + address_size;
+	return match_subnets(address, NULL, network, netmask, address_size);
+}
+
+/**
+ * Matches a subnet to a subnet
+ */
+static id_match_t matches_subnet_to_subnet(private_identification_t *this,
+										   identification_t *other,
+										   uint8_t address_size)
+{
+	chunk_t other_encoding;
+	uint8_t *network, *netmask, *other_network, *other_netmask;
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != 2 * address_size ||
+		other_encoding.len != 2 * address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+	network = this->encoded.ptr;
+	netmask = this->encoded.ptr + address_size;
+	other_network = other_encoding.ptr;
+	other_netmask = other_encoding.ptr + address_size;
+	return match_subnets(network, netmask, other_network, other_netmask,
+						 address_size);
+}
+
+/**
+ * Matches a range to a subnet
+ */
+static id_match_t matches_range_to_subnet(private_identification_t *this,
+										  identification_t *other,
+										  uint8_t address_size)
+{
+	chunk_t other_encoding;
+	uint8_t *from, *to, other_from[address_size], other_to[address_size];
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != 2 * address_size ||
+		other_encoding.len != 2 * address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+
+	from = this->encoded.ptr;
+	to = this->encoded.ptr + address_size;
+	subnet_to_range(other_encoding, address_size, other_from, other_to);
+	return match_ranges(from, to, other_from, other_to, address_size);
+}
+
+/**
+ * Match an address to a range
+ */
+static id_match_t matches_addr_to_range(private_identification_t *this,
+										identification_t *other,
+										uint8_t address_size)
+{
+	chunk_t other_encoding;
+	uint8_t *address, *from, *to;
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != address_size ||
+		other_encoding.len != 2 * address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+	address = this->encoded.ptr;
+	from = other_encoding.ptr;
+	to = other_encoding.ptr + address_size;
+	return match_ranges(address, address, from, to, address_size);
+}
+
+/**
+ * Match a subnet to a range
+ */
+static id_match_t matches_subnet_to_range(private_identification_t *this,
+										  identification_t *other,
+										  uint8_t address_size)
+{
+	chunk_t other_encoding;
+	uint8_t from[address_size], to[address_size], *other_from, *other_to;
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != 2 * address_size ||
+		other_encoding.len != 2 * address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+	subnet_to_range(this->encoded, address_size, from, to);
+	other_from = other_encoding.ptr;
+	other_to = other_encoding.ptr + address_size;
+	return match_ranges(from, to, other_from, other_to, address_size);
+}
+
+/**
+ * Match a range to a range
+ */
+static id_match_t matches_range_to_range(private_identification_t *this,
+										 identification_t *other,
+										 uint8_t address_size)
+{
+	chunk_t other_encoding;
+	uint8_t *from, *to, *other_from, *other_to;
+
+	other_encoding = other->get_encoding(other);
+	if (this->encoded.len != 2 * address_size ||
+		other_encoding.len != 2 * address_size)
+	{
+		return ID_MATCH_NONE;
+	}
+	from = this->encoded.ptr;
+	to = this->encoded.ptr + address_size;
+	other_from = other_encoding.ptr;
+	other_to = other_encoding.ptr + address_size;
+	return match_ranges(from, to, other_from, other_to, address_size);
+}
+
+METHOD(identification_t, matches_range, id_match_t,
+	private_identification_t *this, identification_t *other)
+{
+	id_type_t other_type;
+	uint8_t address_size = 0;
+
+	other_type = other->get_type(other);
+	if (other_type == ID_ANY)
+	{
+		return ID_MATCH_ANY;
+	}
+	if (this->type == other_type &&
+		chunk_equals(this->encoded, other->get_encoding(other)))
+	{
+		return ID_MATCH_PERFECT;
+	}
+	if (other_type == ID_IPV4_ADDR &&
+		(this->type == ID_IPV4_ADDR_SUBNET || this->type == ID_IPV4_ADDR_RANGE))
+	{
+		address_size = sizeof(struct in_addr);
+	}
+	else if (other_type == ID_IPV6_ADDR &&
+			(this->type == ID_IPV6_ADDR_SUBNET || this->type == ID_IPV6_ADDR_RANGE))
+	{
+		address_size = sizeof(struct in6_addr);
+	}
+	if (address_size)
+	{
+		if (this->type == ID_IPV4_ADDR_SUBNET || this->type == ID_IPV6_ADDR_SUBNET)
+		{
+			return matches_subnet_to_addr(this, other, address_size);
+		}
+		return matches_range_to_addr(this, other, address_size);
+	}
+	if (other_type == ID_IPV4_ADDR_SUBNET &&
+		(this->type == ID_IPV4_ADDR || this->type == ID_IPV4_ADDR_SUBNET ||
+		 this->type == ID_IPV4_ADDR_RANGE))
+	{
+		address_size = sizeof(struct in_addr);
+	}
+	else if (other_type == ID_IPV6_ADDR_SUBNET &&
+			(this->type == ID_IPV6_ADDR || this->type == ID_IPV6_ADDR_SUBNET ||
+			 this->type == ID_IPV6_ADDR_RANGE))
+	{
+		address_size = sizeof(struct in6_addr);
+	}
+	if (address_size)
+	{
+		if (this->type == ID_IPV4_ADDR || this->type == ID_IPV6_ADDR)
+		{
+			return matches_addr_to_subnet(this, other, address_size);
+		}
+		else if (this->type == ID_IPV4_ADDR_SUBNET || this->type == ID_IPV6_ADDR_SUBNET)
+		{
+			return matches_subnet_to_subnet(this, other, address_size);
+		}
+		return matches_range_to_subnet(this, other, address_size);
+	}
+	if (other_type == ID_IPV4_ADDR_RANGE &&
+		(this->type == ID_IPV4_ADDR || this->type == ID_IPV4_ADDR_SUBNET ||
+		 this->type == ID_IPV4_ADDR_RANGE))
+	{
+		address_size = sizeof(struct in_addr);
+	}
+	else if (other_type == ID_IPV6_ADDR_RANGE &&
+			(this->type == ID_IPV6_ADDR || this->type == ID_IPV6_ADDR_SUBNET ||
+			 this->type == ID_IPV6_ADDR_RANGE))
+	{
+		address_size = sizeof(struct in6_addr);
+	}
+	if (address_size)
+	{
+		if (this->type == ID_IPV4_ADDR || this->type == ID_IPV6_ADDR)
+		{
+			return matches_addr_to_range(this, other, address_size);
+		}
+		else if (this->type == ID_IPV4_ADDR_SUBNET || this->type == ID_IPV6_ADDR_SUBNET)
+		{
+			return matches_subnet_to_range(this, other, address_size);
+		}
+		return matches_range_to_range(this, other, address_size);
+	}
+	return ID_MATCH_NONE;
+}
+
+/**
+ * Convert the given identity to a string depending on its type.
+ */
+static void identity_to_string(private_identification_t *this, char buf[BUF_LEN])
+{
 	chunk_t proper;
-	char buf[BUF_LEN], *pos;
-	size_t len, address_size;
+	char *pos;
+	uint8_t address_size;
+	size_t len;
 	int written;
 
-	if (this == NULL)
+	if (this->regex)
 	{
-		return print_in_hook(data, "%*s", spec->width, "(null)");
+		snprintf(buf, BUF_LEN, "%s", this->encoded.ptr);
+		return;
 	}
 
 	switch (this->type)
@@ -1322,6 +1651,24 @@ int identification_printf_hook(printf_hook_data_t *data,
 			snprintf(buf, BUF_LEN, "(unknown ID type: %d)", this->type);
 			break;
 	}
+}
+
+/**
+ * Described in header.
+ */
+int identification_printf_hook(printf_hook_data_t *data,
+							printf_hook_spec_t *spec, const void *const *args)
+{
+	private_identification_t *this = *((private_identification_t**)(args[0]));
+	char buf[BUF_LEN];
+
+	if (!this)
+	{
+		return print_in_hook(data, "%*s", spec->width, "(null)");
+	}
+
+	identity_to_string(this, buf);
+
 	if (spec->minus)
 	{
 		return print_in_hook(data, "%-*s", spec->width, buf);
@@ -1329,13 +1676,52 @@ int identification_printf_hook(printf_hook_data_t *data,
 	return print_in_hook(data, "%*s", spec->width, buf);
 }
 
+#ifdef HAVE_REGEX
+
+/**
+ * Compile the encoded regular expression.
+ */
+static bool compile_regex(private_identification_t *this)
+{
+	char buf[BUF_LEN];
+	int err = 0;
+
+	this->regex = malloc(sizeof(*this->regex));
+	err = regcomp(this->regex, this->encoded.ptr,
+				  REG_EXTENDED | REG_ICASE | REG_NOSUB);
+	if (err != 0)
+	{
+		regerror(err, NULL, buf, sizeof(buf));
+		DBG1(DBG_LIB, "invalid regular expression '%s': %s",
+			 this->encoded.ptr, buf);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+#else /* HAVE_REGEX */
+
+static bool compile_regex(private_identification_t *this)
+{
+	DBG1(DBG_LIB, "regular expressions are not supported");
+	return FALSE;
+}
+
+#endif /* HAVE_REGEX */
+
 METHOD(identification_t, clone_, identification_t*,
 	private_identification_t *this)
 {
 	private_identification_t *clone = malloc_thing(private_identification_t);
 
 	memcpy(clone, this, sizeof(private_identification_t));
-	if (this->encoded.len)
+	if (this->regex)
+	{
+		/* make sure we have the full encoding cloned */
+		clone->encoded = chunk_from_str(strdup(this->encoded.ptr));
+		compile_regex(clone);
+	}
+	else if (this->encoded.len)
 	{
 		clone->encoded = chunk_clone(this->encoded);
 	}
@@ -1346,6 +1732,11 @@ METHOD(identification_t, destroy, void,
 	private_identification_t *this)
 {
 	chunk_free(&this->encoded);
+	if (this->regex)
+	{
+		regfree(this->regex);
+		free(this->regex);
+	}
 	free(this);
 }
 
@@ -1374,7 +1765,7 @@ static private_identification_t *identification_create(id_type_t type)
 			this->public.hash = _hash_binary;
 			this->public.equals = _equals_binary;
 			this->public.matches = _matches_any;
-			this->public.contains_wildcards = return_true;
+			this->public.contains_wildcards = (void*)return_true;
 			break;
 		case ID_FQDN:
 		case ID_RFC822_ADDR:
@@ -1402,47 +1793,56 @@ static private_identification_t *identification_create(id_type_t type)
 			break;
 		case ID_IPV4_ADDR:
 		case ID_IPV6_ADDR:
+		case ID_IPV4_ADDR_SUBNET:
+		case ID_IPV6_ADDR_SUBNET:
+		case ID_IPV4_ADDR_RANGE:
+		case ID_IPV6_ADDR_RANGE:
 			this->public.hash = _hash_binary;
 			this->public.equals = _equals_binary;
 			this->public.matches = _matches_range;
-			this->public.contains_wildcards = return_false;
+			this->public.contains_wildcards = (void*)return_false;
 			break;
 		default:
 			this->public.hash = _hash_binary;
 			this->public.equals = _equals_binary;
 			this->public.matches = _matches_binary;
-			this->public.contains_wildcards = return_false;
+			this->public.contains_wildcards = (void*)return_false;
 			break;
 	}
 	return this;
 }
 
 /**
+ * Prefixes used when parsing identities.
+ */
+static const struct {
+	const char *str;
+	id_type_t type;
+	bool regex;
+} prefixes[] = {
+	{ "ipv4:",			ID_IPV4_ADDR,			FALSE},
+	{ "ipv6:",			ID_IPV6_ADDR,			FALSE},
+	{ "ipv4net:",		ID_IPV4_ADDR_SUBNET,	FALSE},
+	{ "ipv6net:",		ID_IPV6_ADDR_SUBNET,	FALSE},
+	{ "ipv4range:",		ID_IPV4_ADDR_RANGE,		FALSE},
+	{ "ipv6range:",		ID_IPV6_ADDR_RANGE,		FALSE},
+	{ "rfc822:",		ID_RFC822_ADDR,			TRUE},
+	{ "email:",			ID_RFC822_ADDR,			TRUE},
+	{ "userfqdn:",		ID_RFC822_ADDR,			TRUE},
+	{ "fqdn:",			ID_FQDN,				TRUE},
+	{ "dns:",			ID_FQDN,				TRUE},
+	{ "asn1dn:",		ID_DER_ASN1_DN,			TRUE},
+	{ "asn1gn:",		ID_DER_ASN1_GN,			FALSE},
+	{ "xmppaddr:",		ID_DER_ASN1_GN,         FALSE},
+	{ "keyid:",			ID_KEY_ID,				FALSE},
+	{ "uri:",			ID_DER_ASN1_GN_URI,		FALSE},
+};
+
+/**
  * Create an identity for a specific type, determined by prefix
  */
-static private_identification_t* create_from_string_with_prefix_type(char *str)
+static private_identification_t *create_from_string_with_prefix_type(char *str)
 {
-	struct {
-		const char *str;
-		id_type_t type;
-	} prefixes[] = {
-		{ "ipv4:",			ID_IPV4_ADDR			},
-		{ "ipv6:",			ID_IPV6_ADDR			},
-		{ "ipv4net:",		ID_IPV4_ADDR_SUBNET		},
-		{ "ipv6net:",		ID_IPV6_ADDR_SUBNET		},
-		{ "ipv4range:",		ID_IPV4_ADDR_RANGE		},
-		{ "ipv6range:",		ID_IPV6_ADDR_RANGE		},
-		{ "rfc822:",		ID_RFC822_ADDR			},
-		{ "email:",			ID_RFC822_ADDR			},
-		{ "userfqdn:",		ID_USER_FQDN			},
-		{ "fqdn:",			ID_FQDN					},
-		{ "dns:",			ID_FQDN					},
-		{ "asn1dn:",		ID_DER_ASN1_DN			},
-		{ "asn1gn:",		ID_DER_ASN1_GN			},
-		{ "xmppaddr:",		ID_DER_ASN1_GN          },
-		{ "keyid:",			ID_KEY_ID				},
-		{ "uri:",			ID_DER_ASN1_GN_URI		},
-	};
 	private_identification_t *this;
 	int i;
 
@@ -1471,7 +1871,6 @@ static private_identification_t* create_from_string_with_prefix_type(char *str)
 										asn1_wrap(ASN1_UTF8STRING, "m",
 											this->encoded)));
 			}
-
 			return this;
 		}
 	}
@@ -1484,7 +1883,7 @@ static private_identification_t* create_from_string_with_prefix_type(char *str)
  * The prefix is of the form "{x}:", where x denotes the numerical identity
  * type.
  */
-static private_identification_t* create_from_string_with_num_type(char *str)
+static private_identification_t *create_from_string_with_num_type(char *str)
 {
 	private_identification_t *this;
 	u_long type;
@@ -1514,7 +1913,7 @@ static private_identification_t* create_from_string_with_num_type(char *str)
 /**
  * Convert to an IPv4/IPv6 host address, subnet or address range
  */
-static private_identification_t* create_ip_address_from_string(char *string,
+static private_identification_t *create_ip_address_from_string(char *string,
 															   bool is_ipv4)
 {
 	private_identification_t *this;
@@ -1655,7 +2054,7 @@ identification_t *identification_create_from_string(char *string)
 		else
 		{
 			this = identification_create(ID_KEY_ID);
-			this->encoded = chunk_from_str(strdup(string));
+			this->encoded = chunk_clone(chunk_from_str(string));
 		}
 		return &this->public;
 	}
@@ -1682,7 +2081,7 @@ identification_t *identification_create_from_string(char *string)
 				if (!this)
 				{	/* not IPv4, mostly FQDN */
 					this = identification_create(ID_FQDN);
-					this->encoded = chunk_from_str(strdup(string));
+					this->encoded = chunk_clone(chunk_from_str(string));
 				}
 				return &this->public;
 			}
@@ -1693,7 +2092,7 @@ identification_t *identification_create_from_string(char *string)
 				if (!this)
 				{	/* not IPv4/6 fallback to KEY_ID */
 					this = identification_create(ID_KEY_ID);
-					this->encoded = chunk_from_str(strdup(string));
+					this->encoded = chunk_clone(chunk_from_str(string));
 				}
 				return &this->public;
 			}
@@ -1712,7 +2111,7 @@ identification_t *identification_create_from_string(char *string)
 			}
 			else if (*string == '@')
 			{
-				this = identification_create(ID_USER_FQDN);
+				this = identification_create(ID_RFC822_ADDR);
 				this->encoded = chunk_clone(chunk_from_str(string + 1));
 				return &this->public;
 			}
@@ -1726,16 +2125,75 @@ identification_t *identification_create_from_string(char *string)
 		else
 		{
 			this = identification_create(ID_RFC822_ADDR);
-			this->encoded = chunk_from_str(strdup(string));
+			this->encoded = chunk_clone(chunk_from_str(string));
 			return &this->public;
 		}
 	}
 }
 
+/**
+ * Check if the given string should be parsed as regular expression identity.
+ * If so, it modifies the string and returns the identity type, otherwise,
+ * ID_ANY is returned.
+ */
+static id_type_t is_regex_identity(char **string)
+{
+	char *regex;
+	int i;
+
+	for (i = 0; i < countof(prefixes); i++)
+	{
+		if (strcasepfx(*string, prefixes[i].str))
+		{
+			regex = *string + strlen(prefixes[i].str);
+
+			if (prefixes[i].regex &&
+				*regex == '^' && *(regex + strlen(regex) - 1) == '$')
+			{
+				*string = regex;
+				return prefixes[i].type;
+			}
+			break;
+		}
+	}
+	return ID_ANY;
+}
+
 /*
  * Described in header.
  */
-identification_t * identification_create_from_data(chunk_t data)
+identification_t *identification_create_from_string_with_regex(char *string)
+{
+	private_identification_t *this;
+	id_type_t type;
+
+	type = is_regex_identity(&string);
+	if (type != ID_ANY)
+	{
+		this = identification_create(type);
+
+		this->public.hash = _hash_binary;
+		this->public.equals = _equals_binary;
+		this->public.matches = _matches_any;
+		this->public.contains_wildcards = (void*)return_true;
+
+		/* this encoding explicitly includes the null-terminator so we can
+		 * directly use it to compile the regex and printing */
+		this->encoded = chunk_from_str(strdup(string));
+		if (!compile_regex(this))
+		{
+			destroy(this);
+			return NULL;
+		}
+		return &this->public;
+	}
+	return identification_create_from_string(string);
+}
+
+/*
+ * Described in header.
+ */
+identification_t *identification_create_from_data(chunk_t data)
 {
 	char buf[data.len + 1];
 

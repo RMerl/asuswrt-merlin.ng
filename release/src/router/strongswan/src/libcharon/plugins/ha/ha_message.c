@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2024 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -231,7 +232,7 @@ METHOD(ha_message_t, add_attribute, void,
 			break;
 		}
 		/* uint16_t */
-		case HA_ALG_DH:
+		case HA_ALG_KE:
 		case HA_ALG_PRF:
 		case HA_ALG_OLD_PRF:
 		case HA_ALG_ENCR:
@@ -270,11 +271,13 @@ METHOD(ha_message_t, add_attribute, void,
 		case HA_NONCE_I:
 		case HA_NONCE_R:
 		case HA_SECRET:
+		case HA_ADD_SECRET:
 		case HA_LOCAL_DH:
 		case HA_REMOTE_DH:
 		case HA_PSK:
 		case HA_IV:
 		case HA_OLD_SKD:
+		case HA_ALG_ADD_KES:
 		{
 			chunk_t chunk;
 
@@ -283,7 +286,7 @@ METHOD(ha_message_t, add_attribute, void,
 			*(uint16_t*)(this->buf.ptr + this->buf.len) = htons(chunk.len);
 			memcpy(this->buf.ptr + this->buf.len + sizeof(uint16_t),
 				   chunk.ptr, chunk.len);
-			this->buf.len += chunk.len + sizeof(uint16_t);;
+			this->buf.len += chunk.len + sizeof(uint16_t);
 			break;
 		}
 		/** traffic_selector_t */
@@ -316,6 +319,36 @@ METHOD(ha_message_t, add_attribute, void,
 		}
 	}
 	va_end(args);
+}
+
+METHOD(ha_message_t, add_key_exchange_methods, void,
+	private_ha_message_t *this, proposal_t *proposal)
+{
+	uint16_t algs[MAX_ADDITIONAL_KEY_EXCHANGES] = {};
+	int i, count = 0;
+
+	if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD, &algs[0], NULL))
+	{
+		add_attribute(this, HA_ALG_KE, algs[0]);
+		algs[0] = 0;
+	}
+	for (i = 0; i < countof(algs); i++)
+	{
+		if (proposal->get_algorithm(proposal, i + ADDITIONAL_KEY_EXCHANGE_1,
+									&algs[i], NULL))
+		{
+			count = i+1;
+		}
+	}
+	if (count)
+	{
+		for (i = 0; i < count; i++)
+		{
+			algs[i] = htons(algs[i]);
+		}
+		add_attribute(this, HA_ALG_ADD_KES,
+					  chunk_create((u_char*)algs, count * sizeof(uint16_t)));
+	}
 }
 
 /**
@@ -455,7 +488,7 @@ METHOD(enumerator_t, attribute_enumerate, bool,
 			return TRUE;
 		}
 		/** uint16_t */
-		case HA_ALG_DH:
+		case HA_ALG_KE:
 		case HA_ALG_PRF:
 		case HA_ALG_OLD_PRF:
 		case HA_ALG_ENCR:
@@ -496,11 +529,13 @@ METHOD(enumerator_t, attribute_enumerate, bool,
 		case HA_NONCE_I:
 		case HA_NONCE_R:
 		case HA_SECRET:
+		case HA_ADD_SECRET:
 		case HA_LOCAL_DH:
 		case HA_REMOTE_DH:
 		case HA_PSK:
 		case HA_IV:
 		case HA_OLD_SKD:
+		case HA_ALG_ADD_KES:
 		{
 			size_t len;
 
@@ -626,7 +661,7 @@ METHOD(ha_message_t, get_encoding, chunk_t,
 METHOD(ha_message_t, destroy, void,
 	private_ha_message_t *this)
 {
-	free(this->buf.ptr);
+	chunk_clear(&this->buf);
 	free(this);
 }
 
@@ -639,6 +674,7 @@ static private_ha_message_t *ha_message_create_generic()
 		.public = {
 			.get_type = _get_type,
 			.add_attribute = _add_attribute,
+			.add_key_exchange_methods = _add_key_exchange_methods,
 			.create_attribute_enumerator = _create_attribute_enumerator,
 			.get_encoding = _get_encoding,
 			.destroy = _destroy,
@@ -688,4 +724,3 @@ ha_message_t *ha_message_parse(chunk_t data)
 
 	return &this->public;
 }
-

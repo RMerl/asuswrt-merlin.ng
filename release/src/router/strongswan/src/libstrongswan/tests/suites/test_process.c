@@ -203,24 +203,29 @@ Suite *process_suite_create()
 	s = suite_create("process");
 
 	tc = tcase_create("return values");
+	tcase_set_timeout(tc, 10);
 	tcase_add_test(tc, test_retval_true);
 	tcase_add_test(tc, test_retval_false);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("not found");
+	tcase_set_timeout(tc, 10);
 	tcase_add_test(tc, test_not_found);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("echo");
+	tcase_set_timeout(tc, 10);
 	tcase_add_test(tc, test_echo);
 	tcase_add_test(tc, test_echo_err);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("env");
+	tcase_set_timeout(tc, 10);
 	tcase_add_test(tc, test_env);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("shell");
+	tcase_set_timeout(tc, 10);
 	tcase_add_test(tc, test_shell);
 	suite_add_tcase(s, tc);
 

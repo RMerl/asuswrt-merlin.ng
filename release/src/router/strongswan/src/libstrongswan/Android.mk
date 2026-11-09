@@ -42,7 +42,7 @@ networking/streams/stream_tcp.c networking/streams/stream_service_tcp.c \
 pen/pen.c plugins/plugin_loader.c plugins/plugin_feature.c processing/jobs/job.c \
 processing/jobs/callback_job.c processing/processor.c processing/scheduler.c \
 processing/watcher.c resolver/resolver_manager.c resolver/rr_set.c \
-selectors/sec_label.c selectors/traffic_selector.c \
+selectors/sec_label.c selectors/traffic_selector.c selectors/traffic_selector_list.c \
 settings/settings.c settings/settings_types.c \
 settings/settings_parser.c settings/settings_lexer.c utils/cpu_feature.c \
 utils/utils.c utils/chunk.c utils/debug.c utils/enum.c utils/identification.c \

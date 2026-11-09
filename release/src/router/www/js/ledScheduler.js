@@ -205,7 +205,7 @@ class AuraScheduler {
 				<br />
 				<div class="icon_text_container">
 					<div class="icon-circle-mask"><i class="icon-comments"></i></div>
-					<a target="_blank" href="https://www.asus.com/support/" tabindex="0" role="button"
+					<a target="_blank" href="https://www.asus.com/support/faq/1056111/" tabindex="0" role="button"
 						aria-label="<#HOWTOSETUP#>"
 						onkeydown="if(event.key==='Enter'||event.key===' '){this.click();}">
 						<#HOWTOSETUP#>

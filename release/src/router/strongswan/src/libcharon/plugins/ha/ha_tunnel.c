@@ -205,7 +205,7 @@ static void setup_tunnel(private_ha_tunnel_t *this,
 		.rekey_time = 86400, /* 24h */
 		.jitter_time = 7200, /* 2h */
 		.over_time = 3600, /* 1h */
-		.no_mobike = TRUE,
+		.options = OPT_NO_MOBIKE,
 		.dpd = 30,
 	};
 	child_cfg_create_t child = {

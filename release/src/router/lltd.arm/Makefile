@@ -2,6 +2,15 @@ include ../common.mak
 
 include $(SRCBASE)/.config
 
+# HND_ROUTER_LEGACY: set to y when pwd contains an exact path component of either
+# "src-rt-5.02hnd" or "src-rt-5.02axhnd" (must match the whole directory name,
+# not a prefix such as "src-rt-5.02axhnd.675x"). The surrounding slashes anchor
+# the match to a complete path segment; "\.02" escapes the dot and "\(ax\)\?"
+# accepts both the hnd and axhnd variants.
+ifeq ($(origin HND_ROUTER_LEGACY), undefined)
+export HND_ROUTER_LEGACY := $(if $(shell pwd | grep -e '/src-rt-5\.02\(ax\)\?hnd/'),y,)
+endif
+
 model = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 modelstr = $(shell echo $(model) | tr '[:upper:]' '[:lower:]')
 
@@ -12,12 +21,10 @@ install: all
 ifneq ($(HND_ROUTER),y)
 	install lld2d $(INSTALLDIR)/usr/sbin
 else
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
-	install lld2d.6755axhnd $(INSTALLDIR)/usr/sbin/lld2d
-else ifeq ($(HND_ROUTER_BE_4916),y)
-	echo "skip router/lltd.arm/lld2d"
-else
+ifeq ($(HND_ROUTER_LEGACY),y)
 	install lld2d.hnd $(INSTALLDIR)/usr/sbin/lld2d
+else
+	install lld2d.6755axhnd.patched $(INSTALLDIR)/usr/sbin/lld2d
 endif
 endif
 ifeq ($(BUILD_NAME),RT-AC3200)
@@ -82,9 +89,6 @@ else ifeq ($(BUILD_NAME), BQ16)
 else ifeq ($(BUILD_NAME), BQ16_PRO)
 	install icon.bq16_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.bq16_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), BN12)
-	install icon.bn12.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.bn12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), BM68)
 	install icon.bm68.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.bm68.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -246,30 +250,9 @@ else ifeq ($(BUILD_NAME), GS7_PRO)
 else ifeq ($(BUILD_NAME), GT7)
 	install icon.gt7.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gt7.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), GS7_PRO_MAX)
-	install icon.gs7_pro_max.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.gs7_pro_max.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), GT-BE96_AI)
 	install icon.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtbe96_ai.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), GT-BN98)
-	install icon.gtbn98.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.gtbn98.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), GT-BN98_PRO)
-	install icon.gtbn98_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.gtbn98_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), BN12)
-	install icon.bn12.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.bn12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), GT-BN96X)
-	install icon.gtbn96x.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.gtbn96x.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), GT-BN98)
-	install icon.gtbn98.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.gtbn98.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME), GT-BN96)
-	install icon.gtbn96.ico $(INSTALLDIR)/usr/sbin/icon.ico
-	install icon.large.gtbn96.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else
 	install icon.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.large.ico

@@ -189,7 +189,6 @@ METHOD(plugin_t, get_features, int,
 {
 	static plugin_feature_t f_hash[] = {
 		PLUGIN_REGISTER(HASHER, pkcs11_hasher_create),
-			PLUGIN_PROVIDE(HASHER, HASH_MD2),
 			PLUGIN_PROVIDE(HASHER, HASH_MD5),
 			PLUGIN_PROVIDE(HASHER, HASH_SHA1),
 			PLUGIN_PROVIDE(HASHER, HASH_SHA256),
@@ -294,7 +293,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *pkcs11_plugin_create()
+PLUGIN_DEFINE(pkcs11)
 {
 	private_pkcs11_plugin_t *this;
 

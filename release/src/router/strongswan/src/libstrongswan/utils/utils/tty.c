@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 Tobias Brunner
+ * Copyright (C) 2008-2025 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -18,6 +18,7 @@
 #include <utils/utils.h>
 
 #include <unistd.h>
+#include <stdio.h>
 
 ENUM(tty_color_names, TTY_RESET, TTY_BG_DEF,
 	"\e[0m",
@@ -45,11 +46,29 @@ ENUM(tty_color_names, TTY_RESET, TTY_BG_DEF,
 );
 
 /**
+ * Check if the output goes to stdout/stderr in a CI environment, where colored
+ * output is usually supported.
+ */
+static bool is_ci(int fd)
+{
+	static bool ci_checked = FALSE, ci_found = FALSE;
+
+	if (!ci_checked)
+	{
+		ci_checked = TRUE;
+		ci_found = getenv("CI") && (getenv("GITHUB_ACTIONS") ||
+									getenv("CIRRUS_CI") ||
+									getenv("APPVEYOR"));
+	}
+	return ci_found && (fd == fileno(stdout) || fd == fileno(stderr));
+}
+
+/**
  * Get the escape string for a given TTY color, empty string on non-tty FILE
  */
 char* tty_escape_get(int fd, tty_escape_t escape)
 {
-	if (!isatty(fd))
+	if (!isatty(fd) && !is_ci(fd))
 	{
 		return "";
 	}

@@ -1315,7 +1315,7 @@
             style.textContent = `
             @import url('/css/color-table.css');
             .categories-container::-webkit-scrollbar, .category-apps::-webkit-scrollbar { width: 6px; height: 6px; }
-            .categories-container::-webkit-scrollbar-thumb, .category-apps::-webkit-scrollbar-thumb { background-color: #7775; border-radius: 20px; }
+            .categories-container::-webkit-scrollbar-thumb, .category-apps::-webkit-scrollbar-thumb { background-color: var(--brand-color, #7775); border-radius: 20px; }
             .categories-container::-webkit-scrollbar-thumb:hover, .category-apps::-webkit-scrollbar-thumb:hover { background-color: #7777; }
             .categories-container::-webkit-scrollbar-track:hover, .category-apps::-webkit-scrollbar-track:hover { background-color: #5555; }
             :host { --item-height: ${this.#itemHeight}px; }
@@ -1329,8 +1329,8 @@
             .modal-body { flex: 1; padding: 20px; overflow: hidden; display: flex; flex-direction: column; }
             .search-container { margin-bottom: 20px; }
             .search-input-wrapper { position: relative; display: flex; align-items: center; }
-            .search-input { width: 100%; padding: 12px 40px 12px 12px; border: 1px solid var(--wrt-input-border); background: var(--wrt-input-bg); border-radius: var(--wrt-radius-sm); font-size: 14px; box-sizing: border-box; transition: all 0.2s ease; }
-            .search-input:focus { outline: none; border: 1px solid var(--wrt-input-focus-border); color: var(--wrt-input-color); box-shadow: 0px -4px 0px 0px var(--wrt-input-focus-border) inset; background-color: var(--wrt-input-focus-bg) !important; }
+            .search-input { width: 100%; padding: 12px 40px 12px 12px; color: var(--text-input-color, #333); border: 1px solid var(--wrt-input-border, #ccc); background: var(--wrt-input-bg, #fff); border-radius: var(--wrt-radius-sm, 8px); font-size: 14px; box-sizing: border-box; transition: all 0.2s ease; }
+            .search-input:focus { outline: none; border: 1px solid var(--wrt-input-focus-border); box-shadow: 0 0 0 3px var(--wrt-input-focus-ring); }
             .search-clear-btn { position: absolute; right: 8px; background: none; border: none; font-size: 16px; color: #666; cursor: pointer; padding: 4px; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, opacity 0.2s, transform 0.2s; opacity: 0; transform: scale(0.7); pointer-events: none; }
             .search-clear-btn.visible { opacity: 1; transform: scale(1); pointer-events: auto; }
             .search-clear-btn:hover { background-color: var(--ark-iam-tree-hover-bg-color, #f0f0f0); color: #333; }
@@ -1344,7 +1344,7 @@
             .categories-container { flex: 1; overflow-y: auto; border: 1px solid var(--textbox-normal-stroke-color, #ccc); border-radius: var(--global-radius, 8px); background: var(--ark-iam-categories-container-bg-color, #fff); }
             .category-section { border-bottom: 1px solid var(--textbox-normal-stroke-color, #ccc); }
             .category-section:last-child { border-bottom: none; }
-            .category-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--wrt-btn-group-bg); cursor: pointer; font-weight: 600; color: var(--wrt-text-color); transition: background-color 0.2s; }
+            .category-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--wrt-btn-default-bg); cursor: pointer; font-weight: 600; color: var(--wrt-text-color); transition: background-color 0.2s; border-bottom: 1px solid var(--textbox-normal-stroke-color, #ccc); }
             .category-header:hover { background: var(--wrt-btn-default-hover-bg); }
             .category-header-controls { display: flex; align-items: center; gap: 12px; }
             .category-action-btn { background: none; border: 1px solid var(--wrt-btn-default-border); color: var(--wrt-btn-default-color); padding: 2px 8px; font-size: 12px; font-weight: normal; border-radius: var(--global-radius, 8px); cursor: pointer; transition: all 0.2s; }

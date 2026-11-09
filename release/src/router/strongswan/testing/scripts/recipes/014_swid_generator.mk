@@ -17,4 +17,8 @@ $(TAR):
 	@touch $@
 
 install: .$(PKG)-unpacked-$(REV)
+ifeq (,$(filter $(BASEIMG),bullseye bookworm))
+	cd $(DIR) && pipx install --global --system-site-packages .
+else
 	cd $(DIR) && SETUPTOOLS_USE_DISTUTILS=stdlib python3 setup.py install
+endif

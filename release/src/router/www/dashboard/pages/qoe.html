@@ -4,6 +4,7 @@
 
             --color-stroke-start: var(--gradient-accent-end); /* radar-stroke */
             --color-stroke-end: var(--gradient-accent-start); /* radar-stroke */
+            --qoe-radar-grid-color: rgba(39, 42, 49, 0.35); /* radar centre spokes — dark so it shows on the pale card */
             --slider-fill-start: var(--gradient-accent-end); /* filled area */
             --slider-fill-end: var(--gradient-accent-start);
             --slider-track: var(--border-default); /* unfilled area */
@@ -30,6 +31,7 @@
         [data-asuswrt-color="dark"] {
             --color-stroke-start: var(--gradient-accent-end); /* radar-stroke */
             --color-stroke-end: var(--gradient-accent-start); /* radar-stroke */
+            --qoe-radar-grid-color: rgba(255, 255, 255, 0.5); /* radar centre spokes */
             --slider-fill-start: var(--gradient-accent-end); /* filled area */
             --slider-fill-end: var(--gradient-accent-start);
             --slider-track: rgba(var(--surface-invert-rgb),0.4); /* unfilled area */
@@ -576,11 +578,14 @@
 
         .tab-navigation {
             box-sizing: border-box;
-            border-bottom: var(--wrt-nav-tabs-border-width) solid var(--wrt-nav-tabs-border-color);
+            /* sit on the page like architecture.css .page-title: transparent
+               background (page bg shows through) and no baseline divider. The
+               active tab's red underline serves as the sole indicator. */
+            border-bottom: none;
             border-radius: var(--wrt-nav-tabs-border-radius);
             display: flex;
             align-items: center;
-            background: var(--tab-navigation-bg-color);
+            background: transparent;
             font-size: var(--wrt-nav-tabs-link-font-size);
             font-family: inherit;
             font-weight: var(--wrt-nav-tabs-link-font-weight);
@@ -596,9 +601,12 @@
             justify-content: center;
             background: none;
             border: none;
-            font-size: var(--wrt-nav-tabs-link-font-size);
-            font-family: inherit;
-            color: var(--wrt-nav-tabs-link-color);
+            /* match architecture.css .page-title typeface + size (ROG Xolonium, 18px) */
+            font-size: 18px;
+            font-family: var(--page-title-font-style);
+            /* white label like architecture.css .page-title; the red underline
+               (below) is the sole active indicator */
+            color: var(--page-title-color, #fff);
             cursor: pointer;
             border-bottom: var(--wrt-nav-tabs-link-border-bottom-width) solid transparent;
             transition: color 0.2s, border-color 0.2s, background-color 0.2s;
@@ -607,7 +615,7 @@
         }
 
         .tab-navigation__item:hover {
-            background: var(--wrt-nav-tabs-link-hover-bgc);
+            background: var(--wrt-nav-tabs-link-hover-bg);
             border-color: var(--wrt-nav-tabs-link-hover-border-color);
             color: var(--wrt-nav-tabs-link-active-color);
         }
@@ -619,7 +627,7 @@
         }
 
         .tab-navigation__item.active {
-            color: var(--wrt-nav-tabs-link-active-color);
+            color: var(--page-title-color, #fff);
             font-weight: var(--wrt-nav-tabs-link-font-weight);
             background: var(--wrt-nav-tabs-link-active-bg);
             border-bottom-color: var(--wrt-nav-tabs-link-active-border-color);
@@ -2288,17 +2296,43 @@
                 nodeFormula: x => [Math.max(0, 3 - (x / 10)), 1, Math.max(0, 4 - (x / 10)), 3, Math.max(0, 5 + (x / 10))],
             },
         ]
-        const thisMode = modes.find(m => m.mode === orig_ark_qoe_profile);
-        thisMode.active = true;
+        // On page load: switch already on -> re-select the saved profile;
+        // switch off -> select no mode, and the radar shows an even regular
+        // pentagon (equal on all 5 axes). Smart Balance (ai) is only applied
+        // later when the switch is turned on and no mode is selected yet
+        // (see switchToggle).
+        const REGULAR_PENTAGON_BASE = 3.5;
+        const regularPentagonData = [
+            REGULAR_PENTAGON_BASE, REGULAR_PENTAGON_BASE, REGULAR_PENTAGON_BASE,
+            REGULAR_PENTAGON_BASE, REGULAR_PENTAGON_BASE
+        ];
+
+        const savedMode = modes.find(m => m.mode === orig_ark_qoe_profile);
+        const thisMode = (orig_ark_qoe_enable === "1") ? savedMode : null;
+        if (thisMode) {
+            thisMode.active = true;
+        }
+
+        // Initial radar data: use the selected mode's shape, or a regular pentagon when none is selected.
+        const initialRadarData = thisMode
+            ? thisMode.nodeFormula(thisMode.value)
+            : regularPentagonData;
 
         const title = document.getElementById("modeTitle");
         const description = document.getElementById("modeDescription");
         const slider = document.getElementById("tuningSlider");
         const sliderValue = document.getElementById("tuningValue");
-        title.textContent = thisMode.title;
-        description.textContent = thisMode.desc;
-        slider.value = thisMode.value;
-        sliderValue.innerText = thisMode.value;
+        if (thisMode) {
+            title.textContent = thisMode.title;
+            description.textContent = thisMode.desc;
+            slider.value = thisMode.value;
+            sliderValue.innerText = thisMode.value;
+        } else {
+            title.textContent = "";
+            description.textContent = "";
+            slider.value = 0;
+            sliderValue.innerText = 0;
+        }
         updateSliderBackground(slider);
 
         modes.forEach(m => {
@@ -2430,7 +2464,11 @@
                 }
 
                 ctx.save();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; // dashed line color
+                // Themed dashed-spoke colour — hardcoded white was invisible on the
+                // light theme's pale card; read the per-theme token instead.
+                const gridColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--qoe-radar-grid-color').trim() || 'rgba(255, 255, 255, 0.5)';
+                ctx.strokeStyle = gridColor; // dashed line color
                 ctx.lineWidth = 1;
                 ctx.setLineDash([5, 5]); // dashed line style [line length, gap length]
 
@@ -2547,7 +2585,7 @@
                 datasets: [
                     {
                         label: '',
-                        data: thisMode.nodeFormula(thisMode.value).map(data => {
+                        data: initialRadarData.map(data => {
                             return data * 0.6;
                         }),
                         borderColor: radarBorderColor,
@@ -2563,7 +2601,7 @@
                     },
                     {
                         label: '',
-                        data: thisMode.nodeFormula(thisMode.value).map(data => {
+                        data: initialRadarData.map(data => {
                             return data * 0.8;
                         }),
                         borderColor: radarLayer2BorderColor,
@@ -2579,7 +2617,7 @@
                     },
                     {
                         label: '',
-                        data: thisMode.nodeFormula(thisMode.value),
+                        data: initialRadarData.slice(),
                         borderColor: radarLayer3BorderColor,
                         backgroundColor: gradient,
                         borderWidth: radarLayer3BorderWidth,
@@ -2683,6 +2721,15 @@
             } else {
                 document.getElementById("enable_qoe_btn").classList.add("active");
                 document.getElementById("applyBtn").classList.remove("disabled");
+                // When turning the switch on, default to Smart Balance (ai) if the
+                // user has not selected any mode yet; if a mode is already selected,
+                // keep it and do not switch it for the user.
+                if (!document.querySelector(".mode-button.active")) {
+                    const aiMode = modes.find(m => m.mode === "ai");
+                    if (aiMode && aiMode.btn) {
+                        aiMode.btn.click();
+                    }
+                }
             }
         }
 
@@ -3003,6 +3050,7 @@
         }
         const deviceSelector = new ClientSelector({
             data: window.clientList.listAllClients().filter(item => !item.name.toLowerCase().includes('aiboard') && !item.amesh_isRe),
+            allowSubnet: true,
             // onSelect: (device) => {
             //     console.log('Selected device:', device);
             // }

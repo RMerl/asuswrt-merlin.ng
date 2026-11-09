@@ -364,7 +364,7 @@ kernel_libipsec_router_t *kernel_libipsec_router_create()
 	charon->receiver->add_esp_cb(charon->receiver, receiver_esp_cb, NULL);
 	lib->processor->queue_job(lib->processor,
 			(job_t*)callback_job_create((callback_job_cb_t)handle_plain, this,
-									NULL, (callback_job_cancel_t)return_false));
+										NULL, callback_job_cancel_thread));
 
 	router = &this->public;
 	return &this->public;

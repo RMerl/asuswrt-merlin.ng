@@ -1,5 +1,4 @@
 @import "/css/color-table.css";
-@import "/css/wrt-ui-alias-tokens.css";
 
 .schedule_ui{
 	color: var(--wrt-text-color);
@@ -108,7 +107,7 @@
 	border-radius: var(--wrt-btn-radius);
 }
 .hr_mins_container .hr_mins_title{
-	color: var(--wrt-btn-primary-color);
+	color: var(--wrt-text-color);
 }
 .combination_input_select{
 	background: var(--textbox-bg-color);
@@ -190,11 +189,16 @@
 .add_new_component > .add_new_text:before{
 	background-color: var(--wrt-btn-outline-primary-bg);
 }
-.icon_switch.off{
+.icon_switch.off {
 	background: var(--wrt-switch-track-bg-off);
 }
-.icon_switch:before{
+
+.icon_switch.off:before {
 	background: var(--wrt-switch-thumb-bg-off);
+}
+
+.icon_switch.off:after {
+	color: var(--wrt-switch-thumb-bg-off);
 }
 .icon_radio.clicked{
 	border-color: var(--wrt-radio-checked-border) !important;
@@ -226,7 +230,7 @@
 	color: var(--wrt-btn-primary-color) !important;
 }
 .quickset_component > div.custom{
-	color: var(--wrt-text-color);
+	color: var(--wrt-btn-primary-color);
 }
 .radio_options_container{
 	background: var(--wrt-card-surface-2-bg);

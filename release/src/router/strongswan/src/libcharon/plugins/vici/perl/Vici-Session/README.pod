@@ -426,13 +426,13 @@ lists currently loaded certificates by streaming list-cert events. This
 call includes all certificates known by the daemon, not only those loaded
 over VICI.
 
-  my %vars = ( subject => 'C=CH, O=Linux strongSwan, CN=moon.strongswan.org' );
+  my %vars = ( subject => 'C=CH, O=strongSwan Project, CN=moon.strongswan.org' );
   my $certs = $session->list_certs(Vici::Message->new(\%vars));
 
 =cut
 
 print "----- list-certs -----\n";
-%vars = ( subject => 'C=CH, O=Linux strongSwan, CN=moon.strongswan.org' );
+%vars = ( subject => 'C=CH, O=strongSwan Project, CN=moon.strongswan.org' );
 my $certs = $session->list_certs(Vici::Message->new(\%vars));
 foreach my $cert (@$certs)
 {

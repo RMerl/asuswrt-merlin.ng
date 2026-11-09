@@ -27,8 +27,11 @@
 #include <collections/linked_list.h>
 
 /**
- * Create an IMV empty recommendations instance
+ * Create an empty IMV recommendations instance
+ *
+ * @param imv_list		list of IMVs that could provide recommendations
+ * @return				created instance
  */
-recommendations_t *tnc_imv_recommendations_create();
+recommendations_t *tnc_imv_recommendations_create(linked_list_t *imv_list);
 
 #endif /** TNC_IMV_RECOMMENDATIONS_H_ @}*/

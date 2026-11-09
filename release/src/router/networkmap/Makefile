@@ -172,7 +172,7 @@ ifeq ($(RTCONFIG_TRUSTZONE),y)
 LDFLAGS += -L$(TOP)/ateed/ -latee
 endif
 
-ifeq ($(RTCONFIG_MXL_826XX),y)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 LDFLAGS += -L$(TOP)/libhostapi -lhostapi
 endif
 
@@ -245,7 +245,7 @@ ifneq ($(wildcard $(SRCBASE)/router/networkmap/arpstorm),)
 endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap
-	cp -f db/networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js
+	cp -f db/ieee.oui.json $(INSTALLDIR)/usr/networkmap/ieee.oui.json
 	cp -f db/nmp_conv_type.js $(INSTALLDIR)/usr/networkmap/nmp_conv_type.js
 	cp -f db/nmp_vendor_type.js $(INSTALLDIR)/usr/networkmap/nmp_vendor_type.js
 	cp -f db/nmp_bwdpi_type.js $(INSTALLDIR)/usr/networkmap/nmp_bwdpi_type.js

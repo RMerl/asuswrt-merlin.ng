@@ -114,7 +114,7 @@ START_TEST(test_append_obj)
 
 		array_insert(array, ARRAY_HEAD, &y[3]);
 		array_insert(array, ARRAY_TAIL, &y[4]);
-		ck_assert_int_eq(array_count(array), 2);;
+		ck_assert_int_eq(array_count(array), 2);
 
 		/* 3, 4 */
 

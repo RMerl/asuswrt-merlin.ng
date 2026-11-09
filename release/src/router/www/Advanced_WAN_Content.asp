@@ -661,6 +661,39 @@ function genWANSoption(){
 	}
 }
 
+function use_single_default_wan(){
+	let _use_single_default_wan = false;
+
+	if(wans_dualwan_orig.indexOf("none") == -1)
+		_use_single_default_wan = false;
+	else if(!isEmpty(eth_wan_list)){
+		$.each(eth_wan_list, function(key) {
+			if(key == "wan"){
+				_use_single_default_wan = true;
+
+				let wan_obj = eth_wan_list[key];
+				if(wan_obj.hasOwnProperty("extra_settings")){
+					let extra_settings = wan_obj.extra_settings;
+					let extra_setting_nvram_list = [];
+					let current_value_list = [];
+
+					extra_setting_nvram_list = Object.keys(extra_settings);
+					current_value_list = httpApi.nvramGet(extra_setting_nvram_list, true);
+					$.each(extra_settings, function(extra_settings_key) {
+						if(current_value_list[extra_settings_key] != extra_settings[extra_settings_key]){
+							_use_single_default_wan = false;
+							return false;
+						}
+					});
+				}
+			}
+		});
+	}
+
+	return _use_single_default_wan;
+}
+
+
 var reboot_confirm=0;
 function applyRule(){
 	if(ctf.dhcpToPppoe() && ctf.getLevel() == 2){
@@ -820,7 +853,14 @@ function applyRule(){
 			document.form.action_script.value += ";restart_wireless";
 		}
 
-		if(isSupport("autowan") && autowan_conflict){
+		let current_wan_support_wanbonding = true;
+		if(wan_bonding_support){
+			if((orig_bond_wan != document.form.bond_wan_radio.value) && !use_single_default_wan())
+				current_wan_support_wanbonding = false;
+		}
+
+
+		if((isSupport("autowan") && autowan_conflict) || !current_wan_support_wanbonding){
 			var hint_str = `<#conflict_function_wanport_hint#>`;
 			var msg = hint_str.replace("%1$@", conflict_functions).replaceAll("%2$@", get_default_wan_name());
 
@@ -1868,6 +1908,22 @@ function change_wanAggre_desc(){
 	$("#wanAgg_desc").html(orig_desc);
 
 	cur_bond_port = selectedName;
+
+	if(isSupport("NEW_PHYMAP")) {
+		var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+		if(cap_mac) {
+			httpApi.get_port_status(cap_mac, function(response) {
+				var port_info = response["port_info"] && response["port_info"][cap_mac];
+				if(!port_info) return;
+				var wan_rate = (port_info["W0"]) ? (parseInt(port_info["W0"].max_rate) || 0) : 0;
+				var lan4_rate = (port_info["L4"]) ? (parseInt(port_info["L4"].max_rate) || 0) : 0;
+				var total_gbps = ((wan_rate + lan4_rate) / 1000).toFixed(1);
+				var cur_desc = $("#wanAgg_desc").html();
+				cur_desc = cur_desc.replace(/\d+(\.\d+)?\s*Gbps/, total_gbps + "Gbps");
+				$("#wanAgg_desc").html(cur_desc);
+			});
+		}
+	}
 }
 
 function pullDNSList(_this) {

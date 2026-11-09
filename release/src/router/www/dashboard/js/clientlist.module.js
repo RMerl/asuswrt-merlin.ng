@@ -1,8 +1,26 @@
-import {isSupport} from "./utils.module.js";
+import {isSupport, validIPForm, haveFullWidthChar, lengthInUtf8} from "./utils.module.js";
 import {AsuswrtPopupPanel, AsuswrtButton, ToggleButton} from "./component.module.js";
 
 const _nvram = httpApi.nvramGet(["preferred_lang", "productid"]);
 const ui_lang = _nvram.preferred_lang;
+
+// Module-level cache for the OUI vendor database. The file is ~40k entries and
+// doesn't change within a session, so fetch it at most once and share the
+// resolved data (and any in-flight request) across the whole client list.
+// A failed fetch resets the cache so a later reload can retry.
+const OUI_DB_URL = "https://nw-dlcdnet.asus.com/plugin/js/ouiDB.json";
+let ouiDBPromise = null;
+function fetchOuiDB() {
+    if (!ouiDBPromise) {
+        ouiDBPromise = fetch(OUI_DB_URL)
+            .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+            .catch(() => {
+                ouiDBPromise = null; // don't cache a failure; allow retry on next reload
+                return null;
+            });
+    }
+    return ouiDBPromise;
+}
 
 const htmlEnDeCode = (function () {
     let charToEntityRegex,
@@ -395,6 +413,31 @@ export class ClientList {
         ];
         await Promise.all(iconLoadPromises);
         this.fetchDone = true;
+    }
+
+    // Fill in the vendor for every client the router couldn't classify, using the
+    // OUI database fetched once at load (batched equivalent of client_function.js's
+    // per-card oui_query_card()). Only clients with no DPI device name and no vendor
+    // are looked up; the resolved name feeds both the list's Vendor column and the
+    // client-info panel.
+    async resolveMissingVendors() {
+        if (!(httpApi.isConnected(0) || httpApi.isConnected(1))) return;
+        // Treat null / undefined / whitespace-only as "no value" so we don't skip
+        // clients whose field is blank but not exactly "".
+        const isBlank = (v) => v == null || String(v).trim() === "";
+        const pending = this.clients.filter(c => isBlank(c.dpiDevice) && isBlank(c.vendor));
+        if (pending.length === 0) return;
+        const data = await fetchOuiDB();
+        if (!data) return;
+        pending.forEach(c => {
+            // Guard against malformed records: a missing/non-string mac would throw
+            // and abort the whole batch, leaving every remaining vendor unresolved.
+            if (typeof c.mac !== "string") return;
+            const ouiKey = c.mac.replace(/\:/g, "").substring(0, 6).toUpperCase();
+            if (ouiKey.length === 6 && data[ouiKey] !== undefined) {
+                c.vendor = String(data[ouiKey]).trim();
+            }
+        });
     }
 
     startTrafficFetch() {
@@ -968,13 +1011,13 @@ export class ClientListTable {
                                  role="button"
                                  tabindex="0"
                                  aria-label="<#Filter_Mode#>"
-                                 title="<#Filter_Mode#>">
+                                 data-tooltip="<#Filter_Mode#>">
                                 <div><i class="filter_icon" aria-hidden="true"></i></div>
                             </div>
                             <div id="client_export_btn"
                                  role="button"
                                  tabindex="0"
-                                 title="<#btn_Export#>"
+                                 data-tooltip="<#btn_Export#>"
                                  aria-label="<#btn_Export#>">
                                 <i class="icon-export-file" aria-hidden="true"></i>
                             </div>
@@ -1617,7 +1660,14 @@ export class ClientListTable {
     }
 
     reloadClientListData = async () => {
+        // The OUI vendor DB is only needed for the client list (this table), so it is
+        // fetched here rather than in the shared ClientList.init() used by other pages.
+        // Kick off the download in parallel with the client reload so it overlaps.
+        if (httpApi.isConnected(0) || httpApi.isConnected(1)) {
+            fetchOuiDB();
+        }
         await this.clientList.reloadClientList();
+        await this.clientList.resolveMissingVendors();
         this.clients = this.clientList.listClients(0);
         await this.renderClientsInfo();
         await this.reloadTable();
@@ -1958,6 +2008,18 @@ export class ClientInfoView {
             });
         }
 
+        // Manufacturer / vendor — synced from client_function.js oui_query_card().
+        // Prefer the DPI-classified device name, fall back to the vendor string.
+        const deviceVendorTitle = (client.dpiDevice === "") ? client.vendor : client.dpiDevice;
+        // ASUS UI truncates vendor strings longer than 38 chars, keeping the full value in the tooltip.
+        const formatVendorName = (name) => {
+            name = (name || "").trim();
+            if (name.length > 38) {
+                return {value: `${name.substring(0, 36)}..`, title: name};
+            }
+            return {value: name, title: ""};
+        };
+
         const mainInfo = [
             {
                 title: `<#Client_IP#>`, value: client.ip, order: 1, render: function () {
@@ -1979,8 +2041,15 @@ export class ClientInfoView {
                     }
                 })(), order: 4
             },
+            {
+                title: `<#Vendor#>`, order: 5, render: function () {
+                    // Vendor is resolved up front in ClientList.resolveMissingVendors();
+                    // here we just display it (truncated, with the full name in the tooltip).
+                    const info = formatVendorName(deviceVendorTitle);
+                    return `<div title="${info.title}">${info.value}</div>`;
+                }
+            },
             // {title: "Hostname", value: "ASUS", order: 3},
-            // {title: "Manufacturer", value: "ASUS", order: 4},
             // {title: "Model", value: "ROG Phone3", order: 5},
             // {title: "OS", value: "Android", order: 6},
         ]
@@ -2111,7 +2180,7 @@ export class ClientInfoView {
                         ip_obj.value = client.ip;
                         ip_obj.focus();
                         retFlag = 0;
-                    } else if (!validator.validIPForm(ip_obj, 0)) {
+                    } else if (!validIPForm(ip_obj, 0)) {
                         ip_obj.value = client.ip;
                         ip_obj.focus();
                         retFlag = 0;
@@ -2152,7 +2221,7 @@ export class ClientInfoView {
                     }
 
                     if (isSupport("utf8_ssid")) {
-                        var len = validator.lengthInUtf8(clientNameInput.value);
+                        var len = lengthInUtf8(clientNameInput.value);
                         if (len > 32) {
                             alert("Username cannot be greater than 32 characters.");
                             clientNameInput.focus();
@@ -2160,7 +2229,7 @@ export class ClientInfoView {
                             clientNameInput.value = "";
                             return false;
                         }
-                    } else if (!validator.haveFullWidthChar(clientNameInput)) {
+                    } else if (!haveFullWidthChar(clientNameInput)) {
                         clientNameInput.focus();
                         clientNameInput.select();
                         clientNameInput.value = "";
@@ -8221,7 +8290,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
 
 
         const shadowRoot = this.shadowRoot;
-        shadowRoot.querySelector('.modal-title').innerText = `<#Client_Icon_change#>`;
+        shadowRoot.querySelector('.modal-title').innerText = 'Change Icon';
 
         const link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -8241,7 +8310,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         searchDiv.classList.add('search');
         searchDiv.innerHTML = `
             <div class="search-icon"><i class="icon-search"></i></div>
-            <input type="text" class="search-input" placeholder="<#CTL_search#>">`;
+            <input type="text" class="search-input" placeholder="Search">`;
         toolsDiv.appendChild(searchDiv);
 
         const addIcon = document.createElement('div');
@@ -8260,7 +8329,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         uploadDiv.classList.add('custom-upload');
         uploadDiv.innerHTML = `
                 <div class="upload-icon"><i class="icon-upload"></i></div>
-                <span><#CTL_upload_img#></span>
+                <span>Upload image</span>
                 <input type="file" class="custom-upload-file" accept="image/*" />`;
         const input = uploadDiv.querySelector('.custom-upload-file');
         input.addEventListener('change', (e) => {
@@ -8312,7 +8381,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         });
 
         const restoreBtn = new AsuswrtButton({
-            text: `<#CTL_restore#>`,
+            text: 'Restore Default',
             className: 'btn-secondary',
             onclick: () => {
                 ClientInfoView.resetIcon();
@@ -8321,7 +8390,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         });
 
         const closeBtn = new AsuswrtButton({
-            text: `<#CTL_Cancel#>`,
+            text: 'Cancel',
             className: 'btn-secondary',
             animation: '',
             onclick: () => {
@@ -8330,7 +8399,7 @@ export class IconSelectorPanel extends AsuswrtPopupPanel {
         });
 
         const applyBtn = new AsuswrtButton({
-            text: `<#CTL_apply#>`,
+            text: 'Apply',
             className: 'btn-primary',
             animation: 'slide',
             onclick: () => {

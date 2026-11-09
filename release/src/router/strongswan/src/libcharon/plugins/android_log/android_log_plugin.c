@@ -66,7 +66,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * See header
  */
-plugin_t *android_log_plugin_create()
+PLUGIN_DEFINE(android_log)
 {
 	private_android_log_plugin_t *this;
 

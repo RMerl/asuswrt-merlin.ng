@@ -89,7 +89,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *duplicheck_plugin_create()
+PLUGIN_DEFINE(duplicheck)
 {
 	private_duplicheck_plugin_t *this;
 

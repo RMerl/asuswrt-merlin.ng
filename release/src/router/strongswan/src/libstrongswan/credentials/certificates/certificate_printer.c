@@ -162,7 +162,7 @@ static void print_x509(private_certificate_printer_t *this, x509_t *x509)
 			}
 			else
 			{
-				fprintf(f, "           %s", cdp->uri);
+				fprintf(f, "             %s", cdp->uri);
 			}
 			if (cdp->issuer)
 			{
@@ -183,7 +183,7 @@ static void print_x509(private_certificate_printer_t *this, x509_t *x509)
 			}
 			else
 			{
-				fprintf(f, "           %s\n", uri);
+				fprintf(f, "             %s\n", uri);
 			}
 		}
 		enumerator->destroy(enumerator);

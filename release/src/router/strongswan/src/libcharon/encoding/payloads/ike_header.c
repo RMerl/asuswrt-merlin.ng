@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Tobias Brunner
+ * Copyright (C) 2007-2020 Tobias Brunner
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  *
@@ -129,15 +129,19 @@ ENUM_NEXT(exchange_type_names, QUICK_MODE, IKE_SESSION_RESUME, TRANSACTION,
 	"CREATE_CHILD_SA",
 	"INFORMATIONAL",
 	"IKE_SESSION_RESUME");
+ENUM_NEXT(exchange_type_names, IKE_INTERMEDIATE, IKE_FOLLOWUP_KE,
+		  IKE_SESSION_RESUME,
+	"IKE_INTERMEDIATE",
+	"IKE_FOLLOWUP_KE");
 #ifdef ME
-ENUM_NEXT(exchange_type_names, ME_CONNECT, ME_CONNECT, IKE_SESSION_RESUME,
+ENUM_NEXT(exchange_type_names, ME_CONNECT, ME_CONNECT, IKE_FOLLOWUP_KE,
 	"ME_CONNECT");
-ENUM_NEXT(exchange_type_names, EXCHANGE_TYPE_UNDEFINED,
-							   EXCHANGE_TYPE_UNDEFINED, ME_CONNECT,
+ENUM_NEXT(exchange_type_names, EXCHANGE_TYPE_UNDEFINED, EXCHANGE_TYPE_UNDEFINED,
+		  ME_CONNECT,
 	"EXCHANGE_TYPE_UNDEFINED");
 #else
-ENUM_NEXT(exchange_type_names, EXCHANGE_TYPE_UNDEFINED,
-							   EXCHANGE_TYPE_UNDEFINED, IKE_SESSION_RESUME,
+ENUM_NEXT(exchange_type_names, EXCHANGE_TYPE_UNDEFINED, EXCHANGE_TYPE_UNDEFINED,
+		  IKE_FOLLOWUP_KE,
 	"EXCHANGE_TYPE_UNDEFINED");
 #endif /* ME */
 ENUM_END(exchange_type_names, EXCHANGE_TYPE_UNDEFINED);
@@ -218,10 +222,12 @@ METHOD(payload_t, verify, status_t,
 			}
 			break;
 		case IKE_SA_INIT:
+		case IKE_INTERMEDIATE:
 		case IKE_AUTH:
 		case CREATE_CHILD_SA:
 		case INFORMATIONAL:
 		case IKE_SESSION_RESUME:
+		case IKE_FOLLOWUP_KE:
 #ifdef ME
 		case ME_CONNECT:
 #endif /* ME */

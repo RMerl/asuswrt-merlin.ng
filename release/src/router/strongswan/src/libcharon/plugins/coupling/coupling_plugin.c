@@ -92,7 +92,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *coupling_plugin_create()
+PLUGIN_DEFINE(coupling)
 {
 	private_coupling_plugin_t *this;
 

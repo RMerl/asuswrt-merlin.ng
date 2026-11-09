@@ -126,7 +126,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *ipseckey_plugin_create()
+PLUGIN_DEFINE(ipseckey)
 {
 	private_ipseckey_plugin_t *this;
 

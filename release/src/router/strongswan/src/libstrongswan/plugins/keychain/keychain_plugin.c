@@ -81,7 +81,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *keychain_plugin_create()
+PLUGIN_DEFINE(keychain)
 {
 	private_keychain_plugin_t *this;
 

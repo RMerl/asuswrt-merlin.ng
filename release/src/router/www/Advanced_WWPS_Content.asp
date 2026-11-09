@@ -339,7 +339,7 @@ function resetWPS(){
 	showLoading(sec);
 	FormActions("apply.cgi", "wps_reset", "", sec.toString());
 	document.form.submit();
-	setTimeout('location.replace(location.href);', sec * 1000);
+	setTimeout('location.reload();', sec * 1000);
 }
 
 function resetTimer()
@@ -1055,7 +1055,7 @@ function get_mainfh_by_wl_unit(_wl_unit){
 				<th width="30%"><a class="hintstyle" href="javascript:void(0);" onclick="openHint(13,5);"><#Current_band#></th>
 				
 				<td id="wps_switch">
-						<span class="devicepin" style="color:#FFF;" id="wps_band_word"></span>&nbsp;&nbsp;
+						<div class="devicepin" style="display: inline-block;" id="wps_band_word"></div>
 						<input type="button" class="button_gen" name="switchWPSbtn" id="switchWPSbtn" value="<#Switch_band#>" class="button" onClick="SwitchBand();">
 						<br><span id="wps_band_hint"></span>
 		  	</td>

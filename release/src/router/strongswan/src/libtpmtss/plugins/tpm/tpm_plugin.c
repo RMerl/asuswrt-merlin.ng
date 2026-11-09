@@ -88,7 +88,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *tpm_plugin_create()
+PLUGIN_DEFINE(tpm)
 {
 	private_tpm_plugin_t *this;
 

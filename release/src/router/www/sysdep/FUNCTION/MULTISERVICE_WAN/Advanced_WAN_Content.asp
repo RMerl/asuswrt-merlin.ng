@@ -221,13 +221,7 @@ var getUrlParameter = function getUrlParameter(param){
 	}
 	return "";
 };
-function getSafeTheme(paramName, allowedValues = ['WHITE', 'ROG', 'TUF', '']) {
-	let rawValue = getUrlParameter(paramName);
-	if (!rawValue) return "";
-	let safePrefix = rawValue.toUpperCase().match(/^[A-Z0-9_]*/)[0];
-	return allowedValues.includes(safePrefix) ? safePrefix : "";
-}
-var theme = getSafeTheme("current_theme").toUpperCase();
+var theme = getUrlParameter("current_theme").toUpperCase();
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';
@@ -329,6 +323,39 @@ function Check_IE_Version(){ //Edge: return 12
 }
 var IE_Version = Check_IE_Version();
 
+function use_single_default_wan(){
+	let _use_single_default_wan = false;
+
+	if(wans_dualwan_orig.indexOf("none") == -1)
+		_use_single_default_wan = false;
+	else if(!isEmpty(eth_wan_list)){
+		$.each(eth_wan_list, function(key) {
+			if(key == "wan"){
+				_use_single_default_wan = true;
+
+				let wan_obj = eth_wan_list[key];
+				if(wan_obj.hasOwnProperty("extra_settings")){
+					let extra_settings = wan_obj.extra_settings;
+					let extra_setting_nvram_list = [];
+					let current_value_list = [];
+
+					extra_setting_nvram_list = Object.keys(extra_settings);
+					current_value_list = httpApi.nvramGet(extra_setting_nvram_list, true);
+					$.each(extra_settings, function(extra_settings_key) {
+						if(current_value_list[extra_settings_key] != extra_settings[extra_settings_key]){
+							_use_single_default_wan = false;
+							return false;
+						}
+					});
+				}
+			}
+		});
+	}
+
+	return _use_single_default_wan;
+}
+
+
 function clean_applyData(){ //remove values of hidden settings from applyData
 	Object.keys(applyData).forEach(function(key){
 		if(key != "action_mode" && key != "rc_service"){
@@ -425,7 +452,7 @@ function save_applyData(wan_unit){
 		applyData["rc_service"] += ";restart_dnsmasq";
 
 	/* Multi-Service WAN / IPTV Conflict check */
-	if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none" || original_switch_stb_x != "0"){
+	if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none"){
 		var hint_str = `<#conflict_function_hint#>`;
 		var msg = hint_str.replace("%1$@", `<#multiservice_WAN#>`).replace("%2$@", "IPTV");
 
@@ -721,7 +748,7 @@ function Get_Component_Setting_Profile(type){//internet, user_defined
 	$dot1q_container.appendTo($content_container);
 	$dot1q_container.append($("<div>").addClass("profile_title_item").attr({"id":"dit1q_div"}).append($("<span>").html("802.1Q")));
 
-	var dot1q_enabled_parm = {"title":"<#WLANConfig11b_WirelessCtrl_button1name#>", "type":"switch", "id":"wan_dot1q"};
+	var dot1q_enabled_parm = {"title":"<#WLANConfig11b_WirelessCtrl_button1name#>", "type":"switch", "id":"wan_dot1q", "set_value":"off"};
 	Get_Component_Switch(dot1q_enabled_parm).appendTo($dot1q_container)
 		.find("#" + dot1q_enabled_parm.id + "").click(function(e){
 			e = e || event;
@@ -2029,7 +2056,7 @@ function applyRule(){
 			document.form.action_script.value += ";restart_dnsmasq";
 
 		/* Check function conflict between 802.1Q and IPTV */
-		if(httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none" || original_switch_stb_x != "0"){
+		if(document.form.wan_dot1q.value == "1" && httpApi.nvramGet(["switch_wantag"], true).switch_wantag != "none"){
 			var hint_str = `<#conflict_function_hint#>`;
 			var msg = hint_str.replace("%1$@", `802.1Q`).replace("%2$@", "IPTV");
 
@@ -2052,7 +2079,14 @@ function applyRule(){
 			}
 		}
 
-		if(isSupport("autowan") && autowan_conflict){
+		let current_wan_support_wanbonding = true;
+		if(wan_bonding_support){
+			if((orig_bond_wan != document.form.bond_wan_radio.value) && !use_single_default_wan())
+				current_wan_support_wanbonding = false;
+		}
+
+
+		if((isSupport("autowan") && autowan_conflict) || !current_wan_support_wanbonding){
 			var hint_str = `<#conflict_function_wanport_hint#>`;
 			var msg = "";
 			if(wan_bonding_support && document.form.bond_wan_radio.value == "1")
@@ -3090,6 +3124,22 @@ function change_wanAggre_desc(){
 	$("#wanAgg_desc").html(orig_desc);
 
 	cur_bond_port = selectedName;
+
+	if(isSupport("NEW_PHYMAP")) {
+		var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+		if(cap_mac) {
+			httpApi.get_port_status(cap_mac, function(response) {
+				var port_info = response["port_info"] && response["port_info"][cap_mac];
+				if(!port_info) return;
+				var wan_rate = (port_info["W0"]) ? (parseInt(port_info["W0"].max_rate) || 0) : 0;
+				var lan4_rate = (port_info["L4"]) ? (parseInt(port_info["L4"].max_rate) || 0) : 0;
+				var total_gbps = ((wan_rate + lan4_rate) / 1000).toFixed(1);
+				var cur_desc = $("#wanAgg_desc").html();
+				cur_desc = cur_desc.replace(/\d+(\.\d+)?\s*Gbps/, total_gbps + "Gbps");
+				$("#wanAgg_desc").html(cur_desc);
+			});
+		}
+	}
 }
 
 function showDiableDHCPclientID(clientid_enable){

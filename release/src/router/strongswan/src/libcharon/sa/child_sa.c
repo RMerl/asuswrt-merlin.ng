@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2023 Tobias Brunner
+ * Copyright (C) 2006-2025 Tobias Brunner
  * Copyright (C) 2016 Andreas Steffen
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
@@ -131,9 +131,10 @@ struct private_child_sa_t {
 	bool tfcv3;
 
 	/**
-	 * The outbound SPI of the CHILD_SA that replaced this one during a rekeying
+	 * The "other" CHILD_SA involved in a passive rekeying (either replacing
+	 * this one, or being replaced by it)
 	 */
-	uint32_t rekey_spi;
+	child_sa_t *rekey_sa;
 
 	/**
 	 * Protocol used to protect this SA, ESP|AH
@@ -161,6 +162,11 @@ struct private_child_sa_t {
 	uint32_t unique_id;
 
 	/**
+	 * Optional sequence number associated with triggering acquire
+	 */
+	uint32_t seq;
+
+	/**
 	 * Whether FWD policies in the outbound direction should be installed
 	 */
 	bool policies_fwd_out;
@@ -174,6 +180,16 @@ struct private_child_sa_t {
 	 * Outbound interface ID
 	 */
 	uint32_t if_id_out;
+
+	/**
+	 * CPU ID to use for the outbound SA
+	 */
+	uint32_t cpu;
+
+	/**
+	 * Whether to enable per-CPU feature for this SA
+	 */
+	bool per_cpu;
 
 	/**
 	 * inbound mark used for this child_sa
@@ -229,6 +245,11 @@ struct private_child_sa_t {
 	 * mode this SA uses, tunnel/transport
 	 */
 	ipsec_mode_t mode;
+
+	/**
+	 * Disable fragmenting packets across IP-TFS packets
+	 */
+	bool iptfs_dont_frag;
 
 	/**
 	 * Action to enforce if peer closes the CHILD_SA
@@ -446,6 +467,12 @@ METHOD(child_sa_t, set_mode, void,
 	this->mode = mode;
 }
 
+METHOD(child_sa_t, set_iptfs_dont_fragment, void,
+	private_child_sa_t *this)
+{
+	this->iptfs_dont_frag = TRUE;
+}
+
 METHOD(child_sa_t, has_encap, bool,
 	   private_child_sa_t *this)
 {
@@ -619,7 +646,7 @@ static status_t update_usebytes(private_child_sa_t *this, bool inbound)
 
 	if (inbound)
 	{
-		if (this->my_spi && this->inbound_installed)
+		if (this->inbound_installed)
 		{
 			kernel_ipsec_sa_id_t id = {
 				.src = this->other_addr,
@@ -653,7 +680,7 @@ static status_t update_usebytes(private_child_sa_t *this, bool inbound)
 	}
 	else
 	{
-		if (this->other_spi && (this->outbound_state & CHILD_OUTBOUND_SA))
+		if (this->outbound_state & CHILD_OUTBOUND_SA)
 		{
 			kernel_ipsec_sa_id_t id = {
 				.src = this->my_addr,
@@ -816,6 +843,40 @@ METHOD(child_sa_t, get_label, sec_label_t*,
 	return this->label ?: this->config->get_label(this->config);
 }
 
+METHOD(child_sa_t, get_acquire_seq, uint32_t,
+	private_child_sa_t *this)
+{
+	return this->seq;
+}
+
+METHOD(child_sa_t, set_acquire_seq, void,
+	private_child_sa_t *this, uint32_t seq)
+{
+	this->seq = seq;
+}
+
+METHOD(child_sa_t, get_cpu, uint32_t,
+	private_child_sa_t *this)
+{
+	return this->cpu;
+}
+
+METHOD(child_sa_t, use_per_cpu, bool,
+	private_child_sa_t *this)
+{
+	return this->per_cpu;
+}
+
+METHOD(child_sa_t, set_per_cpu, void,
+	private_child_sa_t *this, bool per_cpu)
+{
+	if (!per_cpu)
+	{
+		this->cpu = CPU_ID_MAX;
+	}
+	this->per_cpu = per_cpu;
+}
+
 METHOD(child_sa_t, get_lifetime, time_t,
 	   private_child_sa_t *this, bool hard)
 {
@@ -938,7 +999,14 @@ static status_t install_internal(private_child_sa_t *this, chunk_t encr,
 		this->my_cpi = cpi;
 		dst_ts = my_ts;
 		src_ts = other_ts;
-		this->inbound_installed = TRUE;
+
+		if (this->per_cpu && this->encap)
+		{
+			src = src->clone(src);
+			/* accept inbound traffic from any port as we don't know if the
+			 * peer uses random ports or not */
+			src->set_port(src, 0);
+		}
 	}
 	else
 	{
@@ -953,7 +1021,14 @@ static status_t install_internal(private_child_sa_t *this, chunk_t encr,
 		{
 			tfc = this->config->get_tfc(this->config);
 		}
-		this->outbound_state |= CHILD_OUTBOUND_SA;
+		if (this->per_cpu && this->encap &&
+			this->config->has_option(this->config, OPT_PER_CPU_SAS_ENCAP))
+		{
+			src = src->clone(src);
+			/* use a random source port between 49152 and 65535. doesn't matter
+			 * if it's free or not as we don't receive traffic on it */
+			src->set_port(src, 0xc000 | (random() & 0xffff));
+		}
 	}
 
 	DBG2(DBG_CHD, "adding %s %N SA", inbound ? "inbound" : "outbound",
@@ -1023,6 +1098,7 @@ static status_t install_internal(private_child_sa_t *this, chunk_t encr,
 	};
 	sa = (kernel_ipsec_add_sa_t){
 		.reqid = this->reqid,
+		.seq = this->seq,
 		.mode = this->mode,
 		.src_ts = src_ts,
 		.dst_ts = dst_ts,
@@ -1037,12 +1113,14 @@ static status_t install_internal(private_child_sa_t *this, chunk_t encr,
 		.ipcomp = this->ipcomp,
 		.cpi = cpi,
 		.encap = this->encap,
+		.cpu = this->per_cpu ? this->cpu : CPU_ID_MAX,
 		.hw_offload = this->config->get_hw_offload(this->config),
 		.mark = this->config->get_set_mark(this->config, inbound),
 		.esn = esn,
 		.copy_df = !this->config->has_option(this->config, OPT_NO_COPY_DF),
 		.copy_ecn = !this->config->has_option(this->config, OPT_NO_COPY_ECN),
 		.copy_dscp = this->config->get_copy_dscp(this->config),
+		.iptfs_dont_frag = this->iptfs_dont_frag,
 		.label = label_for(this, LABEL_USE_SA),
 		.initiator = initiator,
 		.inbound = inbound,
@@ -1056,10 +1134,25 @@ static status_t install_internal(private_child_sa_t *this, chunk_t encr,
 
 	status = charon->kernel->add_sa(charon->kernel, &id, &sa);
 
+	if (src != this->my_addr && src != this->other_addr)
+	{
+		src->destroy(src);
+	}
 	my_ts->destroy(my_ts);
 	other_ts->destroy(other_ts);
 	free(lifetime);
 
+	if (status == SUCCESS)
+	{
+		if (inbound)
+		{
+			this->inbound_installed = TRUE;
+		}
+		else
+		{
+			this->outbound_state |= CHILD_OUTBOUND_SA;
+		}
+	}
 	return status;
 }
 
@@ -1072,11 +1165,24 @@ METHOD(child_sa_t, install, status_t,
 }
 
 /**
- * Check kernel interface if policy updates are required
+ * Check whether to install policies for this CHILD_SA
  */
-static bool require_policy_update()
+static bool require_policies(private_child_sa_t *this)
+{
+	return !this->config->has_option(this->config, OPT_NO_POLICIES);
+}
+
+/**
+ * Check if policy updates are required
+ */
+static bool require_policy_update(private_child_sa_t *this)
 {
 	kernel_feature_t f;
+
+	if (!require_policies(this))
+	{
+		return FALSE;
+	}
 
 	f = charon->kernel->get_features(charon->kernel);
 	return !(f & KERNEL_NO_POLICY_UPDATES);
@@ -1188,6 +1294,7 @@ static status_t install_policies_outbound(private_child_sa_t *this,
 		.hw_offload = this->config->get_hw_offload(this->config),
 		.src = my_addr,
 		.dst = other_addr,
+		.pcpu_acquires = this->per_cpu,
 		.sa = other_sa,
 	};
 	uint32_t reqid = other_sa->reqid;
@@ -1301,6 +1408,7 @@ static void del_policies_outbound(private_child_sa_t *this,
 		.hw_offload = this->config->get_hw_offload(this->config),
 		.src = my_addr,
 		.dst = other_addr,
+		.pcpu_acquires = this->per_cpu,
 		.sa = other_sa,
 	};
 	uint32_t reqid = other_sa->reqid;
@@ -1398,7 +1506,7 @@ METHOD(child_sa_t, install_policies, status_t,
 		this->outbound_state |= CHILD_OUTBOUND_POLICIES;
 	}
 
-	if (!this->config->has_option(this->config, OPT_NO_POLICIES))
+	if (require_policies(this))
 	{
 		policy_priority_t priority;
 		ipsec_sa_cfg_t my_sa, other_sa;
@@ -1444,11 +1552,12 @@ METHOD(child_sa_t, install_policies, status_t,
  *
  * However, if we use labels with SELinux, we can't as we don't set SPIs
  * on the policy in order to match SAs with other labels that match the generic
- * label that's used on the policies.
+ * label that's used on the policies. The same is the case for per-CPU SAs.
  */
 static bool install_outbound_immediately(private_child_sa_t *this)
 {
-	if (charon->kernel->get_features(charon->kernel) & KERNEL_POLICY_SPI)
+	if (charon->kernel->get_features(charon->kernel) & KERNEL_POLICY_SPI &&
+		!this->per_cpu)
 	{
 		if (this->config->get_label_mode(this->config) == SEC_LABEL_MODE_SELINUX)
 		{
@@ -1509,7 +1618,7 @@ METHOD(child_sa_t, install_outbound, status_t,
 	{
 		return status;
 	}
-	if (!this->config->has_option(this->config, OPT_NO_POLICIES) &&
+	if (require_policies(this) &&
 		!(this->outbound_state & CHILD_OUTBOUND_POLICIES))
 	{
 		ipsec_sa_cfg_t my_sa, other_sa;
@@ -1553,7 +1662,7 @@ METHOD(child_sa_t, remove_outbound, void,
 		return;
 	}
 
-	if (!this->config->has_option(this->config, OPT_NO_POLICIES) &&
+	if (require_policies(this) &&
 		(this->outbound_state & CHILD_OUTBOUND_POLICIES))
 	{
 		ipsec_sa_cfg_t my_sa, other_sa;
@@ -1588,16 +1697,16 @@ METHOD(child_sa_t, remove_outbound, void,
 	this->outbound_state = CHILD_OUTBOUND_NONE;
 }
 
-METHOD(child_sa_t, set_rekey_spi, void,
-	private_child_sa_t *this, uint32_t spi)
+METHOD(child_sa_t, set_rekey_sa, void,
+	private_child_sa_t *this, child_sa_t *sa)
 {
-	this->rekey_spi = spi;
+	this->rekey_sa = sa;
 }
 
-METHOD(child_sa_t, get_rekey_spi, uint32_t,
+METHOD(child_sa_t, get_rekey_sa, child_sa_t*,
 	private_child_sa_t *this)
 {
-	return this->rekey_spi;
+	return this->rekey_sa;
 }
 
 CALLBACK(reinstall_vip, void,
@@ -1622,7 +1731,7 @@ static status_t update_sas(private_child_sa_t *this, host_t *me, host_t *other,
 						   bool encap, uint32_t reqid)
 {
 	/* update our (initiator) SA */
-	if (this->my_spi && this->inbound_installed)
+	if (this->inbound_installed)
 	{
 		kernel_ipsec_sa_id_t id = {
 			.src = this->other_addr,
@@ -1648,7 +1757,7 @@ static status_t update_sas(private_child_sa_t *this, host_t *me, host_t *other,
 	}
 
 	/* update his (responder) SA */
-	if (this->other_spi && (this->outbound_state & CHILD_OUTBOUND_SA))
+	if (this->outbound_state & CHILD_OUTBOUND_SA)
 	{
 		kernel_ipsec_sa_id_t id = {
 			.src = this->my_addr,
@@ -1720,8 +1829,7 @@ METHOD(child_sa_t, update, status_t,
 						   this->config->has_option(this->config,
 													OPT_PROXY_MODE);
 
-	if (!this->config->has_option(this->config, OPT_NO_POLICIES) &&
-		require_policy_update() && array_count(this->my_ts) &&
+	if (require_policy_update(this) && array_count(this->my_ts) &&
 		array_count(this->other_ts))
 	{
 		ipsec_sa_cfg_t my_sa, other_sa;
@@ -1920,7 +2028,7 @@ METHOD(child_sa_t, destroy, void,
 
 	set_state(this, CHILD_DESTROYING);
 
-	if (!this->config->has_option(this->config, OPT_NO_POLICIES))
+	if (require_policies(this))
 	{
 		ipsec_sa_cfg_t my_sa, other_sa;
 		uint32_t manual_prio;
@@ -1959,7 +2067,7 @@ METHOD(child_sa_t, destroy, void,
 		};
 		charon->kernel->del_sa(charon->kernel, &id, &sa);
 	}
-	if (this->other_spi && (this->outbound_state & CHILD_OUTBOUND_SA))
+	if (this->outbound_state & CHILD_OUTBOUND_SA)
 	{
 		kernel_ipsec_sa_id_t id = {
 			.src = this->my_addr,
@@ -2008,7 +2116,7 @@ static host_t* get_proxy_addr(child_cfg_t *config, host_t *ike, bool local)
 	traffic_selector_t *ts;
 
 	list = linked_list_create_with_items(ike, NULL);
-	ts_list = config->get_traffic_selectors(config, local, NULL, list, FALSE);
+	ts_list = config->get_traffic_selectors(config, local, list);
 	list->destroy(list);
 
 	enumerator = ts_list->create_enumerator(ts_list);
@@ -2038,7 +2146,7 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 							child_sa_create_t *data)
 {
 	private_child_sa_t *this;
-	static refcount_t unique_id = 0, unique_mark = 0;
+	static refcount_t unique_id = 0;
 
 	INIT(this,
 		.public = {
@@ -2064,9 +2172,15 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 			.get_mark = _get_mark,
 			.get_if_id = _get_if_id,
 			.get_label = _get_label,
+			.get_cpu = _get_cpu,
+			.set_per_cpu = _set_per_cpu,
+			.use_per_cpu = _use_per_cpu,
+			.get_acquire_seq = _get_acquire_seq,
+			.set_acquire_seq = _set_acquire_seq,
 			.has_encap = _has_encap,
 			.get_ipcomp = _get_ipcomp,
 			.set_ipcomp = _set_ipcomp,
+			.set_iptfs_dont_fragment = _set_iptfs_dont_fragment,
 			.get_close_action = _get_close_action,
 			.set_close_action = _set_close_action,
 			.get_dpd_action = _get_dpd_action,
@@ -2077,8 +2191,8 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 			.register_outbound = _register_outbound,
 			.install_outbound = _install_outbound,
 			.remove_outbound = _remove_outbound,
-			.set_rekey_spi = _set_rekey_spi,
-			.get_rekey_spi = _get_rekey_spi,
+			.set_rekey_sa = _set_rekey_sa,
+			.get_rekey_sa = _get_rekey_sa,
 			.update = _update,
 			.set_policies = _set_policies,
 			.install_policies = _install_policies,
@@ -2096,12 +2210,15 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 		.close_action = config->get_close_action(config),
 		.dpd_action = config->get_dpd_action(config),
 		.reqid = config->get_reqid(config),
-		.unique_id = ref_get(&unique_id),
+		.unique_id = ref_get_nonzero(&unique_id),
 		.mark_in = config->get_mark(config, TRUE),
 		.mark_out = config->get_mark(config, FALSE),
 		.if_id_in = config->get_if_id(config, TRUE) ?: data->if_id_in_def,
 		.if_id_out = config->get_if_id(config, FALSE) ?: data->if_id_out_def,
 		.label = data->label ? data->label->clone(data->label) : NULL,
+		.cpu = data->cpu,
+		.per_cpu = data->per_cpu,
+		.seq = data->seq,
 		.install_time = time_monotonic(NULL),
 		.policies_fwd_out = config->has_option(config, OPT_FWD_OUT_POLICIES),
 	);
@@ -2127,38 +2244,19 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 	}
 
 	allocate_unique_if_ids(&this->if_id_in, &this->if_id_out);
-
-	if (MARK_IS_UNIQUE(this->mark_in.value) ||
-		MARK_IS_UNIQUE(this->mark_out.value))
-	{
-		refcount_t mark = 0;
-		bool unique_dir = this->mark_in.value == MARK_UNIQUE_DIR ||
-						  this->mark_out.value == MARK_UNIQUE_DIR;
-
-		if (!unique_dir)
-		{
-			mark = ref_get(&unique_mark);
-		}
-		if (MARK_IS_UNIQUE(this->mark_in.value))
-		{
-			this->mark_in.value = unique_dir ? ref_get(&unique_mark) : mark;
-		}
-		if (MARK_IS_UNIQUE(this->mark_out.value))
-		{
-			this->mark_out.value = unique_dir ? ref_get(&unique_mark) : mark;
-		}
-	}
+	allocate_unique_marks(&this->mark_in.value, &this->mark_out.value);
 
 	if (!this->reqid)
 	{
 		/* reuse old reqid if we are rekeying an existing CHILD_SA and when
-		 * initiating a trap policy. While the reqid cache would find the same
-		 * reqid for our selectors, this does not work in a special case: If an
-		 * SA is triggered by a trap policy, but the negotiated TS get
-		 * narrowed, we still must reuse the same reqid to successfully
-		 * replace the temporary SA on the kernel level. Rekeying such an SA
-		 * requires an explicit reqid, as the cache currently knows the original
-		 * selectors only for that reqid. */
+		 * initiating a trap policy. the reqid cache will generally find the
+		 * same reqid for our selectors. but this does not work in a special
+		 * case: if the IPsec stack does not use sequence numbers for acquires,
+		 * an SA is triggered by a trap policy and the negotiated TS get
+		 * narrowed, we still must reuse the same reqid to successfully replace
+		 * the temporary SA on the kernel level. however, if sequence numbers
+		 * are supported, the reqid will later get updated in case of narrowing
+		 * when alloc_reqid() is called */
 		if (data->reqid &&
 			charon->kernel->ref_reqid(charon->kernel, data->reqid) == SUCCESS)
 		{
@@ -2185,4 +2283,73 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 		this->other_addr = other->clone(other);
 	}
 	return &this->public;
+}
+
+/**
+ * Check if the given traffic selector is contained in any of the traffic
+ * selectors in the given list.
+ */
+static bool is_ts_match(traffic_selector_t *to_check, array_t *list)
+{
+	traffic_selector_t *ts;
+	int i;
+
+	for (i = 0; i < array_count(list); i++)
+	{
+		array_get(list, i, &ts);
+		if (to_check->is_contained_in(to_check, ts))
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+/**
+ * Check if all given traffic selectors are contained in any of the traffic
+ * selectors in the given list.
+ */
+static bool is_ts_list_match(traffic_selector_list_t *to_check, array_t *list)
+{
+	enumerator_t *enumerator;
+	traffic_selector_t *ts;
+	bool matched = TRUE;
+
+	enumerator = to_check->create_enumerator(to_check);
+	while (enumerator->enumerate(enumerator, &ts))
+	{
+		if (!is_ts_match(ts, list))
+		{
+			matched = FALSE;
+			break;
+		}
+	}
+	enumerator->destroy(enumerator);
+	return matched;
+}
+
+/*
+ * Described in header
+ */
+bool child_sa_ts_match(child_sa_t *child, traffic_selector_t *src,
+					   traffic_selector_t *dst)
+{
+	private_child_sa_t *this = (private_child_sa_t*)child;
+
+	return src && dst &&
+		   is_ts_match(src, this->my_ts) &&
+		   is_ts_match(dst, this->other_ts);
+}
+
+/*
+ * Described in header
+ */
+bool child_sa_ts_lists_match(child_sa_t *child, traffic_selector_list_t *src,
+							 traffic_selector_list_t *dst)
+{
+	private_child_sa_t *this = (private_child_sa_t*)child;
+
+	return src && dst &&
+		   is_ts_list_match(src, this->my_ts) &&
+		   is_ts_list_match(dst, this->other_ts);
 }

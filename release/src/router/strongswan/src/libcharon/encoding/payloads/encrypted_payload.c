@@ -1023,7 +1023,7 @@ encrypted_fragment_payload_t *encrypted_fragment_payload_create()
 				.get_length = _frag_get_length,
 				.add_payload = _frag_add_payload,
 				.remove_payload = (void*)return_null,
-				.generate_payloads = nop,
+				.generate_payloads = (void*)nop,
 				.set_transform = _frag_set_transform,
 				.get_transform = _frag_get_transform,
 				.encrypt = _frag_encrypt,

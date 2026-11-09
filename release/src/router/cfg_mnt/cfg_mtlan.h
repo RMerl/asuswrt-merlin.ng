@@ -62,7 +62,6 @@ extern char* get_wificap_all_ifnames(char *dut_mac, unsigned long type, char *re
 extern int get_max_mtlan(char *mac);
 extern int is_sdn_supported(char *mac);
 extern int is_wifi7_supported(char *mac);
-extern int is_wifi8_supported(char *mac);
 #if defined(RTCONFIG_MLO)
 extern int is_mlo_supported(char *mac);
 extern int is_mlo_bh_fh_supported(char *mac);
@@ -70,9 +69,6 @@ extern int gen_mlo_band();
 extern int get_mlo_band(char *mac);
 #endif
 extern char* get_wgn_ifnames(int band, int total, char *ret_ifnames, size_t ret_bsize);
-extern char* get_wgn_ifnames_by_band(char *dut_mac, unsigned short band, char *ret_ifnames, size_t ret_bsize);
-extern char* get_wgn_all_ifnames(char* dut_mac, char *ret_ifnames, size_t ret_bsize);
-extern char *get_wgn_vlan_rl(char *ifnames, char *ret_vlans, size_t vlans_bsize);
 extern unsigned short get_wifi_band_for_wgn(char *dut_mac);
 extern int is_wgn_auth_mode_supported(char *auth_mode);
 extern char* create_wgn_vlan_rl(char *mac, char *ret_buf, size_t ret_bsize);

@@ -200,7 +200,7 @@ METHOD(radius_config_t, destroy, void,
 /**
  * See header
  */
-radius_config_t *radius_config_create(char *name, char *address,
+radius_config_t *radius_config_create(char *name, char *address, char *source,
 									  uint16_t auth_port, uint16_t acct_port,
 									  char *nas_identifier, char *secret,
 									  int sockets, int preference,
@@ -232,7 +232,7 @@ radius_config_t *radius_config_create(char *name, char *address,
 
 	while (sockets--)
 	{
-		socket = radius_socket_create(address, auth_port, acct_port,
+		socket = radius_socket_create(address, source, auth_port, acct_port,
 									  chunk_create(secret, strlen(secret)),
 									  tries, timeout, base);
 		if (!socket)

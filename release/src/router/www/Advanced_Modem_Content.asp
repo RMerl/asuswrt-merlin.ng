@@ -118,14 +118,25 @@ function initial(){
 						change_usb_unit();
 					}, 300);
 	}
-	else{
+
+	if(usb_index == -1 || (usb_index != -1 && wans_dualwan.indexOf("none") != -1)){
 		document.form.wan_unit.disabled = true;
 		document.getElementById("WANscap").style.display = "none";
 	}
 
 	if(usb_modem_enable){
 		document.getElementById("modem_android_tr").style.display="";
-		select_usb_device(modem_android_orig);
+		if(modem_android_orig == "0"){
+			switch_modem_mode('<% nvram_get("modem_enable"); %>');
+			gen_country_list();
+			reloadProfile();
+			inputCtrl(document.form.modem_autoapn, 1);
+			inputCtrl(document.form.modem_enable_option, 1);
+			change_apn_mode();
+		}
+		else{
+			hide_usb_settings(1);
+		}
 	}
 	else{
 		hide_usb_settings();
@@ -193,7 +204,18 @@ function initial(){
 				document.form.modem_enable.value = "1";
 
 			document.getElementById("modem_android_tr").style.display="";
-			select_usb_device(document.form.modem_android.value);
+			if(document.form.modem_android.value == "0"){
+				switch_modem_mode(document.form.modem_enable.value);
+				gen_country_list();
+				reloadProfile();
+				inputCtrl(document.form.modem_autoapn, 1);
+				inputCtrl(document.form.modem_authmode, 1);
+				inputCtrl(document.form.modem_enable_option, 1);
+				change_apn_mode();
+			}
+			else{
+				hide_usb_settings(1);
+			}
 		},
 		function() {
 			if(isSupport("multiwan")){
@@ -352,23 +374,70 @@ function switch_modem_mode(mode){
 	show_modem_list(mode);
 
 	if(mode == "1"){ // WCDMA
-		if(document.form.modem_autoapn.value == "0")
-			$("#apn_manual_setting_tr").show();
+		inputCtrl(document.form.Dev3G, 1);
+		inputCtrl(document.form.modem_country, 1);
+		inputCtrl(document.form.modem_isp, 1);
+		$("#apn_manual_setting_tr").show();
+		if(pin_opt) inputCtrl(document.form.modem_pincode, 1);
+		inputCtrl(document.form.modem_dialnum, 1);
+		inputCtrl(document.form.modem_user, 1);
+		inputCtrl(document.form.modem_pass, 1);
 		inputCtrl(document.form.modem_ttlsid, 0);
+		inputCtrl(document.form.modem_mtu, 1);
+		//document.getElementById("hsdpa_hint").style.display = "";
 	}
 	else if(mode == "2"){ // CDMA2000
-		if(document.form.modem_autoapn.value == "0")
-			$("#apn_manual_setting_tr").show();
+		inputCtrl(document.form.Dev3G, 1);
+		inputCtrl(document.form.modem_country, 1);
+		inputCtrl(document.form.modem_isp, 1);
+		$("#apn_manual_setting_tr").show();
+		if(pin_opt) inputCtrl(document.form.modem_pincode, 1);
+		inputCtrl(document.form.modem_dialnum, 1);
+		inputCtrl(document.form.modem_user, 1);
+		inputCtrl(document.form.modem_pass, 1);
 		inputCtrl(document.form.modem_ttlsid, 0);
+		inputCtrl(document.form.modem_mtu, 1);
+		//document.getElementById("hsdpa_hint").style.display = "";
 	}
 	else if(mode == "3"){ // TD-SCDMA
-		if(document.form.modem_autoapn.value == "0")
-			$("#apn_manual_setting_tr").show();
+		inputCtrl(document.form.Dev3G, 1);
+		inputCtrl(document.form.modem_country, 1);
+		inputCtrl(document.form.modem_isp, 1);
+		$("#apn_manual_setting_tr").show();
+		if(pin_opt) inputCtrl(document.form.modem_pincode, 1);
+		inputCtrl(document.form.modem_dialnum, 1);
+		inputCtrl(document.form.modem_user, 1);
+		inputCtrl(document.form.modem_pass, 1);
 		inputCtrl(document.form.modem_ttlsid, 0);
+		inputCtrl(document.form.modem_mtu, 1);
+		//document.getElementById("hsdpa_hint").style.display = "";
 	}
 	else if(mode == "4"){	// WiMAX
+		inputCtrl(document.form.Dev3G, 1);
+		inputCtrl(document.form.modem_country, 1);
+		inputCtrl(document.form.modem_isp, 1);
 		$("#apn_manual_setting_tr").hide();
+		if(pin_opt) inputCtrl(document.form.modem_pincode, 1);
+		inputCtrl(document.form.modem_dialnum, 0);
+		inputCtrl(document.form.modem_user, 1);
+		inputCtrl(document.form.modem_pass, 1);
 		inputCtrl(document.form.modem_ttlsid, 1);
+		inputCtrl(document.form.modem_mtu, 1);
+		//document.getElementById("hsdpa_hint").style.display = "";
+	}
+	else{	// Disable (mode == 0)
+		inputCtrl(document.form.Dev3G, 0);
+		inputCtrl(document.form.modem_country, 0);
+		inputCtrl(document.form.modem_isp, 0);
+		$("#apn_manual_setting_tr").hide();
+		if(pin_opt) inputCtrl(document.form.modem_pincode, 0);
+		inputCtrl(document.form.modem_dialnum, 0);
+		inputCtrl(document.form.modem_user, 0);
+		inputCtrl(document.form.modem_pass, 0);
+		inputCtrl(document.form.modem_ttlsid, 0);
+		inputCtrl(document.form.modem_mtu, 0);
+		//document.getElementById("hsdpa_hint").style.display = "none";
+		document.form.modem_enable.value = "0";
 	}
 }
 
@@ -646,26 +715,25 @@ function hide_usb_settings(_flag){
 	document.getElementById("modem_pass_div_tr").style.display = "none";
 }
 
-function select_usb_device(usb_device){//0: Auto 1: Legacy
-	if(usb_device == 0){
+function select_usb_device(obj){
+	if(obj.selectedIndex == 0){
 		inputCtrl(document.form.modem_autoapn, 1);
 		inputCtrl(document.form.modem_authmode, 1);
 		inputCtrl(document.form.modem_enable_option, 1);
-		if(pin_opt) inputCtrl(document.form.modem_pincode, 1);
-		inputCtrl(document.form.Dev3G, 1);
-		inputCtrl(document.form.modem_mtu, 1);
 		switch_modem_mode(document.form.modem_enable_option.value);
 		gen_country_list();
 		reloadProfile();
-		change_apn_mode(document.form.modem_autoapn.value);
+		change_apn_mode();
 	}
 	else{
 		hide_usb_settings(1);
 	}
+
 }
 
-function change_apn_mode(apn_mode){//0: Manual  1: Automatic
-	if(apn_mode == "1"){//Automatic
+function change_apn_mode(){
+	if(document.form.modem_autoapn.value == "1"){//Automatic
+		var modem_enable_str = "";
 		inputCtrl(document.form.modem_country, 0);
 		inputCtrl(document.form.modem_isp, 0);
 		$("#apn_manual_setting_tr").hide();
@@ -676,6 +744,14 @@ function change_apn_mode(apn_mode){//0: Manual  1: Automatic
 		document.getElementById("modem_dialnum_div_tr").style.display = "";
 		document.getElementById("modem_user_div_tr").style.display = "";
 		document.getElementById("modem_pass_div_tr").style.display = "";	
+		if(document.form.modem_enable.value == "1")
+			mdoem_enable_str = "WCDMA (UMTS) / LTE";
+		else if(document.form.modem_enable.value == "2")
+			mdoem_enable_str = "CDMA2000 (EVDO)";
+		else if(document.form.modem_enable.value == "3")
+			mdoem_enable_str = "TD-SCDMA";
+		else if(document.form.modem_enable.value == "4")
+			mdoem_enable_str = "WiMAX";
 		document.getElementById("modem_apn_div").innerHTML = apn;
 		document.getElementById("modem_dialnum_div").innerHTML = dialnum;
 		document.getElementById("modem_user_div").innerHTML = user;
@@ -689,10 +765,7 @@ function change_apn_mode(apn_mode){//0: Manual  1: Automatic
 		else{
 			inputCtrl(document.form.modem_isp, 1);
 		}
-		// Only show APN manual setting if not in WiMAX mode
-		if(document.form.modem_enable.value != "4"){
-			$("#apn_manual_setting_tr").show();
-		}
+		$("#apn_manual_setting_tr").show();
 		inputCtrl(document.form.modem_dialnum, 1);
 		inputCtrl(document.form.modem_user, 1);
 		inputCtrl(document.form.modem_pass, 1);
@@ -811,7 +884,7 @@ function change_apn_mode(apn_mode){//0: Manual  1: Automatic
 						<th><#select_usb_device#></th>
 						<td align="left">
 							<div style="display: flex; align-items: center;">
-								<select id="modem_android" name="modem_android" class="input_option" onChange="select_usb_device(this.value);">
+								<select id="modem_android" name="modem_android" class="input_option" onChange="select_usb_device(this);">
 									<option value="0" <% nvram_match("modem_android", "0", "selected"); %>><#Auto#></option>
 									<option value="1" <% nvram_match("modem_android", "1", "selected"); %>>Legacy</option><!--untranslated-->
 								</select>
@@ -823,12 +896,26 @@ function change_apn_mode(apn_mode){//0: Manual  1: Automatic
 					<tr>
 						<th width="40%"><#APN_configuration#></th>
 						<td>
-							<select name="modem_autoapn" id="modem_autoapn" class="input_option" onchange="change_apn_mode(this.value);">
+							<select name="modem_autoapn" id="modem_autoapn" class="input_option" onchange="change_apn_mode();">
 								<option value="1" <% nvram_match("modem_autoapn", "1","selected"); %>><#Auto#></option>
 								<option value="0" <% nvram_match("modem_autoapn", "0","selected"); %>><#Manual_Setting_btn#></option>
 							</select>
 						</td>
+					</tr>					
+
+					<tr>
+          				<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,9);"><#HSDPAConfig_Country_itemname#></a></th>
+            			<td>
+            				<select name="modem_country" class="input_option" onchange="switch_modem_mode(document.form.modem_enable_option.value);reloadProfile();"></select>
+						</td>
 					</tr>
+                                
+			        <tr>
+			         	<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,8);"><#HSDPAConfig_ISP_itemname#></a></th>
+			            <td>
+			            	<select name="modem_isp" class="input_option" onchange="show_APN_list();"></select>
+			            </td>
+			        </tr>
 
 					<tr>
 						<th width="40%">
@@ -841,23 +928,10 @@ function change_apn_mode(apn_mode){//0: Manual  1: Automatic
 								<option value="3" <% nvram_match("modem_enable", "3", "selected"); %>>TD-SCDMA</option>
 								<option value="4" <% nvram_match("modem_enable", "4", "selected"); %>>WiMAX</option>
 							</select>
+							
+							<br/><span id="hsdpa_hint" style="display:none;"><#HSDPAConfig_hsdpa_enable_hint2#></span>
 						</td>
 					</tr>
-
-					<tr>
-						<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,9);"><#HSDPAConfig_Country_itemname#></a></th>
-						<td>
-							<select name="modem_country" class="input_option" onchange="switch_modem_mode(document.form.modem_enable_option.value);reloadProfile();"></select>
-						</td>
-					</tr>
-
-					<tr>
-						<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,8);"><#HSDPAConfig_ISP_itemname#></a></th>
-						<td>
-							<select name="modem_isp" class="input_option" onchange="show_APN_list();"></select>
-			            </td>
-			        </tr>
-
 					<tr id="apn_manual_setting_tr" style="display:none;">
 						<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,3);"><#HSDPAConfig_private_apn_itemname#></a></th>
             			<td>

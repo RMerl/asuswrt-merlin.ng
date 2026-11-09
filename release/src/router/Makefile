@@ -174,11 +174,6 @@ endif
 endif
 endif
 
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-CFLAGS += -D$(ASUSWRT_BRCM_SDK_VERSION)
-CFLAGS += -DNEW_WPA_CLI
-endif
-
 ifeq ($(RTCONFIG_MUSL_LIBC),y)
 export RTCONFIG_MUSL_LIBC
 MUSL_CFLAGS += -Dloff_t=off_t
@@ -187,7 +182,7 @@ endif
 export comma=","
 
 # New Broadcom/Ralink/MTK/QCA/RTK platform.
-KPATH_2636_OR_3X = $(if $(or $(findstring linux-2.6.36,$(LINUXDIR)),$(findstring linux-3.x,$(LINUXDIR)),$(findstring linux-3.3.x,$(LINUXDIR)),$(findstring linux-3.3.8,$(LINUXDIR)),$(findstring linux-3.4.x,$(LINUXDIR)),$(findstring linux-4.1,$(LINUXDIR)),$(findstring linux-3.10,$(LINUXDIR)),$(findstring linux-3.14.x,$(LINUXDIR)),$(findstring linux-4.4.x,$(LINUXDIR)),$(findstring linux-5.4.x,$(LINUXDIR)),$(findstring linux-5.15,$(LINUXDIR))),y)
+KPATH_2636_OR_3X = $(if $(or $(findstring linux-2.6.36,$(LINUXDIR)),$(findstring linux-3.x,$(LINUXDIR)),$(findstring linux-3.3.x,$(LINUXDIR)),$(findstring linux-3.3.8,$(LINUXDIR)),$(findstring linux-3.4.x,$(LINUXDIR)),$(findstring linux-4.1,$(LINUXDIR)),$(findstring linux-3.10,$(LINUXDIR)),$(findstring linux-3.14.x,$(LINUXDIR)),$(findstring linux-4.4.x,$(LINUXDIR)),$(findstring linux-5.4.x,$(LINUXDIR))),y)
 
 # New Ralink/MTK/QCA platform.
 KPATH_2636X_OR_3X = $(if $(or $(findstring linux-2.6.36.x,$(LINUXDIR)),$(findstring linux-3.x,$(LINUXDIR)),$(findstring linux-3.3.x,$(LINUXDIR)),$(findstring linux-3.3.8,$(LINUXDIR)),$(findstring linux-3.4.x,$(LINUXDIR)),$(findstring linux-3.14.x,$(LINUXDIR)),$(findstring linux-4.4.x,$(LINUXDIR)),$(findstring linux-5.4.x,$(LINUXDIR))),y)
@@ -242,27 +237,13 @@ else
 export LINUX_KERNEL=4.19.183
 endif
 else ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
-export LINUX_KERNEL=5.15.167
-else
 export LINUX_KERNEL=4.19.235
-endif
 else
 export LINUX_KERNEL=4.1.51
 endif
 else
 export LINUX_KERNEL=4.1.27
 endif
-
-ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
-export LINUX_KERNEL=5.15.176
-endif
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-export LINUX_KERNEL=5.15.182
-endif
-endif
-
 export KBUILD_VERBOSE := 1
 export BUILD_MFG := 0
 SUBMAKE_SETTINGS = SRCBASE=$(SRCBASE) BASEDIR=$(BASEDIR)
@@ -272,9 +253,7 @@ LINUX_KERNEL=2.6.36
 endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
-export LINUX_KERNEL=5.15.167
-else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
 export LINUX_KERNEL=4.19.294
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 export LINUX_KERNEL=4.19.275
@@ -284,18 +263,6 @@ else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20230426)
 export LINUX_KERNEL=4.19.275
 else
 export LINUX_KERNEL=4.19.235
-endif
-endif
-
-ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
-export LINUX_KERNEL=5.15.176
-endif
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260204))
-export LINUX_KERNEL=5.15.182
-endif
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260402))
-export LINUX_KERNEL=5.15.182
 endif
 endif
 
@@ -370,8 +337,6 @@ ifeq ($(RPBE58),y)
 export JFFS2_UBI_VOLUME_SIZE := 6
 else ifeq ($(RTBE55),y)
 export JFFS2_UBI_VOLUME_SIZE := 20
-else ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-BN98_PRO GT-BN98 GT-BN96X BN12))
-export JFFS2_UBI_VOLUME_SIZE := 32
 else
 export JFFS2_UBI_VOLUME_SIZE := 50
 endif
@@ -441,9 +406,9 @@ KDIR=$(TOP)/kernel_header
 KERNEL_HEADER_DIR=$(TOP)/kernel_header/include
 else
 ifeq ($(HND_ROUTER),y)
-KDIR=$(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/usr
+KDIR=$(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/usr
 KERNEL_HEADER_DIR=$(KDIR)/include
-TOOL_SYS_INCLUDE=$(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/usr/include
+TOOL_SYS_INCLUDE=$(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/usr/include
 export SRCBASE_ROUTER=$(SRCBASE)/router
 ifeq ($(RTCONFIG_VISUALIZATION),y)
 export TOOLCHAIN_LIB_DIR=$(KDIR)/lib
@@ -458,7 +423,7 @@ ifeq ($(HND_ROUTER_AX),y)
   else ifeq ($(BRCM_CHIP),4912)
   export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/usr/bin/aarch64-buildroot-linux-gnu-
   endif
-else # not HND_ROUTER_AX
+else
 export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/aarch64-buildroot-linux-gnu-
 endif
 ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
@@ -472,10 +437,10 @@ ifeq ($(HND_ROUTER_AX),y)
     export PATH:=$(PATH):/opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin
   endif
   endif
-else	# not HND_ROUTER_AX
+else
 export PATH:=$(PATH):/opt/toolchains/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin
-endif	# end of HND_ROUTER_AX
-else	# not HND_ROUTER
+endif
+else
 KDIR=$(LINUXDIR)
 KERNEL_HEADER_DIR=$(LINUXDIR)/include
 endif
@@ -486,7 +451,7 @@ export PATH:=$(PATH):$(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)/ma
 endif
 
 ifeq ($(HND_ROUTER),y)
-export LINUX_INC_DIR := $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/usr
+export LINUX_INC_DIR := $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/usr
 else ifeq ($(or $(RTACRH18),$(RT4GAC86U),$(RTAX53U),$(RTAX54),$(RT4GAX56),$(if $(filter $(BUILD_NAME),XD4S),y,)),y)
 export LINUX_INC_DIR := $(KDIR)
 else
@@ -514,17 +479,6 @@ ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126)
 include Makefile.fw.be
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250122)
 include Makefile.fw.be_369_39041
-else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506)
-include Makefile.fw.be_6.2.0_25.438.64.0
-else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126)
-export SRCBASE_DHD := $(SRCBASE)/../../main/src
-include Makefile.fw.be_6.3.0_17.10.515.0
-else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260204)
-export SRCBASE_DHD := $(SRCBASE)/../../main/src
-include Makefile.fw.be_6.4.0rc1_26.522.5.0
-else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260402)
-export SRCBASE_DHD := $(SRCBASE)/../../main/src
-include Makefile.fw.be_6.4.0_26.522.15.0
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 include Makefile.fw.be_369_1808
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20241007)
@@ -587,12 +541,6 @@ ifneq ($(RTCONFIG_NOWL),y)
 include Makefile.fw.ax
 endif
 endif	# HND_ROUTER_AX
-ifeq ($(HND_ROUTER_BE_4916),y)
-export SRCBASE_SYS := $(SRCBASE)/../../sys/src
-ifeq ($(origin SRCBASE_DHD), undefined)
-export SRCBASE_DHD := $(SRCBASE_SYS)
-endif
-endif
 endif	# RTCONFIG_DHDAP
 
 ifeq ($(HND_ROUTER),y)
@@ -867,7 +815,7 @@ obj-$(RTCONFIG_TRUSTZONE) += openssl
 obj-$(RTCONFIG_TRUSTZONE) += ateed
 endif
 
-ifeq ($(RTCONFIG_MXL_826XX),y)
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7))
 obj-y += libhostapi
 obj-y += ethswbox
 endif
@@ -1082,34 +1030,20 @@ obj-$(RTCONFIG_DSL_REMOTE) += dsl_drv_tool
 obj-$(RTCONFIG_DSL_HOST) += dsl_diag
 obj-$(RTCONFIG_DSL_HOST) += dsl_autodet
 
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-IPTABLES_VER := iptables-1.8.11
-else
-ifeq ($(RTCONFIG_IPTABLES1810),y)
-IPTABLES_VER := iptables-1.8.10
-else
-IPTABLES_VER := iptables-1.4.x
-endif
-endif
-
 ifneq ($(RTCONFIG_ALPINE)$(RTCONFIG_LANTIQ)$(RTL8198D),y)
 ifeq ($(KPATH_2636_OR_3X)$(RTACRH18)$(RT4GAC86U)$(RTAX53U)$(RTAX54)$(RT4GAX56)$(if $(filter $(BUILD_NAME),XD4S),y,),y)
 ifeq ($(RTCONFIG_IPTABLES1810),y)
-IPTABLES := $(IPTABLES_VER)
+IPTABLES := iptables-1.8.10
 else
-IPTABLES := $(IPTABLES_VER)
+IPTABLES := iptables-1.4.x
 endif
 IPTC_LIBDIR := $(TOP)/$(IPTABLES)/libiptc/.libs
 ifeq ($(RTCONFIG_IPTABLES1810),y)
 IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,)
-obj-y += $(IPTABLES_VER)
-else
-ifeq ($(IPTABLES_VER),iptables-1.8.11)
-IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,)
+obj-y += iptables-1.8.10
 else
 IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,) -liptc
-endif
-obj-y += $(IPTABLES_VER)
+obj-y += iptables-1.4.x
 endif	
 ifeq ($(HND_ROUTER),y)
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
@@ -1174,7 +1108,6 @@ obj-$(RTCONFIG_SPEEDTEST) += curl
 
 obj-$(RTCONFIG_HNS) += hns
 obj-$(RTCONFIG_GTBOOSTER) += ark
-obj-$(RTCONFIG_GTBOOSTER) += pcre-8.31
 obj-$(RTCONFIG_GTBOOSTER) += expat-2.0.1
 obj-$(RTCONFIG_GTBOOSTER) += dbus-1.8.8
 obj-$(RTCONFIG_GTBOOSTER) += libgdbm
@@ -1353,10 +1286,7 @@ endif
 endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-else
 obj-y += qosmgmt
-endif
 ifeq ($(RTCONFIG_AIRIQ),y)
 obj-y += airiq
 endif
@@ -1665,8 +1595,6 @@ obj-$(RTCONFIG_TIMEMACHINE) += netatalk-3.0.5
 ifeq ($(or $(RTCONFIG_TIMEMACHINE),$(RTCONFIG_MDNS)),y)
 obj-y += libdaemon
 obj-y += expat-2.0.1
-obj-y += dbus-1.8.8
-obj-y += libgdbm
 obj-y += avahi
 obj-y += libnss-mdns
 else
@@ -1822,10 +1750,7 @@ endif
 
 obj-n += lsof
 obj-$(RTCONFIG_IPERF) += iperf
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-else
 obj-$(RTCONFIG_IPERF3) += iperf3
-endif
 
 obj-$(RTCONFIG_PUSH_EMAIL) += openssl
 obj-$(RTCONFIG_PUSH_EMAIL) += email-3.1.3
@@ -2040,7 +1965,6 @@ obj-$(HND_ROUTER) += bp3hal
 obj-$(HND_ROUTER) += civetweb
 obj-$(HND_ROUTER) += cjson
 obj-$(HND_ROUTER) += bp3
-obj-$(HND_ROUTER) += bcmnetdevctl
 endif
 obj-$(HND_ROUTER) += ethctl
 obj-$(HND_ROUTER) += ethctl_lib
@@ -2105,10 +2029,7 @@ endif
 ifeq ($(and $(HND_ROUTER_BE_4916),$(BUILD_GPTFDISK)),y)
 obj-$(HND_ROUTER) += uuid
 obj-$(HND_ROUTER) += popt
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-else
 obj-$(HND_ROUTER) += gptdfisk
-endif
 endif
 
 # BCM AFC features
@@ -2606,35 +2527,24 @@ reinstall:
 	# extra install in case build-process skip them
 # why precompiled?
 	install -D $(TOOLCHAIN)/lib/libexpat.so $(INSTALLDIR)/lib/public/libexpat.so
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-ifeq ($(PROFILE_KARCH),aarch64)
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/ld-linux$(LD-LINUX_SO_TYPE).so.1 $(INSTALLDIR)/lib/ld-linux.so.1
-else
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/ld-linux$(LD-LINUX_SO_TYPE).so.3 $(INSTALLDIR)/lib/ld-linux.so.3
-endif
-else
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/ld-linux$(LD-LINUX_SO_TYPE).so.3 $(INSTALLDIR)/lib/ld-linux.so.3
-endif
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libresolv.so.2 $(INSTALLDIR)/lib/libresolv.so.2
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libcrypt.so.1 $(INSTALLDIR)/lib/libcrypt.so.1
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/ld-linux.so.3 $(INSTALLDIR)/lib/ld-linux.so.3
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libresolv.so.2 $(INSTALLDIR)/lib/libresolv.so.2
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libcrypt.so.1 $(INSTALLDIR)/lib/libcrypt.so.1
 ifeq ($(RTL8198D),y)
 else
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libutil.so.1 $(INSTALLDIR)/lib/libutil.so.1
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libutil.so.1 $(INSTALLDIR)/lib/libutil.so.1
 endif
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libm.so.6 $(INSTALLDIR)/lib/libm.so.6
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libnss_dns.so.2 $(INSTALLDIR)/lib/libnss_dns.so.2
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libnsl.so.1 $(INSTALLDIR)/lib/libnsl.so.1
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libm.so.6 $(INSTALLDIR)/lib/libm.so.6
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libnss_dns.so.2 $(INSTALLDIR)/lib/libnss_dns.so.2
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libnsl.so.1 $(INSTALLDIR)/lib/libnsl.so.1
 ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-else
-	install -D $(TOOLS)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libnsl-2.32.so $(INSTALLDIR)/lib/libnsl.so.1
+	install -D $(TOOLS)/arm-buildroot-linux-gnueabi/sysroot/lib/libnsl-2.32.so $(INSTALLDIR)/lib/libnsl.so.1
 endif
-endif
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libnss_files.so.2 $(INSTALLDIR)/lib/libnss_files.so.2
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libc.so.6 $(INSTALLDIR)/lib/libc.so.6
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libpthread.so.0 $(INSTALLDIR)/lib/libpthread.so.0
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libdl.so.2 $(INSTALLDIR)/lib/libdl.so.2
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libgcc_s.so.1 $(INSTALLDIR)/lib/libgcc_s.so.1
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libnss_files.so.2 $(INSTALLDIR)/lib/libnss_files.so.2
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libc.so.6 $(INSTALLDIR)/lib/libc.so.6
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libpthread.so.0 $(INSTALLDIR)/lib/libpthread.so.0
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libdl.so.2 $(INSTALLDIR)/lib/libdl.so.2
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libgcc_s.so.1 $(INSTALLDIR)/lib/libgcc_s.so.1
 ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 	install -D $(TOOLCHAIN_64)/aarch64-buildroot-linux-gnu/sysroot/lib/ld-linux-aarch64.so.1 $(INSTALLDIR)/lib/ld-linux-aarch64.so.1
 	install -D $(TOOLCHAIN_64)/aarch64-buildroot-linux-gnu/sysroot/lib/libc.so.6 $(INSTALLDIR)/lib/aarch64/libc.so.6
@@ -2651,9 +2561,6 @@ endif
 	$(BUSYBOX_DIR)/examples/depmod.pl -k $(LINUXDIR)/vmlinux -b $(TARGETDIR)/../modules/lib/modules/$(LINUX_KERNEL)
 
 ifeq ($(HND_ROUTER),y)
-ifeq ($(RTCONFIG_TUXERA_NTFS),y)
-	echo "kernel/fs/tfs_linux.ko:" >> $(TARGETDIR)/../modules/lib/modules/$(LINUX_KERNEL)/modules.dep
-endif
 ifeq ($(RTCONFIG_TFAT),y)
 	echo "kernel/fs/tfat.ko:" >> $(TARGETDIR)/../modules/lib/modules/$(LINUX_KERNEL)/modules.dep
 endif
@@ -3570,7 +3477,7 @@ libcbor-0.11-clean:
 
 libjwt/Makefile:
 	@cd libjwt && autoreconf -i -f && $(CONFIGURE) CC=$(CC) --prefix=/usr \
-	LDFLAGS="-L$(TOP)/openssl -lssl -lcrypto -L$(STAGEDIR)/usr/lib -ljansson" \
+	LDFLAGS="-L$(TOP)/openssl -lssl -lcrypto -L$(TOP)/jansson-2.7/src/.libs -ljansson" \
 	CFLAGS="-Wall -g -O0 -DDEBUG -I$(STAGEDIR)/usr/local/include -I$(TOP)/openssl/include -I$(TOP)/jansson-2.7/src"
 
 libjwt:jansson-2.7 libjwt/Makefile
@@ -3689,11 +3596,10 @@ libmnl-1.0.4-configure:
 	)
 
 libmnl-1.0.4-install:
-	install -D libmnl-1.0.4/src/.libs/libmnl.so.0.2.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0.2.0
-	cd $(INSTALLDIR)/libmnl-1.0.4/usr/lib/ && \
-		ln -sf libmnl.so.0.2.0 libmnl.so && \
-		ln -sf libmnl.so.0.2.0 libmnl.so.0
-	$(STRIP) $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0.2.0
+	install -D libmnl-1.0.4/src/.libs/libmnl.so $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
+	ln -sf $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so
+	ln -sf $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0 $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0.2.0
+	$(STRIP) $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
 
 libmnl-1.0.4-clean:
 	[ ! -f libmnl-1.0.4/Makefile ] || $(MAKE) -C libmnl-1.0.4 distclean
@@ -3883,12 +3789,6 @@ else
 HOSTCONFIG_OPENSSL:= $(HOSTCONFIG)
 endif
 
-ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-HOSTCONFIG_OPENSSL:= linux-aarch64
-endif
-endif
-
 openssl-3.5/Makefile:
 	cd openssl-3.5 && \
 	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
@@ -3955,20 +3855,12 @@ openssl-3.0-install:
 	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so && ln -sf libcrypto.so.3 libcrypto.so.1.1	
 	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.3 libssl.so && ln -sf libssl.so.3 libssl.so.1.1
 
-OPENSSL_1_1_ASM_FLAG := 
-
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-ifeq ($(PROFILE_KARCH),armhfp)
-OPENSSL_1_1_ASM_FLAG := no-asm
-endif
-endif
-
 openssl-1.1/Makefile:
 	cd openssl-1.1 && \
 	./Configure $(HOSTCONFIG_OPENSSL) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
 	$(if $(RTCONFIG_DEBUG),-g) \
-	-ffunction-sections -fdata-sections -Wl,--gc-sections $(OPENSSL_1_1_ASM_FLAG) \
+	-ffunction-sections -fdata-sections -Wl,--gc-sections \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
 	no-aria no-sm2 no-sm3 no-sm4 \
 	--with-rand-seed=devrandom \
@@ -4381,7 +4273,7 @@ dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTL
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP) \
 		$(if $(RTCONFIG_DNSSEC_OPENSSL),-I$(TOP)/openssl/include -DHAVE_DNSSEC,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-I$(TOP)/nettle/include -I$(TOP)/gmp -DHAVE_DNSSEC -DHAVE_DNSSEC_STATIC -DNO_GOST,)" \
-	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS) -std=gnu99 \
+	CFLAGS="-Os -ffunction-sections -DASUSWRT -fdata-sections $(EXTRACFLAGS) -std=gnu99 \
 		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-I$(TOP)/shared -I$(SRCBASE)/include -D$(MODEL),)" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS) \
 		$(if $(filter $(BUILD_NAME),RT-AX82_XD6 XD6_V2 ET12),-L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm,) \
@@ -4769,81 +4661,6 @@ iptables-1.8.10-clean:
 	[ ! -f iptables-1.8.10/Makefile ] || $(MAKE) -C iptables-1.8.10 KERNEL_DIR=$(LINUX_INC_DIR) distclean
 	@rm -f iptables-1.8.10/Makefile
 
-iptables-1.8.11/configure:
-	cd iptables-1.8.11 && ./autogen.sh
-
-iptables-1.8.11/Makefile: iptables-1.8.11/configure
-ifeq ($(HND_ROUTER),y)
-	cd iptables-1.8.11 && $(CONFIGURE) \
-		--prefix=/usr \
-		--bindir=/usr/sbin \
-		--libdir=/usr/lib \
-		--enable-ipv6 \
-		--disable-nftables \
-		--with-kbuild=$(TOOLCHAIN_INCLUDE_DIR) \
-		--target=$(TOOLCHAIN_ARCH_TYPE) \
-		--with-xt-lock-name=/tmp/xtables.lock \
-		LDFLAGS=-L$(INSTALL_DIR)/lib \
-		CFLAGS="-Os $(BRCM_FLAG) -U CONFIG_NVRAM_SIZE -I$(SRCBASE)/kernel/bcmkernel/include/uapi/"
-else ifneq ($(or $(findstring linux-3.10,$(LINUXDIR))),)
-	cd iptables-1.8.11 && $(CONFIGURE) \
-		--prefix=/usr \
-		--bindir=/usr/sbin \
-		--libdir=/usr/lib \
-		--with-kernel=$(KDIR)/include \
-		$(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
-		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZEi -I$(KDIR)/include"
-else
-	cd iptables-1.8.11 && $(CONFIGURE) \
-		--prefix=/usr \
-		--bindir=/usr/sbin \
-		--libdir=/usr/lib \
-		--with-kernel=$(LINUXDIR) \
-		$(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
-		CFLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
-endif
-
-iptables-1.8.11: iptables-1.8.11/Makefile
-	@$(SEP)
-	$(MAKE) -C $@ KERNEL_DIR=$(LINUX_INC_DIR) COPT_FLAGS="-Os $(EXTRACFLAGS) -U CONFIG_NVRAM_SIZE"
-
-iptables-1.8.11-install: iptables-1.8.11
-	install -D iptables-1.8.11/iptables/.libs/xtables-legacy-multi $(INSTALLDIR)/iptables-1.8.11/usr/sbin/xtables-legacy-multi
-	cd $(INSTALLDIR)/iptables-1.8.11/usr/sbin && \
-		ln -sf xtables-legacy-multi iptables-restore && \
-		ln -sf xtables-legacy-multi iptables-save && \
-		ln -sf xtables-legacy-multi iptables
-	install -d $(INSTALLDIR)/iptables-1.8.11/usr/lib/xtables
-	# install -D iptables-1.8.11/libiptc/.libs/libiptc.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/libiptc.so
-	install -D iptables-1.8.11/libiptc/.libs/libip4tc.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/libip4tc.so
-	cd $(INSTALLDIR)/iptables-1.8.11/usr/lib && \
-		ln -sf libip4tc.so libip4tc.so.2 && \
-		ln -sf libip4tc.so libip4tc.so.2.0.0
-	install -D iptables-1.8.11/libxtables/.libs/lib*.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/
-	cd $(INSTALLDIR)/iptables-1.8.11/usr/lib && \
-		ln -sf libxtables.so libxtables.so.12 && \
-		ln -sf libxtables.so libxtables.so.12.4.0
-	install -D iptables-1.8.11/extensions/*.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/xtables
-
-ifeq ($(RTCONFIG_IPV6),y)
-	cd $(INSTALLDIR)/iptables-1.8.11/usr/sbin && \
-		ln -sf xtables-legacy-multi ip6tables-restore && \
-		ln -sf xtables-legacy-multi ip6tables-save && \
-		ln -sf xtables-legacy-multi ip6tables
-	install -D iptables-1.8.11/libiptc/.libs/libip6tc.so $(INSTALLDIR)/iptables-1.8.11/usr/lib/libip6tc.so
-	cd $(INSTALLDIR)/iptables-1.8.11/usr/lib && \
-		ln -sf libip6tc.so libip6tc.so.2 && \
-		ln -sf libip6tc.so libip6tc.so.2.0.0
-endif
-
-	$(STRIP) $(INSTALLDIR)/iptables-1.8.11/usr/sbin/xtables-legacy-multi
-	$(STRIP) $(INSTALLDIR)/iptables-1.8.11/usr/lib/*.so*
-	$(STRIP) $(INSTALLDIR)/iptables-1.8.11/usr/lib/xtables/*.so*
-
-iptables-1.8.11-clean:
-	[ ! -f iptables-1.8.11/Makefile ] || $(MAKE) -C iptables-1.8.11 KERNEL_DIR=$(LINUX_INC_DIR) distclean
-	@rm -f iptables-1.8.11/Makefile
-
 miniupnpd/config.h: shared/version.h
 ifeq ($(RTCONFIG_IGD2),y)
 	cd miniupnpd-igdv2 && ./configure --vendorcfg --leasefile $(if $(RTCONFIG_IPV6),--ipv6,) --igd2 --portinuse $(if $(RTCONFIG_AURASYNC),--aurasync,) $(if $(RTCONFIG_GEFORCENOW),--nvgfn) --iptablespath=$(TOP)/$(IPTABLES) --disable-pppconn
@@ -4953,9 +4770,6 @@ endif
 
 vsftpd: nvram$(BCMEX)$(EX7) shared $(if $(BCM_502L07P2),ethctl_lib) libdisk $(ftp_dep)
 	@$(SEP)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-	cp -f $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/libnsl.so.1 arm-glibc/stage/usr/lib/libnsl.so
-endif
 ifeq ($(RTCONFIG_FTP_SSL),y)
 	-cp vsftpd/builddefs-ssl.h vsftpd/builddefs.h
 else
@@ -5467,21 +5281,14 @@ ifeq ($(RTCONFIG_CFEZ),y)
 envram_bin:
 	$(SEP)
 
-ifeq ($(HND_ROUTER_BE_4916),y)
-ENVRAM_BIN_EXT :=
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-ENVRAM_BIN_EXT := _saved-$(PROFILE_KARCH)
-endif
-endif
-
 envram_bin-install:
 #ifeq ($(or $(HND_ROUTER_AX_6756),$(BCM_502L07P2)),y)
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(BCM_502L07P2)),y)
 	install -D $(TOP_PLATFORM)/envram_bin/envram/envrams_saved-$(BRCM_CHIP)-arm $(INSTALLDIR)/usr/sbin/envrams
 	install -D $(TOP_PLATFORM)/envram_bin/envram/envram_saved-$(BRCM_CHIP)-arm $(INSTALLDIR)/usr/sbin/envram
 else ifeq ($(HND_ROUTER_BE_4916),y)
-	install -D $(TOP_PLATFORM)/envram_bin/envram/envrams$(ENVRAM_BIN_EXT) $(INSTALLDIR)/usr/sbin/envrams
-	install -D $(TOP_PLATFORM)/envram_bin/envram/envram$(ENVRAM_BIN_EXT) $(INSTALLDIR)/usr/sbin/envram
+	install -D $(TOP_PLATFORM)/envram_bin/envram/envrams $(INSTALLDIR)/usr/sbin/envrams
+	install -D $(TOP_PLATFORM)/envram_bin/envram/envram $(INSTALLDIR)/usr/sbin/envram
 else
 	install -D $(TOP_PLATFORM)/envram_bin/envram$(BCMEX)$(EX7)/envrams $(INSTALLDIR)/usr/sbin/envrams
 	install -D $(TOP_PLATFORM)/envram_bin/envram$(BCMEX)$(EX7)/envram $(INSTALLDIR)/usr/sbin/envram
@@ -5705,7 +5512,7 @@ inadyn/Makefile: inadyn/configure
 			-I$(STAGEDIR)/usr/include  -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
 		LDFLAGS="-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/shared $(EXTRA_NV_LDFLAGS) $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed/ -latee) \
-			$(if $(RTCONFIG_MXL_826XX),-L$(TOP)/libhostapi -lhostapi) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),-L$(TOP)/libhostapi -lhostapi,) \
 			 -L$(STAGEDIR)/usr/lib -Wl,--gc-sections $(LDFLAGS) $(EXTRALDFLAGS)" \
 		LIBS="-lnvram -lshared $(if $(BCM_502L07P2),-lethctl) $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ldl"
 
@@ -5762,11 +5569,7 @@ ifeq ($(HND_ROUTER_AX),y)
 ifeq ($(HND_ROUTER_AX_6756),y)
 	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/librt-2.30.so $(INSTALLDIR)/lib/librt.so.1
 else ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-	install -D $(TOOLS)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/librt.so.1 $(INSTALLDIR)/lib/librt.so.1
-else
-	install -D $(TOOLS)/$(TOOLCHAIN_ARCH_TYPE)/sysroot/lib/librt-2.32.so $(INSTALLDIR)/lib/librt.so.1
-endif # HND_ROUTER_BE_4916
+	install -D $(TOOLS)/arm-buildroot-linux-gnueabi/sysroot/lib/librt-2.32.so $(INSTALLDIR)/lib/librt.so.1
 else ifeq ($(BCM_502L07P2),y)
 	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/librt-2.26.so $(INSTALLDIR)/lib/librt.so.1
 else
@@ -6472,36 +6275,13 @@ lldpd-1.0.11-clean:
 	[ ! -f lldpd-1.0.11/libevent/Makefile ] || $(MAKE) -C lldpd-1.0.11/libevent clean
 	@rm -f lldpd-1.0.11/libevent/Makefile
 
-ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506))
-LIBEVENT_EXT_PKG += -DRTCONFIG_HND_ROUTER_BE_4916 -DWIFI7_SDK_20250506
-# LIBEVENT_EXT_PKG += -DARC4RANDOM_DISABLED
-LIBEVENT_EXT_PKG2 += ac_cv_func_arc4random=no ac_cv_func_arc4random_buf=no
-endif
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126))
-LIBEVENT_EXT_PKG += -DRTCONFIG_HND_ROUTER_BE_4916 -DWIFI8_SDK_20251126
-# LIBEVENT_EXT_PKG += -DARC4RANDOM_DISABLED
-LIBEVENT_EXT_PKG2 += ac_cv_func_arc4random=no ac_cv_func_arc4random_buf=no
-endif
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260204))
-LIBEVENT_EXT_PKG += -DRTCONFIG_HND_ROUTER_BE_4916 -DWIFI8_SDK_20260204
-# LIBEVENT_EXT_PKG += -DARC4RANDOM_DISABLED
-LIBEVENT_EXT_PKG2 += ac_cv_func_arc4random=no ac_cv_func_arc4random_buf=no
-endif
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260402))
-LIBEVENT_EXT_PKG += -DRTCONFIG_HND_ROUTER_BE_4916 -DWIFI8_SDK_20260402
-# LIBEVENT_EXT_PKG += -DARC4RANDOM_DISABLED
-LIBEVENT_EXT_PKG2 += ac_cv_func_arc4random=no ac_cv_func_arc4random_buf=no
-endif
-endif
-
 libevent-2.0.21: libevent-2.0.21/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
 
 libevent-2.0.21/Makefile:
 	( cd libevent-2.0.21 && autoreconf -i -f ; \
-		CFLAGS="$(CFLAGS) -Os -Wall $(EXTRACFLAGS) $(LIBEVENT_EXT_PKG) -I$(STAGEDIR)/usr/include" \
-		LDFLAGS="-L$(STAGEDIR)/usr/lib" $(LIBEVENT_EXT_PKG2) \
+		CFLAGS="$(CFLAGS) -Os -Wall $(EXTRACFLAGS) -I$(STAGEDIR)/usr/include" \
+		LDFLAGS="-L$(STAGEDIR)/usr/lib" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 		--disable-openssl --disable-debug-mode \
 	)
@@ -6694,7 +6474,7 @@ dropbear/config.h: dropbear/config.h.in
 		LDFLAGS="-Wl,--gc-sections -L$(STAGEDIR)/usr/lib" \
 		LIBS="$(if $(RTCONFIG_PROTECTION_SERVER),-lptcsrv) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed -latee) \
-			$(if $(RTCONFIG_MXL_826XX),-L$(TOP)/libhostapi -lhostapi) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),-L$(TOP)/libhostapi -lhostapi,) \
 			-L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram -L$(TOP)/shared -lshared $(EXTRA_NV_LDFLAGS)" \
 		$(CONFIGURE) --disable-harden --disable-zlib --disable-pam \
 		--enable-openpty --enable-syslog --enable-shadow --enable-bundled-libtom \
@@ -7499,11 +7279,7 @@ clm-clean:
 		$(RM) $(CLMBASE)/src/$(clmb).clm_bin; \
 		$(RM) $(TARGETDIR)/brcm/clm/$(clmb).clm_blob )
 
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-SRC_WLEXE = $(SRCBASE)/../../main/src/wl/exe
-else
-SRC_WLEXE = $(SRCBASE_DHD)/wl/exe
-endif
+SRC_WLEXE = $(SRCBASE_SYS)/wl/exe
 SRC_PRE_WLEXE = $(SRCBASE)/wl/exe
 
 .PHONY: wlexe
@@ -7791,15 +7567,6 @@ endif
 
 ifeq ($(HND_ROUTER_BE_4916),y)
 ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),6764 6766))
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-# EBTABLES_HOST := --host=arm-buildroot-linux-gnueabihf
-EBTABLES_TARGET := --target=arm-buildroot-linux-gnueabihf
-EBTABLES_INCLUDE := -Iinclude -I$(HND_SRC)/kernel/bcmkernel/ -I$(HND_SRC)/kernel/linux-5.15/
-EBTABLES_CC_PATH := /opt/toolchains/crosstools-arm_hf-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41/usr/bin
-EBTABLES_CC := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabihf-gcc
-EBTABLES_CPP := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabihf-cpp
-EBTABLES_LD := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabihf-ld
-else
 EBTABLES_HOST := --host=mips-linux-uclibc
 EBTABLES_TARGET := --target=mips-linux-uclibc
 EBTABLES_INCLUDE := -Iinclude -I$(HND_SRC)/kernel/bcmkernel/ -I$(HND_SRC)/kernel/linux-4.19/
@@ -7807,7 +7574,6 @@ EBTABLES_CC_PATH := /opt/toolchains/crosstools-arm_softfp-gcc-10.3-linux-4.19-gl
 EBTABLES_CC := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabi-gcc
 EBTABLES_CPP := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabi-cpp
 EBTABLES_LD := $(EBTABLES_CC_PATH)/arm-buildroot-linux-gnueabi-ld
-endif
 else
 EBTABLES_HOST := --host=mips-linux-uclibc
 EBTABLES_TARGET := --target=mips-linux-uclibc
@@ -7816,24 +7582,6 @@ EBTABLES_CC_PATH := /opt/toolchains/crosstools-aarch64-gcc-10.3-linux-4.19-glibc
 EBTABLES_CC := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-gcc
 EBTABLES_CPP := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-cpp
 EBTABLES_LD := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-ld
-endif
-endif
-
-ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-# EBTABLES_HOST := --host=aarch64-buildroot-linux-gnu
-EBTABLES_TARGET := --target=aarch64-buildroot-linux-gnu
-EBTABLES_INCLUDE := -Iinclude -I$(HND_SRC)/kernel/bcmkernel/ -I$(HND_SRC)/kernel/linux-5.15/
-EBTABLES_CC_PATH := /opt/toolchains/crosstools-aarch64-gcc-13.2-linux-5.15-glibc-2.38-binutils-2.41/usr/bin
-EBTABLES_CC := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-gcc
-EBTABLES_CPP := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-cpp
-EBTABLES_LD := $(EBTABLES_CC_PATH)/aarch64-buildroot-linux-gnu-ld
-endif
-endif
-
-ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-EBTABLES_INCLUDE := -Iinclude -I$(HND_SRC)/kernel/bcmkernel/ -I$(SRCBASE)/kernel/bcmkernel/include/uapi/ -I$(HND_SRC)/kernel/linux-5.15/
 endif
 endif
 
@@ -7977,9 +7725,9 @@ openpam/Makefile:
 	( cd openpam ; \
 		LDFLAGS=-ldl \
 		$(CONFIGURE) \
-		--prefix=$(STAGEDIR)/usr \
-		--bindir=$(STAGEDIR)/usr/sbin \
-		--libdir=$(STAGEDIR)/usr/lib \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
 		--without-doc --with-pam-unix \
 	)
 
@@ -8177,7 +7925,7 @@ else
 endif
 	@touch $@
 
-lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) $(if $(RTCONFIG_MXL_826XX),libhostapi) lighttpd-1.4.39/stamp-h1
+lighttpd-1.4.39: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libpasswd libdisk samba-3.5.8 pcre-8.31 libxml2 sqlite libexif openssl curl $(if $(RTCONFIG_PERMISSION_MANAGEMENT),PMS_DBapis) $(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),libhostapi,) lighttpd-1.4.39/stamp-h1
 	$(MAKE) -C lighttpd-1.4.39 $(PARALLEL_BUILD)
 
 lighttpd-1.4.39-install:
@@ -8254,7 +8002,7 @@ pcre-8.12-clean:
 pcre-8.31/stamp-h1:
 	cd pcre-8.31 && \
 	CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" LIBS="$(EXTRALDFLAGS)" \
-	./$(CONFIGURE) --prefix=$(STAGEDIR)/usr --disable-dependency-tracking
+	./$(CONFIGURE) --prefix=/usr --disable-dependency-tracking
 	touch $@
 	[ -d pcre-8.31/m4 ] || mkdir pcre-8.31/m4
 
@@ -8344,7 +8092,7 @@ ftpclient-install:
 	$(STRIP) $(INSTALLDIR)/ftpclient/usr/sbin/ftpclient
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(HND_ROUTER),y)
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/lib${LIB_ARCH}/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 else
 	install -D $(shell dirname $(shell which $(CXX)))/../arm-brcm-linux-uclibcgnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 endif
@@ -8368,7 +8116,7 @@ sambaclient-install:
 	$(STRIP) $(INSTALLDIR)/sambaclient/usr/sbin/sambaclient
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(HND_ROUTER),y)
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/lib${LIB_ARCH}/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 else
 	install -D $(shell dirname $(shell which $(CXX)))/../arm-brcm-linux-uclibcgnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 endif
@@ -8393,7 +8141,7 @@ usbclient-install:
 	$(STRIP) $(INSTALLDIR)/usbclient/usr/sbin/usbclient
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(HND_ROUTER),y)
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/lib${LIB_ARCH}/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 else
 	install -D $(shell dirname $(shell which $(CXX)))/../arm-brcm-linux-uclibcgnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 endif
@@ -8435,20 +8183,6 @@ strongswan/Makefile: strongswan/configure
 strongswan: openssl strongswan/Makefile
 	@$(SEP)
 	$(MAKE) -j 8 -C strongswan
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-	@-patchelf --force-rpath --set-rpath /usr/lib/ipsec strongswan/src/libipsec/.libs/libipsec.so
-	@-sed -i '/relink_command/d' strongswan/src/libipsec/libipsec.la
-	@-patchelf --force-rpath --set-rpath /usr/lib/ipsec strongswan/src/libtls/.libs/libtls.so
-	@-sed -i '/relink_command/d' strongswan/src/libtls/libtls.la
-	@-patchelf --force-rpath --set-rpath /usr/lib/ipsec strongswan/src/libcharon/.libs/libcharon.so
-	@-sed -i '/relink_command/d' strongswan/src/libcharon/libcharon.la
-	@-patchelf --force-rpath --set-rpath /usr/lib/ipsec strongswan/src/libcharon/plugins/vici/.libs/libvici.so
-	@-sed -i '/relink_command/d' strongswan/src/libcharon/plugins/vici/libvici.la
-	@-patchelf --force-rpath --set-rpath /usr/lib/ipsec strongswan/src/libcharon/plugins/eap_tls/.libs/libstrongswan-eap-tls.so
-	@-sed -i '/relink_command/d' strongswan/src/libcharon/plugins/eap_tls/libstrongswan-eap-tls.la
-	@-patchelf --force-rpath --set-rpath /usr/lib/ipsec strongswan/src/libcharon/plugins/eap_peap/.libs/libstrongswan-eap-peap.so
-	@-sed -i '/relink_command/d' strongswan/src/libcharon/plugins/eap_peap/libstrongswan-eap-peap.la
-endif
 
 strongswan-install: strongswan
 	mkdir -p $(INSTALLDIR)/strongswan/
@@ -8952,14 +8686,16 @@ avahi: expat-2.0.1 libdaemon avahi/Makefile
 
 avahi/Makefile: avahi/configure
 	cd avahi && $(CONFIGURE) \
-		LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS) -L$(TOP)/libgdbm/.libs -lgdbm -L$(TOP)/dbus-1.8.8/.libs -ldbus-1" \
-		CFLAGS="-Os $(CFLAGS) -I$(STAGEDIR)/usr/include -I$(TOP)/libgdbm -I$(TOP)/dbus-1.8.8/" \
+		LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS) \
+		$(if $(RTCONFIG_GTBOOSTER),-L$(TOP)/libgdbm/.libs -lgdbm -L$(TOP)/dbus-1.8.8/.libs -ldbus-1)" \
+		CFLAGS="-Os $(CFLAGS) -I$(STAGEDIR)/usr/include \
+		$(if $(RTCONFIG_GTBOOSTER),-I$(TOP)/libgdbm -I$(TOP)/dbus-1.8.8/)" \
 		--prefix=/usr --sysconfdir=/tmp localstatedir=/var --with-distro=none \
 		--disable-nls --disable-glib --disable-gobject \
 		--enable-introspection=no \
 		--disable-qt3 --disable-qt4 --disable-qt5 --disable-gtk --disable-gtk3 \
-		--enable-dbus \
-		--enable-gdbm \
+		$(if $(RTCONFIG_GTBOOSTER),--enable-dbus,--disable-dbus) \
+		$(if $(RTCONFIG_GTBOOSTER),--enable-gdbm,--disable-gdbm) \
 		--disable-python --disable-pygtk --disable-python-dbus \
 		--disable-mono --disable-monodoc \
 		--disable-autoipd \
@@ -8976,20 +8712,22 @@ avahi/Makefile: avahi/configure
 
 avahi-install: avahi
 	install -D avahi/avahi-daemon/.libs/avahi-daemon $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
-	install -D avahi/avahi-utils/.libs/avahi-browse $(INSTALLDIR)/avahi/usr/sbin/avahi-browse
-	install -D avahi/avahi-utils/.libs/avahi-resolve $(INSTALLDIR)/avahi/usr/sbin/avahi-resolve
 	install -D avahi/avahi-common/.libs/libavahi-common.so.3.5.4 $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.4
 	install -D avahi/avahi-core/.libs/libavahi-core.so.7.1.0 $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.1.0
-	install -D avahi/avahi-client/.libs/libavahi-client.so.3.2.9 $(INSTALLDIR)/avahi/usr/lib/libavahi-client.so.3.2.9
 	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
-	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-browse
-	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-resolve
 	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.4
 	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.1.0
-	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-client.so.3.2.9
 	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-common.so.3.5.4 libavahi-common.so.3
 	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-core.so.7.1.0 libavahi-core.so.7
+ifdef RTCONFIG_GTBOOSTER
+	install -D avahi/avahi-utils/.libs/avahi-browse $(INSTALLDIR)/avahi/usr/sbin/avahi-browse
+	install -D avahi/avahi-utils/.libs/avahi-resolve $(INSTALLDIR)/avahi/usr/sbin/avahi-resolve
+	install -D avahi/avahi-client/.libs/libavahi-client.so.3.2.9 $(INSTALLDIR)/avahi/usr/lib/libavahi-client.so.3.2.9
+	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-browse
+	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-resolve
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-client.so.3.2.9
 	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-client.so.3.2.9 libavahi-client.so.3
+endif
 
 avahi-clean:
 	[ ! -f avahi/Makefile ] || $(MAKE) -C avahi distclean
@@ -10393,7 +10131,7 @@ aaews-install:
 	$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/mastiff)
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(HND_ROUTER),y)
-	install -D $(TOOLCHAIN)/$(TOOLCHAIN_ARCH_TYPE)/lib${LIB_ARCH}/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
+	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 else
 	install -D $(shell dirname $(shell which $(CXX)))/../arm-brcm-linux-uclibcgnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
 endif
@@ -10544,7 +10282,7 @@ ifeq ($(HND_ROUTER),y)
 		LDFLAGS="-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP_PLATFORM)/wlcsm \
 			-L$(TOP)/shared $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib) \
 			$(if $(RTCONFIG_TRUSTZONE),-L$(TOP)/ateed/ -latee) \
-			$(if $(RTCONFIG_MXL_826XX),-L$(TOP)/libhostapi -lhostapi) \
+			$(if $(filter $(BUILD_NAME),RT-BE82M GS-BE18000 GS-BE12000 GS7_PRO GT7),-L$(TOP)/libhostapi -lhostapi,) \
 			$(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client) $(EXTRALDFLAGS)" \
 		LIBS="-lnvram -lwlcsm -lshared $(if $(BCM_502L07P2),-lethctl) $(if $(RTCONFIG_QTN),-lqcsapi_client)"
 	@touch $@
@@ -10794,11 +10532,6 @@ ifneq ($(wildcard $(AFCDSOURCE_DIR)/prebuilt/afcd),)
 	cp -f $(AFCDSOURCE_DIR)/prebuilt/afc_cli $(AFCDSOURCE_DIR)/
 	cp -f $(AFCDSOURCE_DIR)/prebuilt/libafc.so $(AFCDSOURCE_DIR)/
 endif
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-	cp -f $(HND_SRC)/router-sysdep/ieee1905/usr/lib/libi5api.so_saved-$(PROFILE_KARCH) $(INSTALLDIR)/usr/lib/libi5api.so
-	cp -f $(HND_SRC)/router-sysdep/ieee1905/usr/lib/libieee1905.so_saved-$(PROFILE_KARCH) $(INSTALLDIR)/usr/lib/libieee1905.so
-	cp -f $(HND_SRC)/router-sysdep/wbd2/prebuilt/libwbdhld.so_saved-$(PROFILE_KARCH) $(INSTALLDIR)/usr/lib/libwbdhld.so
-endif
 	+$(MAKE) -C $(AFCDSOURCE_DIR) INSTALLDIR=$(INSTALLDIR) install
 
 afcd-clean:
@@ -10895,9 +10628,7 @@ ifeq ($(HND_ROUTER_AX_6756),y)
 DTC_VER := -1.5.1
 else
 ifeq ($(HND_ROUTER_BE_4916),y)
-ifneq (,$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20250506 WIFI8_SDK_20251126 WIFI8_SDK_20260204 WIFI8_SDK_20260402))
-DTC_VER := -1.7.2
-else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
+ifeq ($(ASUSWRT_BRCM_SDK_VERSION),$(filter $(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20231126 WIFI7_SDK_20250122))
 DTC_VER := -1.7.0
 else ifeq ($(ASUSWRT_BRCM_SDK_VERSION),WIFI7_SDK_20240103)
 DTC_VER := -1.7.0
@@ -11575,19 +11306,6 @@ bp3-install:
 
 bp3-clean:
 	-$(MAKE) -C $(TOP_PLATFORM)/bp3 clean
-
-.PHONY : bp3
-
-bcmnetdevctl:
-	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
-	-$(MAKE) -C $(TOPX_DIR)
-
-bcmnetdevctl-install:
-	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/bcmnetdevctl) $(wildcard bp3)))
-	-$(MAKE) -C $(TOPX_DIR) INSTALLDIR=$(INSTALLDIR)/bcmnetdevctl install
-
-bcmnetdevctl-clean:
-	-$(MAKE) -C $(TOP_PLATFORM)/bcmnetdevctl clean
 
 .PHONY : bp3
 

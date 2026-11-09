@@ -143,6 +143,7 @@ struct authenticator_t {
 	 *						- SUCCESS if authentication successful
 	 *						- FAILED if authentication failed
 	 *						- NEED_MORE if another exchange required
+	 * 						- INVALID_ARG if EAP-Identity doesn't match
 	 */
 	status_t (*process)(authenticator_t *this, message_t *message);
 
@@ -167,6 +168,16 @@ struct authenticator_t {
 	 * @param no_ppk_auth	whether to add a NO_PPK_AUTH notify in build()
 	 */
 	void (*use_ppk)(authenticator_t *this, chunk_t ppk, bool no_ppk_auth);
+
+	/**
+	 * Optional method to set authentication data for IKE_INTERMEDIATE
+	 * exchanges.
+	 *
+	 * Has to be called before the final call to process()/build().
+	 *
+	 * @param int_auth		concatenated IntAuth_I|R data
+	 */
+	void (*set_int_auth)(authenticator_t *this, chunk_t int_auth);
 
 	/**
 	 * Check if the authenticator is capable of mutual authentication.

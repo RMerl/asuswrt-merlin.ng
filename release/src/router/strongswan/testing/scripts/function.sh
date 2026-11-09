@@ -48,9 +48,23 @@ execute()
 
 # execute command in chroot
 # $1 - command to execute
+# $2 - whether or not to log command exit status
+#      (0 -> disable exit status logging)
 execute_chroot()
 {
-	execute "chroot $LOOPDIR env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin $@"
+	cmd=${1}
+	echo chroot $LOOPDIR $cmd >>$LOGFILE 2>&1
+	chroot $LOOPDIR /bin/bash -l <<-EOF >>$LOGFILE 2>&1
+		$cmd
+	EOF
+	status=$?
+	[ "$2" != 0 ] && log_status $status
+	if [ $status != 0 ]; then
+		echo
+		echo "! Command chroot $LOOPDIR $cmd failed, exiting (status $status)"
+		echo "! Check why here $LOGFILE"
+		exit 1
+	fi
 }
 
 # write green status message to console
@@ -194,10 +208,6 @@ function searchandreplace {
 	# search and replace in each found file the
 	# given string
 	#
-
-	for eachfoundfile in `find $DESTDIR -type f`
-	do
-		sed -i -e "s/$SEARCHSTRING/$REPLACESTRING/g" "$eachfoundfile"
-	done
-
+	grep -rlZ --exclude='*.pem' "$SEARCHSTRING" $DESTDIR | \
+		xargs -0 -I@ sed -i -e "s/$SEARCHSTRING/$REPLACESTRING/g" @
 }

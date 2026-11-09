@@ -377,16 +377,18 @@ export class AsuswrtWidgetLoading {
 
 export class ClientSelector {
     constructor(options = {}) {
+        const allowSubnet = options.allowSubnet === true;
         this.options = {
-            placeholder: `<#SearchDevice_By_Name_Mac_Ip#>`,
+            placeholder: allowSubnet ? `<#SearchDevice_By_Name_Mac_Ip_Subnet#>` : `<#SearchDevice_By_Name_Mac_Ip#>`,
             data: [],
             width: '100%',
             maxHeight: '300px',
             showSelectedValue: true,
             className: '',
             onSelect: null,
-            searchFields: ['name', 'mac', 'ip'], // 可搜尋的欄位
+            searchFields: allowSubnet ? ['name', 'mac', 'ip', 'subnet'] : ['name', 'mac', 'ip'],
             allowAddressSelection: true, // 允許選擇 MAC 或 IP
+            allowSubnet: false,
             ...options
         };
 
@@ -406,16 +408,16 @@ export class ClientSelector {
         this.container.style.width = this.options.width;
         const shadowRoot = this.container.attachShadow({mode: 'open'});
         this.shadowRoot = shadowRoot;
-        
+
         // 注入樣式
         const styles = StyleManager.combineStyles('base', 'clientSelector');
         const template = document.createElement('template');
-        
+
         const selectorId = `client-selector-${Math.random().toString(36).substr(2, 9)}`;
         const inputId = `${selectorId}-input`;
         const listboxId = `${selectorId}-listbox`;
         const selectedId = `${selectorId}-selected`;
-        
+
         template.innerHTML = `
             <style>${styles}</style>
             <div class="client-selector ${this.options.className}" id="${selectorId}">
@@ -451,6 +453,7 @@ export class ClientSelector {
                                 <div class="cs-device-details">
                                     <span class="cs-device-mac"></span>
                                     <span class="cs-device-ip"></span>
+                                    ${this.options.allowSubnet ? '<span class="cs-device-subnet"></span>' : ''}
                                 </div>
                             </div>
                         </div>
@@ -458,9 +461,9 @@ export class ClientSelector {
                 ` : ''}
             </div>
         `;
-        
+
         shadowRoot.appendChild(template.content.cloneNode(true));
-        
+
         // 取得 Shadow DOM 內的元素引用
         this.selectorContainer = shadowRoot.querySelector('.client-selector');
         this.dropdownContainer = shadowRoot.querySelector('.cs-dropdown-container');
@@ -468,7 +471,7 @@ export class ClientSelector {
         this.arrow = shadowRoot.querySelector('.cs-dropdown-arrow');
         this.list = shadowRoot.querySelector('.cs-dropdown-list');
         this.selectedDisplay = shadowRoot.querySelector('.cs-selected-value');
-        
+
         // 創建選項
         this.createItems();
     }
@@ -482,6 +485,7 @@ export class ClientSelector {
             const statusText = item.isOnline ? 'online' : 'offline';
             const ipText = (item.ip !== '') ? item.ip : 'N/A';
             const isIpAvailable = item.ip !== '';
+            const subnetText = item.subnet || '';
 
             element.innerHTML = `
                 <div class="cs-device-item">
@@ -494,13 +498,14 @@ export class ClientSelector {
                     <div class="cs-device-details">
                         <span class="cs-device-mac cs-address-option" data-type="mac" data-value="${item.mac}">MAC: ${item.mac}</span>
                         <span class="cs-device-ip ${isIpAvailable ? 'cs-address-option' : 'cs-address-disabled'}" data-type="ip" data-value="${ipText}">IP: ${ipText}</span>
+                        ${this.options.allowSubnet && subnetText ? `<span class="cs-device-subnet">Subnet: ${subnetText}</span>` : ''}
                     </div>
                 </div>
             `;
 
             // 設置無障礙屬性
             element.setAttribute('role', 'option');
-            element.setAttribute('aria-label', `${deviceName}, MAC: ${item.mac}, IP: ${ipText}, Status: ${statusText}`);
+            element.setAttribute('aria-label', `${deviceName}, MAC: ${item.mac}, IP: ${ipText}${subnetText ? `, Subnet: ${subnetText}` : ''}, Status: ${statusText}`);
             element.setAttribute('aria-selected', 'false');
             element.setAttribute('tabindex', '-1');
 
@@ -508,6 +513,7 @@ export class ClientSelector {
             element.dataset.name = deviceName;
             element.dataset.mac = item.mac;
             element.dataset.ip = item.ip;
+            element.dataset.subnet = subnetText;
             element.dataset.index = index;
             this.list.appendChild(element);
             this.items.push(element);
@@ -648,7 +654,7 @@ export class ClientSelector {
         this.list.classList.add('open');
         this.arrow.classList.add('open');
         this.input.style.borderRadius = 'var(--global-radius, 8px) var(--global-radius, 8px) 0 0';
-        
+
         // 通知螢幕閱讀器
         this.announceToScreenReader(`Device list opened. ${this.filteredItems.length} options available.`);
     }
@@ -662,11 +668,11 @@ export class ClientSelector {
         this.input.style.borderRadius = 'var(--global-radius, 8px)';
         this.selectedIndex = -1;
         this.clearSelection();
-        
+
         // 通知螢幕閱讀器
         this.announceToScreenReader('Device list closed.');
     }
-    
+
     announceToScreenReader(message) {
         // 創建臨時的 live region 來通知螢幕閱讀器
         const announcement = document.createElement('div');
@@ -677,10 +683,10 @@ export class ClientSelector {
         announcement.style.width = '1px';
         announcement.style.height = '1px';
         announcement.style.overflow = 'hidden';
-        
+
         this.shadowRoot.appendChild(announcement);
         announcement.textContent = message;
-        
+
         // 移除臨時元素
         setTimeout(() => {
             if (announcement.parentNode) {
@@ -699,6 +705,7 @@ export class ClientSelector {
             const name = item.dataset.name.toLowerCase();
             const mac = item.dataset.mac.toLowerCase();
             const ip = item.dataset.ip.toLowerCase();
+            const subnet = (item.dataset.subnet || '').toLowerCase();
 
             // 檢查是否在任何搜尋欄位中找到匹配
             const isVisible = this.options.searchFields.some(field => {
@@ -709,6 +716,8 @@ export class ClientSelector {
                         return mac.includes(searchTerm);
                     case 'ip':
                         return ip.includes(searchTerm);
+                    case 'subnet':
+                        return subnet.includes(searchTerm);
                     default:
                         return false;
                 }
@@ -813,10 +822,11 @@ export class ClientSelector {
         const name = item.dataset.name;
         const mac = item.dataset.mac;
         const ip = item.dataset.ip;
+        const subnet = item.dataset.subnet || '';
         const index = parseInt(item.dataset.index);
         const type = null;
 
-        this.selectedValue = {value, name, mac, ip, index, type};
+        this.selectedValue = {value, name, mac, ip, subnet, index, type};
         this.selectedType = type; // 選擇設備名稱時，type 為 null
         this.input.value = name;
         this.input.setAttribute('aria-describedby', `Selected device: ${name}`);
@@ -829,10 +839,12 @@ export class ClientSelector {
             const nameEl = this.selectedDisplay.querySelector('.cs-device-name');
             const macEl = this.selectedDisplay.querySelector('.cs-device-mac');
             const ipEl = this.selectedDisplay.querySelector('.cs-device-ip');
+            const subnetEl = this.selectedDisplay.querySelector('.cs-device-subnet');
 
             nameEl.textContent = name;
             macEl.textContent = `MAC: ${mac}`;
             ipEl.textContent = ip ? `IP: ${ip}` : 'IP: N/A';
+            if (subnetEl) subnetEl.textContent = subnet ? `Subnet: ${subnet}` : '';
 
             this.selectedDisplay.style.display = 'block';
             this.selectedDisplay.setAttribute('aria-live', 'polite');
@@ -858,9 +870,10 @@ export class ClientSelector {
         const name = item.dataset.name;
         const mac = item.dataset.mac;
         const ip = item.dataset.ip;
+        const subnet = item.dataset.subnet || '';
         const index = parseInt(item.dataset.index);
 
-        this.selectedValue = {value: type === 'mac' ? mac : ip, name, mac, ip, index, type};
+        this.selectedValue = {value: type === 'mac' ? mac : ip, name, mac, ip, subnet, index, type};
         this.selectedType = type; // 記錄選擇的類型 ('mac' 或 'ip')
         this.input.value = value;
         this.input.setAttribute('aria-describedby', `Selected ${type.toUpperCase()}: ${value}`);
@@ -873,10 +886,12 @@ export class ClientSelector {
             const nameEl = this.selectedDisplay.querySelector('.cs-device-name');
             const macEl = this.selectedDisplay.querySelector('.cs-device-mac');
             const ipEl = this.selectedDisplay.querySelector('.cs-device-ip');
+            const subnetEl = this.selectedDisplay.querySelector('.cs-device-subnet');
 
             nameEl.textContent = `${name} (${type.toUpperCase()})`;
             macEl.textContent = `MAC: ${mac}`;
             ipEl.textContent = ip ? `IP: ${ip}` : 'IP: N/A';
+            if (subnetEl) subnetEl.textContent = subnet ? `Subnet: ${subnet}` : '';
 
             this.selectedDisplay.style.display = 'block';
             this.selectedDisplay.setAttribute('aria-live', 'polite');

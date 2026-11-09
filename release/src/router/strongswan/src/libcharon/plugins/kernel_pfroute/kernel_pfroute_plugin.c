@@ -57,7 +57,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *kernel_pfroute_plugin_create()
+PLUGIN_DEFINE(kernel_pfroute)
 {
 	private_kernel_pfroute_plugin_t *this;
 

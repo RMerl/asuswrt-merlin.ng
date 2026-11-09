@@ -83,7 +83,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *resolve_plugin_create()
+PLUGIN_DEFINE(resolve)
 {
 	private_resolve_plugin_t *this;
 

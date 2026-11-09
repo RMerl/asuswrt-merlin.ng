@@ -877,8 +877,9 @@ var isp_customize_tool_support = isSupport('isp_customize_tool');
 var lacp_support = isSupport("lacp");
 var dashboard_support = isSupport("dashboard");
 var newsite_provisioning_support = isSupport("newsite_provisioning");
-var is_GTBE_externalswitch_series = (based_modelid == "GT-BE98" || based_modelid == "GT-BE98_PRO" || based_modelid == "GT-BE96" || based_modelid == "GT-BE19000" || based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI"|| based_modelid == "GT-BN98_PRO")? true : false;// These models have the same hardware designs (externel realtek switch).
-var GTBE_lacp_ifnames_settings = (based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO")? "eth0 eth6":"eth0 eth3";
+var GTBE_externalswitch_series = ["GT-BE98", "GT-BE98_PRO", "GT-BE96", "GT-BE19000", "GT-BE19000AI", "GT-BE96_AI", "GT-BN98_PRO", "GT-BN98", "GT-BN96X"];
+var is_GTBE_externalswitch_series = (GTBE_externalswitch_series.indexOf(based_modelid) != -1)? true : false;// These models have the same hardware designs (externel realtek switch).
+var GTBE_lacp_ifnames_settings = (based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO" || based_modelid == "GT-BN98" || based_modelid == "GT-BN96X")? "eth0 eth6":"eth0 eth3";
 
 function get_bonding_ports(product_id){//return lacp bonding ports
 	let bonding_port_settings = [];
@@ -898,7 +899,7 @@ function get_bonding_ports(product_id){//return lacp bonding ports
 			let lacp_ifnames_x = httpApi.nvramGet(["lacp_ifnames_x"], true).lacp_ifnames_x;
 			if(lacp_ifnames_x == GTBE_lacp_ifnames_settings)
 				bonding_port_settings = [{"val": "0", "text": "10G WAN/LAN-1"}, {"val": "6", "text": "10G LAN-6"}];
-			else if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO")
+			else if(based_modelid == "GT-BE19000AI" || based_modelid == "GT-BE96_AI" || based_modelid == "GT-BN98_PRO" || based_modelid == "GT-BN98" || based_modelid == "GT-BN96X")
 				bonding_port_settings = [{"val": "1", "text": "2.5G WAN/LAN-1"}, {"val": "2", "text": "2.5G LAN-2"}];
 			else
 				bonding_port_settings = [{"val": "5", "text": "1G LAN-5"}, {"val": "6", "text": "10G LAN-6"}];
@@ -1444,7 +1445,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 							</div>
 							<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">`;
 		if (is_CN || ui_lang == "CN") {
-			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank" rel="noreferrer"><div style="width:160px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;margin: auto;">Android App</div></a></div>`;
+			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank"><div style="width:160px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;margin: auto;">Android App</div></a></div>`;
 		} else {
 			banner_code += `<div style="padding-left: 30px;"><a href="${Android_app_link}" target="_blank"><div style="width:160px;height:46px;background:url('images/googleplay.png') no-repeat;background-size:100%;margin:auto;"></div></a></div>`;
 		}
@@ -2077,10 +2078,14 @@ function showMenuTree(menuList, menuExclude){
 			break;
 	}
 
-	document.getElementById("mainMenu").innerHTML = getCode("menus");
-	document.getElementById("tabMenu").innerHTML = getCode("tabs");
+	var mainMenuContainer = document.getElementById("mainMenu");
+	var tabMenuContainer = document.getElementById("tabMenu");
+	if(mainMenuContainer)
+		mainMenuContainer.innerHTML = getCode("menus");
+	if(tabMenuContainer)
+		tabMenuContainer.innerHTML = getCode("tabs");
 
-	if(document.getElementById("tabMenu").innerHTML && !isWebWrapper) {
+	if(tabMenuContainer && tabMenuContainer.innerHTML && !isWebWrapper) {
 		var getStyle = function(el, prop) {
 			if(typeof getComputedStyle != 'undefined')
 				return window.getComputedStyle(el, null).getPropertyValue(prop);
@@ -2922,7 +2927,7 @@ function refreshpage(seconds){
 	if(typeof(seconds) == "number")
 		setTimeout("refreshpage()", seconds*1000);
 	else
-		location.replace(location.href);
+		location.reload();
 }
 
 function hideLinkTag(){
@@ -5429,6 +5434,8 @@ function showArkMigrationNotification(arkMigrationPromise) {
                 }
             });
             observer.observe(top.document.body, { childList: true, subtree: true });
+        } else if (isSupport("ai_support") == 1) {
+            fetch('/set_ark_migration_done.cgi').catch(function() {});
         } else {
 			const functionList = [`<#AiProtection_filter#> (Web)`, `<#FamilyContentBlock#> (App)`, `<#Adaptive_QoS#>`];
 			if(gameMode_support){

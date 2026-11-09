@@ -47,7 +47,6 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	overflow: hidden;
 }
 .icon_bg{
 	height: 200px;
@@ -165,21 +164,37 @@
 	color: var(--wrt-brand-primary);
 }
 .bubble_icon{
-	background: initial !important;
-	background-color: var(--wrt-btn-icon-color) !important;
-	-webkit-mask-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg) !important;
-	mask-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg) !important;
-	-webkit-mask-repeat: no-repeat !important;
-	mask-repeat: no-repeat !important;
+	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
 }
-.bubble_icon.info {
-	-webkit-mask-position: -144px -112px !important;
-	mask-position: -144px -112px !important;
-	-webkit-mask-size: 700% !important;
-	mask-size: 700% !important;
+/* mask-size defaults to auto (native 306x246) so these reuse the base sprite
+   coordinates from aimesh_topology.css directly. Without them the icon falls
+   back to mask-position 0 0 and shows a clipped corner of the sprite. */
+.bubble_icon.warn_red {
+	background-color: var(--status-msg-negative-strong, #f05e16) !important;
+	-webkit-mask-position: 5px -176px !important;
+	mask-position: 5px -176px !important;
+}
+.bubble_icon.warn_grey {
+	-webkit-mask-position: -41px -176px !important;
+	mask-position: -41px -176px !important;
+}
+.bubble_icon.more {
+	-webkit-mask-position: -87px -176px !important;
+	mask-position: -87px -176px !important;
 }
 .signal_hint_text{
 	color: var(--wrt-text-primary);
+}
+/* The location name field (#input_location, z-index:20) is absolutely
+   positioned on top of .custom_select_selected and covers the center of the
+   bar. For preset locations it is disabled, and a disabled input still hit-tests
+   as topmost while swallowing the click (no event dispatched, no bubbling), so
+   clicking the label text does nothing and only the arrow/icon edges toggle the
+   dropdown. Let clicks fall through to the toggle div while disabled; the field
+   only needs pointer events when it becomes editable ("Custom" location). */
+.custom_select input:disabled,
+.custom_select input[disabled]{
+	pointer-events: none;
 }
 .fw_version_title_bg{
 	color: var(--wrt-text-primary);
@@ -247,27 +262,21 @@
 	background-color: var(--icon-active);
 }
 
+
 .category_bg > div:first-child:before{
 	background-image: none;
 	mask-repeat: no-repeat;
 	-webkit-mask-repeat: no-repeat;
 }
 .category_bg > div.iperf:before{
-	background: initial !important;
-	background-color: var(--icon-default) !important;
-	-webkit-mask-image: url(/images/New_ui/amesh/iperf_speed.svg) !important;
-	mask-image: url(/images/New_ui/amesh/iperf_speed.svg) !important;
-	-webkit-mask-size: 75% !important;
-	mask-size: 75% !important;
-	-webkit-mask-position: center !important;
-	mask-position: center !important;
+	background: url(/images/New_ui/amesh/iperf_speed.svg) no-repeat;
+	background-size: 75%;
+	background-position: center;
 }
 .category_bg.clicked > div.iperf:before{
-	background-color: var(--icon-active) !important;
-	-webkit-mask-position: center !important;
-	mask-position: center !important;
-	-webkit-mask-size: 75% !important;
-	mask-size: 75% !important;
+	background: url(/images/New_ui/amesh/iperf_speed_active.svg) no-repeat;
+	background-size: 75%;
+	background-position: center;
 }
 .connect_type_status_bg .as_backhaul_info > div{
 	color: var(--wrt-badge-error-color);
@@ -439,7 +448,7 @@
 .manage_switch_led_night_mode .switch,
 .poe_settings_item .switch{
 	box-shadow: inset 0 1px 0 0 rgba(0, 0, 0, 0.1);
-	width: 45px;
+	width: var(--wrt-switch-width);
 	height: var(--wrt-switch-height);
 	position: relative;
 	display: inline-block;
@@ -460,53 +469,9 @@
 .manage_switch_wifi .switch.on,
 .manage_switch_led_night_mode .switch.on,
 .poe_settings_item .switch.on{
-	background: var(--switch-btn-on-normal-fill-color);
-	border: 1.5px solid var(--switch-btn-on-normal-ellipse-stroke-color) ;
-}
-.manage_switch_led .switch.on::after,
-.manage_switch_wifi .switch.on::after,
-.manage_switch_led_night_mode .switch.on::after,
-.poe_settings_item .switch.on::after,
-.manage_switch_led .switch.off::after,
-.manage_switch_wifi .switch.off::after,
-.manage_switch_led_night_mode .switch.off::after,
-.poe_settings_item .switch.off::after {
-	font-family: "Roboto";
-	font-size: 11px;
-	font-weight: bold;
-	color: var(--switch-btn-on-normal-text-color);
-	transition: all 0.6s;
-	position: absolute;
-	opacity: 1;
-	height: 100%;
-	line-height: 100%;
-	display: flex;
-	align-items: center;
-}
-.manage_switch_led .switch.on::after,
-.manage_switch_wifi .switch.on::after,
-.manage_switch_led_night_mode .switch.on::after,
-.poe_settings_item .switch.on::after {
-	left: 4px;
-	content: "ON";
-}
-.manage_switch_led .switch.off::after,
-.manage_switch_wifi .switch.off::after,
-.manage_switch_led_night_mode .switch.off::after,
-.poe_settings_item .switch.off::after {
-	content: "OFF";
-	right: 4px;
-}
-.manage_switch_led .switch.on.hide-text::after,
-.manage_switch_wifi .switch.on.hide-text::after,
-.manage_switch_led_night_mode .switch.on.hide-text::after,
-.poe_settings_item .switch.on.hide-text::after,
-.manage_switch_led .switch.off.hide-text::after,
-.manage_switch_wifi .switch.off.hide-text::after,
-.manage_switch_led_night_mode .switch.off.hide-text::after,
-.poe_settings_item .switch.off.hide-text::after {
-	opacity: 0;
-	transition: opacity 0.6s;
+	background: var(--wrt-switch-track-bg-on);
+	border: 1px solid var(--wrt-switch-track-border-on);
+	border-radius: var(--wrt-switch-radius);
 }
 .manage_switch_led .switch:before,
 .manage_switch_wifi .switch:before,
@@ -530,11 +495,10 @@
 .manage_switch_wifi .switch.on:before,
 .manage_switch_led_night_mode .switch.on:before,
 .poe_settings_item .switch.on:before{
-	background: var(--switch-btn-on-normal-ellipse-fill-color);
-	border-radius: var(--radius-lg);
-	-webkit-transform: translateX(24px);
-	-ms-transform: translateX(24px);
-	transform: translateX(24px);
+	background: var(--wrt-switch-thumb-bg-on);
+	-webkit-transform: translateX(calc(var(--wrt-switch-width) - var(--wrt-switch-thumb-size) - var(--wrt-switch-padding) * 2));
+	-ms-transform: translateX(calc(var(--wrt-switch-width) - var(--wrt-switch-thumb-size) - var(--wrt-switch-padding) * 2));
+	transform: translateX(calc(var(--wrt-switch-width) - var(--wrt-switch-thumb-size) - var(--wrt-switch-padding) * 2));
 }
 .manage_switch_led .switch.off:before,
 .manage_switch_wifi .switch.off:before,
@@ -591,30 +555,7 @@
 	border-bottom: 1px solid var(--wrt-divider-color);
 }
 .managment_icon{
-	background: initial !important;
-	background-color: var(--wrt-btn-icon-color) !important;
-	-webkit-mask-image: url(/images/New_ui/amesh/white_theme/managment_icon.svg) !important;
-	mask-image: url(/images/New_ui/amesh/white_theme/managment_icon.svg) !important;
-	-webkit-mask-repeat: no-repeat !important;
-	mask-repeat: no-repeat !important;
-	-webkit-mask-size: 500% !important;
-	mask-size: 500% !important;
-}
-.managment_icon.reconnect_icon{
-	-webkit-mask-position: 2px -42px !important;
-	mask-position: 2px -42px !important;
-}
-.managment_icon.reboot_icon{
-	-webkit-mask-position: 2px -96px !important;
-	mask-position: 2px -96px !important;
-}
-.managment_icon.trash_icon{
-	-webkit-mask-position: 3px -151px !important;
-	mask-position: 3px -151px !important;
-}
-.managment_icon.preferable_backhaul_icon{
-	-webkit-mask-position: 2px -206px !important;
-	mask-position: 2px -206px !important;
+	background: url(/images/New_ui/amesh/white_theme/managment_icon.svg) no-repeat;
 }
 .preferable_backhaul_text{
 	color: var(--primary-60);
@@ -734,14 +675,9 @@
 	-webkit-mask-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
 	mask-repeat: no-repeat;
 	-webkit-mask-repeat: no-repeat;
-	mask-size: contain;
-	-webkit-mask-size: contain;
+	mask-size: 345px;
+	-webkit-mask-size: 345px;
 	background-color: var(--brand-color);
-}
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
-	background-image: url(/images/New_ui/SDN/white_theme/Notification/wifi_mlo.svg);
-	background-size: 110%;
-	background-position: -1px -2px;
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip{
 	color: var(--wrt-text-secondary);
@@ -753,10 +689,22 @@
 .newOB_list_bg .no_client_hint{
 	color: var(--wrt-text-secondary);
 }
+
+.newOB_container .action_container .btn_container, .manage_function_item .action_container .btn_container {
+	background-color: var(--wrt-btn-primary-bg);
+}
+
+.icon_checkbox.clicked {
+	background-color: var(--wrt-checkbox-checked-bg);
+	border-color: var(--wrt-checkbox-checked-border);
+}
+
 /* icon with wifi-band*/
+.device_connect_icon.wired,
 .client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wired{
-	width: 20px;
-	height: 20px;
+	width: 24px;
+	height: 24px;
+	background-image: none;
 	mask-image: var(--icon-lan);
 	-webkit-mask-image: var(--icon-lan);
 	mask-repeat: no-repeat;
@@ -767,85 +715,142 @@
 	mask-position: center center;
 	-webkit-mask-position: center center;
 }
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g{
-	width: 20px;
-	height: 20px;
-	display: inline-block;
-	/* 以兩層背景作為顏色來源（Text on top → WiFi below） */
-	background-image:
-		linear-gradient(var(--text-primary), var(--text-primary)),
-		linear-gradient(var(--brand-color), var(--brand-color));
-	background-size: 15px 9px, 100% 100%;
-	background-position: 3.4px 12.4px, center center;
-	background-repeat: no-repeat, no-repeat;
-	/* 兩層 mask 對應兩層背景（文字在上、WiFi 在下） */
-	-webkit-mask-image: var(--icon-band-text-2G), var(--icon-wifi);
-	        mask-image: var(--icon-band-text-2G), var(--icon-wifi);
-	-webkit-mask-size: 15px 9px, 100% 100%;
-	        mask-size: 15px 9px, 100% 100%;
-	-webkit-mask-position: 3.4px 12.4px, center center;
-	        mask-position: 3.4px 12.4px, center center;
-	-webkit-mask-repeat: no-repeat, no-repeat;
-	        mask-repeat: no-repeat, no-repeat;
-}
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g{
-	width: 20px;
-	height: 20px;
-	display: inline-block;
-	/* Text on top → WiFi below */
-	background-image:
-		linear-gradient(var(--text-primary), var(--text-primary)),
-		linear-gradient(var(--brand-color), var(--brand-color));
-	background-size: 13px 9px, 100% 100%;
-	background-position: 3.4px 8px, center center;
-	background-repeat: no-repeat, no-repeat;
-	-webkit-mask-image: var(--icon-band-text-5G), var(--icon-wifi);
-	        mask-image: var(--icon-band-text-5G), var(--icon-wifi);
-	-webkit-mask-size: 13px 9px, 100% 100%;
-	        mask-size: 13px 9px, 100% 100%;
-	-webkit-mask-position: 3.4px 10px, center center;
-	        mask-position: 3.4px 10px, center center;
-	-webkit-mask-repeat: no-repeat, no-repeat;
-	        mask-repeat: no-repeat, no-repeat;
-}
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2{
-	background-position-x: -164px;
-}
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g{
-	width: 20px;
-	height: 20px;
-	display: inline-block;
-	/* Text on top → WiFi below */
-	background-image:
-		linear-gradient(var(--text-primary), var(--text-primary)),
-		linear-gradient(var(--brand-color), var(--brand-color));
-	background-size: 13px 9px, 100% 100%;
-	background-position: 3.4px 8px, center center;
-	background-repeat: no-repeat, no-repeat;
-	-webkit-mask-image: var(--icon-band-text-6G), var(--icon-wifi);
-	        mask-image: var(--icon-band-text-6G), var(--icon-wifi);
-	-webkit-mask-size: 13px 9px, 100% 100%;
-	        mask-size: 13px 9px, 100% 100%;
-	-webkit-mask-position: 3.4px 10px, center center;
-	        mask-position: 3.4px 10px, center center;
-	-webkit-mask-repeat: no-repeat, no-repeat;
-	        mask-repeat: no-repeat, no-repeat;
-}
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_1{
-	background-position: 1.5px -33px;
-}
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_2{
-	background-position: -32px -33px;
-}
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.plc{
-	background-position-x: -230px;
-}
+/* Wifi and the band label are painted by two independently masked pseudo-elements.
+   A single element cannot do this: its background layers are rectangles, so the
+   text-primary layer would also recolor whatever part of --icon-wifi it covers.
+   The host must drop the sprite mask and brand background it inherits from the
+   base .client_connect_icon rule - a mask on the host would clip its own
+   pseudo-elements. */
+.device_connect_icon.wl_2g,
+.device_connect_icon.wl_5g,
+.device_connect_icon.wl_5g_1,
+.device_connect_icon.wl_5g_2,
+.device_connect_icon.wl_6g,
+.device_connect_icon.wl_6g_1,
+.device_connect_icon.wl_6g_2,
+.device_connect_icon.mlo,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_1,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_1,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_2,
 .client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo{
-	background-image: url(/images/New_ui/SDN/dark_theme/Notification/wifi_mlo.svg);
-	background-size: 110%;
-	background-position: -1px -2px;
+	position: relative;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	background: none;
+	-webkit-mask: none;
+	        mask: none;
+}
+.device_connect_icon.wl_2g::before,
+.device_connect_icon.wl_2g::after,
+.device_connect_icon.wl_5g::before,
+.device_connect_icon.wl_5g::after,
+.device_connect_icon.wl_5g_1::before,
+.device_connect_icon.wl_5g_1::after,
+.device_connect_icon.wl_5g_2::before,
+.device_connect_icon.wl_5g_2::after,
+.device_connect_icon.wl_6g::before,
+.device_connect_icon.wl_6g::after,
+.device_connect_icon.wl_6g_1::before,
+.device_connect_icon.wl_6g_1::after,
+.device_connect_icon.wl_6g_2::before,
+.device_connect_icon.wl_6g_2::after,
+.device_connect_icon.mlo::before,
+.device_connect_icon.mlo::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_1::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_1::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_1::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_1::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_2::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_2::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo::after{
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+.device_connect_icon.wl_2g::before,
+.device_connect_icon.wl_5g::before,
+.device_connect_icon.wl_5g_1::before,
+.device_connect_icon.wl_5g_2::before,
+.device_connect_icon.wl_6g::before,
+.device_connect_icon.wl_6g_1::before,
+.device_connect_icon.wl_6g_2::before,
+.device_connect_icon.mlo::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_1::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_1::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_2::before,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo::before{
+	background-color: var(--brand-color);
+	-webkit-mask: var(--icon-wifi) center center / 100% 100% no-repeat;
+	        mask: var(--icon-wifi) center center / 100% 100% no-repeat;
 }
 
+.device_connect_icon.wl_2g::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-2G) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-2G) center calc(100% - 3px) / 16px auto no-repeat;
+}
+.device_connect_icon.wl_5g::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-5G) center calc(100% - 3px) / auto 10px no-repeat;
+	        mask: var(--icon-band-text-5G) center calc(100% - 3px) / auto 10px no-repeat;
+}
+.device_connect_icon.wl_6g::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-6G) center calc(100% - 3px) / auto 10px no-repeat;
+	        mask: var(--icon-band-text-6G) center calc(100% - 3px) / auto 10px no-repeat;
+}
+.device_connect_icon.mlo::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.mlo::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-mlo) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-mlo) center calc(100% - 3px) / 16px auto no-repeat;
+}
+.device_connect_icon.wl_5g_1::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_1::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-5G-1) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-5G-1) center calc(100% - 3px) / 16px auto no-repeat;
+}
+.device_connect_icon.wl_5g_2::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-5G-2) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-5G-2) center calc(100% - 3px) / 16px auto no-repeat;
+}
+.device_connect_icon.wl_6g_1::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_1::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-6G-1) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-6G-1) center calc(100% - 3px) / 16px auto no-repeat;
+}
+.device_connect_icon.wl_6g_2::after,
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g_2::after{
+	background-color: var(--text-primary);
+	-webkit-mask: var(--icon-band-text-6G-2) center calc(100% - 3px) / 16px auto no-repeat;
+	        mask: var(--icon-band-text-6G-2) center calc(100% - 3px) / 16px auto no-repeat;
+}
 .popup_hint_bg{
 	background: var(--wrt-popover-bg);
 	border: 1px solid var(--wrt-popover-border);
@@ -1145,13 +1150,10 @@
 	box-shadow: initial;
 }
 .device_info_container .main_info{
-	color: var(--wrt-tab-nav-text-active-color);
+	color: var(--wrt-text-color);
 }
 .device_info_container .sub_info{
 	color: var(--wrt-dropdown-item-color);
-}
-.device_info_container .device_connect_icon{
-	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
 }
 .icon_checkbox{
 	border: 1px solid #818181;

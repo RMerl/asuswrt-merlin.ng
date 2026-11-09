@@ -443,41 +443,24 @@ function obIsRecommededNode(nodeInfo) {
 		"WIFI7": 2,
 		"WIFI8": 3
 	};
-	const cap_generation = (()=>{
-		let result = {"modelName": "", "miscInfo": "", "gen": 0};
-		if(isSupport("wifi8")){
-			result.modelName = "BN";
-			result.miscInfo = "WIFI8";
-			result.gen = modelNameMap["BN"];
-		}
-		else if(isSupport("wifi7")){
-			result.modelName = "BE";
-			result.miscInfo = "WIFI7";
-			result.gen = modelNameMap["BE"];
-		}
-		return result;
-	})();
-	if(cap_generation.gen === 0) return false;
-	const threshold = cap_generation.gen - 1;
 
-	const sortedKeys = Object.keys(modelNameMap).sort((a, b) => modelNameMap[b] - modelNameMap[a]);
-	const modelName = (nodeInfo.model_name || nodeInfo.name || "").toUpperCase();
-	let nodeGen = 0;
-	for(const key of sortedKeys){
-		if(modelName.includes(key)){
-			nodeGen = modelNameMap[key];
+	let matchedKey = null;
+	for (const key in modelNameMap) {
+		const modelName = nodeInfo.model_name || nodeInfo.name;
+		if (modelName && modelName.includes(key) && modelNameMap[key] >= modelNameMap["BN"]) {
+			matchedKey = key;
 			break;
 		}
 	}
+	if (matchedKey) return true;
 
-	if(nodeGen > 0) return nodeGen >= threshold;
-
-	if(nodeInfo.misc_info && nodeInfo.misc_info["3"]){
+	if (nodeInfo.misc_info && nodeInfo.misc_info["3"]) {
 		const misc3 = Number(nodeInfo.misc_info["3"]);
-		const capMiscBit = miscInfoBitMap[cap_generation.miscInfo];
-		if(!isNaN(misc3) && misc3 >= 1 && capMiscBit !== undefined){
+		if (!isNaN(misc3) && misc3 >= 1) {
 			const n = Math.log2(misc3);
-			if(Number.isInteger(n)) return n >= capMiscBit - 1;
+			if (Number.isInteger(n) && n >= miscInfoBitMap["WIFI8"]) {
+				return true;
+			}
 		}
 	}
 	return false;
@@ -2242,10 +2225,10 @@ var isSupport = function(_ptn){
 			matchingResult = false;
 			break;
 		case "VPNCLIENT":
-			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
+			matchingResult = (isSku("US") || isSku("U2") || isSku("U3") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
 			break;
 		case "IPTV":
-			matchingResult = (isSupport("noiptv") || isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("TW")) ? false : true;
+			matchingResult = (isSupport("noiptv") || isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("U3") || isSku("TW")) ? false : true;
 			break;
 		case "ENABLE_IPv6":
 			matchingResult = (isSku("CN") || isSku("GD") || isSku("TC")) ? true : false;

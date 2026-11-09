@@ -337,7 +337,7 @@ kernel_libipsec_esp_handler_t *kernel_libipsec_esp_handler_create()
 	}
 	lib->processor->queue_job(lib->processor,
 			(job_t*)callback_job_create(send_esp, this, NULL,
-										(callback_job_cancel_t)return_false));
+										callback_job_cancel_thread));
 	return &this->public;
 }
 

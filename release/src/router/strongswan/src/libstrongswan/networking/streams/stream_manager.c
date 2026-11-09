@@ -22,6 +22,10 @@
 # include "stream_unix.h"
 # include "stream_service_unix.h"
 #endif
+#ifdef HAVE_LINUX_VM_SOCKETS_H
+# include "stream_vsock.h"
+# include "stream_service_vsock.h"
+#endif
 #ifdef USE_SYSTEMD
 # include "stream_service_systemd.h"
 #endif
@@ -210,6 +214,10 @@ METHOD(stream_manager_t, destroy, void,
 	remove_stream(this, stream_create_unix);
 	remove_service(this, stream_service_create_unix);
 #endif
+#ifdef HAVE_LINUX_VM_SOCKETS_H
+	remove_stream(this, stream_create_vsock);
+	remove_service(this, stream_service_create_vsock);
+#endif
 #ifdef USE_SYSTEMD
 	remove_service(this, stream_service_create_systemd);
 #endif
@@ -247,6 +255,10 @@ stream_manager_t *stream_manager_create()
 #ifndef WIN32
 	add_stream(this, "unix://", stream_create_unix);
 	add_service(this, "unix://", stream_service_create_unix);
+#endif
+#ifdef HAVE_LINUX_VM_SOCKETS_H
+	add_stream(this, "vsock://", stream_create_vsock);
+	add_service(this, "vsock://", stream_service_create_vsock);
 #endif
 #ifdef USE_SYSTEMD
 	add_service(this, "systemd://", stream_service_create_systemd);

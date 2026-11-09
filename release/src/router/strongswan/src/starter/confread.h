@@ -197,7 +197,7 @@ typedef struct starter_config starter_config_t;
 struct starter_config {
 		struct {
 				char     *charondebug;
-				bool     uniqueids;
+				int      uniqueids;
 				bool     cachecrls;
 				strict_t strictcrlpolicy;
 		} setup;

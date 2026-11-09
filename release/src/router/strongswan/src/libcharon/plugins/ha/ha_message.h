@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2024 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -26,12 +27,13 @@
 #include <networking/host.h>
 #include <utils/identification.h>
 #include <sa/ike_sa_id.h>
+#include <crypto/proposal/proposal.h>
 #include <selectors/traffic_selector.h>
 
 /**
  * Protocol version of this implementation
  */
-#define HA_MESSAGE_VERSION 3
+#define HA_MESSAGE_VERSION 5
 
 typedef struct ha_message_t ha_message_t;
 typedef enum ha_message_type_t ha_message_type_t;
@@ -109,8 +111,10 @@ enum ha_message_attribute_t {
 	HA_NONCE_I,
 	/** chunk_t, responders nonce */
 	HA_NONCE_R,
-	/** chunk_t, diffie hellman shared secret */
+	/** chunk_t, KE shared secret */
 	HA_SECRET,
+	/** chunk_t, optional additional KE shared secret(s) */
+	HA_ADD_SECRET,
 	/** chunk_t, SKd of old SA if rekeying */
 	HA_OLD_SKD,
 	/** uint16_t, pseudo random function */
@@ -123,8 +127,10 @@ enum ha_message_attribute_t {
 	HA_ALG_ENCR_LEN,
 	/** uint16_t, integrity protection algorithm */
 	HA_ALG_INTEG,
-	/** uint16_t, DH group */
-	HA_ALG_DH,
+	/** uint16_t, KE method */
+	HA_ALG_KE,
+	/** chunk_t of uint16_t[], optional additional KE methods (IKEv2 only) */
+	HA_ALG_ADD_KES,
 	/** uint8_t, IPsec mode, TUNNEL|TRANSPORT|... */
 	HA_IPSEC_MODE,
 	/** uint8_t, IPComp protocol */
@@ -149,9 +155,9 @@ enum ha_message_attribute_t {
 	HA_ESN,
 	/** uint8_t, IKE version */
 	HA_IKE_VERSION,
-	/** chunk_t, own DH public value */
+	/** chunk_t, own DH public value (IKEv1 only) */
 	HA_LOCAL_DH,
-	/** chunk_t, remote DH public value */
+	/** chunk_t, remote DH public value (IKEv1 only) */
 	HA_REMOTE_DH,
 	/** chunk_t, shared secret for IKEv1 key derivation */
 	HA_PSK,
@@ -196,6 +202,13 @@ struct ha_message_t {
 	 */
 	void (*add_attribute)(ha_message_t *this,
 						  ha_message_attribute_t attribute, ...);
+
+	/**
+	 * Add attributes for key exchange methods in the given proposal.
+	 *
+	 * @param proposal		proposal from which to get key exchange methods
+	 */
+	void (*add_key_exchange_methods)(ha_message_t *this, proposal_t *proposal);
 
 	/**
 	 * Create an enumerator over all attributes in a message.

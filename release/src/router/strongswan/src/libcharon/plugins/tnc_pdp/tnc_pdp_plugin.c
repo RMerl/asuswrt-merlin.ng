@@ -89,7 +89,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *tnc_pdp_plugin_create()
+PLUGIN_DEFINE(tnc_pdp)
 {
 	private_tnc_pdp_plugin_t *this;
 

@@ -82,7 +82,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *kernel_netlink_plugin_create()
+PLUGIN_DEFINE(kernel_netlink)
 {
 	private_kernel_netlink_plugin_t *this;
 

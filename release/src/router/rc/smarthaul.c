@@ -162,7 +162,7 @@ void sh_ipc_receive(void* arg, int sockfd)
 	struct eventHandler *handler = NULL;
 
 	if(eidObj) {
-		EID = atoi(json_object_get_string(eidObj));
+		EID = safe_atoi(json_object_get_string(eidObj));
 		for(handler = &SH_CFG_EVENTS[0]; handler->event_id > 0; handler++)
 		{
 			if (handler->event_id == EID)
@@ -412,7 +412,7 @@ int sh_process_ipc_data(sh_dev_info_t *new_dev, char *data)
         SMARTHAUL_TRACE("pap :%s\n", json_object_to_json_string(pap_bssidObj));
         snprintf(cap_bssid, sizeof(cap_bssid), json_object_get_string(pap_bssidObj));
         ether_atoe(cap_bssid, new_dev->mlo_info.mlo_link_info[cnt].pap_bssid.octet);
-        new_dev->mlo_info.mlo_link_info[cnt].wlc_unit = atoi(key);
+        new_dev->mlo_info.mlo_link_info[cnt].wlc_unit = safe_atoi(key);
         new_dev->mlo_info.mlo_link_info[cnt].link_id = cnt; 
         cnt++;    
     }

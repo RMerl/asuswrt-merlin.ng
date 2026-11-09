@@ -1277,13 +1277,7 @@ apply.wireless = function(){
 			qisPostData[`wl${band}_ssid`] = ($(`#wireless_ssid_${band}`).length) ? $(`#wireless_ssid_${band}`).val() : scProfile.ssid;
 			qisPostData[`wl${band}_wpa_psk`] = ($(`#wireless_key_${band}`).length) ? $(`#wireless_key_${band}`).val() : scProfile.wpa_psk;
 			qisPostData[`wl${band}_crypto`] = "aes";
-			if(isSupport("wifi_mode")){
-				qisPostData[`wl${band}_wifi_mode`] = "bn";
-				qisPostData[`wl${band}_iot_cmpt`] = "disable";
-			}
-			else if(isSupport("wifi7")){
-				qisPostData[`wl${band}_11be`] = "1";
-			}
+			qisPostData[`wl${band}_11be`] = "1";
 			qisPostData[`wl${band}_radio`] = "1";
 			qisPostData[`wl${band}_timesched`] = "0";
 
@@ -1324,16 +1318,9 @@ apply.wireless = function(){
 		}
 
 		if(qisPostData[`wl${band}_auth_mode_x`] == "sae" || qisPostData[`wl${band}_auth_mode_x`] == "psk2sae"){
-			if(isSupport("wifi_mode")) {
-				const wifiModeNvram = httpApi.nvramGet([`wl${band}_crypto`, `wl${band}_wifi_mode`]);
-				const mode = wifiModeNvram[`wl${band}_wifi_mode`];
-				if(mode && ["bn", "be"].includes(mode)) {
-					qisPostData[`wl${band}_crypto`] = "aes";
-				}
-			}
-			else if(isSupport("wifi7")) {
-				const wifi7Nvram = httpApi.nvramGet([`wl${band}_crypto`, `wl${band}_11be`]);
-				if(wifi7Nvram[`wl${band}_11be`] == '1') {
+			const wifi7Nvram = httpApi.nvramGet([`wl${band}_crypto`, `wl${band}_11be`]);
+			if(wifi7Nvram[`wl${band}_11be`]){
+				if(wifi7Nvram[`wl${band}_11be`] == '1'){
 					qisPostData[`wl${band}_crypto`] = "aes";
 				}
 			}
@@ -3369,7 +3356,6 @@ goTo.rpMode = function(){
 };
 
 goTo.wispMode = function(){
-	postDataModel.remove(wispObj);
 	postDataModel.insert(wispObj);
 
 	if(typeof login_mac_str == 'function' && systemVariable.macClone){
@@ -5281,7 +5267,7 @@ goTo.NoWan_AP = function(){
 };
 
 goTo.ResetModem = function(){
-	if(!isSku("US") && !isSku("CA") && !isSku("U2")){
+	if(!isSku("US") && !isSku("CA") && !isSku("U2") && !isSku("U3")){
 		apply.manual();
 		return false;
 	}
@@ -5322,7 +5308,7 @@ goTo.ResetModem = function(){
 };
 
 goTo.ResetModem_AP = function(){
-	if(!isSku("US") && !isSku("CA") && !isSku("U2")){
+	if(!isSku("US") && !isSku("CA") && !isSku("U2") && !isSku("U3")){
 		goTo.apMode();
 		return false;
 	}
@@ -5371,7 +5357,7 @@ goTo.Waiting = function(){
 				goTo.Modem();
 			}
 			else{
-				if(isSku("US") || isSku("CA") || isSku("U2")){
+				if(isSku("US") || isSku("CA") || isSku("U2") || isSku("U3")){
 					httpApi.log("goTo.Waiting", "goTo.ResetModem()", systemVariable.qisSession);
 					goTo.ResetModem();
 				}
@@ -5430,7 +5416,7 @@ goTo.Waiting_AP = function(){
 		if(systemVariable.manualWanSetup) return false;
 		if(check_linkInternet_count > MAX_LinkInternet_Detection){
 			httpApi.log("goTo.Waiting_AP", "check_linkInternet_count > MAX_LinkInternet_Detection", systemVariable.qisSession);
-			if(isSku("US") || isSku("CA") || isSku("U2")){
+			if(isSku("US") || isSku("CA") || isSku("U2") || isSku("U3")){
 				httpApi.log("goTo.Waiting_AP", "goTo.ResetModem_AP()", systemVariable.qisSession);
 				goTo.ResetModem_AP();
 			}
@@ -5889,22 +5875,6 @@ goTo.amassearch = function(){
 		onboardinglist_array.forEach(function(nodeInfo){
 			gen_node_component(nodeInfo);
 		});
-
-		const $onboardingList = $('#onboardinglist');
-		if(isSupport("wifi_mode")){
-			const totalNodes = $onboardingList.find('[data-recommended]').length;
-			const recommendedTrue = $onboardingList.find('[data-recommended="true"]').length;
-			const recommendedFalse = $onboardingList.find('[data-recommended="false"]').length;
-			if (totalNodes === recommendedTrue || totalNodes === recommendedFalse) {
-				$onboardingList.find('[data-recommended]').hide();
-			} else {
-				$onboardingList.find('[data-recommended]').hide();
-				$onboardingList.find('[data-recommended="true"]').show();
-			}
-		}
-		else {
-			$onboardingList.find('[data-recommended]').hide();
-		}
 	}
 	function gen_node_component(nodeInfo){
 		let model_info = {"model_name": nodeInfo.name, "tcode": nodeInfo.tcode, "cobrand": nodeInfo.cobrand, "icon_model_name": "", "cloudModelName": nodeInfo.cloud_model_name};
@@ -5953,14 +5923,6 @@ goTo.amassearch = function(){
 		}
 		else if(systemVariable.modelCloudIcon[cloudModelName])
 			$('#onboardinglist').find('[model_name="' + cloudModelName + '"]').css("background-image", "url(" + systemVariable.modelCloudIcon[cloudModelName] + ")");
-
-		const isrecommendeded = nodeInfo.is_recommended;
-		if (isrecommendeded) {
-			$ob_node_comp.find('[data-recommended]').attr('data-recommended', 'true');
-		}
-		else {
-			$ob_node_comp.find('[data-recommended]').attr('data-recommended', 'false');
-		}
 	}
 };
 
@@ -5991,20 +5953,11 @@ goTo.amasOnboarding = function(){
 	/* init end */
 
 	if((parseInt(systemVariable.onboardingInfo.rssi) < parseInt(get_onboardingstatus.cfg_wifi_quality)) && (systemVariable.onboardingInfo.source != "2")){
-		$("#amasonboarding_page").find("#weak").addClass("text_yellow_italic").show();
+		$("#amasonboarding_page").find("#weak").show();
 		$("#amasonboarding_page").find("#controlBtn_result").show();
 	}
 	else
 		$("#amasonboarding_page").find("#controlBtn_apply").show();
-
-	if(isSupport("wifi_mode")){
-		if(!systemVariable.onboardingInfo?.is_recommended){
-			$("#amasonboarding_page").find("#recommended_hint").show();
-			if($("#amasonboarding_page").find("#weak").css("display") != "none"){
-				$("#amasonboarding_page").find("#weak").removeClass("text_yellow_italic ");
-			}
-		}
-	}
 
 	if($("#amasonboarding_page").find("#weak").css("display") == "none"){
 		systemVariable.authModePostData = {};

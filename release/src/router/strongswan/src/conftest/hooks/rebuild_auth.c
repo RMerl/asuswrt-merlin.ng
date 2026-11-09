@@ -138,7 +138,8 @@ static bool rebuild_auth(private_rebuild_auth_t *this, ike_sa_t *ike_sa,
 	}
 	keymat = (keymat_v2_t*)ike_sa->get_keymat(ike_sa);
 	if (!keymat->get_auth_octets(keymat, FALSE, this->ike_init, this->nonce,
-								 chunk_empty, id, reserved, &octets, NULL))
+								 chunk_empty, chunk_empty, id, reserved,
+								 &octets, NULL))
 	{
 		private->destroy(private);
 		id->destroy(id);

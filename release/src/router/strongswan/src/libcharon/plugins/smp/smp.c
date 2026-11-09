@@ -76,44 +76,45 @@ static void write_bool(xmlTextWriterPtr writer, char *element, bool val)
  */
 static void write_id(xmlTextWriterPtr writer, char *element, identification_t *id)
 {
+	char *type = NULL;
+
 	xmlTextWriterStartElement(writer, element);
 	switch (id->get_type(id))
 	{
-		{
-			char *type;
 
-			while (TRUE)
-			{
-				case ID_ANY:
-					type = "any";
-					break;
-				case ID_IPV4_ADDR:
-					type = "ipv4";
-					break;
-				case ID_IPV6_ADDR:
-					type = "ipv6";
-					break;
-				case ID_FQDN:
-					type = "fqdn";
-					break;
-				case ID_RFC822_ADDR:
-					type = "email";
-					break;
-				case ID_DER_ASN1_DN:
-					type = "asn1dn";
-					break;
-				case ID_DER_ASN1_GN:
-					type = "asn1gn";
-					break;
-			}
-			xmlTextWriterWriteAttribute(writer, "type", type);
-			xmlTextWriterWriteFormatString(writer, "%Y", id);
+		case ID_ANY:
+			type = "any";
 			break;
-		}
+		case ID_IPV4_ADDR:
+			type = "ipv4";
+			break;
+		case ID_IPV6_ADDR:
+			type = "ipv6";
+			break;
+		case ID_FQDN:
+			type = "fqdn";
+			break;
+		case ID_RFC822_ADDR:
+			type = "email";
+			break;
+		case ID_DER_ASN1_DN:
+			type = "asn1dn";
+			break;
+		case ID_DER_ASN1_GN:
+			type = "asn1gn";
+			break;
 		default:
-			/* TODO: base64 keyid */
-			xmlTextWriterWriteAttribute(writer, "type", "keyid");
 			break;
+	}
+	if (type)
+	{
+		xmlTextWriterWriteAttribute(writer, "type", type);
+		xmlTextWriterWriteFormatString(writer, "%Y", id);
+	}
+	else
+	{
+		/* TODO: base64 keyid */
+		xmlTextWriterWriteAttribute(writer, "type", "keyid");
 	}
 	xmlTextWriterEndElement(writer);
 }
@@ -329,12 +330,10 @@ static void request_query_config(xmlTextReaderPtr reader, xmlTextWriterPtr write
 			xmlTextWriterStartElement(writer, "childconfig");
 			xmlTextWriterWriteElement(writer, "name",
 									  child_cfg->get_name(child_cfg));
-			list = child_cfg->get_traffic_selectors(child_cfg, TRUE, NULL,
-													NULL, FALSE);
+			list = child_cfg->get_traffic_selectors(child_cfg, TRUE, NULL);
 			write_networks(writer, "local", list);
 			list->destroy_offset(list, offsetof(traffic_selector_t, destroy));
-			list = child_cfg->get_traffic_selectors(child_cfg, FALSE, NULL,
-													NULL, FALSE);
+			list = child_cfg->get_traffic_selectors(child_cfg, FALSE, NULL);
 			write_networks(writer, "remote", list);
 			list->destroy_offset(list, offsetof(traffic_selector_t, destroy));
 			xmlTextWriterEndElement(writer);
@@ -653,7 +652,7 @@ static job_requeue_t process(int *fdp)
 	if (reader == NULL)
 	{
 		DBG1(DBG_CFG, "opening SMP XML reader failed");
-		return JOB_REQUEUE_FAIR;;
+		return JOB_REQUEUE_FAIR;
 	}
 
 	/* read message type and id */
@@ -681,7 +680,7 @@ static job_requeue_t process(int *fdp)
 		}
 	}
 	xmlFreeTextReader(reader);
-	return JOB_REQUEUE_FAIR;;
+	return JOB_REQUEUE_FAIR;
 }
 
 /**
@@ -703,13 +702,13 @@ static job_requeue_t dispatch(private_smp_t *this)
 	{
 		DBG1(DBG_CFG, "accepting SMP XML socket failed: %s", strerror(errno));
 		sleep(1);
-		return JOB_REQUEUE_FAIR;;
+		return JOB_REQUEUE_FAIR;
 	}
 
 	fdp = malloc_thing(int);
 	*fdp = fd;
 	job = callback_job_create((callback_job_cb_t)process, fdp, free,
-							  (callback_job_cancel_t)return_false);
+							  callback_job_cancel_thread);
 	lib->processor->queue_job(lib->processor, (job_t*)job);
 
 	return JOB_REQUEUE_DIRECT;
@@ -742,7 +741,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * Described in header file
  */
-plugin_t *smp_plugin_create()
+PLUGIN_DEFINE(smp)
 {
 	struct sockaddr_un unix_addr = { AF_UNIX, IPSEC_PIDDIR "/charon.xml"};
 	private_smp_t *this;
@@ -799,7 +798,7 @@ plugin_t *smp_plugin_create()
 
 	lib->processor->queue_job(lib->processor,
 		(job_t*)callback_job_create_with_prio((callback_job_cb_t)dispatch, this,
-				NULL, (callback_job_cancel_t)return_false, JOB_PRIO_CRITICAL));
+				NULL, callback_job_cancel_thread, JOB_PRIO_CRITICAL));
 
 	return &this->public.plugin;
 }

@@ -260,7 +260,7 @@ static int read_sysfs_int(const char *sysfs_path, const char *attr_name, int *va
 			printf("Failed to read chip name\n");
 			ret = -1;
 		} else {
-			*val = atoi(result);
+			*val = safe_atoi(result);
 		}
 		fclose(fp);
 	}
@@ -387,13 +387,13 @@ pressure_main(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, "hcr:swy:r:m:t:", options, &option_index)) != -1) {
 		switch (opt) {
 			case 'r':
-				frequency = atoi(optarg);
+				frequency = safe_atoi(optarg);
 				break;
 			case 'm':
-				mode = atoi(optarg);
+				mode = safe_atoi(optarg);
 				break;
 			case 't':
-				timeout = atoi(optarg);
+				timeout = safe_atoi(optarg);
 				if (timeout < 2 || timeout > 20) {
 					_dprintf("timeout invaild \n");
 					return 1;

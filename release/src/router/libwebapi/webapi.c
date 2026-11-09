@@ -475,19 +475,26 @@ int upload_server_ipsec_cert_cgi()
 				"svrKey.pem",
 				NULL
 			};
-			snprintf(cmd, sizeof(cmd), "tar -xzf %s -C %s", IPSEC_UPLOAD_FILE, IPSEC_UPLOAD_FLODER);
-			system(cmd);
+			snprintf(cmd, sizeof(cmd), "tar -tzvf %s 2>/dev/null | grep -q ' -> '", IPSEC_UPLOAD_FILE);
+			if (system(cmd) == 0) {
+				/* archive contains a symlink/hardlink entry; a legitimate IPsec cert
+				 * archive never has one, reject to avoid extraction escaping IPSEC_UPLOAD_FLODER */
+				logmessage("httpd", "upload_server_ipsec_cert_cgi: reject archive containing symlink/hardlink entry");
+			} else {
+				snprintf(cmd, sizeof(cmd), "tar -xzf %s -C %s", IPSEC_UPLOAD_FILE, IPSEC_UPLOAD_FLODER);
+				system(cmd);
 
-			for (i = 0; i < ARRAY_SIZE(lists) && lists[i] != NULL; ++i) {
-				memset(file_path, 0, sizeof(file_path));
-				snprintf(file_path, sizeof(file_path), "%s/%s", IPSEC_UPLOAD_FLODER, lists[i]);
-				if(check_if_file_exist(file_path)) {
-					eval("mv", "-f", file_path, JFFS_CA_FILES);
+				for (i = 0; i < ARRAY_SIZE(lists) && lists[i] != NULL; ++i) {
+					memset(file_path, 0, sizeof(file_path));
+					snprintf(file_path, sizeof(file_path), "%s/%s", IPSEC_UPLOAD_FLODER, lists[i]);
+					if(check_if_file_exist(file_path)) {
+						eval("mv", "-f", file_path, JFFS_CA_FILES);
+					}
 				}
+				ret = HTTP_OK;
+				notify_rc("ipsec_restart");
+				sync_profile_update_time(2);
 			}
-			ret = HTTP_OK;
-			notify_rc("ipsec_restart");
-			sync_profile_update_time(2);
 		}
 	}
 
@@ -694,7 +701,7 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 	|| defined(RTCONFIG_BCMLEDG) \
 	|| defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) \
 	|| defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(TUFAX6000) \
-	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(GTBN98_PRO) || defined(GTBN96X) || defined(GTBN98) || defined(GTBN96)
+	|| defined(GS7) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GTBE96_AI)
 	{"AuraRGB", "light_effect/light_effect.html", "<rt><gt>light_effect/light_effect_rog.css<white>light_effect/light_effect_white.css"},
 	{"AuraRGB_preview", "light_effect/light_effect_pre.html", "<rt>"},
 #endif
@@ -715,20 +722,22 @@ struct RWD_MAPPING_TABLE rwd_mapping_t[] =
 #ifdef RTCONFIG_DASHBOARD
 	{"Dashboard", "index.html?page=dashboard", "<white>css/business-white.css"},
 #ifdef RTCONFIG_GTBOOSTER
-    {"AiProtection_ARK_MALS", "index.html?page=aiprotection&view=ark_mals", "<white>css/business-white.css"},
-    {"AiProtection_ARK_ADBLOCK", "index.html?page=aiprotection&view=ark_adblock", "<white>css/business-white.css"},
-    {"AiProtection_ARK_TRACKER", "index.html?page=aiprotection&view=ark_tracker", "<white>css/business-white.css"},
+    {"AiProtection_ARK_MALS", "index.html?page=aiprotection&view=ark_mals", "<UI4>pages/aiprotection.html"},
+    {"AiProtection_ARK_ADBLOCK", "index.html?page=aiprotection&view=ark_adblock", "<UI4>pages/aiprotection.html"},
+    {"AiProtection_ARK_TRACKER", "index.html?page=aiprotection&view=ark_tracker", "<UI4>pages/aiprotection.html"},
+    {"AiProtection_ARK_IDS", "index.html?page=aiprotection&view=ark_ids", "<UI4>pages/aiprotection.html"},
 #if defined(RTCONFIG_BWDPI) || defined(RTCONFIG_HNS)
-    {"AiProtection_DPI_MALS", "index.html?page=aiprotection&view=dpi_mals", "<white>css/business-white.css"},
-    {"AiProtection_DPI_VP", "index.html?page=aiprotection&view=dpi_vp", "<white>css/business-white.css"},
-    {"AiProtection_DPI_CC", "index.html?page=aiprotection&view=dpi_cc", "<white>css/business-white.css"},
+    {"AiProtection_DPI_MALS", "index.html?page=aiprotection&view=dpi_mals", "<UI4>pages/aiprotection.html"},
+    {"AiProtection_DPI_VP", "index.html?page=aiprotection&view=dpi_vp", "<UI4>pages/aiprotection.html"},
+    {"AiProtection_DPI_CC", "index.html?page=aiprotection&view=dpi_cc", "<UI4>pages/aiprotection.html"},
 #endif
 #endif
 #else
 #ifdef RTCONFIG_GTBOOSTER
-    {"AiProtection_ARK_MALS", "pages/aiprotection_info.html?view=ark_mals", "<white>css/business-white.css"},
-    {"AiProtection_ARK_ADBLOCK", "pages/aiprotection_info.html?view=ark_adblock", "<white>css/business-white.css"},
-    {"AiProtection_ARK_TRACKER", "pages/aiprotection_info.html?view=ark_tracker", "<white>css/business-white.css"},
+    {"AiProtection_ARK_MALS", "pages/aiprotection_info.html?view=ark_mals", "<UI3>pages/aiprotection_info.html"},
+    {"AiProtection_ARK_ADBLOCK", "pages/aiprotection_info.html?view=ark_adblock", "<UI3>pages/aiprotection_info.html"},
+    {"AiProtection_ARK_TRACKER", "pages/aiprotection_info.html?view=ark_tracker", "<UI3>pages/aiprotection_info.html"},
+    {"AiProtection_ARK_IDS", "pages/aiprotection_info.html?view=ark_ids", "<UI3>pages/aiprotection_info.html"},
 #endif
 #endif
 #ifdef RTCONFIG_UI4
@@ -1192,7 +1201,6 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"TUF_3600_V2", "TUF GAMING 小旋风 V2 WiFi7", "CN"},
 	{"GS-BE7200X", "ROG 魔盒 X", "CN"},
 	{"GT-BE96_AI", "ROG 八爪鱼7 AI", "CN"},
-	{"GS7_Pro_Max", "ROG 魔盒 Pro Max", "CN"},
 	{NULL, NULL, NULL}
 };
 

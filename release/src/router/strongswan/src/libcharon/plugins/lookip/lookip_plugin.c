@@ -89,7 +89,7 @@ METHOD(plugin_t, destroy, void,
 /**
  * Plugin constructor
  */
-plugin_t *lookip_plugin_create()
+PLUGIN_DEFINE(lookip)
 {
 	private_lookip_plugin_t *this;
 

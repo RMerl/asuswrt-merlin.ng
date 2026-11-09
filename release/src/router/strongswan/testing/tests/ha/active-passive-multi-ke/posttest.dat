@@ -1,0 +1,22 @@
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::ip xfrm policy flush::no output expected::NO
+moon::ip xfrm state flush::no output expected::NO
+moon::systemctl kill -s SIGKILL strongswan::no output expected::NO
+moon::cd /etc/swanctl; rm rsa/marsKey.pem x509/marsCert.pem
+alice::cd /etc/swanctl; rm rsa/marsKey.pem x509/marsCert.pem
+moon::iptables-restore < /etc/iptables.flush
+alice::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush
+moon::ip addr del 192.168.0.5/24 dev eth0
+moon::ip addr del 10.1.0.5/16 dev eth1
+alice::ip addr del 192.168.0.5/24 dev eth1
+alice::ip addr del 10.1.0.5/16 dev eth0
+alice::ifdown eth1
+venus::ip route del default via 10.1.0.5 dev eth0
+venus::ip route add default via 10.1.0.1 dev eth0
+alice::sed -i s/Restart=no/Restart=on-abnormal/ /lib/systemd/system/strongswan.service
+alice::systemctl daemon-reload
+moon::sed -i s/Restart=no/Restart=on-abnormal/ /lib/systemd/system/strongswan.service
+moon::systemctl daemon-reload

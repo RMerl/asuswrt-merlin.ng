@@ -30,7 +30,7 @@ static unsigned char tftpfile[128];
 static unsigned char cfgfile[128];
 static int sw_mode = 0;
 
-char *timezonelist[] = {"UTC12", "UTC11", "UTC10", "NAST9DST", "PST8DST","MST7DST_1", "MST7_2", "MST7_3", "CST6DST_1", "CST6DST_2",
+char *timezonelist[] = {"UTC12", "UTC11", "UTC10", "NAST9DST", "PST8DST", "PST7", "MST7DST_1", "MST7_2", "MST7_3", "MST6", "CST6DST_1", "CST6DST_2",
 			"CST6_3", "CST6_3_1", "UTC6", "EST5DST", "UTC5_1", "UTC5_2", "AST4DST", "UTC4_1", "UTC4DST_2", "NST3.30DST",
 			"EBST3DST_1", "UTC3", "NORO2DST", "UTC2DST_1", "EUT1DST", "UTC1", "GMT0", "GMT0DST_1", "GMT0DST_2", "UTC-1DST_1",
 			"UTC-1_1_1", "UTC-1_2", "UTC-1_2_1", "MET-1DST", "MET-1DST_1", "MEZ-1DST", "MEZ-1DST_1", "UTC-1_3", "UTC-2DST",

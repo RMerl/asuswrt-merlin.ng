@@ -76,7 +76,7 @@ function genHeader(filter = ["logo", "router-assistant", "model-name", /*"time",
         code += `
             <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasConfiguration" aria-labelledby="offcanvasConfigurationLabel">
               <div class="offcanvas-header">
-                <h5 id="offcanvasConfigurationLabel"><#Configuration#></h5>
+                <h5 id="offcanvasConfigurationLabel">Configuration</h5>
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
               </div>
               <hr class="m-0">
@@ -91,16 +91,16 @@ function genHeader(filter = ["logo", "router-assistant", "model-name", /*"time",
                     </button>
                 </div>
                 ${theme === 'rog' ? `
-                <p class="config-title"><#Configuration_theme#></p>
+                <p class="config-title">Theme</p>
                 <div role="group" class="config-toggle-button-group-root" aria-labelledby="config-style">
                     <button class="config-toggle-button config-toggle-button-group-first" tabindex="0" type="button" value="normal" aria-pressed="false" aria-label="Normal" data-ga-event-category="style" data-ga-event-action="normal">
-                        <i role="icon" class="icon-size-24 icon-theme-normal"></i> <#AiMesh_Conn_Quality_Normal#>
+                        <i role="icon" class="icon-size-24 icon-theme-normal"></i> Normal
                     </button>
                     <button class="config-toggle-button config-toggle-button-group-last selected" tabindex="0" type="button" value="fancy" aria-pressed="true" aria-label="Fancy" data-ga-event-category="style" data-ga-event-action="fancy">
-                        <i role="icon" class="icon-size-24 icon-theme-fancy"></i> <#Configuration_fancy_theme#>
+                        <i role="icon" class="icon-size-24 icon-theme-fancy"></i> Fancy
                     </button>
                 </div>` : ``}
-                ${(filter.includes("language"))? `<p class="config-title"><#PASS_LANG#></p>${genLanguageSelect()}`: ``}               
+                ${(filter.includes("language"))? `<p class="config-title">Language</p>${genLanguageSelect()}`: ``}               
               </div>
               <div class="offcanvas-footer border-top p-3 d-flex justify-content-around">
                 ${(filter.includes("logout")) ? genLogout() : ``}
@@ -232,7 +232,7 @@ function genHeader(filter = ["logo", "router-assistant", "model-name", /*"time",
 function genRouterAssistant() {
     let code = "";
 	var searchIconClass = isSupport("ai_board_slm") ? "icon-AiBoard" : "icon-search";
-	var searchText = isSupport("ai_board_slm") ? `<#SLM_Ask#>` : `<#CTL_search#>`;
+	var searchText = isSupport("ai_board_slm") ? "Ask Router Assistant..." : "<#CTL_search#>";
 	
     code += `
         <div role="router-assistant" class="router-assistant-container flex-grow-1 mx-3" style="position: relative; display: flex; justify-content: center;z-index: 999;">
@@ -313,14 +313,13 @@ function genLogoModelName(filter = ["logo", "model-name", "merlin-logo"/*, "time
 				<a href="https://www.asuswrt-merlin.net/" target="_blank" rel="noreferrer"><img src="images/merlin-logo-dark.png" style="border: 0;padding-right:8px;"></a>
 			</div>`:``}
 			${filter.includes('time')?`
-			<div role="time-banner" class="d-none px-2 py-1 d-lg-flex flex-row" onclick="goToSystem()">
-				<div class="ps-1 banner-title d-flex flex-column me-2">
-					<#General_x_SystemTime_itemname#>
-					<small class="banner-time-meridiem">${system.time.weekday}</small>
-				</div>
-				<div class="font-weight-bold banner-time my-auto" id="sys_time">
+			<div role="time-banner" class="d-none px-2 py-1 d-lg-flex flex-row align-items-center" onclick="goToSystem()">
+				<div role="icon" class="icon-clock-outline icon-size-20 banner-time-icon me-2"></div>
+				<div class="banner-title me-2"><#General_x_SystemTime_itemname#></div>
+				<div class="font-weight-bold banner-time me-2" id="sys_time">
 					<span>${system.time.current}</span>
 				</div>
+				<small class="banner-time-meridiem">${system.time.weekday}</small>
 			</div>`:``}
 			
 		</div>	
@@ -693,7 +692,7 @@ if(system.currentOPMode.id != "RT"){
 
 	if(system.currentOPMode.id != "AP"){
 		menuList = menuList.filter(function(item, index, array){
-			return (item.url != "aimesh");
+			return (item.url != "aimesh") && (item.url != "sdn");
 		});
 	}
 }
@@ -899,11 +898,13 @@ function genMidHeader() {
 function genTimeBanner() {
 	let code = "";
 	code += `
-		<div role="time-banner" class="mx-2 my-1 px-2 py-1">
-			<div class="ps-1 banner-title"><#General_x_SystemTime_itemname#></div>
-			<div class="font-weight-bold banner-time" id="sys_time">
+		<div role="time-banner" class="mx-2 my-1 px-2 py-1 d-flex flex-row align-items-center">
+			<div role="icon" class="icon-clock-outline icon-size-20 banner-time-icon me-2"></div>
+			<div class="banner-title me-2"><#General_x_SystemTime_itemname#></div>
+			<div class="font-weight-bold banner-time me-2" id="sys_time">
 				<span>${system.time.current}</span>
 			</div>
+			<small class="banner-time-meridiem">${system.time.weekday}</small>
 		</div>
 	`;
 
@@ -1016,15 +1017,17 @@ function checkAiBoardInOtaOrRescue() {
     const _nvram = httpApi.nvramGet(['ai_prog_status', 'ai_fw_path', 'ai_rescue_ts']);
     const {ai_prog_status, ai_fw_path, ai_rescue_ts} = _nvram;
 
-    let in_three_hours = false;
+    let in_time_window = false;
     if (ai_rescue_ts) {
         const currentTime = Math.floor(Date.now() / 1000);
         const timeDiff = currentTime - parseInt(ai_rescue_ts, 10);
-        in_three_hours = timeDiff < 3 * 60 * 60; // 3 hours in seconds
+        // Use 3 hours (10800 seconds) for rescue, 1 hour (3600 seconds) for Live Update
+        const timeThreshold = ai_fw_path === "firmware/aisom_reset.swu" ? 3 * 60 * 60 : 1 * 60 * 60;
+        in_time_window = timeDiff >= 0 && timeDiff < timeThreshold;
     }
     const excludeStatuses = ["failed", "DOCKER_DONE", "DONE", ""];
     const includePaths = ["firmware/aisom_reset.swu", "firmware/aisom.swu"];
-    return !excludeStatuses.includes(ai_prog_status) && includePaths.includes(ai_fw_path) && in_three_hours;
+    return !excludeStatuses.includes(ai_prog_status) && includePaths.includes(ai_fw_path) && in_time_window;
 }
 
 function checkAiBoardStatusAndRedirect() {
@@ -1107,6 +1110,13 @@ function pageRedirect(target, lastPage = "") {
 
 var ntCallbackEvent = [];
 function checkNotification(){
+	// 韌體燒錄進度 overlay（settings.html 的 #settings-upgrade-overlay）顯示期間
+	// 暫停通知輪詢（webs_state_flag / get_cfg_clientlist / get_newob_onboardinglist），
+	// 只保留排程，overlay 移除後自動恢復。
+	if(document.getElementById('settings-upgrade-overlay')){
+		setTimeout(checkNotification, 3000);
+		return;
+	}
 	import('/js/dashboard-nt.js')
 		.then(({ getNotifications }) => {
 			var notification = getNotifications();

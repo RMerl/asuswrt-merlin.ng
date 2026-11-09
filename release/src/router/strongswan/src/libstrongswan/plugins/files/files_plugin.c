@@ -59,7 +59,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *files_plugin_create()
+PLUGIN_DEFINE(files)
 {
 	private_files_plugin_t *this;
 

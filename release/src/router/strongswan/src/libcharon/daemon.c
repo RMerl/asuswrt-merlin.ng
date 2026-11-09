@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2017 Tobias Brunner
+ * Copyright (C) 2006-2025 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
@@ -106,9 +106,9 @@ struct private_daemon_t {
 	mutex_t *mutex;
 
 	/**
-	 * Integrity check failed?
+	 * Initialization (e.g. integrity check) failed?
 	 */
-	bool integrity_failed;
+	bool init_failed;
 
 	/**
 	 * Number of times we have been initialized
@@ -190,6 +190,30 @@ void register_custom_logger(char *name,
 	{
 		fprintf(stderr, "failed to register custom logger, please increase "
 				"MAX_CUSTOM_LOGGERS");
+	}
+}
+
+#define MAX_LIBCHARON_INIT_FUNCTIONS 10
+
+/**
+ * Static array for init function registration using __attribute__((constructor))
+ */
+static library_init_t init_functions[MAX_LIBCHARON_INIT_FUNCTIONS];
+static int init_function_count;
+
+/**
+ * Described in header
+ */
+void libcharon_init_register(library_init_t init)
+{
+	if (init_function_count < MAX_LIBCHARON_INIT_FUNCTIONS - 1)
+	{
+		init_functions[init_function_count++] = init;
+	}
+	else
+	{
+		fprintf(stderr, "failed to register init function, please increase "
+				"MAX_LIBCHARON_INIT_FUNCTIONS");
 	}
 }
 
@@ -368,7 +392,7 @@ static logger_entry_t *get_logger_entry(char *target, logger_type_t type,
 												get_syslog_facility(target));
 				break;
 #else
-				free(entry);
+				logger_entry_destroy(entry);
 				return NULL;
 #endif /* HAVE_SYSLOG */
 			case CUSTOM_LOGGER:
@@ -378,7 +402,7 @@ static logger_entry_t *get_logger_entry(char *target, logger_type_t type,
 				}
 				if (!entry->logger.custom)
 				{
-					free(entry);
+					logger_entry_destroy(entry);
 					return NULL;
 				}
 				break;
@@ -491,25 +515,37 @@ static void load_file_logger(private_daemon_t *this, char *section,
 							 linked_list_t *current_loggers)
 {
 	file_logger_t *file_logger;
+	file_logger_options_t options;
 	debug_t group;
 	level_t def;
-	bool add_ms, ike_name, log_level, flush_line, append;
-	char *time_format, *filename;
+	bool flush_line, append;
+	char *filename;
 
-	time_format = lib->settings->get_str(lib->settings,
-						"%s.filelog.%s.time_format", NULL, lib->ns, section);
-	add_ms = lib->settings->get_bool(lib->settings,
-						"%s.filelog.%s.time_add_ms", FALSE, lib->ns, section);
-	ike_name = lib->settings->get_bool(lib->settings,
-						"%s.filelog.%s.ike_name", FALSE, lib->ns, section);
-	log_level = lib->settings->get_bool(lib->settings,
-						"%s.filelog.%s.log_level", FALSE, lib->ns, section);
+	options.time_format = lib->settings->get_str(lib->settings,
+					"%s.filelog.%s.time_format", NULL, lib->ns, section);
+	options.time_precision = file_logger_time_precision_parse(
+				lib->settings->get_str(lib->settings,
+					"%s.filelog.%s.time_precision", NULL, lib->ns, section));
+	/* handle legacy option */
+	if (!options.time_precision &&
+		lib->settings->get_bool(lib->settings,
+					"%s.filelog.%s.time_add_ms", FALSE, lib->ns, section))
+	{
+		options.time_precision = FILE_LOGGER_TIME_PRECISION_MS;
+	}
+	options.ike_name = lib->settings->get_bool(lib->settings,
+					"%s.filelog.%s.ike_name", FALSE, lib->ns, section);
+	options.log_level = lib->settings->get_bool(lib->settings,
+					"%s.filelog.%s.log_level", FALSE, lib->ns, section);
+	options.json = lib->settings->get_bool(lib->settings,
+					"%s.filelog.%s.json", FALSE, lib->ns, section);
+
 	flush_line = lib->settings->get_bool(lib->settings,
-						"%s.filelog.%s.flush_line", FALSE, lib->ns, section);
+					"%s.filelog.%s.flush_line", FALSE, lib->ns, section);
 	append = lib->settings->get_bool(lib->settings,
-						"%s.filelog.%s.append", TRUE, lib->ns, section);
+					"%s.filelog.%s.append", TRUE, lib->ns, section);
 	filename = lib->settings->get_str(lib->settings,
-						"%s.filelog.%s.path", section, lib->ns, section);
+					"%s.filelog.%s.path", section, lib->ns, section);
 
 	file_logger = add_file_logger(this, filename, current_loggers);
 	if (!file_logger)
@@ -517,8 +553,7 @@ static void load_file_logger(private_daemon_t *this, char *section,
 		return;
 	}
 
-	file_logger->set_options(file_logger, time_format, add_ms, ike_name,
-							 log_level);
+	file_logger->set_options(file_logger, &options);
 	file_logger->open(file_logger, flush_line, append);
 
 	def = lib->settings->get_int(lib->settings, "%s.filelog.%s.default", 1,
@@ -652,7 +687,7 @@ METHOD(daemon_t, set_default_loggers, void,
 	{
 		if (!this->levels)
 		{
-			this->levels = calloc(sizeof(level_t), DBG_MAX);
+			this->levels = calloc(DBG_MAX, sizeof(level_t));
 		}
 		for (group = 0; group < DBG_MAX; group++)
 		{
@@ -969,6 +1004,7 @@ private_daemon_t *daemon_create()
 void libcharon_deinit()
 {
 	private_daemon_t *this = (private_daemon_t*)charon;
+	int i;
 
 	if (!this || !ref_put(&this->ref))
 	{	/* have more users */
@@ -976,6 +1012,11 @@ void libcharon_deinit()
 	}
 
 	run_scripts(this, "stop");
+
+	for (i = 0; i < init_function_count; ++i)
+	{
+		init_functions[i](FALSE);
+	}
 
 	destroy(this);
 	charon = NULL;
@@ -987,12 +1028,13 @@ void libcharon_deinit()
 bool libcharon_init()
 {
 	private_daemon_t *this;
+	int i;
 
 	if (charon)
 	{	/* already initialized, increase refcount */
 		this = (private_daemon_t*)charon;
 		ref_get(&this->ref);
-		return !this->integrity_failed;
+		return !this->init_failed;
 	}
 
 	this = daemon_create();
@@ -1008,7 +1050,15 @@ bool libcharon_init()
 		!lib->integrity->check(lib->integrity, "libcharon", libcharon_init))
 	{
 		dbg(DBG_DMN, 1, "integrity check of libcharon failed");
-		this->integrity_failed = TRUE;
+		this->init_failed = TRUE;
 	}
-	return !this->integrity_failed;
+
+	for (i = 0; i < init_function_count; ++i)
+	{
+		if (!init_functions[i](TRUE))
+		{
+			this->init_failed = TRUE;
+		}
+	}
+	return !this->init_failed;
 }

@@ -7,11 +7,8 @@
 }
 .card-header {
     font-size: 14px;
-    /* font-weight: bolder; */
-    text-transform: uppercase;
+    font-weight: bolder;
     background-color: transparent;
-    border-bottom: none;
-    color: var(--wrt-card-title-color);
 }
 .chart-client-value {
     color: var(--wrt-card-text-color);

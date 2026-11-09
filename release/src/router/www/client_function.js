@@ -499,11 +499,9 @@ function genClientList(){
 			clientList[thisClientMacAddr].wtfast = parseInt(thisClient.wtfast);
 			clientList[thisClientMacAddr].internetMode = thisClient.internetMode;
 			clientList[thisClientMacAddr].internetState = thisClient.internetState;
-			if(isSupport("stainfo")) {
-				clientList[thisClientMacAddr].curTx = (thisClient.curTx == "") ? "": thisClient.curTx;
-				clientList[thisClientMacAddr].curRx = (thisClient.curRx == "") ? "": thisClient.curRx;
-				clientList[thisClientMacAddr].wlConnectTime = thisClient.wlConnectTime;
-			}
+			clientList[thisClientMacAddr].curTx = (thisClient.curTx == "") ? "": thisClient.curTx;
+			clientList[thisClientMacAddr].curRx = (thisClient.curRx == "") ? "": thisClient.curRx;
+			clientList[thisClientMacAddr].wlConnectTime = thisClient.wlConnectTime;
 
 			if(isSupport("amas")) {
 				if(thisClient.amesh_isRe != undefined) {
@@ -1094,13 +1092,11 @@ function popClientListEditTable(event) {
 					connectModeTip = "<#Radio#>: <#PASS_score4#>\n";
 					break;
 			}
-			if(isSupport("stainfo")) {
-				if(clientInfo.curTx != "")
-					connectModeTip += "Tx Rate: " + clientInfo.curTx + "\n"; /*untranslated*/
-				if(clientInfo.curRx != "")
-					connectModeTip += "Rx Rate: " + clientInfo.curRx + "\n"; /*untranslated*/
-				connectModeTip += "<#Access_Time#>: " + clientInfo.wlConnectTime + "";
-			}
+			if(clientInfo.curTx != "")
+				connectModeTip += "Tx Rate: " + clientInfo.curTx + "\n"; /*untranslated*/
+			if(clientInfo.curRx != "")
+				connectModeTip += "Rx Rate: " + clientInfo.curRx + "\n"; /*untranslated*/
+			connectModeTip += "<#Access_Time#>: " + clientInfo.wlConnectTime + "";
 		}
 
 		if(sw_mode != 4){
@@ -3472,7 +3468,7 @@ function drawClientListBlock(objID) {
 				let txRate = "-";
 				let rxRate = "-";
 				let accessTime = "-";
-				if (isSupport("stainfo") && !(isSwMode('mb') || isSwMode('ew'))) {
+				if (!(isSwMode('mb') || isSwMode('ew'))) {
 					if (clientlist_sort[j].isWL != 0) {
 						txRate = (clientlist_sort[j].curTx == "") ? "-" : clientlist_sort[j].curTx;
 						rxRate = (clientlist_sort[j].curRx == "") ? "-" : clientlist_sort[j].curRx;
@@ -4048,6 +4044,36 @@ function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode,
 		if(document.getElementById(_pullArrowID) != null)
 			document.getElementById(_pullArrowID).style.display = "";
 	}
+
+	observeDropdownForWrapper(_containerID);
+}
+
+// Under settingsWindow the absolute dropdown doesn't grow .content, so the
+// resize protocol clips it. Observe the dropdown and post its bottom on expand.
+var _wrapperResizeObservers = {};
+function observeDropdownForWrapper(_containerID) {
+	if(!top.webWrapper || typeof ResizeObserver !== "function") return;
+	var dropdown = document.getElementById(_containerID);
+	if(!dropdown) return;
+	// Re-observe rebuilt containers; disconnect the stale observer first.
+	if(dropdown.dataset.wrapperResizeObserved === "1") return;
+	if(_wrapperResizeObservers[_containerID]) {
+		_wrapperResizeObservers[_containerID].disconnect();
+	}
+	dropdown.dataset.wrapperResizeObserved = "1";
+	var content = document.querySelector('.content');
+	var observer = new ResizeObserver(function(){
+		var naturalHeight = content ? content.getBoundingClientRect().height : document.body.scrollHeight;
+		var targetHeight = naturalHeight;
+		if(dropdown.offsetHeight > 0 || dropdown.offsetWidth > 0){
+			var scrollTop = window.pageYOffset || document.documentElement.scrollTop || 0;
+			var dropdownBottom = dropdown.getBoundingClientRect().bottom + scrollTop;
+			targetHeight = Math.max(dropdownBottom + 10, naturalHeight);
+		}
+		window.parent.postMessage({ type: 'resize', height: targetHeight }, '*');
+	});
+	observer.observe(dropdown);
+	_wrapperResizeObservers[_containerID] = observer;
 }
 
 function redirectTimeScheduling(_mac) {

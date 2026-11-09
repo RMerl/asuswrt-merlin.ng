@@ -27,7 +27,7 @@ HOSTSDIR=$DIR/../hosts
 [ -f $HOSTDIR ] || die "Hosts directory $HOSTSDIR not found"
 running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
 
-check_commands partprobe qemu-img qemu-nbd
+check_commands blockdev qemu-img qemu-nbd
 
 load_qemu_nbd
 
@@ -37,14 +37,19 @@ mkdir -p $LOOPDIR
 # just to be sure
 do_on_exit qemu-nbd -d $NBDEV
 do_on_exit umount $LOOPDIR
+do_on_exit umount $LOOPDIR/proc
 
 for host in $STRONGSWANHOSTS
 do
 	log_action "Creating guest image for $host"
 	execute "qemu-img create -b $ROOTIMG -f $IMGEXT -F $IMGEXT $IMGDIR/$host.$IMGEXT" 0
 	execute "qemu-nbd -c $NBDEV $IMGDIR/$host.$IMGEXT" 0
-	partprobe $NBDEV
+	# wait for disk to become ready with newer QEMU versions
+	sleep 1
+	blockdev --rereadpt $NBDEV
 	execute "mount $NBDPARTITION $LOOPDIR" 0
+	execute "mount -t proc none $LOOPDIR/proc" 0
+	execute "mv $LOOPDIR/usr/local/sbin/ipsec $LOOPDIR/usr/local/sbin/ipsec.orig" 0
 	execute "cp -rf $HOSTSDIR/default/* $LOOPDIR" 0
 	execute "cp -rf $HOSTSDIR/${host}/etc $LOOPDIR" 0
 	execute_chroot "ldconfig" 0
@@ -74,24 +79,14 @@ do
 		execute_chroot "dnssec-signzone -K /etc/bind -o org. /etc/bind/db.org" 0
 		execute_chroot "dnssec-signzone -K /etc/bind -o . /etc/bind/db.root" 0
 
-		# on bullseye and newer, enabling via bind9 doesn't work, while
-		# disabling does, so use named here. on the other hand, older releases
-		# like buster don't have named service files
-		SERVICES="apache2 slapd"
-		case "$BASEIMGSUITE" in
-		buster)
-			SERVICES="$SERVICES bind9"
-			;;
-		*)
-			SERVICES="$SERVICES named"
-			;;
-		esac
+		SERVICES="apache2 slapd named"
 		for service in $SERVICES
 		do
 			execute_chroot "systemctl enable $service" 0
 		done
 	fi
 	sync
+	execute "umount -l $LOOPDIR/proc" 0
 	execute "umount -l $LOOPDIR" 0
 	execute "qemu-nbd -d $NBDEV" 0
 	log_status 0

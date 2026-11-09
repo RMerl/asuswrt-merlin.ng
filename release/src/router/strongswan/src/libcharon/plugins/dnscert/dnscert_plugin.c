@@ -148,7 +148,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *dnscert_plugin_create()
+PLUGIN_DEFINE(dnscert)
 {
 	private_dnscert_plugin_t *this;
 

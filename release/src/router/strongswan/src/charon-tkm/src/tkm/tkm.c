@@ -83,9 +83,10 @@ bool tkm_init()
 	}
 
 	/* get limits from tkm */
-	if (ike_tkm_limits(&max_requests, &limits[TKM_CTX_NONCE], &limits[TKM_CTX_DH],
+	if (ike_tkm_limits(&max_requests, &limits[TKM_CTX_NONCE], &limits[TKM_CTX_KE],
 					   &limits[TKM_CTX_CC], &limits[TKM_CTX_AE],
-					   &limits[TKM_CTX_ISA], &limits[TKM_CTX_ESA]) != TKM_OK)
+					   &limits[TKM_CTX_ISA], &limits[TKM_CTX_ESA],
+					   &limits[TKM_CTX_BLOB]) != TKM_OK)
 	{
 		ees_server_finalize();
 		tkmlib_final();

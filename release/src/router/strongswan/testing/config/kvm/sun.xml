@@ -1,9 +1,9 @@
 <domain type='kvm'>
   <name>sun</name>
   <uuid>35341843-346c-a63a-786b-9df0fd5e6264</uuid>
-  <memory unit='MiB'>144</memory>
-  <currentMemory unit='MiB'>144</currentMemory>
-  <vcpu placement='static'>1</vcpu>
+  <memory unit='MiB'>150</memory>
+  <currentMemory unit='MiB'>150</currentMemory>
+  <vcpu placement='static'>2</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>
 	<kernel>/var/run/kvm-swan-kernel</kernel>

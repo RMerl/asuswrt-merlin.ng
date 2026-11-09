@@ -112,7 +112,7 @@ METHOD(plugin_t, destroy, void,
 /*
  * see header file
  */
-plugin_t *aesni_plugin_create()
+PLUGIN_DEFINE(aesni)
 {
 	private_aesni_plugin_t *this;
 

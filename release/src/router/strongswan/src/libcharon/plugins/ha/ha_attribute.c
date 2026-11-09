@@ -381,7 +381,7 @@ ha_attribute_t *ha_attribute_create(ha_kernel_t *kernel, ha_segments_t *segments
 			.provider = {
 				.acquire_address = _acquire_address,
 				.release_address = _release_address,
-				.create_attribute_enumerator = enumerator_create_empty,
+				.create_attribute_enumerator = (void*)enumerator_create_empty,
 			},
 			.reserve = _reserve,
 			.destroy = _destroy,

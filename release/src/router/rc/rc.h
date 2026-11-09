@@ -384,10 +384,6 @@ do {					\
 #define DSL_WAN_PTM_IF	"ptm0"
 #endif
 #define STB_BR_IF		"br101"
-#define MSWAN_IF_PREFIX     "wan"
-#define MSWAN_BR_PREFIX     "br-wan"
-#define MSWAN_V_PREFIX      "vwan"
-#define MSWAN_P_PREFIX      "pwan"
 
 #ifdef RTCONFIG_DSL
 #define DSL_DIAG_DIR       "asus_diagnostic"
@@ -1129,13 +1125,13 @@ extern int bcm_cled_ctrl_single_white(int rgb, int cled_mode);
 extern int bcm_cled_ctrl_single_led(int rgb, int cled_mode, int brightness);
 #endif
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(GTBN98_PRO) || defined(GTBN96X) || defined(GTBN98) || defined(GTBN96)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI)
 extern void setLEDGroupOn(void);
 extern void setLEDGroupOff(void);
 extern void cled_set(int gpio, uint32_t config0, uint32_t config1, uint32_t config2, uint32_t config3);
 extern void LEDGroupReset(int mode);
 #endif
-#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI) || defined(GT7)
 extern int vlan4094_enabled();
 #endif
 extern void activateLANLed();
@@ -1254,7 +1250,6 @@ typedef struct {
 	int vid;
 	int dot1p;
 	int total_config;
-	int total_vlan;
 	char base_ifname[IFNAMSIZ];
 	int base_wan_unit;
 	int mcast;
@@ -1268,14 +1263,10 @@ extern void clean_mswan_vitf(int wan_unit);
 extern void set_mswan_vitf(MSWAN_PARAM *p);
 extern void update_iptv_ifname(int wan_base_unit);
 extern char* get_mswan_ifname(int wan_unit, char* buf, size_t len);
-#ifdef RTCONFIG_MSWAN_GENERIC
-extern void config_mswan_br_rule(void);
-#endif
 #ifdef RTCONFIG_HND_ROUTER
 extern int is_wan_port_ext_switch(int base_unit);
 extern void config_mswan_ext_switch_vlan_add(MSWAN_PARAM *p);
 extern void config_mswan_ext_switch_vlan_del(int wan_unit);
-extern void config_extwan(void);
 #endif
 #endif
 
@@ -1548,14 +1539,8 @@ extern void restore_defaults_wifi(int all);
 extern void clean_vlan_ifnames(void);
 extern int fixdmgfw_main(int argc, char *argv[]);
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING)
-extern void init_onboarding_vif_flag(void);
 extern void set_onboarding_vif_security(void);
 extern int set_onboarding_vif_bss_enabled(int unit, int subunit);
-#ifdef RTCONFIG_AMAS_5G_ONBOARDING
-extern void set_onboarding_vif_bss_enabled_by_unit(int unit);
-extern void set_onboarding_vif_ifnames();
-extern void init_obvif_subunit();
-#endif
 #endif
 extern int get_urand_num(int range);
 extern void force_free_caches();
@@ -1590,6 +1575,7 @@ extern void adjust_merlin_config();
 extern void adjust_url_urlelist();
 extern void adjust_ddns_config();
 extern void adjust_access_restrict_config();
+extern void adjust_dns_ping_list();
 #if defined(RTCONFIG_VPN_FUSION)
 extern void adjust_vpnc_config(void);
 #endif
@@ -2082,9 +2068,6 @@ extern int poeInit_main(int argc, char *argv[]);
 #ifdef RTCONFIG_CONNTRACK
 extern int pctime_main(int argc, char *argv[]);
 #endif
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_WISP)
-extern int wlcmon_main(int argc, char *argv[]);
-#endif
 extern int watchdog02_main(int argc, char *argv[]);
 #ifdef SW_DEVLED
 extern int sw_devled_main(int argc, char *argv[]);
@@ -2128,10 +2111,10 @@ extern int send_arpreq(void);
 extern int psta_monitor_main(int argc, char *argv[]);
 #endif
 // ledg.c
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 extern int ledg_main(int argc, char *argv[]);
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 extern int ledbtn_main(int argc, char *argv[]);
 #endif
 #ifdef GTAX6000
@@ -2140,10 +2123,10 @@ extern int antled_main(int argc, char *argv[]);
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE58U) || defined(TUFBE3600) || defined(RTBE58U_V2) || defined(TUFBE3600_V2) || defined(RTBE55) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 extern int rtkmonitor_main(int argc, char *argv[]);
 #endif
-#ifdef RTCONFIG_MXL_826XX
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 extern int mxlmonitor_main(int argc, char *argv[]);
 #endif
-#if defined(GT7) || defined(GS7_PRO_MAX)
+#if defined(GT7)
 extern int ext84991_main(int argc, char *argv[]);
 #endif
 #if defined(RTBE92U)
@@ -2428,7 +2411,7 @@ extern int mount_cifs_main(int argc, char *argv[]);
 static inline void start_cifs(void) {};
 static inline void stop_cifs(void) {};
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GS7_PRO_MAX) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(GTBE96) || defined(GTBE19000) || defined(GTBE19000AI) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7) || defined(GTBE96_AI) || defined(RTCONFIG_AURALED)
 extern int start_ledg(void);
 extern int stop_ledg(void);
 #endif
@@ -2436,7 +2419,7 @@ extern int stop_ledg(void);
 extern int start_rtkmonitor(void);
 extern int stop_rtkmonitor(void);
 #endif
-#ifdef RTCONFIG_MXL_826XX
+#if defined(RTBE82M) || defined(GSBE18000) || defined(GSBE12000) || defined(GS7_PRO) || defined(GT7)
 extern int start_mxlmonitor(void);
 extern int stop_mxlmonitor(void);
 #endif
@@ -2536,11 +2519,6 @@ extern void mtwanduck_update_profile();
 extern int pressure_main(int argc, char *argv[]);
 #endif
 
-// cmp-pressure.c
-#ifdef RTCONFIG_PRESSURE_SENSOR_CMP201
-extern int cmp_pressure_main(int argc, char *argv[]);
-#endif
-
 #ifdef RTCONFIG_SMARTHAUL
 extern int smarthaul_main();
 #endif
@@ -2595,6 +2573,24 @@ void free_usb_devices(usb_device_info_t **device_list);
 #endif
 
 // dsl_fb.c
+
+#ifdef RTCONFIG_DBLOG
+enum {
+	DBLOG_STATE_INIT = 0
+	,DBLOG_STATE_RUN = 1
+	,DBLOG_STATE_REBOOT = 2
+	,DBLOG_STATE_PAUSE = 3
+	,DBLOG_STATE_STOP = 4
+	,DBLOG_STATE_FINISH = 5
+	,DBLOG_STATE_SENDMAIL_SUCCESS
+	,DBLOG_STATE_SENDMAIL_FAIL_SMTP
+	,DBLOG_STATE_SENDMAIL_FAIL_DISK_SPACE
+	,DBLOG_STATE_SENDMAIL_FAIL_OTHER
+	,DBLOG_STATE_ERR_USB
+	,DBLOG_STATE_ERR_OTHERS
+}; // You should sync it with dblog/daemon/dblog.h
+#endif /* RTCONFIG_DBLOG */
+
 extern unsigned long readFileSize( char *filepath );
 #ifdef RTCONFIG_AHS
 #define AHS_HWSW_ST_JFFS_FILE "ahs_hwsw_status.txt"
@@ -2726,6 +2722,7 @@ extern int ce_dad_check(int unit);
 extern int s46_ntt_hgw(int unit);
 extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
 extern int is_v6addr(const char *input);
+extern int switch_v6_mode(int unit, int mode);
 extern int get_s46_prefer(int unit);
 extern char *get_AFTR_addr(const char *host, char *ip, size_t iplen);
 extern char *get_s46_ra(int unit);
@@ -3353,10 +3350,19 @@ extern void stop_gu_service(int status);
 extern void start_gu_service();
 #endif
 
+#if defined(RTCONFIG_GTBOOSTER)
+extern int rsasign_sigArk_check_main(int argc, char *argv[]);
+extern int ark_sig_update_and_rsa_check();
+#endif
+
 //speedtest.c
 extern int speedtest_main(int argc, char **argv);
 extern void wan_bandwidth_detect(void);
 extern int speedtest();
+
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
+extern int ookla_quota_mon_main(int argc, char *argv[]);
+#endif
 
 #if defined(RTCONFIG_HNS)
 extern int hns_main(int argc, char **argv);
@@ -3561,7 +3567,6 @@ extern void apg_destory_vlan_for_lan(void);
 #define INIT_APG_CHK_MWL_SECURITY   0x0008
 #define INIT_APG_CHK_MAX_MTLAN      0x0010
 #define INIT_APG_FIX_MLO_DWB_BHFH   0x0020
-#define INIT_APG_FIX_WIFI_MODE		0x0040
 extern unsigned int init_apg(void);
 extern int check_SDN_MAX_VIF(void);
 #endif
@@ -4265,7 +4270,7 @@ int nvsw_get_info(unsigned char idx, char *comment_buf, int comment_len, unsigne
 int nvsw_statuslog_clear(void);
 int nvsw_cmd(int argc, char **argv);
 #endif
-#if defined(BQ16) || defined(BQ16_PRO) || defined(BN12)
+#if defined(BQ16) || defined(BQ16_PRO)
 extern int wl_defer_conf_main(int argc, char *argv[]);
 #endif
 
@@ -4273,12 +4278,6 @@ extern int wl_defer_conf_main(int argc, char *argv[]);
 extern int csi_monitor_main(int argc, char *argv[]);
 extern void stop_csi_monitor();
 extern void start_csi_monitor();
-#endif
-
-#if defined(WIFI8_SDK_20251126) || defined(WIFI8_SDK_20260204) || defined(WIFI8_SDK_20260402)
-#define WL_BSS_INFO_SDK_VER wl_bss_info_v109_1_t
-#else
-#define WL_BSS_INFO_SDK_VER wl_bss_info_107_t
 #endif
 
 #ifdef RTCONFIG_CISCAN_MONITOR

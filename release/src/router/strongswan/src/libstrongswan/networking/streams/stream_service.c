@@ -221,11 +221,15 @@ static bool watch(private_stream_service_t *this, int fd, watcher_event_t event)
 
 		lib->processor->queue_job(lib->processor,
 			(job_t*)callback_job_create_with_prio((void*)accept_async, data,
-				(void*)destroy_async_data, (callback_job_cancel_t)return_false,
+				(void*)destroy_async_data, callback_job_cancel_thread,
 				this->prio));
 	}
 	else
 	{
+		if (data->fd != -1)
+		{
+			close(data->fd);
+		}
 		free(data);
 	}
 	return keep;

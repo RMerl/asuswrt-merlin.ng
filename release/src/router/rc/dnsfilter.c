@@ -192,7 +192,7 @@ void dnsfilter_settings(FILE *fp) {
 			int unit;
 			nvram_safe_get_r("vpn_serverx_start", nvservers, sizeof(nvservers));
 			foreach_44(word, nvservers, next) {
-				unit = atoi(word);
+				unit = safe_atoi(word);
 				fprintf(fp, "-A PREROUTING -i tun%d -p udp -m udp --dport 53 -j DNSFILTER\n"
 					"-A PREROUTING -i tun%d -p tcp -m tcp --dport 53 -j DNSFILTER\n"
 					, OVPN_SERVER_BASE + unit, OVPN_SERVER_BASE + unit);
@@ -244,7 +244,7 @@ void dnsfilter_settings(FILE *fp) {
 				continue;
 			if (!*mac || !*mode || !ether_atoe(mac, ea))
 				continue;
-			dnsmode = atoi(mode);
+			dnsmode = safe_atoi(mode);
 			if (dnsmode == DNSF_SRV_UNFILTERED) {
 				fprintf(fp, "-A DNSFILTER -m mac --mac-source %s -j RETURN\n",
 					mac);
@@ -411,7 +411,7 @@ void dnsfilter6_settings_mangle(FILE *fp) {
 	while (nv && (rule = strsep(&nvp, "<")) != NULL) {
 		if (vstrsep(rule, ">", &name, &mac, &mode) != 3)
 			continue;
-		dnsmode = atoi(mode);
+		dnsmode = safe_atoi(mode);
 		if (!*mac || !ether_atoe(mac, ea))
 			continue;
 		if (dnsmode == DNSF_SRV_UNFILTERED) {
@@ -546,11 +546,11 @@ void dnsfilter_setup_dnsmasq(FILE *fp) {
 	while (nv && (b = strsep(&nvp, "<")) != NULL) {
 		if (vstrsep(b, ">", &name, &mac, &mode, &enable) < 3)
 			continue;
-		if (enable && atoi(enable) == 0)
+		if (enable && safe_atoi(enable) == 0)
 			continue;
 		if (!*mac || !*mode || !ether_atoe(mac, ea))
 			continue;
-		dnsmode = atoi(mode);
+		dnsmode = safe_atoi(mode);
 		/* Skip unfiltered, default, or non-IPv6 capable levels */
 		if ((dnsmode == DNSF_SRV_UNFILTERED) || (dnsmode == defmode) || (get_dns_filter(AF_INET6, dnsmode, &dnsfsrv) == 0))
 			continue;
@@ -631,7 +631,7 @@ void dnsfilter_dot_rules(FILE *fp)
 			continue;
 		if (!*mac || !*mode || !ether_atoe(mac, ea))
 			continue;
-		dnsmode = atoi(mode);
+		dnsmode = safe_atoi(mode);
 		if (dnsmode == DNSF_SRV_UNFILTERED)
 			fprintf(fp, "-A DNSFILTER_DOT -m mac --mac-source %s -j RETURN\n", mac);
 		else if (dnsfilter_support_dot(dnsmode) && get_dns_filter(AF_INET, dnsmode, &dnsfsrv) > 0 )	// Filter supports DOT

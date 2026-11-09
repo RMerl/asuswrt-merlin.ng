@@ -831,7 +831,8 @@ static int _init_mxl371x()
 		//restore moca firmware file
 		snprintf(path, sizeof(path), "%s/%s", workdir, fwdir);
 		mkdir_if_none(path);
-		safe_do_system("cp -af %s %s", fwpath, path);
+		snprintf(cmd, sizeof(cmd), "cp -af %s %s", fwpath, path);
+		system(cmd);
 
 		//confirm prelink key
 		amas_bdlkey = nvram_safe_get("amas_bdlkey");
@@ -1547,19 +1548,24 @@ int create_moca_log(const char *log_path)
 	//remove exist file
 	unlink(log_path);
 	f_write_string(log_path, "<clnkstat -d>\n", FW_APPEND, 0);
-	safe_do_system_to_file(log_path, 1, "clnkstat -d");
+	snprintf(cmd, sizeof(cmd), "clnkstat -d >> %s", log_path);
+	system(cmd);
 
 	f_write_string(log_path, "\n\n<clnkstat>\n", FW_APPEND, 0);
-	safe_do_system_to_file(log_path, 1, "clnkstat");
+	snprintf(cmd, sizeof(cmd), "clnkstat >> %s", log_path);
+	system(cmd);
 
 	f_write_string(log_path, "\n\n<clnkstat -p>\n", FW_APPEND, 0);
-	safe_do_system_to_file(log_path, 1, "clnkstat -p");
+	snprintf(cmd, sizeof(cmd), "clnkstat -p >> %s", log_path);
+	system(cmd);
 
 	f_write_string(log_path, "\n\n<clnkstat -n>\n", FW_APPEND, 0);
-	safe_do_system_to_file(log_path, 1, "clnkstat -n");
+	snprintf(cmd, sizeof(cmd), "clnkstat -n >> %s", log_path);
+	system(cmd);
 
 	f_write_string(log_path, "\n\n<clnkstat --fmr2>\n", FW_APPEND, 0);
-	safe_do_system_to_file(log_path, 1, "clnkstat --fmr2");
+	snprintf(cmd, sizeof(cmd), "clnkstat --fmr2 >> %s", log_path);
+	system(cmd);
 
 	return 0;
 }

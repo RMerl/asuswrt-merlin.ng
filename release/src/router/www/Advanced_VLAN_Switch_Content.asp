@@ -704,7 +704,7 @@ var get_VLAN_Status;
 function initial() {
 	show_menu();
 	$("#vlan_desc2").html(str_vlan_desc2);
-	var vlan_switch_array = { "VLAN" : ["VLAN", "Advanced_VLAN_Switch_Content.asp"], "Profile" : ["<#vpnc_profile#>", "Advanced_VLAN_Profile_Content.asp"]};
+	var vlan_switch_array = { "VLAN" : ["VLAN", "Advanced_VLAN_Switch_Content.asp"], "Profile" : ["Profile", "Advanced_VLAN_Profile_Content.asp"]};
 	$('#divSwitchMenu').html(gen_switch_menu(vlan_switch_array, "VLAN"));
 
 	get_VLAN_Status = update_VLAN_ports();
@@ -759,7 +759,6 @@ function gen_VLAN_port_table(port_profile) {
 
 			role_str = (i == 0) ? "<#Device_type_02_RT#>" : "<#AiMesh_Node#>";
 			model_str = port_profile[mesh_mac[i]].model;
-			model_str = model_str.replace(/_/g, " ");
 			macaddr_str = port_profile[mesh_mac[i]].macAddress;
 			loc_val = port_profile[mesh_mac[i]].location;
 			specific_location = aimesh_location_arr.filter(function(item, index, _array){
@@ -821,12 +820,8 @@ function gen_VLAN_port_table(port_profile) {
 				.append($("<span>").addClass("info-model").text(model_str))
 				.append($("<span>").addClass("info-sep").text("|"))
 				.append($("<span>").addClass("info-item").text(macaddr_str))
-				.append(
-					loc_str !== macaddr_str
-						? $("<span>").addClass("info-sep").text("|")
-                  			.add($("<span>").addClass("info-item").text(loc_str))
-            			: null
-    			)
+				.append($("<span>").addClass("info-sep").text("|"))
+				.append($("<span>").addClass("info-item").text(loc_str))
 				.appendTo($port_table_thead);
 
 			//table content : status
@@ -841,7 +836,7 @@ function gen_VLAN_port_table(port_profile) {
 			//table content : profile
 			var $port_table_tr_profile = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
 			var $port_table_th_profile = $("<div>").addClass("vlan-th").appendTo($port_table_tr_profile);
-			$port_table_th_profile.html(`<#VALN_Profile#>`);
+			$port_table_th_profile.html("SDN (VLAN) Profile"); /* Untranslated */
 
 			//Note: modify array
 			var wan_aggregation_array = [];
@@ -1063,7 +1058,7 @@ function gen_VLAN_port_table(port_profile) {
 					//table content : profile
 					$port_table_tr_profile[r] = $("<div>").addClass("vlan-row").appendTo($port_table_bg);
 					var $port_table_th_profile = $("<div>").addClass("vlan-th").appendTo($port_table_tr_profile[r]);
-					$port_table_th_profile.html(`<#VALN_Profile#>`);
+					$port_table_th_profile.html("SDN (VLAN) Profile");
 
 					col2_count[r]=0;
 					port_info.forEach(([key, value]) => {

@@ -7,6 +7,7 @@ Asuswrt-Merlin 3006.xxx Changelog
              Linux kernel, and a switch from TrendMicro's BWDPI
              to GTBooster's Ark engine. (RT-BE92U)
   - UPDATED: Merged with GPL 102_39302 for the RT-BE58_GO.
+  - UPDATED: Merged with GPL 102_40771 for the GT-BE19000AI.
   - UPDATED: Merged with GPL 102_40585 for other wifi 7 models.
   - UPDATED: OpenSSL to 3.5.9.
   - UPDATED: OpenVPN to 2.7.9.

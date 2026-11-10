@@ -5274,7 +5274,8 @@ start_ddns(char *caller, int isAidisk)
 #endif
 
 	snprintf(ipv6_service_cur, sizeof(ipv6_service_cur), "%s", nvram_safe_get(ipv6_nvname_by_unit("ipv6_service", unit)));
-	logmessage(log_title, "current ipv6_service: %s | old ipv6_service: %s\n", ipv6_service_cur, nvram_safe_get("ddns_ipv6_service_old"));
+	if (nvram_get_int("ddns_debug"))
+		logmessage(log_title, "current ipv6_service: %s | old ipv6_service: %s\n", ipv6_service_cur, nvram_safe_get("ddns_ipv6_service_old"));
 
 	if (inet_addr_(wan_ip) == inet_addr_(nvram_safe_get("ddns_ipaddr")) &&
 		strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) == 0 &&
@@ -5285,7 +5286,8 @@ start_ddns(char *caller, int isAidisk)
 #endif
 		&& f_exists(cache_path) /* Not forced to restart DDNS */
 	) {
-		logmessage(log_title, "IP address, server and hostname have not changed since the last update.");
+		if (nvram_get_int("ddns_debug"))
+			logmessage(log_title, "IP address, server and hostname have not changed since the last update.");
 		if (!isAidisk) {
 			nvram_set("ddns_updated", "1");
 			/* for UI display */

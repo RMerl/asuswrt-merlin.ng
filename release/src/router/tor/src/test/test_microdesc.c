@@ -639,7 +639,7 @@ test_md_parse(void *arg)
                                                   NULL, 1, SAVED_NOWHERE,
                                                   invalid);
   tt_int_op(smartlist_len(mds), OP_EQ, 14);
-  tt_int_op(smartlist_len(invalid), OP_EQ, 4);
+  tt_int_op(smartlist_len(invalid), OP_EQ, 3);
 
   test_memeq_hex(smartlist_get(invalid,0),
                  "5d76bf1c6614e885614a1e0ad074e1ab"
@@ -650,9 +650,8 @@ test_md_parse(void *arg)
   test_memeq_hex(smartlist_get(invalid,2),
                  "20d1576c5ab11bbcff0dedb1db4a3cfc"
                  "c8bc8dd839d8cbfef92d00a1a7d7b294");
-  test_memeq_hex(smartlist_get(invalid,3),
-                 "074770f394c73dbde7b44412e9692add"
-                 "691a478d4727f9804b77646c95420a96");
+  /* There is a 4th md, but since it gets parsed with annotations in its
+     prefix, we can't record its digest. */
 
   /* Spot-check the valid ones. */
   const microdesc_t *md = smartlist_get(mds, 5);

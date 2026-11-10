@@ -15,18 +15,9 @@
 #include "orconfig.h"
 #include "lib/cc/torint.h"
 
-#ifndef SYS_SECCOMP
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
 #endif
-
-/**
- * Used by SIGSYS signal handler to check if the signal was issued due to a
- * seccomp2 filter violation.
- */
-#define SYS_SECCOMP 1
-
-#endif /* !defined(SYS_SECCOMP) */
 
 #if defined(HAVE_SECCOMP_H) && defined(__linux__)
 #define USE_LIBSECCOMP
@@ -45,6 +36,15 @@ typedef struct sandbox_cfg_elem_t sandbox_cfg_t;
 #include <sys/ucontext.h>
 #include <seccomp.h>
 #include <netdb.h>
+
+#if !defined(HAVE_SYS_SECCOMP) && !defined(SYS_SECCOMP)
+/**
+ * Used by SIGSYS signal handler to check if the signal was issued due to a
+ * seccomp2 filter violation. Only provide this fallback when using libseccomp,
+ * since configure skips the declaration probe when seccomp is disabled.
+ */
+#define SYS_SECCOMP 1
+#endif /* !defined(HAVE_SYS_SECCOMP) && !defined(SYS_SECCOMP) */
 
 #define PARAM_PTR 0
 #define PARAM_NUM 1

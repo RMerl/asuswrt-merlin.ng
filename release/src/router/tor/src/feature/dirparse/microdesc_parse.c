@@ -317,13 +317,21 @@ microdescs_parse_from_string(const char *s, const char *eos,
   result = smartlist_new();
 
   while (s < eos) {
-   bool okay = false;
-
+    bool okay = false;
     start_of_next_microdesc = find_start_of_next_microdesc(s, eos);
     if (!start_of_next_microdesc)
       start_of_next_microdesc = eos;
 
+    // Keep track of whether 's' begins with 'onion-key'.  If it doesn't,
+    // then the digest that we get in microdesc_extract_body will not
+    // cover everything that we check with microdesc_parse_fields,
+    // and so we can't record the digest as invalid,
+    // since any source of invalidity may come from elsewhere.
+    bool digest_covers_whole_input =
+      fast_memeqstart(s, start_of_next_microdesc - s, "onion-key");
+
     md = tor_malloc_zero(sizeof(microdesc_t));
+
     uint8_t md_digest[DIGEST256_LEN];
     {
       const bool body_not_found =
@@ -346,7 +354,7 @@ microdescs_parse_from_string(const char *s, const char *eos,
     }
 
   next:
-    if (! okay && invalid_digests_out) {
+    if (! okay && invalid_digests_out && digest_covers_whole_input) {
       smartlist_add(invalid_digests_out,
                     tor_memdup(md_digest, DIGEST256_LEN));
     }

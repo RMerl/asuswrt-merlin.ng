@@ -18,7 +18,7 @@ static int
 consensus_split_lines_(smartlist_t *out, const char *s, memarea_t *area)
 {
   size_t len = strlen(s);
-  return consensus_split_lines(out, s, len, area);
+  return consensus_split_lines(out, s, len, area, SIZE_MAX);
 }
 
 static int
@@ -103,6 +103,31 @@ test_consdiff_smartlist_slice_string_pos(void *arg)
  done:
   tor_free(sls);
   smartlist_free(sl);
+  memarea_drop_all(area);
+}
+
+static void
+test_consdiff_split_max_lines(void *arg)
+{
+  smartlist_t *sl1 = smartlist_new();
+  smartlist_t *sl2 = smartlist_new();
+  memarea_t *area = memarea_new();
+  const char *s = "a\nb\nc\n"; // a 3-line string.
+  size_t s_len = strlen(s);
+  int r;
+
+  (void)arg;
+  // Should succeed, 3 >= 3.
+  r = consensus_split_lines(sl1, s, s_len, area, 3);
+  tt_int_op(r, OP_EQ, 0);
+
+  // Should fail, 2 < 3.
+  r = consensus_split_lines(sl2, s, s_len, area, 2);
+  tt_int_op(r, OP_EQ, -1);
+
+ done:
+  smartlist_free(sl1);
+  smartlist_free(sl2);
   memarea_drop_all(area);
 }
 
@@ -1201,6 +1226,7 @@ test_consdiff_apply_diff(void *arg)
 struct testcase_t consdiff_tests[] = {
   CONSDIFF_LEGACY(smartlist_slice),
   CONSDIFF_LEGACY(smartlist_slice_string_pos),
+  CONSDIFF_LEGACY(split_max_lines),
   CONSDIFF_LEGACY(lcs_lengths),
   CONSDIFF_LEGACY(trim_slices),
   CONSDIFF_LEGACY(set_changed),

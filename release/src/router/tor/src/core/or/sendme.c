@@ -66,7 +66,8 @@ get_accept_min_version(void)
  * The caller gets ownership of the returned digest thus is responsible for
  * freeing the memory. */
 static uint8_t *
-pop_first_cell_digest(const circuit_t *circ)
+pop_first_cell_digest(const circuit_t *circ,
+                      const crypt_path_t *layer)
 {
   uint8_t *circ_digest;
 
@@ -74,6 +75,11 @@ pop_first_cell_digest(const circuit_t *circ)
 
   if (circ->sendme_last_digests == NULL ||
       smartlist_len(circ->sendme_last_digests) == 0) {
+    return NULL;
+  }
+  if (layer != circ->sendme_digest_hop) {
+    log_fn(LOG_PROTOCOL_WARN, LD_GENERAL,
+           "Received a SENDME from an unexpected circuit hop");
     return NULL;
   }
 
@@ -239,7 +245,7 @@ sendme_is_valid(circuit_t *circ,
   /* Pop the first element that was added (FIFO). We do that regardless of the
    * version so we don't accumulate on the circuit if v0 is used by the other
    * end point. */
-  circ_digest = pop_first_cell_digest(circ);
+  circ_digest = pop_first_cell_digest(circ, layer_hint);
   if (circ_digest == NULL) {
     /* We shouldn't have received a SENDME if we have no digests. Log at
      * protocol warning because it can be tricked by sending many SENDMEs
@@ -361,7 +367,8 @@ send_circuit_level_sendme(circuit_t *circ, crypt_path_t *layer_hint,
 static void
 record_cell_digest_on_circ(circuit_t *circ,
                            const uint8_t *sendme_tag,
-                           size_t tag_len)
+                           size_t tag_len,
+                           const crypt_path_t *layer)
 {
   tor_assert(circ);
   tor_assert(sendme_tag);
@@ -369,6 +376,15 @@ record_cell_digest_on_circ(circuit_t *circ,
   /* Add the digest to the last seen list in the circuit. */
   if (circ->sendme_last_digests == NULL) {
     circ->sendme_last_digests = smartlist_new();
+    /* The first time that we remember a sendme digest,
+     * we record which layer we will expect to get sendme digests from.
+     * In theory it would be better to have a per-hop list, but
+     * see comments on sendme_last_digestss. */
+    circ->sendme_digest_hop = layer;
+  } else if (BUG(circ->sendme_digest_hop != layer)) {
+    /* If we expect a sendme digest from a hop that we didn't
+     * expect, that's an error: C tor can't handle that. */
+    return;
   }
   // We always allocate the largest possible tag here to
   // make sure we don't have heap overflow bugs.
@@ -748,5 +764,5 @@ sendme_record_cell_digest_on_circ(circuit_t *circ, crypt_path_t *cpath)
       relay_crypto_get_sendme_tag(&TO_OR_CIRCUIT(circ)->crypto, &tag_len);
   }
 
-  record_cell_digest_on_circ(circ, sendme_tag, tag_len);
+  record_cell_digest_on_circ(circ, sendme_tag, tag_len, cpath);
 }

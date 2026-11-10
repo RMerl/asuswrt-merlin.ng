@@ -250,16 +250,17 @@ noinst_PROGRAMS = $(am__EXEEXT_2) src/test/bench$(EXEEXT) \
 @USEPYTHON_TRUE@	scripts/maint/practracker/test_practracker.sh \
 @USEPYTHON_TRUE@	scripts/maint/run_check_subsystem_order.sh
 
+@USEPYTHON_TRUE@@WIN32_FALSE@am__append_74 = src/test/test_cbt_mvp.sh
 
 # ...
 # Only do this when coverage is not on, since it invokes lots of code
 # in a kind of unpredictable way.
-@COVERAGE_ENABLED_FALSE@@USEPYTHON_TRUE@am__append_74 = src/test/test_rebind.sh \
+@COVERAGE_ENABLED_FALSE@@USEPYTHON_TRUE@am__append_75 = src/test/test_rebind.sh \
 @COVERAGE_ENABLED_FALSE@@USEPYTHON_TRUE@	src/test/test_include.sh
-@USE_PERL_TRUE@am__append_75 = \
+@USE_PERL_TRUE@am__append_76 = \
 @USE_PERL_TRUE@	scripts/maint/checkSpaceTest.sh
 
-@UNITTESTS_ENABLED_TRUE@am__append_76 = \
+@UNITTESTS_ENABLED_TRUE@am__append_77 = \
 @UNITTESTS_ENABLED_TRUE@	src/test/test \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-slow \
 @UNITTESTS_ENABLED_TRUE@	src/test/test-memwipe \
@@ -271,7 +272,7 @@ noinst_PROGRAMS = $(am__EXEEXT_2) src/test/bench$(EXEEXT) \
 
 
 # ADD_C_FILE: INSERT SOURCES HERE.
-@UNITTESTS_ENABLED_TRUE@am__append_77 = \
+@UNITTESTS_ENABLED_TRUE@am__append_78 = \
 @UNITTESTS_ENABLED_TRUE@	src/test/fakecircs.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/log_test_helpers.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/hs_test_helpers.c \
@@ -409,11 +410,11 @@ noinst_PROGRAMS = $(am__EXEEXT_2) src/test/bench$(EXEEXT) \
 
 
 # ...
-@UNITTESTS_ENABLED_TRUE@@USE_NSS_FALSE@am__append_78 = \
+@UNITTESTS_ENABLED_TRUE@@USE_NSS_FALSE@am__append_79 = \
 @UNITTESTS_ENABLED_TRUE@@USE_NSS_FALSE@	src/test/test_crypto_openssl.c \
 @UNITTESTS_ENABLED_TRUE@@USE_NSS_FALSE@	src/test/test_tortls_openssl.c
 
-@UNITTESTS_ENABLED_TRUE@am__append_79 = \
+@UNITTESTS_ENABLED_TRUE@am__append_80 = \
 @UNITTESTS_ENABLED_TRUE@	src/test/rng_test_helpers.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_slow.c \
 @UNITTESTS_ENABLED_TRUE@	src/test/test_crypto_slow.c \
@@ -426,19 +427,20 @@ noinst_PROGRAMS = $(am__EXEEXT_2) src/test/bench$(EXEEXT) \
 @UNITTESTS_ENABLED_TRUE@	src/test/testing_rsakeys.c \
 @UNITTESTS_ENABLED_TRUE@	src/ext/tinytest.c
 
-@UNITTESTS_ENABLED_TRUE@am__append_80 = src/test/test-bt-cl
-@COVERAGE_ENABLED_TRUE@am__append_81 = src/tools/tor-cov-resolve
+@UNITTESTS_ENABLED_TRUE@am__append_81 = src/test/test-bt-cl
+@COVERAGE_ENABLED_TRUE@am__append_82 = src/tools/tor-cov-resolve
 
 # ...
-@USE_NSS_FALSE@am__append_82 = src/tools/tor-gencert
+@USE_NSS_FALSE@am__append_83 = src/tools/tor-gencert
 
 # ...
-@COVERAGE_ENABLED_TRUE@@USE_NSS_FALSE@am__append_83 = src/tools/tor-cov-gencert
-@BUILD_LIBTORRUNNER_TRUE@am__append_84 = src/tools/libtorrunner.a
-@LIBFUZZER_ENABLED_TRUE@am__append_85 = -fsanitize=fuzzer-no-link
+@COVERAGE_ENABLED_TRUE@@USE_NSS_FALSE@am__append_84 = src/tools/tor-cov-gencert
+@BUILD_LIBTORRUNNER_TRUE@am__append_85 = src/tools/libtorrunner.a
+@LIBFUZZER_ENABLED_TRUE@am__append_86 = -fsanitize=fuzzer-no-link
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_compile_flag.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_add_fortify_source.m4 \
+	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
 	$(top_srcdir)/m4/ax_check_sign.m4 \
 	$(top_srcdir)/m4/ax_compiler_vendor.m4 \
 	$(top_srcdir)/m4/ax_compiler_version.m4 \
@@ -5360,7 +5362,7 @@ noinst_LIBRARIES = $(LIBED25519_REF10) $(LIBED25519_DONNA) \
 	src/lib/libtor-version.a $(am__append_57) \
 	src/lib/libtor-wallclock.a $(am__append_58) \
 	src/trunnel/libor-trunnel.a $(am__append_59) \
-	src/core/libtor-app.a $(am__append_60) $(am__append_84) \
+	src/core/libtor-app.a $(am__append_60) $(am__append_85) \
 	$(OSS_FUZZ_FUZZERS)
 EXTRA_DIST = src/ext/ext.md src/ext/timeouts/bench/bench-add.lua \
 	src/ext/timeouts/bench/bench-aux.lua \
@@ -5379,7 +5381,8 @@ EXTRA_DIST = src/ext/ext.md src/ext/timeouts/bench/bench-add.lua \
 	src/test/hs_ntor_ref.py src/test/hs_build_address.py \
 	src/test/hs_indexes.py src/test/fuzz_static_testcases.sh \
 	src/test/slownacl_curve25519.py src/test/test_rebind.sh \
-	src/test/test_rebind.py src/test/test_include.sh \
+	src/test/test_rebind.py src/test/test_cbt_mvp.sh \
+	src/test/test_cbt_mvp.py src/test/test_include.sh \
 	src/test/test_include.py src/test/zero_length_keys.sh \
 	scripts/maint/run_check_subsystem_order.sh \
 	src/test/test_keygen.sh src/test/test_key_expiration.sh \
@@ -7047,7 +7050,7 @@ TESTSCRIPTS = src/test/fuzz_static_testcases.sh \
 	src/test/unittest_part4.sh src/test/unittest_part5.sh \
 	src/test/unittest_part6.sh src/test/unittest_part7.sh \
 	src/test/unittest_part8.sh $(am__append_73) $(am__append_74) \
-	$(am__append_75)
+	$(am__append_75) $(am__append_76)
 
 # These flavors are run using automake's test-driver and test-network.sh
 
@@ -7080,8 +7083,8 @@ src_test_AM_CPPFLAGS = -DSHARE_DATADIR="\"$(datadir)\"" \
 # -L flags need to go in LDFLAGS. -l flags need to go in LDADD.
 # This seems to matter nowhere but on Windows, but I assure you that it
 # matters a lot there, and is quite hard to debug if you forget to do it.
-src_test_test_SOURCES = $(am__append_77) $(am__append_78)
-src_test_test_slow_SOURCES = $(am__append_79)
+src_test_test_SOURCES = $(am__append_78) $(am__append_79)
+src_test_test_slow_SOURCES = $(am__append_80)
 src_test_test_memwipe_SOURCES = \
 	src/test/test-memwipe.c
 
@@ -7679,9 +7682,9 @@ all_mans = doc/man/tor doc/man/tor-gencert doc/man/tor-resolve doc/man/torify do
 @USE_ASCIIDOC_FALSE@man_in = 
 asciidoc_product = $(nodist_man1_MANS) $(doc_DATA)
 AM_ETAGSFLAGS = --regex='{c}/MOCK_IMPL([^,]+,\W*\([a-zA-Z0-9_]+\)\W*,/\1/s'
-@COVERAGE_ENABLED_FALSE@TEST_CFLAGS = $(am__append_85)
+@COVERAGE_ENABLED_FALSE@TEST_CFLAGS = $(am__append_86)
 @COVERAGE_ENABLED_TRUE@TEST_CFLAGS = -fno-inline -fprofile-arcs \
-@COVERAGE_ENABLED_TRUE@	-ftest-coverage $(am__append_85)
+@COVERAGE_ENABLED_TRUE@	-ftest-coverage $(am__append_86)
 @COVERAGE_ENABLED_FALSE@TEST_CPPFLAGS = -DTOR_UNIT_TESTS @TOR_MODULES_ALL_ENABLED@
 @COVERAGE_ENABLED_TRUE@@DISABLE_ASSERTS_IN_UNIT_TESTS_FALSE@TEST_CPPFLAGS = -DTOR_UNIT_TESTS -DTOR_COVERAGE @TOR_MODULES_ALL_ENABLED@
 @COVERAGE_ENABLED_TRUE@@DISABLE_ASSERTS_IN_UNIT_TESTS_TRUE@TEST_CPPFLAGS = -DTOR_UNIT_TESTS -DTOR_COVERAGE -DDISABLE_ASSERTS_IN_UNIT_TESTS @TOR_MODULES_ALL_ENABLED@
@@ -24023,6 +24026,13 @@ scripts/maint/practracker/test_practracker.sh.log: scripts/maint/practracker/tes
 scripts/maint/run_check_subsystem_order.sh.log: scripts/maint/run_check_subsystem_order.sh
 	@p='scripts/maint/run_check_subsystem_order.sh'; \
 	b='scripts/maint/run_check_subsystem_order.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+src/test/test_cbt_mvp.sh.log: src/test/test_cbt_mvp.sh
+	@p='src/test/test_cbt_mvp.sh'; \
+	b='src/test/test_cbt_mvp.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

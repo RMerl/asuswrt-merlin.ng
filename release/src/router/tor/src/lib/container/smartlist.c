@@ -673,6 +673,37 @@ smartlist_sort_pointers(smartlist_t *sl)
 /** @} */
 
 /** Helper. <b>sl</b> may have at most one violation of the heap property:
+ * the item at <b>idx</b> may be less than its parent.
+ * Restore the heap property.
+ *
+ * Return true if anything was changed.
+ */
+static inline bool
+smartlist_heapify_up(smartlist_t *sl,
+                  int (*compare)(const void *a, const void *b),
+                  ptrdiff_t idx_field_offset,
+                  int idx)
+{
+  bool changed = false;
+
+  while (idx) {
+    int parent = PARENT(idx);
+    if (compare(sl->list[idx], sl->list[parent]) < 0) {
+      void *tmp = sl->list[parent];
+      sl->list[parent] = sl->list[idx];
+      sl->list[idx] = tmp;
+      UPDATE_IDX(parent);
+      UPDATE_IDX(idx);
+      idx = parent;
+      changed = true;
+    } else {
+      break;
+    }
+  }
+  return changed;
+}
+
+/** Helper. <b>sl</b> may have at most one violation of the heap property:
  * the item at <b>idx</b> may be greater than one or both of its children.
  * Restore the heap property. */
 static inline void
@@ -728,23 +759,10 @@ smartlist_pqueue_add(smartlist_t *sl,
                      ptrdiff_t idx_field_offset,
                      void *item)
 {
-  int idx;
   smartlist_add(sl,item);
   UPDATE_IDX(sl->num_used-1);
 
-  for (idx = sl->num_used - 1; idx; ) {
-    int parent = PARENT(idx);
-    if (compare(sl->list[idx], sl->list[parent]) < 0) {
-      void *tmp = sl->list[parent];
-      sl->list[parent] = sl->list[idx];
-      sl->list[idx] = tmp;
-      UPDATE_IDX(parent);
-      UPDATE_IDX(idx);
-      idx = parent;
-    } else {
-      return;
-    }
-  }
+  smartlist_heapify_up(sl, compare, idx_field_offset, sl->num_used - 1);
 }
 
 /** Remove and return the top-priority item from the heap stored in <b>sl</b>,
@@ -793,6 +811,11 @@ smartlist_pqueue_remove(smartlist_t *sl,
     sl->list[idx] = sl->list[sl->num_used];
     sl->list[sl->num_used] = NULL;
     UPDATE_IDX(idx);
+    if (smartlist_heapify_up(sl, compare, idx_field_offset, idx)) {
+      // If we bubbled the element upwards, then we do not need
+      // to consider the downward direction.
+      return;
+    }
     smartlist_heapify(sl, compare, idx_field_offset, idx);
   }
 }

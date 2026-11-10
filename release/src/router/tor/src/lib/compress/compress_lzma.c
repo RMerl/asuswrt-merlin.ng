@@ -307,6 +307,12 @@ tor_lzma_compress_process(tor_lzma_compress_state_t *state,
       if (state->stream.avail_in == 0 && !finish)
         return TOR_COMPRESS_OK;
 
+      /* As elsewhere, avail_in==0 with finish=1 means that the input
+       * stream was truncated. Treat this as an error. */
+      if (state->stream.avail_in == 0) {
+        return TOR_COMPRESS_ERROR;
+      }
+
       return TOR_COMPRESS_BUFFER_FULL;
 
     case LZMA_STREAM_END:

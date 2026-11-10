@@ -754,6 +754,7 @@ dirserv_add_descriptor(routerinfo_t *ri, const char **msg, const char *source)
       ri->cache_info.annotations_len;
   const int key_pinning = dirauth_get_options()->AuthDirPinKeys;
   *msg = NULL;
+  const or_options_t *options = get_options();
 
   /* If it's too big, refuse it now. Otherwise we'll cache it all over the
    * network and it'll clog everything up. */
@@ -771,8 +772,8 @@ dirserv_add_descriptor(routerinfo_t *ri, const char **msg, const char *source)
   log_info(LD_DIR, "Assessing new descriptor: %s: %s",
            ri->nickname, ri->platform);
 
-  /* For now, TAP keys are still required. */
-  if (! ri->tap_onion_pkey) {
+  /* Until 0.4.8 is gone, TAP keys are still required. */
+  if (options->AuthDirSupport048Clients && !ri->tap_onion_pkey) {
     log_info(LD_DIRSERV, "Rejecting descriptor from %s (source: %s); "
              "it has no TAP key.",
              router_describe(ri), source);

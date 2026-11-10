@@ -2713,6 +2713,15 @@ hs_client_reextend_intro_circuit(origin_circuit_t *circ)
        * linkability issue is minimized, we just need the circuit to hold a
        * bit longer so we can introduce. */
       TO_CIRCUIT(circ)->timestamp_dirty = time(NULL);
+      /* The circuit now ends at a different introduction point: forget the
+       * per-intro-point state of the previous attempt so that the INTRODUCE1
+       * we send once this hop opens is built for (and failures are accounted
+       * to) the intro point we are actually talking to. */
+      circ->hs_currently_solving_pow = 0;
+      if (hs_client_setup_intro_circ_auth_key(circ) < 0) {
+        /* Circuit has been marked for close. */
+        ret = -1;
+      }
     }
   } else {
     log_info(LD_REND, "Closing intro circ %u (out of RELAY_EARLY cells).",

@@ -35,7 +35,6 @@
 #include "feature/nodelist/routerlist.h"
 #include "feature/relay/router.h"
 #include "feature/relay/routerkeys.h"
-#include "feature/stats/rephist.h"
 #include "feature/client/entrynodes.h" /* needed for guardfraction methods */
 #include "feature/nodelist/torcert.h"
 #include "feature/dirauth/voting_schedule.h"
@@ -830,6 +829,11 @@ compute_consensus_method(smartlist_t *votes)
 static int
 consensus_method_is_supported(int method)
 {
+  if (get_options()->AuthDirSupport048Clients &&
+      method >= MIN_METHOD_TO_PERMIT_ABSENT_TAP_KEYS) {
+    return 0;
+  }
+
   return (method >= MIN_SUPPORTED_CONSENSUS_METHOD) &&
     (method <= MAX_SUPPORTED_CONSENSUS_METHOD);
 }
@@ -1557,15 +1561,18 @@ networkstatus_compute_consensus(smartlist_t *votes,
   flags = smartlist_new();
 
   consensus_method = compute_consensus_method(votes);
-  if (consensus_method_is_supported(consensus_method)) {
-    log_info(LD_DIR, "Generating consensus using method %d.",
-             consensus_method);
-  } else {
+  if (!consensus_method_is_supported(consensus_method)) {
     log_warn(LD_DIR, "The other authorities will use consensus method %d, "
              "which I don't support.  Maybe I should upgrade!",
              consensus_method);
     consensus_method = MAX_SUPPORTED_CONSENSUS_METHOD;
+    /* Fall back to the newest method supported by our current options. */
+    while (!consensus_method_is_supported(consensus_method)) {
+      --consensus_method;
+    }
   }
+  log_info(LD_DIR, "Generating consensus using method %d.",
+           consensus_method);
 
   {
     /* It's smarter to initialize these weights to 1, so that later on,
@@ -2328,7 +2335,7 @@ networkstatus_compute_consensus(smartlist_t *votes,
           tor_asprintf(&guardfraction_str,
                        " GuardFraction=%u", rs_out.guardfraction_percentage);
         }
-        smartlist_add_asprintf(chunks, "w Bandwidth=%d%s%s\n",
+        smartlist_add_asprintf(chunks, "w Bandwidth=%u%s%s\n",
                                rs_out.bandwidth_kb,
                                unmeasured?" Unmeasured=1":"",
                                guardfraction_str ? guardfraction_str : "");
@@ -3905,6 +3912,40 @@ dirvote_get_vote(const char *fp, int flags)
   return NULL;
 }
 
+/** "Dummy" TAP public key to use with newer consensus methods.
+
+    Due to surprising bugs (#41466, #41467),
+    we can't actually remove the TAP key yet.  But they aren't
+    used for anything except v2 onion services, which no longer exist.
+    So instead we give every relay the same TAP key,
+    in order to improve md compressibility.
+
+    To prove that ther eis nothing up my sleeve, here is the
+    corresponding private key.
+
+-----BEGIN RSA PRIVATE KEY-----
+MIICXgIBAAKBgQCkGdZJqPF9h/XSXgIhpptjotFzFWCl6xTJxvYN2J6E1jtZ69N5
+ST75zCV4+IccfVwRypMK+Gxtink/LpsU1Xdq/yzlMZILv9J4s2grOLQarGrh+oS/
+NbV0otL8WIUe1b7beCt4nb5TL8w4rfpfC7Hk+H6Ks9gwwADjtp6Mui4wrwIDAQAB
+AoGBAI1tfxNouQf5P1EYmDmsP0u1rVHD4NHeMsJb6P+x65yMjgZHirCDAfWDjeAe
+QUO6frkOn3/a7ofRygE8B4gDGbEKAlY+D6QbTicOGuzv4HIapGDyA8uWMG/p5ZR4
+7iCOwrClx4adAseUQYkcQZMicgtBB34LHX+8gHyEA6qRtNSxAkEAzirJgV2QoJBV
+UBit18r3cfGn9voVNs3xgYmbSJmSq81BTGp9jPZ1RCa8+W8Jlh65bXSg7W0yZTOF
+5erh90wA3QJBAMvEE4vYsuAoKCMBMSq3AAZUlqLz1ghi1GwE+WdLF9ulJu/FYmuc
+9djSoQRduOsmRo0stU4X6Rat0PRaXeBNOPsCQQCMJvolP336KSRV9vD3KbtdcnJE
+q22QfCAZd3pguEXFFRu23w3KriC527vLtXhG3Uwg5JAh14HS2lvEGRDUFI7hAkBF
+Ffm6lIIxVewl0iWlYd50RwG7xghvV3LGHPmid+di5R/Kc5Xm/pSsKt3E6THlKFkL
+THk8PQceVVhfQLRLdGM5AkEAsG4VW/rqLRB22Dsv23ReiCqi9S95aLgRExCk/LR/
+PcBG6JLzkBUzziksA0c9olarFXdwFbPU0YR+DtyHutunxQ==
+-----END RSA PRIVATE KEY-----
+*/
+static const char DUMMY_TAP_PUBKEY[] =
+"-----BEGIN RSA PUBLIC KEY-----\n"
+"MIGJAoGBAKQZ1kmo8X2H9dJeAiGmm2Oi0XMVYKXrFMnG9g3YnoTWO1nr03lJPvnM\n"
+"JXj4hxx9XBHKkwr4bG2KeT8umxTVd2r/LOUxkgu/0nizaCs4tBqsauH6hL81tXSi\n"
+"0vxYhR7Vvtt4K3idvlMvzDit+l8LseT4foqz2DDAAOO2noy6LjCvAgMBAAE=\n"
+"-----END RSA PUBLIC KEY-----\n";
+
 /** Construct and return a new microdescriptor from a routerinfo <b>ri</b>
  * according to <b>consensus_method</b>.
  **/
@@ -3919,15 +3960,30 @@ dirvote_create_microdescriptor(const routerinfo_t *ri, int consensus_method)
   char *output = NULL;
   crypto_pk_t *rsa_pubkey = router_get_rsa_onion_pkey(ri->tap_onion_pkey,
                                                       ri->tap_onion_pkey_len);
-  if (!rsa_pubkey) {
-    /* We do not yet support creating MDs for relays without TAP onion keys. */
-    goto done;
+  bool omit_fam_list =
+    consensus_method >= MIN_METHOD_TO_OMIT_ALL_TAP_KEYS_AND_FAMILY_LISTS;
+  bool omit_tap_key =
+    consensus_method == MIN_METHOD_TO_OMIT_ALL_TAP_KEYS_AND_FAMILY_LISTS;
+  bool dummy_tap_key =
+    consensus_method >= MIN_METHOD_TO_USE_DUMMY_TAP_KEYS;
+
+  if (omit_tap_key) {
+    key = tor_strdup("");
+  } else if (dummy_tap_key) {
+    key = tor_strdup(DUMMY_TAP_PUBKEY);
+  } else if (!rsa_pubkey) {
+    if (consensus_method < MIN_METHOD_TO_PERMIT_ABSENT_TAP_KEYS) {
+      /* This method does not support generating MDs without TAP keys. */
+      goto done;
+    }
+    key = tor_strdup("");
+  } else {
+    if (crypto_pk_write_public_key_to_string(rsa_pubkey, &key, &keylen)<0)
+      goto done;
   }
 
-  if (crypto_pk_write_public_key_to_string(rsa_pubkey, &key, &keylen)<0)
-    goto done;
   summary = policy_summarize(ri->exit_policy, AF_INET);
-  if (ri->declared_family)
+  if (ri->declared_family && !omit_fam_list)
     family = smartlist_join_strings(ri->declared_family, " ", 0, NULL);
 
   smartlist_add_asprintf(chunks, "onion-key\n%s", key);
@@ -4049,7 +4105,13 @@ static const struct consensus_method_range_t {
   {MIN_SUPPORTED_CONSENSUS_METHOD,
    MIN_METHOD_FOR_FAMILY_IDS - 1},
   {MIN_METHOD_FOR_FAMILY_IDS,
-   MAX_SUPPORTED_CONSENSUS_METHOD},
+   MIN_METHOD_TO_PERMIT_ABSENT_TAP_KEYS - 1},
+  { MIN_METHOD_TO_PERMIT_ABSENT_TAP_KEYS,
+    MIN_METHOD_TO_OMIT_ALL_TAP_KEYS_AND_FAMILY_LISTS - 1},
+  { MIN_METHOD_TO_OMIT_ALL_TAP_KEYS_AND_FAMILY_LISTS,
+    MIN_METHOD_TO_USE_DUMMY_TAP_KEYS - 1},
+  { MIN_METHOD_TO_USE_DUMMY_TAP_KEYS,
+    MAX_SUPPORTED_CONSENSUS_METHOD},
   {-1, -1}
 };
 
@@ -4077,6 +4139,9 @@ dirvote_format_all_microdesc_vote_lines(const routerinfo_t *ri, time_t now,
   for (cmr = microdesc_consensus_methods;
        cmr->low != -1 && cmr->high != -1;
        cmr++) {
+    if (! consensus_method_is_supported(cmr->low)) {
+      continue;
+    }
     microdesc_t *md = dirvote_create_microdescriptor(ri, cmr->low);
     if (md) {
       microdesc_vote_line_t *e =
@@ -4396,21 +4461,36 @@ compare_routerinfo_usefulness(const routerinfo_t *first,
  * IP version, specified in <b>family</b>, return a new digestmap_t whose keys
  * are the identity digests of those routers that we're going to exclude for
  * Sybil-like appearance.
+ *
+ * Only routers that we have found reachable at their advertised address in
+ * this family count: anybody can claim an address in a descriptor, and an
+ * unverified claim must not push out the relay that really lives there.
  */
 STATIC digestmap_t *
 get_sybil_list_by_ip_version(const smartlist_t *routers, sa_family_t family)
 {
   const dirauth_options_t *options = dirauth_get_options();
   digestmap_t *omit_as_sybil = digestmap_new();
-  smartlist_t *routers_by_ip = smartlist_new();
+  smartlist_t *routers_by_ip = NULL;
   int addr_count = 0;
   routerinfo_t *last_ri = NULL;
   /* Allow at most this number of Tor servers on a single IP address, ... */
   int max_with_same_addr = options->AuthDirMaxServersPerAddr;
-  if (max_with_same_addr <= 0)
-    max_with_same_addr = INT_MAX;
+  /* Without reachability tests in this family, we can't verify anything. */
+  if (max_with_same_addr <= 0 || !options->AuthDirTestReachability ||
+      (family == AF_INET6 && !options->AuthDirHasIPv6Connectivity)) {
+    return omit_as_sybil;
+  }
 
-  smartlist_add_all(routers_by_ip, routers);
+  routers_by_ip = smartlist_new();
+  SMARTLIST_FOREACH_BEGIN(routers, routerinfo_t *, ri) {
+    const node_t *node = node_get_by_id(ri->cache_info.identity_digest);
+    if (router_is_me(ri) ||
+        (node && (family == AF_INET6 ? node->reached_ipv6_orport :
+                                      node->reached_ipv4_orport))) {
+      smartlist_add(routers_by_ip, ri);
+    }
+  } SMARTLIST_FOREACH_END(ri);
   if (family == AF_INET6)
     smartlist_sort(routers_by_ip, compare_routerinfo_by_ipv6);
   else
@@ -4728,10 +4808,6 @@ dirserv_generate_networkstatus_vote_obj(crypto_pk_t *private_key,
   routers_sort_by_identity(routers);
   /* Get a digestmap of possible sybil routers, IPv4 or IPv6 */
   digestmap_t *omit_as_sybil = get_all_possible_sybil(routers);
-  DIGESTMAP_FOREACH (omit_as_sybil, sybil_id, void *, ignore) {
-    (void)ignore;
-    rep_hist_make_router_pessimal(sybil_id, now);
-  } DIGESTMAP_FOREACH_END
   /* Count how many have measured bandwidths so we know how to assign flags;
    * this must come before dirserv_compute_performance_thresholds() */
   dirserv_count_measured_bws(routers);

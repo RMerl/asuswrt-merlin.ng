@@ -18,6 +18,7 @@
 #include "feature/nodelist/routerlist.h"
 
 #include "feature/nodelist/networkstatus_st.h"
+#include "core/or/or_circuit_st.h"
 #include "core/or/or_connection_st.h"
 #include "feature/nodelist/routerstatus_st.h"
 
@@ -566,6 +567,52 @@ test_dos_conn_rate(void *arg)
   dos_free_all();
 }
 
+/** Test the one BEGIN_DIR per circuit limit. */
+static void
+test_dos_begindir_limit(void *arg)
+{
+  channel_t relay_chan = {0}, client_chan = {0};
+  or_circuit_t *relay_circ = NULL, *client_circ = NULL;
+  (void) arg;
+
+  channel_mark_client(&client_chan);
+  relay_circ = or_circuit_new(0, NULL);
+  relay_circ->p_chan = &relay_chan;
+  client_circ = or_circuit_new(0, NULL);
+  client_circ->p_chan = &client_chan;
+
+  /* Disabled: the allowance is used, but nothing is refused. */
+  dos_init();
+  tt_assert(!dos_begindir_should_refuse(relay_circ));
+  tt_uint_op(relay_circ->already_received_begindir, OP_EQ, 1);
+  tt_assert(!dos_begindir_should_refuse(relay_circ));
+  tt_u64_op(dos_get_num_begindir_rejected(), OP_EQ, 0);
+
+  /* Enabled: the circuit used its allowance before, so it is refused. */
+  MOCK(get_param_begindir_limit_enabled, mock_enable_dos_protection);
+  dos_init();
+  tt_assert(dos_begindir_should_refuse(relay_circ));
+  tt_u64_op(dos_get_num_begindir_rejected(), OP_EQ, 1);
+
+  /* Clients and bridges are never limited. */
+  tt_assert(!dos_begindir_should_refuse(client_circ));
+  tt_assert(!dos_begindir_should_refuse(client_circ));
+  tt_uint_op(client_circ->already_received_begindir, OP_EQ, 0);
+  tt_u64_op(dos_get_num_begindir_rejected(), OP_EQ, 1);
+
+ done:
+  UNMOCK(get_param_begindir_limit_enabled);
+  if (relay_circ) {
+    relay_circ->p_chan = NULL;
+    circuit_free_(TO_CIRCUIT(relay_circ));
+  }
+  if (client_circ) {
+    client_circ->p_chan = NULL;
+    circuit_free_(TO_CIRCUIT(client_circ));
+  }
+  dos_free_all();
+}
+
 struct testcase_t dos_tests[] = {
   { "conn_creation", test_dos_conn_creation, TT_FORK, NULL, NULL },
   { "circuit_creation", test_dos_circuit_creation, TT_FORK, NULL, NULL },
@@ -573,5 +620,6 @@ struct testcase_t dos_tests[] = {
   { "known_relay" , test_known_relay, TT_FORK,
     NULL, NULL },
   { "conn_rate", test_dos_conn_rate, TT_FORK, NULL, NULL },
+  { "begindir_limit", test_dos_begindir_limit, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };

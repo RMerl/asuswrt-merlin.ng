@@ -856,6 +856,26 @@ test_container_pqueue(void *arg)
   tt_int_op(smartlist_len(sl),OP_EQ, 0);
   OK();
 
+  // Now reproduce #41428.  We construct a valid heap, and
+  // remove an element such that the last element should be
+  // bubbled _up_ the heap.
+  smartlist_clear(sl);
+  smartlist_add(sl, &apples);
+
+  smartlist_add(sl, &frogs);
+  smartlist_add(sl, &chinchillas);
+
+  smartlist_add(sl, &zebras);
+  smartlist_add(sl, &lobsters);
+
+  smartlist_add(sl, &daschunds);
+  SMARTLIST_FOREACH(sl, pq_entry_t *, e, e->idx = e_sl_idx);
+  OK();
+  smartlist_pqueue_remove(sl, cmp, offset, &zebras);
+  // The above 'remove' swaps "dachsunds" into the space occupied by "zebras".
+  // Its parent is "frogs" so it should bubble up.
+  OK();
+
 #undef OK
 
  done:

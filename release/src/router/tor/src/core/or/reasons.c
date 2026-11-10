@@ -460,7 +460,7 @@ bandwidth_weight_rule_to_string(bandwidth_weight_rule_t rule)
 }
 
 /** Given a RELAY_END reason value, convert it to an HTTP response to be
- * send over an HTTP tunnel connection. */
+ * sent over an HTTP tunnel connection. */
 const char *
 end_reason_to_http_connect_response_line(int endreason)
 {
@@ -497,9 +497,22 @@ end_reason_to_http_connect_response_line(int endreason)
       return "HTTP/1.0 502 Bad Gateway (tor protocol violation)\r\n";
     case END_STREAM_REASON_ENTRYPOLICY:
       return "HTTP/1.0 403 Forbidden (entry policy violation)\r\n";
-    case END_STREAM_REASON_NOTDIRECTORY: FALLTHROUGH;
+    case END_STREAM_REASON_NOTDIRECTORY:
+      return "HTTP/1.0 502 Bad Gateway (not a directory)\r\n";
+    case END_STREAM_REASON_CANT_ATTACH:
+      return "HTTP/1.0 503 Service Unavailable (no circuit)\r\n";
+    case END_STREAM_REASON_NET_UNREACHABLE:
+      return "HTTP/1.0 503 Service Unavailable (network unreachable)\r\n";
+    case END_STREAM_REASON_PRIVATE_ADDR:
+      return "HTTP/1.0 403 Forbidden (private address)\r\n";
+
     default:
-      tor_assert_nonfatal_unreached();
+      /* The reason may come straight from the other side's END cell,
+       * or be a local reason we have no better line for. Give a
+       * generic error response. */
+      log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+             "Reason for ending (%d) not recognized; "
+             "sending generic HTTP error.", endreason);
       return "HTTP/1.0 500 Internal Server Error (weird end reason)\r\n";
   }
 }

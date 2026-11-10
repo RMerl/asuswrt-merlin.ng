@@ -995,10 +995,14 @@ hs_circ_service_get_established_intro_circ(const hs_service_intro_point_t *ip)
  * - The rendezvous circuit failed to connect to the RP.
  *
  * We avoid relaunching a connection to this rendezvous point if:
- * - We have already tried MAX_REND_FAILURES times to connect to this RP,
+ * - We have already tried MAX_REND_FAILURES times to connect to this RP, or
  * - We've been trying to connect to this RP for more than MAX_REND_TIMEOUT
- *   seconds, or
- * - We've already retried this specific rendezvous circuit.
+ *   seconds.
+ *
+ * This is not idempotent: every call that passes the checks above launches
+ * a new circuit carrying a copy of circ's hs_ident (rendezvous cookie,
+ * handshake info and key seed). It must therefore be reached exactly once
+ * per dying circuit.
  */
 void
 hs_circ_retry_service_rendezvous_point(const origin_circuit_t *circ)

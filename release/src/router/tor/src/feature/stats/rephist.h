@@ -15,8 +15,6 @@
 void rep_hist_init(void);
 void rep_hist_dump_stats(time_t now, int severity);
 
-void rep_hist_make_router_pessimal(const char *id, time_t when);
-
 void rep_history_clean(time_t before);
 
 void rep_hist_note_router_reachable(const char *id, const tor_addr_t *at_addr,

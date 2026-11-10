@@ -77,7 +77,7 @@ CONF_VAR(RecommendedClientVersions, LINELIST, 0, NULL)
 CONF_VAR(RecommendedServerVersions, LINELIST, 0, NULL)
 
 /** Which minimal version of tor do we accept relay descriptors from? */
-CONF_VAR(MinimalAcceptedServerVersion, STRING, 0, "0.4.8.0-alpha-dev")
+CONF_VAR(MinimalAcceptedServerVersion, STRING, 0, "0.4.9.1-alpha")
 
 /** Relays which should be voted Guard regardless of uptime and bandwidth. */
 CONF_VAR(AuthDirVoteGuard, ROUTERSET, 0, NULL)

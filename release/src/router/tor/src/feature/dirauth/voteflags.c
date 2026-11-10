@@ -32,6 +32,7 @@
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "feature/nodelist/routerlist_st.h"
+#include "feature/nodelist/routerstatus_st.h"
 #include "feature/nodelist/vote_routerstatus_st.h"
 
 #include "lib/container/order.h"
@@ -127,11 +128,48 @@ router_is_active(const routerinfo_t *ri, const node_t *node, time_t now)
   return 1;
 }
 
+/** Return true iff <b>router</b> had the HSDir flag in a reasonably live
+ * consensus.
+ *
+ * This lets a relay that already holds the flag skip the uptime requirement,
+ * for instance after a restart. A new identity still has to wait for the
+ * uptime so a relay can't bruteforce a key for a known SRV and land on the
+ * hashring before the SRV changes.
+ *
+ * The consensus is looked up by RSA identity but the hashring position comes
+ * from the ed25519 identity. We rely on key pinning to keep that pair fixed,
+ * otherwise a relay could keep its RSA identity and swap in a ground ed25519
+ * key. Without pinning, or without an ed25519 key, this returns false. */
+static bool
+router_was_hs_dir_in_consensus(const routerinfo_t *router, time_t now)
+{
+  networkstatus_t *ns = NULL;
+  const routerstatus_t *rs = NULL;
+
+  /* Without key pinning, RSA identity can be kept while ed25519 key (used for
+   * the hashring position) is bruteforced which would enable the hashring
+   * positioning attack. */
+  if (!dirauth_get_options()->AuthDirPinKeys ||
+      !router->cache_info.signing_key_cert) {
+    return false;
+  }
+  /* Using the reasonably live consensus allows us a greater chance to recover
+   * after let say a massive network wide DDoS. Use the microdesc flavor
+   * because this is the one clients build the hashring from. */
+  ns = networkstatus_get_reasonably_live_consensus(now, FLAV_MICRODESC);
+  if (!ns) {
+    return false;
+  }
+  rs = networkstatus_vote_find_entry(ns,
+                                     router->cache_info.identity_digest);
+  return rs && rs->is_hs_dir;
+}
+
 /** Return true iff <b>router</b> should be assigned the "HSDir" flag.
  *
- * Right now this means it advertises support for it, it has a high uptime,
- * it's a directory cache, it has the Stable and Fast flags, and it's currently
- * considered Running.
+ * Right now this means it advertises support for it, it has a high uptime
+ * or had the HSDir flag in a recent consensus, it's a directory cache, it
+ * has the Stable and Fast flags, and it's currently considered Running.
  *
  * This function needs to be called after router-\>is_running has
  * been set.
@@ -160,7 +198,8 @@ dirserv_thinks_router_is_hs_dir(const routerinfo_t *router,
   return (router->wants_to_be_hs_dir &&
           router->supports_tunnelled_dir_requests &&
           node->is_stable && node->is_fast &&
-          uptime >= dirauth_get_options()->MinUptimeHidServDirectoryV2 &&
+          (uptime >= dirauth_get_options()->MinUptimeHidServDirectoryV2 ||
+           router_was_hs_dir_in_consensus(router, now)) &&
           router_is_active(router, node, now));
 }
 

@@ -132,6 +132,10 @@ evdns_server_callback(struct evdns_server_request *req, void *data_)
   /* Make sure the name isn't too long: This should be impossible, I think. */
   if (err == DNS_ERR_NONE && strlen(q->name) > MAX_SOCKS_ADDR_LEN-1)
     err = DNS_ERR_FORMAT;
+  /* Make sure name is valid DNS. */
+  if (err == DNS_ERR_NONE && ! name_is_valid_for_dns(q->name)) {
+    err = DNS_ERR_FORMAT;
+  }
 
   if (err != DNS_ERR_NONE || !supported_q) {
     /* We got an error?  There's no question we're willing to answer? Then
@@ -374,9 +378,13 @@ dnsserv_resolved(entry_connection_t *conn,
              answer_len < 256 &&
              conn->socks_request->command == SOCKS_COMMAND_RESOLVE_PTR) {
     char *ans = tor_strndup(answer, answer_len);
-    evdns_server_request_add_ptr_reply(req, NULL,
-                                       name,
-                                       ans, ttl);
+    if (name_is_valid_for_dns(ans)) {
+      evdns_server_request_add_ptr_reply(req, NULL,
+                                         name,
+                                         ans, ttl);
+    } else {
+      err = DNS_ERR_FORMAT;
+    }
     tor_free(ans);
   } else if (answer_type == RESOLVED_TYPE_ERROR) {
     err = DNS_ERR_NOTEXIST;

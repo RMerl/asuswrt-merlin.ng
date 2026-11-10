@@ -202,7 +202,7 @@ metrics_store_hist_entry_get_value(const metrics_store_entry_t *entry,
     return 0;
   }
 
-  for (size_t i = 0; i <= entry->u.histogram.bucket_count; ++i) {
+  for (size_t i = 0; i < entry->u.histogram.bucket_count; ++i) {
     metrics_histogram_bucket_t hb = entry->u.histogram.buckets[i];
     if (bucket == hb.bucket) {
       if (hb.value > INT64_MAX) {

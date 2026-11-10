@@ -199,6 +199,14 @@ bridge_get_addr_port(const bridge_info_t *bridge)
   return &bridge->addrport_configured;
 }
 
+/** Returns the descriptor download schedule for this configured bridge. */
+download_status_t *
+bridge_get_dl_status(bridge_info_t *bridge)
+{
+  tor_assert(bridge);
+  return &bridge->fetch_status;
+}
+
 /**
  * Given a <b>bridge</b>, return the transport name. If none were configured,
  * NULL is returned.
@@ -740,7 +748,7 @@ launch_direct_bridge_descriptor_fetch(bridge_info_t *bridge)
   memcpy(&bridge_addrport.addr, &bridge->addr, sizeof(tor_addr_t));
   bridge_addrport.port = bridge->port;
 
-  guard_state = get_guard_state_for_bridge_desc_fetch(bridge->identity);
+  guard_state = get_guard_state_for_bridge_desc_fetch(bridge);
 
   directory_request_t *req =
     directory_request_new(DIR_PURPOSE_FETCH_SERVERDESC);

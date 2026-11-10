@@ -1423,6 +1423,21 @@ attach_pending_entry_connections_cb(mainloop_event_t *ev, void *arg)
   connection_ap_attach_pending(0);
 }
 
+/** Retry waiting streams after a pending circuit becomes unusable. Defer
+ * attachment until after the current callback, since it can launch circuits.
+ * This also works during bootstrap, before periodic attachment is enabled. */
+void
+connection_ap_retry_pending(void)
+{
+  if (!pending_entry_connections ||
+      smartlist_len(pending_entry_connections) == 0) {
+    return;
+  }
+  tor_assert(attach_pending_entry_connections_ev);
+  untried_pending_connections = 1;
+  mainloop_event_activate(attach_pending_entry_connections_ev);
+}
+
 /** Mark <b>entry_conn</b> as needing to get attached to a circuit.
  *
  * And <b>entry_conn</b> must be in AP_CONN_STATE_CIRCUIT_WAIT,
@@ -1545,8 +1560,8 @@ connection_ap_fail_onehop(const char *failed_digest,
                                   entry_conn->socks_request->port))
         continue;
     }
-    log_info(LD_APP, "Closing one-hop stream to '%s/%s' because the OR conn "
-                     "just failed.", entry_conn->chosen_exit_name,
+    log_info(LD_APP, "Closing one-hop stream to '%s/%s' because its first-hop "
+                     "attempt failed.", entry_conn->chosen_exit_name,
                      entry_conn->socks_request->address);
     connection_mark_unattached_ap(entry_conn, END_STREAM_REASON_TIMEOUT);
   } SMARTLIST_FOREACH_END(conn);
@@ -2199,18 +2214,18 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
       options->ExcludeExitNodesUnion_ : options->ExcludeExitNodes;
     const node_t *node = NULL;
 
-    /* If this .exit was added by an AUTOMAP, then it came straight from
-     * a user.  That's not safe. */
+    /* If this .exit was added by an AUTOMAP, then either it came straight
+     * from a user (that's not safe), or it came via MapAddress (could be
+     * safe but anyway we broke it and haven't fixed it). */
     if (exit_source == ADDRMAPSRC_AUTOMAP) {
-      /* Whoops; this one is stale.  It must have gotten added earlier?
-       * (Probably this is not possible, since AllowDotExit no longer
-       * exists.) */
-      log_warn(LD_APP,"Stale automapped address for '%s.$fp.exit'. Refusing.",
+      /* When we disabled AllowDotExit, we also broke MapAddress rewriting
+       * to .exit when combined with AutomapHostsOnResolve. See ticket 41418
+       * if you want to make it resume working. */
+      log_warn(LD_APP,"Automapped mapaddress for '%s.exit'. Refusing.",
                safe_str_client(socks->address));
       control_event_client_status(LOG_WARN, "SOCKS_BAD_HOSTNAME HOSTNAME=%s",
                                   escaped(socks->address));
       connection_mark_unattached_ap(conn, END_STREAM_REASON_TORPROTOCOL);
-      tor_assert_nonfatal_unreached();
       return -1;
     }
 
@@ -4230,6 +4245,28 @@ connection_exit_begin_conn(const relay_msg_t *msg, circuit_t *circ)
                                     layer_hint);
       return 0;
     }
+    /* Rate limit first so that a peer flooding BEGIN_DIR that the lifetime
+     * limit below refuses still hits the stronger rate defense. */
+    switch (dos_begindir_new_request(or_circ)) {
+      case DOS_STREAM_DEFENSE_NONE:
+        break;
+      case DOS_STREAM_DEFENSE_REFUSE_STREAM:
+        /* Same as BEGIN: avoid END_STREAM_REASON_RESOURCELIMIT so clients
+         * don't mark us as non-functional. */
+        relay_send_end_cell_from_edge(msg->stream_id, circ,
+                                      END_STREAM_REASON_MISC, layer_hint);
+        return 0;
+      case DOS_STREAM_DEFENSE_CLOSE_CIRCUIT:
+        return -END_CIRC_REASON_RESOURCELIMIT;
+    }
+    if (dos_begindir_should_refuse(or_circ)) {
+      /* Relays isolate every directory request on its own circuit, so only
+       * refuse the stream. Avoid END_STREAM_REASON_RESOURCELIMIT so we
+       * aren't marked as non-functional. */
+      relay_send_end_cell_from_edge(msg->stream_id, circ,
+                                    END_STREAM_REASON_MISC, layer_hint);
+      return 0;
+    }
     /* Make sure to get the 'real' address of the previous hop: the
      * caller might want to know whether the remote IP address has changed,
      * and we might already have corrected base_.addr[ess] for the relay's
@@ -4320,9 +4357,9 @@ connection_exit_begin_conn(const relay_msg_t *msg, circuit_t *circ)
 
   log_debug(LD_EXIT,"about to start the dns_resolve().");
 
-  // in the future we may want to have a similar defense for BEGIN_DIR and
-  // BEGIN sent to OS.
-  dos_defense_type = dos_stream_new_begin_or_resolve_cell(or_circ);
+  // BEGIN_DIR has its own per circuit limit above. In the future we may want
+  // to have a similar defense for BEGIN sent to OS.
+  dos_defense_type = dos_stream_new_request(or_circ);
   switch (dos_defense_type) {
     case DOS_STREAM_DEFENSE_NONE:
       break;
@@ -4392,7 +4429,7 @@ connection_exit_begin_resolve(const relay_msg_t *msg, or_circuit_t *circ)
 
   dummy_conn->on_circuit = TO_CIRCUIT(circ);
 
-  dos_defense_type = dos_stream_new_begin_or_resolve_cell(circ);
+  dos_defense_type = dos_stream_new_request(circ);
   switch (dos_defense_type) {
     case DOS_STREAM_DEFENSE_NONE:
       break;
@@ -4943,6 +4980,7 @@ connection_edge_update_circuit_isolation(const entry_connection_t *conn,
     circ->socks_password_len = sr->passwordlen;
 
     circ->isolation_values_set = 1;
+    circuit_sync_isolation(circ);
     return 0;
   } else {
     uint8_t mixed = 0;
@@ -4973,6 +5011,7 @@ connection_edge_update_circuit_isolation(const entry_connection_t *conn,
                "isolation flags.");
     }
     circ->isolation_flags_mixed |= mixed;
+    circuit_sync_isolation(circ);
     return 0;
   }
 }
@@ -5001,25 +5040,8 @@ circuit_clear_isolation(origin_circuit_t *circ)
     return;
   }
 
-  circ->isolation_values_set = 0;
-  circ->isolation_flags_mixed = 0;
-  circ->associated_isolated_stream_global_id = 0;
-  circ->client_proto_type = 0;
-  circ->client_proto_socksver = 0;
-  circ->dest_port = 0;
-  tor_addr_make_unspec(&circ->client_addr);
-  tor_free(circ->dest_address);
-  circ->session_group = -1;
-  circ->nym_epoch = 0;
-  if (circ->socks_username) {
-    memwipe(circ->socks_username, 0x11, circ->socks_username_len);
-    tor_free(circ->socks_username);
-  }
-  if (circ->socks_password) {
-    memwipe(circ->socks_password, 0x05, circ->socks_password_len);
-    tor_free(circ->socks_password);
-  }
-  circ->socks_username_len = circ->socks_password_len = 0;
+  circuit_reset_isolation(circ);
+  circuit_sync_isolation(circ);
 }
 
 /** Send an END and mark for close the given edge connection conn using the

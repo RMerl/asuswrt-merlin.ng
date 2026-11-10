@@ -856,8 +856,8 @@ tor_tls_write(tor_tls_t *tls, const char *cp, size_t n)
  * TOR_TLS_DONE.  On failure, returns TOR_TLS_ERROR, TOR_TLS_WANTREAD,
  * or TOR_TLS_WANTWRITE.
  */
-int
-tor_tls_handshake(tor_tls_t *tls)
+MOCK_IMPL(int,
+tor_tls_handshake,(tor_tls_t *tls))
 {
   int r;
   tor_assert(tls);
@@ -943,8 +943,8 @@ tor_tls_get_own_cert,(tor_tls_t *tls))
 
 /** Return the number of bytes available for reading from <b>tls</b>.
  */
-int
-tor_tls_get_pending_bytes(tor_tls_t *tls)
+MOCK_IMPL(int,
+tor_tls_get_pending_bytes,(tor_tls_t *tls))
 {
   tor_assert(tls);
   return SSL_pending(tls->ssl);

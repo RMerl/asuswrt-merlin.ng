@@ -754,20 +754,6 @@ rep_hist_note_router_unreachable(const char *id, time_t when)
   }
 }
 
-/** Mark a router with ID <b>id</b> as non-Running, and retroactively declare
- * that it has never been running: give it no stability and no WFU. */
-void
-rep_hist_make_router_pessimal(const char *id, time_t when)
-{
-  or_history_t *hist = get_or_history(id);
-  tor_assert(hist);
-
-  rep_hist_note_router_unreachable(id, when);
-
-  hist->weighted_run_length = 0;
-  hist->weighted_uptime = 0;
-}
-
 /** Helper: Discount all old MTBF data, if it is time to do so.  Return
  * the time at which we should next discount MTBF data. */
 time_t

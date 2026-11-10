@@ -534,6 +534,10 @@ struct or_options_t {
   struct smartlist_t *AuthDirRejectCCs;
   /**@}*/
 
+  /** If true, we do not allow relays or consensus methods
+   * that would degrade support for clients running 0.4.8 or earlier. */
+  int AuthDirSupport048Clients;
+
   char *AccountingStart; /**< How long is the accounting interval, and when
                           * does it start? */
   uint64_t AccountingMax; /**< How many bytes do we allow per accounting

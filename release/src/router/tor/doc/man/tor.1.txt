@@ -1830,7 +1830,26 @@ to building Tor circuits and using them:
 
 // Out of order because it logically belongs before the CircuitBuildTimeout option
 [[LearnCircuitBuildTimeout]] **LearnCircuitBuildTimeout** **0**|**1**::
-    If 0, CircuitBuildTimeout adaptive learning is disabled. (Default: 1)
+    If 0, CircuitBuildTimeout adaptive learning is disabled. (Default: 1) +
+ +
+    If adaptive history contains only abandoned measurements, Tor clears that
+    history and restarts learning with conservative timeout values. This does
+    not change guard selection or guarantee that a stalled path will recover.
+    During continuing circuit-build failures, Tor logs a process-wide expiry
+    summary at most once every five minutes. Hop-stage and channel-state
+    counts are separate totals, not correlated observations. Failed first-hop
+    connections are counted separately as connection_failed; they have not
+    yet started circuit build timing. +
+ +
+    To diagnose persistent failures with fixed timeouts, restart with
+    LearnCircuitBuildTimeout 0 and CircuitBuildTimeout 60 while preserving
+    the existing state file. Purpose-specific timeout rules still apply;
+    a path already failing after 60 seconds might remain unusable. Changing
+    these options in a running process is not equivalent to this restart
+    diagnostic. When reporting failures, share the aggregate expiry/recovery
+    summaries and, if requested, only TotalBuildTimes and
+    CircuitBuildAbandonedCount from state. Do not share the full state file,
+    histogram bins, or circuit path logs by default.
 
 [[CircuitBuildTimeout]] **CircuitBuildTimeout** __NUM__::
     Try for at most NUM seconds when building circuits. If the circuit isn't
@@ -3129,6 +3148,44 @@ The following options are useful only for a exit relay.
     not defined or set to 0, it is controlled by a consensus parameter. If not
     defined in the consensus, the value is 300. (Default: 0)
 
+The following options are useful only for a directory cache.
+
+[[DoSBeginDirRateEnabled]] **DoSBeginDirRateEnabled** **0**|**1**|**auto**::
+
+    Enable the BEGIN_DIR rate limit. If set to 1 (enabled), tor will apply a
+    rate limit on the directory streams opened per circuit. "auto" means use
+    the consensus parameter. If not defined in the consensus, the value is 1.
+    (Default: auto)
+
+[[DoSBeginDirDefenseType]] **DoSBeginDirDefenseType** __NUM__::
+
+    This is the type of defense applied to a circuit going over the BEGIN_DIR
+    rate limit. The possible values are:
+     +
+      1: No defense.
+     +
+      2: Reject the directory stream.
+     +
+      3: Close the circuit.
+     +
+    "0" means use the consensus parameter. If not defined in the consensus, the value is 3.
+    (Default: 0)
+
+[[DoSBeginDirRate]] **DoSBeginDirRate** __NUM__::
+
+    The allowed rate of BEGIN_DIR from a single circuit per second. Coupled
+    with the burst (see below), if the limit is reached, actions can be taken
+    against the stream or circuit (DoSBeginDirDefenseType). If not defined or
+    set to 0, it is controlled by a consensus parameter. If not defined in the
+    consensus, the value is 10. (Default: 0)
+
+[[DoSBeginDirBurst]] **DoSBeginDirBurst** __NUM__::
+
+    The allowed burst of BEGIN_DIR from a circuit. See the DoSBeginDirRate for
+    more details on this detection. If not defined or set to 0, it is
+    controlled by a consensus parameter. If not defined in the consensus, the
+    value is 60. (Default: 0)
+
 
 For onion services, mitigations are a work in progress and multiple options
 are currently available.
@@ -3335,7 +3392,11 @@ on the public Tor network.
 
 [[AuthDirMaxServersPerAddr]] **AuthDirMaxServersPerAddr** __NUM__::
     Authoritative directories only. The maximum number of servers that we will
-    list as acceptable on a single IP address. Set this to "0" for "no limit".
+    list as acceptable on a single IP address. Only servers that we have
+    found reachable at that address count toward the limit, so it is only
+    enforced when AuthDirTestReachability is set, and for IPv6 addresses
+    only when AuthDirHasIPv6Connectivity is set. Set this to "0" for
+    "no limit".
     (Default: 2)
 
 [[AuthDirPinKeys]] **AuthDirPinKeys** **0**|**1**::
@@ -3377,6 +3438,14 @@ on the public Tor network.
     If zero, the authority won't participate in the protocol. If non-zero
     (default), the flag "shared-rand-participate" is added to the authority
     vote indicating participation in the protocol. (Default: 1)
+
+[[AuthDirSupport048Clients]] **AuthDirSupport048Clients** **0**|**1**::
+    Authoritative directory only.
+    If true, we do not accept any router descriptors or generate any
+    consensuses that would confuse clients running 0.4.8 and earlier.
+    If false, 0.4.8 clients will get a somewhat degraded view of the network,
+    but will generally continue working.
+    (Default: 0)
 
 [[AuthDirTestEd25519LinkKeys]] **AuthDirTestEd25519LinkKeys**  **0**|**1**::
     Authoritative directories only. If this option is set to 0, then we treat
@@ -3450,7 +3519,8 @@ on the public Tor network.
 
 [[MinUptimeHidServDirectoryV2]] **MinUptimeHidServDirectoryV2** __N__ **seconds**|**minutes**|**hours**|**days**|**weeks**::
     Minimum uptime of a relay to be accepted as a hidden service directory
-    by directory authorities. (Default: 96 hours)
+    by directory authorities. A relay that has the HSDir flag in a recent
+    consensus doesn't need to meet it. (Default: 96 hours)
 
 [[RecommendedClientVersions]] **RecommendedClientVersions** __STRING__::
     STRING is a comma-separated list of Tor versions currently believed to be
@@ -3476,7 +3546,7 @@ on the public Tor network.
 [[MinimalAcceptedServerVersion]] **MinimalAcceptedServerVersion** __STRING__::
    STRING is the oldest Tor version accepted by the directory authority for
    relays and bridge. Any older version will be rejected.
-   (Default: 0.4.7.0-alpha-dev)
+   (Default: 0.4.9.1-alpha)
 
 [[V3AuthDistDelay]] **V3AuthDistDelay** __N__ **seconds**|**minutes**|**hours**::
     V3 authoritative directories only. Configures the server's preferred  delay

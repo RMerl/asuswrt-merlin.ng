@@ -18,6 +18,7 @@ extern uint64_t stats_n_relay_cells_relayed;
 extern uint64_t stats_n_relay_cells_delivered;
 extern uint64_t stats_n_circ_max_cell_reached;
 extern uint64_t stats_n_circ_max_cell_outq_reached;
+extern bool mainloop_must_free_memory;
 
 const char *relay_command_to_string(uint8_t command);
 
@@ -118,6 +119,8 @@ relay_cell_fmt_t circuit_get_relay_format(const circuit_t *circ,
 size_t circuit_max_relay_payload(const circuit_t *circ,
                                  const crypt_path_t *cpath,
                                  uint8_t relay_command);
+
+void cell_queues_reclaim_memory(void);
 
 #ifdef RELAY_PRIVATE
 STATIC int

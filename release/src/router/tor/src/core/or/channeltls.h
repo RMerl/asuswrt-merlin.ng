@@ -35,9 +35,12 @@ struct channel_tls_t {
 
 #endif /* defined(CHANNEL_OBJECT_PRIVATE) */
 
+struct circuit_guard_state_t;
 channel_t * channel_tls_connect(const tor_addr_t *addr, uint16_t port,
                                 const char *id_digest,
-                                const struct ed25519_public_key_t *ed_id);
+                                const struct ed25519_public_key_t *ed_id,
+                            const struct circuit_guard_state_t *guard_state,
+                            bool for_origin_circ);
 channel_listener_t * channel_tls_get_listener(void);
 channel_listener_t * channel_tls_start_listener(void);
 channel_t * channel_tls_handle_incoming(or_connection_t *orconn);

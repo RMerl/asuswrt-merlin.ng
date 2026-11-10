@@ -62,6 +62,15 @@ rend_mid_establish_rendezvous(or_circuit_t *circ, const uint8_t *request,
     goto err;
   }
 
+  /* A (pending) conflux leg must stay a plain OR circuit: changing its
+   * purpose is treated as a close of the leg by the conflux subsystem. */
+  if (circ->base_.conflux || circ->base_.conflux_pending_nonce) {
+    relay_increment_est_rend_action(EST_REND_UNSUITABLE_CIRCUIT);
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Tried to establish rendezvous on a conflux circuit");
+    goto err;
+  }
+
   if (request_len != REND_COOKIE_LEN) {
     relay_increment_est_rend_action(EST_REND_MALFORMED);
     log_fn(LOG_PROTOCOL_WARN,
@@ -119,6 +128,16 @@ rend_mid_rendezvous(or_circuit_t *circ, const uint8_t *request,
     relay_increment_rend1_action(REND1_UNSUITABLE_CIRCUIT);
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
            "Tried to complete rendezvous on non-OR or non-edge circuit %u.",
+           (unsigned)circ->p_circ_id);
+    reason = END_CIRC_REASON_TORPROTOCOL;
+    goto err;
+  }
+
+  /* Same for a (pending) conflux leg: its purpose must not change. */
+  if (circ->base_.conflux || circ->base_.conflux_pending_nonce) {
+    relay_increment_rend1_action(REND1_UNSUITABLE_CIRCUIT);
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Tried to complete rendezvous on conflux circuit %u.",
            (unsigned)circ->p_circ_id);
     reason = END_CIRC_REASON_TORPROTOCOL;
     goto err;

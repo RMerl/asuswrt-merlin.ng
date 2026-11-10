@@ -2156,6 +2156,50 @@ test_dir_split_fps(void *testdata)
   SMARTLIST_FOREACH(sl, char *, cp, tor_free(cp));
   smartlist_clear(sl);
 
+  /* Filtering must preserve order and duplicates unless sorting is requested,
+   * and must append to an existing output list. Include consecutive rejects,
+   * invalid encodings of the right length, and a .z on a rejected last entry.
+   */
+#define BAD_HEX "!!!!!!!!!!!!!!!!!!!!" "!!!!!!!!!!!!!!!!!!!!"
+#define BAD_B64 "!!!!!!!!!" "!!!!!!!!!" "!!!!!!!!!"
+  const struct {
+    const char *resource;
+    int flags;
+    int compressed;
+    int n_expected;
+    const char *expected[3];
+  } cases[] = {
+    { "bad+" HEX2 "+" BAD_HEX "+bad+" HEX1 "+" HEX2 "+bad.z",
+      DSR_HEX, 1, 3, { HEX2, HEX1, HEX2 } },
+    { "bad+" HEX2 "+" BAD_HEX "+bad+" HEX1 "+" HEX2 "+bad",
+      DSR_HEX|DSR_SORT_UNIQ, 0, 2, { HEX2, HEX1 } },
+    { "bad-" B64_2 "-" BAD_B64 "-bad-" B64_1 ".z",
+      DSR_BASE64, 1, 2, { HEX2, HEX1 } },
+    { "bad+" HEX256_2 "+bad+bad+" HEX256_1 "+bad",
+      DSR_HEX|DSR_DIGEST256, 0, 2, { HEX256_2, HEX256_1 } },
+    { "bad-" B64_256_2 "-bad-bad-" B64_256_1 ".z",
+      DSR_BASE64|DSR_DIGEST256, 1, 2, { HEX256_2, HEX256_1 } },
+    { "bad+" BAD_HEX "+bad.z", DSR_HEX, 1, 0, { NULL } },
+    { "bad-" BAD_B64 "-bad", DSR_BASE64, 0, 0, { NULL } },
+    { "", DSR_HEX, 0, 0, { NULL } },
+  };
+  for (unsigned i = 0; i < ARRAY_LENGTH(cases); ++i) {
+    int compressed = -1;
+    smartlist_add(sl, tor_strdup("existing"));
+    tt_int_op(dir_split_resource_into_fingerprints(cases[i].resource, sl,
+                         &compressed, cases[i].flags), OP_EQ, 0);
+    tt_int_op(compressed, OP_EQ, cases[i].compressed);
+    tt_int_op(smartlist_len(sl), OP_EQ, cases[i].n_expected + 1);
+    tt_str_op(smartlist_get(sl, 0), OP_EQ, "existing");
+    for (int j = 0; j < cases[i].n_expected; ++j) {
+      test_mem_op_hex(smartlist_get(sl, j + 1), OP_EQ, cases[i].expected[j]);
+    }
+    SMARTLIST_FOREACH(sl, char *, cp, tor_free(cp));
+    smartlist_clear(sl);
+  }
+#undef BAD_HEX
+#undef BAD_B64
+
  done:
   SMARTLIST_FOREACH(sl, char *, cp, tor_free(cp));
   smartlist_free(sl);
@@ -5456,6 +5500,35 @@ test_dir_should_use_directory_guards(void *data)
     tor_free(errmsg);
 }
 
+static void
+test_dir_tunnel_isolation_flags(void *data)
+{
+  or_options_t *options = NULL;
+  (void)data;
+
+  options = options_new();
+  options_init(options);
+
+  /* Client: one-hop requests share circuits, anonymized ones don't. */
+  tt_int_op(dirclient_tunnel_isolation_flags(options, 0), OP_EQ,
+            ISO_SESSIONGRP);
+  tt_int_op(dirclient_tunnel_isolation_flags(options, 1), OP_EQ, ISO_STREAM);
+
+  /* Relay: every request gets its own circuit. */
+  options->ORPort_set = 1;
+  tt_int_op(dirclient_tunnel_isolation_flags(options, 0), OP_EQ, ISO_STREAM);
+  tt_int_op(dirclient_tunnel_isolation_flags(options, 1), OP_EQ, ISO_STREAM);
+
+  /* Bridge: same as a client. */
+  options->BridgeRelay = 1;
+  tt_int_op(dirclient_tunnel_isolation_flags(options, 0), OP_EQ,
+            ISO_SESSIONGRP);
+  tt_int_op(dirclient_tunnel_isolation_flags(options, 1), OP_EQ, ISO_STREAM);
+
+ done:
+  or_options_free(options);
+}
+
 static void dir_tests_directory_initiate_request(directory_request_t *req);
 ATTR_UNUSED static int dir_tests_directory_initiate_request_called = 0;
 
@@ -7482,6 +7555,7 @@ struct testcase_t dir_tests[] = {
   DIR(authdir_type_to_string, 0),
   DIR(conn_purpose_to_string, 0),
   DIR(should_use_directory_guards, 0),
+  DIR(tunnel_isolation_flags, 0),
   DIR(should_not_init_request_to_ourselves, TT_FORK),
   DIR(should_not_init_request_to_dir_auths_without_v3_info, 0),
   DIR(should_init_request_to_dir_auths, 0),

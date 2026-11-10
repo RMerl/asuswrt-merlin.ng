@@ -3,6 +3,13 @@
 
 #include "orconfig.h"
 
+#include <signal.h>
+
+#define BUFFERS_PRIVATE
+#define CONNECTION_PRIVATE
+#define HIBERNATE_PRIVATE
+#define CHANNEL_OBJECT_PRIVATE
+#define MAINLOOP_PRIVATE
 #define CIRCUITLIST_PRIVATE
 #define CIRCUITBUILD_PRIVATE
 #define CONFIG_PRIVATE
@@ -10,20 +17,50 @@
 #define ENTRYNODES_PRIVATE
 #define ROUTERLIST_PRIVATE
 #define DIRCLIENT_PRIVATE
+#define PT_PRIVATE
 
 #include "core/or/or.h"
+#include "core/or/channel.h"
+#include "core/or/circuituse.h"
+#include "core/or/entry_connection_st.h"
+#include "core/or/connection_edge.h"
+#include "core/or/socks_request_st.h"
+#include "lib/net/socket.h"
+#include "lib/evloop/compat_libevent.h"
+#include <event2/event.h>
+#include "lib/tls/tortls.h"
+#include "core/or/or_handshake_state_st.h"
+#include "core/or/var_cell_st.h"
+#include "core/or/cell_st.h"
+#include "core/or/scheduler.h"
+#include "test/fakechans.h"
+#include "feature/hibernate/hibernate.h"
+#include "core/or/channeltls.h"
+#include "core/or/connection_or.h"
+#include "core/or/or_connection_st.h"
+#include "core/mainloop/connection.h"
+#include "core/mainloop/mainloop.h"
+#include "lib/buf/buffers.h"
 #include "test/test.h"
 
 #include "feature/client/bridges.h"
+#include "feature/client/transports.h"
+#include "feature/control/control_events.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitbuild.h"
+#include "core/or/extendinfo.h"
+#include "core/or/crypt_path.h"
 #include "app/config/config.h"
 #include "lib/confmgt/confmgt.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "feature/dircommon/directory.h"
 #include "feature/dirclient/dirclient.h"
+#include "feature/dirclient/dlstatus.h"
 #include "feature/client/entrynodes.h"
 #include "feature/nodelist/nodelist.h"
+#include "feature/nodelist/dirlist.h"
+#include "feature/nodelist/node_select.h"
+#include "feature/dirclient/dir_server_st.h"
 #include "feature/nodelist/nodefamily.h"
 #include "feature/nodelist/networkstatus.h"
 #include "core/or/policies.h"
@@ -2125,10 +2162,11 @@ test_entry_guard_select_for_circuit_highlevel_primary(void *arg)
 
   /* It's failed!  What will happen to our poor guard? */
   update_approx_time(start+45);
-  entry_guard_failed(&guard);
+  entry_guard_connection_failed(guard->guard);
   tt_assert(guard);
-  tt_int_op(guard->state, OP_EQ, GUARD_CIRC_STATE_DEAD);
-  tt_i64_op(guard->state_set_at, OP_EQ, start+45);
+  /* A connection failure does not mutate the request's success state. */
+  tt_int_op(guard->state, OP_EQ, GUARD_CIRC_STATE_USABLE_ON_COMPLETION);
+  tt_i64_op(guard->state_set_at, OP_EQ, start+35);
   g = entry_guard_handle_get(guard->guard);
   tt_assert(g);
   tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
@@ -2204,7 +2242,7 @@ test_entry_guard_select_for_circuit_highlevel_confirm_other(void *arg)
     tt_assert(guard);
     tt_int_op(r, OP_EQ, 0);
     tt_int_op(guard->state, OP_EQ, GUARD_CIRC_STATE_USABLE_ON_COMPLETION);
-    entry_guard_failed(&guard);
+    entry_guard_connection_failed(guard->guard);
     circuit_guard_state_free(guard);
     guard = NULL;
     node = NULL;
@@ -2273,7 +2311,7 @@ test_entry_guard_select_for_circuit_highlevel_primary_retry(void *arg)
     g = entry_guard_handle_get(guard->guard);
     make_guard_confirmed(gs, g);
     tt_int_op(g->is_primary, OP_EQ, 1);
-    entry_guard_failed(&guard);
+    entry_guard_connection_failed(guard->guard);
     circuit_guard_state_free(guard);
     tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
     guard = NULL;
@@ -2416,7 +2454,7 @@ test_entry_guard_select_and_cancel(void *arg)
     tt_int_op(g->is_primary, OP_EQ, 1);
     tt_int_op(g->is_pending, OP_EQ, 0);
     make_guard_confirmed(gs, g);
-    entry_guard_failed(&guard);
+    entry_guard_connection_failed(guard->guard);
     circuit_guard_state_free(guard);
     guard = NULL;
     node = NULL;
@@ -2517,7 +2555,7 @@ upgrade_circuits_setup(const struct testcase_t *testcase)
     entry_guard_pick_for_circuit(gs, GUARD_USAGE_TRAFFIC, NULL, &node, &guard);
     g = entry_guard_handle_get(guard->guard);
     make_guard_confirmed(gs, g);
-    entry_guard_failed(&guard);
+    entry_guard_connection_failed(guard->guard);
     circuit_guard_state_free(guard);
   }
 
@@ -2981,8 +3019,12 @@ test_entry_guard_outdated_dirserver_exclusion(void *arg)
     SMARTLIST_FOREACH_BEGIN(gs->primary_entry_guards,const entry_guard_t *,g) {
       memcpy(conn->identity_digest, g->identity, DIGEST_LEN);
 
+      const int reachable = g->is_reachable;
       retval = handle_response_fetch_microdesc(conn, args);
       tt_int_op(retval, OP_EQ, 0);
+      tt_int_op(g->is_reachable, OP_EQ, reachable);
+      tt_assert(smartlist_contains(gs->sampled_entry_guards, g));
+      tt_assert(g->is_usable_filtered_guard);
     } SMARTLIST_FOREACH_END(g);
   }
 
@@ -3197,6 +3239,1772 @@ test_entry_guard_layer2_guards(void *arg)
   UNMOCK(router_have_minimum_dir_info);
 }
 
+/** Finalization consumes selection permission, independently of request
+ * lifetime, CBT history, received identity, and the active selection. */
+static void
+test_entry_guard_establishment_finalizer(void *arg)
+{
+  (void)arg;
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  hibernate_set_state_for_testing_(HIBERNATE_STATE_LIVE);
+  channel_t chan;
+  memset(&chan, 0, sizeof(chan));
+  unsigned selected_state;
+  entry_guard_t *g = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC,
+                                                  NULL, &selected_state);
+  tt_assert(g);
+  for (int mode = 0; mode < 10; ++mode) {
+    hibernate_set_state_for_testing_(mode == 8 ? HIBERNATE_STATE_DORMANT :
+                        mode == 9 ? HIBERNATE_STATE_EXITING :
+                                    HIBERNATE_STATE_LIVE);
+    state = circuit_guard_state_new(g, selected_state, NULL);
+    chan.state = CHANNEL_STATE_OPENING;
+    chan.is_incoming = mode == 1;
+    chan.has_been_open = mode == 2;
+    chan.establishment_guard = entry_guard_handle_from_state(state);
+    tt_ptr_op(chan.establishment_guard, OP_NE, state->guard);
+    g->is_reachable = GUARD_REACHABLE_YES;
+    get_options_mutable()->LearnCircuitBuildTimeout = mode != 6;
+    get_options_mutable()->DisableNetwork = mode == 4;
+    /* Cancellation must suppress a later failure notification. */
+    if (mode == 3)
+      channel_note_establishment_cancelled(&chan);
+    if (mode == 5) {
+      /* A channel with no association cannot adopt a later request. */
+      channel_note_establishment_cancelled(&chan);
+    }
+    /* Losing the launching request never loses the independent handle. */
+    entry_guard_cancel(&state);
+    tt_ptr_op(state, OP_EQ, NULL);
+    channel_note_establishment_failure(&chan);
+    tt_ptr_op(chan.establishment_guard, OP_EQ, NULL);
+    tt_int_op(g->is_reachable, OP_EQ,
+              mode == 0 || mode == 6 || mode == 7 ?
+              GUARD_REACHABLE_NO : GUARD_REACHABLE_YES);
+    tt_int_op(g->is_pending, OP_EQ, 0);
+    tt_int_op(g->confirmed_idx, OP_EQ, -1);
+    /* A subsequent success must not be undone by duplicate delivery. */
+    g->is_reachable = GUARD_REACHABLE_YES;
+    get_options_mutable()->DisableNetwork = 0;
+    channel_note_establishment_failure(&chan);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+  }
+
+  state = circuit_guard_state_new(g, selected_state, NULL);
+  chan.establishment_guard = entry_guard_handle_from_state(state);
+  guard_selection_free(gs); /* invalidates both weak handles */
+  entry_guard_cancel(&state);
+  tt_ptr_op(state, OP_EQ, NULL);
+  channel_note_establishment_failure(&chan);
+  tt_ptr_op(chan.establishment_guard, OP_EQ, NULL);
+
+ done:
+  get_options_mutable()->DisableNetwork = 0;
+  /* Release the fixture handle if an assertion skipped finalization. */
+  channel_note_establishment_cancelled(&chan);
+  circuit_guard_state_free(state);
+  guard_selection_free(gs);
+}
+
+/* Launch fixture: the real channel allocation owns its selection before the
+ * connection callback runs. Errors below use production producers. */
+static or_connection_t *establishment_conn;
+static or_connection_t *
+establishment_connect(const tor_addr_t *addr, uint16_t port,
+                      const char *digest, const ed25519_public_key_t *ed,
+                      channel_tls_t *chan, bool for_origin_circ)
+{
+  (void)ed;
+  (void)for_origin_circ;
+  or_connection_t *conn = or_connection_new(CONN_TYPE_OR,
+                                            tor_addr_family(addr));
+  conn->chan = chan;
+  chan->conn = conn;
+  conn->is_outgoing = 1;
+  conn->base_.state = OR_CONN_STATE_PROXY_HANDSHAKING;
+  tor_addr_copy(&conn->base_.addr, addr);
+  conn->base_.port = port;
+  conn->base_.address = tor_strdup("192.0.2.1");
+  memcpy(conn->identity_digest, digest, DIGEST_LEN);
+  establishment_conn = conn;
+  return conn;
+}
+
+/* These integration tests invoke real connection handlers without running
+ * Tor's main loop. The fixture supplies the subsystem initialization normally
+ * performed before those handlers run, including nonzero bandwidth buckets. */
+static void *
+establishment_test_setup(void)
+{
+  void *dispatcher = helper_setup_pubsub(NULL);
+  tor_init_connection_lists();
+  hibernate_set_state_for_testing_(HIBERNATE_STATE_LIVE);
+  connection_bucket_init();
+  scheduler_init();
+  return dispatcher;
+}
+
+/* Test-owned connections, circuits, and channels are released before this
+ * helper, while scheduler and pubsub dependencies are still available. */
+static void
+establishment_test_cleanup(void *dispatcher)
+{
+  scheduler_free_all();
+  helper_cleanup_pubsub(NULL, dispatcher);
+}
+
+static void
+test_entry_guard_establishment_failover(void *arg)
+{
+  void *dispatcher = establishment_test_setup();
+  (void)arg;
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  channel_t *chan = NULL;
+  smartlist_t *failed = smartlist_new();
+  tor_addr_t addr;
+  tor_addr_parse(&addr, "192.0.2.1");
+  MOCK(connection_or_connect, establishment_connect);
+  /* Expected deployment parameters; the existing selection tests exercise
+   * compiled defaults and configuration overrides. */
+  dummy_consensus->net_params = smartlist_new();
+  smartlist_add_strdup(dummy_consensus->net_params,
+                      "guard-n-primary-dir-guards-to-use=2");
+  smartlist_add_strdup(dummy_consensus->net_params,
+                      "guard-n-primary-guards-to-use=2");
+
+  for (int i = 0; i < 12; ++i) {
+    unsigned selected_state;
+    entry_guard_t *g = select_entry_guard_for_circuit(gs,
+                   i % 2 ? GUARD_USAGE_DIRGUARD : GUARD_USAGE_TRAFFIC,
+                   NULL, &selected_state);
+    tt_assert(g);
+    tt_assert(!smartlist_contains(failed, g));
+    smartlist_add(failed, g);
+    state = circuit_guard_state_new(g, selected_state, NULL);
+    chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+    tt_assert(chan);
+    tt_assert(chan->establishment_guard);
+    /* This also models a directory owner disappearing or a pending circuit
+     * expiring while the actual establishment remains in progress. */
+    entry_guard_cancel(&state);
+    if (i % 3 == 0) {
+      establishment_conn->base_.proxy_state = PROXY_HTTPS_WANT_CONNECT_OK;
+      buf_add(establishment_conn->base_.inbuf,
+              "HTTP/1.0 503 unavailable\r\n\r\n", 28);
+      tt_int_op(connection_read_proxy_handshake(TO_CONN(establishment_conn)),
+                OP_EQ, -1);
+      connection_or_close_for_error(establishment_conn, 0);
+    } else if (i % 3 == 1) {
+      connection_or_reached_eof(establishment_conn);
+    } else {
+      connection_or_close_for_error(establishment_conn, 0);
+    }
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+    tt_int_op(g->is_pending, OP_EQ, 0);
+    tt_int_op(g->confirmed_idx, OP_EQ, -1);
+    close_closeable_connections();
+    establishment_conn = NULL;
+    channel_unregister(chan);
+    channel_free(chan);
+  }
+
+ done:
+  UNMOCK(connection_or_connect);
+  circuit_guard_state_free(state);
+  if (establishment_conn) {
+    if (!establishment_conn->base_.marked_for_close)
+      connection_or_close_for_error(establishment_conn, 0);
+    close_closeable_connections();
+    establishment_conn = NULL;
+  }
+  channel_free_all();
+  smartlist_free(failed);
+  SMARTLIST_FOREACH(dummy_consensus->net_params, char *, param,
+                    tor_free(param));
+  smartlist_free(dummy_consensus->net_params);
+  dummy_consensus->net_params = NULL;
+  guard_selection_free(gs);
+  establishment_test_cleanup(dispatcher);
+}
+
+static void
+test_entry_guard_establishment_bridges(void *arg)
+{
+  (void)arg;
+  circuit_guard_state_t *state = NULL;
+  channel_t chan;
+  memset(&chan, 0, sizeof(chan));
+  chan.state = CHANNEL_STATE_OPENING;
+  hibernate_set_state_for_testing_(HIBERNATE_STATE_LIVE);
+  get_options_mutable()->UseBridges = 1;
+  mark_bridge_list();
+  for (int i = 1; i <= 30; ++i) {
+    char line[64];
+    tor_snprintf(line, sizeof(line), "192.0.2.%d:9001", i);
+    bridge_line_t *bl = parse_bridge_line(line);
+    tt_assert(bl);
+    bridge_add_from_config(bl); /* consumes bl */
+  }
+  guard_selection_t *gs = get_guard_selection_info();
+  tt_int_op(gs->type, OP_EQ, GS_TYPE_BRIDGE);
+  entry_guards_expand_sample(gs);
+  int n_sampled = smartlist_len(gs->sampled_entry_guards);
+  tt_int_op(n_sampled, OP_EQ, 20);
+  int sampled_fetches = 0, unsampled_fetches = 0;
+  const smartlist_t *bridges = bridge_list_get();
+  for (int i = 0; i < smartlist_len(bridges); ++i) {
+    const bridge_info_t *bridge = smartlist_get(bridges, i);
+    state = get_guard_state_for_bridge_desc_fetch(bridge);
+    if (!state) {
+      ++unsampled_fetches;
+      continue;
+    }
+    ++sampled_fetches;
+    entry_guard_t *g = entry_guard_handle_get(state->guard);
+    tt_assert(g);
+    tt_assert(tor_addr_port_eq(g->bridge_addr, bridge_get_addr_port(bridge)));
+    chan.establishment_guard = entry_guard_handle_from_state(state);
+    entry_guard_cancel(&state);
+    channel_note_establishment_failure(&chan);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+    tt_int_op(g->is_pending, OP_EQ, 0);
+    tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, n_sampled);
+  }
+  tt_int_op(sampled_fetches, OP_EQ, 20);
+  tt_int_op(unsampled_fetches, OP_EQ, 10);
+  /* A configured bridge removed during an attempt is not resurrected. */
+  for (int i = 0; i < smartlist_len(bridges); ++i) {
+    state = get_guard_state_for_bridge_desc_fetch(smartlist_get(bridges, i));
+    if (state)
+      break;
+  }
+  tt_assert(state);
+  entry_guard_t *g = entry_guard_handle_get(state->guard);
+  g->is_reachable = GUARD_REACHABLE_YES;
+  chan.establishment_guard = entry_guard_handle_from_state(state);
+  mark_bridge_list();
+  sweep_bridge_list();
+  channel_note_establishment_failure(&chan);
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+  entry_guard_cancel(&state);
+
+ done:
+  /* Release the fixture handle if an assertion skipped finalization. */
+  channel_note_establishment_cancelled(&chan);
+  circuit_guard_state_free(state);
+  bridges_free_all();
+  entry_guards_free_all();
+}
+
+/* Retrying the second configured endpoint must not reset the first endpoint's
+ * backoff, even if their fingerprints are unknown or deliberately shared. */
+static void
+test_entry_guard_establishment_bridge_retry_reset(void *arg)
+{
+  const struct testcase_t *testcase = arg;
+  const int known = testcase->setup_data != NULL;
+  circuit_guard_state_t *state[2] = { NULL, NULL };
+  entry_guard_t *guards[2];
+  download_status_t *dl[2];
+  get_options_mutable()->UseBridges = 1;
+  get_options_mutable()->NumPrimaryGuards = 1;
+  get_options_mutable()->TestingBridgeBootstrapDownloadInitialDelay = 5;
+  mark_bridge_list();
+  for (int i = 0; i < 2; ++i) {
+    char line[100];
+    tor_snprintf(line, sizeof(line), "192.0.2.%d:9001%s", i + 1,
+                 known ? " 0101010101010101010101010101010101010101" : "");
+    bridge_add_from_config(parse_bridge_line(line));
+  }
+  guard_selection_t *gs = get_guard_selection_info();
+  entry_guards_expand_sample(gs);
+  for (int i = 0; i < 2; ++i) {
+    bridge_info_t *bridge = smartlist_get(bridge_list_get(), i);
+    state[i] = get_guard_state_for_bridge_desc_fetch(bridge);
+    tt_assert(state[i]);
+    guards[i] = entry_guard_handle_get(state[i]->guard);
+    dl[i] = bridge_get_dl_status(bridge);
+    download_status_increment_attempt(dl[i], "bridge", approx_time() + 600);
+    tt_int_op(dl[i]->n_download_attempts, OP_GT, 0);
+  }
+  /* Prefer the second endpoint, independently of random sample order. */
+  make_guard_confirmed(gs, guards[1]);
+  entry_guards_update_primary(gs);
+  tt_int_op(smartlist_len(gs->primary_entry_guards), OP_EQ, 1);
+  tt_ptr_op(smartlist_get(gs->primary_entry_guards, 0), OP_EQ, guards[1]);
+  for (int i = 0; i < 2; ++i)
+    entry_guard_connection_failed(state[i]->guard);
+  const time_t other_retry = dl[0]->next_attempt_at;
+  const unsigned other_attempts = dl[0]->n_download_attempts;
+
+  mark_primary_guards_maybe_reachable(gs);
+  tt_int_op(guards[0]->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+  tt_int_op(guards[1]->is_reachable, OP_EQ, GUARD_REACHABLE_MAYBE);
+  tt_int_op(dl[1]->n_download_attempts, OP_EQ, 0);
+  tt_i64_op(dl[1]->next_attempt_at, OP_LT, other_retry);
+  tt_int_op(dl[0]->n_download_attempts, OP_EQ, other_attempts);
+  tt_i64_op(dl[0]->next_attempt_at, OP_EQ, other_retry);
+
+ done:
+  for (int i = 0; i < 2; ++i) {
+    if (state[i])
+      entry_guard_cancel(&state[i]);
+  }
+  entry_guards_free_all();
+  bridges_free_all();
+}
+
+static int connect_attempts;
+static int connect_error;
+static tor_socket_t
+establishment_socket_failure(tor_socket_t sock, const struct sockaddr *addr,
+                             socklen_t addrlen)
+{
+  (void)sock;
+  (void)addr;
+  (void)addrlen;
+  ++connect_attempts;
+#ifdef _WIN32
+  WSASetLastError(connect_error);
+#else
+  errno = connect_error;
+#endif
+  return -1;
+}
+
+/* Pending socket results retain the original attempt and its guard handle.
+ * Windows includes WSAEWOULDBLOCK among these results. */
+static void
+test_entry_guard_establishment_socket_pending(void *arg)
+{
+  (void)arg;
+  static const int pending_errors[] = {
+    SOCK_ERRNO(EINPROGRESS),
+#ifdef _WIN32
+    WSAEWOULDBLOCK, WSAEINVAL,
+#endif
+  };
+  void *dispatcher = establishment_test_setup();
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  channel_t *chan = NULL;
+  tor_addr_t addr;
+  tor_addr_parse(&addr, "192.0.2.1");
+  MOCK(tor_connect_socket, establishment_socket_failure);
+  unsigned selected_state;
+  entry_guard_t *g = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC,
+                                                  NULL, &selected_state);
+  state = circuit_guard_state_new(g, selected_state, NULL);
+  connect_attempts = 0;
+  for (unsigned i = 0; i < ARRAY_LENGTH(pending_errors); ++i) {
+    g->is_reachable = GUARD_REACHABLE_YES;
+    connect_error = pending_errors[i];
+    chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, true);
+    tt_assert(chan);
+    or_connection_t *conn = BASE_CHAN_TO_TLS(chan)->conn;
+    tt_assert(conn);
+    tt_int_op(connect_attempts, OP_EQ, i + 1);
+    tt_int_op(conn->base_.state, OP_EQ, OR_CONN_STATE_CONNECTING);
+    tt_int_op(conn->base_.marked_for_close, OP_EQ, 0);
+    tt_int_op(chan->state, OP_EQ, CHANNEL_STATE_OPENING);
+    tt_ptr_op(entry_guard_handle_get(chan->establishment_guard), OP_EQ, g);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+    tt_assert(connection_is_reading(TO_CONN(conn)));
+    tt_assert(connection_is_writing(TO_CONN(conn)));
+
+    connection_or_close_normally(conn, 0);
+    close_closeable_connections();
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+    channel_unregister(chan);
+    channel_free(chan);
+  }
+
+ done:
+  if (chan && BASE_CHAN_TO_TLS(chan)->conn) {
+    connection_or_close_normally(BASE_CHAN_TO_TLS(chan)->conn, 0);
+    close_closeable_connections();
+  }
+  circuit_guard_state_free(state);
+  channel_free_all();
+  UNMOCK(tor_connect_socket);
+  guard_selection_free(gs);
+  establishment_test_cleanup(dispatcher);
+}
+
+static void
+test_entry_guard_establishment_sync_cache(void *arg)
+{
+  const struct testcase_t *testcase = arg;
+  const int single_bridge = testcase->setup_data &&
+    !strcmp(testcase->setup_data, "single-bridge");
+  void *dispatcher = establishment_test_setup();
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  channel_t *chan = NULL;
+  const int old_max_sockets = get_max_sockets();
+  tor_addr_t addr;
+  tor_addr_parse(&addr, "192.0.2.1");
+  MOCK(tor_connect_socket, establishment_socket_failure);
+  unsigned selected_state = GUARD_CIRC_STATE_USABLE_ON_COMPLETION;
+  entry_guard_t *g;
+  if (single_bridge) {
+    guard_selection_free(gs);
+    get_options_mutable()->UseBridges = 1;
+    mark_bridge_list();
+    bridge_add_from_config(parse_bridge_line("snowflake 192.0.2.1:9001"));
+    config_line_append(&get_options_mutable()->ClientTransportPlugin,
+                       "ClientTransportPlugin", "snowflake exec /unused");
+    gs = get_guard_selection_info();
+    entry_guards_expand_sample(gs);
+    tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, 1);
+    g = smartlist_get(gs->sampled_entry_guards, 0);
+  } else {
+    g = select_entry_guard_for_circuit(gs, GUARD_USAGE_DIRGUARD,
+                                       NULL, &selected_state);
+  }
+  state = circuit_guard_state_new(g, selected_state, NULL);
+  connect_attempts = 0;
+  connect_error = SOCK_ERRNO(ECONNREFUSED);
+  time_t start = approx_time();
+  if (single_bridge) {
+    /* Missing PT registration is local setup, not an attempted connection.
+     * Registration recovery permits the same bridge to be retried. */
+    chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+    tt_ptr_op(chan, OP_EQ, NULL);
+    tt_int_op(connect_attempts, OP_EQ, 0);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_MAYBE);
+    tt_int_op(transport_add_from_config(&addr, 9999, "snowflake",
+                                        PROXY_SOCKS5), OP_EQ, 0);
+  }
+  chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 1);
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+  /* Cache rejection is not another attempt and must not refresh its expiry. */
+  g->is_reachable = GUARD_REACHABLE_YES;
+  update_approx_time(start + 30);
+  chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 1);
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+  update_approx_time(start + 61);
+  chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 2);
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+  /* A terminal connect() result counts even for a local permission error. */
+  update_approx_time(start + 122);
+  connect_error = SOCK_ERRNO(EACCES);
+  g->is_reachable = GUARD_REACHABLE_YES;
+  chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 3);
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+  /* Socket creation failure precedes the attempted connect operation. */
+  g->is_reachable = GUARD_REACHABLE_YES;
+  update_approx_time(start + 183);
+  set_max_sockets(1);
+  chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+  set_max_sockets(old_max_sockets);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 3);
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+
+ done:
+  set_max_sockets(old_max_sockets);
+  circuit_guard_state_free(state);
+  channel_free_all();
+  UNMOCK(tor_connect_socket);
+  if (single_bridge) {
+    entry_guards_free_all();
+    bridges_free_all();
+  } else {
+    guard_selection_free(gs);
+  }
+  establishment_test_cleanup(dispatcher);
+}
+
+/* Origin provenance is independent of guard attribution. In particular,
+ * synchronous fallback failures must not populate the relay EXTEND cache. */
+static void
+test_entry_guard_establishment_origin_cache(void *arg)
+{
+  (void)arg;
+  control_event_bootstrap(BOOTSTRAP_STATUS_STARTING, 0);
+  void *dispatcher = establishment_test_setup();
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  channel_t *chan = NULL;
+  extend_info_t *ei = NULL;
+  tor_addr_t addr;
+  tor_addr_parse(&addr, "192.0.2.1");
+  MOCK(tor_connect_socket, establishment_socket_failure);
+  unsigned selected_state;
+  entry_guard_t *g = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC,
+                                                  NULL, &selected_state);
+  state = circuit_guard_state_new(g, selected_state, NULL);
+  connect_error = SOCK_ERRNO(ECONNREFUSED);
+  connect_attempts = 0;
+  const time_t start = approx_time();
+  /* Different ports keep these three launch types independent. */
+  for (int mode = 0; mode < 3; ++mode) {
+    ei = extend_info_new(NULL, g->identity, NULL, NULL, &addr, 9001 + mode,
+                         NULL, false);
+    const int attempts_before = connect_attempts;
+    for (int attempt = 0; attempt < 2; ++attempt) {
+      chan = channel_connect_for_circuit(ei, mode == 0 ? state : NULL,
+                                         mode != 2);
+      tt_ptr_op(chan, OP_EQ, NULL);
+    }
+    tt_int_op(connect_attempts - attempts_before, OP_EQ, mode == 2 ? 1 : 2);
+    extend_info_free(ei);
+  }
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+  /* The unguarded relay launch above populated the cache. Becoming an origin
+   * request does not bypass or refresh that existing entry. */
+  ei = extend_info_new(NULL, g->identity, NULL, NULL, &addr, 9003,
+                       NULL, false);
+  update_approx_time(start + 30);
+  chan = channel_connect_for_circuit(ei, state, true);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 5);
+  update_approx_time(start + 61);
+  chan = channel_connect_for_circuit(ei, state, true);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 6);
+  chan = channel_connect_for_circuit(ei, state, true);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 7);
+
+ done:
+  extend_info_free(ei);
+  if (state)
+    entry_guard_cancel(&state);
+  channel_free_all();
+  UNMOCK(tor_connect_socket);
+  guard_selection_free(gs);
+  establishment_test_cleanup(dispatcher);
+}
+
+/* Keep the downloader and guard selector real; replace the directory request
+ * owner and the eventual peer response. Channel/socket launch is real. */
+static channel_t *bridge_retry_chan;
+static circuit_guard_state_t *bridge_retry_state;
+static int bridge_retry_requests;
+
+static void
+bridge_retry_launch(const tor_addr_port_t *ap, const char *digest,
+                    circuit_guard_state_t *state)
+{
+  tor_assert(!bridge_retry_chan && !bridge_retry_state);
+  bridge_retry_state = state;
+  extend_info_t *ei = extend_info_new(NULL, digest, NULL, NULL,
+                                      &ap->addr, ap->port, NULL, false);
+  bridge_retry_chan = channel_connect_for_circuit(ei, state, true);
+  extend_info_free(ei);
+  if (!bridge_retry_chan)
+    entry_guard_cancel(&bridge_retry_state);
+}
+
+static void
+bridge_retry_directory_request(directory_request_t *req)
+{
+  ++bridge_retry_requests;
+  tor_assert(req->guard_state);
+  bridge_retry_launch(&req->or_addr_port, req->digest, req->guard_state);
+}
+
+static void
+test_entry_guard_establishment_bridge_retry(void *arg)
+{
+  control_event_bootstrap(BOOTSTRAP_STATUS_STARTING, 0);
+  const struct testcase_t *testcase = arg;
+  const int cached = testcase->setup_data != NULL;
+  void *dispatcher = establishment_test_setup();
+  char *missing = NULL;
+  node_t *node = smartlist_get(big_fake_net_nodes, 0);
+  routerinfo_t ri;
+  memset(&ri, 0, sizeof(ri));
+  ri.purpose = ROUTER_PURPOSE_BRIDGE;
+  tor_addr_copy(&ri.ipv4_addr, &node->rs->ipv4_addr);
+  ri.ipv4_orport = node->rs->ipv4_orport;
+  memcpy(ri.cache_info.identity_digest, node->identity, DIGEST_LEN);
+  node->ri = cached ? &ri : NULL;
+  char line[128];
+  tor_snprintf(line, sizeof(line), "snowflake 4.2.2.2:1234 %s",
+               hex_str(node->identity, DIGEST_LEN));
+  get_options_mutable()->UseBridges = 1;
+  get_options_mutable()->TestingBridgeBootstrapDownloadInitialDelay = 5;
+  config_line_append(&get_options_mutable()->ClientTransportPlugin,
+                     "ClientTransportPlugin", "snowflake exec /unused");
+  mark_bridge_list();
+  bridge_add_from_config(parse_bridge_line(line));
+  const bridge_info_t *bridge = smartlist_get(bridge_list_get(), 0);
+  const tor_addr_port_t *ap = bridge_get_addr_port(bridge);
+  tt_int_op(transport_add_from_config(&ap->addr, 9999, "snowflake",
+                                      PROXY_SOCKS5), OP_EQ, 0);
+  guard_selection_t *gs = get_guard_selection_info();
+  entry_guards_update_primary(gs);
+  tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, 1);
+  entry_guard_t *g = smartlist_get(gs->sampled_entry_guards, 0);
+  tt_assert(g->is_primary);
+  MOCK(tor_connect_socket, establishment_socket_failure);
+  MOCK(directory_initiate_request, bridge_retry_directory_request);
+  bridge_retry_chan = NULL;
+  bridge_retry_state = NULL;
+  bridge_retry_requests = connect_attempts = 0;
+  connect_error = SOCK_ERRNO(ECONNREFUSED);
+  const time_t start = time(NULL);
+  download_status_t *dl = get_bridge_dl_status_by_id(node->identity);
+  tt_assert(dl);
+
+  /* Drive the normal periodic retry entry points. Neither the test nor the
+   * request fixture writes guard reachability, pending flags, or retry times.
+   * The only environmental change is that the next socket attempt works. */
+  for (time_t now = start; now <= start + 3600; ++now) {
+    update_approx_time(now);
+    if (cached) {
+      circuit_guard_state_t *state = NULL;
+      const node_t *selected = NULL;
+      if (entry_guard_pick_for_circuit(gs, GUARD_USAGE_TRAFFIC, NULL,
+                                       &selected, &state) == 0) {
+        tt_ptr_op(selected, OP_EQ, node);
+        bridge_retry_launch(ap, selected->identity, state);
+      }
+    } else {
+      const int requests_before = bridge_retry_requests;
+      const int ready = download_status_is_ready(dl, now);
+      fetch_bridge_descriptors(get_options(), now);
+      tt_int_op(bridge_retry_requests - requests_before, OP_EQ, ready);
+    }
+    if (connect_attempts == 1 && connect_error == SOCK_ERRNO(ECONNREFUSED)) {
+      tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+      tt_int_op(g->is_pending, OP_EQ, 0);
+      tt_int_op(g->confirmed_idx, OP_EQ, -1);
+      connect_error = SOCK_ERRNO(EINPROGRESS);
+    }
+    if (bridge_retry_chan)
+      break;
+  }
+  tt_int_op(connect_attempts, OP_EQ, 2);
+  tt_assert(bridge_retry_chan);
+  tt_assert(bridge_retry_state);
+  tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, 1);
+  tt_ptr_op(entry_guard_handle_get(bridge_retry_state->guard), OP_EQ, g);
+  /* Model a completed link and a successful circuit/directory response. */
+  channel_change_state_open(bridge_retry_chan);
+  tt_int_op(entry_guard_succeeded(&bridge_retry_state), OP_EQ,
+            GUARD_USABLE_NOW);
+  node->ri = &ri; /* A successful descriptor response supplies this too. */
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+  tt_int_op(g->is_pending, OP_EQ, 0);
+  tt_int_op(g->confirmed_idx, OP_EQ, 0);
+  missing = guard_selection_get_err_str_if_dir_info_missing(gs, 0, 1, 1);
+  tt_ptr_op(missing, OP_EQ, NULL);
+
+ done:
+  tor_free(missing);
+  node->ri = NULL;
+  if (bridge_retry_state)
+    entry_guard_cancel(&bridge_retry_state);
+  if (bridge_retry_chan)
+    channel_mark_for_close(bridge_retry_chan);
+  close_closeable_connections();
+  channel_free_all();
+  bridge_retry_chan = NULL;
+  UNMOCK(directory_initiate_request);
+  UNMOCK(tor_connect_socket);
+  entry_guards_free_all();
+  bridges_free_all();
+  establishment_test_cleanup(dispatcher);
+}
+
+static const node_t *
+establishment_node_by_nickname(const char *name, unsigned flags)
+{
+  (void)flags;
+  char digest[DIGEST_LEN];
+  if (name[0] != '$' ||
+      base16_decode(digest, sizeof(digest), name + 1, HEX_DIGEST_LEN) < 0)
+    return NULL;
+  return bfn_mock_node_get_by_id(digest);
+}
+
+static void
+test_entry_guard_establishment_directory(void *arg)
+{
+  const struct testcase_t *testcase = arg;
+  const int unguarded = testcase->setup_data &&
+    !strcmp(testcase->setup_data, "unguarded");
+  void *dispatcher = establishment_test_setup();
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  entry_connection_t *ap = entry_connection_new(CONN_TYPE_AP, AF_INET);
+  dir_connection_t *dir = dir_connection_new(AF_INET);
+  origin_circuit_t *circ = NULL, *joined = NULL;
+  channel_t *chan = NULL;
+  MOCK(connection_or_connect, establishment_connect);
+  MOCK(node_get_by_nickname, establishment_node_by_nickname);
+  unsigned selected_state;
+  entry_guard_t *g = select_entry_guard_for_circuit(gs, GUARD_USAGE_DIRGUARD,
+                                                   NULL, &selected_state);
+  if (!unguarded)
+    dir->guard_state = circuit_guard_state_new(g, selected_state, NULL);
+  ENTRY_TO_CONN(ap)->linked_conn = TO_CONN(dir);
+  ENTRY_TO_CONN(ap)->state = AP_CONN_STATE_CIRCUIT_WAIT;
+  ap->want_onehop = ap->use_begindir = 1;
+  ap->socks_request->command = SOCKS_COMMAND_CONNECT;
+  strlcpy(ap->socks_request->address, "192.0.2.1",
+          sizeof(ap->socks_request->address));
+  ap->socks_request->port = 9001;
+  ap->original_dest_address = tor_strdup("192.0.2.1");
+  tor_asprintf(&ap->chosen_exit_name, "$%s", hex_str(g->identity, DIGEST_LEN));
+  tt_int_op(circuit_get_open_circ_or_launch(ap, CIRCUIT_PURPOSE_C_GENERAL,
+                                           &circ), OP_EQ, 0);
+  tt_assert(circ);
+  tt_ptr_op(circ->guard_state, OP_EQ, NULL);
+  tt_assert(establishment_conn);
+  chan = TLS_CHAN_TO_BASE(establishment_conn->chan);
+  tt_int_op(chan->establishment_guard != NULL, OP_EQ, !unguarded);
+  if (unguarded)
+    dir->guard_state = circuit_guard_state_new(g, selected_state, NULL);
+  struct entry_guard_handle_t *original = chan->establishment_guard;
+  tt_int_op(circuit_get_open_circ_or_launch(ap, CIRCUIT_PURPOSE_C_GENERAL,
+                                           &joined), OP_EQ, 0);
+  tt_ptr_op(joined, OP_EQ, circ);
+  tt_ptr_op(chan->establishment_guard, OP_EQ, original);
+  /* The request and its pending circuit may die first. */
+  entry_guard_cancel(&dir->guard_state);
+  circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_TIMEOUT);
+  circuit_close_all_marked();
+  circ = NULL;
+  tt_ptr_op(chan->establishment_guard, OP_EQ, original);
+  connection_or_reached_eof(establishment_conn);
+  tt_int_op(g->is_reachable, OP_EQ,
+            unguarded ? GUARD_REACHABLE_MAYBE : GUARD_REACHABLE_NO);
+  tt_int_op(g->is_pending, OP_EQ, 0);
+  close_closeable_connections();
+  establishment_conn = NULL;
+  channel_unregister(chan);
+  channel_free(chan);
+  if (unguarded) {
+    dir->guard_state = circuit_guard_state_new(g, selected_state, NULL);
+    tt_int_op(circuit_get_open_circ_or_launch(ap, CIRCUIT_PURPOSE_C_GENERAL,
+                                             &circ), OP_EQ, 0);
+    tt_assert(circ);
+    tt_assert(establishment_conn);
+    chan = TLS_CHAN_TO_BASE(establishment_conn->chan);
+    tt_assert(chan->establishment_guard);
+    connection_or_reached_eof(establishment_conn);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+    close_closeable_connections();
+    establishment_conn = NULL;
+  }
+
+ done:
+  circuit_free_all();
+  if (establishment_conn) {
+    if (!establishment_conn->base_.marked_for_close)
+      connection_or_close_for_error(establishment_conn, 0);
+    close_closeable_connections();
+    establishment_conn = NULL;
+  }
+  ENTRY_TO_CONN(ap)->linked_conn = NULL;
+  connection_free_(ENTRY_TO_CONN(ap));
+  connection_free_(TO_CONN(dir));
+  channel_free_all();
+  UNMOCK(connection_or_connect);
+  UNMOCK(node_get_by_nickname);
+  guard_selection_free(gs);
+  establishment_test_cleanup(dispatcher);
+}
+
+/* The channel/guard accounting test does not need cryptographic teardown. */
+static void
+mock_establishment_circuit_close(circuit_t *circ, int reason, int line,
+                                  const char *file)
+{
+  (void)circ;
+  (void)reason;
+  (void)line;
+  (void)file;
+}
+
+/* Exercise circuit/request failure accounting after an established link, not
+ * just the finalizer's OPEN gate. The socket/TLS peer is simulated. */
+static void
+test_entry_guard_establishment_postopen_circuit(void *arg)
+{
+  void *dispatcher = establishment_test_setup();
+  (void)arg;
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  origin_circuit_t *circ = NULL;
+  extend_info_t *ei = NULL;
+  channel_t *chan = NULL;
+  const node_t *node = NULL;
+  tor_addr_t addr;
+  tor_addr_parse(&addr, "192.0.2.1");
+  get_options_mutable()->NumPrimaryGuards = 1;
+  get_options_mutable()->PathBiasDropGuards = 0;
+  get_options_mutable()->LearnCircuitBuildTimeout = 0;
+  get_options_mutable()->CircuitBuildTimeout = 60;
+  MOCK(circuit_mark_for_close_, mock_establishment_circuit_close);
+  MOCK(connection_or_connect, establishment_connect);
+  tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_TRAFFIC, NULL,
+                                       &node, &state), OP_EQ, 0);
+  entry_guard_t *g = entry_guard_handle_get(state->guard);
+  tt_int_op(entry_guard_succeeded(&state), OP_EQ, GUARD_USABLE_NOW);
+  entry_guard_cancel(&state);
+  const int n_sampled = smartlist_len(gs->sampled_entry_guards);
+  ei = extend_info_new(NULL, g->identity, NULL, NULL,
+                       &addr, 9001, NULL, false);
+  /* Generic cleanup before CREATE completes, then at a middle and exit. */
+  for (int iteration = 0; iteration < 5; ++iteration) {
+    tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_TRAFFIC, NULL,
+                                         &node, &state), OP_EQ, 0);
+    tt_ptr_op(entry_guard_handle_get(state->guard), OP_EQ, g);
+    chan = channel_connect_for_circuit(ei, state, true);
+    tt_assert(chan);
+    channel_change_state_open(chan);
+    circ = origin_circuit_init(CIRCUIT_PURPOSE_C_GENERAL, 0);
+    /* This circuit already has an open channel. BUILDING removes it from
+     * the pending-channel list before failure handling and direct freeing. */
+    circuit_set_state(TO_CIRCUIT(circ), CIRCUIT_STATE_BUILDING);
+    circ->guard_state = state;
+    state = NULL;
+    circ->build_state->desired_path_len = 3;
+    for (int hop = 0; hop < 3; ++hop)
+      cpath_append_hop(&circ->cpath, ei);
+    if (iteration >= 3)
+      circ->cpath->state = CPATH_STATE_OPEN;
+    if (iteration == 4)
+      circ->cpath->next->state = CPATH_STATE_OPEN;
+    circ->base_.n_chan = chan;
+    circuit_build_failed(circ);
+    /* Cleanup alone must retain both the channel and the guard. */
+    tt_int_op(chan->is_bad_for_new_circs, OP_EQ, 0);
+    /* An actual first-hop expiry retires the channel, but not the guard.
+     * Later-hop expiry must retain the channel as well. */
+    if (iteration < 3)
+      circ->cpath->state = CPATH_STATE_AWAITING_KEYS;
+    tor_gettimeofday(&circ->base_.timestamp_began);
+    circ->base_.timestamp_began.tv_sec -= 120;
+    circuit_expire_building();
+    tt_int_op(chan->is_bad_for_new_circs, OP_EQ, iteration < 3);
+    circ->base_.n_chan = NULL;
+    circuit_free_(TO_CIRCUIT(circ));
+    circ = NULL;
+    channel_mark_for_close(chan);
+    close_closeable_connections();
+    establishment_conn = NULL;
+    channel_unregister(chan);
+    channel_free(chan);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+    tt_int_op(g->is_pending, OP_EQ, 0);
+    tt_int_op(g->confirmed_idx, OP_EQ, 0);
+    tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, n_sampled);
+  }
+  tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_TRAFFIC, NULL,
+                                       &node, &state), OP_EQ, 0);
+  tt_ptr_op(entry_guard_handle_get(state->guard), OP_EQ, g);
+
+ done:
+  if (circ) {
+    circ->base_.n_chan = NULL;
+    circuit_free_(TO_CIRCUIT(circ));
+  }
+  if (state)
+    entry_guard_cancel(&state);
+  if (establishment_conn) {
+    if (!establishment_conn->base_.marked_for_close)
+      connection_or_close_normally(establishment_conn, 0);
+    close_closeable_connections();
+    establishment_conn = NULL;
+  }
+  channel_free_all();
+  extend_info_free(ei);
+  UNMOCK(connection_or_connect);
+  UNMOCK(circuit_mark_for_close_);
+  guard_selection_free(gs);
+  establishment_test_cleanup(dispatcher);
+}
+
+static node_t *
+establishment_mutable_node(const char *digest)
+{
+  return (node_t *)bfn_mock_node_get_by_id(digest);
+}
+
+static void
+test_entry_guard_establishment_postopen_directory(void *arg)
+{
+  void *dispatcher = establishment_test_setup();
+  (void)arg;
+  guard_selection_t *gs = get_guard_selection_info();
+  circuit_guard_state_t *state = NULL;
+  dir_connection_t *dir = NULL;
+  const node_t *node = NULL;
+  get_options_mutable()->NumPrimaryGuards = 1;
+  get_options_mutable()->PathBiasDropGuards = 0;
+  MOCK(node_get_mutable_by_id, establishment_mutable_node);
+  tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_DIRGUARD, NULL,
+                                       &node, &state), OP_EQ, 0);
+  entry_guard_t *g = entry_guard_handle_get(state->guard);
+  tt_int_op(entry_guard_succeeded(&state), OP_EQ, GUARD_USABLE_NOW);
+  entry_guard_cancel(&state);
+  const int n_sampled = smartlist_len(gs->sampled_entry_guards);
+  const char *responses[] = {
+    "Not an HTTP response\r\n\r\nx",
+    "HTTP/1.0 200 OK\r\nContent-Length: 50\r\n",
+    "HTTP/1.0 503 Busy\r\nContent-Length: 0\r\n\r\n",
+    NULL /* stall expiry */
+  };
+  for (unsigned i = 0; i < ARRAY_LENGTH(responses); ++i) {
+    tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_DIRGUARD, NULL,
+                                         &node, &state), OP_EQ, 0);
+    tt_ptr_op(entry_guard_handle_get(state->guard), OP_EQ, g);
+    dir = dir_connection_new(AF_INET);
+    dir->guard_state = state;
+    state = NULL;
+    dir->base_.state = DIR_CONN_STATE_CLIENT_READING;
+    dir->base_.purpose = DIR_PURPOSE_FETCH_SERVERDESC;
+    dir->base_.address = tor_strdup("192.0.2.1");
+    memcpy(dir->identity_digest, g->identity, DIGEST_LEN);
+    if (responses[i]) {
+      buf_add(dir->base_.inbuf, responses[i], strlen(responses[i]));
+      setup_full_capture_of_logs(LOG_WARN);
+      int rv = connection_dir_reached_eof(dir);
+      teardown_capture_of_logs();
+      tt_int_op(rv, OP_EQ, -1);
+    } else {
+      smartlist_t *connections = get_connection_array();
+      dir->base_.conn_array_index = smartlist_len(connections);
+      smartlist_add(connections, TO_CONN(dir));
+      dir->base_.timestamp_last_read_allowed = approx_time() - 3600;
+      run_connection_housekeeping(dir->base_.conn_array_index, approx_time());
+    }
+    tt_assert(dir->base_.marked_for_close);
+    close_closeable_connections(); /* real request-failure and cancel paths */
+    dir = NULL;
+    tt_int_op(node->is_running, OP_EQ, 0);
+    /* Node status must not indirectly retire the guard. */
+    entry_guards_update_all(gs);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+    tt_int_op(g->is_pending, OP_EQ, 0);
+    tt_assert(g->is_usable_filtered_guard);
+    tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, n_sampled);
+  }
+  tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_DIRGUARD, NULL,
+                                       &node, &state), OP_EQ, 0);
+  tt_ptr_op(entry_guard_handle_get(state->guard), OP_EQ, g);
+
+ done:
+  teardown_capture_of_logs();
+  if (state)
+    entry_guard_cancel(&state);
+  if (dir) {
+    if (!dir->base_.marked_for_close)
+      connection_mark_for_close(TO_CONN(dir));
+    close_closeable_connections();
+  }
+  UNMOCK(node_get_mutable_by_id);
+  entry_guards_free_all();
+  establishment_test_cleanup(dispatcher);
+}
+
+/* Exhaust the real fallback chooser, then retry its down mirrors. A mirror
+ * whose identity happens to be sampled is still an unguarded request. */
+static void
+test_entry_guard_establishment_mirror_retry(void *arg)
+{
+  (void)arg;
+  void *dispatcher = establishment_test_setup();
+  guard_selection_t *gs = get_guard_selection_info();
+  circuit_guard_state_t *state = NULL;
+  dir_connection_t *dir = NULL;
+  extend_info_t *ei = NULL;
+  channel_t *chan = NULL;
+  const node_t *node = NULL;
+  dir_server_t *mirrors[2];
+  tor_addr_t addr;
+  get_options_mutable()->NumPrimaryGuards = 1;
+  control_event_bootstrap(BOOTSTRAP_STATUS_STARTING, 0);
+  MOCK(tor_connect_socket, establishment_socket_failure);
+  MOCK(node_get_mutable_by_id, establishment_mutable_node);
+  MOCK(router_have_minimum_dir_info, mock_router_have_minimum_dir_info);
+  tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_DIRGUARD, NULL,
+                                       &node, &state), OP_EQ, 0);
+  entry_guard_t *g = entry_guard_handle_get(state->guard);
+  tt_int_op(entry_guard_succeeded(&state), OP_EQ, GUARD_USABLE_NOW);
+  entry_guard_cancel(&state);
+  const int n_sampled = smartlist_len(gs->sampled_entry_guards);
+  tor_addr_parse(&addr, "192.0.2.1");
+  mirrors[0] = fallback_dir_server_new(&addr, 80, 9001, NULL, g->identity, 1);
+  tor_addr_parse(&addr, "192.0.2.2");
+  mirrors[1] = fallback_dir_server_new(&addr, 80, 9001, NULL,
+                                      "another mirror id!!!", 1);
+  clear_dir_servers();
+  for (int i = 0; i < 2; ++i)
+    dir_server_add(mirrors[i]);
+  connect_attempts = 0;
+  connect_error = SOCK_ERRNO(ECONNREFUSED);
+  for (int i = 0; i < 2; ++i) {
+    const routerstatus_t *rs = router_pick_fallback_dirserver(V3_DIRINFO, 0);
+    tt_assert(rs);
+    ei = extend_info_new(NULL, rs->identity_digest, NULL, NULL,
+                         &rs->ipv4_addr, rs->ipv4_orport, NULL, false);
+    chan = channel_connect_for_circuit(ei, NULL, true);
+    tt_ptr_op(chan, OP_EQ, NULL);
+    tt_int_op(connect_attempts, OP_EQ, i + 1);
+    dir = dir_connection_new(AF_INET);
+    dir->base_.purpose = DIR_PURPOSE_FETCH_SERVERDESC;
+    memcpy(dir->identity_digest, rs->identity_digest, DIGEST_LEN);
+    connection_dir_client_request_failed(dir);
+    connection_free_(TO_CONN(dir));
+    dir = NULL;
+    extend_info_free(ei);
+    tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+  }
+  tt_assert(!mirrors[0]->is_running && !mirrors[1]->is_running);
+  tt_ptr_op(router_pick_fallback_dirserver(V3_DIRINFO, 0), OP_EQ, NULL);
+  const routerstatus_t *rs = router_pick_fallback_dirserver(
+                                      V3_DIRINFO, PDS_RETRY_IF_NO_SERVERS);
+  tt_assert(rs);
+  tt_assert(mirrors[0]->is_running && mirrors[1]->is_running);
+  connect_error = SOCK_ERRNO(EINPROGRESS);
+  ei = extend_info_new(NULL, rs->identity_digest, NULL, NULL,
+                       &rs->ipv4_addr, rs->ipv4_orport, NULL, false);
+  chan = channel_connect_for_circuit(ei, NULL, true);
+  tt_assert(chan);
+  tt_ptr_op(chan->establishment_guard, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 3);
+  channel_change_state_open(chan);
+  channel_mark_for_close(chan);
+  close_closeable_connections();
+  channel_unregister(chan);
+  channel_free(chan);
+
+  /* Busy is different from exhausted: do not resurrect the other mirror. */
+  router_set_status(mirrors[1]->digest, 0);
+  dir = dir_connection_new(AF_INET);
+  dir->base_.purpose = DIR_PURPOSE_FETCH_SERVERDESC;
+  dir->base_.state = DIR_CONN_STATE_CLIENT_READING;
+  tor_addr_copy(&dir->base_.addr, &mirrors[0]->ipv4_addr);
+  dir->base_.port = mirrors[0]->ipv4_dirport;
+  smartlist_t *connections = get_connection_array();
+  dir->base_.conn_array_index = smartlist_len(connections);
+  smartlist_add(connections, TO_CONN(dir));
+  tt_ptr_op(router_pick_fallback_dirserver(V3_DIRINFO,
+                 PDS_RETRY_IF_NO_SERVERS | PDS_NO_EXISTING_SERVERDESC_FETCH),
+            OP_EQ, NULL);
+  tt_assert(!mirrors[1]->is_running);
+  connection_mark_for_close(TO_CONN(dir));
+  close_closeable_connections();
+  dir = NULL;
+  entry_guards_update_all(gs);
+  tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+  tt_int_op(g->is_pending, OP_EQ, 0);
+  tt_int_op(g->confirmed_idx, OP_EQ, 0);
+  tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, n_sampled);
+  tt_int_op(entry_guard_pick_for_circuit(gs, GUARD_USAGE_DIRGUARD, NULL,
+                                       &node, &state), OP_EQ, 0);
+  tt_ptr_op(entry_guard_handle_get(state->guard), OP_EQ, g);
+
+ done:
+  if (state)
+    entry_guard_cancel(&state);
+  if (dir) {
+    if (!dir->base_.marked_for_close)
+      connection_mark_for_close(TO_CONN(dir));
+    close_closeable_connections();
+  }
+  if (chan) {
+    channel_mark_for_close(chan);
+    close_closeable_connections();
+  }
+  channel_free_all();
+  extend_info_free(ei);
+  clear_dir_servers();
+  UNMOCK(router_have_minimum_dir_info);
+  UNMOCK(node_get_mutable_by_id);
+  UNMOCK(tor_connect_socket);
+  entry_guards_free_all();
+  establishment_test_cleanup(dispatcher);
+}
+
+static int pt_retry_requests[2];
+static void
+pt_retry_directory_request(directory_request_t *req)
+{
+  tor_assert(req->guard_state);
+  tor_assert(req->or_addr_port.port == 9001 || req->or_addr_port.port == 9002);
+  ++pt_retry_requests[req->or_addr_port.port - 9001];
+  entry_guard_cancel(&req->guard_state);
+}
+
+/* Substitute only process launch and its output; registration and pending
+ * configuration accounting run through the actual PT callbacks. */
+static void
+pt_retry_register(managed_proxy_t *mp)
+{
+  const char *lines[] = {
+    "VERSION 1", "CMETHOD snowflake socks5 127.0.0.1:9999", "CMETHODS DONE"
+  };
+  if (mp->process_launch_ev)
+    mainloop_event_cancel(mp->process_launch_ev);
+  mp->process = process_new("");
+  process_set_data(mp->process, mp);
+  managed_proxy_set_state(mp, PT_PROTO_LAUNCHED);
+  for (unsigned i = 0; i < ARRAY_LENGTH(lines); ++i)
+    managed_proxy_stdout_callback(mp->process, lines[i], strlen(lines[i]));
+}
+
+static void
+test_entry_guard_establishment_pt_registration(void *arg)
+{
+  (void)arg;
+  void *dispatcher = establishment_test_setup();
+  managed_proxy_t *mp = NULL;
+  circuit_guard_state_t *state = NULL;
+  smartlist_t *names = smartlist_new();
+  entry_guard_t *guards[2];
+  bridge_info_t *bridges[2];
+  download_status_t *dl[2];
+  download_status_t before[2];
+  tor_addr_t addr;
+  guard_selection_t *gs = NULL;
+  get_options_mutable()->UseBridges = 1;
+  get_options_mutable()->TestingBridgeBootstrapDownloadInitialDelay = 0;
+  config_line_append(&get_options_mutable()->ClientTransportPlugin,
+                     "ClientTransportPlugin", "snowflake exec /unused");
+  config_line_append(&get_options_mutable()->ClientTransportPlugin,
+                     "ClientTransportPlugin", "other socks5 127.0.0.1:9998");
+  control_event_bootstrap(BOOTSTRAP_STATUS_STARTING, 0);
+  MOCK(tor_connect_socket, establishment_socket_failure);
+  MOCK(directory_initiate_request, pt_retry_directory_request);
+  bridge_retry_chan = NULL;
+  bridge_retry_state = NULL;
+  connect_attempts = pt_retry_requests[0] = pt_retry_requests[1] = 0;
+  connect_error = SOCK_ERRNO(ECONNREFUSED);
+  smartlist_add(names, (void *)"snowflake");
+  char **argv = tor_calloc(2, sizeof(char *));
+  argv[0] = tor_strdup("/unused");
+  mp = managed_proxy_create(names, argv, 0);
+  pt_retry_register(mp);
+  tt_int_op(mp->conf_state, OP_EQ, PT_PROTO_COMPLETED);
+  tt_assert(!pt_proxies_configuration_pending());
+  tt_assert(transport_get_by_name("snowflake"));
+  tor_addr_parse(&addr, "127.0.0.1");
+  tt_int_op(transport_add_from_config(&addr, 9998, "other", PROXY_SOCKS5),
+            OP_EQ, 0);
+  mark_bridge_list();
+  bridge_add_from_config(parse_bridge_line("snowflake 192.0.2.1:9001"));
+  bridge_add_from_config(parse_bridge_line("other 192.0.2.2:9002"));
+  gs = get_guard_selection_info();
+  entry_guards_expand_sample(gs);
+  /* Exercise the stale cached clock that made readiness checks flaky. */
+  update_approx_time(time(NULL) - 60);
+  for (int i = 0; i < 2; ++i) {
+    bridges[i] = smartlist_get(bridge_list_get(), i);
+    state = get_guard_state_for_bridge_desc_fetch(bridges[i]);
+    tt_assert(state);
+    guards[i] = entry_guard_handle_get(state->guard);
+    entry_guard_cancel(&state);
+    dl[i] = bridge_get_dl_status(bridges[i]);
+    download_status_reset(dl[i]);
+    before[i] = *dl[i];
+    tt_int_op(guards[i]->is_reachable, OP_EQ, GUARD_REACHABLE_MAYBE);
+  }
+
+  /* Initial schedule resets use wall time; approx_time() may be stale.
+   * Both deadlines are established before the simulated timeline begins.
+   * No schedules are reset during the downtime/recovery interval below. */
+  time_t start = time(NULL);
+  for (int i = 0; i < 2; ++i)
+    start = MAX(start, dl[i]->next_attempt_at);
+  update_approx_time(start);
+  for (int i = 0; i < 2; ++i)
+    tt_assert(download_status_is_ready(dl[i], start));
+
+  process_t *process = mp->process;
+  setup_full_capture_of_logs(LOG_WARN);
+  const bool release = managed_proxy_exit_callback(process, 1);
+  teardown_capture_of_logs();
+  if (release)
+    process_free(process);
+  tt_assert(release);
+  tt_int_op(mp->conf_state, OP_EQ, PT_PROTO_WAITING);
+  tt_assert(pt_proxies_configuration_pending());
+  tt_ptr_op(transport_get_by_name("snowflake"), OP_EQ, NULL);
+  tt_assert(transport_get_by_name("other"));
+  for (time_t now = start; now < start + 60; ++now) {
+    update_approx_time(now);
+    fetch_bridge_descriptors(get_options(), now);
+  }
+  for (int i = 0; i < 2; ++i) {
+    tt_int_op(pt_retry_requests[i], OP_EQ, 0);
+    tt_int_op(dl[i]->n_download_attempts, OP_EQ,
+              before[i].n_download_attempts);
+    tt_i64_op(dl[i]->next_attempt_at, OP_EQ, before[i].next_attempt_at);
+    tt_int_op(guards[i]->is_reachable, OP_EQ, GUARD_REACHABLE_MAYBE);
+    tt_int_op(guards[i]->is_pending, OP_EQ, 0);
+  }
+  /* A selected connection with missing registration also cancels without
+   * reaching connect(). It must not blame either bridge. */
+  state = get_guard_state_for_bridge_desc_fetch(bridges[0]);
+  setup_full_capture_of_logs(LOG_WARN);
+  bridge_retry_launch(bridge_get_addr_port(bridges[0]), guards[0]->identity,
+                      state);
+  state = NULL;
+  teardown_capture_of_logs();
+  tt_ptr_op(bridge_retry_chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 0);
+  tt_int_op(guards[0]->is_reachable, OP_EQ, GUARD_REACHABLE_MAYBE);
+
+  update_approx_time(start + 60);
+  pt_retry_register(mp);
+  tt_int_op(mp->conf_state, OP_EQ, PT_PROTO_COMPLETED);
+  tt_assert(!pt_proxies_configuration_pending());
+  tt_assert(transport_get_by_name("snowflake"));
+  fetch_bridge_descriptors(get_options(), start + 60);
+  for (int i = 0; i < 2; ++i) {
+    tt_int_op(pt_retry_requests[i], OP_EQ, 1);
+    tt_int_op(dl[i]->n_download_attempts, OP_EQ, 1);
+    tt_int_op(guards[i]->is_reachable, OP_EQ, GUARD_REACHABLE_MAYBE);
+  }
+  /* Once registered, an actual listener refusal blames only this selection. */
+  state = get_guard_state_for_bridge_desc_fetch(bridges[0]);
+  bridge_retry_launch(bridge_get_addr_port(bridges[0]), guards[0]->identity,
+                      state);
+  state = NULL;
+  tt_ptr_op(bridge_retry_chan, OP_EQ, NULL);
+  tt_int_op(connect_attempts, OP_EQ, 1);
+  tt_int_op(guards[0]->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+  tt_int_op(guards[1]->is_reachable, OP_EQ, GUARD_REACHABLE_MAYBE);
+  tt_int_op(guards[0]->is_pending, OP_EQ, 0);
+  tt_int_op(guards[1]->is_pending, OP_EQ, 0);
+  tt_int_op(smartlist_len(gs->sampled_entry_guards), OP_EQ, 2);
+
+ done:
+  teardown_capture_of_logs();
+  if (state)
+    entry_guard_cancel(&state);
+  if (bridge_retry_state)
+    entry_guard_cancel(&bridge_retry_state);
+  if (bridge_retry_chan) {
+    channel_mark_for_close(bridge_retry_chan);
+    close_closeable_connections();
+    bridge_retry_chan = NULL;
+  }
+  channel_free_all();
+  if (mp && mp->process)
+    process_free(mp->process);
+  pt_free_all();
+  smartlist_free(names);
+  UNMOCK(directory_initiate_request);
+  UNMOCK(tor_connect_socket);
+  entry_guards_free_all();
+  bridges_free_all();
+  establishment_test_cleanup(dispatcher);
+}
+
+static int establishment_tls_result, establishment_read_calls;
+static int
+establishment_tls_handshake(tor_tls_t *tls)
+{
+  (void)tls;
+  return establishment_tls_result;
+}
+static int
+establishment_tls_pending(tor_tls_t *tls)
+{
+  (void)tls;
+  return 1;
+}
+static int
+establishment_tls_read(tor_tls_t *tls, char *data, size_t len)
+{
+  (void)tls;
+  (void)data;
+  (void)len;
+  return establishment_read_calls++ == 0 ? TOR_TLS_WANTREAD :
+                                           establishment_tls_result;
+}
+
+static int
+establishment_tls_setup_failure(or_connection_t *conn, int receiving)
+{
+  (void)conn;
+  (void)receiving;
+  return -1;
+}
+
+static int open_callback_called;
+static void
+establishment_open_callback(channel_t *chan, int status)
+{
+  tor_assert(status == 1);
+  tor_assert(!chan->establishment_guard);
+  ++open_callback_called;
+  channel_note_establishment_failure(chan);
+  channel_close_for_error(chan);
+}
+
+static void
+test_establishment_producer_cases(const int *modes, size_t n_modes)
+{
+  void *dispatcher = establishment_test_setup();
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  channel_t *chan = NULL;
+  var_cell_t *cell = NULL;
+  int fake_tls; /* All TLS operations in this fixture are mocked. */
+  unsigned selected_state;
+  entry_guard_t *g = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC,
+                                                  NULL, &selected_state);
+  tor_addr_t addr;
+  tor_addr_parse(&addr, "192.0.2.1");
+  MOCK(connection_or_connect, establishment_connect);
+  MOCK(tor_tls_handshake, establishment_tls_handshake);
+  MOCK(tor_tls_get_pending_bytes, establishment_tls_pending);
+  MOCK(tor_tls_read, establishment_tls_read);
+  for (size_t i = 0; i < n_modes; ++i) {
+    const int mode = modes[i];
+    state = circuit_guard_state_new(g, selected_state, NULL);
+    g->is_reachable = GUARD_REACHABLE_YES;
+    chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+    tt_assert(chan);
+    or_connection_t *conn = establishment_conn;
+    conn->tls = (tor_tls_t *)&fake_tls;
+    establishment_tls_result = TOR_TLS_ERROR_MISC;
+    if (mode == 0 || mode == 1) {
+      conn->base_.s = tor_open_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+      tt_assert(SOCKET_OK(conn->base_.s));
+      conn->base_.state = OR_CONN_STATE_TLS_HANDSHAKING;
+      if (mode == 1)
+        establishment_tls_result = TOR_TLS_ERROR_IO;
+      tt_int_op(connection_handle_read(TO_CONN(conn)), OP_EQ, -1);
+    } else if (mode == 2 || mode == 3) {
+      conn->base_.state = OR_CONN_STATE_OR_HANDSHAKING_V3;
+      connection_init_or_handshake_state(conn, 1);
+      establishment_read_calls = 0;
+      ssize_t max_read = mode == 3 ? 0 : 1;
+      int socket_error = 0;
+      if (mode == 3) {
+        /* No room for the second (pending TLS bytes) read. */
+        conn->base_.inbuf->datalen = BUF_MAX_LEN;
+      }
+      /* The existing pending-read path flags negative results as a BUG and
+       * returns -1; attribution must work without changing that behavior. */
+      setup_full_capture_of_logs(LOG_WARN);
+      tor_capture_bugs_(mode == 3 ? 2 : 1);
+      int result = connection_buf_read_from_socket(TO_CONN(conn), &max_read,
+                                                   &socket_error);
+      tor_end_capture_bugs_();
+      teardown_capture_of_logs();
+      if (mode == 3) {
+        conn->base_.inbuf->datalen = 0;
+        tt_int_op(establishment_read_calls, OP_EQ, 0);
+      } else {
+        tt_int_op(establishment_read_calls, OP_EQ, 2);
+      }
+      tt_int_op(result, OP_EQ, -1);
+      tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+      /* The buffer returns an error; its caller reports at the shared hook. */
+      connection_or_notify_error(conn, END_OR_CONN_REASON_MISC, "read failed");
+    } else if (mode == 4 || mode == 5 || mode == 6) {
+      conn->base_.state = OR_CONN_STATE_OR_HANDSHAKING_V3;
+      connection_init_or_handshake_state(conn, 1);
+      if (mode == 4) {
+        cell = var_cell_new(1); /* odd-length VERSIONS */
+        cell->command = CELL_VERSIONS;
+        channel_tls_handle_var_cell(cell, conn);
+      } else if (mode == 5) {
+        conn->link_proto = 4;
+        cell = var_cell_new(0); /* truncated CERTS */
+        cell->command = CELL_CERTS;
+        channel_tls_handle_var_cell(cell, conn);
+      } else {
+        cell_t fixed;
+        memset(&fixed, 0, sizeof(fixed));
+        fixed.command = CELL_NETINFO;
+        conn->link_proto = 4;
+        conn->handshake_state->received_versions = 1;
+        channel_tls_handle_cell(&fixed, conn); /* no authentication */
+      }
+      var_cell_free(cell);
+    } else if (mode == 7) {
+      MOCK(circuit_n_chan_done, establishment_open_callback);
+      open_callback_called = 0;
+      channel_change_state_open(chan);
+      UNMOCK(circuit_n_chan_done);
+      tt_int_op(open_callback_called, OP_EQ, 1);
+      tt_assert(chan->has_been_open);
+    } else if (mode == 8) {
+      /* Normal close cancels, even if error notification follows later. */
+      connection_or_close_normally(conn, 1);
+      conn->base_.state = OR_CONN_STATE_TLS_HANDSHAKING;
+      tt_int_op(connection_tls_continue_handshake(conn), OP_EQ, -1);
+      connection_or_notify_error(conn, END_OR_CONN_REASON_MISC, "late error");
+    } else if (mode == 9) {
+      /* Local descriptor errors from an attempted raw read count too. */
+      conn->base_.s = INT_MAX;
+      ssize_t max_read = 1;
+      int socket_error = 0;
+      int result = connection_buf_read_from_socket(TO_CONN(conn), &max_read,
+                                                   &socket_error);
+      conn->base_.s = TOR_INVALID_SOCKET;
+      tt_int_op(result, OP_EQ, -1);
+      tt_int_op(socket_error, OP_NE, 0);
+      connection_or_notify_error(conn, END_OR_CONN_REASON_MISC, "read failed");
+    } else if (mode == 10 || mode == 11) {
+      smartlist_t *connections = get_connection_array();
+      conn->base_.conn_array_index = smartlist_len(connections);
+      smartlist_add(connections, TO_CONN(conn));
+      conn->base_.timestamp_last_write_allowed = approx_time() - 3600;
+      if (mode == 11)
+        channel_mark_bad_for_new_circs(chan);
+      run_connection_housekeeping(conn->base_.conn_array_index, approx_time());
+      tt_int_op(chan->reason_for_closing, OP_EQ, mode == 10 ?
+                CHANNEL_CLOSE_FOR_ERROR : CHANNEL_CLOSE_FROM_BELOW);
+      tt_int_op(conn->base_.hold_open_until_flushed, OP_EQ, mode == 11);
+    } else if (mode == 12) {
+      smartlist_t *victims = smartlist_new();
+      smartlist_add(victims, TO_CONN(conn));
+      kill_conn_list_for_oos(victims);
+      smartlist_free(victims);
+      /* A secondary error notification cannot undo the OOS exception. */
+      connection_or_notify_error(conn, END_OR_CONN_REASON_MISC, "late error");
+    } else if (mode == 13) {
+      buf_add(conn->base_.outbuf, "x", 1);
+      setup_full_capture_of_logs(LOG_WARN);
+      tor_capture_bugs_(1);
+      connection_buf_add("", BUF_MAX_LEN, TO_CONN(conn));
+      tor_end_capture_bugs_();
+      teardown_capture_of_logs();
+      connection_or_notify_error(conn, END_OR_CONN_REASON_MISC, "late error");
+    } else if (mode == 14) {
+      /* A proxy can close while Tor is still sending negotiation bytes. */
+      tor_socket_t sockets[2];
+#ifndef _WIN32
+      signal(SIGPIPE, SIG_IGN);
+#endif
+      tt_int_op(tor_socketpair(AF_UNIX, SOCK_STREAM, 0, sockets), OP_EQ, 0);
+      conn->base_.s = sockets[0];
+      tor_close_socket(sockets[1]);
+      buf_add(conn->base_.outbuf, "proxy request", 13);
+      tt_int_op(connection_handle_write(TO_CONN(conn), 1), OP_EQ, -1);
+    } else if (mode == 15) {
+      /* A permitted cell encounters missing local handshake state. */
+      cell_t fixed;
+      memset(&fixed, 0, sizeof(fixed));
+      fixed.command = CELL_NETINFO;
+      conn->base_.state = OR_CONN_STATE_OR_HANDSHAKING_V3;
+      setup_full_capture_of_logs(LOG_WARN);
+      tor_capture_bugs_(1);
+      channel_tls_handle_cell(&fixed, conn);
+      tor_end_capture_bugs_();
+      teardown_capture_of_logs();
+    } else if (mode == 16) {
+      /* Negotiation errors report through the caller's error close. */
+      conn->base_.proxy_state = PROXY_INFANT;
+      setup_full_capture_of_logs(LOG_WARN);
+      tor_capture_bugs_(1);
+      int result = connection_read_proxy_handshake(TO_CONN(conn));
+      tor_end_capture_bugs_();
+      teardown_capture_of_logs();
+      tt_int_op(result, OP_EQ, -1);
+      tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+      connection_or_close_for_error(conn, 0);
+    } else if (mode == 17) {
+      /* Local proxy request construction is not a cancellation exception. */
+      conn->base_.state = OR_CONN_STATE_CONNECTING;
+      conn->proxy_type = PROXY_SOCKS4;
+      tor_addr_parse(&conn->base_.addr, "2001:db8::1");
+      setup_full_capture_of_logs(LOG_WARN);
+      int result = connection_or_finished_connecting(conn);
+      teardown_capture_of_logs();
+      tt_int_op(result, OP_EQ, -1);
+    } else if (mode == 18) {
+      /* No per-operation producer is required for an ordinary error close. */
+      connection_or_close_for_error(conn, 0);
+    } else if (mode == 19) {
+      connection_or_notify_error(conn, END_OR_CONN_REASON_MISC, "I/O error");
+      /* The close following notification cannot count the failure again. */
+      g->is_reachable = GUARD_REACHABLE_YES;
+      connection_or_close_for_error(conn, 0);
+    } else if (mode == 21 || mode == 22) {
+      /* EOF is an error close even after opening, but only establishment
+       * failure may blame the guard. Preserve flushing in both cases. */
+      if (mode == 22)
+        channel_change_state_open(chan);
+      tt_int_op(connection_or_reached_eof(conn), OP_EQ, 0);
+      tt_int_op(chan->reason_for_closing, OP_EQ, CHANNEL_CLOSE_FOR_ERROR);
+      tt_assert(conn->base_.hold_open_until_flushed);
+    } else {
+      /* TLS setup failures follow the same close as active TLS failures. */
+      conn->base_.state = OR_CONN_STATE_CONNECTING;
+      MOCK(connection_tls_start_handshake, establishment_tls_setup_failure);
+      int result = connection_or_finished_connecting(conn);
+      UNMOCK(connection_tls_start_handshake);
+      tt_int_op(result, OP_EQ, -1);
+    }
+    tt_int_op(g->is_reachable, OP_EQ,
+              mode == 7 || mode == 8 || mode == 19 || mode == 22 ||
+              (mode >= 11 && mode <= 13) ?
+              GUARD_REACHABLE_YES : GUARD_REACHABLE_NO);
+    if (!conn->base_.marked_for_close)
+      connection_or_close_for_error(conn, 0);
+    entry_guard_cancel(&state);
+    conn->tls = NULL;
+    conn->base_.state = OR_CONN_STATE_PROXY_HANDSHAKING;
+    close_closeable_connections();
+    establishment_conn = NULL;
+    if (mode == 10 || mode == 11 || mode == 21 || mode == 22)
+      tt_int_op(chan->state, OP_EQ, mode == 11 ?
+                CHANNEL_STATE_CLOSED : CHANNEL_STATE_ERROR);
+    channel_unregister(chan);
+    channel_free(chan);
+  }
+
+ done:
+  UNMOCK(connection_tls_start_handshake);
+  UNMOCK(circuit_n_chan_done);
+  tor_end_capture_bugs_();
+  teardown_capture_of_logs();
+  var_cell_free(cell);
+  circuit_guard_state_free(state);
+  if (establishment_conn) {
+    establishment_conn->tls = NULL;
+    establishment_conn->base_.state = OR_CONN_STATE_PROXY_HANDSHAKING;
+    establishment_conn->base_.inbuf->datalen = 0;
+    if (!establishment_conn->base_.marked_for_close)
+      connection_or_close_for_error(establishment_conn, 0);
+    close_closeable_connections();
+    establishment_conn = NULL;
+  }
+  channel_free_all();
+  UNMOCK(connection_or_connect);
+  UNMOCK(tor_tls_handshake);
+  UNMOCK(tor_tls_get_pending_bytes);
+  UNMOCK(tor_tls_read);
+  guard_selection_free(gs);
+  establishment_test_cleanup(dispatcher);
+}
+
+/* Share setup/teardown while keeping the policy groups independently runnable.
+ * Every producer case belongs to exactly one group. Cases that deliberately
+ * trigger BUG() are omitted when ALL_BUGS_ARE_FATAL: those builds abort before
+ * tor_capture_bugs_() can intercept the report or recovery can run. The other
+ * cases still exercise each policy group in that configuration. */
+static void
+test_entry_guard_establishment_reporting(void *arg)
+{
+  (void)arg;
+  static const int modes[] = {
+    0, 1,       /* active TLS handshake errors */
+#ifndef ALL_BUGS_ARE_FATAL
+    2, 3,       /* pending TLS read and input-buffer limit */
+#endif
+    4, 5, 6,    /* VERSIONS, CERTS, and NETINFO rejection */
+    9, 10,      /* raw read error and establishment timeout */
+    14,         /* proxy write failure */
+#ifndef ALL_BUGS_ARE_FATAL
+    15, 16,     /* missing handshake state and invalid proxy state */
+#endif
+    17,         /* proxy request construction */
+    18, 19, 20, /* generic close, duplicate delivery, TLS setup */
+    21          /* EOF during establishment */
+  };
+  test_establishment_producer_cases(modes, ARRAY_LENGTH(modes));
+}
+
+static void
+test_entry_guard_establishment_cancellation(void *arg)
+{
+  (void)arg;
+  static const int modes[] = {
+    7,          /* successful open with a reentrant error callback */
+    8,          /* normal close followed by a late error */
+    11,         /* housekeeping disposal of an obsolete connection */
+    22          /* EOF after successful opening */
+  };
+  test_establishment_producer_cases(modes, ARRAY_LENGTH(modes));
+}
+
+static void
+test_entry_guard_establishment_exceptions(void *arg)
+{
+  (void)arg;
+  static const int modes[] = {
+    12,         /* OOS eviction followed by a late error */
+#ifndef ALL_BUGS_ARE_FATAL
+    13          /* output-queue disposal followed by a late error */
+#endif
+  };
+  test_establishment_producer_cases(modes, ARRAY_LENGTH(modes));
+}
+
+/* A private event base isolates socket readiness from other test events.
+ * Libevent maps Windows connect exceptions to EV_WRITE, as in production. */
+static void
+establishment_socket_ready(evutil_socket_t fd, short events, void *arg)
+{
+  (void)fd;
+  *(short *)arg = events;
+}
+
+/* Failed completions and local getsockopt failures reach OR error handling.
+ * Successful TCP completion retains attribution through proxy negotiation. */
+static void
+test_entry_guard_establishment_socket_completion(void *arg)
+{
+  (void)arg;
+  void *dispatcher = establishment_test_setup();
+  guard_selection_t *gs = guard_selection_new("default", GS_TYPE_NORMAL);
+  circuit_guard_state_t *state = NULL;
+  channel_t *chan = NULL;
+  tor_socket_t reserved = TOR_INVALID_SOCKET;
+  struct event_base *base = event_base_new();
+  struct event *ready_event = NULL;
+  short ready = 0;
+  tor_addr_t addr;
+  tor_addr_parse(&addr, "127.0.0.1");
+  MOCK(connection_or_connect, establishment_connect);
+  unsigned selected_state;
+  entry_guard_t *g = select_entry_guard_for_circuit(gs, GUARD_USAGE_TRAFFIC,
+                                                  NULL, &selected_state);
+  tt_assert(base);
+  for (int mode = 0; mode < 3; ++mode) {
+    state = circuit_guard_state_new(g, selected_state, NULL);
+    g->is_reachable = GUARD_REACHABLE_YES;
+    chan = channel_tls_connect(&addr, 9001, g->identity, NULL, state, false);
+    tt_assert(chan);
+    or_connection_t *conn = establishment_conn;
+    conn->base_.state = OR_CONN_STATE_CONNECTING;
+    if (mode != 1) {
+      struct sockaddr_in sa;
+      memset(&sa, 0, sizeof(sa));
+      sa.sin_family = AF_INET;
+      sa.sin_addr.s_addr = htonl(0x7f000001);
+      socklen_t len = sizeof(sa);
+      /* The failure case releases a reserved port so the kernel refuses
+       * connections even on platforms that defer bound sockets. The success
+       * case instead listens on that port. */
+      reserved = tor_open_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+      tt_assert(SOCKET_OK(reserved));
+      if (bind(reserved, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
+        const int error = tor_socket_errno(reserved);
+        if (error == SOCK_ERRNO(EACCES)
+#ifndef _WIN32
+            || error == EPERM
+#endif
+            )
+          tt_skip(); /* Restricted runners cannot bind localhost. */
+        tt_abort_msg("Could not reserve a local port");
+      }
+      tt_int_op(tor_getsockname(reserved, (struct sockaddr *)&sa, &len),
+                OP_EQ, 0);
+      if (mode == 2) {
+        tt_int_op(listen(reserved, 1), OP_EQ, 0);
+      } else {
+        tor_close_socket(reserved);
+        reserved = TOR_INVALID_SOCKET;
+      }
+      conn->base_.s = tor_open_socket_nonblocking(AF_INET, SOCK_STREAM,
+                                                 IPPROTO_TCP);
+      tt_assert(SOCKET_OK(conn->base_.s));
+      const tor_socket_t result = tor_connect_socket(conn->base_.s,
+                                            (struct sockaddr *)&sa, len);
+      const int socket_ok = SOCKET_OK(result);
+      const int error = !socket_ok ?
+        tor_socket_errno(conn->base_.s) : 0;
+      if (!socket_ok && !ERRNO_IS_CONN_EINPROGRESS(error)) {
+        /* Some platforms refuse synchronously. SO_ERROR need not retain an
+         * error already returned by connect(), so no completion is awaited.
+         * The synchronous production launch path is covered separately. */
+        tt_int_op(mode, OP_EQ, 0);
+        tt_int_op(error, OP_EQ, SOCK_ERRNO(ECONNREFUSED));
+        connection_or_notify_error(conn, END_OR_CONN_REASON_REFUSED,
+                                   tor_socket_strerror(error));
+        connection_or_close_for_error(conn, 0);
+      } else {
+        struct timeval timeout = { 2, 0 };
+        ready = 0;
+        ready_event = event_new(base, conn->base_.s, EV_WRITE,
+                                establishment_socket_ready, &ready);
+        tt_assert(ready_event);
+        tt_int_op(event_add(ready_event, &timeout), OP_EQ, 0);
+        tt_int_op(event_base_dispatch(base), OP_EQ, 1);
+        tor_event_free(ready_event);
+        tt_assert(ready & EV_WRITE);
+        tt_assert(!(ready & EV_TIMEOUT));
+        if (mode == 2) {
+          /* A real successful TCP completion starts proxy negotiation.
+           * TCP success alone must neither blame nor release the guard. */
+          conn->proxy_type = PROXY_SOCKS5;
+          tt_int_op(connection_add(TO_CONN(conn)), OP_EQ, 0);
+          tt_int_op(connection_handle_write(TO_CONN(conn), 1), OP_EQ, 0);
+          tt_int_op(conn->base_.state, OP_EQ, OR_CONN_STATE_PROXY_HANDSHAKING);
+          tt_int_op(conn->base_.marked_for_close, OP_EQ, 0);
+          tt_ptr_op(entry_guard_handle_get(chan->establishment_guard),
+                    OP_EQ, g);
+          tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_YES);
+          /* Successful link establishment, followed by a late error, cannot
+           * turn the completed attempt into guard failure. */
+          channel_change_state_open(chan);
+          tt_ptr_op(chan->establishment_guard, OP_EQ, NULL);
+          connection_or_close_for_error(conn, 0);
+          tor_close_socket(reserved);
+          reserved = TOR_INVALID_SOCKET;
+        } else {
+          tt_int_op(connection_handle_write(TO_CONN(conn), 1), OP_EQ, -1);
+        }
+      }
+      tt_int_op(g->is_reachable, OP_EQ,
+                mode == 2 ? GUARD_REACHABLE_YES : GUARD_REACHABLE_NO);
+    } else {
+      /* A syntactically valid descriptor that is not open makes getsockopt
+       * fail locally. The generic error-close policy still counts it. */
+      conn->base_.s = INT_MAX;
+      setup_full_capture_of_logs(LOG_WARN);
+      int result = connection_handle_write(TO_CONN(conn), 1);
+      conn->base_.s = TOR_INVALID_SOCKET;
+      teardown_capture_of_logs();
+      tt_int_op(result, OP_EQ, -1);
+      tt_int_op(g->is_reachable, OP_EQ, GUARD_REACHABLE_NO);
+    }
+    entry_guard_cancel(&state);
+    close_closeable_connections();
+    establishment_conn = NULL;
+    channel_unregister(chan);
+    channel_free(chan);
+  }
+
+ done:
+  tor_event_free(ready_event);
+  if (base)
+    event_base_free(base);
+  teardown_capture_of_logs();
+  if (SOCKET_OK(reserved))
+    tor_close_socket(reserved);
+  circuit_guard_state_free(state);
+  if (establishment_conn) {
+    if (establishment_conn->base_.s == INT_MAX)
+      establishment_conn->base_.s = TOR_INVALID_SOCKET;
+    if (!establishment_conn->base_.marked_for_close)
+      connection_or_close_for_error(establishment_conn, 0);
+    close_closeable_connections();
+    establishment_conn = NULL;
+  }
+  channel_free_all();
+  UNMOCK(connection_or_connect);
+  guard_selection_free(gs);
+  establishment_test_cleanup(dispatcher);
+}
+
 static const struct testcase_setup_t big_fake_network = {
   big_fake_network_setup, big_fake_network_cleanup
 };
@@ -3247,6 +5055,41 @@ struct testcase_t entrynodes_tests[] = {
   EN_TEST_FORK(get_guard_selection_by_name),
   EN_TEST_FORK(number_of_primaries),
 
+  { "establishment_unguarded_join", test_entry_guard_establishment_directory,
+    TT_FORK, &big_fake_network, (void *)"unguarded" },
+  { "establishment_single_bridge", test_entry_guard_establishment_sync_cache,
+    TT_FORK, &big_fake_network, (void *)"single-bridge" },
+  { "establishment_bridge_retry", test_entry_guard_establishment_bridge_retry,
+    TT_FORK, &big_fake_network, NULL },
+  { "establishment_cached_bridge_retry",
+    test_entry_guard_establishment_bridge_retry,
+    TT_FORK, &big_fake_network, (void *)"cached" },
+  { "establishment_bridge_retry_reset",
+    test_entry_guard_establishment_bridge_retry_reset,
+    TT_FORK, &big_fake_network, NULL },
+  { "establishment_bridge_retry_reset_shared_id",
+    test_entry_guard_establishment_bridge_retry_reset,
+    TT_FORK, &big_fake_network, (void *)"known" },
+  EN_TEST_BASE(establishment_socket_pending, TT_FORK,
+               &big_fake_network, NULL),
+  EN_TEST_BASE(establishment_socket_completion, TT_FORK,
+               &big_fake_network, NULL),
+  BFN_TEST(establishment_reporting),
+  BFN_TEST(establishment_cancellation),
+  BFN_TEST(establishment_exceptions),
+  BFN_TEST(establishment_sync_cache),
+  BFN_TEST(establishment_origin_cache),
+  BFN_TEST(establishment_directory),
+  BFN_TEST(establishment_bridges),
+  BFN_TEST(establishment_finalizer),
+  BFN_TEST(establishment_failover),
+  EN_TEST_BASE(establishment_pt_registration, TT_FORK,
+               &big_fake_network, NULL),
+  EN_TEST_BASE(establishment_mirror_retry, TT_FORK, &big_fake_network, NULL),
+  EN_TEST_BASE(establishment_postopen_circuit, TT_FORK,
+               &big_fake_network, NULL),
+  EN_TEST_BASE(establishment_postopen_directory, TT_FORK,
+               &big_fake_network, NULL),
   BFN_TEST(choose_selection_initial),
   BFN_TEST(add_single_guard),
   BFN_TEST(node_filter),

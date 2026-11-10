@@ -3685,7 +3685,26 @@ to building Tor circuits and using them:</p></div>
 </dt>
 <dd>
 <p>
-    If 0, CircuitBuildTimeout adaptive learning is disabled. (Default: 1)
+    If 0, CircuitBuildTimeout adaptive learning is disabled. (Default: 1)<br />
+<br />
+    If adaptive history contains only abandoned measurements, Tor clears that
+    history and restarts learning with conservative timeout values. This does
+    not change guard selection or guarantee that a stalled path will recover.
+    During continuing circuit-build failures, Tor logs a process-wide expiry
+    summary at most once every five minutes. Hop-stage and channel-state
+    counts are separate totals, not correlated observations. Failed first-hop
+    connections are counted separately as connection_failed; they have not
+    yet started circuit build timing.<br />
+<br />
+    To diagnose persistent failures with fixed timeouts, restart with
+    LearnCircuitBuildTimeout 0 and CircuitBuildTimeout 60 while preserving
+    the existing state file. Purpose-specific timeout rules still apply;
+    a path already failing after 60 seconds might remain unusable. Changing
+    these options in a running process is not equivalent to this restart
+    diagnostic. When reporting failures, share the aggregate expiry/recovery
+    summaries and, if requested, only TotalBuildTimes and
+    CircuitBuildAbandonedCount from state. Do not share the full state file,
+    histogram bins, or circuit path logs by default.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -5557,6 +5576,61 @@ Denial of Service mitigation subsystem described above.</p></div>
 </p>
 </dd>
 </dl></div>
+<div class="paragraph"><p>The following options are useful only for a directory cache.</p></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a id="DoSBeginDirRateEnabled"></a> <strong>DoSBeginDirRateEnabled</strong> <strong>0</strong>|<strong>1</strong>|<strong>auto</strong>
+</dt>
+<dd>
+<p>
+    Enable the BEGIN_DIR rate limit. If set to 1 (enabled), tor will apply a
+    rate limit on the directory streams opened per circuit. "auto" means use
+    the consensus parameter. If not defined in the consensus, the value is 1.
+    (Default: auto)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="DoSBeginDirDefenseType"></a> <strong>DoSBeginDirDefenseType</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    This is the type of defense applied to a circuit going over the BEGIN_DIR
+    rate limit. The possible values are:
+    <br />
+      1: No defense.
+    <br />
+      2: Reject the directory stream.
+    <br />
+      3: Close the circuit.
+    <br />
+    "0" means use the consensus parameter. If not defined in the consensus, the value is 3.
+    (Default: 0)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="DoSBeginDirRate"></a> <strong>DoSBeginDirRate</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The allowed rate of BEGIN_DIR from a single circuit per second. Coupled
+    with the burst (see below), if the limit is reached, actions can be taken
+    against the stream or circuit (DoSBeginDirDefenseType). If not defined or
+    set to 0, it is controlled by a consensus parameter. If not defined in the
+    consensus, the value is 10. (Default: 0)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="DoSBeginDirBurst"></a> <strong>DoSBeginDirBurst</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The allowed burst of BEGIN_DIR from a circuit. See the DoSBeginDirRate for
+    more details on this detection. If not defined or set to 0, it is
+    controlled by a consensus parameter. If not defined in the consensus, the
+    value is 60. (Default: 0)
+</p>
+</dd>
+</dl></div>
 <div class="paragraph"><p>For onion services, mitigations are a work in progress and multiple options
 are currently available.</p></div>
 <div class="paragraph"><p>The introduction point defense is a rate limit on the number of introduction
@@ -5860,7 +5934,11 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
 <dd>
 <p>
     Authoritative directories only. The maximum number of servers that we will
-    list as acceptable on a single IP address. Set this to "0" for "no limit".
+    list as acceptable on a single IP address. Only servers that we have
+    found reachable at that address count toward the limit, so it is only
+    enforced when AuthDirTestReachability is set, and for IPv6 addresses
+    only when AuthDirHasIPv6Connectivity is set. Set this to "0" for
+    "no limit".
     (Default: 2)
 </p>
 </dd>
@@ -5923,6 +6001,19 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
     If zero, the authority won&#8217;t participate in the protocol. If non-zero
     (default), the flag "shared-rand-participate" is added to the authority
     vote indicating participation in the protocol. (Default: 1)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirSupport048Clients"></a> <strong>AuthDirSupport048Clients</strong> <strong>0</strong>|<strong>1</strong>
+</dt>
+<dd>
+<p>
+    Authoritative directory only.
+    If true, we do not accept any router descriptors or generate any
+    consensuses that would confuse clients running 0.4.8 and earlier.
+    If false, 0.4.8 clients will get a somewhat degraded view of the network,
+    but will generally continue working.
+    (Default: 0)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -6066,7 +6157,8 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
 <dd>
 <p>
     Minimum uptime of a relay to be accepted as a hidden service directory
-    by directory authorities. (Default: 96 hours)
+    by directory authorities. A relay that has the HSDir flag in a recent
+    consensus doesn&#8217;t need to meet it. (Default: 96 hours)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -6112,7 +6204,7 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
 <p>
    STRING is the oldest Tor version accepted by the directory authority for
    relays and bridge. Any older version will be rejected.
-   (Default: 0.4.7.0-alpha-dev)
+   (Default: 0.4.9.1-alpha)
 </p>
 </dd>
 <dt class="hdlist1">

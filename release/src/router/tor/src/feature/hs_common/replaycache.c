@@ -70,6 +70,23 @@ replaycache_new(time_t horizon, time_t interval)
   return r;
 }
 
+/** Check a digest without modifying the cache. Return its stored timestamp
+ * through access_time, even if expired, so the caller can refresh it. */
+static int
+replaycache_test_and_elapsed_internal(time_t present, const replaycache_t *r,
+                                      const uint8_t *digest, time_t *elapsed,
+                                      time_t **access_time)
+{
+  *access_time = digest256map_get(r->digests_seen, digest);
+  if (!*access_time || (r->horizon && **access_time < present - r->horizon)) {
+    return 0;
+  }
+  if (elapsed) {
+    *elapsed = present >= **access_time ? present - **access_time : 0;
+  }
+  return 1;
+}
+
 /** See documentation for replaycache_add_and_test().
  */
 STATIC int
@@ -91,28 +108,11 @@ replaycache_add_and_test_internal(
   /* compute digest */
   crypto_digest256((char *)digest, (const char *)data, len, DIGEST_SHA256);
 
-  /* check map */
-  access_time = digest256map_get(r->digests_seen, digest);
+  rv = replaycache_test_and_elapsed_internal(present, r, digest, elapsed,
+                                             &access_time);
 
   /* seen before? */
   if (access_time != NULL) {
-    /*
-     * If it's far enough in the past, no hit.  If the horizon is zero, we
-     * never expire.
-     */
-    if (*access_time >= present - r->horizon || r->horizon == 0) {
-      /* replay cache hit, return 1 */
-      rv = 1;
-      /* If we want to output an elapsed time, do so */
-      if (elapsed) {
-        if (present >= *access_time) {
-          *elapsed = present - *access_time;
-        } else {
-          /* We shouldn't really be seeing hits from the future, but... */
-          *elapsed = 0;
-        }
-      }
-    }
     /*
      * If it's ahead of the cached time, update
      */
@@ -188,6 +188,24 @@ replaycache_add_and_test(replaycache_t *r, const void *data, size_t len)
   return replaycache_add_and_test_internal(time(NULL), r, data, len, NULL);
 }
 
+/** Test for a cached digest without inserting, refreshing, or scrubbing any
+ * entries. On a hit, optionally return the time since it was last added. */
+int
+replaycache_test_and_elapsed(const replaycache_t *r, const void *data,
+                             size_t len, time_t *elapsed)
+{
+  uint8_t digest[DIGEST256_LEN];
+  time_t *access_time;
+
+  tor_assert(r);
+  tor_assert(data);
+  tor_assert(len);
+
+  crypto_digest256((char *)digest, data, len, DIGEST_SHA256);
+  return replaycache_test_and_elapsed_internal(time(NULL), r, digest, elapsed,
+                                               &access_time);
+}
+
 /** Like replaycache_add_and_test(), but if it's a hit also return the time
  * elapsed since this digest was last seen.
  */
@@ -207,3 +225,12 @@ replaycache_scrub_if_needed(replaycache_t *r)
   replaycache_scrub_if_needed_internal(time(NULL), r);
 }
 
+/** Return the number of entries currently stored in the given cache `r`. */
+size_t
+replay_cache_count(const replaycache_t *r)
+{
+  if (!r) {
+    return 0;
+  }
+  return digest256map_size(r->digests_seen);
+}

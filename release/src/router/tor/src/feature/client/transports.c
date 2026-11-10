@@ -536,6 +536,11 @@ proxy_prepare_for_restart(managed_proxy_t *mp)
                             "is being terminated...", mp->argv[0],
                             process_get_pid(mp->process));
     process_terminate(mp->process);
+    /* We have detached from this process_t: once the child exits,
+     * managed_proxy_exit_callback() will see no data and let the process
+     * subsystem free it.  Forget our pointer so that we neither touch it
+     * after that nor trip over it in launch_managed_proxy(). */
+    mp->process = NULL;
   }
 
   /* destroy all its registered transports, since we will no longer

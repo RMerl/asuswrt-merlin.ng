@@ -464,6 +464,24 @@ fill_dos_values(void)
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "stream_rejected"));
   metrics_store_entry_update(sentry, dos_get_num_stream_rejected());
+
+  sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                             rentry->help, 0, NULL);
+  metrics_store_entry_add_label(sentry,
+          metrics_format_label("type", "begindir_rejected"));
+  metrics_store_entry_update(sentry, dos_get_num_begindir_rejected());
+
+  sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                             rentry->help, 0, NULL);
+  metrics_store_entry_add_label(sentry,
+          metrics_format_label("type", "begindir_rate_rejected"));
+  metrics_store_entry_update(sentry, dos_get_num_begindir_rate_rejected());
+
+  sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                             rentry->help, 0, NULL);
+  metrics_store_entry_add_label(sentry,
+          metrics_format_label("type", "begindir_hsdir_rejected"));
+  metrics_store_entry_update(sentry, dos_get_num_begindir_hsdir_rejected());
 }
 
 /** Fill function for the RELAY_METRICS_CC_COUNTERS metric. */

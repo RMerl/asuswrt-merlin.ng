@@ -35,6 +35,7 @@ int connection_or_digest_is_known_relay(const char *id_digest);
 void connection_or_update_token_buckets(smartlist_t *conns,
                                         const or_options_t *options);
 
+void connection_or_note_establishment_failure(or_connection_t *conn);
 void connection_or_connect_failed(or_connection_t *conn,
                                   int reason, const char *msg);
 void connection_or_notify_error(or_connection_t *conn,
@@ -44,7 +45,7 @@ MOCK_DECL(or_connection_t *,
           (const tor_addr_t *addr, uint16_t port,
            const char *id_digest,
            const struct ed25519_public_key_t *ed_id,
-           channel_tls_t *chan));
+           channel_tls_t *chan, bool for_origin_circ));
 
 void connection_or_close_normally(or_connection_t *orconn, int flush);
 MOCK_DECL(void,connection_or_close_for_error,

@@ -1608,6 +1608,7 @@ routerstatus_has_visibly_changed(const routerstatus_t *a,
          a->is_exit != b->is_exit ||
          a->is_stable != b->is_stable ||
          a->is_fast != b->is_fast ||
+         a->is_middle_only != b->is_middle_only ||
          a->is_flagged_running != b->is_flagged_running ||
          a->is_named != b->is_named ||
          a->is_unnamed != b->is_unnamed ||

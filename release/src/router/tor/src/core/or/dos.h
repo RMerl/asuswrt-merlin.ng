@@ -69,6 +69,7 @@ typedef struct dos_client_stats_t {
 struct clientmap_entry_t;
 
 void dos_init(void);
+void dos_bridge_init(void);
 void dos_free_all(void);
 void dos_consensus_has_changed(const networkstatus_t *ns);
 int dos_enabled(void);
@@ -83,6 +84,7 @@ void dos_close_client_conn(const or_connection_t *or_conn);
 int dos_should_refuse_single_hop_client(void);
 void dos_note_refuse_single_hop_client(void);
 void dos_note_circ_max_outq(const channel_t *chan);
+void dos_note_begindir_hsdir_rejected(void);
 
 uint32_t dos_get_num_cc_marked_addr(void);
 uint32_t dos_get_num_cc_marked_addr_maxq(void);
@@ -91,6 +93,9 @@ uint64_t dos_get_num_conn_addr_rejected(void);
 uint64_t dos_get_num_conn_addr_connect_rejected(void);
 uint64_t dos_get_num_single_hop_refused(void);
 uint64_t dos_get_num_stream_rejected(void);
+uint64_t dos_get_num_begindir_rejected(void);
+uint64_t dos_get_num_begindir_rate_rejected(void);
+uint64_t dos_get_num_begindir_hsdir_rejected(void);
 
 /*
  * Circuit creation DoS mitigation subsystemn interface.
@@ -187,9 +192,39 @@ typedef enum dos_stream_defense_type_t {
   DOS_STREAM_DEFENSE_MAX            = 3,
 } dos_stream_defense_type_t;
 
-dos_stream_defense_type_t dos_stream_new_begin_or_resolve_cell(
-                                                          or_circuit_t *circ);
+dos_stream_defense_type_t dos_stream_new_request(or_circuit_t *circ);
 void dos_stream_init_circ_tbf(or_circuit_t *circ);
+
+/*
+ * BEGIN_DIR limit DoS mitigation subsystem interface.
+ */
+
+/* DoSBeginDirLimitEnabled default. Disabled by default. */
+#define DOS_BEGINDIR_LIMIT_ENABLED_DEFAULT 0
+/* DoSBeginDirRateEnabled default. Enabled by default. */
+#define DOS_BEGINDIR_RATE_ENABLED_DEFAULT 1
+/* DoSBeginDirDefenseType maps to the dos_stream_defense_type_t enum */
+#define DOS_BEGINDIR_DEFENSE_TYPE_DEFAULT DOS_STREAM_DEFENSE_CLOSE_CIRCUIT
+/* DoSBeginDirRate is 10 per seconds. */
+#define DOS_BEGINDIR_RATE_DEFAULT 10
+/* DoSBeginDirBurst default. Clients and bridges launch all their descriptor
+ * fetches at once on a shared one-hop circuit, up to 500 per request. With
+ * N relays in the network, a bootstrap is about:
+ *
+ *   client: ceil(N/500) microdescs + ~2 (consensus, certs)
+ *   bridge: 2 * ceil(N/500) server descs and microdescs + ~4 (two consensus
+ *           flavors, certs)
+ *
+ * At 9000 relays, that is ~20 for a client and ~40 for a bridge. A burst of
+ * 60 fits bridges up to ~14000 relays and clients up to ~29000, without
+ * retries. It is kept tight on purpose: circuit creation is already rate
+ * limited, so an attacker should have to open new circuits rather than
+ * pushing more BEGIN_DIR down one. */
+#define DOS_BEGINDIR_BURST_DEFAULT 60
+
+bool dos_begindir_should_refuse(or_circuit_t *circ);
+dos_stream_defense_type_t dos_begindir_new_request(or_circuit_t *circ);
+void dos_begindir_init_circ_tbf(or_circuit_t *circ);
 
 #ifdef DOS_PRIVATE
 
@@ -209,6 +244,10 @@ MOCK_DECL(STATIC unsigned int, get_param_cc_enabled,
 MOCK_DECL(STATIC unsigned int, get_param_conn_enabled,
           (const networkstatus_t *ns));
 MOCK_DECL(STATIC unsigned int, get_param_stream_enabled,
+          (const networkstatus_t *ns));
+MOCK_DECL(STATIC unsigned int, get_param_begindir_limit_enabled,
+          (const networkstatus_t *ns));
+MOCK_DECL(STATIC unsigned int, get_param_begindir_rate_enabled,
           (const networkstatus_t *ns));
 
 #endif /* defined(DOS_PRIVATE) */

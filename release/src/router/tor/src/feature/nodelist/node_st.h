@@ -102,6 +102,12 @@ struct node_t {
   /** When was the last time we could reach this OR? */
   time_t last_reachable;        /* IPv4. */
   time_t last_reachable6;       /* IPv6. */
+  /** Have we reached this OR at the IPv4/IPv6 ORPort of its current
+   * descriptor?  Unlike last_reachable{,6}, these are cleared whenever the
+   * descriptor goes away, so they never vouch for an address we didn't
+   * test. Used for AuthDirMaxServersPerAddr. */
+  unsigned int reached_ipv4_orport:1;
+  unsigned int reached_ipv6_orport:1;
 
   /* Hidden service directory index data. This is used by a service or client
    * in order to know what's the hs directory index for this node at the time

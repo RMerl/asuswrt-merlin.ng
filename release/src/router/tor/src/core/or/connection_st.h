@@ -98,7 +98,10 @@ struct connection_t {
   /** Our socket; set to TOR_INVALID_SOCKET if this connection is closed,
    * or has no socket. */
   tor_socket_t s;
-  int conn_array_index; /**< Index into the global connection array. */
+  /** Indices into the global connection lists, or -1 when absent. */
+  int conn_array_index;
+  int closeable_list_index;
+  int active_linked_list_index;
 
   struct event *read_event; /**< Libevent event structure. */
   struct event *write_event; /**< Libevent event structure. */

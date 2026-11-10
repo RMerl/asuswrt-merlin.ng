@@ -145,11 +145,11 @@ addressmap_virtaddress_remove(const char *address, addressmap_entry_t *ent)
       strmap_get(virtaddress_reversemap, ent->new_address);
     /*log_fn(LOG_NOTICE,"remove reverse mapping for %s",ent->new_address);*/
     if (ve) {
-      if (!strcmp(address, ve->ipv4_address))
+      if (!strcmp_opt(address, ve->ipv4_address))
         tor_free(ve->ipv4_address);
-      if (!strcmp(address, ve->ipv6_address))
+      if (!strcmp_opt(address, ve->ipv6_address))
         tor_free(ve->ipv6_address);
-      if (!strcmp(address, ve->hostname_address))
+      if (!strcmp_opt(address, ve->hostname_address))
         tor_free(ve->hostname_address);
       if (!ve->ipv4_address && !ve->ipv6_address && !ve->hostname_address) {
         tor_free(ve);
@@ -372,8 +372,8 @@ addressmap_match_superdomains(char *address)
  * expiry time of the result, or to <b>time_max</b> if the result does
  * not expire.
  *
- * If <b>exit_source_out</b> is non-null, we set it as follows.  If we the
- * address starts out as a non-exit address, and we remap it to an .exit
+ * If <b>exit_source_out</b> is non-null, we set it as follows.  If the
+ * address starts out as a non-.exit address, and we remap it to an .exit
  * address at any point, then set *<b>exit_source_out</b> to the
  * address_entry_source_t of the first such rule.  Set *<b>exit_source_out</b>
  * to ADDRMAPSRC_NONE if there is no such rewrite, or if the original address
@@ -772,9 +772,21 @@ client_dns_set_reverse_addressmap(entry_connection_t *for_conn,
   char *s = NULL;
   {
     tor_addr_t tmp_addr;
-    sa_family_t f = tor_addr_parse(&tmp_addr, address);
-    if ((f == AF_INET && ! for_conn->entry_cfg.cache_ipv4_answers) ||
-        (f == AF_INET6 && ! for_conn->entry_cfg.cache_ipv6_answers))
+    if (tor_addr_parse_PTR_name(&tmp_addr, address, AF_UNSPEC, true) <= 0)
+      return;
+    bool cacheable;
+    switch (tor_addr_family(&tmp_addr)) {
+      case AF_INET:
+        cacheable = for_conn->entry_cfg.cache_ipv4_answers;
+        break;
+      case AF_INET6:
+        cacheable = for_conn->entry_cfg.cache_ipv6_answers;
+        break;
+      default:
+        cacheable = false;
+        break;
+    }
+    if (! cacheable)
       return;
   }
   tor_asprintf(&s, "REVERSE[%s]", address);
@@ -999,6 +1011,8 @@ addressmap_get_virtual_address(int type)
 const char *
 addressmap_register_virtual_address(int type, char *new_address)
 {
+  char *new_mapping = NULL;
+
   char **addrp;
   virtaddress_entry_t *vent;
   int vent_needs_to_be_added = 0;
@@ -1038,13 +1052,17 @@ addressmap_register_virtual_address(int type, char *new_address)
     }
   }
 
-  tor_free(*addrp);
-  *addrp = addressmap_get_virtual_address(type);
-  if (!*addrp) {
-    tor_free(vent);
+  new_mapping = addressmap_get_virtual_address(type);
+  if (! new_mapping) {
+    if (vent_needs_to_be_added)
+      tor_free(vent);
     tor_free(new_address);
     return NULL;
   }
+
+  tor_free(*addrp);
+  *addrp = new_mapping;
+
   log_info(LD_APP, "Registering map from %s to %s", *addrp, new_address);
   if (vent_needs_to_be_added)
     strmap_set(virtaddress_reversemap, new_address, vent);
@@ -1132,8 +1150,8 @@ addressmap_get_mappings(smartlist_t *sl, time_t min_expires,
      val = val_;
      if (val->expires >= min_expires && val->expires <= max_expires) {
        if (!sl) {
-         iter = strmap_iter_next_rmv(addressmap,iter);
          addressmap_ent_remove(key, val);
+         iter = strmap_iter_next_rmv(addressmap,iter);
          continue;
        } else if (val->new_address) {
          const char *src_wc = val->src_wildcard ? "*." : "";

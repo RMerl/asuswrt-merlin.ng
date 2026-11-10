@@ -23,6 +23,7 @@
 #include "core/or/connection_or.h"
 #include "lib/net/resolve.h"
 #include "lib/evloop/compat_libevent.h"
+#include "lib/evloop/token_bucket.h"
 
 #include "test/test_connection.h"
 #include "test/test_helpers.h"
@@ -976,6 +977,266 @@ test_conn_describe(void *arg)
   connection_free_minimal(conn);
 }
 
+/* Keep closed connections available so tests can inspect cleared indices. */
+static void
+mock_keep_closed_connection(connection_t *conn)
+{
+  (void)conn;
+}
+
+static connection_t *
+new_list_test_connection(int linked)
+{
+  connection_t *conn = TO_CONN(dir_connection_new(AF_INET));
+  conn->state = DIR_CONN_STATE_SERVER_WRITING;
+  conn->purpose = DIR_PURPOSE_SERVER;
+  conn->linked = linked;
+  return conn;
+}
+
+/* Called while connection_free_ is mocked to retain the closed objects. */
+static void
+free_list_test_connections(connection_t **conns, unsigned n)
+{
+  for (unsigned i = 0; i < n; ++i) {
+    if (!conns[i])
+      continue;
+    conns[i]->hold_open_until_flushed = 0;
+    buf_clear(conns[i]->outbuf);
+    if (!conns[i]->marked_for_close)
+      connection_mark_for_close(conns[i]);
+  }
+  close_closeable_connections();
+  UNMOCK(connection_free_);
+  for (unsigned i = 0; i < n; ++i)
+    connection_free(conns[i]);
+}
+
+static void
+test_conn_list_indices(void *arg)
+{
+  (void)arg;
+  connection_t *conns[3] = { NULL, NULL, NULL };
+  tor_init_connection_lists();
+  MOCK(connection_free_, mock_keep_closed_connection);
+
+  for (unsigned i = 0; i < ARRAY_LENGTH(conns); ++i) {
+    conns[i] = new_list_test_connection(1);
+    tt_int_op(conns[i]->conn_array_index, OP_EQ, -1);
+    tt_int_op(conns[i]->closeable_list_index, OP_EQ, -1);
+    tt_int_op(conns[i]->active_linked_list_index, OP_EQ, -1);
+    tt_assert(!connection_in_array(conns[i]));
+    tt_assert(!connection_is_on_closeable_list(conns[i]));
+    tt_int_op(connection_add(conns[i]), OP_EQ, 0);
+    connection_start_reading(conns[i]);
+    tt_int_op(conns[i]->active_linked_list_index, OP_EQ, i);
+  }
+
+  /* Removing the middle entry moves the last entry into its slot. Repeated
+   * starts and stops must neither duplicate entries nor remove them twice. */
+  connection_stop_reading(conns[1]);
+  connection_stop_reading(conns[1]);
+  tt_int_op(conns[1]->active_linked_list_index, OP_EQ, -1);
+  tt_int_op(conns[2]->active_linked_list_index, OP_EQ, 1);
+  connection_start_reading(conns[2]);
+  connection_start_reading(conns[1]);
+  connection_start_reading(conns[1]);
+  tt_int_op(conns[1]->active_linked_list_index, OP_EQ, 2);
+  connection_stop_reading(conns[1]);
+  tt_int_op(conns[1]->active_linked_list_index, OP_EQ, -1);
+
+  tt_int_op(connection_remove(conns[1]), OP_EQ, 0);
+  tt_int_op(conns[1]->conn_array_index, OP_EQ, -1);
+  tt_assert(!connection_in_array(conns[1]));
+  tt_int_op(conns[2]->conn_array_index, OP_EQ, 1);
+  tt_assert(connection_in_array(conns[2]));
+  tt_int_op(connection_add(conns[1]), OP_EQ, 0);
+  tt_int_op(conns[1]->conn_array_index, OP_EQ, 2);
+  tt_int_op(connection_remove(conns[1]), OP_EQ, 0);
+  tt_int_op(conns[1]->conn_array_index, OP_EQ, -1);
+
+ done:
+  free_list_test_connections(conns, ARRAY_LENGTH(conns));
+}
+
+#ifndef ALL_BUGS_ARE_FATAL
+/* Exercise recovery and object lifetime, rather than diagnostic wording. */
+static void
+test_conn_list_index_recovery(void *arg)
+{
+  (void)arg;
+  connection_t *conns[4] = { NULL, NULL, NULL, NULL };
+  tor_init_connection_lists();
+  MOCK(connection_free_, mock_keep_closed_connection);
+  tor_capture_bugs_(16);
+  for (unsigned i = 0; i < 3; ++i) {
+    conns[i] = new_list_test_connection(1);
+    tt_int_op(connection_add(conns[i]), OP_EQ, 0);
+    connection_start_reading(conns[i]);
+  }
+
+  /* An index pointing at another connection must not remove that entry. */
+  conns[1]->active_linked_list_index = 0;
+  connection_stop_reading(conns[1]);
+  tt_int_op(conns[0]->active_linked_list_index, OP_EQ, 0);
+  tt_int_op(conns[2]->active_linked_list_index, OP_EQ, 1);
+  conns[0]->active_on_link = 0;
+  connection_start_reading(conns[0]);
+  connection_start_reading(conns[1]);
+  tt_int_op(conns[1]->active_linked_list_index, OP_EQ, 2);
+
+  /* Recover a lost index, and an active flag with no list entry. */
+  conns[2]->active_linked_list_index = -1;
+  connection_stop_reading(conns[2]);
+  tt_int_op(conns[1]->active_linked_list_index, OP_EQ, 1);
+  conns[2]->active_on_link = 1;
+  connection_stop_reading(conns[2]);
+  tt_assert(!conns[2]->active_on_link);
+
+  conns[1]->conn_array_index = 0;
+  tt_int_op(connection_remove(conns[1]), OP_EQ, 0);
+  tt_assert(connection_in_array(conns[0]));
+  tt_int_op(conns[2]->conn_array_index, OP_EQ, 1);
+  conns[1]->conn_array_index = 100;
+  tt_assert(!connection_in_array(conns[1]));
+  tt_int_op(conns[1]->conn_array_index, OP_EQ, -1);
+  conns[2]->conn_array_index = -1;
+  tt_int_op(connection_remove(conns[2]), OP_EQ, 0);
+
+  for (unsigned i = 0; i < 3; ++i)
+    connection_mark_for_close(conns[i]);
+  conns[0]->closeable_list_index = 100;
+  tt_assert(connection_is_on_closeable_list(conns[0]));
+  tt_int_op(conns[0]->closeable_list_index, OP_EQ, 0);
+  add_connection_to_closeable_list(conns[0]); /* must not duplicate it */
+  conns[0]->closeable_list_index = -1;
+  close_closeable_connections();
+  for (unsigned i = 0; i < 3; ++i) {
+    tt_int_op(conns[i]->conn_array_index, OP_EQ, -1);
+    tt_int_op(conns[i]->closeable_list_index, OP_EQ, -1);
+    tt_int_op(conns[i]->active_linked_list_index, OP_EQ, -1);
+  }
+
+  /* Direct free must remove unexpected active membership before freeing. */
+  conns[3] = new_list_test_connection(1);
+  tt_int_op(connection_add(conns[3]), OP_EQ, 0);
+  connection_start_reading(conns[3]);
+  tt_int_op(conns[3]->active_linked_list_index, OP_EQ, 0);
+  tt_int_op(connection_remove(conns[3]), OP_EQ, 0);
+  connection_free___real(conns[3]);
+  conns[3] = NULL;
+
+ done:
+  free_list_test_connections(conns, ARRAY_LENGTH(conns));
+  tor_end_capture_bugs_();
+}
+#endif /* !defined(ALL_BUGS_ARE_FATAL) */
+
+static connection_t *close_on_linked_wakeup;
+
+static void
+mock_read_and_queue_close(connection_t *conn)
+{
+  connection_start_reading__real(conn);
+  if (close_on_linked_wakeup) {
+    connection_mark_for_close(close_on_linked_wakeup);
+    close_on_linked_wakeup = NULL;
+  }
+}
+
+static void
+test_conn_linked_list_teardown(void *arg)
+{
+  (void)arg;
+  connection_t *conns[3] = { NULL, NULL, NULL };
+  tor_init_connection_lists();
+  MOCK(connection_free_, mock_keep_closed_connection);
+  for (unsigned i = 0; i < ARRAY_LENGTH(conns); ++i) {
+    conns[i] = new_list_test_connection(1);
+    tt_int_op(connection_add(conns[i]), OP_EQ, 0);
+  }
+  connection_link_connections(conns[0], conns[1]);
+  connection_start_reading(conns[1]);
+  connection_start_reading(conns[2]);
+
+  /* Unlinking the first connection wakes its peer. Queue another closure in
+   * that callback, before the first connection leaves the closeable list. */
+  close_on_linked_wakeup = conns[2];
+  MOCK(connection_start_reading, mock_read_and_queue_close);
+  connection_mark_for_close(conns[0]);
+  tt_int_op(conns[0]->closeable_list_index, OP_EQ, 0);
+  close_closeable_connections();
+  tt_ptr_op(close_on_linked_wakeup, OP_EQ, NULL);
+  tt_ptr_op(conns[1]->linked_conn, OP_EQ, NULL);
+  tt_assert(conns[1]->active_on_link);
+  tt_int_op(conns[1]->active_linked_list_index, OP_EQ, 0);
+  tt_int_op(conns[1]->conn_array_index, OP_EQ, 0);
+  for (unsigned i = 0; i < ARRAY_LENGTH(conns); i += 2) {
+    tt_int_op(conns[i]->conn_array_index, OP_EQ, -1);
+    tt_int_op(conns[i]->closeable_list_index, OP_EQ, -1);
+    tt_int_op(conns[i]->active_linked_list_index, OP_EQ, -1);
+    tt_assert(!conns[i]->active_on_link);
+  }
+  connection_mark_for_close(conns[1]);
+  close_closeable_connections();
+  tt_int_op(conns[1]->active_linked_list_index, OP_EQ, -1);
+  tt_int_op(smartlist_len(get_connection_array()), OP_EQ, 0);
+
+ done:
+  close_on_linked_wakeup = NULL;
+  UNMOCK(connection_start_reading);
+  free_list_test_connections(conns, ARRAY_LENGTH(conns));
+}
+
+static void
+test_conn_closeable_list_delayed(void *arg)
+{
+  (void)arg;
+  connection_t *conns[3] = { NULL, NULL, NULL };
+  tor_socket_t sockets[2] = { TOR_INVALID_SOCKET, TOR_INVALID_SOCKET };
+  tor_init_connection_lists();
+  MOCK(connection_free_, mock_keep_closed_connection);
+  connection_bucket_init();
+  token_bucket_rw_dec_write(&global_bucket,
+                            token_bucket_rw_get_write(&global_bucket));
+  tt_int_op(tor_socketpair(AF_UNIX, SOCK_STREAM, 0, sockets), OP_EQ, 0);
+  for (unsigned i = 0; i < ARRAY_LENGTH(conns); ++i) {
+    conns[i] = new_list_test_connection(i != 0);
+    if (i == 0) {
+      conns[i]->s = sockets[0];
+      sockets[0] = TOR_INVALID_SOCKET;
+      conns[i]->always_rate_limit_as_remote = 1;
+    }
+    tt_int_op(connection_add(conns[i]), OP_EQ, 0);
+    connection_mark_for_close(conns[i]);
+    tt_int_op(conns[i]->closeable_list_index, OP_EQ, i);
+  }
+  conns[0]->hold_open_until_flushed = 1;
+  buf_add(conns[0]->outbuf, "x", 1);
+
+  /* Keep the first entry pending while removing the middle and last entries.
+   * The connection moved into the middle slot must still be closed. */
+  close_closeable_connections();
+  tt_assert(connection_in_array(conns[0]));
+  tt_assert(connection_is_on_closeable_list(conns[0]));
+  tt_int_op(conns[0]->closeable_list_index, OP_EQ, 0);
+  for (unsigned i = 1; i < ARRAY_LENGTH(conns); ++i) {
+    tt_int_op(conns[i]->conn_array_index, OP_EQ, -1);
+    tt_int_op(conns[i]->closeable_list_index, OP_EQ, -1);
+  }
+  buf_clear(conns[0]->outbuf);
+  close_closeable_connections();
+  tt_int_op(conns[0]->closeable_list_index, OP_EQ, -1);
+  tt_int_op(smartlist_len(get_connection_array()), OP_EQ, 0);
+
+ done:
+  free_list_test_connections(conns, ARRAY_LENGTH(conns));
+  for (unsigned i = 0; i < ARRAY_LENGTH(sockets); ++i) {
+    if (SOCKET_OK(sockets[i]))
+      tor_close_socket(sockets[i]);
+  }
+}
+
 #ifndef COCCI
 #define CONNECTION_TESTCASE(name, fork, setup)                           \
   { #name, test_conn_##name, fork, &setup, NULL }
@@ -994,6 +1255,15 @@ static const unsigned int PROXY_CONNECT_ARG = PROXY_CONNECT;
 static const unsigned int PROXY_HAPROXY_ARG = PROXY_HAPROXY;
 
 struct testcase_t connection_tests[] = {
+  { "list_indices", test_conn_list_indices, TT_FORK, NULL, NULL },
+#ifndef ALL_BUGS_ARE_FATAL
+  { "list_index_recovery", test_conn_list_index_recovery,
+    TT_FORK, NULL, NULL },
+#endif /* !defined(ALL_BUGS_ARE_FATAL) */
+  { "linked_list_teardown", test_conn_linked_list_teardown,
+    TT_FORK, NULL, NULL },
+  { "closeable_list_delayed", test_conn_closeable_list_delayed,
+    TT_FORK, NULL, NULL },
   CONNECTION_TESTCASE(get_basic, TT_FORK, test_conn_get_basic_st),
   CONNECTION_TESTCASE(get_rsrc,  TT_FORK, test_conn_get_rsrc_st),
 

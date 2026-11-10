@@ -195,7 +195,7 @@ authority_cert_parse_from_string(const char *s, size_t maxlen,
   cert->cache_info.saved_location = SAVED_NOWHERE;
 
   if (end_of_string) {
-    *end_of_string = eat_whitespace(eos);
+    *end_of_string = eat_whitespace_eos(eos, end_of_s);
   }
   SMARTLIST_FOREACH(tokens, directory_token_t *, t, token_clear(t));
   smartlist_free(tokens);

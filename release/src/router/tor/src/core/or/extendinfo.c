@@ -22,6 +22,7 @@
 #include "feature/relay/router.h"
 #include "feature/relay/routermode.h"
 #include "lib/crypt_ops/crypto_rand.h"
+#include "core/or/congestion_control_common.h"
 
 #include "core/or/extend_info_st.h"
 #include "feature/nodelist/node_st.h"
@@ -38,6 +39,8 @@ extend_info_new(const char *nickname,
                 const protover_summary_flags_t *pv,
                 bool for_exit_use)
 {
+  (void) for_exit_use;
+
   extend_info_t *info = tor_malloc_zero(sizeof(extend_info_t));
   if (rsa_id_digest)
     memcpy(info->identity_digest, rsa_id_digest, DIGEST_LEN);
@@ -56,14 +59,14 @@ extend_info_new(const char *nickname,
     extend_info_add_orport(info, addr, port);
   }
 
-  if (pv && for_exit_use) {
-    info->exit_supports_congestion_control =
-      pv->supports_congestion_control;
+  if (pv) {
+    info->use_congestion_control =
+      pv->supports_congestion_control && congestion_control_enabled();
   }
 
   if (pv) {
     info->supports_ntor_v3 = pv->supports_ntor_v3;
-    info->enable_cgo = pv->supports_cgo;
+    info->enable_cgo = pv->supports_cgo && info->use_congestion_control;
   }
 
   return info;

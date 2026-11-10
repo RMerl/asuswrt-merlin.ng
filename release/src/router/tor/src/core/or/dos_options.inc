@@ -63,6 +63,19 @@ CONF_VAR(DoSStreamCreationBurst, POSINT, 0, "0")
  * against it. See the dos_stream_defense_type_t enum. */
 CONF_VAR(DoSStreamCreationDefenseType, INT, 0, "0")
 
+/** Autobool: Is the per circuit BEGIN_DIR rate limit enabled? */
+CONF_VAR(DoSBeginDirRateEnabled, AUTOBOOL, 0, "auto")
+
+/** BEGIN_DIR rate used to refill the token bucket. */
+CONF_VAR(DoSBeginDirRate, POSINT, 0, "0")
+
+/** Maximum allowed burst of BEGIN_DIR. */
+CONF_VAR(DoSBeginDirBurst, POSINT, 0, "0")
+
+/** When a circuit goes over the BEGIN_DIR rate, what defense should be used
+ * against it. See the dos_stream_defense_type_t enum. */
+CONF_VAR(DoSBeginDirDefenseType, INT, 0, "0")
+
 /** For how much time (in seconds) the connection connect rate defense is
 * applicable for a malicious address. A random time delta is added to the
 * defense time of an address which will be between 1 second and half of this

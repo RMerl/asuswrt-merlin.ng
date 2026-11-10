@@ -294,6 +294,9 @@ test_oos_kill_conn_list(void *arg)
   or_c1 = tor_malloc_zero(sizeof(*or_c1));
   or_c1->base_.magic = OR_CONNECTION_MAGIC;
   or_c1->base_.type = CONN_TYPE_OR;
+  /* OOS validates the connection before invoking the mocked error close. */
+  or_c1->base_.state = OR_CONN_STATE_CONNECTING;
+  or_c1->base_.address = tor_strdup("192.0.2.1");
   c1 = TO_CONN(or_c1);
   dir_c2 = tor_malloc_zero(sizeof(*dir_c2));
   dir_c2->base_.magic = DIR_CONNECTION_MAGIC;
@@ -323,6 +326,7 @@ test_oos_kill_conn_list(void *arg)
   UNMOCK(connection_mark_for_close_internal_);
 
   if (l) smartlist_free(l);
+  if (or_c1) tor_free(or_c1->base_.address);
   tor_free(or_c1);
   tor_free(dir_c2);
 

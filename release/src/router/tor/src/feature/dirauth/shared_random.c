@@ -464,8 +464,15 @@ static int
 compare_reveal_(const void **_a, const void **_b)
 {
   const sr_commit_t *a = *_a, *b = *_b;
-  return fast_memcmp(a->hashed_reveal, b->hashed_reveal,
-                     sizeof(a->hashed_reveal));
+  int r = fast_memcmp(a->hashed_reveal, b->hashed_reveal,
+                      sizeof(a->hashed_reveal));
+  if (r)
+    return r;
+  /* Two authorities with the same commitment value can happen if one
+   * copied the other's; make the order well defined, so that every
+   * authority holding the same commits hashes them in the same order. */
+  return fast_memcmp(a->rsa_identity, b->rsa_identity,
+                     sizeof(a->rsa_identity));
 }
 
 /** Given <b>commit</b> give the line that we should place in our votes.
@@ -959,8 +966,8 @@ sr_compute_srv(void)
   commits = smartlist_new();
   chunks = smartlist_new();
 
-  /* We must make a list of commit ordered by authority fingerprint in
-   * ascending order as specified by proposal 250. */
+  /* We must make a list of commits ordered by reveal in
+   * ascending order as specified by srv-spec/protocol. */
   DIGESTMAP_FOREACH(state_commits, key, sr_commit_t *, c) {
     /* Extra safety net, make sure we have valid commit before using it. */
     ASSERT_COMMIT_VALID(c);

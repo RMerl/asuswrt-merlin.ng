@@ -157,6 +157,15 @@ struct circuit_t {
    */
   smartlist_t *sendme_last_digests;
 
+  /**
+   * If this is non-0, then this is the crypt_path_t for the hop
+   * which we expect sendme recorded in sendme_last_digests to arrive.
+   *
+   * NOTE: We only compare this pointer for equality.  We never indirect
+   * into it.
+   **/
+  const struct crypt_path_t *sendme_digest_hop;
+
   /** Temporary field used during circuits_handle_oom. */
   uint32_t age_tmp;
 

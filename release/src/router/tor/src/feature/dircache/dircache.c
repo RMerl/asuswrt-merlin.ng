@@ -15,6 +15,9 @@
 #include "app/config/config.h"
 #include "app/config/resolve_addr.h"
 #include "core/mainloop/connection.h"
+#include "core/or/circuitlist.h"
+#include "core/or/connection_edge.h"
+#include "core/or/dos.h"
 #include "core/or/relay.h"
 #include "feature/dirauth/dirvote.h"
 #include "feature/dirauth/authmode.h"
@@ -37,6 +40,8 @@
 #include "lib/compress/compress.h"
 #include "lib/crypt_ops/crypto_format.h"
 
+#include "core/or/edge_connection_st.h"
+#include "core/or/or_circuit_st.h"
 #include "feature/dircache/cached_dir_st.h"
 #include "feature/dircommon/dir_connection_st.h"
 #include "feature/nodelist/authority_cert_st.h"
@@ -548,29 +553,23 @@ warn_consensus_is_not_reasonably_live(
 
 /**
  * Parse a single hex-encoded sha3-256 digest from <b>hex</b> into
- * <b>digest</b>. Return 0 on success.  On failure, report that the hash came
- * from <b>location</b>, report that we are taking <b>action</b> with it, and
- * return -1.
+ * <b>digest</b>. Return 0 on success and -1 on failure.
  */
 static int
-parse_one_diff_hash(uint8_t *digest, const char *hex, const char *location,
-                    const char *action)
+parse_one_diff_hash(uint8_t *digest, const char *hex)
 {
   if (base16_decode((char*)digest, DIGEST256_LEN, hex, strlen(hex)) ==
       DIGEST256_LEN) {
     return 0;
   } else {
-    log_fn(LOG_PROTOCOL_WARN, LD_DIR,
-           "%s contained bogus digest %s; %s.",
-           location, escaped(hex), action);
     return -1;
   }
 }
 
 /** If there is an X-Or-Diff-From-Consensus header included in <b>headers</b>,
- * set <b>digest_out</b> to a new smartlist containing every 256-bit
- * hex-encoded digest listed in that header and return 0.  Otherwise return
- * -1.  */
+ * set <b>digests_out</b> to a new smartlist containing every valid 256-bit
+ * digest listed in that header, decoded, and return 0. Report invalid entries
+ * in one summary. If the header is absent, return -1. */
 static int
 parse_or_diff_from_header(smartlist_t **digests_out, const char *headers)
 {
@@ -584,11 +583,17 @@ parse_or_diff_from_header(smartlist_t **digests_out, const char *headers)
                          SPLIT_SKIP_SPACE|SPLIT_IGNORE_BLANK, -1);
   SMARTLIST_FOREACH_BEGIN(hex_digests, const char *, hex) {
     uint8_t digest[DIGEST256_LEN];
-    if (!parse_one_diff_hash(digest, hex, "X-Or-Diff-From-Consensus header",
-                             "ignoring")) {
+    if (!parse_one_diff_hash(digest, hex)) {
       smartlist_add(*digests_out, tor_memdup(digest, sizeof(digest)));
     }
   } SMARTLIST_FOREACH_END(hex);
+  const int n_invalid =
+    smartlist_len(hex_digests) - smartlist_len(*digests_out);
+  if (n_invalid) {
+    log_fn(LOG_PROTOCOL_WARN, LD_DIR,
+           "X-Or-Diff-From-Consensus header contained %d invalid digests; "
+           "ignoring them.", n_invalid);
+  }
   SMARTLIST_FOREACH(hex_digests, char *, cp, tor_free(cp));
   smartlist_free(hex_digests);
   tor_free(hdr);
@@ -828,13 +833,14 @@ parse_consensus_request(parsed_consensus_request_t *out,
     uint8_t diff_from[DIGEST256_LEN];
     out->diff_from_digests = smartlist_new();
     out->diff_only = 1;
-    int ok = !parse_one_diff_hash(diff_from, diff_hash_in_url, "URL",
-                                  "rejecting");
+    int ok = !parse_one_diff_hash(diff_from, diff_hash_in_url);
     tor_free(diff_hash_in_url);
     if (ok) {
       smartlist_add(out->diff_from_digests,
                     tor_memdup(diff_from, DIGEST256_LEN));
     } else {
+      log_fn(LOG_PROTOCOL_WARN, LD_DIR,
+             "URL contained an invalid consensus diff digest; rejecting.");
       return -1;
     }
   } else {
@@ -1348,6 +1354,72 @@ handle_get_keys(dir_connection_t *conn, const get_handler_args_t *args)
   return 0;
 }
 
+/** Return true iff a directory connection is closing or has lost its circuit.
+ * Direct DirPort connections still need the usual non-anonymous rejection. */
+static bool
+dir_conn_is_closing(const dir_connection_t *conn)
+{
+  const connection_t *base = TO_CONN(conn);
+  const connection_t *linked = base->linked_conn;
+  const circuit_t *circ = NULL;
+
+  /* The directory connection itself is already closing. */
+  if (base->marked_for_close) {
+    return true;
+  }
+  /* Direct DirPort connections have no linked stream to check. */
+  if (!base->linked) {
+    return false;
+  }
+  /* A linked directory connection needs a live edge connection. */
+  if (!linked || base->linked_conn_is_closed || linked->marked_for_close ||
+      !CONN_IS_EDGE(linked)) {
+    return true;
+  }
+  circ = CONST_TO_EDGE_CONN(linked)->on_circuit;
+  return !circ || circ->marked_for_close;
+}
+
+/** Return true iff an HSDir request (descriptor fetch or upload) is allowed
+ * on the circuit of <b>conn</b>, and use up the circuit's allowance.
+ *
+ * A circuit gets one HSDir request over its lifetime, shared between fetches
+ * and uploads. It is used up before lookup or validation, so requests for
+ * missing descriptors and invalid uploads count too. Other directory requests
+ * don't use it. This can't be enforced at BEGIN_DIR time because the HTTP
+ * request type isn't known yet.
+ *
+ * The caller must have checked connection_dir_is_anonymous(), so the linked
+ * edge connection is on an OR circuit whose previous hop authenticated. That
+ * doesn't prove the circuit has multiple hops.
+ *
+ * Tor never sends a second HSDir request on a circuit since each one is
+ * stream isolated. When one shows up, we close the circuit so the sender has
+ * to build a new one for every request. We don't send a response: the
+ * sender is misbehaving and the circuit is going away. */
+static bool
+hsdir_request_allowed_on_circuit(dir_connection_t *conn)
+{
+  edge_connection_t *edge_conn = NULL;
+  or_circuit_t *circ = NULL;
+
+  if (BUG(!connection_dir_is_anonymous(conn))) {
+    write_short_http_response(conn, 503,
+                              "Rejecting single hop HSDir request");
+    return false;
+  }
+  edge_conn = TO_EDGE_CONN(TO_CONN(conn)->linked_conn);
+  circ = TO_OR_CIRCUIT(edge_conn->on_circuit);
+
+  if (circ->already_received_hsdir_request) {
+    dos_note_begindir_hsdir_rejected();
+    circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_TORPROTOCOL);
+    return false;
+  }
+  circ->already_received_hsdir_request = 1;
+  return true;
+}
+
 /** Helper function for GET `/tor/hs/3/...`. Only for version 3.
  */
 STATIC int
@@ -1359,11 +1431,18 @@ handle_get_hs_descriptor_v3(dir_connection_t *conn,
   const char *pubkey_str = NULL;
   const char *url = args->url;
 
+  if (dir_conn_is_closing(conn)) {
+    goto done;
+  }
+
   /* Reject non anonymous dir connections (which also tests if encrypted). We
    * do not allow single hop clients to query an HSDir. */
   if (!connection_dir_is_anonymous(conn)) {
     write_short_http_response(conn, 503,
                               "Rejecting single hop HS v3 descriptor request");
+    goto done;
+  }
+  if (!hsdir_request_allowed_on_circuit(conn)) {
     goto done;
   }
 
@@ -1606,9 +1685,15 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
    * (which also tests for encrypted). We do not allow single-hop client to
    * post a descriptor onto an HSDir. */
   if (!strcmpstart(url, "/tor/hs/")) {
+    if (dir_conn_is_closing(conn)) {
+      goto done;
+    }
     if (!connection_dir_is_anonymous(conn)) {
       write_short_http_response(conn, 503,
                                 "Rejecting single hop HS descriptor post");
+      goto done;
+    }
+    if (!hsdir_request_allowed_on_circuit(conn)) {
       goto done;
     }
     const char *msg = "HS descriptor stored successfully.";
@@ -1744,6 +1829,16 @@ directory_handle_command(dir_connection_t *conn)
 
   tor_assert(conn);
   tor_assert(conn->base_.type == CONN_TYPE_DIR);
+
+  /* Already marked: nothing to do, and the caller must not mark it again. */
+  if (TO_CONN(conn)->marked_for_close) {
+    return 0;
+  }
+  /* Don't parse queued requests whose stream or circuit is gone.
+   * The caller will close the directory connection without a response. */
+  if (dir_conn_is_closing(conn)) {
+    return -1;
+  }
 
   switch (connection_fetch_from_buf_http(TO_CONN(conn),
                               &headers, MAX_HEADERS_SIZE,

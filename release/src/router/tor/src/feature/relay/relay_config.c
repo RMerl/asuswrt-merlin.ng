@@ -1641,9 +1641,15 @@ options_act_relay_dos(const or_options_t *old_options)
      * this is safe to call as it will load data from the current options
      * or/and the consensus. */
     dos_init();
-  } else if (old_options && public_server_mode(old_options)) {
-    /* Going from relay to non relay, clean it up. */
-    dos_free_all();
+  } else {
+    if (old_options && public_server_mode(old_options)) {
+      /* Going from relay to non relay, clean it up. */
+      dos_free_all();
+    }
+    if (server_mode(options)) {
+      /* Bridges serve directory requests, so the BEGIN_DIR limits apply. */
+      dos_bridge_init();
+    }
   }
 
   return 0;

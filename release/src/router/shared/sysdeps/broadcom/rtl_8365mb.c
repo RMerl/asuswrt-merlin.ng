@@ -397,7 +397,6 @@ int rtkswitch_port_mactable(int port)
 		*p = port - 1;
 		if (ioctl(fd, DUMP_MACTABLE, &Port_mactable) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		} else
 			show_port_mactable(&Port_mactable);
 

@@ -520,7 +520,6 @@ int rtkswitch_port_speed(int port)
 		memset(&pS, 0, sizeof(pS));
 		if (ioctl(fd, RTKSWITCH_IOCTL(0), &pS) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		}
 
 		close(fd);
@@ -565,7 +564,6 @@ int rtkswitch_testmode(int val, int val2, int val3)
 		tm.mode = val3;
 		if (ioctl(fd, RTKSWITCH_IOCTL(val), &tm) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		}
 
 		close(fd);
@@ -591,7 +589,6 @@ int rtkswitch_regop(int val, int val2, int val3, int val4, int val5)
                 ro.pm4 = val5;
                 if (ioctl(fd, RTKSWITCH_IOCTL(val), &ro) < 0) {
                         perror("rtkswitch ioctl");
-                        close(fd);
                 }
 
                 close(fd);
@@ -613,7 +610,6 @@ int rtkswitch_port_duplex(int port)
 		memset(&pS, 0, sizeof(pS));
 		if (ioctl(fd, RTKSWITCH_IOCTL(0), &pS) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		}
 
 		close(fd);
@@ -996,7 +992,6 @@ int rtkswitch_port_stat(int port)
 #endif
 		if (ioctl(fd, RTKSWITCH_IOCTL(1), &Port_cntrs) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		} else
 			show_port_stat(&Port_cntrs);
 
@@ -1040,7 +1035,6 @@ int rtkswitch_port_mactable(int port)
 #endif
 		if (ioctl(fd, RTKSWITCH_IOCTL(7), &Port_mactable) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		} else
 			show_port_mactable(&Port_mactable);
 

@@ -341,7 +341,7 @@ static void close_socket(int sockfd){
 char *arp_mac(struct in_addr sin_addr){
 	static char mac_address[30];
 	unsigned char *ptr;
-	int s_arp;
+	int s_arp, ret;
 	struct arpreq areq;
 	struct sockaddr_in *sin;
 	
@@ -355,11 +355,12 @@ char *arp_mac(struct in_addr sin_addr){
 	}
 	
 	strcpy(areq.arp_dev, "br0");
-	if(ioctl(s_arp, SIOCGARP, (caddr_t)&areq) < 0){
+	ret = ioctl(s_arp, SIOCGARP, (caddr_t)&areq);
+	close(s_arp);
+	if(ret < 0){
 		perror("SIOCGARP");
 		return NULL;
 	}
-	close(s_arp);
 
 	if(areq.arp_flags & ATF_COM){
 		ptr = (unsigned char *) areq.arp_ha.sa_data;

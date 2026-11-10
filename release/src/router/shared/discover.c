@@ -118,6 +118,7 @@ openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
 			snprintf(buffer, sizeof(buffer), "Interface %.16s has broadcast/multicast MAC address??", ifname);
 			//rp_fatal(buffer);
 			fprintf(stderr, buffer);
+			close(fd);
 			return -1;
 		}
 	}

@@ -3338,6 +3338,7 @@ void create_custom_passwd(void)
 	if (result < 0) {
 		usb_dbg("Can't get the account list.\n");
 		free_2_dimension_list(&acc_num, &account_list);
+		fclose(fp);
 		return;
 	}
 	is_first = 1;
@@ -5707,12 +5708,14 @@ int diskmon_main(int argc, char *argv[])
 		nv = nvp = strdup(nvram_safe_get(nvram_name));
 		if(!nv || strlen(nv) <= 0){
 			cprintf("disk_monitor: Without setting the running time at the port %d!\n", (port_num+1));
+			free(nv);
 			++port_num;
 			continue;
 		}
 
 		if((vstrsep(nvp, ">", &set_day, &set_week, &set_hour) != 3)){
 			cprintf("disk_monitor: Without the correct running time at the port %d!\n", (port_num+1));
+			free(nv);
 			++port_num;
 			continue;
 		}
@@ -5726,6 +5729,7 @@ int diskmon_main(int argc, char *argv[])
 			val_day[port_num] = -1;
 cprintf("disk_monitor: Port %d: val_day=%d, val_hour=%d.\n", port_num, val_day[port_num], val_hour[port_num]);
 
+		free(nv);
 		++port_num;
 	}
 

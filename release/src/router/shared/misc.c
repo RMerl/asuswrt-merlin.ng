@@ -779,8 +779,10 @@ struct vlan_rules_s *get_vlan_rules(void)
 		return NULL;
 
 	vlan_rules = malloc(sizeof(struct vlan_rules_s));
-	if (!vlan_rules)
+	if (!vlan_rules) {
+		free(nv);
 		return NULL;
+	}
 
 	r = &vlan_rules->rules[0];
 	memset(vlan_rules, 0, sizeof(struct vlan_rules_s));

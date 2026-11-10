@@ -24176,6 +24176,7 @@ create_alexa_ifttt_sdn_profile(int from_app, char *ssid, char *key, int expireti
 	if (lan_netmask) free(lan_netmask);
 	if (wan_ipaddr) free(wan_ipaddr);
 	if (wan_netmask) free(wan_netmask);
+	if (list) free(list);
 
 	HTTPD_DBG(">>>New SDN Guest<<<, APGx=%d vid=%d, wifi_band=%d\n", apg_idx, vlan_vid, 7);
 	return 1;

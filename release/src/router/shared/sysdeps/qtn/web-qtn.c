@@ -320,6 +320,7 @@ int rpc_qcsapi_set_beacon_type(const char *ifname, const char *auth_mode)
 	ret = qcsapi_wifi_set_beacon_type(ifname, p_new_beacon);
 	if (ret < 0) {
 		dbG("Qcsapi qcsapi_wifi_set_beacon_type %s error, return: %d\n", ifname, ret);
+		free(p_new_beacon);
 		return ret;
 	}
 	dbG("%s as: %s\n", ifname, p_new_beacon);

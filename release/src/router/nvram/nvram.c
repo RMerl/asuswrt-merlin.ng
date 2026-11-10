@@ -957,6 +957,7 @@ main(int argc, char **argv)
 				char *tmp_dnv = malloc(nvram_space);
 				if (!tmp_dnv) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
+					free(tmp_export);
 					return 0;
 				}
 				memset(tmp_dnv, 0, nvram_space);

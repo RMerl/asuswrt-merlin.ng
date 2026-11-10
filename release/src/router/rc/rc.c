@@ -2935,6 +2935,8 @@ static int do_led_ctrl(enum led_id led_id, int onoff)
 	dup2(fd, 0);
 	dup2(fd, 1);
 	dup2(fd, 2);
+	if (fd > 2)
+		close(fd);
 
 	/* Always blink LED due to we need to wait qca-wifi to settle mode, 8 seconds,
 	 * even LED is inhibited. (AllLED = 0).

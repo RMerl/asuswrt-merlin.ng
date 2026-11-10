@@ -263,8 +263,11 @@ int sh_sta_add(void *arg, char *data)
     smarthaul_t *smarthaul = (smarthaul_t *)arg;
     sh_dev_info_t *new_dev;
     new_dev = calloc(1, sizeof(sh_dev_info_t));
+    if(!new_dev)
+        return 0;
 
     if(!sh_process_ipc_data(new_dev, data)){
+        free(new_dev);
         return 0;
     }
 	sh_add_dev2list(smarthaul, new_dev);
@@ -281,6 +284,8 @@ int sh_sta_upd(void *arg, char *data)
     sh_dev_info_t *new_dev;
     new_dev = calloc(1, sizeof(sh_dev_info_t));
     char new_mac[18], list_mac[18];
+    if(!new_dev)
+        return 0;
     sh_process_ipc_data(new_dev, data);
 
     ether_etoa(new_dev->self_mac.octet, new_mac);
@@ -291,6 +296,7 @@ int sh_sta_upd(void *arg, char *data)
             SMARTHAUL_TRACE("Update mlo info of %s\n", new_mac);
             if(!memcmp(&curr->mlo_info, &new_dev->mlo_info, sizeof(sh_mlo_info_t))){
                 SMARTHAUL_TRACE("No info of %s need to update\n", new_mac);
+                free(new_dev);
                 return 1;
             }
             if (curr == active_bh){

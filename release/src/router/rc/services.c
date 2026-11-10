@@ -5443,7 +5443,6 @@ start_ddns(char *caller, int isAidisk)
 		nvram_unset("ddns_ipaddr");
 		nvram_unset("ddns_status");
 		nvram_unset("ddns_updated");
-	}
 		logmessage(log_title, "Clear ddns cache.");
 #else
 		if ((!nvram_match("ddns_server_x_old", "") && strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) != 0)

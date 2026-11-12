@@ -2214,10 +2214,10 @@ padding-top:1px;
 	;
 }
 .amng-highlight-color {
-        color: rgb(var(--color-text-hint)) !important;
+        color: var(--brand-primary, #FFCC00) !important;
 }
 .amng-secondary-color {
-        color: var(--wrt-text-secondary);
+        color: var(--wrt-text-secondary, cyan);
 }
 
 #cancelBtn, #applyBtn{

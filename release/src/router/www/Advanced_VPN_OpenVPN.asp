@@ -22,16 +22,23 @@
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
-.tlsPanel{
+#tlsKey_panel {
 	width:740px;
 	margin-top:280px;
 	margin-left:380px;
 	position:absolute;
-	border-radius: 5px;
+	border-radius: 6px;
 	z-index:200;
-	background-color:#2B373B;
 	box-shadow: 3px 3px 10px #000;
 	display:none;
+	color: #FFFFFF;
+}
+#tlsKey_panel.clientlist_viewlist {
+	background-color: var(--surface-card, #444f53) !important;
+	color: var(--wrt-text-color, #FFFFFF);
+	height: auto;
+	width: 740px !important;
+	min-width: 0 !important;
 }
 
 .tlsTable{
@@ -216,10 +223,6 @@ function initial(){
 	var currentdigest = "<% nvram_get("vpn_server_digest"); %>";
 
 	show_menu();
-
-	if (isSupport("UI4")) {
-		document.getElementById("tlsKey_panel").style.backgroundColor="white";
-	}
 
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support && openvpnd_support) {
@@ -1014,6 +1017,12 @@ function update_visibility(){
 }
 
 function edit_Keys() {
+	if (isSupport("UI4")) {
+		document.getElementById("tlsKey_panel").className = "clientlist_viewlist";
+	} else {
+		document.getElementById("tlsKey_panel").className = "pop_div_bg";
+	}
+
 	cal_panel_block("tlsKey_panel", 0.15);
 	$("#tlsKey_panel").fadeIn(300);
 }
@@ -1441,7 +1450,7 @@ function handle_ipv6_submit_settings(){
 </script>
 </head>
 <body onload="initial();" class="bg">
-<div id="tlsKey_panel" class="tlsPanel">
+<div id="tlsKey_panel" class="pop_div_bg">
 	<!--===================================Beginning of tls Content===========================================-->
 	<table class="tlsTable" border=0 align="center" cellpadding="5" cellspacing="0">
 		<form method="post" name="openvpnTLSKeyForm" action="/start_apply.htm" target="hidden_frame">

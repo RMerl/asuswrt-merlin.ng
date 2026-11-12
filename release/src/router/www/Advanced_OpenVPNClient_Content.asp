@@ -21,16 +21,23 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <style type="text/css">
-.tlsPanel{
+#tlsKey_panel {
 	width:740px;
 	margin-top:280px;
 	margin-left:380px;
 	position:absolute;
-	border-radius: 5px;
+	border-radius: 6px;
 	z-index:200;
-	background-color:#2B373B;
 	box-shadow: 3px 3px 10px #000;
 	display:none;
+	color: #FFFFFF;
+}
+#tlsKey_panel.clientlist_viewlist {
+	background-color: var(--surface-card, #444f53) !important;
+	color: var(--wrt-text-color, #FFFFFF);
+	height: auto;
+	width: 740px !important;
+	min-width: 0 !important;
 }
 
 .tlsTable{
@@ -130,10 +137,6 @@ var clientlist_array = "<% nvram_char_to_ascii("", "vpndirector_rulelist"); %>";
 function initial()
 {
 	show_menu();
-
-	if (isSupport("UI4")) {
-		document.getElementById("tlsKey_panel").style.backgroundColor="white";
-	}
 
 	var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"], "Wireguard" : ["Wireguard", "Advanced_WireguardClient_Content.asp"]};
 
@@ -311,6 +314,12 @@ function update_rgw_options(){
 
 
 function edit_Keys(){
+	if (isSupport("UI4")) {
+		document.getElementById("tlsKey_panel").className = "clientlist_viewlist";
+	} else {
+		document.getElementById("tlsKey_panel").className = "pop_div_bg";
+	}
+
 	cal_panel_block();
 	$("#tlsKey_panel").fadeIn(300);
 }
@@ -736,7 +745,7 @@ function refreshVPNIP() {
 </head>
 
 <body onload="initial();" onunLoad="return unload_body();" class="bg">
-	<div id="tlsKey_panel"  class="tlsPanel" style="box-shadow: 3px 3px 10px #000;">
+	<div id="tlsKey_panel" class="pop_div_bg">
 		<table class="tlsTable" border=0 align="center" cellpadding="5" cellspacing="0">
 			<tr>
 				<div class="description_down">Keys and Certificates</div>

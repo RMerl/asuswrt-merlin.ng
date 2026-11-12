@@ -156,7 +156,7 @@ function display_data(){
 	}
 
 	if(rows == 0)
-		htmldata +='<tr><td class="hint-color" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
+		htmldata +='<tr><td class="amng-highlight-color" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 
 	document.getElementById('bwm-monthly-grid').innerHTML = htmldata + '</table>';
 	drawChart();

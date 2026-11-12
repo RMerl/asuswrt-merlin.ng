@@ -167,7 +167,7 @@ function redraw(){
 
 	for (i = 0; i < client_array.length; i++) {
 		if (client_array[i].length == 0) {
-			code += '<div><span class="hint-color" style="font-size: 125%;">Wireless '+bandname_array[i]+' is disabled.</span></div><br><br>';
+			code += '<div><span class="amng-highlight-color" style="font-size: 125%;">Wireless '+bandname_array[i]+' is disabled.</span></div><br><br>';
 		} else {
 			code += '<div>';
 			code += generate_header(apinfo_array[i], bandname_array[i], dfs_array[i]);
@@ -215,17 +215,17 @@ function generate_clients(clientsarray) {
 			if (client[12] != "" && client[12] != guestheader) {
 				guestheader = client[12];
 				if (client[12] == "Main BSS") {
-					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Link</span>`;
+					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="amng-highlight-color" style="font-weight:bolder;">Link</span>`;
 					mainBSS = 1;
 				} else {
-					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Guest Network: </span> ${guestheader}`;
+					code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="amng-highlight-color" style="font-weight:bolder;">Guest Network: </span> ${guestheader}`;
 				}
 				if (client[13] != "") {
-					code += '<span style="float:right;"><span class="hint-color" style="font-weight:bolder;">VLAN: </span> ' + client[13] + '</span>';
+					code += '<span style="float:right;"><span class="amng-highlight-color" style="font-weight:bolder;">VLAN: </span> ' + client[13] + '</span>';
 				}
 				code += '</th></tr>';
 			} else if (client[12] == "" && mainBSS == 1) {
-				code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="hint-color" style="font-weight:bolder;">Local Clients</span>`;
+				code += `<tr><th colspan="6" style="height:20px; ${guestBackgroundColor}"><span class="amng-highlight-color" style="font-weight:bolder;">Local Clients</span>`;
 				mainBSS = 0;
 			}
 			code += '<tr>';

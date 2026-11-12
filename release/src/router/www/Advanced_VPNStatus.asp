@@ -453,7 +453,7 @@ function show_vpnc_rulelist(){
 	code +='<th style="width:65%;"><div><#IPConnection_autofwDesc_itemname#></div></th>';
 	code +='<th style="width:15%;"><div><#QIS_internet_vpn_type#></div></th></tr>';
 	if(vpnc_clientlist_array == "")
-		code +='<tr><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td class="amng-highlight-color" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i=0; i<vpnc_clientlist_row.length; i++){
 			overlib_str0[i] = "";
@@ -692,7 +692,7 @@ function parseWGSStatus(_block) {
 					if (is_wgsc_connected(fields[1].trim())) {
 						active_peer = 1;
 						have_peers = 1;
-						code += "<tr><th colspan='2' style='text-align:left;color:#FFCC00;text-decoration:bold;'>Peer: " + wgs_object[fields[1].trim()] + "</th></tr>";
+						code += "<tr><th colspan='2' class='amng-highlight-color' style='text-align:left;text-decoration:bold;'>Peer: " + wgs_object[fields[1].trim()] + "</th></tr>";
 						code += "<tr><th class='wgsheader' style='text-align:left;'>Public ID</td><td style='text-align:left;'>" + fields[1] + "</td></tr>";
 					} else {
 						active_peer = 0;

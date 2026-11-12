@@ -68,7 +68,7 @@ function show_routev6() {
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
 	code += '<thead><tr><td colspan="7">IPv6 Routing table</td></tr></thead>';
-	code += '<tr><th width="40%">Destination<br><span style="color:#FFCC00;">Next Hop</span></th>';
+	code += '<tr><th width="40%">Destination<br><span class="amng-secondary-color">Next Hop</span></th>';
 	code += '<th width="10%">Flags</th>';
 	code += '<th width="10%">Metric</th>';
 	code += '<th width="10%">Ref</th>';
@@ -82,7 +82,7 @@ function show_routev6() {
 			line = routev6array[i];
 
 			code += '<tr>';
-			code += '<td>' + line[0] + '<br><span style="color:#FFCC00;">' + line[1] + '</span></td>';
+			code += '<td>' + line[0] + '<br><span class="amng-secondary-color">' + line[1] + '</span></td>';
 			code += '<td>' + line[2] + '</td>';
 			code += '<td>' + line[3] + '</td>';
 			code += '<td>' + line[4] + '</td>';

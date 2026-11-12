@@ -118,7 +118,7 @@ function redraw(){
 	}
 
 	if(rows == 0)
-		grid +='<tr><td style="color:#FFCC00;" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
+		grid +='<tr><td class="amng-highlight-color" colspan="4"><#IPConnection_VSList_Norule#></td></tr>';
 
 	E('bwm-daily-grid').innerHTML = grid + '</table>';
 	E('last-dn').innerHTML = rescale(lastd);

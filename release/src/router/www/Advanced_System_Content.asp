@@ -3080,7 +3080,7 @@ function Get_Component_reboot_schedule_ui(config){
 							<div style="display:table-cell;white-space: nowrap">Expires on :</div>
 							<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
 						</div>
-						<div id="cert_manage_link" style="padding-top:10px;"><span>Click <a style="color:#FC0;text-decoration: underline;" href="Advanced_ASUSDDNS_Content.asp">here</a> to manage.</span></div>
+						<div id="cert_manage_link" style="padding-top:10px;"><span>Click <a class="amng-highlight-color" style="text-decoration: underline;" href="Advanced_ASUSDDNS_Content.asp">here</a> to manage.</span></div>
 					</td>
 				</tr>
 				<tr id="https_download_cert" style="display: none;">

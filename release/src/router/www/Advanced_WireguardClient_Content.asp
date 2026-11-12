@@ -439,7 +439,7 @@ function show_director_rules(){
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="directorrules_table">';
 	if(directorrules_row.length == 1)
-		code +='<tr><td class="hint-color" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td class="amng-highlight-color" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < directorrules_row.length; i++){
 			line ='<tr id="row'+i+'">';
@@ -614,7 +614,7 @@ function defaultSettings() {
 						<tr>
 							<th>Import config</th>
 							<td>
-								<input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
+								<input id="wgfile" type="file" name="file" class="input amng-highlight-color">
 								<input class="button_gen_in_table button_gen buttonInTable" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
 								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
 								<span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>

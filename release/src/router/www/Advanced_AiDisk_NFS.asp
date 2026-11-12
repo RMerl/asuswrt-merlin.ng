@@ -543,7 +543,7 @@ function shownfsd_exportlist(){
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="nfsd_exportlist_table">';
 	if(nfsd_exportlist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td class="amng-highlight-color" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < nfsd_exportlist_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -691,7 +691,7 @@ function check_dir_path(){
 									<br><b>Options:</b> Comma-separated list of options to apply to every hosts within that export.
 								</div>
 
-								<div><br><span id="NoUSB" style="display:none;color:#FFCC00;">You need to plug a USB disk to your router to be able to export folders!<br></span></div>
+								<div><br><span id="NoUSB" class="amng-highlight-color" style="display:none;">You need to plug a USB disk to your router to be able to export folders!<br></span></div>
 
 								<table class="FormTable" width="100%" cellspacing="1">
 									<tr>

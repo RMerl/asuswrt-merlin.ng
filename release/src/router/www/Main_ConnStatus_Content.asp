@@ -233,9 +233,9 @@ function draw_table(type){
 	}
 
 	if (shownlen == 0) {
-		code += '<tr><td colspan="6" class="hint-color" style="text-align:center;">No results.</td></tr>';
+		code += '<tr><td colspan="6" class="amng-highlight-color" style="text-align:center;">No results.</td></tr>';
 	} else {
-		code += '<tr><td colspan="6" class="hint-color" style="text-align:center;">' + shownlen + ' / ' + tracklen +' connections shown.</td></tr>';
+		code += '<tr><td colspan="6" class="amng-highlight-color" style="text-align:center;">' + shownlen + ' / ' + tracklen +' connections shown.</td></tr>';
 	}
 	code += "</tbody></table>";
 
@@ -443,7 +443,7 @@ function setShowNames(obj) {
 											<input type="button" onClick="get_connection_list();" value="<#CTL_refresh#>" class="button_gen">
 										</div>
 
-										<div id="connblock_header" style="display:none;"><span class="connblock_title" style="color:#FFCC00;">NAT connections</span></div>
+										<div id="connblock_header" style="display:none;"><span class="connblock_title amng-highlight-color">NAT connections</span></div>
 										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter NAT connections</td></tr></thead>
 											<tr>
 												<th width="8%">Proto</th>
@@ -478,7 +478,7 @@ function setShowNames(obj) {
 
 										<div id="connblock_nat"></div>
 
-										<div id="connblock_route_header" style="display:none; margin-top:50px;"><span class="connblock_title" style="color:#FFCC00;">Routed IPv6 connections</span></div>
+										<div id="connblock_route_header" style="display:none; margin-top:50px;"><span class="connblock_title amng-highlight-color">Routed IPv6 connections</span></div>
 										<table cellpadding="4" width="100%" class="FormTable_table" id="tracked_filters_route" style="display:none;"><thead><tr><td colspan="6">Filter routed connections</td></tr></thead>
 											<tr>
 												<th width="8%">Proto</th>

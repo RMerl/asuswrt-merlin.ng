@@ -135,7 +135,7 @@ function show_ipv6clients() {
 		}
 		tableApi.genTableAPI(tableStruct);
 	} else {
-		document.getElementById("ipv6clientsblock").innerHTML = '<span style="color:#FFCC00;padding-left:12;">No IPv6 clients.</span>';
+		document.getElementById("ipv6clientsblock").innerHTML = '<span class="amng-highlight-color" style="padding-left:12;">No IPv6 clients.</span>';
 	}
 }
 

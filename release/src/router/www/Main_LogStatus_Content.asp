@@ -276,14 +276,14 @@ function get_log_data(){
 												<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,1)"><#LANHostConfig_x_ServerLogEnable_itemname#></a></th>
 												<td>
 														<input type="text" maxlength="64" class="input_30_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
-														<br/><span id="alert_msg1" class="hint-color"></span>
+														<br/><span id="alert_msg1" class="amng-highlight-color"></span>
 													</td>
 												</tr>
 												<tr>
 													<th><#LANHostConfig_x_ServerLogPort_itemname#></th>
 													<td>
 														<input type="text" class="input_6_table" maxlength="5" name="log_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("log_port"); %>'>
-													  <div class="hint-color"><#LANHostConfig_x_ServerLogPort_itemhint#></div>
+													  <div class="amng-highlight-color"><#LANHostConfig_x_ServerLogPort_itemhint#></div>
 												</td>
 											</tr>
 											<tr>
@@ -319,7 +319,7 @@ function get_log_data(){
 										</table>
 									</form>
 									<div class="apply_gen" style="margin-top: 5px; text-align: center;"><input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" /></div>
-									<div style="color:#FFCC00;"><input type="checkbox" checked id="auto_refresh">Auto refresh</div>
+									<div class="amng-highlight-color"><input type="checkbox" checked id="auto_refresh">Auto refresh</div>
 									<div style="margin-top:8px">
 										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono;"></textarea>
 									</div>

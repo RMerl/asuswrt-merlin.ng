@@ -76,7 +76,7 @@
  	hlbr:expression(this.onFocus=this.blur()); /* for IE */
 }
 .current_fw_release_note {
-	color: #FC0;
+	color: var(--brand-primary, #FC0);
 }
 
 #rbk_Block{

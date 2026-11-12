@@ -1845,7 +1845,7 @@ function show_dnspriv_rulelist(){
 
 	code +='<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="dnspriv_rulelist_table">';
 	if(dnspriv_rulelist_row.length == 1)
-		code +='<tr><td style="color:#FFCC00;" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td class="amng-highlight-color" colspan="5"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < dnspriv_rulelist_row.length; i++){
 			code +='<tr id="row'+i+'">';
@@ -2960,7 +2960,7 @@ function get_default_wan_name(){
 					</select>
 					<div id="yadns_hint_dnspriv" style="display:none;"></div>
 					<div id="dhcpdns_hint_dnspriv" style="display:none;"></div>
-					<div id="dnsfilter_hint_dnspriv" style="display:none;"><span><a style="text-decoration:underline; color:#FFCC00;" href="DNSDirector.asp">DNS Director</a> is enabled - anything configured there to something other than No Redirection or Router will bypass DNS Privacy servers.</span></div>
+					<div id="dnsfilter_hint_dnspriv" style="display:none;"><span><a class="amng-highlight-color" style="text-decoration:underline;" href="DNSDirector.asp">DNS Director</a> is enabled - anything configured there to something other than No Redirection or Router will bypass DNS Privacy servers.</span></div>
 				</td>
 			</tr>
 			<tr style="display:none">

@@ -607,7 +607,7 @@ function showclientlist(){
 
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientlist_table">';
 	if(clientlist_row.length == 1)
-		code +='<tr><td class="hint-color" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+		code +='<tr><td class="amng-highlight-color" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
 	else{
 		for(var i = 1; i < clientlist_row.length; i++){
 			line ='<tr id="row'+i+'">';
@@ -743,7 +743,7 @@ function refreshVPNIP() {
 			</tr>
 			<tr>
 			<div style="margin-left:30px; margin-top:10px;">
-				<p><#vpn_openvpn_KC_Edit1#> <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
+				<p><#vpn_openvpn_KC_Edit1#> <span class="amng-highlight-color">----- BEGIN xxx ----- </span>/<span class="amng-highlight-color"> ----- END xxx -----</span> <#vpn_openvpn_KC_Edit2#>
 				<p>Limit: 7999 characters per field
 			</div>
 				<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
@@ -922,7 +922,7 @@ function refreshVPNIP() {
 					<tr>
 						<th><#vpn_openvpnc_importovpn#></th>
 						<td>
-							<input id="ovpnfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
+							<input id="ovpnfile" type="file" name="file" class="input amng-highlight-color">
 							<input class="button_gen_in_table button_gen buttonInTable" onclick="ImportOvpn();" type="button" value="<#CTL_upload#>" />
 								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
 								<span id="importOvpnFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
@@ -1117,7 +1117,7 @@ function refreshVPNIP() {
 						<th>Log verbosity</th>
 						<td>
 							<input type="text" maxlength="2" class="input_6_table" name="vpn_client_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_verb"); %>">
-							<span class="hint-color">(Between 0 and 6. Default: 3)</span>
+							<span class="amng-highlight-color">(Between 0 and 6. Default: 3)</span>
 						</td>
 					</tr>
 					<tr>
@@ -1139,14 +1139,14 @@ function refreshVPNIP() {
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_reneg" value="<% nvram_get("vpn_client_reneg"); %>">
-							<span class="hint-color">(in seconds, -1 for default)</span>
+							<span class="amng-highlight-color">(in seconds, -1 for default)</span>
 						</td>
 					</tr>
 					<tr>
 						<th>Connection Retry attempts</th>
 						<td>
 							<input type="text" maxlength="3" class="input_6_table" name="vpn_client_connretry" value="<% nvram_get("vpn_client_connretry"); %>">
-							<span class="hint-color">(0 for infinite)</span>
+							<span class="amng-highlight-color">(0 for infinite)</span>
 						</td>
 					</tr>
 					<tr id="client_tlsremote">

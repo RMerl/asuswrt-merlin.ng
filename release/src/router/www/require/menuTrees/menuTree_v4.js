@@ -200,7 +200,7 @@ define(function () {
                 ]
             },
             {
-                menuName: "<#Traffic_Analyzer#>",
+                menuName: "<#traffic_monitor#>",
                 index: "menu_TrafficAnalyzer",
                 tab: [
                     {url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},

@@ -417,10 +417,6 @@ define(function () {
                     retArray.push("menu_AiProtection");
                 }
 
-                if (!isSupport("traffic_analyzer") && !isSupport("dns_dpi")) {
-                    retArray.push("menu_TrafficAnalyzer");
-                }
-
                 if (!usb_support) {
                     retArray.push("menu_APP");
                 }

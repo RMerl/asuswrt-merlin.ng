@@ -254,7 +254,7 @@ function generate_clients(clientsarray) {
 			}
 
 			if (hostname.length > 24) {		// Name
-				code +=`<br><span class="amng-secondary-color" class="amng-secondary-color" style="margin-top:-15px;"${hostname}">${hostname.substring(0,20)}...</span></td>`;
+				code +=`<br><span class="amng-secondary-color" style="margin-top:-15px;" title="${htmlEnDeCode.htmlEncode(hostname)}">${htmlEnDeCode.htmlEncode(hostname.substring(0,20))}...</span></td>`;
 			} else {
 				code +=`<br><span class="amng-secondary-color" style="margin-top:-15px;">${htmlEnDeCode.htmlEncode(hostname)}</span></td>`;
 			}
@@ -278,7 +278,7 @@ function generate_clients(clientsarray) {
 				code += '<br></td>'; // IPv6
 
 			code += `<td style="text-align: right;">${client[5]} / ${client[6]} Mbps`;	// Rate
-			code += `<br><span class="amng-secondary-color" style="margin-top:-15px;">${client[4]} dBm</td>`;	// RSSI
+			code += `<br><span class="amng-secondary-color" style="margin-top:-15px;">${client[4]} dBm</span></td>`;	// RSSI
 			code += `<td style="text-align: right;vertical-align:top;">${client[7]}</td>`;	// Time
 
 			if (client[8] != "") {
@@ -289,7 +289,7 @@ function generate_clients(clientsarray) {
 				code += '<td>';
 			}
 			if (client[10] != "") {
-				code += `<br><span class="amng-secondary-color" style="margin-top:-15px;">${client[10]}</td>`;  // BW
+				code += `<br><span class="amng-secondary-color" style="margin-top:-15px;">${client[10]}</span></td>`;  // BW
 			} else {
 				code += '</td>';
 			}

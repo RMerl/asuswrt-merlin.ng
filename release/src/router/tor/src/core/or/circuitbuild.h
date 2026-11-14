@@ -33,7 +33,7 @@ MOCK_DECL(origin_circuit_t *, circuit_establish_circuit_conflux, (
 struct circuit_guard_state_t *origin_circuit_get_guard_state(
                                             origin_circuit_t *circ);
 int circuit_handle_first_hop(origin_circuit_t *circ);
-void circuit_n_chan_done(channel_t *chan, int status);
+MOCK_DECL(void, circuit_n_chan_done, (channel_t *chan, int status));
 int circuit_timeout_want_to_count_circ(const origin_circuit_t *circ);
 int circuit_send_next_onion_skin(origin_circuit_t *circ);
 void circuit_note_clock_jumped(int64_t seconds_elapsed, bool was_idle);
@@ -54,6 +54,9 @@ MOCK_DECL(const node_t *,
 const char *build_state_get_exit_nickname(cpath_build_state_t *state);
 
 struct circuit_guard_state_t;
+origin_circuit_t *circuit_establish_circuit_with_guard(uint8_t purpose,
+    extend_info_t *exit_ei, int flags,
+    const struct circuit_guard_state_t *guard_state);
 
 const node_t *choose_good_entry_server(const origin_circuit_t *circ,
                            uint8_t purpose,
@@ -61,7 +64,9 @@ const node_t *choose_good_entry_server(const origin_circuit_t *circ,
                            struct circuit_guard_state_t **guard_state_out);
 void circuit_upgrade_circuits_from_guard_wait(void);
 
-MOCK_DECL(channel_t *, channel_connect_for_circuit,(const extend_info_t *ei));
+MOCK_DECL(channel_t *, channel_connect_for_circuit,(const extend_info_t *ei,
+                        const struct circuit_guard_state_t *guard_state,
+                        bool for_origin_circ));
 
 struct create_cell_t;
 MOCK_DECL(int,

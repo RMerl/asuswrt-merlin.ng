@@ -427,6 +427,11 @@ struct channel_t {
   /** Set if the channel was initiated remotely (came from a listener) */
   unsigned int is_incoming:1;
 
+  /** Owned weak selection handle, installed only at launch. Consumed by an
+   * audited establishment failure; cleared on success or local
+   * cancellation. */
+  struct entry_guard_handle_t *establishment_guard;
+
   /** Set by lower layer if this is local; i.e., everything it communicates
    * with for this channel returns true for is_local_addr().  This is used
    * to decide whether to declare reachability when we receive something on
@@ -437,6 +442,10 @@ struct channel_t {
   /** Have we logged a warning about circID exhaustion on this channel?
    * If so, when? */
   ratelim_t last_warned_circ_ids_exhausted;
+
+  /** Successful origin first-hop handshakes on this channel. Used to avoid
+   * retiring a productive channel when another CREATE attempt expires. */
+  uint64_t first_hop_success_count;
 
   /** Channel timestamps for cell channels */
   time_t timestamp_client; /*(< Client used this, according to relay.c */
@@ -586,6 +595,8 @@ void channel_listener_unregister(channel_listener_t *chan_l);
 void channel_close_from_lower_layer(channel_t *chan);
 void channel_close_for_error(channel_t *chan);
 void channel_closed(channel_t *chan);
+void channel_note_establishment_failure(channel_t *chan);
+void channel_note_establishment_cancelled(channel_t *chan);
 
 /* Free a channel */
 void channel_free_(channel_t *chan);
@@ -654,9 +665,12 @@ int channel_send_destroy(circid_t circ_id, channel_t *chan,
  * something transport/address format independent.
  */
 
+struct circuit_guard_state_t;
 channel_t * channel_connect(const tor_addr_t *addr, uint16_t port,
                             const char *rsa_id_digest,
-                            const struct ed25519_public_key_t *ed_id);
+                            const struct ed25519_public_key_t *ed_id,
+                            const struct circuit_guard_state_t *guard_state,
+                            bool for_origin_circ);
 
 MOCK_DECL(channel_t *, channel_get_for_extend,(
                                    const char *rsa_id_digest,

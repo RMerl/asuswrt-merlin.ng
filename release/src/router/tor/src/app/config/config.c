@@ -342,6 +342,7 @@ static const config_var_t option_vars_[] = {
   OBSOLETE("AuthDirRejectUnlisted"),
   OBSOLETE("AuthDirListBadDirs"),
   OBSOLETE("AuthDirMaxServersPerAuthAddr"),
+  V(AuthDirSupport048Clients,    BOOL,     "0"),
   VAR("AuthoritativeDirectory",  BOOL, AuthoritativeDir,    "0"),
   V(AutomapHostsOnResolve,       BOOL,     "0"),
   V(AutomapHostsSuffixes,        CSV,      ".onion,.exit"),
@@ -1107,7 +1108,8 @@ config_free_all(void)
 const char *
 safe_str_client_opts(const or_options_t *options, const char *address)
 {
-  tor_assert(address);
+  if (!address)
+    return "[null]";
   if (!options) {
     options = get_options();
   }
@@ -1128,7 +1130,8 @@ safe_str_client_opts(const or_options_t *options, const char *address)
 const char *
 safe_str_opts(const or_options_t *options, const char *address)
 {
-  tor_assert(address);
+  if (!address)
+    return "[null]";
   if (!options) {
     options = get_options();
   }

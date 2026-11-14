@@ -6,12 +6,16 @@
 #include <math.h>
 
 #define CHANNEL_OBJECT_PRIVATE
+#define CONNECTION_PRIVATE
+#define MAINLOOP_PRIVATE
 #include "core/or/or.h"
 #include "lib/net/address.h"
 #include "lib/buf/buffers.h"
 #include "core/or/channel.h"
 #include "core/or/channeltls.h"
 #include "core/mainloop/connection.h"
+#include "core/mainloop/mainloop.h"
+#include "app/config/or_options_st.h"
 #include "core/or/connection_or.h"
 #include "app/config/config.h"
 #include "app/config/resolve_addr.h"
@@ -24,6 +28,7 @@
 
 /* Test suite stuff */
 #include "test/test.h"
+#include "test/test_helpers.h"
 #include "test/fakechans.h"
 
 /* The channeltls unit tests */
@@ -38,7 +43,7 @@ static or_connection_t * tlschan_connection_or_connect_mock(
     uint16_t port,
     const char *digest,
     const ed25519_public_key_t *ed_id,
-    channel_tls_t *tlschan);
+    channel_tls_t *tlschan, bool for_origin_circ);
 static bool tlschan_resolved_addr_is_local_mock(const tor_addr_t *addr);
 
 /* Fake close method */
@@ -76,7 +81,7 @@ test_channeltls_create(void *arg)
   MOCK(connection_or_connect, tlschan_connection_or_connect_mock);
 
   /* Try connecting */
-  ch = channel_tls_connect(&test_addr, 567, test_digest, NULL);
+  ch = channel_tls_connect(&test_addr, 567, test_digest, NULL, NULL, false);
   tt_ptr_op(ch, OP_NE, NULL);
 
  done:
@@ -125,7 +130,7 @@ test_channeltls_num_bytes_queued(void *arg)
   MOCK(connection_or_connect, tlschan_connection_or_connect_mock);
 
   /* Try connecting */
-  ch = channel_tls_connect(&test_addr, 567, test_digest, NULL);
+  ch = channel_tls_connect(&test_addr, 567, test_digest, NULL, NULL, false);
   tt_ptr_op(ch, OP_NE, NULL);
 
   /*
@@ -210,7 +215,7 @@ test_channeltls_overhead_estimate(void *arg)
   MOCK(connection_or_connect, tlschan_connection_or_connect_mock);
 
   /* Try connecting */
-  ch = channel_tls_connect(&test_addr, 567, test_digest, NULL);
+  ch = channel_tls_connect(&test_addr, 567, test_digest, NULL, NULL, false);
   tt_ptr_op(ch, OP_NE, NULL);
 
   /* First case: silly low ratios should get clamped to 1.0 */
@@ -273,8 +278,10 @@ tlschan_connection_or_connect_mock(const tor_addr_t *addr,
                                    uint16_t port,
                                    const char *digest,
                                    const ed25519_public_key_t *ed_id,
-                                   channel_tls_t *tlschan)
+                                   channel_tls_t *tlschan,
+                                   bool for_origin_circ)
 {
+  (void) for_origin_circ;
   or_connection_t *result = NULL;
   (void) ed_id; // XXXX Not yet used.
 
@@ -331,7 +338,81 @@ tlschan_resolved_addr_is_local_mock(const tor_addr_t *addr)
   return tlschan_local;
 }
 
+/* Immediate TCP success can still leave a deferred OR connection when local
+ * TLS startup or SOCKS4 request construction fails. Exercise real startup and
+ * both normal deferred teardown and the launcher's immediate channel free. */
+static connection_t *startup_conn;
+static int
+startup_connected(connection_t *conn, const struct sockaddr *sa,
+                  socklen_t len, const struct sockaddr *bindaddr,
+                  socklen_t bindlen, int *error)
+{
+  (void)sa;
+  (void)len;
+  (void)bindaddr;
+  (void)bindlen;
+  *error = 0;
+  startup_conn = conn;
+  return 1;
+}
+
+static int
+startup_tls_failed(or_connection_t *conn, int receiving)
+{
+  (void)conn;
+  (void)receiving;
+  return -1;
+}
+
+static void
+test_channeltls_startup_failure(void *arg)
+{
+  tor_addr_t addr;
+  char digest[DIGEST_LEN];
+  channel_t *chan = NULL;
+  memset(digest, 'x', sizeof(digest));
+  tor_init_connection_lists();
+  MOCK(connection_connect_sockaddr, startup_connected);
+  MOCK(connection_tls_start_handshake, startup_tls_failed);
+  MOCK(is_local_to_resolve_addr, tlschan_resolved_addr_is_local_mock);
+  startup_conn = NULL;
+  void *dispatcher = helper_setup_pubsub(NULL);
+  MOCK(scheduler_release_channel, scheduler_release_channel_mock);
+
+  if (arg) {
+    /* SOCKS4 cannot represent an IPv6 target: a local construction failure. */
+    tor_addr_parse(&addr, "2001:db8::1");
+    or_options_t *options = get_options_mutable();
+    options->Socks4Proxy = tor_strdup("127.0.0.1:9999");
+    tor_addr_parse(&options->Socks4ProxyAddr, "127.0.0.1");
+    options->Socks4ProxyPort = 9999;
+  } else {
+    tor_addr_parse(&addr, "192.0.2.1");
+  }
+  chan = channel_tls_connect(&addr, 9001, digest, NULL, NULL, false);
+  tt_ptr_op(chan, OP_EQ, NULL);
+  tt_ptr_op(startup_conn, OP_NE, NULL);
+  tt_assert(startup_conn->marked_for_close);
+  tt_ptr_op(TO_OR_CONN(startup_conn)->chan, OP_EQ, NULL);
+  close_closeable_connections();
+  startup_conn = NULL;
+
+ done:
+  UNMOCK(connection_connect_sockaddr);
+  UNMOCK(connection_tls_start_handshake);
+  UNMOCK(is_local_to_resolve_addr);
+  if (startup_conn)
+    close_closeable_connections();
+  channel_free_all();
+  UNMOCK(scheduler_release_channel);
+  helper_cleanup_pubsub(NULL, dispatcher);
+}
+
 struct testcase_t channeltls_tests[] = {
+  { "startup_tls_failure", test_channeltls_startup_failure,
+    TT_FORK, NULL, NULL },
+  { "startup_proxy_failure", test_channeltls_startup_failure,
+    TT_FORK, &passthrough_setup, (void *)"proxy" },
   { "create", test_channeltls_create, TT_FORK, NULL, NULL },
   { "num_bytes_queued", test_channeltls_num_bytes_queued,
     TT_FORK, NULL, NULL },

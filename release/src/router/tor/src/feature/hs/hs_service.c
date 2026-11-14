@@ -23,6 +23,7 @@
 #include "feature/dirclient/dirclient.h"
 #include "feature/dircommon/directory.h"
 #include "feature/hs_common/shared_random_client.h"
+#include "feature/hs_common/replaycache.h"
 #include "feature/keymgt/loadkey.h"
 #include "feature/nodelist/describe.h"
 #include "feature/nodelist/microdesc.h"
@@ -2517,6 +2518,13 @@ intro_point_should_expire(const hs_service_intro_point_t *ip,
     goto expired;
   }
 
+  /* Our INTRODUCE2 replay cache has reached the maximum number of INTRODUCE2
+   * we can accept for this intro point. Rotate it so we can clear it and avoid
+   * filling memory with replays. */
+  if (replay_cache_count(ip->replay_cache) >= ip->introduce2_max) {
+    goto expired;
+  }
+
   if (ip->time_to_expire <= now) {
     goto expired;
   }
@@ -4309,13 +4317,14 @@ hs_service_set_conn_addr_port(const origin_circuit_t *circ,
                       "hidden service %s.",
              TO_CONN(conn)->port, service->onion_address);
     if (service->config.allow_unknown_ports) {
-      /* Service explicitly allow connection to unknown ports so close right
-       * away because we do not care about port mapping. */
-      goto err_close;
+      /* Service explicitly allows connections to unknown ports: only this
+       * stream fails, the rendezvous circuit is kept
+       * (HiddenServiceAllowUnknownPorts 1). */
+      goto err_no_close;
     }
-    /* If the service didn't explicitly allow it, we do NOT close the circuit
-     * here to raise the bar in terms of performance for port mapping. */
-    goto err_no_close;
+    /* By default, close the whole rendezvous circuit so that probing the
+     * ports of a service costs one circuit per unknown port. */
+    goto err_close;
   }
 
   /* Success. */

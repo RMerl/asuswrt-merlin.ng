@@ -20,5 +20,6 @@ long tor_lround(double d) ATTR_CONST;
 int64_t tor_llround(double d) ATTR_CONST;
 int64_t clamp_double_to_int64(double number);
 int tor_isinf(double x);
+int tor_isfinite(double x);
 
 #endif /* !defined(TOR_FP_H) */

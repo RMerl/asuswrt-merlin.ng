@@ -32,7 +32,7 @@ consensus_diff_apply_(const char *c, const char *d)
   // This makes it likelier for us to spot bugs.
   char *c_tmp = tor_memdup(c, c_len);
   char *d_tmp = tor_memdup(d, d_len);
-  char *result = consensus_diff_apply(c_tmp, c_len, d_tmp, d_len);
+  char *result = consensus_diff_apply(c_tmp, c_len, d_tmp, d_len, true);
   tor_free(c_tmp);
   tor_free(d_tmp);
   return result;
@@ -200,7 +200,8 @@ lookup_apply_and_verify_diff(consensus_flavor_t flav,
   if (diff_string == NULL || r < 0)
     return -1;
 
-  char *applied = consensus_diff_apply(str1, strlen(str1), diff_string, size);
+  char *applied = consensus_diff_apply(str1, strlen(str1),
+                                       diff_string, size, true);
   tor_free(diff_owned);
   if (applied == NULL)
     return -1;

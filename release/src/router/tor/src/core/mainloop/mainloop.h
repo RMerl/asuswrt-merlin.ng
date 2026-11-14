@@ -98,6 +98,7 @@ extern struct token_bucket_rw_t global_bucket;
 extern struct token_bucket_rw_t global_relayed_bucket;
 
 #ifdef MAINLOOP_PRIVATE
+STATIC void run_connection_housekeeping(int i, time_t now);
 STATIC int run_main_loop_until_done(void);
 STATIC void close_closeable_connections(void);
 STATIC void teardown_periodic_events(void);

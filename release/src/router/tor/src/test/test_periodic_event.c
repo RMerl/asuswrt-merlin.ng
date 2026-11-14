@@ -299,6 +299,9 @@ test_pe_hs_service(void *arg)
 
   (void) arg;
 
+  get_options_mutable()->SocksPort_set = 0;
+  get_options_mutable()->ControlPort_set = 0;
+  set_network_participation(true);
   hs_init();
   /* We need to put tor in hibernation live state so the events requiring
    * network gets enabled. */
@@ -323,6 +326,15 @@ test_pe_hs_service(void *arg)
    * memory on the stack. Furthermore, we can't remove it now else it will
    * trigger a rescan of the event disabling the HS service event. */
   to_remove = &service;
+  int roles = get_my_roles(get_options());
+  tt_assert(roles & PERIODIC_EVENT_ROLE_HS_SERVICE);
+  tt_assert(roles & PERIODIC_EVENT_ROLE_NET_PARTICIPANT);
+  tt_assert(!(roles & PERIODIC_EVENT_ROLE_CLIENT));
+  for (int i = 0; mainloop_periodic_events[i].name; ++i) {
+    periodic_event_item_t *item = &mainloop_periodic_events[i];
+    if (!strcmp(item->name, "second_elapsed"))
+      tt_assert(periodic_event_is_enabled(item));
+  }
 
   for (int i = 0; mainloop_periodic_events[i].name; ++i) {
     periodic_event_item_t *item = &mainloop_periodic_events[i];

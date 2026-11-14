@@ -71,6 +71,16 @@ struct or_circuit_t {
   /* We have already received an INTRODUCE1 cell on this circuit. */
   unsigned int already_received_introduce1 : 1;
 
+  /** An HSDir fetch or upload has used this circuit's lifetime allowance.
+   * Set after checking the incoming channel and identifying the HTTP request;
+   * closing its stream must not clear this flag. */
+  unsigned int already_received_hsdir_request : 1;
+
+  /** A BEGIN_DIR has used this circuit's lifetime allowance. Only set when
+   * the previous hop authenticated; closing its stream must not clear this
+   * flag. */
+  unsigned int already_received_begindir : 1;
+
   /** If set, this circuit carries HS traffic. Consider it in any HS
    *  statistics. */
   unsigned int circuit_carries_hs_traffic_stats : 1;
@@ -111,6 +121,11 @@ struct or_circuit_t {
   /** RELAY_BEGIN and RELAY_RESOLVE cell bucket controlling how much can go on
    * this circuit. Only used if this is the end of a circuit on an exit node.*/
   token_bucket_ctr_t stream_limiter;
+
+  /** RELAY_BEGIN_DIR cell bucket controlling how much can go on this
+   * circuit. Only used if this is the end of a circuit on a directory
+   * cache. */
+  token_bucket_ctr_t begindir_limiter;
 
   /** Format to use when exchanging relay cells with the client
    * who built this circuit. */

@@ -550,7 +550,11 @@ connection_or_reached_eof(or_connection_t *conn)
   tor_assert(conn);
 
   log_info(LD_OR,"OR connection reached EOF. Closing.");
-  connection_or_close_normally(conn, 1);
+  /* EOF is treated as a channel error, with queued output still flushed.
+   * Error-close attributes guard failure only during eligible establishment;
+   * an established or previously cancelled connection cannot blame its
+   * guard. */
+  connection_or_close_for_error(conn, 1);
 
   return 0;
 }
@@ -773,8 +777,6 @@ connection_or_about_to_close(or_connection_t *or_conn)
     if (connection_or_nonopen_was_started_here(or_conn)) {
       const or_options_t *options = get_options();
       connection_or_note_state_when_broken(or_conn);
-      /* Tell the new guard API about the channel failure */
-      entry_guard_chan_failed(TLS_CHAN_TO_BASE(or_conn->chan));
       if (conn->state >= OR_CONN_STATE_TLS_HANDSHAKING) {
         int reason = tls_error_to_orconn_end_reason(or_conn->tls_error);
         connection_or_event_status(or_conn, OR_CONN_EVENT_FAILED,
@@ -1384,6 +1386,38 @@ should_connect_to_relay(const or_connection_t *or_conn)
   return 0;
 }
 
+/** Finalizes an opening attempt at an OR error boundary, EOF, timeout, or
+ * immediate connect failure. Normal closure and explicit exceptions consume
+ * permission without blame; successful opening does so before callbacks. */
+void
+connection_or_note_establishment_failure(or_connection_t *conn)
+{
+  if (!conn->chan)
+    return;
+  channel_t *chan = TLS_CHAN_TO_BASE(conn->chan);
+  if (!conn->is_outgoing || conn->base_.marked_for_close ||
+      conn->base_.state == OR_CONN_STATE_OPEN) {
+    /* Incoming, closed, or established connections cannot fail this attempt.
+     * Clearing the association prevents later notifications from using it. */
+    channel_note_establishment_cancelled(chan);
+    return;
+  }
+  switch (conn->base_.state) {
+    case OR_CONN_STATE_CONNECTING:
+    case OR_CONN_STATE_PROXY_HANDSHAKING:
+    case OR_CONN_STATE_TLS_HANDSHAKING:
+    case OR_CONN_STATE_SERVER_VERSIONS_WAIT:
+    case OR_CONN_STATE_OR_HANDSHAKING_V3:
+      channel_note_establishment_failure(chan);
+      break;
+    default:
+      /* No establishment is in progress in this state. Clearing stale blame
+       * permission prevents its use after a later state transition. */
+      channel_note_establishment_cancelled(chan);
+      break;
+  }
+}
+
 /** <b>conn</b> is in the 'connecting' state, and it failed to complete
  * a TCP connection. Send notifications appropriately.
  *
@@ -1413,6 +1447,7 @@ connection_or_notify_error(or_connection_t *conn,
   channel_t *chan;
 
   tor_assert(conn);
+  connection_or_note_establishment_failure(conn);
 
   /* If we're connecting, call connect_failed() too */
   if (TO_CONN(conn)->state == OR_CONN_STATE_CONNECTING)
@@ -1449,7 +1484,7 @@ MOCK_IMPL(or_connection_t *,
 connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
                         const char *id_digest,
                         const ed25519_public_key_t *ed_id,
-                        channel_tls_t *chan))
+                        channel_tls_t *chan, bool for_origin_circ))
 {
   or_connection_t *conn;
   const or_options_t *options = get_options();
@@ -1476,6 +1511,11 @@ connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
   }
 
   conn = or_connection_new(CONN_TYPE_OR, tor_addr_family(&addr));
+  /* Origin provenance is set before socket work so synchronous failures use
+   * the same bootstrap reporting and cache policy as asynchronous failures.
+   * This is independent of guard selection; fallbacks are origin launches too.
+   * should_connect_to_relay() still honors existing cached failures. */
+  conn->potentially_used_for_bootstrapping = for_origin_circ;
 
   /*
    * Set up conn so it's got all the data we need to remember for channels
@@ -1515,6 +1555,11 @@ connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
     connection_or_change_state(conn, OR_CONN_STATE_CONNECTING);
     connection_or_event_status(conn, OR_CONN_EVENT_LAUNCHED, 0);
   } else {
+    /* Missing proxy/PT configuration prevented any socket connection attempt.
+     * This discards guard attribution permission before state/status
+     * callbacks, so later error handling cannot blame the guard for this
+     * setup error. */
+    channel_note_establishment_cancelled(TLS_CHAN_TO_BASE(chan));
     /* This duplication of state change calls is necessary in case we
      * run into an error condition below */
     connection_or_change_state(conn, OR_CONN_STATE_CONNECTING);
@@ -1555,9 +1600,16 @@ connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
   switch (connection_connect(TO_CONN(conn), conn->base_.address,
                              &addr, port, &socket_error)) {
     case -1:
-      /* We failed to establish a connection probably because of a local
-       * error. No need to blame the guard in this case. Notify the networking
-       * system of this failure. */
+      /* connection_connect() calls connection_connect_sockaddr(), which calls
+       * connection_or_note_establishment_failure() on an immediate
+       * tor_connect_socket() error other than EINPROGRESS. Any eligible
+       * guard-blaming attribution has therefore already been reported.
+       * Cancel any remaining guard-blaming attribution for local setup errors
+       * before connection_or_connect_failed() and connection_free_() can
+       * reenter error handling. Cancellation does not undo a reported guard
+       * failure; connection failure notifications and failure-cache accounting
+       * still follow in both cases. */
+      channel_note_establishment_cancelled(TLS_CHAN_TO_BASE(chan));
       connection_or_connect_failed(conn,
                                    errno_to_orconn_end_reason(socket_error),
                                    tor_socket_strerror(socket_error));
@@ -1597,6 +1649,12 @@ connection_or_close_normally(or_connection_t *orconn, int flush)
   channel_t *chan = NULL;
 
   tor_assert(orconn);
+  /* Both connection_mark_for_close_internal() and
+   * connection_mark_and_flush_internal() call
+   * connection_mark_for_close_internal_(), which validates the connection,
+   * then cancels guard-blaming attribution before close bookkeeping or
+   * flushing. On a duplicate close, the first marking already cancelled that
+   * attribution; the guard handle must never be reinstalled. */
   if (flush) connection_mark_and_flush_internal(TO_CONN(orconn));
   else connection_mark_for_close_internal(TO_CONN(orconn));
   if (orconn->chan) {
@@ -1609,7 +1667,13 @@ connection_or_close_normally(or_connection_t *orconn, int flush)
 }
 
 /** Mark orconn for close and transition the associated channel, if any, to
- * the error state.
+ * the error state. During selected outgoing establishment, any such error
+ * counts, including local TLS setup, protocol, and internal-state failures.
+ * OOS eviction and output-queue failure explicitly cancel permission at their
+ * callers: those are Tor-directed disposal, potentially caused by other work.
+ * These exceptions live at the disposal sites; this function does not
+ * classify individual error causes. Normal close, prior cancellation, and
+ * successful open never regain attribution permission.
  */
 MOCK_IMPL(void,
 connection_or_close_for_error,(or_connection_t *orconn, int flush))
@@ -1617,6 +1681,8 @@ connection_or_close_for_error,(or_connection_t *orconn, int flush))
   channel_t *chan = NULL;
 
   tor_assert(orconn);
+  assert_connection_ok(TO_CONN(orconn), 0);
+  connection_or_note_establishment_failure(orconn);
   if (flush) connection_mark_and_flush_internal(TO_CONN(orconn));
   else connection_mark_for_close_internal(TO_CONN(orconn));
   if (orconn->chan) {
@@ -1885,8 +1951,6 @@ connection_or_client_learned_peer_id(or_connection_t *conn,
            connection_describe_peer(TO_CONN(conn)),
            expected_rsa, expected_ed, seen_rsa, seen_ed, extra_log);
 
-    /* Tell the new guard API about the channel failure */
-    entry_guard_chan_failed(TLS_CHAN_TO_BASE(conn->chan));
     connection_or_event_status(conn, OR_CONN_EVENT_FAILED,
                                END_OR_CONN_REASON_OR_IDENTITY);
     if (!authdir_mode_tests_reachability(options))
@@ -2078,6 +2142,12 @@ or_handshake_state_record_var_cell(or_connection_t *conn,
 int
 connection_or_set_state_open(or_connection_t *conn)
 {
+  tor_assert(conn);
+  /* Handshaking succeeded. This clears attribution before OR status callbacks
+   * can reenter error handling, even while the channel still appears
+   * OPENING. */
+  if (conn->chan)
+    channel_note_establishment_cancelled(TLS_CHAN_TO_BASE(conn->chan));
   connection_or_change_state(conn, OR_CONN_STATE_OPEN);
   connection_or_event_status(conn, OR_CONN_EVENT_CONNECTED, 0);
 

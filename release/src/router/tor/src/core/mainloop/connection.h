@@ -378,6 +378,8 @@ void connection_check_oos(int n_socks, int failed);
   STMT_END
 
 #ifdef CONNECTION_PRIVATE
+STATIC int connection_buf_read_from_socket(connection_t *conn,
+                             ssize_t *max_to_read, int *socket_error);
 STATIC void connection_free_minimal(struct connection_t *conn);
 
 /* Used only by connection.c and test*.c */

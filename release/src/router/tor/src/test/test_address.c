@@ -1362,6 +1362,78 @@ test_address_parse_port_range(void *arg)
   ;
 }
 
+static void
+test_address_dns_addrs(void *arg)
+{
+  (void)arg;
+
+  const char *valid_addrs[] = {
+    "a.b.c",
+    "a",
+    "www.example.com",
+    "www.example.com.",
+    "www.exa-mple.com",
+    "3www.example.com",
+    "www.3example.com",
+    "www.amidst-the-mists-and-coldest-frosts-with-barest-wrists-and-stou.test",
+    "w89.example.foobar",
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.",
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X",
+    NULL,
+  };
+
+  const char *invalid_addrs[] = {
+    "a..b.c",
+    "",
+    ".",
+    ".www.example.com.",
+    ".www.example.com",
+    "www.example.com..",
+    "www.example..com",
+    "www-.example.com",
+    "-www.example.com",
+    "www.example.-com",
+    "www.amidst-the-mists-and-coldest-frosts-"
+    "with-barest-wrists-and-stoutest.boasts",
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.",
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X."
+    "X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X.X",
+    NULL,
+  };
+
+  for (int i = 0; valid_addrs[i]; ++i) {
+    //printf("%s\n", valid_addrs[i]);
+    tt_assert(name_is_valid_for_dns(valid_addrs[i]));
+  }
+
+  for (int i = 0; invalid_addrs[i]; ++i) {
+    //printf("%s\n", invalid_addrs[i]);
+    tt_assert(! name_is_valid_for_dns(invalid_addrs[i]));
+  }
+
+  // \x07, 'example', \x00.
+  tt_int_op(9, OP_EQ, valid_dns_name_encoded_len("example"));
+  // \x07, 'example', \x03, 'com', \x00.
+  tt_int_op(13, OP_EQ, valid_dns_name_encoded_len("example.com"));
+  // \x07, 'example', \x03, 'com', \x00.
+  tt_int_op(13, OP_EQ, valid_dns_name_encoded_len("example.com."));
+  // \x03, 'www', \x07, 'example', \x03, 'com', \x00.
+  tt_int_op(17, OP_EQ, valid_dns_name_encoded_len("www.example.com."));
+
+ done:
+  ;
+}
 #define ADDRESS_TEST(name, flags) \
   { #name, test_address_ ## name, flags, NULL, NULL }
 #define ADDRESS_TEST_STR_ARG(name, flags, str_arg) \
@@ -1401,5 +1473,6 @@ struct testcase_t address_tests[] = {
   ADDRESS_TEST(dirserv_router_addr_private, 0),
   ADDRESS_TEST_STR_ARG(dirserv_router_addr_private, 0, "allow_private"),
   ADDRESS_TEST(parse_port_range, 0),
+  ADDRESS_TEST(dns_addrs, 0),
   END_OF_TESTCASES
 };

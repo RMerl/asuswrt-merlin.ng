@@ -112,6 +112,7 @@
 #include "app/config/or_state_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "core/or/socks_request_st.h"
+#include "core/or/relay.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -281,9 +282,27 @@ connection_unregister_events(connection_t *conn)
   }
 }
 
+/** Return a connection's list index, repairing a stale index after reporting
+ * a bug. Only an inconsistent index takes the linear search path. When
+ * <b>must_be_present</b> is true, even -1 is inconsistent. */
+static int
+connection_list_index(const connection_t *conn, const smartlist_t *list,
+                      int *index, bool must_be_present)
+{
+  const int idx = *index;
+  if (idx == -1 && !must_be_present)
+    return -1;
+  if (BUG(!list || idx < 0 || idx >= smartlist_len(list) ||
+          smartlist_get(list, idx) != conn)) {
+    *index = smartlist_pos(list, conn);
+  }
+  return *index;
+}
+
 /** Remove the connection from the global list, and remove the
  * corresponding poll entry.  Calling this function will shift the last
  * connection (if any) into the position occupied by conn.
+ * Return 0 if removed, or -1 if the connection was not in the array.
  */
 int
 connection_remove(connection_t *conn)
@@ -303,20 +322,37 @@ connection_remove(connection_t *conn)
 
   control_event_conn_bandwidth(conn);
 
-  tor_assert(conn->conn_array_index >= 0);
-  current_index = conn->conn_array_index;
   connection_unregister_events(conn); /* This is redundant, but cheap. */
-  if (current_index == smartlist_len(connection_array)-1) { /* at the end */
-    smartlist_del(connection_array, current_index);
-    return 0;
-  }
+  current_index = connection_list_index(conn, connection_array,
+                                        &conn->conn_array_index, true);
+  if (current_index < 0)
+    return -1;
 
   /* replace this one with the one at the end */
   smartlist_del(connection_array, current_index);
-  tmp = smartlist_get(connection_array, current_index);
-  tmp->conn_array_index = current_index;
+  conn->conn_array_index = -1;
+  if (current_index < smartlist_len(connection_array)) {
+    tmp = smartlist_get(connection_array, current_index);
+    tmp->conn_array_index = current_index;
+  }
 
   return 0;
+}
+
+/** Remove <b>conn</b> from the closeable list, updating the moved entry. */
+static void
+connection_remove_from_closeable_list(connection_t *conn)
+{
+  const int idx = connection_list_index(conn, closeable_connection_lst,
+                                        &conn->closeable_list_index, true);
+  if (idx < 0)
+    return;
+  smartlist_del(closeable_connection_lst, idx);
+  conn->closeable_list_index = -1;
+  if (idx < smartlist_len(closeable_connection_lst)) {
+    connection_t *moved = smartlist_get(closeable_connection_lst, idx);
+    moved->closeable_list_index = idx;
+  }
 }
 
 /** If <b>conn</b> is an edge conn, remove it from the list
@@ -332,7 +368,7 @@ static void
 connection_unlink(connection_t *conn)
 {
   connection_about_to_close_connection(conn);
-  if (conn->conn_array_index >= 0) {
+  if (conn->conn_array_index != -1) {
     connection_remove(conn);
   }
   if (conn->linked_conn) {
@@ -342,8 +378,9 @@ connection_unlink(connection_t *conn)
       connection_start_reading(conn->linked_conn);
     conn->linked_conn = NULL;
   }
-  smartlist_remove(closeable_connection_lst, conn);
-  smartlist_remove(active_linked_connection_lst, conn);
+  connection_remove_from_closeable_list(conn);
+  if (conn->linked)
+    connection_stop_reading_from_linked_conn(conn);
   if (conn->type == CONN_TYPE_EXIT) {
     assert_connection_edge_not_dns_pending(TO_EDGE_CONN(conn));
   }
@@ -415,9 +452,14 @@ tor_init_connection_lists(void)
 void
 add_connection_to_closeable_list(connection_t *conn)
 {
-  tor_assert(!smartlist_contains(closeable_connection_lst, conn));
   tor_assert(conn->marked_for_close);
   assert_connection_ok(conn, time(NULL));
+  if (BUG(connection_is_on_closeable_list(conn))) {
+    /* Do not insert a second reference to an object that will be freed. */
+    mainloop_schedule_postloop_cleanup();
+    return;
+  }
+  conn->closeable_list_index = smartlist_len(closeable_connection_lst);
   smartlist_add(closeable_connection_lst, conn);
   mainloop_schedule_postloop_cleanup();
 }
@@ -426,14 +468,16 @@ add_connection_to_closeable_list(connection_t *conn)
 int
 connection_is_on_closeable_list(connection_t *conn)
 {
-  return smartlist_contains(closeable_connection_lst, conn);
+  return connection_list_index(conn, closeable_connection_lst,
+                                &conn->closeable_list_index, false) >= 0;
 }
 
 /** Return true iff conn is in the current poll array. */
 int
 connection_in_array(connection_t *conn)
 {
-  return smartlist_contains(connection_array, conn);
+  return connection_list_index(conn, connection_array,
+                                &conn->conn_array_index, false) >= 0;
 }
 
 /** Set <b>*array</b> to an array of all connections. <b>*array</b> must not
@@ -824,13 +868,18 @@ connection_start_reading_from_linked_conn(connection_t *conn)
   tor_assert(conn);
   tor_assert(conn->linked == 1);
 
-  if (!conn->active_on_link) {
-    conn->active_on_link = 1;
+  const int idx = connection_list_index(conn, active_linked_connection_lst,
+                                        &conn->active_linked_list_index,
+                                        conn->active_on_link);
+  tor_assert_nonfatal(conn->active_on_link || idx == -1);
+  if (idx < 0) {
+    conn->active_linked_list_index =
+      smartlist_len(active_linked_connection_lst);
     smartlist_add(active_linked_connection_lst, conn);
-    mainloop_event_activate(schedule_active_linked_connections_event);
-  } else {
-    tor_assert(smartlist_contains(active_linked_connection_lst, conn));
   }
+  if (!conn->active_on_link || idx < 0)
+    mainloop_event_activate(schedule_active_linked_connections_event);
+  conn->active_on_link = 1;
 }
 
 /** Tell the main loop to stop reading bytes into <b>conn</b> from its linked
@@ -840,16 +889,20 @@ void
 connection_stop_reading_from_linked_conn(connection_t *conn)
 {
   tor_assert(conn);
-  tor_assert(conn->linked == 1);
+  tor_assert_nonfatal(conn->linked == 1);
 
-  if (conn->active_on_link) {
-    conn->active_on_link = 0;
-    /* FFFF We could keep an index here so we can smartlist_del
-     * cleanly.  On the other hand, this doesn't show up on profiles,
-     * so let's leave it alone for now. */
-    smartlist_remove(active_linked_connection_lst, conn);
-  } else {
-    tor_assert(!smartlist_contains(active_linked_connection_lst, conn));
+  const int idx = connection_list_index(conn, active_linked_connection_lst,
+                                        &conn->active_linked_list_index,
+                                        conn->active_on_link);
+  tor_assert_nonfatal(conn->active_on_link || idx == -1);
+  conn->active_on_link = 0;
+  conn->active_linked_list_index = -1;
+  if (idx < 0)
+    return;
+  smartlist_del(active_linked_connection_lst, idx);
+  if (idx < smartlist_len(active_linked_connection_lst)) {
+    connection_t *moved = smartlist_get(active_linked_connection_lst, idx);
+    moved->active_linked_list_index = idx;
   }
 }
 
@@ -860,7 +913,7 @@ close_closeable_connections(void)
   int i;
   for (i = 0; i < smartlist_len(closeable_connection_lst); ) {
     connection_t *conn = smartlist_get(closeable_connection_lst, i);
-    if (conn->conn_array_index < 0) {
+    if (!connection_in_array(conn)) {
       connection_unlink(conn); /* blow it away right now */
     } else {
       if (!conn_close_if_marked(conn->conn_array_index))
@@ -1173,7 +1226,7 @@ directory_info_has_arrived(time_t now, int from_cache, int suppress_logs)
 /** Perform regular maintenance tasks for a single connection.  This
  * function gets run once per second per connection by run_scheduled_events.
  */
-static void
+STATIC void
 run_connection_housekeeping(int i, time_t now)
 {
   cell_t cell;
@@ -1254,7 +1307,7 @@ run_connection_housekeeping(int i, time_t now)
       /* We never managed to actually get this connection open and happy. */
       log_info(LD_OR,"Expiring non-open OR connection to fd %d (%s:%d).",
                (int)conn->s, fmt_and_decorate_addr(&conn->addr), conn->port);
-      connection_or_close_normally(TO_OR_CONN(conn), 0);
+      connection_or_close_for_error(or_conn, 0);
     }
   } else if (we_are_hibernating() &&
              ! have_any_circuits &&
@@ -2492,6 +2545,14 @@ run_main_loop_once(void)
    * of these happens, then run all the appropriate callbacks. */
   loop_result = tor_libevent_run_event_loop(tor_libevent_get_base(),
                                             called_loop_once);
+
+  if (mainloop_must_free_memory) {
+    /* Note that calling event_base_loopbreak() can set the return value
+     * to -1, so we need to clear it in this case. :/
+     */
+    cell_queues_reclaim_memory();
+    loop_result = 0;
+  }
 
   if (get_options()->MainloopStats) {
     /* Update our main loop counters. */

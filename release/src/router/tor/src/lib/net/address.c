@@ -2244,3 +2244,101 @@ string_is_valid_nonrfc_hostname(const char *string)
 
   return result;
 }
+
+/** Return true if the string beginning at <b>label</b> and ending just
+ * before <b>eos</b> is a valid DNS label.
+ */
+static bool
+dns_label_is_valid(const char *label, const char *eos, bool is_final)
+{
+  const size_t MAX_LABEL_LEN = 63;
+  size_t len = eos-label;
+
+  if (len == 0) {
+    return is_final;
+  }
+  if (len > MAX_LABEL_LEN) {
+    return false;
+  }
+  if (! TOR_ISALNUM(*label)) {
+    return false;
+  }
+  ++label;
+
+  while (label < eos) {
+    bool is_last = (label + 1 == eos);
+    if (is_last) {
+      if (! TOR_ISALNUM(*label)) {
+        return false;
+      }
+    } else {
+      if (! TOR_ISALNUM(*label) && *label != '-') {
+        return false;
+      }
+    }
+    ++label;
+  }
+
+  return true;
+}
+
+/* As `name_is_valid_for_dns`, but return -1 on an invalid name,
+ * and return the encoded length of the name if the name is valid.
+ */
+STATIC ssize_t
+valid_dns_name_encoded_len(const char *name)
+{
+  const size_t MAX_NAME_LEN = 255;
+
+  if (*name == '\0') {
+    return -1;
+  }
+
+  size_t encoded_len = 0;
+  if (strcmpend(name, ".")) {
+    /* name doesn't end with ".",
+     * so it will take one extra byte to encode it. */
+    encoded_len += 1;
+  }
+
+  while (true) {
+    const char *eol = strchr(name, '.');
+    bool is_final = false;
+    if (!eol) {
+      eol = strchr(name, 0);
+      is_final = true;
+    }
+    tor_assert(eol);
+
+    if (!dns_label_is_valid(name, eol, is_final))
+      return -1;
+    encoded_len += (eol - name) + 1;
+
+    if (! *eol)
+      break;
+
+    name = eol+1;
+  }
+
+  if (encoded_len > MAX_NAME_LEN) {
+    return -1;
+  }
+
+  return encoded_len;
+}
+
+/**
+ * Return true if <b>name</b> is a pedantically correct DNS name.
+ *
+ * (Specifically,
+ * the name must be between 1 and 255 characters long,
+ * and must consist of labels between in 1 and 63 characters long,
+ * and its labels must contain only alphanumeric characters and dashes,
+ * and its labels must not begin or end with a dash.)
+ */
+bool
+name_is_valid_for_dns(const char *name)
+{
+  ssize_t res = valid_dns_name_encoded_len(name);
+  return (res >= 0);
+}

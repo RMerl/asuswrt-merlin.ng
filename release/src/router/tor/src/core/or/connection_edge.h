@@ -140,6 +140,7 @@ int connection_ap_can_use_exit(const entry_connection_t *conn,
 void connection_ap_expire_beginning(void);
 void connection_ap_rescan_and_attach_pending(void);
 void connection_ap_attach_pending(int retry);
+void connection_ap_retry_pending(void);
 void connection_ap_mark_as_pending_circuit_(entry_connection_t *entry_conn,
                                            const char *file, int line);
 #define connection_ap_mark_as_pending_circuit(c) \

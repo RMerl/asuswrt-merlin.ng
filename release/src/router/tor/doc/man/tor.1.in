@@ -2,12 +2,12 @@
 .\"     Title: tor
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 06/25/2026
+.\"      Date: 11/04/2026
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR" "1" "06/25/2026" "Tor" "Tor Manual"
+.TH "TOR" "1" "11/04/2026" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1830,6 +1830,12 @@ Tor will attempt to keep at least one open, unused circuit available for this am
 \fBLearnCircuitBuildTimeout\fR \fB0\fR|\fB1\fR
 .RS 4
 If 0, CircuitBuildTimeout adaptive learning is disabled\&. (Default: 1)
+
+
+If adaptive history contains only abandoned measurements, Tor clears that history and restarts learning with conservative timeout values\&. This does not change guard selection or guarantee that a stalled path will recover\&. During continuing circuit\-build failures, Tor logs a process\-wide expiry summary at most once every five minutes\&. Hop\-stage and channel\-state counts are separate totals, not correlated observations\&. Failed first\-hop connections are counted separately as connection_failed; they have not yet started circuit build timing\&.
+
+
+To diagnose persistent failures with fixed timeouts, restart with LearnCircuitBuildTimeout 0 and CircuitBuildTimeout 60 while preserving the existing state file\&. Purpose\-specific timeout rules still apply; a path already failing after 60 seconds might remain unusable\&. Changing these options in a running process is not equivalent to this restart diagnostic\&. When reporting failures, share the aggregate expiry/recovery summaries and, if requested, only TotalBuildTimes and CircuitBuildAbandonedCount from state\&. Do not share the full state file, histogram bins, or circuit path logs by default\&.
 .RE
 .PP
 \fBCircuitBuildTimeout\fR \fINUM\fR
@@ -2981,6 +2987,36 @@ The allowed rate of stream creation from a single circuit per second\&. Coupled 
 The allowed burst of stream creation from a circuit per second\&. See the DoSStreamCreationRate for more details on this detection\&. If not defined or set to 0, it is controlled by a consensus parameter\&. If not defined in the consensus, the value is 300\&. (Default: 0)
 .RE
 .sp
+The following options are useful only for a directory cache\&.
+.PP
+\fBDoSBeginDirRateEnabled\fR \fB0\fR|\fB1\fR|\fBauto\fR
+.RS 4
+Enable the BEGIN_DIR rate limit\&. If set to 1 (enabled), tor will apply a rate limit on the directory streams opened per circuit\&. "auto" means use the consensus parameter\&. If not defined in the consensus, the value is 1\&. (Default: auto)
+.RE
+.PP
+\fBDoSBeginDirDefenseType\fR \fINUM\fR
+.RS 4
+This is the type of defense applied to a circuit going over the BEGIN_DIR rate limit\&. The possible values are:
+
+1: No defense\&.
+
+2: Reject the directory stream\&.
+
+3: Close the circuit\&.
+
+"0" means use the consensus parameter\&. If not defined in the consensus, the value is 3\&. (Default: 0)
+.RE
+.PP
+\fBDoSBeginDirRate\fR \fINUM\fR
+.RS 4
+The allowed rate of BEGIN_DIR from a single circuit per second\&. Coupled with the burst (see below), if the limit is reached, actions can be taken against the stream or circuit (DoSBeginDirDefenseType)\&. If not defined or set to 0, it is controlled by a consensus parameter\&. If not defined in the consensus, the value is 10\&. (Default: 0)
+.RE
+.PP
+\fBDoSBeginDirBurst\fR \fINUM\fR
+.RS 4
+The allowed burst of BEGIN_DIR from a circuit\&. See the DoSBeginDirRate for more details on this detection\&. If not defined or set to 0, it is controlled by a consensus parameter\&. If not defined in the consensus, the value is 60\&. (Default: 0)
+.RE
+.sp
 For onion services, mitigations are a work in progress and multiple options are currently available\&.
 .sp
 The introduction point defense is a rate limit on the number of introduction requests that will be forwarded to a service by each of its honest introduction point routers\&. This can prevent some types of overwhelming floods from reaching the service, but it will also prevent legitimate clients from establishing new connections\&.
@@ -3172,7 +3208,7 @@ middle\-only status for every relay\&.)
 .PP
 \fBAuthDirMaxServersPerAddr\fR \fINUM\fR
 .RS 4
-Authoritative directories only\&. The maximum number of servers that we will list as acceptable on a single IP address\&. Set this to "0" for "no limit"\&. (Default: 2)
+Authoritative directories only\&. The maximum number of servers that we will list as acceptable on a single IP address\&. Only servers that we have found reachable at that address count toward the limit, so it is only enforced when AuthDirTestReachability is set, and for IPv6 addresses only when AuthDirHasIPv6Connectivity is set\&. Set this to "0" for "no limit"\&. (Default: 2)
 .RE
 .PP
 \fBAuthDirPinKeys\fR \fB0\fR|\fB1\fR
@@ -3204,6 +3240,11 @@ Authoritative directories only\&. These options contain a comma\-separated list 
 \fBAuthDirSharedRandomness\fR \fB0\fR|\fB1\fR
 .RS 4
 Authoritative directories only\&. Switch for the shared random protocol\&. If zero, the authority won\(cqt participate in the protocol\&. If non\-zero (default), the flag "shared\-rand\-participate" is added to the authority vote indicating participation in the protocol\&. (Default: 1)
+.RE
+.PP
+\fBAuthDirSupport048Clients\fR \fB0\fR|\fB1\fR
+.RS 4
+Authoritative directory only\&. If true, we do not accept any router descriptors or generate any consensuses that would confuse clients running 0\&.4\&.8 and earlier\&. If false, 0\&.4\&.8 clients will get a somewhat degraded view of the network, but will generally continue working\&. (Default: 0)
 .RE
 .PP
 \fBAuthDirTestEd25519LinkKeys\fR \fB0\fR|\fB1\fR
@@ -3275,7 +3316,7 @@ A total value, in abstract bandwidth units, describing how much measured total b
 .PP
 \fBMinUptimeHidServDirectoryV2\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR|\fBdays\fR|\fBweeks\fR
 .RS 4
-Minimum uptime of a relay to be accepted as a hidden service directory by directory authorities\&. (Default: 96 hours)
+Minimum uptime of a relay to be accepted as a hidden service directory by directory authorities\&. A relay that has the HSDir flag in a recent consensus doesn\(cqt need to meet it\&. (Default: 96 hours)
 .RE
 .PP
 \fBRecommendedClientVersions\fR \fISTRING\fR
@@ -3305,7 +3346,7 @@ should be set too\&.
 .PP
 \fBMinimalAcceptedServerVersion\fR \fISTRING\fR
 .RS 4
-STRING is the oldest Tor version accepted by the directory authority for relays and bridge\&. Any older version will be rejected\&. (Default: 0\&.4\&.7\&.0\-alpha\-dev)
+STRING is the oldest Tor version accepted by the directory authority for relays and bridge\&. Any older version will be rejected\&. (Default: 0\&.4\&.9\&.1\-alpha)
 .RE
 .PP
 \fBV3AuthDistDelay\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR

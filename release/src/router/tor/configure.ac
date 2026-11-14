@@ -4,7 +4,7 @@ dnl Copyright (c) 2007-2019, The Tor Project, Inc.
 dnl See LICENSE for licensing information
 
 AC_PREREQ([2.63])
-AC_INIT([tor],[0.4.9.11])
+AC_INIT([tor],[0.4.9.16])
 AC_CONFIG_SRCDIR([src/app/main/tor_main.c])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -18,7 +18,7 @@ AC_DEFINE_UNQUOTED([CONFIG_FLAGS], ["$configure_flags"], [Flags passed to config
 # version number changes.  Tor uses it to make sure that it
 # only shuts down for missing "required protocols" when those protocols
 # are listed as required by a consensus after this date.
-AC_DEFINE(APPROX_RELEASE_DATE, ["2026-06-25"], # for 0.4.9.11
+AC_DEFINE(APPROX_RELEASE_DATE, ["2026-11-04"], # for 0.4.9.16
           [Approximate date when this software was released. (Updated when the version changes.)])
 
 # "foreign" means we don't follow GNU package layout standards
@@ -1356,7 +1356,7 @@ if test "x$enable_pic" = "xyes"; then
 fi
 
 if test "x$enable_gcc_hardening" != "xno"; then
-    CFLAGS="$CFLAGS -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2"
+    AX_ADD_FORTIFY_SOURCE
     if test "x$have_clang" = "xyes"; then
         TOR_CHECK_CFLAGS(-Qunused-arguments)
     fi
@@ -1523,6 +1523,12 @@ dnl Check for libseccomp
 if test "x$enable_seccomp" != "xno"; then
   AC_CHECK_HEADERS([seccomp.h])
   AC_SEARCH_LIBS(seccomp_init, [seccomp])
+
+  AC_CHECK_DECL(SYS_SECCOMP,
+     [AC_DEFINE(HAVE_SYS_SECCOMP, 1, [Is SYS_SECCOMP defined?])],
+     [],
+     [#include <signal.h>]
+  )
 fi
 
 dnl ============================================================

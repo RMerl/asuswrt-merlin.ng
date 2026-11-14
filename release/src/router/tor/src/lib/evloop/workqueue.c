@@ -311,9 +311,13 @@ worker_thread_main(void *thread_)
             tor_get_thread_id());
 
   while (1) {
-    /* Exit thread when signaled to exit */
-    if (pool->exit)
+    /* Pool shutdown bypasses work callbacks, so release the worker's state
+     * here. Callbacks requesting their own shutdown handle their state. */
+    if (pool->exit) {
+      pool->free_thread_state_fn(thread->state);
+      thread->state = NULL;
       goto exit;
+    }
 
     /* lock must be held at this point. */
     while (worker_thread_has_work(thread)) {

@@ -88,9 +88,11 @@ dirserv_orconn_tls_done(const tor_addr_t *addr,
       if (tor_addr_family(addr) == AF_INET) {
         rep_hist_note_router_reachable(digest_rcvd, addr, or_port, now);
         node->last_reachable = now;
+        node->reached_ipv4_orport = 1;
       } else if (tor_addr_family(addr) == AF_INET6) {
         /* No rephist for IPv6.  */
         node->last_reachable6 = now;
+        node->reached_ipv6_orport = 1;
       }
     }
   }
@@ -157,7 +159,7 @@ dirserv_single_reachability_test(time_t now, routerinfo_t *router)
             router->ipv4_orport);
   chan = channel_tls_connect(&router->ipv4_addr, router->ipv4_orport,
                              router->cache_info.identity_digest,
-                             ed_id_key);
+                             ed_id_key, NULL, false);
   if (chan) command_setup_channel(chan);
 
   /* Possible IPv6. */
@@ -170,7 +172,7 @@ dirserv_single_reachability_test(time_t now, routerinfo_t *router)
              router->ipv6_orport);
     chan = channel_tls_connect(&router->ipv6_addr, router->ipv6_orport,
                                router->cache_info.identity_digest,
-                               ed_id_key);
+                               ed_id_key, NULL, false);
     if (chan) command_setup_channel(chan);
   }
 }

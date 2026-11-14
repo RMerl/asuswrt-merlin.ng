@@ -71,6 +71,7 @@
 #include "core/or/relay.h"
 #include "core/or/scheduler.h"
 #include "feature/client/entrynodes.h"
+#include "core/mainloop/netstatus.h"
 #include "feature/hs/hs_service.h"
 #include "feature/nodelist/dirlist.h"
 #include "feature/nodelist/networkstatus.h"
@@ -914,6 +915,10 @@ channel_free_(channel_t *chan)
   /* It must be deregistered */
   tor_assert(!(chan->registered));
 
+  /* Direct destruction releases the weak handle even if closure was
+   * bypassed; freeing a channel is never evidence of establishment failure. */
+  channel_note_establishment_cancelled(chan);
+
   log_debug(LD_CHANNEL,
             "Freeing channel %"PRIu64 " at %p",
             (chan->global_identifier), chan);
@@ -986,6 +991,9 @@ static void
 channel_force_xfree(channel_t *chan)
 {
   tor_assert(chan);
+  /* Shutdown bypasses normal state transitions and channel_free_(). This
+   * releases the handle before subclass cleanup, without blaming the guard. */
+  channel_note_establishment_cancelled(chan);
 
   log_debug(LD_CHANNEL,
             "Force-freeing channel %"PRIu64 " at %p",
@@ -1265,6 +1273,48 @@ channel_close_for_error(channel_t *chan)
   channel_change_state(chan, CHANNEL_STATE_CLOSING);
 }
 
+/** Discards any unused permission to blame this channel's selected guard.
+ * Releases the channel-owned weak handle without changing guard reachability
+ * or closing the channel. It does not cancel requests using the channel.
+ * This also ends attribution after successful establishment: "cancelled"
+ * refers to permission to report failure, not to whether the connection
+ * succeeded.
+ *
+ * After failure reporting, success, or earlier cancellation has consumed the
+ * handle, this function is a no-op and cannot undo a reported failure.
+ *
+ * Callers ending attribution without reporting failure must call this before
+ * invoking callbacks that could report another error. Callers must install
+ * the handle only at launch and must never reinstall it after clearing. */
+void
+channel_note_establishment_cancelled(channel_t *chan)
+{
+  if (!chan)
+    return;
+  struct entry_guard_handle_t *handle = chan->establishment_guard;
+  chan->establishment_guard = NULL;
+  entry_guard_handle_release(handle);
+}
+
+/** Called by the OR failure finalizer. This function clears the channel
+ * handle before delivering the failure, so reentrant callbacks and shared
+ * requests cannot count the attempt twice.
+ * OPENING plus outgoing excludes maintenance and all established traffic. */
+void
+channel_note_establishment_failure(channel_t *chan)
+{
+  if (!chan)
+    return;
+  struct entry_guard_handle_t *handle = chan->establishment_guard;
+  chan->establishment_guard = NULL;
+  if (!handle)
+    return;
+  if (!chan->is_incoming && chan->state == CHANNEL_STATE_OPENING &&
+      !chan->has_been_open && !net_is_disabled())
+    entry_guard_connection_failed(handle);
+  entry_guard_handle_release(handle);
+}
+
 /**
  * Notify that the lower layer is finished closing the channel.
  *
@@ -1277,6 +1327,11 @@ channel_closed(channel_t *chan)
 {
   tor_assert(chan);
   tor_assert(CHANNEL_CONDEMNED(chan));
+  /* The required transition to a condemned state already clears this handle.
+   * This defensive cleanup precedes early return and circuit callbacks in
+   * case a future teardown path leaves an association behind. It is redundant
+   * today and never infers failure from closure. */
+  channel_note_establishment_cancelled(chan);
 
   /* No-op if already inactive */
   if (CHANNEL_FINISHED(chan))
@@ -1534,6 +1589,21 @@ channel_change_state_(channel_t *chan, channel_state_t to_state)
   tor_assert(channel_state_is_valid(to_state));
   tor_assert(channel_state_can_transition(chan->state, to_state));
 
+  /* If we're going to a closing or closed state, we must have a reason set */
+  if (from_state != to_state &&
+      (to_state == CHANNEL_STATE_CLOSING ||
+       to_state == CHANNEL_STATE_CLOSED ||
+       to_state == CHANNEL_STATE_ERROR)) {
+    tor_assert(chan->reason_for_closing != CHANNEL_NOT_CLOSING);
+  }
+
+  /* Validate the transition before releasing attribution, including for
+   * no-op transitions. Success and generic closure clear permission before
+   * callbacks; OR error hooks must report eligible failure first. */
+  if (to_state == CHANNEL_STATE_OPEN || to_state == CHANNEL_STATE_CLOSING ||
+      to_state == CHANNEL_STATE_CLOSED || to_state == CHANNEL_STATE_ERROR)
+    channel_note_establishment_cancelled(chan);
+
   /* Check for no-op transitions */
   if (from_state == to_state) {
     log_debug(LD_CHANNEL,
@@ -1542,13 +1612,6 @@ channel_change_state_(channel_t *chan, channel_state_t to_state)
               channel_state_to_string(to_state),
               chan, (chan->global_identifier));
     return;
-  }
-
-  /* If we're going to a closing or closed state, we must have a reason set */
-  if (to_state == CHANNEL_STATE_CLOSING ||
-      to_state == CHANNEL_STATE_CLOSED ||
-      to_state == CHANNEL_STATE_ERROR) {
-    tor_assert(chan->reason_for_closing != CHANNEL_NOT_CLOSING);
   }
 
   log_debug(LD_CHANNEL,
@@ -2312,7 +2375,11 @@ channel_free_all(void)
 }
 
 /**
- * Connect to a given addr/port/digest.
+ * Connects to a given addr/port/digest. guard_state is borrowed only during
+ * this synchronous launch; the new channel takes an independent weak handle.
+ * Reuse decisions happen before this call and never replace a handle.
+ * for_origin_circ identifies local circuit launches even without a guard
+ * selection (for example, a fallback directory request).
  *
  * This sets up a new outgoing channel; in the future if multiple
  * channel_t subclasses are available, this is where the selection policy
@@ -2324,9 +2391,12 @@ channel_free_all(void)
 channel_t *
 channel_connect(const tor_addr_t *addr, uint16_t port,
                 const char *id_digest,
-                const ed25519_public_key_t *ed_id)
+                const ed25519_public_key_t *ed_id,
+                const struct circuit_guard_state_t *guard_state,
+                bool for_origin_circ)
 {
-  return channel_tls_connect(addr, port, id_digest, ed_id);
+  return channel_tls_connect(addr, port, id_digest, ed_id, guard_state,
+                             for_origin_circ);
 }
 
 /**

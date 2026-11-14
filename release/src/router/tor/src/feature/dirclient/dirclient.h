@@ -150,6 +150,8 @@ STATIC void warn_disallowed_anonymous_compression_method(
                                                enum compress_method_t);
 
 STATIC int should_use_directory_guards(const or_options_t *options);
+STATIC int dirclient_tunnel_isolation_flags(const or_options_t *options,
+                                            int anonymized_connection);
 STATIC char *accept_encoding_header(void);
 STATIC const char *dir_conn_purpose_to_string(int purpose);
 

@@ -70,6 +70,14 @@ hs_helper_build_intro_point(const ed25519_keypair_t *signing_kp, time_t now,
     smartlist_add(ip->link_specifiers, ls_ip);
   }
 
+  /* A usable intro point also needs a (non-zero) ntor onion key. */
+  {
+    curve25519_keypair_t onion_kp;
+    ret = curve25519_keypair_generate(&onion_kp, 0);
+    tt_int_op(ret, OP_EQ, 0);
+    memcpy(&ip->onion_key, &onion_kp.pubkey, sizeof(ip->onion_key));
+  }
+
   if (intro_auth_kp) {
     memcpy(&auth_kp, intro_auth_kp, sizeof(ed25519_keypair_t));
   } else {

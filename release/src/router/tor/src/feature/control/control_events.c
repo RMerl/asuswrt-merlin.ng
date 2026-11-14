@@ -834,7 +834,7 @@ control_event_stream_status(entry_connection_t *conn, stream_status_event_t tp,
     const char *reason_str = stream_end_reason_to_control_string(reason_code);
     char *r = NULL;
     if (!reason_str) {
-      tor_asprintf(&r, " UNKNOWN_%d", reason_code);
+      tor_asprintf(&r, "UNKNOWN_%d", reason_code);
       reason_str = r;
     }
     if (reason_code & END_STREAM_REASON_FLAG_REMOTE)

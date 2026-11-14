@@ -56,7 +56,7 @@ fuzz_main(const uint8_t *stdin_buf, size_t data_size)
   size_t c2_len = data_size - c1_len - SEPLEN;
   const char *c2 = (const char *)separator + SEPLEN;
 
-  char *c3 = consensus_diff_apply(c1, c1_len, c2, c2_len);
+  char *c3 = consensus_diff_apply(c1, c1_len, c2, c2_len, true);
 
   tor_free(c3);
 

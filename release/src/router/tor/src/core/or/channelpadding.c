@@ -280,13 +280,19 @@ channelpadding_update_padding_for_channel(channel_t *chan,
   chan->padding_enabled = (pad_vars->command == CHANNELPADDING_COMMAND_START);
 
   /* Min must not be lower than the current consensus parameter
-     nf_ito_low. */
+     nf_ito_low; also it must not be higher than what the consensus itself
+     could ask for. */
   chan->padding_timeout_low_ms = MAX(consensus_nf_ito_low,
                                      pad_vars->ito_low_ms);
+  chan->padding_timeout_low_ms = MIN(chan->padding_timeout_low_ms,
+                                     DFLT_NETFLOW_INACTIVE_KEEPALIVE_MAX);
 
-  /* Max must not be lower than ito_low_ms */
+  /* Max must not be lower than ito_low_ms, and must not be higher than
+   * what the consensus can ask for. */
   chan->padding_timeout_high_ms = MAX(chan->padding_timeout_low_ms,
                                       pad_vars->ito_high_ms);
+  chan->padding_timeout_high_ms = MIN(chan->padding_timeout_high_ms,
+                                      DFLT_NETFLOW_INACTIVE_KEEPALIVE_MAX);
 
   log_fn(LOG_INFO,LD_OR,
          "Negotiated padding=%d, lo=%d, hi=%d on %"PRIu64,

@@ -244,8 +244,12 @@ log_heartbeat(time_t now)
   if (public_server_mode(options)) {
     rep_hist_log_circuit_handshake_stats(now);
     rep_hist_log_link_protocol_counts();
-    dos_log_heartbeat();
     channelpadding_log_heartbeat();
+  }
+
+  /* Bridges also enforce BEGIN_DIR defenses. */
+  if (server_mode(options)) {
+    dos_log_heartbeat();
   }
 
   circuit_log_ancient_one_hop_circuits(1800);

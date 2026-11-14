@@ -522,6 +522,7 @@ test_descriptor_fetch(void *arg)
   ENTRY_TO_EDGE_CONN(ec)->hs_ident = hs_ident_edge_conn_new(&service_pk);
   tt_assert(ENTRY_TO_EDGE_CONN(ec)->hs_ident);
   TO_CONN(ENTRY_TO_EDGE_CONN(ec))->state = AP_CONN_STATE_RENDDESC_WAIT;
+  ENTRY_TO_CONN(ec)->conn_array_index = smartlist_len(get_connection_array());
   smartlist_add(get_connection_array(), &ec->edge_.base_);
 
   /* 1. FetchHidServDescriptors is false so we shouldn't be able to fetch. */
@@ -558,9 +559,11 @@ test_descriptor_fetch(void *arg)
     dir_conn->hs_ident = tor_malloc_zero(sizeof(hs_ident_dir_conn_t));
     TO_CONN(dir_conn)->purpose = DIR_PURPOSE_FETCH_HSDESC;
     ed25519_pubkey_copy(&dir_conn->hs_ident->identity_pk, &service_pk);
+    TO_CONN(dir_conn)->conn_array_index =
+      smartlist_len(get_connection_array());
     smartlist_add(get_connection_array(), TO_CONN(dir_conn));
     ret = hs_client_refetch_hsdesc(&service_pk);
-    smartlist_remove(get_connection_array(), TO_CONN(dir_conn));
+    connection_remove(TO_CONN(dir_conn));
     connection_free_minimal(TO_CONN(dir_conn));
     tt_int_op(ret, OP_EQ, HS_CLIENT_FETCH_PENDING);
   }
@@ -580,6 +583,8 @@ test_descriptor_fetch(void *arg)
   tt_int_op(ec->edge_.end_reason, OP_EQ, END_STREAM_REASON_RESOLVEFAILED);
 
  done:
+  if (ec && ENTRY_TO_CONN(ec)->conn_array_index >= 0)
+    connection_remove(ENTRY_TO_CONN(ec));
   connection_free_minimal(ENTRY_TO_CONN(ec));
   UNMOCK(networkstatus_get_reasonably_live_consensus);
   UNMOCK(router_have_minimum_dir_info);
@@ -751,6 +756,8 @@ helper_build_socks_connection(const ed25519_public_key_t *service_pk,
   entry_connection_t *socks = entry_connection_new(CONN_TYPE_AP, AF_INET);
   ENTRY_TO_EDGE_CONN(socks)->hs_ident = hs_ident_edge_conn_new(service_pk);
   TO_CONN(ENTRY_TO_EDGE_CONN(socks))->state = conn_state;
+  ENTRY_TO_CONN(socks)->conn_array_index =
+    smartlist_len(get_connection_array());
   smartlist_add(get_connection_array(), &socks->edge_.base_);
   return socks;
 }
@@ -847,6 +854,10 @@ test_desc_has_arrived_cleanup(void *arg)
   retry_all_socks_conn_waiting_for_desc();
 
  done:
+  if (socks1 && ENTRY_TO_CONN(socks1)->conn_array_index >= 0)
+    connection_remove(ENTRY_TO_CONN(socks1));
+  if (socks2 && ENTRY_TO_CONN(socks2)->conn_array_index >= 0)
+    connection_remove(ENTRY_TO_CONN(socks2));
   connection_free_minimal(ENTRY_TO_CONN(socks1));
   connection_free_minimal(ENTRY_TO_CONN(socks2));
   hs_descriptor_free(desc);
@@ -1246,6 +1257,8 @@ test_socks_hs_errors(void *arg)
             SOCKS5_HS_BAD_CLIENT_AUTH);
 
  done:
+  if (socks_conn && ENTRY_TO_CONN(socks_conn)->conn_array_index >= 0)
+    connection_remove(ENTRY_TO_CONN(socks_conn));
   connection_free_minimal(ENTRY_TO_CONN(socks_conn));
   connection_free_minimal(TO_CONN(dir_conn));
   hs_descriptor_free(desc);

@@ -10,6 +10,7 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitmux_ewma.h"
+#include "core/or/extendinfo.h"
 #include "core/or/relay.h"
 #include "feature/hs/hs_circuitmap.h"
 #include "app/config/config.h"
@@ -615,6 +616,57 @@ test_clist_mark_for_close_pathbias_reentry(void *arg)
   tor_free(fake_chan);
 }
 
+static const char *
+fake_channel_describe_peer(const channel_t *chan)
+{
+  (void)chan;
+  return "fake channel";
+}
+
+/** Test that marking a CHAN_WAIT circuit for close takes it off the
+ *  pending-channel list right away, so that assert_circuit_ok() (run e.g.
+ *  from a padding timer or a second mark attempt) holds between
+ *  mark and free. */
+static void
+test_clist_mark_for_close_chan_wait(void *arg)
+{
+  or_circuit_t *orcirc = NULL;
+  circuit_t *circ = NULL;
+  channel_t *chan = new_fake_channel();
+  (void)arg;
+
+  chan->describe_peer = fake_channel_describe_peer;
+  memset(chan->identity_digest, 0xAB, DIGEST_LEN);
+
+  orcirc = or_circuit_new(0, NULL);
+  tt_assert(orcirc);
+  circ = TO_CIRCUIT(orcirc);
+  circ->purpose = CIRCUIT_PURPOSE_OR;
+  circ->n_hop = extend_info_new(NULL, chan->identity_digest, NULL, NULL,
+                                NULL, 0, NULL, false);
+  circuit_set_state(circ, CIRCUIT_STATE_CHAN_WAIT);
+
+  tt_int_op(circuit_count_pending_on_channel(chan), OP_EQ, 1);
+  assert_circuit_ok(circ);
+
+  circuit_mark_for_close(circ, END_CIRC_REASON_DESTROYED);
+  tt_assert(circ->marked_for_close);
+  tt_int_op(circ->state, OP_EQ, CIRCUIT_STATE_CHAN_WAIT);
+
+  /* The count filters out marked circuits, so assert_circuit_ok() is
+   * needed to verify that the circuit was actually removed from the list. */
+  tt_int_op(circuit_count_pending_on_channel(chan), OP_EQ, 0);
+  assert_circuit_ok(circ);
+
+  /* Freeing it via the normal path must still work. */
+  circuit_close_all_marked();
+  tt_int_op(circuit_count_pending_on_channel(chan), OP_EQ, 0);
+
+ done:
+  circuit_free_all();
+  tor_free(chan);
+}
+
 struct testcase_t circuitlist_tests[] = {
   { "maps", test_clist_maps, TT_FORK, NULL, NULL },
   { "rend_token_maps", test_rend_token_maps, TT_FORK, NULL, NULL },
@@ -623,5 +675,7 @@ struct testcase_t circuitlist_tests[] = {
     TT_FORK, NULL, NULL },
   { "mark_for_close_pathbias_reentry",
     test_clist_mark_for_close_pathbias_reentry, TT_FORK, NULL, NULL },
+  { "mark_for_close_chan_wait",
+    test_clist_mark_for_close_chan_wait, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };

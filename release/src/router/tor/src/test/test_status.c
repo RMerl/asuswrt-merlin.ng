@@ -366,6 +366,9 @@ test_status_hb_not_in_consensus(void *arg)
                  "[DoSConnectionEnabled disabled], "
                  "[DoSRefuseSingleHopClientRendezvous disabled], "
                  "[DoSStreamCreationEnabled disabled], "
+                 "[DoSBeginDirLimitEnabled disabled], "
+                 "[DoSBeginDirRateEnabled disabled], "
+                 "0 BEGIN_DIR HSDir requests rejected, "
                  "0 INTRODUCE2 rejected.\n");
   tt_int_op(mock_saved_log_n_entries(), OP_EQ, 6);
 
@@ -421,7 +424,8 @@ status_hb_not_in_consensus_server_mode(const or_options_t *options)
 {
   (void)options;
 
-  return 0;
+  /* A public relay is also in server mode. */
+  return 1;
 }
 
 /*
@@ -597,7 +601,8 @@ test_status_hb_calls_log_accounting(void *arg)
   expect_log_msg_containing("Heartbeat: Accounting enabled. Sent: 0 kB, "
                             "Received: 0 kB, Used: 0 kB / 0 kB, Rule: max. "
                             "The current accounting interval ends on ");
-  tt_int_op(mock_saved_log_n_entries(), OP_EQ, 2);
+  expect_log_msg_containing("Heartbeat: DoS mitigation since startup:");
+  tt_int_op(mock_saved_log_n_entries(), OP_EQ, 3);
 
   done:
     teardown_capture_of_logs();

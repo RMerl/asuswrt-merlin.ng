@@ -155,6 +155,7 @@ test_oom_circbuf(void *arg)
   tt_int_op(cell_queues_check_size(), OP_EQ, 0); /* We are still not OOM */
   tt_int_op(cell_queues_get_total_allocation(), OP_EQ,
             packed_cell_mem_cost() * 255);
+  tt_assert(! mainloop_must_free_memory);
 
   now_ns += 10 * 1000000;
   monotime_coarse_set_mock_time_nsec(now_ns);
@@ -165,6 +166,9 @@ test_oom_circbuf(void *arg)
             packed_cell_mem_cost() * 257);
 
   tt_int_op(cell_queues_check_size(), OP_EQ, 1); /* We are now OOM */
+  tt_assert(mainloop_must_free_memory);
+  cell_queues_reclaim_memory();
+  tt_assert(! mainloop_must_free_memory);
 
   tt_assert(c1->marked_for_close);
   tt_assert(! c2->marked_for_close);
@@ -183,6 +187,7 @@ test_oom_circbuf(void *arg)
   monotime_coarse_set_mock_time_nsec(now_ns);
 
   tt_int_op(cell_queues_check_size(), OP_EQ, 1); /* We are now OOM */
+  cell_queues_reclaim_memory();
 
   tt_assert(c1->marked_for_close);
   tt_assert(! c2->marked_for_close);
@@ -316,6 +321,7 @@ test_oom_streambuf(void *arg)
   ts_is_approx(circuit_max_queued_item_age(c4, tvts), 1000);
 
   tt_int_op(cell_queues_check_size(), OP_EQ, 0);
+  tt_assert(! mainloop_must_free_memory);
 
   /* And run over the limit. */
   now_ns += 800*1000000;
@@ -327,6 +333,9 @@ test_oom_streambuf(void *arg)
   tt_int_op(buf_get_total_allocation(), OP_EQ, 4096*17*2);
 
   tt_int_op(cell_queues_check_size(), OP_EQ, 1); /* We are now OOM */
+  tt_assert(mainloop_must_free_memory);
+  cell_queues_reclaim_memory();
+  tt_assert(! mainloop_must_free_memory);
 
   /* C4 should have died. */
   tt_assert(! c1->marked_for_close);
@@ -359,4 +368,3 @@ struct testcase_t oom_tests[] = {
   { "streambuf", test_oom_streambuf, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };
-

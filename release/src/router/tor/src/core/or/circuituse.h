@@ -32,6 +32,10 @@ void reset_bandwidth_test(void);
 int circuit_enough_testing_circs(void);
 
 void circuit_has_opened(origin_circuit_t *circ);
+void circuit_reset_isolation(origin_circuit_t *circ);
+void circuit_sync_isolation(origin_circuit_t *circ);
+void circuit_copy_isolation(origin_circuit_t *dst,
+                           const origin_circuit_t *src);
 void circuit_try_attaching_streams(origin_circuit_t *circ);
 void circuit_build_failed(origin_circuit_t *circ);
 
@@ -52,9 +56,8 @@ void circuit_build_failed(origin_circuit_t *circ);
 /** Flag to set when a circuit needs the exit to support conflux. */
 #define CIRCLAUNCH_NEED_CONFLUX     (1<<6)
 
-origin_circuit_t *circuit_launch_by_extend_info(uint8_t purpose,
-                                                extend_info_t *info,
-                                                int flags);
+MOCK_DECL(origin_circuit_t *, circuit_launch_by_extend_info,
+          (uint8_t purpose, extend_info_t *info, int flags));
 origin_circuit_t *circuit_launch(uint8_t purpose, int flags);
 void circuit_reset_failure_count(int timeout);
 int connection_ap_handshake_attach_chosen_circuit(entry_connection_t *conn,
@@ -89,6 +92,8 @@ void circuit_read_valid_data(origin_circuit_t *circ, uint16_t relay_body_len);
 #ifdef TOR_UNIT_TESTS
 /* Used only by circuituse.c and test_circuituse.c */
 
+STATIC int count_pending_general_client_circuits(void);
+
 STATIC int circuit_is_available_for_use(const circuit_t *circ);
 
 STATIC int needs_exit_circuits(time_t now,
@@ -105,6 +110,8 @@ STATIC int needs_hs_client_circuits(time_t now,
 
 STATIC int needs_circuits_for_build(int num);
 
+STATIC int circuit_get_open_circ_or_launch(entry_connection_t *conn,
+    uint8_t desired_circuit_purpose, origin_circuit_t **circp);
 STATIC origin_circuit_t *circuit_get_best(const entry_connection_t *conn,
                                           int must_be_open,
                                           uint8_t purpose,

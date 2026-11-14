@@ -184,9 +184,6 @@ static int connection_finished_flushing(connection_t *conn);
 static int connection_flushed_some(connection_t *conn);
 static int connection_finished_connecting(connection_t *conn);
 static int connection_reached_eof(connection_t *conn);
-static int connection_buf_read_from_socket(connection_t *conn,
-                                           ssize_t *max_to_read,
-                                           int *socket_error);
 static void client_check_address_changed(tor_socket_t sock);
 static void set_constrained_socket_buffers(tor_socket_t sock, int size);
 
@@ -734,6 +731,8 @@ connection_init(time_t now, connection_t *conn, int type, int socket_family)
 
   conn->s = TOR_INVALID_SOCKET; /* give it a default of 'not used' */
   conn->conn_array_index = -1; /* also default to 'not used' */
+  conn->closeable_list_index = -1;
+  conn->active_linked_list_index = -1;
   conn->global_identifier = n_connections_allocated++;
 
   conn->type = type;
@@ -971,6 +970,17 @@ connection_free_,(connection_t *conn))
     return;
   tor_assert(!connection_is_on_closeable_list(conn));
   tor_assert(!connection_in_array(conn));
+  if (BUG(conn->active_linked_list_index != -1 || conn->active_on_link)) {
+    /* Do not leave a pointer to freed memory in the active linked list. */
+    connection_stop_reading_from_linked_conn(conn);
+  }
+  /* Direct free can bypass normal closure. This releases the channel's guard
+   * attribution handle before cleanup callbacks can report another error.
+   * Destruction itself is not evidence of establishment failure; any eligible
+   * failure must already have been reported before reaching this cleanup. */
+  if (conn->type == CONN_TYPE_OR && TO_OR_CONN(conn)->chan)
+    channel_note_establishment_cancelled(
+                              TLS_CHAN_TO_BASE(TO_OR_CONN(conn)->chan));
   if (conn->linked_conn) {
     conn->linked_conn->linked_conn = NULL;
     if (! conn->linked_conn->marked_for_close &&
@@ -1056,6 +1066,12 @@ connection_close_immediate(connection_t *conn)
     tor_fragile_assert();
     return;
   }
+  /* Socket disposal ends the attempt and clears attribution before later
+   * EOF/error handling. Callers reporting a failure must do so before closing
+   * the socket. */
+  if (conn->type == CONN_TYPE_OR && TO_OR_CONN(conn)->chan)
+    channel_note_establishment_cancelled(
+                              TLS_CHAN_TO_BASE(TO_OR_CONN(conn)->chan));
   if (connection_get_outbuf_len(conn)) {
     log_info(LD_NET,"fd %d, type %s, state %s, %"TOR_PRIuSZ" bytes on outbuf.",
              (int)conn->s, conn_type_to_string(conn->type),
@@ -1136,6 +1152,15 @@ connection_mark_for_close_internal_, (connection_t *conn,
     tor_fragile_assert();
     return;
   }
+
+  /* Both normal and error closes reach this shared marking function. Error
+   * callers must report eligible establishment failure first, consuming the
+   * handle. This discards any remaining attribution permission before
+   * bookkeeping can invoke callbacks; it cannot undo an already-reported
+   * failure. */
+  if (conn->type == CONN_TYPE_OR && TO_OR_CONN(conn)->chan)
+    channel_note_establishment_cancelled(
+                              TLS_CHAN_TO_BASE(TO_OR_CONN(conn)->chan));
 
   if (conn->type == CONN_TYPE_OR) {
     /*
@@ -2277,11 +2302,14 @@ connection_connect_sockaddr,(connection_t *conn,
   if (options->ConstrainedSockets)
     set_constrained_socket_buffers(s, (int)options->ConstrainedSockSize);
 
-  if (connect(s, sa, sa_len) < 0) {
+  const tor_socket_t connect_result = tor_connect_socket(s, sa, sa_len);
+  if (!SOCKET_OK(connect_result)) {
     int e = tor_socket_errno(s);
     if (!ERRNO_IS_CONN_EINPROGRESS(e)) {
       /* yuck. kill it. */
       *socket_error = e;
+      if (conn->type == CONN_TYPE_OR)
+        connection_or_note_establishment_failure(TO_OR_CONN(conn));
       log_info(LD_NET,
                "connect() to socket failed: %s",
                tor_socket_strerror(e));
@@ -4121,7 +4149,7 @@ connection_handle_read(connection_t *conn)
  *
  * Return -1 if we want to break conn, else return 0.
  */
-static int
+STATIC int
 connection_buf_read_from_socket(connection_t *conn, ssize_t *max_to_read,
                        int *socket_error)
 {
@@ -4584,8 +4612,13 @@ connection_handle_write_impl(connection_t *conn, int force)
         TO_ENTRY_CONN(conn)->socks_request->has_finished = 1;
       }
 
+      /* The OR error is reported before immediate close cancels
+       * attribution. */
+      if (conn->type == CONN_TYPE_OR)
+        connection_or_close_for_error(TO_OR_CONN(conn), 0);
       connection_close_immediate(conn); /* Don't flush; connection is dead. */
-      connection_mark_for_close(conn);
+      if (conn->type != CONN_TYPE_OR)
+        connection_mark_for_close(conn);
       return -1;
     }
     update_send_buffer_size(conn->s);
@@ -4729,6 +4762,15 @@ connection_write_to_buf_failed(connection_t *conn)
     log_warn(LD_NET,
              "write_to_buf failed on an orconn; notifying of error "
              "(fd %d)", (int)(conn->s));
+    /* Attribution exception: Tor cannot queue its own output. This is a
+     * local queue-limit/invariant failure, not a failed establishment result.
+     * Like OOS eviction, it is a distinct disposal decision with a single
+     * cancellation site; opaque TLS/protocol errors are deliberately not
+     * given per-cause exceptions. Cancellation here prevents the shared error
+     * close from blaming the guard. */
+    assert_connection_ok(conn, 0);
+    if (orconn->chan)
+      channel_note_establishment_cancelled(TLS_CHAN_TO_BASE(orconn->chan));
     connection_or_close_for_error(orconn, 0);
   } else {
     log_warn(LD_NET,
@@ -5497,6 +5539,15 @@ kill_conn_list_for_oos, (smartlist_t *conns))
   SMARTLIST_FOREACH_BEGIN(conns, connection_t *, c) {
     /* Make sure the channel layer gets told about orconns */
     if (c->type == CONN_TYPE_OR) {
+      /* Attribution exception: socket pressure elsewhere can make Tor evict
+       * a healthy opening connection. OOS and output-queue disposal have
+       * explicit local decision points. Cancellation here exempts OOS eviction
+       * without an error-code taxonomy for TLS, proxy, or protocol
+       * failures. */
+      assert_connection_ok(c, 0);
+      if (TO_OR_CONN(c)->chan)
+        channel_note_establishment_cancelled(
+                                TLS_CHAN_TO_BASE(TO_OR_CONN(c)->chan));
       connection_or_close_for_error(TO_OR_CONN(c), 1);
     } else {
       connection_mark_for_close(c);

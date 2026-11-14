@@ -1720,6 +1720,13 @@ evdns_callback(int result, char type, int count, int ttl, void *addresses,
       log_debug(LD_EXIT, "eventdns said that %s resolves to %s",
                 safe_str(escaped_address),
                 escaped_safe_str(hostname));
+      if (! name_is_valid_for_dns(hostname)) {
+        log_fn(LOG_PROTOCOL_WARN, LD_EXIT,
+               "Received an invalid name %s in a PTR record. Ignoring.",
+               escaped_safe_str(hostname));
+        hostname = NULL;
+        result = DNS_ERR_NOTEXIST;
+      }
       tor_free(escaped_address);
     } else if (count) {
       log_info(LD_EXIT, "eventdns returned only unrecognized answer types "
@@ -1827,6 +1834,13 @@ launch_resolve,(cached_resolve_t *resolve))
     if (configure_nameservers(1) < 0) {
       return -1;
     }
+  }
+
+  if (! name_is_valid_for_dns(resolve->address)) {
+    log_fn(LOG_PROTOCOL_WARN, LD_EXIT,
+           "Rejecting DNS %s address as invalid for DNS.",
+           escaped_safe_str(resolve->address));
+    return -1;
   }
 
   r = tor_addr_parse_PTR_name(

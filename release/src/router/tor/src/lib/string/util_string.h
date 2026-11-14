@@ -42,6 +42,9 @@ int strcmpend(const char *s1, const char *s2);
 int strcasecmpend(const char *s1, const char *s2);
 int fast_memcmpstart(const void *mem, size_t memlen, const char *prefix);
 
+#define fast_memeqstart(mem, memlen, prefix) \
+  (0 == fast_memcmpstart((mem), (memlen), (prefix)))
+
 void tor_strstrip(char *s, const char *strip);
 
 const char *eat_whitespace(const char *s);

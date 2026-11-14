@@ -59,7 +59,7 @@ fuzz_main(const uint8_t *stdin_buf, size_t data_size)
   char *c3 = consensus_diff_generate(c1, c1_len, c2, c2_len);
 
   if (c3) {
-    char *c4 = consensus_diff_apply(c1, c1_len, c3, strlen(c3));
+    char *c4 = consensus_diff_apply(c1, c1_len, c3, strlen(c3), false);
     tor_assert(c4);
     int equal = (c2_len == strlen(c4)) && fast_memeq(c2, c4, c2_len);
     if (! equal) {

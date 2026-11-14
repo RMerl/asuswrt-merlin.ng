@@ -111,6 +111,8 @@ void tor_addr_make_null(tor_addr_t *a, sa_family_t family);
   tor_addr_port_make_null(&(ap)->addr, (ap)->port, family)
 char *tor_sockaddr_to_str(const struct sockaddr *sa);
 
+bool name_is_valid_for_dns(const char *name);
+
 /** Return an in6_addr* equivalent to <b>a</b>, or NULL if <b>a</b> is not
  * an IPv6 address. */
 static inline const struct in6_addr *
@@ -407,6 +409,7 @@ MOCK_DECL(struct smartlist_t *,get_interface_addresses_raw,(int severity,
 MOCK_DECL(int,get_interface_address6_via_udp_socket_hack,(int severity,
                                                           sa_family_t family,
                                                           tor_addr_t *addr));
+STATIC ssize_t valid_dns_name_encoded_len(const char *name);
 
 #ifdef HAVE_IFADDRS_TO_SMARTLIST
 STATIC struct smartlist_t *ifaddrs_to_smartlist(const struct ifaddrs *ifa,

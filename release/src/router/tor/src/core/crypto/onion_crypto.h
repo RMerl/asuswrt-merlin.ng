@@ -30,6 +30,9 @@ void onion_handshake_state_release(onion_handshake_state_t *state);
  * Parameters negotiated as part of a circuit handshake.
  */
 typedef struct circuit_params_t {
+  /** True if we have requested congestion control.
+   */
+  bool cc_requested;
   /** Is true if congestion control is enabled in consensus or param,
    * as per congestion_control_enabled() result. */
   bool cc_enabled;

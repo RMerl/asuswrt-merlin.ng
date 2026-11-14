@@ -122,7 +122,7 @@ problem function-size /src/core/or/circuituse.c:circuit_is_acceptable() 128
 problem function-size /src/core/or/circuituse.c:circuit_expire_building() 389
 problem function-size /src/core/or/circuituse.c:circuit_log_ancient_one_hop_circuits() 126
 problem function-size /src/core/or/circuituse.c:circuit_build_failed() 149
-problem function-size /src/core/or/circuituse.c:circuit_launch_by_extend_info() 108
+problem function-size /src/core/or/circuituse.c:circuit_launch_by_extend_info_with_guard() 108
 problem function-size /src/core/or/circuituse.c:circuit_get_open_circ_or_launch() 351
 problem function-size /src/core/or/circuituse.c:connection_ap_handshake_attach_circuit() 244
 problem dependency-violation /src/core/or/circuituse.c 24

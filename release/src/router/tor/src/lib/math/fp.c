@@ -141,3 +141,23 @@ ENABLE_GCC_WARNING("-Wdouble-promotion")
 ENABLE_GCC_WARNING("-Wfloat-conversion")
 #endif
 }
+
+/* isfinite() wrapper for tor */
+int
+tor_isfinite(double x)
+{
+  /* Same as above, work around the "double promotion" warnings */
+#ifdef PROBLEMATIC_FLOAT_CONVERSION_WARNING
+DISABLE_GCC_WARNING("-Wfloat-conversion")
+#endif
+#ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
+DISABLE_GCC_WARNING("-Wdouble-promotion")
+#endif
+  return isfinite(x);
+#ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
+ENABLE_GCC_WARNING("-Wdouble-promotion")
+#endif
+#ifdef PROBLEMATIC_FLOAT_CONVERSION_WARNING
+ENABLE_GCC_WARNING("-Wfloat-conversion")
+#endif
+}

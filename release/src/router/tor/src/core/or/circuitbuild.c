@@ -87,6 +87,8 @@
 #include "trunnel/congestion_control.h"
 #include "trunnel/subproto_request.h"
 
+static int circuit_handle_first_hop_with_guard(origin_circuit_t *circ,
+                                  const circuit_guard_state_t *guard_state);
 static int circuit_send_first_onion_skin(origin_circuit_t *circ);
 static int circuit_build_no_more_hops(origin_circuit_t *circ);
 static int circuit_send_intermediate_onion_skin(origin_circuit_t *circ,
@@ -102,7 +104,9 @@ static const node_t *choose_good_middle_server(const origin_circuit_t *,
  * callbacks.
  */
 MOCK_IMPL(channel_t *,
-channel_connect_for_circuit,(const extend_info_t *ei))
+channel_connect_for_circuit,(const extend_info_t *ei,
+                            const struct circuit_guard_state_t *guard_state,
+                            bool for_origin_circ))
 {
   channel_t *chan;
 
@@ -112,7 +116,8 @@ channel_connect_for_circuit,(const extend_info_t *ei))
   const char *id_digest = ei->identity_digest;
   const ed25519_public_key_t *ed_id = &ei->ed_identity;
 
-  chan = channel_connect(&orport->addr, orport->port, id_digest, ed_id);
+  chan = channel_connect(&orport->addr, orport->port, id_digest, ed_id,
+                         guard_state, for_origin_circ);
   if (chan) command_setup_channel(chan);
 
   return chan;
@@ -478,6 +483,14 @@ origin_circuit_init(uint8_t purpose, int flags)
 origin_circuit_t *
 circuit_establish_circuit(uint8_t purpose, extend_info_t *exit_ei, int flags)
 {
+  return circuit_establish_circuit_with_guard(purpose, exit_ei, flags, NULL);
+}
+
+origin_circuit_t *
+circuit_establish_circuit_with_guard(uint8_t purpose, extend_info_t *exit_ei,
+                                   int flags,
+                                   const circuit_guard_state_t *guard_state)
+{
   origin_circuit_t *circ;
   int err_reason = 0;
 
@@ -491,7 +504,8 @@ circuit_establish_circuit(uint8_t purpose, extend_info_t *exit_ei, int flags)
 
   circuit_event_status(circ, CIRC_EVENT_LAUNCHED, 0);
 
-  if ((err_reason = circuit_handle_first_hop(circ)) < 0) {
+  err_reason = circuit_handle_first_hop_with_guard(circ, guard_state);
+  if (err_reason < 0) {
     circuit_mark_for_close(TO_CIRCUIT(circ), -err_reason);
     return NULL;
   }
@@ -582,6 +596,13 @@ circuit_chan_publish(const origin_circuit_t *circ, const channel_t *chan)
 int
 circuit_handle_first_hop(origin_circuit_t *circ)
 {
+  return circuit_handle_first_hop_with_guard(circ, NULL);
+}
+
+static int
+circuit_handle_first_hop_with_guard(origin_circuit_t *circ,
+                                  const circuit_guard_state_t *guard_state)
+{
   crypt_path_t *firsthop;
   channel_t *n_chan;
   int err_reason = 0;
@@ -629,9 +650,13 @@ circuit_handle_first_hop(origin_circuit_t *circ)
     circ->base_.n_hop = extend_info_dup(firsthop->extend_info);
 
     if (should_launch) {
-      n_chan = channel_connect_for_circuit(firsthop->extend_info);
+      n_chan = channel_connect_for_circuit(firsthop->extend_info,
+                              guard_state ? guard_state : circ->guard_state,
+                              true);
       if (!n_chan) { /* connect failed, forget the whole thing */
         log_info(LD_CIRC,"connect to firsthop failed. Closing.");
+        connection_ap_fail_onehop(firsthop->extend_info->identity_digest,
+                                  circ->build_state);
         return -END_CIRC_REASON_CONNECTFAILED;
       }
       /* We didn't find a channel, but we're launching one for an origin
@@ -670,8 +695,8 @@ circuit_handle_first_hop(origin_circuit_t *circ)
  *
  * Status is 1 if connect succeeded, or 0 if connect failed.
  */
-void
-circuit_n_chan_done(channel_t *chan, int status)
+MOCK_IMPL(void,
+circuit_n_chan_done,(channel_t *chan, int status))
 {
   smartlist_t *pending_circs;
   int err_reason = 0;
@@ -720,6 +745,16 @@ circuit_n_chan_done(channel_t *chan, int status)
       }
       if (!status) { /* chan failed; close circ */
         log_info(LD_CIRC,"Channel failed; closing circ.");
+        /* Pending directory requests can retry now that their first-hop
+         * connection is gone. Circuit cancellation alone must not do this. */
+        if (CIRCUIT_IS_ORIGIN(circ)) {
+          origin_circuit_t *ocirc = TO_ORIGIN_CIRCUIT(circ);
+          if (ocirc->cpath && ocirc->cpath->state == CPATH_STATE_CLOSED) {
+            connection_ap_fail_onehop(
+                ocirc->cpath->extend_info->identity_digest,
+                ocirc->build_state);
+          }
+        }
         circuit_mark_for_close(circ, END_CIRC_REASON_CHANNEL_CLOSED);
         continue;
       }
@@ -879,8 +914,7 @@ circuit_pick_create_handshake(uint8_t *cell_type_out,
   *cell_type_out = CELL_CREATE2;
   /* Only use ntor v3 with exits that support congestion control,
    * and only when it is enabled. */
-  if (ei->exit_supports_congestion_control &&
-      congestion_control_enabled())
+  if (ei->use_congestion_control)
     *handshake_type_out = ONION_HANDSHAKE_TYPE_NTOR_V3;
   else if (ei->enable_cgo)
     *handshake_type_out = ONION_HANDSHAKE_TYPE_NTOR_V3;
@@ -1034,8 +1068,16 @@ circuit_send_first_onion_skin(origin_circuit_t *circ)
   }
   cc.handshake_len = len;
 
-  if (circuit_deliver_create_cell(TO_CIRCUIT(circ), &cc, 0) < 0)
+  if (circuit_deliver_create_cell(TO_CIRCUIT(circ), &cc, 0) < 0) {
+    /* No CREATE is outstanding, so neither a reply nor first-hop expiry
+     * will release pending directory requests. Fail them at the actual
+     * send failure without treating circuit cleanup as channel failure. */
+    connection_ap_fail_onehop(circ->cpath->extend_info->identity_digest,
+                              circ->build_state);
     return - END_CIRC_REASON_RESOURCELIMIT;
+  }
+  circ->first_hop_success_count_at_create =
+    circ->base_.n_chan->first_hop_success_count;
   tor_trace(TR_SUBSYS(circuit), TR_EV(first_onion_skin), circ, circ->cpath);
 
   circ->cpath->state = CPATH_STATE_AWAITING_KEYS;
@@ -1207,6 +1249,30 @@ circuit_send_intermediate_onion_skin(origin_circuit_t *circ,
       return 0; /* circuit is closed */
   }
   hop->state = CPATH_STATE_AWAITING_KEYS;
+  if (!circ->has_opened &&
+      circ->base_.purpose == CIRCUIT_PURPOSE_S_CONNECT_REND &&
+      circuit_get_cpath_opened_len(circ) >= DEFAULT_ROUTE_LEN) {
+    /* Give a fresh service rendezvous extension the same time origin as a
+     * cannibalized circuit. Under load, the service will actually be out
+     * of pre-build circuits to cannibalize, and so this case should have
+     * more timeout grace. We scope this to service rend circuits because this
+     * is the case observed in simulation as an excessive timeout source.
+     * Additionally, failing a rend circuit now retries the whole handshake,
+     * which is an expensive thing to do in this load condition.
+     *
+     * Reset for each extension beyond the measured prefix: with L3
+     * vanguards, both hop four and hop five get their own full usage budget.
+     * Each reset also moves the measurement/close and idle-age deadlines
+     * forward. CBT remains dynamic, and the separate rendezvous retry expiry
+     * is unchanged.
+     *
+     * circuit_send_next_onion_skin() has already handled three-hop CBT
+     * accounting (or its exclusions). Resetting this timestamp must happen
+     * AFTER that accounting, and must not revive a circuit made measurement-
+     * only by a slow prefix (excluded by the purpose check above).
+     */
+    tor_gettimeofday(&circ->base_.timestamp_began);
+  }
   tor_trace(TR_SUBSYS(circuit), TR_EV(intermediate_onion_skin), circ, hop);
   return 0;
 }
@@ -1338,6 +1404,10 @@ circuit_finish_handshake(origin_circuit_t *circ,
     }
   }
 
+  if (hop == circ->cpath && circ->base_.n_chan) {
+    ++circ->base_.n_chan->first_hop_success_count;
+  }
+
   hop->state = CPATH_STATE_OPEN;
   log_info(LD_CIRC,"Finished building circuit hop:");
   circuit_log_path(LOG_INFO,LD_CIRC,circ);
@@ -1387,6 +1457,10 @@ circuit_truncated(origin_circuit_t *circ, int reason)
 
     layer->next = victim->next;
     cpath_free(victim);
+    /* NOTE: If we were ever to reinstate this code, we should
+     * ensure that `victim` is not the sendme_digest_hop,
+     * or clear sendme_digest_hop if it is.
+     */
   }
 
   log_info(LD_CIRC, "finished");
@@ -2732,12 +2806,12 @@ client_circ_negotiation_message(const extend_info_t *ei,
 
   trn_extension_t *ext = trn_extension_new();
 
-  if (ei->exit_supports_congestion_control &&
-      congestion_control_enabled()) {
+  if (ei->use_congestion_control) {
     if (congestion_control_build_ext_request(ext) < 0) {
       goto err;
     }
     cc_enabled = true;
+    params_out->cc_requested = true;
   }
 
   if (cc_enabled && ei->enable_cgo) {

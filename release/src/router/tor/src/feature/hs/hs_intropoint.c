@@ -491,6 +491,14 @@ circuit_is_suitable_intro_point(const or_circuit_t *circ,
     return 0;
   }
 
+  /* A (pending) conflux leg must stay a plain OR circuit: changing its
+   * purpose is treated as a close of the leg by the conflux subsystem. */
+  if (circ->base_.conflux || circ->base_.conflux_pending_nonce) {
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Rejecting %s on conflux circuit.", log_cell_type_str);
+    return 0;
+  }
+
   /* Suitable. */
   return 1;
 }

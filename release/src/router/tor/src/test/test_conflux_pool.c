@@ -11,10 +11,14 @@
 
 #include "core/or/or.h"
 #include "test/test.h"
+#include "test/test_helpers.h"
 #include "test/log_test_helpers.h"
 #include "lib/testsupport/testsupport.h"
 #include "core/or/connection_or.h"
 #include "core/or/channel.h"
+#include "core/or/scheduler.h"
+#include "core/mainloop/mainloop.h"
+#include "core/or/extend_info_st.h"
 #include "core/or/channeltls.h"
 #include "core/or/crypt_path.h"
 #include <event.h>
@@ -57,6 +61,7 @@
 #include "core/or/conflux_params.h"
 #include "core/or/conflux.h"
 #include "core/or/conflux_st.h"
+#include "core/or/conflux_cell.h"
 #include "trunnel/conflux.h"
 #include "lib/crypt_ops/crypto_rand.h"
 
@@ -1746,8 +1751,247 @@ test_conflux_recovery_leg(void *arg)
   test_teardown();
 }
 
+static void
+mock_cross_cancel_assert_circuit_ok(const circuit_t *circ)
+{
+  (void)circ;
+}
+
+static int
+mock_cross_cancel_queued_writes(channel_t *chan)
+{
+  (void)chan;
+  return 1;
+}
+
+/* Conflux set teardown can cancel a leg still waiting for its first hop.
+ * Real close/free callbacks must preserve its channel and pending directory
+ * request. Only the transport and circuit construction are simulated. */
+static void
+test_conflux_cross_cancel_channel(void *arg)
+{
+  channel_t *chan = NULL;
+  entry_connection_t *request = NULL;
+  (void)arg;
+  test_setup();
+  tor_init_connection_lists();
+  scheduler_init();
+  UNMOCK(circuit_mark_for_close_);
+  UNMOCK(circuitmux_attach_circuit);
+  MOCK(assert_circuit_ok, mock_cross_cancel_assert_circuit_ok);
+  chan = new_fake_channel();
+  chan->has_queued_writes = mock_cross_cancel_queued_writes;
+  channel_register(chan);
+  request = entry_connection_new(CONN_TYPE_AP, AF_INET);
+  ENTRY_TO_CONN(request)->state = AP_CONN_STATE_CIRCUIT_WAIT;
+  request->want_onehop = 1;
+  request->chosen_exit_name = tor_strdup(
+      "$4242424242424242424242424242424242424242");
+  ENTRY_TO_CONN(request)->conn_array_index =
+    smartlist_len(get_connection_array());
+  smartlist_add(get_connection_array(), ENTRY_TO_CONN(request));
+
+  tt_assert(launch_new_set(2));
+  tt_int_op(smartlist_len(client_circs), OP_EQ, 2);
+  origin_circuit_t *trigger = smartlist_get(client_circs, 0);
+  origin_circuit_t *pending = smartlist_get(client_circs, 1);
+  pending->base_.state = CIRCUIT_STATE_BUILDING;
+  pending->cpath->state = CPATH_STATE_AWAITING_KEYS;
+  memset(pending->cpath->extend_info->identity_digest, 0x42, DIGEST_LEN);
+  circuit_set_n_circid_chan(TO_CIRCUIT(pending), 42, chan);
+  /* Suppress replacement launches during this forced teardown. */
+  conflux_notify_shutdown();
+  conflux_mark_all_for_close(trigger->base_.conflux_pending_nonce, true,
+                             END_CIRC_REASON_TORPROTOCOL);
+  tt_assert(trigger->base_.marked_for_close);
+  tt_assert(pending->base_.marked_for_close);
+  tt_int_op(digest256map_size(get_unlinked_pool(true)), OP_EQ, 0);
+  tt_int_op(chan->is_bad_for_new_circs, OP_EQ, 0);
+  tt_assert(!ENTRY_TO_CONN(request)->marked_for_close);
+  /* The real reaper owns these circuits now. */
+  smartlist_clear(client_circs);
+  circuit_close_all_marked();
+  tt_int_op(chan->is_bad_for_new_circs, OP_EQ, 0);
+  tt_assert(!ENTRY_TO_CONN(request)->marked_for_close);
+  tt_int_op(ENTRY_TO_CONN(request)->state, OP_EQ, AP_CONN_STATE_CIRCUIT_WAIT);
+ done:
+  test_clear_circs();
+  if (request) {
+    connection_remove(ENTRY_TO_CONN(request));
+    connection_free_(ENTRY_TO_CONN(request));
+  }
+  if (chan) {
+    channel_unregister(chan);
+    chan->state = CHANNEL_STATE_CLOSED;
+    channel_free(chan);
+  }
+  scheduler_free_all();
+  UNMOCK(assert_circuit_ok);
+  test_teardown();
+}
+
+/* CBT repurposing must detach an unlinked leg just like a close. */
+static void
+test_conflux_measurement_cleanup(void *arg)
+{
+  (void)arg;
+  test_setup();
+  launch_new_set(2);
+  tt_int_op(smartlist_len(client_circs), OP_EQ, 2);
+  origin_circuit_t *circ = smartlist_get(client_circs, 0);
+  tt_int_op(circ->base_.purpose, OP_EQ, CIRCUIT_PURPOSE_CONFLUX_UNLINKED);
+  tt_assert(circ->base_.conflux_pending_nonce);
+  /* Suppress replacement launches so the cleanup itself can be observed. */
+  conflux_notify_shutdown();
+  circ->cbt_observation_invalidated = 1;
+  circuit_build_times_mark_circ_as_measurement_only(circ);
+  tt_int_op(circ->base_.purpose, OP_EQ, CIRCUIT_PURPOSE_C_MEASURE_TIMEOUT);
+  tt_ptr_op(circ->base_.conflux_pending_nonce, OP_EQ, NULL);
+  tt_ptr_op(circ->base_.conflux, OP_EQ, NULL);
+  conflux_circuit_has_closed(TO_CIRCUIT(circ));
+ done:
+  test_clear_circs();
+  test_teardown();
+}
+
+/** Simple mark-for-close mock for relay-side only tests that have no paired
+ * client circuit: record the mark and let conflux know. */
+static void
+circuit_mark_for_close_relay_mock(circuit_t *circ, int reason, int line,
+                                  const char *file)
+{
+  if (circ->marked_for_close) {
+    return;
+  }
+  circ->marked_for_close = line;
+  circ->marked_for_close_file = file;
+  circ->marked_for_close_reason = reason;
+  if (CIRCUIT_IS_CONFLUX(circ)) {
+    conflux_circuit_has_closed(circ);
+  }
+}
+
+/** Helper: new relay-side circuit that terminates here with CC negotiated. */
+static or_circuit_t *
+new_relay_last_hop_circ(uint8_t purpose)
+{
+  or_circuit_t *orcirc = new_fake_orcirc(&dummy_channel, &dummy_channel);
+  TO_CIRCUIT(orcirc)->purpose = purpose;
+  TO_CIRCUIT(orcirc)->n_chan = NULL;
+  TO_CIRCUIT(orcirc)->ccontrol = tor_malloc_zero(sizeof(congestion_control_t));
+  TO_CIRCUIT(orcirc)->ccontrol->sendme_pending_timestamps = smartlist_new();
+  TO_CIRCUIT(orcirc)->ccontrol->sendme_inc = 31;
+  smartlist_add(exit_circs, orcirc);
+  return orcirc;
+}
+
+/* Regression test for fix-0815/G1-a: a relay must only accept CONFLUX_LINK on
+ * a plain OR circuit (not on a circuit that is already an intro point or a
+ * rendezvous point), and must not let the peer-supplied last_seqno_recv of a
+ * LINK exceed what was actually sent on the set. */
+static void
+test_conflux_link_relay_side_checks(void *arg)
+{
+  (void) arg;
+  uint8_t nonce[DIGEST256_LEN];
+  uint8_t payload[RELAY_PAYLOAD_SIZE_MAX];
+  conflux_cell_link_t *link = NULL;
+  relay_msg_t msg;
+  ssize_t len;
+  or_circuit_t *orcirc = NULL;
+  const uint8_t bad_purposes[] = {
+    CIRCUIT_PURPOSE_INTRO_POINT,
+    CIRCUIT_PURPOSE_REND_POINT_WAITING,
+    CIRCUIT_PURPOSE_REND_ESTABLISHED,
+  };
+
+  test_setup();
+  MOCK(circuit_mark_for_close_, circuit_mark_for_close_relay_mock);
+  MOCK(relay_send_command_from_edge_, mock_relay_send_command_from_edge);
+
+  crypto_rand((char *) nonce, sizeof(nonce));
+
+  /* 1) LINK on a non-OR purpose or_circuit is refused and circuit closed. */
+  link = conflux_cell_new_link(nonce, 0, 0, CONFLUX_UX_HIGH_THROUGHPUT);
+  len = build_link_cell(link, payload);
+  tt_int_op(len, OP_GT, 0);
+  make_test_relay_msg(&msg, RELAY_COMMAND_CONFLUX_LINK, payload, len, 0);
+
+  for (unsigned i = 0; i < ARRAY_LENGTH(bad_purposes); i++) {
+    orcirc = new_relay_last_hop_circ(bad_purposes[i]);
+    reset_begindir_end_capture();
+    conflux_process_link(TO_CIRCUIT(orcirc), &msg);
+    tt_int_op(TO_CIRCUIT(orcirc)->marked_for_close, OP_NE, 0);
+    tt_int_op(TO_CIRCUIT(orcirc)->marked_for_close_reason, OP_EQ,
+              END_CIRC_REASON_TORPROTOCOL);
+    tt_ptr_op(TO_CIRCUIT(orcirc)->conflux, OP_EQ, NULL);
+    tt_ptr_op(TO_CIRCUIT(orcirc)->conflux_pending_nonce, OP_EQ, NULL);
+    tt_int_op(TO_CIRCUIT(orcirc)->purpose, OP_EQ, bad_purposes[i]);
+    /* No LINKED went out. */
+    tt_int_op(begindir_end_capture.called, OP_EQ, 0);
+    tt_int_op(digest256map_size(get_linked_pool(false)), OP_EQ, 0);
+    tt_int_op(digest256map_size(get_unlinked_pool(false)), OP_EQ, 0);
+  }
+
+  /* 2) Same LINK on a plain OR circuit links and a LINKED is sent back. */
+  orcirc = new_relay_last_hop_circ(CIRCUIT_PURPOSE_OR);
+  reset_begindir_end_capture();
+  conflux_process_link(TO_CIRCUIT(orcirc), &msg);
+  tt_int_op(TO_CIRCUIT(orcirc)->marked_for_close, OP_EQ, 0);
+  tt_ptr_op(TO_CIRCUIT(orcirc)->conflux, OP_NE, NULL);
+  tt_int_op(begindir_end_capture.called, OP_EQ, 1);
+  tt_int_op(begindir_end_capture.relay_command, OP_EQ,
+            RELAY_COMMAND_CONFLUX_LINKED);
+  tt_int_op(digest256map_size(get_linked_pool(false)), OP_EQ, 1);
+  {
+    conflux_leg_t *cleg = conflux_get_leg(TO_CIRCUIT(orcirc)->conflux,
+                                          TO_CIRCUIT(orcirc));
+    tt_assert(cleg);
+    tt_u64_op(cleg->last_seq_sent, OP_EQ, 0);
+    tt_u64_op(cleg->last_seq_recv, OP_EQ, 0);
+  }
+  tor_free(link);
+
+  /* 3) A second leg for the same set that claims to have received more than
+   * we ever sent (last_seqno_recv forged) must not be linked. */
+  link = conflux_cell_new_link(nonce, 0, 5, CONFLUX_UX_HIGH_THROUGHPUT);
+  len = build_link_cell(link, payload);
+  tt_int_op(len, OP_GT, 0);
+  make_test_relay_msg(&msg, RELAY_COMMAND_CONFLUX_LINK, payload, len, 0);
+
+  or_circuit_t *orcirc2 = new_relay_last_hop_circ(CIRCUIT_PURPOSE_OR);
+  reset_begindir_end_capture();
+  setup_full_capture_of_logs(LOG_INFO);
+  conflux_process_link(TO_CIRCUIT(orcirc2), &msg);
+  expect_log_msg_containing("claims to have received more than we sent");
+  tt_int_op(TO_CIRCUIT(orcirc2)->marked_for_close, OP_NE, 0);
+  tt_ptr_op(TO_CIRCUIT(orcirc2)->conflux, OP_EQ, NULL);
+  /* No LINKED for the forged leg. */
+  tt_int_op(begindir_end_capture.called, OP_EQ, 0);
+  /* And the forged value never made it into any leg of the set. */
+  if (TO_CIRCUIT(orcirc)->conflux) {
+    CONFLUX_FOR_EACH_LEG_BEGIN(TO_CIRCUIT(orcirc)->conflux, cleg) {
+      tt_u64_op(cleg->last_seq_sent, OP_EQ, 0);
+    } CONFLUX_FOR_EACH_LEG_END(cleg);
+  }
+
+ done:
+  teardown_capture_of_logs();
+  tor_free(link);
+  UNMOCK(relay_send_command_from_edge_);
+  test_clear_circs();
+  test_teardown();
+  UNMOCK(circuit_mark_for_close_);
+}
+
 struct testcase_t conflux_pool_tests[] = {
+  { "cross_cancel_channel", test_conflux_cross_cancel_channel,
+    TT_FORK, &helper_pubsub_setup, NULL },
+  { "measurement_cleanup", test_conflux_measurement_cleanup,
+    TT_FORK, &helper_pubsub_setup, NULL },
   { "link", test_conflux_link, TT_FORK, NULL, NULL },
+  { "link_relay_side_checks", test_conflux_link_relay_side_checks,
+    TT_FORK, NULL, NULL },
   { "link_retry", test_conflux_link_retry, TT_FORK, NULL, NULL },
   { "link_relink", test_conflux_link_relink, TT_FORK, NULL, NULL },
   { "link_streams", test_conflux_link_streams, TT_FORK, NULL, NULL },

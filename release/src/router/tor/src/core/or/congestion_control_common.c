@@ -206,7 +206,7 @@ congestion_control_new_consensus_params(const networkstatus_t *ns)
         SENDME_INC_MIN,
         SENDME_INC_MAX);
 
-#define CC_ALG_MIN 0
+#define CC_ALG_MIN 2
 #define CC_ALG_MAX (NUM_CC_ALGS-1)
   cc_alg =
     networkstatus_get_param(NULL, "cc_alg",
@@ -454,11 +454,20 @@ enqueue_timestamp(smartlist_t *timestamps_u64, uint64_t timestamp_usec)
 static inline uint64_t
 dequeue_timestamp(smartlist_t *timestamps_u64_usecs)
 {
-  uint64_t *timestamp_ptr = smartlist_get(timestamps_u64_usecs, 0);
+  uint64_t *timestamp_ptr;
   uint64_t timestamp_u64;
 
-  if (BUG(!timestamp_ptr)) {
+  if (BUG(!timestamps_u64_usecs)) {
+    return 0;
+  }
+
+  if (BUG(0 == smartlist_len(timestamps_u64_usecs))) {
     log_err(LD_CIRC, "Congestion control timestamp list became empty!");
+    return 0;
+  }
+
+  timestamp_ptr = smartlist_get(timestamps_u64_usecs, 0);
+  if (BUG(timestamp_ptr == NULL)) {
     return 0;
   }
 
@@ -1190,8 +1199,22 @@ congestion_control_parse_ext_response(const trn_extension_t *ext,
 
   field = trn_extension_find(ext, TRUNNEL_EXT_TYPE_CC_FIELD_RESPONSE);
 
-  if (field == 0) {
-    ret = 0;
+  if (field == NULL) {
+    if (params_out->cc_requested) {
+      log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+             "Sent CC_REQUEST but received no CC_RESPONSE. "
+             "Rejecting.");
+      ret = -1;
+      goto end;
+    } else {
+      ret = 0;
+    }
+  } else if (! params_out->cc_requested) {
+    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+           "Received CC_RESPONSE without having sent CC_REQUEST. "
+           "Rejecting.");
+    ret = -1;
+    goto end;
   } else {
       /* Parse the field into the congestion control field. */
       ret = trn_extension_field_cc_parse(&cc_field,

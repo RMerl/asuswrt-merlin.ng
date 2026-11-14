@@ -57,12 +57,15 @@ test_process_descs_versions(void *arg)
     { "Tor 0.4.7.0-alpha-dev", true },
     { "Tor 0.4.7.3-alpha", true },
     { "Tor 0.4.7.12", true },
+    { "Tor 0.4.8.0-alpha-dev", true },
+    { "Tor 0.4.8.2-alpha", true},
+    { "Tor 0.4.8.3-rc", true},
+    { "Tor 0.4.8.12", true},
 
-    /* The 0.4.8.x series is supported. */
-    { "Tor 0.4.8.0-alpha-dev", false },
-    { "Tor 0.4.8.2-alpha", false },
-    { "Tor 0.4.8.3-rc", false },
-    { "Tor 0.4.8.12", false },
+    /* The 0.4.9.x series is supported. */
+    { "Tor 0.4.9.1-alpha", false },
+    { "Tor 0.4.9.3-rc", false },
+    { "Tor 0.4.9.12", false },
 
     // Very far in the future
     { "Tor 100.100.1.5", false },

@@ -2101,6 +2101,18 @@ test_policies_fascist_firewall_allows_address(void *arg)
     teardown_capture_of_logs(); \
   STMT_END
 
+#define CHECK_HS_EXTEND_INFO_ADDR_LS_ZERO_KEY(fake_ls) \
+  STMT_BEGIN \
+    curve25519_public_key_t zero_pubkey; \
+    memset(&zero_pubkey, 0, sizeof(zero_pubkey)); \
+    setup_full_capture_of_logs(LOG_DEBUG); \
+    extend_info_t *ei = hs_get_extend_info_from_lspecs(fake_ls, \
+                                                       &zero_pubkey, 0); \
+    tt_ptr_op(ei, OP_EQ, NULL); \
+    expect_log_msg_containing("Invalid ntor onion key"); \
+    teardown_capture_of_logs(); \
+  STMT_END
+
 #define CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(fake_ls, direct_conn) \
   STMT_BEGIN \
     curve25519_secret_key_t seckey; \
@@ -2609,6 +2621,8 @@ test_policies_fascist_firewall_choose_address(void *arg)
 
   CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 1, ipv4_or_ap);
   CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 0, ipv4_or_ap);
+  /* Same, otherwise valid, link specifiers with an all-zero onion key. */
+  CHECK_HS_EXTEND_INFO_ADDR_LS_ZERO_KEY(lspecs);
 
   /* Prefer IPv6, enable both IPv4 and IPv6. */
   mock_options.ClientPreferIPv6ORPort = 1;

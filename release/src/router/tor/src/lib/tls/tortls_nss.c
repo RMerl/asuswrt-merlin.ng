@@ -574,8 +574,8 @@ tor_tls_write(tor_tls_t *tls, const char *cp, size_t n)
   }
 }
 
-int
-tor_tls_handshake(tor_tls_t *tls)
+MOCK_IMPL(int,
+tor_tls_handshake,(tor_tls_t *tls))
 {
   tor_assert(tls);
   tor_assert(tls->state == TOR_TLS_ST_HANDSHAKE);
@@ -592,8 +592,8 @@ tor_tls_handshake(tor_tls_t *tls)
   return TOR_TLS_ERROR_MISC; // XXXX
 }
 
-int
-tor_tls_get_pending_bytes(tor_tls_t *tls)
+MOCK_IMPL(int,
+tor_tls_get_pending_bytes,(tor_tls_t *tls))
 {
   tor_assert(tls);
   int n = SSL_DataPending(tls->ssl);

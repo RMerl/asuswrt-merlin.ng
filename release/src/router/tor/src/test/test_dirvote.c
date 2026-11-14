@@ -6,13 +6,17 @@
  * \brief Unit tests for dirvote related functions
  */
 #define DIRVOTE_PRIVATE
+#define DIRAUTH_SYS_PRIVATE
 
 #include "core/or/or.h"
+#include "feature/dirauth/dirauth_options_st.h"
+#include "feature/dirauth/dirauth_sys.h"
 #include "feature/dirauth/dirvote.h"
 #include "feature/nodelist/dirlist.h"
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerinfo_st.h"
+#include "feature/nodelist/routerstatus_st.h"
 #include "feature/nodelist/signed_descriptor_st.h"
 
 #include "test/test.h"
@@ -45,16 +49,29 @@ static node_t *non_running_node;
 /* Allocate memory to the global variables that represent a running
  * and non-running node
  */
-#define ALLOCATE_MOCK_NODES()                    \
-  running_node = tor_malloc(sizeof(node_t));     \
-  running_node->is_running = 1;                  \
-  non_running_node = tor_malloc(sizeof(node_t)); \
+#define ALLOCATE_MOCK_NODES()                         \
+  running_node = tor_malloc_zero(sizeof(node_t));     \
+  running_node->is_running = 1;                       \
+  running_node->reached_ipv4_orport = 1;              \
+  running_node->reached_ipv6_orport = 1;              \
+  non_running_node = tor_malloc_zero(sizeof(node_t)); \
   non_running_node->is_running = 0;
 
 /* Free the memory allocated to the mock nodes */
 #define FREE_MOCK_NODES() \
   tor_free(running_node); \
   tor_free(non_running_node);
+
+/** Install and return a modifiable copy of the dirauth options.
+ * Only for TT_FORK tests, since we never restore the originals. */
+static dirauth_options_t *
+get_test_dirauth_options(void)
+{
+  static dirauth_options_t options;
+  options = *dirauth_get_options();
+  dirauth_set_options(&options);
+  return &options;
+}
 
 static int
 mock_router_digest_is_trusted(const char *digest, dirinfo_type_t type)
@@ -431,6 +448,7 @@ test_dirvote_get_sybil_by_ip_version_ipv6(void *arg)
 
   // It is assumed that global_dirauth_options.AuthDirMaxServersPerAddr == 2
   (void)arg;
+  get_test_dirauth_options()->AuthDirHasIPv6Connectivity = 1;
   MOCK(router_digest_is_trusted_dir_type, mock_router_digest_is_trusted);
   MOCK(node_get_by_id, mock_node_get_by_id);
   MOCK(dirserv_get_bandwidth_for_router_kb, mock_dirserv_get_bw);
@@ -523,6 +541,7 @@ test_dirvote_get_all_possible_sybil(void *arg)
 
   // It is assumed that global_dirauth_options.AuthDirMaxServersPerAddr == 2
   (void)arg;
+  get_test_dirauth_options()->AuthDirHasIPv6Connectivity = 1;
   MOCK(router_digest_is_trusted_dir_type, mock_router_digest_is_trusted);
   MOCK(node_get_by_id, mock_node_get_by_id);
   MOCK(dirserv_get_bandwidth_for_router_kb, mock_dirserv_get_bw);
@@ -656,6 +675,85 @@ done:
   ROUTER_FREE(pppp);
 }
 
+/** Relays that only claim an address can't push out the relay that we
+ * found reachable there. */
+static void
+test_dirvote_get_sybil_unverified(void *arg)
+{
+  (void)arg;
+  dirauth_options_t *options = get_test_dirauth_options();
+  routerinfo_t relays[3];
+  node_t *nodes[3] = { NULL };
+  smartlist_t *routers = smartlist_new();
+  digestmap_t *omit = NULL;
+  routerstatus_t rs;
+
+  options->AuthDirHasIPv6Connectivity = 1;
+  memset(relays, 0, sizeof(relays));
+  memset(&rs, 0, sizeof(rs));
+  /* relays[0] is the victim; the others claim its addresses, advertise
+   * more bandwidth, and are Running. */
+  for (int i = 0; i < 3; ++i) {
+    memset(relays[i].cache_info.identity_digest, 'a' + i, DIGEST_LEN);
+    tor_addr_parse(&relays[i].ipv4_addr, "8.8.8.8");
+    tor_addr_parse(&relays[i].ipv6_addr, "2001:db8::1");
+    relays[i].bandwidthrate = relays[i].bandwidthcapacity =
+      i ? 1000000000 : 1000000;
+    nodes[i] = nodelist_set_routerinfo(&relays[i], NULL);
+    nodes[i]->is_running = 1;
+    smartlist_add(routers, &relays[i]);
+  }
+  nodes[0]->reached_ipv4_orport = nodes[0]->reached_ipv6_orport = 1;
+
+  /* Squatting on the victim's IPv4 address. */
+  omit = get_sybil_list_by_ip_version(routers, AF_INET);
+  tt_assert(digestmap_isempty(omit));
+  digestmap_free(omit, NULL);
+
+  /* Squatting on the victim's IPv6 address, while reachable on IPv4. */
+  nodes[1]->reached_ipv4_orport = nodes[2]->reached_ipv4_orport = 1;
+  omit = get_sybil_list_by_ip_version(routers, AF_INET6);
+  tt_assert(digestmap_isempty(omit));
+  digestmap_free(omit, NULL);
+
+  /* Relays that really share an address are still limited... */
+  nodes[1]->reached_ipv6_orport = nodes[2]->reached_ipv6_orport = 1;
+  omit = get_sybil_list_by_ip_version(routers, AF_INET6);
+  tt_int_op(digestmap_size(omit), OP_EQ, 1);
+  tt_assert(digestmap_get(omit, relays[0].cache_info.identity_digest));
+  digestmap_free(omit, NULL);
+
+  /* ...unless we can't test reachability in that family. */
+  options->AuthDirHasIPv6Connectivity = 0;
+  omit = get_sybil_list_by_ip_version(routers, AF_INET6);
+  tt_assert(digestmap_isempty(omit));
+  digestmap_free(omit, NULL);
+  options->AuthDirHasIPv6Connectivity = 1;
+  options->AuthDirTestReachability = 0;
+  omit = get_sybil_list_by_ip_version(routers, AF_INET);
+  tt_assert(digestmap_isempty(omit));
+  digestmap_free(omit, NULL);
+  options->AuthDirTestReachability = 1;
+
+  /* Evidence doesn't survive a descriptor removal, even if the node does
+   * (via its routerstatus): we can't tell which address the next descriptor
+   * claims. last_reachable6 must survive, since it decides Running. */
+  for (int i = 1; i < 3; ++i) {
+    nodes[i]->rs = &rs;
+    nodes[i]->last_reachable6 = 123;
+    nodelist_remove_routerinfo(&relays[i]);
+    tt_ptr_op(nodelist_set_routerinfo(&relays[i], NULL), OP_EQ, nodes[i]);
+    tt_i64_op(nodes[i]->last_reachable6, OP_EQ, 123);
+  }
+  omit = get_sybil_list_by_ip_version(routers, AF_INET6);
+  tt_assert(digestmap_isempty(omit));
+
+ done:
+  digestmap_free(omit, NULL);
+  smartlist_free(routers);
+  nodelist_free_all();
+}
+
 #define NODE(name, flags)                           \
   {                                                 \
     #name, test_dirvote_##name, (flags), NULL, NULL \
@@ -668,4 +766,5 @@ struct testcase_t dirvote_tests[] = {
     NODE(get_sybil_by_ip_version_ipv4, TT_FORK),
     NODE(get_sybil_by_ip_version_ipv6, TT_FORK),
     NODE(get_all_possible_sybil, TT_FORK),
+    NODE(get_sybil_unverified, TT_FORK),
     END_OF_TESTCASES};

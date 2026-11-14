@@ -221,6 +221,8 @@ congestion_control_vegas_log(const circuit_t *circ,
 {
   uint64_t queue_use = cc->cwnd - vegas_bdp(cc);
 
+  uint64_t max_rtt = MAX(cc->min_rtt_usec,cc->ewma_rtt_usec);
+  max_rtt = MAX(1, max_rtt); // prevent divide-by-zero
   if (CIRCUIT_IS_ORIGIN(circ) &&
       circ->purpose == CIRCUIT_PURPOSE_S_REND_JOINED) {
     log_info(LD_CIRC,
@@ -240,8 +242,7 @@ congestion_control_vegas_log(const circuit_t *circ,
              cc->inflight,
              vegas_bdp(cc),
              queue_use,
-             cc->cwnd*CELL_MAX_NETWORK_SIZE*1000/
-                MAX(cc->min_rtt_usec,cc->ewma_rtt_usec),
+             (cc->cwnd*CELL_MAX_NETWORK_SIZE*1000)/max_rtt,
              cc->in_slow_start
              );
   } else {
@@ -261,8 +262,7 @@ congestion_control_vegas_log(const circuit_t *circ,
              cc->inflight,
              vegas_bdp(cc),
              queue_use,
-             cc->cwnd*CELL_MAX_NETWORK_SIZE*1000/
-                MAX(cc->min_rtt_usec,cc->ewma_rtt_usec),
+             (cc->cwnd*CELL_MAX_NETWORK_SIZE*1000)/max_rtt,
              cc->in_slow_start
              );
   }

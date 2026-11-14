@@ -22,6 +22,7 @@
 #include "core/or/conflux_util.h"
 #include "core/or/conflux_pool.h"
 #include "core/or/conflux_st.h"
+#include "core/or/circuituse.h"
 #include "lib/time/compat_time.h"
 #include "app/config/config.h"
 
@@ -291,13 +292,14 @@ conflux_update_p_streams(origin_circuit_t *circ, edge_connection_t *stream)
 }
 
 /**
- * Sync the next_stream_id, timestamp_dirty, and circuit_idle_timeout
- * fields of a conflux set to the values in a particular circuit.
+ * Sync the next_stream_id, timestamp_dirty, circuit_idle_timeout,
+ * unusable_for_new_conns and the isolation fields from the given ref_circ into
+ * all legs of the conflux set.
  *
- * This is called upon link, and whenever one of these fields
- * changes on ref_circ. The ref_circ values are copied to all
- * other circuits in the conflux set.
-*/
+ * This is called upon link, and whenever one of these fields changes on
+ * ref_circ. The ref_circ values are copied to all other circuits in the
+ * conflux set.
+ */
 void
 conflux_sync_circ_fields(conflux_t *cfx, origin_circuit_t *ref_circ)
 {
@@ -313,6 +315,10 @@ conflux_sync_circ_fields(conflux_t *cfx, origin_circuit_t *ref_circ)
     leg->circ->timestamp_dirty = TO_CIRCUIT(ref_circ)->timestamp_dirty;
     ocirc->circuit_idle_timeout = ref_circ->circuit_idle_timeout;
     ocirc->unusable_for_new_conns = ref_circ->unusable_for_new_conns;
+    /* All legs carry the same streams, so they must carry the same stream
+     * isolation state. Whichever leg survives and ends up first in the set
+     * is the one circuit_is_acceptable() will be asked about. */
+    circuit_copy_isolation(ocirc, ref_circ);
   } CONFLUX_FOR_EACH_LEG_END(leg);
 }
 

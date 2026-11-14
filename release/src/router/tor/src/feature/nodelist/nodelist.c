@@ -441,6 +441,7 @@ static void
 node_addrs_changed(node_t *node)
 {
   node->last_reachable = node->last_reachable6 = 0;
+  node->reached_ipv4_orport = node->reached_ipv6_orport = 0;
   node->country = -1;
 }
 
@@ -770,11 +771,13 @@ nodelist_set_consensus(const networkstatus_t *ns)
       node->is_possible_guard = rs->is_possible_guard;
       node->is_exit = rs->is_exit;
       if (!authdir) {
-        /* Authdirs treat is_bad_exit specially in that they only assign
-         * it when the descriptor arrives. So when a dir auth is reading
-         * the flags from an existing consensus, don't believe the bit
-         * here, else it will get stuck 'on' forever. */
+        /* Authdirs treat is_bad_exit and is_middle_only specially in
+         * that they only assign it when the descriptor arrives and when
+         * reloading. So when a dir auth is reading the flags from an
+         * existing consensus, don't believe the bit here, else it will
+         * get stuck with the value from the consensus for too long. */
         node->is_bad_exit = rs->is_bad_exit;
+        node->is_middle_only = rs->is_middle_only;
       }
       node->is_hs_dir = rs->is_hs_dir;
       node->ipv6_preferred = 0;
@@ -782,6 +785,10 @@ nodelist_set_consensus(const networkstatus_t *ns)
           (tor_addr_is_null(&rs->ipv6_addr) == 0 ||
            (node->md && tor_addr_is_null(&node->md->ipv6_addr) == 0)))
         node->ipv6_preferred = 1;
+      /* forgive any annotations that made us avoid using this
+       * relay as an exit "for a while"; see the callers of
+       * policies_set_node_exitpolicy_to_reject_all(). */
+      node->rejects_all = 0;
     }
 
   } SMARTLIST_FOREACH_END(rs);
@@ -850,6 +857,9 @@ nodelist_remove_routerinfo(routerinfo_t *ri)
   node_t *node = node_get_mutable_by_id(ri->cache_info.identity_digest);
   if (node && node->ri == ri) {
     node->ri = NULL;
+    /* The next descriptor may have other ORPorts, and we won't be able to
+     * compare. (last_reachable{,6} are kept: they also decide Running.) */
+    node->reached_ipv4_orport = node->reached_ipv6_orport = 0;
     if (! node_is_usable(node)) {
       nodelist_drop_node(node, 1);
       node_free(node);

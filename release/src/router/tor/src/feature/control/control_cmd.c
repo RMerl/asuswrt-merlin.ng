@@ -883,6 +883,7 @@ handle_control_extendcircuit(control_connection_t *conn,
 }
 
 static const control_cmd_syntax_t setcircuitpurpose_syntax = {
+  .min_args=1,
   .max_args=1,
   .accept_keywords=true,
 };
@@ -995,6 +996,17 @@ handle_control_attachstream(control_connection_t *conn,
   if (circ && (circuit_get_cpath_len(circ)<2 || hop==1)) {
     control_write_endreply(conn, 551,
                            "Can't attach stream to this one-hop circuit.");
+    return 0;
+  }
+
+  /* Is this a conflux leg that has not finished linking? Such a circuit is
+   * open but must not carry streams until the set is linked, or it will
+   * violate the checks in validate_circ_has_no_streams(). */
+  if (circ && (TO_CIRCUIT(circ)->purpose == CIRCUIT_PURPOSE_CONFLUX_UNLINKED ||
+               TO_CIRCUIT(circ)->conflux_pending_nonce)) {
+    control_write_endreply(conn, 551,
+                           "Can't attach stream to an unlinked conflux "
+                           "circuit.");
     return 0;
   }
 
@@ -1465,7 +1477,8 @@ handle_control_hsfetch(control_connection_t *conn,
       const char *server = line->value;
 
       const node_t *node = node_get_by_hex_id(server, 0);
-      if (!node) {
+      /* As with HSPOST, we need a routerstatus to use this as an HSDir. */
+      if (!node || !node->rs) {
         control_printf_endreply(conn, 552, "Server \"%s\" not found", server);
         goto done;
       }

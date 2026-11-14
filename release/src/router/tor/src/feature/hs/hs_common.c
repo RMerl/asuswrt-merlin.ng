@@ -32,6 +32,7 @@
 #include "feature/nodelist/routerset.h"
 #include "feature/rend/rendcommon.h"
 #include "feature/relay/routermode.h"
+#include "lib/crypt_ops/crypto_curve25519.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "lib/net/resolve.h"
@@ -83,6 +84,8 @@ set_unix_port(edge_connection_t *conn, hs_port_config_t *p)
   conn->base_.socket_family = AF_UNIX;
   tor_addr_make_unspec(&conn->base_.addr);
   conn->base_.port = 1;
+  /* address is currently "(rendezvous)"; free it before we replace it */
+  tor_free(conn->base_.address);
   conn->base_.address = tor_strdup(p->unix_addr);
   return 0;
 }
@@ -1589,6 +1592,7 @@ hs_pick_hsdir(smartlist_t *responsible_dirs, const char *req_key_str,
  * ORPort, or NULL. If direct_conn is false, the IP address is always IPv4.
  *
  * It performs the following checks:
+ *  if the onion key is unusable, return NULL.
  *  if there is no usable IP address, or legacy ID is missing, return NULL.
  *  if direct_conn, and we can't reach any IP address, return NULL.
  */
@@ -1613,6 +1617,11 @@ hs_get_extend_info_from_lspecs(const smartlist_t *lspecs,
 
   if (onion_key == NULL) {
     log_warn(LD_BUG, "Specified onion key is null");
+    goto done;
+  }
+
+  if (!curve25519_public_key_is_ok(onion_key)) {
+    log_debug(LD_REND, "Invalid ntor onion key");
     goto done;
   }
 

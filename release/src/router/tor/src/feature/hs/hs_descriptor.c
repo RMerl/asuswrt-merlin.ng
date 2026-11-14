@@ -2058,9 +2058,12 @@ desc_sig_is_valid(const char *b64_sig,
 
   /* Signature length check. */
   if (strlen(b64_sig) != ED25519_SIG_BASE64_LEN) {
-    log_warn(LD_REND, "Service descriptor has an invalid signature length."
-                      "Expected %d but got %lu",
-             ED25519_SIG_BASE64_LEN, (unsigned long) strlen(b64_sig));
+    static ratelim_t warning_limit = RATELIM_INIT(600);
+    log_fn_ratelim(&warning_limit, LOG_WARN, LD_REND,
+                   "Service descriptor has an invalid signature length. "
+                   "Expected %d but got %lu",
+                   ED25519_SIG_BASE64_LEN,
+                   (unsigned long) strlen(b64_sig));
     goto err;
   }
 

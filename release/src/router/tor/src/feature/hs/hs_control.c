@@ -195,11 +195,11 @@ hs_control_desc_event_content(const hs_ident_dir_conn_t *ident,
 
 /** Handle the "HSPOST [...]" command. The body is an encoded descriptor for
  * the given onion_address. The descriptor will be uploaded to each directory
- * in hsdirs_rs. If NULL, the responsible directories for the current time
- * period will be selected.
+ * in <b>hsdirs_rs</b>. If NULL, the responsible directories for the current
+ * time period will be selected.
  *
- * Return -1 on if the descriptor plaintext section is not decodable. Else, 0
- * on success. */
+ * Return -1 if the descriptor plaintext section is not decodable. Else,
+ * return 0 for success. */
 int
 hs_control_hspost_command(const char *body, const char *onion_address,
                           const smartlist_t *hsdirs_rs)
@@ -209,6 +209,7 @@ hs_control_hspost_command(const char *body, const char *onion_address,
   hs_desc_plaintext_data_t plaintext;
   smartlist_t *hsdirs = NULL;
 
+  memset(&plaintext, 0, sizeof(plaintext));
   tor_assert(body);
   tor_assert(onion_address);
 
@@ -245,6 +246,7 @@ hs_control_hspost_command(const char *body, const char *onion_address,
  done:
   /* We don't have ownership of the objects in this list. */
   smartlist_free(hsdirs);
+  hs_desc_plaintext_data_free_contents(&plaintext);
   return ret;
 }
 

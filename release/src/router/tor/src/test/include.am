@@ -39,6 +39,10 @@ TESTSCRIPTS += \
 	scripts/maint/practracker/test_practracker.sh \
 	scripts/maint/run_check_subsystem_order.sh
 
+if !WIN32
+TESTSCRIPTS += src/test/test_cbt_mvp.sh
+endif
+
 if COVERAGE_ENABLED
 # ...
 else
@@ -433,6 +437,8 @@ EXTRA_DIST += \
 	src/test/slownacl_curve25519.py \
 	src/test/test_rebind.sh \
 	src/test/test_rebind.py \
+	src/test/test_cbt_mvp.sh \
+	src/test/test_cbt_mvp.py \
 	src/test/test_include.sh \
 	src/test/test_include.py \
 	src/test/zero_length_keys.sh \

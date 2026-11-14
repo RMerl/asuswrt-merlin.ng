@@ -1276,7 +1276,9 @@ consdiff_apply_diff(const smartlist_t *cons1,
 /**
  * Helper: For every NL-terminated line in <b>s</b>, add a cdline referring to
  * that line (without trailing newline) to <b>out</b>.  Return -1 if there are
- * any non-NL terminated lines; 0 otherwise.
+ * any non-NL terminated lines,
+ * or if there would be more than <b>max_lines</b> in the output;
+ * 0 otherwise.
  *
  * Unlike tor_split_lines, this function avoids ambiguity on its
  * handling of a final line that isn't NL-terminated.
@@ -1288,7 +1290,8 @@ consdiff_apply_diff(const smartlist_t *cons1,
 STATIC int
 consensus_split_lines(smartlist_t *out,
                       const char *s, size_t len,
-                      memarea_t *area)
+                      memarea_t *area,
+                      size_t max_lines)
 {
   const char *end_of_str = s + len;
 
@@ -1302,6 +1305,12 @@ consensus_split_lines(smartlist_t *out,
       /* Line is far too long. */
       return -1;
     }
+    if ((size_t)smartlist_len(out) >= max_lines) {
+      /* too many lines. */
+      log_warn(LD_GENERAL, "Too many lines when splitting consensus or diff");
+      return -1;
+    }
+
     cdline_t *line = memarea_alloc(area, sizeof(cdline_t));
     line->s = s;
     line->len = (uint32_t)(eol - s);
@@ -1354,9 +1363,9 @@ consensus_diff_generate(const char *cons1, size_t cons1len,
   memarea_t *area = memarea_new();
   lines1 = smartlist_new();
   lines2 = smartlist_new();
-  if (consensus_split_lines(lines1, cons1, cons1len, area) < 0)
+  if (consensus_split_lines(lines1, cons1, cons1len, area, SIZE_MAX) < 0)
     goto done;
-  if (consensus_split_lines(lines2, cons2, cons2len, area) < 0)
+  if (consensus_split_lines(lines2, cons2, cons2len, area, SIZE_MAX) < 0)
     goto done;
 
   result_lines = consdiff_gen_diff(lines1, lines2, &d1, &d2, area);
@@ -1376,12 +1385,16 @@ consensus_diff_generate(const char *cons1, size_t cons1len,
 
 /** Given a consensus document and a diff, try to apply the diff to the
  * consensus.  On success return a newly allocated string containing the new
- * consensus.  On failure, return NULL. */
+ * consensus.  On failure, return NULL.
+ *
+ * If `enforce_length_maxima` is true, reject over-long diffs.
+ **/
 char *
 consensus_diff_apply(const char *consensus,
                      size_t consensus_len,
                      const char *diff,
-                     size_t diff_len)
+                     size_t diff_len,
+                     bool enforce_length_maxima)
 {
   consensus_digest_t d1;
   smartlist_t *lines1 = NULL, *lines2 = NULL;
@@ -1389,15 +1402,41 @@ consensus_diff_apply(const char *consensus,
   char *result = NULL;
   memarea_t *area = memarea_new();
 
+  if (enforce_length_maxima &&
+      diff_len >= 64*1024 && diff_len / 2 >= consensus_len) {
+    // We consider a diff too long if it is as least 64 KiB,
+    // and it is at least twice as long as the consensus in bytes.
+    log_warn(LD_GENERAL, "Consensus diff has too many bytes; "
+             "rejecting as possible DOS");
+    goto done;
+  }
+
   r1 = consensus_compute_digest_as_signed(consensus, consensus_len, &d1);
   if (BUG(r1 < 0))
     goto done;
 
   lines1 = smartlist_new();
   lines2 = smartlist_new();
-  if (consensus_split_lines(lines1, consensus, consensus_len, area) < 0)
+  if (consensus_split_lines(lines1, consensus, consensus_len,
+                            area, SIZE_MAX) < 0)
     goto done;
-  if (consensus_split_lines(lines2, diff, diff_len, area) < 0)
+
+  const size_t n_consensus_lines = smartlist_len(lines1);
+  if (BUG(n_consensus_lines > SIZE_MAX / 3)) {
+    /* This should be impossible; we should not be able to allocate a smartlist
+     * of this size */
+    goto done;
+  }
+  // We also consider a diff too long if it is at least 1024 lines,
+  // and it has at least three times as many lines as the consensus.
+  size_t max_diff_lines;
+  if (enforce_length_maxima) {
+    max_diff_lines = MAX(n_consensus_lines * 3, 1024) - 1;
+  } else {
+    max_diff_lines = SIZE_MAX;
+  }
+
+  if (consensus_split_lines(lines2, diff, diff_len, area, max_diff_lines) < 0)
     goto done;
 
   result = consdiff_apply_diff(lines1, lines2, &d1);

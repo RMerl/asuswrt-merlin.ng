@@ -16,4 +16,4 @@ legacy branch has been dropped.
 
 Please consult the Wiki for an up-to-date list of supported models:
 
-https://github.com/RMerl/asuswrt-merlin.ng/wiki/Supported-Devices
+https://github.com/Asuswrt-Merlin/asuswrt-merlin.ng/wiki/Supported-Devices

@@ -185,7 +185,7 @@ For documentation on how to use the features that are specific to
 Asuswrt-Merlin, as well as additional guides, please consult the
 wiki:
 
-https://github.com/RMerl/asuswrt-merlin.ng/wiki
+https://github.com/Asuswrt-Merlin/asuswrt-merlin.ng/wiki
 
 There are also support forums hosted at SNBForums.
 
@@ -197,7 +197,7 @@ Source code
 -----------
 The source code can be found on Github:
 
-https://github.com/RMerl/asuswrt-merlin.ng
+https://github.com/Asuswrt-Merlin/asuswrt-merlin.ng
 
 
    
@@ -205,7 +205,7 @@ Contact information
 -------------------
 SmallNetBuilder forums (preferred method: https://www.snbforums.com/forums/asuswrt-merlin.42/ as RMerlin)
 Website: https://www.asuswrt-merlin.net/
-Github: https://github.com/RMerl
+Github: https://github.com/Asuswrt-Merlin
 Email: merlin@asuswrt-merlin.net
 Twitter: https://twitter.com/RMerlinDev
 Mastodon: https://fosstodon.org/@RMerlin
@@ -266,7 +266,7 @@ The only call back made by this firmware to me is when it checks for the
 availability of a new version.  The automated check can be disabled if desired.
 More info on the Wiki:
 
-https://github.com/RMerl/asuswrt-merlin.ng/wiki/Privacy-disclosure
+https://github.com/Asuswrt-Merlin/asuswrt-merlin.ng/wiki/Privacy-disclosure
 
 
 --- 

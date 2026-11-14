@@ -2017,20 +2017,24 @@ void rc_ipsec_nvram_convert_check(void)
 			if(0 != strcmp(nvram_safe_get(&buf[0]), "")){
 				if(0 == strcmp(nvram_safe_get(&buf_ext[0]),""))	/* if there no ext nvram, filled them. */
 				{
-				nvp = strdup(nvram_safe_get(&buf[0]));
+				nv = nvp = strdup(nvram_safe_get(&buf[0]));
 				b = strsep(&nvp, ">");
 				if(0 == strcmp(b, "4"))
 					nvram_set(&buf_ext[0], "0>0>0>0>0>0");	/* none */
 				else
 					nvram_set(&buf_ext[0], "6>6>255>6>6>255");
+				free(nv);
 				}
 				else	/* if there is ext nvram but format not match, replace them. */
 				{
 					nv = nvp = strdup(nvram_safe_get(&buf_ext[0]));
-					if (vstrsep(nv, ">", &encryption_p1, &hash_p1, &dh_group, &encryption_p2, &hash_p2, &pfs_group) == 6)
+					if (vstrsep(nv, ">", &encryption_p1, &hash_p1, &dh_group, &encryption_p2, &hash_p2, &pfs_group) == 6) {
+						free(nv);
 						continue;
+					}
 					sprintf(tmpStr, "%s>%s>%s>%s>%s>255", encryption_p1, hash_p1, dh_group, encryption_p2, hash_p2);
 					nvram_set(&buf_ext[0], tmpStr);
+					free(nv);
 				}
 			}
 
@@ -2217,7 +2221,7 @@ void rc_ipsec_topology_set_XML()
     s_tmp = &buf1[0];
 	qs_virtual_ip_t virtual_ip;
 	char lan_class[32];
-	char *subnet, *subnet_total;
+	char *subnet, *subnet_total, *subnet_buf;
 
     memset(p_tmp, 0, sizeof(char) * SZ_MIN);
 	memset(&virtual_ip, 0, sizeof(qs_virtual_ip_t));
@@ -2426,22 +2430,24 @@ void rc_ipsec_topology_set_XML()
 					//fprintf(fp,"      <src>ipv4(%s)</src>\n",prof[prof_count][i].local_subnet);
 					//fprintf(fp,"      <dst>ipv4(%s)</dst>\n",prof[prof_count][i].remote_subnet);
 					fprintf(fp,"      <src>");
-					subnet_total = strdup(prof[prof_count][i].local_subnet);
+					subnet_total = subnet_buf = strdup(prof[prof_count][i].local_subnet);
 					while((subnet = strsep(&subnet_total, ",")) != NULL){
 						if(NULL != strstr(subnet, ":"))
 							fprintf(fp,"ipv6(%s),", subnet);
 						else
 							fprintf(fp,"ipv4(%s),", subnet);
 				    }
+					free(subnet_buf);
 					fprintf(fp,"</src>\n");
 					fprintf(fp,"      <dst>");
-					subnet_total = strdup(prof[prof_count][i].remote_subnet);
+					subnet_total = subnet_buf = strdup(prof[prof_count][i].remote_subnet);
 					while((subnet = strsep(&subnet_total, ",")) != NULL){
 						if(NULL != strstr(subnet, ":"))
 							fprintf(fp,"ipv6(%s),", subnet);
 						else
 							fprintf(fp,"ipv4(%s),", subnet);
 				    }
+					free(subnet_buf);
 					fprintf(fp,"</dst>\n");
 					fprintf(fp,"    </rule>\n");
 				}
@@ -2454,22 +2460,24 @@ void rc_ipsec_topology_set_XML()
 					//fprintf(fp,"      <src>ipv4(%s)</src>\n", prof[prof_count][i].remote_subnet);
 					//fprintf(fp,"      <dst>ipv4(%s)</dst>\n", prof[prof_count][i].local_subnet);
 					fprintf(fp,"      <src>");
-					subnet_total = strdup(prof[prof_count][i].remote_subnet);
+					subnet_total = subnet_buf = strdup(prof[prof_count][i].remote_subnet);
 					while((subnet = strsep(&subnet_total, ",")) != NULL){
 						if(NULL != strstr(subnet, ":"))
 							fprintf(fp,"ipv6(%s),", subnet);
 						else
 							fprintf(fp,"ipv4(%s),", subnet);
 				    }
+					free(subnet_buf);
 					fprintf(fp,"</src>\n");
 					fprintf(fp,"      <dst>");
-					subnet_total = strdup(prof[prof_count][i].local_subnet);
+					subnet_total = subnet_buf = strdup(prof[prof_count][i].local_subnet);
 					while((subnet = strsep(&subnet_total, ",")) != NULL){
 						if(NULL != strstr(subnet, ":"))
 							fprintf(fp,"ipv6(%s),", subnet);
 						else
 							fprintf(fp,"ipv4(%s),", subnet);
 				    }
+					free(subnet_buf);
 					fprintf(fp,"</dst>\n");
 					fprintf(fp,"    </rule>\n");
 				}
@@ -2889,7 +2897,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 	int unit = 0;
 	char word[80], *next;
 	uint32_t cur_bitmap_en_p[2]={0};
-	char *local_subnet, *local_subnet_total;
+	char *local_subnet, *local_subnet_total, *local_subnet_buf;
 	int prof_i = 0, is_duplicate = 0;
 	char tmpStr[20];
 /* moved to firewall
@@ -2919,6 +2927,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 
 	if ((fp1 = fopen(FILE_PATH_IPSEC_IPTABLES_RULE, "w")) == NULL){
 		DBG(("OPEN %s FAIL!!\n", FILE_PATH_IPSEC_IPTABLES_RULE));
+		fclose(fp);
 		return;
 	}
 		
@@ -3064,7 +3073,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, isakmp_port);
 							fprintf(fp1, "iptables -I OUTPUT -o %s -p udp --sport %d -j ACCEPT\n", interface, nat_t_port);
 							*/
-							local_subnet_total = strdup(prof[prof_count][i].local_subnet);
+							local_subnet_total = local_subnet_buf = strdup(prof[prof_count][i].local_subnet);
 							while((local_subnet = strsep(&local_subnet_total, ",")) != NULL){
 								/* moved to firewall
 								fprintf(fp1, "iptables -t nat -D POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);
@@ -3080,6 +3089,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 								}
 #endif
 						    }
+							free(local_subnet_buf);
 						}
 						
 					}
@@ -3126,7 +3136,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 #endif							
 						}
 						else{
-							local_subnet_total = strdup(prof[prof_count][i].local_subnet);
+							local_subnet_total = local_subnet_buf = strdup(prof[prof_count][i].local_subnet);
 							while((local_subnet = strsep(&local_subnet_total, ",")) != NULL){
 								/* moved to firewall
 								fprintf(fp, "iptables -t nat -D POSTROUTING -s %s -m policy --dir out --pol ipsec -j ACCEPT\n", local_subnet);
@@ -3142,6 +3152,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 								}*/
 #endif									
 						    }
+							free(local_subnet_buf);
 							
 						}
 						}

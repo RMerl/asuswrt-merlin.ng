@@ -2344,8 +2344,10 @@ char *find_sg_of_device(const char *device_name, char *buf, const int buf_size)
 		if(strncmp(file->d_name, "sg", 2))
 			continue;
 
-		if(get_usb_port_by_device(file->d_name, check_usb_port, sizeof(check_usb_port)) == NULL)
+		if(get_usb_port_by_device(file->d_name, check_usb_port, sizeof(check_usb_port)) == NULL){
+			closedir(dp);
 			return NULL;
+		}
 
 		if(!strcmp(target_usb_port, check_usb_port)){
 			snprintf(buf, buf_size, "%s", file->d_name);

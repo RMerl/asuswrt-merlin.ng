@@ -272,7 +272,8 @@ void get_ifname_by_wlmac_prep(void)
 char *
 get_ifname_by_wlmac(unsigned char *mac, char *name)
 {
-	char nv_name[16], os_name[16], if_name[16];
+	char nv_name[16], os_name[16];
+	static char if_name[16];
 	char tmptr[] = "lanXX_ifnames";
 	char *ifnames, *ifname;
 	int i;

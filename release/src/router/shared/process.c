@@ -73,9 +73,14 @@ static int _pidof(const char *name, pid_t **pids)
 					count = i;
 					break;
 				}
-				if ((*pids = realloc(*pids, sizeof(pid_t) * (count + 1))) == NULL) {
+				pid_t *tmp = realloc(*pids, sizeof(pid_t) * (count + 1));
+				if (tmp == NULL) {
+					free(*pids);
+					*pids = NULL;
+					closedir(dir);
 					return -1;
 				}
+				*pids = tmp;
 				(*pids)[count++] = i;
 			}
 		}
@@ -245,7 +250,6 @@ static int un_tcpsock_connect(char *path, int nodelay)
 	strlcpy(uaddr.sun_path, path, sizeof(uaddr.sun_path));
 
 	if ( connect(sock, (struct sockaddr*)(&uaddr), sizeof(uaddr)) == -1 ) {
-		close(sock);
 		_dprintf("%s: connect[%s]: %s\n", __func__, path, strerror(errno));
 		close(sock);
 		return -1;

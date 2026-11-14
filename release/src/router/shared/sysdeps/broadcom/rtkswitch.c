@@ -204,10 +204,12 @@ int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 	case 0:		/* Get LAN phy status of all LAN ports */
 #endif
 	case 1:		/* Dump all counters of the specified LAN port */
+			close(fd);
 			return rtkswitch_port_stat(val2 + 1);
 	case 100:	/* set reset pin to 0 */
 	case 101:	/* set reset pin to 1 */
 	case 7:		/* Dump L2 lookup table of specified LAN port */
+			close(fd);
 			return rtkswitch_port_mactable(val2 + 1);
 	case 19:	// IOL 100M mode
 	case 20:	// IOL 1G mode
@@ -218,6 +220,7 @@ int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 	case 25:	// IOL 2.5G mode5
 	case 26:	// IOL 2.5G mode6
 	case 27:	// IOL 2.5G mode7
+			close(fd);
 			return rtkswitch_testmode(val, val2, val3);
 #if defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96) || defined(GTBE19000) || defined(RTBE92U) || defined(RTBE95U) || defined(RTBE82U) || defined(TUFBE82) || defined(RTBE58U_PRO) || defined(GTBE19000AI) || defined(GTBE96_AI)
 	case 80:	// rtl8373_setAsicReg
@@ -226,6 +229,7 @@ int rtkswitch_ioctl(int val, int val2, int val3, int val4, int val5)
 	case 83:	// rtk_port_phyReg_get
 	case 84:	// rtk_rtl8373_sds_reg_write
 	case 85:	// rtk_rtl8373_sds_reg_read
+			close(fd);
 			return rtkswitch_regop(val, val2, val3, val4, val5);
 #endif
 	case 2:		/* Dump MAC status of specified LAN port */
@@ -516,7 +520,6 @@ int rtkswitch_port_speed(int port)
 		memset(&pS, 0, sizeof(pS));
 		if (ioctl(fd, RTKSWITCH_IOCTL(0), &pS) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		}
 
 		close(fd);
@@ -561,7 +564,6 @@ int rtkswitch_testmode(int val, int val2, int val3)
 		tm.mode = val3;
 		if (ioctl(fd, RTKSWITCH_IOCTL(val), &tm) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		}
 
 		close(fd);
@@ -587,7 +589,6 @@ int rtkswitch_regop(int val, int val2, int val3, int val4, int val5)
                 ro.pm4 = val5;
                 if (ioctl(fd, RTKSWITCH_IOCTL(val), &ro) < 0) {
                         perror("rtkswitch ioctl");
-                        close(fd);
                 }
 
                 close(fd);
@@ -609,7 +610,6 @@ int rtkswitch_port_duplex(int port)
 		memset(&pS, 0, sizeof(pS));
 		if (ioctl(fd, RTKSWITCH_IOCTL(0), &pS) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		}
 
 		close(fd);
@@ -992,7 +992,6 @@ int rtkswitch_port_stat(int port)
 #endif
 		if (ioctl(fd, RTKSWITCH_IOCTL(1), &Port_cntrs) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		} else
 			show_port_stat(&Port_cntrs);
 
@@ -1036,7 +1035,6 @@ int rtkswitch_port_mactable(int port)
 #endif
 		if (ioctl(fd, RTKSWITCH_IOCTL(7), &Port_mactable) < 0) {
 			perror("rtkswitch ioctl");
-			close(fd);
 		} else
 			show_port_mactable(&Port_mactable);
 

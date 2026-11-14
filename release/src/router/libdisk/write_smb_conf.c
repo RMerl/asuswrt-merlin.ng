@@ -77,10 +77,10 @@ int check_existed_share(const char *string)
 	FILE *tp;
 	char buf[PATH_MAX], target[256];
 
-	if((tp = fopen(SAMBA_CONF, "r")) == NULL)
+	if(string == NULL || strlen(string) <= 0)
 		return 0;
 
-	if(string == NULL || strlen(string) <= 0)
+	if((tp = fopen(SAMBA_CONF, "r")) == NULL)
 		return 0;
 
 	snprintf(target, sizeof(target), "[%s]", string);

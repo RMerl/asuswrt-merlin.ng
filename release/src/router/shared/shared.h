@@ -2652,8 +2652,8 @@ static inline int is_tcode_country(char *cc)
 	return __is_tcode_country(nvram_safe_get("territory_code"), cc);
 }
 #else
-static inline int __is_tcode_country(char __attribute__((unused)) *tcode, char __attribute__((unused) *cc) { return 0; }
-static inline int is_tcode_country(char __attribute__((unused) *cc) { return 0; }
+static inline int __is_tcode_country(char __attribute__((unused)) *tcode, char __attribute__((unused)) *cc) { return 0; }
+static inline int is_tcode_country(char __attribute__((unused)) *cc) { return 0; }
 #endif
 
 extern int init_gpio(void);

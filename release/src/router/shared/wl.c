@@ -788,6 +788,9 @@ wl_iovar_xtlv_setbuf(char *ifname, char *iovar, uint8* param, uint16 paramlen, u
 	uint iolen;
 
 	iov_buf = (bcm_iov_buf_t *)calloc(1, WLC_IOCTL_MEDLEN);
+	if (iov_buf == NULL) {
+		return (BCME_NOMEM);
+	}
 
 	/* fill header */
 	iov_buf->version = version;
@@ -796,6 +799,7 @@ wl_iovar_xtlv_setbuf(char *ifname, char *iovar, uint8* param, uint16 paramlen, u
 	pxtlv = (uint8 *)&iov_buf->data[0];
 	buflen = buflen_start = WLC_IOCTL_MEDLEN - sizeof(bcm_iov_buf_t);
 	if ((bcm_pack_xtlv_entry(&pxtlv, &buflen, xtlv_id, paramlen, param, opts)) != BCME_OK) {
+		free(iov_buf);
 		return BCME_ERROR;
 	}
 	iov_buf->len = buflen_start - buflen;
@@ -806,6 +810,7 @@ wl_iovar_xtlv_setbuf(char *ifname, char *iovar, uint8* param, uint16 paramlen, u
 
 	/* check for overflow */
 	if (iolen > buf_len) {
+		free(iov_buf);
 		return (BCME_BUFTOOSHORT);
 	}
 

@@ -2006,7 +2006,8 @@ extern int mod_folder(const char *const mount_path, const char *const folder, co
 	new_full_path = (char *)malloc(sizeof(char)*(len+1));
 	if(new_full_path == NULL){
 		usb_dbg("Can't malloc \"new_full_path\".\n");
-		
+		free(full_path);
+
 		return -1;
 	}
 	snprintf(new_full_path, (len+1), "%s/%s", mount_path, new_folder);

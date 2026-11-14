@@ -804,13 +804,14 @@ int chk_nv_sanity(int is_re, int action)
 	size_t table_size = is_re==1 ? RE_MODE_TABLE_SIZE : CAP_MODE_TABLE_SIZE;
 
 	FILE *config_A = fopen(KNV_FILE, "r");
-	FILE *config_B = fopen(KNV_FILE_BP, "r");
+	FILE *config_B = NULL;
 
 	if (!config_A) {
 		perror("Error opening KNV_FILE");
 		return -1;
 	}
 
+	config_B = fopen(KNV_FILE_BP, "r");
 	if (!config_B) {
 		perror("KNV_BP file does not exist. Shall be still in defaults ?\n");
 		fclose(config_A);
@@ -876,15 +877,15 @@ int chk_nv_sanity(int is_re, int action)
 			knv_logmessage(KNV_LOG, "nv_sanity", "restore nvram from knv_bp\n");
 
 			restore_nvram(config_B);
-			fclose(config_B);
-
 			nvram_commit();
 		} else {
 			printf("%s: warning: Errors found in both knv and knv_bp !\n", __func__);
 			knv_logmessage(KNV_LOG, "nv_sanity", "warning: errors found in both knv and knv_bp !\n");
-
-			fclose(config_B);
 		}
+	}
+
+	if (config_B) {
+		fclose(config_B);
 	}
 
 	knv_logmessage(KNV_LOG, "nv_sanity", "---------\n");

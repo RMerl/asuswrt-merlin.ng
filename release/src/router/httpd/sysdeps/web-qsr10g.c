@@ -669,7 +669,7 @@ char *wl_ifname_qtn_by_unit(int unit)
 		qtn_unit=0;	/* 5G */
 
 	snprintf(tmp, sizeof(tmp), "wifi%d_0", qtn_unit);
-	return strdup(tmp);
+	return tmp;
 }
 
 int wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)

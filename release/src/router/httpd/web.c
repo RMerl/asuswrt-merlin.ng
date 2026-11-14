@@ -7947,6 +7947,8 @@ ej_dhcpLeaseMacList(int eid, webs_t wp, int argc, char_t **argv)
 		name_len = strlen(name) * sizeof(char)*3 + sizeof(char);
 
 		if (name_len > sizeof(tmp)) {
+			if (buf != tmp)
+				free(buf);
 			buf = (char *)malloc(name_len);
 			if (buf == NULL) {
 				csprintf("No memory.\n");
@@ -12755,7 +12757,7 @@ send_action(char *ftp_url,int port)
 	}
 
 	int len;
-	while ((len = recv(my_fd, buf, 1024, 0))) {
+	while ((len = recv(my_fd, buf, sizeof(buf) - 1, 0))) {
 		//_dprintf("BUF:%s\n",buf);
 		close(my_fd);
 		return strdup(buf);
@@ -12784,6 +12786,7 @@ ftpServerTree_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	else
 		websWrite(wp,"%s",buf);
 
+	free(buf);
 	return 0;
 }
 
@@ -15854,6 +15857,11 @@ int inc_uploadImg(FILE * stream, int *len, uint32 *imageLen)
       } else {
          fprintf(stderr, "HTTP: script %s does not exist! Use original code \n", SINGLE_IMAGE_SCRIPT);
          use_single_image = 0;
+      }
+      /* close a handle left open by an earlier upload that bailed out early */
+      if (tmp_upload_fp) {
+         fclose(tmp_upload_fp);
+         tmp_upload_fp = NULL;
       }
       if (use_single_image)
          tmp_upload_fp = fopen(TMP_NEW_IMAGE_FILENAME, "wb");
@@ -22240,6 +22248,7 @@ do_wrs_wbl_cgi(char *url, FILE *stream)
 					snprintf(tmp, end-head, "%s", head);
 					json_object_array_add(data, json_object_new_string(tmp));
 				}
+				fclose(fp);
 			}
 		}
 		else {
@@ -24167,6 +24176,7 @@ create_alexa_ifttt_sdn_profile(int from_app, char *ssid, char *key, int expireti
 	if (lan_netmask) free(lan_netmask);
 	if (wan_ipaddr) free(wan_ipaddr);
 	if (wan_netmask) free(wan_netmask);
+	if (list) free(list);
 
 	HTTPD_DBG(">>>New SDN Guest<<<, APGx=%d vid=%d, wifi_band=%d\n", apg_idx, vlan_vid, 7);
 	return 1;
@@ -43933,9 +43943,10 @@ void websSetVer(void)
 		snprintf(fwver, sizeof(fwver), "%d.%d.%d.%d", verPtr[0], verPtr[1], verPtr[2], verPtr[3]);
 
 		cprintf("get fw ver: %s\n", productid);
-		fclose(fp);
 	}
 write_ver:
+	if (fp)
+		fclose(fp);
 	nvram_set_f("general.log", "productid", productid);
 	nvram_set_f("general.log", "firmver", fwver);
 }

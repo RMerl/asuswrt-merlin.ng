@@ -207,7 +207,7 @@ static char *probe_apfs(struct volume_id *id, char *dev)
 			else if(!strncmp(buf, "Name", 4))
 				sscanf(buf, "Name: %s %*s", id->label);
 		}
-		fclose(fp);
+		pclose(fp);
 	}
 
 	return *(id->label) || *(id->uuid) ? "apfs" : NULL;
